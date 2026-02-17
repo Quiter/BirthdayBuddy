@@ -17,54 +17,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import com.heckmannch.birthdaybuddy.model.BirthdayContact
-
-// Farbrechner für das Alter
-@Composable
-fun getAgeColor(age: Int): Color {
-    val isDark = isSystemInDarkTheme()
-    val youngColor = if (isDark) Color(0xFFFFA4A4) else Color(0xFFFF5252)
-    val oldColor = if (isDark) Color(0xFFD32F2F) else Color(0xFF8B0000)
-    val clampedAge = age.coerceIn(0, 100)
-    val fraction = clampedAge / 100f
-    return lerp(youngColor, oldColor, fraction)
-}
-
-// Farbrechner für die restlichen Tage
-@Composable
-fun getDaysColor(days: Int): Color {
-    if (days == 0) return Color(0xFFFFC107) // Gold für "Heute"
-    val isDark = isSystemInDarkTheme()
-    val nearColor = if (isDark) Color(0xFF80D8FF) else Color(0xFF00BFFF)
-    val farColor = if (isDark) Color(0xFF5C6BC0) else Color(0xFF00008B)
-    val clampedDays = days.coerceIn(1, 365)
-    val fraction = clampedDays / 365f
-    return lerp(nearColor, farColor, fraction)
-}
-
-// NEU: Übersetzt YYYY-MM-DD zu DD.MM.YYYY
-fun formatGermanDate(dateString: String): String {
-    return try {
-        if (dateString.startsWith("--")) {
-            // Fall: Kein Jahr angegeben (z.B. --05-24)
-            val month = dateString.substring(2, 4)
-            val day = dateString.substring(5, 7)
-            "$day.$month."
-        } else {
-            // Fall: Mit Jahr angegeben (z.B. 1990-05-24)
-            val parts = dateString.split("-")
-            if (parts.size == 3) {
-                val year = parts[0]
-                val month = parts[1]
-                val day = parts[2]
-                "$day.$month.$year"
-            } else {
-                dateString // Falls es ein ganz komisches Format ist, geben wir es einfach so zurück
-            }
-        }
-    } catch (e: Exception) {
-        dateString
-    }
-}
+import com.heckmannch.birthdaybuddy.utils.formatGermanDate // WICHTIG: Hier laden wir jetzt unser Helferlein!
 
 @Composable
 fun BirthdayItem(contact: BirthdayContact) {
@@ -90,7 +43,6 @@ fun BirthdayItem(contact: BirthdayContact) {
                     fontWeight = FontWeight.Bold
                 )
                 Spacer(modifier = Modifier.height(4.dp))
-                // NEU: Hier rufen wir unsere Formatierungs-Funktion auf!
                 Text(
                     text = "Datum: ${formatGermanDate(contact.birthday)}",
                     style = MaterialTheme.typography.bodySmall,
@@ -126,4 +78,26 @@ fun BirthdayItem(contact: BirthdayContact) {
             }
         }
     }
+}
+
+// PRIVATE Helfer-Funktionen: Die Karte behält ihr "Rezept" für die Farben für sich
+@Composable
+private fun getAgeColor(age: Int): Color {
+    val isDark = isSystemInDarkTheme()
+    val youngColor = if (isDark) Color(0xFFFFA4A4) else Color(0xFFFF5252)
+    val oldColor = if (isDark) Color(0xFFD32F2F) else Color(0xFF8B0000)
+    val clampedAge = age.coerceIn(0, 100)
+    val fraction = clampedAge / 100f
+    return lerp(youngColor, oldColor, fraction)
+}
+
+@Composable
+private fun getDaysColor(days: Int): Color {
+    if (days == 0) return Color(0xFFFFC107)
+    val isDark = isSystemInDarkTheme()
+    val nearColor = if (isDark) Color(0xFF80D8FF) else Color(0xFF00BFFF)
+    val farColor = if (isDark) Color(0xFF5C6BC0) else Color(0xFF00008B)
+    val clampedDays = days.coerceIn(1, 365)
+    val fraction = clampedDays / 365f
+    return lerp(nearColor, farColor, fraction)
 }

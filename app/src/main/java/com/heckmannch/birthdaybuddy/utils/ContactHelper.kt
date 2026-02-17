@@ -37,17 +37,19 @@ fun fetchBirthdays(context: Context): List<BirthdayContact> {
             val name = it.getString(nameIndex) ?: "Unbekannt"
             val bday = it.getString(birthdayIndex) ?: ""
 
-            // Jetzt erhalten wir eine Liste von Labels statt eines einzelnen Strings
+            // Labels holen
             val labels = getContactLabels(context, contactId)
 
+            // Die Berechnung findet jetzt automatisch im DateHelper statt!
             val (age, remainingDays) = calculateAgeAndDays(bday)
+
             contactList.add(BirthdayContact(name, bday, labels, remainingDays, age))
         }
     }
     return contactList
 }
 
-// NEU: Gibt jetzt List<String> zurück, damit jedes Label einzeln verarbeitet werden kann
+// Holt die Gruppen/Labels für einen einzelnen Kontakt
 private fun getContactLabels(context: Context, contactId: String): List<String> {
     val groupIds = mutableListOf<String>()
 
@@ -67,7 +69,6 @@ private fun getContactLabels(context: Context, contactId: String): List<String> 
         }
     }
 
-    // Wenn keine Gruppen-IDs gefunden wurden
     if (groupIds.isEmpty()) return listOf("Ohne Label")
 
     val labels = mutableListOf<String>()
@@ -91,43 +92,5 @@ private fun getContactLabels(context: Context, contactId: String): List<String> 
         }
     }
 
-    // Rückgabe der Liste (oder "Ohne Label", falls die Gruppen keine Titel hatten)
     return if (labels.isEmpty()) listOf("Ohne Label") else labels
-}
-
-private fun calculateAgeAndDays(birthDateString: String): Pair<Int, Int> {
-    if (birthDateString.isEmpty()) return Pair(0, 0)
-
-    return try {
-        val today = java.time.LocalDate.now()
-
-        if (birthDateString.startsWith("--")) {
-            val month = birthDateString.substring(2, 4).toInt()
-            val day = birthDateString.substring(5, 7).toInt()
-
-            var nextBday = java.time.LocalDate.of(today.year, month, day)
-            if (nextBday.isBefore(today)) {
-                nextBday = nextBday.plusYears(1)
-            }
-
-            val days = java.time.temporal.ChronoUnit.DAYS.between(today, nextBday).toInt()
-            return Pair(0, days)
-        } else {
-            val formatter = java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd")
-            val birthDate = java.time.LocalDate.parse(birthDateString, formatter)
-
-            var turnsAge = today.year - birthDate.year
-            var nextBday = birthDate.withYear(today.year)
-
-            if (nextBday.isBefore(today)) {
-                nextBday = nextBday.plusYears(1)
-                turnsAge += 1
-            }
-
-            val days = java.time.temporal.ChronoUnit.DAYS.between(today, nextBday).toInt()
-            return Pair(turnsAge, days)
-        }
-    } catch (e: Exception) {
-        Pair(0, 0)
-    }
 }
