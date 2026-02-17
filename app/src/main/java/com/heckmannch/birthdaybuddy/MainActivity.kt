@@ -9,8 +9,16 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -26,6 +34,15 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
 import androidx.compose.material3.Surface
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.sp
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Column
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.unit.sp
+import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import com.heckmannch.birthdaybuddy.ui.theme.BirthdayBuddyTheme
 
@@ -70,23 +87,32 @@ class MainActivity : ComponentActivity() {
                     }
                 }
 
-                // 5. Unser erster Test-Bildschirm
+                // 5. Unsere neue, fertige Liste
                 Surface(
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
                     if (hasPermission) {
-                        // Später bauen wir hier die schöne Liste.
-                        // Für jetzt zeigen wir nur, ob die Logik funktioniert!
-                        Text(
-                            text = "Erlaubnis erteilt! Gefundene Geburtstage: ${contacts.size}",
-                            modifier = Modifier.padding(16.dp)
-                        )
+                        // Wir sortieren die Liste von Januar bis Dezember.
+                        // Da das Datum z.B. "1990-05-25" oder "--05-25" ist,
+                        // sortieren wir einfach nach den letzten 5 Zeichen ("05-25").
+                        val sortedContacts = contacts.sortedBy { it.birthday.takeLast(5) }
+
+                        // LazyColumn ist unsere scrollbare Liste
+                        LazyColumn(
+                            modifier = Modifier.fillMaxSize(),
+                            contentPadding = PaddingValues(top = 16.dp, bottom = 16.dp)
+                        ) {
+                            items(sortedContacts) { contact ->
+                                // Hier rufen wir unser Design von unten auf
+                                BirthdayItem(contact = contact)
+                            }
+                        }
                     } else {
-                        Text(
-                            text = "Wir brauchen die Erlaubnis, um Geburtstage anzuzeigen.",
-                            modifier = Modifier.padding(16.dp)
-                        )
+                        // Wenn der Nutzer die Erlaubnis verweigert hat
+                        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                            Text(text = "Wir brauchen die Erlaubnis, um Geburtstage anzuzeigen.")
+                        }
                     }
                 }
             }
@@ -135,9 +161,10 @@ class MainActivity : ComponentActivity() {
         }
         return contactList
     }
+
+
     // Hilfsfunktion zum Berechnen von Alter und Resttagen
     private fun calculateAgeAndDays(birthDateString: String): Pair<Int, Int> {
-        // Wenn kein Datum da ist, geben wir 0 Jahre und 0 Tage zurück
         if (birthDateString.isEmpty()) return Pair(0, 0)
 
         return try {
@@ -150,35 +177,31 @@ class MainActivity : ComponentActivity() {
 
                 var nextBday = java.time.LocalDate.of(today.year, month, day)
                 if (nextBday.isBefore(today)) {
-                    nextBday = nextBday.plusYears(1) // Geburtstag war schon, also nächstes Jahr
+                    nextBday = nextBday.plusYears(1)
                 }
 
                 val days = java.time.temporal.ChronoUnit.DAYS.between(today, nextBday).toInt()
-                return Pair(0, days) // Alter 0, da wir das Jahr nicht kennen
+                return Pair(0, days)
             }
             // Fall 2: Normales Datum mit Jahr (z.B. "1992-05-25")
             else {
                 val formatter = java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd")
                 val birthDate = java.time.LocalDate.parse(birthDateString, formatter)
 
-                var age = today.year - birthDate.year
+                // Das Alter, das die Person in DIESEM Kalenderjahr erreicht
+                var turnsAge = today.year - birthDate.year
                 var nextBday = birthDate.withYear(today.year)
 
-                // Korrektur, falls der Geburtstag dieses Jahr schon war oder heute ist
-                if (nextBday.isBefore(today) || nextBday.isEqual(today)) {
-                    if (nextBday.isBefore(today)) {
-                        nextBday = nextBday.plusYears(1)
-                    }
-                } else {
-                    // Geburtstag kommt erst noch, also ist die Person noch ein Jahr jünger
-                    age--
+                // Wenn der Geburtstag dieses Jahr schon vorbei ist...
+                if (nextBday.isBefore(today)) {
+                    nextBday = nextBday.plusYears(1) // ...ist der nächste im nächsten Jahr
+                    turnsAge += 1                    // ...und sie wird noch ein Jahr älter!
                 }
 
                 val days = java.time.temporal.ChronoUnit.DAYS.between(today, nextBday).toInt()
-                return Pair(age, days)
+                return Pair(turnsAge, days)
             }
         } catch (e: Exception) {
-            // Falls das Datum komplett unleserlich ist, stürzt die App nicht ab
             Pair(0, 0)
         }
     }
@@ -197,6 +220,46 @@ fun Greeting(name: String, modifier: Modifier = Modifier) {
 fun GreetingPreview() {
     BirthdayBuddyTheme {
         Greeting("Android")
+    }
+}
+
+@Composable
+fun BirthdayItem(contact: BirthdayContact) {
+    // Card ist eine schöne Box mit leichtem Schatten und abgerundeten Ecken
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp, vertical = 8.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+    ) {
+        // Row ordnet die Elemente nebeneinander an (Links: Name/Datum, Rechts: Alter/Tage)
+        Row(
+            modifier = Modifier
+                .padding(16.dp)
+                .fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            // Linke Spalte
+            Column {
+                Text(
+                    text = contact.name,
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 20.sp
+                )
+                Text(text = "Datum: ${contact.birthday}", fontSize = 14.sp)
+                Text(text = "Label: ${contact.label}", color = Color.Gray, fontSize = 12.sp)
+            }
+
+            // Rechte Spalte (rechtsbündig)
+            Column(horizontalAlignment = Alignment.End) {
+                Text(
+                    text = "Wird ${contact.age}",
+                    color = MaterialTheme.colorScheme.primary,
+                    fontWeight = FontWeight.Bold
+                )
+                Text(text = "in ${contact.remainingDays} Tagen")
+            }
+        }
     }
 }
 
