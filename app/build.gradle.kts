@@ -23,7 +23,10 @@ android {
 
     buildTypes {
         release {
-            isMinifyEnabled = false
+            // NEU: Wirft allen ungenutzten Code (auch aus den Google-Bibliotheken) raus
+            isMinifyEnabled = true
+            // NEU: Wirft alle unsichtbaren/ungenutzten Bilder, Icons und Texte raus
+            isShrinkResources = true
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"

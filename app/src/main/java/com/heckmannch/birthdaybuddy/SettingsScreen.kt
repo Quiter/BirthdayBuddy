@@ -3,17 +3,23 @@ package com.heckmannch.birthdaybuddy
 import android.app.TimePickerDialog
 import android.content.Intent
 import android.net.Uri
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.Clear
+import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -44,32 +50,58 @@ fun SettingsMenuScreen(onNavigate: (String) -> Unit, onBack: () -> Unit) {
             )
         }
     ) { padding ->
-        Column(modifier = Modifier.fillMaxSize().padding(padding)) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(padding)
+                .padding(horizontal = 16.dp)
+        ) {
+            Spacer(modifier = Modifier.height(8.dp))
 
-            ListItem(
-                headlineContent = { Text("Blockieren") },
-                supportingContent = { Text("Labels komplett ausschließen") },
-                trailingContent = { Icon(Icons.AutoMirrored.Filled.KeyboardArrowRight, null) },
-                modifier = Modifier.clickable { onNavigate("settings_block") }
-            )
-            HorizontalDivider()
-
-            ListItem(
-                headlineContent = { Text("Menü") },
-                supportingContent = { Text("Labels im Drawer verstecken") },
-                trailingContent = { Icon(Icons.AutoMirrored.Filled.KeyboardArrowRight, null) },
-                modifier = Modifier.clickable { onNavigate("settings_hide") }
-            )
-            HorizontalDivider()
-
-            ListItem(
-                headlineContent = { Text("Alarme") },
-                supportingContent = { Text("Benachrichtigungen einrichten") },
-                trailingContent = { Icon(Icons.AutoMirrored.Filled.KeyboardArrowRight, null) },
-                modifier = Modifier.clickable { onNavigate("settings_alarms") }
+            // 1. Alarme (Ein einzelner, großer Block - Icon: Grün)
+            SettingsBlock(
+                title = "Alarme",
+                subtitle = "Benachrichtigungen einrichten",
+                icon = Icons.Default.DateRange, // Kalenderblatt
+                iconBgColor = Color(0xFF4CAF50), // Schickes Material-Grün
+                onClick = { onNavigate("settings_alarms") }
             )
 
-            Spacer(modifier = Modifier.weight(1f)) // Drückt den Footer nach ganz unten
+            Spacer(modifier = Modifier.height(24.dp))
+
+            // 2. Filter & Sichtbarkeit (Zusammengefasst in EINER Karte - Icons: Rot)
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(28.dp),
+                colors = CardDefaults.cardColors(
+                    containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
+                )
+            ) {
+                Column {
+                    SettingsBlockRow(
+                        title = "Blockieren",
+                        subtitle = "Labels komplett ausschließen",
+                        icon = Icons.Default.Clear, // Großes X
+                        iconBgColor = Color(0xFFE53935), // Schickes Material-Rot
+                        onClick = { onNavigate("settings_block") }
+                    )
+
+                    HorizontalDivider(
+                        modifier = Modifier.padding(horizontal = 24.dp),
+                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.2f)
+                    )
+
+                    SettingsBlockRow(
+                        title = "Menü",
+                        subtitle = "Labels im Drawer verstecken",
+                        icon = Icons.Default.Lock, // Schloss
+                        iconBgColor = Color(0xFFE53935), // Schickes Material-Rot
+                        onClick = { onNavigate("settings_hide") }
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.weight(1f))
 
             // --- DER FOOTER ---
             Column(
@@ -81,7 +113,6 @@ fun SettingsMenuScreen(onNavigate: (String) -> Unit, onBack: () -> Unit) {
                 Spacer(modifier = Modifier.height(8.dp))
 
                 TextButton(onClick = {
-                    // Öffnet direkt deinen GitHub-Link im Browser!
                     val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://github.com/heckmannch/BirthdayBuddy"))
                     context.startActivity(intent)
                 }) {
@@ -94,9 +125,65 @@ fun SettingsMenuScreen(onNavigate: (String) -> Unit, onBack: () -> Unit) {
     }
 }
 
+// --- HELFER FÜR DAS ANDROID-12+ DESIGN ---
+@Composable
+fun SettingsBlock(
+    title: String, subtitle: String,
+    icon: androidx.compose.ui.graphics.vector.ImageVector,
+    iconBgColor: Color, onClick: () -> Unit
+) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(28.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
+        ),
+        onClick = onClick
+    ) {
+        SettingsBlockRow(title, subtitle, icon, iconBgColor, onClick = onClick)
+    }
+}
+
+@Composable
+fun SettingsBlockRow(
+    title: String, subtitle: String,
+    icon: androidx.compose.ui.graphics.vector.ImageVector,
+    iconBgColor: Color, onClick: () -> Unit
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable { onClick() }
+            .padding(20.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Box(
+            modifier = Modifier
+                .size(48.dp)
+                .background(iconBgColor, shape = CircleShape),
+            contentAlignment = Alignment.Center
+        ) {
+            Icon(
+                imageVector = icon,
+                contentDescription = null,
+                tint = Color.White
+            )
+        }
+
+        Spacer(modifier = Modifier.width(16.dp))
+
+        Column(modifier = Modifier.weight(1f)) {
+            Text(text = title, style = MaterialTheme.typography.titleMedium)
+            Text(text = subtitle, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        }
+
+        Icon(Icons.AutoMirrored.Filled.KeyboardArrowRight, contentDescription = null, tint = Color.Gray)
+    }
+}
+
 // --- 2. UNTERSEITE: BLOCKIEREN ---
 @Composable
-fun BlockLabelsScreen(filterManager: FilterManager, availableLabels: Set<String>, onBack: () -> Unit) {
+fun BlockLabelsScreen(filterManager: FilterManager, availableLabels: Set<String>, isLoading: Boolean, onBack: () -> Unit) {
     val excludedLabels by filterManager.excludedLabelsFlow.collectAsState(initial = emptySet())
     val scope = rememberCoroutineScope()
 
@@ -105,6 +192,7 @@ fun BlockLabelsScreen(filterManager: FilterManager, availableLabels: Set<String>
         description = "Kontakte mit diesen Labels werden ignoriert und nirgendwo angezeigt.",
         availableLabels = availableLabels,
         activeLabels = excludedLabels,
+        isLoading = isLoading, // Reichen wir weiter
         onToggle = { label, isChecked ->
             val newSet = excludedLabels.toMutableSet()
             if (isChecked) newSet.add(label) else newSet.remove(label)
@@ -116,7 +204,7 @@ fun BlockLabelsScreen(filterManager: FilterManager, availableLabels: Set<String>
 
 // --- 3. UNTERSEITE: VERSTECKEN ---
 @Composable
-fun HideLabelsScreen(filterManager: FilterManager, availableLabels: Set<String>, onBack: () -> Unit) {
+fun HideLabelsScreen(filterManager: FilterManager, availableLabels: Set<String>, isLoading: Boolean, onBack: () -> Unit) {
     val hiddenLabels by filterManager.hiddenDrawerLabelsFlow.collectAsState(initial = emptySet())
     val scope = rememberCoroutineScope()
 
@@ -125,6 +213,7 @@ fun HideLabelsScreen(filterManager: FilterManager, availableLabels: Set<String>,
         description = "Diese Labels tauchen im linken Filter-Menü nicht auf, die Kontakte bleiben aber erhalten.",
         availableLabels = availableLabels,
         activeLabels = hiddenLabels,
+        isLoading = isLoading, // Reichen wir weiter
         onToggle = { label, isChecked ->
             val newSet = hiddenLabels.toMutableSet()
             if (isChecked) newSet.add(label) else newSet.remove(label)
@@ -134,11 +223,12 @@ fun HideLabelsScreen(filterManager: FilterManager, availableLabels: Set<String>,
     )
 }
 
-// --- GENERISCHE VORLAGE FÜR LABEL-LISTEN (Spart extrem viel Code!) ---
+// --- GENERISCHE VORLAGE FÜR LABEL-LISTEN ---
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun LabelSelectionScreen(
     title: String, description: String, availableLabels: Set<String>, activeLabels: Set<String>,
+    isLoading: Boolean, // NEU: Wir prüfen hier, ob wir noch laden
     onToggle: (String, Boolean) -> Unit, onBack: () -> Unit
 ) {
     Scaffold(
@@ -149,13 +239,23 @@ fun LabelSelectionScreen(
             )
         }
     ) { padding ->
-        LazyColumn(modifier = Modifier.fillMaxSize().padding(padding)) {
-            item { Text(description, style = MaterialTheme.typography.bodyMedium, modifier = Modifier.padding(16.dp)) }
-            items(availableLabels.toList()) { label ->
-                ListItem(
-                    headlineContent = { Text(label) },
-                    trailingContent = { Switch(checked = activeLabels.contains(label), onCheckedChange = { onToggle(label, it) }) }
-                )
+        Column(modifier = Modifier.fillMaxSize().padding(padding)) {
+            Text(description, style = MaterialTheme.typography.bodyMedium, modifier = Modifier.padding(16.dp))
+
+            // Magie: Wenn wir laden, zeige den Kreis. Wenn nicht, zeige die Liste!
+            if (isLoading) {
+                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                    CircularProgressIndicator() // Der wunderschöne Android-Ladekreis
+                }
+            } else {
+                LazyColumn(modifier = Modifier.weight(1f)) {
+                    items(availableLabels.toList()) { label ->
+                        ListItem(
+                            headlineContent = { Text(label) },
+                            trailingContent = { Switch(checked = activeLabels.contains(label), onCheckedChange = { onToggle(label, it) }) }
+                        )
+                    }
+                }
             }
         }
     }
