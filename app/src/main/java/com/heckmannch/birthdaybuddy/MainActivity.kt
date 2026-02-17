@@ -45,7 +45,10 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat
+import com.heckmannch.birthdaybuddy.components.BirthdayItem
+import com.heckmannch.birthdaybuddy.model.BirthdayContact
 import com.heckmannch.birthdaybuddy.ui.theme.BirthdayBuddyTheme
+import com.heckmannch.birthdaybuddy.utils.fetchBirthdays
 
 
 class MainActivity : ComponentActivity() {
@@ -71,7 +74,7 @@ class MainActivity : ComponentActivity() {
                 ) { isGranted: Boolean ->
                     hasPermission = isGranted
                     if (isGranted) {
-                        contacts = fetchBirthdays()
+                        contacts = fetchBirthdays(context = this@MainActivity)
                     }
                 }
 
@@ -80,7 +83,7 @@ class MainActivity : ComponentActivity() {
                     if (!hasPermission) {
                         permissionLauncher.launch(Manifest.permission.READ_CONTACTS)
                     } else {
-                        contacts = fetchBirthdays()
+                        contacts = fetchBirthdays(context = this@MainActivity)
                     }
                 }
 
@@ -134,17 +137,25 @@ class MainActivity : ComponentActivity() {
                                                         Checkbox(
                                                             checked = selectedLabels.contains(label),
                                                             onCheckedChange = { isChecked ->
-                                                                val newSelection = selectedLabels.toMutableSet()
-                                                                if (isChecked) newSelection.add(label) else newSelection.remove(label)
+                                                                val newSelection =
+                                                                    selectedLabels.toMutableSet()
+                                                                if (isChecked) newSelection.add(
+                                                                    label
+                                                                ) else newSelection.remove(label)
                                                                 selectedLabels = newSelection
                                                             }
                                                         )
-                                                        Text(text = label, modifier = Modifier.padding(start = 8.dp))
+                                                        Text(
+                                                            text = label,
+                                                            modifier = Modifier.padding(start = 8.dp)
+                                                        )
                                                     }
                                                 },
                                                 onClick = {
                                                     val newSelection = selectedLabels.toMutableSet()
-                                                    if (selectedLabels.contains(label)) newSelection.remove(label) else newSelection.add(label)
+                                                    if (selectedLabels.contains(label)) newSelection.remove(
+                                                        label
+                                                    ) else newSelection.add(label)
                                                     selectedLabels = newSelection
                                                 }
                                             )
@@ -165,7 +176,10 @@ class MainActivity : ComponentActivity() {
                         }
                     } else {
                         // Ansicht, wenn keine Erlaubnis erteilt wurde
-                        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                        Box(
+                            modifier = Modifier.fillMaxSize(),
+                            contentAlignment = Alignment.Center
+                        ) {
                             Text(text = "Wir brauchen die Erlaubnis, um Geburtstage anzuzeigen.")
                         }
                     }
@@ -173,148 +187,8 @@ class MainActivity : ComponentActivity() {
             }
         }
     }
-    private fun fetchBirthdays(): List<BirthdayContact> {
-        val contactList = mutableListOf<BirthdayContact>()
-
-        // Die Projektion definiert, welche Spalten wir aus der Datenbank abfragen
-        val projection = arrayOf(
-            ContactsContract.CommonDataKinds.Event.CONTACT_ID,
-            ContactsContract.CommonDataKinds.Event.DISPLAY_NAME,
-            ContactsContract.CommonDataKinds.Event.START_DATE,
-            ContactsContract.CommonDataKinds.Event.LABEL,
-            ContactsContract.CommonDataKinds.Event.TYPE
-        )
-
-        // Filter: Wir wollen nur Daten vom Typ "Geburtstag"
-        val selection = "${ContactsContract.Data.MIMETYPE} = ? AND ${ContactsContract.CommonDataKinds.Event.TYPE} = ${ContactsContract.CommonDataKinds.Event.TYPE_BIRTHDAY}"
-        val selectionArgs = arrayOf(ContactsContract.CommonDataKinds.Event.CONTENT_ITEM_TYPE)
-
-        // Die eigentliche Abfrage an das System
-        val cursor = contentResolver.query(
-            ContactsContract.Data.CONTENT_URI,
-            projection,
-            selection,
-            selectionArgs,
-            null
-        )
-
-        // Cursor durchlaufen und Daten in unsere Liste schreiben
-        cursor?.use {
-            // Wir brauchen jetzt auch die ID des Kontakts, um danach suchen zu können
-            val idIndex = it.getColumnIndex(ContactsContract.CommonDataKinds.Event.CONTACT_ID)
-            val nameIndex = it.getColumnIndex(ContactsContract.CommonDataKinds.Event.DISPLAY_NAME)
-            val birthdayIndex = it.getColumnIndex(ContactsContract.CommonDataKinds.Event.START_DATE)
-
-            while (it.moveToNext()) {
-                val contactId = it.getString(idIndex) ?: ""
-                val name = it.getString(nameIndex) ?: "Unbekannt"
-                val bday = it.getString(birthdayIndex) ?: ""
-
-                // HIER IST DIE MAGIE: Wir holen die echten Label!
-                val label = getContactLabels(contactId)
-
-                val (age, remainingDays) = calculateAgeAndDays(bday)
-                contactList.add(BirthdayContact(name, bday, label, remainingDays, age))
-            }
-        }
-        return contactList
-    }
-
-
-    // Hilfsfunktion zum Berechnen von Alter und Resttagen
-    private fun calculateAgeAndDays(birthDateString: String): Pair<Int, Int> {
-        if (birthDateString.isEmpty()) return Pair(0, 0)
-
-        return try {
-            val today = java.time.LocalDate.now()
-
-            // Fall 1: Kontakt hat KEIN Jahr hinterlegt (z.B. "--05-25")
-            if (birthDateString.startsWith("--")) {
-                val month = birthDateString.substring(2, 4).toInt()
-                val day = birthDateString.substring(5, 7).toInt()
-
-                var nextBday = java.time.LocalDate.of(today.year, month, day)
-                if (nextBday.isBefore(today)) {
-                    nextBday = nextBday.plusYears(1)
-                }
-
-                val days = java.time.temporal.ChronoUnit.DAYS.between(today, nextBday).toInt()
-                return Pair(0, days)
-            }
-            // Fall 2: Normales Datum mit Jahr (z.B. "1992-05-25")
-            else {
-                val formatter = java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd")
-                val birthDate = java.time.LocalDate.parse(birthDateString, formatter)
-
-                // Das Alter, das die Person in DIESEM Kalenderjahr erreicht
-                var turnsAge = today.year - birthDate.year
-                var nextBday = birthDate.withYear(today.year)
-
-                // Wenn der Geburtstag dieses Jahr schon vorbei ist...
-                if (nextBday.isBefore(today)) {
-                    nextBday = nextBday.plusYears(1) // ...ist der nächste im nächsten Jahr
-                    turnsAge += 1                    // ...und sie wird noch ein Jahr älter!
-                }
-
-                val days = java.time.temporal.ChronoUnit.DAYS.between(today, nextBday).toInt()
-                return Pair(turnsAge, days)
-            }
-        } catch (e: Exception) {
-            Pair(0, 0)
-        }
-    }
-
-    // Neue Hilfsfunktion: Holt die echten Kontakt-Gruppen (Label) aus der Datenbank
-    private fun getContactLabels(contactId: String): String {
-        val groupIds = mutableListOf<String>()
-
-        // 1. Welche Gruppen-IDs hat dieser Kontakt?
-        val groupCursor = contentResolver.query(
-            ContactsContract.Data.CONTENT_URI,
-            arrayOf(ContactsContract.CommonDataKinds.GroupMembership.GROUP_ROW_ID),
-            "${ContactsContract.Data.CONTACT_ID} = ? AND ${ContactsContract.Data.MIMETYPE} = ?",
-            arrayOf(contactId, ContactsContract.CommonDataKinds.GroupMembership.CONTENT_ITEM_TYPE),
-            null
-        )
-
-        groupCursor?.use {
-            val idIndex = it.getColumnIndex(ContactsContract.CommonDataKinds.GroupMembership.GROUP_ROW_ID)
-            while (it.moveToNext()) {
-                val groupId = it.getString(idIndex)
-                if (groupId != null) groupIds.add(groupId)
-            }
-        }
-
-        // Wenn er in keiner Gruppe ist
-        if (groupIds.isEmpty()) return "Ohne Label"
-
-        // 2. Wie heißen diese Gruppen im Klartext?
-        val labels = mutableListOf<String>()
-        val placeholders = groupIds.joinToString(",") { "?" }
-
-        val titleCursor = contentResolver.query(
-            ContactsContract.Groups.CONTENT_URI,
-            arrayOf(ContactsContract.Groups.TITLE),
-            "${ContactsContract.Groups._ID} IN ($placeholders)",
-            groupIds.toTypedArray(),
-            null
-        )
-
-        titleCursor?.use {
-            val titleIndex = it.getColumnIndex(ContactsContract.Groups.TITLE)
-            while (it.moveToNext()) {
-                // Manchmal heißen die Gruppen im System "System Group: My Contacts"
-                // Wir schneiden das "System Group: " einfach weg, damit es schöner aussieht
-                val title = it.getString(titleIndex)?.replace("System Group: ", "")
-                if (!title.isNullOrBlank()) {
-                    labels.add(title)
-                }
-            }
-        }
-
-        return if (labels.isEmpty()) "Ohne Label" else labels.joinToString(", ")
-    }
 }
+
 
 @Composable
 fun Greeting(name: String, modifier: Modifier = Modifier) {
@@ -329,76 +203,5 @@ fun Greeting(name: String, modifier: Modifier = Modifier) {
 fun GreetingPreview() {
     BirthdayBuddyTheme {
         Greeting("Android")
-    }
-}
-
-@Composable
-fun BirthdayItem(contact: BirthdayContact) {
-    Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 8.dp),
-        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
-    ) {
-        Row(
-            modifier = Modifier
-                .padding(16.dp)
-                .fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically // Zentriert beide Spalten schön mittig
-        ) {
-            // Linke Spalte (bekommt das "weight", damit sie sich anpasst)
-            Column(modifier = Modifier.weight(1f).padding(end = 8.dp)) {
-                Text(
-                    text = contact.name,
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 20.sp,
-                    maxLines = 2, // Erlaubt maximal 2 Zeilen für sehr lange Namen
-                    overflow = TextOverflow.Ellipsis // Macht "..." am Ende, wenn es nicht passt
-                )
-                Text(text = "Datum: ${formatBirthdayGerman(contact.birthday)}", fontSize = 14.sp)
-            }
-
-            // Rechte Spalte (ohne weight, nimmt exakt den Platz, den sie braucht)
-            Column(horizontalAlignment = Alignment.End) {
-                Text(
-                    text = "Wird ${contact.age}",
-                    color = MaterialTheme.colorScheme.primary,
-                    fontWeight = FontWeight.Bold
-                )
-                Text(text = "in ${contact.remainingDays} Tagen")
-            }
-        }
-    }
-}
-
-data class BirthdayContact(
-    val name: String,
-    val birthday: String, // Später wandeln wir das in ein echtes Datum um
-    val label: String,    // Für deine Kategorien (Privat, Arbeit, etc.)
-    val remainingDays: Int,
-    val age: Int
-)
-
-// Hilfsfunktion: Macht aus "1990-05-25" ein schönes "25.05.1990"
-fun formatBirthdayGerman(dateString: String): String {
-    if (dateString.isEmpty()) return "Unbekannt"
-
-    return try {
-        if (dateString.startsWith("--")) {
-            // Fall 1: Kein Jahr bekannt (z.B. "--05-25")
-            val month = dateString.substring(2, 4)
-            val day = dateString.substring(5, 7)
-            "$day.$month."
-        } else {
-            // Fall 2: Normales Datum (z.B. "1990-05-25")
-            val parts = dateString.split("-")
-            if (parts.size == 3) {
-                "${parts[2]}.${parts[1]}.${parts[0]}" // Tag.Monat.Jahr
-            } else {
-                dateString
-            }
-        }
-    } catch (e: Exception) {
-        dateString // Falls das Format ganz komisch ist, geben wir es einfach unformatiert zurück
     }
 }
