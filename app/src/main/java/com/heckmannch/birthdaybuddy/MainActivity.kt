@@ -1,17 +1,32 @@
 package com.heckmannch.birthdaybuddy
 
+import android.Manifest
+import android.content.pm.PackageManager
 import android.os.Bundle
 import android.provider.ContactsContract
 import androidx.activity.ComponentActivity
+import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
+import androidx.compose.material3.Surface
+import androidx.core.content.ContextCompat
 import com.heckmannch.birthdaybuddy.ui.theme.BirthdayBuddyTheme
 
 class MainActivity : ComponentActivity() {
@@ -20,11 +35,59 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             BirthdayBuddyTheme {
-                Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    Greeting(
-                        name = "Android",
-                        modifier = Modifier.padding(innerPadding)
+                // 1. Wir merken uns die Kontakte in einem "Zustand" (State)
+                var contacts by remember { mutableStateOf<List<BirthdayContact>>(emptyList()) }
+
+                // 2. Wir prüfen, ob wir die Erlaubnis schon haben
+                var hasPermission by remember {
+                    mutableStateOf(
+                        ContextCompat.checkSelfPermission(
+                            this@MainActivity,
+                            Manifest.permission.READ_CONTACTS
+                        ) == PackageManager.PERMISSION_GRANTED
                     )
+                }
+
+                // 3. Das ist unser "Frage-Fenster" an den Nutzer
+                val permissionLauncher = rememberLauncherForActivityResult(
+                    contract = ActivityResultContracts.RequestPermission()
+                ) { isGranted: Boolean ->
+                    hasPermission = isGranted
+                    if (isGranted) {
+                        // Wenn der Nutzer "Ja" klickt, laden wir die Geburtstage
+                        contacts = fetchBirthdays()
+                    }
+                }
+
+                // 4. Direkt beim Start der App prüfen wir, was zu tun ist
+                LaunchedEffect(Unit) {
+                    if (!hasPermission) {
+                        // Wenn keine Erlaubnis da ist, fragen wir danach
+                        permissionLauncher.launch(Manifest.permission.READ_CONTACTS)
+                    } else {
+                        // Wenn sie schon da ist, laden wir sofort die Daten
+                        contacts = fetchBirthdays()
+                    }
+                }
+
+                // 5. Unser erster Test-Bildschirm
+                Surface(
+                    modifier = Modifier.fillMaxSize(),
+                    color = MaterialTheme.colorScheme.background
+                ) {
+                    if (hasPermission) {
+                        // Später bauen wir hier die schöne Liste.
+                        // Für jetzt zeigen wir nur, ob die Logik funktioniert!
+                        Text(
+                            text = "Erlaubnis erteilt! Gefundene Geburtstage: ${contacts.size}",
+                            modifier = Modifier.padding(16.dp)
+                        )
+                    } else {
+                        Text(
+                            text = "Wir brauchen die Erlaubnis, um Geburtstage anzuzeigen.",
+                            modifier = Modifier.padding(16.dp)
+                        )
+                    }
                 }
             }
         }
