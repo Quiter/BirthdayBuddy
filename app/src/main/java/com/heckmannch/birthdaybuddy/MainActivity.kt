@@ -16,6 +16,7 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.lazy.LazyColumn
@@ -39,6 +40,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -121,7 +123,9 @@ class MainActivity : ComponentActivity() {
 
                                     DropdownMenu(
                                         expanded = isMenuExpanded,
-                                        onDismissRequest = { isMenuExpanded = false }
+                                        onDismissRequest = { isMenuExpanded = false },
+                                        // NEU: Begrenzt die Höhe, damit das Menü scrollbar bleibt und nicht über den Rand schießt
+                                        modifier = Modifier.heightIn(max = 350.dp)
                                     ) {
                                         availableLabels.forEach { label ->
                                             DropdownMenuItem(
@@ -330,32 +334,31 @@ fun GreetingPreview() {
 
 @Composable
 fun BirthdayItem(contact: BirthdayContact) {
-    // Card ist eine schöne Box mit leichtem Schatten und abgerundeten Ecken
     Card(
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = 16.dp, vertical = 8.dp),
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
     ) {
-        // Row ordnet die Elemente nebeneinander an (Links: Name/Datum, Rechts: Alter/Tage)
         Row(
             modifier = Modifier
                 .padding(16.dp)
                 .fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween
+            verticalAlignment = Alignment.CenterVertically // Zentriert beide Spalten schön mittig
         ) {
-            // Linke Spalte
-            Column {
+            // Linke Spalte (bekommt das "weight", damit sie sich anpasst)
+            Column(modifier = Modifier.weight(1f).padding(end = 8.dp)) {
                 Text(
                     text = contact.name,
                     fontWeight = FontWeight.Bold,
-                    fontSize = 20.sp
+                    fontSize = 20.sp,
+                    maxLines = 2, // Erlaubt maximal 2 Zeilen für sehr lange Namen
+                    overflow = TextOverflow.Ellipsis // Macht "..." am Ende, wenn es nicht passt
                 )
                 Text(text = "Datum: ${contact.birthday}", fontSize = 14.sp)
-                Text(text = "Label: ${contact.label}", color = Color.Gray, fontSize = 12.sp)
             }
 
-            // Rechte Spalte (rechtsbündig)
+            // Rechte Spalte (ohne weight, nimmt exakt den Platz, den sie braucht)
             Column(horizontalAlignment = Alignment.End) {
                 Text(
                     text = "Wird ${contact.age}",
