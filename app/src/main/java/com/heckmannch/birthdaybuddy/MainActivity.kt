@@ -28,9 +28,11 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -39,17 +41,20 @@ import androidx.core.content.ContextCompat
 import com.heckmannch.birthdaybuddy.components.BirthdayItem
 import com.heckmannch.birthdaybuddy.model.BirthdayContact
 import com.heckmannch.birthdaybuddy.ui.theme.BirthdayBuddyTheme
+import com.heckmannch.birthdaybuddy.utils.FilterManager
 import com.heckmannch.birthdaybuddy.utils.fetchBirthdays
-
+import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        enableEdgeToEdge() // Sorgt dafür, dass wir den ganzen Bildschirm nutzen
+        enableEdgeToEdge()
 
         setContent {
             BirthdayBuddyTheme {
-                // 1. Zustände (States) ganz oben
+                val scope = rememberCoroutineScope()
+                val filterManager = remember { FilterManager(this@MainActivity) }
+
                 var contacts by remember { mutableStateOf<List<BirthdayContact>>(emptyList()) }
                 var hasPermission by remember {
                     mutableStateOf(
@@ -60,7 +65,6 @@ class MainActivity : ComponentActivity() {
                     )
                 }
 
-                // 2. Erlaubnis-Abfrage
                 val permissionLauncher = rememberLauncherForActivityResult(
                     contract = ActivityResultContracts.RequestPermission()
                 ) { isGranted: Boolean ->
@@ -70,7 +74,7 @@ class MainActivity : ComponentActivity() {
                     }
                 }
 
-                // 3. Start-Prüfung (Hintergrund-Task)
+                // Start-Prüfung für Kontakte
                 LaunchedEffect(Unit) {
                     if (!hasPermission) {
                         permissionLauncher.launch(Manifest.permission.READ_CONTACTS)
@@ -79,38 +83,42 @@ class MainActivity : ComponentActivity() {
                     }
                 }
 
-                // --- HIER BEGINNT DIE OBERFLÄCHE (UI) ---
+                // Lade die gespeicherten Labels aus dem DataStore
+                val savedLabels by filterManager.selectedLabelsFlow.collectAsState(initial = null)
 
-                // Die Surface ist unsere "Tapete" und nimmt den GANZEN Platz bis zum Rand ein
                 Surface(
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    // NEU: Diese Box sorgt als "Sicherheitsabstand" dafür, dass unser Inhalt
-                    // nicht unter Akku-Icons oder der Navigationsleiste verschwindet.
                     Box(modifier = Modifier.fillMaxSize().systemBarsPadding()) {
 
                         if (hasPermission) {
-                            // Daten für den Filter vorbereiten
+                            // --- WICHTIG: Variablen zuerst definieren ---
                             val availableLabels = contacts.map { it.label }.toSortedSet()
                             var selectedLabels by remember { mutableStateOf(emptySet<String>()) }
                             var isMenuExpanded by remember { mutableStateOf(false) }
+                            var isInitialized by remember { mutableStateOf(false) }
 
-                            // Wenn Labels geladen wurden, beim Start alle anhaken
-                            LaunchedEffect(availableLabels) {
-                                if (selectedLabels.isEmpty() && availableLabels.isNotEmpty()) {
-                                    selectedLabels = availableLabels
+                            // --- JETZT folgt die Logik zum Wiederherstellen ---
+                            LaunchedEffect(availableLabels, savedLabels) {
+                                // Erst ausführen, wenn DataStore geantwortet hat (nicht mehr null)
+                                if (savedLabels != null && !isInitialized) {
+                                    if (savedLabels!!.isEmpty() && availableLabels.isNotEmpty()) {
+                                        // Erster Start: Alles auswählen
+                                        selectedLabels = availableLabels
+                                        filterManager.saveSelectedLabels(availableLabels)
+                                    } else {
+                                        // Bestehende Auswahl laden (und filtern, falls Labels gelöscht wurden)
+                                        selectedLabels = savedLabels!!.filter { availableLabels.contains(it) }.toSet()
+                                    }
+                                    isInitialized = true
                                 }
                             }
 
-                            // Liste filtern und sortieren
                             val filteredContacts = contacts.filter { selectedLabels.contains(it.label) }
                             val sortedContacts = filteredContacts.sortedBy { it.birthday.takeLast(5) }
 
-                            // Das eigentliche Layout (Spalte mit Menü oben und Liste unten)
                             Column(modifier = Modifier.fillMaxSize()) {
-
-                                // Filter-Menüleiste
                                 Row(
                                     modifier = Modifier
                                         .fillMaxWidth()
@@ -137,18 +145,17 @@ class MainActivity : ComponentActivity() {
                                                                     val newSelection = selectedLabels.toMutableSet()
                                                                     if (isChecked) newSelection.add(label) else newSelection.remove(label)
                                                                     selectedLabels = newSelection
+                                                                    scope.launch { filterManager.saveSelectedLabels(newSelection) }
                                                                 }
                                                             )
-                                                            Text(
-                                                                text = label,
-                                                                modifier = Modifier.padding(start = 8.dp)
-                                                            )
+                                                            Text(text = label, modifier = Modifier.padding(start = 8.dp))
                                                         }
                                                     },
                                                     onClick = {
                                                         val newSelection = selectedLabels.toMutableSet()
                                                         if (selectedLabels.contains(label)) newSelection.remove(label) else newSelection.add(label)
                                                         selectedLabels = newSelection
+                                                        scope.launch { filterManager.saveSelectedLabels(newSelection) }
                                                     }
                                                 )
                                             }
@@ -156,7 +163,6 @@ class MainActivity : ComponentActivity() {
                                     }
                                 }
 
-                                // Die Liste
                                 LazyColumn(
                                     modifier = Modifier.weight(1f),
                                     contentPadding = PaddingValues(top = 8.dp, bottom = 16.dp)
@@ -167,17 +173,12 @@ class MainActivity : ComponentActivity() {
                                 }
                             }
                         } else {
-                            // Ansicht, wenn keine Erlaubnis erteilt wurde
-                            Box(
-                                modifier = Modifier.fillMaxSize(),
-                                contentAlignment = Alignment.Center
-                            ) {
+                            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                                 Text(text = "Wir brauchen die Erlaubnis, um Geburtstage anzuzeigen.")
                             }
                         }
-
-                    } // Ende der sicheren Box
-                } // Ende der Surface
+                    }
+                }
             }
         }
     }
