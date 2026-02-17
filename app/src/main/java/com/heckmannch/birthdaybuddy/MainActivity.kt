@@ -17,7 +17,6 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        // Systemvorbereitungen
         createNotificationChannel()
         enableEdgeToEdge()
 
@@ -28,7 +27,7 @@ class MainActivity : ComponentActivity() {
 
                 NavHost(navController = navController, startDestination = "main") {
 
-                    // 1. Der ausgelagerte Hauptbildschirm
+                    // 1. Der Hauptbildschirm
                     composable("main") {
                         MainScreen(
                             filterManager = filterManager,
@@ -36,26 +35,41 @@ class MainActivity : ComponentActivity() {
                         )
                     }
 
-                    // 2. Der Einstellungsbildschirm
+                    // 2. Das neue Hauptmenü der Einstellungen
                     composable("settings") {
-                        var contacts by remember { mutableStateOf<List<BirthdayContact>>(emptyList()) }
-                        LaunchedEffect(Unit) {
-                            contacts = fetchBirthdays(this@MainActivity)
-                        }
-                        val availableLabels = contacts.flatMap { it.labels }.toSortedSet()
-
-                        SettingsScreen(
-                            filterManager = filterManager,
-                            availableLabels = availableLabels,
+                        SettingsMenuScreen(
+                            onNavigate = { route -> navController.navigate(route) },
                             onBack = { navController.popBackStack() }
                         )
+                    }
+
+                    // 3. Unterseite: Blockieren
+                    composable("settings_block") {
+                        var contacts by remember { mutableStateOf<List<BirthdayContact>>(emptyList()) }
+                        LaunchedEffect(Unit) { contacts = fetchBirthdays(this@MainActivity) }
+                        val availableLabels = contacts.flatMap { it.labels }.toSortedSet()
+
+                        BlockLabelsScreen(filterManager, availableLabels) { navController.popBackStack() }
+                    }
+
+                    // 4. Unterseite: Verstecken
+                    composable("settings_hide") {
+                        var contacts by remember { mutableStateOf<List<BirthdayContact>>(emptyList()) }
+                        LaunchedEffect(Unit) { contacts = fetchBirthdays(this@MainActivity) }
+                        val availableLabels = contacts.flatMap { it.labels }.toSortedSet()
+
+                        HideLabelsScreen(filterManager, availableLabels) { navController.popBackStack() }
+                    }
+
+                    // 5. Unterseite: Alarme
+                    composable("settings_alarms") {
+                        AlarmsScreen(filterManager) { navController.popBackStack() }
                     }
                 }
             }
         }
     }
 
-    // Richtet den unsichtbaren Kanal für die Geburtstags-Erinnerungen ein
     private fun createNotificationChannel() {
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
             val name = "Geburtstags-Erinnerungen"
