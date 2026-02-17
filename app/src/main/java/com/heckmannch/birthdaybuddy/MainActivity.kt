@@ -91,7 +91,7 @@ class MainActivity : ComponentActivity() {
                 ) {
                     if (hasPermission) {
                         // Daten für den Filter vorbereiten
-                        val availableLabels = contacts.map { it.label }.toSet()
+                        val availableLabels = contacts.map { it.label }.toSortedSet()
                         var selectedLabels by remember { mutableStateOf(emptySet<String>()) }
                         var isMenuExpanded by remember { mutableStateOf(false) }
 
@@ -355,7 +355,7 @@ fun BirthdayItem(contact: BirthdayContact) {
                     maxLines = 2, // Erlaubt maximal 2 Zeilen für sehr lange Namen
                     overflow = TextOverflow.Ellipsis // Macht "..." am Ende, wenn es nicht passt
                 )
-                Text(text = "Datum: ${contact.birthday}", fontSize = 14.sp)
+                Text(text = "Datum: ${formatBirthdayGerman(contact.birthday)}", fontSize = 14.sp)
             }
 
             // Rechte Spalte (ohne weight, nimmt exakt den Platz, den sie braucht)
@@ -378,3 +378,27 @@ data class BirthdayContact(
     val remainingDays: Int,
     val age: Int
 )
+
+// Hilfsfunktion: Macht aus "1990-05-25" ein schönes "25.05.1990"
+fun formatBirthdayGerman(dateString: String): String {
+    if (dateString.isEmpty()) return "Unbekannt"
+
+    return try {
+        if (dateString.startsWith("--")) {
+            // Fall 1: Kein Jahr bekannt (z.B. "--05-25")
+            val month = dateString.substring(2, 4)
+            val day = dateString.substring(5, 7)
+            "$day.$month."
+        } else {
+            // Fall 2: Normales Datum (z.B. "1990-05-25")
+            val parts = dateString.split("-")
+            if (parts.size == 3) {
+                "${parts[2]}.${parts[1]}.${parts[0]}" // Tag.Monat.Jahr
+            } else {
+                dateString
+            }
+        }
+    } catch (e: Exception) {
+        dateString // Falls das Format ganz komisch ist, geben wir es einfach unformatiert zurück
+    }
+}
