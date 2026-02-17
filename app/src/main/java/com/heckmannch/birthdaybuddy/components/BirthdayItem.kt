@@ -90,7 +90,7 @@ fun BirthdayItem(contact: BirthdayContact) {
                 // Alter mit rotem Farbverlauf
                 Text(
                     text = buildAnnotatedString {
-                        append("Wird ")
+                        append("wird ")
                         withStyle(style = SpanStyle(color = getAgeColor(contact.age))) {
                             append("${contact.age}")
                         }
