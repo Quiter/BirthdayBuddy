@@ -12,6 +12,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
@@ -24,6 +25,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import androidx.navigation.compose.NavHost
@@ -34,11 +36,14 @@ import com.heckmannch.birthdaybuddy.model.BirthdayContact
 import com.heckmannch.birthdaybuddy.ui.theme.BirthdayBuddyTheme
 import com.heckmannch.birthdaybuddy.utils.FilterManager
 import com.heckmannch.birthdaybuddy.utils.fetchBirthdays
+import com.heckmannch.birthdaybuddy.utils.scheduleDailyAlarm // NEU IMPORTIERT
 import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        createNotificationChannel()
         enableEdgeToEdge()
 
         setContent {
@@ -71,6 +76,21 @@ class MainActivity : ComponentActivity() {
             }
         }
     }
+
+    private fun createNotificationChannel() {
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+            val name = "Geburtstags-Erinnerungen"
+            val descriptionText = "Benachrichtigungen für anstehende Geburtstage"
+            val importance = android.app.NotificationManager.IMPORTANCE_HIGH
+            val channel = android.app.NotificationChannel("birthday_channel", name, importance).apply {
+                description = descriptionText
+            }
+
+            val notificationManager: android.app.NotificationManager =
+                getSystemService(android.content.Context.NOTIFICATION_SERVICE) as android.app.NotificationManager
+            notificationManager.createNotificationChannel(channel)
+        }
+    }
 }
 
 @Composable
@@ -88,8 +108,11 @@ fun MainScreen(
 
     val savedLabels by filterManager.selectedLabelsFlow.collectAsState(initial = null)
     val excludedLabels by filterManager.excludedLabelsFlow.collectAsState(initial = emptySet())
-    // NEU: Die zu versteckenden Labels laden
     val hiddenDrawerLabels by filterManager.hiddenDrawerLabelsFlow.collectAsState(initial = emptySet())
+
+    // NEU: Alarmzeiten laden
+    val notifHour by filterManager.notificationHourFlow.collectAsState(initial = 9)
+    val notifMinute by filterManager.notificationMinuteFlow.collectAsState(initial = 0)
 
     val context = androidx.compose.ui.platform.LocalContext.current
     var hasPermission by remember {
@@ -98,18 +121,31 @@ fun MainScreen(
         )
     }
 
+    // NEU: Multi-Permission-Abfrage (für Kontakte UND Benachrichtigungen)
     val permissionLauncher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.RequestPermission()
-    ) { isGranted ->
-        if (isGranted) hasPermission = true
+        contract = ActivityResultContracts.RequestMultiplePermissions()
+    ) { permissions ->
+        if (permissions[Manifest.permission.READ_CONTACTS] == true) {
+            hasPermission = true
+        }
     }
 
     LaunchedEffect(hasPermission) {
         if (!hasPermission) {
-            permissionLauncher.launch(Manifest.permission.READ_CONTACTS)
+            val permsToRequest = mutableListOf(Manifest.permission.READ_CONTACTS)
+            // Ab Android 13 nach Benachrichtigungen fragen
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
+                permsToRequest.add(Manifest.permission.POST_NOTIFICATIONS)
+            }
+            permissionLauncher.launch(permsToRequest.toTypedArray())
         } else {
             contacts = fetchBirthdays(context)
         }
+    }
+
+    // NEU: Jedes Mal, wenn die Uhrzeit geändert wird oder die App startet -> Wecker (neu) stellen!
+    LaunchedEffect(notifHour, notifMinute) {
+        scheduleDailyAlarm(context, notifHour, notifMinute)
     }
 
     val availableLabels = contacts.flatMap { it.labels }.toSortedSet()
@@ -125,6 +161,8 @@ fun MainScreen(
         }
     }
 
+    val listState = rememberLazyListState()
+
     ModalNavigationDrawer(
         drawerState = drawerState,
         drawerContent = {
@@ -133,7 +171,6 @@ fun MainScreen(
                     Spacer(Modifier.height(12.dp))
                     Text("Labels filtern", style = MaterialTheme.typography.titleSmall, modifier = Modifier.padding(horizontal = 28.dp, vertical = 16.dp))
 
-                    // NEU: Wir zeigen nur die an, die nicht in der "hiddenDrawerLabels"-Liste stehen!
                     val labelsToShow = availableLabels.filterNot { hiddenDrawerLabels.contains(it) }
 
                     labelsToShow.forEach { label ->
@@ -207,9 +244,45 @@ fun MainScreen(
                             }
                         }
 
-                        LazyColumn(modifier = Modifier.weight(1f), contentPadding = PaddingValues(bottom = 16.dp)) {
-                            items(sortedContacts) { contact ->
-                                BirthdayItem(contact = contact)
+                        Box(modifier = Modifier.weight(1f).fillMaxWidth()) {
+                            LazyColumn(
+                                state = listState,
+                                modifier = Modifier.fillMaxSize(),
+                                contentPadding = PaddingValues(bottom = 16.dp)
+                            ) {
+                                items(sortedContacts) { contact ->
+                                    BirthdayItem(contact = contact)
+                                }
+                            }
+
+                            if (sortedContacts.size > 10) {
+                                val listProgress by remember {
+                                    derivedStateOf {
+                                        if (sortedContacts.isEmpty()) 0f
+                                        else listState.firstVisibleItemIndex.toFloat() / sortedContacts.size
+                                    }
+                                }
+
+                                BoxWithConstraints(
+                                    modifier = Modifier
+                                        .align(Alignment.CenterEnd)
+                                        .fillMaxHeight()
+                                        .padding(end = 4.dp, top = 8.dp, bottom = 8.dp)
+                                        .width(4.dp)
+                                        .background(Color.Gray.copy(alpha = 0.2f), RoundedCornerShape(2.dp))
+                                ) {
+                                    val thumbHeight = 40.dp
+                                    val thumbHeightPx = with(androidx.compose.ui.platform.LocalDensity.current) { thumbHeight.toPx() }
+                                    val maxOffsetPx = constraints.maxHeight.toFloat() - thumbHeightPx
+                                    val yOffset = (listProgress * maxOffsetPx).toInt().coerceAtLeast(0)
+
+                                    Box(
+                                        modifier = Modifier
+                                            .offset { IntOffset(0, yOffset) }
+                                            .size(width = 4.dp, height = thumbHeight)
+                                            .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.6f), RoundedCornerShape(2.dp))
+                                    )
+                                }
                             }
                         }
                     }
