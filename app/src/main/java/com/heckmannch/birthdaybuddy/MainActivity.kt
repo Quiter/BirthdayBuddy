@@ -177,7 +177,7 @@ fun MainScreen(
 
                         hasActiveLabel && !isBlacklisted && matchesSearch
                     }
-                    val sortedContacts = filteredContacts.sortedBy { it.birthday.takeLast(5) }
+                    val sortedContacts = filteredContacts.sortedBy { it.remainingDays }
 
                     Column(modifier = Modifier.fillMaxSize()) {
                         Box(
