@@ -4,7 +4,7 @@ import android.content.Context
 import android.provider.ContactsContract
 import com.heckmannch.birthdaybuddy.model.BirthdayContact
 
-// Wir übergeben jetzt den "Context", damit die Funktion in der Datenbank lesen darf
+// Holt alle Kontakte mit Geburtsdatum aus der Datenbank
 fun fetchBirthdays(context: Context): List<BirthdayContact> {
     val contactList = mutableListOf<BirthdayContact>()
 
@@ -19,7 +19,6 @@ fun fetchBirthdays(context: Context): List<BirthdayContact> {
     val selection = "${ContactsContract.Data.MIMETYPE} = ? AND ${ContactsContract.CommonDataKinds.Event.TYPE} = ${ContactsContract.CommonDataKinds.Event.TYPE_BIRTHDAY}"
     val selectionArgs = arrayOf(ContactsContract.CommonDataKinds.Event.CONTENT_ITEM_TYPE)
 
-    // WICHTIG: Hier nutzen wir jetzt context.contentResolver
     val cursor = context.contentResolver.query(
         ContactsContract.Data.CONTENT_URI,
         projection,
@@ -38,20 +37,20 @@ fun fetchBirthdays(context: Context): List<BirthdayContact> {
             val name = it.getString(nameIndex) ?: "Unbekannt"
             val bday = it.getString(birthdayIndex) ?: ""
 
-            // Auch hier geben wir den Context weiter
-            val label = getContactLabels(context, contactId)
+            // Jetzt erhalten wir eine Liste von Labels statt eines einzelnen Strings
+            val labels = getContactLabels(context, contactId)
 
             val (age, remainingDays) = calculateAgeAndDays(bday)
-            contactList.add(BirthdayContact(name, bday, label, remainingDays, age))
+            contactList.add(BirthdayContact(name, bday, labels, remainingDays, age))
         }
     }
     return contactList
 }
 
-private fun getContactLabels(context: Context, contactId: String): String {
+// NEU: Gibt jetzt List<String> zurück, damit jedes Label einzeln verarbeitet werden kann
+private fun getContactLabels(context: Context, contactId: String): List<String> {
     val groupIds = mutableListOf<String>()
 
-    // WICHTIG: context.contentResolver
     val groupCursor = context.contentResolver.query(
         ContactsContract.Data.CONTENT_URI,
         arrayOf(ContactsContract.CommonDataKinds.GroupMembership.GROUP_ROW_ID),
@@ -68,12 +67,12 @@ private fun getContactLabels(context: Context, contactId: String): String {
         }
     }
 
-    if (groupIds.isEmpty()) return "Ohne Label"
+    // Wenn keine Gruppen-IDs gefunden wurden
+    if (groupIds.isEmpty()) return listOf("Ohne Label")
 
     val labels = mutableListOf<String>()
     val placeholders = groupIds.joinToString(",") { "?" }
 
-    // WICHTIG: context.contentResolver
     val titleCursor = context.contentResolver.query(
         ContactsContract.Groups.CONTENT_URI,
         arrayOf(ContactsContract.Groups.TITLE),
@@ -92,10 +91,10 @@ private fun getContactLabels(context: Context, contactId: String): String {
         }
     }
 
-    return if (labels.isEmpty()) "Ohne Label" else labels.joinToString(", ")
+    // Rückgabe der Liste (oder "Ohne Label", falls die Gruppen keine Titel hatten)
+    return if (labels.isEmpty()) listOf("Ohne Label") else labels
 }
 
-// Mathe braucht keinen Context, das funktioniert einfach so
 private fun calculateAgeAndDays(birthDateString: String): Pair<Int, Int> {
     if (birthDateString.isEmpty()) return Pair(0, 0)
 

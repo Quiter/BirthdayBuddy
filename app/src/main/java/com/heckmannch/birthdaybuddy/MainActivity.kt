@@ -8,36 +8,27 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.heightIn
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.systemBarsPadding
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material3.Button
-import androidx.compose.material3.Checkbox
-import androidx.compose.material3.DropdownMenu
-import androidx.compose.material3.DropdownMenuItem
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Menu
+import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
 import com.heckmannch.birthdaybuddy.components.BirthdayItem
 import com.heckmannch.birthdaybuddy.model.BirthdayContact
 import com.heckmannch.birthdaybuddy.ui.theme.BirthdayBuddyTheme
@@ -52,129 +43,173 @@ class MainActivity : ComponentActivity() {
 
         setContent {
             BirthdayBuddyTheme {
-                val scope = rememberCoroutineScope()
+                val navController = rememberNavController()
                 val filterManager = remember { FilterManager(this@MainActivity) }
 
-                var contacts by remember { mutableStateOf<List<BirthdayContact>>(emptyList()) }
-                var hasPermission by remember {
-                    mutableStateOf(
-                        ContextCompat.checkSelfPermission(
-                            this@MainActivity,
-                            Manifest.permission.READ_CONTACTS
-                        ) == PackageManager.PERMISSION_GRANTED
+                NavHost(navController = navController, startDestination = "main") {
+                    composable("main") {
+                        MainScreen(
+                            filterManager = filterManager,
+                            onNavigateToSettings = { navController.navigate("settings") }
+                        )
+                    }
+
+                    composable("settings") {
+                        var contacts by remember { mutableStateOf<List<BirthdayContact>>(emptyList()) }
+                        LaunchedEffect(Unit) {
+                            contacts = fetchBirthdays(this@MainActivity)
+                        }
+                        val availableLabels = contacts.flatMap { it.labels }.toSortedSet()
+
+                        SettingsScreen(
+                            filterManager = filterManager,
+                            availableLabels = availableLabels,
+                            onBack = { navController.popBackStack() }
+                        )
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun MainScreen(
+    filterManager: FilterManager,
+    onNavigateToSettings: () -> Unit
+) {
+    val scope = rememberCoroutineScope()
+    val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
+
+    var contacts by remember { mutableStateOf<List<BirthdayContact>>(emptyList()) }
+    var searchQuery by remember { mutableStateOf("") }
+    var selectedLabels by remember { mutableStateOf(emptySet<String>()) }
+    var isInitialized by remember { mutableStateOf(false) }
+
+    val savedLabels by filterManager.selectedLabelsFlow.collectAsState(initial = null)
+    val excludedLabels by filterManager.excludedLabelsFlow.collectAsState(initial = emptySet())
+    // NEU: Die zu versteckenden Labels laden
+    val hiddenDrawerLabels by filterManager.hiddenDrawerLabelsFlow.collectAsState(initial = emptySet())
+
+    val context = androidx.compose.ui.platform.LocalContext.current
+    var hasPermission by remember {
+        mutableStateOf(
+            ContextCompat.checkSelfPermission(context, Manifest.permission.READ_CONTACTS) == PackageManager.PERMISSION_GRANTED
+        )
+    }
+
+    val permissionLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestPermission()
+    ) { isGranted ->
+        if (isGranted) hasPermission = true
+    }
+
+    LaunchedEffect(hasPermission) {
+        if (!hasPermission) {
+            permissionLauncher.launch(Manifest.permission.READ_CONTACTS)
+        } else {
+            contacts = fetchBirthdays(context)
+        }
+    }
+
+    val availableLabels = contacts.flatMap { it.labels }.toSortedSet()
+
+    LaunchedEffect(availableLabels, savedLabels) {
+        if (savedLabels != null && !isInitialized) {
+            selectedLabels = if (savedLabels!!.isEmpty() && availableLabels.isNotEmpty()) {
+                availableLabels.also { scope.launch { filterManager.saveSelectedLabels(it) } }
+            } else {
+                savedLabels!!.filter { availableLabels.contains(it) }.toSet()
+            }
+            isInitialized = true
+        }
+    }
+
+    ModalNavigationDrawer(
+        drawerState = drawerState,
+        drawerContent = {
+            ModalDrawerSheet {
+                Column(modifier = Modifier.fillMaxHeight().verticalScroll(rememberScrollState())) {
+                    Spacer(Modifier.height(12.dp))
+                    Text("Labels filtern", style = MaterialTheme.typography.titleSmall, modifier = Modifier.padding(horizontal = 28.dp, vertical = 16.dp))
+
+                    // NEU: Wir zeigen nur die an, die nicht in der "hiddenDrawerLabels"-Liste stehen!
+                    val labelsToShow = availableLabels.filterNot { hiddenDrawerLabels.contains(it) }
+
+                    labelsToShow.forEach { label ->
+                        NavigationDrawerItem(
+                            label = { Text(label) },
+                            selected = selectedLabels.contains(label),
+                            onClick = {
+                                val newSelection = selectedLabels.toMutableSet()
+                                if (selectedLabels.contains(label)) newSelection.remove(label) else newSelection.add(label)
+                                selectedLabels = newSelection
+                                scope.launch { filterManager.saveSelectedLabels(newSelection) }
+                            },
+                            icon = { Checkbox(checked = selectedLabels.contains(label), onCheckedChange = null) },
+                            modifier = Modifier.padding(NavigationDrawerItemDefaults.ItemPadding)
+                        )
+                    }
+
+                    HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp, horizontal = 28.dp))
+
+                    NavigationDrawerItem(
+                        label = { Text("Einstellungen") },
+                        selected = false,
+                        onClick = {
+                            scope.launch { drawerState.close() }
+                            onNavigateToSettings()
+                        },
+                        icon = { Icon(Icons.Default.Settings, contentDescription = "Settings") },
+                        modifier = Modifier.padding(NavigationDrawerItemDefaults.ItemPadding)
                     )
                 }
+            }
+        }
+    ) {
+        Surface(modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
+            Box(modifier = Modifier.fillMaxSize().systemBarsPadding()) {
+                if (hasPermission) {
+                    val filteredContacts = contacts.filter { contact ->
+                        val hasActiveLabel = contact.labels.any { label -> selectedLabels.contains(label) }
+                        val isBlacklisted = contact.labels.any { label -> excludedLabels.contains(label) }
+                        val matchesSearch = contact.name.contains(searchQuery, ignoreCase = true)
 
-                val permissionLauncher = rememberLauncherForActivityResult(
-                    contract = ActivityResultContracts.RequestPermission()
-                ) { isGranted: Boolean ->
-                    hasPermission = isGranted
-                    if (isGranted) {
-                        contacts = fetchBirthdays(context = this@MainActivity)
+                        hasActiveLabel && !isBlacklisted && matchesSearch
                     }
-                }
+                    val sortedContacts = filteredContacts.sortedBy { it.birthday.takeLast(5) }
 
-                // Start-Prüfung für Kontakte
-                LaunchedEffect(Unit) {
-                    if (!hasPermission) {
-                        permissionLauncher.launch(Manifest.permission.READ_CONTACTS)
-                    } else {
-                        contacts = fetchBirthdays(context = this@MainActivity)
-                    }
-                }
-
-                // Lade die gespeicherten Labels aus dem DataStore
-                val savedLabels by filterManager.selectedLabelsFlow.collectAsState(initial = null)
-
-                Surface(
-                    modifier = Modifier.fillMaxSize(),
-                    color = MaterialTheme.colorScheme.background
-                ) {
-                    Box(modifier = Modifier.fillMaxSize().systemBarsPadding()) {
-
-                        if (hasPermission) {
-                            // --- WICHTIG: Variablen zuerst definieren ---
-                            val availableLabels = contacts.map { it.label }.toSortedSet()
-                            var selectedLabels by remember { mutableStateOf(emptySet<String>()) }
-                            var isMenuExpanded by remember { mutableStateOf(false) }
-                            var isInitialized by remember { mutableStateOf(false) }
-
-                            // --- JETZT folgt die Logik zum Wiederherstellen ---
-                            LaunchedEffect(availableLabels, savedLabels) {
-                                // Erst ausführen, wenn DataStore geantwortet hat (nicht mehr null)
-                                if (savedLabels != null && !isInitialized) {
-                                    if (savedLabels!!.isEmpty() && availableLabels.isNotEmpty()) {
-                                        // Erster Start: Alles auswählen
-                                        selectedLabels = availableLabels
-                                        filterManager.saveSelectedLabels(availableLabels)
-                                    } else {
-                                        // Bestehende Auswahl laden (und filtern, falls Labels gelöscht wurden)
-                                        selectedLabels = savedLabels!!.filter { availableLabels.contains(it) }.toSet()
-                                    }
-                                    isInitialized = true
+                    Column(modifier = Modifier.fillMaxSize()) {
+                        Box(
+                            modifier = Modifier.padding(16.dp).fillMaxWidth().height(56.dp)
+                                .clip(RoundedCornerShape(28.dp))
+                                .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f))
+                                .padding(horizontal = 8.dp),
+                            contentAlignment = Alignment.CenterStart
+                        ) {
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                IconButton(onClick = { scope.launch { drawerState.open() } }) {
+                                    Icon(Icons.Default.Menu, contentDescription = "Menu")
                                 }
-                            }
-
-                            val filteredContacts = contacts.filter { selectedLabels.contains(it.label) }
-                            val sortedContacts = filteredContacts.sortedBy { it.birthday.takeLast(5) }
-
-                            Column(modifier = Modifier.fillMaxSize()) {
-                                Row(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .padding(horizontal = 16.dp, vertical = 8.dp),
-                                    horizontalArrangement = Arrangement.End
-                                ) {
-                                    Box {
-                                        Button(onClick = { isMenuExpanded = true }) {
-                                            Text("Filter")
-                                        }
-
-                                        DropdownMenu(
-                                            expanded = isMenuExpanded,
-                                            onDismissRequest = { isMenuExpanded = false },
-                                            modifier = Modifier.heightIn(max = 350.dp)
-                                        ) {
-                                            availableLabels.forEach { label ->
-                                                DropdownMenuItem(
-                                                    text = {
-                                                        Row(verticalAlignment = Alignment.CenterVertically) {
-                                                            Checkbox(
-                                                                checked = selectedLabels.contains(label),
-                                                                onCheckedChange = { isChecked ->
-                                                                    val newSelection = selectedLabels.toMutableSet()
-                                                                    if (isChecked) newSelection.add(label) else newSelection.remove(label)
-                                                                    selectedLabels = newSelection
-                                                                    scope.launch { filterManager.saveSelectedLabels(newSelection) }
-                                                                }
-                                                            )
-                                                            Text(text = label, modifier = Modifier.padding(start = 8.dp))
-                                                        }
-                                                    },
-                                                    onClick = {
-                                                        val newSelection = selectedLabels.toMutableSet()
-                                                        if (selectedLabels.contains(label)) newSelection.remove(label) else newSelection.add(label)
-                                                        selectedLabels = newSelection
-                                                        scope.launch { filterManager.saveSelectedLabels(newSelection) }
-                                                    }
-                                                )
-                                            }
-                                        }
-                                    }
-                                }
-
-                                LazyColumn(
+                                TextField(
+                                    value = searchQuery,
+                                    onValueChange = { searchQuery = it },
+                                    placeholder = { Text("In Kontakten suchen...", color = Color.Gray) },
                                     modifier = Modifier.weight(1f),
-                                    contentPadding = PaddingValues(top = 8.dp, bottom = 16.dp)
-                                ) {
-                                    items(sortedContacts) { contact ->
-                                        BirthdayItem(contact = contact)
-                                    }
-                                }
+                                    colors = TextFieldDefaults.colors(
+                                        focusedContainerColor = Color.Transparent,
+                                        unfocusedContainerColor = Color.Transparent,
+                                        focusedIndicatorColor = Color.Transparent,
+                                        unfocusedIndicatorColor = Color.Transparent,
+                                    ),
+                                    singleLine = true
+                                )
                             }
-                        } else {
-                            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                                Text(text = "Wir brauchen die Erlaubnis, um Geburtstage anzuzeigen.")
+                        }
+
+                        LazyColumn(modifier = Modifier.weight(1f), contentPadding = PaddingValues(bottom = 16.dp)) {
+                            items(sortedContacts) { contact ->
+                                BirthdayItem(contact = contact)
                             }
                         }
                     }
