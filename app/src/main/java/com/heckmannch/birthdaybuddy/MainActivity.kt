@@ -13,14 +13,21 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Checkbox
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -28,23 +35,16 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.setValue
-import androidx.compose.material3.Surface
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.sp
-import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Column
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.unit.sp
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat
 import com.heckmannch.birthdaybuddy.ui.theme.BirthdayBuddyTheme
+
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -52,10 +52,8 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             BirthdayBuddyTheme {
-                // 1. Wir merken uns die Kontakte in einem "Zustand" (State)
+                // 1. Zustände (States) ganz oben
                 var contacts by remember { mutableStateOf<List<BirthdayContact>>(emptyList()) }
-
-                // 2. Wir prüfen, ob wir die Erlaubnis schon haben
                 var hasPermission by remember {
                     mutableStateOf(
                         ContextCompat.checkSelfPermission(
@@ -65,51 +63,104 @@ class MainActivity : ComponentActivity() {
                     )
                 }
 
-                // 3. Das ist unser "Frage-Fenster" an den Nutzer
+                // 2. Erlaubnis-Abfrage
                 val permissionLauncher = rememberLauncherForActivityResult(
                     contract = ActivityResultContracts.RequestPermission()
                 ) { isGranted: Boolean ->
                     hasPermission = isGranted
                     if (isGranted) {
-                        // Wenn der Nutzer "Ja" klickt, laden wir die Geburtstage
                         contacts = fetchBirthdays()
                     }
                 }
 
-                // 4. Direkt beim Start der App prüfen wir, was zu tun ist
+                // 3. Start-Prüfung (Hintergrund-Task)
                 LaunchedEffect(Unit) {
                     if (!hasPermission) {
-                        // Wenn keine Erlaubnis da ist, fragen wir danach
                         permissionLauncher.launch(Manifest.permission.READ_CONTACTS)
                     } else {
-                        // Wenn sie schon da ist, laden wir sofort die Daten
                         contacts = fetchBirthdays()
                     }
                 }
 
-                // 5. Unsere neue, fertige Liste
+                // --- HIER BEGINNT DIE OBERFLÄCHE (UI) ---
                 Surface(
-                    modifier = Modifier.fillMaxSize(),
+                    modifier = Modifier.fillMaxSize().systemBarsPadding(),
                     color = MaterialTheme.colorScheme.background
                 ) {
                     if (hasPermission) {
-                        // Wir sortieren die Liste von Januar bis Dezember.
-                        // Da das Datum z.B. "1990-05-25" oder "--05-25" ist,
-                        // sortieren wir einfach nach den letzten 5 Zeichen ("05-25").
-                        val sortedContacts = contacts.sortedBy { it.birthday.takeLast(5) }
+                        // Daten für den Filter vorbereiten
+                        val availableLabels = contacts.map { it.label }.toSet()
+                        var selectedLabels by remember { mutableStateOf(emptySet<String>()) }
+                        var isMenuExpanded by remember { mutableStateOf(false) }
 
-                        // LazyColumn ist unsere scrollbare Liste
-                        LazyColumn(
-                            modifier = Modifier.fillMaxSize(),
-                            contentPadding = PaddingValues(top = 16.dp, bottom = 16.dp)
-                        ) {
-                            items(sortedContacts) { contact ->
-                                // Hier rufen wir unser Design von unten auf
-                                BirthdayItem(contact = contact)
+                        // Wenn Labels geladen wurden, beim Start alle anhaken
+                        LaunchedEffect(availableLabels) {
+                            if (selectedLabels.isEmpty() && availableLabels.isNotEmpty()) {
+                                selectedLabels = availableLabels
+                            }
+                        }
+
+                        // Liste filtern und sortieren
+                        val filteredContacts = contacts.filter { selectedLabels.contains(it.label) }
+                        val sortedContacts = filteredContacts.sortedBy { it.birthday.takeLast(5) }
+
+                        // Das eigentliche Layout (Spalte mit Menü oben und Liste unten)
+                        Column(modifier = Modifier.fillMaxSize()) {
+
+                            // Filter-Menüleiste
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(horizontal = 16.dp, vertical = 8.dp),
+                                horizontalArrangement = Arrangement.End
+                            ) {
+                                Box {
+                                    Button(onClick = { isMenuExpanded = true }) {
+                                        Text("Filter")
+                                    }
+
+                                    DropdownMenu(
+                                        expanded = isMenuExpanded,
+                                        onDismissRequest = { isMenuExpanded = false }
+                                    ) {
+                                        availableLabels.forEach { label ->
+                                            DropdownMenuItem(
+                                                text = {
+                                                    Row(verticalAlignment = Alignment.CenterVertically) {
+                                                        Checkbox(
+                                                            checked = selectedLabels.contains(label),
+                                                            onCheckedChange = { isChecked ->
+                                                                val newSelection = selectedLabels.toMutableSet()
+                                                                if (isChecked) newSelection.add(label) else newSelection.remove(label)
+                                                                selectedLabels = newSelection
+                                                            }
+                                                        )
+                                                        Text(text = label, modifier = Modifier.padding(start = 8.dp))
+                                                    }
+                                                },
+                                                onClick = {
+                                                    val newSelection = selectedLabels.toMutableSet()
+                                                    if (selectedLabels.contains(label)) newSelection.remove(label) else newSelection.add(label)
+                                                    selectedLabels = newSelection
+                                                }
+                                            )
+                                        }
+                                    }
+                                }
+                            }
+
+                            // Die Liste
+                            LazyColumn(
+                                modifier = Modifier.weight(1f),
+                                contentPadding = PaddingValues(top = 8.dp, bottom = 16.dp)
+                            ) {
+                                items(sortedContacts) { contact ->
+                                    BirthdayItem(contact = contact)
+                                }
                             }
                         }
                     } else {
-                        // Wenn der Nutzer die Erlaubnis verweigert hat
+                        // Ansicht, wenn keine Erlaubnis erteilt wurde
                         Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                             Text(text = "Wir brauchen die Erlaubnis, um Geburtstage anzuzeigen.")
                         }
@@ -145,16 +196,19 @@ class MainActivity : ComponentActivity() {
 
         // Cursor durchlaufen und Daten in unsere Liste schreiben
         cursor?.use {
+            // Wir brauchen jetzt auch die ID des Kontakts, um danach suchen zu können
+            val idIndex = it.getColumnIndex(ContactsContract.CommonDataKinds.Event.CONTACT_ID)
             val nameIndex = it.getColumnIndex(ContactsContract.CommonDataKinds.Event.DISPLAY_NAME)
             val birthdayIndex = it.getColumnIndex(ContactsContract.CommonDataKinds.Event.START_DATE)
-            val labelIndex = it.getColumnIndex(ContactsContract.CommonDataKinds.Event.LABEL)
 
             while (it.moveToNext()) {
+                val contactId = it.getString(idIndex) ?: ""
                 val name = it.getString(nameIndex) ?: "Unbekannt"
                 val bday = it.getString(birthdayIndex) ?: ""
-                val label = it.getString(labelIndex) ?: "Privat"
 
-                // Wir fügen das Objekt unserer Liste hinzu
+                // HIER IST DIE MAGIE: Wir holen die echten Label!
+                val label = getContactLabels(contactId)
+
                 val (age, remainingDays) = calculateAgeAndDays(bday)
                 contactList.add(BirthdayContact(name, bday, label, remainingDays, age))
             }
@@ -204,6 +258,57 @@ class MainActivity : ComponentActivity() {
         } catch (e: Exception) {
             Pair(0, 0)
         }
+    }
+
+    // Neue Hilfsfunktion: Holt die echten Kontakt-Gruppen (Label) aus der Datenbank
+    private fun getContactLabels(contactId: String): String {
+        val groupIds = mutableListOf<String>()
+
+        // 1. Welche Gruppen-IDs hat dieser Kontakt?
+        val groupCursor = contentResolver.query(
+            ContactsContract.Data.CONTENT_URI,
+            arrayOf(ContactsContract.CommonDataKinds.GroupMembership.GROUP_ROW_ID),
+            "${ContactsContract.Data.CONTACT_ID} = ? AND ${ContactsContract.Data.MIMETYPE} = ?",
+            arrayOf(contactId, ContactsContract.CommonDataKinds.GroupMembership.CONTENT_ITEM_TYPE),
+            null
+        )
+
+        groupCursor?.use {
+            val idIndex = it.getColumnIndex(ContactsContract.CommonDataKinds.GroupMembership.GROUP_ROW_ID)
+            while (it.moveToNext()) {
+                val groupId = it.getString(idIndex)
+                if (groupId != null) groupIds.add(groupId)
+            }
+        }
+
+        // Wenn er in keiner Gruppe ist
+        if (groupIds.isEmpty()) return "Ohne Label"
+
+        // 2. Wie heißen diese Gruppen im Klartext?
+        val labels = mutableListOf<String>()
+        val placeholders = groupIds.joinToString(",") { "?" }
+
+        val titleCursor = contentResolver.query(
+            ContactsContract.Groups.CONTENT_URI,
+            arrayOf(ContactsContract.Groups.TITLE),
+            "${ContactsContract.Groups._ID} IN ($placeholders)",
+            groupIds.toTypedArray(),
+            null
+        )
+
+        titleCursor?.use {
+            val titleIndex = it.getColumnIndex(ContactsContract.Groups.TITLE)
+            while (it.moveToNext()) {
+                // Manchmal heißen die Gruppen im System "System Group: My Contacts"
+                // Wir schneiden das "System Group: " einfach weg, damit es schöner aussieht
+                val title = it.getString(titleIndex)?.replace("System Group: ", "")
+                if (!title.isNullOrBlank()) {
+                    labels.add(title)
+                }
+            }
+        }
+
+        return if (labels.isEmpty()) "Ohne Label" else labels.joinToString(", ")
     }
 }
 
