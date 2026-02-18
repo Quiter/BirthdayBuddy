@@ -1,0 +1,138 @@
+package com.heckmannch.birthdaybuddy.components
+
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
+import androidx.compose.material3.*
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
+import com.heckmannch.birthdaybuddy.R
+
+@Composable
+fun SectionHeader(title: String) {
+    Text(
+        text = title,
+        style = MaterialTheme.typography.labelLarge,
+        color = MaterialTheme.colorScheme.primary,
+        modifier = Modifier.padding(vertical = 8.dp, horizontal = 4.dp)
+    )
+}
+
+@Composable
+fun SettingsCard(content: @Composable ColumnScope.() -> Unit) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow),
+        content = content
+    )
+}
+
+@Composable
+fun SettingsBlock(title: String, subtitle: String, icon: ImageVector, containerColor: Color, onClick: () -> Unit) {
+    SettingsCard {
+        SettingsBlockRow(title, subtitle, icon, containerColor, onClick = onClick)
+    }
+}
+
+@Composable
+fun SettingsBlockRow(title: String, subtitle: String, icon: ImageVector, containerColor: Color, onClick: () -> Unit) {
+    ListItem(
+        modifier = Modifier.clickable { onClick() },
+        headlineContent = { Text(title, fontWeight = FontWeight.SemiBold) },
+        supportingContent = { Text(subtitle) },
+        leadingContent = {
+            Box(
+                modifier = Modifier.size(40.dp).background(containerColor, shape = CircleShape),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(icon, null, modifier = Modifier.size(20.dp), tint = Color.White)
+            }
+        },
+        trailingContent = { Icon(Icons.AutoMirrored.Filled.KeyboardArrowRight, null, tint = MaterialTheme.colorScheme.outline) },
+        colors = ListItemDefaults.colors(containerColor = Color.Transparent)
+    )
+}
+
+@Composable
+fun SettingsFooter(versionName: String, onGithubClick: () -> Unit) {
+    Column(
+        modifier = Modifier.fillMaxWidth().padding(bottom = 24.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Text("Version $versionName", style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        TextButton(onClick = onGithubClick) {
+            Icon(painter = painterResource(id = R.drawable.ic_github), contentDescription = null, modifier = Modifier.size(18.dp))
+            Spacer(Modifier.width(8.dp))
+            Text("Projekt auf GitHub")
+        }
+    }
+}
+
+@Composable
+fun WidgetCountDialog(currentCount: Int, onDismiss: () -> Unit, onSelect: (Int) -> Unit) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("Widget Kapazität") },
+        text = {
+            Column {
+                listOf(1, 2, 3).forEach { count ->
+                    ListItem(
+                        headlineContent = { Text("$count ${if (count == 1) "Person" else "Personen"}") },
+                        leadingContent = { RadioButton(selected = currentCount == count, onClick = null) },
+                        modifier = Modifier.clickable { onSelect(count) }
+                    )
+                }
+            }
+        },
+        confirmButton = { TextButton(onClick = onDismiss) { Text("Fertig") } }
+    )
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun LabelSelectionScreen(
+    title: String, 
+    description: String, 
+    availableLabels: Set<String>, 
+    activeLabels: Set<String>, 
+    isLoading: Boolean, 
+    onToggle: (String, Boolean) -> Unit, 
+    onBack: () -> Unit
+) {
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = { Text(title) },
+                navigationIcon = { IconButton(onClick = onBack) { Icon(Icons.AutoMirrored.Filled.ArrowBack, "Zurück") } }
+            )
+        }
+    ) { padding ->
+        Column(modifier = Modifier.fillMaxSize().padding(padding)) {
+            Text(description, style = MaterialTheme.typography.bodyMedium, modifier = Modifier.padding(16.dp), color = MaterialTheme.colorScheme.onSurfaceVariant)
+            if (isLoading) {
+                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) { CircularProgressIndicator() }
+            } else {
+                LazyColumn(modifier = Modifier.weight(1f)) {
+                    items(availableLabels.toList()) { label ->
+                        ListItem(
+                            headlineContent = { Text(label) },
+                            trailingContent = { Switch(checked = activeLabels.contains(label), onCheckedChange = { onToggle(label, it) }) }
+                        )
+                    }
+                }
+            }
+        }
+    }
+}
