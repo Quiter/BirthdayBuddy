@@ -5,27 +5,21 @@ plugins {
 
 android {
     namespace = "com.heckmannch.birthdaybuddy"
-    compileSdk {
-        version = release(36) {
-            minorApiLevel = 1
-        }
-    }
+    compileSdk = 36
 
     defaultConfig {
         applicationId = "com.heckmannch.birthdaybuddy"
         minSdk = 28
-        targetSdk = 36
+        targetSdk = 34
         versionCode = 1
-        versionName = "0.5"
+        versionName = "0.7"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
     buildTypes {
         release {
-            // NEU: Wirft allen ungenutzten Code (auch aus den Google-Bibliotheken) raus
             isMinifyEnabled = true
-            // NEU: Wirft alle unsichtbaren/ungenutzten Bilder, Icons und Texte raus
             isShrinkResources = true
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
@@ -58,11 +52,7 @@ dependencies {
     androidTestImplementation(libs.androidx.compose.ui.test.junit4)
     debugImplementation(libs.androidx.compose.ui.tooling)
     debugImplementation(libs.androidx.compose.ui.test.manifest)
-    implementation("androidx.datastore:datastore-preferences:1.2.0")
-    implementation("androidx.navigation:navigation-compose:2.9.7")
-    implementation("io.coil-kt:coil-compose:2.6.0")
-}
-
-base {
-    archivesName.set("BirthdayBuddy")
+    implementation(libs.androidx.datastore.preferences)
+    implementation(libs.androidx.navigation.compose)
+    implementation(libs.coil.compose)
 }
