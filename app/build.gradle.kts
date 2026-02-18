@@ -5,14 +5,14 @@ plugins {
 
 android {
     namespace = "com.heckmannch.birthdaybuddy"
-    compileSdk = 36
+    compileSdk = 35
 
     defaultConfig {
         applicationId = "com.heckmannch.birthdaybuddy"
         minSdk = 28
         targetSdk = 35
         versionCode = 1
-        versionName = "0.6"
+        versionName = "0.8"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -46,9 +46,10 @@ dependencies {
     implementation(libs.androidx.compose.ui.tooling.preview)
     implementation(libs.androidx.compose.material3)
     
-    // NEU: Klassische Material-Bibliothek für XML-Themes
+    // Icons
+    implementation(libs.androidx.compose.material.icons.extended)
+    
     implementation("com.google.android.material:material:1.12.0")
-    // SplashScreen API
     implementation("androidx.core:core-splashscreen:1.0.1")
     
     testImplementation(libs.junit)

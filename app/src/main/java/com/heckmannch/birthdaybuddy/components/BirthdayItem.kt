@@ -62,6 +62,27 @@ fun BirthdayItem(
     var expanded by remember { mutableStateOf(false) }
     val context = LocalContext.current
     val keyboardController = LocalSoftwareKeyboardController.current
+    val isDark = isSystemInDarkTheme()
+
+    // PERFORMANCE: Wir berechnen die Texte nur neu, wenn sie sich ändern
+    val ageText = remember(contact.age, isDark) {
+        buildAnnotatedString {
+            append("Wird ")
+            withStyle(style = SpanStyle(color = getAgeColorRaw(contact.age, isDark), fontWeight = FontWeight.Bold)) {
+                append("${contact.age}")
+            }
+        }
+    }
+
+    val remainingDaysText = remember(contact.remainingDays, isDark) {
+        buildAnnotatedString {
+            append("in ")
+            withStyle(style = SpanStyle(color = getDaysColorRaw(contact.remainingDays, isDark), fontWeight = FontWeight.SemiBold)) {
+                append("${contact.remainingDays}")
+            }
+            append(" Tagen")
+        }
+    }
 
     ElevatedCard(
         modifier = modifier
@@ -120,23 +141,12 @@ fun BirthdayItem(
 
                 Column(horizontalAlignment = Alignment.End) {
                     Text(
-                        text = buildAnnotatedString {
-                            append("Wird ")
-                            withStyle(style = SpanStyle(color = getAgeColor(contact.age), fontWeight = FontWeight.Bold)) {
-                                append("${contact.age}")
-                            }
-                        },
+                        text = ageText,
                         style = MaterialTheme.typography.bodyLarge
                     )
                     Spacer(modifier = Modifier.height(2.dp))
                     Text(
-                        text = buildAnnotatedString {
-                            append("in ")
-                            withStyle(style = SpanStyle(color = getDaysColor(contact.remainingDays), fontWeight = FontWeight.SemiBold)) {
-                                append("${contact.remainingDays}")
-                            }
-                            append(" Tagen")
-                        },
+                        text = remainingDaysText,
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -226,9 +236,8 @@ private fun MessengerIcon(text: String, color: Color, onClick: () -> Unit) {
     }
 }
 
-@Composable
-private fun getAgeColor(age: Int): Color {
-    val isDark = isSystemInDarkTheme()
+// PERFORMANCE: Funktionen sind jetzt pur (kein @Composable-Aufruf intern mehr)
+private fun getAgeColorRaw(age: Int, isDark: Boolean): Color {
     val youngColor = if (isDark) Color(0xFFFFA4A4) else Color(0xFFFF5252)
     val oldColor = if (isDark) Color(0xFFD32F2F) else Color(0xFF8B0000)
     val clampedAge = age.coerceIn(0, 100)
@@ -236,10 +245,8 @@ private fun getAgeColor(age: Int): Color {
     return lerp(youngColor, oldColor, fraction)
 }
 
-@Composable
-private fun getDaysColor(days: Int): Color {
+private fun getDaysColorRaw(days: Int, isDark: Boolean): Color {
     if (days == 0) return Color(0xFFFFC107)
-    val isDark = isSystemInDarkTheme()
     val nearColor = if (isDark) Color(0xFF80D8FF) else Color(0xFF00BFFF)
     val farColor = if (isDark) Color(0xFF5C6BC0) else Color(0xFF00008B)
     val clampedDays = days.coerceIn(1, 365)
