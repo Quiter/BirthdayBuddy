@@ -5,7 +5,9 @@ import android.net.Uri
 import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.spring
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
@@ -39,12 +41,14 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.lerp
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
+import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
@@ -63,8 +67,11 @@ fun BirthdayItem(
     val context = LocalContext.current
     val keyboardController = LocalSoftwareKeyboardController.current
     val isDark = isSystemInDarkTheme()
+    val isBirthdayToday = contact.remainingDays == 0
 
-    // PERFORMANCE: Wir berechnen die Texte nur neu, wenn sie sich ändern
+    val goldColor = Color(0xFFFFD700)
+    val darkGoldColor = Color(0xFFFFB300)
+
     val ageText = remember(contact.age, isDark) {
         buildAnnotatedString {
             append("Wird ")
@@ -84,16 +91,40 @@ fun BirthdayItem(
         }
     }
 
+    val birthdayModifier = if (isBirthdayToday) {
+        Modifier.border(
+            BorderStroke(
+                2.dp,
+                Brush.linearGradient(
+                    colors = listOf(goldColor, darkGoldColor, goldColor)
+                )
+            ),
+            shape = CardDefaults.elevatedShape
+        )
+    } else {
+        Modifier
+    }
+
     ElevatedCard(
         modifier = modifier
             .fillMaxWidth()
             .padding(horizontal = 16.dp, vertical = 6.dp)
+            .then(birthdayModifier)
             .clickable {
                 keyboardController?.hide()
                 expanded = !expanded
             },
-        elevation = CardDefaults.elevatedCardElevation(defaultElevation = 2.dp, pressedElevation = 8.dp),
-        colors = CardDefaults.elevatedCardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow)
+        elevation = CardDefaults.elevatedCardElevation(
+            defaultElevation = if (isBirthdayToday) 4.dp else 2.dp, 
+            pressedElevation = 8.dp
+        ),
+        colors = CardDefaults.elevatedCardColors(
+            containerColor = if (isBirthdayToday) {
+                if (isDark) Color(0xFF3E3600) else Color(0xFFFFFDE7)
+            } else {
+                MaterialTheme.colorScheme.surfaceContainerLow
+            }
+        )
     ) {
         Column(
             modifier = Modifier.animateContentSize(
@@ -146,9 +177,10 @@ fun BirthdayItem(
                     )
                     Spacer(modifier = Modifier.height(2.dp))
                     Text(
-                        text = remainingDaysText,
+                        text = if (isBirthdayToday) AnnotatedString("HEUTE! \uD83C\uDF82") else remainingDaysText,
                         style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                        fontWeight = if (isBirthdayToday) FontWeight.Bold else FontWeight.Normal,
+                        color = if (isBirthdayToday) goldColor else MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
             }
@@ -204,7 +236,7 @@ fun BirthdayItem(
 
                     if (actions.hasTelegram && actions.phoneNumber != null) {
                         MessengerIcon(text = "TG", color = Color(0xFF0088CC)) {
-                            try { context.startActivity(Intent(Intent.ACTION_SENDTO, Uri.parse("smsto:${actions.phoneNumber}")).setPackage("org.telegram.messenger")) } catch (e: Exception) { /* Ignored */ }
+                            try { context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse("tg://msg?to=${actions.phoneNumber}"))) } catch (e: Exception) { /* Ignored */ }
                         }
                     }
 
@@ -236,7 +268,6 @@ private fun MessengerIcon(text: String, color: Color, onClick: () -> Unit) {
     }
 }
 
-// PERFORMANCE: Funktionen sind jetzt pur (kein @Composable-Aufruf intern mehr)
 private fun getAgeColorRaw(age: Int, isDark: Boolean): Color {
     val youngColor = if (isDark) Color(0xFFFFA4A4) else Color(0xFFFF5252)
     val oldColor = if (isDark) Color(0xFFD32F2F) else Color(0xFF8B0000)
