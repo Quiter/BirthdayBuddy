@@ -67,7 +67,7 @@ fun SettingsMenuScreen(onNavigate: (String) -> Unit, onBack: () -> Unit) {
             SectionHeader("Filter & Sichtbarkeit")
             SettingsCard {
                 val menuOrange = Color(0xFFFF9800)
-                SettingsBlockRow("Anzeigen", "Labels im Drawer verstecken", Icons.Default.Visibility, menuOrange) { onNavigate("settings_hide") }
+                SettingsBlockRow("Anzeigen", "Diese Labels im Drawer anzeigen", Icons.Default.Visibility, menuOrange) { onNavigate("settings_hide") }
                 HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant)
                 SettingsBlockRow("Blockieren", "Labels komplett ignorieren", Icons.Default.VisibilityOff, menuOrange) { onNavigate("settings_block") }
             }
@@ -78,9 +78,9 @@ fun SettingsMenuScreen(onNavigate: (String) -> Unit, onBack: () -> Unit) {
                 val widgetBlue = Color(0xFF2196F3)
                 SettingsBlockRow("Anzahl", "Bis zu $widgetCount Personen", Icons.Default.List, widgetBlue) { showCountDialog = true }
                 HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant)
-                SettingsBlockRow("Anzeigen", "Nur diese Labels nutzen", Icons.Default.Visibility, widgetBlue) { onNavigate("settings_widget_include") }
+                SettingsBlockRow("Anzeigen", "Diese Labels im Widget anzeigen", Icons.Default.Visibility, widgetBlue) { onNavigate("settings_widget_include") }
                 HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant)
-                SettingsBlockRow("Blockieren", "Diese Labels ausschließen", Icons.Default.VisibilityOff, widgetBlue) { onNavigate("settings_widget_exclude") }
+                SettingsBlockRow("Blockieren", "Diese Labels im Widget ignorieren", Icons.Default.VisibilityOff, widgetBlue) { onNavigate("settings_widget_exclude") }
             }
 
             Spacer(modifier = Modifier.weight(1f))
@@ -320,6 +320,7 @@ fun AlarmsScreen(filterManager: FilterManager, onBack: () -> Unit) {
     }
 }
 
+// Navigations-Wrapper
 @Composable fun BlockLabelsScreen(f: FilterManager, a: Set<String>, l: Boolean, b: () -> Unit) {
     val labels by f.excludedLabelsFlow.collectAsState(initial = emptySet())
     val scope = rememberCoroutineScope()
@@ -331,25 +332,30 @@ fun AlarmsScreen(filterManager: FilterManager, onBack: () -> Unit) {
 }
 
 @Composable fun HideLabelsScreen(f: FilterManager, a: Set<String>, l: Boolean, b: () -> Unit) {
-    val labels by f.hiddenDrawerLabelsFlow.collectAsState(initial = emptySet())
+    val hiddenLabels by f.hiddenDrawerLabelsFlow.collectAsState(initial = emptySet())
     val scope = rememberCoroutineScope()
-    LabelSelectionScreen("Anzeigen", "Diese Labels im Seitenmenü verstecken.", a, labels, l, { label, checked ->
-        val newSet = labels.toMutableSet()
-        if (checked) newSet.add(label) else newSet.remove(label)
+    // Umkehrlogik: Ein Label ist "aktiv" (Switch an), wenn es NICHT in der hidden-Liste ist.
+    val activeLabels = a.filterNot { hiddenLabels.contains(it) }.toSet()
+    LabelSelectionScreen("Anzeigen", "Diese Labels im Seitenmenü anzeigen.", a, activeLabels, l, { label, checked ->
+        val newSet = hiddenLabels.toMutableSet()
+        if (checked) newSet.remove(label) else newSet.add(label) // Wenn gecheckt -> aus Blacklist raus
         scope.launch { f.saveHiddenDrawerLabels(newSet) }
     }, b)
 }
 
 @Composable fun WidgetIncludeLabelsScreen(f: FilterManager, a: Set<String>, l: Boolean, b: () -> Unit) {
     val context = LocalContext.current
-    val labels by f.widgetIncludedLabelsFlow.collectAsState(initial = setOf("ALL_DEFAULT"))
+    val hiddenLabels by f.widgetHiddenLabelsFlow.collectAsState(initial = emptySet())
     val scope = rememberCoroutineScope()
-    val activeLabels = if (labels.contains("ALL_DEFAULT")) a else labels
-    LabelSelectionScreen("Widget: Anzeigen", "Nur diese Labels im Widget zeigen.", a, activeLabels, l, { label, checked ->
-        val newSet = activeLabels.toMutableSet()
-        if (checked) newSet.add(label) else newSet.remove(label)
-        scope.launch { f.saveWidgetIncludedLabels(newSet) }
-        updateWidget(context)
+    // Umkehrlogik: Ein Label ist "aktiv" (Switch an), wenn es NICHT in der hidden-Liste ist.
+    val activeLabels = a.filterNot { hiddenLabels.contains(it) }.toSet()
+    LabelSelectionScreen("Anzeigen", "Diese Labels im Widget anzeigen.", a, activeLabels, l, { label, checked ->
+        val newSet = hiddenLabels.toMutableSet()
+        if (checked) newSet.remove(label) else newSet.add(label) // Wenn gecheckt -> aus Blacklist raus
+        scope.launch { 
+            f.saveWidgetHiddenLabels(newSet)
+            updateWidget(context)
+        }
     }, b)
 }
 
@@ -357,10 +363,12 @@ fun AlarmsScreen(filterManager: FilterManager, onBack: () -> Unit) {
     val context = LocalContext.current
     val labels by f.widgetExcludedLabelsFlow.collectAsState(initial = emptySet())
     val scope = rememberCoroutineScope()
-    LabelSelectionScreen("Widget: Blockieren", "Diese Labels im Widget immer ignorieren.", a, labels, l, { label, checked ->
+    LabelSelectionScreen("Blockieren", "Diese Labels im Widget immer ignorieren.", a, labels, l, { label, checked ->
         val newSet = labels.toMutableSet()
         if (checked) newSet.add(label) else newSet.remove(label)
-        scope.launch { f.saveWidgetExcludedLabels(newSet) }
-        updateWidget(context)
+        scope.launch { 
+            f.saveWidgetExcludedLabels(newSet)
+            updateWidget(context)
+        }
     }, b)
 }

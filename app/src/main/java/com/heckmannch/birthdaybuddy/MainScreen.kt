@@ -40,11 +40,10 @@ fun MainScreen(
 
     var contacts by remember { mutableStateOf<List<BirthdayContact>>(emptyList()) }
     var searchQuery by remember { mutableStateOf("") }
-    var selectedLabels by remember { mutableStateOf(emptySet<String>()) }
-    var isInitialized by remember { mutableStateOf(false) }
     var isLoading by remember { mutableStateOf(true) }
 
-    val savedLabels by filterManager.selectedLabelsFlow.collectAsState(initial = null)
+    // Wir nutzen jetzt die Blacklist-Flows
+    val hiddenFilterLabels by filterManager.hiddenFilterLabelsFlow.collectAsState(initial = emptySet())
     val excludedLabels by filterManager.excludedLabelsFlow.collectAsState(initial = emptySet())
     val hiddenDrawerLabels by filterManager.hiddenDrawerLabelsFlow.collectAsState(initial = emptySet())
 
@@ -90,17 +89,6 @@ fun MainScreen(
         contacts.flatMap { it.labels }.toSortedSet()
     }
 
-    LaunchedEffect(availableLabels, savedLabels, isLoading) {
-        if (savedLabels != null && !isLoading && !isInitialized) {
-            selectedLabels = if (savedLabels!!.isEmpty() && availableLabels.isNotEmpty()) {
-                availableLabels.also { scope.launch { filterManager.saveSelectedLabels(it) } }
-            } else {
-                savedLabels!!.filter { availableLabels.contains(it) }.toSet()
-            }
-            isInitialized = true
-        }
-    }
-
     val listState = rememberLazyListState()
 
     ModalNavigationDrawer(
@@ -114,21 +102,21 @@ fun MainScreen(
                     modifier = Modifier.padding(horizontal = 28.dp, vertical = 16.dp)
                 )
 
-                val labelsToShow = remember(availableLabels, hiddenDrawerLabels) {
+                val labelsToShowInDrawer = remember(availableLabels, hiddenDrawerLabels) {
                     availableLabels.filterNot { hiddenDrawerLabels.contains(it) }
                 }
 
-                labelsToShow.forEach { label ->
+                labelsToShowInDrawer.forEach { label ->
+                    val isChecked = !hiddenFilterLabels.contains(label)
                     NavigationDrawerItem(
                         label = { Text(label) },
-                        selected = selectedLabels.contains(label),
+                        selected = isChecked,
                         onClick = {
-                            val newSelection = selectedLabels.toMutableSet()
-                            if (selectedLabels.contains(label)) newSelection.remove(label) else newSelection.add(label)
-                            selectedLabels = newSelection
-                            scope.launch { filterManager.saveSelectedLabels(newSelection) }
+                            val newHiddenSet = hiddenFilterLabels.toMutableSet()
+                            if (isChecked) newHiddenSet.add(label) else newHiddenSet.remove(label)
+                            scope.launch { filterManager.saveHiddenFilterLabels(newHiddenSet) }
                         },
-                        icon = { Checkbox(checked = selectedLabels.contains(label), onCheckedChange = null) },
+                        icon = { Checkbox(checked = isChecked, onCheckedChange = null) },
                         modifier = Modifier.padding(NavigationDrawerItemDefaults.ItemPadding)
                     )
                 }
@@ -188,19 +176,21 @@ fun MainScreen(
                     },
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(horizontal = if (false) 0.dp else 16.dp)
+                        .padding(horizontal = 16.dp)
                         .padding(bottom = 8.dp)
                 ) { }
             }
         ) { padding ->
             Box(modifier = Modifier.fillMaxSize().padding(padding)) {
                 if (hasPermission) {
-                    val sortedContacts = remember(contacts, selectedLabels, excludedLabels, searchQuery) {
+                    val sortedContacts = remember(contacts, hiddenFilterLabels, excludedLabels, searchQuery) {
                         contacts.filter { contact ->
-                            val hasActiveLabel = contact.labels.any { label -> selectedLabels.contains(label) }
-                            val isBlacklisted = contact.labels.any { label -> excludedLabels.contains(label) }
+                            // Kontakt anzeigen, wenn KEINES seiner Labels versteckt oder blockiert ist
+                            val isHiddenByFilter = contact.labels.any { hiddenFilterLabels.contains(it) }
+                            val isExcludedGlobally = contact.labels.any { excludedLabels.contains(it) }
                             val matchesSearch = contact.name.contains(searchQuery, ignoreCase = true)
-                            hasActiveLabel && !isBlacklisted && matchesSearch
+                            
+                            !isHiddenByFilter && !isExcludedGlobally && matchesSearch
                         }.sortedBy { it.remainingDays }
                     }
 

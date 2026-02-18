@@ -28,38 +28,36 @@ class BirthdayWidgetProvider : AppWidgetProvider() {
                 if (ContextCompat.checkSelfPermission(context, Manifest.permission.READ_CONTACTS) == PackageManager.PERMISSION_GRANTED) {
                     val filterManager = FilterManager(context)
 
-                    val included = filterManager.widgetIncludedLabelsFlow.first()
+                    // Korrektur: Wir nutzen jetzt die Blacklist-Flows
+                    val hidden = filterManager.widgetHiddenLabelsFlow.first()
                     val excluded = filterManager.widgetExcludedLabelsFlow.first()
-                    // NEU: Auslesen, wie viele angezeigt werden sollen
                     val itemCount = filterManager.widgetItemCountFlow.first()
 
                     val contacts = fetchBirthdays(context)
 
-                    // NEU: Sortieren und exakt X Stück abschneiden (.take)
+                    // Korrektur: Filterung nach Blacklist-Logik
                     val nextBirthdays = contacts.filter { contact ->
-                        val hasActiveLabel = if (included.contains("ALL_DEFAULT")) true else contact.labels.any { label -> included.contains(label) }
-                        val isBlacklisted = contact.labels.any { label -> excluded.contains(label) }
-                        hasActiveLabel && !isBlacklisted
+                        val isHidden = contact.labels.any { hidden.contains(it) }
+                        val isExcluded = contact.labels.any { excluded.contains(it) }
+                        !isHidden && !isExcluded
                     }.sortedBy { it.remainingDays }.take(itemCount)
 
-                    // Erstmal alle 3 Zeilen sicherheitshalber unsichtbar machen
+                    // UI zurücksetzen
                     views.setViewVisibility(R.id.row_1, android.view.View.GONE)
                     views.setViewVisibility(R.id.row_2, android.view.View.GONE)
                     views.setViewVisibility(R.id.row_3, android.view.View.GONE)
 
                     if (nextBirthdays.isNotEmpty()) {
-                        views.setTextViewText(R.id.widget_title, if (nextBirthdays.size > 1) "Nächste Geburtstage:" else "Nächster Geburtstag:")
+                        views.setTextViewText(R.id.widget_title, if (nextBirthdays.size > 1) "Nächste Geburtstage" else "Nächster Geburtstag")
 
-                        // Wir befüllen die Zeilen der Reihe nach
                         nextBirthdays.forEachIndexed { index, contact ->
                             val nameId = when(index) { 0 -> R.id.widget_name_1; 1 -> R.id.widget_name_2; else -> R.id.widget_name_3 }
                             val daysId = when(index) { 0 -> R.id.widget_days_1; 1 -> R.id.widget_days_2; else -> R.id.widget_days_3 }
                             val rowId = when(index) { 0 -> R.id.row_1; 1 -> R.id.row_2; else -> R.id.row_3 }
 
-                            // Zeile sichtbar machen
                             views.setViewVisibility(rowId, android.view.View.VISIBLE)
-
                             views.setTextViewText(nameId, contact.name)
+                            
                             val daysText = when (contact.remainingDays) {
                                 0 -> "Heute! \uD83C\uDF82"
                                 1 -> "Morgen (wird ${contact.age})"
@@ -68,10 +66,9 @@ class BirthdayWidgetProvider : AppWidgetProvider() {
                             views.setTextViewText(daysId, daysText)
                         }
                     } else {
-                        // Falls gar keiner gefunden wurde, zeigen wir Zeile 1 mit Fehler an
                         views.setViewVisibility(R.id.row_1, android.view.View.VISIBLE)
                         views.setTextViewText(R.id.widget_name_1, "Keine Geburtstage")
-                        views.setTextViewText(R.id.widget_days_1, "")
+                        views.setTextViewText(R.id.widget_days_1, "Filter prüfen")
                     }
                 } else {
                     views.setViewVisibility(R.id.row_1, android.view.View.VISIBLE)
@@ -85,7 +82,9 @@ class BirthdayWidgetProvider : AppWidgetProvider() {
                 )
                 views.setOnClickPendingIntent(R.id.widget_root, pendingIntent)
 
-                appWidgetManager.updateAppWidget(appWidgetIds, views)
+                appWidgetIds.forEach { id ->
+                    appWidgetManager.updateAppWidget(id, views)
+                }
             } finally {
                 pendingResult.finish()
             }
