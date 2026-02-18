@@ -23,6 +23,10 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.heckmannch.birthdaybuddy.R
 
+/**
+ * Zeigt eine Überschrift für einen Einstellungsbereich an.
+ * @param title Der Text der Überschrift.
+ */
 @Composable
 fun SectionHeader(title: String) {
     Text(
@@ -33,6 +37,10 @@ fun SectionHeader(title: String) {
     )
 }
 
+/**
+ * Ein Basis-Container (Card) für Einstellungseinträge.
+ * @param content Die UI-Elemente, die innerhalb der Card angezeigt werden sollen.
+ */
 @Composable
 fun SettingsCard(content: @Composable ColumnScope.() -> Unit) {
     Card(
@@ -42,6 +50,10 @@ fun SettingsCard(content: @Composable ColumnScope.() -> Unit) {
     )
 }
 
+/**
+ * Eine komplette Einstellungs-Kachel bestehend aus einer Card und einer Zeile.
+ * Kombiniert [SettingsCard] und [SettingsBlockRow].
+ */
 @Composable
 fun SettingsBlock(title: String, subtitle: String, icon: ImageVector, containerColor: Color, onClick: () -> Unit) {
     SettingsCard {
@@ -49,6 +61,16 @@ fun SettingsBlock(title: String, subtitle: String, icon: ImageVector, containerC
     }
 }
 
+/**
+ * Ein standardisierter Listeneintrag für die Einstellungen.
+ * Enthält ein Icon links, Text in der Mitte und einen Pfeil rechts.
+ * 
+ * @param title Haupttitel der Einstellung.
+ * @param subtitle Zusätzliche Informationen oder aktueller Wert.
+ * @param icon Das anzuzeigende Icon.
+ * @param containerColor Hintergrundfarbe des Icons.
+ * @param onClick Aktion, die beim Klicken ausgeführt wird.
+ */
 @Composable
 fun SettingsBlockRow(title: String, subtitle: String, icon: ImageVector, containerColor: Color, onClick: () -> Unit) {
     ListItem(
@@ -56,6 +78,7 @@ fun SettingsBlockRow(title: String, subtitle: String, icon: ImageVector, contain
         headlineContent = { Text(title, fontWeight = FontWeight.SemiBold) },
         supportingContent = { Text(subtitle) },
         leadingContent = {
+            // Kreisrunder Hintergrund für das Icon
             Box(
                 modifier = Modifier.size(40.dp).background(containerColor, shape = CircleShape),
                 contentAlignment = Alignment.Center
@@ -63,11 +86,18 @@ fun SettingsBlockRow(title: String, subtitle: String, icon: ImageVector, contain
                 Icon(icon, null, modifier = Modifier.size(20.dp), tint = Color.White)
             }
         },
-        trailingContent = { Icon(Icons.AutoMirrored.Filled.KeyboardArrowRight, null, tint = MaterialTheme.colorScheme.outline) },
+        trailingContent = { 
+            // Standard "Weiter"-Pfeil
+            Icon(Icons.AutoMirrored.Filled.KeyboardArrowRight, null, tint = MaterialTheme.colorScheme.outline) 
+        },
         colors = ListItemDefaults.colors(containerColor = Color.Transparent)
     )
 }
 
+/**
+ * Fußzeile der Einstellungsseite.
+ * Zeigt die App-Version und einen Link zum GitHub-Repository.
+ */
 @Composable
 fun SettingsFooter(versionName: String, onGithubClick: () -> Unit) {
     Column(
@@ -83,6 +113,9 @@ fun SettingsFooter(versionName: String, onGithubClick: () -> Unit) {
     }
 }
 
+/**
+ * Dialog zur Auswahl der Anzahl der Personen, die im Widget angezeigt werden sollen.
+ */
 @Composable
 fun WidgetCountDialog(currentCount: Int, onDismiss: () -> Unit, onSelect: (Int) -> Unit) {
     AlertDialog(
@@ -90,6 +123,7 @@ fun WidgetCountDialog(currentCount: Int, onDismiss: () -> Unit, onSelect: (Int) 
         title = { Text("Widget Kapazität") },
         text = {
             Column {
+                // Auswahlmöglichkeiten 1, 2 oder 3 Personen
                 listOf(1, 2, 3).forEach { count ->
                     ListItem(
                         headlineContent = { Text("$count ${if (count == 1) "Person" else "Personen"}") },
@@ -103,6 +137,10 @@ fun WidgetCountDialog(currentCount: Int, onDismiss: () -> Unit, onSelect: (Int) 
     )
 }
 
+/**
+ * Ein separater Bildschirm zur Auswahl (Aktivierung/Deaktivierung) von Labels.
+ * Wird z.B. genutzt, um zu filtern, welche Geburtsstage im Widget erscheinen.
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun LabelSelectionScreen(
@@ -124,6 +162,7 @@ fun LabelSelectionScreen(
     ) { padding ->
         Column(modifier = Modifier.fillMaxSize().padding(padding)) {
             Text(description, style = MaterialTheme.typography.bodyMedium, modifier = Modifier.padding(16.dp), color = MaterialTheme.colorScheme.onSurfaceVariant)
+            
             if (isLoading) {
                 Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) { CircularProgressIndicator() }
             } else {
@@ -131,7 +170,10 @@ fun LabelSelectionScreen(
                     items(items = availableLabels.toList()) { label ->
                         ListItem(
                             headlineContent = { Text(label) },
-                            trailingContent = { Switch(checked = activeLabels.contains(label), onCheckedChange = { onToggle(label, it) }) }
+                            trailingContent = { 
+                                // Switch zum An-/Ausschalten des Labels
+                                Switch(checked = activeLabels.contains(label), onCheckedChange = { onToggle(label, it) }) 
+                            }
                         )
                     }
                 }
@@ -141,7 +183,12 @@ fun LabelSelectionScreen(
 }
 
 /**
- * Ein modernes "Drehrad" (Wheel Picker) für Zahlen.
+ * Ein modernes "Drehrad" (Wheel Picker) zur Auswahl von Zahlenwerten.
+ * Nutzt Snapping, damit das Rad immer auf einem Wert einrastet.
+ * 
+ * @param range Der Zahlenbereich (z.B. 0..23 für Stunden).
+ * @param initialValue Der am Anfang ausgewählte Wert.
+ * @param onValueChange Callback, wenn ein neuer Wert fixiert wird.
  */
 @Composable
 fun WheelPicker(
@@ -149,10 +196,12 @@ fun WheelPicker(
     initialValue: Int,
     onValueChange: (Int) -> Unit
 ) {
+    // State für die Liste und das Snapping-Verhalten
     val listState = rememberLazyListState(initialFirstVisibleItemIndex = range.indexOf(initialValue).coerceAtLeast(0))
     val flingBehavior = rememberSnapFlingBehavior(lazyListState = listState)
     val itemHeight = 48.dp
     
+    // Überwacht den Scroll-Status und meldet den Wert zurück, wenn das Scrollen stoppt
     LaunchedEffect(listState.isScrollInProgress) {
         if (!listState.isScrollInProgress) {
             val centeredIndex = listState.firstVisibleItemIndex
@@ -165,9 +214,10 @@ fun WheelPicker(
     Box(
         modifier = Modifier
             .fillMaxWidth()
-            .height(itemHeight * 3),
+            .height(itemHeight * 3), // Zeigt 3 Zeilen an (eine oben, eine mitte, eine unten)
         contentAlignment = Alignment.Center
     ) {
+        // Markierung des mittleren (ausgewählten) Bereichs
         Box(
             modifier = Modifier
                 .fillMaxWidth()
@@ -181,7 +231,7 @@ fun WheelPicker(
         LazyColumn(
             state = listState,
             flingBehavior = flingBehavior,
-            contentPadding = PaddingValues(vertical = itemHeight),
+            contentPadding = PaddingValues(vertical = itemHeight), // Padding, damit das erste/letzte Element mittig sein kann
             modifier = Modifier.fillMaxSize(),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {

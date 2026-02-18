@@ -22,12 +22,17 @@ import com.heckmannch.birthdaybuddy.components.*
 import com.heckmannch.birthdaybuddy.utils.*
 import kotlinx.coroutines.launch
 
+/**
+ * Hauptmenü der App-Einstellungen.
+ * Bietet eine Übersicht über Benachrichtigungen, Filter-Optionen und Widget-Konfigurationen.
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SettingsMenuScreen(onNavigate: (String) -> Unit, onBack: () -> Unit) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
     val filterManager = remember { FilterManager(context) }
+    // Verhalten für die TopAppBar, damit sie beim Scrollen einklappt
     val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
 
     val widgetCount by filterManager.widgetItemCountFlow.collectAsState(initial = 1)
@@ -47,10 +52,13 @@ fun SettingsMenuScreen(onNavigate: (String) -> Unit, onBack: () -> Unit) {
         }
     ) { padding ->
         Column(modifier = Modifier.fillMaxSize().padding(padding).padding(horizontal = 16.dp)) {
+            // Sektion für Alarme und Erinnerungen
             SectionHeader("Benachrichtigungen")
             SettingsBlock("Alarme", "Erinnerungszeiten konfigurieren", Icons.Default.Notifications, Color(0xFF4CAF50)) { onNavigate("settings_alarms") }
 
             Spacer(modifier = Modifier.height(16.dp))
+            
+            // Sektion für die Sichtbarkeit von Kontakten und Labels in der App
             SectionHeader("Filter & Sichtbarkeit")
             SettingsCard {
                 val menuOrange = Color(0xFFFF9800)
@@ -60,6 +68,8 @@ fun SettingsMenuScreen(onNavigate: (String) -> Unit, onBack: () -> Unit) {
             }
 
             Spacer(modifier = Modifier.height(16.dp))
+            
+            // Sektion für das Homescreen-Widget
             SectionHeader("Widget")
             SettingsCard {
                 val widgetBlue = Color(0xFF2196F3)
@@ -71,12 +81,15 @@ fun SettingsMenuScreen(onNavigate: (String) -> Unit, onBack: () -> Unit) {
             }
 
             Spacer(modifier = Modifier.weight(1f))
+            
+            // Footer mit Versionsnummer und Link zum GitHub-Repository
             SettingsFooter(versionName) {
                 context.startActivity(Intent(Intent.ACTION_VIEW, "https://github.com/Quiter/BirthdayBuddy".toUri()))
             }
         }
     }
 
+    // Dialog zur Auswahl der Anzahl der im Widget anzuzeigenden Personen
     if (showCountDialog) {
         WidgetCountDialog(widgetCount, onDismiss = { showCountDialog = false }) { count ->
             scope.launch {
@@ -88,6 +101,10 @@ fun SettingsMenuScreen(onNavigate: (String) -> Unit, onBack: () -> Unit) {
     }
 }
 
+/**
+ * Bildschirm zur Konfiguration der Alarmzeiten.
+ * Nutzer können die Uhrzeit und die Tage vor dem Geburtstag (Vorlaufzeit) einstellen.
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AlarmsScreen(filterManager: FilterManager, onBack: () -> Unit) {
@@ -118,6 +135,7 @@ fun AlarmsScreen(filterManager: FilterManager, onBack: () -> Unit) {
     ) { padding ->
         Column(modifier = Modifier.fillMaxSize().padding(padding)) {
             SectionHeader("Uhrzeit")
+            // Zeigt die aktuell eingestellte Zeit an und öffnet bei Klick den Picker
             ListItem(
                 headlineContent = { Text("Standard-Uhrzeit") },
                 supportingContent = { Text(String.format(java.util.Locale.getDefault(), "%02d:%02d Uhr", notifHour, notifMinute)) },
@@ -129,6 +147,7 @@ fun AlarmsScreen(filterManager: FilterManager, onBack: () -> Unit) {
             val sortedDays = notifDaysSet.mapNotNull { it.toIntOrNull() }.sorted()
             LazyColumn(modifier = Modifier.weight(1f)) {
                 items(sortedDays) { day ->
+                    // Formatiert die Anzeige der Tage (z.B. "Am Tag", "1 Tag vorher", "X Wochen vorher")
                     val text = when {
                         day == 0 -> "Am Tag des Geburtstags"
                         day == 1 -> "1 Tag vorher"
@@ -153,6 +172,7 @@ fun AlarmsScreen(filterManager: FilterManager, onBack: () -> Unit) {
         }
     }
 
+    // Material 3 TimePicker Dialog
     if (showTimePicker) {
         AlertDialog(
             onDismissRequest = { showTimePicker = false },
@@ -170,6 +190,7 @@ fun AlarmsScreen(filterManager: FilterManager, onBack: () -> Unit) {
         )
     }
 
+    // Dialog zum Hinzufügen einer neuen Vorlaufzeit (Tage vorher)
     if (showAddDayDialog) {
         AlertDialog(
             onDismissRequest = { showAddDayDialog = false },
@@ -194,6 +215,9 @@ fun AlarmsScreen(filterManager: FilterManager, onBack: () -> Unit) {
     }
 }
 
+/**
+ * Filter-Bildschirm: Labels komplett aus der App blockieren.
+ */
 @Composable fun BlockLabelsScreen(f: FilterManager, a: Set<String>, l: Boolean, b: () -> Unit) {
     val labels by f.excludedLabelsFlow.collectAsState(initial = emptySet())
     val scope = rememberCoroutineScope()
@@ -204,10 +228,12 @@ fun AlarmsScreen(filterManager: FilterManager, onBack: () -> Unit) {
     }, b)
 }
 
+/**
+ * Filter-Bildschirm: Labels im Seitenmenü (Drawer) ein-/ausblenden.
+ */
 @Composable fun HideLabelsScreen(f: FilterManager, a: Set<String>, l: Boolean, b: () -> Unit) {
     val selectedLabels by f.selectedLabelsFlow.collectAsState(initial = emptySet())
     val scope = rememberCoroutineScope()
-    // Whitelist Logik: Switch ON = Label ist in SELECTED_LABELS
     LabelSelectionScreen("Anzeigen", "Diese Labels im Seitenmenü anzeigen.", a, selectedLabels, l, { label, checked ->
         val newSet = selectedLabels.toMutableSet()
         if (checked) newSet.add(label) else newSet.remove(label)
@@ -215,11 +241,13 @@ fun AlarmsScreen(filterManager: FilterManager, onBack: () -> Unit) {
     }, b)
 }
 
+/**
+ * Filter-Bildschirm: Labels festlegen, die im Widget erscheinen sollen (Whitelist).
+ */
 @Composable fun WidgetIncludeLabelsScreen(f: FilterManager, a: Set<String>, l: Boolean, b: () -> Unit) {
     val context = LocalContext.current
     val selectedLabels by f.widgetSelectedLabelsFlow.collectAsState(initial = emptySet())
     val scope = rememberCoroutineScope()
-    // Whitelist Logik: Switch ON = Label ist in WIDGET_SELECTED_LABELS
     LabelSelectionScreen("Anzeigen", "Diese Labels im Widget anzeigen.", a, selectedLabels, l, { label, checked ->
         val newSet = selectedLabels.toMutableSet()
         if (checked) newSet.add(label) else newSet.remove(label)
@@ -230,6 +258,9 @@ fun AlarmsScreen(filterManager: FilterManager, onBack: () -> Unit) {
     }, b)
 }
 
+/**
+ * Filter-Bildschirm: Labels festlegen, die im Widget ignoriert werden sollen (Blacklist).
+ */
 @Composable fun WidgetExcludeLabelsScreen(f: FilterManager, a: Set<String>, l: Boolean, b: () -> Unit) {
     val context = LocalContext.current
     val labels by f.widgetExcludedLabelsFlow.collectAsState(initial = emptySet())

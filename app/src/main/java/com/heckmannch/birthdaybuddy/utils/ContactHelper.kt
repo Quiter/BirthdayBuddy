@@ -7,18 +7,27 @@ import android.provider.ContactsContract
 import com.heckmannch.birthdaybuddy.model.BirthdayContact
 import com.heckmannch.birthdaybuddy.model.ContactActions
 
+/**
+ * Durchsucht das Android-Telefonbuch nach allen Kontakten, die ein Geburtsdatum hinterlegt haben.
+ *
+ * @param context Der App-Kontext für den Zugriff auf den ContentResolver.
+ * @return Eine Liste von [BirthdayContact] Objekten mit Namen, Datum, Labels und Kontaktmöglichkeiten.
+ */
 fun fetchBirthdays(context: Context): List<BirthdayContact> {
     val contactList = mutableListOf<BirthdayContact>()
 
+    // Definition der Spalten, die wir aus der Kontaktdatenbank lesen wollen
     val projection = arrayOf(
         ContactsContract.CommonDataKinds.Event.CONTACT_ID,
         ContactsContract.CommonDataKinds.Event.DISPLAY_NAME,
         ContactsContract.CommonDataKinds.Event.START_DATE
     )
 
+    // Filter: Wir suchen nach Daten vom Typ "Event", die speziell ein "Geburtstag" sind
     val selection = "${ContactsContract.Data.MIMETYPE} = ? AND ${ContactsContract.CommonDataKinds.Event.TYPE} = ${ContactsContract.CommonDataKinds.Event.TYPE_BIRTHDAY}"
     val selectionArgs = arrayOf(ContactsContract.CommonDataKinds.Event.CONTENT_ITEM_TYPE)
 
+    // Abfrage der Kontaktdatenbank
     context.contentResolver.query(
         ContactsContract.Data.CONTENT_URI,
         projection,
@@ -35,10 +44,12 @@ fun fetchBirthdays(context: Context): List<BirthdayContact> {
             val name = cursor.getString(nameIdx) ?: "Unbekannt"
             val bday = cursor.getString(bdayIdx) ?: ""
 
+            // Konstruiert die URI zum Profilbild des Kontakts
             val photoUri = ContentUris.withAppendedId(ContactsContract.Contacts.CONTENT_URI, contactId.toLong()).let {
                 Uri.withAppendedPath(it, ContactsContract.Contacts.Photo.CONTENT_DIRECTORY).toString()
             }
 
+            // Holt zusätzliche Informationen wie Labels und Messenger-Accounts
             val labels = getContactLabels(context, contactId)
             val (age, remainingDays) = calculateAgeAndDays(bday)
             val actions = getContactActions(context, contactId)
@@ -49,9 +60,13 @@ fun fetchBirthdays(context: Context): List<BirthdayContact> {
     return contactList
 }
 
+/**
+ * Ermittelt alle Labels (Kontaktgruppen), denen ein spezifischer Kontakt zugeordnet ist.
+ */
 private fun getContactLabels(context: Context, contactId: String): List<String> {
     val groupIds = mutableListOf<String>()
 
+    // Schritt 1: IDs der Gruppen finden, in denen der Kontakt Mitglied ist
     context.contentResolver.query(
         ContactsContract.Data.CONTENT_URI,
         arrayOf(ContactsContract.CommonDataKinds.GroupMembership.GROUP_ROW_ID),
@@ -70,6 +85,7 @@ private fun getContactLabels(context: Context, contactId: String): List<String> 
     val labels = mutableListOf<String>()
     val placeholders = groupIds.joinToString(",") { "?" }
 
+    // Schritt 2: Die lesbaren Namen (Titel) zu den gefundenen Gruppen-IDs abfragen
     context.contentResolver.query(
         ContactsContract.Groups.CONTENT_URI,
         arrayOf(ContactsContract.Groups.TITLE),
@@ -88,6 +104,10 @@ private fun getContactLabels(context: Context, contactId: String): List<String> 
     return labels.ifEmpty { listOf("Ohne Label") }
 }
 
+/**
+ * Durchsucht alle Datenfelder eines Kontakts nach Telefonnummern, E-Mails
+ * und Profilen von Messengern (WhatsApp, Signal, Telegram).
+ */
 private fun getContactActions(context: Context, contactId: String): ContactActions {
     var phone: String? = null
     var email: String? = null
@@ -110,8 +130,11 @@ private fun getContactActions(context: Context, contactId: String): ContactActio
             val data1 = cursor.getString(data1Idx)
 
             when (mime) {
+                // Standard Telefonnummer
                 ContactsContract.CommonDataKinds.Phone.CONTENT_ITEM_TYPE -> if (phone == null) phone = data1
+                // Standard E-Mail
                 ContactsContract.CommonDataKinds.Email.CONTENT_ITEM_TYPE -> if (email == null) email = data1
+                // Spezifische Mime-Types für Messenger-Integrationen
                 "vnd.android.cursor.item/vnd.com.whatsapp.profile" -> hasWA = true
                 "vnd.android.cursor.item/vnd.org.thoughtcrime.securesms.contact" -> hasSig = true
                 "vnd.android.cursor.item/vnd.org.telegram.messenger.android.profile" -> hasTG = true

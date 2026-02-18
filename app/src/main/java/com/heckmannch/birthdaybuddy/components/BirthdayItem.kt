@@ -61,6 +61,14 @@ import com.heckmannch.birthdaybuddy.R
 import com.heckmannch.birthdaybuddy.model.BirthdayContact
 import com.heckmannch.birthdaybuddy.utils.formatGermanDate
 
+/**
+ * Ein einzelner Eintrag in der Geburtstagsliste.
+ * Zeigt Profilbild, Name, Geburtsdatum, Alter und die verbleibenden Tage an.
+ * Beim Klicken klappt der Eintrag auf und zeigt verschiedene Kontakt-Möglichkeiten (Anruf, WhatsApp, etc.).
+ *
+ * @param contact Das Datenobjekt des Kontakts.
+ * @param modifier Zusätzliche Modifier für das Layout.
+ */
 @Composable
 fun BirthdayItem(
     contact: BirthdayContact,
@@ -72,9 +80,11 @@ fun BirthdayItem(
     val isDark = isSystemInDarkTheme()
     val isBirthdayToday = contact.remainingDays == 0
 
+    // Farben für das "Geburtstags-Highlight"
     val goldColor = Color(0xFFFFD700)
     val darkGoldColor = Color(0xFFFFB300)
 
+    // Formatiert den Text für das Alter mit dynamischer Farbe
     val ageText = remember(contact.age, isDark) {
         buildAnnotatedString {
             append("Wird ")
@@ -84,6 +94,7 @@ fun BirthdayItem(
         }
     }
 
+    // Formatiert den Text für die verbleibenden Tage
     val remainingDaysText = remember(contact.remainingDays, isDark) {
         buildAnnotatedString {
             append("in ")
@@ -94,6 +105,7 @@ fun BirthdayItem(
         }
     }
 
+    // Spezieller Rahmen, wenn die Person heute Geburtstag hat
     val birthdayModifier = if (isBirthdayToday) {
         Modifier.border(
             BorderStroke(
@@ -114,6 +126,7 @@ fun BirthdayItem(
             .padding(horizontal = 16.dp, vertical = 6.dp)
             .then(birthdayModifier)
             .clickable {
+                // Schließt die Tastatur, falls die Suche noch aktiv war
                 keyboardController?.hide()
                 expanded = !expanded
             },
@@ -137,6 +150,7 @@ fun BirthdayItem(
                 )
             )
         ) {
+            // Oberer Bereich: Profilbild und Stammdaten
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -144,6 +158,7 @@ fun BirthdayItem(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
+                // Kontaktbild via Coil-Library laden
                 AsyncImage(
                     model = contact.photoUri,
                     contentDescription = "Profilbild von ${contact.name}",
@@ -173,6 +188,7 @@ fun BirthdayItem(
                     )
                 }
 
+                // Rechts: Alter und Tage-Countdown
                 Column(horizontalAlignment = Alignment.End) {
                     Text(
                         text = ageText,
@@ -188,6 +204,7 @@ fun BirthdayItem(
                 }
             }
 
+            // Ausgeklappter Bereich: Kontakt-Aktionen
             if (expanded) {
                 HorizontalDivider(
                     modifier = Modifier.padding(horizontal = 16.dp),
@@ -203,6 +220,7 @@ fun BirthdayItem(
                 ) {
                     val actions = contact.actions
 
+                    // Telefon & SMS
                     if (actions.phoneNumber != null) {
                         IconButton(onClick = {
                             context.startActivity(Intent(Intent.ACTION_DIAL, Uri.parse("tel:${actions.phoneNumber}")))
@@ -216,6 +234,7 @@ fun BirthdayItem(
                         }
                     }
 
+                    // E-Mail
                     if (actions.email != null) {
                         IconButton(onClick = {
                             context.startActivity(Intent(Intent.ACTION_SENDTO, Uri.parse("mailto:${actions.email}")))
@@ -224,6 +243,7 @@ fun BirthdayItem(
                         }
                     }
 
+                    // WhatsApp Integration
                     if (actions.hasWhatsApp && actions.phoneNumber != null) {
                         MessengerIcon(
                             text = "WA", 
@@ -236,11 +256,13 @@ fun BirthdayItem(
                             try {
                                 context.startActivity(intent)
                             } catch (e: Exception) {
+                                // Fallback falls App nicht installiert ist (Web-Link)
                                 context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse("https://wa.me/$cleanNumber")))
                             }
                         }
                     }
 
+                    // Signal Integration
                     if (actions.hasSignal && actions.phoneNumber != null) {
                         MessengerIcon(
                             text = "SIG", 
@@ -248,13 +270,11 @@ fun BirthdayItem(
                             iconRes = R.drawable.ic_signal
                         ) {
                             val cleanNumber = actions.phoneNumber.replace(Regex("[^0-9+]"), "")
-                            // Methode 1: Direktes Paket ansprechen (am stabilsten)
                             val intent = Intent(Intent.ACTION_SENDTO, Uri.parse("smsto:$cleanNumber"))
                             intent.setPackage("org.thoughtcrime.securesms")
                             try {
                                 context.startActivity(intent)
                             } catch (e: Exception) {
-                                // Methode 2: Universal Link als Fallback
                                 try {
                                     context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse("https://signal.me/#p/$cleanNumber")))
                                 } catch (e2: Exception) {
@@ -264,6 +284,7 @@ fun BirthdayItem(
                         }
                     }
 
+                    // Telegram Integration
                     if (actions.hasTelegram && actions.phoneNumber != null) {
                         MessengerIcon(text = "TG", color = Color(0xFF0088CC)) {
                             val cleanNumber = actions.phoneNumber.replace(Regex("[^0-9+]"), "")
@@ -281,6 +302,7 @@ fun BirthdayItem(
                         }
                     }
 
+                    // Fallback falls gar keine Infos da sind
                     if (actions.phoneNumber == null && actions.email == null && !actions.hasWhatsApp && !actions.hasSignal && !actions.hasTelegram) {
                         Text(
                             "Keine Kontaktdaten hinterlegt",
@@ -295,6 +317,9 @@ fun BirthdayItem(
     }
 }
 
+/**
+ * Ein kleines rundes Icon für Messenger-Aktionen.
+ */
 @Composable
 private fun MessengerIcon(
     text: String, 
@@ -323,6 +348,9 @@ private fun MessengerIcon(
     }
 }
 
+/**
+ * Berechnet eine Farbe für das Alter (von Hellrot zu Dunkelrot basierend auf dem Alter).
+ */
 private fun getAgeColorRaw(age: Int, isDark: Boolean): Color {
     val youngColor = if (isDark) Color(0xFFFFA4A4) else Color(0xFFFF5252)
     val oldColor = if (isDark) Color(0xFFD32F2F) else Color(0xFF8B0000)
@@ -331,6 +359,9 @@ private fun getAgeColorRaw(age: Int, isDark: Boolean): Color {
     return lerp(youngColor, oldColor, fraction)
 }
 
+/**
+ * Berechnet eine Farbe für die verbleibenden Tage (Gelb für heute, Hellblau zu Dunkelblau für die Ferne).
+ */
 private fun getDaysColorRaw(days: Int, isDark: Boolean): Color {
     if (days == 0) return Color(0xFFFFC107)
     val nearColor = if (isDark) Color(0xFF80D8FF) else Color(0xFF00BFFF)
