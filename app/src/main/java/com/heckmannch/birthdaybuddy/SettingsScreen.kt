@@ -6,17 +6,18 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import com.heckmannch.birthdaybuddy.components.*
 import com.heckmannch.birthdaybuddy.utils.*
@@ -46,10 +47,7 @@ fun SettingsMenuScreen(onNavigate: (String) -> Unit, onBack: () -> Unit) {
             )
         }
     ) { padding ->
-        Column(modifier = Modifier
-            .fillMaxSize()
-            .padding(padding)
-            .padding(horizontal = 16.dp)) {
+        Column(modifier = Modifier.fillMaxSize().padding(padding).padding(horizontal = 16.dp)) {
             SectionHeader("Benachrichtigungen")
             SettingsBlock("Alarme", "Erinnerungszeiten konfigurieren", Icons.Default.Notifications, Color(0xFF4CAF50)) { onNavigate("settings_alarms") }
 
@@ -120,9 +118,7 @@ fun AlarmsScreen(filterManager: FilterManager, onBack: () -> Unit) {
             )
         }
     ) { padding ->
-        Column(modifier = Modifier
-            .fillMaxSize()
-            .padding(padding)) {
+        Column(modifier = Modifier.fillMaxSize().padding(padding)) {
             SectionHeader("Uhrzeit")
             ListItem(
                 headlineContent = { Text("Standard-Uhrzeit") },
@@ -150,10 +146,54 @@ fun AlarmsScreen(filterManager: FilterManager, onBack: () -> Unit) {
             }
         }
     }
-    // ... Dialoge für TimePicker und AddDay bleiben hier (identisch zu vorher) ...
+
+    if (showTimePicker) {
+        AlertDialog(
+            onDismissRequest = { showTimePicker = false },
+            title = { Text("Erinnerungszeit wählen") },
+            text = { Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) { TimePicker(state = timePickerState) } },
+            confirmButton = {
+                TextButton(onClick = {
+                    scope.launch {
+                        filterManager.saveNotificationTime(timePickerState.hour, timePickerState.minute)
+                        showTimePicker = false
+                    }
+                }) { Text("Speichern") }
+            },
+            dismissButton = { TextButton(onClick = { showTimePicker = false }) { Text("Abbrechen") } }
+        )
+    }
+
+    if (showAddDayDialog) {
+        AlertDialog(
+            onDismissRequest = { showAddDayDialog = false },
+            title = { Text("Vorlaufzeit hinzufügen") },
+            text = {
+                OutlinedTextField(
+                    value = newDayInput,
+                    onValueChange = { if (it.all { char -> char.isDigit() }) newDayInput = it },
+                    label = { Text("Tage vorher") },
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                    singleLine = true,
+                    modifier = Modifier.fillMaxWidth()
+                )
+            },
+            confirmButton = {
+                TextButton(onClick = {
+                    newDayInput.toIntOrNull()?.let {
+                        val newSet = notifDaysSet.toMutableSet()
+                        newSet.add(it.toString())
+                        scope.launch { filterManager.saveNotificationDays(newSet) }
+                    }
+                    newDayInput = ""
+                    showAddDayDialog = false
+                }) { Text("Speichern") }
+            },
+            dismissButton = { TextButton(onClick = { showAddDayDialog = false }) { Text("Abbrechen") } }
+        )
+    }
 }
 
-// Navigations-Wrapper
 @Composable fun BlockLabelsScreen(f: FilterManager, a: Set<String>, l: Boolean, b: () -> Unit) {
     val labels by f.excludedLabelsFlow.collectAsState(initial = emptySet())
     val scope = rememberCoroutineScope()
