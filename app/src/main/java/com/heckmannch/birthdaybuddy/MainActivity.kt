@@ -96,12 +96,10 @@ class MainActivity : ComponentActivity() {
      * damit das System weiß, wie Benachrichtigungen priorisiert werden sollen.
      */
     private fun createNotificationChannel() {
-        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
-            val name = "Geburtstags-Erinnerungen"
-            val channel = android.app.NotificationChannel("birthday_channel", name, android.app.NotificationManager.IMPORTANCE_HIGH).apply {
-                description = "Benachrichtigungen für anstehende Geburtstage"
-            }
-            getSystemService(android.app.NotificationManager::class.java)?.createNotificationChannel(channel)
+        val name = "Geburtstags-Erinnerungen"
+        val channel = android.app.NotificationChannel("birthday_channel", name, android.app.NotificationManager.IMPORTANCE_HIGH).apply {
+            description = "Benachrichtigungen für anstehende Geburtstage"
         }
+        getSystemService(android.app.NotificationManager::class.java)?.createNotificationChannel(channel)
     }
 }
