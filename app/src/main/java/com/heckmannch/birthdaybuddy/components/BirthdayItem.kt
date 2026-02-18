@@ -2,6 +2,7 @@ package com.heckmannch.birthdaybuddy.components
 
 import android.content.Intent
 import android.net.Uri
+import android.widget.Toast
 import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.spring
@@ -48,6 +49,7 @@ import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
@@ -55,6 +57,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
+import com.heckmannch.birthdaybuddy.R
 import com.heckmannch.birthdaybuddy.model.BirthdayContact
 import com.heckmannch.birthdaybuddy.utils.formatGermanDate
 
@@ -222,21 +225,59 @@ fun BirthdayItem(
                     }
 
                     if (actions.hasWhatsApp && actions.phoneNumber != null) {
-                        MessengerIcon(text = "WA", color = Color(0xFF25D366)) {
+                        MessengerIcon(
+                            text = "WA", 
+                            color = Color(0xFF25D366),
+                            iconRes = R.drawable.ic_whatsapp
+                        ) {
                             val cleanNumber = actions.phoneNumber.replace(Regex("[^0-9+]"), "")
-                            context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse("https://wa.me/$cleanNumber")))
+                            val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://wa.me/$cleanNumber"))
+                            intent.setPackage("com.whatsapp")
+                            try {
+                                context.startActivity(intent)
+                            } catch (e: Exception) {
+                                context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse("https://wa.me/$cleanNumber")))
+                            }
                         }
                     }
 
                     if (actions.hasSignal && actions.phoneNumber != null) {
-                        MessengerIcon(text = "SIG", color = Color(0xFF3A76F0)) {
-                            try { context.startActivity(Intent(Intent.ACTION_SENDTO, Uri.parse("smsto:${actions.phoneNumber}")).setPackage("org.thoughtcrime.securesms")) } catch (e: Exception) { /* Ignored */ }
+                        MessengerIcon(
+                            text = "SIG", 
+                            color = Color(0xFF3A76F0),
+                            iconRes = R.drawable.ic_signal
+                        ) {
+                            val cleanNumber = actions.phoneNumber.replace(Regex("[^0-9+]"), "")
+                            // Methode 1: Direktes Paket ansprechen (am stabilsten)
+                            val intent = Intent(Intent.ACTION_SENDTO, Uri.parse("smsto:$cleanNumber"))
+                            intent.setPackage("org.thoughtcrime.securesms")
+                            try {
+                                context.startActivity(intent)
+                            } catch (e: Exception) {
+                                // Methode 2: Universal Link als Fallback
+                                try {
+                                    context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse("https://signal.me/#p/$cleanNumber")))
+                                } catch (e2: Exception) {
+                                    Toast.makeText(context, "Signal konnte nicht geöffnet werden", Toast.LENGTH_SHORT).show()
+                                }
+                            }
                         }
                     }
 
                     if (actions.hasTelegram && actions.phoneNumber != null) {
                         MessengerIcon(text = "TG", color = Color(0xFF0088CC)) {
-                            try { context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse("tg://msg?to=${actions.phoneNumber}"))) } catch (e: Exception) { /* Ignored */ }
+                            val cleanNumber = actions.phoneNumber.replace(Regex("[^0-9+]"), "")
+                            val intent = Intent(Intent.ACTION_VIEW, Uri.parse("tg://msg?to=$cleanNumber"))
+                            intent.setPackage("org.telegram.messenger")
+                            try {
+                                context.startActivity(intent)
+                            } catch (e: Exception) {
+                                try {
+                                    context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse("tg://msg?to=$cleanNumber")))
+                                } catch (e2: Exception) {
+                                    Toast.makeText(context, "Telegram konnte nicht geöffnet werden", Toast.LENGTH_SHORT).show()
+                                }
+                            }
                         }
                     }
 
@@ -255,7 +296,12 @@ fun BirthdayItem(
 }
 
 @Composable
-private fun MessengerIcon(text: String, color: Color, onClick: () -> Unit) {
+private fun MessengerIcon(
+    text: String, 
+    color: Color, 
+    iconRes: Int? = null,
+    onClick: () -> Unit
+) {
     Box(
         modifier = Modifier
             .size(40.dp)
@@ -264,7 +310,16 @@ private fun MessengerIcon(text: String, color: Color, onClick: () -> Unit) {
             .clickable { onClick() },
         contentAlignment = Alignment.Center
     ) {
-        Text(text, color = color, fontWeight = FontWeight.ExtraBold, style = MaterialTheme.typography.labelSmall)
+        if (iconRes != null) {
+            Icon(
+                painter = painterResource(id = iconRes),
+                contentDescription = text,
+                tint = Color.Unspecified,
+                modifier = Modifier.size(24.dp)
+            )
+        } else {
+            Text(text, color = color, fontWeight = FontWeight.ExtraBold, style = MaterialTheme.typography.labelSmall)
+        }
     }
 }
 
