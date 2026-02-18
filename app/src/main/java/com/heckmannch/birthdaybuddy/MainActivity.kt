@@ -17,7 +17,6 @@ import kotlinx.coroutines.withContext
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
         createNotificationChannel()
         enableEdgeToEdge()
 
@@ -28,54 +27,52 @@ class MainActivity : ComponentActivity() {
 
                 NavHost(navController = navController, startDestination = "main") {
 
-                    composable("main") {
-                        MainScreen(
-                            filterManager = filterManager,
-                            onNavigateToSettings = { navController.navigate("settings") }
-                        )
-                    }
+                    composable("main") { MainScreen(filterManager) { navController.navigate("settings") } }
 
-                    composable("settings") {
-                        SettingsMenuScreen(
-                            onNavigate = { route -> navController.navigate(route) },
-                            onBack = { navController.popBackStack() }
-                        )
-                    }
+                    composable("settings") { SettingsMenuScreen({ navController.navigate(it) }, { navController.popBackStack() }) }
 
-                    // 3. Unterseite: Blockieren
                     composable("settings_block") {
                         var availableLabels by remember { mutableStateOf<Set<String>>(emptySet()) }
-                        var isLoading by remember { mutableStateOf(true) } // NEU: Lade-Status
-
+                        var isLoading by remember { mutableStateOf(true) }
                         LaunchedEffect(Unit) {
-                            withContext(Dispatchers.IO) {
-                                val contacts = fetchBirthdays(this@MainActivity)
-                                availableLabels = contacts.flatMap { it.labels }.toSortedSet()
-                            }
-                            isLoading = false // NEU: Laden beendet!
+                            withContext(Dispatchers.IO) { availableLabels = fetchBirthdays(this@MainActivity).flatMap { it.labels }.toSortedSet() }
+                            isLoading = false
                         }
-
                         BlockLabelsScreen(filterManager, availableLabels, isLoading) { navController.popBackStack() }
                     }
 
-                    // 4. Unterseite: Verstecken
                     composable("settings_hide") {
                         var availableLabels by remember { mutableStateOf<Set<String>>(emptySet()) }
-                        var isLoading by remember { mutableStateOf(true) } // NEU: Lade-Status
-
+                        var isLoading by remember { mutableStateOf(true) }
                         LaunchedEffect(Unit) {
-                            withContext(Dispatchers.IO) {
-                                val contacts = fetchBirthdays(this@MainActivity)
-                                availableLabels = contacts.flatMap { it.labels }.toSortedSet()
-                            }
-                            isLoading = false // NEU: Laden beendet!
+                            withContext(Dispatchers.IO) { availableLabels = fetchBirthdays(this@MainActivity).flatMap { it.labels }.toSortedSet() }
+                            isLoading = false
                         }
-
                         HideLabelsScreen(filterManager, availableLabels, isLoading) { navController.popBackStack() }
                     }
 
-                    composable("settings_alarms") {
-                        AlarmsScreen(filterManager) { navController.popBackStack() }
+                    composable("settings_alarms") { AlarmsScreen(filterManager) { navController.popBackStack() } }
+
+                    // NEU: Route für Widget Include
+                    composable("settings_widget_include") {
+                        var availableLabels by remember { mutableStateOf<Set<String>>(emptySet()) }
+                        var isLoading by remember { mutableStateOf(true) }
+                        LaunchedEffect(Unit) {
+                            withContext(Dispatchers.IO) { availableLabels = fetchBirthdays(this@MainActivity).flatMap { it.labels }.toSortedSet() }
+                            isLoading = false
+                        }
+                        WidgetIncludeLabelsScreen(filterManager, availableLabels, isLoading) { navController.popBackStack() }
+                    }
+
+                    // NEU: Route für Widget Exclude
+                    composable("settings_widget_exclude") {
+                        var availableLabels by remember { mutableStateOf<Set<String>>(emptySet()) }
+                        var isLoading by remember { mutableStateOf(true) }
+                        LaunchedEffect(Unit) {
+                            withContext(Dispatchers.IO) { availableLabels = fetchBirthdays(this@MainActivity).flatMap { it.labels }.toSortedSet() }
+                            isLoading = false
+                        }
+                        WidgetExcludeLabelsScreen(filterManager, availableLabels, isLoading) { navController.popBackStack() }
                     }
                 }
             }
@@ -85,15 +82,10 @@ class MainActivity : ComponentActivity() {
     private fun createNotificationChannel() {
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
             val name = "Geburtstags-Erinnerungen"
-            val descriptionText = "Benachrichtigungen für anstehende Geburtstage"
-            val importance = android.app.NotificationManager.IMPORTANCE_HIGH
-            val channel = android.app.NotificationChannel("birthday_channel", name, importance).apply {
-                description = descriptionText
+            val channel = android.app.NotificationChannel("birthday_channel", name, android.app.NotificationManager.IMPORTANCE_HIGH).apply {
+                description = "Benachrichtigungen für anstehende Geburtstage"
             }
-
-            val notificationManager: android.app.NotificationManager =
-                getSystemService(android.content.Context.NOTIFICATION_SERVICE) as android.app.NotificationManager
-            notificationManager.createNotificationChannel(channel)
+            getSystemService(android.app.NotificationManager::class.java)?.createNotificationChannel(channel)
         }
     }
 }

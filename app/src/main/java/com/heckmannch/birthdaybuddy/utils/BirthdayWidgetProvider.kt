@@ -19,56 +19,87 @@ import kotlinx.coroutines.launch
 class BirthdayWidgetProvider : AppWidgetProvider() {
 
     override fun onUpdate(context: Context, appWidgetManager: AppWidgetManager, appWidgetIds: IntArray) {
-        // goAsync erlaubt uns das Auslesen der Datenbank im Hintergrund
         val pendingResult = goAsync()
 
         CoroutineScope(Dispatchers.IO).launch {
             try {
-                // Wir holen uns das Layout, das wir gerade in XML gebaut haben
                 val views = RemoteViews(context.packageName, R.layout.widget_layout)
 
-                // Dürfen wir Kontakte lesen?
                 if (ContextCompat.checkSelfPermission(context, Manifest.permission.READ_CONTACTS) == PackageManager.PERMISSION_GRANTED) {
                     val filterManager = FilterManager(context)
-                    val excluded = filterManager.excludedLabelsFlow.first()
+
+                    val included = filterManager.widgetIncludedLabelsFlow.first()
+                    val excluded = filterManager.widgetExcludedLabelsFlow.first()
+                    // NEU: Auslesen, wie viele angezeigt werden sollen
+                    val itemCount = filterManager.widgetItemCountFlow.first()
 
                     val contacts = fetchBirthdays(context)
 
-                    // Wir filtern geblockte Labels raus und schnappen uns den, der als erstes dran ist!
-                    val nextBirthday = contacts.filter { contact ->
-                        !contact.labels.any { label -> excluded.contains(label) }
-                    }.minByOrNull { it.remainingDays }
+                    // NEU: Sortieren und exakt X Stück abschneiden (.take)
+                    val nextBirthdays = contacts.filter { contact ->
+                        val hasActiveLabel = if (included.contains("ALL_DEFAULT")) true else contact.labels.any { label -> included.contains(label) }
+                        val isBlacklisted = contact.labels.any { label -> excluded.contains(label) }
+                        hasActiveLabel && !isBlacklisted
+                    }.sortedBy { it.remainingDays }.take(itemCount)
 
-                    if (nextBirthday != null) {
-                        views.setTextViewText(R.id.widget_name, nextBirthday.name)
+                    // Erstmal alle 3 Zeilen sicherheitshalber unsichtbar machen
+                    views.setViewVisibility(R.id.row_1, android.view.View.GONE)
+                    views.setViewVisibility(R.id.row_2, android.view.View.GONE)
+                    views.setViewVisibility(R.id.row_3, android.view.View.GONE)
 
-                        val daysText = when (nextBirthday.remainingDays) {
-                            0 -> "Heute! \uD83C\uDF82"
-                            1 -> "Morgen (wird ${nextBirthday.age})"
-                            else -> "In ${nextBirthday.remainingDays} Tagen (wird ${nextBirthday.age})"
+                    if (nextBirthdays.isNotEmpty()) {
+                        views.setTextViewText(R.id.widget_title, if (nextBirthdays.size > 1) "Nächste Geburtstage:" else "Nächster Geburtstag:")
+
+                        // Wir befüllen die Zeilen der Reihe nach
+                        nextBirthdays.forEachIndexed { index, contact ->
+                            val nameId = when(index) { 0 -> R.id.widget_name_1; 1 -> R.id.widget_name_2; else -> R.id.widget_name_3 }
+                            val daysId = when(index) { 0 -> R.id.widget_days_1; 1 -> R.id.widget_days_2; else -> R.id.widget_days_3 }
+                            val rowId = when(index) { 0 -> R.id.row_1; 1 -> R.id.row_2; else -> R.id.row_3 }
+
+                            // Zeile sichtbar machen
+                            views.setViewVisibility(rowId, android.view.View.VISIBLE)
+
+                            views.setTextViewText(nameId, contact.name)
+                            val daysText = when (contact.remainingDays) {
+                                0 -> "Heute! \uD83C\uDF82"
+                                1 -> "Morgen (wird ${contact.age})"
+                                else -> "In ${contact.remainingDays} Tagen (wird ${contact.age})"
+                            }
+                            views.setTextViewText(daysId, daysText)
                         }
-                        views.setTextViewText(R.id.widget_days, daysText)
                     } else {
-                        views.setTextViewText(R.id.widget_name, "Keine Geburtstage")
-                        views.setTextViewText(R.id.widget_days, "")
+                        // Falls gar keiner gefunden wurde, zeigen wir Zeile 1 mit Fehler an
+                        views.setViewVisibility(R.id.row_1, android.view.View.VISIBLE)
+                        views.setTextViewText(R.id.widget_name_1, "Keine Geburtstage")
+                        views.setTextViewText(R.id.widget_days_1, "")
                     }
                 } else {
-                    views.setTextViewText(R.id.widget_name, "App öffnen")
-                    views.setTextViewText(R.id.widget_days, "Berechtigung fehlt")
+                    views.setViewVisibility(R.id.row_1, android.view.View.VISIBLE)
+                    views.setTextViewText(R.id.widget_name_1, "App öffnen")
+                    views.setTextViewText(R.id.widget_days_1, "Berechtigung fehlt")
                 }
 
-                // Wenn man das Widget antippt, soll sich die App öffnen
                 val intent = Intent(context, MainActivity::class.java)
                 val pendingIntent = PendingIntent.getActivity(
                     context, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
                 )
                 views.setOnClickPendingIntent(R.id.widget_root, pendingIntent)
 
-                // Das fertige Bild an den Android-Homescreen schicken
                 appWidgetManager.updateAppWidget(appWidgetIds, views)
             } finally {
                 pendingResult.finish()
             }
         }
     }
+}
+
+fun updateWidget(context: Context) {
+    val intent = Intent(context, BirthdayWidgetProvider::class.java).apply {
+        action = AppWidgetManager.ACTION_APPWIDGET_UPDATE
+    }
+    val ids = AppWidgetManager.getInstance(context).getAppWidgetIds(
+        android.content.ComponentName(context, BirthdayWidgetProvider::class.java)
+    )
+    intent.putExtra(AppWidgetManager.EXTRA_APPWIDGET_IDS, ids)
+    context.sendBroadcast(intent)
 }
