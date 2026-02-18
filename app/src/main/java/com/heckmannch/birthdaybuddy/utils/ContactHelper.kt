@@ -24,7 +24,8 @@ fun fetchBirthdays(context: Context): List<BirthdayContact> {
     val selection = "${ContactsContract.Data.MIMETYPE} = ? AND ${ContactsContract.CommonDataKinds.Event.TYPE} = ${ContactsContract.CommonDataKinds.Event.TYPE_BIRTHDAY}"
     val selectionArgs = arrayOf(ContactsContract.CommonDataKinds.Event.CONTENT_ITEM_TYPE)
 
-    val tempContacts = mutableListOf<Triple<String, String, String>>()
+    // Wir nutzen eine Map, um Duplikate pro Kontakt-ID sofort zu vermeiden
+    val tempContactsMap = mutableMapOf<String, Pair<String, String>>()
 
     context.contentResolver.query(
         ContactsContract.Data.CONTENT_URI,
@@ -38,8 +39,11 @@ fun fetchBirthdays(context: Context): List<BirthdayContact> {
             val id = cursor.getString(idIdx) ?: continue
             val name = cursor.getString(nameIdx) ?: "Unbekannt"
             val bday = cursor.getString(bdayIdx) ?: ""
-            tempContacts.add(Triple(id, name, bday))
-            contactIds.add(id)
+            // Falls eine ID mehrfach auftaucht (z.B. mehrere Events), nehmen wir nur das erste.
+            if (!tempContactsMap.containsKey(id)) {
+                tempContactsMap[id] = name to bday
+                contactIds.add(id)
+            }
         }
     }
 
@@ -49,10 +53,14 @@ fun fetchBirthdays(context: Context): List<BirthdayContact> {
     val allLabels = getAllContactLabels(context, contactIds)
     val allActions = getAllContactActions(context, contactIds)
 
-    for ((id, name, bday) in tempContacts) {
-        val photoUri = ContentUris.withAppendedId(ContactsContract.Contacts.CONTENT_URI, id.toLong()).let {
-            Uri.withAppendedPath(it, ContactsContract.Contacts.Photo.CONTENT_DIRECTORY).toString()
-        }
+    for ((id, data) in tempContactsMap) {
+        val (name, bday) = data
+        val photoUri = try {
+            ContentUris.withAppendedId(ContactsContract.Contacts.CONTENT_URI, id.toLong()).let {
+                Uri.withAppendedPath(it, ContactsContract.Contacts.Photo.CONTENT_DIRECTORY).toString()
+            }
+        } catch (e: Exception) { null }
+
         val (age, remainingDays) = calculateAgeAndDays(bday)
         
         contactList.add(BirthdayContact(
@@ -136,7 +144,7 @@ private fun getAllContactActions(context: Context, contactIds: Set<String>): Map
         val data1Idx = cursor.getColumnIndex(ContactsContract.Data.DATA1)
 
         while (cursor.moveToNext()) {
-            val id = cursor.getString(idIdx)
+            val id = cursor.getString(idIdx) ?: continue
             val mime = cursor.getString(mimeIdx)
             val data1 = cursor.getString(data1Idx)
 

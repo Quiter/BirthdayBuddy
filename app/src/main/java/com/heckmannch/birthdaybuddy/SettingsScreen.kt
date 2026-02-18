@@ -5,6 +5,8 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.List
@@ -23,8 +25,7 @@ import com.heckmannch.birthdaybuddy.utils.*
 import kotlinx.coroutines.launch
 
 /**
- * Hauptmenü der App-Einstellungen.
- * Bietet eine Übersicht über Benachrichtigungen, Filter-Optionen und Widget-Konfigurationen.
+ * Hauptmenü der App-Einstellungen im Android 16 Look.
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -32,8 +33,7 @@ fun SettingsMenuScreen(onNavigate: (String) -> Unit, onBack: () -> Unit) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
     val filterManager = remember { FilterManager(context) }
-    // Verhalten für die TopAppBar, damit sie beim Scrollen einklappt
-    val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
+    val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
 
     val widgetCount by filterManager.widgetItemCountFlow.collectAsState(initial = 1)
     var showCountDialog by remember { mutableStateOf(false) }
@@ -42,8 +42,8 @@ fun SettingsMenuScreen(onNavigate: (String) -> Unit, onBack: () -> Unit) {
     Scaffold(
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
         topBar = {
-            MediumTopAppBar(
-                title = { Text("Einstellungen") },
+            TopAppBar(
+                title = { },
                 navigationIcon = {
                     IconButton(onClick = onBack) { Icon(Icons.AutoMirrored.Filled.ArrowBack, "Zurück") }
                 },
@@ -51,45 +51,54 @@ fun SettingsMenuScreen(onNavigate: (String) -> Unit, onBack: () -> Unit) {
             )
         }
     ) { padding ->
-        Column(modifier = Modifier.fillMaxSize().padding(padding).padding(horizontal = 16.dp)) {
-            // Sektion für Alarme und Erinnerungen
-            SectionHeader("Benachrichtigungen")
-            SettingsBlock("Alarme", "Erinnerungszeiten konfigurieren", Icons.Default.Notifications, Color(0xFF4CAF50)) { onNavigate("settings_alarms") }
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(padding)
+                .verticalScroll(rememberScrollState())
+                .padding(horizontal = 16.dp)
+        ) {
+            // Android 16 Search Bar
+            /**
+            SettingsSearchBar(modifier = Modifier.padding(vertical = 8.dp))
 
-            Spacer(modifier = Modifier.height(16.dp))
-            
-            // Sektion für die Sichtbarkeit von Kontakten und Labels in der App
-            SectionHeader("Filter & Sichtbarkeit")
+            // Profil / User Section (Simuliert wie im Screenshot)
             SettingsCard {
-                val menuOrange = Color(0xFFFF9800)
+                SettingsBlockRow(
+                    title = "Christof Heckmann",
+                    subtitle = "Google-Dienste und -Einstellungen",
+                    icon = Icons.Default.Person,
+                    containerColor = Color(0xFF5C5C5C)
+                ) { /* Aktion */ }
+            }
+             */
+            SectionHeader("Benachrichtigungen")
+            SettingsBlock("Alarme", "Erinnerungszeiten konfigurieren", Icons.Default.Notifications, Color(0xFFE91E63)) { onNavigate("settings_alarms") }
+
+            SectionHeader("Drawer & Liste")
+            SettingsCard {
+                val menuOrange = Color(0xFF673AB7)
                 SettingsBlockRow("Anzeigen", "Diese Labels im Drawer anzeigen", Icons.Default.Visibility, menuOrange) { onNavigate("settings_hide") }
                 HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant)
                 SettingsBlockRow("Blockieren", "Labels komplett ignorieren", Icons.Default.VisibilityOff, menuOrange) { onNavigate("settings_block") }
             }
 
-            Spacer(modifier = Modifier.height(16.dp))
-            
-            // Sektion für das Homescreen-Widget
             SectionHeader("Widget")
             SettingsCard {
-                val widgetBlue = Color(0xFF2196F3)
+                val widgetBlue = Color(0xFF4CAF50)
                 SettingsBlockRow("Anzahl", "Bis zu $widgetCount Personen", Icons.AutoMirrored.Filled.List, widgetBlue) { showCountDialog = true }
                 HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant)
-                SettingsBlockRow("Anzeigen", "Diese Labels im Widget anzeigen", Icons.Default.Visibility, widgetBlue) { onNavigate("settings_widget_include") }
+                SettingsBlockRow("Anzeigen", "Kontakte mit diesen Labels im Widget anzeigen", Icons.Default.Visibility, widgetBlue) { onNavigate("settings_widget_include") }
                 HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant)
-                SettingsBlockRow("Blockieren", "Diese Labels im Widget ignorieren", Icons.Default.VisibilityOff, widgetBlue) { onNavigate("settings_widget_exclude") }
+                SettingsBlockRow("Blockieren", "Kontakte mit diesen Labels im Widget ignorieren", Icons.Default.VisibilityOff, widgetBlue) { onNavigate("settings_widget_exclude") }
             }
 
-            Spacer(modifier = Modifier.weight(1f))
-            
-            // Footer mit Versionsnummer und Link zum GitHub-Repository
             SettingsFooter(versionName) {
                 context.startActivity(Intent(Intent.ACTION_VIEW, "https://github.com/Quiter/BirthdayBuddy".toUri()))
             }
         }
     }
 
-    // Dialog zur Auswahl der Anzahl der im Widget anzuzeigenden Personen
     if (showCountDialog) {
         WidgetCountDialog(widgetCount, onDismiss = { showCountDialog = false }) { count ->
             scope.launch {
@@ -103,7 +112,6 @@ fun SettingsMenuScreen(onNavigate: (String) -> Unit, onBack: () -> Unit) {
 
 /**
  * Bildschirm zur Konfiguration der Alarmzeiten.
- * Nutzer können die Uhrzeit und die Tage vor dem Geburtstag (Vorlaufzeit) einstellen.
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -135,7 +143,6 @@ fun AlarmsScreen(filterManager: FilterManager, onBack: () -> Unit) {
     ) { padding ->
         Column(modifier = Modifier.fillMaxSize().padding(padding)) {
             SectionHeader("Uhrzeit")
-            // Zeigt die aktuell eingestellte Zeit an und öffnet bei Klick den Picker
             ListItem(
                 headlineContent = { Text("Standard-Uhrzeit") },
                 supportingContent = { Text(String.format(java.util.Locale.getDefault(), "%02d:%02d Uhr", notifHour, notifMinute)) },
@@ -147,7 +154,6 @@ fun AlarmsScreen(filterManager: FilterManager, onBack: () -> Unit) {
             val sortedDays = notifDaysSet.mapNotNull { it.toIntOrNull() }.sorted()
             LazyColumn(modifier = Modifier.weight(1f)) {
                 items(sortedDays) { day ->
-                    // Formatiert die Anzeige der Tage (z.B. "Am Tag", "1 Tag vorher", "X Wochen vorher")
                     val text = when {
                         day == 0 -> "Am Tag des Geburtstags"
                         day == 1 -> "1 Tag vorher"
@@ -172,7 +178,6 @@ fun AlarmsScreen(filterManager: FilterManager, onBack: () -> Unit) {
         }
     }
 
-    // Material 3 TimePicker Dialog
     if (showTimePicker) {
         AlertDialog(
             onDismissRequest = { showTimePicker = false },
@@ -190,7 +195,6 @@ fun AlarmsScreen(filterManager: FilterManager, onBack: () -> Unit) {
         )
     }
 
-    // Dialog zum Hinzufügen einer neuen Vorlaufzeit (Tage vorher)
     if (showAddDayDialog) {
         AlertDialog(
             onDismissRequest = { showAddDayDialog = false },
@@ -216,34 +220,38 @@ fun AlarmsScreen(filterManager: FilterManager, onBack: () -> Unit) {
 }
 
 /**
- * Filter-Bildschirm: Labels komplett aus der App blockieren.
+ * Filter-Bildschirme.
  */
 @Composable fun BlockLabelsScreen(f: FilterManager, a: Set<String>, l: Boolean, b: () -> Unit) {
     val labels by f.excludedLabelsFlow.collectAsState(initial = emptySet())
     val scope = rememberCoroutineScope()
-    LabelSelectionScreen("Blockieren", "Diese Kontakte werden komplett ausgeblendet.", a, labels, l, { label, checked ->
+    LabelSelectionScreen("Blockieren", "Kontakte mit hier aktivierten Labels werden immer ausgeblendet.", a, labels, l, { label, checked ->
         val newSet = labels.toMutableSet()
         if (checked) newSet.add(label) else newSet.remove(label)
         scope.launch { f.saveExcludedLabels(newSet) }
     }, b)
 }
 
-/**
- * Filter-Bildschirm: Labels im Seitenmenü (Drawer) ein-/ausblenden.
- */
 @Composable fun HideLabelsScreen(f: FilterManager, a: Set<String>, l: Boolean, b: () -> Unit) {
-    val selectedLabels by f.selectedLabelsFlow.collectAsState(initial = emptySet())
+    val hiddenLabels by f.hiddenDrawerLabelsFlow.collectAsState(initial = emptySet())
     val scope = rememberCoroutineScope()
-    LabelSelectionScreen("Anzeigen", "Diese Labels im Seitenmenü anzeigen.", a, selectedLabels, l, { label, checked ->
-        val newSet = selectedLabels.toMutableSet()
-        if (checked) newSet.add(label) else newSet.remove(label)
-        scope.launch { f.saveSelectedLabels(newSet) }
+    
+    // Wir berechnen die Menge der Labels, die NICHT versteckt sind.
+    val visibleLabels = remember(a, hiddenLabels) { 
+        a.filter { !hiddenLabels.contains(it) }.toSet() 
+    }
+
+    LabelSelectionScreen("Anzeigen", "Diese Labels im Seitenmenü anzeigen.", a, visibleLabels, l, { label, isVisible ->
+        val newHiddenSet = hiddenLabels.toMutableSet()
+        if (isVisible) {
+            newHiddenSet.remove(label)
+        } else {
+            newHiddenSet.add(label)
+        }
+        scope.launch { f.saveHiddenDrawerLabels(newHiddenSet) }
     }, b)
 }
 
-/**
- * Filter-Bildschirm: Labels festlegen, die im Widget erscheinen sollen (Whitelist).
- */
 @Composable fun WidgetIncludeLabelsScreen(f: FilterManager, a: Set<String>, l: Boolean, b: () -> Unit) {
     val context = LocalContext.current
     val selectedLabels by f.widgetSelectedLabelsFlow.collectAsState(initial = emptySet())
@@ -258,9 +266,6 @@ fun AlarmsScreen(filterManager: FilterManager, onBack: () -> Unit) {
     }, b)
 }
 
-/**
- * Filter-Bildschirm: Labels festlegen, die im Widget ignoriert werden sollen (Blacklist).
- */
 @Composable fun WidgetExcludeLabelsScreen(f: FilterManager, a: Set<String>, l: Boolean, b: () -> Unit) {
     val context = LocalContext.current
     val labels by f.widgetExcludedLabelsFlow.collectAsState(initial = emptySet())

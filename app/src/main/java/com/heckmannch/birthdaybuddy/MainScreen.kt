@@ -15,16 +15,12 @@ import androidx.core.content.ContextCompat
 import com.heckmannch.birthdaybuddy.components.*
 import com.heckmannch.birthdaybuddy.model.BirthdayContact
 import com.heckmannch.birthdaybuddy.utils.*
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
 /**
  * Der Hauptbildschirm der App, der die Liste der Geburtstage anzeigt.
- * Er verwaltet den State für Kontakte, Suche, Filter und Berechtigungen.
- * 
- * @param filterManager Zentrale Instanz zum Lesen/Schreiben von Filtereinstellungen.
- * @param onNavigateToSettings Callback zur Navigation in die Einstellungen.
  */
 @Composable
 fun MainScreen(
@@ -41,19 +37,19 @@ fun MainScreen(
     var isLoading by remember { mutableStateOf(true) }
     var isInitialized by remember { mutableStateOf(false) }
 
-    // Beobachtet die Filter-Einstellungen aus dem FilterManager (DataStore/SharedPreferences)
+    // Beobachtet die Filter-Einstellungen aus dem FilterManager
     val savedSelectedLabels by filterManager.selectedLabelsFlow.collectAsState(initial = null)
     val excludedLabels by filterManager.excludedLabelsFlow.collectAsState(initial = emptySet())
     val hiddenDrawerLabels by filterManager.hiddenDrawerLabelsFlow.collectAsState(initial = emptySet())
 
-    // Hilfsfunktion zum (Neu-)Laden der Kontakte aus dem System
+    // Hilfsfunktion zum (Neu-)Laden der Kontakte
     val reloadContactsAction = suspend {
         isLoading = true
         contacts = withContext(Dispatchers.IO) { fetchBirthdays(context) }
         isLoading = false
     }
 
-    // Berechtigungs-Management für den Kontaktzugriff
+    // Berechtigungs-Management
     var hasPermission by remember {
         mutableStateOf(ContextCompat.checkSelfPermission(context, Manifest.permission.READ_CONTACTS) == PackageManager.PERMISSION_GRANTED)
     }
@@ -61,11 +57,9 @@ fun MainScreen(
         if (perms[Manifest.permission.READ_CONTACTS] == true) hasPermission = true
     }
 
-    // Prüft Berechtigungen beim Start und lädt ggf. die Daten
     LaunchedEffect(hasPermission) {
         if (!hasPermission) {
             val perms = mutableListOf(Manifest.permission.READ_CONTACTS)
-            // Benachrichtigungs-Berechtigung ab Android 13 erforderlich
             if (android.os.Build.VERSION.SDK_INT >= 33) perms.add(Manifest.permission.POST_NOTIFICATIONS)
             permissionLauncher.launch(perms.toTypedArray())
         } else {
@@ -73,10 +67,10 @@ fun MainScreen(
         }
     }
 
-    // Extrahiert alle verfügbaren Labels (Gruppen) aus den geladenen Kontakten
+    // Extrahiert alle verfügbaren Labels
     val availableLabels = remember(contacts) { contacts.flatMap { it.labels }.toSortedSet() }
 
-    // Falls die App zum ersten Mal startet, werden standardmäßig alle Labels aktiviert
+    // Standardmäßig alle Labels aktivieren beim ersten Start
     LaunchedEffect(availableLabels, savedSelectedLabels) {
         if (availableLabels.isNotEmpty() && savedSelectedLabels != null && !isInitialized) {
             if (savedSelectedLabels!!.isEmpty()) {
@@ -87,21 +81,24 @@ fun MainScreen(
     }
 
     // Filter- und Sortier-Logik für die Kontaktliste
-    val sortedContacts = remember(contacts, savedSelectedLabels, excludedLabels, searchQuery) {
+    val sortedContacts = remember(contacts, savedSelectedLabels, excludedLabels, hiddenDrawerLabels, searchQuery) {
         val selected = savedSelectedLabels ?: emptySet()
         contacts.filter { contact ->
-            // 1. Globale Sperre (Labels, die in den Einstellungen blockiert wurden)
+            // 1. Globale Sperre
             if (contact.labels.any { excludedLabels.contains(it) }) return@filter false
             
-            // 2. Suche nach Namen (Groß-/Kleinschreibung ignorieren)
+            // 2. Suche
             if (!contact.name.contains(searchQuery, ignoreCase = true)) return@filter false
 
-            // 3. Whitelist-Check: Zeige nur Kontakte, die zu einem aktiven Label gehören
-            contact.labels.any { selected.contains(it) }
-        }.sortedBy { it.remainingDays } // Sortiere nach den Tagen bis zum Geburtstag
+            // 3. Whitelist-Check (nur Labels, die auch im Drawer SICHTBAR sind)
+            contact.labels.any { label -> 
+                selected.contains(label) && !hiddenDrawerLabels.contains(label)
+            }
+        }
+        .distinctBy { it.id } // SICHERHEIT: Duplikate nach ID entfernen
+        .sortedBy { it.remainingDays }
     }
 
-    // UI-Struktur mit Drawer (Seitenmenü) und Scaffold (Grundlayout)
     ModalNavigationDrawer(
         drawerState = drawerState,
         drawerContent = {
@@ -140,7 +137,6 @@ fun MainScreen(
                 if (isLoading) {
                     CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
                 } else {
-                    // Die eigentliche Liste der Kontakte
                     BirthdayList(contacts = sortedContacts, listState = rememberLazyListState())
                 }
             }

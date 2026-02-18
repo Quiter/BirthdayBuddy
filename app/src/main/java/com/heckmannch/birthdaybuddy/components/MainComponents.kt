@@ -4,6 +4,8 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
@@ -62,43 +64,50 @@ fun MainDrawerContent(
     onSettingsClick: () -> Unit
 ) {
     ModalDrawerSheet {
-        Spacer(Modifier.height(12.dp))
-        Text(
-            "Labels filtern",
-            style = MaterialTheme.typography.titleSmall,
-            modifier = Modifier.padding(horizontal = 28.dp, vertical = 16.dp)
-        )
+        Column(
+            modifier = Modifier
+                .verticalScroll(rememberScrollState())
+                .navigationBarsPadding()
+                .padding(bottom = 24.dp)
+        ) {
+            Spacer(Modifier.height(12.dp))
+            Text(
+                "Labels filtern",
+                style = MaterialTheme.typography.titleSmall,
+                modifier = Modifier.padding(horizontal = 28.dp, vertical = 16.dp)
+            )
 
-        val labelsToShow = availableLabels.filterNot { hiddenDrawerLabels.contains(it) }
+            val labelsToShow = availableLabels.filterNot { hiddenDrawerLabels.contains(it) }
 
-        labelsToShow.forEach { label ->
-            val isChecked = selectedLabels.contains(label)
+            labelsToShow.forEach { label ->
+                val isChecked = selectedLabels.contains(label)
+                NavigationDrawerItem(
+                    label = { Text(label) },
+                    selected = false,
+                    onClick = { onLabelToggle(label, isChecked) },
+                    icon = { Checkbox(checked = isChecked, onCheckedChange = null) },
+                    modifier = Modifier.padding(NavigationDrawerItemDefaults.ItemPadding)
+                )
+            }
+
+            HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp, horizontal = 28.dp))
+
             NavigationDrawerItem(
-                label = { Text(label) },
+                label = { Text("Kontakte neu laden") },
                 selected = false,
-                onClick = { onLabelToggle(label, isChecked) },
-                icon = { Checkbox(checked = isChecked, onCheckedChange = null) },
+                onClick = onReloadContacts,
+                icon = { Icon(Icons.Default.Refresh, contentDescription = null) },
+                modifier = Modifier.padding(NavigationDrawerItemDefaults.ItemPadding)
+            )
+
+            NavigationDrawerItem(
+                label = { Text("Einstellungen") },
+                selected = false,
+                onClick = onSettingsClick,
+                icon = { Icon(Icons.Default.Settings, contentDescription = null) },
                 modifier = Modifier.padding(NavigationDrawerItemDefaults.ItemPadding)
             )
         }
-
-        HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp, horizontal = 28.dp))
-
-        NavigationDrawerItem(
-            label = { Text("Kontakte neu laden") },
-            selected = false,
-            onClick = onReloadContacts,
-            icon = { Icon(Icons.Default.Refresh, contentDescription = null) },
-            modifier = Modifier.padding(NavigationDrawerItemDefaults.ItemPadding)
-        )
-
-        NavigationDrawerItem(
-            label = { Text("Einstellungen") },
-            selected = false,
-            onClick = onSettingsClick,
-            icon = { Icon(Icons.Default.Settings, contentDescription = null) },
-            modifier = Modifier.padding(NavigationDrawerItemDefaults.ItemPadding)
-        )
     }
 }
 
@@ -115,9 +124,8 @@ fun BirthdayList(
     ) {
         items(
             items = contacts,
-            // PERFORMANCE: Nutze die eindeutige ID statt Name+Datum. 
-            // Das hilft Compose, die Liste effizienter zu aktualisieren.
-            key = { it.id }
+            // Sicherheits-Key: Kombiniert ID und Name, falls IDs im System doppelt vergeben sind
+            key = { "${it.id}_${it.name}" }
         ) { contact ->
             BirthdayItem(
                 contact = contact,
