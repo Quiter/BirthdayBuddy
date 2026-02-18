@@ -8,8 +8,6 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -41,6 +39,14 @@ fun MainScreen(
     val notifHour by filterManager.notificationHourFlow.collectAsState(initial = 9)
     val notifMinute by filterManager.notificationMinuteFlow.collectAsState(initial = 0)
 
+    // Hilfsfunktion zum Laden der Kontakte (vermeidet Warnungen und Code-Duplikate)
+    val reloadContactsAction = suspend {
+        isLoading = true
+        val loadedContacts = withContext(Dispatchers.IO) { fetchBirthdays(context) }
+        contacts = loadedContacts
+        isLoading = false
+    }
+
     // Berechtigungs-Logik
     var hasPermission by remember {
         mutableStateOf(ContextCompat.checkSelfPermission(context, Manifest.permission.READ_CONTACTS) == PackageManager.PERMISSION_GRANTED)
@@ -55,9 +61,7 @@ fun MainScreen(
             if (android.os.Build.VERSION.SDK_INT >= 33) perms.add(Manifest.permission.POST_NOTIFICATIONS)
             permissionLauncher.launch(perms.toTypedArray())
         } else {
-            isLoading = true
-            withContext(Dispatchers.IO) { contacts = fetchBirthdays(context) }
-            isLoading = false
+            reloadContactsAction()
         }
     }
 
@@ -80,17 +84,15 @@ fun MainScreen(
                 availableLabels = availableLabels,
                 hiddenFilterLabels = hiddenFilterLabels,
                 hiddenDrawerLabels = hiddenDrawerLabels,
-                onLabelToggle = { label, isChecked ->
+                onLabelToggle = { label, _ ->
                     val newSet = hiddenFilterLabels.toMutableSet()
-                    if (isChecked) newSet.add(label) else newSet.remove(label)
+                    if (hiddenFilterLabels.contains(label)) newSet.remove(label) else newSet.add(label)
                     scope.launch { filterManager.saveHiddenFilterLabels(newSet) }
                 },
                 onReloadContacts = {
                     scope.launch {
                         drawerState.close()
-                        isLoading = true
-                        withContext(Dispatchers.IO) { contacts = fetchBirthdays(context) }
-                        isLoading = false
+                        reloadContactsAction()
                     }
                 },
                 onSettingsClick = {

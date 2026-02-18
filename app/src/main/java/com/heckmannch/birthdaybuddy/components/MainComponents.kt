@@ -8,7 +8,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.heckmannch.birthdaybuddy.model.BirthdayContact
@@ -22,24 +21,30 @@ fun MainSearchBar(
     modifier: Modifier = Modifier
 ) {
     SearchBar(
-        query = query,
-        onQueryChange = onQueryChange,
-        onSearch = { },
-        active = false,
-        onActiveChange = { },
-        placeholder = { Text("In Kontakten suchen...") },
-        leadingIcon = {
-            IconButton(onClick = onMenuClick) {
-                Icon(Icons.Default.Menu, contentDescription = "Menü öffnen")
-            }
-        },
-        trailingIcon = {
-            if (query.isNotEmpty()) {
-                IconButton(onClick = { onQueryChange("") }) {
-                    Icon(Icons.Default.Clear, contentDescription = "Suche löschen")
+        inputField = {
+            SearchBarDefaults.InputField(
+                query = query,
+                onQueryChange = onQueryChange,
+                onSearch = { },
+                expanded = false,
+                onExpandedChange = { },
+                placeholder = { Text("In Kontakten suchen...") },
+                leadingIcon = {
+                    IconButton(onClick = onMenuClick) {
+                        Icon(Icons.Default.Menu, contentDescription = "Menü öffnen")
+                    }
+                },
+                trailingIcon = {
+                    if (query.isNotEmpty()) {
+                        IconButton(onClick = { onQueryChange("") }) {
+                            Icon(Icons.Default.Clear, contentDescription = "Suche löschen")
+                        }
+                    }
                 }
-            }
+            )
         },
+        expanded = false,
+        onExpandedChange = { },
         modifier = modifier
             .fillMaxWidth()
             .padding(horizontal = 16.dp)
@@ -70,8 +75,8 @@ fun MainDrawerContent(
             val isChecked = !hiddenFilterLabels.contains(label)
             NavigationDrawerItem(
                 label = { Text(label) },
-                selected = isChecked,
-                onClick = { onLabelToggle(label, isChecked) },
+                selected = false,
+                onClick = { onLabelToggle(label, !isChecked) },
                 icon = { Checkbox(checked = isChecked, onCheckedChange = null) },
                 modifier = Modifier.padding(NavigationDrawerItemDefaults.ItemPadding)
             )
