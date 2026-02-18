@@ -13,9 +13,13 @@ import com.heckmannch.birthdaybuddy.utils.FilterManager
 import com.heckmannch.birthdaybuddy.utils.fetchBirthdays
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
+        // Splash Screen vor super.onCreate() installieren!
+        installSplashScreen()
+        
         super.onCreate(savedInstanceState)
         createNotificationChannel()
         enableEdgeToEdge()
@@ -53,7 +57,6 @@ class MainActivity : ComponentActivity() {
 
                     composable("settings_alarms") { AlarmsScreen(filterManager) { navController.popBackStack() } }
 
-                    // NEU: Route für Widget Include
                     composable("settings_widget_include") {
                         var availableLabels by remember { mutableStateOf<Set<String>>(emptySet()) }
                         var isLoading by remember { mutableStateOf(true) }
@@ -64,7 +67,6 @@ class MainActivity : ComponentActivity() {
                         WidgetIncludeLabelsScreen(filterManager, availableLabels, isLoading) { navController.popBackStack() }
                     }
 
-                    // NEU: Route für Widget Exclude
                     composable("settings_widget_exclude") {
                         var availableLabels by remember { mutableStateOf<Set<String>>(emptySet()) }
                         var isLoading by remember { mutableStateOf(true) }

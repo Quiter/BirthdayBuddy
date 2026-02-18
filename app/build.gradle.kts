@@ -10,9 +10,9 @@ android {
     defaultConfig {
         applicationId = "com.heckmannch.birthdaybuddy"
         minSdk = 28
-        targetSdk = 34
+        targetSdk = 35
         versionCode = 1
-        versionName = "0.7"
+        versionName = "0.6"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -45,6 +45,12 @@ dependencies {
     implementation(libs.androidx.compose.ui.graphics)
     implementation(libs.androidx.compose.ui.tooling.preview)
     implementation(libs.androidx.compose.material3)
+    
+    // NEU: Klassische Material-Bibliothek für XML-Themes
+    implementation("com.google.android.material:material:1.12.0")
+    // SplashScreen API
+    implementation("androidx.core:core-splashscreen:1.0.1")
+    
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)

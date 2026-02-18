@@ -229,17 +229,20 @@ private fun MessengerIcon(text: String, color: Color, onClick: () -> Unit) {
 @Composable
 private fun getAgeColor(age: Int): Color {
     val isDark = isSystemInDarkTheme()
-    val youngColor = if (isDark) Color(0xFFC8E6C9) else Color(0xFF2E7D32)
-    val oldColor = if (isDark) Color(0xFFFFCDD2) else Color(0xFFD32F2F)
-    val fraction = (age.coerceIn(18, 80) - 18) / (80 - 18f)
+    val youngColor = if (isDark) Color(0xFFFFA4A4) else Color(0xFFFF5252)
+    val oldColor = if (isDark) Color(0xFFD32F2F) else Color(0xFF8B0000)
+    val clampedAge = age.coerceIn(0, 100)
+    val fraction = clampedAge / 100f
     return lerp(youngColor, oldColor, fraction)
 }
 
 @Composable
 private fun getDaysColor(days: Int): Color {
-    return when {
-        days == 0 -> MaterialTheme.colorScheme.tertiary
-        days < 7 -> MaterialTheme.colorScheme.secondary
-        else -> MaterialTheme.colorScheme.primary
-    }
+    if (days == 0) return Color(0xFFFFC107)
+    val isDark = isSystemInDarkTheme()
+    val nearColor = if (isDark) Color(0xFF80D8FF) else Color(0xFF00BFFF)
+    val farColor = if (isDark) Color(0xFF5C6BC0) else Color(0xFF00008B)
+    val clampedDays = days.coerceIn(1, 365)
+    val fraction = clampedDays / 365f
+    return lerp(nearColor, farColor, fraction)
 }
