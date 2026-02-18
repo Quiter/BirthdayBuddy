@@ -1,6 +1,7 @@
 package com.heckmannch.birthdaybuddy
 
 import android.Manifest
+import android.annotation.SuppressLint
 import android.content.pm.PackageManager
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -36,6 +37,7 @@ import com.heckmannch.birthdaybuddy.utils.fetchBirthdays
 import com.heckmannch.birthdaybuddy.utils.scheduleDailyAlarm
 import kotlinx.coroutines.launch
 
+@SuppressLint("UnusedBoxWithConstraintsScope")
 @Composable
 fun MainScreen(
     filterManager: FilterManager,
