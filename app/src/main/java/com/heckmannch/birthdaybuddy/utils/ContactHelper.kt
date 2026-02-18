@@ -8,138 +8,150 @@ import com.heckmannch.birthdaybuddy.model.BirthdayContact
 import com.heckmannch.birthdaybuddy.model.ContactActions
 
 /**
- * Durchsucht das Android-Telefonbuch nach allen Kontakten, die ein Geburtsdatum hinterlegt haben.
- *
- * @param context Der App-Kontext für den Zugriff auf den ContentResolver.
- * @return Eine Liste von [BirthdayContact] Objekten mit Namen, Datum, Labels und Kontaktmöglichkeiten.
+ * Optimierte Funktion zum Laden aller Geburtstagskontakte.
+ * Reduziert die Datenbankabfragen drastisch (Batch-Processing statt Einzelabfragen).
  */
 fun fetchBirthdays(context: Context): List<BirthdayContact> {
     val contactList = mutableListOf<BirthdayContact>()
-
-    // Definition der Spalten, die wir aus der Kontaktdatenbank lesen wollen
+    val contactIds = mutableSetOf<String>()
+    
+    // 1. Alle Geburtstag-Events abfragen
     val projection = arrayOf(
         ContactsContract.CommonDataKinds.Event.CONTACT_ID,
         ContactsContract.CommonDataKinds.Event.DISPLAY_NAME,
         ContactsContract.CommonDataKinds.Event.START_DATE
     )
-
-    // Filter: Wir suchen nach Daten vom Typ "Event", die speziell ein "Geburtstag" sind
     val selection = "${ContactsContract.Data.MIMETYPE} = ? AND ${ContactsContract.CommonDataKinds.Event.TYPE} = ${ContactsContract.CommonDataKinds.Event.TYPE_BIRTHDAY}"
     val selectionArgs = arrayOf(ContactsContract.CommonDataKinds.Event.CONTENT_ITEM_TYPE)
 
-    // Abfrage der Kontaktdatenbank
+    val tempContacts = mutableListOf<Triple<String, String, String>>()
+
     context.contentResolver.query(
         ContactsContract.Data.CONTENT_URI,
-        projection,
-        selection,
-        selectionArgs,
-        null
+        projection, selection, selectionArgs, null
     )?.use { cursor ->
         val idIdx = cursor.getColumnIndex(ContactsContract.CommonDataKinds.Event.CONTACT_ID)
         val nameIdx = cursor.getColumnIndex(ContactsContract.CommonDataKinds.Event.DISPLAY_NAME)
         val bdayIdx = cursor.getColumnIndex(ContactsContract.CommonDataKinds.Event.START_DATE)
 
         while (cursor.moveToNext()) {
-            val contactId = cursor.getString(idIdx) ?: continue
+            val id = cursor.getString(idIdx) ?: continue
             val name = cursor.getString(nameIdx) ?: "Unbekannt"
             val bday = cursor.getString(bdayIdx) ?: ""
-
-            // Konstruiert die URI zum Profilbild des Kontakts
-            val photoUri = ContentUris.withAppendedId(ContactsContract.Contacts.CONTENT_URI, contactId.toLong()).let {
-                Uri.withAppendedPath(it, ContactsContract.Contacts.Photo.CONTENT_DIRECTORY).toString()
-            }
-
-            // Holt zusätzliche Informationen wie Labels und Messenger-Accounts
-            val labels = getContactLabels(context, contactId)
-            val (age, remainingDays) = calculateAgeAndDays(bday)
-            val actions = getContactActions(context, contactId)
-
-            contactList.add(BirthdayContact(name, bday, labels, remainingDays, age, actions, photoUri))
+            tempContacts.add(Triple(id, name, bday))
+            contactIds.add(id)
         }
+    }
+
+    if (contactIds.isEmpty()) return emptyList()
+
+    // 2. Batch-Abfrage für ALLE Labels und ALLE Kontaktdaten der gefundenen Personen
+    val allLabels = getAllContactLabels(context, contactIds)
+    val allActions = getAllContactActions(context, contactIds)
+
+    for ((id, name, bday) in tempContacts) {
+        val photoUri = ContentUris.withAppendedId(ContactsContract.Contacts.CONTENT_URI, id.toLong()).let {
+            Uri.withAppendedPath(it, ContactsContract.Contacts.Photo.CONTENT_DIRECTORY).toString()
+        }
+        val (age, remainingDays) = calculateAgeAndDays(bday)
+        
+        contactList.add(BirthdayContact(
+            id = id,
+            name = name,
+            birthday = bday,
+            labels = allLabels[id] ?: listOf("Ohne Label"),
+            remainingDays = remainingDays,
+            age = age,
+            actions = allActions[id] ?: ContactActions(),
+            photoUri = photoUri
+        ))
     }
     return contactList
 }
 
 /**
- * Ermittelt alle Labels (Kontaktgruppen), denen ein spezifischer Kontakt zugeordnet ist.
+ * Lädt alle Gruppenmitgliedschaften für eine Liste von IDs in einer einzigen Abfrage.
  */
-private fun getContactLabels(context: Context, contactId: String): List<String> {
-    val groupIds = mutableListOf<String>()
+private fun getAllContactLabels(context: Context, contactIds: Set<String>): Map<String, List<String>> {
+    val result = mutableMapOf<String, MutableList<String>>()
+    val groupTitles = mutableMapOf<String, String>()
 
-    // Schritt 1: IDs der Gruppen finden, in denen der Kontakt Mitglied ist
+    // Schritt A: Alle Gruppennamen laden
     context.contentResolver.query(
-        ContactsContract.Data.CONTENT_URI,
-        arrayOf(ContactsContract.CommonDataKinds.GroupMembership.GROUP_ROW_ID),
-        "${ContactsContract.Data.CONTACT_ID} = ? AND ${ContactsContract.Data.MIMETYPE} = ?",
-        arrayOf(contactId, ContactsContract.CommonDataKinds.GroupMembership.CONTENT_ITEM_TYPE),
-        null
+        ContactsContract.Groups.CONTENT_URI,
+        arrayOf(ContactsContract.Groups._ID, ContactsContract.Groups.TITLE),
+        null, null, null
     )?.use { cursor ->
-        val idIdx = cursor.getColumnIndex(ContactsContract.CommonDataKinds.GroupMembership.GROUP_ROW_ID)
+        val idIdx = cursor.getColumnIndex(ContactsContract.Groups._ID)
+        val titleIdx = cursor.getColumnIndex(ContactsContract.Groups.TITLE)
         while (cursor.moveToNext()) {
-            cursor.getString(idIdx)?.let { groupIds.add(it) }
+            val id = cursor.getString(idIdx)
+            val title = cursor.getString(titleIdx)?.replace("System Group: ", "")
+            if (id != null && !title.isNullOrBlank()) groupTitles[id] = title
         }
     }
 
-    if (groupIds.isEmpty()) return listOf("Ohne Label")
-
-    val labels = mutableListOf<String>()
-    val placeholders = groupIds.joinToString(",") { "?" }
-
-    // Schritt 2: Die lesbaren Namen (Titel) zu den gefundenen Gruppen-IDs abfragen
+    // Schritt B: Alle Mitgliedschaften laden
+    val idList = contactIds.joinToString(",") { "'$it'" }
     context.contentResolver.query(
-        ContactsContract.Groups.CONTENT_URI,
-        arrayOf(ContactsContract.Groups.TITLE),
-        "${ContactsContract.Groups._ID} IN ($placeholders)",
-        groupIds.toTypedArray(),
+        ContactsContract.Data.CONTENT_URI,
+        arrayOf(ContactsContract.Data.CONTACT_ID, ContactsContract.CommonDataKinds.GroupMembership.GROUP_ROW_ID),
+        "${ContactsContract.Data.CONTACT_ID} IN ($idList) AND ${ContactsContract.Data.MIMETYPE} = ?",
+        arrayOf(ContactsContract.CommonDataKinds.GroupMembership.CONTENT_ITEM_TYPE),
         null
     )?.use { cursor ->
-        val titleIdx = cursor.getColumnIndex(ContactsContract.Groups.TITLE)
+        val contactIdIdx = cursor.getColumnIndex(ContactsContract.Data.CONTACT_ID)
+        val groupIdIdx = cursor.getColumnIndex(ContactsContract.CommonDataKinds.GroupMembership.GROUP_ROW_ID)
         while (cursor.moveToNext()) {
-            cursor.getString(titleIdx)?.replace("System Group: ", "")?.let {
-                if (it.isNotBlank()) labels.add(it)
+            val cId = cursor.getString(contactIdIdx)
+            val gId = cursor.getString(groupIdIdx)
+            groupTitles[gId]?.let { title ->
+                result.getOrPut(cId) { mutableListOf() }.add(title)
             }
         }
     }
-
-    return labels.ifEmpty { listOf("Ohne Label") }
+    return result
 }
 
 /**
- * Durchsucht alle Datenfelder eines Kontakts nach Telefonnummern, E-Mails
- * und Profilen von Messengern (WhatsApp, Signal, Telegram).
+ * Lädt alle Telefonnummern, E-Mails und Messenger-Flags für eine Liste von IDs in einer einzigen Abfrage.
  */
-private fun getContactActions(context: Context, contactId: String): ContactActions {
-    var phone: String? = null
-    var email: String? = null
-    var hasWA = false
-    var hasSig = false
-    var hasTG = false
+private fun getAllContactActions(context: Context, contactIds: Set<String>): Map<String, ContactActions> {
+    val resultMap = mutableMapOf<String, ContactActions>()
+    val phoneMap = mutableMapOf<String, String>()
+    val emailMap = mutableMapOf<String, String>()
+    val waSet = mutableSetOf<String>()
+    val sigSet = mutableSetOf<String>()
+    val tgSet = mutableSetOf<String>()
 
+    val idList = contactIds.joinToString(",") { "'$it'" }
     context.contentResolver.query(
         ContactsContract.Data.CONTENT_URI,
-        arrayOf(ContactsContract.Data.MIMETYPE, ContactsContract.Data.DATA1),
-        "${ContactsContract.Data.CONTACT_ID} = ?",
-        arrayOf(contactId),
-        null
+        arrayOf(ContactsContract.Data.CONTACT_ID, ContactsContract.Data.MIMETYPE, ContactsContract.Data.DATA1),
+        "${ContactsContract.Data.CONTACT_ID} IN ($idList)",
+        null, null
     )?.use { cursor ->
+        val idIdx = cursor.getColumnIndex(ContactsContract.Data.CONTACT_ID)
         val mimeIdx = cursor.getColumnIndex(ContactsContract.Data.MIMETYPE)
         val data1Idx = cursor.getColumnIndex(ContactsContract.Data.DATA1)
 
         while (cursor.moveToNext()) {
+            val id = cursor.getString(idIdx)
             val mime = cursor.getString(mimeIdx)
             val data1 = cursor.getString(data1Idx)
 
             when (mime) {
-                // Standard Telefonnummer
-                ContactsContract.CommonDataKinds.Phone.CONTENT_ITEM_TYPE -> if (phone == null) phone = data1
-                // Standard E-Mail
-                ContactsContract.CommonDataKinds.Email.CONTENT_ITEM_TYPE -> if (email == null) email = data1
-                // Spezifische Mime-Types für Messenger-Integrationen
-                "vnd.android.cursor.item/vnd.com.whatsapp.profile" -> hasWA = true
-                "vnd.android.cursor.item/vnd.org.thoughtcrime.securesms.contact" -> hasSig = true
-                "vnd.android.cursor.item/vnd.org.telegram.messenger.android.profile" -> hasTG = true
+                ContactsContract.CommonDataKinds.Phone.CONTENT_ITEM_TYPE -> if (!phoneMap.containsKey(id)) phoneMap[id] = data1
+                ContactsContract.CommonDataKinds.Email.CONTENT_ITEM_TYPE -> if (!emailMap.containsKey(id)) emailMap[id] = data1
+                "vnd.android.cursor.item/vnd.com.whatsapp.profile" -> waSet.add(id)
+                "vnd.android.cursor.item/vnd.org.thoughtcrime.securesms.contact" -> sigSet.add(id)
+                "vnd.android.cursor.item/vnd.org.telegram.messenger.android.profile" -> tgSet.add(id)
             }
         }
     }
-    return ContactActions(phone, email, hasWA, hasSig, hasTG)
+
+    contactIds.forEach { id ->
+        resultMap[id] = ContactActions(phoneMap[id], emailMap[id], waSet.contains(id), sigSet.contains(id), tgSet.contains(id))
+    }
+    return resultMap
 }
