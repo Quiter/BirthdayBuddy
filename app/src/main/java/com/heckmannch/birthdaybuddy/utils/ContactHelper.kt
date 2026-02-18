@@ -38,6 +38,12 @@ fun fetchBirthdays(context: Context): List<BirthdayContact> {
             val name = it.getString(nameIndex) ?: "Unbekannt"
             val bday = it.getString(birthdayIndex) ?: ""
 
+            // NEU: Den Pfad zum Kontaktbild im Android-System zusammenbauen
+            val photoUri = if (contactId.isNotEmpty()) {
+                val contactUri = android.content.ContentUris.withAppendedId(android.provider.ContactsContract.Contacts.CONTENT_URI, contactId.toLong())
+                android.net.Uri.withAppendedPath(contactUri, android.provider.ContactsContract.Contacts.Photo.CONTENT_DIRECTORY).toString()
+            } else null
+
             // Labels holen
             val labels = getContactLabels(context, contactId)
 
@@ -48,7 +54,7 @@ fun fetchBirthdays(context: Context): List<BirthdayContact> {
             val actions = getContactActions(context, contactId)
 
             // NEU: Aktionen an den Kontakt übergeben
-            contactList.add(BirthdayContact(name, bday, labels, remainingDays, age, actions))
+            contactList.add(BirthdayContact(name, bday, labels, remainingDays, age, actions, photoUri))
         }
     }
     return contactList

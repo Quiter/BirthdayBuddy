@@ -2,6 +2,7 @@ package com.heckmannch.birthdaybuddy.components
 
 import android.content.Intent
 import android.net.Uri
+import coil.compose.AsyncImage
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -11,7 +12,8 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Call
 import androidx.compose.material.icons.filled.Email
-import androidx.compose.material.icons.filled.Send
+import androidx.compose.material.icons.automirrored.filled.Send
+import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -26,26 +28,37 @@ import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import com.heckmannch.birthdaybuddy.model.BirthdayContact
 import com.heckmannch.birthdaybuddy.utils.formatGermanDate
 
 @Composable
-fun BirthdayItem(contact: BirthdayContact) {
+fun BirthdayItem(
+    contact: BirthdayContact,
+    modifier: Modifier = Modifier // NEU 1: Wir empfangen den Modifier von außen
+) {
     var expanded by remember { mutableStateOf(false) }
     val context = LocalContext.current
     // NEU: Tastatur-Controller auch für die Karte holen
     val keyboardController = LocalSoftwareKeyboardController.current
-    Card(
-        modifier = Modifier
+    ElevatedCard(
+        modifier = modifier
             .fillMaxWidth()
             .padding(horizontal = 16.dp, vertical = 8.dp)
-            .animateContentSize() // Animiert das Ausklappen butterweich
+            .animateContentSize()
             .clickable {
-                keyboardController?.hide() // Tastatur einklappen, wenn Karte angetippt wird
+                keyboardController?.hide()
                 expanded = !expanded
             },
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
+        // HIER IST DIE MATERIAL 3 MAGIE: Tonal Elevation statt hartem Schatten!
+        elevation = CardDefaults.elevatedCardElevation(
+            defaultElevation = 2.dp, // Der unsichtbare Schatten
+            pressedElevation = 8.dp  // Wenn du draufdrückst, "schwebt" die Karte kurz hoch
+        ),
+        colors = CardDefaults.elevatedCardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceContainerLow // Moderne, sehr subtile Abhebung
+        )
     ) {
         Column {
             Row(
@@ -55,6 +68,22 @@ fun BirthdayItem(contact: BirthdayContact) {
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
+                // --- NEU: DER AVATAR ---
+                AsyncImage(
+                    model = contact.photoUri,
+                    contentDescription = "Profilbild von ${contact.name}",
+                    modifier = Modifier
+                        .size(50.dp)
+                        .clip(CircleShape) // Macht das Bild perfekt rund
+                        .background(MaterialTheme.colorScheme.surfaceVariant), // Hintergrund, falls es transparent ist
+                    contentScale = ContentScale.Crop, // Schneidet das Bild sauber ab, ohne es zu stauchen
+                    placeholder = rememberVectorPainter(Icons.Default.Person), // Zeigt das Icon, während es lädt
+                    error = rememberVectorPainter(Icons.Default.Person),       // Zeigt das Icon, wenn er kein Bild hat
+                    fallback = rememberVectorPainter(Icons.Default.Person)
+                )
+
+                Spacer(modifier = Modifier.width(16.dp)) // Etwas Abstand zwischen Bild und Name
+
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
                         text = contact.name,
@@ -119,7 +148,8 @@ fun BirthdayItem(contact: BirthdayContact) {
                             val intent = Intent(Intent.ACTION_SENDTO, Uri.parse("smsto:${actions.phoneNumber}"))
                             context.startActivity(intent)
                         }) {
-                            Icon(Icons.Default.Send, contentDescription = "SMS", tint = MaterialTheme.colorScheme.primary)
+                            // NEU 3: Das veraltete Send-Icon durch das moderne ersetzt (beseitigt die gelbe Warnung)
+                            Icon(Icons.AutoMirrored.Filled.Send, contentDescription = "SMS", tint = MaterialTheme.colorScheme.primary)
                         }
                     }
 

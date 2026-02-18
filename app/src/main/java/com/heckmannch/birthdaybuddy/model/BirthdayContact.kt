@@ -14,5 +14,6 @@ data class BirthdayContact(
     val labels: List<String>,
     val remainingDays: Int,
     val age: Int,
-    val actions: ContactActions = ContactActions()
+    val actions: ContactActions = ContactActions(),
+    val photoUri: String? = null
 )
