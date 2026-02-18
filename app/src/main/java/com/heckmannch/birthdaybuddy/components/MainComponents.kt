@@ -4,8 +4,6 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
@@ -64,22 +62,25 @@ fun MainDrawerContent(
     onSettingsClick: () -> Unit
 ) {
     ModalDrawerSheet {
-        Column(
+        // LazyColumn ist robuster für lange Listen im Drawer
+        LazyColumn(
             modifier = Modifier
-                .verticalScroll(rememberScrollState())
-                .navigationBarsPadding()
-                .padding(bottom = 24.dp)
+                .fillMaxSize()
+                .navigationBarsPadding(),
+            contentPadding = PaddingValues(bottom = 32.dp) // Extra Platz unten
         ) {
-            Spacer(Modifier.height(12.dp))
-            Text(
-                "Labels filtern",
-                style = MaterialTheme.typography.titleSmall,
-                modifier = Modifier.padding(horizontal = 28.dp, vertical = 16.dp)
-            )
+            item {
+                Spacer(Modifier.height(12.dp))
+                Text(
+                    "Labels filtern",
+                    style = MaterialTheme.typography.titleSmall,
+                    modifier = Modifier.padding(horizontal = 28.dp, vertical = 16.dp)
+                )
+            }
 
             val labelsToShow = availableLabels.filterNot { hiddenDrawerLabels.contains(it) }
 
-            labelsToShow.forEach { label ->
+            items(labelsToShow) { label ->
                 val isChecked = selectedLabels.contains(label)
                 NavigationDrawerItem(
                     label = { Text(label) },
@@ -90,23 +91,25 @@ fun MainDrawerContent(
                 )
             }
 
-            HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp, horizontal = 28.dp))
+            item {
+                HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp, horizontal = 28.dp))
+                
+                NavigationDrawerItem(
+                    label = { Text("Kontakte neu laden") },
+                    selected = false,
+                    onClick = onReloadContacts,
+                    icon = { Icon(Icons.Default.Refresh, contentDescription = null) },
+                    modifier = Modifier.padding(NavigationDrawerItemDefaults.ItemPadding)
+                )
 
-            NavigationDrawerItem(
-                label = { Text("Kontakte neu laden") },
-                selected = false,
-                onClick = onReloadContacts,
-                icon = { Icon(Icons.Default.Refresh, contentDescription = null) },
-                modifier = Modifier.padding(NavigationDrawerItemDefaults.ItemPadding)
-            )
-
-            NavigationDrawerItem(
-                label = { Text("Einstellungen") },
-                selected = false,
-                onClick = onSettingsClick,
-                icon = { Icon(Icons.Default.Settings, contentDescription = null) },
-                modifier = Modifier.padding(NavigationDrawerItemDefaults.ItemPadding)
-            )
+                NavigationDrawerItem(
+                    label = { Text("Einstellungen") },
+                    selected = false,
+                    onClick = onSettingsClick,
+                    icon = { Icon(Icons.Default.Settings, contentDescription = null) },
+                    modifier = Modifier.padding(NavigationDrawerItemDefaults.ItemPadding)
+                )
+            }
         }
     }
 }
@@ -124,7 +127,6 @@ fun BirthdayList(
     ) {
         items(
             items = contacts,
-            // Sicherheits-Key: Kombiniert ID und Name, falls IDs im System doppelt vergeben sind
             key = { "${it.id}_${it.name}" }
         ) { contact ->
             BirthdayItem(
