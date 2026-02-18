@@ -28,18 +28,18 @@ class BirthdayWidgetProvider : AppWidgetProvider() {
                 if (ContextCompat.checkSelfPermission(context, Manifest.permission.READ_CONTACTS) == PackageManager.PERMISSION_GRANTED) {
                     val filterManager = FilterManager(context)
 
-                    // Korrektur: Wir nutzen jetzt die Blacklist-Flows
-                    val hidden = filterManager.widgetHiddenLabelsFlow.first()
+                    // Korrektur: Wir nutzen jetzt die Blacklist- und Whitelist-Flows
+                    val selected = filterManager.widgetSelectedLabelsFlow.first()
                     val excluded = filterManager.widgetExcludedLabelsFlow.first()
                     val itemCount = filterManager.widgetItemCountFlow.first()
 
                     val contacts = fetchBirthdays(context)
 
-                    // Korrektur: Filterung nach Blacklist-Logik
+                    // Filterung nach Blacklist- und Whitelist-Logik
                     val nextBirthdays = contacts.filter { contact ->
-                        val isHidden = contact.labels.any { hidden.contains(it) }
                         val isExcluded = contact.labels.any { excluded.contains(it) }
-                        !isHidden && !isExcluded
+                        val isSelected = selected.isEmpty() || contact.labels.any { selected.contains(it) }
+                        !isExcluded && isSelected
                     }.sortedBy { it.remainingDays }.take(itemCount)
 
                     // UI zurücksetzen

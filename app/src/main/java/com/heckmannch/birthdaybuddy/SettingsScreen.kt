@@ -205,26 +205,26 @@ fun AlarmsScreen(filterManager: FilterManager, onBack: () -> Unit) {
 }
 
 @Composable fun HideLabelsScreen(f: FilterManager, a: Set<String>, l: Boolean, b: () -> Unit) {
-    val hiddenLabels by f.hiddenDrawerLabelsFlow.collectAsState(initial = emptySet())
+    val selectedLabels by f.selectedLabelsFlow.collectAsState(initial = emptySet())
     val scope = rememberCoroutineScope()
-    val activeLabels = a.filterNot { hiddenLabels.contains(it) }.toSet()
-    LabelSelectionScreen("Anzeigen", "Diese Labels im Seitenmenü anzeigen.", a, activeLabels, l, { label, checked ->
-        val newSet = hiddenLabels.toMutableSet()
-        if (checked) newSet.remove(label) else newSet.add(label)
-        scope.launch { f.saveHiddenDrawerLabels(newSet) }
+    // Whitelist Logik: Switch ON = Label ist in SELECTED_LABELS
+    LabelSelectionScreen("Anzeigen", "Diese Labels im Seitenmenü anzeigen.", a, selectedLabels, l, { label, checked ->
+        val newSet = selectedLabels.toMutableSet()
+        if (checked) newSet.add(label) else newSet.remove(label)
+        scope.launch { f.saveSelectedLabels(newSet) }
     }, b)
 }
 
 @Composable fun WidgetIncludeLabelsScreen(f: FilterManager, a: Set<String>, l: Boolean, b: () -> Unit) {
     val context = LocalContext.current
-    val hiddenLabels by f.widgetHiddenLabelsFlow.collectAsState(initial = emptySet())
+    val selectedLabels by f.widgetSelectedLabelsFlow.collectAsState(initial = emptySet())
     val scope = rememberCoroutineScope()
-    val activeLabels = a.filterNot { hiddenLabels.contains(it) }.toSet()
-    LabelSelectionScreen("Anzeigen", "Diese Labels im Widget anzeigen.", a, activeLabels, l, { label, checked ->
-        val newSet = hiddenLabels.toMutableSet()
-        if (checked) newSet.remove(label) else newSet.add(label)
+    // Whitelist Logik: Switch ON = Label ist in WIDGET_SELECTED_LABELS
+    LabelSelectionScreen("Anzeigen", "Diese Labels im Widget anzeigen.", a, selectedLabels, l, { label, checked ->
+        val newSet = selectedLabels.toMutableSet()
+        if (checked) newSet.add(label) else newSet.remove(label)
         scope.launch { 
-            f.saveWidgetHiddenLabels(newSet)
+            f.saveWidgetSelectedLabels(newSet)
             updateWidget(context)
         }
     }, b)

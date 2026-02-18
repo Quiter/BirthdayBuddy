@@ -31,23 +31,19 @@ fun MainScreen(
     var contacts by remember { mutableStateOf<List<BirthdayContact>>(emptyList()) }
     var searchQuery by remember { mutableStateOf("") }
     var isLoading by remember { mutableStateOf(true) }
+    var isInitialized by remember { mutableStateOf(false) }
 
-    val hiddenFilterLabels by filterManager.hiddenFilterLabelsFlow.collectAsState(initial = emptySet())
+    // Whitelist der ausgewählten Labels
+    val savedSelectedLabels by filterManager.selectedLabelsFlow.collectAsState(initial = null)
     val excludedLabels by filterManager.excludedLabelsFlow.collectAsState(initial = emptySet())
     val hiddenDrawerLabels by filterManager.hiddenDrawerLabelsFlow.collectAsState(initial = emptySet())
 
-    val notifHour by filterManager.notificationHourFlow.collectAsState(initial = 9)
-    val notifMinute by filterManager.notificationMinuteFlow.collectAsState(initial = 0)
-
-    // Hilfsfunktion zum Laden der Kontakte (vermeidet Warnungen und Code-Duplikate)
     val reloadContactsAction = suspend {
         isLoading = true
-        val loadedContacts = withContext(Dispatchers.IO) { fetchBirthdays(context) }
-        contacts = loadedContacts
+        contacts = withContext(Dispatchers.IO) { fetchBirthdays(context) }
         isLoading = false
     }
 
-    // Berechtigungs-Logik
     var hasPermission by remember {
         mutableStateOf(ContextCompat.checkSelfPermission(context, Manifest.permission.READ_CONTACTS) == PackageManager.PERMISSION_GRANTED)
     }
@@ -65,15 +61,29 @@ fun MainScreen(
         }
     }
 
-    LaunchedEffect(notifHour, notifMinute) { scheduleDailyAlarm(context, notifHour, notifMinute) }
-
     val availableLabels = remember(contacts) { contacts.flatMap { it.labels }.toSortedSet() }
-    val sortedContacts = remember(contacts, hiddenFilterLabels, excludedLabels, searchQuery) {
+
+    // Initialisierung: Wenn noch nichts gespeichert wurde, alles auswählen
+    LaunchedEffect(availableLabels, savedSelectedLabels) {
+        if (availableLabels.isNotEmpty() && savedSelectedLabels != null && !isInitialized) {
+            if (savedSelectedLabels!!.isEmpty()) {
+                filterManager.saveSelectedLabels(availableLabels)
+            }
+            isInitialized = true
+        }
+    }
+
+    val sortedContacts = remember(contacts, savedSelectedLabels, excludedLabels, searchQuery) {
+        val selected = savedSelectedLabels ?: emptySet()
         contacts.filter { contact ->
-            val isHidden = contact.labels.any { hiddenFilterLabels.contains(it) }
-            val isExcluded = contact.labels.any { excludedLabels.contains(it) }
-            val matches = contact.name.contains(searchQuery, ignoreCase = true)
-            !isHidden && !isExcluded && matches
+            // 1. Globale Sperre
+            if (contact.labels.any { excludedLabels.contains(it) }) return@filter false
+            
+            // 2. Suche
+            if (!contact.name.contains(searchQuery, ignoreCase = true)) return@filter false
+
+            // 3. Whitelist-Check: Hat der Kontakt mindestens ein Label, das aktiv ist?
+            contact.labels.any { selected.contains(it) }
         }.sortedBy { it.remainingDays }
     }
 
@@ -82,12 +92,12 @@ fun MainScreen(
         drawerContent = {
             MainDrawerContent(
                 availableLabels = availableLabels,
-                hiddenFilterLabels = hiddenFilterLabels,
+                selectedLabels = savedSelectedLabels ?: emptySet(),
                 hiddenDrawerLabels = hiddenDrawerLabels,
-                onLabelToggle = { label, _ ->
-                    val newSet = hiddenFilterLabels.toMutableSet()
-                    if (hiddenFilterLabels.contains(label)) newSet.remove(label) else newSet.add(label)
-                    scope.launch { filterManager.saveHiddenFilterLabels(newSet) }
+                onLabelToggle = { label, isCurrentlySelected ->
+                    val newSelection = (savedSelectedLabels ?: emptySet()).toMutableSet()
+                    if (isCurrentlySelected) newSelection.remove(label) else newSelection.add(label)
+                    scope.launch { filterManager.saveSelectedLabels(newSelection) }
                 },
                 onReloadContacts = {
                     scope.launch {

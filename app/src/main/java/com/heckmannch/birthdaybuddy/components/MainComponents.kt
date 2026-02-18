@@ -55,7 +55,7 @@ fun MainSearchBar(
 @Composable
 fun MainDrawerContent(
     availableLabels: Set<String>,
-    hiddenFilterLabels: Set<String>,
+    selectedLabels: Set<String>, // Geändert auf Whitelist
     hiddenDrawerLabels: Set<String>,
     onLabelToggle: (String, Boolean) -> Unit,
     onReloadContacts: () -> Unit,
@@ -69,14 +69,15 @@ fun MainDrawerContent(
             modifier = Modifier.padding(horizontal = 28.dp, vertical = 16.dp)
         )
 
+        // Nur Labels zeigen, die nicht in den Settings versteckt wurden
         val labelsToShow = availableLabels.filterNot { hiddenDrawerLabels.contains(it) }
 
         labelsToShow.forEach { label ->
-            val isChecked = !hiddenFilterLabels.contains(label)
+            val isChecked = selectedLabels.contains(label)
             NavigationDrawerItem(
                 label = { Text(label) },
                 selected = false,
-                onClick = { onLabelToggle(label, !isChecked) },
+                onClick = { onLabelToggle(label, isChecked) },
                 icon = { Checkbox(checked = isChecked, onCheckedChange = null) },
                 modifier = Modifier.padding(NavigationDrawerItemDefaults.ItemPadding)
             )
