@@ -17,9 +17,7 @@ import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
-        // Splash Screen vor super.onCreate() installieren!
         installSplashScreen()
-        
         super.onCreate(savedInstanceState)
         createNotificationChannel()
         enableEdgeToEdge()
@@ -30,51 +28,43 @@ class MainActivity : ComponentActivity() {
                 val filterManager = remember { FilterManager(this@MainActivity) }
 
                 NavHost(navController = navController, startDestination = "main") {
-
-                    composable("main") { MainScreen(filterManager) { navController.navigate("settings") } }
-
-                    composable("settings") { SettingsMenuScreen({ navController.navigate(it) }, { navController.popBackStack() }) }
-
-                    composable("settings_block") {
-                        var availableLabels by remember { mutableStateOf<Set<String>>(emptySet()) }
-                        var isLoading by remember { mutableStateOf(true) }
-                        LaunchedEffect(Unit) {
-                            withContext(Dispatchers.IO) { availableLabels = fetchBirthdays(this@MainActivity).flatMap { it.labels }.toSortedSet() }
-                            isLoading = false
-                        }
-                        BlockLabelsScreen(filterManager, availableLabels, isLoading) { navController.popBackStack() }
+                    composable("main") { 
+                        MainScreen(filterManager) { navController.navigate("settings") } 
                     }
 
-                    composable("settings_hide") {
-                        var availableLabels by remember { mutableStateOf<Set<String>>(emptySet()) }
-                        var isLoading by remember { mutableStateOf(true) }
-                        LaunchedEffect(Unit) {
-                            withContext(Dispatchers.IO) { availableLabels = fetchBirthdays(this@MainActivity).flatMap { it.labels }.toSortedSet() }
-                            isLoading = false
-                        }
-                        HideLabelsScreen(filterManager, availableLabels, isLoading) { navController.popBackStack() }
+                    composable("settings") { 
+                        SettingsMenuScreen({ navController.navigate(it) }, { navController.popBackStack() }) 
                     }
 
-                    composable("settings_alarms") { AlarmsScreen(filterManager) { navController.popBackStack() } }
+                    // Optimierung: Gemeinsame Logik für Label-basierte Screens
+                    listOf(
+                        "settings_block", "settings_hide", 
+                        "settings_widget_include", "settings_widget_exclude"
+                    ).forEach { route ->
+                        composable(route) {
+                            var availableLabels by remember { mutableStateOf<Set<String>>(emptySet()) }
+                            var isLoading by remember { mutableStateOf(true) }
+                            
+                            LaunchedEffect(Unit) {
+                                withContext(Dispatchers.IO) {
+                                    availableLabels = fetchBirthdays(this@MainActivity)
+                                        .flatMap { it.labels }
+                                        .toSortedSet()
+                                }
+                                isLoading = false
+                            }
 
-                    composable("settings_widget_include") {
-                        var availableLabels by remember { mutableStateOf<Set<String>>(emptySet()) }
-                        var isLoading by remember { mutableStateOf(true) }
-                        LaunchedEffect(Unit) {
-                            withContext(Dispatchers.IO) { availableLabels = fetchBirthdays(this@MainActivity).flatMap { it.labels }.toSortedSet() }
-                            isLoading = false
+                            when (route) {
+                                "settings_block" -> BlockLabelsScreen(filterManager, availableLabels, isLoading) { navController.popBackStack() }
+                                "settings_hide" -> HideLabelsScreen(filterManager, availableLabels, isLoading) { navController.popBackStack() }
+                                "settings_widget_include" -> WidgetIncludeLabelsScreen(filterManager, availableLabels, isLoading) { navController.popBackStack() }
+                                "settings_widget_exclude" -> WidgetExcludeLabelsScreen(filterManager, availableLabels, isLoading) { navController.popBackStack() }
+                            }
                         }
-                        WidgetIncludeLabelsScreen(filterManager, availableLabels, isLoading) { navController.popBackStack() }
                     }
 
-                    composable("settings_widget_exclude") {
-                        var availableLabels by remember { mutableStateOf<Set<String>>(emptySet()) }
-                        var isLoading by remember { mutableStateOf(true) }
-                        LaunchedEffect(Unit) {
-                            withContext(Dispatchers.IO) { availableLabels = fetchBirthdays(this@MainActivity).flatMap { it.labels }.toSortedSet() }
-                            isLoading = false
-                        }
-                        WidgetExcludeLabelsScreen(filterManager, availableLabels, isLoading) { navController.popBackStack() }
+                    composable("settings_alarms") { 
+                        AlarmsScreen(filterManager) { navController.popBackStack() }
                     }
                 }
             }

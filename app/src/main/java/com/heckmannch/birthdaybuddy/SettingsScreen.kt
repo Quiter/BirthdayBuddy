@@ -1,6 +1,5 @@
 package com.heckmannch.birthdaybuddy
 
-import android.app.TimePickerDialog
 import android.content.Intent
 import android.net.Uri
 import androidx.compose.foundation.background
@@ -13,17 +12,7 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
-import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Clear
-import androidx.compose.material.icons.filled.DateRange
-import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.icons.filled.Done
-import androidx.compose.material.icons.filled.Info
-import androidx.compose.material.icons.filled.List
-import androidx.compose.material.icons.filled.Lock
-import androidx.compose.material.icons.filled.Notifications
-import androidx.compose.material.icons.filled.Visibility
-import androidx.compose.material.icons.filled.VisibilityOff
+import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -49,18 +38,14 @@ fun SettingsMenuScreen(onNavigate: (String) -> Unit, onBack: () -> Unit) {
     val filterManager = remember { FilterManager(context) }
     val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
 
-    var showCountDialog by remember { mutableStateOf(false) }
     val widgetCount by filterManager.widgetItemCountFlow.collectAsState(initial = 1)
+    var showCountDialog by remember { mutableStateOf(false) }
 
-    // Versionsnummer dynamisch laden
-    val packageInfo = remember {
+    val versionName = remember {
         try {
-            context.packageManager.getPackageInfo(context.packageName, 0)
-        } catch (e: Exception) {
-            null
-        }
+            context.packageManager.getPackageInfo(context.packageName, 0).versionName ?: "0.6"
+        } catch (e: Exception) { "0.6" }
     }
-    val versionName = packageInfo?.versionName ?: "0.6"
 
     Scaffold(
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
@@ -68,116 +53,76 @@ fun SettingsMenuScreen(onNavigate: (String) -> Unit, onBack: () -> Unit) {
             MediumTopAppBar(
                 title = { Text("Einstellungen") },
                 navigationIcon = {
-                    IconButton(onClick = onBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, "Zurück")
-                    }
+                    IconButton(onClick = onBack) { Icon(Icons.AutoMirrored.Filled.ArrowBack, "Zurück") }
                 },
                 scrollBehavior = scrollBehavior
             )
         }
     ) { padding ->
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(padding)
-                .padding(horizontal = 16.dp)
-        ) {
-            Text(
-                "Benachrichtigungen",
-                style = MaterialTheme.typography.labelLarge,
-                color = MaterialTheme.colorScheme.primary,
-                modifier = Modifier.padding(vertical = 8.dp, horizontal = 4.dp)
-            )
+        Column(modifier = Modifier.fillMaxSize().padding(padding).padding(horizontal = 16.dp)) {
+            SectionHeader("Benachrichtigungen")
             SettingsBlock("Alarme", "Erinnerungszeiten konfigurieren", Icons.Default.Notifications, Color(0xFF4CAF50)) { onNavigate("settings_alarms") }
             
             Spacer(modifier = Modifier.height(16.dp))
-            Text(
-                "Filter & Sichtbarkeit",
-                style = MaterialTheme.typography.labelLarge,
-                color = MaterialTheme.colorScheme.primary,
-                modifier = Modifier.padding(vertical = 8.dp, horizontal = 4.dp)
-            )
-            Card(
-                modifier = Modifier.fillMaxWidth(),
-                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow)
-            ) {
+            SectionHeader("Filter & Sichtbarkeit")
+            SettingsCard {
                 val menuOrange = Color(0xFFFF9800)
-                Column {
-                    SettingsBlockRow("Anzeigen", "Labels im Drawer verstecken", Icons.Default.Visibility, menuOrange) { onNavigate("settings_hide") }
-                    HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant)
-                    SettingsBlockRow("Blockieren", "Labels komplett ignorieren", Icons.Default.VisibilityOff, menuOrange) { onNavigate("settings_block") }
-                }
+                SettingsBlockRow("Anzeigen", "Labels im Drawer verstecken", Icons.Default.Visibility, menuOrange) { onNavigate("settings_hide") }
+                HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant)
+                SettingsBlockRow("Blockieren", "Labels komplett ignorieren", Icons.Default.VisibilityOff, menuOrange) { onNavigate("settings_block") }
             }
 
             Spacer(modifier = Modifier.height(16.dp))
-            Text(
-                "Widget",
-                style = MaterialTheme.typography.labelLarge,
-                color = MaterialTheme.colorScheme.primary,
-                modifier = Modifier.padding(vertical = 8.dp, horizontal = 4.dp)
-            )
-            Card(
-                modifier = Modifier.fillMaxWidth(),
-                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow)
-            ) {
+            SectionHeader("Widget")
+            SettingsCard {
                 val widgetBlue = Color(0xFF2196F3)
-                Column {
-                    SettingsBlockRow("Anzahl", "Bis zu $widgetCount Personen", Icons.Default.List, widgetBlue) { showCountDialog = true }
-                    HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant)
-                    SettingsBlockRow("Anzeigen", "Nur diese Labels nutzen", Icons.Default.Visibility, widgetBlue) { onNavigate("settings_widget_include") }
-                    HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant)
-                    SettingsBlockRow("Blockieren", "Diese Labels ausschließen", Icons.Default.VisibilityOff, widgetBlue) { onNavigate("settings_widget_exclude") }
-                }
+                SettingsBlockRow("Anzahl", "Bis zu $widgetCount Personen", Icons.Default.List, widgetBlue) { showCountDialog = true }
+                HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant)
+                SettingsBlockRow("Anzeigen", "Nur diese Labels nutzen", Icons.Default.Visibility, widgetBlue) { onNavigate("settings_widget_include") }
+                HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant)
+                SettingsBlockRow("Blockieren", "Diese Labels ausschließen", Icons.Default.VisibilityOff, widgetBlue) { onNavigate("settings_widget_exclude") }
             }
 
             Spacer(modifier = Modifier.weight(1f))
-            Column(
-                modifier = Modifier.fillMaxWidth().padding(bottom = 24.dp),
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                Text("Version $versionName", style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                TextButton(onClick = { context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse("https://github.com/Quiter/BirthdayBuddy"))) }) {
-                    Icon(painter = painterResource(id = R.drawable.ic_github), contentDescription = null, modifier = Modifier.size(18.dp))
-                    Spacer(Modifier.width(8.dp))
-                    Text("Projekt auf GitHub")
-                }
+            Footer(versionName) {
+                context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse("https://github.com/Quiter/BirthdayBuddy")))
             }
         }
     }
 
     if (showCountDialog) {
-        AlertDialog(
-            onDismissRequest = { showCountDialog = false },
-            title = { Text("Widget Kapazität") },
-            text = {
-                Column {
-                    listOf(1, 2, 3).forEach { count ->
-                        ListItem(
-                            headlineContent = { Text("$count ${if (count == 1) "Person" else "Personen"}") },
-                            leadingContent = { RadioButton(selected = widgetCount == count, onClick = null) },
-                            modifier = Modifier.clickable {
-                                scope.launch {
-                                    filterManager.saveWidgetItemCount(count)
-                                    updateWidget(context)
-                                }
-                                showCountDialog = false
-                            }
-                        )
-                    }
-                }
-            },
-            confirmButton = { TextButton(onClick = { showCountDialog = false }) { Text("Fertig") } }
-        )
+        WidgetCountDialog(widgetCount, onDismiss = { showCountDialog = false }) { count ->
+            scope.launch {
+                filterManager.saveWidgetItemCount(count)
+                updateWidget(context)
+                showCountDialog = false
+            }
+        }
     }
 }
 
 @Composable
-fun SettingsBlock(title: String, subtitle: String, icon: ImageVector, containerColor: Color, onClick: () -> Unit) {
+private fun SectionHeader(title: String) {
+    Text(
+        text = title,
+        style = MaterialTheme.typography.labelLarge,
+        color = MaterialTheme.colorScheme.primary,
+        modifier = Modifier.padding(vertical = 8.dp, horizontal = 4.dp)
+    )
+}
+
+@Composable
+private fun SettingsCard(content: @Composable ColumnScope.() -> Unit) {
     Card(
         modifier = Modifier.fillMaxWidth(),
-        onClick = onClick,
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow)
-    ) {
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow),
+        content = content
+    )
+}
+
+@Composable
+fun SettingsBlock(title: String, subtitle: String, icon: ImageVector, containerColor: Color, onClick: () -> Unit) {
+    SettingsCard {
         SettingsBlockRow(title, subtitle, icon, containerColor, onClick = onClick)
     }
 }
@@ -198,6 +143,41 @@ fun SettingsBlockRow(title: String, subtitle: String, icon: ImageVector, contain
         },
         trailingContent = { Icon(Icons.AutoMirrored.Filled.KeyboardArrowRight, null, tint = MaterialTheme.colorScheme.outline) },
         colors = ListItemDefaults.colors(containerColor = Color.Transparent)
+    )
+}
+
+@Composable
+private fun Footer(versionName: String, onGithubClick: () -> Unit) {
+    Column(
+        modifier = Modifier.fillMaxWidth().padding(bottom = 24.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Text("Version $versionName", style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        TextButton(onClick = onGithubClick) {
+            Icon(painter = painterResource(id = R.drawable.ic_github), contentDescription = null, modifier = Modifier.size(18.dp))
+            Spacer(Modifier.width(8.dp))
+            Text("Projekt auf GitHub")
+        }
+    }
+}
+
+@Composable
+private fun WidgetCountDialog(currentCount: Int, onDismiss: () -> Unit, onSelect: (Int) -> Unit) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("Widget Kapazität") },
+        text = {
+            Column {
+                listOf(1, 2, 3).forEach { count ->
+                    ListItem(
+                        headlineContent = { Text("$count ${if (count == 1) "Person" else "Personen"}") },
+                        leadingContent = { RadioButton(selected = currentCount == count, onClick = null) },
+                        modifier = Modifier.clickable { onSelect(count) }
+                    )
+                }
+            }
+        },
+        confirmButton = { TextButton(onClick = onDismiss) { Text("Fertig") } }
     )
 }
 
@@ -242,13 +222,9 @@ fun AlarmsScreen(filterManager: FilterManager, onBack: () -> Unit) {
 
     var showAddDayDialog by remember { mutableStateOf(false) }
     var newDayInput by remember { mutableStateOf("") }
-
     var showTimePicker by remember { mutableStateOf(false) }
-    val timePickerState = rememberTimePickerState(
-        initialHour = notifHour,
-        initialMinute = notifMinute,
-        is24Hour = true
-    )
+    
+    val timePickerState = rememberTimePickerState(initialHour = notifHour, initialMinute = notifMinute, is24Hour = true)
 
     Scaffold(
         topBar = {
@@ -266,7 +242,7 @@ fun AlarmsScreen(filterManager: FilterManager, onBack: () -> Unit) {
         }
     ) { padding ->
         Column(modifier = Modifier.fillMaxSize().padding(padding)) {
-            Text("Uhrzeit", style = MaterialTheme.typography.titleSmall, modifier = Modifier.padding(16.dp), color = MaterialTheme.colorScheme.primary)
+            SectionHeader("Uhrzeit")
             ListItem(
                 headlineContent = { Text("Standard-Uhrzeit") },
                 supportingContent = { Text(String.format(Locale.getDefault(), "%02d:%02d Uhr", notifHour, notifMinute)) },
@@ -275,7 +251,7 @@ fun AlarmsScreen(filterManager: FilterManager, onBack: () -> Unit) {
             )
 
             HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
-            Text("Vorlaufzeiten", style = MaterialTheme.typography.titleSmall, modifier = Modifier.padding(16.dp), color = MaterialTheme.colorScheme.primary)
+            SectionHeader("Vorlaufzeiten")
 
             val sortedDays = notifDaysSet.mapNotNull { it.toIntOrNull() }.sorted()
 
@@ -301,11 +277,7 @@ fun AlarmsScreen(filterManager: FilterManager, onBack: () -> Unit) {
         AlertDialog(
             onDismissRequest = { showTimePicker = false },
             title = { Text("Erinnerungszeit wählen") },
-            text = {
-                Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
-                    TimePicker(state = timePickerState)
-                }
-            },
+            text = { Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) { TimePicker(state = timePickerState) } },
             confirmButton = {
                 TextButton(onClick = {
                     scope.launch {
@@ -314,9 +286,7 @@ fun AlarmsScreen(filterManager: FilterManager, onBack: () -> Unit) {
                     }
                 }) { Text("Speichern") }
             },
-            dismissButton = {
-                TextButton(onClick = { showTimePicker = false }) { Text("Abbrechen") }
-            }
+            dismissButton = { TextButton(onClick = { showTimePicker = false }) { Text("Abbrechen") } }
         )
     }
 
@@ -350,52 +320,47 @@ fun AlarmsScreen(filterManager: FilterManager, onBack: () -> Unit) {
     }
 }
 
-@Composable fun BlockLabelsScreen(f: FilterManager, a: Set<String>, l: Boolean, b: () -> Unit) = BlockLabelsScreenImpl(f, a, l, b)
-@Composable fun HideLabelsScreen(f: FilterManager, a: Set<String>, l: Boolean, b: () -> Unit) = HideLabelsScreenImpl(f, a, l, b)
-@Composable fun WidgetIncludeLabelsScreen(f: FilterManager, a: Set<String>, l: Boolean, b: () -> Unit) = WidgetIncludeLabelsScreenImpl(f, a, l, b)
-@Composable fun WidgetExcludeLabelsScreen(f: FilterManager, a: Set<String>, l: Boolean, b: () -> Unit) = WidgetExcludeLabelsScreenImpl(f, a, l, b)
-
-@Composable private fun BlockLabelsScreenImpl(filterManager: FilterManager, availableLabels: Set<String>, isLoading: Boolean, onBack: () -> Unit) {
-    val excludedLabels by filterManager.excludedLabelsFlow.collectAsState(initial = emptySet())
+@Composable fun BlockLabelsScreen(f: FilterManager, a: Set<String>, l: Boolean, b: () -> Unit) {
+    val labels by f.excludedLabelsFlow.collectAsState(initial = emptySet())
     val scope = rememberCoroutineScope()
-    LabelSelectionScreen("Blockieren", "Diese Kontakte werden komplett ausgeblendet.", availableLabels, excludedLabels, isLoading, { label, isChecked ->
-        val newSet = excludedLabels.toMutableSet()
-        if (isChecked) newSet.add(label) else newSet.remove(label)
-        scope.launch { filterManager.saveExcludedLabels(newSet) }
-    }, onBack)
+    LabelSelectionScreen("Blockieren", "Diese Kontakte werden komplett ausgeblendet.", a, labels, l, { label, checked ->
+        val newSet = labels.toMutableSet()
+        if (checked) newSet.add(label) else newSet.remove(label)
+        scope.launch { f.saveExcludedLabels(newSet) }
+    }, b)
 }
 
-@Composable private fun HideLabelsScreenImpl(filterManager: FilterManager, availableLabels: Set<String>, isLoading: Boolean, onBack: () -> Unit) {
-    val hiddenLabels by filterManager.hiddenDrawerLabelsFlow.collectAsState(initial = emptySet())
+@Composable fun HideLabelsScreen(f: FilterManager, a: Set<String>, l: Boolean, b: () -> Unit) {
+    val labels by f.hiddenDrawerLabelsFlow.collectAsState(initial = emptySet())
     val scope = rememberCoroutineScope()
-    LabelSelectionScreen("Anzeigen", "Diese Labels im Seitenmenü verstecken.", availableLabels, hiddenLabels, isLoading, { label, isChecked ->
-        val newSet = hiddenLabels.toMutableSet()
-        if (isChecked) newSet.add(label) else newSet.remove(label)
-        scope.launch { filterManager.saveHiddenDrawerLabels(newSet) }
-    }, onBack)
+    LabelSelectionScreen("Anzeigen", "Diese Labels im Seitenmenü verstecken.", a, labels, l, { label, checked ->
+        val newSet = labels.toMutableSet()
+        if (checked) newSet.add(label) else newSet.remove(label)
+        scope.launch { f.saveHiddenDrawerLabels(newSet) }
+    }, b)
 }
 
-@Composable private fun WidgetIncludeLabelsScreenImpl(filterManager: FilterManager, availableLabels: Set<String>, isLoading: Boolean, onBack: () -> Unit) {
-    val includedLabels by filterManager.widgetIncludedLabelsFlow.collectAsState(initial = setOf("ALL_DEFAULT"))
-    val scope = rememberCoroutineScope()
+@Composable fun WidgetIncludeLabelsScreen(f: FilterManager, a: Set<String>, l: Boolean, b: () -> Unit) {
     val context = LocalContext.current
-    val activeLabels = if (includedLabels.contains("ALL_DEFAULT")) availableLabels else includedLabels
-    LabelSelectionScreen("Widget: Anzeigen", "Nur diese Labels im Widget zeigen.", availableLabels, activeLabels, isLoading, { label, isChecked ->
+    val labels by f.widgetIncludedLabelsFlow.collectAsState(initial = setOf("ALL_DEFAULT"))
+    val scope = rememberCoroutineScope()
+    val activeLabels = if (labels.contains("ALL_DEFAULT")) a else labels
+    LabelSelectionScreen("Widget: Anzeigen", "Nur diese Labels im Widget zeigen.", a, activeLabels, l, { label, checked ->
         val newSet = activeLabels.toMutableSet()
-        if (isChecked) newSet.add(label) else newSet.remove(label)
-        scope.launch { filterManager.saveWidgetIncludedLabels(newSet) }
+        if (checked) newSet.add(label) else newSet.remove(label)
+        scope.launch { f.saveWidgetIncludedLabels(newSet) }
         updateWidget(context)
-    }, onBack)
+    }, b)
 }
 
-@Composable private fun WidgetExcludeLabelsScreenImpl(filterManager: FilterManager, availableLabels: Set<String>, isLoading: Boolean, onBack: () -> Unit) {
-    val excludedLabels by filterManager.widgetExcludedLabelsFlow.collectAsState(initial = emptySet())
-    val scope = rememberCoroutineScope()
+@Composable fun WidgetExcludeLabelsScreen(f: FilterManager, a: Set<String>, l: Boolean, b: () -> Unit) {
     val context = LocalContext.current
-    LabelSelectionScreen("Widget: Blockieren", "Diese Labels im Widget immer ignorieren.", availableLabels, excludedLabels, isLoading, { label, isChecked ->
-        val newSet = excludedLabels.toMutableSet()
-        if (isChecked) newSet.add(label) else newSet.remove(label)
-        scope.launch { filterManager.saveWidgetExcludedLabels(newSet) }
+    val labels by f.widgetExcludedLabelsFlow.collectAsState(initial = emptySet())
+    val scope = rememberCoroutineScope()
+    LabelSelectionScreen("Widget: Blockieren", "Diese Labels im Widget immer ignorieren.", a, labels, l, { label, checked ->
+        val newSet = labels.toMutableSet()
+        if (checked) newSet.add(label) else newSet.remove(label)
+        scope.launch { f.saveWidgetExcludedLabels(newSet) }
         updateWidget(context)
-    }, onBack)
+    }, b)
 }

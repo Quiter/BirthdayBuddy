@@ -1,60 +1,64 @@
 package com.heckmannch.birthdaybuddy.utils
 
-// Übersetzt das amerikanische ISO-Datum (YYYY-MM-DD) in DD.MM.YYYY
+import java.time.LocalDate
+import java.time.MonthDay
+import java.time.format.DateTimeFormatter
+import java.time.temporal.ChronoUnit
+
+private val ISO_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd")
+private val GERMAN_FORMATTER = DateTimeFormatter.ofPattern("dd.MM.yyyy")
+private val GERMAN_NO_YEAR_FORMATTER = DateTimeFormatter.ofPattern("dd.MM.")
+
+/**
+ * Formatiert ein Datum von ISO (yyyy-MM-dd oder --MM-DD) in das deutsche Format.
+ */
 fun formatGermanDate(dateString: String): String {
+    if (dateString.isBlank()) return ""
     return try {
         if (dateString.startsWith("--")) {
-            val month = dateString.substring(2, 4)
-            val day = dateString.substring(5, 7)
-            "$day.$month."
+            val monthDay = MonthDay.parse(dateString)
+            monthDay.format(GERMAN_NO_YEAR_FORMATTER)
         } else {
-            val parts = dateString.split("-")
-            if (parts.size == 3) {
-                val year = parts[0]
-                val month = parts[1]
-                val day = parts[2]
-                "$day.$month.$year"
-            } else {
-                dateString
-            }
+            val date = LocalDate.parse(dateString, ISO_FORMATTER)
+            date.format(GERMAN_FORMATTER)
         }
     } catch (e: Exception) {
         dateString
     }
 }
 
-// Berechnet das Alter und die verbleibenden Tage bis zum nächsten Geburtstag
+/**
+ * Berechnet das Alter (beim nächsten Geburtstag) und die verbleibenden Tage.
+ * Pair(Alter, TageBisGeburtstag)
+ */
 fun calculateAgeAndDays(birthDateString: String): Pair<Int, Int> {
-    if (birthDateString.isEmpty()) return Pair(0, 0)
-
+    if (birthDateString.isBlank()) return Pair(0, 0)
+    
     return try {
-        val today = java.time.LocalDate.now()
-
+        val today = LocalDate.now()
+        
         if (birthDateString.startsWith("--")) {
-            val month = birthDateString.substring(2, 4).toInt()
-            val day = birthDateString.substring(5, 7).toInt()
-
-            var nextBday = java.time.LocalDate.of(today.year, month, day)
-            if (nextBday.isBefore(today)) {
-                nextBday = nextBday.plusYears(1)
+            val monthDay = MonthDay.parse(birthDateString)
+            var nextBirthday = monthDay.atYear(today.year)
+            
+            if (nextBirthday.isBefore(today)) {
+                nextBirthday = nextBirthday.plusYears(1)
             }
-
-            val days = java.time.temporal.ChronoUnit.DAYS.between(today, nextBday).toInt()
-            return Pair(0, days)
+            
+            val days = ChronoUnit.DAYS.between(today, nextBirthday).toInt()
+            Pair(0, days) // Jahr unbekannt -> Alter 0
         } else {
-            val formatter = java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd")
-            val birthDate = java.time.LocalDate.parse(birthDateString, formatter)
-
-            var turnsAge = today.year - birthDate.year
-            var nextBday = birthDate.withYear(today.year)
-
-            if (nextBday.isBefore(today)) {
-                nextBday = nextBday.plusYears(1)
-                turnsAge += 1
+            val birthDate = LocalDate.parse(birthDateString, ISO_FORMATTER)
+            var nextBirthday = birthDate.withYear(today.year)
+            var age = today.year - birthDate.year
+            
+            if (nextBirthday.isBefore(today)) {
+                nextBirthday = nextBirthday.plusYears(1)
+                age++
             }
-
-            val days = java.time.temporal.ChronoUnit.DAYS.between(today, nextBday).toInt()
-            return Pair(turnsAge, days)
+            
+            val days = ChronoUnit.DAYS.between(today, nextBirthday).toInt()
+            Pair(age, days)
         }
     } catch (e: Exception) {
         Pair(0, 0)
