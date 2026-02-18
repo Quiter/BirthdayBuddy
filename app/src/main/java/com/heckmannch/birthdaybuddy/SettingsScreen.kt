@@ -1,14 +1,13 @@
 package com.heckmannch.birthdaybuddy
 
 import android.content.Intent
-import android.net.Uri
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.List
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -17,8 +16,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
+import androidx.core.net.toUri
 import com.heckmannch.birthdaybuddy.components.*
 import com.heckmannch.birthdaybuddy.utils.*
 import kotlinx.coroutines.launch
@@ -64,7 +63,7 @@ fun SettingsMenuScreen(onNavigate: (String) -> Unit, onBack: () -> Unit) {
             SectionHeader("Widget")
             SettingsCard {
                 val widgetBlue = Color(0xFF2196F3)
-                SettingsBlockRow("Anzahl", "Bis zu $widgetCount Personen", Icons.Default.List, widgetBlue) { showCountDialog = true }
+                SettingsBlockRow("Anzahl", "Bis zu $widgetCount Personen", Icons.AutoMirrored.Filled.List, widgetBlue) { showCountDialog = true }
                 HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant)
                 SettingsBlockRow("Anzeigen", "Diese Labels im Widget anzeigen", Icons.Default.Visibility, widgetBlue) { onNavigate("settings_widget_include") }
                 HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant)
@@ -73,7 +72,7 @@ fun SettingsMenuScreen(onNavigate: (String) -> Unit, onBack: () -> Unit) {
 
             Spacer(modifier = Modifier.weight(1f))
             SettingsFooter(versionName) {
-                context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse("https://github.com/Quiter/BirthdayBuddy")))
+                context.startActivity(Intent(Intent.ACTION_VIEW, "https://github.com/Quiter/BirthdayBuddy".toUri()))
             }
         }
     }
@@ -93,13 +92,12 @@ fun SettingsMenuScreen(onNavigate: (String) -> Unit, onBack: () -> Unit) {
 @Composable
 fun AlarmsScreen(filterManager: FilterManager, onBack: () -> Unit) {
     val scope = rememberCoroutineScope()
-    val context = LocalContext.current
     val notifHour by filterManager.notificationHourFlow.collectAsState(initial = 9)
     val notifMinute by filterManager.notificationMinuteFlow.collectAsState(initial = 0)
     val notifDaysSet by filterManager.notificationDaysFlow.collectAsState(initial = setOf("0", "7"))
 
     var showAddDayDialog by remember { mutableStateOf(false) }
-    var newDayInput by remember { mutableStateOf("") }
+    var selectedDayByWheel by remember { mutableIntStateOf(3) }
     var showTimePicker by remember { mutableStateOf(false) }
     val timePickerState = rememberTimePickerState(initialHour = notifHour, initialMinute = notifMinute, is24Hour = true)
 
@@ -131,7 +129,15 @@ fun AlarmsScreen(filterManager: FilterManager, onBack: () -> Unit) {
             val sortedDays = notifDaysSet.mapNotNull { it.toIntOrNull() }.sorted()
             LazyColumn(modifier = Modifier.weight(1f)) {
                 items(sortedDays) { day ->
-                    val text = when (day) { 0 -> "Am Tag des Geburtstags"; 1 -> "1 Tag vorher"; 7 -> "1 Woche vorher"; else -> "$day Tage vorher" }
+                    val text = when {
+                        day == 0 -> "Am Tag des Geburtstags"
+                        day == 1 -> "1 Tag vorher"
+                        day % 7 == 0 -> {
+                            val weeks = day / 7
+                            if (weeks == 1) "1 Woche vorher" else "$weeks Wochen vorher"
+                        }
+                        else -> "$day Tage vorher"
+                    }
                     ListItem(
                         headlineContent = { Text(text) },
                         trailingContent = {
@@ -167,27 +173,21 @@ fun AlarmsScreen(filterManager: FilterManager, onBack: () -> Unit) {
     if (showAddDayDialog) {
         AlertDialog(
             onDismissRequest = { showAddDayDialog = false },
-            title = { Text("Vorlaufzeit hinzufügen") },
+            title = { Text("Vorlaufzeit wählen") },
             text = {
-                OutlinedTextField(
-                    value = newDayInput,
-                    onValueChange = { if (it.all { char -> char.isDigit() }) newDayInput = it },
-                    label = { Text("Tage vorher") },
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                    singleLine = true,
-                    modifier = Modifier.fillMaxWidth()
+                WheelPicker(
+                    range = (0..30).toList(),
+                    initialValue = selectedDayByWheel,
+                    onValueChange = { selectedDayByWheel = it }
                 )
             },
             confirmButton = {
                 TextButton(onClick = {
-                    newDayInput.toIntOrNull()?.let {
-                        val newSet = notifDaysSet.toMutableSet()
-                        newSet.add(it.toString())
-                        scope.launch { filterManager.saveNotificationDays(newSet) }
-                    }
-                    newDayInput = ""
+                    val newSet = notifDaysSet.toMutableSet()
+                    newSet.add(selectedDayByWheel.toString())
+                    scope.launch { filterManager.saveNotificationDays(newSet) }
                     showAddDayDialog = false
-                }) { Text("Speichern") }
+                }) { Text("Hinzufügen") }
             },
             dismissButton = { TextButton(onClick = { showAddDayDialog = false }) { Text("Abbrechen") } }
         )
@@ -223,7 +223,7 @@ fun AlarmsScreen(filterManager: FilterManager, onBack: () -> Unit) {
     LabelSelectionScreen("Anzeigen", "Diese Labels im Widget anzeigen.", a, activeLabels, l, { label, checked ->
         val newSet = hiddenLabels.toMutableSet()
         if (checked) newSet.remove(label) else newSet.add(label)
-        scope.launch {
+        scope.launch { 
             f.saveWidgetHiddenLabels(newSet)
             updateWidget(context)
         }
