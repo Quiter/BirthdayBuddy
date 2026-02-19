@@ -5,6 +5,8 @@
     <string name="main_search_hint">Search…</string>
     <string name="main_no_birthdays">No birthdays found.</string>
     <string name="main_loading">Loading data…</string>
+    <string name="permission_required_desc">BirthdayBuddy needs permission to read your contacts to display birthdays.</string>
+    <string name="open_settings">Open Settings</string>
 
     <!-- Drawer / Navigation -->
     <string name="drawer_title">Birthday Buddy</string>
@@ -66,4 +68,16 @@
     <string name="alarms_day_7">1 week before</string>
     <string name="alarms_day_14">2 weeks before</string>
     <string name="alarms_day_30">1 month before</string>
+
+    <!-- <string name="permission_required_desc">BirthdayBuddy benötigt die Berechtigung, deine Kontakte
+        zu lesen, um Geburtstage anzuzeigen.
+    </string> -->
+
+    <!-- <string name="open_settings">Einstellungen öffnen</string> -->
+
+    <!-- <string name="permission_required_desc">BirthdayBuddy benötigt die Berechtigung, deine Kontakte
+        zu lesen, um Geburtstage anzuzeigen.
+    </string> -->
+
+    <!-- <string name="open_settings">Einstellungen öffnen</string> -->
 </resources>

@@ -87,8 +87,9 @@ fun fetchBirthdays(context: Context): List<BirthdayContact> {
 
 private fun getAllContactLabels(context: Context, contactIds: Set<String>): Map<String, List<String>> {
     val result = mutableMapOf<String, MutableList<String>>()
-    val groupTitles = mutableMapOf<String, String>()
+    if (contactIds.isEmpty()) return result
 
+    val groupTitles = mutableMapOf<String, String>()
     context.contentResolver.query(
         ContactsContract.Groups.CONTENT_URI,
         arrayOf(ContactsContract.Groups._ID, ContactsContract.Groups.TITLE),
@@ -103,21 +104,23 @@ private fun getAllContactLabels(context: Context, contactIds: Set<String>): Map<
         }
     }
 
-    val idList = contactIds.joinToString(",") { "'$it'" }
-    context.contentResolver.query(
-        ContactsContract.Data.CONTENT_URI,
-        arrayOf(ContactsContract.Data.CONTACT_ID, ContactsContract.CommonDataKinds.GroupMembership.GROUP_ROW_ID),
-        "${ContactsContract.Data.CONTACT_ID} IN ($idList) AND ${ContactsContract.Data.MIMETYPE} = ?",
-        arrayOf(ContactsContract.CommonDataKinds.GroupMembership.CONTENT_ITEM_TYPE),
-        null
-    )?.use { cursor ->
-        val contactIdIdx = cursor.getColumnIndex(ContactsContract.Data.CONTACT_ID)
-        val groupIdIdx = cursor.getColumnIndex(ContactsContract.CommonDataKinds.GroupMembership.GROUP_ROW_ID)
-        while (cursor.moveToNext()) {
-            val cId = cursor.getString(contactIdIdx)
-            val gId = cursor.getString(groupIdIdx)
-            groupTitles[gId]?.let { title ->
-                result.getOrPut(cId) { mutableListOf() }.add(title)
+    contactIds.chunked(900).forEach { chunk ->
+        val idList = chunk.joinToString(",") { "?" }
+        context.contentResolver.query(
+            ContactsContract.Data.CONTENT_URI,
+            arrayOf(ContactsContract.Data.CONTACT_ID, ContactsContract.CommonDataKinds.GroupMembership.GROUP_ROW_ID),
+            "${ContactsContract.Data.CONTACT_ID} IN ($idList) AND ${ContactsContract.Data.MIMETYPE} = ?",
+            chunk.toTypedArray() + ContactsContract.CommonDataKinds.GroupMembership.CONTENT_ITEM_TYPE,
+            null
+        )?.use { cursor ->
+            val contactIdIdx = cursor.getColumnIndex(ContactsContract.Data.CONTACT_ID)
+            val groupIdIdx = cursor.getColumnIndex(ContactsContract.CommonDataKinds.GroupMembership.GROUP_ROW_ID)
+            while (cursor.moveToNext()) {
+                val cId = cursor.getString(contactIdIdx)
+                val gId = cursor.getString(groupIdIdx)
+                groupTitles[gId]?.let { title ->
+                    result.getOrPut(cId) { mutableListOf() }.add(title)
+                }
             }
         }
     }
@@ -126,34 +129,39 @@ private fun getAllContactLabels(context: Context, contactIds: Set<String>): Map<
 
 private fun getAllContactActions(context: Context, contactIds: Set<String>): Map<String, ContactActions> {
     val resultMap = mutableMapOf<String, ContactActions>()
+    if (contactIds.isEmpty()) return resultMap
+
     val phoneMap = mutableMapOf<String, String>()
     val emailMap = mutableMapOf<String, String>()
     val waSet = mutableSetOf<String>()
     val sigSet = mutableSetOf<String>()
     val tgSet = mutableSetOf<String>()
 
-    val idList = contactIds.joinToString(",") { "'$it'" }
-    context.contentResolver.query(
-        ContactsContract.Data.CONTENT_URI,
-        arrayOf(ContactsContract.Data.CONTACT_ID, ContactsContract.Data.MIMETYPE, ContactsContract.Data.DATA1),
-        "${ContactsContract.Data.CONTACT_ID} IN ($idList)",
-        null, null
-    )?.use { cursor ->
-        val idIdx = cursor.getColumnIndex(ContactsContract.Data.CONTACT_ID)
-        val mimeIdx = cursor.getColumnIndex(ContactsContract.Data.MIMETYPE)
-        val data1Idx = cursor.getColumnIndex(ContactsContract.Data.DATA1)
+    contactIds.chunked(900).forEach { chunk ->
+        val idList = chunk.joinToString(",") { "?" }
+        context.contentResolver.query(
+            ContactsContract.Data.CONTENT_URI,
+            arrayOf(ContactsContract.Data.CONTACT_ID, ContactsContract.Data.MIMETYPE, ContactsContract.Data.DATA1),
+            "${ContactsContract.Data.CONTACT_ID} IN ($idList)",
+            chunk.toTypedArray(),
+            null
+        )?.use { cursor ->
+            val idIdx = cursor.getColumnIndex(ContactsContract.Data.CONTACT_ID)
+            val mimeIdx = cursor.getColumnIndex(ContactsContract.Data.MIMETYPE)
+            val data1Idx = cursor.getColumnIndex(ContactsContract.Data.DATA1)
 
-        while (cursor.moveToNext()) {
-            val id = cursor.getString(idIdx) ?: continue
-            val mime = cursor.getString(mimeIdx)
-            val data1 = cursor.getString(data1Idx)
+            while (cursor.moveToNext()) {
+                val id = cursor.getString(idIdx) ?: continue
+                val mime = cursor.getString(mimeIdx)
+                val data1 = cursor.getString(data1Idx)
 
-            when (mime) {
-                ContactsContract.CommonDataKinds.Phone.CONTENT_ITEM_TYPE -> if (!phoneMap.containsKey(id)) phoneMap[id] = data1
-                ContactsContract.CommonDataKinds.Email.CONTENT_ITEM_TYPE -> if (!emailMap.containsKey(id)) emailMap[id] = data1
-                ContactMimes.WHATSAPP -> waSet.add(id)
-                ContactMimes.SIGNAL -> sigSet.add(id)
-                ContactMimes.TELEGRAM -> tgSet.add(id)
+                when (mime) {
+                    ContactsContract.CommonDataKinds.Phone.CONTENT_ITEM_TYPE -> if (!phoneMap.containsKey(id)) phoneMap[id] = data1
+                    ContactsContract.CommonDataKinds.Email.CONTENT_ITEM_TYPE -> if (!emailMap.containsKey(id)) emailMap[id] = data1
+                    ContactMimes.WHATSAPP -> waSet.add(id)
+                    ContactMimes.SIGNAL -> sigSet.add(id)
+                    ContactMimes.TELEGRAM -> tgSet.add(id)
+                }
             }
         }
     }

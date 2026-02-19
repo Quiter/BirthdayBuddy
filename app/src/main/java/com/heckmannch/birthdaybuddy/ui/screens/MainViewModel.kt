@@ -20,6 +20,12 @@ data class MainUiState(
     val hiddenDrawerLabels: Set<String> = emptySet()
 )
 
+private data class VmFilterState(
+    val selected: Set<String>,
+    val excluded: Set<String>,
+    val hidden: Set<String>
+)
+
 class MainViewModel(
     private val repository: BirthdayRepository,
     private val filterManager: FilterManager
@@ -28,32 +34,31 @@ class MainViewModel(
     private val _isLoading = MutableStateFlow(false)
     private val _searchQuery = MutableStateFlow("")
 
+    private val vmFilterStateFlow = combine(
+        filterManager.selectedLabelsFlow,
+        filterManager.excludedLabelsFlow,
+        filterManager.hiddenDrawerLabelsFlow
+    ) { selected, excluded, hidden ->
+        VmFilterState(selected, excluded, hidden)
+    }
+
     val uiState: StateFlow<MainUiState> = combine(
         repository.allBirthdays,
         _isLoading,
         _searchQuery,
-        filterManager.selectedLabelsFlow,
-        filterManager.excludedLabelsFlow,
-        filterManager.hiddenDrawerLabelsFlow
-    ) { array ->
-        @Suppress("UNCHECKED_CAST")
-        val contacts = array[0] as List<BirthdayContact>
-        val loading = array[1] as Boolean
-        val query = array[2] as String
-        @Suppress("UNCHECKED_CAST")
-        val selected = array[3] as Set<String>
-        @Suppress("UNCHECKED_CAST")
-        val excluded = array[4] as Set<String>
-        @Suppress("UNCHECKED_CAST")
-        val hidden = array[5] as Set<String>
-        
+        vmFilterStateFlow
+    ) { contacts, loading, query, filterState ->
+        val selected = filterState.selected
+        val excluded = filterState.excluded
+        val hidden = filterState.hidden
+
         val filtered = if (contacts.isEmpty() || selected.isEmpty()) {
             emptyList()
         } else {
             contacts.filter { contact ->
                 if (contact.labels.any { excluded.contains(it) }) return@filter false
                 if (query.isNotEmpty() && !contact.name.contains(query, ignoreCase = true)) return@filter false
-                contact.labels.any { label -> 
+                contact.labels.any { label ->
                     selected.contains(label) && !hidden.contains(label)
                 }
             }
