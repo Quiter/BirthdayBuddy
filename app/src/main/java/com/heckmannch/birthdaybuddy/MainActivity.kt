@@ -5,85 +5,69 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.runtime.*
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.heckmannch.birthdaybuddy.ui.theme.BirthdayBuddyTheme
 import com.heckmannch.birthdaybuddy.utils.FilterManager
-import com.heckmannch.birthdaybuddy.utils.fetchBirthdays
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
+import com.heckmannch.birthdaybuddy.ui.*
 
-/**
- * Der Haupteinstiegspunkt der Anwendung.
- * Verantwortlich für das Setup der Notification-Channels, des Splash-Screens
- * und der zentralen Navigationsstruktur (Compose Navigation).
- */
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
-        // Initialisiert den Splash-Screen (Android 12+ API)
         installSplashScreen()
         super.onCreate(savedInstanceState)
         
-        // Erstellt den Benachrichtigungskanal für die Geburtstags-Erinnerungen
         createNotificationChannel()
-        
-        // Aktiviert Edge-to-Edge Design (Inhalt fließt unter Status- und Navigationsleiste)
         enableEdgeToEdge()
 
         setContent {
             BirthdayBuddyTheme {
                 val navController = rememberNavController()
+                val mainViewModel: MainViewModel = viewModel()
                 
-                // Manager für alle persistenten Filter- und Einstellungswerte (SharedPreferences/DataStore)
+                val availableLabels by mainViewModel.availableLabels.collectAsState()
+                val isLoadingLabels by mainViewModel.isLoading.collectAsState()
                 val filterManager = remember { FilterManager(this@MainActivity) }
 
-                // Zentraler Navigations-Host für die App
-                NavHost(navController = navController, startDestination = "main") {
+                NavHost(navController = navController, startDestination = Route.Main) {
                     
-                    // Hauptbildschirm mit der Geburtstagsliste
-                    composable("main") { 
-                        MainScreen(filterManager) { navController.navigate("settings") } 
+                    composable<Route.Main> { 
+                        MainScreen(mainViewModel, filterManager) { navController.navigate(Route.Settings) } 
                     }
 
-                    // Hauptmenü der Einstellungen
-                    composable("settings") { 
-                        SettingsMenuScreen({ navController.navigate(it) }, { navController.popBackStack() }) 
-                    }
-
-                    // Dynamische Routen für verschiedene Label-Auswahl-Screens in den Einstellungen.
-                    // Diese nutzen eine gemeinsame Logik zum Laden der verfügbaren Kontakt-Labels.
-                    listOf(
-                        "settings_block", "settings_hide", 
-                        "settings_widget_include", "settings_widget_exclude"
-                    ).forEach { route ->
-                        composable(route) {
-                            var availableLabels by remember { mutableStateOf<Set<String>>(emptySet()) }
-                            var isLoading by remember { mutableStateOf(true) }
-                            
-                            // Lädt alle Labels asynchron aus der Kontakt-Datenbank
-                            LaunchedEffect(Unit) {
-                                withContext(Dispatchers.IO) {
-                                    availableLabels = fetchBirthdays(this@MainActivity)
-                                        .flatMap { it.labels }
-                                        .toSortedSet()
+                    composable<Route.Settings> { 
+                        SettingsMenuScreen(
+                            onNavigate = { routeName ->
+                                val target = when(routeName) {
+                                    "settings_alarms" -> Route.Alarms
+                                    "settings_hide" -> Route.HideLabels
+                                    "settings_block" -> Route.BlockLabels
+                                    "settings_widget_include" -> Route.WidgetIncludeLabels
+                                    "settings_widget_exclude" -> Route.WidgetExcludeLabels
+                                    else -> Route.Main
                                 }
-                                isLoading = false
-                            }
-
-                            // Wählt den entsprechenden Screen basierend auf der Route aus
-                            when (route) {
-                                "settings_block" -> BlockLabelsScreen(filterManager, availableLabels, isLoading) { navController.popBackStack() }
-                                "settings_hide" -> HideLabelsScreen(filterManager, availableLabels, isLoading) { navController.popBackStack() }
-                                "settings_widget_include" -> WidgetIncludeLabelsScreen(filterManager, availableLabels, isLoading) { navController.popBackStack() }
-                                "settings_widget_exclude" -> WidgetExcludeLabelsScreen(filterManager, availableLabels, isLoading) { navController.popBackStack() }
-                            }
-                        }
+                                navController.navigate(target)
+                            }, 
+                            onBack = { navController.popBackStack() }
+                        ) 
                     }
 
-                    // Screen für die Konfiguration der Weckzeiten / Benachrichtigungen
-                    composable("settings_alarms") { 
+                    composable<Route.BlockLabels> {
+                        BlockLabelsScreen(filterManager, availableLabels, isLoadingLabels) { navController.popBackStack() }
+                    }
+                    composable<Route.HideLabels> {
+                        HideLabelsScreen(filterManager, availableLabels, isLoadingLabels) { navController.popBackStack() }
+                    }
+                    composable<Route.WidgetIncludeLabels> {
+                        WidgetIncludeLabelsScreen(filterManager, availableLabels, isLoadingLabels) { navController.popBackStack() }
+                    }
+                    composable<Route.WidgetExcludeLabels> {
+                        WidgetExcludeLabelsScreen(filterManager, availableLabels, isLoadingLabels) { navController.popBackStack() }
+                    }
+
+                    composable<Route.Alarms> {
                         AlarmsScreen(filterManager) { navController.popBackStack() }
                     }
                 }
@@ -91,10 +75,6 @@ class MainActivity : ComponentActivity() {
         }
     }
 
-    /**
-     * Erstellt ab Android 8.0 (Oreo) einen Notification Channel, 
-     * damit das System weiß, wie Benachrichtigungen priorisiert werden sollen.
-     */
     private fun createNotificationChannel() {
         val name = "Geburtstags-Erinnerungen"
         val channel = android.app.NotificationChannel("birthday_channel", name, android.app.NotificationManager.IMPORTANCE_HIGH).apply {

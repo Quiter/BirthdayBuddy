@@ -58,20 +58,6 @@ fun SettingsMenuScreen(onNavigate: (String) -> Unit, onBack: () -> Unit) {
                 .verticalScroll(rememberScrollState())
                 .padding(horizontal = 16.dp)
         ) {
-            // Android 16 Search Bar
-            /**
-            SettingsSearchBar(modifier = Modifier.padding(vertical = 8.dp))
-
-            // Profil / User Section (Simuliert wie im Screenshot)
-            SettingsCard {
-                SettingsBlockRow(
-                    title = "Christof Heckmann",
-                    subtitle = "Google-Dienste und -Einstellungen",
-                    icon = Icons.Default.Person,
-                    containerColor = Color(0xFF5C5C5C)
-                ) { /* Aktion */ }
-            }
-             */
             SectionHeader("Benachrichtigungen")
             SettingsBlock("Alarme", "Erinnerungszeiten konfigurieren", Icons.Default.Notifications, Color(0xFFE91E63)) { onNavigate("settings_alarms") }
 
@@ -103,6 +89,7 @@ fun SettingsMenuScreen(onNavigate: (String) -> Unit, onBack: () -> Unit) {
         WidgetCountDialog(widgetCount, onDismiss = { showCountDialog = false }) { count ->
             scope.launch {
                 filterManager.saveWidgetItemCount(count)
+                // OPTIMIERUNG: Widget-Update via WorkManager anstoßen
                 updateWidget(context)
                 showCountDialog = false
             }
@@ -116,6 +103,7 @@ fun SettingsMenuScreen(onNavigate: (String) -> Unit, onBack: () -> Unit) {
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AlarmsScreen(filterManager: FilterManager, onBack: () -> Unit) {
+    val context = LocalContext.current
     val scope = rememberCoroutineScope()
     val notifHour by filterManager.notificationHourFlow.collectAsState(initial = 9)
     val notifMinute by filterManager.notificationMinuteFlow.collectAsState(initial = 0)
@@ -169,7 +157,11 @@ fun AlarmsScreen(filterManager: FilterManager, onBack: () -> Unit) {
                             IconButton(onClick = {
                                 val newSet = notifDaysSet.toMutableSet()
                                 newSet.remove(day.toString())
-                                scope.launch { filterManager.saveNotificationDays(newSet) }
+                                scope.launch { 
+                                    filterManager.saveNotificationDays(newSet)
+                                    // OPTIMIERUNG: Hintergrundarbeit bei Einstellungsänderung sofort neu planen
+                                    scheduleDailyBirthdayWork(context, notifHour, notifMinute)
+                                }
                             }) { Icon(Icons.Default.Delete, "Löschen", tint = MaterialTheme.colorScheme.error) }
                         }
                     )
@@ -187,6 +179,8 @@ fun AlarmsScreen(filterManager: FilterManager, onBack: () -> Unit) {
                 TextButton(onClick = {
                     scope.launch {
                         filterManager.saveNotificationTime(timePickerState.hour, timePickerState.minute)
+                        // OPTIMIERUNG: Neuen Zeitpunkt sofort im WorkManager registrieren
+                        scheduleDailyBirthdayWork(context, timePickerState.hour, timePickerState.minute)
                         showTimePicker = false
                     }
                 }) { Text("Speichern") }
@@ -210,7 +204,11 @@ fun AlarmsScreen(filterManager: FilterManager, onBack: () -> Unit) {
                 TextButton(onClick = {
                     val newSet = notifDaysSet.toMutableSet()
                     newSet.add(selectedDayByWheel.toString())
-                    scope.launch { filterManager.saveNotificationDays(newSet) }
+                    scope.launch { 
+                        filterManager.saveNotificationDays(newSet)
+                        // OPTIMIERUNG: Planer aktualisieren
+                        scheduleDailyBirthdayWork(context, notifHour, notifMinute)
+                    }
                     showAddDayDialog = false
                 }) { Text("Hinzufügen") }
             },
@@ -236,7 +234,6 @@ fun AlarmsScreen(filterManager: FilterManager, onBack: () -> Unit) {
     val hiddenLabels by f.hiddenDrawerLabelsFlow.collectAsState(initial = emptySet())
     val scope = rememberCoroutineScope()
     
-    // Wir berechnen die Menge der Labels, die NICHT versteckt sind.
     val visibleLabels = remember(a, hiddenLabels) { 
         a.filter { !hiddenLabels.contains(it) }.toSet() 
     }
@@ -261,6 +258,7 @@ fun AlarmsScreen(filterManager: FilterManager, onBack: () -> Unit) {
         if (checked) newSet.add(label) else newSet.remove(label)
         scope.launch { 
             f.saveWidgetSelectedLabels(newSet)
+            // OPTIMIERUNG: Widget-Update via WorkManager erzwingen
             updateWidget(context)
         }
     }, b)
@@ -275,6 +273,7 @@ fun AlarmsScreen(filterManager: FilterManager, onBack: () -> Unit) {
         if (checked) newSet.add(label) else newSet.remove(label)
         scope.launch {
             f.saveWidgetExcludedLabels(newSet)
+            // OPTIMIERUNG: Widget-Update via WorkManager erzwingen
             updateWidget(context)
         }
     }, b)

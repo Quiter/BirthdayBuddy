@@ -13,17 +13,16 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.core.content.ContextCompat
 import com.heckmannch.birthdaybuddy.components.*
-import com.heckmannch.birthdaybuddy.model.BirthdayContact
 import com.heckmannch.birthdaybuddy.utils.*
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
 
 /**
- * Der Hauptbildschirm der App, der die Liste der Geburtstage anzeigt.
+ * Der Hauptbildschirm der App. 
+ * Er nutzt das MainViewModel für eine saubere Trennung von Logik und UI.
  */
 @Composable
 fun MainScreen(
+    mainViewModel: MainViewModel,
     filterManager: FilterManager,
     onNavigateToSettings: () -> Unit
 ) {
@@ -31,72 +30,35 @@ fun MainScreen(
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     val context = LocalContext.current
 
-    // State-Variablen für UI und Daten
-    var contacts by remember { mutableStateOf<List<BirthdayContact>>(emptyList()) }
-    var searchQuery by remember { mutableStateOf("") }
-    var isLoading by remember { mutableStateOf(true) }
-    var isInitialized by remember { mutableStateOf(false) }
-
-    // Beobachtet die Filter-Einstellungen aus dem FilterManager
-    val savedSelectedLabels by filterManager.selectedLabelsFlow.collectAsState(initial = null)
-    val excludedLabels by filterManager.excludedLabelsFlow.collectAsState(initial = emptySet())
+    // Daten aus dem ViewModel beobachten (als State für Compose)
+    val contacts by mainViewModel.filteredContacts.collectAsState()
+    val isLoading by mainViewModel.isLoading.collectAsState()
+    val searchQuery by mainViewModel.searchQuery.collectAsState()
+    val availableLabels by mainViewModel.availableLabels.collectAsState()
+    
+    // Filter-States für den Drawer
+    val savedSelectedLabels by filterManager.selectedLabelsFlow.collectAsState(initial = emptySet())
     val hiddenDrawerLabels by filterManager.hiddenDrawerLabelsFlow.collectAsState(initial = emptySet())
-
-    // Hilfsfunktion zum (Neu-)Laden der Kontakte
-    val reloadContactsAction = suspend {
-        isLoading = true
-        contacts = withContext(Dispatchers.IO) { fetchBirthdays(context) }
-        isLoading = false
-    }
 
     // Berechtigungs-Management
     var hasPermission by remember {
         mutableStateOf(ContextCompat.checkSelfPermission(context, Manifest.permission.READ_CONTACTS) == PackageManager.PERMISSION_GRANTED)
     }
+    
     val permissionLauncher = rememberLauncherForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { perms ->
-        if (perms[Manifest.permission.READ_CONTACTS] == true) hasPermission = true
+        if (perms[Manifest.permission.READ_CONTACTS] == true) {
+            hasPermission = true
+            mainViewModel.loadContacts() // Kontakte laden, sobald Berechtigung erteilt wurde
+        }
     }
 
-    LaunchedEffect(hasPermission) {
+    // Berechtigung beim Start prüfen
+    LaunchedEffect(Unit) {
         if (!hasPermission) {
             val perms = mutableListOf(Manifest.permission.READ_CONTACTS)
             if (android.os.Build.VERSION.SDK_INT >= 33) perms.add(Manifest.permission.POST_NOTIFICATIONS)
             permissionLauncher.launch(perms.toTypedArray())
-        } else {
-            reloadContactsAction()
         }
-    }
-
-    // Extrahiert alle verfügbaren Labels
-    val availableLabels = remember(contacts) { contacts.flatMap { it.labels }.toSortedSet() }
-
-    // Standardmäßig alle Labels aktivieren beim ersten Start
-    LaunchedEffect(availableLabels, savedSelectedLabels) {
-        if (availableLabels.isNotEmpty() && savedSelectedLabels != null && !isInitialized) {
-            if (savedSelectedLabels!!.isEmpty()) {
-                filterManager.saveSelectedLabels(availableLabels)
-            }
-            isInitialized = true
-        }
-    }
-
-    // Filter- und Sortier-Logik für die Kontaktliste
-    val sortedContacts = remember(contacts, savedSelectedLabels, excludedLabels, hiddenDrawerLabels, searchQuery) {
-        val selected = savedSelectedLabels ?: emptySet()
-        contacts.filter { contact ->
-            // 1. Globale Sperre
-            if (contact.labels.any { excludedLabels.contains(it) }) return@filter false
-            
-            // 2. Suche
-            if (!contact.name.contains(searchQuery, ignoreCase = true)) return@filter false
-
-            // 3. Whitelist-Check (nur Labels, die auch im Drawer SICHTBAR sind)
-            contact.labels.any { label -> 
-                selected.contains(label) && !hiddenDrawerLabels.contains(label)
-            }
-        }
-        .distinctBy { it.id } // SICHERHEIT: Duplikate nach ID entfernen
-        .sortedBy { it.remainingDays }
     }
 
     ModalNavigationDrawer(
@@ -106,15 +68,11 @@ fun MainScreen(
                 availableLabels = availableLabels,
                 selectedLabels = savedSelectedLabels ?: emptySet(),
                 hiddenDrawerLabels = hiddenDrawerLabels,
-                onLabelToggle = { label, isCurrentlySelected ->
-                    val newSelection = (savedSelectedLabels ?: emptySet()).toMutableSet()
-                    if (isCurrentlySelected) newSelection.remove(label) else newSelection.add(label)
-                    scope.launch { filterManager.saveSelectedLabels(newSelection) }
-                },
+                onLabelToggle = { label, _ -> mainViewModel.toggleLabel(label) },
                 onReloadContacts = {
                     scope.launch {
                         drawerState.close()
-                        reloadContactsAction()
+                        mainViewModel.loadContacts()
                     }
                 },
                 onSettingsClick = {
@@ -128,7 +86,7 @@ fun MainScreen(
             topBar = {
                 MainSearchBar(
                     query = searchQuery,
-                    onQueryChange = { searchQuery = it },
+                    onQueryChange = { mainViewModel.updateSearchQuery(it) },
                     onMenuClick = { scope.launch { drawerState.open() } }
                 )
             }
@@ -136,8 +94,18 @@ fun MainScreen(
             Box(modifier = Modifier.fillMaxSize().padding(padding)) {
                 if (isLoading) {
                     CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
+                } else if (contacts.isEmpty() && hasPermission) {
+                    // Optional: Leerer State, wenn keine Kontakte gefunden wurden
+                    Text(
+                        text = "Keine Geburtstage gefunden.",
+                        modifier = Modifier.align(Alignment.Center),
+                        style = MaterialTheme.typography.bodyLarge
+                    )
                 } else {
-                    BirthdayList(contacts = sortedContacts, listState = rememberLazyListState())
+                    BirthdayList(
+                        contacts = contacts, 
+                        listState = rememberLazyListState()
+                    )
                 }
             }
         }

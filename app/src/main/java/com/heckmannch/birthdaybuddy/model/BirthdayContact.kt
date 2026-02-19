@@ -1,22 +1,16 @@
 package com.heckmannch.birthdaybuddy.model
 
-/**
- * Hält Informationen über verfügbare Kontaktmöglichkeiten eines Nutzers bereit.
- */
-data class ContactActions(
-    val phoneNumber: String? = null,
-    val email: String? = null,
-    val hasWhatsApp: Boolean = false,
-    val hasSignal: Boolean = false,
-    val hasTelegram: Boolean = false
-)
+import androidx.room.Entity
+import androidx.room.PrimaryKey
+import kotlinx.serialization.Serializable
 
 /**
- * Repräsentiert einen Geburtstagskontakt.
- * @param id Die eindeutige Android-Kontakt-ID.
+ * Repräsentiert einen Geburtstagskontakt in der lokalen Datenbank.
  */
+@Entity(tableName = "birthdays")
+@Serializable
 data class BirthdayContact(
-    val id: String,
+    @PrimaryKey val id: String,
     val name: String,
     val birthday: String,
     val labels: List<String>,
@@ -24,4 +18,13 @@ data class BirthdayContact(
     val age: Int,
     val actions: ContactActions = ContactActions(),
     val photoUri: String? = null
+)
+
+@Serializable
+data class ContactActions(
+    val phoneNumber: String? = null,
+    val email: String? = null,
+    val hasWhatsApp: Boolean = false,
+    val hasSignal: Boolean = false,
+    val hasTelegram: Boolean = false
 )

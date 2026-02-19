@@ -12,7 +12,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
-import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -24,9 +23,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.heckmannch.birthdaybuddy.R
 
-/**
- * Zeigt eine Überschrift für einen Einstellungsbereich an.
- */
 @Composable
 fun SectionHeader(title: String) {
     Text(
@@ -37,9 +33,6 @@ fun SectionHeader(title: String) {
     )
 }
 
-/**
- * Ein Basis-Container (Card) mit stark abgerundeten Ecken (Android 16 Style).
- */
 @Composable
 fun SettingsCard(content: @Composable ColumnScope.() -> Unit) {
     Card(
@@ -54,9 +47,16 @@ fun SettingsCard(content: @Composable ColumnScope.() -> Unit) {
  * Eine komplette Einstellungs-Kachel bestehend aus einer Card und einer Zeile.
  */
 @Composable
-fun SettingsBlock(title: String, subtitle: String, icon: ImageVector, containerColor: Color, onClick: () -> Unit) {
+fun SettingsBlock(
+    title: String, 
+    subtitle: String, 
+    icon: ImageVector, 
+    iconColor: Color = Color.White,
+    containerColor: Color = MaterialTheme.colorScheme.primary, 
+    onClick: () -> Unit
+) {
     SettingsCard {
-        SettingsBlockRow(title, subtitle, icon, containerColor, onClick = onClick)
+        SettingsBlockRow(title, subtitle, icon, iconColor, containerColor, onClick = onClick)
     }
 }
 
@@ -64,7 +64,14 @@ fun SettingsBlock(title: String, subtitle: String, icon: ImageVector, containerC
  * Ein standardisierter Listeneintrag für die Einstellungen.
  */
 @Composable
-fun SettingsBlockRow(title: String, subtitle: String, icon: ImageVector, containerColor: Color, onClick: () -> Unit) {
+fun SettingsBlockRow(
+    title: String, 
+    subtitle: String, 
+    icon: ImageVector, 
+    iconColor: Color = Color.White,
+    containerColor: Color = MaterialTheme.colorScheme.primary, 
+    onClick: () -> Unit
+) {
     ListItem(
         modifier = Modifier.clickable { onClick() },
         headlineContent = { Text(title, fontWeight = FontWeight.SemiBold, style = MaterialTheme.typography.bodyLarge) },
@@ -74,7 +81,7 @@ fun SettingsBlockRow(title: String, subtitle: String, icon: ImageVector, contain
                 modifier = Modifier.size(44.dp).background(containerColor, shape = CircleShape),
                 contentAlignment = Alignment.Center
             ) {
-                Icon(icon, null, modifier = Modifier.size(24.dp), tint = Color.White)
+                Icon(icon, null, modifier = Modifier.size(24.dp), tint = iconColor)
             }
         },
         trailingContent = { 
@@ -99,19 +106,11 @@ fun SettingsFooter(versionName: String, onGithubClick: () -> Unit) {
     }
 }
 
-/**
- * Überarbeiteter Dialog zur Auswahl der Widget-Kapazität.
- */
 @Composable
 fun WidgetCountDialog(currentCount: Int, onDismiss: () -> Unit, onSelect: (Int) -> Unit) {
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { 
-            Text(
-                "Widget Kapazität",
-                style = MaterialTheme.typography.headlineSmall
-            ) 
-        },
+        title = { Text("Widget Kapazität", style = MaterialTheme.typography.headlineSmall) },
         text = {
             Column(modifier = Modifier.padding(top = 8.dp)) {
                 listOf(1, 2, 3).forEach { count ->
@@ -124,31 +123,19 @@ fun WidgetCountDialog(currentCount: Int, onDismiss: () -> Unit, onSelect: (Int) 
                             Color.Transparent
                     ) {
                         Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(vertical = 12.dp, horizontal = 16.dp),
+                            modifier = Modifier.fillMaxWidth().padding(vertical = 12.dp, horizontal = 16.dp),
                             verticalAlignment = Alignment.CenterVertically
                         ) {
-                            RadioButton(
-                                selected = (currentCount == count),
-                                onClick = null // Klick wird vom Surface übernommen
-                            )
+                            RadioButton(selected = (currentCount == count), onClick = null)
                             Spacer(Modifier.width(12.dp))
-                            Text(
-                                text = "$count ${if (count == 1) "Person" else "Personen"}",
-                                style = MaterialTheme.typography.bodyLarge
-                            )
+                            Text(text = "$count ${if (count == 1) "Person" else "Personen"}", style = MaterialTheme.typography.bodyLarge)
                         }
                     }
                     if (count < 3) Spacer(Modifier.height(4.dp))
                 }
             }
         },
-        confirmButton = { 
-            TextButton(onClick = onDismiss) { 
-                Text("Fertig", fontWeight = FontWeight.Bold) 
-            } 
-        },
+        confirmButton = { TextButton(onClick = onDismiss) { Text("Fertig", fontWeight = FontWeight.Bold) } },
         shape = RoundedCornerShape(28.dp),
         containerColor = MaterialTheme.colorScheme.surfaceContainerHigh
     )
@@ -175,7 +162,6 @@ fun LabelSelectionScreen(
     ) { padding ->
         Column(modifier = Modifier.fillMaxSize().padding(padding)) {
             Text(description, style = MaterialTheme.typography.bodyMedium, modifier = Modifier.padding(16.dp), color = MaterialTheme.colorScheme.onSurfaceVariant)
-            
             if (isLoading) {
                 Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) { CircularProgressIndicator() }
             } else {
@@ -183,9 +169,7 @@ fun LabelSelectionScreen(
                     items(items = availableLabels.toList()) { label ->
                         ListItem(
                             headlineContent = { Text(label) },
-                            trailingContent = { 
-                                Switch(checked = activeLabels.contains(label), onCheckedChange = { onToggle(label, it) }) 
-                            }
+                            trailingContent = { Switch(checked = activeLabels.contains(label), onCheckedChange = { onToggle(label, it) }) }
                         )
                     }
                 }
@@ -195,11 +179,7 @@ fun LabelSelectionScreen(
 }
 
 @Composable
-fun WheelPicker(
-    range: List<Int>,
-    initialValue: Int,
-    onValueChange: (Int) -> Unit
-) {
+fun WheelPicker(range: List<Int>, initialValue: Int, onValueChange: (Int) -> Unit) {
     val listState = rememberLazyListState(initialFirstVisibleItemIndex = range.indexOf(initialValue).coerceAtLeast(0))
     val flingBehavior = rememberSnapFlingBehavior(lazyListState = listState)
     val itemHeight = 48.dp
@@ -207,48 +187,16 @@ fun WheelPicker(
     LaunchedEffect(listState.isScrollInProgress) {
         if (!listState.isScrollInProgress) {
             val centeredIndex = listState.firstVisibleItemIndex
-            if (centeredIndex in range.indices) {
-                onValueChange(range[centeredIndex])
-            }
+            if (centeredIndex in range.indices) onValueChange(range[centeredIndex])
         }
     }
 
-    Box(
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(itemHeight * 3),
-        contentAlignment = Alignment.Center
-    ) {
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(itemHeight)
-                .background(
-                    color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.3f),
-                    shape = RoundedCornerShape(8.dp)
-                )
-        )
-
-        LazyColumn(
-            state = listState,
-            flingBehavior = flingBehavior,
-            contentPadding = PaddingValues(vertical = itemHeight),
-            modifier = Modifier.fillMaxSize(),
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
+    Box(modifier = Modifier.fillMaxWidth().height(itemHeight * 3), contentAlignment = Alignment.Center) {
+        Box(modifier = Modifier.fillMaxWidth().height(itemHeight).background(color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.3f), shape = RoundedCornerShape(8.dp)))
+        LazyColumn(state = listState, flingBehavior = flingBehavior, contentPadding = PaddingValues(vertical = itemHeight), modifier = Modifier.fillMaxSize(), horizontalAlignment = Alignment.CenterHorizontally) {
             items(items = range) { value ->
-                Box(
-                    modifier = Modifier
-                        .height(itemHeight)
-                        .fillMaxWidth(),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text(
-                        text = value.toString(),
-                        style = MaterialTheme.typography.titleLarge,
-                        fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.onSurface
-                    )
+                Box(modifier = Modifier.height(itemHeight).fillMaxWidth(), contentAlignment = Alignment.Center) {
+                    Text(text = value.toString(), style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
                 }
             }
         }
