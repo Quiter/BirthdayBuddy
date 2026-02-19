@@ -11,6 +11,7 @@ import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
@@ -36,6 +37,12 @@ fun SettingsMenuScreen(
     var showCountDialog by remember { mutableStateOf(false) }
     val versionName = getAppVersionName()
 
+    // Definition der Farben für die Icon-Kreise (Android 16 / Material Style)
+    // Diese können hier einfach angepasst werden
+    val colorDisplay = Color(0xFF4285F4)       // Blau für Anzeige
+    val colorNotifications = Color(0xFF4CAF50) // Pink für Benachrichtigungen
+    val colorWidget = Color(0xFFFFB300)        // Orange/Gelb für Widget
+
     Scaffold(
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
         topBar = {
@@ -55,82 +62,91 @@ fun SettingsMenuScreen(
                 .verticalScroll(rememberScrollState())
                 .padding(horizontal = 16.dp, vertical = 8.dp)
         ) {
+            // SEKTION: ANZEIGE & FILTER
             SectionHeader("Anzeige & Filter")
-            SettingsCard {
+            SettingsGroup {
                 SettingsBlockRow(
                     title = "Labels anzeigen", 
                     subtitle = "Sichtbarkeit im Seitenmenü", 
                     icon = Icons.Default.Visibility, 
-                    iconColor = MaterialTheme.colorScheme.secondary
+                    iconContainerColor = colorDisplay,
+                    isTop = true,
+                    isBottom = false
                 ) { onNavigate("settings_mainscreen_include") }
-                
-                HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant)
                 
                 SettingsBlockRow(
                     title = "Labels blockieren", 
                     subtitle = "Kontakte global ignorieren", 
                     icon = Icons.Default.VisibilityOff, 
-                    iconColor = MaterialTheme.colorScheme.secondary
+                    iconContainerColor = colorDisplay,
+                    isTop = false,
+                    isBottom = true
                 ) { onNavigate("settings_mainscreen_exclude") }
             }
 
             Spacer(modifier = Modifier.height(16.dp))
 
+            // SEKTION: BENACHRICHTIGUNGEN
             SectionHeader("Benachrichtigungen")
-            SettingsCard {
+            SettingsGroup {
                 SettingsBlockRow(
                     title = "Alarme", 
                     subtitle = "Erinnerungszeiten konfigurieren", 
                     icon = Icons.Default.Notifications, 
-                    iconColor = MaterialTheme.colorScheme.primary
+                    iconContainerColor = colorNotifications,
+                    isTop = true,
+                    isBottom = false
                 ) { onNavigate("settings_alarms") }
-                
-                HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant)
                 
                 SettingsBlockRow(
                     title = "Filter: Einschließen", 
                     subtitle = "Labels für Benachrichtigungen", 
-                    icon = Icons.Default.FilterList, 
-                    iconColor = MaterialTheme.colorScheme.primary
+                    icon = Icons.Default.Visibility,
+                    iconContainerColor = colorNotifications,
+                    isTop = false,
+                    isBottom = false
                 ) { onNavigate("settings_notification_include") }
-                
-                HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant)
                 
                 SettingsBlockRow(
                     title = "Filter: Ausschließen", 
                     subtitle = "Labels ignorieren", 
-                    icon = Icons.Default.Block, 
-                    iconColor = MaterialTheme.colorScheme.primary
+                    icon = Icons.Default.VisibilityOff,
+                    iconContainerColor = colorNotifications,
+                    isTop = false,
+                    isBottom = true
                 ) { onNavigate("settings_notification_exclude") }
             }
 
             Spacer(modifier = Modifier.height(16.dp))
 
+            // SEKTION: WIDGET
             SectionHeader("Widget")
-            SettingsCard {
+            SettingsGroup {
                 SettingsBlockRow(
                     title = "Anzahl", 
                     subtitle = "Bis zu $widgetCount Personen anzeigen", 
                     icon = Icons.AutoMirrored.Filled.List, 
-                    iconColor = MaterialTheme.colorScheme.tertiary
+                    iconContainerColor = colorWidget,
+                    isTop = true,
+                    isBottom = false
                 ) { showCountDialog = true }
-                
-                HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant)
                 
                 SettingsBlockRow(
                     title = "Filter: Einschließen", 
                     subtitle = "Bestimmte Labels im Widget", 
-                    icon = Icons.Default.FilterList, 
-                    iconColor = MaterialTheme.colorScheme.tertiary
+                    icon = Icons.Default.Visibility,
+                    iconContainerColor = colorWidget,
+                    isTop = false,
+                    isBottom = false
                 ) { onNavigate("settings_widget_include") }
-                
-                HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant)
                 
                 SettingsBlockRow(
                     title = "Filter: Ausschließen", 
                     subtitle = "Labels im Widget ignorieren", 
-                    icon = Icons.Default.Block, 
-                    iconColor = MaterialTheme.colorScheme.tertiary
+                    icon = Icons.Default.VisibilityOff,
+                    iconContainerColor = colorWidget,
+                    isTop = false,
+                    isBottom = true
                 ) { onNavigate("settings_widget_exclude") }
             }
 

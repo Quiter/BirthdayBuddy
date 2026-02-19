@@ -18,6 +18,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
@@ -30,67 +31,84 @@ fun SectionHeader(title: String) {
         text = title.uppercase(),
         style = MaterialTheme.typography.labelMedium,
         fontWeight = FontWeight.Bold,
-        color = MaterialTheme.colorScheme.primary,
-        modifier = Modifier.padding(top = 24.dp, bottom = 8.dp, start = 16.dp)
+        color = MaterialTheme.colorScheme.onSurfaceVariant,
+        modifier = Modifier.padding(top = 24.dp, bottom = 12.dp, start = 16.dp)
     )
 }
 
 @Composable
-fun SettingsCard(content: @Composable ColumnScope.() -> Unit) {
-    ElevatedCard(
-        modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
-        shape = RoundedCornerShape(24.dp),
-        colors = CardDefaults.elevatedCardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceContainerLow
-        ),
-        elevation = CardDefaults.elevatedCardElevation(defaultElevation = 0.dp),
-        content = content
-    )
-}
-
-@Composable
-fun SettingsBlock(
-    title: String, 
-    subtitle: String, 
-    icon: ImageVector, 
-    iconColor: Color = MaterialTheme.colorScheme.primary,
-    containerColor: Color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.3f), 
-    onClick: () -> Unit
+fun SettingsGroup(
+    content: @Composable ColumnScope.() -> Unit
 ) {
-    SettingsCard {
-        SettingsBlockRow(title, subtitle, icon, iconColor, containerColor, onClick = onClick)
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(28.dp))
+    ) {
+        content()
     }
 }
 
 @Composable
 fun SettingsBlockRow(
-    title: String, 
-    subtitle: String, 
-    icon: ImageVector, 
-    iconColor: Color = MaterialTheme.colorScheme.primary,
-    containerColor: Color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.3f), 
+    title: String,
+    subtitle: String,
+    icon: ImageVector,
+    iconContainerColor: Color,
+    iconTint: Color = Color.White,
+    isTop: Boolean = false,
+    isBottom: Boolean = false,
     onClick: () -> Unit
 ) {
-    ListItem(
-        modifier = Modifier.clip(RoundedCornerShape(24.dp)).clickable { onClick() },
-        headlineContent = { Text(title, fontWeight = FontWeight.SemiBold, style = MaterialTheme.typography.titleMedium) },
-        supportingContent = { Text(subtitle, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant) },
-        leadingContent = {
-            Surface(
-                modifier = Modifier.size(42.dp),
-                shape = CircleShape,
-                color = containerColor
-            ) {
-                Box(contentAlignment = Alignment.Center) {
-                    Icon(icon, null, modifier = Modifier.size(22.dp), tint = iconColor)
+    val shape = when {
+        isTop && isBottom -> RoundedCornerShape(28.dp)
+        isTop -> RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp, bottomStart = 4.dp, bottomEnd = 4.dp)
+        isBottom -> RoundedCornerShape(topStart = 4.dp, topEnd = 4.dp, bottomStart = 28.dp, bottomEnd = 28.dp)
+        else -> RoundedCornerShape(4.dp)
+    }
+
+    Surface(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 1.dp) // Winziger Abstand zwischen Pillen im Block
+            .clip(shape)
+            .clickable { onClick() },
+        color = MaterialTheme.colorScheme.surfaceContainerLow,
+        shape = shape
+    ) {
+        ListItem(
+            headlineContent = { 
+                Text(title, fontWeight = FontWeight.SemiBold, style = MaterialTheme.typography.titleMedium) 
+            },
+            supportingContent = { 
+                Text(subtitle, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant) 
+            },
+            leadingContent = {
+                Surface(
+                    modifier = Modifier.size(40.dp),
+                    shape = CircleShape,
+                    color = iconContainerColor
+                ) {
+                    Box(contentAlignment = Alignment.Center) {
+                        Icon(
+                            imageVector = icon,
+                            contentDescription = null,
+                            modifier = Modifier.size(20.dp),
+                            tint = iconTint
+                        )
+                    }
                 }
-            }
-        },
-        trailingContent = { 
-            Icon(Icons.AutoMirrored.Filled.KeyboardArrowRight, null, tint = MaterialTheme.colorScheme.outlineVariant) 
-        },
-        colors = ListItemDefaults.colors(containerColor = Color.Transparent)
-    )
+            },
+            trailingContent = {
+                Icon(
+                    imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.outlineVariant
+                )
+            },
+            colors = ListItemDefaults.colors(containerColor = Color.Transparent)
+        )
+    }
 }
 
 @Composable
