@@ -1,15 +1,23 @@
 package com.heckmannch.birthdaybuddy.ui.components
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.Label
+import androidx.compose.material.icons.automirrored.outlined.Label
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.heckmannch.birthdaybuddy.R
 import com.heckmannch.birthdaybuddy.model.BirthdayContact
@@ -30,27 +38,54 @@ fun MainSearchBar(
                 onSearch = { },
                 expanded = false,
                 onExpandedChange = { },
-                placeholder = { Text(stringResource(R.string.main_search_hint)) },
+                placeholder = { 
+                    Text(
+                        stringResource(R.string.main_search_hint),
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
+                    ) 
+                },
                 leadingIcon = {
                     IconButton(onClick = onMenuClick) {
-                        Icon(Icons.Default.Menu, contentDescription = null)
+                        Icon(
+                            Icons.Default.Menu, 
+                            contentDescription = "Menü öffnen",
+                            tint = MaterialTheme.colorScheme.primary
+                        )
                     }
                 },
                 trailingIcon = {
-                    if (query.isNotEmpty()) {
+                    AnimatedVisibility(
+                        visible = query.isNotEmpty(),
+                        enter = fadeIn(),
+                        exit = fadeOut()
+                    ) {
                         IconButton(onClick = { onQueryChange("") }) {
-                            Icon(Icons.Default.Clear, contentDescription = null)
+                            Icon(Icons.Default.Clear, contentDescription = "Suche löschen")
                         }
                     }
-                }
+                },
+                colors = TextFieldDefaults.colors(
+                    focusedContainerColor = Color.Transparent,
+                    unfocusedContainerColor = Color.Transparent,
+                    disabledContainerColor = Color.Transparent,
+                    cursorColor = MaterialTheme.colorScheme.primary,
+                    focusedIndicatorColor = Color.Transparent,
+                    unfocusedIndicatorColor = Color.Transparent,
+                )
             )
         },
         expanded = false,
         onExpandedChange = { },
         modifier = modifier
             .fillMaxWidth()
-            .padding(horizontal = 16.dp)
-            .padding(bottom = 8.dp)
+            .padding(horizontal = 16.dp, vertical = 8.dp),
+        shape = SearchBarDefaults.inputFieldShape,
+        colors = SearchBarDefaults.colors(
+            containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
+        ),
+        tonalElevation = 2.dp,
+        shadowElevation = 4.dp
     ) { }
 }
 
@@ -71,11 +106,19 @@ fun MainDrawerContent(
             contentPadding = PaddingValues(bottom = 32.dp)
         ) {
             item {
-                Spacer(Modifier.height(12.dp))
+                Text(
+                    "Birthday Buddy",
+                    style = MaterialTheme.typography.headlineSmall,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.padding(horizontal = 28.dp, vertical = 24.dp)
+                )
+                
                 Text(
                     stringResource(R.string.drawer_labels_header),
-                    style = MaterialTheme.typography.titleSmall,
-                    modifier = Modifier.padding(horizontal = 28.dp, vertical = 16.dp)
+                    style = MaterialTheme.typography.labelLarge,
+                    color = MaterialTheme.colorScheme.secondary,
+                    modifier = Modifier.padding(horizontal = 28.dp, vertical = 8.dp)
                 )
             }
 
@@ -85,7 +128,7 @@ fun MainDrawerContent(
                 item {
                     Text(
                         stringResource(R.string.drawer_no_labels),
-                        modifier = Modifier.padding(horizontal = 28.dp, vertical = 8.dp),
+                        modifier = Modifier.padding(horizontal = 28.dp, vertical = 16.dp),
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -95,16 +138,33 @@ fun MainDrawerContent(
             items(labelsToShow) { label ->
                 val isChecked = selectedLabels.contains(label)
                 NavigationDrawerItem(
-                    label = { Text(label) },
-                    selected = false,
+                    label = { 
+                        Text(
+                            label, 
+                            fontWeight = if (isChecked) FontWeight.Bold else FontWeight.Normal 
+                        ) 
+                    },
+                    selected = isChecked,
                     onClick = { onLabelToggle(label, isChecked) },
-                    icon = { Checkbox(checked = isChecked, onCheckedChange = null) },
-                    modifier = Modifier.padding(NavigationDrawerItemDefaults.ItemPadding)
+                    icon = { 
+                        Icon(
+                            if (isChecked) Icons.AutoMirrored.Filled.Label else Icons.AutoMirrored.Outlined.Label,
+                            contentDescription = null
+                        ) 
+                    },
+                    modifier = Modifier.padding(NavigationDrawerItemDefaults.ItemPadding),
+                    colors = NavigationDrawerItemDefaults.colors(
+                        selectedContainerColor = Color.Transparent,
+                        selectedIconColor = MaterialTheme.colorScheme.primary,
+                        selectedTextColor = MaterialTheme.colorScheme.primary,
+                        unselectedIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                        unselectedTextColor = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
                 )
             }
 
             item {
-                HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp, horizontal = 28.dp))
+                HorizontalDivider(modifier = Modifier.padding(vertical = 16.dp, horizontal = 28.dp))
                 
                 NavigationDrawerItem(
                     label = { Text(stringResource(R.string.drawer_reload_contacts)) },

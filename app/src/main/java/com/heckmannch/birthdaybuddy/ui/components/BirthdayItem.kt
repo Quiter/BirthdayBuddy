@@ -18,6 +18,7 @@ import androidx.compose.material.icons.automirrored.filled.Send
 import androidx.compose.material.icons.filled.Call
 import androidx.compose.material.icons.filled.Email
 import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.Cake
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -31,7 +32,6 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
@@ -42,9 +42,6 @@ import com.heckmannch.birthdaybuddy.R
 import com.heckmannch.birthdaybuddy.model.BirthdayContact
 import com.heckmannch.birthdaybuddy.utils.formatGermanDate
 
-/**
- * Ein einzelner Eintrag in der Geburtstagsliste.
- */
 @Composable
 fun BirthdayItem(
     contact: BirthdayContact,
@@ -55,41 +52,21 @@ fun BirthdayItem(
     val keyboardController = LocalSoftwareKeyboardController.current
     val isDark = isSystemInDarkTheme()
     val isBirthdayToday = contact.remainingDays == 0
+    val isSoon = contact.remainingDays in 1..7
 
     val goldColor = Color(0xFFFFD700)
-    val darkGoldColor = Color(0xFFFFB300)
+    val secondaryGold = Color(0xFFFBC02D)
 
-    val ageText = remember(contact.age, isDark) {
-        buildAnnotatedString {
-            append("Wird ")
-            withStyle(style = SpanStyle(color = getAgeColorRaw(contact.age, isDark), fontWeight = FontWeight.Bold)) {
-                append("${contact.age}")
-            }
-        }
-    }
-
-    val remainingDaysText = remember(contact.remainingDays, isDark) {
-        buildAnnotatedString {
-            append("in ")
-            withStyle(style = SpanStyle(color = getDaysColorRaw(contact.remainingDays, isDark), fontWeight = FontWeight.SemiBold)) {
-                append("${contact.remainingDays}")
-            }
-            append(" Tagen")
-        }
-    }
-
-    val birthdayModifier = if (isBirthdayToday) {
-        Modifier.border(
-            BorderStroke(
-                2.dp,
-                Brush.linearGradient(
-                    colors = listOf(goldColor, darkGoldColor, goldColor)
-                )
-            ),
+    val birthdayModifier = when {
+        isBirthdayToday -> Modifier.border(
+            BorderStroke(2.dp, Brush.linearGradient(listOf(goldColor, secondaryGold))),
             shape = CardDefaults.elevatedShape
         )
-    } else {
-        Modifier
+        isSoon -> Modifier.border(
+            BorderStroke(1.dp, MaterialTheme.colorScheme.primaryContainer),
+            shape = CardDefaults.elevatedShape
+        )
+        else -> Modifier
     }
 
     ElevatedCard(
@@ -101,15 +78,11 @@ fun BirthdayItem(
                 keyboardController?.hide()
                 expanded = !expanded
             },
-        elevation = CardDefaults.elevatedCardElevation(
-            defaultElevation = if (isBirthdayToday) 4.dp else 2.dp, 
-            pressedElevation = 8.dp
-        ),
         colors = CardDefaults.elevatedCardColors(
-            containerColor = if (isBirthdayToday) {
-                if (isDark) Color(0xFF3E3600) else Color(0xFFFFFDE7)
-            } else {
-                MaterialTheme.colorScheme.surfaceContainerLow
+            containerColor = when {
+                isBirthdayToday -> if (isDark) Color(0xFF332D00) else Color(0xFFFFFDE7)
+                isSoon -> MaterialTheme.colorScheme.surfaceContainer
+                else -> MaterialTheme.colorScheme.surfaceContainerLow
             }
         )
     ) {
@@ -117,60 +90,80 @@ fun BirthdayItem(
             modifier = Modifier.animateContentSize(
                 animationSpec = spring(
                     dampingRatio = Spring.DampingRatioLowBouncy,
-                    stiffness = Spring.StiffnessMedium
+                    stiffness = Spring.StiffnessLow
                 )
             )
         ) {
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(16.dp),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                AsyncImage(
-                    model = contact.photoUri,
-                    contentDescription = null,
-                    modifier = Modifier
-                        .size(48.dp)
-                        .clip(CircleShape)
-                        .background(MaterialTheme.colorScheme.surfaceContainerHighest),
-                    contentScale = ContentScale.Crop,
-                    placeholder = rememberVectorPainter(Icons.Default.Person),
-                    error = rememberVectorPainter(Icons.Default.Person),
-                    fallback = rememberVectorPainter(Icons.Default.Person)
-                )
-
-                Spacer(modifier = Modifier.width(16.dp))
-
-                Column(modifier = Modifier.weight(1f)) {
+            ListItem(
+                colors = ListItemDefaults.colors(containerColor = Color.Transparent),
+                headlineContent = {
                     Text(
                         text = contact.name,
                         style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.SemiBold
+                        fontWeight = FontWeight.Bold
                     )
-                    Spacer(modifier = Modifier.height(2.dp))
+                },
+                supportingContent = {
                     Text(
                         text = formatGermanDate(contact.birthday),
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                        style = MaterialTheme.typography.bodyMedium
                     )
+                },
+                leadingContent = {
+                    AsyncImage(
+                        model = contact.photoUri,
+                        contentDescription = null,
+                        modifier = Modifier
+                            .size(48.dp)
+                            .clip(CircleShape)
+                            .background(MaterialTheme.colorScheme.surfaceVariant),
+                        contentScale = ContentScale.Crop,
+                        placeholder = rememberVectorPainter(Icons.Default.Person),
+                        error = rememberVectorPainter(Icons.Default.Person)
+                    )
+                },
+                trailingContent = {
+                    Column(horizontalAlignment = Alignment.End) {
+                        Text(
+                            text = buildAnnotatedString {
+                                append("Wird ")
+                                withStyle(SpanStyle(color = getAgeColorRaw(contact.age, isDark), fontWeight = FontWeight.Bold)) {
+                                    append("${contact.age}")
+                                }
+                            },
+                            style = MaterialTheme.typography.bodyLarge
+                        )
+                        if (isBirthdayToday) {
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Icon(
+                                    Icons.Default.Cake,
+                                    contentDescription = null,
+                                    modifier = Modifier.size(16.dp),
+                                    tint = goldColor
+                                )
+                                Spacer(Modifier.width(4.dp))
+                                Text(
+                                    "HEUTE!",
+                                    style = MaterialTheme.typography.labelLarge,
+                                    color = if (isDark) goldColor else Color(0xFF827717),
+                                    fontWeight = FontWeight.ExtraBold
+                                )
+                            }
+                        } else {
+                            Text(
+                                text = buildAnnotatedString {
+                                    append("in ")
+                                    withStyle(SpanStyle(color = getDaysColorRaw(contact.remainingDays, isDark), fontWeight = FontWeight.SemiBold)) {
+                                        append("${contact.remainingDays}")
+                                    }
+                                    append(" Tagen")
+                                },
+                                style = MaterialTheme.typography.bodySmall
+                            )
+                        }
+                    }
                 }
-
-                Column(horizontalAlignment = Alignment.End) {
-                    Text(
-                        text = ageText,
-                        style = MaterialTheme.typography.bodyLarge
-                    )
-                    Spacer(modifier = Modifier.height(2.dp))
-                    Text(
-                        text = if (isBirthdayToday) AnnotatedString("HEUTE! \uD83C\uDF82") else remainingDaysText,
-                        style = MaterialTheme.typography.bodyMedium,
-                        fontWeight = if (isBirthdayToday) FontWeight.Bold else FontWeight.Normal,
-                        color = if (isBirthdayToday) goldColor else MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                }
-            }
+            )
 
             if (expanded) {
                 HorizontalDivider(
@@ -181,83 +174,68 @@ fun BirthdayItem(
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(horizontal = 16.dp, vertical = 8.dp),
-                    horizontalArrangement = Arrangement.SpaceEvenly,
-                    verticalAlignment = Alignment.CenterVertically
+                        .padding(16.dp),
+                    horizontalArrangement = Arrangement.SpaceEvenly
                 ) {
                     val actions = contact.actions
+                    val iconColor = MaterialTheme.colorScheme.primary
 
                     if (actions.phoneNumber != null) {
-                        IconButton(onClick = {
+                        FilledTonalIconButton(onClick = {
                             context.startActivity(Intent(Intent.ACTION_DIAL, Uri.parse("tel:${actions.phoneNumber}")))
                         }) {
-                            Icon(Icons.Default.Call, "Anrufen", tint = MaterialTheme.colorScheme.primary)
+                            Icon(Icons.Default.Call, "Anrufen")
                         }
-                        IconButton(onClick = {
+                        FilledTonalIconButton(onClick = {
                             context.startActivity(Intent(Intent.ACTION_SENDTO, Uri.parse("smsto:${actions.phoneNumber}")))
                         }) {
-                            Icon(Icons.AutoMirrored.Filled.Send, "SMS", tint = MaterialTheme.colorScheme.primary)
+                            Icon(Icons.AutoMirrored.Filled.Send, "SMS")
                         }
                     }
 
                     if (actions.email != null) {
-                        IconButton(onClick = {
+                        FilledTonalIconButton(onClick = {
                             context.startActivity(Intent(Intent.ACTION_SENDTO, Uri.parse("mailto:${actions.email}")))
                         }) {
-                            Icon(Icons.Default.Email, "E-Mail", tint = MaterialTheme.colorScheme.primary)
+                            Icon(Icons.Default.Email, "E-Mail")
                         }
                     }
 
                     if (actions.hasWhatsApp && actions.phoneNumber != null) {
-                        MessengerIcon(
-                            text = "WA", 
-                            color = Color(0xFF25D366),
-                            iconRes = R.drawable.ic_whatsapp
-                        ) {
+                        MessengerButton(color = Color(0xFF25D366), iconRes = R.drawable.ic_whatsapp) {
                             val cleanNumber = actions.phoneNumber.replace(Regex("[^0-9+]"), "")
-                            val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://wa.me/$cleanNumber"))
-                            intent.setPackage("com.whatsapp")
-                            try {
-                                context.startActivity(intent)
-                            } catch (e: Exception) {
+                            val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://wa.me/$cleanNumber")).apply {
+                                setPackage("com.whatsapp")
+                            }
+                            try { context.startActivity(intent) } catch (e: Exception) {
                                 context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse("https://wa.me/$cleanNumber")))
                             }
                         }
                     }
 
                     if (actions.hasSignal && actions.phoneNumber != null) {
-                        MessengerIcon(
-                            text = "SIG", 
-                            color = Color(0xFF3A76F0),
-                            iconRes = R.drawable.ic_signal
-                        ) {
+                        MessengerButton(color = Color(0xFF3A76F0), iconRes = R.drawable.ic_signal) {
                             val cleanNumber = actions.phoneNumber.replace(Regex("[^0-9+]"), "")
-                            val intent = Intent(Intent.ACTION_SENDTO, Uri.parse("smsto:$cleanNumber"))
-                            intent.setPackage("org.thoughtcrime.securesms")
-                            try {
-                                context.startActivity(intent)
-                            } catch (e: Exception) {
-                                try {
-                                    context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse("https://signal.me/#p/$cleanNumber")))
-                                } catch (e2: Exception) {
-                                    Toast.makeText(context, "Signal konnte nicht geöffnet werden", Toast.LENGTH_SHORT).show()
+                            val intent = Intent(Intent.ACTION_SENDTO, Uri.parse("smsto:$cleanNumber")).apply {
+                                setPackage("org.thoughtcrime.securesms")
+                            }
+                            try { context.startActivity(intent) } catch (e: Exception) {
+                                try { context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse("https://signal.me/#p/$cleanNumber"))) } catch (e2: Exception) {
+                                    Toast.makeText(context, "Signal nicht gefunden", Toast.LENGTH_SHORT).show()
                                 }
                             }
                         }
                     }
 
                     if (actions.hasTelegram && actions.phoneNumber != null) {
-                        MessengerIcon(text = "TG", color = Color(0xFF0088CC)) {
+                        MessengerButton(color = Color(0xFF0088CC), text = "TG") {
                             val cleanNumber = actions.phoneNumber.replace(Regex("[^0-9+]"), "")
-                            val intent = Intent(Intent.ACTION_VIEW, Uri.parse("tg://msg?to=$cleanNumber"))
-                            intent.setPackage("org.telegram.messenger")
-                            try {
-                                context.startActivity(intent)
-                            } catch (e: Exception) {
-                                try {
-                                    context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse("tg://msg?to=$cleanNumber")))
-                                } catch (e2: Exception) {
-                                    Toast.makeText(context, "Telegram konnte nicht geöffnet werden", Toast.LENGTH_SHORT).show()
+                            val intent = Intent(Intent.ACTION_VIEW, Uri.parse("tg://msg?to=$cleanNumber")).apply {
+                                setPackage("org.telegram.messenger")
+                            }
+                            try { context.startActivity(intent) } catch (e: Exception) {
+                                try { context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse("tg://msg?to=$cleanNumber"))) } catch (e2: Exception) {
+                                    Toast.makeText(context, "Telegram nicht gefunden", Toast.LENGTH_SHORT).show()
                                 }
                             }
                         }
@@ -265,7 +243,7 @@ fun BirthdayItem(
 
                     if (actions.phoneNumber == null && actions.email == null && !actions.hasWhatsApp && !actions.hasSignal && !actions.hasTelegram) {
                         Text(
-                            "Keine Kontaktdaten hinterlegt",
+                            "Keine Kontaktdaten",
                             style = MaterialTheme.typography.labelMedium,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                             modifier = Modifier.padding(vertical = 8.dp)
@@ -278,29 +256,23 @@ fun BirthdayItem(
 }
 
 @Composable
-private fun MessengerIcon(
-    text: String, 
-    color: Color, 
+private fun MessengerButton(
+    color: Color,
     iconRes: Int? = null,
+    text: String? = null,
     onClick: () -> Unit
 ) {
-    Box(
-        modifier = Modifier
-            .size(40.dp)
-            .clip(CircleShape)
-            .background(color.copy(alpha = 0.1f))
-            .clickable { onClick() },
-        contentAlignment = Alignment.Center
+    FilledTonalIconButton(
+        onClick = onClick,
+        colors = IconButtonDefaults.filledTonalIconButtonColors(
+            containerColor = color.copy(alpha = 0.15f),
+            contentColor = color
+        )
     ) {
         if (iconRes != null) {
-            Icon(
-                painter = painterResource(id = iconRes),
-                contentDescription = text,
-                tint = Color.Unspecified,
-                modifier = Modifier.size(24.dp)
-            )
-        } else {
-            Text(text, color = color, fontWeight = FontWeight.ExtraBold, style = MaterialTheme.typography.labelSmall)
+            Icon(painterResource(id = iconRes), contentDescription = null, tint = Color.Unspecified, modifier = Modifier.size(24.dp))
+        } else if (text != null) {
+            Text(text, fontWeight = FontWeight.ExtraBold, style = MaterialTheme.typography.labelSmall)
         }
     }
 }
@@ -308,16 +280,13 @@ private fun MessengerIcon(
 private fun getAgeColorRaw(age: Int, isDark: Boolean): Color {
     val youngColor = if (isDark) Color(0xFFFFA4A4) else Color(0xFFFF5252)
     val oldColor = if (isDark) Color(0xFFD32F2F) else Color(0xFF8B0000)
-    val clampedAge = age.coerceIn(0, 100)
-    val fraction = clampedAge / 100f
+    val fraction = (age.coerceIn(0, 100) / 100f)
     return lerp(youngColor, oldColor, fraction)
 }
 
 private fun getDaysColorRaw(days: Int, isDark: Boolean): Color {
-    if (days == 0) return Color(0xFFFFC107)
     val nearColor = if (isDark) Color(0xFF80D8FF) else Color(0xFF00BFFF)
     val farColor = if (isDark) Color(0xFF5C6BC0) else Color(0xFF00008B)
-    val clampedDays = days.coerceIn(1, 365)
-    val fraction = clampedDays / 365f
+    val fraction = (days.coerceIn(1, 365) / 365f)
     return lerp(nearColor, farColor, fraction)
 }
