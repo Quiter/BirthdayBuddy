@@ -1,4 +1,4 @@
-package com.heckmannch.birthdaybuddy.ui
+package com.heckmannch.birthdaybuddy.ui.screens
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -15,15 +15,15 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
-import com.heckmannch.birthdaybuddy.components.SectionHeader
-import com.heckmannch.birthdaybuddy.components.WheelPicker
-import com.heckmannch.birthdaybuddy.utils.FilterManager
+import com.heckmannch.birthdaybuddy.ui.components.SectionHeader
+import com.heckmannch.birthdaybuddy.ui.components.WheelPicker
+import com.heckmannch.birthdaybuddy.data.FilterManager
 import com.heckmannch.birthdaybuddy.utils.scheduleDailyBirthdayWork
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AlarmsScreen(filterManager: FilterManager, onBack: () -> Unit) {
+fun SettingsAlarmsScreen(filterManager: FilterManager, onBack: () -> Unit) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
     val notifHour by filterManager.notificationHourFlow.collectAsState(initial = 9)

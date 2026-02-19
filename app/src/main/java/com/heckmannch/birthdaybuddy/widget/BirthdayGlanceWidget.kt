@@ -5,7 +5,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.glance.*
+import androidx.glance.action.actionStartActivity
+import androidx.glance.action.clickable
 import androidx.glance.appwidget.*
 import androidx.glance.appwidget.lazy.LazyColumn
 import androidx.glance.appwidget.lazy.items
@@ -14,23 +17,24 @@ import androidx.glance.material3.ColorProviders
 import androidx.glance.text.FontWeight
 import androidx.glance.text.Text
 import androidx.glance.text.TextStyle
-import com.heckmannch.birthdaybuddy.data.BirthdayDatabase
+import com.heckmannch.birthdaybuddy.BirthdayApplication
+import com.heckmannch.birthdaybuddy.MainActivity
+import com.heckmannch.birthdaybuddy.R
 import com.heckmannch.birthdaybuddy.model.BirthdayContact
-import com.heckmannch.birthdaybuddy.utils.FilterManager
 import kotlinx.coroutines.flow.combine
 
 /**
- * Das moderne Homescreen-Widget basierend auf Jetpack Glance.
+ * Modernes Homescreen-Widget basierend auf Jetpack Glance.
  */
 class BirthdayGlanceWidget : GlanceAppWidget() {
 
     override suspend fun provideGlance(context: Context, id: GlanceId) {
-        val database = BirthdayDatabase.getDatabase(context)
-        val filterManager = FilterManager(context)
-        
-        // Daten für das Widget vorbereiten
-        val birthdayFlow = combine(
-            database.birthdayDao().getAllBirthdays(),
+        val appContainer = (context.applicationContext as BirthdayApplication).container
+        val repository = appContainer.birthdayRepository
+        val filterManager = appContainer.filterManager
+
+        val widgetDataFlow = combine(
+            repository.allBirthdays,
             filterManager.widgetSelectedLabelsFlow,
             filterManager.widgetExcludedLabelsFlow,
             filterManager.widgetItemCountFlow
@@ -39,13 +43,14 @@ class BirthdayGlanceWidget : GlanceAppWidget() {
                 val isExcluded = contact.labels.any { excluded.contains(it) }
                 val isSelected = selected.isEmpty() || contact.labels.any { selected.contains(it) }
                 !isExcluded && isSelected
-            }.sortedBy { it.remainingDays }.take(count)
+            }
+            .sortedBy { it.remainingDays }
+            .take(count)
         }
 
         provideContent {
-            val contacts by birthdayFlow.collectAsState(initial = emptyList())
+            val contacts by widgetDataFlow.collectAsState(initial = emptyList())
             
-            // Nutzt Material 3 Farbschemata
             GlanceTheme {
                 WidgetContent(contacts)
             }
@@ -58,25 +63,25 @@ class BirthdayGlanceWidget : GlanceAppWidget() {
             modifier = GlanceModifier
                 .fillMaxSize()
                 .background(GlanceTheme.colors.surface)
+                .appWidgetBackground()
                 .padding(12.dp)
+                .clickable(actionStartActivity<MainActivity>())
         ) {
-            Text(
-                text = "BirthdayBuddy",
-                style = TextStyle(
-                    color = GlanceTheme.colors.primary,
-                    fontWeight = FontWeight.Bold
-                ),
-                modifier = GlanceModifier.padding(bottom = 8.dp)
-            )
-
+            // App-Name entfernt, Liste startet direkt oder zeigt Empty State
             if (contacts.isEmpty()) {
-                Box(modifier = GlanceModifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    Text("Keine Geburtstage", style = TextStyle(color = GlanceTheme.colors.onSurface))
+                Box(
+                    modifier = GlanceModifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = LocalContext.current.getString(R.string.main_no_birthdays),
+                        style = TextStyle(color = GlanceTheme.colors.onSurfaceVariant)
+                    )
                 }
             } else {
                 LazyColumn(modifier = GlanceModifier.fillMaxSize()) {
                     items(contacts) { contact ->
-                        BirthdayItem(contact)
+                        BirthdayWidgetItem(contact)
                     }
                 }
             }
@@ -84,38 +89,61 @@ class BirthdayGlanceWidget : GlanceAppWidget() {
     }
 
     @Composable
-    private fun BirthdayItem(contact: BirthdayContact) {
-        Row(
-            modifier = GlanceModifier
-                .fillMaxWidth()
-                .padding(vertical = 4.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Column(modifier = GlanceModifier.defaultWeight()) {
-                Text(
-                    text = contact.name,
-                    style = TextStyle(
-                        color = GlanceTheme.colors.onSurface,
-                        fontWeight = FontWeight.Medium
+    private fun BirthdayWidgetItem(contact: BirthdayContact) {
+        val context = LocalContext.current
+        
+        Column(modifier = GlanceModifier.padding(vertical = 4.dp)) {
+            Row(
+                modifier = GlanceModifier
+                    .fillMaxWidth()
+                    .background(GlanceTheme.colors.secondaryContainer)
+                    .cornerRadius(12.dp)
+                    .padding(8.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Column(modifier = GlanceModifier.defaultWeight()) {
+                    Text(
+                        text = contact.name,
+                        style = TextStyle(
+                            color = GlanceTheme.colors.onSecondaryContainer,
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 14.sp
+                        ),
+                        maxLines = 1
                     )
-                )
-                val infoText = when (contact.remainingDays) {
-                    0 -> "Heute! 🎉"
-                    1 -> "Morgen"
-                    else -> "In ${contact.remainingDays} Tagen"
+                    
+                    val infoText = when (contact.remainingDays) {
+                        0 -> context.getString(R.string.alarms_day_0) + " 🎉"
+                        1 -> context.getString(R.string.alarms_day_1)
+                        else -> context.getString(R.string.notification_title_days, contact.remainingDays)
+                    }
+                    
+                    Text(
+                        text = infoText,
+                        style = TextStyle(
+                            color = GlanceTheme.colors.onSecondaryContainer,
+                            fontSize = 12.sp
+                        )
+                    )
                 }
-                Text(
-                    text = infoText,
-                    style = TextStyle(color = GlanceTheme.colors.onSurfaceVariant)
-                )
+
+                Box(
+                    modifier = GlanceModifier
+                        .size(32.dp)
+                        .background(GlanceTheme.colors.primary)
+                        .cornerRadius(16.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = contact.age.toString(),
+                        style = TextStyle(
+                            color = GlanceTheme.colors.onPrimary,
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 12.sp
+                        )
+                    )
+                }
             }
-            Text(
-                text = contact.age.toString(),
-                style = TextStyle(
-                    color = GlanceTheme.colors.secondary,
-                    fontWeight = FontWeight.Bold
-                )
-            )
         }
     }
 }

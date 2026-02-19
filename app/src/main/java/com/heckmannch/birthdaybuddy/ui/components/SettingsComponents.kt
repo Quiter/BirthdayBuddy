@@ -1,4 +1,4 @@
-package com.heckmannch.birthdaybuddy.components
+package com.heckmannch.birthdaybuddy.ui.components
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -108,34 +108,40 @@ fun SettingsFooter(versionName: String, onGithubClick: () -> Unit) {
 
 @Composable
 fun WidgetCountDialog(currentCount: Int, onDismiss: () -> Unit, onSelect: (Int) -> Unit) {
+    var selectedValue by remember { mutableIntStateOf(currentCount) }
+
     AlertDialog(
         onDismissRequest = onDismiss,
         title = { Text("Widget Kapazität", style = MaterialTheme.typography.headlineSmall) },
         text = {
-            Column(modifier = Modifier.padding(top = 8.dp)) {
-                listOf(1, 2, 3).forEach { count ->
-                    Surface(
-                        onClick = { onSelect(count) },
-                        shape = RoundedCornerShape(16.dp),
-                        color = if (currentCount == count) 
-                            MaterialTheme.colorScheme.primaryContainer 
-                        else 
-                            Color.Transparent
-                    ) {
-                        Row(
-                            modifier = Modifier.fillMaxWidth().padding(vertical = 12.dp, horizontal = 16.dp),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            RadioButton(selected = (currentCount == count), onClick = null)
-                            Spacer(Modifier.width(12.dp))
-                            Text(text = "$count ${if (count == 1) "Person" else "Personen"}", style = MaterialTheme.typography.bodyLarge)
-                        }
-                    }
-                    if (count < 3) Spacer(Modifier.height(4.dp))
-                }
+            Column(
+                modifier = Modifier.fillMaxWidth().padding(vertical = 16.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Text(
+                    text = "Wie viele Personen sollen maximal angezeigt werden?",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.padding(bottom = 24.dp)
+                )
+                
+                WheelPicker(
+                    range = (1..6).toList(),
+                    initialValue = selectedValue,
+                    onValueChange = { selectedValue = it }
+                )
             }
         },
-        confirmButton = { TextButton(onClick = onDismiss) { Text("Fertig", fontWeight = FontWeight.Bold) } },
+        confirmButton = {
+            TextButton(onClick = { onSelect(selectedValue) }) {
+                Text("Speichern", fontWeight = FontWeight.Bold)
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text("Abbrechen")
+            }
+        },
         shape = RoundedCornerShape(28.dp),
         containerColor = MaterialTheme.colorScheme.surfaceContainerHigh
     )
@@ -178,6 +184,7 @@ fun LabelSelectionScreen(
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun WheelPicker(range: List<Int>, initialValue: Int, onValueChange: (Int) -> Unit) {
     val listState = rememberLazyListState(initialFirstVisibleItemIndex = range.indexOf(initialValue).coerceAtLeast(0))
@@ -191,12 +198,29 @@ fun WheelPicker(range: List<Int>, initialValue: Int, onValueChange: (Int) -> Uni
         }
     }
 
-    Box(modifier = Modifier.fillMaxWidth().height(itemHeight * 3), contentAlignment = Alignment.Center) {
-        Box(modifier = Modifier.fillMaxWidth().height(itemHeight).background(color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.3f), shape = RoundedCornerShape(8.dp)))
-        LazyColumn(state = listState, flingBehavior = flingBehavior, contentPadding = PaddingValues(vertical = itemHeight), modifier = Modifier.fillMaxSize(), horizontalAlignment = Alignment.CenterHorizontally) {
+    Box(modifier = Modifier.width(120.dp).height(itemHeight * 3), contentAlignment = Alignment.Center) {
+        // Auswahl-Indikator
+        Surface(
+            modifier = Modifier.fillMaxWidth().height(itemHeight),
+            color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.5f),
+            shape = RoundedCornerShape(12.dp)
+        ) {}
+        
+        LazyColumn(
+            state = listState, 
+            flingBehavior = flingBehavior, 
+            contentPadding = PaddingValues(vertical = itemHeight), 
+            modifier = Modifier.fillMaxSize(), 
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
             items(items = range) { value ->
                 Box(modifier = Modifier.height(itemHeight).fillMaxWidth(), contentAlignment = Alignment.Center) {
-                    Text(text = value.toString(), style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
+                    Text(
+                        text = value.toString(), 
+                        style = MaterialTheme.typography.headlineMedium, 
+                        fontWeight = FontWeight.Bold, 
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
                 }
             }
         }

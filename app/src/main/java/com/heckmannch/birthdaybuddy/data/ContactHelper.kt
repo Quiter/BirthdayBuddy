@@ -1,4 +1,4 @@
-package com.heckmannch.birthdaybuddy.utils
+package com.heckmannch.birthdaybuddy.data
 
 import android.content.ContentUris
 import android.content.Context
@@ -6,6 +6,7 @@ import android.net.Uri
 import android.provider.ContactsContract
 import com.heckmannch.birthdaybuddy.model.BirthdayContact
 import com.heckmannch.birthdaybuddy.model.ContactActions
+import com.heckmannch.birthdaybuddy.utils.calculateAgeAndDays
 
 /**
  * Konstanten für spezifische Kontakt-MIME-Types.

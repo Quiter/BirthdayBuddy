@@ -1,4 +1,4 @@
-package com.heckmannch.birthdaybuddy.ui
+package com.heckmannch.birthdaybuddy.ui.screens
 
 import android.content.Intent
 import androidx.compose.foundation.layout.*
@@ -11,19 +11,16 @@ import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.core.net.toUri
-import com.heckmannch.birthdaybuddy.components.*
-import com.heckmannch.birthdaybuddy.utils.*
+import com.heckmannch.birthdaybuddy.ui.components.*
+import com.heckmannch.birthdaybuddy.data.FilterManager
+import com.heckmannch.birthdaybuddy.utils.getAppVersionName
+import com.heckmannch.birthdaybuddy.utils.updateWidget
 import kotlinx.coroutines.launch
 
-/**
- * Das Hauptmenü der App-Einstellungen. 
- * Hier werden alle Konfigurationsmöglichkeiten für Benachrichtigungen, Filter und das Widget gebündelt.
- */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SettingsMenuScreen(
@@ -35,7 +32,7 @@ fun SettingsMenuScreen(
     val filterManager = remember { FilterManager(context) }
     val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
 
-    val widgetCount by filterManager.widgetItemCountFlow.collectAsState(initial = 1)
+    val widgetCount by filterManager.widgetItemCountFlow.collectAsState(initial = 3)
     var showCountDialog by remember { mutableStateOf(false) }
     val versionName = getAppVersionName()
 

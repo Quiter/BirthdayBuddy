@@ -1,9 +1,10 @@
-package com.heckmannch.birthdaybuddy
+package com.heckmannch.birthdaybuddy.ui.screens
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.CreationExtras
+import com.heckmannch.birthdaybuddy.BirthdayApplication
 import com.heckmannch.birthdaybuddy.data.BirthdayRepository
 import com.heckmannch.birthdaybuddy.data.FilterManager
 import com.heckmannch.birthdaybuddy.model.BirthdayContact

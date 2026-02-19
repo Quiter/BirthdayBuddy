@@ -10,9 +10,9 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.heckmannch.birthdaybuddy.ui.theme.BirthdayBuddyTheme
-import com.heckmannch.birthdaybuddy.utils.FilterManager
+import com.heckmannch.birthdaybuddy.ui.screens.*
+import com.heckmannch.birthdaybuddy.ui.Route
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
-import com.heckmannch.birthdaybuddy.ui.*
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -26,12 +26,11 @@ class MainActivity : ComponentActivity() {
             BirthdayBuddyTheme {
                 val navController = rememberNavController()
                 
-                // Wir nutzen die Factory, um das ViewModel mit Abhängigkeiten zu erstellen
-                val mainViewModel: MainViewModel = viewModel(factory = MainViewModel.Factory)
-                
+                // Explizite Angabe des korrekten ViewModels aus dem screens-Paket
+                val mainViewModel: com.heckmannch.birthdaybuddy.ui.screens.MainViewModel = 
+                    viewModel(factory = com.heckmannch.birthdaybuddy.ui.screens.MainViewModel.Factory)
+
                 val uiState by mainViewModel.uiState.collectAsState()
-                
-                // FilterManager kommt jetzt auch aus dem Container
                 val container = (application as BirthdayApplication).container
                 val filterManager = container.filterManager
 
@@ -59,28 +58,28 @@ class MainActivity : ComponentActivity() {
                     }
 
                     composable<Route.BlockLabels> {
-                        BlockLabelsScreen(
+                        SettingsBlockLabelsScreen(
                             filterManager, 
                             uiState.availableLabels, 
                             uiState.isLoading
                         ) { navController.popBackStack() }
                     }
                     composable<Route.HideLabels> {
-                        HideLabelsScreen(
+                        SettingsHideLabelsScreen(
                             filterManager, 
                             uiState.availableLabels, 
                             uiState.isLoading
                         ) { navController.popBackStack() }
                     }
                     composable<Route.WidgetIncludeLabels> {
-                        WidgetIncludeLabelsScreen(
+                        SettingsWidgetIncludeLabelsScreen(
                             filterManager, 
                             uiState.availableLabels, 
                             uiState.isLoading
                         ) { navController.popBackStack() }
                     }
                     composable<Route.WidgetExcludeLabels> {
-                        WidgetExcludeLabelsScreen(
+                        SettingsWidgetExcludeLabelsScreen(
                             filterManager, 
                             uiState.availableLabels, 
                             uiState.isLoading
@@ -88,7 +87,7 @@ class MainActivity : ComponentActivity() {
                     }
 
                     composable<Route.Alarms> {
-                        AlarmsScreen(filterManager) { navController.popBackStack() }
+                        SettingsAlarmsScreen(filterManager) { navController.popBackStack() }
                     }
                 }
             }

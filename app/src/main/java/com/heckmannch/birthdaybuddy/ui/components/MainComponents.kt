@@ -1,4 +1,4 @@
-package com.heckmannch.birthdaybuddy.components
+package com.heckmannch.birthdaybuddy.ui.components
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn

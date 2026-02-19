@@ -3,7 +3,6 @@ package com.heckmannch.birthdaybuddy.data
 import android.content.Context
 import android.util.Log
 import com.heckmannch.birthdaybuddy.model.BirthdayContact
-import com.heckmannch.birthdaybuddy.utils.fetchBirthdays
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.withContext

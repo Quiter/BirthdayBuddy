@@ -1,7 +1,6 @@
 package com.heckmannch.birthdaybuddy.data
 
 import android.content.Context
-import com.heckmannch.birthdaybuddy.utils.FilterManager
 import com.heckmannch.birthdaybuddy.utils.NotificationHelper
 
 /**

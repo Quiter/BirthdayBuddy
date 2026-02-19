@@ -1,4 +1,4 @@
-package com.heckmannch.birthdaybuddy
+package com.heckmannch.birthdaybuddy.ui.screens
 
 import android.Manifest
 import android.content.pm.PackageManager
@@ -11,29 +11,24 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.core.content.ContextCompat
-import com.heckmannch.birthdaybuddy.components.*
-import com.heckmannch.birthdaybuddy.utils.*
+import com.heckmannch.birthdaybuddy.R
+import com.heckmannch.birthdaybuddy.ui.components.*
+import com.heckmannch.birthdaybuddy.data.FilterManager
 import kotlinx.coroutines.launch
 
-/**
- * Der Hauptbildschirm der App. 
- * Er nutzt das MainViewModel für eine saubere Trennung von Logik und UI.
- */
 @Composable
 fun MainScreen(
     mainViewModel: MainViewModel,
-    filterManager: FilterManager,
+    @Suppress("UNUSED_PARAMETER") filterManager: FilterManager,
     onNavigateToSettings: () -> Unit
 ) {
     val scope = rememberCoroutineScope()
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     val context = LocalContext.current
-
-    // Den zentralen UI-State aus dem ViewModel beobachten
     val uiState by mainViewModel.uiState.collectAsState()
 
-    // Berechtigungs-Management
     var hasPermission by remember {
         mutableStateOf(ContextCompat.checkSelfPermission(context, Manifest.permission.READ_CONTACTS) == PackageManager.PERMISSION_GRANTED)
     }
@@ -45,7 +40,6 @@ fun MainScreen(
         }
     }
 
-    // Berechtigung beim Start prüfen
     LaunchedEffect(Unit) {
         if (!hasPermission) {
             val perms = mutableListOf(Manifest.permission.READ_CONTACTS)
@@ -89,13 +83,13 @@ fun MainScreen(
                     CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
                 } else if (uiState.contacts.isEmpty() && hasPermission) {
                     Text(
-                        text = "Keine Geburtstage gefunden.",
+                        text = stringResource(R.string.main_no_birthdays),
                         modifier = Modifier.align(Alignment.Center),
                         style = MaterialTheme.typography.bodyLarge
                     )
                 } else {
                     BirthdayList(
-                        contacts = uiState.contacts,
+                        contacts = uiState.contacts, 
                         listState = rememberLazyListState()
                     )
                 }

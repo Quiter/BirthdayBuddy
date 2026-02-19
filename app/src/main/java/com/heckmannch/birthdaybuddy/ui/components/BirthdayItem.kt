@@ -1,4 +1,4 @@
-package com.heckmannch.birthdaybuddy.components
+package com.heckmannch.birthdaybuddy.ui.components
 
 import android.content.Intent
 import android.net.Uri
@@ -11,34 +11,15 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.isSystemInDarkTheme
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Send
 import androidx.compose.material.icons.filled.Call
 import androidx.compose.material.icons.filled.Email
 import androidx.compose.material.icons.filled.Person
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.ElevatedCard
-import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -63,11 +44,6 @@ import com.heckmannch.birthdaybuddy.utils.formatGermanDate
 
 /**
  * Ein einzelner Eintrag in der Geburtstagsliste.
- * Zeigt Profilbild, Name, Geburtsdatum, Alter und die verbleibenden Tage an.
- * Beim Klicken klappt der Eintrag auf und zeigt verschiedene Kontakt-Möglichkeiten (Anruf, WhatsApp, etc.).
- *
- * @param contact Das Datenobjekt des Kontakts.
- * @param modifier Zusätzliche Modifier für das Layout.
  */
 @Composable
 fun BirthdayItem(
@@ -80,11 +56,9 @@ fun BirthdayItem(
     val isDark = isSystemInDarkTheme()
     val isBirthdayToday = contact.remainingDays == 0
 
-    // Farben für das "Geburtstags-Highlight"
     val goldColor = Color(0xFFFFD700)
     val darkGoldColor = Color(0xFFFFB300)
 
-    // Formatiert den Text für das Alter mit dynamischer Farbe
     val ageText = remember(contact.age, isDark) {
         buildAnnotatedString {
             append("Wird ")
@@ -94,7 +68,6 @@ fun BirthdayItem(
         }
     }
 
-    // Formatiert den Text für die verbleibenden Tage
     val remainingDaysText = remember(contact.remainingDays, isDark) {
         buildAnnotatedString {
             append("in ")
@@ -105,7 +78,6 @@ fun BirthdayItem(
         }
     }
 
-    // Spezieller Rahmen, wenn die Person heute Geburtstag hat
     val birthdayModifier = if (isBirthdayToday) {
         Modifier.border(
             BorderStroke(
@@ -126,7 +98,6 @@ fun BirthdayItem(
             .padding(horizontal = 16.dp, vertical = 6.dp)
             .then(birthdayModifier)
             .clickable {
-                // Schließt die Tastatur, falls die Suche noch aktiv war
                 keyboardController?.hide()
                 expanded = !expanded
             },
@@ -150,7 +121,6 @@ fun BirthdayItem(
                 )
             )
         ) {
-            // Oberer Bereich: Profilbild und Stammdaten
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -158,10 +128,9 @@ fun BirthdayItem(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                // Kontaktbild via Coil-Library laden
                 AsyncImage(
                     model = contact.photoUri,
-                    contentDescription = "Profilbild von ${contact.name}",
+                    contentDescription = null,
                     modifier = Modifier
                         .size(48.dp)
                         .clip(CircleShape)
@@ -188,7 +157,6 @@ fun BirthdayItem(
                     )
                 }
 
-                // Rechts: Alter und Tage-Countdown
                 Column(horizontalAlignment = Alignment.End) {
                     Text(
                         text = ageText,
@@ -204,7 +172,6 @@ fun BirthdayItem(
                 }
             }
 
-            // Ausgeklappter Bereich: Kontakt-Aktionen
             if (expanded) {
                 HorizontalDivider(
                     modifier = Modifier.padding(horizontal = 16.dp),
@@ -220,7 +187,6 @@ fun BirthdayItem(
                 ) {
                     val actions = contact.actions
 
-                    // Telefon & SMS
                     if (actions.phoneNumber != null) {
                         IconButton(onClick = {
                             context.startActivity(Intent(Intent.ACTION_DIAL, Uri.parse("tel:${actions.phoneNumber}")))
@@ -234,7 +200,6 @@ fun BirthdayItem(
                         }
                     }
 
-                    // E-Mail
                     if (actions.email != null) {
                         IconButton(onClick = {
                             context.startActivity(Intent(Intent.ACTION_SENDTO, Uri.parse("mailto:${actions.email}")))
@@ -243,7 +208,6 @@ fun BirthdayItem(
                         }
                     }
 
-                    // WhatsApp Integration
                     if (actions.hasWhatsApp && actions.phoneNumber != null) {
                         MessengerIcon(
                             text = "WA", 
@@ -256,13 +220,11 @@ fun BirthdayItem(
                             try {
                                 context.startActivity(intent)
                             } catch (e: Exception) {
-                                // Fallback falls App nicht installiert ist (Web-Link)
                                 context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse("https://wa.me/$cleanNumber")))
                             }
                         }
                     }
 
-                    // Signal Integration
                     if (actions.hasSignal && actions.phoneNumber != null) {
                         MessengerIcon(
                             text = "SIG", 
@@ -284,7 +246,6 @@ fun BirthdayItem(
                         }
                     }
 
-                    // Telegram Integration
                     if (actions.hasTelegram && actions.phoneNumber != null) {
                         MessengerIcon(text = "TG", color = Color(0xFF0088CC)) {
                             val cleanNumber = actions.phoneNumber.replace(Regex("[^0-9+]"), "")
@@ -302,7 +263,6 @@ fun BirthdayItem(
                         }
                     }
 
-                    // Fallback falls gar keine Infos da sind
                     if (actions.phoneNumber == null && actions.email == null && !actions.hasWhatsApp && !actions.hasSignal && !actions.hasTelegram) {
                         Text(
                             "Keine Kontaktdaten hinterlegt",
@@ -317,9 +277,6 @@ fun BirthdayItem(
     }
 }
 
-/**
- * Ein kleines rundes Icon für Messenger-Aktionen.
- */
 @Composable
 private fun MessengerIcon(
     text: String, 
@@ -348,9 +305,6 @@ private fun MessengerIcon(
     }
 }
 
-/**
- * Berechnet eine Farbe für das Alter (von Hellrot zu Dunkelrot basierend auf dem Alter).
- */
 private fun getAgeColorRaw(age: Int, isDark: Boolean): Color {
     val youngColor = if (isDark) Color(0xFFFFA4A4) else Color(0xFFFF5252)
     val oldColor = if (isDark) Color(0xFFD32F2F) else Color(0xFF8B0000)
@@ -359,9 +313,6 @@ private fun getAgeColorRaw(age: Int, isDark: Boolean): Color {
     return lerp(youngColor, oldColor, fraction)
 }
 
-/**
- * Berechnet eine Farbe für die verbleibenden Tage (Gelb für heute, Hellblau zu Dunkelblau für die Ferne).
- */
 private fun getDaysColorRaw(days: Int, isDark: Boolean): Color {
     if (days == 0) return Color(0xFFFFC107)
     val nearColor = if (isDark) Color(0xFF80D8FF) else Color(0xFF00BFFF)

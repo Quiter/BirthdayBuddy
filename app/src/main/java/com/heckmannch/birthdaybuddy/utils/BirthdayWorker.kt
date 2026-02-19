@@ -7,6 +7,7 @@ import androidx.core.app.ActivityCompat
 import androidx.glance.appwidget.updateAll
 import androidx.work.*
 import com.heckmannch.birthdaybuddy.data.BirthdayRepository
+import com.heckmannch.birthdaybuddy.data.FilterManager
 import com.heckmannch.birthdaybuddy.widget.BirthdayGlanceWidget
 import kotlinx.coroutines.flow.first
 import java.util.concurrent.TimeUnit
