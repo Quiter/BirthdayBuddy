@@ -1,7 +1,9 @@
 package com.heckmannch.birthdaybuddy.ui.components
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.snapping.rememberSnapFlingBehavior
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -21,9 +23,11 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.heckmannch.birthdaybuddy.R
+import com.heckmannch.birthdaybuddy.ui.theme.*
 
 @Composable
 fun SectionHeader(title: String) {
@@ -60,6 +64,9 @@ fun SettingsBlockRow(
     isBottom: Boolean = false,
     onClick: () -> Unit
 ) {
+    val isDark = isSystemInDarkTheme()
+    val backgroundColor = if (isDark) SettingsPillBackgroundDark else SettingsPillBackgroundLight
+    
     val shape = when {
         isTop && isBottom -> RoundedCornerShape(28.dp)
         isTop -> RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp, bottomStart = 4.dp, bottomEnd = 4.dp)
@@ -70,10 +77,10 @@ fun SettingsBlockRow(
     Surface(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(vertical = 1.dp) // Winziger Abstand zwischen Pillen im Block
+            .padding(vertical = 1.dp)
             .clip(shape)
             .clickable { onClick() },
-        color = MaterialTheme.colorScheme.surfaceContainerLow,
+        color = backgroundColor,
         shape = shape
     ) {
         ListItem(
@@ -117,7 +124,7 @@ fun SettingsFooter(versionName: String, onGithubClick: () -> Unit) {
         modifier = Modifier.fillMaxWidth().padding(vertical = 48.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Text("Birthday Buddy", style = MaterialTheme.typography.titleSmall, color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.Bold)
+        Text(stringResource(R.string.drawer_title), style = MaterialTheme.typography.titleSmall, color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.Bold)
         Text("Version $versionName", style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f))
         Spacer(Modifier.height(16.dp))
         FilledTonalButton(
@@ -139,7 +146,7 @@ fun WidgetCountDialog(currentCount: Int, onDismiss: () -> Unit, onSelect: (Int) 
         onDismissRequest = onDismiss,
         title = { 
             Text(
-                "Widget Kapazität", 
+                stringResource(R.string.settings_widget_dialog_title), 
                 style = MaterialTheme.typography.headlineSmall,
                 fontWeight = FontWeight.Bold
             ) 
@@ -150,7 +157,7 @@ fun WidgetCountDialog(currentCount: Int, onDismiss: () -> Unit, onSelect: (Int) 
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Text(
-                    text = "Maximale Anzahl der Personen im Widget.",
+                    text = stringResource(R.string.settings_widget_dialog_desc),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     modifier = Modifier.padding(bottom = 24.dp)
@@ -165,12 +172,12 @@ fun WidgetCountDialog(currentCount: Int, onDismiss: () -> Unit, onSelect: (Int) 
         },
         confirmButton = {
             Button(onClick = { onSelect(selectedValue) }) {
-                Text("Speichern")
+                Text(stringResource(R.string.settings_widget_dialog_save))
             }
         },
         dismissButton = {
             TextButton(onClick = onDismiss) {
-                Text("Abbrechen")
+                Text(stringResource(R.string.settings_widget_dialog_cancel))
             }
         },
         shape = RoundedCornerShape(28.dp),
@@ -197,7 +204,7 @@ fun LabelSelectionScreen(
                 title = { Text(title) },
                 navigationIcon = { 
                     IconButton(onClick = onBack) { 
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, "Zurück") 
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, stringResource(R.string.label_selection_back)) 
                     } 
                 },
                 scrollBehavior = scrollBehavior
@@ -217,32 +224,38 @@ fun LabelSelectionScreen(
                     CircularProgressIndicator() 
                 }
             } else {
-                LazyColumn(
-                    modifier = Modifier.weight(1f),
-                    contentPadding = PaddingValues(bottom = 24.dp)
-                ) {
-                    items(items = availableLabels.toList()) { label ->
-                        val isChecked = activeLabels.contains(label)
-                        ListItem(
-                            modifier = Modifier.clickable { onToggle(label, !isChecked) },
-                            headlineContent = { Text(label, fontWeight = if (isChecked) FontWeight.SemiBold else FontWeight.Normal) },
-                            trailingContent = { 
-                                Switch(
-                                    checked = isChecked, 
-                                    onCheckedChange = { onToggle(label, it) },
-                                    thumbContent = if (isChecked) {
-                                        {
-                                            Icon(
-                                                imageVector = Icons.Default.Check,
-                                                contentDescription = null,
-                                                modifier = Modifier.size(SwitchDefaults.IconSize),
-                                            )
-                                        }
-                                    } else null
-                                ) 
-                            },
-                            colors = ListItemDefaults.colors(containerColor = Color.Transparent)
-                        )
+                if (availableLabels.isEmpty()) {
+                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                        Text(stringResource(R.string.label_selection_none))
+                    }
+                } else {
+                    LazyColumn(
+                        modifier = Modifier.weight(1f),
+                        contentPadding = PaddingValues(bottom = 24.dp)
+                    ) {
+                        items(items = availableLabels.toList()) { label ->
+                            val isChecked = activeLabels.contains(label)
+                            ListItem(
+                                modifier = Modifier.clickable { onToggle(label, !isChecked) },
+                                headlineContent = { Text(label, fontWeight = if (isChecked) FontWeight.SemiBold else FontWeight.Normal) },
+                                trailingContent = { 
+                                    Switch(
+                                        checked = isChecked, 
+                                        onCheckedChange = { onToggle(label, it) },
+                                        thumbContent = if (isChecked) {
+                                            {
+                                                Icon(
+                                                    imageVector = Icons.Default.Check,
+                                                    contentDescription = null,
+                                                    modifier = Modifier.size(SwitchDefaults.IconSize),
+                                                )
+                                            }
+                                        } else null
+                                    ) 
+                                },
+                                colors = ListItemDefaults.colors(containerColor = Color.Transparent)
+                            )
+                        }
                     }
                 }
             }

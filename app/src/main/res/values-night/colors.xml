@@ -1,8 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="splash_background">#121212</color>
-    <color name="widget_background">#2C2C2E</color>
-    <color name="widget_text_primary">#FFFFFF</color>
-    <color name="widget_text_secondary">#A0A0A0</color>
-    <color name="widget_text_highlight">#4CAF50</color>
+    <!-- Nur noch splash_background wird hier benötigt, da es vom Android-System (SplashScreen API)
+         vor dem Start von Compose gelesen wird. Alle anderen Farben befinden sich in Color.kt. -->
+    <color name="splash_background">#000000</color>
 </resources>

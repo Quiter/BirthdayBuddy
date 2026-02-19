@@ -7,7 +7,7 @@
     <string name="main_loading">Loading data…</string>
 
     <!-- Drawer / Navigation -->
-    <string name="drawer_title">BirthdayBuddy</string>
+    <string name="drawer_title">Birthday Buddy</string>
     <string name="drawer_labels_header">Labels</string>
     <string name="drawer_reload_contacts">Sync Contacts</string>
     <string name="drawer_settings">Settings</string>
@@ -23,25 +23,41 @@
 
     <!-- Settings Menu -->
     <string name="settings_title">Settings</string>
-    <string name="settings_section_general">General</string>
+    <string name="settings_section_display">Display &amp; Filter</string>
+    <string name="settings_section_notifications">Notifications</string>
     <string name="settings_section_widget">Widget</string>
-    <string name="settings_alarms_title">Notifications</string>
-    <string name="settings_alarms_desc">Adjust time and warning period</string>
-    <string name="settings_hide_labels_title">Hide labels in menu</string>
-    <string name="settings_hide_labels_desc">Hide specific labels in the side menu</string>
-    <string name="settings_block_labels_title">Ignore labels</string>
-    <string name="settings_block_labels_desc">Completely exclude contacts with these labels</string>
-    <string name="settings_widget_include_title">Show in widget</string>
-    <string name="settings_widget_include_desc">Only consider these labels in the widget</string>
-    <string name="settings_widget_exclude_title">Exclude from widget</string>
-    <string name="settings_widget_exclude_desc">Never show these labels in the widget</string>
+
+    <string name="settings_labels_show_title">Show labels</string>
+    <string name="settings_labels_show_desc">Visibility in side menu</string>
+    <string name="settings_labels_block_title">Block labels</string>
+    <string name="settings_labels_block_desc">Ignore contacts globally</string>
+
+    <string name="settings_alarms_title">Alarms</string>
+    <string name="settings_alarms_desc">Configure notification times</string>
+    <string name="settings_notifications_include_title">Filter: Include</string>
+    <string name="settings_notifications_include_desc">Labels for notifications</string>
+    <string name="settings_notifications_exclude_title">Filter: Exclude</string>
+    <string name="settings_notifications_exclude_desc">Ignore labels</string>
+
+    <string name="settings_widget_count_title">Count</string>
+    <string name="settings_widget_count_desc">Show up to %1$d people</string>
+    <string name="settings_widget_include_title">Filter: Include</string>
+    <string name="settings_widget_include_desc">Specific labels in widget</string>
+    <string name="settings_widget_exclude_title">Filter: Exclude</string>
+    <string name="settings_widget_exclude_desc">Ignore labels in widget</string>
+
+    <string name="settings_widget_dialog_title">Widget Capacity</string>
+    <string name="settings_widget_dialog_desc">Maximum number of people in the widget.</string>
+    <string name="settings_widget_dialog_save">Save</string>
+    <string name="settings_widget_dialog_cancel">Cancel</string>
 
     <!-- Labels Selection -->
     <string name="label_selection_save">Save</string>
     <string name="label_selection_none">No labels available</string>
+    <string name="label_selection_back">Back</string>
 
     <!-- Alarms Screen -->
-    <string name="alarms_title">Notifications</string>
+    <string name="alarms_header_title">Notifications</string>
     <string name="alarms_time_label">Notification time</string>
     <string name="alarms_days_header">When should you be reminded?</string>
     <string name="alarms_day_0">On the day itself</string>

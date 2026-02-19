@@ -4,46 +4,62 @@
     <!-- Main Screen -->
     <string name="main_search_hint">Suchen…</string>
     <string name="main_no_birthdays">Keine Geburtstage gefunden.</string>
-    <string name="main_loading">Daten werden geladen…</string>
+    <string name="main_loading">Lade Daten…</string>
 
     <!-- Drawer / Navigation -->
-    <string name="drawer_title">GeburtstagsBuddy</string>
+    <string name="drawer_title">Birthday Buddy</string>
     <string name="drawer_labels_header">Labels</string>
     <string name="drawer_reload_contacts">Kontakte synchronisieren</string>
     <string name="drawer_settings">Einstellungen</string>
-    <string name="drawer_no_labels">Keine Labels vorhanden</string>
+    <string name="drawer_no_labels">Keine Labels verfügbar</string>
 
     <!-- Notification -->
     <string name="notification_channel_name">Geburtstags-Erinnerungen</string>
     <string name="notification_channel_desc">Benachrichtigungen für anstehende Geburtstage</string>
-    <string name="notification_title_today">Geburtstag heute! \uD83C\uDF82</string>
-    <string name="notification_title_days">Geburtstag in %1$d Tagen</string>
-    <string name="notification_text_today">%1$s wird heute %2$d Jahre alt!</string>
+    <string name="notification_title_today">Heute Geburtstag! \uD83C\uDF82</string>
+    <string name="notification_title_days">In %1$d Tagen Geburtstag</string>
+    <string name="notification_text_today">%1$s wird heute %2$d!</string>
     <string name="notification_text_days">%1$s wird %2$d Jahre alt.</string>
 
     <!-- Settings Menu -->
     <string name="settings_title">Einstellungen</string>
-    <string name="settings_section_general">Allgemein</string>
+    <string name="settings_section_display">Anzeige &amp; Filter</string>
+    <string name="settings_section_notifications">Benachrichtigungen</string>
     <string name="settings_section_widget">Widget</string>
-    <string name="settings_alarms_title">Benachrichtigungen</string>
-    <string name="settings_alarms_desc">Zeitpunkt und Vorwarnzeit anpassen</string>
-    <string name="settings_hide_labels_title">Labels im Menü ausblenden</string>
-    <string name="settings_hide_labels_desc">Bestimmte Labels im Seitenmenü verstecken</string>
-    <string name="settings_block_labels_title">Labels ignorieren</string>
-    <string name="settings_block_labels_desc">Kontakte mit diesen Labels komplett ausschließen</string>
-    <string name="settings_widget_include_title">Im Widget anzeigen</string>
-    <string name="settings_widget_include_desc">Nur diese Labels im Widget berücksichtigen</string>
-    <string name="settings_widget_exclude_title">Vom Widget ausschließen</string>
-    <string name="settings_widget_exclude_desc">Diese Labels nie im Widget anzeigen</string>
+
+    <string name="settings_labels_show_title">Labels anzeigen</string>
+    <string name="settings_labels_show_desc">Sichtbarkeit im Seitenmenü</string>
+    <string name="settings_labels_block_title">Labels blockieren</string>
+    <string name="settings_labels_block_desc">Kontakte global ignorieren</string>
+
+    <string name="settings_alarms_title">Alarme</string>
+    <string name="settings_alarms_desc">Erinnerungszeiten konfigurieren</string>
+    <string name="settings_notifications_include_title">Filter: Einschließen</string>
+    <string name="settings_notifications_include_desc">Labels für Benachrichtigungen</string>
+    <string name="settings_notifications_exclude_title">Filter: Ausschließen</string>
+    <string name="settings_notifications_exclude_desc">Labels ignorieren</string>
+
+    <string name="settings_widget_count_title">Anzahl</string>
+    <string name="settings_widget_count_desc">Bis zu %1$d Personen anzeigen</string>
+    <string name="settings_widget_include_title">Filter: Einschließen</string>
+    <string name="settings_widget_include_desc">Bestimmte Labels im Widget</string>
+    <string name="settings_widget_exclude_title">Filter: Ausschließen</string>
+    <string name="settings_widget_exclude_desc">Labels im Widget ignorieren</string>
+
+    <string name="settings_widget_dialog_title">Widget Kapazität</string>
+    <string name="settings_widget_dialog_desc">Maximale Anzahl der Personen im Widget.</string>
+    <string name="settings_widget_dialog_save">Speichern</string>
+    <string name="settings_widget_dialog_cancel">Abbrechen</string>
 
     <!-- Labels Selection -->
     <string name="label_selection_save">Speichern</string>
     <string name="label_selection_none">Keine Labels verfügbar</string>
+    <string name="label_selection_back">Zurück</string>
 
     <!-- Alarms Screen -->
-    <string name="alarms_title">Benachrichtigungen</string>
-    <string name="alarms_time_label">Uhrzeit der Benachrichtigung</string>
-    <string name="alarms_days_header">Wann soll erinnert werden?</string>
+    <string name="alarms_header_title">Benachrichtigungen</string>
+    <string name="alarms_time_label">Zeitpunkt der Benachrichtigung</string>
+    <string name="alarms_days_header">Wann möchtest du erinnert werden?</string>
     <string name="alarms_day_0">Am Tag selbst</string>
     <string name="alarms_day_1">1 Tag vorher</string>
     <string name="alarms_day_3">3 Tage vorher</string>
