@@ -152,7 +152,7 @@ fun MainDrawerContent(
                             contentDescription = null
                         ) 
                     },
-                    modifier = Modifier.padding(NavigationDrawerItemDefaults.ItemPadding),
+                    modifier = Modifier.padding(NavigationDrawerItemPadding),
                     colors = NavigationDrawerItemDefaults.colors(
                         selectedContainerColor = Color.Transparent,
                         selectedIconColor = MaterialTheme.colorScheme.primary,
@@ -171,7 +171,7 @@ fun MainDrawerContent(
                     selected = false,
                     onClick = onReloadContacts,
                     icon = { Icon(Icons.Default.Refresh, contentDescription = null) },
-                    modifier = Modifier.padding(NavigationDrawerItemDefaults.ItemPadding)
+                    modifier = Modifier.padding(NavigationDrawerItemPadding)
                 )
 
                 NavigationDrawerItem(
@@ -179,12 +179,14 @@ fun MainDrawerContent(
                     selected = false,
                     onClick = onSettingsClick,
                     icon = { Icon(Icons.Default.Settings, contentDescription = null) },
-                    modifier = Modifier.padding(NavigationDrawerItemDefaults.ItemPadding)
+                    modifier = Modifier.padding(NavigationDrawerItemPadding)
                 )
             }
         }
     }
 }
+
+private val NavigationDrawerItemPadding = PaddingValues(horizontal = 12.dp, vertical = 0.dp)
 
 @Composable
 fun BirthdayList(

@@ -12,6 +12,8 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Send
@@ -37,6 +39,7 @@ import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
+import androidx.core.net.toUri
 import coil.compose.AsyncImage
 import com.heckmannch.birthdaybuddy.R
 import com.heckmannch.birthdaybuddy.model.BirthdayContact
@@ -171,23 +174,44 @@ fun BirthdayItem(
                     color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)
                 )
 
+                // Labels des Kontakts anzeigen
+                if (contact.labels.isNotEmpty()) {
+                    LazyRow(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 16.dp, vertical = 8.dp),
+                        horizontalArrangement = Arrangement.spacedBy(4.dp)
+                    ) {
+                        items(contact.labels) { label ->
+                            SuggestionChip(
+                                onClick = { },
+                                label = { Text(label, style = MaterialTheme.typography.labelSmall) },
+                                colors = SuggestionChipDefaults.suggestionChipColors(
+                                    containerColor = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.5f),
+                                    labelColor = MaterialTheme.colorScheme.onSecondaryContainer
+                                ),
+                                border = null
+                            )
+                        }
+                    }
+                }
+
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(16.dp),
+                        .padding(bottom = 16.dp, start = 16.dp, end = 16.dp),
                     horizontalArrangement = Arrangement.SpaceEvenly
                 ) {
                     val actions = contact.actions
-                    val iconColor = MaterialTheme.colorScheme.primary
 
                     if (actions.phoneNumber != null) {
                         FilledTonalIconButton(onClick = {
-                            context.startActivity(Intent(Intent.ACTION_DIAL, Uri.parse("tel:${actions.phoneNumber}")))
+                            context.startActivity(Intent(Intent.ACTION_DIAL, "tel:${actions.phoneNumber}".toUri()))
                         }) {
                             Icon(Icons.Default.Call, "Anrufen")
                         }
                         FilledTonalIconButton(onClick = {
-                            context.startActivity(Intent(Intent.ACTION_SENDTO, Uri.parse("smsto:${actions.phoneNumber}")))
+                            context.startActivity(Intent(Intent.ACTION_SENDTO, "smsto:${actions.phoneNumber}".toUri()))
                         }) {
                             Icon(Icons.AutoMirrored.Filled.Send, "SMS")
                         }
@@ -195,7 +219,7 @@ fun BirthdayItem(
 
                     if (actions.email != null) {
                         FilledTonalIconButton(onClick = {
-                            context.startActivity(Intent(Intent.ACTION_SENDTO, Uri.parse("mailto:${actions.email}")))
+                            context.startActivity(Intent(Intent.ACTION_SENDTO, "mailto:${actions.email}".toUri()))
                         }) {
                             Icon(Icons.Default.Email, "E-Mail")
                         }
@@ -204,11 +228,13 @@ fun BirthdayItem(
                     if (actions.hasWhatsApp && actions.phoneNumber != null) {
                         MessengerButton(color = Color(0xFF25D366), iconRes = R.drawable.ic_whatsapp) {
                             val cleanNumber = actions.phoneNumber.replace(Regex("[^0-9+]"), "")
-                            val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://wa.me/$cleanNumber")).apply {
+                            val intent = Intent(Intent.ACTION_VIEW, "https://wa.me/$cleanNumber".toUri()).apply {
                                 setPackage("com.whatsapp")
                             }
-                            try { context.startActivity(intent) } catch (e: Exception) {
-                                context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse("https://wa.me/$cleanNumber")))
+                            try {
+                                context.startActivity(intent)
+                            } catch (_: Exception) {
+                                context.startActivity(Intent(Intent.ACTION_VIEW, "https://wa.me/$cleanNumber".toUri()))
                             }
                         }
                     }
@@ -216,11 +242,15 @@ fun BirthdayItem(
                     if (actions.hasSignal && actions.phoneNumber != null) {
                         MessengerButton(color = Color(0xFF3A76F0), iconRes = R.drawable.ic_signal) {
                             val cleanNumber = actions.phoneNumber.replace(Regex("[^0-9+]"), "")
-                            val intent = Intent(Intent.ACTION_SENDTO, Uri.parse("smsto:$cleanNumber")).apply {
+                            val intent = Intent(Intent.ACTION_SENDTO, "smsto:$cleanNumber".toUri()).apply {
                                 setPackage("org.thoughtcrime.securesms")
                             }
-                            try { context.startActivity(intent) } catch (e: Exception) {
-                                try { context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse("https://signal.me/#p/$cleanNumber"))) } catch (e2: Exception) {
+                            try {
+                                context.startActivity(intent)
+                            } catch (_: Exception) {
+                                try {
+                                    context.startActivity(Intent(Intent.ACTION_VIEW, "https://signal.me/#p/$cleanNumber".toUri()))
+                                } catch (_: Exception) {
                                     Toast.makeText(context, "Signal nicht gefunden", Toast.LENGTH_SHORT).show()
                                 }
                             }
@@ -230,11 +260,15 @@ fun BirthdayItem(
                     if (actions.hasTelegram && actions.phoneNumber != null) {
                         MessengerButton(color = Color(0xFF0088CC), text = "TG") {
                             val cleanNumber = actions.phoneNumber.replace(Regex("[^0-9+]"), "")
-                            val intent = Intent(Intent.ACTION_VIEW, Uri.parse("tg://msg?to=$cleanNumber")).apply {
+                            val intent = Intent(Intent.ACTION_VIEW, "tg://msg?to=$cleanNumber".toUri()).apply {
                                 setPackage("org.telegram.messenger")
                             }
-                            try { context.startActivity(intent) } catch (e: Exception) {
-                                try { context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse("tg://msg?to=$cleanNumber"))) } catch (e2: Exception) {
+                            try {
+                                context.startActivity(intent)
+                            } catch (_: Exception) {
+                                try {
+                                    context.startActivity(Intent(Intent.ACTION_VIEW, "tg://msg?to=$cleanNumber".toUri()))
+                                } catch (_: Exception) {
                                     Toast.makeText(context, "Telegram nicht gefunden", Toast.LENGTH_SHORT).show()
                                 }
                             }

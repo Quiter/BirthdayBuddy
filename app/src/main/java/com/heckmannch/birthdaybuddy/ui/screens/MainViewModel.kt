@@ -52,19 +52,25 @@ class MainViewModel(
         val excluded = filterState.excluded
         val hidden = filterState.hidden
 
-        val filtered = if (contacts.isEmpty() || selected.isEmpty()) {
-            emptyList()
-        } else {
-            contacts.filter { contact ->
-                if (contact.labels.any { excluded.contains(it) }) return@filter false
-                if (query.isNotEmpty() && !contact.name.contains(query, ignoreCase = true)) return@filter false
-                contact.labels.any { label ->
-                    selected.contains(label) && !hidden.contains(label)
+        val filtered = when {
+            contacts.isEmpty() -> emptyList()
+            query.isNotEmpty() -> {
+                // Suche durchsucht IMMER alle Kontakte der Datenbank nach dem Namen
+                contacts.filter { contact ->
+                    contact.name.contains(query, ignoreCase = true)
                 }
             }
-            .distinctBy { it.id }
-            .sortedBy { it.remainingDays }
-        }
+            selected.isEmpty() -> emptyList()
+            else -> {
+                // Normale Filterung nach Labels nur, wenn keine Suche aktiv ist
+                contacts.filter { contact ->
+                    if (contact.labels.any { excluded.contains(it) }) return@filter false
+                    contact.labels.any { label ->
+                        selected.contains(label) && !hidden.contains(label)
+                    }
+                }
+            }
+        }.distinctBy { it.id }.sortedBy { it.remainingDays }
 
         val labels = contacts.flatMap { it.labels }.toSortedSet()
 
