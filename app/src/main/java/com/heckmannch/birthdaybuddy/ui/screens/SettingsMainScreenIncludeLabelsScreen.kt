@@ -6,7 +6,7 @@ import com.heckmannch.birthdaybuddy.data.FilterManager
 import kotlinx.coroutines.launch
 
 @Composable
-fun SettingsHideLabelsScreen(
+fun SettingsMainScreenIncludeLabelsScreen(
     filterManager: FilterManager, 
     availableLabels: Set<String>, 
     isLoading: Boolean, 

@@ -23,6 +23,9 @@ class FilterManager(val context: Context) {
     private val NOTIFICATION_DAYS_KEY = stringSetPreferencesKey("notification_days")
     private val WIDGET_ITEM_COUNT_KEY = intPreferencesKey("widget_item_count")
     
+    private val NOTIFICATION_SELECTED_LABELS_KEY = stringSetPreferencesKey("notification_selected_labels")
+    private val NOTIFICATION_EXCLUDED_LABELS_KEY = stringSetPreferencesKey("notification_excluded_labels")
+    
     // Flag für die erste Initialisierung
     private val IS_INITIALIZED_KEY = booleanPreferencesKey("is_initialized")
 
@@ -35,6 +38,9 @@ class FilterManager(val context: Context) {
     val widgetSelectedLabelsFlow: Flow<Set<String>> = context.dataStore.data.map { it[WIDGET_SELECTED_LABELS_KEY] ?: emptySet() }
     val widgetExcludedLabelsFlow: Flow<Set<String>> = context.dataStore.data.map { it[WIDGET_EXCLUDED_LABELS_KEY] ?: emptySet() }
     val widgetItemCountFlow: Flow<Int> = context.dataStore.data.map { it[WIDGET_ITEM_COUNT_KEY] ?: 3 }
+    
+    val notificationSelectedLabelsFlow: Flow<Set<String>> = context.dataStore.data.map { it[NOTIFICATION_SELECTED_LABELS_KEY] ?: emptySet() }
+    val notificationExcludedLabelsFlow: Flow<Set<String>> = context.dataStore.data.map { it[NOTIFICATION_EXCLUDED_LABELS_KEY] ?: emptySet() }
     
     val isInitializedFlow: Flow<Boolean> = context.dataStore.data.map { it[IS_INITIALIZED_KEY] ?: false }
 
@@ -53,6 +59,9 @@ class FilterManager(val context: Context) {
     suspend fun saveWidgetSelectedLabels(labels: Set<String>) { context.dataStore.edit { it[WIDGET_SELECTED_LABELS_KEY] = labels } }
     suspend fun saveWidgetExcludedLabels(labels: Set<String>) { context.dataStore.edit { it[WIDGET_EXCLUDED_LABELS_KEY] = labels } }
     suspend fun saveWidgetItemCount(count: Int) { context.dataStore.edit { it[WIDGET_ITEM_COUNT_KEY] = count } }
+    
+    suspend fun saveNotificationSelectedLabels(labels: Set<String>) { context.dataStore.edit { it[NOTIFICATION_SELECTED_LABELS_KEY] = labels } }
+    suspend fun saveNotificationExcludedLabels(labels: Set<String>) { context.dataStore.edit { it[NOTIFICATION_EXCLUDED_LABELS_KEY] = labels } }
     
     suspend fun setInitialized(value: Boolean) { context.dataStore.edit { it[IS_INITIALIZED_KEY] = value } }
 }

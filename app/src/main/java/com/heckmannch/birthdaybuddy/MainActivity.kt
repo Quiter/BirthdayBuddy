@@ -45,10 +45,12 @@ class MainActivity : ComponentActivity() {
                             onNavigate = { routeName ->
                                 val target = when(routeName) {
                                     "settings_alarms" -> Route.Alarms
-                                    "settings_hide" -> Route.HideLabels
-                                    "settings_block" -> Route.BlockLabels
+                                    "settings_mainscreen_include" -> Route.MainScreenIncludeLabels
+                                    "settings_mainscreen_exclude" -> Route.MainScreenExcludeLabels
                                     "settings_widget_include" -> Route.WidgetIncludeLabels
                                     "settings_widget_exclude" -> Route.WidgetExcludeLabels
+                                    "settings_notification_include" -> Route.NotificationIncludeLabels
+                                    "settings_notification_exclude" -> Route.NotificationExcludeLabels
                                     else -> Route.Main
                                 }
                                 navController.navigate(target)
@@ -57,15 +59,15 @@ class MainActivity : ComponentActivity() {
                         ) 
                     }
 
-                    composable<Route.BlockLabels> {
-                        SettingsBlockLabelsScreen(
+                    composable<Route.MainScreenExcludeLabels> {
+                        SettingsMainScreenExcludeLabelsScreen(
                             filterManager, 
                             uiState.availableLabels, 
                             uiState.isLoading
                         ) { navController.popBackStack() }
                     }
-                    composable<Route.HideLabels> {
-                        SettingsHideLabelsScreen(
+                    composable<Route.MainScreenIncludeLabels> {
+                        SettingsMainScreenIncludeLabelsScreen(
                             filterManager, 
                             uiState.availableLabels, 
                             uiState.isLoading
@@ -80,6 +82,20 @@ class MainActivity : ComponentActivity() {
                     }
                     composable<Route.WidgetExcludeLabels> {
                         SettingsWidgetExcludeLabelsScreen(
+                            filterManager, 
+                            uiState.availableLabels, 
+                            uiState.isLoading
+                        ) { navController.popBackStack() }
+                    }
+                    composable<Route.NotificationIncludeLabels> {
+                        SettingsNotificationIncludeLabelsScreen(
+                            filterManager, 
+                            uiState.availableLabels, 
+                            uiState.isLoading
+                        ) { navController.popBackStack() }
+                    }
+                    composable<Route.NotificationExcludeLabels> {
+                        SettingsNotificationExcludeLabelsScreen(
                             filterManager, 
                             uiState.availableLabels, 
                             uiState.isLoading

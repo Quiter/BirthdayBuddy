@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">BirthdayBuddy</string>
+    <string name="app_name">GeburtstagsBuddy</string>
 
     <!-- Main Screen -->
     <string name="main_search_hint">Suchen…</string>
@@ -7,7 +7,7 @@
     <string name="main_loading">Daten werden geladen…</string>
 
     <!-- Drawer / Navigation -->
-    <string name="drawer_title">BirthdayBuddy</string>
+    <string name="drawer_title">GeburtstagsBuddy</string>
     <string name="drawer_labels_header">Labels</string>
     <string name="drawer_reload_contacts">Kontakte synchronisieren</string>
     <string name="drawer_settings">Einstellungen</string>

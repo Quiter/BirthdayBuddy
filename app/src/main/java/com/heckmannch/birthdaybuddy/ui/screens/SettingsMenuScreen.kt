@@ -55,16 +55,6 @@ fun SettingsMenuScreen(
                 .verticalScroll(rememberScrollState())
                 .padding(horizontal = 16.dp, vertical = 8.dp)
         ) {
-            SectionHeader("Benachrichtigungen")
-            SettingsBlock(
-                title = "Alarme", 
-                subtitle = "Erinnerungszeiten konfigurieren", 
-                icon = Icons.Default.Notifications, 
-                iconColor = MaterialTheme.colorScheme.primary
-            ) { onNavigate("settings_alarms") }
-
-            Spacer(modifier = Modifier.height(16.dp))
-
             SectionHeader("Anzeige & Filter")
             SettingsCard {
                 SettingsBlockRow(
@@ -72,7 +62,7 @@ fun SettingsMenuScreen(
                     subtitle = "Sichtbarkeit im Seitenmenü", 
                     icon = Icons.Default.Visibility, 
                     iconColor = MaterialTheme.colorScheme.secondary
-                ) { onNavigate("settings_hide") }
+                ) { onNavigate("settings_mainscreen_include") }
                 
                 HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant)
                 
@@ -81,7 +71,37 @@ fun SettingsMenuScreen(
                     subtitle = "Kontakte global ignorieren", 
                     icon = Icons.Default.VisibilityOff, 
                     iconColor = MaterialTheme.colorScheme.secondary
-                ) { onNavigate("settings_block") }
+                ) { onNavigate("settings_mainscreen_exclude") }
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            SectionHeader("Benachrichtigungen")
+            SettingsCard {
+                SettingsBlockRow(
+                    title = "Alarme", 
+                    subtitle = "Erinnerungszeiten konfigurieren", 
+                    icon = Icons.Default.Notifications, 
+                    iconColor = MaterialTheme.colorScheme.primary
+                ) { onNavigate("settings_alarms") }
+                
+                HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant)
+                
+                SettingsBlockRow(
+                    title = "Filter: Einschließen", 
+                    subtitle = "Labels für Benachrichtigungen", 
+                    icon = Icons.Default.FilterList, 
+                    iconColor = MaterialTheme.colorScheme.primary
+                ) { onNavigate("settings_notification_include") }
+                
+                HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant)
+                
+                SettingsBlockRow(
+                    title = "Filter: Ausschließen", 
+                    subtitle = "Labels ignorieren", 
+                    icon = Icons.Default.Block, 
+                    iconColor = MaterialTheme.colorScheme.primary
+                ) { onNavigate("settings_notification_exclude") }
             }
 
             Spacer(modifier = Modifier.height(16.dp))

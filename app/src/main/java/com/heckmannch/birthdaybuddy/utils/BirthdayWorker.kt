@@ -32,11 +32,20 @@ class BirthdayWorker(context: Context, workerParams: WorkerParameters) : Corouti
         // 2. Benachrichtigungen prüfen und ggf. anzeigen
         val allBirthdays = repository.allBirthdays.first()
         val daysToNotify = filterManager.notificationDaysFlow.first()
-        val excludedLabels = filterManager.excludedLabelsFlow.first()
+        
+        // NEU: Verwende die spezifischen Benachrichtigungsfilter
+        val selectedLabels = filterManager.notificationSelectedLabelsFlow.first()
+        val excludedLabels = filterManager.notificationExcludedLabelsFlow.first()
+        val globalExcludedLabels = filterManager.excludedLabelsFlow.first()
 
         allBirthdays.filter { contact ->
-            !contact.labels.any { excludedLabels.contains(it) } &&
-            daysToNotify.contains(contact.remainingDays.toString())
+            // Prüfen, ob der Kontakt global oder spezifisch für Benachrichtigungen blockiert ist
+            val isExcluded = contact.labels.any { excludedLabels.contains(it) || globalExcludedLabels.contains(it) }
+            
+            // Wenn Einschließen-Filter aktiv sind, muss mindestens ein Label passen
+            val isIncluded = if (selectedLabels.isEmpty()) true else contact.labels.any { selectedLabels.contains(it) }
+            
+            !isExcluded && isIncluded && daysToNotify.contains(contact.remainingDays.toString())
         }.forEach { contact ->
             notificationHelper.showBirthdayNotification(
                 name = contact.name, 

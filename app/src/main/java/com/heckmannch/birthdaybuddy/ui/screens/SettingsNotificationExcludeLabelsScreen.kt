@@ -9,24 +9,26 @@ import com.heckmannch.birthdaybuddy.data.FilterManager
 import kotlinx.coroutines.launch
 
 @Composable
-fun SettingsBlockLabelsScreen(
+fun SettingsNotificationExcludeLabelsScreen(
     filterManager: FilterManager, 
     availableLabels: Set<String>, 
     isLoading: Boolean, 
     onBack: () -> Unit
 ) {
-    val labels by filterManager.excludedLabelsFlow.collectAsState(initial = emptySet())
+    val excludedLabels by filterManager.notificationExcludedLabelsFlow.collectAsState(initial = emptySet())
     val scope = rememberCoroutineScope()
     LabelSelectionScreen(
-        title = "Blockieren",
-        description = "Kontakte mit hier aktivierten Labels werden immer ausgeblendet.",
+        title = "Ausschließen",
+        description = "Diese Labels bei Benachrichtigungen ignorieren.",
         availableLabels = availableLabels,
-        activeLabels = labels,
+        activeLabels = excludedLabels,
         isLoading = isLoading,
         onToggle = { label, checked ->
-            val newSet = labels.toMutableSet()
+            val newSet = excludedLabels.toMutableSet()
             if (checked) newSet.add(label) else newSet.remove(label)
-            scope.launch { filterManager.saveExcludedLabels(newSet) }
+            scope.launch { 
+                filterManager.saveNotificationExcludedLabels(newSet)
+            }
         },
         onBack = onBack
     )
