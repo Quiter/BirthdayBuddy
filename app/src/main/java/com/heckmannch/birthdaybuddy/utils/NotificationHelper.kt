@@ -1,11 +1,14 @@
 package com.heckmannch.birthdaybuddy.utils
 
 import android.Manifest
+import android.app.PendingIntent
 import android.content.Context
+import android.content.Intent
 import android.content.pm.PackageManager
 import androidx.core.app.ActivityCompat
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
+import com.heckmannch.birthdaybuddy.MainActivity
 import com.heckmannch.birthdaybuddy.R
 
 /**
@@ -19,7 +22,6 @@ class NotificationHelper(private val context: Context) {
 
     /**
      * Zeigt eine Geburtstagsbenachrichtigung an.
-     * Nutzt String-Ressourcen für die Formatierung.
      */
     fun showBirthdayNotification(name: String, age: Int, days: Int) {
         if (!canShowNotifications()) return
@@ -36,17 +38,38 @@ class NotificationHelper(private val context: Context) {
             context.getString(R.string.notification_text_days, name, age)
         }
 
+        // Intent zum Öffnen der App beim Klick auf die Benachrichtigung
+        val intent = Intent(context, MainActivity::class.java).apply {
+            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+        }
+        val pendingIntent: PendingIntent = PendingIntent.getActivity(
+            context, 0, intent, PendingIntent.FLAG_IMMUTABLE
+        )
+
         val builder = NotificationCompat.Builder(context, CHANNEL_ID)
-            .setSmallIcon(R.drawable.ic_cake) // Kuchen-Icon hier einsetzen
+            .setSmallIcon(R.drawable.ic_cake)
             .setContentTitle(title)
             .setContentText(text)
             .setPriority(NotificationCompat.PRIORITY_HIGH)
+            .setCategory(NotificationCompat.CATEGORY_EVENT)
+            .setContentIntent(pendingIntent)
             .setAutoCancel(true)
 
-        with(NotificationManagerCompat.from(context)) {
-            // ID basiert auf dem Hashcode des Namens, um mehrere Benachrichtigungen am selben Tag zu ermöglichen
-            notify(name.hashCode(), builder.build())
+        try {
+            with(NotificationManagerCompat.from(context)) {
+                // ID basiert auf dem Hashcode des Namens, um mehrere Benachrichtigungen am selben Tag zu ermöglichen
+                notify(name.hashCode(), builder.build())
+            }
+        } catch (e: SecurityException) {
+            // Falls Berechtigungen zur Laufzeit doch fehlen
         }
+    }
+
+    /**
+     * Test-Funktion, um sofort eine Benachrichtigung zu triggern.
+     */
+    fun triggerTestNotification() {
+        showBirthdayNotification("Test Kontakt", 25, 0)
     }
 
     private fun canShowNotifications(): Boolean {

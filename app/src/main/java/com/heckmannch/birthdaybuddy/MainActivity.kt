@@ -13,6 +13,7 @@ import com.heckmannch.birthdaybuddy.ui.theme.BirthdayBuddyTheme
 import com.heckmannch.birthdaybuddy.ui.screens.*
 import com.heckmannch.birthdaybuddy.ui.Route
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
+import com.heckmannch.birthdaybuddy.utils.NotificationHelper
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -20,6 +21,16 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         
         createNotificationChannel()
+
+        /* 
+         * ANLEITUNG ZUM TESTEN DER BENACHRICHTIGUNGEN:
+         * Um eine Test-Benachrichtigung mit dem neuen Kuchen-Icon zu sehen:
+         * 1. Die untere Zeile einkommentieren.
+         * 2. App starten.
+         * 3. Sobald die Benachrichtigung erscheint, Zeile wieder auskommentieren.
+         */
+        // NotificationHelper(this).triggerTestNotification()
+
         enableEdgeToEdge()
 
         setContent {
