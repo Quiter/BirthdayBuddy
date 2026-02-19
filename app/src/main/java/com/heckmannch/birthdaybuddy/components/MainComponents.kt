@@ -9,7 +9,9 @@ import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import com.heckmannch.birthdaybuddy.R
 import com.heckmannch.birthdaybuddy.model.BirthdayContact
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -28,16 +30,16 @@ fun MainSearchBar(
                 onSearch = { },
                 expanded = false,
                 onExpandedChange = { },
-                placeholder = { Text("In Kontakten suchen...") },
+                placeholder = { Text(stringResource(R.string.main_search_hint)) },
                 leadingIcon = {
                     IconButton(onClick = onMenuClick) {
-                        Icon(Icons.Default.Menu, contentDescription = "Menü öffnen")
+                        Icon(Icons.Default.Menu, contentDescription = null)
                     }
                 },
                 trailingIcon = {
                     if (query.isNotEmpty()) {
                         IconButton(onClick = { onQueryChange("") }) {
-                            Icon(Icons.Default.Clear, contentDescription = "Suche löschen")
+                            Icon(Icons.Default.Clear, contentDescription = null)
                         }
                     }
                 }
@@ -62,23 +64,33 @@ fun MainDrawerContent(
     onSettingsClick: () -> Unit
 ) {
     ModalDrawerSheet {
-        // LazyColumn ist robuster für lange Listen im Drawer
         LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
                 .navigationBarsPadding(),
-            contentPadding = PaddingValues(bottom = 32.dp) // Extra Platz unten
+            contentPadding = PaddingValues(bottom = 32.dp)
         ) {
             item {
                 Spacer(Modifier.height(12.dp))
                 Text(
-                    "Labels filtern",
+                    stringResource(R.string.drawer_labels_header),
                     style = MaterialTheme.typography.titleSmall,
                     modifier = Modifier.padding(horizontal = 28.dp, vertical = 16.dp)
                 )
             }
 
             val labelsToShow = availableLabels.filterNot { hiddenDrawerLabels.contains(it) }
+
+            if (labelsToShow.isEmpty()) {
+                item {
+                    Text(
+                        stringResource(R.string.drawer_no_labels),
+                        modifier = Modifier.padding(horizontal = 28.dp, vertical = 8.dp),
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+            }
 
             items(labelsToShow) { label ->
                 val isChecked = selectedLabels.contains(label)
@@ -95,7 +107,7 @@ fun MainDrawerContent(
                 HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp, horizontal = 28.dp))
                 
                 NavigationDrawerItem(
-                    label = { Text("Kontakte neu laden") },
+                    label = { Text(stringResource(R.string.drawer_reload_contacts)) },
                     selected = false,
                     onClick = onReloadContacts,
                     icon = { Icon(Icons.Default.Refresh, contentDescription = null) },
@@ -103,7 +115,7 @@ fun MainDrawerContent(
                 )
 
                 NavigationDrawerItem(
-                    label = { Text("Einstellungen") },
+                    label = { Text(stringResource(R.string.drawer_settings)) },
                     selected = false,
                     onClick = onSettingsClick,
                     icon = { Icon(Icons.Default.Settings, contentDescription = null) },

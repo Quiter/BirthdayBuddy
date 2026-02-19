@@ -30,15 +30,8 @@ fun MainScreen(
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     val context = LocalContext.current
 
-    // Daten aus dem ViewModel beobachten (als State für Compose)
-    val contacts by mainViewModel.filteredContacts.collectAsState()
-    val isLoading by mainViewModel.isLoading.collectAsState()
-    val searchQuery by mainViewModel.searchQuery.collectAsState()
-    val availableLabels by mainViewModel.availableLabels.collectAsState()
-    
-    // Filter-States für den Drawer
-    val savedSelectedLabels by filterManager.selectedLabelsFlow.collectAsState(initial = emptySet())
-    val hiddenDrawerLabels by filterManager.hiddenDrawerLabelsFlow.collectAsState(initial = emptySet())
+    // Den zentralen UI-State aus dem ViewModel beobachten
+    val uiState by mainViewModel.uiState.collectAsState()
 
     // Berechtigungs-Management
     var hasPermission by remember {
@@ -48,7 +41,7 @@ fun MainScreen(
     val permissionLauncher = rememberLauncherForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { perms ->
         if (perms[Manifest.permission.READ_CONTACTS] == true) {
             hasPermission = true
-            mainViewModel.loadContacts() // Kontakte laden, sobald Berechtigung erteilt wurde
+            mainViewModel.loadContacts()
         }
     }
 
@@ -65,9 +58,9 @@ fun MainScreen(
         drawerState = drawerState,
         drawerContent = {
             MainDrawerContent(
-                availableLabels = availableLabels,
-                selectedLabels = savedSelectedLabels ?: emptySet(),
-                hiddenDrawerLabels = hiddenDrawerLabels,
+                availableLabels = uiState.availableLabels,
+                selectedLabels = uiState.selectedLabels,
+                hiddenDrawerLabels = uiState.hiddenDrawerLabels,
                 onLabelToggle = { label, _ -> mainViewModel.toggleLabel(label) },
                 onReloadContacts = {
                     scope.launch {
@@ -85,17 +78,16 @@ fun MainScreen(
         Scaffold(
             topBar = {
                 MainSearchBar(
-                    query = searchQuery,
+                    query = uiState.searchQuery,
                     onQueryChange = { mainViewModel.updateSearchQuery(it) },
                     onMenuClick = { scope.launch { drawerState.open() } }
                 )
             }
         ) { padding ->
             Box(modifier = Modifier.fillMaxSize().padding(padding)) {
-                if (isLoading) {
+                if (uiState.isLoading) {
                     CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
-                } else if (contacts.isEmpty() && hasPermission) {
-                    // Optional: Leerer State, wenn keine Kontakte gefunden wurden
+                } else if (uiState.contacts.isEmpty() && hasPermission) {
                     Text(
                         text = "Keine Geburtstage gefunden.",
                         modifier = Modifier.align(Alignment.Center),
@@ -103,7 +95,7 @@ fun MainScreen(
                     )
                 } else {
                     BirthdayList(
-                        contacts = contacts, 
+                        contacts = uiState.contacts,
                         listState = rememberLazyListState()
                     )
                 }

@@ -1,6 +1,7 @@
 package com.heckmannch.birthdaybuddy.data
 
 import android.content.Context
+import android.util.Log
 import com.heckmannch.birthdaybuddy.model.BirthdayContact
 import com.heckmannch.birthdaybuddy.utils.fetchBirthdays
 import kotlinx.coroutines.Dispatchers
@@ -31,10 +32,15 @@ class BirthdayRepository(private val context: Context) {
                 // 1. Neue Daten vom System laden
                 val freshBirthdays = fetchBirthdays(context)
                 
-                // 2. In die Datenbank schreiben (REPLACE Strategie sorgt für Aktualität)
-                birthdayDao.insertBirthdays(freshBirthdays)
+                if (freshBirthdays.isNotEmpty()) {
+                    // 2. In die Datenbank schreiben (REPLACE Strategie sorgt für Aktualität)
+                    birthdayDao.insertBirthdays(freshBirthdays)
+                } else {
+                    Log.i("BirthdayRepository", "Keine Geburtstage in den Kontakten gefunden.")
+                }
             } catch (e: Exception) {
-                // Fehlerbehandlung (z.B. Loggen)
+                // Fehlerbehandlung mit Logging
+                Log.e("BirthdayRepository", "Fehler bei der Synchronisierung der Geburtstage", e)
             }
         }
     }

@@ -1,0 +1,53 @@
+<resources>
+    <string name="app_name">BirthdayBuddy</string>
+
+    <!-- Main Screen -->
+    <string name="main_search_hint">Suchen…</string>
+    <string name="main_no_birthdays">Keine Geburtstage gefunden.</string>
+    <string name="main_loading">Daten werden geladen…</string>
+
+    <!-- Drawer / Navigation -->
+    <string name="drawer_title">BirthdayBuddy</string>
+    <string name="drawer_labels_header">Labels</string>
+    <string name="drawer_reload_contacts">Kontakte synchronisieren</string>
+    <string name="drawer_settings">Einstellungen</string>
+    <string name="drawer_no_labels">Keine Labels vorhanden</string>
+
+    <!-- Notification -->
+    <string name="notification_channel_name">Geburtstags-Erinnerungen</string>
+    <string name="notification_channel_desc">Benachrichtigungen für anstehende Geburtstage</string>
+    <string name="notification_title_today">Geburtstag heute! \uD83C\uDF82</string>
+    <string name="notification_title_days">Geburtstag in %1$d Tagen</string>
+    <string name="notification_text_today">%1$s wird heute %2$d Jahre alt!</string>
+    <string name="notification_text_days">%1$s wird %2$d Jahre alt.</string>
+
+    <!-- Settings Menu -->
+    <string name="settings_title">Einstellungen</string>
+    <string name="settings_section_general">Allgemein</string>
+    <string name="settings_section_widget">Widget</string>
+    <string name="settings_alarms_title">Benachrichtigungen</string>
+    <string name="settings_alarms_desc">Zeitpunkt und Vorwarnzeit anpassen</string>
+    <string name="settings_hide_labels_title">Labels im Menü ausblenden</string>
+    <string name="settings_hide_labels_desc">Bestimmte Labels im Seitenmenü verstecken</string>
+    <string name="settings_block_labels_title">Labels ignorieren</string>
+    <string name="settings_block_labels_desc">Kontakte mit diesen Labels komplett ausschließen</string>
+    <string name="settings_widget_include_title">Im Widget anzeigen</string>
+    <string name="settings_widget_include_desc">Nur diese Labels im Widget berücksichtigen</string>
+    <string name="settings_widget_exclude_title">Vom Widget ausschließen</string>
+    <string name="settings_widget_exclude_desc">Diese Labels nie im Widget anzeigen</string>
+
+    <!-- Labels Selection -->
+    <string name="label_selection_save">Speichern</string>
+    <string name="label_selection_none">Keine Labels verfügbar</string>
+
+    <!-- Alarms Screen -->
+    <string name="alarms_title">Benachrichtigungen</string>
+    <string name="alarms_time_label">Uhrzeit der Benachrichtigung</string>
+    <string name="alarms_days_header">Wann soll erinnert werden?</string>
+    <string name="alarms_day_0">Am Tag selbst</string>
+    <string name="alarms_day_1">1 Tag vorher</string>
+    <string name="alarms_day_3">3 Tage vorher</string>
+    <string name="alarms_day_7">1 Woche vorher</string>
+    <string name="alarms_day_14">2 Wochen vorher</string>
+    <string name="alarms_day_30">1 Monat vorher</string>
+</resources>

@@ -4,8 +4,6 @@ import android.Manifest
 import android.content.Context
 import android.content.pm.PackageManager
 import androidx.core.app.ActivityCompat
-import androidx.core.app.NotificationCompat
-import androidx.core.app.NotificationManagerCompat
 import androidx.glance.appwidget.updateAll
 import androidx.work.*
 import com.heckmannch.birthdaybuddy.data.BirthdayRepository
@@ -21,6 +19,7 @@ class BirthdayWorker(context: Context, workerParams: WorkerParameters) : Corouti
     override suspend fun doWork(): Result {
         val repository = BirthdayRepository(applicationContext)
         val filterManager = FilterManager(applicationContext)
+        val notificationHelper = NotificationHelper(applicationContext)
 
         if (ActivityCompat.checkSelfPermission(applicationContext, Manifest.permission.READ_CONTACTS) != PackageManager.PERMISSION_GRANTED) {
             return Result.failure()
@@ -29,46 +28,26 @@ class BirthdayWorker(context: Context, workerParams: WorkerParameters) : Corouti
         // 1. DB synchronisieren
         repository.refreshBirthdays()
 
-        // 2. Benachrichtigungen
-        val canNotify = ActivityCompat.checkSelfPermission(applicationContext, Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED ||
-                android.os.Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.TIRAMISU
+        // 2. Benachrichtigungen prüfen und ggf. anzeigen
+        val allBirthdays = repository.allBirthdays.first()
+        val daysToNotify = filterManager.notificationDaysFlow.first()
+        val excludedLabels = filterManager.excludedLabelsFlow.first()
 
-        if (canNotify) {
-            val allBirthdays = repository.allBirthdays.first()
-            val daysToNotify = filterManager.notificationDaysFlow.first()
-            val excludedLabels = filterManager.excludedLabelsFlow.first()
-
-            allBirthdays.filter { contact ->
-                !contact.labels.any { excludedLabels.contains(it) } &&
-                daysToNotify.contains(contact.remainingDays.toString())
-            }.forEach { contact ->
-                showNotification(applicationContext, contact.name, contact.age, contact.remainingDays)
-            }
+        allBirthdays.filter { contact ->
+            !contact.labels.any { excludedLabels.contains(it) } &&
+            daysToNotify.contains(contact.remainingDays.toString())
+        }.forEach { contact ->
+            notificationHelper.showBirthdayNotification(
+                name = contact.name, 
+                age = contact.age, 
+                days = contact.remainingDays
+            )
         }
 
         // 3. Glance Widget zur Aktualisierung zwingen
         BirthdayGlanceWidget().updateAll(applicationContext)
 
         return Result.success()
-    }
-
-    private fun showNotification(context: Context, name: String, age: Int, days: Int) {
-        val title = if (days == 0) "Geburtstag heute! \uD83C\uDF82" else "Geburtstag in $days Tagen"
-        val text = if (days == 0) "$name wird heute $age Jahre alt!" else "$name wird $age Jahre alt."
-
-        val builder = NotificationCompat.Builder(context, "birthday_channel")
-            .setSmallIcon(android.R.drawable.ic_popup_reminder)
-            .setContentTitle(title)
-            .setContentText(text)
-            .setPriority(NotificationCompat.PRIORITY_HIGH)
-            .setAutoCancel(true)
-
-        with(NotificationManagerCompat.from(context)) {
-            if (ActivityCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED ||
-                android.os.Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.TIRAMISU) {
-                notify(name.hashCode(), builder.build())
-            }
-        }
     }
 }
 

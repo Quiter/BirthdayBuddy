@@ -8,6 +8,15 @@ import com.heckmannch.birthdaybuddy.model.BirthdayContact
 import com.heckmannch.birthdaybuddy.model.ContactActions
 
 /**
+ * Konstanten für spezifische Kontakt-MIME-Types.
+ */
+object ContactMimes {
+    const val WHATSAPP = "vnd.android.cursor.item/vnd.com.whatsapp.profile"
+    const val SIGNAL = "vnd.android.cursor.item/vnd.org.thoughtcrime.securesms.contact"
+    const val TELEGRAM = "vnd.android.cursor.item/vnd.org.telegram.messenger.android.profile"
+}
+
+/**
  * Optimierte Funktion zum Laden aller Geburtstagskontakte.
  * Reduziert die Datenbankabfragen drastisch (Batch-Processing statt Einzelabfragen).
  */
@@ -24,7 +33,6 @@ fun fetchBirthdays(context: Context): List<BirthdayContact> {
     val selection = "${ContactsContract.Data.MIMETYPE} = ? AND ${ContactsContract.CommonDataKinds.Event.TYPE} = ${ContactsContract.CommonDataKinds.Event.TYPE_BIRTHDAY}"
     val selectionArgs = arrayOf(ContactsContract.CommonDataKinds.Event.CONTENT_ITEM_TYPE)
 
-    // Wir nutzen eine Map, um Duplikate pro Kontakt-ID sofort zu vermeiden
     val tempContactsMap = mutableMapOf<String, Pair<String, String>>()
 
     context.contentResolver.query(
@@ -39,7 +47,6 @@ fun fetchBirthdays(context: Context): List<BirthdayContact> {
             val id = cursor.getString(idIdx) ?: continue
             val name = cursor.getString(nameIdx) ?: "Unbekannt"
             val bday = cursor.getString(bdayIdx) ?: ""
-            // Falls eine ID mehrfach auftaucht (z.B. mehrere Events), nehmen wir nur das erste.
             if (!tempContactsMap.containsKey(id)) {
                 tempContactsMap[id] = name to bday
                 contactIds.add(id)
@@ -49,7 +56,7 @@ fun fetchBirthdays(context: Context): List<BirthdayContact> {
 
     if (contactIds.isEmpty()) return emptyList()
 
-    // 2. Batch-Abfrage für ALLE Labels und ALLE Kontaktdaten der gefundenen Personen
+    // 2. Batch-Abfrage für Labels und Aktionen
     val allLabels = getAllContactLabels(context, contactIds)
     val allActions = getAllContactActions(context, contactIds)
 
@@ -77,14 +84,10 @@ fun fetchBirthdays(context: Context): List<BirthdayContact> {
     return contactList
 }
 
-/**
- * Lädt alle Gruppenmitgliedschaften für eine Liste von IDs in einer einzigen Abfrage.
- */
 private fun getAllContactLabels(context: Context, contactIds: Set<String>): Map<String, List<String>> {
     val result = mutableMapOf<String, MutableList<String>>()
     val groupTitles = mutableMapOf<String, String>()
 
-    // Schritt A: Alle Gruppennamen laden
     context.contentResolver.query(
         ContactsContract.Groups.CONTENT_URI,
         arrayOf(ContactsContract.Groups._ID, ContactsContract.Groups.TITLE),
@@ -99,7 +102,6 @@ private fun getAllContactLabels(context: Context, contactIds: Set<String>): Map<
         }
     }
 
-    // Schritt B: Alle Mitgliedschaften laden
     val idList = contactIds.joinToString(",") { "'$it'" }
     context.contentResolver.query(
         ContactsContract.Data.CONTENT_URI,
@@ -121,9 +123,6 @@ private fun getAllContactLabels(context: Context, contactIds: Set<String>): Map<
     return result
 }
 
-/**
- * Lädt alle Telefonnummern, E-Mails und Messenger-Flags für eine Liste von IDs in einer einzigen Abfrage.
- */
 private fun getAllContactActions(context: Context, contactIds: Set<String>): Map<String, ContactActions> {
     val resultMap = mutableMapOf<String, ContactActions>()
     val phoneMap = mutableMapOf<String, String>()
@@ -151,9 +150,9 @@ private fun getAllContactActions(context: Context, contactIds: Set<String>): Map
             when (mime) {
                 ContactsContract.CommonDataKinds.Phone.CONTENT_ITEM_TYPE -> if (!phoneMap.containsKey(id)) phoneMap[id] = data1
                 ContactsContract.CommonDataKinds.Email.CONTENT_ITEM_TYPE -> if (!emailMap.containsKey(id)) emailMap[id] = data1
-                "vnd.android.cursor.item/vnd.com.whatsapp.profile" -> waSet.add(id)
-                "vnd.android.cursor.item/vnd.org.thoughtcrime.securesms.contact" -> sigSet.add(id)
-                "vnd.android.cursor.item/vnd.org.telegram.messenger.android.profile" -> tgSet.add(id)
+                ContactMimes.WHATSAPP -> waSet.add(id)
+                ContactMimes.SIGNAL -> sigSet.add(id)
+                ContactMimes.TELEGRAM -> tgSet.add(id)
             }
         }
     }

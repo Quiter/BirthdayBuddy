@@ -25,11 +25,15 @@ class MainActivity : ComponentActivity() {
         setContent {
             BirthdayBuddyTheme {
                 val navController = rememberNavController()
-                val mainViewModel: MainViewModel = viewModel()
                 
-                val availableLabels by mainViewModel.availableLabels.collectAsState()
-                val isLoadingLabels by mainViewModel.isLoading.collectAsState()
-                val filterManager = remember { FilterManager(this@MainActivity) }
+                // Wir nutzen die Factory, um das ViewModel mit Abhängigkeiten zu erstellen
+                val mainViewModel: MainViewModel = viewModel(factory = MainViewModel.Factory)
+                
+                val uiState by mainViewModel.uiState.collectAsState()
+                
+                // FilterManager kommt jetzt auch aus dem Container
+                val container = (application as BirthdayApplication).container
+                val filterManager = container.filterManager
 
                 NavHost(navController = navController, startDestination = Route.Main) {
                     
@@ -55,16 +59,32 @@ class MainActivity : ComponentActivity() {
                     }
 
                     composable<Route.BlockLabels> {
-                        BlockLabelsScreen(filterManager, availableLabels, isLoadingLabels) { navController.popBackStack() }
+                        BlockLabelsScreen(
+                            filterManager, 
+                            uiState.availableLabels, 
+                            uiState.isLoading
+                        ) { navController.popBackStack() }
                     }
                     composable<Route.HideLabels> {
-                        HideLabelsScreen(filterManager, availableLabels, isLoadingLabels) { navController.popBackStack() }
+                        HideLabelsScreen(
+                            filterManager, 
+                            uiState.availableLabels, 
+                            uiState.isLoading
+                        ) { navController.popBackStack() }
                     }
                     composable<Route.WidgetIncludeLabels> {
-                        WidgetIncludeLabelsScreen(filterManager, availableLabels, isLoadingLabels) { navController.popBackStack() }
+                        WidgetIncludeLabelsScreen(
+                            filterManager, 
+                            uiState.availableLabels, 
+                            uiState.isLoading
+                        ) { navController.popBackStack() }
                     }
                     composable<Route.WidgetExcludeLabels> {
-                        WidgetExcludeLabelsScreen(filterManager, availableLabels, isLoadingLabels) { navController.popBackStack() }
+                        WidgetExcludeLabelsScreen(
+                            filterManager, 
+                            uiState.availableLabels, 
+                            uiState.isLoading
+                        ) { navController.popBackStack() }
                     }
 
                     composable<Route.Alarms> {
@@ -76,9 +96,10 @@ class MainActivity : ComponentActivity() {
     }
 
     private fun createNotificationChannel() {
-        val name = "Geburtstags-Erinnerungen"
+        val name = getString(R.string.notification_channel_name)
+        val descriptionText = getString(R.string.notification_channel_desc)
         val channel = android.app.NotificationChannel("birthday_channel", name, android.app.NotificationManager.IMPORTANCE_HIGH).apply {
-            description = "Benachrichtigungen für anstehende Geburtstage"
+            description = descriptionText
         }
         getSystemService(android.app.NotificationManager::class.java)?.createNotificationChannel(channel)
     }
