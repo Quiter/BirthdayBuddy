@@ -187,17 +187,12 @@ fun LabelSelectionScreen(
         }
     ) { padding ->
         Column(modifier = Modifier.fillMaxSize().padding(padding)) {
-            Surface(
-                color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f),
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Text(
-                    description, 
-                    style = MaterialTheme.typography.bodyMedium, 
-                    modifier = Modifier.padding(16.dp), 
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            }
+            Text(
+                description, 
+                style = MaterialTheme.typography.bodyMedium, 
+                modifier = Modifier.padding(horizontal = 16.dp, vertical = 20.dp), 
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
             
             if (isLoading) {
                 Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) { 
@@ -228,9 +223,7 @@ fun LabelSelectionScreen(
                                     } else null
                                 ) 
                             },
-                            colors = ListItemDefaults.colors(
-                                containerColor = if (isChecked) MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.05f) else Color.Transparent
-                            )
+                            colors = ListItemDefaults.colors(containerColor = Color.Transparent)
                         )
                     }
                 }
