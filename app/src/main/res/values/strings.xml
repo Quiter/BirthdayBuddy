@@ -69,6 +69,12 @@
     <string name="alarms_day_14">2 weeks before</string>
     <string name="alarms_day_30">1 month before</string>
 
+    <!-- Widget -->
+    <string name="widget_today">Today</string>
+    <string name="widget_tomorrow">Tomorrow</string>
+    <string name="widget_in_days">In %1$d days</string>
+
+
     <!-- <string name="permission_required_desc">BirthdayBuddy benötigt die Berechtigung, deine Kontakte
         zu lesen, um Geburtstage anzuzeigen.
     </string> -->

@@ -113,9 +113,9 @@ class BirthdayGlanceWidget : GlanceAppWidget() {
                     )
                     
                     val infoText = when (contact.remainingDays) {
-                        0 -> context.getString(R.string.alarms_day_0) + " 🎉"
-                        1 -> context.getString(R.string.alarms_day_1)
-                        else -> context.getString(R.string.notification_title_days, contact.remainingDays)
+                        0 -> context.getString(R.string.widget_today) + " 🎉"
+                        1 -> context.getString(R.string.widget_tomorrow)
+                        else -> context.getString(R.string.widget_in_days, contact.remainingDays)
                     }
                     
                     Text(

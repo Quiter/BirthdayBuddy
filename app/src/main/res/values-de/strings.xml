@@ -66,4 +66,9 @@
     <string name="alarms_day_7">1 Woche vorher</string>
     <string name="alarms_day_14">2 Wochen vorher</string>
     <string name="alarms_day_30">1 Monat vorher</string>
+
+    <!-- Widget -->
+    <string name="widget_today">Heute</string>
+    <string name="widget_tomorrow">Morgen</string>
+    <string name="widget_in_days">In %1$d Tagen</string>
 </resources>
