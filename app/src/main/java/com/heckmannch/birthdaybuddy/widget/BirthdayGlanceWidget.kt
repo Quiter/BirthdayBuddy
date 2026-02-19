@@ -134,8 +134,9 @@ class BirthdayGlanceWidget : GlanceAppWidget() {
                         .cornerRadius(16.dp),
                     contentAlignment = Alignment.Center
                 ) {
+                    val ageText = if (contact.age < 0) "?" else contact.age.toString()
                     Text(
-                        text = contact.age.toString(),
+                        text = ageText,
                         style = TextStyle(
                             color = GlanceTheme.colors.onPrimary,
                             fontWeight = FontWeight.Bold,

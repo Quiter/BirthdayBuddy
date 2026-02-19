@@ -41,10 +41,11 @@ fun formatGermanDate(dateString: String): String {
  * 2. Die Anzahl der Tage, bis dieser Geburtstag stattfindet.
  *
  * @param birthDateString Das Geburtsdatum im ISO-Format.
- * @return Ein Pair bestehend aus (Alter, verbleibende Tage).
+ * @return Ein Pair bestehend aus (Alter, verbleibende Tage). 
+ *         Wenn das Alter unbekannt ist (kein Jahr im Kontakt), wird -1 zurückgegeben.
  */
 fun calculateAgeAndDays(birthDateString: String): Pair<Int, Int> {
-    if (birthDateString.isBlank()) return Pair(0, 0)
+    if (birthDateString.isBlank()) return Pair(-1, 0)
     
     return try {
         val today = LocalDate.now()
@@ -60,7 +61,7 @@ fun calculateAgeAndDays(birthDateString: String): Pair<Int, Int> {
             }
             
             val days = ChronoUnit.DAYS.between(today, nextBirthday).toInt()
-            Pair(0, days) // Alter ist unbekannt, daher 0
+            Pair(-1, days) // Alter ist unbekannt, daher -1
         } else {
             // Logik für Kontakte MIT Geburtsjahr
             val birthDate = LocalDate.parse(birthDateString, ISO_FORMATTER)
@@ -80,6 +81,6 @@ fun calculateAgeAndDays(birthDateString: String): Pair<Int, Int> {
             Pair(age, days)
         }
     } catch (e: Exception) {
-        Pair(0, 0)
+        Pair(-1, 0)
     }
 }

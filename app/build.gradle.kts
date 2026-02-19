@@ -16,7 +16,7 @@ android {
         minSdk = 28
         targetSdk = 36
         versionCode = 1
-        versionName = "2.4"
+        versionName = "2.4.2"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -37,18 +37,20 @@ android {
         targetCompatibility = JavaVersion.VERSION_11
     }
 
-    // ÄNDERUNG HIER:
-    // Wir entfernen den block 'kotlin { compilerOptions { ... } }' innerhalb von 'android',
-    // da dieser oft den Konflikt mit KSP und den SourceSets auslöst.
-    // Stattdessen definieren wir das JvmTarget global für alle Kotlin-Tasks (siehe ganz unten).
-
     buildFeatures {
         compose = true
     }
+
+    // Automatisches Umbenennen der APK-Datei
+    applicationVariants.all {
+        outputs.all {
+            val output = this as com.android.build.gradle.internal.api.BaseVariantOutputImpl
+            output.outputFileName = "BirthdayBuddy_v${versionName}.apk"
+        }
+    }
 }
 
-// NEU: Diese globale Konfiguration setzt das JvmTarget für alle Kotlin-Kompilierungen,
-// ohne die internen Android-SourceSets zu stören. Das löst den KSP-Error.
+// Globales JvmTarget für alle Kotlin-Tasks
 tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>().configureEach {
     compilerOptions {
         jvmTarget.set(JvmTarget.JVM_11)

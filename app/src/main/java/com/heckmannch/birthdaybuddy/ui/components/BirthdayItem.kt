@@ -1,6 +1,7 @@
 package com.heckmannch.birthdaybuddy.ui.components
 
 import android.content.Intent
+import android.net.Uri
 import android.widget.Toast
 import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.Spring
@@ -130,7 +131,8 @@ fun BirthdayItem(
                             text = buildAnnotatedString {
                                 append("Wird ")
                                 withStyle(SpanStyle(color = getAgeColorRaw(contact.age, isDark), fontWeight = FontWeight.Bold)) {
-                                    append("${contact.age}")
+                                    val ageText = if (contact.age < 0) "?" else "${contact.age}"
+                                    append(ageText)
                                 }
                             },
                             style = MaterialTheme.typography.bodyLarge
@@ -313,7 +315,10 @@ private fun MessengerButton(
 private fun getAgeColorRaw(age: Int, isDark: Boolean): Color {
     val youngColor = if (isDark) Color(0xFFFFA4A4) else Color(0xFFFF5252)
     val oldColor = if (isDark) Color(0xFFD32F2F) else Color(0xFF8B0000)
-    val fraction = (age.coerceIn(0, 100) / 100f)
+    
+    // Wenn das Alter unbekannt (-1) ist, nehmen wir den Wert für 50 Jahre (0.5)
+    val ageValue = if (age < 0) 50 else age
+    val fraction = (ageValue.coerceIn(0, 100) / 100f)
     return lerp(youngColor, oldColor, fraction)
 }
 
