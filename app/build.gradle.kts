@@ -2,7 +2,6 @@ import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
     alias(libs.plugins.android.application)
-    alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.kotlin.serialization)
     alias(libs.plugins.ksp)
@@ -10,12 +9,12 @@ plugins {
 
 android {
     namespace = "com.heckmannch.birthdaybuddy"
-    compileSdk = 35
+    compileSdk = 36
 
     defaultConfig {
         applicationId = "com.heckmannch.birthdaybuddy"
         minSdk = 28
-        targetSdk = 35
+        targetSdk = 36
         versionCode = 1
         versionName = "1.3"
 
@@ -32,19 +31,27 @@ android {
             )
         }
     }
+
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
     }
 
-    kotlin {
-        compilerOptions {
-            jvmTarget.set(JvmTarget.JVM_11)
-        }
-    }
+    // ÄNDERUNG HIER:
+    // Wir entfernen den block 'kotlin { compilerOptions { ... } }' innerhalb von 'android',
+    // da dieser oft den Konflikt mit KSP und den SourceSets auslöst.
+    // Stattdessen definieren wir das JvmTarget global für alle Kotlin-Tasks (siehe ganz unten).
 
     buildFeatures {
         compose = true
+    }
+}
+
+// NEU: Diese globale Konfiguration setzt das JvmTarget für alle Kotlin-Kompilierungen,
+// ohne die internen Android-SourceSets zu stören. Das löst den KSP-Error.
+tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>().configureEach {
+    compilerOptions {
+        jvmTarget.set(JvmTarget.JVM_11)
     }
 }
 
@@ -60,7 +67,7 @@ dependencies {
     implementation(libs.androidx.compose.material.icons.extended)
     implementation(libs.google.material)
     implementation(libs.androidx.core.splashscreen)
-    
+
     implementation(libs.androidx.datastore.preferences)
     implementation(libs.androidx.navigation.compose)
     implementation(libs.coil.compose)
