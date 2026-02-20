@@ -7,13 +7,16 @@ import android.net.Uri
 import android.provider.Settings
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -33,6 +36,7 @@ fun MainScreen(
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     val context = LocalContext.current
     val uiState by mainViewModel.uiState.collectAsState()
+    val focusManager = LocalFocusManager.current
 
     var hasPermission by remember {
         mutableStateOf(ContextCompat.checkSelfPermission(context, Manifest.permission.READ_CONTACTS) == PackageManager.PERMISSION_GRANTED)
@@ -42,6 +46,13 @@ fun MainScreen(
         hasPermission = perms[Manifest.permission.READ_CONTACTS] == true
         if (hasPermission) {
             mainViewModel.loadContacts()
+        }
+    }
+
+    // Tastatur schließen, wenn der Drawer geöffnet wird
+    LaunchedEffect(drawerState.targetValue) {
+        if (drawerState.targetValue == DrawerValue.Open) {
+            focusManager.clearFocus()
         }
     }
 
@@ -75,8 +86,22 @@ fun MainScreen(
                     onQueryChange = { mainViewModel.updateSearchQuery(it) },
                     onMenuClick = { scope.launch { drawerState.open() } }
                 )
+            },
+            modifier = Modifier.pointerInput(Unit) {
+                detectTapGestures(onTap = {
+                    focusManager.clearFocus()
+                })
             }
         ) { padding ->
+            val listState = rememberLazyListState()
+            
+            // Fokus löschen, wenn die Liste gescrollt wird
+            LaunchedEffect(listState.isScrollInProgress) {
+                if (listState.isScrollInProgress) {
+                    focusManager.clearFocus()
+                }
+            }
+
             Box(modifier = Modifier.fillMaxSize().padding(padding)) {
                 if (!hasPermission) {
                     Column(
@@ -112,7 +137,7 @@ fun MainScreen(
                 } else {
                     BirthdayList(
                         contacts = uiState.contacts, 
-                        listState = rememberLazyListState()
+                        listState = listState
                     )
                 }
             }

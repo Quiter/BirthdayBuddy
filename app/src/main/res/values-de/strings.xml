@@ -40,6 +40,8 @@
     <string name="settings_notifications_include_title">Filter: Einschließen</string>
     <string name="settings_notifications_exclude_title">Filter: Ausschließen</string>
 
+    <string name="footer_slogan">Made with ❤ in Dortmund</string>
+
     <!-- Labels Selection -->
     <string name="label_selection_save">Speichern</string>
     <string name="label_selection_none">Keine Labels verfügbar</string>
@@ -101,7 +103,7 @@
 
     <!-- Widget -->
     <string name="settings_widget_count_title">Anzahl</string>
-    <string name="settings_widget_count_desc">Bis zu %1$d Personen anzeigen</string>
+    <string name="settings_widget_count_desc">Zeigt %1$d Personen an</string>
     <string name="settings_widget_include_title">Filter: Einschließen</string>
     <string name="settings_widget_exclude_title">Filter: Ausschließen</string>
     <string name="settings_widget_dialog_title">Widget Kapazität</string>

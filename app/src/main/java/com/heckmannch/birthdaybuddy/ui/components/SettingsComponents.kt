@@ -126,6 +126,8 @@ fun SettingsFooter(versionName: String, onGithubClick: () -> Unit) {
         Text(stringResource(R.string.app_name), style = MaterialTheme.typography.titleSmall, color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.Bold)
         Text("Version $versionName", style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f))
         Spacer(Modifier.height(16.dp))
+        Text(stringResource(R.string.footer_slogan), style = MaterialTheme.typography.titleSmall, color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.Bold)
+        Spacer(Modifier.height(16.dp))
         FilledTonalButton(
             onClick = onGithubClick,
             contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp)

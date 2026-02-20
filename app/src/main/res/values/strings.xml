@@ -42,6 +42,8 @@
     <string name="settings_notifications_exclude_title">Filter: Exclude</string>
     <string name="settings_notifications_exclude_desc">Ignore labels</string>
 
+    <string name="footer_slogan">Made with ❤ in Dortmund</string>
+
     <!-- Labels Selection -->
     <string name="label_selection_save">Save</string>
     <string name="label_selection_none">No labels available</string>
@@ -108,7 +110,7 @@
 
     <!-- Widget -->
     <string name="settings_widget_count_title">Count</string>
-    <string name="settings_widget_count_desc">Show up to %1$d people</string>
+    <string name="settings_widget_count_desc">Show %1$d people</string>
     <string name="settings_widget_include_title">Filter: Include</string>
     <string name="settings_widget_include_desc">Specific labels in widget</string>
     <string name="settings_widget_exclude_title">Filter: Exclude</string>
