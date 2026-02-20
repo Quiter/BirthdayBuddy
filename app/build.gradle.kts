@@ -8,7 +8,7 @@ plugins {
 }
 
 // Zentrale Definition der Versionen
-val appVersionName = "2.5.7"
+val appVersionName = "2.5.8"
 val appVersionCode = 2
 
 android {
