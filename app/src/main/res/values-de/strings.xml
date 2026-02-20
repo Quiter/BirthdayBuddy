@@ -90,6 +90,17 @@
     <string name="label_manager_section_org">Organisation</string>
     <string name="label_manager_subtitle">Zentrale Sichtbarkeitssteuerung</string>
 
+    <string name="label_matrix_legend_title">Icon-Legende</string>
+    <string name="label_matrix_legend_show">Anzeigen: In diesem Bereich sichtbar.</string>
+    <string name="label_matrix_legend_hide">Ausblenden: Nicht explizit gefiltert (Neutral).</string>
+    <string name="label_matrix_legend_block">Blockieren: Kontakte mit diesem Label werden ignoriert.</string>
+
+    <!-- Sync Status -->
+    <string name="sync_success">Kontakte erfolgreich synchronisiert</string>
+    <string name="sync_error_permission">Berechtigung fehlt</string>
+    <string name="sync_error_unknown">Fehler: %1$s</string>
+    <string name="sync_desc">Lade alle Geburtstage aus deinen Kontakten neu</string>
+
     <!-- Standard Labels -->
     <string name="label_all">Alle</string>
     <string name="label_favorites">Favoriten</string>

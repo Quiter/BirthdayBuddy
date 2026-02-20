@@ -1,6 +1,5 @@
 package com.heckmannch.birthdaybuddy.ui.components
 
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.snapping.rememberSnapFlingBehavior
 import androidx.compose.foundation.isSystemInDarkTheme
@@ -11,16 +10,13 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
-import androidx.compose.material.icons.filled.Check
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -62,6 +58,7 @@ fun SettingsBlockRow(
     iconTint: Color = Color.White,
     isTop: Boolean = false,
     isBottom: Boolean = false,
+    showArrow: Boolean = true,
     onClick: () -> Unit
 ) {
     val isDark = isSystemInDarkTheme()
@@ -106,13 +103,15 @@ fun SettingsBlockRow(
                     }
                 }
             },
-            trailingContent = {
-                Icon(
-                    imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
-                    contentDescription = null,
-                    tint = MaterialTheme.colorScheme.outlineVariant
-                )
-            },
+            trailingContent = if (showArrow) {
+                {
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.outlineVariant
+                    )
+                }
+            } else null,
             colors = ListItemDefaults.colors(containerColor = Color.Transparent)
         )
     }
@@ -183,84 +182,6 @@ fun WidgetCountDialog(currentCount: Int, onDismiss: () -> Unit, onSelect: (Int) 
         shape = RoundedCornerShape(28.dp),
         containerColor = MaterialTheme.colorScheme.surfaceContainerHigh
     )
-}
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun LabelSelectionScreen(
-    title: String, 
-    description: String, 
-    availableLabels: Set<String>, 
-    activeLabels: Set<String>, 
-    isLoading: Boolean, 
-    onToggle: (String, Boolean) -> Unit, 
-    onBack: () -> Unit
-) {
-    val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
-    
-    Scaffold(
-        topBar = {
-            MediumTopAppBar(
-                title = { Text(title) },
-                navigationIcon = { 
-                    IconButton(onClick = onBack) { 
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, stringResource(R.string.label_selection_back)) 
-                    } 
-                },
-                scrollBehavior = scrollBehavior
-            )
-        }
-    ) { padding ->
-        Column(modifier = Modifier.fillMaxSize().padding(padding)) {
-            Text(
-                description, 
-                style = MaterialTheme.typography.bodyMedium, 
-                modifier = Modifier.padding(horizontal = 16.dp, vertical = 20.dp), 
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-            
-            if (isLoading) {
-                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) { 
-                    CircularProgressIndicator() 
-                }
-            } else {
-                if (availableLabels.isEmpty()) {
-                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                        Text(stringResource(R.string.label_selection_none))
-                    }
-                } else {
-                    LazyColumn(
-                        modifier = Modifier.weight(1f),
-                        contentPadding = PaddingValues(bottom = 24.dp)
-                    ) {
-                        items(items = availableLabels.toList()) { label ->
-                            val isChecked = activeLabels.contains(label)
-                            ListItem(
-                                modifier = Modifier.clickable { onToggle(label, !isChecked) },
-                                headlineContent = { Text(label, fontWeight = if (isChecked) FontWeight.SemiBold else FontWeight.Normal) },
-                                trailingContent = { 
-                                    Switch(
-                                        checked = isChecked, 
-                                        onCheckedChange = { onToggle(label, it) },
-                                        thumbContent = if (isChecked) {
-                                            {
-                                                Icon(
-                                                    imageVector = Icons.Default.Check,
-                                                    contentDescription = null,
-                                                    modifier = Modifier.size(SwitchDefaults.IconSize),
-                                                )
-                                            }
-                                        } else null
-                                    ) 
-                                },
-                                colors = ListItemDefaults.colors(containerColor = Color.Transparent)
-                            )
-                        }
-                    }
-                }
-            }
-        }
-    }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)

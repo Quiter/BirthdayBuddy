@@ -61,12 +61,6 @@ fun MainScreen(
                 selectedLabels = uiState.selectedLabels,
                 hiddenDrawerLabels = uiState.hiddenDrawerLabels,
                 onLabelToggle = { label, _ -> mainViewModel.toggleLabel(label) },
-                onReloadContacts = {
-                    scope.launch {
-                        drawerState.close()
-                        mainViewModel.loadContacts()
-                    }
-                },
                 onSettingsClick = {
                     scope.launch { drawerState.close() }
                     onNavigateToSettings()

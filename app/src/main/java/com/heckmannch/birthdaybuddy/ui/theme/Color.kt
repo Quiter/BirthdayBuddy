@@ -20,7 +20,7 @@ val SettingsPillBackgroundDark = Color(0xFF1C1C1E) // Typisches dunkles Grau fü
 val SettingsPillBorderColor = Color(0x1A000000) // Sehr dezente Umrandung (optional)
 
 // Settings Icon Colors
-val SettingsColorDisplay = Color(0xFF4285F4)
+val SettingsColorOrganisation = Color(0xFF4285F4)
 val SettingsColorNotifications = Color(0xFFF06292)
 val SettingsColorWidget = Color(0xFFFFB300)
 

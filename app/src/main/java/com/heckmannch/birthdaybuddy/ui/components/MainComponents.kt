@@ -96,7 +96,6 @@ fun MainDrawerContent(
     selectedLabels: Set<String>,
     hiddenDrawerLabels: Set<String>,
     onLabelToggle: (String, Boolean) -> Unit,
-    onReloadContacts: () -> Unit,
     onSettingsClick: () -> Unit
 ) {
     val allLabel = stringResource(R.string.label_all)
@@ -179,14 +178,6 @@ fun MainDrawerContent(
             item {
                 HorizontalDivider(modifier = Modifier.padding(vertical = 16.dp, horizontal = 28.dp))
                 
-                NavigationDrawerItem(
-                    label = { Text(stringResource(R.string.drawer_reload_contacts)) },
-                    selected = false,
-                    onClick = onReloadContacts,
-                    icon = { Icon(Icons.Default.Refresh, contentDescription = null) },
-                    modifier = Modifier.padding(NavigationDrawerItemPadding)
-                )
-
                 NavigationDrawerItem(
                     label = { Text(stringResource(R.string.drawer_settings)) },
                     selected = false,

@@ -42,16 +42,11 @@ class MainActivity : ComponentActivity() {
 
                     composable<Route.Settings> { 
                         SettingsMenuScreen(
+                            mainViewModel = mainViewModel,
                             onNavigate = { routeName ->
                                 val target = when(routeName) {
                                     "settings_alarms" -> Route.Alarms
                                     "settings_label_manager" -> Route.LabelManager
-                                    "settings_mainscreen_include" -> Route.MainScreenIncludeLabels
-                                    "settings_mainscreen_exclude" -> Route.MainScreenExcludeLabels
-                                    "settings_widget_include" -> Route.WidgetIncludeLabels
-                                    "settings_widget_exclude" -> Route.WidgetExcludeLabels
-                                    "settings_notification_include" -> Route.NotificationIncludeLabels
-                                    "settings_notification_exclude" -> Route.NotificationExcludeLabels
                                     else -> Route.Main
                                 }
                                 navController.navigate(target)
@@ -67,49 +62,6 @@ class MainActivity : ComponentActivity() {
                             isLoading = uiState.isLoading,
                             onBack = { navController.popBackStack() }
                         )
-                    }
-
-                    composable<Route.MainScreenExcludeLabels> {
-                        SettingsMainScreenExcludeLabelsScreen(
-                            filterManager, 
-                            uiState.availableLabels, 
-                            uiState.isLoading
-                        ) { navController.popBackStack() }
-                    }
-                    composable<Route.MainScreenIncludeLabels> {
-                        SettingsMainScreenIncludeLabelsScreen(
-                            filterManager, 
-                            uiState.availableLabels, 
-                            uiState.isLoading
-                        ) { navController.popBackStack() }
-                    }
-                    composable<Route.WidgetIncludeLabels> {
-                        SettingsWidgetIncludeLabelsScreen(
-                            filterManager, 
-                            uiState.availableLabels, 
-                            uiState.isLoading
-                        ) { navController.popBackStack() }
-                    }
-                    composable<Route.WidgetExcludeLabels> {
-                        SettingsWidgetExcludeLabelsScreen(
-                            filterManager, 
-                            uiState.availableLabels, 
-                            uiState.isLoading
-                        ) { navController.popBackStack() }
-                    }
-                    composable<Route.NotificationIncludeLabels> {
-                        SettingsNotificationIncludeLabelsScreen(
-                            filterManager, 
-                            uiState.availableLabels, 
-                            uiState.isLoading
-                        ) { navController.popBackStack() }
-                    }
-                    composable<Route.NotificationExcludeLabels> {
-                        SettingsNotificationExcludeLabelsScreen(
-                            filterManager, 
-                            uiState.availableLabels, 
-                            uiState.isLoading
-                        ) { navController.popBackStack() }
                     }
 
                     composable<Route.Alarms> {

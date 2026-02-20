@@ -27,6 +27,7 @@ import kotlinx.coroutines.launch
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SettingsMenuScreen(
+    mainViewModel: MainViewModel,
     onNavigate: (String) -> Unit, 
     onBack: () -> Unit
 ) {
@@ -36,11 +37,32 @@ fun SettingsMenuScreen(
     val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
 
     val widgetCount by filterManager.widgetItemCountFlow.collectAsState(initial = 3)
+    val syncStatus by mainViewModel.syncStatus.collectAsState()
+    val snackbarHostState = remember { SnackbarHostState() }
+    
     var showCountDialog by remember { mutableStateOf(false) }
     val versionName = getAppVersionName()
 
+    val successMsg = stringResource(R.string.sync_success)
+
+    // Status-Meldungen verarbeiten
+    LaunchedEffect(syncStatus) {
+        when (syncStatus) {
+            is SyncStatus.Success -> {
+                snackbarHostState.showSnackbar(successMsg)
+                mainViewModel.resetSyncStatus()
+            }
+            is SyncStatus.Error -> {
+                snackbarHostState.showSnackbar((syncStatus as SyncStatus.Error).message)
+                mainViewModel.resetSyncStatus()
+            }
+            else -> {}
+        }
+    }
+
     Scaffold(
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
+        snackbarHost = { SnackbarHost(snackbarHostState) },
         topBar = {
             LargeTopAppBar(
                 title = { Text(stringResource(R.string.settings_title)) },
@@ -58,44 +80,30 @@ fun SettingsMenuScreen(
                 .verticalScroll(rememberScrollState())
                 .padding(horizontal = 16.dp, vertical = 8.dp)
         ) {
-            // NEUE ZENTRALE LABEL-VERWALTUNG
-            SectionHeader("Organisation")
+            // SEKTION: ORGANISATION
+            SectionHeader(stringResource(R.string.label_manager_section_org))
             SettingsGroup {
                 SettingsBlockRow(
-                    title = "Label Manager", 
-                    subtitle = "Sichtbarkeit für App, Widget & Alarme", 
+                    title = stringResource(R.string.label_manager_title), 
+                    subtitle = stringResource(R.string.label_manager_subtitle), 
                     icon = Icons.Default.Style, 
-                    iconContainerColor = MaterialTheme.colorScheme.tertiary,
+                    iconContainerColor = SettingsColorOrganisation,
                     isTop = true,
-                    isBottom = true
+                    isBottom = false
                 ) { onNavigate("settings_label_manager") }
+                
+                SettingsBlockRow(
+                    title = stringResource(R.string.drawer_reload_contacts), 
+                    subtitle = stringResource(R.string.sync_desc), 
+                    icon = Icons.Default.Refresh, 
+                    iconContainerColor = SettingsColorOrganisation,
+                    isTop = false,
+                    isBottom = true,
+                    showArrow = false
+                ) { mainViewModel.loadContacts() }
             }
 
             Spacer(modifier = Modifier.height(24.dp))
-
-            // SEKTION: ANZEIGE & FILTER
-            SectionHeader(stringResource(R.string.settings_section_display))
-            SettingsGroup {
-                SettingsBlockRow(
-                    title = stringResource(R.string.settings_labels_show_title), 
-                    subtitle = stringResource(R.string.settings_labels_show_desc), 
-                    icon = Icons.Default.Visibility, 
-                    iconContainerColor = SettingsColorDisplay,
-                    isTop = true,
-                    isBottom = false
-                ) { onNavigate("settings_mainscreen_include") }
-                
-                SettingsBlockRow(
-                    title = stringResource(R.string.settings_labels_block_title), 
-                    subtitle = stringResource(R.string.settings_labels_block_desc), 
-                    icon = Icons.Default.VisibilityOff, 
-                    iconContainerColor = SettingsColorDisplay,
-                    isTop = false,
-                    isBottom = true
-                ) { onNavigate("settings_mainscreen_exclude") }
-            }
-
-            Spacer(modifier = Modifier.height(16.dp))
 
             // SEKTION: BENACHRICHTIGUNGEN
             SectionHeader(stringResource(R.string.settings_section_notifications))
@@ -106,29 +114,11 @@ fun SettingsMenuScreen(
                     icon = Icons.Default.Notifications, 
                     iconContainerColor = SettingsColorNotifications,
                     isTop = true,
-                    isBottom = false
-                ) { onNavigate("settings_alarms") }
-                
-                SettingsBlockRow(
-                    title = stringResource(R.string.settings_notifications_include_title), 
-                    subtitle = stringResource(R.string.settings_notifications_include_desc), 
-                    icon = Icons.Default.Visibility,
-                    iconContainerColor = SettingsColorNotifications,
-                    isTop = false,
-                    isBottom = false
-                ) { onNavigate("settings_notification_include") }
-                
-                SettingsBlockRow(
-                    title = stringResource(R.string.settings_notifications_exclude_title), 
-                    subtitle = stringResource(R.string.settings_notifications_exclude_desc), 
-                    icon = Icons.Default.VisibilityOff,
-                    iconContainerColor = SettingsColorNotifications,
-                    isTop = false,
                     isBottom = true
-                ) { onNavigate("settings_notification_exclude") }
+                ) { onNavigate("settings_alarms") }
             }
 
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(24.dp))
 
             // SEKTION: WIDGET
             SectionHeader(stringResource(R.string.settings_section_widget))
@@ -139,26 +129,8 @@ fun SettingsMenuScreen(
                     icon = Icons.AutoMirrored.Filled.List, 
                     iconContainerColor = SettingsColorWidget,
                     isTop = true,
-                    isBottom = false
-                ) { showCountDialog = true }
-                
-                SettingsBlockRow(
-                    title = stringResource(R.string.settings_widget_include_title), 
-                    subtitle = stringResource(R.string.settings_widget_include_desc), 
-                    icon = Icons.Default.Visibility,
-                    iconContainerColor = SettingsColorWidget,
-                    isTop = false,
-                    isBottom = false
-                ) { onNavigate("settings_widget_include") }
-                
-                SettingsBlockRow(
-                    title = stringResource(R.string.settings_widget_exclude_title), 
-                    subtitle = stringResource(R.string.settings_widget_exclude_desc),
-                    icon = Icons.Default.VisibilityOff,
-                    iconContainerColor = SettingsColorWidget,
-                    isTop = false,
                     isBottom = true
-                ) { onNavigate("settings_widget_exclude") }
+                ) { showCountDialog = true }
             }
 
             SettingsFooter(versionName) {

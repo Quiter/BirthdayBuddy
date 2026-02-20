@@ -90,6 +90,17 @@
     <string name="label_manager_section_org">Organization</string>
     <string name="label_manager_subtitle">Central visibility control</string>
 
+    <string name="label_matrix_legend_title">Icon Legend</string>
+    <string name="label_matrix_legend_show">Show: Visible in this area.</string>
+    <string name="label_matrix_legend_hide">Hide: Not explicitly filtered (Neutral).</string>
+    <string name="label_matrix_legend_block">Block: Contacts with this label are ignored.</string>
+
+    <!-- Sync Status -->
+    <string name="sync_success">Contacts synced successfully</string>
+    <string name="sync_error_permission">Permission missing</string>
+    <string name="sync_error_unknown">Unknown error: %1$s</string>
+    <string name="sync_desc">Refresh all birthdays from your contacts</string>
+
     <!-- Standard Labels -->
     <string name="label_all">All</string>
     <string name="label_favorites">Favorites</string>

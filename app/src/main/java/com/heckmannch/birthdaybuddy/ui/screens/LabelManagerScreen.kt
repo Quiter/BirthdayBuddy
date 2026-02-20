@@ -1,11 +1,8 @@
 package com.heckmannch.birthdaybuddy.ui.screens
 
-import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.*
@@ -13,14 +10,11 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import com.heckmannch.birthdaybuddy.R
 import com.heckmannch.birthdaybuddy.data.FilterManager
 import com.heckmannch.birthdaybuddy.utils.updateWidget
@@ -38,7 +32,6 @@ fun LabelManagerScreen(
     val scope = rememberCoroutineScope()
     
     // Aktuelle Filter-Sets sammeln
-    val selectedLabels by filterManager.selectedLabelsFlow.collectAsState(initial = emptySet())
     val hiddenDrawer by filterManager.hiddenDrawerLabelsFlow.collectAsState(initial = emptySet())
     val widgetSelected by filterManager.widgetSelectedLabelsFlow.collectAsState(initial = emptySet())
     val notifSelected by filterManager.notificationSelectedLabelsFlow.collectAsState(initial = emptySet())
@@ -46,18 +39,21 @@ fun LabelManagerScreen(
 
     var selectedTab by remember { mutableIntStateOf(0) }
     val tabs = listOf(
-        TabItem("App", Icons.Default.PhoneAndroid, "Sichtbarkeit im Hauptmenü"),
-        TabItem("Widget", Icons.Default.Widgets, "Kontakte auf dem Homescreen"),
-        TabItem("Alarme", Icons.Default.Notifications, "Benachrichtigungs-Filter")
+        TabItem(stringResource(R.string.label_manager_tab_app), Icons.Default.PhoneAndroid, stringResource(R.string.label_manager_desc_app)),
+        TabItem(stringResource(R.string.label_manager_tab_widget), Icons.Default.Widgets, stringResource(R.string.label_manager_desc_widget)),
+        TabItem(stringResource(R.string.label_manager_tab_alarms), Icons.Default.Notifications, stringResource(R.string.label_manager_desc_alarms))
     )
+
+    val allLabel = stringResource(R.string.label_all)
+    val favoritesLabel = stringResource(R.string.label_favorites)
 
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Label Manager") },
+                title = { Text(stringResource(R.string.label_manager_title)) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, "Zurück")
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, stringResource(R.string.label_selection_back))
                     }
                 }
             )
@@ -97,9 +93,19 @@ fun LabelManagerScreen(
                 Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                     CircularProgressIndicator()
                 }
+            } else if (availableLabels.isEmpty()) {
+                Box(modifier = Modifier.fillMaxSize().padding(16.dp), contentAlignment = Alignment.Center) {
+                    Text(stringResource(R.string.label_manager_empty))
+                }
             } else {
                 LazyColumn(modifier = Modifier.fillMaxSize()) {
-                    val sortedLabels = availableLabels.toList().sortedBy { it }
+                    val sortedLabels = availableLabels.toList().sortedWith(compareBy<String> {
+                        when (it) {
+                            "My Contacts" -> 0
+                            "Starred in Android" -> 1
+                            else -> 2
+                        }
+                    }.thenBy { it })
                     
                     items(sortedLabels) { label ->
                         val isBlockedGlobal = globalExcluded.contains(label)
@@ -110,8 +116,14 @@ fun LabelManagerScreen(
                             else -> notifSelected.contains(label)
                         }
 
+                        val displayText = when(label) {
+                            "My Contacts" -> allLabel
+                            "Starred in Android" -> favoritesLabel
+                            else -> label
+                        }
+
                         LabelManagerRow(
-                            label = label,
+                            label = displayText,
                             isVisible = isVisible,
                             isBlockedGlobal = isBlockedGlobal,
                             onToggleVisibility = {
@@ -161,8 +173,6 @@ fun LabelManagerRow(
     onToggleVisibility: () -> Unit,
     onToggleBlock: () -> Unit
 ) {
-    val alpha = if (isBlockedGlobal) 0.5f else 1.0f
-    
     ListItem(
         modifier = Modifier.fillMaxWidth(),
         headlineContent = {
@@ -175,12 +185,11 @@ fun LabelManagerRow(
         },
         supportingContent = {
             if (isBlockedGlobal) {
-                Text("Vollständig ignoriert", color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.labelSmall)
+                Text(stringResource(R.string.label_manager_tab_global), color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.labelSmall)
             }
         },
         trailingContent = {
             Row(verticalAlignment = Alignment.CenterVertically) {
-                // Sichtbarkeit Switch
                 IconButton(
                     onClick = onToggleVisibility,
                     enabled = !isBlockedGlobal
@@ -194,7 +203,6 @@ fun LabelManagerRow(
                 
                 VerticalDivider(modifier = Modifier.height(24.dp).padding(horizontal = 4.dp))
                 
-                // Global Block Button
                 IconButton(onClick = onToggleBlock) {
                     Icon(
                         imageVector = Icons.Default.Block,
