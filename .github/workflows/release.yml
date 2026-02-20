@@ -2,17 +2,19 @@ name: Create Signed Release
 
 on:
   push:
-    branches:
-      - master
+    branches:- master
 
 jobs:
   build:
     name: Build and Release Signed APK
     runs-on: ubuntu-latest
-    
+
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
+
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
 
       - name: Set up JDK 17
         uses: actions/setup-java@v4
