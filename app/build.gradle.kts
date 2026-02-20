@@ -7,6 +7,10 @@ plugins {
     alias(libs.plugins.ksp)
 }
 
+// Zentrale Definition der Versionen
+val appVersionName = "2.5.7"
+val appVersionCode = 2
+
 android {
     namespace = "com.heckmannch.birthdaybuddy"
     compileSdk = 36
@@ -15,10 +19,15 @@ android {
         applicationId = "com.heckmannch.birthdaybuddy"
         minSdk = 28
         targetSdk = 36
-        versionCode = 2
-        versionName = "2.5.7"
+        versionCode = appVersionCode
+        versionName = appVersionName
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+    }
+
+    // Setzt den Basis-Namen für die APK-Erzeugung (Modern & Stabil)
+    base {
+        archivesName.set("BirthdayBuddy_v$appVersionName")
     }
 
     signingConfigs {
@@ -55,13 +64,6 @@ android {
     buildFeatures {
         compose = true
     }
-
-    applicationVariants.all {
-        outputs.all {
-            val output = this as com.android.build.gradle.internal.api.BaseVariantOutputImpl
-            output.outputFileName = "BirthdayBuddy_v${versionName}.apk"
-        }
-    }
 }
 
 // Build-Optimierung für stabilere Caches
@@ -96,10 +98,12 @@ dependencies {
     implementation(libs.androidx.lifecycle.viewmodel.compose)
     implementation(libs.kotlinx.serialization.json)
 
+    // Room
     implementation(libs.androidx.room.runtime)
     implementation(libs.androidx.room.ktx)
     ksp(libs.androidx.room.compiler)
 
+    // Glance (Widgets)
     implementation(libs.androidx.glance.appwidget)
     implementation(libs.androidx.glance.material3)
 
