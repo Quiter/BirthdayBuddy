@@ -5,6 +5,8 @@
     <string name="main_search_hint">Suchen…</string>
     <string name="main_no_birthdays">Keine Geburtstage gefunden.</string>
     <string name="main_loading">Lade Daten…</string>
+    <string name="permission_required_desc">GeburtstagsBuddy benötigt die Berechtigung, deine Kontakte zu lesen, um Geburtstage anzuzeigen.</string>
+    <string name="open_settings">Einstellungen öffnen</string>
 
     <!-- Drawer / Navigation -->
     <string name="drawer_title">Birthday Buddy</string>
@@ -39,18 +41,6 @@
     <string name="settings_notifications_exclude_title">Filter: Ausschließen</string>
     <string name="settings_notifications_exclude_desc">Labels ignorieren</string>
 
-    <string name="settings_widget_count_title">Anzahl</string>
-    <string name="settings_widget_count_desc">Bis zu %1$d Personen anzeigen</string>
-    <string name="settings_widget_include_title">Filter: Einschließen</string>
-    <string name="settings_widget_include_desc">Bestimmte Labels im Widget</string>
-    <string name="settings_widget_exclude_title">Filter: Ausschließen</string>
-    <string name="settings_widget_exclude_desc">Labels im Widget ignorieren</string>
-
-    <string name="settings_widget_dialog_title">Widget Kapazität</string>
-    <string name="settings_widget_dialog_desc">Maximale Anzahl der Personen im Widget.</string>
-    <string name="settings_widget_dialog_save">Speichern</string>
-    <string name="settings_widget_dialog_cancel">Abbrechen</string>
-
     <!-- Labels Selection -->
     <string name="label_selection_save">Speichern</string>
     <string name="label_selection_none">Keine Labels verfügbar</string>
@@ -67,7 +57,35 @@
     <string name="alarms_day_14">2 Wochen vorher</string>
     <string name="alarms_day_30">1 Monat vorher</string>
 
+    <string name="alarms_add_button">Hinzufügen</string>
+    <string name="alarms_time_section">Uhrzeit</string>
+    <string name="alarms_default_time_label">Standard-Uhrzeit</string>
+    <string name="alarms_lead_times_section">Vorlaufzeiten</string>
+    <string name="alarms_delete_description">Löschen</string>
+    <string name="alarms_dialog_time_title">Erinnerungszeit wählen</string>
+    <string name="alarms_dialog_lead_time_title">Vorlaufzeit wählen</string>
+    <string name="alarms_time_display">%1$02d:%2$02d Uhr</string>
+
+    <plurals name="alarms_days_before">
+        <item quantity="one">1 Tag vorher</item>
+        <item quantity="other">%d Tage vorher</item>
+    </plurals>
+    <plurals name="alarms_weeks_before">
+        <item quantity="one">1 Woche vorher</item>
+        <item quantity="other">%d Wochen vorher</item>
+    </plurals>
+
     <!-- Widget -->
+    <string name="settings_widget_count_title">Anzahl</string>
+    <string name="settings_widget_count_desc">Bis zu %1$d Personen anzeigen</string>
+    <string name="settings_widget_include_title">Filter: Einschließen</string>
+    <string name="settings_widget_include_desc">Bestimmte Labels im Widget</string>
+    <string name="settings_widget_exclude_title">Filter: Ausschließen</string>
+    <string name="settings_widget_exclude_desc">Labels im Widget ignorieren</string>
+    <string name="settings_widget_dialog_title">Widget Kapazität</string>
+    <string name="settings_widget_dialog_desc">Maximale Anzahl der Personen im Widget.</string>
+    <string name="settings_widget_dialog_save">Speichern</string>
+    <string name="settings_widget_dialog_cancel">Abbrechen</string>
     <string name="widget_today">Heute</string>
     <string name="widget_tomorrow">Morgen</string>
     <string name="widget_in_days">In %1$d Tagen</string>

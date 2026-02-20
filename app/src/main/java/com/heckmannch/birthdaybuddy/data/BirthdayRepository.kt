@@ -31,10 +31,11 @@ class BirthdayRepository(private val context: Context) {
                 // 1. Neue Daten vom System laden
                 val freshBirthdays = fetchBirthdays(context)
                 
-                if (freshBirthdays.isNotEmpty()) {
-                    // 2. In die Datenbank schreiben (REPLACE Strategie sorgt für Aktualität)
-                    birthdayDao.insertBirthdays(freshBirthdays)
-                } else {
+                // 2. In die Datenbank schreiben
+                // Wir nutzen syncBirthdays, um auch gelöschte Kontakte zu entfernen
+                birthdayDao.syncBirthdays(freshBirthdays)
+                
+                if (freshBirthdays.isEmpty()) {
                     Log.i("BirthdayRepository", "Keine Geburtstage in den Kontakten gefunden.")
                 }
             } catch (e: Exception) {

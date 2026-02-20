@@ -14,7 +14,10 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.pluralStringResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import com.heckmannch.birthdaybuddy.R
 import com.heckmannch.birthdaybuddy.ui.components.SectionHeader
 import com.heckmannch.birthdaybuddy.ui.components.WheelPicker
 import com.heckmannch.birthdaybuddy.data.FilterManager
@@ -38,39 +41,41 @@ fun SettingsAlarmsScreen(filterManager: FilterManager, onBack: () -> Unit) {
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Alarme") },
-                navigationIcon = { IconButton(onClick = onBack) { Icon(Icons.AutoMirrored.Filled.ArrowBack, "Zurück") } }
+                title = { Text(stringResource(R.string.settings_alarms_title)) },
+                navigationIcon = { IconButton(onClick = onBack) { Icon(Icons.AutoMirrored.Filled.ArrowBack, stringResource(R.string.label_selection_back)) } }
             )
         },
         floatingActionButton = {
             ExtendedFloatingActionButton(
-                text = { Text("Hinzufügen") },
+                text = { Text(stringResource(R.string.alarms_add_button)) },
                 icon = { Icon(Icons.Default.Add, null) },
                 onClick = { showAddDayDialog = true }
             )
         }
     ) { padding ->
         Column(modifier = Modifier.fillMaxSize().padding(padding)) {
-            SectionHeader("Uhrzeit")
+            SectionHeader(stringResource(R.string.alarms_time_section))
             ListItem(
-                headlineContent = { Text("Standard-Uhrzeit") },
-                supportingContent = { Text(String.format(java.util.Locale.getDefault(), "%02d:%02d Uhr", notifHour, notifMinute)) },
+                headlineContent = { Text(stringResource(R.string.alarms_default_time_label)) },
+                supportingContent = { 
+                    Text(stringResource(R.string.alarms_time_display, notifHour, notifMinute)) 
+                },
                 leadingContent = { Icon(Icons.Default.Notifications, null) },
                 modifier = Modifier.clickable { showTimePicker = true }
             )
             HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
-            SectionHeader("Vorlaufzeiten")
+            SectionHeader(stringResource(R.string.alarms_lead_times_section))
             val sortedDays = notifDaysSet.mapNotNull { it.toIntOrNull() }.sorted()
             LazyColumn(modifier = Modifier.weight(1f)) {
                 items(sortedDays) { day ->
                     val text = when {
-                        day == 0 -> "Am Tag des Geburtstags"
-                        day == 1 -> "1 Tag vorher"
+                        day == 0 -> stringResource(R.string.alarms_day_0)
+                        day == 1 -> stringResource(R.string.alarms_day_1)
                         day % 7 == 0 -> {
                             val weeks = day / 7
-                            if (weeks == 1) "1 Woche vorher" else "$weeks Wochen vorher"
+                            pluralStringResource(R.plurals.alarms_weeks_before, weeks, weeks)
                         }
-                        else -> "$day Tage vorher"
+                        else -> pluralStringResource(R.plurals.alarms_days_before, day, day)
                     }
                     ListItem(
                         headlineContent = { Text(text) },
@@ -82,7 +87,7 @@ fun SettingsAlarmsScreen(filterManager: FilterManager, onBack: () -> Unit) {
                                     filterManager.saveNotificationDays(newSet)
                                     scheduleDailyBirthdayWork(context, notifHour, notifMinute)
                                 }
-                            }) { Icon(Icons.Default.Delete, "Löschen", tint = MaterialTheme.colorScheme.error) }
+                            }) { Icon(Icons.Default.Delete, stringResource(R.string.alarms_delete_description), tint = MaterialTheme.colorScheme.error) }
                         }
                     )
                 }
@@ -93,7 +98,7 @@ fun SettingsAlarmsScreen(filterManager: FilterManager, onBack: () -> Unit) {
     if (showTimePicker) {
         AlertDialog(
             onDismissRequest = { showTimePicker = false },
-            title = { Text("Erinnerungszeit wählen") },
+            title = { Text(stringResource(R.string.alarms_dialog_time_title)) },
             text = { Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) { TimePicker(state = timePickerState) } },
             confirmButton = {
                 TextButton(onClick = {
@@ -102,16 +107,16 @@ fun SettingsAlarmsScreen(filterManager: FilterManager, onBack: () -> Unit) {
                         scheduleDailyBirthdayWork(context, timePickerState.hour, timePickerState.minute)
                         showTimePicker = false
                     }
-                }) { Text("Speichern") }
+                }) { Text(stringResource(R.string.settings_widget_dialog_save)) }
             },
-            dismissButton = { TextButton(onClick = { showTimePicker = false }) { Text("Abbrechen") } }
+            dismissButton = { TextButton(onClick = { showTimePicker = false }) { Text(stringResource(R.string.settings_widget_dialog_cancel)) } }
         )
     }
 
     if (showAddDayDialog) {
         AlertDialog(
             onDismissRequest = { showAddDayDialog = false },
-            title = { Text("Vorlaufzeit wählen") },
+            title = { Text(stringResource(R.string.alarms_dialog_lead_time_title)) },
             text = {
                 WheelPicker(
                     range = (0..30).toList(),
@@ -128,9 +133,9 @@ fun SettingsAlarmsScreen(filterManager: FilterManager, onBack: () -> Unit) {
                         scheduleDailyBirthdayWork(context, notifHour, notifMinute)
                     }
                     showAddDayDialog = false
-                }) { Text("Hinzufügen") }
+                }) { Text(stringResource(R.string.alarms_add_button)) }
             },
-            dismissButton = { TextButton(onClick = { showAddDayDialog = false }) { Text("Abbrechen") } }
+            dismissButton = { TextButton(onClick = { showAddDayDialog = false }) { Text(stringResource(R.string.settings_widget_dialog_cancel)) } }
         )
     }
 }

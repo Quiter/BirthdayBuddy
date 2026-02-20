@@ -41,18 +41,6 @@
     <string name="settings_notifications_exclude_title">Filter: Exclude</string>
     <string name="settings_notifications_exclude_desc">Ignore labels</string>
 
-    <string name="settings_widget_count_title">Count</string>
-    <string name="settings_widget_count_desc">Show up to %1$d people</string>
-    <string name="settings_widget_include_title">Filter: Include</string>
-    <string name="settings_widget_include_desc">Specific labels in widget</string>
-    <string name="settings_widget_exclude_title">Filter: Exclude</string>
-    <string name="settings_widget_exclude_desc">Ignore labels in widget</string>
-
-    <string name="settings_widget_dialog_title">Widget Capacity</string>
-    <string name="settings_widget_dialog_desc">Maximum number of people in the widget.</string>
-    <string name="settings_widget_dialog_save">Save</string>
-    <string name="settings_widget_dialog_cancel">Cancel</string>
-
     <!-- Labels Selection -->
     <string name="label_selection_save">Save</string>
     <string name="label_selection_none">No labels available</string>
@@ -69,21 +57,36 @@
     <string name="alarms_day_14">2 weeks before</string>
     <string name="alarms_day_30">1 month before</string>
 
+    <string name="alarms_add_button">Add</string>
+    <string name="alarms_time_section">Time</string>
+    <string name="alarms_default_time_label">Default time</string>
+    <string name="alarms_lead_times_section">Lead times</string>
+    <string name="alarms_delete_description">Delete</string>
+    <string name="alarms_dialog_time_title">Choose notification time</string>
+    <string name="alarms_dialog_lead_time_title">Choose lead time</string>
+    <string name="alarms_time_display">%1$02d:%2$02d</string>
+
+    <plurals name="alarms_days_before">
+        <item quantity="one">1 day before</item>
+        <item quantity="other">%d days before</item>
+    </plurals>
+    <plurals name="alarms_weeks_before">
+        <item quantity="one">1 week before</item>
+        <item quantity="other">%d weeks before</item>
+    </plurals>
+
     <!-- Widget -->
+    <string name="settings_widget_count_title">Count</string>
+    <string name="settings_widget_count_desc">Show up to %1$d people</string>
+    <string name="settings_widget_include_title">Filter: Include</string>
+    <string name="settings_widget_include_desc">Specific labels in widget</string>
+    <string name="settings_widget_exclude_title">Filter: Exclude</string>
+    <string name="settings_widget_exclude_desc">Ignore labels in widget</string>
+    <string name="settings_widget_dialog_title">Widget Capacity</string>
+    <string name="settings_widget_dialog_desc">Maximum number of people in the widget.</string>
+    <string name="settings_widget_dialog_save">Save</string>
+    <string name="settings_widget_dialog_cancel">Cancel</string>
     <string name="widget_today">Today</string>
     <string name="widget_tomorrow">Tomorrow</string>
     <string name="widget_in_days">In %1$d days</string>
-
-
-    <!-- <string name="permission_required_desc">BirthdayBuddy benötigt die Berechtigung, deine Kontakte
-        zu lesen, um Geburtstage anzuzeigen.
-    </string> -->
-
-    <!-- <string name="open_settings">Einstellungen öffnen</string> -->
-
-    <!-- <string name="permission_required_desc">BirthdayBuddy benötigt die Berechtigung, deine Kontakte
-        zu lesen, um Geburtstage anzuzeigen.
-    </string> -->
-
-    <!-- <string name="open_settings">Einstellungen öffnen</string> -->
 </resources>
