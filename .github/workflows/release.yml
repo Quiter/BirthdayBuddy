@@ -1,13 +1,13 @@
-name: Create Release
+name: Create Signed Release
 
 on:
   push:
     branches:
-      - master # Oder dein Haupt-Branch
+      - master
 
 jobs:
   build:
-    name: Build and Release APK
+    name: Build and Release Signed APK
     runs-on: ubuntu-latest
     
     steps:
@@ -21,11 +21,16 @@ jobs:
           java-version: '17'
           cache: 'gradle'
 
-      - name: Grant execute permission for gradlew
-        run: chmod +x gradlew
+      - name: Decode Keystore
+        run: |
+          echo "${{ secrets.KEYSTORE }}" | base64 --decode > app/release.keystore
 
       - name: Build with Gradle
         run: ./gradlew assembleRelease
+        env:
+          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
 
       - name: Extract Version Name
         id: get_version
