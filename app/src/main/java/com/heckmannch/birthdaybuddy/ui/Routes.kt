@@ -9,6 +9,9 @@ sealed interface Route {
     @Serializable object Main : Route
     @Serializable object Settings : Route
     @Serializable object Alarms : Route
+    @Serializable object LabelManager : Route
+    
+    // Alte Routen (bleiben vorerst für Kompatibilität)
     @Serializable object MainScreenExcludeLabels : Route
     @Serializable object MainScreenIncludeLabels : Route
     @Serializable object WidgetIncludeLabels : Route

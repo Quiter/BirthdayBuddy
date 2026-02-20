@@ -13,7 +13,6 @@ import com.heckmannch.birthdaybuddy.ui.theme.BirthdayBuddyTheme
 import com.heckmannch.birthdaybuddy.ui.screens.*
 import com.heckmannch.birthdaybuddy.ui.Route
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
-import com.heckmannch.birthdaybuddy.utils.NotificationHelper
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -22,24 +21,14 @@ class MainActivity : ComponentActivity() {
         
         createNotificationChannel()
 
-        /* 
-         * ANLEITUNG ZUM TESTEN DER BENACHRICHTIGUNGEN:
-         * Um eine Test-Benachrichtigung mit dem neuen Kuchen-Icon zu sehen:
-         * 1. Die untere Zeile einkommentieren.
-         * 2. App starten.
-         * 3. Sobald die Benachrichtigung erscheint, Zeile wieder auskommentieren.
-         */
-        // NotificationHelper(this).triggerTestNotification()
-
         enableEdgeToEdge()
 
         setContent {
             BirthdayBuddyTheme {
                 val navController = rememberNavController()
                 
-                // Explizite Angabe des korrekten ViewModels aus dem screens-Paket
-                val mainViewModel: com.heckmannch.birthdaybuddy.ui.screens.MainViewModel = 
-                    viewModel(factory = com.heckmannch.birthdaybuddy.ui.screens.MainViewModel.Factory)
+                val mainViewModel: MainViewModel = 
+                    viewModel(factory = MainViewModel.Factory)
 
                 val uiState by mainViewModel.uiState.collectAsState()
                 val container = (application as BirthdayApplication).container
@@ -56,6 +45,7 @@ class MainActivity : ComponentActivity() {
                             onNavigate = { routeName ->
                                 val target = when(routeName) {
                                     "settings_alarms" -> Route.Alarms
+                                    "settings_label_manager" -> Route.LabelManager
                                     "settings_mainscreen_include" -> Route.MainScreenIncludeLabels
                                     "settings_mainscreen_exclude" -> Route.MainScreenExcludeLabels
                                     "settings_widget_include" -> Route.WidgetIncludeLabels
@@ -68,6 +58,15 @@ class MainActivity : ComponentActivity() {
                             }, 
                             onBack = { navController.popBackStack() }
                         ) 
+                    }
+
+                    composable<Route.LabelManager> {
+                        LabelManagerScreen(
+                            filterManager = filterManager,
+                            availableLabels = uiState.availableLabels,
+                            isLoading = uiState.isLoading,
+                            onBack = { navController.popBackStack() }
+                        )
                     }
 
                     composable<Route.MainScreenExcludeLabels> {

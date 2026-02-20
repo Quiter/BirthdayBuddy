@@ -36,11 +36,12 @@ class BirthdayGlanceWidget : GlanceAppWidget() {
         val widgetDataFlow = combine(
             repository.allBirthdays,
             filterManager.widgetSelectedLabelsFlow,
+            filterManager.excludedLabelsFlow, // Globale Exclude nutzen
             filterManager.widgetExcludedLabelsFlow,
             filterManager.widgetItemCountFlow
-        ) { contacts, selected, excluded, count ->
+        ) { contacts, selected, globalExcluded, widgetExcluded, count ->
             contacts.filter { contact ->
-                val isExcluded = contact.labels.any { excluded.contains(it) }
+                val isExcluded = contact.labels.any { globalExcluded.contains(it) || widgetExcluded.contains(it) }
                 val isSelected = selected.isEmpty() || contact.labels.any { selected.contains(it) }
                 !isExcluded && isSelected
             }
@@ -67,7 +68,6 @@ class BirthdayGlanceWidget : GlanceAppWidget() {
                 .padding(12.dp)
                 .clickable(actionStartActivity<MainActivity>())
         ) {
-            // App-Name entfernt, Liste startet direkt oder zeigt Empty State
             if (contacts.isEmpty()) {
                 Box(
                     modifier = GlanceModifier.fillMaxSize(),

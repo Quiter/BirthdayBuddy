@@ -58,6 +58,21 @@ fun SettingsMenuScreen(
                 .verticalScroll(rememberScrollState())
                 .padding(horizontal = 16.dp, vertical = 8.dp)
         ) {
+            // NEUE ZENTRALE LABEL-VERWALTUNG
+            SectionHeader("Organisation")
+            SettingsGroup {
+                SettingsBlockRow(
+                    title = "Label Manager", 
+                    subtitle = "Sichtbarkeit für App, Widget & Alarme", 
+                    icon = Icons.Default.Style, 
+                    iconContainerColor = MaterialTheme.colorScheme.tertiary,
+                    isTop = true,
+                    isBottom = true
+                ) { onNavigate("settings_label_manager") }
+            }
+
+            Spacer(modifier = Modifier.height(24.dp))
+
             // SEKTION: ANZEIGE & FILTER
             SectionHeader(stringResource(R.string.settings_section_display))
             SettingsGroup {

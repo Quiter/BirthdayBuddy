@@ -76,18 +76,19 @@
         <item quantity="other">%d Wochen vorher</item>
     </plurals>
 
-    <!-- Label Matrix -->
-    <string name="label_matrix_title">Label-Matrix</string>
-    <string name="label_matrix_desc">Labels bereichsübergreifend verwalten</string>
-    <string name="label_matrix_column_drawer">Menü</string>
-    <string name="label_matrix_column_notif">Benachr.</string>
-    <string name="label_matrix_column_widget">Widget</string>
-    <string name="label_matrix_empty">Keine Labels gefunden. Kontakte synchronisieren.</string>
-
-    <string name="label_matrix_legend_title">Icon-Legende</string>
-    <string name="label_matrix_legend_show">Anzeigen: In diesem Bereich sichtbar.</string>
-    <string name="label_matrix_legend_hide">Ausblenden: Nicht explizit gefiltert (Neutral).</string>
-    <string name="label_matrix_legend_block">Blockieren: Kontakte mit diesem Label werden ignoriert.</string>
+    <!-- Label Manager -->
+    <string name="label_manager_title">Label Manager</string>
+    <string name="label_manager_tab_app">App</string>
+    <string name="label_manager_tab_widget">Widget</string>
+    <string name="label_manager_tab_alarms">Alarme</string>
+    <string name="label_manager_tab_global">Sperrliste</string>
+    <string name="label_manager_desc_app">Wähle Labels für das Seitenmenü.</string>
+    <string name="label_manager_desc_widget">Wähle Labels für das Homescreen-Widget.</string>
+    <string name="label_manager_desc_alarms">Wähle Labels für Benachrichtigungen.</string>
+    <string name="label_manager_desc_global">Diese Labels werden überall ausgeblendet.</string>
+    <string name="label_manager_empty">Keine Labels gefunden. Bitte Kontakte synchronisieren.</string>
+    <string name="label_manager_section_org">Organisation</string>
+    <string name="label_manager_subtitle">Zentrale Sichtbarkeitssteuerung</string>
 
     <!-- Standard Labels -->
     <string name="label_all">Alle</string>

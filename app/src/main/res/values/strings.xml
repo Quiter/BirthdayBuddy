@@ -76,18 +76,19 @@
         <item quantity="other">%d weeks before</item>
     </plurals>
 
-    <!-- Label Matrix -->
-    <string name="label_matrix_title">Label Matrix</string>
-    <string name="label_matrix_desc">Manage label visibility across areas</string>
-    <string name="label_matrix_column_drawer">Drawer</string>
-    <string name="label_matrix_column_notif">Notif</string>
-    <string name="label_matrix_column_widget">Widget</string>
-    <string name="label_matrix_empty">No labels found. Sync contacts first.</string>
-
-    <string name="label_matrix_legend_title">Icon Legend</string>
-    <string name="label_matrix_legend_show">Show: Visible in this area.</string>
-    <string name="label_matrix_legend_hide">Hide: Not explicitly filtered (Neutral).</string>
-    <string name="label_matrix_legend_block">Block: Contacts with this label are ignored.</string>
+    <!-- Label Manager -->
+    <string name="label_manager_title">Label Manager</string>
+    <string name="label_manager_tab_app">App</string>
+    <string name="label_manager_tab_widget">Widget</string>
+    <string name="label_manager_tab_alarms">Alarms</string>
+    <string name="label_manager_tab_global">Block List</string>
+    <string name="label_manager_desc_app">Choose which labels to show in the side menu.</string>
+    <string name="label_manager_desc_widget">Choose which labels to show on the home screen widget.</string>
+    <string name="label_manager_desc_alarms">Choose which labels should trigger notifications.</string>
+    <string name="label_manager_desc_global">Labels here are hidden everywhere, overriding other settings.</string>
+    <string name="label_manager_empty">No labels found. Please sync contacts.</string>
+    <string name="label_manager_section_org">Organization</string>
+    <string name="label_manager_subtitle">Central visibility control</string>
 
     <!-- Standard Labels -->
     <string name="label_all">All</string>
