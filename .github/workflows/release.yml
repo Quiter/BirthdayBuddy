@@ -1,0 +1,47 @@
+name: Create Release
+
+on:
+  push:
+    branches:
+      - master # Oder dein Haupt-Branch
+
+jobs:
+  build:
+    name: Build and Release APK
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'zulu'
+          java-version: '17'
+          cache: 'gradle'
+
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
+
+      - name: Build with Gradle
+        run: ./gradlew assembleRelease
+
+      - name: Extract Version Name
+        id: get_version
+        run: |
+          VERSION_NAME=$(grep "versionName =" app/build.gradle.kts | awk -F '"' '{print $2}')
+          echo "VERSION=$VERSION_NAME" >> $GITHUB_OUTPUT
+          echo "Found Version: $VERSION_NAME"
+
+      - name: Create Release
+        id: create_release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v${{ steps.get_version.outputs.VERSION }}
+          name: Release v${{ steps.get_version.outputs.VERSION }}
+          draft: false
+          prerelease: false
+          files: app/build/outputs/apk/release/BirthdayBuddy_v${{ steps.get_version.outputs.VERSION }}.apk
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
