@@ -7,10 +7,6 @@ plugins {
     alias(libs.plugins.ksp)
 }
 
-// Zentrale Definition der Versionen
-val appVersionName = "2.5.8"
-val appVersionCode = 2
-
 android {
     namespace = "com.heckmannch.birthdaybuddy"
     compileSdk = 36
@@ -19,15 +15,10 @@ android {
         applicationId = "com.heckmannch.birthdaybuddy"
         minSdk = 28
         targetSdk = 36
-        versionCode = appVersionCode
-        versionName = appVersionName
+        versionCode = 3
+        versionName = "2.5.8"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
-    }
-
-    // Setzt den Basis-Namen für die APK-Erzeugung (Modern & Stabil)
-    base {
-        archivesName.set("BirthdayBuddy_v$appVersionName")
     }
 
     signingConfigs {
@@ -63,6 +54,16 @@ android {
 
     buildFeatures {
         compose = true
+    }
+}
+
+// Stabile Methode zum Umbenennen der APK für GitHub Actions
+// Wir verzichten auf komplexe APIs und nutzen den Standard-Weg, der auch von Grep gefunden wird
+android.applicationVariants.all {
+    val variant = this
+    variant.outputs.all {
+        val output = this as com.android.build.gradle.internal.api.BaseVariantOutputImpl
+        output.outputFileName = "BirthdayBuddy_v${variant.versionName}.apk"
     }
 }
 
