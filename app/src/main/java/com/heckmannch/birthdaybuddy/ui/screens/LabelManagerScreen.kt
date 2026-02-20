@@ -3,6 +3,7 @@ package com.heckmannch.birthdaybuddy.ui.screens
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.*
@@ -60,18 +61,50 @@ fun LabelManagerScreen(
         }
     ) { padding ->
         Column(modifier = Modifier.fillMaxSize().padding(padding)) {
-            // Tab-Navigation
+            // Moderne Material 3 TabRow mit aktivem Indikator und farbiger Pille
             PrimaryTabRow(
                 selectedTabIndex = selectedTab,
                 containerColor = MaterialTheme.colorScheme.surface,
-                divider = {}
+                divider = {},
+                indicator = {
+                    TabRowDefaults.PrimaryIndicator(
+                        modifier = Modifier.tabIndicatorOffset(selectedTab),
+                        width = 64.dp,
+                        shape = RoundedCornerShape(topStart = 3.dp, topEnd = 3.dp)
+                    )
+                }
             ) {
                 tabs.forEachIndexed { index, tab ->
                     Tab(
                         selected = selectedTab == index,
                         onClick = { selectedTab = index },
-                        text = { Text(tab.title) },
-                        icon = { Icon(tab.icon, null) }
+                        text = { 
+                            Text(
+                                tab.title,
+                                style = if (selectedTab == index) 
+                                    MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold)
+                                else 
+                                    MaterialTheme.typography.titleSmall
+                            ) 
+                        },
+                        icon = { 
+                            if (selectedTab == index) {
+                                Surface(
+                                    color = MaterialTheme.colorScheme.secondaryContainer,
+                                    shape = RoundedCornerShape(16.dp),
+                                    modifier = Modifier.padding(bottom = 4.dp)
+                                ) {
+                                    Icon(
+                                        imageVector = tab.icon, 
+                                        contentDescription = null,
+                                        modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp),
+                                        tint = MaterialTheme.colorScheme.onSecondaryContainer
+                                    )
+                                }
+                            } else {
+                                Icon(tab.icon, null, modifier = Modifier.padding(bottom = 4.dp))
+                            }
+                        }
                     )
                 }
             }
@@ -156,6 +189,11 @@ fun LabelManagerScreen(
                                 }
                             }
                         )
+                        HorizontalDivider(
+                            modifier = Modifier.padding(horizontal = 16.dp),
+                            thickness = 0.5.dp,
+                            color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)
+                        )
                     }
                 }
             }
@@ -163,7 +201,7 @@ fun LabelManagerScreen(
     }
 }
 
-data class TabItem(val title: String, val icon: ImageVector, val description: String)
+private data class TabItem(val title: String, val icon: ImageVector, val description: String)
 
 @Composable
 fun LabelManagerRow(
@@ -174,7 +212,9 @@ fun LabelManagerRow(
     onToggleBlock: () -> Unit
 ) {
     ListItem(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier
+            .fillMaxWidth()
+            .heightIn(min = 72.dp), // Fixierte Mindesthöhe für stabile Layouts
         headlineContent = {
             Text(
                 text = label,
@@ -184,8 +224,17 @@ fun LabelManagerRow(
             )
         },
         supportingContent = {
+            // Platzhalter oder Statusmeldung
             if (isBlockedGlobal) {
-                Text(stringResource(R.string.label_manager_tab_global), color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.labelSmall)
+                Text(
+                    stringResource(R.string.label_manager_status_blocked), 
+                    color = MaterialTheme.colorScheme.error, 
+                    style = MaterialTheme.typography.labelSmall
+                )
+            } else {
+                // Leerer Spacer, um die Mindesthöhe des unterstützenden Bereichs zu sichern, 
+                // falls keine Meldung da ist (optional, heightIn am ListItem reicht meist)
+                Spacer(modifier = Modifier.height(16.dp))
             }
         },
         trailingContent = {

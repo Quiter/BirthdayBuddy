@@ -89,6 +89,7 @@
     <string name="label_manager_empty">No labels found. Please sync contacts.</string>
     <string name="label_manager_section_org">Organization</string>
     <string name="label_manager_subtitle">Central visibility control</string>
+    <string name="label_manager_status_blocked">Fully ignored</string>
 
     <string name="label_matrix_legend_title">Icon Legend</string>
     <string name="label_matrix_legend_show">Show: Visible in this area.</string>

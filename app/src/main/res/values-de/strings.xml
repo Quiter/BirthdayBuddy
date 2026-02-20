@@ -38,9 +38,7 @@
     <string name="settings_alarms_title">Alarme</string>
     <string name="settings_alarms_desc">Erinnerungszeiten konfigurieren</string>
     <string name="settings_notifications_include_title">Filter: Einschließen</string>
-    <string name="settings_notifications_include_desc">Labels für Benachrichtigungen</string>
     <string name="settings_notifications_exclude_title">Filter: Ausschließen</string>
-    <string name="settings_notifications_exclude_desc">Labels ignorieren</string>
 
     <!-- Labels Selection -->
     <string name="label_selection_save">Speichern</string>
@@ -89,11 +87,7 @@
     <string name="label_manager_empty">Keine Labels gefunden. Bitte Kontakte synchronisieren.</string>
     <string name="label_manager_section_org">Organisation</string>
     <string name="label_manager_subtitle">Zentrale Sichtbarkeitssteuerung</string>
-
-    <string name="label_matrix_legend_title">Icon-Legende</string>
-    <string name="label_matrix_legend_show">Anzeigen: In diesem Bereich sichtbar.</string>
-    <string name="label_matrix_legend_hide">Ausblenden: Nicht explizit gefiltert (Neutral).</string>
-    <string name="label_matrix_legend_block">Blockieren: Kontakte mit diesem Label werden ignoriert.</string>
+    <string name="label_manager_status_blocked">Vollständig ignoriert</string>
 
     <!-- Sync Status -->
     <string name="sync_success">Kontakte erfolgreich synchronisiert</string>
@@ -109,9 +103,7 @@
     <string name="settings_widget_count_title">Anzahl</string>
     <string name="settings_widget_count_desc">Bis zu %1$d Personen anzeigen</string>
     <string name="settings_widget_include_title">Filter: Einschließen</string>
-    <string name="settings_widget_include_desc">Bestimmte Labels im Widget</string>
     <string name="settings_widget_exclude_title">Filter: Ausschließen</string>
-    <string name="settings_widget_exclude_desc">Labels im Widget ignorieren</string>
     <string name="settings_widget_dialog_title">Widget Kapazität</string>
     <string name="settings_widget_dialog_desc">Maximale Anzahl der Personen im Widget.</string>
     <string name="settings_widget_dialog_save">Speichern</string>
