@@ -28,6 +28,7 @@
     <string name="settings_section_display">Display &amp; Filter</string>
     <string name="settings_section_notifications">Notifications</string>
     <string name="settings_section_widget">Widget</string>
+    <string name="settings_section_advanced">Advanced</string>
 
     <string name="settings_labels_show_title">Show labels</string>
     <string name="settings_labels_show_desc">Visibility in side menu</string>
@@ -74,6 +75,19 @@
         <item quantity="one">1 week before</item>
         <item quantity="other">%d weeks before</item>
     </plurals>
+
+    <!-- Label Matrix -->
+    <string name="label_matrix_title">Label Management</string>
+    <string name="label_matrix_desc">Manage label visibility across areas</string>
+    <string name="label_matrix_column_drawer">Drawer</string>
+    <string name="label_matrix_column_notif">Notif</string>
+    <string name="label_matrix_column_widget">Widget</string>
+    <string name="label_matrix_empty">No labels found. Sync contacts first.</string>
+
+    <string name="label_matrix_legend_title">Icon Legend</string>
+    <string name="label_matrix_legend_show">Show: Visible in this area.</string>
+    <string name="label_matrix_legend_hide">Hide: Not explicitly filtered (Neutral).</string>
+    <string name="label_matrix_legend_block">Block: Contacts with this label are ignored.</string>
 
     <!-- Widget -->
     <string name="settings_widget_count_title">Count</string>

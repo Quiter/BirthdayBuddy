@@ -119,26 +119,6 @@ fun SettingsBlockRow(
 }
 
 @Composable
-fun SettingsFooter(versionName: String, onGithubClick: () -> Unit) {
-    Column(
-        modifier = Modifier.fillMaxWidth().padding(vertical = 48.dp),
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        Text(stringResource(R.string.drawer_title), style = MaterialTheme.typography.titleSmall, color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.Bold)
-        Text("Version $versionName", style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f))
-        Spacer(Modifier.height(16.dp))
-        FilledTonalButton(
-            onClick = onGithubClick,
-            contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp)
-        ) {
-            Icon(painter = painterResource(id = R.drawable.ic_github), contentDescription = null, modifier = Modifier.size(18.dp))
-            Spacer(Modifier.width(8.dp))
-            Text("GitHub Projekt", style = MaterialTheme.typography.labelLarge)
-        }
-    }
-}
-
-@Composable
 fun WidgetCountDialog(currentCount: Int, onDismiss: () -> Unit, onSelect: (Int) -> Unit) {
     var selectedValue by remember { mutableIntStateOf(currentCount) }
 
@@ -302,6 +282,26 @@ fun WheelPicker(range: List<Int>, initialValue: Int, onValueChange: (Int) -> Uni
                     )
                 }
             }
+        }
+    }
+}
+
+@Composable
+fun SettingsFooter(versionName: String, onGithubClick: () -> Unit) {
+    Column(
+        modifier = Modifier.fillMaxWidth().padding(vertical = 48.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Text(stringResource(R.string.app_name), style = MaterialTheme.typography.titleSmall, color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.Bold)
+        Text("Version $versionName", style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f))
+        Spacer(Modifier.height(16.dp))
+        FilledTonalButton(
+            onClick = onGithubClick,
+            contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp)
+        ) {
+            Icon(painter = painterResource(id = R.drawable.ic_github), contentDescription = null, modifier = Modifier.size(18.dp))
+            Spacer(Modifier.width(8.dp))
+            Text("GitHub Projekt", style = MaterialTheme.typography.labelLarge)
         }
     }
 }

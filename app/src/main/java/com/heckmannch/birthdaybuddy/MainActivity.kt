@@ -56,6 +56,7 @@ class MainActivity : ComponentActivity() {
                             onNavigate = { routeName ->
                                 val target = when(routeName) {
                                     "settings_alarms" -> Route.Alarms
+                                    "settings_label_matrix" -> Route.LabelMatrix
                                     "settings_mainscreen_include" -> Route.MainScreenIncludeLabels
                                     "settings_mainscreen_exclude" -> Route.MainScreenExcludeLabels
                                     "settings_widget_include" -> Route.WidgetIncludeLabels
@@ -68,6 +69,15 @@ class MainActivity : ComponentActivity() {
                             }, 
                             onBack = { navController.popBackStack() }
                         ) 
+                    }
+
+                    composable<Route.LabelMatrix> {
+                        LabelMatrixScreen(
+                            filterManager = filterManager,
+                            availableLabels = uiState.availableLabels,
+                            isLoading = uiState.isLoading,
+                            onBack = { navController.popBackStack() }
+                        )
                     }
 
                     composable<Route.MainScreenExcludeLabels> {

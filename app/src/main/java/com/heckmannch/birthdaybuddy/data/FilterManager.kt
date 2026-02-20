@@ -26,8 +26,9 @@ class FilterManager(val context: Context) {
     private val NOTIFICATION_SELECTED_LABELS_KEY = stringSetPreferencesKey("notification_selected_labels")
     private val NOTIFICATION_EXCLUDED_LABELS_KEY = stringSetPreferencesKey("notification_excluded_labels")
     
-    // Flag für die erste Initialisierung
+    // Flags für Initialisierung und UI-Zustände
     private val IS_INITIALIZED_KEY = booleanPreferencesKey("is_initialized")
+    private val MATRIX_LEGEND_SHOWN_KEY = booleanPreferencesKey("matrix_legend_shown")
 
     val selectedLabelsFlow: Flow<Set<String>> = context.dataStore.data.map { it[SELECTED_LABELS_KEY] ?: emptySet() }
     val excludedLabelsFlow: Flow<Set<String>> = context.dataStore.data.map { it[EXCLUDED_LABELS_KEY] ?: emptySet() }
@@ -43,6 +44,7 @@ class FilterManager(val context: Context) {
     val notificationExcludedLabelsFlow: Flow<Set<String>> = context.dataStore.data.map { it[NOTIFICATION_EXCLUDED_LABELS_KEY] ?: emptySet() }
     
     val isInitializedFlow: Flow<Boolean> = context.dataStore.data.map { it[IS_INITIALIZED_KEY] ?: false }
+    val matrixLegendShownFlow: Flow<Boolean> = context.dataStore.data.map { it[MATRIX_LEGEND_SHOWN_KEY] ?: false }
 
     suspend fun saveSelectedLabels(labels: Set<String>) { context.dataStore.edit { it[SELECTED_LABELS_KEY] = labels } }
     suspend fun saveExcludedLabels(labels: Set<String>) { context.dataStore.edit { it[EXCLUDED_LABELS_KEY] = labels } }
@@ -64,4 +66,5 @@ class FilterManager(val context: Context) {
     suspend fun saveNotificationExcludedLabels(labels: Set<String>) { context.dataStore.edit { it[NOTIFICATION_EXCLUDED_LABELS_KEY] = labels } }
     
     suspend fun setInitialized(value: Boolean) { context.dataStore.edit { it[IS_INITIALIZED_KEY] = value } }
+    suspend fun setMatrixLegendShown(value: Boolean) { context.dataStore.edit { it[MATRIX_LEGEND_SHOWN_KEY] = value } }
 }

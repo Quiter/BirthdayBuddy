@@ -58,6 +58,21 @@ fun SettingsMenuScreen(
                 .verticalScroll(rememberScrollState())
                 .padding(horizontal = 16.dp, vertical = 8.dp)
         ) {
+            // SEKTION: ERWEITERT (Label Matrix)
+            SectionHeader(stringResource(R.string.settings_section_advanced))
+            SettingsGroup {
+                SettingsBlockRow(
+                    title = stringResource(R.string.label_matrix_title), 
+                    subtitle = stringResource(R.string.label_matrix_desc), 
+                    icon = Icons.Default.GridView, 
+                    iconContainerColor = MaterialTheme.colorScheme.tertiaryContainer,
+                    isTop = true,
+                    isBottom = true
+                ) { onNavigate("settings_label_matrix") }
+            }
+
+            Spacer(modifier = Modifier.height(24.dp))
+
             // SEKTION: ANZEIGE & FILTER
             SectionHeader(stringResource(R.string.settings_section_display))
             SettingsGroup {

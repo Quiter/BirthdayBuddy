@@ -55,14 +55,12 @@ class MainViewModel(
         val filtered = when {
             contacts.isEmpty() -> emptyList()
             query.isNotEmpty() -> {
-                // Suche durchsucht IMMER alle Kontakte der Datenbank nach dem Namen
                 contacts.filter { contact ->
                     contact.name.contains(query, ignoreCase = true)
                 }
             }
             selected.isEmpty() -> emptyList()
             else -> {
-                // Normale Filterung nach Labels nur, wenn keine Suche aktiv ist
                 contacts.filter { contact ->
                     if (contact.labels.any { excluded.contains(it) }) return@filter false
                     contact.labels.any { label ->
@@ -90,12 +88,28 @@ class MainViewModel(
 
     init {
         loadContacts()
+        
+        // Initialisierung der Standard-Labels bei Neuinstallation
         viewModelScope.launch {
-            uiState.map { it.availableLabels to it.selectedLabels }
-                .distinctUntilChanged()
-                .collect { (available, selected) ->
-                    if (available.isNotEmpty() && selected.isEmpty()) {
-                        filterManager.saveSelectedLabels(available)
+            val isInitialized = filterManager.isInitializedFlow.first()
+            
+            uiState.map { it.availableLabels }
+                .filter { it.isNotEmpty() }
+                .first()
+                .let { labels ->
+                    if (!isInitialized) {
+                        // Alles auf SHOW setzen
+                        filterManager.saveSelectedLabels(labels)
+                        filterManager.saveNotificationSelectedLabels(labels)
+                        filterManager.saveWidgetSelectedLabels(labels)
+                        
+                        // Listen für EXCLUDE leeren
+                        filterManager.saveExcludedLabels(emptySet())
+                        filterManager.saveNotificationExcludedLabels(emptySet())
+                        filterManager.saveWidgetExcludedLabels(emptySet())
+                        filterManager.saveHiddenDrawerLabels(emptySet())
+                        
+                        filterManager.setInitialized(true)
                     }
                 }
         }
