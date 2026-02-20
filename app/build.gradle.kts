@@ -57,17 +57,6 @@ android {
     }
 }
 
-// Typsichere Methode zum Umbenennen der APK (AGP 8.x - 9.x)
-androidComponents {
-    onVariants { variant ->
-        variant.outputs.forEach { output ->
-            val versionName = android.defaultConfig.versionName
-            // Wir nutzen die Property-API von Gradle explizit
-            (output as com.android.build.api.variant.VariantOutput).outputFileName.set("BirthdayBuddy_v${versionName}.apk")
-        }
-    }
-}
-
 // Build-Optimierung für stabilere Caches
 tasks.withType<AbstractArchiveTask>().configureEach {
     isPreserveFileTimestamps = false

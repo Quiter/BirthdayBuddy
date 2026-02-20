@@ -38,7 +38,7 @@ jobs:
       - name: Extract Version Name
         id: get_version
         run: |
-          VERSION_NAME=$(grep "versionName = " app/build.gradle.kts | head -1 | awk -F '"' '{print $2}')
+          VERSION_NAME=$(grep "versionName =" app/build.gradle.kts | head -1 | awk -F '"' '{print $2}')
           echo "VERSION=$VERSION_NAME" >> $GITHUB_OUTPUT
           echo "Found Version: $VERSION_NAME"
 
@@ -50,6 +50,6 @@ jobs:
           name: Release v${{ steps.get_version.outputs.VERSION }}
           draft: false
           prerelease: false
-          files: app/build/outputs/apk/release/BirthdayBuddy_v${{ steps.get_version.outputs.VERSION }}.apk
+          files: app/build/outputs/apk/release/app-release.apk
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
