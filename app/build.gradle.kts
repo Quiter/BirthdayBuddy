@@ -57,13 +57,14 @@ android {
     }
 }
 
-// Stabile Methode zum Umbenennen der APK für GitHub Actions
-// Wir verzichten auf komplexe APIs und nutzen den Standard-Weg, der auch von Grep gefunden wird
-android.applicationVariants.all {
-    val variant = this
-    variant.outputs.all {
-        val output = this as com.android.build.gradle.internal.api.BaseVariantOutputImpl
-        output.outputFileName = "BirthdayBuddy_v${variant.versionName}.apk"
+// Typsichere Methode zum Umbenennen der APK (AGP 8.x - 9.x)
+androidComponents {
+    onVariants { variant ->
+        variant.outputs.forEach { output ->
+            val versionName = android.defaultConfig.versionName
+            // Wir nutzen die Property-API von Gradle explizit
+            (output as com.android.build.api.variant.VariantOutput).outputFileName.set("BirthdayBuddy_v${versionName}.apk")
+        }
     }
 }
 
