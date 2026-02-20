@@ -28,6 +28,7 @@
     <string name="settings_section_display">Anzeige &amp; Filter</string>
     <string name="settings_section_notifications">Benachrichtigungen</string>
     <string name="settings_section_widget">Widget</string>
+    <string name="settings_section_advanced">Erweitert</string>
 
     <string name="settings_labels_show_title">Labels anzeigen</string>
     <string name="settings_labels_show_desc">Sichtbarkeit im Seitenmenü</string>
@@ -74,6 +75,23 @@
         <item quantity="one">1 Woche vorher</item>
         <item quantity="other">%d Wochen vorher</item>
     </plurals>
+
+    <!-- Label Matrix -->
+    <string name="label_matrix_title">Label-Matrix</string>
+    <string name="label_matrix_desc">Labels bereichsübergreifend verwalten</string>
+    <string name="label_matrix_column_drawer">Menü</string>
+    <string name="label_matrix_column_notif">Benachr.</string>
+    <string name="label_matrix_column_widget">Widget</string>
+    <string name="label_matrix_empty">Keine Labels gefunden. Kontakte synchronisieren.</string>
+
+    <string name="label_matrix_legend_title">Icon-Legende</string>
+    <string name="label_matrix_legend_show">Anzeigen: In diesem Bereich sichtbar.</string>
+    <string name="label_matrix_legend_hide">Ausblenden: Nicht explizit gefiltert (Neutral).</string>
+    <string name="label_matrix_legend_block">Blockieren: Kontakte mit diesem Label werden ignoriert.</string>
+
+    <!-- Standard Labels -->
+    <string name="label_all">Alle</string>
+    <string name="label_favorites">Favoriten</string>
 
     <!-- Widget -->
     <string name="settings_widget_count_title">Anzahl</string>

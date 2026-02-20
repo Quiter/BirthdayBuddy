@@ -11,6 +11,8 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Label
 import androidx.compose.material.icons.automirrored.outlined.Label
 import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.outlined.People
+import androidx.compose.material.icons.outlined.Star
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -97,6 +99,19 @@ fun MainDrawerContent(
     onReloadContacts: () -> Unit,
     onSettingsClick: () -> Unit
 ) {
+    val allLabel = stringResource(R.string.label_all)
+    val favoritesLabel = stringResource(R.string.label_favorites)
+    
+    val sortedLabels = availableLabels
+        .filterNot { hiddenDrawerLabels.contains(it) }
+        .sortedWith(compareBy<String> {
+            when (it) {
+                "My Contacts" -> 0
+                "Starred in Android" -> 1
+                else -> 2
+            }
+        }.thenBy { it })
+
     ModalDrawerSheet {
         LazyColumn(
             modifier = Modifier
@@ -121,9 +136,7 @@ fun MainDrawerContent(
                 )
             }
 
-            val labelsToShow = availableLabels.filterNot { hiddenDrawerLabels.contains(it) }
-
-            if (labelsToShow.isEmpty()) {
+            if (sortedLabels.isEmpty()) {
                 item {
                     Text(
                         stringResource(R.string.drawer_no_labels),
@@ -134,23 +147,24 @@ fun MainDrawerContent(
                 }
             }
 
-            items(labelsToShow) { label ->
+            items(sortedLabels) { label ->
                 val isChecked = selectedLabels.contains(label)
+                val (displayText, icon) = when(label) {
+                    "My Contacts" -> allLabel to if (isChecked) Icons.Default.People else Icons.Outlined.People
+                    "Starred in Android" -> favoritesLabel to if (isChecked) Icons.Default.Star else Icons.Outlined.Star
+                    else -> label to if (isChecked) Icons.AutoMirrored.Filled.Label else Icons.AutoMirrored.Outlined.Label
+                }
+
                 NavigationDrawerItem(
                     label = { 
                         Text(
-                            label, 
+                            displayText, 
                             fontWeight = if (isChecked) FontWeight.Bold else FontWeight.Normal 
                         ) 
                     },
                     selected = isChecked,
                     onClick = { onLabelToggle(label, isChecked) },
-                    icon = { 
-                        Icon(
-                            if (isChecked) Icons.AutoMirrored.Filled.Label else Icons.AutoMirrored.Outlined.Label,
-                            contentDescription = null
-                        ) 
-                    },
+                    icon = { Icon(icon, contentDescription = null) },
                     modifier = Modifier.padding(NavigationDrawerItemPadding),
                     colors = NavigationDrawerItemDefaults.colors(
                         selectedContainerColor = Color.Transparent,
