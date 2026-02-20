@@ -15,15 +15,14 @@ android {
         applicationId = "com.heckmannch.birthdaybuddy"
         minSdk = 28
         targetSdk = 36
-        versionCode = 1
-        versionName = "2.5.6"
+        versionCode = 2
+        versionName = "2.5.7"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
     signingConfigs {
         create("release") {
-            // Diese Werte kommen von GitHub Actions Secrets
             val keystoreFile = rootProject.file("app/release.keystore")
             if (keystoreFile.exists()) {
                 storeFile = keystoreFile
@@ -42,7 +41,6 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
-            // Nur signieren, wenn die Keys vorhanden sind (GitHub Modus)
             if (rootProject.file("app/release.keystore").exists()) {
                 signingConfig = signingConfigs.getByName("release")
             }
@@ -58,7 +56,6 @@ android {
         compose = true
     }
 
-    // Automatisches Umbenennen der APK-Datei
     applicationVariants.all {
         outputs.all {
             val output = this as com.android.build.gradle.internal.api.BaseVariantOutputImpl
@@ -67,7 +64,12 @@ android {
     }
 }
 
-// Globales JvmTarget für alle Kotlin-Tasks
+// Build-Optimierung für stabilere Caches
+tasks.withType<AbstractArchiveTask>().configureEach {
+    isPreserveFileTimestamps = false
+    isReproducibleFileOrder = true
+}
+
 tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>().configureEach {
     compilerOptions {
         jvmTarget.set(JvmTarget.JVM_11)
@@ -94,12 +96,10 @@ dependencies {
     implementation(libs.androidx.lifecycle.viewmodel.compose)
     implementation(libs.kotlinx.serialization.json)
 
-    // Room
     implementation(libs.androidx.room.runtime)
     implementation(libs.androidx.room.ktx)
     ksp(libs.androidx.room.compiler)
 
-    // Glance (Widgets)
     implementation(libs.androidx.glance.appwidget)
     implementation(libs.androidx.glance.material3)
 
