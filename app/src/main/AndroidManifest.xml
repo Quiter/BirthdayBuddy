@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
 
     <uses-permission android:name="android.permission.READ_CONTACTS" />
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
@@ -42,7 +43,6 @@
             </intent-filter>
         </activity>
 
-        <!-- NEU: Das Glance-basierte Widget -->
         <receiver
             android:name=".widget.BirthdayGlanceWidgetReceiver"
             android:exported="true"
@@ -55,14 +55,17 @@
                 android:resource="@xml/widget_info" />
         </receiver>
 
+        <!-- Deaktiviert die Standard-Initialisierung des WorkManagers,
+             da wir On-Demand Initialisierung in der Application-Klasse nutzen -->
         <provider
             android:name="androidx.startup.InitializationProvider"
             android:authorities="${applicationId}.androidx-startup"
             android:exported="false"
-            xmlns:tools="http://schemas.android.com/tools">
+            tools:node="merge">
             <meta-data
                 android:name="androidx.work.WorkManagerInitializer"
-                android:value="androidx.startup" />
+                android:value="androidx.startup"
+                tools:node="remove" />
         </provider>
 
     </application>

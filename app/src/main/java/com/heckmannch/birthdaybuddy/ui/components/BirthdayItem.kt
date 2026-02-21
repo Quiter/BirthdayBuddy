@@ -65,11 +65,9 @@ fun BirthdayItem(
     val isBirthdayToday = contact.remainingDays == 0
     val isSoon = contact.remainingDays in 1..7
     
-    // Meilensteine differenzieren
     val isKidBirthday = contact.age in 1..9
     val isRoundBirthday = contact.age > 0 && contact.age % 10 == 0
 
-    // Farben für UI-Highlights
     val goldColor = Color(0xFFFFD700)
     val secondaryGold = Color(0xFFFBC02D)
     val silverColor = Color(0xFFC0C0C0)
@@ -88,7 +86,6 @@ fun BirthdayItem(
         else -> silverColor
     }
 
-    // Konfetti-Konfiguration (nur berechnen, wenn nötig)
     val party = remember(isKidBirthday, isRoundBirthday) {
         val colors = when {
             isKidBirthday -> kidColors.map { it.hashCode() }
@@ -221,7 +218,6 @@ fun BirthdayItem(
                         color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)
                     )
 
-                    // Labels
                     if (contact.labels.isNotEmpty()) {
                         LazyRow(
                             modifier = Modifier
@@ -243,7 +239,6 @@ fun BirthdayItem(
                         }
                     }
 
-                    // Aktionen
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -251,7 +246,7 @@ fun BirthdayItem(
                         horizontalArrangement = Arrangement.SpaceEvenly
                     ) {
                         val actions = contact.actions
-                        val greetingText = if (isBirthdayToday) GreetingGenerator.generateRandomGreeting(contact.name, contact.age) else ""
+                        val greetingText = if (isBirthdayToday) GreetingGenerator.generateRandomGreeting(context, contact.name, contact.age) else ""
 
                         if (actions.phoneNumber != null) {
                             FilledTonalIconButton(onClick = {
@@ -283,7 +278,6 @@ fun BirthdayItem(
                             }
                         }
 
-                        // Messenger-Buttons mit Hilfsfunktion
                         if (actions.hasWhatsApp && actions.phoneNumber != null) {
                             MessengerButton(color = Color(0xFF25D366), iconRes = R.drawable.ic_whatsapp) {
                                 launchMessenger(context, actions.phoneNumber, greetingText, isBirthdayToday, "com.whatsapp", "https://wa.me/")
@@ -321,9 +315,6 @@ fun BirthdayItem(
     }
 }
 
-/**
- * Hilfsfunktion zum Starten von Messenger-Apps
- */
 private fun launchMessenger(context: Context, number: String, text: String, isToday: Boolean, packageName: String, urlPrefix: String) {
     val cleanNumber = number.replace(Regex("[^0-9+]"), "")
     val url = if (isToday) "$urlPrefix$cleanNumber?text=${Uri.encode(text)}" else "$urlPrefix$cleanNumber"

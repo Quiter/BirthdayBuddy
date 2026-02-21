@@ -144,4 +144,30 @@
     <!-- Internal Labels (Don't translate) -->
     <string name="label_system_all" translatable="false">My Contacts</string>
     <string name="label_system_starred" translatable="false">Starred in Android</string>
+
+    <!-- Birthday Greetings -->
+    <string-array name="greetings_kid">
+        <item>Happy %1$d. birthday, little champion! 🎉 Have a great party with lots of presents! 🎂</item>
+        <item>Happy Birthday, %1$s! ✨ %2$d years old - you\'re getting so big! Have a super day with plenty of cake! 🎈</item>
+        <item>Hooray, it\'s your birthday! 🥳 All the best for your %1$d. birthday. Have fun playing and celebrating! 🎁</item>
+    </string-array>
+
+    <string-array name="greetings_teen">
+        <item>Happy Birthday, %1$s! 🎂 %2$d years - enjoy the time and let yourself be celebrated today! 🤘✨</item>
+        <item>Happy %1$d.! 🎉 I wish you a mega day with your friends and all the best for the new year of life! 🚀</item>
+        <item>Congratulations on your birthday! 🥳 %1$d years old is really cool. Have a relaxed day! 🎈</item>
+    </string-array>
+
+    <string-array name="greetings_adult">
+        <item>Happy %1$d. birthday, %2$s! 🎉 I wish you a wonderful day surrounded by your loved ones. 🎂✨</item>
+        <item>Happy Birthday! 🥂 %1$d years is a great age. I wish you health and joy for your new year of life! 🎈</item>
+        <item>Happy Birthday! 🥳 Get pampered today and enjoy your special day to the fullest. All the best! 🎁✨</item>
+        <item>I wish you all the very best for your %1$d. birthday! 🎂 To another year full of beautiful moments! 🥂</item>
+    </string-array>
+
+    <string-array name="greetings_round">
+        <item>Wow, %1$d years! 🎉 Happy birthday on this great milestone, %2$s! Celebrate properly today! 🥂🎂</item>
+        <item>Happy Birthday for the round %1$d! 🥳 A new decade full of possibilities begins. All the best! ✨🚀</item>
+        <item>Happy %1$d. birthday! 🎈 Such a special anniversary must be celebrated accordingly. Have an unforgettable day! 🥂🎁</item>
+    </string-array>
 </resources>
