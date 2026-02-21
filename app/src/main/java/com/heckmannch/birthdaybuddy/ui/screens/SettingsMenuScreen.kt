@@ -47,19 +47,29 @@ fun SettingsMenuScreen(
             LargeTopAppBar(
                 title = { Text(stringResource(R.string.settings_title)) },
                 navigationIcon = {
-                    IconButton(onClick = onBack) { Icon(Icons.AutoMirrored.Filled.ArrowBack, stringResource(R.string.label_selection_back)) }
+                    IconButton(onClick = onBack) { 
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, stringResource(R.string.label_selection_back)) 
+                    }
                 },
-                scrollBehavior = scrollBehavior
+                scrollBehavior = scrollBehavior,
+                // Respektiert die Statusleiste beim Ein-/Ausfahren
+                windowInsets = TopAppBarDefaults.windowInsets
             )
         }
     ) { padding ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(padding)
+                .padding(horizontal = 16.dp)
                 .verticalScroll(rememberScrollState())
-                .padding(horizontal = 16.dp, vertical = 8.dp)
+                // Wir nutzen padding.calculateTopPadding() manuell, um die Kontrolle zu behalten,
+                // fügen aber unten explizit navigationBarsPadding hinzu.
+                .padding(top = padding.calculateTopPadding())
+                .navigationBarsPadding() 
+                .padding(bottom = 16.dp)
         ) {
+            Spacer(modifier = Modifier.height(8.dp))
+
             // SEKTION: ORGANISATION
             SectionHeader(stringResource(R.string.label_manager_section_org))
             SettingsGroup {

@@ -32,7 +32,6 @@ fun LabelManagerScreen(
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
     
-    // Aktuelle Filter-Sets sammeln
     val hiddenDrawer by filterManager.hiddenDrawerLabelsFlow.collectAsState(initial = emptySet())
     val widgetSelected by filterManager.widgetSelectedLabelsFlow.collectAsState(initial = emptySet())
     val notifSelected by filterManager.notificationSelectedLabelsFlow.collectAsState(initial = emptySet())
@@ -56,12 +55,13 @@ fun LabelManagerScreen(
                     IconButton(onClick = onBack) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, stringResource(R.string.label_selection_back))
                     }
-                }
+                },
+                // Sorgt dafür, dass die TopAppBar die Statusleiste korrekt berücksichtigt
+                windowInsets = TopAppBarDefaults.windowInsets
             )
         }
     ) { padding ->
-        Column(modifier = Modifier.fillMaxSize().padding(padding)) {
-            // Moderne Material 3 TabRow mit aktivem Indikator und farbiger Pille
+        Column(modifier = Modifier.fillMaxSize().padding(top = padding.calculateTopPadding())) {
             PrimaryTabRow(
                 selectedTabIndex = selectedTab,
                 containerColor = MaterialTheme.colorScheme.surface,
@@ -109,7 +109,6 @@ fun LabelManagerScreen(
                 }
             }
 
-            // Sub-Header mit Beschreibung
             Surface(
                 color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f),
                 modifier = Modifier.fillMaxWidth()
@@ -131,7 +130,13 @@ fun LabelManagerScreen(
                     Text(stringResource(R.string.label_manager_empty))
                 }
             } else {
-                LazyColumn(modifier = Modifier.fillMaxSize()) {
+                LazyColumn(
+                    modifier = Modifier.fillMaxSize(),
+                    // Reserviert Platz für die Navigationsleiste am unteren Ende
+                    contentPadding = PaddingValues(
+                        bottom = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding() + 16.dp
+                    )
+                ) {
                     val sortedLabels = availableLabels.toList().sortedWith(compareBy<String> {
                         when (it) {
                             "My Contacts" -> 0
@@ -142,7 +147,6 @@ fun LabelManagerScreen(
                     
                     items(sortedLabels) { label ->
                         val isBlockedGlobal = globalExcluded.contains(label)
-                        
                         val isVisible = when(selectedTab) {
                             0 -> !hiddenDrawer.contains(label)
                             1 -> widgetSelected.contains(label)
@@ -216,7 +220,7 @@ fun LabelManagerRow(
     ListItem(
         modifier = Modifier
             .fillMaxWidth()
-            .heightIn(min = 72.dp), // Fixierte Mindesthöhe für stabile Layouts
+            .heightIn(min = 72.dp),
         headlineContent = {
             Text(
                 text = label,
@@ -226,7 +230,6 @@ fun LabelManagerRow(
             )
         },
         supportingContent = {
-            // Platzhalter oder Statusmeldung
             if (isBlockedGlobal) {
                 Text(
                     stringResource(R.string.label_manager_status_blocked), 
@@ -234,8 +237,6 @@ fun LabelManagerRow(
                     style = MaterialTheme.typography.labelSmall
                 )
             } else {
-                // Leerer Spacer, um die Mindesthöhe des unterstützenden Bereichs zu sichern, 
-                // falls keine Meldung da ist (optional, heightIn am ListItem reicht meist)
                 Spacer(modifier = Modifier.height(16.dp))
             }
         },

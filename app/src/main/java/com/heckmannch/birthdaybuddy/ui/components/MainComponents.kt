@@ -38,6 +38,7 @@ fun MainSearchBar(
     onMenuClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    // statusBarsPadding() sorgt dafür, dass die SearchBar unter der Statusleiste beginnt.
     SearchBar(
         inputField = {
             SearchBarDefaults.InputField(
@@ -87,6 +88,7 @@ fun MainSearchBar(
         onExpandedChange = { },
         modifier = modifier
             .fillMaxWidth()
+            .statusBarsPadding() // WICHTIG: Verhindert Überlagerung mit der Statusleiste
             .padding(horizontal = 16.dp, vertical = 8.dp),
         shape = SearchBarDefaults.inputFieldShape,
         colors = SearchBarDefaults.colors(
@@ -130,12 +132,13 @@ fun MainDrawerContent(
         modifier = Modifier.width(300.dp),
         drawerShape = RoundedCornerShape(topEnd = 16.dp, bottomEnd = 16.dp)
     ) {
-        // HEADER BEREICH (Exakt SolidExplorer Style)
+        // HEADER BEREICH
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(200.dp)
+                .height(200.dp + 48.dp) // Etwas höher für Statusleiste
                 .background(headerBrush)
+                .statusBarsPadding() // Header-Inhalt unter die Statusleiste schieben
                 .padding(start = 24.dp, end = 16.dp, bottom = 24.dp)
         ) {
             Row(
@@ -143,7 +146,6 @@ fun MainDrawerContent(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                // Titel in zwei Zeilen
                 Text(
                     text = stringResource(R.string.drawer_title),
                     style = MaterialTheme.typography.headlineLarge,
@@ -153,7 +155,6 @@ fun MainDrawerContent(
                     modifier = Modifier.weight(1f)
                 )
                 
-                // Einstellungen Icon (rechts neben dem Titel positioniert)
                 IconButton(
                     onClick = onSettingsClick,
                     modifier = Modifier.size(48.dp)
@@ -170,11 +171,11 @@ fun MainDrawerContent(
 
         LazyColumn(
             modifier = Modifier
-                .fillMaxSize()
-                .navigationBarsPadding(),
-            contentPadding = PaddingValues(vertical = 8.dp)
+                .fillMaxSize(),
+            // navigationBarsPadding wird hier nicht benötigt, da ModalDrawerSheet das oft selbst handhabt,
+            // aber zur Sicherheit im LazyColumn ContentPadding:
+            contentPadding = PaddingValues(bottom = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding() + 8.dp)
         ) {
-            // SCHNELLZUGRIFF
             item {
                 NavigationDrawerItem(
                     label = { Text(stringResource(R.string.drawer_calendar)) },
@@ -201,7 +202,6 @@ fun MainDrawerContent(
                 HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp, horizontal = 16.dp))
             }
 
-            // EINKLAPPBARE LABEL LISTE
             item {
                 ListItem(
                     headlineContent = { 
@@ -223,17 +223,6 @@ fun MainDrawerContent(
             }
 
             if (labelsExpanded) {
-                if (sortedLabels.isEmpty()) {
-                    item {
-                        Text(
-                            stringResource(R.string.drawer_no_labels),
-                            modifier = Modifier.padding(horizontal = 28.dp, vertical = 16.dp),
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                    }
-                }
-
                 items(sortedLabels) { label ->
                     val isChecked = selectedLabels.contains(label)
                     val (displayText, icon) = when(label) {
@@ -278,7 +267,11 @@ fun BirthdayList(
     LazyColumn(
         state = listState,
         modifier = modifier.fillMaxSize(),
-        contentPadding = PaddingValues(bottom = 16.dp)
+        // Bottom Padding für Navigationsleiste
+        contentPadding = PaddingValues(
+            bottom = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding() + 80.dp 
+            // +80dp damit der FAB den letzten Eintrag nicht verdeckt
+        )
     ) {
         items(
             items = contacts,
