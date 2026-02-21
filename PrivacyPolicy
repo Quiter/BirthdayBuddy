@@ -1,0 +1,31 @@
+Privacy Policy for BirthdayBuddy
+Last Updated: February 2026
+
+This Privacy Policy explains how the "BirthdayBuddy" app (hereinafter referred to as the "App") handles your data.
+
+Protecting your privacy is my highest priority. This App is designed to operate completely locally on your device. No personal data is ever sent to external servers, collected by the developer, or shared with third parties.
+
+1. Access to Contacts (READ_CONTACTS)
+In order to fulfill its core functionality – displaying birthdays and calculating age as well as remaining days – the App requires read access to your device's address book.
+
+Purpose: The App strictly reads names, birth dates, contact images, labels (groups), and contact methods (phone/messenger) to display them within the App and its home screen widget.
+
+No Uploads: All read data is processed exclusively locally on your device. No data is uploaded to developer servers or any third-party services.
+
+2. Notifications and Alarms
+The App requests permissions for notifications (POST_NOTIFICATIONS) and exact alarms (SCHEDULE_EXACT_ALARM, USE_EXACT_ALARM) to reliably remind you of upcoming birthdays. All related calculations and timers are managed locally by your device's operating system.
+
+3. Analytics and Tracking
+This App does not use any analytics tools (such as Google Analytics), tracking software, or advertising networks. Your usage behavior is not monitored or recorded.
+
+4. Third-Party Data Sharing
+Because the App does not collect data or transmit anything over the internet, sharing your data with third parties is technically impossible.
+
+5. Your Rights and Control
+You have full control over your data at all times. You can revoke the App's permission to access your contacts or send notifications at any time via your Android device's system settings. Uninstalling the App will completely remove all internal App settings (such as alarm times) from your device.
+
+6. Contact
+If you have any questions regarding privacy or this App, please feel free to contact me:
+
+Quiter
+fleischbanane@web.de
