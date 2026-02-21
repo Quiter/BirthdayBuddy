@@ -4,12 +4,15 @@ import android.Manifest
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.net.Uri
+import android.provider.ContactsContract
 import android.provider.Settings
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -86,6 +89,22 @@ fun MainScreen(
                     onQueryChange = { mainViewModel.updateSearchQuery(it) },
                     onMenuClick = { scope.launch { drawerState.open() } }
                 )
+            },
+            floatingActionButton = {
+                if (hasPermission) {
+                    FloatingActionButton(
+                        onClick = {
+                            val intent = Intent(Intent.ACTION_INSERT).apply {
+                                type = ContactsContract.Contacts.CONTENT_TYPE
+                            }
+                            context.startActivity(intent)
+                        },
+                        containerColor = MaterialTheme.colorScheme.primary,
+                        contentColor = MaterialTheme.colorScheme.onPrimary
+                    ) {
+                        Icon(Icons.Default.Add, contentDescription = stringResource(R.string.add_contact))
+                    }
+                }
             },
             modifier = Modifier.pointerInput(Unit) {
                 detectTapGestures(onTap = {

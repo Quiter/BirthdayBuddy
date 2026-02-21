@@ -7,6 +7,7 @@
     <string name="main_loading">Loading data…</string>
     <string name="permission_required_desc">BirthdayBuddy needs permission to read your contacts to display birthdays.</string>
     <string name="open_settings">Open Settings</string>
+    <string name="add_contact">Add Contact</string>
 
     <!-- Drawer / Navigation -->
     <string name="drawer_title">Birthday Buddy</string>
@@ -38,9 +39,7 @@
     <string name="settings_alarms_title">Alarms</string>
     <string name="settings_alarms_desc">Configure notification times</string>
     <string name="settings_notifications_include_title">Filter: Include</string>
-    <string name="settings_notifications_include_desc">Labels for notifications</string>
     <string name="settings_notifications_exclude_title">Filter: Exclude</string>
-    <string name="settings_notifications_exclude_desc">Ignore labels</string>
 
     <string name="footer_slogan">Made with ❤ in Dortmund</string>
 
@@ -110,11 +109,9 @@
 
     <!-- Widget -->
     <string name="settings_widget_count_title">Count</string>
-    <string name="settings_widget_count_desc">Show %1$d people</string>
+    <string name="settings_widget_count_desc">Show up to %1$d people</string>
     <string name="settings_widget_include_title">Filter: Include</string>
-    <string name="settings_widget_include_desc">Specific labels in widget</string>
     <string name="settings_widget_exclude_title">Filter: Exclude</string>
-    <string name="settings_widget_exclude_desc">Ignore labels in widget</string>
     <string name="settings_widget_dialog_title">Widget Capacity</string>
     <string name="settings_widget_dialog_desc">Maximum number of people in the widget.</string>
     <string name="settings_widget_dialog_save">Save</string>

@@ -61,18 +61,31 @@ fun BirthdayItem(
     val isDark = isSystemInDarkTheme()
     val isBirthdayToday = contact.remainingDays == 0
     val isSoon = contact.remainingDays in 1..7
+    
+    // Prüfen ob besonderer Meilenstein (1. Geburtstag oder durch 10 teilbar)
+    val isRoundBirthday = contact.age > 0 && (contact.age % 10 == 0 || contact.age == 1)
 
     val goldColor = Color(0xFFFFD700)
     val secondaryGold = Color(0xFFFBC02D)
+    val silverColor = Color(0xFFC0C0C0)
+    val secondarySilver = Color(0xFFE0E0E0)
 
-    // Konfetti-Konfiguration mit explizitem Cast zu Int (für ARGB Werte)
-    val party = remember {
+    val currentThemeColor = if (isRoundBirthday) goldColor else silverColor
+    val currentSecondaryColor = if (isRoundBirthday) secondaryGold else secondarySilver
+
+    // Konfetti-Konfiguration
+    val party = remember(isRoundBirthday) {
+        val colors = if (isRoundBirthday) {
+            listOf(0xFFFFD700.toInt(), 0xFF4285F4.toInt(), 0xFFF06292.toInt(), 0xFFFFB300.toInt())
+        } else {
+            listOf(0xFFC0C0C0.toInt(), 0xFFE0E0E0.toInt(), 0xFFFFFFFF.toInt(), 0xFF9E9E9E.toInt())
+        }
         Party(
             speed = 0f,
             maxSpeed = 30f,
             damping = 0.9f,
             spread = 360,
-            colors = listOf(0xFFFFD700.toInt(), 0xFF4285F4.toInt(), 0xFFF06292.toInt(), 0xFFFFB300.toInt()),
+            colors = colors,
             position = Position.Relative(0.5, 0.3),
             emitter = Emitter(duration = 100, TimeUnit.MILLISECONDS).max(100)
         )
@@ -80,7 +93,7 @@ fun BirthdayItem(
 
     val birthdayModifier = when {
         isBirthdayToday -> Modifier.border(
-            BorderStroke(2.dp, Brush.linearGradient(listOf(goldColor, secondaryGold))),
+            BorderStroke(2.dp, Brush.linearGradient(listOf(currentThemeColor, currentSecondaryColor))),
             shape = CardDefaults.elevatedShape
         )
         isSoon -> Modifier.border(
@@ -102,7 +115,13 @@ fun BirthdayItem(
                 },
             colors = CardDefaults.elevatedCardColors(
                 containerColor = when {
-                    isBirthdayToday -> if (isDark) Color(0xFF332D00) else Color(0xFFFFFDE7)
+                    isBirthdayToday -> {
+                        if (isRoundBirthday) {
+                            if (isDark) Color(0xFF332D00) else Color(0xFFFFFDE7)
+                        } else {
+                            if (isDark) Color(0xFF2C2C2C) else Color(0xFFF5F5F5)
+                        }
+                    }
                     isSoon -> MaterialTheme.colorScheme.surfaceContainer
                     else -> MaterialTheme.colorScheme.surfaceContainerLow
                 }
@@ -162,13 +181,13 @@ fun BirthdayItem(
                                         Icons.Default.Cake,
                                         contentDescription = null,
                                         modifier = Modifier.size(16.dp),
-                                        tint = goldColor
+                                        tint = currentThemeColor
                                     )
                                     Spacer(Modifier.width(4.dp))
                                     Text(
                                         "HEUTE!",
                                         style = MaterialTheme.typography.labelLarge,
-                                        color = if (isDark) goldColor else Color(0xFF827717),
+                                        color = if (isDark) currentThemeColor else (if (isRoundBirthday) Color(0xFF827717) else Color(0xFF616161)),
                                         fontWeight = FontWeight.ExtraBold
                                     )
                                 }

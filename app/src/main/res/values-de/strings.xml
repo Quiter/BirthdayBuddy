@@ -7,6 +7,7 @@
     <string name="main_loading">Lade Daten…</string>
     <string name="permission_required_desc">GeburtstagsBuddy benötigt die Berechtigung, deine Kontakte zu lesen, um Geburtstage anzuzeigen.</string>
     <string name="open_settings">Einstellungen öffnen</string>
+    <string name="add_contact">Kontakt hinzufügen</string>
 
     <!-- Drawer / Navigation -->
     <string name="drawer_title">Birthday Buddy</string>
@@ -91,6 +92,11 @@
     <string name="label_manager_subtitle">Zentrale Sichtbarkeitssteuerung</string>
     <string name="label_manager_status_blocked">Vollständig ignoriert</string>
 
+    <string name="label_matrix_legend_title">Icon-Legende</string>
+    <string name="label_matrix_legend_show">Anzeigen: In diesem Bereich sichtbar.</string>
+    <string name="label_matrix_legend_hide">Ausblenden: Nicht explizit gefiltert (Neutral).</string>
+    <string name="label_matrix_legend_block">Blockieren: Kontakte mit diesem Label werden ignoriert.</string>
+
     <!-- Sync Status -->
     <string name="sync_success">Kontakte erfolgreich synchronisiert</string>
     <string name="sync_error_permission">Berechtigung fehlt</string>
@@ -103,7 +109,7 @@
 
     <!-- Widget -->
     <string name="settings_widget_count_title">Anzahl</string>
-    <string name="settings_widget_count_desc">Zeigt %1$d Personen an</string>
+    <string name="settings_widget_count_desc">Bis zu %1$d Personen anzeigen</string>
     <string name="settings_widget_include_title">Filter: Einschließen</string>
     <string name="settings_widget_exclude_title">Filter: Ausschließen</string>
     <string name="settings_widget_dialog_title">Widget Kapazität</string>
