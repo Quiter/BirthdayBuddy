@@ -22,9 +22,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.heckmannch.birthdaybuddy.R
@@ -38,7 +40,6 @@ fun MainSearchBar(
     onMenuClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    // statusBarsPadding() sorgt dafür, dass die SearchBar unter der Statusleiste beginnt.
     SearchBar(
         inputField = {
             SearchBarDefaults.InputField(
@@ -88,7 +89,7 @@ fun MainSearchBar(
         onExpandedChange = { },
         modifier = modifier
             .fillMaxWidth()
-            .statusBarsPadding() // WICHTIG: Verhindert Überlagerung mit der Statusleiste
+            .statusBarsPadding()
             .padding(horizontal = 16.dp, vertical = 8.dp),
         shape = SearchBarDefaults.inputFieldShape,
         colors = SearchBarDefaults.colors(
@@ -110,8 +111,8 @@ fun MainDrawerContent(
     val context = LocalContext.current
     val allLabel = stringResource(R.string.label_all)
     val favoritesLabel = stringResource(R.string.label_favorites)
-    val sysAll = stringResource(R.string.label_system_all)
-    val sysStarred = stringResource(R.string.label_system_starred)
+    val sysAll = "My Contacts"
+    val sysStarred = "Starred in Android"
     
     var labelsExpanded by rememberSaveable { mutableStateOf(true) }
 
@@ -132,13 +133,12 @@ fun MainDrawerContent(
         modifier = Modifier.width(300.dp),
         drawerShape = RoundedCornerShape(topEnd = 16.dp, bottomEnd = 16.dp)
     ) {
-        // HEADER BEREICH
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(200.dp + 48.dp) // Etwas höher für Statusleiste
+                .height(200.dp + 48.dp)
                 .background(headerBrush)
-                .statusBarsPadding() // Header-Inhalt unter die Statusleiste schieben
+                .statusBarsPadding()
                 .padding(start = 24.dp, end = 16.dp, bottom = 24.dp)
         ) {
             Row(
@@ -170,10 +170,7 @@ fun MainDrawerContent(
         }
 
         LazyColumn(
-            modifier = Modifier
-                .fillMaxSize(),
-            // navigationBarsPadding wird hier nicht benötigt, da ModalDrawerSheet das oft selbst handhabt,
-            // aber zur Sicherheit im LazyColumn ContentPadding:
+            modifier = Modifier.fillMaxSize(),
             contentPadding = PaddingValues(bottom = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding() + 8.dp)
         ) {
             item {
@@ -267,10 +264,8 @@ fun BirthdayList(
     LazyColumn(
         state = listState,
         modifier = modifier.fillMaxSize(),
-        // Bottom Padding für Navigationsleiste
         contentPadding = PaddingValues(
             bottom = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding() + 80.dp 
-            // +80dp damit der FAB den letzten Eintrag nicht verdeckt
         )
     ) {
         items(
@@ -282,5 +277,59 @@ fun BirthdayList(
                 modifier = Modifier.animateItem()
             )
         }
+    }
+}
+
+/**
+ * Eine ansprechende Komponente für leere Zustände (Empty States).
+ */
+@Composable
+fun EmptyState(
+    icon: ImageVector,
+    title: String,
+    description: String,
+    modifier: Modifier = Modifier
+) {
+    Column(
+        modifier = modifier
+            .fillMaxSize()
+            .padding(32.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center
+    ) {
+        Surface(
+            modifier = Modifier.size(120.dp),
+            shape = RoundedCornerShape(32.dp),
+            color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
+        ) {
+            Box(contentAlignment = Alignment.Center) {
+                Icon(
+                    imageVector = icon,
+                    contentDescription = null,
+                    modifier = Modifier.size(64.dp),
+                    tint = MaterialTheme.colorScheme.primary.copy(alpha = 0.6f)
+                )
+            }
+        }
+        
+        Spacer(modifier = Modifier.height(24.dp))
+        
+        Text(
+            text = title,
+            style = MaterialTheme.typography.headlineSmall,
+            fontWeight = FontWeight.Bold,
+            textAlign = TextAlign.Center,
+            color = MaterialTheme.colorScheme.onSurface
+        )
+        
+        Spacer(modifier = Modifier.height(8.dp))
+        
+        Text(
+            text = description,
+            style = MaterialTheme.typography.bodyMedium,
+            textAlign = TextAlign.Center,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.padding(horizontal = 16.dp)
+        )
     }
 }

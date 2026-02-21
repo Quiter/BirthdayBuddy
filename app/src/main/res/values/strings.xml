@@ -9,6 +9,11 @@
     <string name="open_settings">Open Settings</string>
     <string name="add_contact">Add Contact</string>
 
+    <string name="main_empty_birthdays_title">No birthdays yet</string>
+    <string name="main_empty_birthdays_desc">Add birthdays to your contacts or sync them to see them here.</string>
+    <string name="main_empty_search_title">No matches found</string>
+    <string name="main_empty_search_desc">We couldn\'t find anyone matching \u0022%1$s\u0022.</string>
+
     <!-- Drawer / Navigation -->
     <string name="drawer_title">Birthday\nBuddy</string>
     <string name="drawer_labels_header">Labels</string>

@@ -13,6 +13,8 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Cake
+import androidx.compose.material.icons.filled.SearchOff
 import androidx.compose.material3.*
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.*
@@ -150,11 +152,22 @@ fun MainScreen(
                         modifier = Modifier.fillMaxSize()
                     ) {
                         if (uiState.contacts.isEmpty() && !uiState.isLoading) {
-                            Text(
-                                text = stringResource(R.string.main_no_birthdays),
-                                modifier = Modifier.align(Alignment.Center),
-                                style = MaterialTheme.typography.bodyLarge
-                            )
+                            // Empty States Logik
+                            if (uiState.searchQuery.isNotEmpty()) {
+                                // Fall: Suche ohne Treffer
+                                EmptyState(
+                                    icon = Icons.Default.SearchOff,
+                                    title = stringResource(R.string.main_empty_search_title),
+                                    description = stringResource(R.string.main_empty_search_desc, uiState.searchQuery)
+                                )
+                            } else {
+                                // Fall: Generell keine Geburtstage gefunden
+                                EmptyState(
+                                    icon = Icons.Default.Cake,
+                                    title = stringResource(R.string.main_empty_birthdays_title),
+                                    description = stringResource(R.string.main_empty_birthdays_desc)
+                                )
+                            }
                         } else {
                             BirthdayList(
                                 contacts = uiState.contacts, 
