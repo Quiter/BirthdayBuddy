@@ -5,23 +5,30 @@ import android.content.Context
 import android.content.pm.PackageManager
 import androidx.core.app.ActivityCompat
 import androidx.glance.appwidget.updateAll
+import androidx.hilt.work.HiltWorker
 import androidx.work.*
 import com.heckmannch.birthdaybuddy.data.BirthdayRepository
 import com.heckmannch.birthdaybuddy.data.FilterManager
 import com.heckmannch.birthdaybuddy.widget.BirthdayGlanceWidget
+import dagger.assisted.Assisted
+import dagger.assisted.AssistedInject
 import kotlinx.coroutines.flow.first
 import java.util.concurrent.TimeUnit
 
 /**
  * Der BirthdayWorker übernimmt die tägliche Synchronisierung und Benachrichtigung.
+ * Dank @HiltWorker werden die Abhängigkeiten nun sauber injiziert.
  */
-class BirthdayWorker(context: Context, workerParams: WorkerParameters) : CoroutineWorker(context, workerParams) {
+@HiltWorker
+class BirthdayWorker @AssistedInject constructor(
+    @Assisted context: Context,
+    @Assisted workerParams: WorkerParameters,
+    private val repository: BirthdayRepository,
+    private val filterManager: FilterManager,
+    private val notificationHelper: NotificationHelper
+) : CoroutineWorker(context, workerParams) {
 
     override suspend fun doWork(): Result {
-        val repository = BirthdayRepository(applicationContext)
-        val filterManager = FilterManager(applicationContext)
-        val notificationHelper = NotificationHelper(applicationContext)
-
         if (ActivityCompat.checkSelfPermission(applicationContext, Manifest.permission.READ_CONTACTS) != PackageManager.PERMISSION_GRANTED) {
             return Result.failure()
         }
@@ -39,10 +46,7 @@ class BirthdayWorker(context: Context, workerParams: WorkerParameters) : Corouti
         val globalExcludedLabels = prefs.excludedLabels
 
         allBirthdays.filter { contact ->
-            // Prüfen, ob der Kontakt global oder spezifisch für Benachrichtigungen blockiert ist
             val isExcluded = contact.labels.any { excludedLabels.contains(it) || globalExcludedLabels.contains(it) }
-            
-            // Wenn Einschließen-Filter aktiv sind, muss mindestens ein Label passen
             val isIncluded = if (selectedLabels.isEmpty()) true else contact.labels.any { selectedLabels.contains(it) }
             
             !isExcluded && isIncluded && daysToNotify.contains(contact.remainingDays.toString())

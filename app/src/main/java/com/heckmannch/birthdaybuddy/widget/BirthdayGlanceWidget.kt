@@ -1,9 +1,7 @@
 package com.heckmannch.birthdaybuddy.widget
 
 import android.content.Context
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
+import androidx.compose.runtime.*
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.glance.*
@@ -16,11 +14,27 @@ import androidx.glance.layout.*
 import androidx.glance.text.FontWeight
 import androidx.glance.text.Text
 import androidx.glance.text.TextStyle
-import com.heckmannch.birthdaybuddy.BirthdayApplication
 import com.heckmannch.birthdaybuddy.MainActivity
 import com.heckmannch.birthdaybuddy.R
+import com.heckmannch.birthdaybuddy.data.BirthdayRepository
+import com.heckmannch.birthdaybuddy.data.FilterManager
 import com.heckmannch.birthdaybuddy.model.BirthdayContact
+import dagger.hilt.EntryPoint
+import dagger.hilt.InstallIn
+import dagger.hilt.android.EntryPointAccessors
+import dagger.hilt.components.SingletonComponent
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.first
+
+/**
+ * EntryPoint für Hilt, da GlanceAppWidget keine Constructor Injection unterstützt.
+ */
+@EntryPoint
+@InstallIn(SingletonComponent::class)
+interface WidgetEntryPoint {
+    fun birthdayRepository(): BirthdayRepository
+    fun filterManager(): FilterManager
+}
 
 /**
  * Modernes Homescreen-Widget basierend auf Jetpack Glance.
@@ -28,34 +42,41 @@ import kotlinx.coroutines.flow.combine
 class BirthdayGlanceWidget : GlanceAppWidget() {
 
     override suspend fun provideGlance(context: Context, id: GlanceId) {
-        val appContainer = (context.applicationContext as BirthdayApplication).container
-        val repository = appContainer.birthdayRepository
-        val filterManager = appContainer.filterManager
+        // Abhängigkeiten über den Hilt EntryPoint beziehen
+        val entryPoint = EntryPointAccessors.fromApplication(context, WidgetEntryPoint::class.java)
+        val repository = entryPoint.birthdayRepository()
+        val filterManager = entryPoint.filterManager()
 
-        val widgetDataFlow = combine(
-            repository.allBirthdays,
-            filterManager.preferencesFlow
-        ) { contacts, prefs ->
-            contacts.filter { contact ->
-                val isExcluded = contact.labels.any { prefs.excludedLabels.contains(it) || prefs.widgetExcludedLabels.contains(it) }
-                val isSelected = prefs.widgetSelectedLabels.isEmpty() || contact.labels.any { prefs.widgetSelectedLabels.contains(it) }
-                !isExcluded && isSelected
-            }
-            .sortedBy { it.remainingDays }
-            .take(prefs.widgetItemCount)
-        }
+        // Wir laden die Daten einmalig für das initiale Rendering
+        // Glance bietet keine native Flow-Observation im Composable wie "collectAsState" in der UI
+        val initialContacts = loadWidgetData(repository, filterManager)
 
         provideContent {
-            val contacts by widgetDataFlow.collectAsState(initial = emptyList())
-            
             GlanceTheme {
-                WidgetContent(contacts)
+                WidgetContent(initialContacts)
             }
         }
     }
 
+    private suspend fun loadWidgetData(
+        repository: BirthdayRepository,
+        filterManager: FilterManager
+    ): List<BirthdayContact> {
+        val contacts = repository.allBirthdays.first()
+        val prefs = filterManager.preferencesFlow.first()
+        
+        return contacts.filter { contact ->
+            val isExcluded = contact.labels.any { prefs.excludedLabels.contains(it) || prefs.widgetExcludedLabels.contains(it) }
+            val isSelected = prefs.widgetSelectedLabels.isEmpty() || contact.labels.any { prefs.widgetSelectedLabels.contains(it) }
+            !isExcluded && isSelected
+        }
+        .sortedBy { it.remainingDays }
+        .take(prefs.widgetItemCount)
+    }
+
     @Composable
     private fun WidgetContent(contacts: List<BirthdayContact>) {
+        val context = LocalContext.current
         Column(
             modifier = GlanceModifier
                 .fillMaxSize()
@@ -70,7 +91,7 @@ class BirthdayGlanceWidget : GlanceAppWidget() {
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
-                        text = LocalContext.current.getString(R.string.main_no_birthdays),
+                        text = context.getString(R.string.main_no_birthdays),
                         style = TextStyle(color = GlanceTheme.colors.onSurfaceVariant)
                     )
                 }

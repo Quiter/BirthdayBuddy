@@ -10,11 +10,17 @@ import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import com.heckmannch.birthdaybuddy.MainActivity
 import com.heckmannch.birthdaybuddy.R
+import dagger.hilt.android.qualifiers.ApplicationContext
+import javax.inject.Inject
+import javax.inject.Singleton
 
 /**
  * Hilfsklasse für die Erstellung und Anzeige von Benachrichtigungen.
  */
-class NotificationHelper(private val context: Context) {
+@Singleton
+class NotificationHelper @Inject constructor(
+    @ApplicationContext private val context: Context
+) {
 
     companion object {
         const val CHANNEL_ID = "birthday_channel"

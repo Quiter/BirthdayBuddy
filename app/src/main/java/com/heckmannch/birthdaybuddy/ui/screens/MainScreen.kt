@@ -27,14 +27,12 @@ import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import com.heckmannch.birthdaybuddy.R
 import com.heckmannch.birthdaybuddy.ui.components.*
-import com.heckmannch.birthdaybuddy.data.FilterManager
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MainScreen(
     mainViewModel: MainViewModel,
-    @Suppress("UNUSED_PARAMETER") filterManager: FilterManager,
     onNavigateToSettings: () -> Unit
 ) {
     val scope = rememberCoroutineScope()
@@ -54,7 +52,6 @@ fun MainScreen(
         }
     }
 
-    // Tastatur schließen, wenn der Drawer geöffnet wird
     LaunchedEffect(drawerState.targetValue) {
         if (drawerState.targetValue == DrawerValue.Open) {
             focusManager.clearFocus()
@@ -116,7 +113,6 @@ fun MainScreen(
         ) { padding ->
             val listState = rememberLazyListState()
             
-            // Fokus löschen, wenn die Liste gescrollt wird
             LaunchedEffect(listState.isScrollInProgress) {
                 if (listState.isScrollInProgress) {
                     focusManager.clearFocus()
@@ -148,7 +144,6 @@ fun MainScreen(
                         }
                     }
                 } else {
-                    // Pull to Refresh Implementation
                     PullToRefreshBox(
                         isRefreshing = uiState.isLoading,
                         onRefresh = { mainViewModel.loadContacts() },

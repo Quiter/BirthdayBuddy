@@ -5,18 +5,16 @@ import android.app.Application
 import android.content.pm.PackageManager
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.AndroidViewModel
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
-import androidx.lifecycle.viewmodel.CreationExtras
-import com.heckmannch.birthdaybuddy.BirthdayApplication
 import com.heckmannch.birthdaybuddy.R
 import com.heckmannch.birthdaybuddy.data.BirthdayRepository
 import com.heckmannch.birthdaybuddy.data.FilterManager
 import com.heckmannch.birthdaybuddy.data.UserPreferences
 import com.heckmannch.birthdaybuddy.model.BirthdayContact
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
 data class MainUiState(
     val contacts: List<BirthdayContact> = emptyList(),
@@ -36,8 +34,10 @@ sealed interface SyncStatus {
 
 /**
  * Das MainViewModel verwaltet den globalen State der App.
+ * Dank Hilt wird es nun automatisch mit Repository und FilterManager versorgt.
  */
-class MainViewModel(
+@HiltViewModel
+class MainViewModel @Inject constructor(
     application: Application,
     private val repository: BirthdayRepository,
     private val filterManager: FilterManager
@@ -85,11 +85,9 @@ class MainViewModel(
 
         return contacts.asSequence()
             .filter { contact ->
-                // 1. Suche hat Vorrang
                 if (query.isNotEmpty()) {
                     contact.name.contains(query, ignoreCase = true)
                 } else {
-                    // 2. Regulärer Filter
                     val isNotExcluded = contact.labels.none { prefs.excludedLabels.contains(it) }
                     val isSelected = contact.labels.any { label ->
                         prefs.selectedLabels.contains(label) && !prefs.hiddenDrawerLabels.contains(label)
@@ -124,15 +122,14 @@ class MainViewModel(
             if (!isInitial) _syncStatus.value = SyncStatus.Loading
             _isLoading.value = true
             
-            val context = getApplication<Application>()
             val hasPermission = ContextCompat.checkSelfPermission(
-                context, 
+                getApplication(), 
                 Manifest.permission.READ_CONTACTS
             ) == PackageManager.PERMISSION_GRANTED
 
             if (!hasPermission) {
                 if (!isInitial) {
-                    _syncStatus.value = SyncStatus.Error(context.getString(R.string.sync_error_permission))
+                    _syncStatus.value = SyncStatus.Error(getApplication<Application>().getString(R.string.sync_error_permission))
                 }
                 _isLoading.value = false
                 return@launch
@@ -144,7 +141,7 @@ class MainViewModel(
             } catch (e: Exception) {
                 if (!isInitial) {
                     _syncStatus.value = SyncStatus.Error(
-                        context.getString(R.string.sync_error_unknown, e.message ?: "Unknown")
+                        getApplication<Application>().getString(R.string.sync_error_unknown, e.message ?: "Unknown")
                     )
                 }
             } finally {
@@ -167,20 +164,6 @@ class MainViewModel(
             val newSelection = currentSelected.toMutableSet()
             if (newSelection.contains(label)) newSelection.remove(label) else newSelection.add(label)
             filterManager.saveSelectedLabels(newSelection)
-        }
-    }
-
-    companion object {
-        val Factory: ViewModelProvider.Factory = object : ViewModelProvider.Factory {
-            @Suppress("UNCHECKED_CAST")
-            override fun <T : ViewModel> create(modelClass: Class<T>, extras: CreationExtras): T {
-                val application = checkNotNull(extras[ViewModelProvider.AndroidViewModelFactory.APPLICATION_KEY]) as BirthdayApplication
-                return MainViewModel(
-                    application = application,
-                    repository = application.container.birthdayRepository,
-                    filterManager = application.container.filterManager
-                ) as T
-            }
         }
     }
 }

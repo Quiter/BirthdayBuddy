@@ -16,6 +16,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
 import com.heckmannch.birthdaybuddy.R
 import com.heckmannch.birthdaybuddy.data.FilterManager
 import com.heckmannch.birthdaybuddy.utils.updateWidget
@@ -24,11 +25,12 @@ import kotlinx.coroutines.launch
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun LabelManagerScreen(
-    filterManager: FilterManager,
     availableLabels: Set<String>,
     isLoading: Boolean,
-    onBack: () -> Unit
+    onBack: () -> Unit,
+    viewModel: LabelViewModel = hiltViewModel()
 ) {
+    val filterManager = viewModel.filterManager
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
     
@@ -56,7 +58,6 @@ fun LabelManagerScreen(
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, stringResource(R.string.label_selection_back))
                     }
                 },
-                // Sorgt dafür, dass die TopAppBar die Statusleiste korrekt berücksichtigt
                 windowInsets = TopAppBarDefaults.windowInsets
             )
         }
@@ -132,7 +133,6 @@ fun LabelManagerScreen(
             } else {
                 LazyColumn(
                     modifier = Modifier.fillMaxSize(),
-                    // Reserviert Platz für die Navigationsleiste am unteren Ende
                     contentPadding = PaddingValues(
                         bottom = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding() + 16.dp
                     )

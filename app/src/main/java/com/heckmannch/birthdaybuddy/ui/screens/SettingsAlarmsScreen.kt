@@ -17,6 +17,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
 import com.heckmannch.birthdaybuddy.R
 import com.heckmannch.birthdaybuddy.ui.components.SectionHeader
 import com.heckmannch.birthdaybuddy.ui.components.WheelPicker
@@ -26,7 +27,10 @@ import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SettingsAlarmsScreen(filterManager: FilterManager, onBack: () -> Unit) {
+fun SettingsAlarmsScreen(
+    onBack: () -> Unit,
+    filterManager: FilterManager = hiltViewModel<AlarmsViewModel>().filterManager
+) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
     val notifHour by filterManager.notificationHourFlow.collectAsState(initial = 9)
@@ -42,7 +46,8 @@ fun SettingsAlarmsScreen(filterManager: FilterManager, onBack: () -> Unit) {
         topBar = {
             TopAppBar(
                 title = { Text(stringResource(R.string.settings_alarms_title)) },
-                navigationIcon = { IconButton(onClick = onBack) { Icon(Icons.AutoMirrored.Filled.ArrowBack, stringResource(R.string.label_selection_back)) } }
+                navigationIcon = { IconButton(onClick = onBack) { Icon(Icons.AutoMirrored.Filled.ArrowBack, stringResource(R.string.label_selection_back)) } },
+                windowInsets = TopAppBarDefaults.windowInsets
             )
         },
         floatingActionButton = {
@@ -139,3 +144,8 @@ fun SettingsAlarmsScreen(filterManager: FilterManager, onBack: () -> Unit) {
         )
     }
 }
+
+@dagger.hilt.android.lifecycle.HiltViewModel
+class AlarmsViewModel @javax.inject.Inject constructor(
+    val filterManager: FilterManager
+) : androidx.lifecycle.ViewModel()

@@ -14,7 +14,9 @@ import com.heckmannch.birthdaybuddy.ui.theme.BirthdayBuddyTheme
 import com.heckmannch.birthdaybuddy.ui.screens.*
 import com.heckmannch.birthdaybuddy.ui.Route
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
+import dagger.hilt.android.AndroidEntryPoint
 
+@AndroidEntryPoint
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         installSplashScreen()
@@ -26,12 +28,14 @@ class MainActivity : ComponentActivity() {
             BirthdayBuddyTheme {
                 val navController = rememberNavController()
                 
-                val mainViewModel: MainViewModel = 
-                    viewModel(factory = MainViewModel.Factory)
+                // Dank HiltViewModel Annotation im ViewModel wird hier automatisch die Hilt-Instanz genutzt
+                val mainViewModel: MainViewModel = viewModel()
 
                 val uiState by mainViewModel.uiState.collectAsState()
-                val container = (application as BirthdayApplication).container
-                val filterManager = container.filterManager
+                
+                // Da wir nun Hilt nutzen, können wir den FilterManager auch direkt im Screen 
+                // oder via ViewModel handhaben. Für den Übergang lassen wir ihn hier, 
+                // aber er wird nun nicht mehr über den alten Container geholt.
 
                 val onSafeBack = {
                     if (navController.currentBackStackEntry?.lifecycle?.currentState == Lifecycle.State.RESUMED) {
@@ -42,7 +46,10 @@ class MainActivity : ComponentActivity() {
                 NavHost(navController = navController, startDestination = Route.Main) {
                     
                     composable<Route.Main> { 
-                        MainScreen(mainViewModel, filterManager) { 
+                        // Wir übergeben den FilterManager nicht mehr manuell, 
+                        // da die Screens ihn sich selbst injecten können oder via ViewModel arbeiten.
+                        // Hier ein kleiner Refactoring-Schritt:
+                        MainScreen(mainViewModel) { 
                             navController.navigate(Route.Settings) {
                                 launchSingleTop = true
                             } 
@@ -68,7 +75,6 @@ class MainActivity : ComponentActivity() {
 
                     composable<Route.LabelManager> {
                         LabelManagerScreen(
-                            filterManager = filterManager,
                             availableLabels = uiState.availableLabels,
                             isLoading = uiState.isLoading,
                             onBack = onSafeBack
@@ -76,7 +82,7 @@ class MainActivity : ComponentActivity() {
                     }
 
                     composable<Route.Alarms> {
-                        SettingsAlarmsScreen(filterManager, onBack = onSafeBack)
+                        SettingsAlarmsScreen(onBack = onSafeBack)
                     }
                 }
             }

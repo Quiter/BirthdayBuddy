@@ -3,8 +3,11 @@ package com.heckmannch.birthdaybuddy.data
 import android.content.Context
 import androidx.datastore.preferences.core.*
 import androidx.datastore.preferences.preferencesDataStore
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
+import javax.inject.Inject
+import javax.inject.Singleton
 
 private val Context.dataStore by preferencesDataStore(name = "settings")
 
@@ -23,7 +26,10 @@ data class UserPreferences(
     val isInitialized: Boolean
 )
 
-class FilterManager(private val context: Context) {
+@Singleton
+class FilterManager @Inject constructor(
+    @ApplicationContext private val context: Context
+) {
 
     private object Keys {
         val SELECTED_LABELS = stringSetPreferencesKey("selected_labels")
@@ -57,7 +63,6 @@ class FilterManager(private val context: Context) {
         )
     }
 
-    // Einzel-Flows für Abwärtskompatibilität und gezielte Beobachtung
     val selectedLabelsFlow = preferencesFlow.map { it.selectedLabels }
     val excludedLabelsFlow = preferencesFlow.map { it.excludedLabels }
     val hiddenDrawerLabelsFlow = preferencesFlow.map { it.hiddenDrawerLabels }
