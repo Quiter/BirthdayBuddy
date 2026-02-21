@@ -31,12 +31,12 @@ class BirthdayWorker(context: Context, workerParams: WorkerParameters) : Corouti
 
         // 2. Benachrichtigungen prüfen und ggf. anzeigen
         val allBirthdays = repository.allBirthdays.first()
-        val daysToNotify = filterManager.notificationDaysFlow.first()
+        val prefs = filterManager.preferencesFlow.first()
+        val daysToNotify = prefs.notificationDays
         
-        // NEU: Verwende die spezifischen Benachrichtigungsfilter
-        val selectedLabels = filterManager.notificationSelectedLabelsFlow.first()
-        val excludedLabels = filterManager.notificationExcludedLabelsFlow.first()
-        val globalExcludedLabels = filterManager.excludedLabelsFlow.first()
+        val selectedLabels = prefs.notificationSelectedLabels
+        val excludedLabels = prefs.notificationExcludedLabels
+        val globalExcludedLabels = prefs.excludedLabels
 
         allBirthdays.filter { contact ->
             // Prüfen, ob der Kontakt global oder spezifisch für Benachrichtigungen blockiert ist

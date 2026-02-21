@@ -3,29 +3,30 @@ package com.heckmannch.birthdaybuddy.ui.components
 import android.content.Intent
 import android.net.Uri
 import android.provider.ContactsContract
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
+import androidx.compose.animation.*
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Label
 import androidx.compose.material.icons.automirrored.outlined.Label
 import androidx.compose.material.icons.filled.*
-import androidx.compose.material.icons.outlined.AccountCircle
-import androidx.compose.material.icons.outlined.CalendarToday
-import androidx.compose.material.icons.outlined.People
-import androidx.compose.material.icons.outlined.Star
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.heckmannch.birthdaybuddy.R
 import com.heckmannch.birthdaybuddy.model.BirthdayContact
 
@@ -110,6 +111,11 @@ fun MainDrawerContent(
     val sysAll = stringResource(R.string.label_system_all)
     val sysStarred = stringResource(R.string.label_system_starred)
     
+    var labelsExpanded by rememberSaveable { mutableStateOf(true) }
+
+    val kidColors = listOf(Color(0xFF4285F4), Color(0xFFF06292), Color(0xFFFFB300), Color(0xFF4CAF50))
+    val headerBrush = Brush.linearGradient(kidColors)
+
     val sortedLabels = availableLabels
         .filterNot { hiddenDrawerLabels.contains(it) }
         .sortedWith(compareBy<String> {
@@ -120,73 +126,56 @@ fun MainDrawerContent(
             }
         }.thenBy { it })
 
-    ModalDrawerSheet {
+    ModalDrawerSheet(
+        modifier = Modifier.width(300.dp),
+        drawerShape = RoundedCornerShape(topEnd = 16.dp, bottomEnd = 16.dp)
+    ) {
+        // HEADER BEREICH (Exakt SolidExplorer Style)
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(200.dp)
+                .background(headerBrush)
+                .padding(start = 24.dp, end = 16.dp, bottom = 24.dp)
+        ) {
+            Row(
+                modifier = Modifier.fillMaxWidth().align(Alignment.BottomStart),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                // Titel in zwei Zeilen
+                Text(
+                    text = stringResource(R.string.drawer_title),
+                    style = MaterialTheme.typography.headlineLarge,
+                    fontWeight = FontWeight.Bold,
+                    color = Color.White,
+                    lineHeight = 38.sp,
+                    modifier = Modifier.weight(1f)
+                )
+                
+                // Einstellungen Icon (rechts neben dem Titel positioniert)
+                IconButton(
+                    onClick = onSettingsClick,
+                    modifier = Modifier.size(48.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Settings, 
+                        contentDescription = stringResource(R.string.drawer_settings), 
+                        tint = Color.White,
+                        modifier = Modifier.size(28.dp)
+                    )
+                }
+            }
+        }
+
         LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
                 .navigationBarsPadding(),
-            contentPadding = PaddingValues(bottom = 32.dp)
+            contentPadding = PaddingValues(vertical = 8.dp)
         ) {
+            // SCHNELLZUGRIFF
             item {
-                Text(
-                    stringResource(R.string.drawer_title),
-                    style = MaterialTheme.typography.headlineSmall,
-                    fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.padding(horizontal = 28.dp, vertical = 24.dp)
-                )
-                
-                Text(
-                    stringResource(R.string.drawer_labels_header),
-                    style = MaterialTheme.typography.labelLarge,
-                    color = MaterialTheme.colorScheme.secondary,
-                    modifier = Modifier.padding(horizontal = 28.dp, vertical = 8.dp)
-                )
-            }
-
-            if (sortedLabels.isEmpty()) {
-                item {
-                    Text(
-                        stringResource(R.string.drawer_no_labels),
-                        modifier = Modifier.padding(horizontal = 28.dp, vertical = 16.dp),
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                }
-            }
-
-            items(sortedLabels) { label ->
-                val isChecked = selectedLabels.contains(label)
-                val (displayText, icon) = when(label) {
-                    sysAll -> allLabel to if (isChecked) Icons.Default.People else Icons.Outlined.People
-                    sysStarred -> favoritesLabel to if (isChecked) Icons.Default.Star else Icons.Outlined.Star
-                    else -> label to if (isChecked) Icons.AutoMirrored.Filled.Label else Icons.AutoMirrored.Outlined.Label
-                }
-
-                NavigationDrawerItem(
-                    label = { 
-                        Text(
-                            displayText, 
-                            fontWeight = if (isChecked) FontWeight.Bold else FontWeight.Normal 
-                        ) 
-                    },
-                    selected = isChecked,
-                    onClick = { onLabelToggle(label, isChecked) },
-                    icon = { Icon(icon, contentDescription = null) },
-                    modifier = Modifier.padding(NavigationDrawerItemPadding),
-                    colors = NavigationDrawerItemDefaults.colors(
-                        selectedContainerColor = Color.Transparent,
-                        selectedIconColor = MaterialTheme.colorScheme.primary,
-                        selectedTextColor = MaterialTheme.colorScheme.primary,
-                        unselectedIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
-                        unselectedTextColor = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                )
-            }
-
-            item {
-                HorizontalDivider(modifier = Modifier.padding(vertical = 16.dp, horizontal = 28.dp))
-                
                 NavigationDrawerItem(
                     label = { Text(stringResource(R.string.drawer_calendar)) },
                     selected = false,
@@ -194,7 +183,7 @@ fun MainDrawerContent(
                         val intent = Intent(Intent.ACTION_VIEW).setData(Uri.parse("content://com.android.calendar/time/"))
                         context.startActivity(intent)
                     },
-                    icon = { Icon(Icons.Outlined.CalendarToday, contentDescription = null) },
+                    icon = { Icon(Icons.Default.CalendarToday, contentDescription = null) },
                     modifier = Modifier.padding(NavigationDrawerItemPadding)
                 )
                 
@@ -205,19 +194,74 @@ fun MainDrawerContent(
                         val intent = Intent(Intent.ACTION_VIEW, ContactsContract.Contacts.CONTENT_URI)
                         context.startActivity(intent)
                     },
-                    icon = { Icon(Icons.Outlined.AccountCircle, contentDescription = null) },
+                    icon = { Icon(Icons.Default.AccountCircle, contentDescription = null) },
                     modifier = Modifier.padding(NavigationDrawerItemPadding)
                 )
 
-                HorizontalDivider(modifier = Modifier.padding(vertical = 16.dp, horizontal = 28.dp))
-                
-                NavigationDrawerItem(
-                    label = { Text(stringResource(R.string.drawer_settings)) },
-                    selected = false,
-                    onClick = onSettingsClick,
-                    icon = { Icon(Icons.Default.Settings, contentDescription = null) },
-                    modifier = Modifier.padding(NavigationDrawerItemPadding)
+                HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp, horizontal = 16.dp))
+            }
+
+            // EINKLAPPBARE LABEL LISTE
+            item {
+                ListItem(
+                    headlineContent = { 
+                        Text(
+                            stringResource(R.string.drawer_labels_header).uppercase(),
+                            style = MaterialTheme.typography.labelLarge,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.primary
+                        ) 
+                    },
+                    trailingContent = {
+                        Icon(
+                            imageVector = if (labelsExpanded) Icons.Default.ExpandLess else Icons.Default.ExpandMore,
+                            contentDescription = null
+                        )
+                    },
+                    modifier = Modifier.clickable { labelsExpanded = !labelsExpanded }
                 )
+            }
+
+            if (labelsExpanded) {
+                if (sortedLabels.isEmpty()) {
+                    item {
+                        Text(
+                            stringResource(R.string.drawer_no_labels),
+                            modifier = Modifier.padding(horizontal = 28.dp, vertical = 16.dp),
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                }
+
+                items(sortedLabels) { label ->
+                    val isChecked = selectedLabels.contains(label)
+                    val (displayText, icon) = when(label) {
+                        sysAll -> allLabel to if (isChecked) Icons.Default.People else Icons.Default.PeopleOutline
+                        sysStarred -> favoritesLabel to if (isChecked) Icons.Default.Star else Icons.Default.StarOutline
+                        else -> label to if (isChecked) Icons.AutoMirrored.Filled.Label else Icons.AutoMirrored.Outlined.Label
+                    }
+
+                    NavigationDrawerItem(
+                        label = { 
+                            Text(
+                                text = displayText,
+                                fontWeight = if (isChecked) FontWeight.Bold else FontWeight.Normal 
+                            ) 
+                        },
+                        selected = isChecked,
+                        onClick = { onLabelToggle(label, isChecked) },
+                        icon = { Icon(icon, contentDescription = null) },
+                        modifier = Modifier.padding(NavigationDrawerItemPadding),
+                        colors = NavigationDrawerItemDefaults.colors(
+                            selectedContainerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.3f),
+                            selectedIconColor = MaterialTheme.colorScheme.primary,
+                            selectedTextColor = MaterialTheme.colorScheme.primary,
+                            unselectedIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                            unselectedTextColor = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    )
+                }
             }
         }
     }

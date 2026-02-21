@@ -13,7 +13,6 @@ import androidx.glance.appwidget.*
 import androidx.glance.appwidget.lazy.LazyColumn
 import androidx.glance.appwidget.lazy.items
 import androidx.glance.layout.*
-import androidx.glance.material3.ColorProviders
 import androidx.glance.text.FontWeight
 import androidx.glance.text.Text
 import androidx.glance.text.TextStyle
@@ -35,18 +34,15 @@ class BirthdayGlanceWidget : GlanceAppWidget() {
 
         val widgetDataFlow = combine(
             repository.allBirthdays,
-            filterManager.widgetSelectedLabelsFlow,
-            filterManager.excludedLabelsFlow, // Globale Exclude nutzen
-            filterManager.widgetExcludedLabelsFlow,
-            filterManager.widgetItemCountFlow
-        ) { contacts, selected, globalExcluded, widgetExcluded, count ->
+            filterManager.preferencesFlow
+        ) { contacts, prefs ->
             contacts.filter { contact ->
-                val isExcluded = contact.labels.any { globalExcluded.contains(it) || widgetExcluded.contains(it) }
-                val isSelected = selected.isEmpty() || contact.labels.any { selected.contains(it) }
+                val isExcluded = contact.labels.any { prefs.excludedLabels.contains(it) || prefs.widgetExcludedLabels.contains(it) }
+                val isSelected = prefs.widgetSelectedLabels.isEmpty() || contact.labels.any { prefs.widgetSelectedLabels.contains(it) }
                 !isExcluded && isSelected
             }
             .sortedBy { it.remainingDays }
-            .take(count)
+            .take(prefs.widgetItemCount)
         }
 
         provideContent {

@@ -1,67 +1,94 @@
 package com.heckmannch.birthdaybuddy.data
 
 import android.content.Context
-import androidx.datastore.preferences.core.booleanPreferencesKey
-import androidx.datastore.preferences.core.edit
-import androidx.datastore.preferences.core.intPreferencesKey
-import androidx.datastore.preferences.core.stringSetPreferencesKey
+import androidx.datastore.preferences.core.*
 import androidx.datastore.preferences.preferencesDataStore
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 
 private val Context.dataStore by preferencesDataStore(name = "settings")
 
-class FilterManager(val context: Context) {
+data class UserPreferences(
+    val selectedLabels: Set<String>,
+    val excludedLabels: Set<String>,
+    val hiddenDrawerLabels: Set<String>,
+    val widgetSelectedLabels: Set<String>,
+    val widgetExcludedLabels: Set<String>,
+    val notificationSelectedLabels: Set<String>,
+    val notificationExcludedLabels: Set<String>,
+    val notificationHour: Int,
+    val notificationMinute: Int,
+    val notificationDays: Set<String>,
+    val widgetItemCount: Int,
+    val isInitialized: Boolean
+)
 
-    private val SELECTED_LABELS_KEY = stringSetPreferencesKey("selected_labels")
-    private val WIDGET_SELECTED_LABELS_KEY = stringSetPreferencesKey("widget_selected_labels")
-    private val EXCLUDED_LABELS_KEY = stringSetPreferencesKey("excluded_labels")
-    private val WIDGET_EXCLUDED_LABELS_KEY = stringSetPreferencesKey("widget_excluded_labels")
-    private val HIDDEN_DRAWER_LABELS_KEY = stringSetPreferencesKey("hidden_drawer_labels")
-    private val NOTIFICATION_HOUR_KEY = intPreferencesKey("notification_hour")
-    private val NOTIFICATION_MINUTE_KEY = intPreferencesKey("notification_minute")
-    private val NOTIFICATION_DAYS_KEY = stringSetPreferencesKey("notification_days")
-    private val WIDGET_ITEM_COUNT_KEY = intPreferencesKey("widget_item_count")
-    
-    private val NOTIFICATION_SELECTED_LABELS_KEY = stringSetPreferencesKey("notification_selected_labels")
-    private val NOTIFICATION_EXCLUDED_LABELS_KEY = stringSetPreferencesKey("notification_excluded_labels")
-    
-    // Flag für die erste Initialisierung
-    private val IS_INITIALIZED_KEY = booleanPreferencesKey("is_initialized")
+class FilterManager(private val context: Context) {
 
-    val selectedLabelsFlow: Flow<Set<String>> = context.dataStore.data.map { it[SELECTED_LABELS_KEY] ?: emptySet() }
-    val excludedLabelsFlow: Flow<Set<String>> = context.dataStore.data.map { it[EXCLUDED_LABELS_KEY] ?: emptySet() }
-    val hiddenDrawerLabelsFlow: Flow<Set<String>> = context.dataStore.data.map { it[HIDDEN_DRAWER_LABELS_KEY] ?: emptySet() }
-    val notificationHourFlow: Flow<Int> = context.dataStore.data.map { it[NOTIFICATION_HOUR_KEY] ?: 9 }
-    val notificationMinuteFlow: Flow<Int> = context.dataStore.data.map { it[NOTIFICATION_MINUTE_KEY] ?: 0 }
-    val notificationDaysFlow: Flow<Set<String>> = context.dataStore.data.map { it[NOTIFICATION_DAYS_KEY] ?: setOf("0", "7") }
-    val widgetSelectedLabelsFlow: Flow<Set<String>> = context.dataStore.data.map { it[WIDGET_SELECTED_LABELS_KEY] ?: emptySet() }
-    val widgetExcludedLabelsFlow: Flow<Set<String>> = context.dataStore.data.map { it[WIDGET_EXCLUDED_LABELS_KEY] ?: emptySet() }
-    val widgetItemCountFlow: Flow<Int> = context.dataStore.data.map { it[WIDGET_ITEM_COUNT_KEY] ?: 3 }
-    
-    val notificationSelectedLabelsFlow: Flow<Set<String>> = context.dataStore.data.map { it[NOTIFICATION_SELECTED_LABELS_KEY] ?: emptySet() }
-    val notificationExcludedLabelsFlow: Flow<Set<String>> = context.dataStore.data.map { it[NOTIFICATION_EXCLUDED_LABELS_KEY] ?: emptySet() }
-    
-    val isInitializedFlow: Flow<Boolean> = context.dataStore.data.map { it[IS_INITIALIZED_KEY] ?: false }
-
-    suspend fun saveSelectedLabels(labels: Set<String>) { context.dataStore.edit { it[SELECTED_LABELS_KEY] = labels } }
-    suspend fun saveExcludedLabels(labels: Set<String>) { context.dataStore.edit { it[EXCLUDED_LABELS_KEY] = labels } }
-    suspend fun saveHiddenDrawerLabels(labels: Set<String>) { context.dataStore.edit { it[HIDDEN_DRAWER_LABELS_KEY] = labels } }
-    
-    suspend fun saveNotificationTime(hour: Int, minute: Int) { 
-        context.dataStore.edit { 
-            it[NOTIFICATION_HOUR_KEY] = hour
-            it[NOTIFICATION_MINUTE_KEY] = minute 
-        } 
+    private object Keys {
+        val SELECTED_LABELS = stringSetPreferencesKey("selected_labels")
+        val EXCLUDED_LABELS = stringSetPreferencesKey("excluded_labels")
+        val HIDDEN_DRAWER_LABELS = stringSetPreferencesKey("hidden_drawer_labels")
+        val WIDGET_SELECTED_LABELS = stringSetPreferencesKey("widget_selected_labels")
+        val WIDGET_EXCLUDED_LABELS = stringSetPreferencesKey("widget_excluded_labels")
+        val NOTIFICATION_SELECTED_LABELS = stringSetPreferencesKey("notification_selected_labels")
+        val NOTIFICATION_EXCLUDED_LABELS = stringSetPreferencesKey("notification_excluded_labels")
+        val NOTIFICATION_HOUR = intPreferencesKey("notification_hour")
+        val NOTIFICATION_MINUTE = intPreferencesKey("notification_minute")
+        val NOTIFICATION_DAYS = stringSetPreferencesKey("notification_days")
+        val WIDGET_ITEM_COUNT = intPreferencesKey("widget_item_count")
+        val IS_INITIALIZED = booleanPreferencesKey("is_initialized")
     }
 
-    suspend fun saveNotificationDays(days: Set<String>) { context.dataStore.edit { it[NOTIFICATION_DAYS_KEY] = days } }
-    suspend fun saveWidgetSelectedLabels(labels: Set<String>) { context.dataStore.edit { it[WIDGET_SELECTED_LABELS_KEY] = labels } }
-    suspend fun saveWidgetExcludedLabels(labels: Set<String>) { context.dataStore.edit { it[WIDGET_EXCLUDED_LABELS_KEY] = labels } }
-    suspend fun saveWidgetItemCount(count: Int) { context.dataStore.edit { it[WIDGET_ITEM_COUNT_KEY] = count } }
+    val preferencesFlow: Flow<UserPreferences> = context.dataStore.data.map { prefs ->
+        UserPreferences(
+            selectedLabels = prefs[Keys.SELECTED_LABELS] ?: emptySet(),
+            excludedLabels = prefs[Keys.EXCLUDED_LABELS] ?: emptySet(),
+            hiddenDrawerLabels = prefs[Keys.HIDDEN_DRAWER_LABELS] ?: emptySet(),
+            widgetSelectedLabels = prefs[Keys.WIDGET_SELECTED_LABELS] ?: emptySet(),
+            widgetExcludedLabels = prefs[Keys.WIDGET_EXCLUDED_LABELS] ?: emptySet(),
+            notificationSelectedLabels = prefs[Keys.NOTIFICATION_SELECTED_LABELS] ?: emptySet(),
+            notificationExcludedLabels = prefs[Keys.NOTIFICATION_EXCLUDED_LABELS] ?: emptySet(),
+            notificationHour = prefs[Keys.NOTIFICATION_HOUR] ?: 9,
+            notificationMinute = prefs[Keys.NOTIFICATION_MINUTE] ?: 0,
+            notificationDays = prefs[Keys.NOTIFICATION_DAYS] ?: setOf("0", "7"),
+            widgetItemCount = prefs[Keys.WIDGET_ITEM_COUNT] ?: 3,
+            isInitialized = prefs[Keys.IS_INITIALIZED] ?: false
+        )
+    }
+
+    // Einzel-Flows für Abwärtskompatibilität und gezielte Beobachtung
+    val selectedLabelsFlow = preferencesFlow.map { it.selectedLabels }
+    val excludedLabelsFlow = preferencesFlow.map { it.excludedLabels }
+    val hiddenDrawerLabelsFlow = preferencesFlow.map { it.hiddenDrawerLabels }
+    val widgetSelectedLabelsFlow = preferencesFlow.map { it.widgetSelectedLabels }
+    val widgetExcludedLabelsFlow = preferencesFlow.map { it.widgetExcludedLabels }
+    val notificationSelectedLabelsFlow = preferencesFlow.map { it.notificationSelectedLabels }
+    val notificationExcludedLabelsFlow = preferencesFlow.map { it.notificationExcludedLabels }
+    val notificationHourFlow = preferencesFlow.map { it.notificationHour }
+    val notificationMinuteFlow = preferencesFlow.map { it.notificationMinute }
+    val notificationDaysFlow = preferencesFlow.map { it.notificationDays }
+    val widgetItemCountFlow = preferencesFlow.map { it.widgetItemCount }
+    val isInitializedFlow = preferencesFlow.map { it.isInitialized }
+
+    suspend fun saveSelectedLabels(labels: Set<String>) = edit { it[Keys.SELECTED_LABELS] = labels }
+    suspend fun saveExcludedLabels(labels: Set<String>) = edit { it[Keys.EXCLUDED_LABELS] = labels }
+    suspend fun saveHiddenDrawerLabels(labels: Set<String>) = edit { it[Keys.HIDDEN_DRAWER_LABELS] = labels }
+    suspend fun saveWidgetSelectedLabels(labels: Set<String>) = edit { it[Keys.WIDGET_SELECTED_LABELS] = labels }
+    suspend fun saveWidgetExcludedLabels(labels: Set<String>) = edit { it[Keys.WIDGET_EXCLUDED_LABELS] = labels }
+    suspend fun saveNotificationSelectedLabels(labels: Set<String>) = edit { it[Keys.NOTIFICATION_SELECTED_LABELS] = labels }
+    suspend fun saveNotificationExcludedLabels(labels: Set<String>) = edit { it[Keys.NOTIFICATION_EXCLUDED_LABELS] = labels }
+    suspend fun saveWidgetItemCount(count: Int) = edit { it[Keys.WIDGET_ITEM_COUNT] = count }
+    suspend fun setInitialized(value: Boolean) = edit { it[Keys.IS_INITIALIZED] = value }
     
-    suspend fun saveNotificationSelectedLabels(labels: Set<String>) { context.dataStore.edit { it[NOTIFICATION_SELECTED_LABELS_KEY] = labels } }
-    suspend fun saveNotificationExcludedLabels(labels: Set<String>) { context.dataStore.edit { it[NOTIFICATION_EXCLUDED_LABELS_KEY] = labels } }
+    suspend fun saveNotificationTime(hour: Int, minute: Int) = context.dataStore.edit { 
+        it[Keys.NOTIFICATION_HOUR] = hour
+        it[Keys.NOTIFICATION_MINUTE] = minute 
+    }
     
-    suspend fun setInitialized(value: Boolean) { context.dataStore.edit { it[IS_INITIALIZED_KEY] = value } }
+    suspend fun saveNotificationDays(days: Set<String>) = edit { it[Keys.NOTIFICATION_DAYS] = days }
+
+    private suspend fun edit(action: (MutablePreferences) -> Unit) {
+        context.dataStore.edit { action(it) }
+    }
 }

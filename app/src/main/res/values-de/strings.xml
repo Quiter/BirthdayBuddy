@@ -10,7 +10,7 @@
     <string name="add_contact">Kontakt hinzufügen</string>
 
     <!-- Drawer / Navigation -->
-    <string name="drawer_title">Birthday Buddy</string>
+    <string name="drawer_title">Geburtstags\nBuddy</string>
     <string name="drawer_labels_header">Labels</string>
     <string name="drawer_reload_contacts">Kontakte synchronisieren</string>
     <string name="drawer_settings">Einstellungen</string>

@@ -37,32 +37,12 @@ fun SettingsMenuScreen(
     val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
 
     val widgetCount by filterManager.widgetItemCountFlow.collectAsState(initial = 3)
-    val syncStatus by mainViewModel.syncStatus.collectAsState()
-    val snackbarHostState = remember { SnackbarHostState() }
+    val versionName = getAppVersionName()
     
     var showCountDialog by remember { mutableStateOf(false) }
-    val versionName = getAppVersionName()
-
-    val successMsg = stringResource(R.string.sync_success)
-
-    // Status-Meldungen verarbeiten
-    LaunchedEffect(syncStatus) {
-        when (syncStatus) {
-            is SyncStatus.Success -> {
-                snackbarHostState.showSnackbar(successMsg)
-                mainViewModel.resetSyncStatus()
-            }
-            is SyncStatus.Error -> {
-                snackbarHostState.showSnackbar((syncStatus as SyncStatus.Error).message)
-                mainViewModel.resetSyncStatus()
-            }
-            else -> {}
-        }
-    }
 
     Scaffold(
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
-        snackbarHost = { SnackbarHost(snackbarHostState) },
         topBar = {
             LargeTopAppBar(
                 title = { Text(stringResource(R.string.settings_title)) },
@@ -89,18 +69,8 @@ fun SettingsMenuScreen(
                     icon = Icons.Default.Style, 
                     iconContainerColor = SettingsColorOrganisation,
                     isTop = true,
-                    isBottom = false
+                    isBottom = true
                 ) { onNavigate("settings_label_manager") }
-                
-                SettingsBlockRow(
-                    title = stringResource(R.string.drawer_reload_contacts), 
-                    subtitle = stringResource(R.string.sync_desc), 
-                    icon = Icons.Default.Refresh, 
-                    iconContainerColor = SettingsColorOrganisation,
-                    isTop = false,
-                    isBottom = true,
-                    showArrow = false
-                ) { mainViewModel.loadContacts() }
             }
 
             Spacer(modifier = Modifier.height(24.dp))
