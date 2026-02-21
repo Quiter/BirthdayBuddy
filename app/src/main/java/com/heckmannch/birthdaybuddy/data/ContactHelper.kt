@@ -4,6 +4,7 @@ import android.content.ContentUris
 import android.content.Context
 import android.net.Uri
 import android.provider.ContactsContract
+import com.heckmannch.birthdaybuddy.R
 import com.heckmannch.birthdaybuddy.model.BirthdayContact
 import com.heckmannch.birthdaybuddy.model.ContactActions
 import com.heckmannch.birthdaybuddy.utils.calculateAgeAndDays
@@ -60,14 +61,15 @@ fun fetchBirthdays(context: Context): List<BirthdayContact> {
     // 2. Batch-Abfrage für Labels und Aktionen
     val allLabels = getAllContactLabels(context, contactIds)
     val allActions = getAllContactActions(context, contactIds)
+    val defaultLabel = context.getString(R.string.label_none)
 
     for ((id, data) in tempContactsMap) {
         val (name, bday) = data
-        val photoUri = try {
-            ContentUris.withAppendedId(ContactsContract.Contacts.CONTENT_URI, id.toLong()).let {
-                Uri.withAppendedPath(it, ContactsContract.Contacts.Photo.CONTENT_DIRECTORY).toString()
-            }
-        } catch (e: Exception) { null }
+        
+        // Effiziente Generierung der Photo-URI
+        val photoUri = ContentUris.withAppendedId(ContactsContract.Contacts.CONTENT_URI, id.toLong()).let {
+            Uri.withAppendedPath(it, ContactsContract.Contacts.Photo.CONTENT_DIRECTORY).toString()
+        }
 
         val (age, remainingDays) = calculateAgeAndDays(bday)
         
@@ -75,7 +77,7 @@ fun fetchBirthdays(context: Context): List<BirthdayContact> {
             id = id,
             name = name,
             birthday = bday,
-            labels = allLabels[id] ?: listOf("Ohne Label"),
+            labels = allLabels[id] ?: listOf(defaultLabel),
             remainingDays = remainingDays,
             age = age,
             actions = allActions[id] ?: ContactActions(),
@@ -167,7 +169,13 @@ private fun getAllContactActions(context: Context, contactIds: Set<String>): Map
     }
 
     contactIds.forEach { id ->
-        resultMap[id] = ContactActions(phoneMap[id], emailMap[id], waSet.contains(id), sigSet.contains(id), tgSet.contains(id))
+        resultMap[id] = ContactActions(
+            phoneNumber = phoneMap[id],
+            email = emailMap[id],
+            hasWhatsApp = waSet.contains(id),
+            hasSignal = sigSet.contains(id),
+            hasTelegram = tgSet.contains(id)
+        )
     }
     return resultMap
 }
