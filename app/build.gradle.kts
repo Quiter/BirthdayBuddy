@@ -16,7 +16,7 @@ android {
         minSdk = 28
         targetSdk = 36
         versionCode = 3
-        versionName = "2.5.8"
+        versionName = "2.5.9"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -97,6 +97,9 @@ dependencies {
     // Glance (Widgets)
     implementation(libs.androidx.glance.appwidget)
     implementation(libs.androidx.glance.material3)
+
+    // Konfetti
+    implementation(libs.konfetti.compose)
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)

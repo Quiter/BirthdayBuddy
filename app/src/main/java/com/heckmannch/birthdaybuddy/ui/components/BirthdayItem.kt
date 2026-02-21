@@ -44,6 +44,11 @@ import coil.compose.AsyncImage
 import com.heckmannch.birthdaybuddy.R
 import com.heckmannch.birthdaybuddy.model.BirthdayContact
 import com.heckmannch.birthdaybuddy.utils.formatGermanDate
+import nl.dionsegijn.konfetti.compose.KonfettiView
+import nl.dionsegijn.konfetti.core.Party
+import nl.dionsegijn.konfetti.core.Position
+import nl.dionsegijn.konfetti.core.emitter.Emitter
+import java.util.concurrent.TimeUnit
 
 @Composable
 fun BirthdayItem(
@@ -60,6 +65,19 @@ fun BirthdayItem(
     val goldColor = Color(0xFFFFD700)
     val secondaryGold = Color(0xFFFBC02D)
 
+    // Konfetti-Konfiguration mit explizitem Cast zu Int (für ARGB Werte)
+    val party = remember {
+        Party(
+            speed = 0f,
+            maxSpeed = 30f,
+            damping = 0.9f,
+            spread = 360,
+            colors = listOf(0xFFFFD700.toInt(), 0xFF4285F4.toInt(), 0xFFF06292.toInt(), 0xFFFFB300.toInt()),
+            position = Position.Relative(0.5, 0.3),
+            emitter = Emitter(duration = 100, TimeUnit.MILLISECONDS).max(100)
+        )
+    }
+
     val birthdayModifier = when {
         isBirthdayToday -> Modifier.border(
             BorderStroke(2.dp, Brush.linearGradient(listOf(goldColor, secondaryGold))),
@@ -72,220 +90,230 @@ fun BirthdayItem(
         else -> Modifier
     }
 
-    ElevatedCard(
-        modifier = modifier
-            .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 6.dp)
-            .then(birthdayModifier)
-            .clickable {
-                keyboardController?.hide()
-                expanded = !expanded
-            },
-        colors = CardDefaults.elevatedCardColors(
-            containerColor = when {
-                isBirthdayToday -> if (isDark) Color(0xFF332D00) else Color(0xFFFFFDE7)
-                isSoon -> MaterialTheme.colorScheme.surfaceContainer
-                else -> MaterialTheme.colorScheme.surfaceContainerLow
-            }
-        )
-    ) {
-        Column(
-            modifier = Modifier.animateContentSize(
-                animationSpec = spring(
-                    dampingRatio = Spring.DampingRatioLowBouncy,
-                    stiffness = Spring.StiffnessLow
-                )
+    Box(modifier = Modifier.fillMaxWidth()) {
+        ElevatedCard(
+            modifier = modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp, vertical = 6.dp)
+                .then(birthdayModifier)
+                .clickable {
+                    keyboardController?.hide()
+                    expanded = !expanded
+                },
+            colors = CardDefaults.elevatedCardColors(
+                containerColor = when {
+                    isBirthdayToday -> if (isDark) Color(0xFF332D00) else Color(0xFFFFFDE7)
+                    isSoon -> MaterialTheme.colorScheme.surfaceContainer
+                    else -> MaterialTheme.colorScheme.surfaceContainerLow
+                }
             )
         ) {
-            ListItem(
-                colors = ListItemDefaults.colors(containerColor = Color.Transparent),
-                headlineContent = {
-                    Text(
-                        text = contact.name,
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.Bold
+            Column(
+                modifier = Modifier.animateContentSize(
+                    animationSpec = spring(
+                        dampingRatio = Spring.DampingRatioLowBouncy,
+                        stiffness = Spring.StiffnessLow
                     )
-                },
-                supportingContent = {
-                    Text(
-                        text = formatGermanDate(contact.birthday),
-                        style = MaterialTheme.typography.bodyMedium
-                    )
-                },
-                leadingContent = {
-                    AsyncImage(
-                        model = contact.photoUri,
-                        contentDescription = null,
-                        modifier = Modifier
-                            .size(48.dp)
-                            .clip(CircleShape)
-                            .background(MaterialTheme.colorScheme.surfaceVariant),
-                        contentScale = ContentScale.Crop,
-                        placeholder = rememberVectorPainter(Icons.Default.Person),
-                        error = rememberVectorPainter(Icons.Default.Person)
-                    )
-                },
-                trailingContent = {
-                    Column(horizontalAlignment = Alignment.End) {
+                )
+            ) {
+                ListItem(
+                    colors = ListItemDefaults.colors(containerColor = Color.Transparent),
+                    headlineContent = {
                         Text(
-                            text = buildAnnotatedString {
-                                append("Wird ")
-                                withStyle(SpanStyle(color = getAgeColorRaw(contact.age, isDark), fontWeight = FontWeight.Bold)) {
-                                    val ageText = if (contact.age < 0) "?" else "${contact.age}"
-                                    append(ageText)
-                                }
-                            },
-                            style = MaterialTheme.typography.bodyLarge
+                            text = contact.name,
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.Bold
                         )
-                        if (isBirthdayToday) {
-                            Row(verticalAlignment = Alignment.CenterVertically) {
-                                Icon(
-                                    Icons.Default.Cake,
-                                    contentDescription = null,
-                                    modifier = Modifier.size(16.dp),
-                                    tint = goldColor
-                                )
-                                Spacer(Modifier.width(4.dp))
-                                Text(
-                                    "HEUTE!",
-                                    style = MaterialTheme.typography.labelLarge,
-                                    color = if (isDark) goldColor else Color(0xFF827717),
-                                    fontWeight = FontWeight.ExtraBold
-                                )
-                            }
-                        } else {
+                    },
+                    supportingContent = {
+                        Text(
+                            text = formatGermanDate(contact.birthday),
+                            style = MaterialTheme.typography.bodyMedium
+                        )
+                    },
+                    leadingContent = {
+                        AsyncImage(
+                            model = contact.photoUri,
+                            contentDescription = null,
+                            modifier = Modifier
+                                .size(48.dp)
+                                .clip(CircleShape)
+                                .background(MaterialTheme.colorScheme.surfaceVariant),
+                            contentScale = ContentScale.Crop,
+                            placeholder = rememberVectorPainter(Icons.Default.Person),
+                            error = rememberVectorPainter(Icons.Default.Person)
+                        )
+                    },
+                    trailingContent = {
+                        Column(horizontalAlignment = Alignment.End) {
                             Text(
                                 text = buildAnnotatedString {
-                                    append("in ")
-                                    withStyle(SpanStyle(color = getDaysColorRaw(contact.remainingDays, isDark), fontWeight = FontWeight.SemiBold)) {
-                                        append("${contact.remainingDays}")
+                                    append("Wird ")
+                                    withStyle(SpanStyle(color = getAgeColorRaw(contact.age, isDark), fontWeight = FontWeight.Bold)) {
+                                        val ageText = if (contact.age < 0) "?" else "${contact.age}"
+                                        append(ageText)
                                     }
-                                    append(" Tagen")
                                 },
-                                style = MaterialTheme.typography.bodySmall
+                                style = MaterialTheme.typography.bodyLarge
                             )
+                            if (isBirthdayToday) {
+                                Row(verticalAlignment = Alignment.CenterVertically) {
+                                    Icon(
+                                        Icons.Default.Cake,
+                                        contentDescription = null,
+                                        modifier = Modifier.size(16.dp),
+                                        tint = goldColor
+                                    )
+                                    Spacer(Modifier.width(4.dp))
+                                    Text(
+                                        "HEUTE!",
+                                        style = MaterialTheme.typography.labelLarge,
+                                        color = if (isDark) goldColor else Color(0xFF827717),
+                                        fontWeight = FontWeight.ExtraBold
+                                    )
+                                }
+                            } else {
+                                Text(
+                                    text = buildAnnotatedString {
+                                        append("in ")
+                                        withStyle(SpanStyle(color = getDaysColorRaw(contact.remainingDays, isDark), fontWeight = FontWeight.SemiBold)) {
+                                            append("${contact.remainingDays}")
+                                        }
+                                        append(" Tagen")
+                                    },
+                                    style = MaterialTheme.typography.bodySmall
+                                )
+                            }
                         }
                     }
-                }
-            )
-
-            if (expanded) {
-                HorizontalDivider(
-                    modifier = Modifier.padding(horizontal = 16.dp),
-                    color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)
                 )
 
-                // Labels des Kontakts anzeigen
-                if (contact.labels.isNotEmpty()) {
-                    LazyRow(
+                if (expanded) {
+                    HorizontalDivider(
+                        modifier = Modifier.padding(horizontal = 16.dp),
+                        color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)
+                    )
+
+                    // Labels des Kontakts anzeigen
+                    if (contact.labels.isNotEmpty()) {
+                        LazyRow(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 16.dp, vertical = 8.dp),
+                            horizontalArrangement = Arrangement.spacedBy(4.dp)
+                        ) {
+                            items(contact.labels) { label ->
+                                SuggestionChip(
+                                    onClick = { },
+                                    label = { Text(label, style = MaterialTheme.typography.labelSmall) },
+                                    colors = SuggestionChipDefaults.suggestionChipColors(
+                                        containerColor = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.5f),
+                                        labelColor = MaterialTheme.colorScheme.onSecondaryContainer
+                                    ),
+                                    border = null
+                                )
+                            }
+                        }
+                    }
+
+                    Row(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(horizontal = 16.dp, vertical = 8.dp),
-                        horizontalArrangement = Arrangement.spacedBy(4.dp)
+                            .padding(bottom = 16.dp, start = 16.dp, end = 16.dp),
+                        horizontalArrangement = Arrangement.SpaceEvenly
                     ) {
-                        items(contact.labels) { label ->
-                            SuggestionChip(
-                                onClick = { },
-                                label = { Text(label, style = MaterialTheme.typography.labelSmall) },
-                                colors = SuggestionChipDefaults.suggestionChipColors(
-                                    containerColor = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.5f),
-                                    labelColor = MaterialTheme.colorScheme.onSecondaryContainer
-                                ),
-                                border = null
+                        val actions = contact.actions
+
+                        if (actions.phoneNumber != null) {
+                            FilledTonalIconButton(onClick = {
+                                context.startActivity(Intent(Intent.ACTION_DIAL, "tel:${actions.phoneNumber}".toUri()))
+                            }) {
+                                Icon(Icons.Default.Call, "Anrufen")
+                            }
+                            FilledTonalIconButton(onClick = {
+                                context.startActivity(Intent(Intent.ACTION_SENDTO, "smsto:${actions.phoneNumber}".toUri()))
+                            }) {
+                                Icon(Icons.AutoMirrored.Filled.Send, "SMS")
+                            }
+                        }
+
+                        if (actions.email != null) {
+                            FilledTonalIconButton(onClick = {
+                                context.startActivity(Intent(Intent.ACTION_SENDTO, "mailto:${actions.email}".toUri()))
+                            }) {
+                                Icon(Icons.Default.Email, "E-Mail")
+                            }
+                        }
+
+                        if (actions.hasWhatsApp && actions.phoneNumber != null) {
+                            MessengerButton(color = Color(0xFF25D366), iconRes = R.drawable.ic_whatsapp) {
+                                val cleanNumber = actions.phoneNumber.replace(Regex("[^0-9+]"), "")
+                                val intent = Intent(Intent.ACTION_VIEW, "https://wa.me/$cleanNumber".toUri()).apply {
+                                    setPackage("com.whatsapp")
+                                }
+                                try {
+                                    context.startActivity(intent)
+                                } catch (_: Exception) {
+                                    context.startActivity(Intent(Intent.ACTION_VIEW, "https://wa.me/$cleanNumber".toUri()))
+                                }
+                            }
+                        }
+
+                        if (actions.hasSignal && actions.phoneNumber != null) {
+                            MessengerButton(color = Color(0xFF3A76F0), iconRes = R.drawable.ic_signal) {
+                                val cleanNumber = actions.phoneNumber.replace(Regex("[^0-9+]"), "")
+                                val intent = Intent(Intent.ACTION_SENDTO, "smsto:$cleanNumber".toUri()).apply {
+                                    setPackage("org.thoughtcrime.securesms")
+                                }
+                                try {
+                                    context.startActivity(intent)
+                                } catch (_: Exception) {
+                                    try {
+                                        context.startActivity(Intent(Intent.ACTION_VIEW, "https://signal.me/#p/$cleanNumber".toUri()))
+                                    } catch (_: Exception) {
+                                        Toast.makeText(context, "Signal nicht gefunden", Toast.LENGTH_SHORT).show()
+                                    }
+                                }
+                            }
+                        }
+
+                        if (actions.hasTelegram && actions.phoneNumber != null) {
+                            MessengerButton(color = Color(0xFF0088CC), text = "TG") {
+                                val cleanNumber = actions.phoneNumber.replace(Regex("[^0-9+]"), "")
+                                val intent = Intent(Intent.ACTION_VIEW, "tg://msg?to=$cleanNumber".toUri()).apply {
+                                    setPackage("org.telegram.messenger")
+                                }
+                                try {
+                                    context.startActivity(intent)
+                                } catch (_: Exception) {
+                                    try {
+                                        context.startActivity(Intent(Intent.ACTION_VIEW, "tg://msg?to=$cleanNumber".toUri()))
+                                    } catch (_: Exception) {
+                                        Toast.makeText(context, "Telegram nicht gefunden", Toast.LENGTH_SHORT).show()
+                                    }
+                                }
+                            }
+                        }
+
+                        if (actions.phoneNumber == null && actions.email == null && !actions.hasWhatsApp && !actions.hasSignal && !actions.hasTelegram) {
+                            Text(
+                                "Keine Kontaktdaten",
+                                style = MaterialTheme.typography.labelMedium,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                modifier = Modifier.padding(vertical = 8.dp)
                             )
                         }
-                    }
-                }
-
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(bottom = 16.dp, start = 16.dp, end = 16.dp),
-                    horizontalArrangement = Arrangement.SpaceEvenly
-                ) {
-                    val actions = contact.actions
-
-                    if (actions.phoneNumber != null) {
-                        FilledTonalIconButton(onClick = {
-                            context.startActivity(Intent(Intent.ACTION_DIAL, "tel:${actions.phoneNumber}".toUri()))
-                        }) {
-                            Icon(Icons.Default.Call, "Anrufen")
-                        }
-                        FilledTonalIconButton(onClick = {
-                            context.startActivity(Intent(Intent.ACTION_SENDTO, "smsto:${actions.phoneNumber}".toUri()))
-                        }) {
-                            Icon(Icons.AutoMirrored.Filled.Send, "SMS")
-                        }
-                    }
-
-                    if (actions.email != null) {
-                        FilledTonalIconButton(onClick = {
-                            context.startActivity(Intent(Intent.ACTION_SENDTO, "mailto:${actions.email}".toUri()))
-                        }) {
-                            Icon(Icons.Default.Email, "E-Mail")
-                        }
-                    }
-
-                    if (actions.hasWhatsApp && actions.phoneNumber != null) {
-                        MessengerButton(color = Color(0xFF25D366), iconRes = R.drawable.ic_whatsapp) {
-                            val cleanNumber = actions.phoneNumber.replace(Regex("[^0-9+]"), "")
-                            val intent = Intent(Intent.ACTION_VIEW, "https://wa.me/$cleanNumber".toUri()).apply {
-                                setPackage("com.whatsapp")
-                            }
-                            try {
-                                context.startActivity(intent)
-                            } catch (_: Exception) {
-                                context.startActivity(Intent(Intent.ACTION_VIEW, "https://wa.me/$cleanNumber".toUri()))
-                            }
-                        }
-                    }
-
-                    if (actions.hasSignal && actions.phoneNumber != null) {
-                        MessengerButton(color = Color(0xFF3A76F0), iconRes = R.drawable.ic_signal) {
-                            val cleanNumber = actions.phoneNumber.replace(Regex("[^0-9+]"), "")
-                            val intent = Intent(Intent.ACTION_SENDTO, "smsto:$cleanNumber".toUri()).apply {
-                                setPackage("org.thoughtcrime.securesms")
-                            }
-                            try {
-                                context.startActivity(intent)
-                            } catch (_: Exception) {
-                                try {
-                                    context.startActivity(Intent(Intent.ACTION_VIEW, "https://signal.me/#p/$cleanNumber".toUri()))
-                                } catch (_: Exception) {
-                                    Toast.makeText(context, "Signal nicht gefunden", Toast.LENGTH_SHORT).show()
-                                }
-                            }
-                        }
-                    }
-
-                    if (actions.hasTelegram && actions.phoneNumber != null) {
-                        MessengerButton(color = Color(0xFF0088CC), text = "TG") {
-                            val cleanNumber = actions.phoneNumber.replace(Regex("[^0-9+]"), "")
-                            val intent = Intent(Intent.ACTION_VIEW, "tg://msg?to=$cleanNumber".toUri()).apply {
-                                setPackage("org.telegram.messenger")
-                            }
-                            try {
-                                context.startActivity(intent)
-                            } catch (_: Exception) {
-                                try {
-                                    context.startActivity(Intent(Intent.ACTION_VIEW, "tg://msg?to=$cleanNumber".toUri()))
-                                } catch (_: Exception) {
-                                    Toast.makeText(context, "Telegram nicht gefunden", Toast.LENGTH_SHORT).show()
-                                }
-                            }
-                        }
-                    }
-
-                    if (actions.phoneNumber == null && actions.email == null && !actions.hasWhatsApp && !actions.hasSignal && !actions.hasTelegram) {
-                        Text(
-                            "Keine Kontaktdaten",
-                            style = MaterialTheme.typography.labelMedium,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            modifier = Modifier.padding(vertical = 8.dp)
-                        )
                     }
                 }
             }
+        }
+
+        // Konfetti über der Karte anzeigen, wenn heute Geburtstag ist und die Karte aufgeklappt wurde
+        if (isBirthdayToday && expanded) {
+            KonfettiView(
+                modifier = Modifier.matchParentSize(),
+                parties = listOf(party)
+            )
         }
     }
 }
@@ -316,7 +344,6 @@ private fun getAgeColorRaw(age: Int, isDark: Boolean): Color {
     val youngColor = if (isDark) Color(0xFFFFA4A4) else Color(0xFFFF5252)
     val oldColor = if (isDark) Color(0xFFD32F2F) else Color(0xFF8B0000)
     
-    // Wenn das Alter unbekannt (-1) ist, nehmen wir den Wert für 50 Jahre (0.5)
     val ageValue = if (age < 0) 50 else age
     val fraction = (ageValue.coerceIn(0, 100) / 100f)
     return lerp(youngColor, oldColor, fraction)
