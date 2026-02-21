@@ -181,13 +181,15 @@ fun LabelManagerScreen(
                                     }
                                 }
                             },
-                            onToggleBlock = {
-                                scope.launch {
-                                    val newGlobal = globalExcluded.toMutableSet()
-                                    if (isBlockedGlobal) newGlobal.remove(label) else newGlobal.add(label)
-                                    filterManager.saveExcludedLabels(newGlobal)
+                            onToggleBlock = if (label != "My Contacts") {
+                                {
+                                    scope.launch {
+                                        val newGlobal = globalExcluded.toMutableSet()
+                                        if (isBlockedGlobal) newGlobal.remove(label) else newGlobal.add(label)
+                                        filterManager.saveExcludedLabels(newGlobal)
+                                    }
                                 }
-                            }
+                            } else null
                         )
                         HorizontalDivider(
                             modifier = Modifier.padding(horizontal = 16.dp),
@@ -209,7 +211,7 @@ fun LabelManagerRow(
     isVisible: Boolean,
     isBlockedGlobal: Boolean,
     onToggleVisibility: () -> Unit,
-    onToggleBlock: () -> Unit
+    onToggleBlock: (() -> Unit)? = null
 ) {
     ListItem(
         modifier = Modifier
@@ -250,14 +252,16 @@ fun LabelManagerRow(
                     )
                 }
                 
-                VerticalDivider(modifier = Modifier.height(24.dp).padding(horizontal = 4.dp))
-                
-                IconButton(onClick = onToggleBlock) {
-                    Icon(
-                        imageVector = Icons.Default.Block,
-                        contentDescription = null,
-                        tint = if (isBlockedGlobal) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.outline
-                    )
+                if (onToggleBlock != null) {
+                    VerticalDivider(modifier = Modifier.height(24.dp).padding(horizontal = 4.dp))
+                    
+                    IconButton(onClick = onToggleBlock) {
+                        Icon(
+                            imageVector = Icons.Default.Block,
+                            contentDescription = null,
+                            tint = if (isBlockedGlobal) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.outline
+                        )
+                    }
                 }
             }
         }

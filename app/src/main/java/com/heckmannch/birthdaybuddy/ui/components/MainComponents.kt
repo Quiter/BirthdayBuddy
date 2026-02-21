@@ -1,5 +1,8 @@
 package com.heckmannch.birthdaybuddy.ui.components
 
+import android.content.Intent
+import android.net.Uri
+import android.provider.ContactsContract
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -11,12 +14,15 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Label
 import androidx.compose.material.icons.automirrored.outlined.Label
 import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.outlined.AccountCircle
+import androidx.compose.material.icons.outlined.CalendarToday
 import androidx.compose.material.icons.outlined.People
 import androidx.compose.material.icons.outlined.Star
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -98,6 +104,7 @@ fun MainDrawerContent(
     onLabelToggle: (String, Boolean) -> Unit,
     onSettingsClick: () -> Unit
 ) {
+    val context = LocalContext.current
     val allLabel = stringResource(R.string.label_all)
     val favoritesLabel = stringResource(R.string.label_favorites)
     
@@ -176,6 +183,30 @@ fun MainDrawerContent(
             }
 
             item {
+                HorizontalDivider(modifier = Modifier.padding(vertical = 16.dp, horizontal = 28.dp))
+                
+                NavigationDrawerItem(
+                    label = { Text(stringResource(R.string.drawer_calendar)) },
+                    selected = false,
+                    onClick = {
+                        val intent = Intent(Intent.ACTION_VIEW).setData(Uri.parse("content://com.android.calendar/time/"))
+                        context.startActivity(intent)
+                    },
+                    icon = { Icon(Icons.Outlined.CalendarToday, contentDescription = null) },
+                    modifier = Modifier.padding(NavigationDrawerItemPadding)
+                )
+                
+                NavigationDrawerItem(
+                    label = { Text(stringResource(R.string.drawer_contacts)) },
+                    selected = false,
+                    onClick = {
+                        val intent = Intent(Intent.ACTION_VIEW, ContactsContract.Contacts.CONTENT_URI)
+                        context.startActivity(intent)
+                    },
+                    icon = { Icon(Icons.Outlined.AccountCircle, contentDescription = null) },
+                    modifier = Modifier.padding(NavigationDrawerItemPadding)
+                )
+
                 HorizontalDivider(modifier = Modifier.padding(vertical = 16.dp, horizontal = 28.dp))
                 
                 NavigationDrawerItem(

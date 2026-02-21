@@ -63,23 +63,37 @@ fun BirthdayItem(
     val isBirthdayToday = contact.remainingDays == 0
     val isSoon = contact.remainingDays in 1..7
     
-    // Prüfen ob besonderer Meilenstein (1. Geburtstag oder durch 10 teilbar)
-    val isRoundBirthday = contact.age > 0 && (contact.age % 10 == 0 || contact.age == 1)
+    // Meilensteine differenzieren
+    val isFirstBirthday = contact.age == 1
+    val isRoundBirthday = contact.age > 0 && contact.age % 10 == 0
 
+    // Farben definieren
     val goldColor = Color(0xFFFFD700)
     val secondaryGold = Color(0xFFFBC02D)
     val silverColor = Color(0xFFC0C0C0)
     val secondarySilver = Color(0xFFE0E0E0)
+    
+    // Bunte Farben für den 1. Geburtstag
+    val kidColors = listOf(Color(0xFF4285F4), Color(0xFFF06292), Color(0xFFFFB300), Color(0xFF4CAF50))
 
-    val currentThemeColor = if (isRoundBirthday) goldColor else silverColor
-    val currentSecondaryColor = if (isRoundBirthday) secondaryGold else secondarySilver
+    val borderBrush = when {
+        isFirstBirthday -> Brush.linearGradient(kidColors)
+        isRoundBirthday -> Brush.linearGradient(listOf(goldColor, secondaryGold))
+        else -> Brush.linearGradient(listOf(silverColor, secondarySilver))
+    }
+
+    val todayLabelColor = when {
+        isFirstBirthday -> Color(0xFF4285F4)
+        isRoundBirthday -> goldColor
+        else -> silverColor
+    }
 
     // Konfetti-Konfiguration
-    val party = remember(isRoundBirthday) {
-        val colors = if (isRoundBirthday) {
-            listOf(0xFFFFD700.toInt(), 0xFF4285F4.toInt(), 0xFFF06292.toInt(), 0xFFFFB300.toInt())
-        } else {
-            listOf(0xFFC0C0C0.toInt(), 0xFFE0E0E0.toInt(), 0xFFFFFFFF.toInt(), 0xFF9E9E9E.toInt())
+    val party = remember(isFirstBirthday, isRoundBirthday) {
+        val colors = when {
+            isFirstBirthday -> kidColors.map { it.hashCode() }
+            isRoundBirthday -> listOf(0xFFFFD700.toInt(), 0xFFFFE082.toInt(), 0xFFB8860B.toInt()) // Reines Gold-Konfetti
+            else -> listOf(0xFFC0C0C0.toInt(), 0xFFE0E0E0.toInt(), 0xFFFFFFFF.toInt(), 0xFF9E9E9E.toInt())
         }
         Party(
             speed = 0f,
@@ -92,17 +106,11 @@ fun BirthdayItem(
         )
     }
 
-    val birthdayModifier = when {
-        isBirthdayToday -> Modifier.border(
-            BorderStroke(2.dp, Brush.linearGradient(listOf(currentThemeColor, currentSecondaryColor))),
-            shape = CardDefaults.elevatedShape
-        )
-        isSoon -> Modifier.border(
-            BorderStroke(1.dp, MaterialTheme.colorScheme.primaryContainer),
-            shape = CardDefaults.elevatedShape
-        )
-        else -> Modifier
-    }
+    val birthdayModifier = if (isBirthdayToday) {
+        Modifier.border(BorderStroke(2.dp, borderBrush), shape = CardDefaults.elevatedShape)
+    } else if (isSoon) {
+        Modifier.border(BorderStroke(1.dp, MaterialTheme.colorScheme.primaryContainer), shape = CardDefaults.elevatedShape)
+    } else Modifier
 
     Box(modifier = Modifier.fillMaxWidth()) {
         ElevatedCard(
@@ -117,10 +125,10 @@ fun BirthdayItem(
             colors = CardDefaults.elevatedCardColors(
                 containerColor = when {
                     isBirthdayToday -> {
-                        if (isRoundBirthday) {
-                            if (isDark) Color(0xFF332D00) else Color(0xFFFFFDE7)
-                        } else {
-                            if (isDark) Color(0xFF2C2C2C) else Color(0xFFF5F5F5)
+                        when {
+                            isFirstBirthday -> if (isDark) Color(0xFF0D1B2A) else Color(0xFFE3F2FD)
+                            isRoundBirthday -> if (isDark) Color(0xFF332D00) else Color(0xFFFFFDE7)
+                            else -> if (isDark) Color(0xFF2C2C2C) else Color(0xFFF5F5F5)
                         }
                     }
                     isSoon -> MaterialTheme.colorScheme.surfaceContainer
@@ -182,13 +190,13 @@ fun BirthdayItem(
                                         Icons.Default.Cake,
                                         contentDescription = null,
                                         modifier = Modifier.size(16.dp),
-                                        tint = currentThemeColor
+                                        tint = todayLabelColor
                                     )
                                     Spacer(Modifier.width(4.dp))
                                     Text(
                                         "HEUTE!",
                                         style = MaterialTheme.typography.labelLarge,
-                                        color = if (isDark) currentThemeColor else (if (isRoundBirthday) Color(0xFF827717) else Color(0xFF616161)),
+                                        color = if (isDark) todayLabelColor else (if (isFirstBirthday) Color(0xFF1976D2) else if (isRoundBirthday) Color(0xFF827717) else Color(0xFF616161)),
                                         fontWeight = FontWeight.ExtraBold
                                     )
                                 }
