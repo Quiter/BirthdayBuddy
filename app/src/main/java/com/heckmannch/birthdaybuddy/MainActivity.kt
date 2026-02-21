@@ -5,6 +5,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.runtime.*
+import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -34,10 +35,21 @@ class MainActivity : ComponentActivity() {
                 val container = (application as BirthdayApplication).container
                 val filterManager = container.filterManager
 
+                // Sicherer Back-Call um Double-Taps zu verhindern, die den Stack leeren
+                val onSafeBack = {
+                    if (navController.currentBackStackEntry?.lifecycle?.currentState == Lifecycle.State.RESUMED) {
+                        navController.popBackStack()
+                    }
+                }
+
                 NavHost(navController = navController, startDestination = Route.Main) {
                     
                     composable<Route.Main> { 
-                        MainScreen(mainViewModel, filterManager) { navController.navigate(Route.Settings) } 
+                        MainScreen(mainViewModel, filterManager) { 
+                            navController.navigate(Route.Settings) {
+                                launchSingleTop = true
+                            } 
+                        } 
                     }
 
                     composable<Route.Settings> { 
@@ -49,9 +61,11 @@ class MainActivity : ComponentActivity() {
                                     "settings_label_manager" -> Route.LabelManager
                                     else -> Route.Main
                                 }
-                                navController.navigate(target)
+                                navController.navigate(target) {
+                                    launchSingleTop = true
+                                }
                             }, 
-                            onBack = { navController.popBackStack() }
+                            onBack = onSafeBack
                         ) 
                     }
 
@@ -60,12 +74,12 @@ class MainActivity : ComponentActivity() {
                             filterManager = filterManager,
                             availableLabels = uiState.availableLabels,
                             isLoading = uiState.isLoading,
-                            onBack = { navController.popBackStack() }
+                            onBack = onSafeBack
                         )
                     }
 
                     composable<Route.Alarms> {
-                        SettingsAlarmsScreen(filterManager) { navController.popBackStack() }
+                        SettingsAlarmsScreen(filterManager, onBack = onSafeBack)
                     }
                 }
             }

@@ -34,6 +34,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
@@ -63,8 +64,8 @@ fun BirthdayItem(
     val isBirthdayToday = contact.remainingDays == 0
     val isSoon = contact.remainingDays in 1..7
     
-    // Meilensteine differenzieren
-    val isFirstBirthday = contact.age == 1
+    // Meilensteine differenzieren: Kinder (1-9), Runde (10, 20...), Andere
+    val isKidBirthday = contact.age in 1..9
     val isRoundBirthday = contact.age > 0 && contact.age % 10 == 0
 
     // Farben definieren
@@ -73,26 +74,26 @@ fun BirthdayItem(
     val silverColor = Color(0xFFC0C0C0)
     val secondarySilver = Color(0xFFE0E0E0)
     
-    // Bunte Farben für den 1. Geburtstag
+    // Bunte Farben für Kindergeburtstage
     val kidColors = listOf(Color(0xFF4285F4), Color(0xFFF06292), Color(0xFFFFB300), Color(0xFF4CAF50))
 
     val borderBrush = when {
-        isFirstBirthday -> Brush.linearGradient(kidColors)
+        isKidBirthday -> Brush.linearGradient(kidColors)
         isRoundBirthday -> Brush.linearGradient(listOf(goldColor, secondaryGold))
         else -> Brush.linearGradient(listOf(silverColor, secondarySilver))
     }
 
     val todayLabelColor = when {
-        isFirstBirthday -> Color(0xFF4285F4)
+        isKidBirthday -> Color(0xFF4285F4)
         isRoundBirthday -> goldColor
         else -> silverColor
     }
 
     // Konfetti-Konfiguration
-    val party = remember(isFirstBirthday, isRoundBirthday) {
+    val party = remember(isKidBirthday, isRoundBirthday) {
         val colors = when {
-            isFirstBirthday -> kidColors.map { it.hashCode() }
-            isRoundBirthday -> listOf(0xFFFFD700.toInt(), 0xFFFFE082.toInt(), 0xFFB8860B.toInt()) // Reines Gold-Konfetti
+            isKidBirthday -> kidColors.map { it.hashCode() }
+            isRoundBirthday -> listOf(0xFFFFD700.toInt(), 0xFFFFE082.toInt(), 0xFFB8860B.toInt())
             else -> listOf(0xFFC0C0C0.toInt(), 0xFFE0E0E0.toInt(), 0xFFFFFFFF.toInt(), 0xFF9E9E9E.toInt())
         }
         Party(
@@ -126,7 +127,7 @@ fun BirthdayItem(
                 containerColor = when {
                     isBirthdayToday -> {
                         when {
-                            isFirstBirthday -> if (isDark) Color(0xFF0D1B2A) else Color(0xFFE3F2FD)
+                            isKidBirthday -> if (isDark) Color(0xFF0D1B2A) else Color(0xFFE3F2FD)
                             isRoundBirthday -> if (isDark) Color(0xFF332D00) else Color(0xFFFFFDE7)
                             else -> if (isDark) Color(0xFF2C2C2C) else Color(0xFFF5F5F5)
                         }
@@ -196,7 +197,7 @@ fun BirthdayItem(
                                     Text(
                                         "HEUTE!",
                                         style = MaterialTheme.typography.labelLarge,
-                                        color = if (isDark) todayLabelColor else (if (isFirstBirthday) Color(0xFF1976D2) else if (isRoundBirthday) Color(0xFF827717) else Color(0xFF616161)),
+                                        color = if (isDark) todayLabelColor else (if (isKidBirthday) Color(0xFF1976D2) else if (isRoundBirthday) Color(0xFF827717) else Color(0xFF616161)),
                                         fontWeight = FontWeight.ExtraBold
                                     )
                                 }
@@ -273,10 +274,11 @@ fun BirthdayItem(
                         }
 
                         if (actions.email != null) {
+                            val shareSubject = context.getString(R.string.share_subject)
                             FilledTonalIconButton(onClick = {
                                 val intent = Intent(Intent.ACTION_SENDTO, "mailto:${actions.email}".toUri()).apply {
                                     if (isBirthdayToday) {
-                                        putExtra(Intent.EXTRA_SUBJECT, "Herzlichen Glückwunsch zum Geburtstag!")
+                                        putExtra(Intent.EXTRA_SUBJECT, shareSubject)
                                         putExtra(Intent.EXTRA_TEXT, greetingText)
                                     }
                                 }
@@ -306,6 +308,7 @@ fun BirthdayItem(
                         }
 
                         if (actions.hasSignal && actions.phoneNumber != null) {
+                            val msgSignalNotFound = context.getString(R.string.error_app_not_found, "Signal")
                             MessengerButton(color = Color(0xFF3A76F0), iconRes = R.drawable.ic_signal) {
                                 val cleanNumber = actions.phoneNumber.replace(Regex("[^0-9+]"), "")
                                 val intent = Intent(Intent.ACTION_SENDTO, "smsto:$cleanNumber".toUri()).apply {
@@ -319,13 +322,14 @@ fun BirthdayItem(
                                     try {
                                         context.startActivity(Intent(Intent.ACTION_VIEW, signalUrl.toUri()))
                                     } catch (_: Exception) {
-                                        Toast.makeText(context, "Signal nicht gefunden", Toast.LENGTH_SHORT).show()
+                                        Toast.makeText(context, msgSignalNotFound, Toast.LENGTH_SHORT).show()
                                     }
                                 }
                             }
                         }
 
                         if (actions.hasTelegram && actions.phoneNumber != null) {
+                            val msgTelegramNotFound = context.getString(R.string.error_app_not_found, "Telegram")
                             MessengerButton(color = Color(0xFF0088CC), text = "TG") {
                                 val cleanNumber = actions.phoneNumber.replace(Regex("[^0-9+]"), "")
                                 val url = if (isBirthdayToday) {
@@ -342,15 +346,16 @@ fun BirthdayItem(
                                     try {
                                         context.startActivity(Intent(Intent.ACTION_VIEW, url.toUri()))
                                     } catch (_: Exception) {
-                                        Toast.makeText(context, "Telegram nicht gefunden", Toast.LENGTH_SHORT).show()
+                                        Toast.makeText(context, msgTelegramNotFound, Toast.LENGTH_SHORT).show()
                                     }
                                 }
                             }
                         }
 
                         if (actions.phoneNumber == null && actions.email == null && !actions.hasWhatsApp && !actions.hasSignal && !actions.hasTelegram) {
+                            val errorNoContact = stringResource(R.string.error_no_contact_data)
                             Text(
-                                "Keine Kontaktdaten",
+                                errorNoContact,
                                 style = MaterialTheme.typography.labelMedium,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                                 modifier = Modifier.padding(vertical = 8.dp)

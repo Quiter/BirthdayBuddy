@@ -56,7 +56,7 @@ fun MainSearchBar(
                     IconButton(onClick = onMenuClick) {
                         Icon(
                             Icons.Default.Menu, 
-                            contentDescription = "Menü öffnen",
+                            contentDescription = stringResource(R.string.drawer_menu_open),
                             tint = MaterialTheme.colorScheme.primary
                         )
                     }
@@ -68,7 +68,7 @@ fun MainSearchBar(
                         exit = fadeOut()
                     ) {
                         IconButton(onClick = { onQueryChange("") }) {
-                            Icon(Icons.Default.Clear, contentDescription = "Suche löschen")
+                            Icon(Icons.Default.Clear, contentDescription = stringResource(R.string.drawer_search_clear))
                         }
                     }
                 },
@@ -107,13 +107,15 @@ fun MainDrawerContent(
     val context = LocalContext.current
     val allLabel = stringResource(R.string.label_all)
     val favoritesLabel = stringResource(R.string.label_favorites)
+    val sysAll = stringResource(R.string.label_system_all)
+    val sysStarred = stringResource(R.string.label_system_starred)
     
     val sortedLabels = availableLabels
         .filterNot { hiddenDrawerLabels.contains(it) }
         .sortedWith(compareBy<String> {
             when (it) {
-                "My Contacts" -> 0
-                "Starred in Android" -> 1
+                sysAll -> 0
+                sysStarred -> 1
                 else -> 2
             }
         }.thenBy { it })
@@ -127,7 +129,7 @@ fun MainDrawerContent(
         ) {
             item {
                 Text(
-                    "Birthday Buddy",
+                    stringResource(R.string.drawer_title),
                     style = MaterialTheme.typography.headlineSmall,
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.primary,
@@ -156,8 +158,8 @@ fun MainDrawerContent(
             items(sortedLabels) { label ->
                 val isChecked = selectedLabels.contains(label)
                 val (displayText, icon) = when(label) {
-                    "My Contacts" -> allLabel to if (isChecked) Icons.Default.People else Icons.Outlined.People
-                    "Starred in Android" -> favoritesLabel to if (isChecked) Icons.Default.Star else Icons.Outlined.Star
+                    sysAll -> allLabel to if (isChecked) Icons.Default.People else Icons.Outlined.People
+                    sysStarred -> favoritesLabel to if (isChecked) Icons.Default.Star else Icons.Outlined.Star
                     else -> label to if (isChecked) Icons.AutoMirrored.Filled.Label else Icons.AutoMirrored.Outlined.Label
                 }
 

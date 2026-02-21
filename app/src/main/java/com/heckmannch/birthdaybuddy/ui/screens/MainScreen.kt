@@ -14,6 +14,7 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.*
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -29,6 +30,7 @@ import com.heckmannch.birthdaybuddy.ui.components.*
 import com.heckmannch.birthdaybuddy.data.FilterManager
 import kotlinx.coroutines.launch
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MainScreen(
     mainViewModel: MainViewModel,
@@ -145,19 +147,26 @@ fun MainScreen(
                             Text(stringResource(R.string.open_settings))
                         }
                     }
-                } else if (uiState.isLoading) {
-                    CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
-                } else if (uiState.contacts.isEmpty()) {
-                    Text(
-                        text = stringResource(R.string.main_no_birthdays),
-                        modifier = Modifier.align(Alignment.Center),
-                        style = MaterialTheme.typography.bodyLarge
-                    )
                 } else {
-                    BirthdayList(
-                        contacts = uiState.contacts, 
-                        listState = listState
-                    )
+                    // Pull to Refresh Implementation
+                    PullToRefreshBox(
+                        isRefreshing = uiState.isLoading,
+                        onRefresh = { mainViewModel.loadContacts() },
+                        modifier = Modifier.fillMaxSize()
+                    ) {
+                        if (uiState.contacts.isEmpty() && !uiState.isLoading) {
+                            Text(
+                                text = stringResource(R.string.main_no_birthdays),
+                                modifier = Modifier.align(Alignment.Center),
+                                style = MaterialTheme.typography.bodyLarge
+                            )
+                        } else {
+                            BirthdayList(
+                                contacts = uiState.contacts, 
+                                listState = listState
+                            )
+                        }
+                    }
                 }
             }
         }

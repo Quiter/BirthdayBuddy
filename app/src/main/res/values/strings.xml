@@ -17,6 +17,8 @@
     <string name="drawer_no_labels">No labels available</string>
     <string name="drawer_contacts">Contacts</string>
     <string name="drawer_calendar">Calendar</string>
+    <string name="drawer_menu_open">Open menu</string>
+    <string name="drawer_search_clear">Clear search</string>
 
     <!-- Notification -->
     <string name="notification_channel_name">Birthday Reminders</string>
@@ -44,6 +46,8 @@
     <string name="settings_notifications_exclude_title">Filter: Exclude</string>
 
     <string name="footer_slogan">Made with ❤ in Dortmund</string>
+    <string name="settings_github_project">GitHub Project</string>
+    <string name="version_label">Version %1$s</string>
 
     <!-- Labels Selection -->
     <string name="label_selection_save">Save</string>
@@ -108,6 +112,7 @@
     <!-- Standard Labels -->
     <string name="label_all">All</string>
     <string name="label_favorites">Favorites</string>
+    <string name="label_none">Unlabeled</string>
 
     <!-- Widget -->
     <string name="settings_widget_count_title">Count</string>
@@ -121,4 +126,16 @@
     <string name="widget_today">Today</string>
     <string name="widget_tomorrow">Tomorrow</string>
     <string name="widget_in_days">In %1$d days</string>
+
+    <!-- Actions / Share / Errors -->
+    <string name="action_call">Call</string>
+    <string name="action_sms">SMS</string>
+    <string name="action_email">E-Mail</string>
+    <string name="share_subject">Happy Birthday!</string>
+    <string name="error_no_contact_data">No contact details</string>
+    <string name="error_app_not_found">%1$s not found</string>
+
+    <!-- Internal Labels (Don't translate) -->
+    <string name="label_system_all" translatable="false">My Contacts</string>
+    <string name="label_system_starred" translatable="false">Starred in Android</string>
 </resources>

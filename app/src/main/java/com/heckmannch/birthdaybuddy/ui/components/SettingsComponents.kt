@@ -124,7 +124,7 @@ fun SettingsFooter(versionName: String, onGithubClick: () -> Unit) {
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Text(stringResource(R.string.app_name), style = MaterialTheme.typography.titleSmall, color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.Bold)
-        Text("Version $versionName", style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f))
+        Text(stringResource(R.string.version_label, versionName), style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f))
         Spacer(Modifier.height(16.dp))
         Text(stringResource(R.string.footer_slogan), style = MaterialTheme.typography.titleSmall, color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.Bold)
         Spacer(Modifier.height(16.dp))
@@ -134,7 +134,7 @@ fun SettingsFooter(versionName: String, onGithubClick: () -> Unit) {
         ) {
             Icon(painter = painterResource(id = R.drawable.ic_github), contentDescription = null, modifier = Modifier.size(18.dp))
             Spacer(Modifier.width(8.dp))
-            Text("GitHub Projekt", style = MaterialTheme.typography.labelLarge)
+            Text(stringResource(R.string.settings_github_project), style = MaterialTheme.typography.labelLarge)
         }
     }
 }

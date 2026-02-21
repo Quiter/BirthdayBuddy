@@ -17,6 +17,8 @@
     <string name="drawer_no_labels">Keine Labels verfügbar</string>
     <string name="drawer_contacts">Kontakte</string>
     <string name="drawer_calendar">Kalender</string>
+    <string name="drawer_menu_open">Menü öffnen</string>
+    <string name="drawer_search_clear">Suche löschen</string>
 
     <!-- Notification -->
     <string name="notification_channel_name">Geburtstags-Erinnerungen</string>
@@ -44,6 +46,8 @@
     <string name="settings_notifications_exclude_title">Filter: Ausschließen</string>
 
     <string name="footer_slogan">Made with ❤ in Dortmund</string>
+    <string name="settings_github_project">GitHub Projekt</string>
+    <string name="version_label">Version %1$s</string>
 
     <!-- Labels Selection -->
     <string name="label_selection_save">Speichern</string>
@@ -108,6 +112,7 @@
     <!-- Standard Labels -->
     <string name="label_all">Alle</string>
     <string name="label_favorites">Favoriten</string>
+    <string name="label_none">Ohne Label</string>
 
     <!-- Widget -->
     <string name="settings_widget_count_title">Anzahl</string>
@@ -121,4 +126,12 @@
     <string name="widget_today">Heute</string>
     <string name="widget_tomorrow">Morgen</string>
     <string name="widget_in_days">In %1$d Tagen</string>
+
+    <!-- Actions / Share / Errors -->
+    <string name="action_call">Anrufen</string>
+    <string name="action_sms">SMS</string>
+    <string name="action_email">E-Mail</string>
+    <string name="share_subject">Herzlichen Glückwunsch!</string>
+    <string name="error_no_contact_data">Keine Kontaktdaten</string>
+    <string name="error_app_not_found">%1$s nicht gefunden</string>
 </resources>
