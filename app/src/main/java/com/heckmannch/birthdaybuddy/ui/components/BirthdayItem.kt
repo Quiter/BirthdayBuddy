@@ -43,6 +43,7 @@ import androidx.core.net.toUri
 import coil.compose.AsyncImage
 import com.heckmannch.birthdaybuddy.R
 import com.heckmannch.birthdaybuddy.model.BirthdayContact
+import com.heckmannch.birthdaybuddy.utils.GreetingGenerator
 import com.heckmannch.birthdaybuddy.utils.formatGermanDate
 import nl.dionsegijn.konfetti.compose.KonfettiView
 import nl.dionsegijn.konfetti.core.Party
@@ -242,6 +243,7 @@ fun BirthdayItem(
                         horizontalArrangement = Arrangement.SpaceEvenly
                     ) {
                         val actions = contact.actions
+                        val greetingText = GreetingGenerator.generateRandomGreeting(contact.name, contact.age)
 
                         if (actions.phoneNumber != null) {
                             FilledTonalIconButton(onClick = {
@@ -250,7 +252,10 @@ fun BirthdayItem(
                                 Icon(Icons.Default.Call, "Anrufen")
                             }
                             FilledTonalIconButton(onClick = {
-                                context.startActivity(Intent(Intent.ACTION_SENDTO, "smsto:${actions.phoneNumber}".toUri()))
+                                val intent = Intent(Intent.ACTION_SENDTO, "smsto:${actions.phoneNumber}".toUri()).apply {
+                                    putExtra("sms_body", greetingText)
+                                }
+                                context.startActivity(intent)
                             }) {
                                 Icon(Icons.AutoMirrored.Filled.Send, "SMS")
                             }
@@ -258,7 +263,11 @@ fun BirthdayItem(
 
                         if (actions.email != null) {
                             FilledTonalIconButton(onClick = {
-                                context.startActivity(Intent(Intent.ACTION_SENDTO, "mailto:${actions.email}".toUri()))
+                                val intent = Intent(Intent.ACTION_SENDTO, "mailto:${actions.email}".toUri()).apply {
+                                    putExtra(Intent.EXTRA_SUBJECT, "Herzlichen Glückwunsch zum Geburtstag!")
+                                    putExtra(Intent.EXTRA_TEXT, greetingText)
+                                }
+                                context.startActivity(intent)
                             }) {
                                 Icon(Icons.Default.Email, "E-Mail")
                             }
@@ -267,13 +276,13 @@ fun BirthdayItem(
                         if (actions.hasWhatsApp && actions.phoneNumber != null) {
                             MessengerButton(color = Color(0xFF25D366), iconRes = R.drawable.ic_whatsapp) {
                                 val cleanNumber = actions.phoneNumber.replace(Regex("[^0-9+]"), "")
-                                val intent = Intent(Intent.ACTION_VIEW, "https://wa.me/$cleanNumber".toUri()).apply {
+                                val intent = Intent(Intent.ACTION_VIEW, "https://wa.me/$cleanNumber?text=${Uri.encode(greetingText)}".toUri()).apply {
                                     setPackage("com.whatsapp")
                                 }
                                 try {
                                     context.startActivity(intent)
                                 } catch (_: Exception) {
-                                    context.startActivity(Intent(Intent.ACTION_VIEW, "https://wa.me/$cleanNumber".toUri()))
+                                    context.startActivity(Intent(Intent.ACTION_VIEW, "https://wa.me/$cleanNumber?text=${Uri.encode(greetingText)}".toUri()))
                                 }
                             }
                         }
@@ -283,6 +292,7 @@ fun BirthdayItem(
                                 val cleanNumber = actions.phoneNumber.replace(Regex("[^0-9+]"), "")
                                 val intent = Intent(Intent.ACTION_SENDTO, "smsto:$cleanNumber".toUri()).apply {
                                     setPackage("org.thoughtcrime.securesms")
+                                    putExtra("sms_body", greetingText)
                                 }
                                 try {
                                     context.startActivity(intent)
@@ -299,7 +309,7 @@ fun BirthdayItem(
                         if (actions.hasTelegram && actions.phoneNumber != null) {
                             MessengerButton(color = Color(0xFF0088CC), text = "TG") {
                                 val cleanNumber = actions.phoneNumber.replace(Regex("[^0-9+]"), "")
-                                val intent = Intent(Intent.ACTION_VIEW, "tg://msg?to=$cleanNumber".toUri()).apply {
+                                val intent = Intent(Intent.ACTION_VIEW, "tg://msg?to=$cleanNumber&text=${Uri.encode(greetingText)}".toUri()).apply {
                                     setPackage("org.telegram.messenger")
                                 }
                                 try {
