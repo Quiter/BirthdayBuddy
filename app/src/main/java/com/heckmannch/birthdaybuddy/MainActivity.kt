@@ -20,8 +20,6 @@ class MainActivity : ComponentActivity() {
         installSplashScreen()
         super.onCreate(savedInstanceState)
         
-        createNotificationChannel()
-
         enableEdgeToEdge()
 
         setContent {
@@ -35,7 +33,6 @@ class MainActivity : ComponentActivity() {
                 val container = (application as BirthdayApplication).container
                 val filterManager = container.filterManager
 
-                // Sicherer Back-Call um Double-Taps zu verhindern, die den Stack leeren
                 val onSafeBack = {
                     if (navController.currentBackStackEntry?.lifecycle?.currentState == Lifecycle.State.RESUMED) {
                         navController.popBackStack()
@@ -84,14 +81,5 @@ class MainActivity : ComponentActivity() {
                 }
             }
         }
-    }
-
-    private fun createNotificationChannel() {
-        val name = getString(R.string.notification_channel_name)
-        val descriptionText = getString(R.string.notification_channel_desc)
-        val channel = android.app.NotificationChannel("birthday_channel", name, android.app.NotificationManager.IMPORTANCE_HIGH).apply {
-            description = descriptionText
-        }
-        getSystemService(android.app.NotificationManager::class.java)?.createNotificationChannel(channel)
     }
 }

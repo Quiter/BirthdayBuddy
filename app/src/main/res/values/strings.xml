@@ -20,6 +20,12 @@
     <string name="drawer_menu_open">Open menu</string>
     <string name="drawer_search_clear">Clear search</string>
 
+    <!-- Birthday Item -->
+    <string name="birthday_item_will_be">Turns </string>
+    <string name="birthday_item_today">TODAY!</string>
+    <string name="birthday_item_in">in </string>
+    <string name="birthday_item_days"> days</string>
+
     <!-- Notification -->
     <string name="notification_channel_name">Birthday Reminders</string>
     <string name="notification_channel_desc">Notifications for upcoming birthdays</string>

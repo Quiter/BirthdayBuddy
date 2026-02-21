@@ -1,5 +1,6 @@
 package com.heckmannch.birthdaybuddy.ui.components
 
+import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.widget.Toast
@@ -64,17 +65,15 @@ fun BirthdayItem(
     val isBirthdayToday = contact.remainingDays == 0
     val isSoon = contact.remainingDays in 1..7
     
-    // Meilensteine differenzieren: Kinder (1-9), Runde (10, 20...), Andere
+    // Meilensteine differenzieren
     val isKidBirthday = contact.age in 1..9
     val isRoundBirthday = contact.age > 0 && contact.age % 10 == 0
 
-    // Farben definieren
+    // Farben für UI-Highlights
     val goldColor = Color(0xFFFFD700)
     val secondaryGold = Color(0xFFFBC02D)
     val silverColor = Color(0xFFC0C0C0)
     val secondarySilver = Color(0xFFE0E0E0)
-    
-    // Bunte Farben für Kindergeburtstage
     val kidColors = listOf(Color(0xFF4285F4), Color(0xFFF06292), Color(0xFFFFB300), Color(0xFF4CAF50))
 
     val borderBrush = when {
@@ -89,7 +88,7 @@ fun BirthdayItem(
         else -> silverColor
     }
 
-    // Konfetti-Konfiguration
+    // Konfetti-Konfiguration (nur berechnen, wenn nötig)
     val party = remember(isKidBirthday, isRoundBirthday) {
         val colors = when {
             isKidBirthday -> kidColors.map { it.hashCode() }
@@ -177,10 +176,9 @@ fun BirthdayItem(
                         Column(horizontalAlignment = Alignment.End) {
                             Text(
                                 text = buildAnnotatedString {
-                                    append("Wird ")
+                                    append(stringResource(R.string.birthday_item_will_be))
                                     withStyle(SpanStyle(color = getAgeColorRaw(contact.age, isDark), fontWeight = FontWeight.Bold)) {
-                                        val ageText = if (contact.age < 0) "?" else "${contact.age}"
-                                        append(ageText)
+                                        append(if (contact.age < 0) "?" else "${contact.age}")
                                     }
                                 },
                                 style = MaterialTheme.typography.bodyLarge
@@ -195,7 +193,7 @@ fun BirthdayItem(
                                     )
                                     Spacer(Modifier.width(4.dp))
                                     Text(
-                                        "HEUTE!",
+                                        stringResource(R.string.birthday_item_today),
                                         style = MaterialTheme.typography.labelLarge,
                                         color = if (isDark) todayLabelColor else (if (isKidBirthday) Color(0xFF1976D2) else if (isRoundBirthday) Color(0xFF827717) else Color(0xFF616161)),
                                         fontWeight = FontWeight.ExtraBold
@@ -204,11 +202,11 @@ fun BirthdayItem(
                             } else {
                                 Text(
                                     text = buildAnnotatedString {
-                                        append("in ")
+                                        append(stringResource(R.string.birthday_item_in))
                                         withStyle(SpanStyle(color = getDaysColorRaw(contact.remainingDays, isDark), fontWeight = FontWeight.SemiBold)) {
                                             append("${contact.remainingDays}")
                                         }
-                                        append(" Tagen")
+                                        append(stringResource(R.string.birthday_item_days))
                                     },
                                     style = MaterialTheme.typography.bodySmall
                                 )
@@ -223,7 +221,7 @@ fun BirthdayItem(
                         color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)
                     )
 
-                    // Labels des Kontakts anzeigen
+                    // Labels
                     if (contact.labels.isNotEmpty()) {
                         LazyRow(
                             modifier = Modifier
@@ -245,6 +243,7 @@ fun BirthdayItem(
                         }
                     }
 
+                    // Aktionen
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -252,16 +251,13 @@ fun BirthdayItem(
                         horizontalArrangement = Arrangement.SpaceEvenly
                     ) {
                         val actions = contact.actions
-                        // Greeting NUR generieren, wenn HEUTE Geburtstag ist
-                        val greetingText = if (isBirthdayToday) {
-                            GreetingGenerator.generateRandomGreeting(contact.name, contact.age)
-                        } else ""
+                        val greetingText = if (isBirthdayToday) GreetingGenerator.generateRandomGreeting(contact.name, contact.age) else ""
 
                         if (actions.phoneNumber != null) {
                             FilledTonalIconButton(onClick = {
                                 context.startActivity(Intent(Intent.ACTION_DIAL, "tel:${actions.phoneNumber}".toUri()))
                             }) {
-                                Icon(Icons.Default.Call, "Anrufen")
+                                Icon(Icons.Default.Call, stringResource(R.string.action_call))
                             }
                             FilledTonalIconButton(onClick = {
                                 val intent = Intent(Intent.ACTION_SENDTO, "smsto:${actions.phoneNumber}".toUri()).apply {
@@ -269,93 +265,46 @@ fun BirthdayItem(
                                 }
                                 context.startActivity(intent)
                             }) {
-                                Icon(Icons.AutoMirrored.Filled.Send, "SMS")
+                                Icon(Icons.AutoMirrored.Filled.Send, stringResource(R.string.action_sms))
                             }
                         }
 
                         if (actions.email != null) {
-                            val shareSubject = context.getString(R.string.share_subject)
                             FilledTonalIconButton(onClick = {
                                 val intent = Intent(Intent.ACTION_SENDTO, "mailto:${actions.email}".toUri()).apply {
                                     if (isBirthdayToday) {
-                                        putExtra(Intent.EXTRA_SUBJECT, shareSubject)
+                                        putExtra(Intent.EXTRA_SUBJECT, context.getString(R.string.share_subject))
                                         putExtra(Intent.EXTRA_TEXT, greetingText)
                                     }
                                 }
                                 context.startActivity(intent)
                             }) {
-                                Icon(Icons.Default.Email, "E-Mail")
+                                Icon(Icons.Default.Email, stringResource(R.string.action_email))
                             }
                         }
 
+                        // Messenger-Buttons mit Hilfsfunktion
                         if (actions.hasWhatsApp && actions.phoneNumber != null) {
                             MessengerButton(color = Color(0xFF25D366), iconRes = R.drawable.ic_whatsapp) {
-                                val cleanNumber = actions.phoneNumber.replace(Regex("[^0-9+]"), "")
-                                val url = if (isBirthdayToday) {
-                                    "https://wa.me/$cleanNumber?text=${Uri.encode(greetingText)}"
-                                } else {
-                                    "https://wa.me/$cleanNumber"
-                                }
-                                val intent = Intent(Intent.ACTION_VIEW, url.toUri()).apply {
-                                    setPackage("com.whatsapp")
-                                }
-                                try {
-                                    context.startActivity(intent)
-                                } catch (_: Exception) {
-                                    context.startActivity(Intent(Intent.ACTION_VIEW, url.toUri()))
-                                }
+                                launchMessenger(context, actions.phoneNumber, greetingText, isBirthdayToday, "com.whatsapp", "https://wa.me/")
                             }
                         }
 
                         if (actions.hasSignal && actions.phoneNumber != null) {
-                            val msgSignalNotFound = context.getString(R.string.error_app_not_found, "Signal")
                             MessengerButton(color = Color(0xFF3A76F0), iconRes = R.drawable.ic_signal) {
-                                val cleanNumber = actions.phoneNumber.replace(Regex("[^0-9+]"), "")
-                                val intent = Intent(Intent.ACTION_SENDTO, "smsto:$cleanNumber".toUri()).apply {
-                                    setPackage("org.thoughtcrime.securesms")
-                                    if (isBirthdayToday) putExtra("sms_body", greetingText)
-                                }
-                                try {
-                                    context.startActivity(intent)
-                                } catch (_: Exception) {
-                                    val signalUrl = if (isBirthdayToday) "https://signal.me/#p/$cleanNumber" else "https://signal.me/#p/$cleanNumber"
-                                    try {
-                                        context.startActivity(Intent(Intent.ACTION_VIEW, signalUrl.toUri()))
-                                    } catch (_: Exception) {
-                                        Toast.makeText(context, msgSignalNotFound, Toast.LENGTH_SHORT).show()
-                                    }
-                                }
+                                launchMessenger(context, actions.phoneNumber, greetingText, isBirthdayToday, "org.thoughtcrime.securesms", "https://signal.me/#p/")
                             }
                         }
 
                         if (actions.hasTelegram && actions.phoneNumber != null) {
-                            val msgTelegramNotFound = context.getString(R.string.error_app_not_found, "Telegram")
                             MessengerButton(color = Color(0xFF0088CC), text = "TG") {
-                                val cleanNumber = actions.phoneNumber.replace(Regex("[^0-9+]"), "")
-                                val url = if (isBirthdayToday) {
-                                    "tg://msg?to=$cleanNumber&text=${Uri.encode(greetingText)}"
-                                } else {
-                                    "tg://msg?to=$cleanNumber"
-                                }
-                                val intent = Intent(Intent.ACTION_VIEW, url.toUri()).apply {
-                                    setPackage("org.telegram.messenger")
-                                }
-                                try {
-                                    context.startActivity(intent)
-                                } catch (_: Exception) {
-                                    try {
-                                        context.startActivity(Intent(Intent.ACTION_VIEW, url.toUri()))
-                                    } catch (_: Exception) {
-                                        Toast.makeText(context, msgTelegramNotFound, Toast.LENGTH_SHORT).show()
-                                    }
-                                }
+                                launchMessenger(context, actions.phoneNumber, greetingText, isBirthdayToday, "org.telegram.messenger", "tg://msg?to=")
                             }
                         }
 
                         if (actions.phoneNumber == null && actions.email == null && !actions.hasWhatsApp && !actions.hasSignal && !actions.hasTelegram) {
-                            val errorNoContact = stringResource(R.string.error_no_contact_data)
                             Text(
-                                errorNoContact,
+                                stringResource(R.string.error_no_contact_data),
                                 style = MaterialTheme.typography.labelMedium,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                                 modifier = Modifier.padding(vertical = 8.dp)
@@ -366,29 +315,36 @@ fun BirthdayItem(
             }
         }
 
-        // Konfetti über der Karte anzeigen, wenn heute Geburtstag ist und die Karte aufgeklappt wurde
         if (isBirthdayToday && expanded) {
-            KonfettiView(
-                modifier = Modifier.matchParentSize(),
-                parties = listOf(party)
-            )
+            KonfettiView(modifier = Modifier.matchParentSize(), parties = listOf(party))
+        }
+    }
+}
+
+/**
+ * Hilfsfunktion zum Starten von Messenger-Apps
+ */
+private fun launchMessenger(context: Context, number: String, text: String, isToday: Boolean, packageName: String, urlPrefix: String) {
+    val cleanNumber = number.replace(Regex("[^0-9+]"), "")
+    val url = if (isToday) "$urlPrefix$cleanNumber?text=${Uri.encode(text)}" else "$urlPrefix$cleanNumber"
+    val intent = Intent(Intent.ACTION_VIEW, url.toUri()).apply { setPackage(packageName) }
+    try {
+        context.startActivity(intent)
+    } catch (_: Exception) {
+        try {
+            context.startActivity(Intent(Intent.ACTION_VIEW, url.toUri()))
+        } catch (_: Exception) {
+            val appName = packageName.substringAfterLast(".").replaceFirstChar { it.uppercase() }
+            Toast.makeText(context, context.getString(R.string.error_app_not_found, appName), Toast.LENGTH_SHORT).show()
         }
     }
 }
 
 @Composable
-private fun MessengerButton(
-    color: Color,
-    iconRes: Int? = null,
-    text: String? = null,
-    onClick: () -> Unit
-) {
+private fun MessengerButton(color: Color, iconRes: Int? = null, text: String? = null, onClick: () -> Unit) {
     FilledTonalIconButton(
         onClick = onClick,
-        colors = IconButtonDefaults.filledTonalIconButtonColors(
-            containerColor = color.copy(alpha = 0.15f),
-            contentColor = color
-        )
+        colors = IconButtonDefaults.filledTonalIconButtonColors(containerColor = color.copy(alpha = 0.15f), contentColor = color)
     ) {
         if (iconRes != null) {
             Icon(painterResource(id = iconRes), contentDescription = null, tint = Color.Unspecified, modifier = Modifier.size(24.dp))
@@ -401,7 +357,6 @@ private fun MessengerButton(
 private fun getAgeColorRaw(age: Int, isDark: Boolean): Color {
     val youngColor = if (isDark) Color(0xFFFFA4A4) else Color(0xFFFF5252)
     val oldColor = if (isDark) Color(0xFFD32F2F) else Color(0xFF8B0000)
-    
     val ageValue = if (age < 0) 50 else age
     val fraction = (ageValue.coerceIn(0, 100) / 100f)
     return lerp(youngColor, oldColor, fraction)
