@@ -180,4 +180,16 @@
         <item>Happy Birthday for the round %1$d! 🥳 A new decade full of possibilities begins. All the best! ✨🚀</item>
         <item>Happy %1$d. birthday! 🎈 Such a special anniversary must be celebrated accordingly. Have an unforgettable day! 🥂🎁</item>
     </string-array>
+
+    <!-- <string name="label_manager_intro_title">Willkommen im Label-Manager! 🎯</string> -->
+
+    <!-- <string name="label_manager_intro_desc">Hier steuerst du präzise, welche Geburtstage wo
+        erscheinen:\n\n• Tabs: Wechsel zwischen App, Widget und Alarmen.\n• Auge-Icon: Labels
+        gezielt für diesen Bereich ein- oder ausblenden.\n• Sperr-Icon: Labels global überall
+        ignorieren.\n\nSo behältst du immer den Überblick!
+    </string> -->
+
+    <!-- <string name="label_manager_intro_dont_show_again">Nicht mehr anzeigen</string> -->
+
+    <!-- <string name="label_manager_intro_button">Verstanden!</string> -->
 </resources>

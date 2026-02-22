@@ -114,6 +114,11 @@
     <string name="label_matrix_legend_hide">Ausblenden: Nicht explizit gefiltert (Neutral).</string>
     <string name="label_matrix_legend_block">Blockieren: Kontakte mit diesem Label werden ignoriert.</string>
 
+    <string name="label_manager_intro_title">Willkommen im Label-Manager! 🎯</string>
+    <string name="label_manager_intro_desc">Hier steuerst du präzise, welche Geburtstage wo erscheinen:\n\n• Tabs: Wechsel zwischen App, Widget und Alarmen.\n• Auge-Icon: Labels gezielt für diesen Bereich ein- oder ausblenden.\n• Sperr-Icon: Labels global überall ignorieren.\n\nSo behältst du immer den Überblick!</string>
+    <string name="label_manager_intro_dont_show_again">Nicht mehr anzeigen</string>
+    <string name="label_manager_intro_button">Verstanden!</string>
+
     <!-- Sync Status -->
     <string name="sync_success">Kontakte erfolgreich synchronisiert</string>
     <string name="sync_error_permission">Berechtigung fehlt</string>
