@@ -115,6 +115,13 @@ fun MainScreen(
         ) { padding ->
             val listState = rememberLazyListState()
             
+            // Automatisch nach oben scrollen, wenn sich die Label-Auswahl ändert
+            LaunchedEffect(uiState.selectedLabels, uiState.hiddenDrawerLabels) {
+                if (uiState.contacts.isNotEmpty()) {
+                    listState.scrollToItem(0)
+                }
+            }
+
             LaunchedEffect(listState.isScrollInProgress) {
                 if (listState.isScrollInProgress) {
                     focusManager.clearFocus()

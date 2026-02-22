@@ -219,13 +219,14 @@ fun BirthdayItem(
                     )
 
                     if (contact.labels.isNotEmpty()) {
+                        val sortedLabels = remember(contact.labels) { contact.labels.sorted() }
                         LazyRow(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .padding(horizontal = 16.dp, vertical = 8.dp),
                             horizontalArrangement = Arrangement.spacedBy(4.dp)
                         ) {
-                            items(contact.labels) { label ->
+                            items(sortedLabels) { label ->
                                 SuggestionChip(
                                     onClick = { },
                                     label = { Text(label, style = MaterialTheme.typography.labelSmall) },

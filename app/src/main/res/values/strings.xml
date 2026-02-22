@@ -109,6 +109,11 @@
     <string name="label_manager_subtitle">Central visibility control</string>
     <string name="label_manager_status_blocked">Fully ignored</string>
 
+    <string name="label_manager_intro_title">Welcome to Label Management! \uD83C\uDFAF</string>
+    <string name="label_manager_intro_desc">Here you can precisely control which birthdays appear where:\n\n• Tabs: Switch between App, Widget, and Alarms.\n• Eye Icon: Show or hide labels specifically for that area.\n• Block Icon: Completely ignore labels everywhere.\n\nCustomizing has never been easier!</string>
+    <string name="label_manager_intro_dont_show_again">Don\'t show this again</string>
+    <string name="label_manager_intro_button">Got it!</string>
+
     <string name="label_matrix_legend_title">Icon Legend</string>
     <string name="label_matrix_legend_show">Show: Visible in this area.</string>
     <string name="label_matrix_legend_hide">Hide: Not explicitly filtered (Neutral).</string>

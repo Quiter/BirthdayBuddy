@@ -22,7 +22,9 @@ data class UserPreferences(
     val notificationHour: Int,
     val notificationMinute: Int,
     val notificationDays: Set<String>,
-    val isInitialized: Boolean
+    val lastBackgroundTime: Long,
+    val isInitialized: Boolean,
+    val showLabelManagerIntro: Boolean
 )
 
 @Singleton
@@ -41,7 +43,9 @@ class FilterManager @Inject constructor(
         val NOTIFICATION_HOUR = intPreferencesKey("notification_hour")
         val NOTIFICATION_MINUTE = intPreferencesKey("notification_minute")
         val NOTIFICATION_DAYS = stringSetPreferencesKey("notification_days")
+        val LAST_BACKGROUND_TIME = longPreferencesKey("last_background_time")
         val IS_INITIALIZED = booleanPreferencesKey("is_initialized")
+        val SHOW_LABEL_MANAGER_INTRO = booleanPreferencesKey("show_label_manager_intro")
     }
 
     val preferencesFlow: Flow<UserPreferences> = context.dataStore.data.map { prefs ->
@@ -56,7 +60,9 @@ class FilterManager @Inject constructor(
             notificationHour = prefs[Keys.NOTIFICATION_HOUR] ?: 9,
             notificationMinute = prefs[Keys.NOTIFICATION_MINUTE] ?: 0,
             notificationDays = prefs[Keys.NOTIFICATION_DAYS] ?: setOf("0", "7"),
-            isInitialized = prefs[Keys.IS_INITIALIZED] ?: false
+            lastBackgroundTime = prefs[Keys.LAST_BACKGROUND_TIME] ?: 0L,
+            isInitialized = prefs[Keys.IS_INITIALIZED] ?: false,
+            showLabelManagerIntro = prefs[Keys.SHOW_LABEL_MANAGER_INTRO] ?: true
         )
     }
 
@@ -70,7 +76,9 @@ class FilterManager @Inject constructor(
     val notificationHourFlow = preferencesFlow.map { it.notificationHour }
     val notificationMinuteFlow = preferencesFlow.map { it.notificationMinute }
     val notificationDaysFlow = preferencesFlow.map { it.notificationDays }
+    val lastBackgroundTimeFlow = preferencesFlow.map { it.lastBackgroundTime }
     val isInitializedFlow = preferencesFlow.map { it.isInitialized }
+    val showLabelManagerIntroFlow = preferencesFlow.map { it.showLabelManagerIntro }
 
     suspend fun saveSelectedLabels(labels: Set<String>) = edit { it[Keys.SELECTED_LABELS] = labels }
     suspend fun saveExcludedLabels(labels: Set<String>) = edit { it[Keys.EXCLUDED_LABELS] = labels }
@@ -79,7 +87,9 @@ class FilterManager @Inject constructor(
     suspend fun saveWidgetExcludedLabels(labels: Set<String>) = edit { it[Keys.WIDGET_EXCLUDED_LABELS] = labels }
     suspend fun saveNotificationSelectedLabels(labels: Set<String>) = edit { it[Keys.NOTIFICATION_SELECTED_LABELS] = labels }
     suspend fun saveNotificationExcludedLabels(labels: Set<String>) = edit { it[Keys.NOTIFICATION_EXCLUDED_LABELS] = labels }
+    suspend fun saveLastBackgroundTime(time: Long) = edit { it[Keys.LAST_BACKGROUND_TIME] = time }
     suspend fun setInitialized(value: Boolean) = edit { it[Keys.IS_INITIALIZED] = value }
+    suspend fun setShowLabelManagerIntro(value: Boolean) = edit { it[Keys.SHOW_LABEL_MANAGER_INTRO] = value }
     
     suspend fun saveNotificationTime(hour: Int, minute: Int) = context.dataStore.edit { 
         it[Keys.NOTIFICATION_HOUR] = hour

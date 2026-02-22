@@ -5,6 +5,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
+import androidx.compose.foundation.selection.toggleable
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
@@ -16,6 +17,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -40,6 +42,7 @@ fun LabelManagerScreen(
     val widgetSelected by filterManager.widgetSelectedLabelsFlow.collectAsState(initial = emptySet())
     val notifSelected by filterManager.notificationSelectedLabelsFlow.collectAsState(initial = emptySet())
     val globalExcluded by filterManager.excludedLabelsFlow.collectAsState(initial = emptySet())
+    val showIntro by filterManager.showLabelManagerIntroFlow.collectAsState(initial = false)
 
     val tabs = listOf(
         TabItem(stringResource(R.string.label_manager_tab_app), Icons.Default.PhoneAndroid, stringResource(R.string.label_manager_desc_app)),
@@ -51,6 +54,18 @@ fun LabelManagerScreen(
 
     val allLabel = stringResource(R.string.label_all)
     val favoritesLabel = stringResource(R.string.label_favorites)
+
+    if (showIntro) {
+        LabelManagerIntroDialog(
+            onDismiss = { dontShowAgain ->
+                scope.launch {
+                    if (dontShowAgain) {
+                        filterManager.setShowLabelManagerIntro(false)
+                    }
+                }
+            }
+        )
+    }
 
     Scaffold(
         topBar = {
@@ -137,7 +152,6 @@ fun LabelManagerScreen(
                             bottom = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding() + 16.dp
                         )
                     ) {
-                        // Explanatory text as a header item so it scrolls with the list
                         item {
                             Surface(
                                 color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f),
@@ -148,7 +162,7 @@ fun LabelManagerScreen(
                                 Text(
                                     text = tabs[pageIndex].description,
                                     style = MaterialTheme.typography.bodySmall,
-                                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp),
+                                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
                                     color = MaterialTheme.colorScheme.onSurfaceVariant
                                 )
                             }
@@ -222,6 +236,69 @@ fun LabelManagerScreen(
                 }
             }
         }
+    }
+}
+
+@Composable
+fun LabelManagerIntroDialog(onDismiss: (Boolean) -> Unit) {
+    var checked by remember { mutableStateOf(false) }
+    var showDialog by remember { mutableStateOf(true) }
+
+    if (showDialog) {
+        AlertDialog(
+            onDismissRequest = { 
+                showDialog = false
+                onDismiss(checked)
+            },
+            icon = { Icon(Icons.Default.Info, contentDescription = null, tint = MaterialTheme.colorScheme.primary) },
+            title = {
+                Text(
+                    text = stringResource(R.string.label_manager_intro_title),
+                    style = MaterialTheme.typography.headlineSmall,
+                    fontWeight = FontWeight.Bold
+                )
+            },
+            text = {
+                Column {
+                    Text(
+                        text = stringResource(R.string.label_manager_intro_desc),
+                        style = MaterialTheme.typography.bodyMedium
+                    )
+                    
+                    Spacer(modifier = Modifier.height(24.dp))
+                    
+                    Row(
+                        Modifier
+                            .fillMaxWidth()
+                            .height(48.dp)
+                            .toggleable(
+                                value = checked,
+                                onValueChange = { checked = it },
+                                role = Role.Checkbox
+                            ),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Checkbox(checked = checked, onCheckedChange = null)
+                        Text(
+                            text = stringResource(R.string.label_manager_intro_dont_show_again),
+                            style = MaterialTheme.typography.bodyMedium,
+                            modifier = Modifier.padding(start = 12.dp)
+                        )
+                    }
+                }
+            },
+            confirmButton = {
+                Button(
+                    onClick = { 
+                        showDialog = false
+                        onDismiss(checked)
+                    }
+                ) {
+                    Text(stringResource(R.string.label_manager_intro_button))
+                }
+            },
+            shape = RoundedCornerShape(28.dp)
+        )
     }
 }
 
