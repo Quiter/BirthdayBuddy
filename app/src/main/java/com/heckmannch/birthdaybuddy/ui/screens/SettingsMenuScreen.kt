@@ -85,21 +85,6 @@ fun SettingsMenuScreen(
                 ) { onNavigate("settings_alarms") }
             }
 
-            Spacer(modifier = Modifier.height(24.dp))
-
-            // SEKTION: WIDGET
-            SectionHeader(stringResource(R.string.settings_section_widget))
-            SettingsGroup {
-                SettingsBlockRow(
-                    title = stringResource(R.string.settings_widget_filters_title),
-                    subtitle = stringResource(R.string.settings_widget_filters_desc),
-                    icon = Icons.Default.FilterList,
-                    iconContainerColor = SettingsColorWidget,
-                    isTop = true,
-                    isBottom = true
-                ) { onNavigate("settings_widget") }
-            }
-
             SettingsFooter(versionName) {
                 context.startActivity(Intent(Intent.ACTION_VIEW, "https://github.com/Quiter/BirthdayBuddy".toUri()))
             }
