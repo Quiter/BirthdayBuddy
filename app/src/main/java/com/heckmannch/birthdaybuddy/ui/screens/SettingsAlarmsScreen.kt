@@ -112,9 +112,9 @@ fun SettingsAlarmsScreen(
                         scheduleDailyBirthdayWork(context, timePickerState.hour, timePickerState.minute)
                         showTimePicker = false
                     }
-                }) { Text(stringResource(R.string.settings_widget_dialog_save)) }
+                }) { Text(stringResource(R.string.dialog_save)) }
             },
-            dismissButton = { TextButton(onClick = { showTimePicker = false }) { Text(stringResource(R.string.settings_widget_dialog_cancel)) } }
+            dismissButton = { TextButton(onClick = { showTimePicker = false }) { Text(stringResource(R.string.dialog_cancel)) } }
         )
     }
 
@@ -123,11 +123,13 @@ fun SettingsAlarmsScreen(
             onDismissRequest = { showAddDayDialog = false },
             title = { Text(stringResource(R.string.alarms_dialog_lead_time_title)) },
             text = {
-                WheelPicker(
-                    range = (0..30).toList(),
-                    initialValue = selectedDayByWheel,
-                    onValueChange = { selectedDayByWheel = it }
-                )
+                Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
+                    WheelPicker(
+                        range = (0..30).toList(),
+                        initialValue = selectedDayByWheel,
+                        onValueChange = { selectedDayByWheel = it }
+                    )
+                }
             },
             confirmButton = {
                 TextButton(onClick = {
@@ -140,7 +142,7 @@ fun SettingsAlarmsScreen(
                     showAddDayDialog = false
                 }) { Text(stringResource(R.string.alarms_add_button)) }
             },
-            dismissButton = { TextButton(onClick = { showAddDayDialog = false }) { Text(stringResource(R.string.settings_widget_dialog_cancel)) } }
+            dismissButton = { TextButton(onClick = { showAddDayDialog = false }) { Text(stringResource(R.string.dialog_cancel)) } }
         )
     }
 }

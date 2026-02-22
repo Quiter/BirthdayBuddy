@@ -139,53 +139,6 @@ fun SettingsFooter(versionName: String, onGithubClick: () -> Unit) {
     }
 }
 
-@Composable
-fun WidgetCountDialog(currentCount: Int, onDismiss: () -> Unit, onSelect: (Int) -> Unit) {
-    var selectedValue by remember { mutableIntStateOf(currentCount) }
-
-    AlertDialog(
-        onDismissRequest = onDismiss,
-        title = { 
-            Text(
-                stringResource(R.string.settings_widget_dialog_title), 
-                style = MaterialTheme.typography.headlineSmall,
-                fontWeight = FontWeight.Bold
-            ) 
-        },
-        text = {
-            Column(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                Text(
-                    text = stringResource(R.string.settings_widget_dialog_desc),
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.padding(bottom = 24.dp)
-                )
-                
-                WheelPicker(
-                    range = (1..10).toList(),
-                    initialValue = selectedValue,
-                    onValueChange = { selectedValue = it }
-                )
-            }
-        },
-        confirmButton = {
-            Button(onClick = { onSelect(selectedValue) }) {
-                Text(stringResource(R.string.settings_widget_dialog_save))
-            }
-        },
-        dismissButton = {
-            TextButton(onClick = onDismiss) {
-                Text(stringResource(R.string.settings_widget_dialog_cancel))
-            }
-        },
-        shape = RoundedCornerShape(28.dp),
-        containerColor = MaterialTheme.colorScheme.surfaceContainerHigh
-    )
-}
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun WheelPicker(range: List<Int>, initialValue: Int, onValueChange: (Int) -> Unit) {
@@ -200,7 +153,7 @@ fun WheelPicker(range: List<Int>, initialValue: Int, onValueChange: (Int) -> Uni
         }
     }
 
-    Box(modifier = Modifier.width(140.dp).height(itemHeight * 3), contentAlignment = Alignment.Center) {
+    Box(modifier = Modifier.width(100.dp).height(itemHeight * 3), contentAlignment = Alignment.Center) {
         Surface(
             modifier = Modifier.fillMaxWidth().height(itemHeight),
             color = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.4f),

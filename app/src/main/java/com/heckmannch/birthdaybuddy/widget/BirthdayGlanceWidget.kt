@@ -2,14 +2,13 @@ package com.heckmannch.birthdaybuddy.widget
 
 import android.content.Context
 import androidx.compose.runtime.*
+import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.glance.*
 import androidx.glance.action.actionStartActivity
 import androidx.glance.action.clickable
 import androidx.glance.appwidget.*
-import androidx.glance.appwidget.lazy.LazyColumn
-import androidx.glance.appwidget.lazy.items
 import androidx.glance.layout.*
 import androidx.glance.text.FontWeight
 import androidx.glance.text.Text
@@ -23,7 +22,6 @@ import dagger.hilt.EntryPoint
 import dagger.hilt.InstallIn
 import dagger.hilt.android.EntryPointAccessors
 import dagger.hilt.components.SingletonComponent
-import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.first
 
 /**
@@ -41,14 +39,14 @@ interface WidgetEntryPoint {
  */
 class BirthdayGlanceWidget : GlanceAppWidget() {
 
+    // Wir nutzen SizeMode.Exact, damit das Widget bei Größenänderungen neu gerendert wird
+    override val sizeMode: SizeMode = SizeMode.Exact
+
     override suspend fun provideGlance(context: Context, id: GlanceId) {
-        // Abhängigkeiten über den Hilt EntryPoint beziehen
         val entryPoint = EntryPointAccessors.fromApplication(context, WidgetEntryPoint::class.java)
         val repository = entryPoint.birthdayRepository()
         val filterManager = entryPoint.filterManager()
 
-        // Wir laden die Daten einmalig für das initiale Rendering
-        // Glance bietet keine native Flow-Observation im Composable wie "collectAsState" in der UI
         val initialContacts = loadWidgetData(repository, filterManager)
 
         provideContent {
@@ -71,21 +69,27 @@ class BirthdayGlanceWidget : GlanceAppWidget() {
             !isExcluded && isSelected
         }
         .sortedBy { it.remainingDays }
-        .take(prefs.widgetItemCount)
     }
 
     @Composable
     private fun WidgetContent(contacts: List<BirthdayContact>) {
         val context = LocalContext.current
+        val size = LocalSize.current
+        
+        // Berechnung der Kapazität: Ein Element braucht ca. 64dp-72dp Höhe
+        val minItemHeight = 64.dp
+        val maxItems = (size.height.value / minItemHeight.value).toInt().coerceAtLeast(1)
+        val displayedContacts = contacts.take(maxItems)
+
         Column(
             modifier = GlanceModifier
                 .fillMaxSize()
                 .background(GlanceTheme.colors.surface)
                 .appWidgetBackground()
-                .padding(12.dp)
+                .padding(8.dp)
                 .clickable(actionStartActivity<MainActivity>())
         ) {
-            if (contacts.isEmpty()) {
+            if (displayedContacts.isEmpty()) {
                 Box(
                     modifier = GlanceModifier.fillMaxSize(),
                     contentAlignment = Alignment.Center
@@ -96,9 +100,14 @@ class BirthdayGlanceWidget : GlanceAppWidget() {
                     )
                 }
             } else {
-                LazyColumn(modifier = GlanceModifier.fillMaxSize()) {
-                    items(contacts) { contact ->
-                        BirthdayWidgetItem(contact)
+                // Wir nutzen eine normale Column statt LazyColumn, damit wir "weight" nutzen können
+                // Das sorgt dafür, dass die Elemente die gesamte Höhe gleichmäßig ausfüllen.
+                Column(modifier = GlanceModifier.fillMaxSize()) {
+                    displayedContacts.forEach { contact ->
+                        BirthdayWidgetItem(
+                            contact = contact,
+                            modifier = GlanceModifier.defaultWeight()
+                        )
                     }
                 }
             }
@@ -106,13 +115,13 @@ class BirthdayGlanceWidget : GlanceAppWidget() {
     }
 
     @Composable
-    private fun BirthdayWidgetItem(contact: BirthdayContact) {
+    private fun BirthdayWidgetItem(contact: BirthdayContact, modifier: GlanceModifier = GlanceModifier) {
         val context = LocalContext.current
         
-        Column(modifier = GlanceModifier.padding(vertical = 4.dp)) {
+        Box(modifier = modifier.padding(vertical = 4.dp)) {
             Row(
                 modifier = GlanceModifier
-                    .fillMaxWidth()
+                    .fillMaxSize()
                     .background(GlanceTheme.colors.secondaryContainer)
                     .cornerRadius(12.dp)
                     .padding(8.dp),

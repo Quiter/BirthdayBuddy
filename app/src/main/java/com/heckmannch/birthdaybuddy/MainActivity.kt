@@ -32,10 +32,6 @@ class MainActivity : ComponentActivity() {
                 val mainViewModel: MainViewModel = viewModel()
 
                 val uiState by mainViewModel.uiState.collectAsState()
-                
-                // Da wir nun Hilt nutzen, können wir den FilterManager auch direkt im Screen 
-                // oder via ViewModel handhaben. Für den Übergang lassen wir ihn hier, 
-                // aber er wird nun nicht mehr über den alten Container geholt.
 
                 val onSafeBack = {
                     if (navController.currentBackStackEntry?.lifecycle?.currentState == Lifecycle.State.RESUMED) {
@@ -46,9 +42,6 @@ class MainActivity : ComponentActivity() {
                 NavHost(navController = navController, startDestination = Route.Main) {
                     
                     composable<Route.Main> { 
-                        // Wir übergeben den FilterManager nicht mehr manuell, 
-                        // da die Screens ihn sich selbst injecten können oder via ViewModel arbeiten.
-                        // Hier ein kleiner Refactoring-Schritt:
                         MainScreen(mainViewModel) { 
                             navController.navigate(Route.Settings) {
                                 launchSingleTop = true
@@ -58,7 +51,6 @@ class MainActivity : ComponentActivity() {
 
                     composable<Route.Settings> { 
                         SettingsMenuScreen(
-                            mainViewModel = mainViewModel,
                             onNavigate = { routeName ->
                                 val target = when(routeName) {
                                     "settings_alarms" -> Route.Alarms

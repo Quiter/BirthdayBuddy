@@ -6,7 +6,6 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.automirrored.filled.List
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -18,28 +17,19 @@ import androidx.compose.ui.unit.dp
 import androidx.core.net.toUri
 import com.heckmannch.birthdaybuddy.R
 import com.heckmannch.birthdaybuddy.ui.components.*
-import com.heckmannch.birthdaybuddy.data.FilterManager
 import com.heckmannch.birthdaybuddy.ui.theme.*
 import com.heckmannch.birthdaybuddy.utils.getAppVersionName
-import com.heckmannch.birthdaybuddy.utils.updateWidget
-import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SettingsMenuScreen(
-    mainViewModel: MainViewModel,
     onNavigate: (String) -> Unit, 
     onBack: () -> Unit
 ) {
     val context = LocalContext.current
-    val scope = rememberCoroutineScope()
-    val filterManager = remember { FilterManager(context) }
     val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
 
-    val widgetCount by filterManager.widgetItemCountFlow.collectAsState(initial = 3)
     val versionName = getAppVersionName()
-    
-    var showCountDialog by remember { mutableStateOf(false) }
 
     Scaffold(
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
@@ -52,7 +42,6 @@ fun SettingsMenuScreen(
                     }
                 },
                 scrollBehavior = scrollBehavior,
-                // Respektiert die Statusleiste beim Ein-/Ausfahren
                 windowInsets = TopAppBarDefaults.windowInsets
             )
         }
@@ -62,8 +51,6 @@ fun SettingsMenuScreen(
                 .fillMaxSize()
                 .padding(horizontal = 16.dp)
                 .verticalScroll(rememberScrollState())
-                // Wir nutzen padding.calculateTopPadding() manuell, um die Kontrolle zu behalten,
-                // fügen aber unten explizit navigationBarsPadding hinzu.
                 .padding(top = padding.calculateTopPadding())
                 .navigationBarsPadding() 
                 .padding(bottom = 16.dp)
@@ -104,27 +91,17 @@ fun SettingsMenuScreen(
             SectionHeader(stringResource(R.string.settings_section_widget))
             SettingsGroup {
                 SettingsBlockRow(
-                    title = stringResource(R.string.settings_widget_count_title), 
-                    subtitle = stringResource(R.string.settings_widget_count_desc, widgetCount), 
-                    icon = Icons.AutoMirrored.Filled.List, 
+                    title = stringResource(R.string.settings_widget_filters_title),
+                    subtitle = stringResource(R.string.settings_widget_filters_desc),
+                    icon = Icons.Default.FilterList,
                     iconContainerColor = SettingsColorWidget,
                     isTop = true,
                     isBottom = true
-                ) { showCountDialog = true }
+                ) { onNavigate("settings_widget") }
             }
 
             SettingsFooter(versionName) {
                 context.startActivity(Intent(Intent.ACTION_VIEW, "https://github.com/Quiter/BirthdayBuddy".toUri()))
-            }
-        }
-    }
-
-    if (showCountDialog) {
-        WidgetCountDialog(widgetCount, onDismiss = { showCountDialog = false }) { count ->
-            scope.launch {
-                filterManager.saveWidgetItemCount(count)
-                updateWidget(context)
-                showCountDialog = false
             }
         }
     }

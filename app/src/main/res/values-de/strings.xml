@@ -28,8 +28,8 @@
     <!-- Birthday Item -->
     <string name="birthday_item_will_be">Wird&#160;</string>
     <string name="birthday_item_today">HEUTE!</string>
-    <string name="birthday_item_in">in </string>
-    <string name="birthday_item_days"> Tagen</string>
+    <string name="birthday_item_in">in&#160;</string>
+    <string name="birthday_item_days">&#160;Tagen</string>
 
     <!-- Notification -->
     <string name="notification_channel_name">Geburtstags-Erinnerungen</string>
@@ -126,17 +126,17 @@
     <string name="label_none">Ohne Label</string>
 
     <!-- Widget -->
-    <string name="settings_widget_count_title">Anzahl</string>
-    <string name="settings_widget_count_desc">Bis zu %1$d Personen anzeigen</string>
+    <string name="settings_widget_filters_title">Widget-Filter</string>
+    <string name="settings_widget_filters_desc">Konfiguriere, welche Labels auf dem Homescreen erscheinen</string>
     <string name="settings_widget_include_title">Filter: Einschließen</string>
     <string name="settings_widget_exclude_title">Filter: Ausschließen</string>
-    <string name="settings_widget_dialog_title">Widget Kapazität</string>
-    <string name="settings_widget_dialog_desc">Maximale Anzahl der Personen im Widget.</string>
-    <string name="settings_widget_dialog_save">Speichern</string>
-    <string name="settings_widget_dialog_cancel">Abbrechen</string>
     <string name="widget_today">Heute</string>
     <string name="widget_tomorrow">Morgen</string>
     <string name="widget_in_days">In %1$d Tagen</string>
+
+    <!-- Common Dialogs -->
+    <string name="dialog_save">Speichern</string>
+    <string name="dialog_cancel">Abbrechen</string>
 
     <!-- Actions / Share / Errors -->
     <string name="action_call">Anrufen</string>

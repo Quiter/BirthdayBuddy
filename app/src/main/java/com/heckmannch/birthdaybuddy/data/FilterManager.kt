@@ -22,7 +22,6 @@ data class UserPreferences(
     val notificationHour: Int,
     val notificationMinute: Int,
     val notificationDays: Set<String>,
-    val widgetItemCount: Int,
     val isInitialized: Boolean
 )
 
@@ -42,7 +41,6 @@ class FilterManager @Inject constructor(
         val NOTIFICATION_HOUR = intPreferencesKey("notification_hour")
         val NOTIFICATION_MINUTE = intPreferencesKey("notification_minute")
         val NOTIFICATION_DAYS = stringSetPreferencesKey("notification_days")
-        val WIDGET_ITEM_COUNT = intPreferencesKey("widget_item_count")
         val IS_INITIALIZED = booleanPreferencesKey("is_initialized")
     }
 
@@ -58,7 +56,6 @@ class FilterManager @Inject constructor(
             notificationHour = prefs[Keys.NOTIFICATION_HOUR] ?: 9,
             notificationMinute = prefs[Keys.NOTIFICATION_MINUTE] ?: 0,
             notificationDays = prefs[Keys.NOTIFICATION_DAYS] ?: setOf("0", "7"),
-            widgetItemCount = prefs[Keys.WIDGET_ITEM_COUNT] ?: 3,
             isInitialized = prefs[Keys.IS_INITIALIZED] ?: false
         )
     }
@@ -73,7 +70,6 @@ class FilterManager @Inject constructor(
     val notificationHourFlow = preferencesFlow.map { it.notificationHour }
     val notificationMinuteFlow = preferencesFlow.map { it.notificationMinute }
     val notificationDaysFlow = preferencesFlow.map { it.notificationDays }
-    val widgetItemCountFlow = preferencesFlow.map { it.widgetItemCount }
     val isInitializedFlow = preferencesFlow.map { it.isInitialized }
 
     suspend fun saveSelectedLabels(labels: Set<String>) = edit { it[Keys.SELECTED_LABELS] = labels }
@@ -83,7 +79,6 @@ class FilterManager @Inject constructor(
     suspend fun saveWidgetExcludedLabels(labels: Set<String>) = edit { it[Keys.WIDGET_EXCLUDED_LABELS] = labels }
     suspend fun saveNotificationSelectedLabels(labels: Set<String>) = edit { it[Keys.NOTIFICATION_SELECTED_LABELS] = labels }
     suspend fun saveNotificationExcludedLabels(labels: Set<String>) = edit { it[Keys.NOTIFICATION_EXCLUDED_LABELS] = labels }
-    suspend fun saveWidgetItemCount(count: Int) = edit { it[Keys.WIDGET_ITEM_COUNT] = count }
     suspend fun setInitialized(value: Boolean) = edit { it[Keys.IS_INITIALIZED] = value }
     
     suspend fun saveNotificationTime(hour: Int, minute: Int) = context.dataStore.edit { 
