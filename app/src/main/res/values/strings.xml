@@ -26,7 +26,7 @@
     <string name="drawer_search_clear">Clear search</string>
 
     <!-- Birthday Item -->
-    <string name="birthday_item_will_be">Turns </string>
+    <string name="birthday_item_will_be">Turns&#160;</string>
     <string name="birthday_item_today">TODAY!</string>
     <string name="birthday_item_in">in </string>
     <string name="birthday_item_days"> days</string>

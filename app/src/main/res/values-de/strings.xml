@@ -9,6 +9,11 @@
     <string name="open_settings">Einstellungen öffnen</string>
     <string name="add_contact">Kontakt hinzufügen</string>
 
+    <string name="main_empty_birthdays_title">Noch keine Geburtstage</string>
+    <string name="main_empty_birthdays_desc">Füge Geburtstage zu deinen Kontakten hinzu oder synchronisiere sie, um sie hier zu sehen.</string>
+    <string name="main_empty_search_title">Keine Treffer gefunden</string>
+    <string name="main_empty_search_desc">Wir konnten niemanden finden, der auf \u0022%1$s\u0022 passt.</string>
+
     <!-- Drawer / Navigation -->
     <string name="drawer_title">Geburtstags\nBuddy</string>
     <string name="drawer_labels_header">Labels</string>
@@ -19,6 +24,12 @@
     <string name="drawer_calendar">Kalender</string>
     <string name="drawer_menu_open">Menü öffnen</string>
     <string name="drawer_search_clear">Suche löschen</string>
+
+    <!-- Birthday Item -->
+    <string name="birthday_item_will_be">Wird&#160;</string>
+    <string name="birthday_item_today">HEUTE!</string>
+    <string name="birthday_item_in">in </string>
+    <string name="birthday_item_days"> Tagen</string>
 
     <!-- Notification -->
     <string name="notification_channel_name">Geburtstags-Erinnerungen</string>
@@ -51,7 +62,7 @@
 
     <!-- Labels Selection -->
     <string name="label_selection_save">Speichern</string>
-    <string name="label_selection_none">Keine Labels verfügbar</string>
+    <string name="label_selection_none">No Labels verfügbar</string>
     <string name="label_selection_back">Zurück</string>
 
     <!-- Alarms Screen -->
@@ -134,4 +145,30 @@
     <string name="share_subject">Herzlichen Glückwunsch!</string>
     <string name="error_no_contact_data">Keine Kontaktdaten</string>
     <string name="error_app_not_found">%1$s nicht gefunden</string>
+
+    <!-- Birthday Greetings -->
+    <string-array name="greetings_kid">
+        <item>Alles Gute zum %1$d. Geburtstag, kleiner Champion! 🎉 Lass dich heute reich beschenken und feier eine tolle Party! 🎂</item>
+        <item>Happy Birthday, %1$s! ✨ %2$d Jahre alt - jetzt bist du schon richtig groß! Hab einen super Tag mit viel Kuchen! 🎈</item>
+        <item>Hurra, du hast Geburtstag! 🥳 Alles Liebe zu deinem %1$d. Ehrentag. Viel Spaß beim Spielen und Feiern! 🎁</item>
+    </string-array>
+
+    <string-array name="greetings_teen">
+        <item>Happy Birthday, %1$s! 🎂 %2$d Jahre - genieß die Zeit und lass dich heute ordentlich feiern! 🤘✨</item>
+        <item>Alles Gute zum %1$d.! 🎉 Ich wünsch dir einen mega Tag mit deinen Freunden und alles Gute für das neue Lebensjahr! 🚀</item>
+        <item>Glückwunsch zum Geburtstag! 🥳 %1$d Jahre alt zu sein ist echt cool. Hab einen entspannten Tag! 🎈</item>
+    </string-array>
+
+    <string-array name="greetings_adult">
+        <item>Herzlichen Glückwunsch zum %1$d. Geburtstag, %2$s! 🎉 Ich wünsche dir einen wundervollen Tag im Kreise deiner Liebsten. 🎂✨</item>
+        <item>Alles Liebe zum Geburtstag! 🥂 %1$d Jahre sind ein tolles Alter. Ich wünsche dir viel Gesundheit und Freude für dein neues Lebensjahr! 🎈</item>
+        <item>Happy Birthday! 🥳 Lass dich heute verwöhnen und genieß deinen Ehrentag in vollen Zügen. Alles Gute! 🎁✨</item>
+        <item>Ich wünsche dir alles erdenklich Gute zu deinem %1$d. Geburtstag! 🎂 Auf ein weiteres Jahr voller schöner Momente! 🥂</item>
+    </string-array>
+
+    <string-array name="greetings_round">
+        <item>Wow, %1$d Jahre! 🎉 Herzlichen Glückwunsch zu diesem tollen Meilenstein, %2$s! Lass es heute richtig krachen! 🥂🎂</item>
+        <item>Happy Birthday zur runden %1$d! 🥳 Ein neues Jahrzehnt voller Möglichkeiten beginnt. Alles Liebe und viel Erfolg! ✨🚀</item>
+        <item>Alles Gute zum %1$d. Geburtstag! 🎈 So ein besonderes Jubiläum muss gebührend gefeiert werden. Hab einen unvergesslichen Tag! 🥂🎁</item>
+    </string-array>
 </resources>

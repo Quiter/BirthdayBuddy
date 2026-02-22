@@ -32,6 +32,10 @@ import androidx.compose.ui.unit.sp
 import com.heckmannch.birthdaybuddy.R
 import com.heckmannch.birthdaybuddy.model.BirthdayContact
 
+// System-Labels als Konstanten für bessere Wartbarkeit
+private const val SYSTEM_LABEL_ALL = "My Contacts"
+private const val SYSTEM_LABEL_STARRED = "Starred in Android"
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MainSearchBar(
@@ -111,48 +115,49 @@ fun MainDrawerContent(
     val context = LocalContext.current
     val allLabel = stringResource(R.string.label_all)
     val favoritesLabel = stringResource(R.string.label_favorites)
-    val sysAll = "My Contacts"
-    val sysStarred = "Starred in Android"
     
     var labelsExpanded by rememberSaveable { mutableStateOf(true) }
 
     val kidColors = listOf(Color(0xFF4285F4), Color(0xFFF06292), Color(0xFFFFB300), Color(0xFF4CAF50))
     val headerBrush = Brush.linearGradient(kidColors)
 
-    val sortedLabels = availableLabels
-        .filterNot { hiddenDrawerLabels.contains(it) }
-        .sortedWith(compareBy<String> {
-            when (it) {
-                sysAll -> 0
-                sysStarred -> 1
-                else -> 2
-            }
-        }.thenBy { it })
+    val sortedLabels = remember(availableLabels, hiddenDrawerLabels) {
+        availableLabels
+            .filterNot { hiddenDrawerLabels.contains(it) }
+            .sortedWith(compareBy<String> {
+                when (it) {
+                    SYSTEM_LABEL_ALL -> 0
+                    SYSTEM_LABEL_STARRED -> 1
+                    else -> 2
+                }
+            }.thenBy { it })
+    }
 
     ModalDrawerSheet(
         modifier = Modifier.width(300.dp),
         drawerShape = RoundedCornerShape(topEnd = 16.dp, bottomEnd = 16.dp)
     ) {
+        // HEADER BEREICH (Optimiertes Inset-Handling)
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(200.dp + 48.dp)
                 .background(headerBrush)
-                .statusBarsPadding()
-                .padding(start = 24.dp, end = 16.dp, bottom = 24.dp)
         ) {
             Row(
-                modifier = Modifier.fillMaxWidth().align(Alignment.BottomStart),
-                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .statusBarsPadding()
+                    .padding(start = 24.dp, end = 8.dp, top = 48.dp, bottom = 16.dp),
+                verticalAlignment = Alignment.Bottom,
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
                 Text(
                     text = stringResource(R.string.drawer_title),
-                    style = MaterialTheme.typography.headlineLarge,
+                    style = MaterialTheme.typography.headlineMedium,
                     fontWeight = FontWeight.Bold,
                     color = Color.White,
-                    lineHeight = 38.sp,
-                    modifier = Modifier.weight(1f)
+                    lineHeight = 32.sp,
+                    modifier = Modifier.weight(1f).padding(bottom = 4.dp)
                 )
                 
                 IconButton(
@@ -163,15 +168,17 @@ fun MainDrawerContent(
                         imageVector = Icons.Default.Settings, 
                         contentDescription = stringResource(R.string.drawer_settings), 
                         tint = Color.White,
-                        modifier = Modifier.size(28.dp)
+                        modifier = Modifier.size(24.dp)
                     )
                 }
             }
         }
 
         LazyColumn(
-            modifier = Modifier.fillMaxSize(),
-            contentPadding = PaddingValues(bottom = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding() + 8.dp)
+            modifier = Modifier
+                .fillMaxSize()
+                .navigationBarsPadding(),
+            contentPadding = PaddingValues(vertical = 8.dp)
         ) {
             item {
                 NavigationDrawerItem(
@@ -181,7 +188,7 @@ fun MainDrawerContent(
                         val intent = Intent(Intent.ACTION_VIEW).setData(Uri.parse("content://com.android.calendar/time/"))
                         context.startActivity(intent)
                     },
-                    icon = { Icon(Icons.Default.CalendarToday, contentDescription = null) },
+                    icon = { Icon(Icons.Default.CalendarToday, contentDescription = stringResource(R.string.drawer_calendar)) },
                     modifier = Modifier.padding(NavigationDrawerItemPadding)
                 )
                 
@@ -192,7 +199,7 @@ fun MainDrawerContent(
                         val intent = Intent(Intent.ACTION_VIEW, ContactsContract.Contacts.CONTENT_URI)
                         context.startActivity(intent)
                     },
-                    icon = { Icon(Icons.Default.AccountCircle, contentDescription = null) },
+                    icon = { Icon(Icons.Default.AccountCircle, contentDescription = stringResource(R.string.drawer_contacts)) },
                     modifier = Modifier.padding(NavigationDrawerItemPadding)
                 )
 
@@ -201,6 +208,7 @@ fun MainDrawerContent(
 
             item {
                 ListItem(
+                    colors = ListItemDefaults.colors(containerColor = Color.Transparent),
                     headlineContent = { 
                         Text(
                             stringResource(R.string.drawer_labels_header).uppercase(),
@@ -223,8 +231,8 @@ fun MainDrawerContent(
                 items(sortedLabels) { label ->
                     val isChecked = selectedLabels.contains(label)
                     val (displayText, icon) = when(label) {
-                        sysAll -> allLabel to if (isChecked) Icons.Default.People else Icons.Default.PeopleOutline
-                        sysStarred -> favoritesLabel to if (isChecked) Icons.Default.Star else Icons.Default.StarOutline
+                        SYSTEM_LABEL_ALL -> allLabel to if (isChecked) Icons.Default.People else Icons.Default.PeopleOutline
+                        SYSTEM_LABEL_STARRED -> favoritesLabel to if (isChecked) Icons.Default.Star else Icons.Default.StarOutline
                         else -> label to if (isChecked) Icons.AutoMirrored.Filled.Label else Icons.AutoMirrored.Outlined.Label
                     }
 
@@ -240,7 +248,7 @@ fun MainDrawerContent(
                         icon = { Icon(icon, contentDescription = null) },
                         modifier = Modifier.padding(NavigationDrawerItemPadding),
                         colors = NavigationDrawerItemDefaults.colors(
-                            selectedContainerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.3f),
+                            selectedContainerColor = Color.Transparent,
                             selectedIconColor = MaterialTheme.colorScheme.primary,
                             selectedTextColor = MaterialTheme.colorScheme.primary,
                             unselectedIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -280,9 +288,6 @@ fun BirthdayList(
     }
 }
 
-/**
- * Eine ansprechende Komponente für leere Zustände (Empty States).
- */
 @Composable
 fun EmptyState(
     icon: ImageVector,

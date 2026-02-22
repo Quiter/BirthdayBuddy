@@ -4,7 +4,6 @@ import android.content.ContentUris
 import android.content.Context
 import android.net.Uri
 import android.provider.ContactsContract
-import com.heckmannch.birthdaybuddy.R
 import com.heckmannch.birthdaybuddy.model.BirthdayContact
 import com.heckmannch.birthdaybuddy.model.ContactActions
 import com.heckmannch.birthdaybuddy.utils.calculateAgeAndDays
@@ -61,7 +60,6 @@ fun fetchBirthdays(context: Context): List<BirthdayContact> {
     // 2. Batch-Abfrage für Labels und Aktionen
     val allLabels = getAllContactLabels(context, contactIds)
     val allActions = getAllContactActions(context, contactIds)
-    val defaultLabel = context.getString(R.string.label_none)
 
     for ((id, data) in tempContactsMap) {
         val (name, bday) = data
@@ -77,7 +75,8 @@ fun fetchBirthdays(context: Context): List<BirthdayContact> {
             id = id,
             name = name,
             birthday = bday,
-            labels = allLabels[id] ?: listOf(defaultLabel),
+            // Kontakte ohne Label erhalten jetzt eine leere Liste statt einer "Ohne Label" Markierung.
+            labels = allLabels[id] ?: emptyList(),
             remainingDays = remainingDays,
             age = age,
             actions = allActions[id] ?: ContactActions(),
