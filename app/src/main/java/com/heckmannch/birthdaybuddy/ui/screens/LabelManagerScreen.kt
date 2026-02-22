@@ -3,6 +3,8 @@ package com.heckmannch.birthdaybuddy.ui.screens
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
@@ -39,12 +41,13 @@ fun LabelManagerScreen(
     val notifSelected by filterManager.notificationSelectedLabelsFlow.collectAsState(initial = emptySet())
     val globalExcluded by filterManager.excludedLabelsFlow.collectAsState(initial = emptySet())
 
-    var selectedTab by remember { mutableIntStateOf(0) }
     val tabs = listOf(
         TabItem(stringResource(R.string.label_manager_tab_app), Icons.Default.PhoneAndroid, stringResource(R.string.label_manager_desc_app)),
         TabItem(stringResource(R.string.label_manager_tab_widget), Icons.Default.Widgets, stringResource(R.string.label_manager_desc_widget)),
         TabItem(stringResource(R.string.label_manager_tab_alarms), Icons.Default.Notifications, stringResource(R.string.label_manager_desc_alarms))
     )
+
+    val pagerState = rememberPagerState(pageCount = { tabs.size })
 
     val allLabel = stringResource(R.string.label_all)
     val favoritesLabel = stringResource(R.string.label_favorites)
@@ -64,12 +67,12 @@ fun LabelManagerScreen(
     ) { padding ->
         Column(modifier = Modifier.fillMaxSize().padding(top = padding.calculateTopPadding())) {
             PrimaryTabRow(
-                selectedTabIndex = selectedTab,
+                selectedTabIndex = pagerState.currentPage,
                 containerColor = MaterialTheme.colorScheme.surface,
                 divider = {},
                 indicator = {
                     TabRowDefaults.PrimaryIndicator(
-                        modifier = Modifier.tabIndicatorOffset(selectedTab),
+                        modifier = Modifier.tabIndicatorOffset(pagerState.currentPage),
                         width = 64.dp,
                         shape = RoundedCornerShape(topStart = 3.dp, topEnd = 3.dp)
                     )
@@ -77,19 +80,23 @@ fun LabelManagerScreen(
             ) {
                 tabs.forEachIndexed { index, tab ->
                     Tab(
-                        selected = selectedTab == index,
-                        onClick = { selectedTab = index },
+                        selected = pagerState.currentPage == index,
+                        onClick = { 
+                            scope.launch {
+                                pagerState.animateScrollToPage(index)
+                            }
+                        },
                         text = { 
                             Text(
                                 tab.title,
-                                style = if (selectedTab == index) 
+                                style = if (pagerState.currentPage == index) 
                                     MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold)
                                 else 
                                     MaterialTheme.typography.titleSmall
                             ) 
                         },
                         icon = { 
-                            if (selectedTab == index) {
+                            if (pagerState.currentPage == index) {
                                 Surface(
                                     color = MaterialTheme.colorScheme.secondaryContainer,
                                     shape = RoundedCornerShape(16.dp),
@@ -110,96 +117,107 @@ fun LabelManagerScreen(
                 }
             }
 
-            Surface(
-                color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f),
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Text(
-                    text = tabs[selectedTab].description,
-                    style = MaterialTheme.typography.bodySmall,
-                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            }
-
-            if (isLoading) {
-                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    CircularProgressIndicator()
-                }
-            } else if (availableLabels.isEmpty()) {
-                Box(modifier = Modifier.fillMaxSize().padding(16.dp), contentAlignment = Alignment.Center) {
-                    Text(stringResource(R.string.label_manager_empty))
-                }
-            } else {
-                LazyColumn(
-                    modifier = Modifier.fillMaxSize(),
-                    contentPadding = PaddingValues(
-                        bottom = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding() + 16.dp
-                    )
-                ) {
-                    val sortedLabels = availableLabels.toList().sortedWith(compareBy<String> {
-                        when (it) {
-                            "My Contacts" -> 0
-                            "Starred in Android" -> 1
-                            else -> 2
-                        }
-                    }.thenBy { it })
-                    
-                    items(sortedLabels) { label ->
-                        val isBlockedGlobal = globalExcluded.contains(label)
-                        val isVisible = when(selectedTab) {
-                            0 -> !hiddenDrawer.contains(label)
-                            1 -> widgetSelected.contains(label)
-                            else -> notifSelected.contains(label)
+            HorizontalPager(
+                state = pagerState,
+                modifier = Modifier.fillMaxSize(),
+                verticalAlignment = Alignment.Top
+            ) { pageIndex ->
+                if (isLoading) {
+                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                        CircularProgressIndicator()
+                    }
+                } else if (availableLabels.isEmpty()) {
+                    Box(modifier = Modifier.fillMaxSize().padding(16.dp), contentAlignment = Alignment.Center) {
+                        Text(stringResource(R.string.label_manager_empty))
+                    }
+                } else {
+                    LazyColumn(
+                        modifier = Modifier.fillMaxSize(),
+                        contentPadding = PaddingValues(
+                            bottom = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding() + 16.dp
+                        )
+                    ) {
+                        // Explanatory text as a header item so it scrolls with the list
+                        item {
+                            Surface(
+                                color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f),
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(bottom = 8.dp)
+                            ) {
+                                Text(
+                                    text = tabs[pageIndex].description,
+                                    style = MaterialTheme.typography.bodySmall,
+                                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp),
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            }
                         }
 
-                        val displayText = when(label) {
-                            "My Contacts" -> allLabel
-                            "Starred in Android" -> favoritesLabel
-                            else -> label
-                        }
+                        val sortedLabels = availableLabels.toList().sortedWith(compareBy<String> {
+                            when (it) {
+                                "My Contacts" -> 0
+                                "Starred in Android" -> 1
+                                else -> 2
+                            }
+                        }.thenBy { it })
+                        
+                        items(sortedLabels) { label ->
+                            val isBlockedGlobal = globalExcluded.contains(label)
+                            val isVisible = when(pageIndex) {
+                                0 -> !hiddenDrawer.contains(label)
+                                1 -> widgetSelected.contains(label)
+                                else -> notifSelected.contains(label)
+                            }
 
-                        LabelManagerRow(
-                            label = displayText,
-                            isVisible = isVisible,
-                            isBlockedGlobal = isBlockedGlobal,
-                            onToggleVisibility = {
-                                scope.launch {
-                                    when(selectedTab) {
-                                        0 -> {
-                                            val newHidden = hiddenDrawer.toMutableSet()
-                                            if (isVisible) newHidden.add(label) else newHidden.remove(label)
-                                            filterManager.saveHiddenDrawerLabels(newHidden)
-                                        }
-                                        1 -> {
-                                            val newWidget = widgetSelected.toMutableSet()
-                                            if (isVisible) newWidget.remove(label) else newWidget.add(label)
-                                            filterManager.saveWidgetSelectedLabels(newWidget)
-                                            updateWidget(context)
-                                        }
-                                        2 -> {
-                                            val newNotif = notifSelected.toMutableSet()
-                                            if (isVisible) newNotif.remove(label) else newNotif.add(label)
-                                            filterManager.saveNotificationSelectedLabels(newNotif)
-                                        }
-                                    }
-                                }
-                            },
-                            onToggleBlock = if (label != "My Contacts") {
-                                {
+                            val displayText = when(label) {
+                                "My Contacts" -> allLabel
+                                "Starred in Android" -> favoritesLabel
+                                else -> label
+                            }
+
+                            LabelManagerRow(
+                                label = displayText,
+                                isVisible = isVisible,
+                                isBlockedGlobal = isBlockedGlobal,
+                                onToggleVisibility = {
                                     scope.launch {
-                                        val newGlobal = globalExcluded.toMutableSet()
-                                        if (isBlockedGlobal) newGlobal.remove(label) else newGlobal.add(label)
-                                        filterManager.saveExcludedLabels(newGlobal)
+                                        when(pageIndex) {
+                                            0 -> {
+                                                val newHidden = hiddenDrawer.toMutableSet()
+                                                if (isVisible) newHidden.add(label) else newHidden.remove(label)
+                                                filterManager.saveHiddenDrawerLabels(newHidden)
+                                            }
+                                            1 -> {
+                                                val newWidget = widgetSelected.toMutableSet()
+                                                if (isVisible) newWidget.remove(label) else newWidget.add(label)
+                                                filterManager.saveWidgetSelectedLabels(newWidget)
+                                                updateWidget(context)
+                                            }
+                                            2 -> {
+                                                val newNotif = notifSelected.toMutableSet()
+                                                if (isVisible) newNotif.remove(label) else newNotif.add(label)
+                                                filterManager.saveNotificationSelectedLabels(newNotif)
+                                            }
+                                        }
                                     }
-                                }
-                            } else null
-                        )
-                        HorizontalDivider(
-                            modifier = Modifier.padding(horizontal = 16.dp),
-                            thickness = 0.5.dp,
-                            color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)
-                        )
+                                },
+                                onToggleBlock = if (label != "My Contacts") {
+                                    {
+                                        scope.launch {
+                                            val newGlobal = globalExcluded.toMutableSet()
+                                            if (isBlockedGlobal) newGlobal.remove(label) else newGlobal.add(label)
+                                            filterManager.saveExcludedLabels(newGlobal)
+                                        }
+                                    }
+                                } else null
+                            )
+                            HorizontalDivider(
+                                modifier = Modifier.padding(horizontal = 16.dp),
+                                thickness = 0.5.dp,
+                                color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)
+                            )
+                        }
                     }
                 }
             }
@@ -237,7 +255,7 @@ fun LabelManagerRow(
                     style = MaterialTheme.typography.labelSmall
                 )
             } else {
-                Spacer(modifier = Modifier.height(16.dp))
+                Spacer(modifier = Modifier.height(4.dp))
             }
         },
         trailingContent = {
