@@ -2,6 +2,7 @@ package com.heckmannch.birthdaybuddy.widget
 
 import android.content.Context
 import androidx.compose.runtime.*
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -13,6 +14,7 @@ import androidx.glance.layout.*
 import androidx.glance.text.FontWeight
 import androidx.glance.text.Text
 import androidx.glance.text.TextStyle
+import androidx.glance.unit.ColorProvider
 import com.heckmannch.birthdaybuddy.MainActivity
 import com.heckmannch.birthdaybuddy.R
 import com.heckmannch.birthdaybuddy.data.BirthdayRepository
@@ -117,7 +119,28 @@ class BirthdayGlanceWidget : GlanceAppWidget() {
     @Composable
     private fun BirthdayWidgetItem(contact: BirthdayContact, modifier: GlanceModifier = GlanceModifier) {
         val context = LocalContext.current
+        val isBirthdayToday = contact.remainingDays == 0
         
+        val isKidBirthday = contact.age in 1..9
+        val isRoundBirthday = contact.age > 0 && contact.age % 10 == 0
+
+        val goldColor = Color(0xFFFFD700)
+        val silverColor = Color(0xFFC0C0C0)
+        // Einfache Annäherung für "bunt" im Widget (Blau als Basis)
+        val kidColor = Color(0xFF4285F4)
+
+        val circleColor = when {
+            !isBirthdayToday -> GlanceTheme.colors.primary
+            isKidBirthday -> ColorProvider(kidColor)
+            isRoundBirthday -> ColorProvider(goldColor)
+            else -> ColorProvider(silverColor)
+        }
+
+        val circleTextColor = when {
+            !isBirthdayToday -> GlanceTheme.colors.onPrimary
+            else -> ColorProvider(Color.Black) // Schwarz auf Silber/Gold/Bunt für besseren Kontrast
+        }
+
         Box(modifier = modifier.padding(vertical = 4.dp)) {
             Row(
                 modifier = GlanceModifier
@@ -156,7 +179,7 @@ class BirthdayGlanceWidget : GlanceAppWidget() {
                 Box(
                     modifier = GlanceModifier
                         .size(32.dp)
-                        .background(GlanceTheme.colors.primary)
+                        .background(circleColor)
                         .cornerRadius(16.dp),
                     contentAlignment = Alignment.Center
                 ) {
@@ -164,7 +187,7 @@ class BirthdayGlanceWidget : GlanceAppWidget() {
                     Text(
                         text = ageText,
                         style = TextStyle(
-                            color = GlanceTheme.colors.onPrimary,
+                            color = circleTextColor,
                             fontWeight = FontWeight.Bold,
                             fontSize = 12.sp
                         )

@@ -63,7 +63,6 @@ fun BirthdayItem(
     val keyboardController = LocalSoftwareKeyboardController.current
     val isDark = isSystemInDarkTheme()
     val isBirthdayToday = contact.remainingDays == 0
-    val isSoon = contact.remainingDays in 1..7
     
     val isKidBirthday = contact.age in 1..9
     val isRoundBirthday = contact.age > 0 && contact.age % 10 == 0
@@ -105,8 +104,6 @@ fun BirthdayItem(
 
     val birthdayModifier = if (isBirthdayToday) {
         Modifier.border(BorderStroke(2.dp, borderBrush), shape = CardDefaults.elevatedShape)
-    } else if (isSoon) {
-        Modifier.border(BorderStroke(1.dp, MaterialTheme.colorScheme.primaryContainer), shape = CardDefaults.elevatedShape)
     } else Modifier
 
     Box(modifier = Modifier.fillMaxWidth()) {
@@ -128,7 +125,6 @@ fun BirthdayItem(
                             else -> if (isDark) Color(0xFF2C2C2C) else Color(0xFFF5F5F5)
                         }
                     }
-                    isSoon -> MaterialTheme.colorScheme.surfaceContainer
                     else -> MaterialTheme.colorScheme.surfaceContainerLow
                 }
             )
