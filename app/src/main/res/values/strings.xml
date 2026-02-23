@@ -56,6 +56,12 @@
     <string name="settings_notifications_include_title">Filter: Include</string>
     <string name="settings_notifications_exclude_title">Filter: Exclude</string>
 
+    <string name="settings_theme_title">Theme</string>
+    <string name="settings_theme_system">System</string>
+    <string name="settings_theme_light">Light</string>
+    <string name="settings_theme_dark">Dark</string>
+    <string name="settings_theme_dialog_title">Choose Theme</string>
+
     <string name="footer_slogan">Made with ❤ in Dortmund</string>
     <string name="settings_github_project">GitHub Project</string>
     <string name="version_label">Version %1$s</string>
@@ -110,9 +116,9 @@
     <string name="label_manager_status_blocked">Fully ignored</string>
 
     <string name="label_manager_intro_title">Welcome to Label Management! \uD83C\uDFAF</string>
-    <string name="label_manager_intro_desc">Here you can precisely control which birthdays appear where:\n\n• Tabs: Switch between App, Widget, and Alarms.\n• Eye Icon: Show or hide labels specifically for that area.\n• Block Icon: Completely ignore labels everywhere.\n\nCustomizing has never been easier!</string>
-    <string name="label_manager_intro_dont_show_again">Don\'t show this again</string>
-    <string name="label_manager_intro_button">Got it!</string>
+    <string name="label_manager_intro_desc">Here you can precisely control which birthdays appear where:\n\n• Tabs: Switch between App, Widget, and Alarms.\n• Eye Icon: Show or hide labels specifically for that area.\n• Block Icon: Completely ignore labels everywhere.\n\nSo behältst du immer den Überblick!</string>
+    <string name="label_manager_intro_dont_show_again">Nicht mehr anzeigen</string>
+    <string name="label_manager_intro_button">Verstanden!</string>
 
     <string name="label_matrix_legend_title">Icon Legend</string>
     <string name="label_matrix_legend_show">Show: Visible in this area.</string>
@@ -180,16 +186,4 @@
         <item>Happy Birthday for the round %1$d! 🥳 A new decade full of possibilities begins. All the best! ✨🚀</item>
         <item>Happy %1$d. birthday! 🎈 Such a special anniversary must be celebrated accordingly. Have an unforgettable day! 🥂🎁</item>
     </string-array>
-
-    <!-- <string name="label_manager_intro_title">Willkommen im Label-Manager! 🎯</string> -->
-
-    <!-- <string name="label_manager_intro_desc">Hier steuerst du präzise, welche Geburtstage wo
-        erscheinen:\n\n• Tabs: Wechsel zwischen App, Widget und Alarmen.\n• Auge-Icon: Labels
-        gezielt für diesen Bereich ein- oder ausblenden.\n• Sperr-Icon: Labels global überall
-        ignorieren.\n\nSo behältst du immer den Überblick!
-    </string> -->
-
-    <!-- <string name="label_manager_intro_dont_show_again">Nicht mehr anzeigen</string> -->
-
-    <!-- <string name="label_manager_intro_button">Verstanden!</string> -->
 </resources>

@@ -1,6 +1,5 @@
 package com.heckmannch.birthdaybuddy.ui.theme
 
-import android.app.Activity
 import android.os.Build
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme
@@ -9,7 +8,6 @@ import androidx.compose.material3.dynamicDarkColorScheme
 import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 
 private val DarkColorScheme = darkColorScheme(
@@ -30,11 +28,16 @@ private val LightColorScheme = lightColorScheme(
 
 @Composable
 fun BirthdayBuddyTheme(
-    darkTheme: Boolean = isSystemInDarkTheme(),
-    // Dynamic color is available on Android 12+
+    theme: Int = 0, // 0: System, 1: Light, 2: Dark
     dynamicColor: Boolean = true,
     content: @Composable () -> Unit
 ) {
+    val darkTheme = when(theme) {
+        1 -> false
+        2 -> true
+        else -> isSystemInDarkTheme()
+    }
+
     val colorScheme = when {
         dynamicColor && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S -> {
             val context = LocalContext.current
@@ -45,7 +48,6 @@ fun BirthdayBuddyTheme(
                 baseScheme.copy(background = AppBackgroundLight, surface = AppBackgroundLight)
             }
         }
-
         darkTheme -> DarkColorScheme
         else -> LightColorScheme
     }
