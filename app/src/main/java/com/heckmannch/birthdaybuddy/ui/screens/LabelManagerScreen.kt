@@ -162,7 +162,7 @@ fun LabelManagerScreen(
                                 Text(
                                     text = tabs[pageIndex].description,
                                     style = MaterialTheme.typography.bodySmall,
-                                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
+                                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp),
                                     color = MaterialTheme.colorScheme.onSurfaceVariant
                                 )
                             }
@@ -339,12 +339,14 @@ fun LabelManagerRow(
             Row(verticalAlignment = Alignment.CenterVertically) {
                 IconButton(
                     onClick = onToggleVisibility,
-                    enabled = !isBlockedGlobal
+                    // Die Sichtbarkeit soll auch dann änderbar sein, wenn das Label geblockt ist.
+                    // Nur die visuelle Darstellung (Icons/Farben) soll den Status widerspiegeln.
+                    enabled = true 
                 ) {
                     Icon(
                         imageVector = if (isVisible) Icons.Default.Visibility else Icons.Default.VisibilityOff,
                         contentDescription = null,
-                        tint = if (isVisible && !isBlockedGlobal) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outline
+                        tint = if (isVisible) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outline
                     )
                 }
                 
