@@ -4,6 +4,13 @@ import android.content.ContentUris
 import android.content.Context
 import android.net.Uri
 import android.provider.ContactsContract
+import android.provider.ContactsContract.CommonDataKinds.Email
+import android.provider.ContactsContract.CommonDataKinds.Event
+import android.provider.ContactsContract.CommonDataKinds.GroupMembership
+import android.provider.ContactsContract.CommonDataKinds.Phone
+import android.provider.ContactsContract.Contacts
+import android.provider.ContactsContract.Data
+import android.provider.ContactsContract.Groups
 import com.heckmannch.birthdaybuddy.model.BirthdayContact
 import com.heckmannch.birthdaybuddy.model.ContactActions
 import com.heckmannch.birthdaybuddy.utils.calculateAgeAndDays
@@ -14,168 +21,162 @@ object ContactMimes {
     const val TELEGRAM = "vnd.android.cursor.item/vnd.org.telegram.messenger.android.profile"
 }
 
-// Interne Keys für System-Labels (werden in der UI übersetzt)
 private const val SYSTEM_LABEL_ALL = "My Contacts"
 private const val SYSTEM_LABEL_STARRED = "Starred in Android"
 private const val LABEL_NONE = "Unlabeled"
 
+/**
+ * Komplett neu geschriebene Implementierung zum Abrufen von Geburtstagen und Labels.
+ * Nutzt einen mehrstufigen Prozess, um maximale Kompatibilität mit Google-Labels 
+ * und herstellerspezifischen Gruppen zu gewährleisten.
+ */
 fun fetchBirthdays(context: Context): List<BirthdayContact> {
-    val contactList = mutableListOf<BirthdayContact>()
-    val contactIds = mutableSetOf<String>()
+    val cr = context.contentResolver
     
-    // 1. Alle verfügbaren Gruppen (Labels) laden
-    val groupMap = mutableMapOf<String, String>()
-    context.contentResolver.query(
-        ContactsContract.Groups.CONTENT_URI,
-        arrayOf(ContactsContract.Groups._ID, ContactsContract.Groups.TITLE, ContactsContract.Groups.SYSTEM_ID),
-        "${ContactsContract.Groups.DELETED} = 0",
-        null,
-        null
+    // 1. Alle Gruppennamen auflösen (über alle Accounts hinweg)
+    val groupMap = mutableMapOf<Long, String>()
+    cr.query(
+        Groups.CONTENT_URI,
+        arrayOf(Groups._ID, Groups.TITLE, Groups.SYSTEM_ID),
+        null, null, null
     )?.use { cursor ->
-        val idIdx = cursor.getColumnIndex(ContactsContract.Groups._ID)
-        val titleIdx = cursor.getColumnIndex(ContactsContract.Groups.TITLE)
-        val systemIdIdx = cursor.getColumnIndex(ContactsContract.Groups.SYSTEM_ID)
+        val idIdx = cursor.getColumnIndex(Groups._ID)
+        val titleIdx = cursor.getColumnIndex(Groups.TITLE)
+        val systemIdIdx = cursor.getColumnIndex(Groups.SYSTEM_ID)
         
         while (cursor.moveToNext()) {
-            val id = cursor.getString(idIdx)
+            val id = cursor.getLong(idIdx)
             val title = cursor.getString(titleIdx)
             val systemId = cursor.getString(systemIdIdx)
             
-            val finalTitle = when {
+            val finalName = when {
                 !title.isNullOrBlank() -> title.replace("System Group: ", "")
                 !systemId.isNullOrBlank() -> systemId
                 else -> null
             }
-            if (id != null && finalTitle != null) groupMap[id] = finalTitle
-        }
-    }
-
-    // 2. Alle Kontakte mit Geburtstag laden
-    val projection = arrayOf(
-        ContactsContract.CommonDataKinds.Event.CONTACT_ID,
-        ContactsContract.CommonDataKinds.Event.DISPLAY_NAME,
-        ContactsContract.CommonDataKinds.Event.START_DATE,
-        ContactsContract.Data.STARRED,
-        ContactsContract.Data.IN_VISIBLE_GROUP
-    )
-    val selection = "${ContactsContract.Data.MIMETYPE} = ? AND ${ContactsContract.CommonDataKinds.Event.TYPE} = ${ContactsContract.CommonDataKinds.Event.TYPE_BIRTHDAY}"
-    val selectionArgs = arrayOf(ContactsContract.CommonDataKinds.Event.CONTENT_ITEM_TYPE)
-
-    val tempContacts = mutableMapOf<String, Triple<String, String, Set<String>>>()
-
-    context.contentResolver.query(
-        ContactsContract.Data.CONTENT_URI,
-        projection, selection, selectionArgs, null
-    )?.use { cursor ->
-        val idIdx = cursor.getColumnIndex(ContactsContract.CommonDataKinds.Event.CONTACT_ID)
-        val nameIdx = cursor.getColumnIndex(ContactsContract.CommonDataKinds.Event.DISPLAY_NAME)
-        val bdayIdx = cursor.getColumnIndex(ContactsContract.CommonDataKinds.Event.START_DATE)
-        val starredIdx = cursor.getColumnIndex(ContactsContract.Data.STARRED)
-        val visibleIdx = cursor.getColumnIndex(ContactsContract.Data.IN_VISIBLE_GROUP)
-
-        while (cursor.moveToNext()) {
-            val id = cursor.getString(idIdx) ?: continue
-            val name = cursor.getString(nameIdx) ?: "Unknown"
-            val bday = cursor.getString(bdayIdx) ?: ""
-            val isStarred = cursor.getInt(starredIdx) == 1
-            val isVisible = cursor.getInt(visibleIdx) == 1
-            
-            val systemLabels = mutableSetOf<String>()
-            if (isStarred) systemLabels.add(SYSTEM_LABEL_STARRED)
-            if (isVisible) systemLabels.add(SYSTEM_LABEL_ALL)
-
-            // Wir speichern nur den ersten Geburtstag pro Kontakt ID
-            if (!tempContacts.containsKey(id)) {
-                tempContacts[id] = Triple(name, bday, systemLabels)
-                contactIds.add(id)
+            if (finalName != null) {
+                groupMap[id] = finalName
             }
         }
     }
 
-    if (contactIds.isEmpty()) return emptyList()
+    // 2. Alle Kontakte identifizieren, die einen Geburtstag hinterlegt haben
+    val birthdayContacts = mutableMapOf<Long, TempContactBuilder>()
+    val birthdaySelection = "${Data.MIMETYPE} = ? AND ${Event.TYPE} = ?"
+    val birthdayArgs = arrayOf(Event.CONTENT_ITEM_TYPE, Event.TYPE_BIRTHDAY.toString())
+    
+    cr.query(
+        Data.CONTENT_URI,
+        arrayOf(Data.CONTACT_ID, Data.DISPLAY_NAME, Event.START_DATE, Data.STARRED, Data.IN_VISIBLE_GROUP, Data.PHOTO_THUMBNAIL_URI),
+        birthdaySelection,
+        birthdayArgs,
+        null
+    )?.use { cursor ->
+        val idCol = cursor.getColumnIndex(Data.CONTACT_ID)
+        val nameCol = cursor.getColumnIndex(Data.DISPLAY_NAME)
+        val dateCol = cursor.getColumnIndex(Event.START_DATE)
+        val starredCol = cursor.getColumnIndex(Data.STARRED)
+        val visibleCol = cursor.getColumnIndex(Data.IN_VISIBLE_GROUP)
+        val photoCol = cursor.getColumnIndex(Data.PHOTO_THUMBNAIL_URI)
 
-    // 3. Batch-Abfrage für ALLES andere (Gruppenmitgliedschaften, Telefon, Mail, Messenger)
-    val labelsMap = mutableMapOf<String, MutableSet<String>>()
-    val actionsMap = mutableMapOf<String, ContactActions>()
-    val phoneMap = mutableMapOf<String, String>()
-    val emailMap = mutableMapOf<String, String>()
-    val waSet = mutableSetOf<String>()
-    val sigSet = mutableSetOf<String>()
-    val tgSet = mutableSetOf<String>()
+        while (cursor.moveToNext()) {
+            val id = cursor.getLong(idCol)
+            val name = cursor.getString(nameCol) ?: "Unknown"
+            val bday = cursor.getString(dateCol) ?: continue
+            val isStarred = cursor.getInt(starredCol) != 0
+            val isVisible = cursor.getInt(visibleCol) != 0
+            val photo = cursor.getString(photoCol)
+            
+            if (!birthdayContacts.containsKey(id)) {
+                birthdayContacts[id] = TempContactBuilder(id, name, bday, isStarred, isVisible, photo)
+            }
+        }
+    }
 
-    contactIds.chunked(500).forEach { chunk ->
-        val idList = chunk.joinToString(",") { "?" }
-        context.contentResolver.query(
-            ContactsContract.Data.CONTENT_URI,
-            arrayOf(
-                ContactsContract.Data.CONTACT_ID, 
-                ContactsContract.Data.MIMETYPE, 
-                ContactsContract.Data.DATA1,
-                ContactsContract.CommonDataKinds.GroupMembership.GROUP_ROW_ID
-            ),
-            "${ContactsContract.Data.CONTACT_ID} IN ($idList)",
-            chunk.toTypedArray(),
+    if (birthdayContacts.isEmpty()) return emptyList()
+
+    // 3. Für alle gefundenen Kontakte ALLE Daten-Einträge in Chunks laden (Labels, Telefon, Messenger)
+    val allIds = birthdayContacts.keys.toList()
+    allIds.chunked(400).forEach { chunk ->
+        val selection = "${Data.CONTACT_ID} IN (${chunk.joinToString(",")})"
+        cr.query(
+            Data.CONTENT_URI,
+            arrayOf(Data.CONTACT_ID, Data.MIMETYPE, Data.DATA1, GroupMembership.GROUP_ROW_ID),
+            selection,
+            null,
             null
         )?.use { cursor ->
-            val cIdIdx = cursor.getColumnIndex(ContactsContract.Data.CONTACT_ID)
-            val mimeIdx = cursor.getColumnIndex(ContactsContract.Data.MIMETYPE)
-            val data1Idx = cursor.getColumnIndex(ContactsContract.Data.DATA1)
-            val groupIdIdx = cursor.getColumnIndex(ContactsContract.CommonDataKinds.GroupMembership.GROUP_ROW_ID)
+            val idIdx = cursor.getColumnIndex(Data.CONTACT_ID)
+            val mimeIdx = cursor.getColumnIndex(Data.MIMETYPE)
+            val data1Idx = cursor.getColumnIndex(Data.DATA1)
+            val groupIdx = cursor.getColumnIndex(GroupMembership.GROUP_ROW_ID)
 
             while (cursor.moveToNext()) {
-                val cid = cursor.getString(cIdIdx) ?: continue
+                val id = cursor.getLong(idIdx)
+                val contact = birthdayContacts[id] ?: continue
                 val mime = cursor.getString(mimeIdx)
                 val data1 = cursor.getString(data1Idx)
 
                 when (mime) {
-                    ContactsContract.CommonDataKinds.GroupMembership.CONTENT_ITEM_TYPE -> {
-                        val groupId = cursor.getString(groupIdIdx)
-                        groupMap[groupId]?.let { labelsMap.getOrPut(cid) { mutableSetOf() }.add(it) }
+                    GroupMembership.CONTENT_ITEM_TYPE -> {
+                        val groupId = cursor.getLong(groupIdx)
+                        groupMap[groupId]?.let { contact.labels.add(it) }
                     }
-                    ContactsContract.CommonDataKinds.Phone.CONTENT_ITEM_TYPE -> if (phoneMap[cid] == null) phoneMap[cid] = data1
-                    ContactsContract.CommonDataKinds.Email.CONTENT_ITEM_TYPE -> if (emailMap[cid] == null) emailMap[cid] = data1
-                    ContactMimes.WHATSAPP -> waSet.add(cid)
-                    ContactMimes.SIGNAL -> sigSet.add(cid)
-                    ContactMimes.TELEGRAM -> tgSet.add(cid)
+                    Phone.CONTENT_ITEM_TYPE -> if (contact.phone == null) contact.phone = data1
+                    Email.CONTENT_ITEM_TYPE -> if (contact.email == null) contact.email = data1
+                    ContactMimes.WHATSAPP -> contact.hasWA = true
+                    ContactMimes.SIGNAL -> contact.hasSig = true
+                    ContactMimes.TELEGRAM -> contact.hasTG = true
                 }
             }
         }
     }
 
-    // 4. Daten zusammenführen
-    for ((id, data) in tempContacts) {
-        val (name, bday, systemLabels) = data
-        val photoUri = ContentUris.withAppendedId(ContactsContract.Contacts.CONTENT_URI, id.toLong()).let {
-            Uri.withAppendedPath(it, ContactsContract.Contacts.Photo.CONTENT_DIRECTORY).toString()
+    // 4. In das endgültige Modell transformieren
+    return birthdayContacts.values.map { builder ->
+        val (age, remainingDays) = calculateAgeAndDays(builder.birthday)
+        val photoUri = builder.photoUri ?: ContentUris.withAppendedId(Contacts.CONTENT_URI, builder.id).let {
+            Uri.withAppendedPath(it, Contacts.Photo.CONTENT_DIRECTORY).toString()
         }
 
-        val (age, remainingDays) = calculateAgeAndDays(bday)
+        val labels = mutableSetOf<String>()
+        if (builder.isVisible) labels.add(SYSTEM_LABEL_ALL)
+        if (builder.isStarred) labels.add(SYSTEM_LABEL_STARRED)
+        labels.addAll(builder.labels)
         
-        // Labels kombinieren (System + Custom)
-        val finalLabels = mutableSetOf<String>().apply {
-            addAll(systemLabels)
-            labelsMap[id]?.let { addAll(it) }
-            // Falls gar keine Labels vorhanden sind, als "Ohne Label" markieren
-            if (isEmpty()) add(LABEL_NONE)
-        }
+        if (labels.isEmpty()) labels.add(LABEL_NONE)
 
-        contactList.add(BirthdayContact(
-            id = id,
-            name = name,
-            birthday = bday,
-            labels = finalLabels.toList().sorted(),
+        BirthdayContact(
+            id = builder.id.toString(),
+            name = builder.name,
+            birthday = builder.birthday,
+            labels = labels.toList().sorted(),
             remainingDays = remainingDays,
             age = age,
             actions = ContactActions(
-                phoneNumber = phoneMap[id],
-                email = emailMap[id],
-                hasWhatsApp = waSet.contains(id),
-                hasSignal = sigSet.contains(id),
-                hasTelegram = tgSet.contains(id)
+                phoneNumber = builder.phone,
+                email = builder.email,
+                hasWhatsApp = builder.hasWA,
+                hasSignal = builder.hasSig,
+                hasTelegram = builder.hasTG
             ),
             photoUri = photoUri
-        ))
+        )
     }
+}
 
-    return contactList
+private class TempContactBuilder(
+    val id: Long,
+    val name: String,
+    val birthday: String,
+    val isStarred: Boolean,
+    val isVisible: Boolean,
+    val photoUri: String?
+) {
+    val labels = mutableSetOf<String>()
+    var phone: String? = null
+    var email: String? = null
+    var hasWA: Boolean = false
+    var hasSig: Boolean = false
+    var hasTG: Boolean = false
 }
