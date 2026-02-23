@@ -32,10 +32,6 @@ sealed interface SyncStatus {
     data class Error(val message: String) : SyncStatus
 }
 
-/**
- * Das MainViewModel verwaltet den globalen State der App.
- * Dank Hilt wird es nun automatisch mit Repository und FilterManager versorgt.
- */
 @HiltViewModel
 class MainViewModel @Inject constructor(
     application: Application,
@@ -73,7 +69,6 @@ class MainViewModel @Inject constructor(
 
     init {
         loadContacts(isInitial = true)
-        initializeDefaultLabels()
     }
 
     private fun filterContacts(
@@ -100,23 +95,6 @@ class MainViewModel @Inject constructor(
             .toList()
     }
 
-    private fun initializeDefaultLabels() {
-        viewModelScope.launch {
-            val prefs = filterManager.preferencesFlow.first()
-            if (!prefs.isInitialized) {
-                uiState.map { it.availableLabels }
-                    .filter { it.isNotEmpty() }
-                    .first()
-                    .let { labels ->
-                        filterManager.saveSelectedLabels(labels)
-                        filterManager.saveNotificationSelectedLabels(labels)
-                        filterManager.saveWidgetSelectedLabels(labels)
-                        filterManager.setInitialized(true)
-                    }
-            }
-        }
-    }
-
     fun loadContacts(isInitial: Boolean = false) {
         viewModelScope.launch {
             if (!isInitial) _syncStatus.value = SyncStatus.Loading
@@ -137,6 +115,19 @@ class MainViewModel @Inject constructor(
 
             try {
                 repository.refreshBirthdays()
+                
+                // Einmalige Initialisierung der Standard-Labels nach dem ersten erfolgreichen Sync
+                val currentPrefs = filterManager.preferencesFlow.first()
+                if (!currentPrefs.isInitialized) {
+                    val labels = repository.allBirthdays.first().flatMap { it.labels }.toSet()
+                    if (labels.isNotEmpty()) {
+                        filterManager.saveSelectedLabels(labels)
+                        filterManager.saveNotificationSelectedLabels(labels)
+                        filterManager.saveWidgetSelectedLabels(labels)
+                    }
+                    filterManager.setInitialized(true)
+                }
+
                 if (!isInitial) _syncStatus.value = SyncStatus.Success
             } catch (e: Exception) {
                 if (!isInitial) {

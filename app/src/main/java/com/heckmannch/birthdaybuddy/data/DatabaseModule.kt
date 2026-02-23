@@ -12,17 +12,27 @@ import javax.inject.Singleton
 
 /**
  * Hilt-Modul zur Bereitstellung von Datenbank-bezogenen Abhängigkeiten.
+ * 
+ * Hilt-Module sind "Fabriken", die definieren, wie Instanzen von Klassen erstellt werden,
+ * die nicht direkt annotiert werden können (wie z.B. Bibliotheksklassen wie Room).
  */
 @Module
-@InstallIn(SingletonComponent::class)
+@InstallIn(SingletonComponent::class) // SingletonComponent bedeutet: Die Instanzen leben so lange wie die App.
 object DatabaseModule {
 
+    /**
+     * Stellt die Singleton-Instanz der Datenbank bereit.
+     */
     @Provides
     @Singleton
     fun provideDatabase(@ApplicationContext context: Context): BirthdayDatabase {
         return BirthdayDatabase.getDatabase(context)
     }
 
+    /**
+     * Stellt das DAO bereit. 
+     * Da wir die Datenbank bereits oben bereitstellen, kann Hilt diese hier automatisch einsetzen.
+     */
     @Provides
     fun provideBirthdayDao(database: BirthdayDatabase): BirthdayDao {
         return database.birthdayDao()
@@ -31,6 +41,8 @@ object DatabaseModule {
 
 /**
  * Modul zur Konfiguration des Hilt-Workers.
+ * 
+ * Dies ist notwendig, damit WorkManager und Hilt zusammenarbeiten können.
  */
 @Module
 @InstallIn(SingletonComponent::class)

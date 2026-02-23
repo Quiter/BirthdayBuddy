@@ -3,7 +3,6 @@ package com.heckmannch.birthdaybuddy.data
 import android.content.ContentUris
 import android.content.Context
 import android.net.Uri
-import android.provider.ContactsContract
 import android.provider.ContactsContract.CommonDataKinds.Email
 import android.provider.ContactsContract.CommonDataKinds.Event
 import android.provider.ContactsContract.CommonDataKinds.GroupMembership
@@ -15,25 +14,35 @@ import com.heckmannch.birthdaybuddy.model.BirthdayContact
 import com.heckmannch.birthdaybuddy.model.ContactActions
 import com.heckmannch.birthdaybuddy.utils.calculateAgeAndDays
 
+/**
+ * MIME-Typen für spezifische Drittanbieter-Daten in der Android-Kontakte-Datenbank.
+ * Diese werden benötigt, um Messenger-Profile (WhatsApp, Signal, Telegram) zu identifizieren.
+ */
 object ContactMimes {
     const val WHATSAPP = "vnd.android.cursor.item/vnd.com.whatsapp.profile"
     const val SIGNAL = "vnd.android.cursor.item/vnd.org.thoughtcrime.securesms.contact"
     const val TELEGRAM = "vnd.android.cursor.item/vnd.org.telegram.messenger.android.profile"
 }
 
+// Interne Konstanten für System-Labels, die in der UI übersetzt werden.
 private const val SYSTEM_LABEL_ALL = "My Contacts"
 private const val SYSTEM_LABEL_STARRED = "Starred in Android"
 private const val LABEL_NONE = "Unlabeled"
 
 /**
- * Komplett neu geschriebene Implementierung zum Abrufen von Geburtstagen und Labels.
- * Nutzt einen mehrstufigen Prozess, um maximale Kompatibilität mit Google-Labels 
- * und herstellerspezifischen Gruppen zu gewährleisten.
+ * Die zentrale Logik zum Laden der Geburtstage aus dem Android-System.
+ * 
+ * Der Prozess ist in 4 Phasen unterteilt, um Performance und Vollständigkeit zu garantieren:
+ * 1. Gruppen auflösen: Holt alle Label-Namen (Google Groups etc.)
+ * 2. Geburtstage finden: Identifiziert alle Kontakte mit Geburtsdatum.
+ * 3. Detail-Laden: Holt Batch-weise Telefon, Mail und Messenger-Status.
+ * 4. Transformation: Berechnet Alter/Tage und baut das finale Domänen-Modell.
  */
 fun fetchBirthdays(context: Context): List<BirthdayContact> {
     val cr = context.contentResolver
     
-    // 1. Alle Gruppennamen auflösen (über alle Accounts hinweg)
+    // 1. SCHRITT: Alle verfügbaren Gruppen-IDs zu Namen auflösen.
+    // Wir berücksichtigen Titel und System-IDs, um herstellerspezifische Gruppen zu erfassen.
     val groupMap = mutableMapOf<Long, String>()
     cr.query(
         Groups.CONTENT_URI,
@@ -60,7 +69,7 @@ fun fetchBirthdays(context: Context): List<BirthdayContact> {
         }
     }
 
-    // 2. Alle Kontakte identifizieren, die einen Geburtstag hinterlegt haben
+    // 2. SCHRITT: Alle Kontakte mit Geburtstags-Eintrag finden.
     val birthdayContacts = mutableMapOf<Long, TempContactBuilder>()
     val birthdaySelection = "${Data.MIMETYPE} = ? AND ${Event.TYPE} = ?"
     val birthdayArgs = arrayOf(Event.CONTENT_ITEM_TYPE, Event.TYPE_BIRTHDAY.toString())
@@ -95,7 +104,8 @@ fun fetchBirthdays(context: Context): List<BirthdayContact> {
 
     if (birthdayContacts.isEmpty()) return emptyList()
 
-    // 3. Für alle gefundenen Kontakte ALLE Daten-Einträge in Chunks laden (Labels, Telefon, Messenger)
+    // 3. SCHRITT: Batch-Abfrage für Labels und Aktionen (Telefon, Messenger).
+    // Wir nutzen Chunking (400er Pakete), um die Limits des ContentProviders nicht zu sprengen.
     val allIds = birthdayContacts.keys.toList()
     allIds.chunked(400).forEach { chunk ->
         val selection = "${Data.CONTACT_ID} IN (${chunk.joinToString(",")})"
@@ -132,18 +142,22 @@ fun fetchBirthdays(context: Context): List<BirthdayContact> {
         }
     }
 
-    // 4. In das endgültige Modell transformieren
+    // 4. SCHRITT: Finale Transformation in BirthdayContact-Objekte.
     return birthdayContacts.values.map { builder ->
         val (age, remainingDays) = calculateAgeAndDays(builder.birthday)
+        
+        // Generiert die Photo-URI. Falls kein Thumbnail existiert, nutzen wir die Standard-URI.
         val photoUri = builder.photoUri ?: ContentUris.withAppendedId(Contacts.CONTENT_URI, builder.id).let {
             Uri.withAppendedPath(it, Contacts.Photo.CONTENT_DIRECTORY).toString()
         }
 
+        // System-Labels (Sichtbar, Favorit) hinzufügen.
         val labels = mutableSetOf<String>()
         if (builder.isVisible) labels.add(SYSTEM_LABEL_ALL)
         if (builder.isStarred) labels.add(SYSTEM_LABEL_STARRED)
         labels.addAll(builder.labels)
         
+        // Fallback: Jeder Kontakt muss mindestens ein Label haben, um filterbar zu sein.
         if (labels.isEmpty()) labels.add(LABEL_NONE)
 
         BirthdayContact(
@@ -165,6 +179,9 @@ fun fetchBirthdays(context: Context): List<BirthdayContact> {
     }
 }
 
+/**
+ * Hilfsklasse zur temporären Aggregation von Kontaktdaten während der verschiedenen Query-Phasen.
+ */
 private class TempContactBuilder(
     val id: Long,
     val name: String,

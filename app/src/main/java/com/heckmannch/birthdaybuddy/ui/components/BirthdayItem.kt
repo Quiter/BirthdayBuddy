@@ -53,6 +53,14 @@ import nl.dionsegijn.konfetti.core.Position
 import nl.dionsegijn.konfetti.core.emitter.Emitter
 import java.util.concurrent.TimeUnit
 
+/**
+ * Die wichtigste UI-Komponente: Eine interaktive Karte für einen Geburtstagskontakt.
+ * 
+ * Diese Komponente nutzt fortschrittliche Compose-Techniken:
+ * - animateContentSize: Sorgt für sanftes Auf- und Zuklappen.
+ * - KonfettiView: Löst bei heutigen Geburtstagen einen Effekt aus.
+ * - Dynamisches Styling: Farben ändern sich basierend auf Alter und Status.
+ */
 @Composable
 fun BirthdayItem(
     contact: BirthdayContact,
@@ -64,15 +72,18 @@ fun BirthdayItem(
     val isDark = isSystemInDarkTheme()
     val isBirthdayToday = contact.remainingDays == 0
     
+    // Kategorisierung für visuelle Highlights
     val isKidBirthday = contact.age in 1..9
     val isRoundBirthday = contact.age > 0 && contact.age % 10 == 0
 
+    // Farb-Konstanten für Spezialeffekte
     val goldColor = Color(0xFFFFD700)
     val secondaryGold = Color(0xFFFBC02D)
     val silverColor = Color(0xFFC0C0C0)
     val secondarySilver = Color(0xFFE0E0E0)
     val kidColors = listOf(Color(0xFF4285F4), Color(0xFFF06292), Color(0xFFFFB300), Color(0xFF4CAF50))
 
+    // Erstellt einen passenden Rahmen-Farbverlauf basierend auf der Art des Geburtstags.
     val borderBrush = when {
         isKidBirthday -> Brush.linearGradient(kidColors)
         isRoundBirthday -> Brush.linearGradient(listOf(goldColor, secondaryGold))
@@ -85,6 +96,7 @@ fun BirthdayItem(
         else -> silverColor
     }
 
+    // Konfetti-Konfiguration: Wird nur berechnet, wenn nötig (remember).
     val party = remember(isKidBirthday, isRoundBirthday) {
         val colors = when {
             isKidBirthday -> kidColors.map { it.hashCode() }
@@ -102,6 +114,7 @@ fun BirthdayItem(
         )
     }
 
+    // Nur bei heutigen Geburtstagen zeigen wir den speziellen Rahmen.
     val birthdayModifier = if (isBirthdayToday) {
         Modifier.border(BorderStroke(2.dp, borderBrush), shape = CardDefaults.elevatedShape)
     } else Modifier
@@ -113,7 +126,7 @@ fun BirthdayItem(
                 .padding(horizontal = 16.dp, vertical = 6.dp)
                 .then(birthdayModifier)
                 .clickable {
-                    keyboardController?.hide()
+                    keyboardController?.hide() // Schließt die Tastatur, falls sie noch offen war (z.B. nach Suche)
                     expanded = !expanded
                 },
             colors = CardDefaults.elevatedCardColors(
@@ -153,6 +166,7 @@ fun BirthdayItem(
                         )
                     },
                     leadingContent = {
+                        // Profilbild-Handling mit Coil (AsyncImage)
                         AsyncImage(
                             model = contact.photoUri,
                             contentDescription = null,
@@ -208,12 +222,14 @@ fun BirthdayItem(
                     }
                 )
 
+                // ERWEITERTER BEREICH: Wird nur angezeigt, wenn expanded == true
                 if (expanded) {
                     HorizontalDivider(
                         modifier = Modifier.padding(horizontal = 16.dp),
                         color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)
                     )
 
+                    // Labels werden alphabetisch sortiert für ein konsistentes UI.
                     if (contact.labels.isNotEmpty()) {
                         val sortedLabels = remember(contact.labels) { contact.labels.sorted() }
                         LazyRow(
@@ -236,6 +252,7 @@ fun BirthdayItem(
                         }
                     }
 
+                    // AKTION-BUTTONS: Schnellzugriff auf Anrufe, SMS, Mail und Messenger.
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -243,6 +260,7 @@ fun BirthdayItem(
                         horizontalArrangement = Arrangement.SpaceEvenly
                     ) {
                         val actions = contact.actions
+                        // Generiert einen zufälligen Glückwunschtext basierend auf dem Alter (adult, round, kid etc.)
                         val greetingText = if (isBirthdayToday) GreetingGenerator.generateRandomGreeting(context, contact.name, contact.age) else ""
 
                         if (actions.phoneNumber != null) {
@@ -275,6 +293,7 @@ fun BirthdayItem(
                             }
                         }
 
+                        // MESSENGER INTEGRATION: Nutzt Deep-Links zu den jeweiligen Apps.
                         if (actions.hasWhatsApp && actions.phoneNumber != null) {
                             MessengerButton(color = Color(0xFF25D366), iconRes = R.drawable.ic_whatsapp) {
                                 launchMessenger(context, actions.phoneNumber, greetingText, isBirthdayToday, "com.whatsapp", "https://wa.me/")
@@ -293,6 +312,7 @@ fun BirthdayItem(
                             }
                         }
 
+                        // Falls keinerlei Kontaktdaten vorhanden sind (sehr selten bei Kontakten mit Namen).
                         if (actions.phoneNumber == null && actions.email == null && !actions.hasWhatsApp && !actions.hasSignal && !actions.hasTelegram) {
                             Text(
                                 stringResource(R.string.error_no_contact_data),
@@ -306,12 +326,17 @@ fun BirthdayItem(
             }
         }
 
+        // Konfetti-Effekt: Wird oben auf die Karte gerendert, wenn heute Geburtstag ist und die Karte offen ist.
         if (isBirthdayToday && expanded) {
             KonfettiView(modifier = Modifier.matchParentSize(), parties = listOf(party))
         }
     }
 }
 
+/**
+ * Hilfsfunktion zum Starten von Messenger-Apps über Deep-Links.
+ * @param urlPrefix Das spezifische Protokoll (z.B. wa.me oder tg://msg)
+ */
 private fun launchMessenger(context: Context, number: String, text: String, isToday: Boolean, packageName: String, urlPrefix: String) {
     val cleanNumber = number.replace(Regex("[^0-9+]"), "")
     val url = if (isToday) "$urlPrefix$cleanNumber?text=${Uri.encode(text)}" else "$urlPrefix$cleanNumber"
@@ -319,6 +344,7 @@ private fun launchMessenger(context: Context, number: String, text: String, isTo
     try {
         context.startActivity(intent)
     } catch (_: Exception) {
+        // Fallback: Falls die App nicht gefunden wurde, versuchen wir es ohne explizites Package (Browser-Link)
         try {
             context.startActivity(Intent(Intent.ACTION_VIEW, url.toUri()))
         } catch (_: Exception) {
@@ -342,6 +368,10 @@ private fun MessengerButton(color: Color, iconRes: Int? = null, text: String? = 
     }
 }
 
+/**
+ * Berechnet eine dynamische Farbe für das Alter.
+ * Junge Menschen erhalten hellere/rötere Töne, ältere tiefere Farbtöne.
+ */
 private fun getAgeColorRaw(age: Int, isDark: Boolean): Color {
     val youngColor = if (isDark) Color(0xFFFFA4A4) else Color(0xFFFF5252)
     val oldColor = if (isDark) Color(0xFFD32F2F) else Color(0xFF8B0000)
@@ -350,6 +380,10 @@ private fun getAgeColorRaw(age: Int, isDark: Boolean): Color {
     return lerp(youngColor, oldColor, fraction)
 }
 
+/**
+ * Berechnet eine Farbe basierend auf den verbleibenden Tagen.
+ * Geburtstage, die kurz bevorstehen, sind "heller" markiert.
+ */
 private fun getDaysColorRaw(days: Int, isDark: Boolean): Color {
     val nearColor = if (isDark) Color(0xFF80D8FF) else Color(0xFF00BFFF)
     val farColor = if (isDark) Color(0xFF5C6BC0) else Color(0xFF00008B)
