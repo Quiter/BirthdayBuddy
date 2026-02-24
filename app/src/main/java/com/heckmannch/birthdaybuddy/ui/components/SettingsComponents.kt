@@ -24,6 +24,15 @@ import androidx.compose.ui.unit.dp
 import com.heckmannch.birthdaybuddy.R
 import com.heckmannch.birthdaybuddy.ui.theme.*
 
+/**
+ * Diese Datei enthält wiederverwendbare UI-Elemente für die Einstellungs-Bildschirme.
+ * Das Design orientiert sich an modernen "Pill"-Layouts (abgerundete Blöcke).
+ */
+
+/**
+ * Eine einfache Überschrift für verschiedene Einstellungs-Sektionen.
+ * Wird meist in Großbuchstaben und mit etwas Abstand angezeigt.
+ */
 @Composable
 fun SectionHeader(title: String) {
     Text(
@@ -35,6 +44,10 @@ fun SectionHeader(title: String) {
     )
 }
 
+/**
+ * Ein Container, der mehrere Einstellungseinträge optisch gruppiert.
+ * Er sorgt dafür, dass die Ecken der gesamten Gruppe abgerundet sind.
+ */
 @Composable
 fun SettingsGroup(
     content: @Composable ColumnScope.() -> Unit
@@ -48,6 +61,17 @@ fun SettingsGroup(
     }
 }
 
+/**
+ * Ein einzelner Eintrag (Zeile) in den Einstellungen.
+ * 
+ * @param title Haupttext (z.B. "Benachrichtigungen")
+ * @param subtitle Kleinerer Text darunter (Beschreibung)
+ * @param icon Das Icon auf der linken Seite
+ * @param iconContainerColor Hintergrundfarbe des kleinen Icon-Kreises
+ * @param isTop Wenn true, werden die oberen Ecken abgerundet (für den ersten Eintrag im Block)
+ * @param isBottom Wenn true, werden die unteren Ecken abgerundet (für den letzten Eintrag im Block)
+ * @param showArrow Zeigt den Pfeil nach rechts an (Standard: true)
+ */
 @Composable
 fun SettingsBlockRow(
     title: String,
@@ -60,10 +84,11 @@ fun SettingsBlockRow(
     showArrow: Boolean = true,
     onClick: () -> Unit
 ) {
-    // Nutzt jetzt die zentrale CompositionLocal statt isSystemInDarkTheme()
+    // Erkennt automatisch, ob der DarkMode aktiv ist, um die Hintergrundfarbe anzupassen
     val isDark = LocalThemeIsDark.current
     val backgroundColor = if (isDark) SettingsPillBackgroundDark else SettingsPillBackgroundLight
     
+    // Logik für die Abrundung: Nur oben, nur unten, beides (Pille) oder gar nicht (Mitte eines Blocks)
     val shape = when {
         isTop && isBottom -> RoundedCornerShape(28.dp)
         isTop -> RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp, bottomStart = 4.dp, bottomEnd = 4.dp)
@@ -74,7 +99,7 @@ fun SettingsBlockRow(
     Surface(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(vertical = 1.dp)
+            .padding(vertical = 1.dp) // Kleiner Spalt zwischen den Zeilen
             .clip(shape)
             .clickable { onClick() },
         color = backgroundColor,
@@ -88,6 +113,7 @@ fun SettingsBlockRow(
                 Text(subtitle, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant) 
             },
             leadingContent = {
+                // Das Icon steckt in einem kleinen farbigen Kreis
                 Surface(
                     modifier = Modifier.size(40.dp),
                     shape = CircleShape,
@@ -117,35 +143,64 @@ fun SettingsBlockRow(
     }
 }
 
+/**
+ * Der Fußbereich der Einstellungen.
+ * Zeigt den App-Namen, die Version und einen Button zum GitHub-Projekt.
+ */
 @Composable
 fun SettingsFooter(versionName: String, onGithubClick: () -> Unit) {
     Column(
         modifier = Modifier.fillMaxWidth().padding(vertical = 48.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Text(stringResource(R.string.app_name), style = MaterialTheme.typography.titleSmall, color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.Bold)
-        Text(stringResource(R.string.version_label, versionName), style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f))
-        // Spacer(Modifier.height(16.dp))
-        // Text(stringResource(R.string.footer_slogan), style = MaterialTheme.typography.titleSmall, color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.Bold)
+        Text(
+            text = stringResource(R.string.app_name), 
+            style = MaterialTheme.typography.titleSmall, 
+            color = MaterialTheme.colorScheme.primary, 
+            fontWeight = FontWeight.Bold
+        )
+        Text(
+            text = stringResource(R.string.version_label, versionName), 
+            style = MaterialTheme.typography.labelMedium, 
+            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
+        )
+        
         Spacer(Modifier.height(16.dp))
+        
+        // Button mit dem GitHub-Icon
         FilledTonalButton(
             onClick = onGithubClick,
             contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp)
         ) {
-            Icon(painter = painterResource(id = R.drawable.ic_github), contentDescription = null, modifier = Modifier.size(18.dp))
+            Icon(
+                painter = painterResource(id = R.drawable.ic_github), 
+                contentDescription = null, 
+                modifier = Modifier.size(18.dp)
+            )
             Spacer(Modifier.width(8.dp))
             Text(stringResource(R.string.settings_github_project), style = MaterialTheme.typography.labelLarge)
         }
     }
 }
 
+/**
+ * Ein "Zahlenrad" (Wheel Picker), wie man es von iOS-Weckern kennt.
+ * Wird in dieser App zur Auswahl der Uhrzeit für Benachrichtigungen genutzt.
+ * 
+ * @param range Der Zahlenbereich (z.B. 0..23 für Stunden)
+ * @param initialValue Der Wert, der am Anfang in der Mitte stehen soll
+ * @param onValueChange Callback, wenn ein neuer Wert in der Mitte einrastet
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun WheelPicker(range: List<Int>, initialValue: Int, onValueChange: (Int) -> Unit) {
+    // Initialer Index in der Liste finden
     val listState = rememberLazyListState(initialFirstVisibleItemIndex = range.indexOf(initialValue).coerceAtLeast(0))
+    // Sorgt dafür, dass die Liste immer exakt auf einem Element "einrastet" (Snapping)
     val flingBehavior = rememberSnapFlingBehavior(lazyListState = listState)
     val itemHeight = 56.dp
     
+    // Überwacht das Ende des Scroll-Vorgangs, um den neuen Wert zurückzugeben
     LaunchedEffect(listState.isScrollInProgress) {
         if (!listState.isScrollInProgress) {
             val centeredIndex = listState.firstVisibleItemIndex
@@ -153,7 +208,11 @@ fun WheelPicker(range: List<Int>, initialValue: Int, onValueChange: (Int) -> Uni
         }
     }
 
-    Box(modifier = Modifier.width(100.dp).height(itemHeight * 3), contentAlignment = Alignment.Center) {
+    Box(
+        modifier = Modifier.width(100.dp).height(itemHeight * 3), 
+        contentAlignment = Alignment.Center
+    ) {
+        // Der optische Auswahlrahmen in der Mitte
         Surface(
             modifier = Modifier.fillMaxWidth().height(itemHeight),
             color = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.4f),
@@ -161,17 +220,21 @@ fun WheelPicker(range: List<Int>, initialValue: Int, onValueChange: (Int) -> Uni
             border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant)
         ) {}
         
+        // Die scrollbare Liste mit den Zahlen
         LazyColumn(
             state = listState, 
             flingBehavior = flingBehavior, 
-            contentPadding = PaddingValues(vertical = itemHeight), 
+            contentPadding = PaddingValues(vertical = itemHeight), // Puffer oben/unten für Zentrierung
             modifier = Modifier.fillMaxSize(), 
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             items(items = range) { value ->
-                Box(modifier = Modifier.height(itemHeight).fillMaxWidth(), contentAlignment = Alignment.Center) {
+                Box(
+                    modifier = Modifier.height(itemHeight).fillMaxWidth(), 
+                    contentAlignment = Alignment.Center
+                ) {
                     Text(
-                        text = value.toString(), 
+                        text = value.toString().padStart(2, '0'), // Füllt einstellige Zahlen mit einer Null auf (09 statt 9)
                         style = MaterialTheme.typography.titleLarge, 
                         fontWeight = FontWeight.ExtraBold,
                         color = MaterialTheme.colorScheme.onSurface

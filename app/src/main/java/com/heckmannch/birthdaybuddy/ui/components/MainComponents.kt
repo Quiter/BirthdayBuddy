@@ -32,16 +32,25 @@ import androidx.compose.ui.unit.sp
 import com.heckmannch.birthdaybuddy.R
 import com.heckmannch.birthdaybuddy.model.BirthdayContact
 
-// System-Labels als Konstanten für bessere Wartbarkeit
+/**
+ * Diese Datei enthält die zentralen UI-Komponenten des Hauptbildschirms.
+ * Hier wird das Layout für die Suchleiste, das Seitenmenü (Drawer) und die Liste definiert.
+ */
+
+// Interne Konstanten für die Erkennung von System-Gruppen aus dem Android-Telefonbuch.
 private const val SYSTEM_LABEL_ALL = "My Contacts"
 private const val SYSTEM_LABEL_STARRED = "Starred in Android"
 
+/**
+ * Die Suchleiste am oberen Bildschirmrand.
+ * Sie ermöglicht das Filtern der Kontaktliste in Echtzeit.
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MainSearchBar(
-    query: String,
-    onQueryChange: (String) -> Unit,
-    onMenuClick: () -> Unit,
+    query: String,                  // Der aktuelle Text in der Suche
+    onQueryChange: (String) -> Unit, // Callback, wenn sich der Text ändert
+    onMenuClick: () -> Unit,        // Öffnet das Seitenmenü
     modifier: Modifier = Modifier
 ) {
     SearchBar(
@@ -49,7 +58,7 @@ fun MainSearchBar(
             SearchBarDefaults.InputField(
                 query = query,
                 onQueryChange = onQueryChange,
-                onSearch = { },
+                onSearch = { }, // Wir suchen live, daher ist kein "Enter"-Event nötig
                 expanded = false,
                 onExpandedChange = { },
                 placeholder = { 
@@ -69,6 +78,7 @@ fun MainSearchBar(
                     }
                 },
                 trailingIcon = {
+                    // Das "X" zum Löschen erscheint nur, wenn Text eingegeben wurde
                     AnimatedVisibility(
                         visible = query.isNotEmpty(),
                         enter = fadeIn(),
@@ -93,7 +103,7 @@ fun MainSearchBar(
         onExpandedChange = { },
         modifier = modifier
             .fillMaxWidth()
-            .statusBarsPadding()
+            .statusBarsPadding() // Sorgt dafür, dass die Leiste unter der Statusleiste (Akku, Uhr) beginnt
             .padding(horizontal = 16.dp, vertical = 8.dp),
         shape = SearchBarDefaults.inputFieldShape,
         colors = SearchBarDefaults.colors(
@@ -104,23 +114,30 @@ fun MainSearchBar(
     ) { }
 }
 
+/**
+ * Der Inhalt des seitlichen Menüs (Navigation Drawer).
+ * Erlaubt das Filtern nach Labels (Kategorien) und den schnellen Zugriff auf Apps.
+ */
 @Composable
 fun MainDrawerContent(
-    availableLabels: Set<String>,
-    selectedLabels: Set<String>,
-    hiddenDrawerLabels: Set<String>,
-    onLabelToggle: (String, Boolean) -> Unit,
-    onSettingsClick: () -> Unit
+    availableLabels: Set<String>,      // Alle gefundenen Labels aus den Kontakten
+    selectedLabels: Set<String>,       // Die aktuell aktiven Filter
+    hiddenDrawerLabels: Set<String>,   // Labels, die der Nutzer in den Einstellungen ausgeblendet hat
+    onLabelToggle: (String, Boolean) -> Unit, // Aktion beim Klick auf ein Label
+    onSettingsClick: () -> Unit        // Navigiert zu den Einstellungen
 ) {
     val context = LocalContext.current
     val allLabel = stringResource(R.string.label_all)
     val favoritesLabel = stringResource(R.string.label_favorites)
     
+    // Merkt sich, ob die Label-Sektion ausgeklappt ist
     var labelsExpanded by rememberSaveable { mutableStateOf(true) }
 
+    // Ein bunter Verlauf für den Header (wirkt freundlicher/moderner)
     val kidColors = listOf(Color(0xFF4285F4), Color(0xFFF06292), Color(0xFFFFB300), Color(0xFF4CAF50))
     val headerBrush = Brush.linearGradient(kidColors)
 
+    // Sortiert die Labels: Erst "Alle", dann "Favoriten", dann den Rest alphabetisch
     val sortedLabels = remember(availableLabels, hiddenDrawerLabels) {
         availableLabels
             .filterNot { hiddenDrawerLabels.contains(it) }
@@ -137,7 +154,7 @@ fun MainDrawerContent(
         modifier = Modifier.width(300.dp),
         drawerShape = RoundedCornerShape(topEnd = 16.dp, bottomEnd = 16.dp)
     ) {
-        // HEADER BEREICH (Optimiertes Inset-Handling)
+        // HEADER BEREICH mit App-Titel und Einstellungen-Button
         Box(
             modifier = Modifier
                 .fillMaxWidth()
@@ -174,12 +191,14 @@ fun MainDrawerContent(
             }
         }
 
+        // SCROLLBARE LISTE im Menü
         LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
                 .navigationBarsPadding(),
             contentPadding = PaddingValues(vertical = 8.dp)
         ) {
+            // Schnellzugriff auf externe Apps
             item {
                 NavigationDrawerItem(
                     label = { Text(stringResource(R.string.drawer_calendar)) },
@@ -206,6 +225,7 @@ fun MainDrawerContent(
                 HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp, horizontal = 16.dp))
             }
 
+            // LABEL-SEKTION (Überschrift mit Ausklapp-Funktion)
             item {
                 ListItem(
                     colors = ListItemDefaults.colors(containerColor = Color.Transparent),
@@ -227,9 +247,11 @@ fun MainDrawerContent(
                 )
             }
 
+            // Die einzelnen Label-Einträge
             if (labelsExpanded) {
                 items(sortedLabels) { label ->
                     val isChecked = selectedLabels.contains(label)
+                    // Mapping der technischen Label-Namen auf lesbare Texte und Icons
                     val (displayText, icon) = when(label) {
                         SYSTEM_LABEL_ALL -> allLabel to if (isChecked) Icons.Default.People else Icons.Default.PeopleOutline
                         SYSTEM_LABEL_STARRED -> favoritesLabel to if (isChecked) Icons.Default.Star else Icons.Default.StarOutline
@@ -263,6 +285,9 @@ fun MainDrawerContent(
 
 private val NavigationDrawerItemPadding = PaddingValues(horizontal = 12.dp, vertical = 0.dp)
 
+/**
+ * Die Hauptliste der Geburtstage.
+ */
 @Composable
 fun BirthdayList(
     contacts: List<BirthdayContact>,
@@ -273,21 +298,25 @@ fun BirthdayList(
         state = listState,
         modifier = modifier.fillMaxSize(),
         contentPadding = PaddingValues(
+            // Extra Abstand unten, damit das FAB (Floating Action Button) nichts verdeckt
             bottom = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding() + 80.dp 
         )
     ) {
         items(
             items = contacts,
-            key = { "${it.id}_${it.name}" }
+            key = { "${it.id}_${it.name}" } // Eindeutiger Schlüssel für flüssige Animationen
         ) { contact ->
             BirthdayItem(
                 contact = contact,
-                modifier = Modifier.animateItem()
+                modifier = Modifier.animateItem() // Sorgt für sanftes Verschieben beim Filtern
             )
         }
     }
 }
 
+/**
+ * Wird angezeigt, wenn keine Kontakte gefunden wurden (z.B. durch einen Filter).
+ */
 @Composable
 fun EmptyState(
     icon: ImageVector,
@@ -321,10 +350,9 @@ fun EmptyState(
         
         Text(
             text = title,
-            style = MaterialTheme.typography.headlineSmall,
+            style = MaterialTheme.typography.titleLarge,
             fontWeight = FontWeight.Bold,
-            textAlign = TextAlign.Center,
-            color = MaterialTheme.colorScheme.onSurface
+            textAlign = TextAlign.Center
         )
         
         Spacer(modifier = Modifier.height(8.dp))
@@ -332,9 +360,8 @@ fun EmptyState(
         Text(
             text = description,
             style = MaterialTheme.typography.bodyMedium,
-            textAlign = TextAlign.Center,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
-            modifier = Modifier.padding(horizontal = 16.dp)
+            textAlign = TextAlign.Center
         )
     }
 }

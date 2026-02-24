@@ -5,6 +5,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.runtime.*
+import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
@@ -17,6 +18,7 @@ import com.heckmannch.birthdaybuddy.ui.screens.*
 import com.heckmannch.birthdaybuddy.ui.Route
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import com.heckmannch.birthdaybuddy.data.FilterManager
+import com.heckmannch.birthdaybuddy.utils.updateWidget
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
@@ -37,11 +39,11 @@ class MainActivity : ComponentActivity() {
         setContent {
             val userPrefs by filterManager.preferencesFlow.collectAsState(initial = null)
             
-            // Wir warten, bis die Präferenzen geladen sind, um das richtige Theme anzuzeigen
             if (userPrefs != null) {
                 BirthdayBuddyTheme(theme = userPrefs!!.theme) {
                     val navController = rememberNavController()
                     val scope = rememberCoroutineScope()
+                    val context = LocalContext.current
                     
                     val mainViewModel: MainViewModel = viewModel()
                     val uiState by mainViewModel.uiState.collectAsState()
@@ -53,32 +55,30 @@ class MainActivity : ComponentActivity() {
                     }
 
                     /**
-                     * Automatischer App-Reset:
-                     * Überwacht den Lifecycle der App. Wenn die App länger als 30 Minuten im Hintergrund war,
-                     * wird der Nutzer beim nächsten Start automatisch zum MainScreen zurückgeleitet.
-                     * Dies sorgt für eine konsistente UX, damit der Nutzer immer mit der Übersicht startet.
+                     * Lifecycle-Überwachung für:
+                     * 1. App-Reset nach 30 Minuten Inaktivität.
+                     * 2. Widget-Update beim App-Start (stellt sicher, dass die Daten aktuell sind).
                      */
                     val lifecycleOwner = LocalLifecycleOwner.current
                     DisposableEffect(lifecycleOwner) {
                         val observer = LifecycleEventObserver { _, event ->
                             when (event) {
                                 Lifecycle.Event.ON_STOP -> {
-                                    // Zeitstempel merken, wenn die App in den Hintergrund geht
                                     scope.launch {
                                         filterManager.saveLastBackgroundTime(System.currentTimeMillis())
                                     }
                                 }
                                 Lifecycle.Event.ON_START -> {
-                                    // Beim Wiederkehren prüfen, ob die Zeitspanne (30 Min) überschritten wurde
+                                    // 1. Widget beim Start aktualisieren (Energieeffizientes "Daily Update")
+                                    updateWidget(context)
+
+                                    // 2. Prüfen, ob wir zum MainScreen zurückkehren müssen
                                     scope.launch {
                                         val prefs = filterManager.preferencesFlow.first()
                                         val lastTime = prefs.lastBackgroundTime
                                         if (lastTime != 0L) {
                                             val diff = System.currentTimeMillis() - lastTime
-                                            val thirtyMinutes = 30 * 60 * 1000
-                                            
-                                            if (diff > thirtyMinutes) {
-                                                // Falls wir nicht schon auf Main sind, dorthin zurückkehren
+                                            if (diff > 30 * 60 * 1000) {
                                                 if (navController.currentDestination?.route != Route.Main::class.qualifiedName) {
                                                     navController.navigate(Route.Main) {
                                                         popUpTo(Route.Main) { inclusive = true }
@@ -126,7 +126,11 @@ class MainActivity : ComponentActivity() {
                             LabelManagerScreen(
                                 availableLabels = uiState.availableLabels,
                                 isLoading = uiState.isLoading,
-                                onBack = onSafeBack
+                                onBack = {
+                                    // Beim Verlassen des Label-Managers das Widget aktualisieren
+                                    updateWidget(context)
+                                    onSafeBack()
+                                }
                             )
                         }
 
