@@ -4,6 +4,7 @@ import android.content.Context
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.LocalContext
+import androidx.work.Data
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
 
@@ -19,7 +20,6 @@ import androidx.work.WorkManager
 fun getAppVersionName(context: Context = LocalContext.current): String {
     return remember {
         try {
-            // PackageInfo enthält Metadaten der installierten App
             val packageInfo = context.packageManager.getPackageInfo(context.packageName, 0)
             packageInfo.versionName ?: "1.0"
         } catch (e: Exception) {
@@ -29,12 +29,17 @@ fun getAppVersionName(context: Context = LocalContext.current): String {
 }
 
 /**
- * Erzwingt eine sofortige Aktualisierung des Widgets.
- * Nutzt den WorkManager, um den BirthdayWorker im Hintergrund auszuführen.
- * Dies sollte immer aufgerufen werden, wenn sich Daten ändern (z.B. Labels oder Filter).
+ * Erzwingt eine sofortige Aktualisierung des Widgets, OHNE neue Benachrichtigungen zu senden.
+ * Dies ist für manuelle Updates aus der App heraus gedacht (z.B. beim App-Start).
  */
 fun updateWidget(context: Context) {
+    // Wir übergeben dem Worker die Info, dass er KEINE Benachrichtigungen senden soll.
+    val inputData = Data.Builder()
+        .putBoolean(BirthdayWorker.KEY_AFFECTS_NOTIFICATIONS, false)
+        .build()
+
     val workRequest = OneTimeWorkRequestBuilder<BirthdayWorker>()
+        .setInputData(inputData)
         .addTag("manual_widget_update")
         .build()
 
