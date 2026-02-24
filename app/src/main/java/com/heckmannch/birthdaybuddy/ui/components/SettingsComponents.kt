@@ -2,7 +2,6 @@ package com.heckmannch.birthdaybuddy.ui.components
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.snapping.rememberSnapFlingBehavior
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -61,7 +60,8 @@ fun SettingsBlockRow(
     showArrow: Boolean = true,
     onClick: () -> Unit
 ) {
-    val isDark = isSystemInDarkTheme()
+    // Nutzt jetzt die zentrale CompositionLocal statt isSystemInDarkTheme()
+    val isDark = LocalThemeIsDark.current
     val backgroundColor = if (isDark) SettingsPillBackgroundDark else SettingsPillBackgroundLight
     
     val shape = when {
@@ -125,8 +125,8 @@ fun SettingsFooter(versionName: String, onGithubClick: () -> Unit) {
     ) {
         Text(stringResource(R.string.app_name), style = MaterialTheme.typography.titleSmall, color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.Bold)
         Text(stringResource(R.string.version_label, versionName), style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f))
-        Spacer(Modifier.height(16.dp))
-        Text(stringResource(R.string.footer_slogan), style = MaterialTheme.typography.titleSmall, color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.Bold)
+        // Spacer(Modifier.height(16.dp))
+        // Text(stringResource(R.string.footer_slogan), style = MaterialTheme.typography.titleSmall, color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.Bold)
         Spacer(Modifier.height(16.dp))
         FilledTonalButton(
             onClick = onGithubClick,

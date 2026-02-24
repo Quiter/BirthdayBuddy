@@ -8,7 +8,13 @@ import androidx.compose.material3.dynamicDarkColorScheme
 import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.platform.LocalContext
+
+// Eine CompositionLocal, die den tatsächlichen Theme-Status (Hell/Dunkel) speichert.
+// Das verhindert, dass Komponenten isSystemInDarkTheme() nutzen müssen.
+val LocalThemeIsDark = staticCompositionLocalOf { false }
 
 private val DarkColorScheme = darkColorScheme(
     primary = Purple80,
@@ -32,6 +38,7 @@ fun BirthdayBuddyTheme(
     dynamicColor: Boolean = true,
     content: @Composable () -> Unit
 ) {
+    // Hier wird entschieden, ob die App dunkel sein soll
     val darkTheme = when(theme) {
         1 -> false
         2 -> true
@@ -52,9 +59,12 @@ fun BirthdayBuddyTheme(
         else -> LightColorScheme
     }
 
-    MaterialTheme(
-        colorScheme = colorScheme,
-        typography = Typography,
-        content = content
-    )
+    // Wir geben den Status 'darkTheme' über den Provider an alle Kinder weiter
+    CompositionLocalProvider(LocalThemeIsDark provides darkTheme) {
+        MaterialTheme(
+            colorScheme = colorScheme,
+            typography = Typography,
+            content = content
+        )
+    }
 }

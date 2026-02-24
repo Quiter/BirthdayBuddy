@@ -14,62 +14,67 @@ import com.heckmannch.birthdaybuddy.model.BirthdayContact
 import com.heckmannch.birthdaybuddy.model.ContactActions
 import com.heckmannch.birthdaybuddy.utils.calculateAgeAndDays
 
-/**
- * MIME-Typen für spezifische Drittanbieter-Daten in der Android-Kontakte-Datenbank.
- * Diese werden benötigt, um Messenger-Profile (WhatsApp, Signal, Telegram) zu identifizieren.
- */
 object ContactMimes {
     const val WHATSAPP = "vnd.android.cursor.item/vnd.com.whatsapp.profile"
     const val SIGNAL = "vnd.android.cursor.item/vnd.org.thoughtcrime.securesms.contact"
     const val TELEGRAM = "vnd.android.cursor.item/vnd.org.telegram.messenger.android.profile"
 }
 
-// Interne Konstanten für System-Labels, die in der UI übersetzt werden.
 private const val SYSTEM_LABEL_ALL = "My Contacts"
 private const val SYSTEM_LABEL_STARRED = "Starred in Android"
 private const val LABEL_NONE = "Unlabeled"
 
 /**
- * Die zentrale Logik zum Laden der Geburtstage aus dem Android-System.
- * 
- * Der Prozess ist in 4 Phasen unterteilt, um Performance und Vollständigkeit zu garantieren:
- * 1. Gruppen auflösen: Holt alle Label-Namen (Google Groups etc.)
- * 2. Geburtstage finden: Identifiziert alle Kontakte mit Geburtsdatum.
- * 3. Detail-Laden: Holt Batch-weise Telefon, Mail und Messenger-Status.
- * 4. Transformation: Berechnet Alter/Tage und baut das finale Domänen-Modell.
+ * Hochgradig robuste Implementierung zum Abrufen von Geburtstagen und Labels.
+ * Berücksichtigt TITLE, TITLE_RES und SYSTEM_ID, um sicherzustellen, dass 
+ * Emoji-Labels und Google-Gruppen über alle Konten hinweg gefunden werden.
  */
 fun fetchBirthdays(context: Context): List<BirthdayContact> {
     val cr = context.contentResolver
     
-    // 1. SCHRITT: Alle verfügbaren Gruppen-IDs zu Namen auflösen.
-    // Wir berücksichtigen Titel und System-IDs, um herstellerspezifische Gruppen zu erfassen.
+    // 1. SCHRITT: Alle Gruppen-Namen auflösen
     val groupMap = mutableMapOf<Long, String>()
     cr.query(
         Groups.CONTENT_URI,
-        arrayOf(Groups._ID, Groups.TITLE, Groups.SYSTEM_ID),
+        arrayOf(Groups._ID, Groups.TITLE, Groups.TITLE_RES, Groups.RES_PACKAGE, Groups.SYSTEM_ID),
         null, null, null
     )?.use { cursor ->
         val idIdx = cursor.getColumnIndex(Groups._ID)
         val titleIdx = cursor.getColumnIndex(Groups.TITLE)
+        val titleResIdx = cursor.getColumnIndex(Groups.TITLE_RES)
+        val resPackageIdx = cursor.getColumnIndex(Groups.RES_PACKAGE)
         val systemIdIdx = cursor.getColumnIndex(Groups.SYSTEM_ID)
         
         while (cursor.moveToNext()) {
             val id = cursor.getLong(idIdx)
             val title = cursor.getString(titleIdx)
+            val titleRes = cursor.getInt(titleResIdx)
+            val resPackage = cursor.getString(resPackageIdx)
             val systemId = cursor.getString(systemIdIdx)
             
-            val finalName = when {
-                !title.isNullOrBlank() -> title.replace("System Group: ", "")
-                !systemId.isNullOrBlank() -> systemId
-                else -> null
+            // Versuche den Namen zu bestimmen: 1. Titel (Emojis sind hier), 2. Lokalisierte Ressource, 3. System-ID
+            var finalName: String? = null
+            
+            if (!title.isNullOrBlank()) {
+                finalName = title
+            } else if (titleRes != 0 && !resPackage.isNullOrBlank()) {
+                try {
+                    val packageRes = context.packageManager.getResourcesForApplication(resPackage)
+                    finalName = packageRes.getString(titleRes)
+                } catch (_: Exception) {}
             }
+            
+            if (finalName == null && !systemId.isNullOrBlank()) {
+                finalName = systemId
+            }
+
             if (finalName != null) {
-                groupMap[id] = finalName
+                groupMap[id] = finalName.replace("System Group: ", "")
             }
         }
     }
 
-    // 2. SCHRITT: Alle Kontakte mit Geburtstags-Eintrag finden.
+    // 2. SCHRITT: Alle Kontakte mit Geburtstag finden
     val birthdayContacts = mutableMapOf<Long, TempContactBuilder>()
     val birthdaySelection = "${Data.MIMETYPE} = ? AND ${Event.TYPE} = ?"
     val birthdayArgs = arrayOf(Event.CONTENT_ITEM_TYPE, Event.TYPE_BIRTHDAY.toString())
@@ -104,8 +109,7 @@ fun fetchBirthdays(context: Context): List<BirthdayContact> {
 
     if (birthdayContacts.isEmpty()) return emptyList()
 
-    // 3. SCHRITT: Batch-Abfrage für Labels und Aktionen (Telefon, Messenger).
-    // Wir nutzen Chunking (400er Pakete), um die Limits des ContentProviders nicht zu sprengen.
+    // 3. SCHRITT: Batch-Abfrage für ALLES andere (Labels, Telefon, Messenger)
     val allIds = birthdayContacts.keys.toList()
     allIds.chunked(400).forEach { chunk ->
         val selection = "${Data.CONTACT_ID} IN (${chunk.joinToString(",")})"
@@ -129,6 +133,7 @@ fun fetchBirthdays(context: Context): List<BirthdayContact> {
 
                 when (mime) {
                     GroupMembership.CONTENT_ITEM_TYPE -> {
+                        // DATA1 (alias GROUP_ROW_ID) enthält die Gruppen-ID
                         val groupId = cursor.getLong(groupIdx)
                         groupMap[groupId]?.let { contact.labels.add(it) }
                     }
@@ -142,22 +147,18 @@ fun fetchBirthdays(context: Context): List<BirthdayContact> {
         }
     }
 
-    // 4. SCHRITT: Finale Transformation in BirthdayContact-Objekte.
+    // 4. SCHRITT: Finale Transformation
     return birthdayContacts.values.map { builder ->
         val (age, remainingDays) = calculateAgeAndDays(builder.birthday)
-        
-        // Generiert die Photo-URI. Falls kein Thumbnail existiert, nutzen wir die Standard-URI.
         val photoUri = builder.photoUri ?: ContentUris.withAppendedId(Contacts.CONTENT_URI, builder.id).let {
             Uri.withAppendedPath(it, Contacts.Photo.CONTENT_DIRECTORY).toString()
         }
 
-        // System-Labels (Sichtbar, Favorit) hinzufügen.
         val labels = mutableSetOf<String>()
         if (builder.isVisible) labels.add(SYSTEM_LABEL_ALL)
         if (builder.isStarred) labels.add(SYSTEM_LABEL_STARRED)
         labels.addAll(builder.labels)
         
-        // Fallback: Jeder Kontakt muss mindestens ein Label haben, um filterbar zu sein.
         if (labels.isEmpty()) labels.add(LABEL_NONE)
 
         BirthdayContact(
@@ -179,9 +180,6 @@ fun fetchBirthdays(context: Context): List<BirthdayContact> {
     }
 }
 
-/**
- * Hilfsklasse zur temporären Aggregation von Kontaktdaten während der verschiedenen Query-Phasen.
- */
 private class TempContactBuilder(
     val id: Long,
     val name: String,

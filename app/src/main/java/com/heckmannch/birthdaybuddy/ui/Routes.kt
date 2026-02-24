@@ -3,7 +3,7 @@ package com.heckmannch.birthdaybuddy.ui
 import kotlinx.serialization.Serializable
 
 /**
- * Alle Routen der App als typsichere Objekte.
+ * Alle Routen der App als typsichere Objekte. Das heißt, hier werden alle Seiten eingetragen und können dann in der MainActivity referenziert werden.
  */
 sealed interface Route {
     @Serializable object Main : Route

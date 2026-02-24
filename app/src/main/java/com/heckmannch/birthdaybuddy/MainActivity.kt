@@ -35,89 +35,104 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
 
         setContent {
-            BirthdayBuddyTheme {
-                val navController = rememberNavController()
-                val scope = rememberCoroutineScope()
-                
-                val mainViewModel: MainViewModel = viewModel()
-                val uiState by mainViewModel.uiState.collectAsState()
+            val userPrefs by filterManager.preferencesFlow.collectAsState(initial = null)
+            
+            // Wir warten, bis die Präferenzen geladen sind, um das richtige Theme anzuzeigen
+            if (userPrefs != null) {
+                BirthdayBuddyTheme(theme = userPrefs!!.theme) {
+                    val navController = rememberNavController()
+                    val scope = rememberCoroutineScope()
+                    
+                    val mainViewModel: MainViewModel = viewModel()
+                    val uiState by mainViewModel.uiState.collectAsState()
 
-                val onSafeBack = {
-                    if (navController.currentBackStackEntry?.lifecycle?.currentState == Lifecycle.State.RESUMED) {
-                        navController.popBackStack()
+                    val onSafeBack = {
+                        if (navController.currentBackStackEntry?.lifecycle?.currentState == Lifecycle.State.RESUMED) {
+                            navController.popBackStack()
+                        }
                     }
-                }
 
-                // Modernisierte Lifecycle-Observation
-                val lifecycleOwner = LocalLifecycleOwner.current
-                DisposableEffect(lifecycleOwner) {
-                    val observer = LifecycleEventObserver { _, event ->
-                        when (event) {
-                            Lifecycle.Event.ON_STOP -> {
-                                scope.launch {
-                                    filterManager.saveLastBackgroundTime(System.currentTimeMillis())
+                    /**
+                     * Automatischer App-Reset:
+                     * Überwacht den Lifecycle der App. Wenn die App länger als 30 Minuten im Hintergrund war,
+                     * wird der Nutzer beim nächsten Start automatisch zum MainScreen zurückgeleitet.
+                     * Dies sorgt für eine konsistente UX, damit der Nutzer immer mit der Übersicht startet.
+                     */
+                    val lifecycleOwner = LocalLifecycleOwner.current
+                    DisposableEffect(lifecycleOwner) {
+                        val observer = LifecycleEventObserver { _, event ->
+                            when (event) {
+                                Lifecycle.Event.ON_STOP -> {
+                                    // Zeitstempel merken, wenn die App in den Hintergrund geht
+                                    scope.launch {
+                                        filterManager.saveLastBackgroundTime(System.currentTimeMillis())
+                                    }
                                 }
-                            }
-                            Lifecycle.Event.ON_START -> {
-                                scope.launch {
-                                    val prefs = filterManager.preferencesFlow.first()
-                                    val lastTime = prefs.lastBackgroundTime
-                                    if (lastTime != 0L) {
-                                        val diff = System.currentTimeMillis() - lastTime
-                                        if (diff > 30 * 60 * 1000) {
-                                            if (navController.currentDestination?.route != Route.Main::class.qualifiedName) {
-                                                navController.navigate(Route.Main) {
-                                                    popUpTo(Route.Main) { inclusive = true }
+                                Lifecycle.Event.ON_START -> {
+                                    // Beim Wiederkehren prüfen, ob die Zeitspanne (30 Min) überschritten wurde
+                                    scope.launch {
+                                        val prefs = filterManager.preferencesFlow.first()
+                                        val lastTime = prefs.lastBackgroundTime
+                                        if (lastTime != 0L) {
+                                            val diff = System.currentTimeMillis() - lastTime
+                                            val thirtyMinutes = 30 * 60 * 1000
+                                            
+                                            if (diff > thirtyMinutes) {
+                                                // Falls wir nicht schon auf Main sind, dorthin zurückkehren
+                                                if (navController.currentDestination?.route != Route.Main::class.qualifiedName) {
+                                                    navController.navigate(Route.Main) {
+                                                        popUpTo(Route.Main) { inclusive = true }
+                                                    }
                                                 }
                                             }
                                         }
                                     }
                                 }
+                                else -> {}
                             }
-                            else -> {}
+                        }
+                        lifecycleOwner.lifecycle.addObserver(observer)
+                        onDispose {
+                            lifecycleOwner.lifecycle.removeObserver(observer)
                         }
                     }
-                    lifecycleOwner.lifecycle.addObserver(observer)
-                    onDispose {
-                        lifecycleOwner.lifecycle.removeObserver(observer)
-                    }
-                }
 
-                NavHost(navController = navController, startDestination = Route.Main) {
-                    composable<Route.Main> { 
-                        MainScreen(mainViewModel) { 
-                            navController.navigate(Route.Settings) {
-                                launchSingleTop = true
-                            } 
-                        } 
-                    }
-
-                    composable<Route.Settings> { 
-                        SettingsMenuScreen(
-                            onNavigate = { routeName ->
-                                val target = when(routeName) {
-                                    "settings_alarms" -> Route.Alarms
-                                    "settings_label_manager" -> Route.LabelManager
-                                    else -> Route.Main
-                                }
-                                navController.navigate(target) {
+                    NavHost(navController = navController, startDestination = Route.Main) {
+                        composable<Route.Main> { 
+                            MainScreen(mainViewModel) { 
+                                navController.navigate(Route.Settings) {
                                     launchSingleTop = true
-                                }
-                            }, 
-                            onBack = onSafeBack
-                        ) 
-                    }
+                                } 
+                            } 
+                        }
 
-                    composable<Route.LabelManager> {
-                        LabelManagerScreen(
-                            availableLabels = uiState.availableLabels,
-                            isLoading = uiState.isLoading,
-                            onBack = onSafeBack
-                        )
-                    }
+                        composable<Route.Settings> { 
+                            SettingsMenuScreen(
+                                onNavigate = { routeName ->
+                                    val target = when(routeName) {
+                                        "settings_alarms" -> Route.Alarms
+                                        "settings_label_manager" -> Route.LabelManager
+                                        else -> Route.Main
+                                    }
+                                    navController.navigate(target) {
+                                        launchSingleTop = true
+                                    }
+                                }, 
+                                onBack = onSafeBack
+                            ) 
+                        }
 
-                    composable<Route.Alarms> {
-                        SettingsAlarmsScreen(onBack = onSafeBack)
+                        composable<Route.LabelManager> {
+                            LabelManagerScreen(
+                                availableLabels = uiState.availableLabels,
+                                isLoading = uiState.isLoading,
+                                onBack = onSafeBack
+                            )
+                        }
+
+                        composable<Route.Alarms> {
+                            SettingsAlarmsScreen(onBack = onSafeBack)
+                        }
                     }
                 }
             }
