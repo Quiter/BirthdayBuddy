@@ -19,6 +19,22 @@
         android:name=".BirthdayApplication"
         tools:targetApi="31">
 
+        <!--
+             Deaktiviert den automatischen WorkManager-Initializer.
+             Dies ist notwendig, da wir in BirthdayApplication.kt 'Configuration.Provider'
+             implementieren, um WorkManager manuell mit Hilt zu konfigurieren.
+        -->
+        <provider
+            android:name="androidx.startup.InitializationProvider"
+            android:authorities="${applicationId}.androidx-startup"
+            android:exported="false"
+            tools:node="merge">
+            <meta-data
+                android:name="androidx.work.WorkManagerInitializer"
+                android:value="androidx.startup"
+                tools:node="remove" />
+        </provider>
+
         <activity
             android:name=".MainActivity"
             android:exported="true"
