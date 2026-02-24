@@ -25,9 +25,8 @@ private const val SYSTEM_LABEL_STARRED = "Starred in Android"
 private const val LABEL_NONE = "Unlabeled"
 
 /**
- * Hochgradig robuste Implementierung zum Abrufen von Geburtstagen und Labels.
- * Berücksichtigt TITLE, TITLE_RES und SYSTEM_ID, um sicherzustellen, dass 
- * Emoji-Labels und Google-Gruppen über alle Konten hinweg gefunden werden.
+ * Ruft Geburtstage und zugehörige Labels ab.
+ * Simplerer Ansatz: Bevorzugt den direkten Titel, um Emojis korrekt zu erfassen.
  */
 fun fetchBirthdays(context: Context): List<BirthdayContact> {
     val cr = context.contentResolver
@@ -36,39 +35,23 @@ fun fetchBirthdays(context: Context): List<BirthdayContact> {
     val groupMap = mutableMapOf<Long, String>()
     cr.query(
         Groups.CONTENT_URI,
-        arrayOf(Groups._ID, Groups.TITLE, Groups.TITLE_RES, Groups.RES_PACKAGE, Groups.SYSTEM_ID),
+        arrayOf(Groups._ID, Groups.TITLE, Groups.SYSTEM_ID),
         null, null, null
     )?.use { cursor ->
         val idIdx = cursor.getColumnIndex(Groups._ID)
         val titleIdx = cursor.getColumnIndex(Groups.TITLE)
-        val titleResIdx = cursor.getColumnIndex(Groups.TITLE_RES)
-        val resPackageIdx = cursor.getColumnIndex(Groups.RES_PACKAGE)
         val systemIdIdx = cursor.getColumnIndex(Groups.SYSTEM_ID)
         
         while (cursor.moveToNext()) {
             val id = cursor.getLong(idIdx)
             val title = cursor.getString(titleIdx)
-            val titleRes = cursor.getInt(titleResIdx)
-            val resPackage = cursor.getString(resPackageIdx)
             val systemId = cursor.getString(systemIdIdx)
             
-            // Versuche den Namen zu bestimmen: 1. Titel (Emojis sind hier), 2. Lokalisierte Ressource, 3. System-ID
-            var finalName: String? = null
+            // Bevorzuge den direkten Titel (hier liegen Emojis). 
+            // Falls leer, nutze die SystemID (z.B. bei Standard-Gruppen).
+            val finalName = title ?: systemId
             
-            if (!title.isNullOrBlank()) {
-                finalName = title
-            } else if (titleRes != 0 && !resPackage.isNullOrBlank()) {
-                try {
-                    val packageRes = context.packageManager.getResourcesForApplication(resPackage)
-                    finalName = packageRes.getString(titleRes)
-                } catch (_: Exception) {}
-            }
-            
-            if (finalName == null && !systemId.isNullOrBlank()) {
-                finalName = systemId
-            }
-
-            if (finalName != null) {
+            if (!finalName.isNullOrBlank()) {
                 groupMap[id] = finalName.replace("System Group: ", "")
             }
         }
@@ -133,7 +116,6 @@ fun fetchBirthdays(context: Context): List<BirthdayContact> {
 
                 when (mime) {
                     GroupMembership.CONTENT_ITEM_TYPE -> {
-                        // DATA1 (alias GROUP_ROW_ID) enthält die Gruppen-ID
                         val groupId = cursor.getLong(groupIdx)
                         groupMap[groupId]?.let { contact.labels.add(it) }
                     }
