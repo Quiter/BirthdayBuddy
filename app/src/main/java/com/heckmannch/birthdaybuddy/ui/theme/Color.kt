@@ -21,6 +21,7 @@ val SettingsPillBackgroundDark = Color(0xFF1E1F22)
 
 val SettingsColorOrganisation = Color(0xFF4285F4) // Google Blue
 val SettingsColorNotifications = Color(0xFFFBBC04) // Google Yellow
+val SettingsColorDisplay = Color(0xFF4CAF50) // Ein schönes Grün für "Anzeige & Filter"
 
 // WIDGET FARBEN (Zentral für einfaches Testing)
 // Hier kannst du die Werte anpassen, um das Design zu verändern.

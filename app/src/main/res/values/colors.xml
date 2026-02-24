@@ -8,6 +8,9 @@
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
 
+    <!-- Splash Screen Color -->
+    <color name="splash_background">#FFFFFF</color>
+
     <!-- Widget Colors -->
     <color name="widget_gold">#FFFFD700</color>
     <color name="widget_silver">#FFE0E0E0</color>

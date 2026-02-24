@@ -110,7 +110,7 @@ fun SettingsMenuScreen(
                     title = stringResource(R.string.settings_theme_title), 
                     subtitle = themeLabel, 
                     icon = Icons.Default.Palette, 
-                    iconContainerColor = MaterialTheme.colorScheme.tertiary,
+                    iconContainerColor = SettingsColorDisplay,
                     isTop = true,
                     isBottom = true
                 ) { showThemeDialog = true }
