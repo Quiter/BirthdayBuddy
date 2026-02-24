@@ -4,20 +4,8 @@
 
     <uses-permission android:name="android.permission.READ_CONTACTS" />
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
-
-    <queries>
-        <package android:name="com.whatsapp" />
-        <package android:name="org.thoughtcrime.securesms" />
-        <package android:name="org.telegram.messenger" />
-        <intent>
-            <action android:name="android.intent.action.VIEW" />
-            <data android:scheme="sgnl" />
-        </intent>
-        <intent>
-            <action android:name="android.intent.action.VIEW" />
-            <data android:scheme="https" android:host="signal.me" />
-        </intent>
-    </queries>
+    <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
 
     <application
         android:allowBackup="true"
@@ -27,16 +15,17 @@
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
-        android:theme="@style/Theme.App.Starting"
-        android:enableOnBackInvokedCallback="true"
-        android:name=".BirthdayApplication">
+        android:theme="@style/Theme.BirthdayBuddy"
+        android:name=".BirthdayApplication"
+        tools:targetApi="31">
 
         <activity
             android:name=".MainActivity"
             android:exported="true"
-            android:configChanges="uiMode"
             android:label="@string/app_name"
-            android:theme="@style/Theme.App.Starting">
+            android:theme="@style/Theme.BirthdayBuddy"
+            android:launchMode="singleTask"
+            android:windowSoftInputMode="adjustResize">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
@@ -45,8 +34,7 @@
 
         <receiver
             android:name=".widget.BirthdayGlanceWidgetReceiver"
-            android:exported="true"
-            android:label="BirthdayBuddy Widget">
+            android:exported="true">
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
             </intent-filter>
@@ -54,19 +42,6 @@
                 android:name="android.appwidget.provider"
                 android:resource="@xml/widget_info" />
         </receiver>
-
-        <!-- Deaktiviert die Standard-Initialisierung des WorkManagers,
-             da wir On-Demand Initialisierung in der Application-Klasse nutzen -->
-        <provider
-            android:name="androidx.startup.InitializationProvider"
-            android:authorities="${applicationId}.androidx-startup"
-            android:exported="false"
-            tools:node="merge">
-            <meta-data
-                android:name="androidx.work.WorkManagerInitializer"
-                android:value="androidx.startup"
-                tools:node="remove" />
-        </provider>
 
     </application>
 
