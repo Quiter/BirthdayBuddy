@@ -16,8 +16,8 @@ android {
         applicationId = "com.heckmannch.birthdaybuddy"
         minSdk = 28
         targetSdk = 36
-        versionCode = 5
-        versionName = "3.0.6"
+        versionCode = 6
+        versionName = "3.1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
