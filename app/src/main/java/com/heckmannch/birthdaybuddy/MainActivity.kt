@@ -22,6 +22,7 @@ import com.heckmannch.birthdaybuddy.utils.updateWidget
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
+import java.time.LocalDate
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -69,12 +70,16 @@ class MainActivity : ComponentActivity() {
                                     }
                                 }
                                 Lifecycle.Event.ON_START -> {
-                                    // 1. Widget beim Start aktualisieren (Energieeffizientes "Daily Update")
-                                    updateWidget(context)
-
-                                    // 2. Prüfen, ob wir zum MainScreen zurückkehren müssen
                                     scope.launch {
                                         val prefs = filterManager.preferencesFlow.first()
+                                        
+                                        // 1. Widget nur aktualisieren, wenn heute noch nicht geschehen
+                                        val today = LocalDate.now().toString()
+                                        if (prefs.lastWidgetUpdateDate != today) {
+                                            updateWidget(context)
+                                        }
+
+                                        // 2. Prüfen, ob wir zum MainScreen zurückkehren müssen
                                         val lastTime = prefs.lastBackgroundTime
                                         if (lastTime != 0L) {
                                             val diff = System.currentTimeMillis() - lastTime

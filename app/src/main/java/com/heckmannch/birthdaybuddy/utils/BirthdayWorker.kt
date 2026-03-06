@@ -13,6 +13,7 @@ import com.heckmannch.birthdaybuddy.widget.BirthdayGlanceWidget
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
 import kotlinx.coroutines.flow.first
+import java.time.LocalDate
 import java.util.concurrent.TimeUnit
 
 /**
@@ -68,6 +69,9 @@ class BirthdayWorker @AssistedInject constructor(
 
         // 3. Glance Widget zur Aktualisierung zwingen (immer notwendig)
         BirthdayGlanceWidget().updateAll(applicationContext)
+        
+        // 4. Datum der letzten Aktualisierung speichern
+        filterManager.saveLastWidgetUpdateDate(LocalDate.now().toString())
 
         return Result.success()
     }

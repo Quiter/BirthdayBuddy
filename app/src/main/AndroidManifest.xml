@@ -59,6 +59,15 @@
                 android:resource="@xml/widget_info" />
         </receiver>
 
+        <!-- Receiver für das Widget-Update beim Entsperren des Displays -->
+        <receiver
+            android:name=".widget.WidgetUpdateReceiver"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="android.intent.action.USER_PRESENT" />
+            </intent-filter>
+        </receiver>
+
     </application>
 
 </manifest>

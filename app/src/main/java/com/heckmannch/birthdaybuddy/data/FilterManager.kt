@@ -23,6 +23,7 @@ data class UserPreferences(
     val notificationMinute: Int,
     val notificationDays: Set<String>,
     val lastBackgroundTime: Long,
+    val lastWidgetUpdateDate: String,
     val isInitialized: Boolean,
     val showLabelManagerIntro: Boolean,
     val theme: Int // 0: System, 1: Light, 2: Dark
@@ -45,6 +46,7 @@ class FilterManager @Inject constructor(
         val NOTIFICATION_MINUTE = intPreferencesKey("notification_minute")
         val NOTIFICATION_DAYS = stringSetPreferencesKey("notification_days")
         val LAST_BACKGROUND_TIME = longPreferencesKey("last_background_time")
+        val LAST_WIDGET_UPDATE_DATE = stringPreferencesKey("last_widget_update_date")
         val IS_INITIALIZED = booleanPreferencesKey("is_initialized")
         val SHOW_LABEL_MANAGER_INTRO = booleanPreferencesKey("show_label_manager_intro")
         val THEME = intPreferencesKey("theme")
@@ -63,6 +65,7 @@ class FilterManager @Inject constructor(
             notificationMinute = prefs[Keys.NOTIFICATION_MINUTE] ?: 0,
             notificationDays = prefs[Keys.NOTIFICATION_DAYS] ?: setOf("0", "7"),
             lastBackgroundTime = prefs[Keys.LAST_BACKGROUND_TIME] ?: 0L,
+            lastWidgetUpdateDate = prefs[Keys.LAST_WIDGET_UPDATE_DATE] ?: "",
             isInitialized = prefs[Keys.IS_INITIALIZED] ?: false,
             showLabelManagerIntro = prefs[Keys.SHOW_LABEL_MANAGER_INTRO] ?: true,
             theme = prefs[Keys.THEME] ?: 0
@@ -92,6 +95,7 @@ class FilterManager @Inject constructor(
     suspend fun saveNotificationSelectedLabels(labels: Set<String>) = edit { it[Keys.NOTIFICATION_SELECTED_LABELS] = labels }
     suspend fun saveNotificationExcludedLabels(labels: Set<String>) = edit { it[Keys.NOTIFICATION_EXCLUDED_LABELS] = labels }
     suspend fun saveLastBackgroundTime(time: Long) = edit { it[Keys.LAST_BACKGROUND_TIME] = time }
+    suspend fun saveLastWidgetUpdateDate(date: String) = edit { it[Keys.LAST_WIDGET_UPDATE_DATE] = date }
     suspend fun setInitialized(value: Boolean) = edit { it[Keys.IS_INITIALIZED] = value }
     suspend fun setShowLabelManagerIntro(value: Boolean) = edit { it[Keys.SHOW_LABEL_MANAGER_INTRO] = value }
     suspend fun saveTheme(theme: Int) = edit { it[Keys.THEME] = theme }
