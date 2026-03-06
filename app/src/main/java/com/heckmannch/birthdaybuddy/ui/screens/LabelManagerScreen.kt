@@ -20,9 +20,8 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import com.heckmannch.birthdaybuddy.R
-import com.heckmannch.birthdaybuddy.data.FilterManager
 import com.heckmannch.birthdaybuddy.utils.updateWidget
 import kotlinx.coroutines.launch
 
@@ -242,12 +241,13 @@ fun LabelManagerScreen(
 @Composable
 fun LabelManagerIntroDialog(onDismiss: (Boolean) -> Unit) {
     var checked by remember { mutableStateOf(false) }
-    var showDialog by remember { mutableStateOf(true) }
+    val showDialog = remember { mutableStateOf(true) }
+    val dismissDialog = { showDialog.value = false }
 
-    if (showDialog) {
+    if (showDialog.value) {
         AlertDialog(
             onDismissRequest = { 
-                showDialog = false
+                dismissDialog()
                 onDismiss(checked)
             },
             icon = { Icon(Icons.Default.Info, contentDescription = null, tint = MaterialTheme.colorScheme.primary) },
@@ -290,7 +290,7 @@ fun LabelManagerIntroDialog(onDismiss: (Boolean) -> Unit) {
             confirmButton = {
                 Button(
                     onClick = { 
-                        showDialog = false
+                        dismissDialog()
                         onDismiss(checked)
                     }
                 ) {

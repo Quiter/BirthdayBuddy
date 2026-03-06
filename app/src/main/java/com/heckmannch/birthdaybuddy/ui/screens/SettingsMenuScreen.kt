@@ -18,7 +18,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.core.net.toUri
-import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import com.heckmannch.birthdaybuddy.R
 import com.heckmannch.birthdaybuddy.ui.components.*
 import com.heckmannch.birthdaybuddy.data.FilterManager
@@ -40,7 +40,8 @@ fun SettingsMenuScreen(
     val currentTheme by filterManager.themeFlow.collectAsState(initial = 0)
     val versionName = getAppVersionName()
     
-    var showThemeDialog by remember { mutableStateOf(false) }
+    val showThemeDialog = remember { mutableStateOf(false) }
+    val dismissThemeDialog = { showThemeDialog.value = false }
 
     Scaffold(
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
@@ -113,7 +114,7 @@ fun SettingsMenuScreen(
                     iconContainerColor = SettingsColorDisplay,
                     isTop = true,
                     isBottom = true
-                ) { showThemeDialog = true }
+                ) { showThemeDialog.value = true }
             }
 
             SettingsFooter(versionName) {
@@ -122,9 +123,9 @@ fun SettingsMenuScreen(
         }
     }
 
-    if (showThemeDialog) {
+    if (showThemeDialog.value) {
         AlertDialog(
-            onDismissRequest = { showThemeDialog = false },
+            onDismissRequest = dismissThemeDialog,
             title = { Text(stringResource(R.string.settings_theme_dialog_title)) },
             text = {
                 Column {
@@ -132,33 +133,33 @@ fun SettingsMenuScreen(
                         label = stringResource(R.string.settings_theme_system),
                         selected = currentTheme == 0
                     ) {
+                        dismissThemeDialog()
                         scope.launch {
                             filterManager.saveTheme(0)
-                            showThemeDialog = false
                         }
                     }
                     ThemeOption(
                         label = stringResource(R.string.settings_theme_light),
                         selected = currentTheme == 1
                     ) {
+                        dismissThemeDialog()
                         scope.launch {
                             filterManager.saveTheme(1)
-                            showThemeDialog = false
                         }
                     }
                     ThemeOption(
                         label = stringResource(R.string.settings_theme_dark),
                         selected = currentTheme == 2
                     ) {
+                        dismissThemeDialog()
                         scope.launch {
                             filterManager.saveTheme(2)
-                            showThemeDialog = false
                         }
                     }
                 }
             },
             confirmButton = {
-                TextButton(onClick = { showThemeDialog = false }) {
+                TextButton(onClick = dismissThemeDialog) {
                     Text(stringResource(R.string.dialog_cancel))
                 }
             },

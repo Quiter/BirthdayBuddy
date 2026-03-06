@@ -17,7 +17,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import com.heckmannch.birthdaybuddy.R
 import com.heckmannch.birthdaybuddy.ui.components.SectionHeader
 import com.heckmannch.birthdaybuddy.ui.components.WheelPicker
@@ -37,10 +37,13 @@ fun SettingsAlarmsScreen(
     val notifMinute by filterManager.notificationMinuteFlow.collectAsState(initial = 0)
     val notifDaysSet by filterManager.notificationDaysFlow.collectAsState(initial = setOf("0", "7"))
 
-    var showAddDayDialog by remember { mutableStateOf(false) }
+    val showAddDayDialog = remember { mutableStateOf(false) }
     var selectedDayByWheel by remember { mutableIntStateOf(3) }
-    var showTimePicker by remember { mutableStateOf(false) }
+    val showTimePicker = remember { mutableStateOf(false) }
     val timePickerState = rememberTimePickerState(initialHour = notifHour, initialMinute = notifMinute, is24Hour = true)
+
+    val dismissTimePicker = { showTimePicker.value = false }
+    val dismissAddDayDialog = { showAddDayDialog.value = false }
 
     Scaffold(
         topBar = {
@@ -54,7 +57,7 @@ fun SettingsAlarmsScreen(
             ExtendedFloatingActionButton(
                 text = { Text(stringResource(R.string.alarms_add_button)) },
                 icon = { Icon(Icons.Default.Add, null) },
-                onClick = { showAddDayDialog = true }
+                onClick = { showAddDayDialog.value = true }
             )
         }
     ) { padding ->
@@ -66,7 +69,7 @@ fun SettingsAlarmsScreen(
                     Text(stringResource(R.string.alarms_time_display, notifHour, notifMinute)) 
                 },
                 leadingContent = { Icon(Icons.Default.Notifications, null) },
-                modifier = Modifier.clickable { showTimePicker = true }
+                modifier = Modifier.clickable { showTimePicker.value = true }
             )
             HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
             SectionHeader(stringResource(R.string.alarms_lead_times_section))
@@ -100,27 +103,27 @@ fun SettingsAlarmsScreen(
         }
     }
 
-    if (showTimePicker) {
+    if (showTimePicker.value) {
         AlertDialog(
-            onDismissRequest = { showTimePicker = false },
+            onDismissRequest = dismissTimePicker,
             title = { Text(stringResource(R.string.alarms_dialog_time_title)) },
             text = { Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) { TimePicker(state = timePickerState) } },
             confirmButton = {
                 TextButton(onClick = {
+                    dismissTimePicker()
                     scope.launch {
                         filterManager.saveNotificationTime(timePickerState.hour, timePickerState.minute)
                         scheduleDailyBirthdayWork(context, timePickerState.hour, timePickerState.minute)
-                        showTimePicker = false
                     }
                 }) { Text(stringResource(R.string.dialog_save)) }
             },
-            dismissButton = { TextButton(onClick = { showTimePicker = false }) { Text(stringResource(R.string.dialog_cancel)) } }
+            dismissButton = { TextButton(onClick = dismissTimePicker) { Text(stringResource(R.string.dialog_cancel)) } }
         )
     }
 
-    if (showAddDayDialog) {
+    if (showAddDayDialog.value) {
         AlertDialog(
-            onDismissRequest = { showAddDayDialog = false },
+            onDismissRequest = dismissAddDayDialog,
             title = { Text(stringResource(R.string.alarms_dialog_lead_time_title)) },
             text = {
                 Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
@@ -133,16 +136,16 @@ fun SettingsAlarmsScreen(
             },
             confirmButton = {
                 TextButton(onClick = {
+                    dismissAddDayDialog()
                     val newSet = notifDaysSet.toMutableSet()
                     newSet.add(selectedDayByWheel.toString())
                     scope.launch { 
                         filterManager.saveNotificationDays(newSet)
                         scheduleDailyBirthdayWork(context, notifHour, notifMinute)
                     }
-                    showAddDayDialog = false
                 }) { Text(stringResource(R.string.alarms_add_button)) }
             },
-            dismissButton = { TextButton(onClick = { showAddDayDialog = false }) { Text(stringResource(R.string.dialog_cancel)) } }
+            dismissButton = { TextButton(onClick = dismissAddDayDialog) { Text(stringResource(R.string.dialog_cancel)) } }
         )
     }
 }
