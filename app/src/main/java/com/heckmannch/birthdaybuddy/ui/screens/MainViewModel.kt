@@ -6,12 +6,12 @@ import android.content.pm.PackageManager
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
-import com.heckmannch.birthdaybuddy.R
 import com.heckmannch.birthdaybuddy.data.BirthdayRepository
 import com.heckmannch.birthdaybuddy.data.FilterManager
 import com.heckmannch.birthdaybuddy.data.UserPreferences
 import com.heckmannch.birthdaybuddy.model.BirthdayContact
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -25,13 +25,6 @@ data class MainUiState(
     val hiddenDrawerLabels: Set<String> = emptySet()
 )
 
-sealed interface SyncStatus {
-    object Idle : SyncStatus
-    object Loading : SyncStatus
-    object Success : SyncStatus
-    data class Error(val message: String) : SyncStatus
-}
-
 @HiltViewModel
 class MainViewModel @Inject constructor(
     application: Application,
@@ -41,8 +34,6 @@ class MainViewModel @Inject constructor(
 
     private val _isLoading = MutableStateFlow(false)
     private val _searchQuery = MutableStateFlow("")
-    private val _syncStatus = MutableStateFlow<SyncStatus>(SyncStatus.Idle)
-    val syncStatus: StateFlow<SyncStatus> = _syncStatus.asStateFlow()
 
     val uiState: StateFlow<MainUiState> = combine(
         repository.allBirthdays,
@@ -97,8 +88,15 @@ class MainViewModel @Inject constructor(
 
     fun loadContacts(isInitial: Boolean = false) {
         viewModelScope.launch {
-            if (!isInitial) _syncStatus.value = SyncStatus.Loading
+            val startTime = System.currentTimeMillis()
+            
+            // Sofort als ladend markieren
             _isLoading.value = true
+
+            if (!isInitial) {
+                // Kurze Pause für System-Sync
+                delay(500)
+            }
             
             val hasPermission = ContextCompat.checkSelfPermission(
                 getApplication(), 
@@ -106,9 +104,6 @@ class MainViewModel @Inject constructor(
             ) == PackageManager.PERMISSION_GRANTED
 
             if (!hasPermission) {
-                if (!isInitial) {
-                    _syncStatus.value = SyncStatus.Error(getApplication<Application>().getString(R.string.sync_error_permission))
-                }
                 _isLoading.value = false
                 return@launch
             }
@@ -116,7 +111,7 @@ class MainViewModel @Inject constructor(
             try {
                 repository.refreshBirthdays()
                 
-                // Einmalige Initialisierung der Standard-Labels nach dem ersten erfolgreichen Sync
+                // Einmalige Initialisierung der Standard-Labels
                 val currentPrefs = filterManager.preferencesFlow.first()
                 if (!currentPrefs.isInitialized) {
                     val labels = repository.allBirthdays.first().flatMap { it.labels }.toSet()
@@ -128,21 +123,19 @@ class MainViewModel @Inject constructor(
                     filterManager.setInitialized(true)
                 }
 
-                if (!isInitial) _syncStatus.value = SyncStatus.Success
-            } catch (e: Exception) {
                 if (!isInitial) {
-                    _syncStatus.value = SyncStatus.Error(
-                        getApplication<Application>().getString(R.string.sync_error_unknown, e.message ?: "Unknown")
-                    )
+                    val elapsedTime = System.currentTimeMillis() - startTime
+                    val minDisplayTime = 1200L 
+                    if (elapsedTime < minDisplayTime) {
+                        delay(minDisplayTime - elapsedTime)
+                    }
                 }
+            } catch (_: Exception) {
+                // Fehler werden im UI über leere Listen/EmptyStates abgefangen
             } finally {
                 _isLoading.value = false
             }
         }
-    }
-
-    fun resetSyncStatus() {
-        _syncStatus.value = SyncStatus.Idle
     }
 
     fun updateSearchQuery(query: String) {

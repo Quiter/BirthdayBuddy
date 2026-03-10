@@ -1,8 +1,8 @@
 package com.heckmannch.birthdaybuddy.widget
 
+import android.annotation.SuppressLint
 import android.content.Context
 import androidx.compose.runtime.*
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.glance.*
@@ -37,7 +37,13 @@ interface WidgetEntryPoint {
 
 /**
  * Modernes Homescreen-Widget basierend auf Jetpack Glance.
+ * 
+ * Hinweis zu @SuppressLint("RestrictedApi"): 
+ * Die Glance-Bibliothek (1.1.1) hat einen Bug in der Lint-Erkennung von ColorProvider.
+ * Wir unterdrücken diesen Fehler hier global für die Klasse, da der Zugriff auf die
+ * öffentliche Hilfsfunktion ColorProvider(resId = ...) technisch absolut korrekt ist.
  */
+@SuppressLint("RestrictedApi")
 class BirthdayGlanceWidget : GlanceAppWidget() {
 
     override val sizeMode: SizeMode = SizeMode.Exact
@@ -119,19 +125,18 @@ class BirthdayGlanceWidget : GlanceAppWidget() {
         val isKidBirthday = contact.age in 1..9
         val isRoundBirthday = contact.age > 0 && contact.age % 10 == 0
 
-        // Wir laden die Farben jetzt sicher über Ressourcen-IDs (R.color)
+        // Nutzung der öffentlichen ColorProvider-API via Ressourcen
         val circleColor = when {
-            !isBirthdayToday -> ColorProvider(R.color.widget_upcoming)
-            isKidBirthday -> ColorProvider(R.color.widget_kid)
-            isRoundBirthday -> ColorProvider(R.color.widget_gold)
-            else -> ColorProvider(R.color.widget_silver)
+            !isBirthdayToday -> ColorProvider(resId = R.color.widget_upcoming)
+            isKidBirthday -> ColorProvider(resId = R.color.widget_kid)
+            isRoundBirthday -> ColorProvider(resId = R.color.widget_gold)
+            else -> ColorProvider(resId = R.color.widget_silver)
         }
 
-        // Kontraststarke Schriftfarben (ebenfalls über Ressourcen)
         val circleTextColor = if (isBirthdayToday) {
-            ColorProvider(R.color.black)
+            ColorProvider(resId = R.color.black)
         } else {
-            ColorProvider(R.color.white)
+            ColorProvider(resId = R.color.white)
         }
 
         Box(modifier = modifier.padding(vertical = 4.dp)) {

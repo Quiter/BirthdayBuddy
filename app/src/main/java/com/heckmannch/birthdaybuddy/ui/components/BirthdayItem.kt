@@ -45,6 +45,7 @@ import androidx.core.net.toUri
 import coil.compose.AsyncImage
 import com.heckmannch.birthdaybuddy.R
 import com.heckmannch.birthdaybuddy.model.BirthdayContact
+import com.heckmannch.birthdaybuddy.ui.theme.BirthdayColors
 import com.heckmannch.birthdaybuddy.utils.GreetingGenerator
 import com.heckmannch.birthdaybuddy.utils.formatGermanDate
 import nl.dionsegijn.konfetti.compose.KonfettiView
@@ -62,8 +63,12 @@ fun BirthdayItem(
     val context = LocalContext.current
     val keyboardController = LocalSoftwareKeyboardController.current
     
-    // WICHTIG: Wir leiten isDark nun von der aktuellen Background-Farbe ab, 
-    // anstatt isSystemInDarkTheme() zu nutzen. So folgt die Komponente immer dem App-Theme.
+    // Ressourcen-Strings vorab laden für die Verwendung in Lambdas (behebt Lint-Error)
+    val shareSubject = stringResource(R.string.share_subject)
+    val actionCallLabel = stringResource(R.string.action_call)
+    val actionSmsLabel = stringResource(R.string.action_sms)
+    val actionEmailLabel = stringResource(R.string.action_email)
+    
     val isDark = MaterialTheme.colorScheme.surface.toArgb().let { 
         val luminance = 0.2126 * ((it shr 16) and 0xFF) + 0.7152 * ((it shr 8) and 0xFF) + 0.0722 * (it and 0xFF)
         luminance < 128
@@ -73,29 +78,23 @@ fun BirthdayItem(
     val isKidBirthday = contact.age in 1..9
     val isRoundBirthday = contact.age > 0 && contact.age % 10 == 0
 
-    val goldColor = Color(0xFFFFD700)
-    val secondaryGold = Color(0xFFFBC02D)
-    val silverColor = Color(0xFFC0C0C0)
-    val secondarySilver = Color(0xFFE0E0E0)
-    val kidColors = listOf(Color(0xFF4285F4), Color(0xFFF06292), Color(0xFFFFB300), Color(0xFF4CAF50))
-
     val borderBrush = when {
-        isKidBirthday -> Brush.linearGradient(kidColors)
-        isRoundBirthday -> Brush.linearGradient(listOf(goldColor, secondaryGold))
-        else -> Brush.linearGradient(listOf(silverColor, secondarySilver))
+        isKidBirthday -> Brush.linearGradient(BirthdayColors.KidColors)
+        isRoundBirthday -> Brush.linearGradient(listOf(BirthdayColors.Gold, BirthdayColors.GoldSecondary))
+        else -> Brush.linearGradient(listOf(BirthdayColors.Silver, BirthdayColors.SilverSecondary))
     }
 
-    val todayLabelColor = when {
-        isKidBirthday -> Color(0xFF4285F4)
-        isRoundBirthday -> goldColor
-        else -> silverColor
+    val todayIconColor = when {
+        isKidBirthday -> BirthdayColors.KidPrimary
+        isRoundBirthday -> BirthdayColors.Gold
+        else -> BirthdayColors.Silver
     }
 
     val party = remember(isKidBirthday, isRoundBirthday) {
         val colors = when {
-            isKidBirthday -> kidColors.map { it.hashCode() }
-            isRoundBirthday -> listOf(0xFFFFD700.toInt(), 0xFFFFE082.toInt(), 0xFFB8860B.toInt())
-            else -> listOf(0xFFC0C0C0.toInt(), 0xFFE0E0E0.toInt(), 0xFFFFFFFF.toInt(), 0xFF9E9E9E.toInt())
+            isKidBirthday -> BirthdayColors.KidColors.map { it.toArgb() }
+            isRoundBirthday -> listOf(BirthdayColors.Gold.toArgb(), BirthdayColors.GoldSecondary.toArgb())
+            else -> listOf(BirthdayColors.Silver.toArgb(), BirthdayColors.SilverSecondary.toArgb())
         }
         Party(
             speed = 0f,
@@ -126,9 +125,9 @@ fun BirthdayItem(
                 containerColor = when {
                     isBirthdayToday -> {
                         when {
-                            isKidBirthday -> if (isDark) Color(0xFF0D1B2A) else Color(0xFFE3F2FD)
-                            isRoundBirthday -> if (isDark) Color(0xFF332D00) else Color(0xFFFFFDE7)
-                            else -> if (isDark) Color(0xFF2C2C2C) else Color(0xFFF5F5F5)
+                            isKidBirthday -> if (isDark) BirthdayColors.KidContainerDark else BirthdayColors.KidContainerLight
+                            isRoundBirthday -> if (isDark) BirthdayColors.GoldContainerDark else BirthdayColors.GoldContainerLight
+                            else -> if (isDark) BirthdayColors.SilverContainerDark else BirthdayColors.SilverContainerLight
                         }
                     }
                     else -> MaterialTheme.colorScheme.surfaceContainerLow
@@ -176,7 +175,7 @@ fun BirthdayItem(
                             Text(
                                 text = buildAnnotatedString {
                                     append(stringResource(R.string.birthday_item_will_be))
-                                    withStyle(SpanStyle(color = getAgeColorRaw(contact.age, isDark), fontWeight = FontWeight.Bold)) {
+                                    withStyle(SpanStyle(color = getAgeColor(contact.age, isDark), fontWeight = FontWeight.Bold)) {
                                         append(if (contact.age < 0) "?" else "${contact.age}")
                                     }
                                 },
@@ -188,13 +187,17 @@ fun BirthdayItem(
                                         Icons.Default.Cake,
                                         contentDescription = null,
                                         modifier = Modifier.size(16.dp),
-                                        tint = todayLabelColor
+                                        tint = todayIconColor
                                     )
                                     Spacer(Modifier.width(4.dp))
                                     Text(
                                         stringResource(R.string.birthday_item_today),
                                         style = MaterialTheme.typography.labelLarge,
-                                        color = if (isDark) todayLabelColor else (if (isKidBirthday) Color(0xFF1976D2) else if (isRoundBirthday) Color(0xFF827717) else Color(0xFF616161)),
+                                        color = when {
+                                            isKidBirthday -> if (isDark) BirthdayColors.KidPrimary else BirthdayColors.KidTextDark
+                                            isRoundBirthday -> if (isDark) BirthdayColors.Gold else BirthdayColors.GoldTextDark
+                                            else -> if (isDark) BirthdayColors.Silver else BirthdayColors.SilverTextDark
+                                        },
                                         fontWeight = FontWeight.ExtraBold
                                     )
                                 }
@@ -202,7 +205,7 @@ fun BirthdayItem(
                                 Text(
                                     text = buildAnnotatedString {
                                         append(stringResource(R.string.birthday_item_in))
-                                        withStyle(SpanStyle(color = getDaysColorRaw(contact.remainingDays, isDark), fontWeight = FontWeight.SemiBold)) {
+                                        withStyle(SpanStyle(color = getDaysColor(contact.remainingDays, isDark), fontWeight = FontWeight.SemiBold)) {
                                             append("${contact.remainingDays}")
                                         }
                                         append(stringResource(R.string.birthday_item_days))
@@ -255,7 +258,7 @@ fun BirthdayItem(
                             FilledTonalIconButton(onClick = {
                                 context.startActivity(Intent(Intent.ACTION_DIAL, "tel:${actions.phoneNumber}".toUri()))
                             }) {
-                                Icon(Icons.Default.Call, stringResource(R.string.action_call))
+                                Icon(Icons.Default.Call, actionCallLabel)
                             }
                             FilledTonalIconButton(onClick = {
                                 val intent = Intent(Intent.ACTION_SENDTO, "smsto:${actions.phoneNumber}".toUri()).apply {
@@ -263,7 +266,7 @@ fun BirthdayItem(
                                 }
                                 context.startActivity(intent)
                             }) {
-                                Icon(Icons.AutoMirrored.Filled.Send, stringResource(R.string.action_sms))
+                                Icon(Icons.AutoMirrored.Filled.Send, actionSmsLabel)
                             }
                         }
 
@@ -271,30 +274,30 @@ fun BirthdayItem(
                             FilledTonalIconButton(onClick = {
                                 val intent = Intent(Intent.ACTION_SENDTO, "mailto:${actions.email}".toUri()).apply {
                                     if (isBirthdayToday) {
-                                        putExtra(Intent.EXTRA_SUBJECT, context.getString(R.string.share_subject))
+                                        putExtra(Intent.EXTRA_SUBJECT, shareSubject)
                                         putExtra(Intent.EXTRA_TEXT, greetingText)
                                     }
                                 }
                                 context.startActivity(intent)
                             }) {
-                                Icon(Icons.Default.Email, stringResource(R.string.action_email))
+                                Icon(Icons.Default.Email, actionEmailLabel)
                             }
                         }
 
                         if (actions.hasWhatsApp && actions.phoneNumber != null) {
-                            MessengerButton(color = Color(0xFF25D366), iconRes = R.drawable.ic_whatsapp) {
+                            MessengerButton(color = BirthdayColors.WhatsApp, iconRes = R.drawable.ic_whatsapp) {
                                 launchMessenger(context, actions.phoneNumber, greetingText, isBirthdayToday, "com.whatsapp", "https://wa.me/")
                             }
                         }
 
                         if (actions.hasSignal && actions.phoneNumber != null) {
-                            MessengerButton(color = Color(0xFF3A76F0), iconRes = R.drawable.ic_signal) {
+                            MessengerButton(color = BirthdayColors.Signal, iconRes = R.drawable.ic_signal) {
                                 launchMessenger(context, actions.phoneNumber, greetingText, isBirthdayToday, "org.thoughtcrime.securesms", "https://signal.me/#p/")
                             }
                         }
 
                         if (actions.hasTelegram && actions.phoneNumber != null) {
-                            MessengerButton(color = Color(0xFF0088CC), text = "TG") {
+                            MessengerButton(color = BirthdayColors.Telegram, text = "TG") {
                                 launchMessenger(context, actions.phoneNumber, greetingText, isBirthdayToday, "org.telegram.messenger", "tg://msg?to=")
                             }
                         }
@@ -348,17 +351,17 @@ private fun MessengerButton(color: Color, iconRes: Int? = null, text: String? = 
     }
 }
 
-private fun getAgeColorRaw(age: Int, isDark: Boolean): Color {
-    val youngColor = if (isDark) Color(0xFFFFA4A4) else Color(0xFFFF5252)
-    val oldColor = if (isDark) Color(0xFFD32F2F) else Color(0xFF8B0000)
+private fun getAgeColor(age: Int, isDark: Boolean): Color {
+    val near = BirthdayColors.ageNear(isDark)
+    val far = BirthdayColors.ageFar(isDark)
     val ageValue = if (age < 0) 50 else age
     val fraction = (ageValue.coerceIn(0, 100) / 100f)
-    return lerp(youngColor, oldColor, fraction)
+    return lerp(near, far, fraction)
 }
 
-private fun getDaysColorRaw(days: Int, isDark: Boolean): Color {
-    val nearColor = if (isDark) Color(0xFF80D8FF) else Color(0xFF00BFFF)
-    val farColor = if (isDark) Color(0xFF5C6BC0) else Color(0xFF00008B)
+private fun getDaysColor(days: Int, isDark: Boolean): Color {
+    val near = BirthdayColors.daysNear(isDark)
+    val far = BirthdayColors.daysFar(isDark)
     val fraction = (days.coerceIn(1, 365) / 365f)
-    return lerp(nearColor, farColor, fraction)
+    return lerp(near, far, fraction)
 }
