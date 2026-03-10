@@ -1,5 +1,7 @@
 package com.heckmannch.birthdaybuddy
 
+import android.content.Intent
+import android.content.IntentFilter
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -18,6 +20,7 @@ import com.heckmannch.birthdaybuddy.ui.screens.*
 import com.heckmannch.birthdaybuddy.ui.Route
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import com.heckmannch.birthdaybuddy.data.FilterManager
+import com.heckmannch.birthdaybuddy.utils.ScreenOnReceiver
 import com.heckmannch.birthdaybuddy.utils.updateWidget
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.first
@@ -31,11 +34,17 @@ class MainActivity : ComponentActivity() {
     @Inject
     lateinit var filterManager: FilterManager
 
+    private val screenOnReceiver = ScreenOnReceiver()
+
     override fun onCreate(savedInstanceState: Bundle?) {
         installSplashScreen()
         super.onCreate(savedInstanceState)
         
         enableEdgeToEdge()
+
+        // Registriere den Receiver für das Einschalten des Displays
+        val filter = IntentFilter(Intent.ACTION_SCREEN_ON)
+        registerReceiver(screenOnReceiver, filter)
 
         setContent {
             val userPrefs by filterManager.preferencesFlow.collectAsState(initial = null)
@@ -146,5 +155,11 @@ class MainActivity : ComponentActivity() {
                 }
             }
         }
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        // Wichtig: Receiver wieder abmelden, um Memory Leaks zu vermeiden
+        unregisterReceiver(screenOnReceiver)
     }
 }
