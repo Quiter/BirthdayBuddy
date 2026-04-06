@@ -1,0 +1,90 @@
+<resources>
+    <string name="app_name">GeburtstagsBuddy</string>
+
+    <!-- General -->
+    <string name="general_back">Zurück</string>
+    <string name="general_save">Speichern</string>
+    <string name="general_cancel">Abbrechen</string>
+
+    <!-- Main Screen -->
+    <string name="main_search_hint">Suchen…</string>
+    <string name="main_no_birthdays">Keine Geburtstage gefunden.</string>
+    <string name="main_loading">Daten werden geladen…</string>
+    <string name="main_open_menu_description">Menü öffnen</string>
+    <string name="main_clear_search_description">Suche löschen</string>
+
+    <string name="main_empty_birthdays_title">Noch keine Geburtstage</string>
+    <string name="main_empty_birthdays_desc">Füge Geburtstage zu deinen Kontakten hinzu oder synchronisiere sie, um sie hier zu sehen.</string>
+    <string name="main_empty_search_title">Keine Treffer gefunden</string>
+    <string name="main_empty_search_desc">Wir konnten niemanden finden, der auf \u0022%1$s\u0022 passt.</string>
+
+    <!-- Birthday Item -->
+    <string name="birthday_item_will_be">Wird </string>
+    <string name="birthday_item_today">HEUTE!</string>
+    <string name="birthday_item_in">in </string>
+    <string name="birthday_item_days"> Tagen</string>
+
+    <!-- Actions -->
+    <string name="action_call">Anrufen</string>
+    <string name="action_sms">SMS</string>
+    <string name="action_email">E-Mail</string>
+    <string name="share_subject">Alles Gute zum Geburtstag!</string>
+    <string name="error_no_contact_data">Keine Kontaktdaten</string>
+    <string name="error_app_not_found">%1$s nicht gefunden</string>
+
+    <!-- Drawer / Navigation -->
+    <string name="drawer_header_title">Geburtstags Buddy</string>
+    <string name="drawer_labels_header">Labels</string>
+    <string name="drawer_reload_contacts">Kontakte synchronisieren</string>
+    <string name="drawer_settings">Einstellungen</string>
+    <string name="drawer_no_labels">Keine Labels vorhanden</string>
+    <string name="drawer_google_apps_header">Google Apps</string>
+    <string name="drawer_contacts">Kontakte</string>
+    <string name="drawer_calendar">Kalender</string>
+
+    <!-- Notification -->
+    <string name="notification_channel_name">Geburtstags-Erinnerungen</string>
+    <string name="notification_channel_desc">Benachrichtigungen für anstehende Geburtstage</string>
+    <string name="notification_title_today">Heute Geburtstag! \uD83C\uDF82</string>
+    <string name="notification_title_days">In %1$d Tagen Geburtstag</string>
+    <string name="notification_text_today">%1$s wird heute %2$d Jahre alt!</string>
+    <string name="notification_text_days">%1$s wird %2$d Jahre alt.</string>
+
+    <!-- Settings Menu Sections -->
+    <string name="settings_title">Einstellungen</string>
+    <string name="settings_section_display">Anzeige &amp; Filter</string>
+    <string name="settings_section_notifications">Benachrichtigungen</string>
+    <string name="settings_section_widget">Widget</string>
+
+    <!-- Label Manager -->
+    <string name="label_manager_intro_title">Willkommen im Label-Manager! \uD83C\uDFAF</string>
+    <string name="label_manager_intro_desc">Hier steuerst du präzise, welche Geburtstage wo erscheinen:\n\n• Tabs: Wechsel zwischen App, Widget und Alarmen.\n• Auge-Icon: Labels gezielt für diesen Bereich ein- oder ausblenden.\n• Sperr-Icon: Labels global überall ignorieren.\n\nSo behältst du immer den Überblick!</string>
+    <string name="label_manager_intro_dont_show_again">Nicht mehr anzeigen</string>
+    <string name="label_manager_intro_button">Verstanden!</string>
+
+    <!-- Birthday Greetings -->
+    <string-array name="greetings_kid">
+        <item>Alles Gute zum %1$d. Geburtstag, kleiner Champion! 🎉 Lass dich heute reich beschenken und feier eine tolle Party! 🎂</item>
+        <item>Happy Birthday, %1$s! ✨ %2$d Jahre alt - jetzt bist du schon richtig groß! Hab einen super Tag mit viel Kuchen! 🎈</item>
+        <item>Hurra, du hast Geburtstag! 🥳 Alles Liebe zu deinem %1$d. Ehrentag. Viel Spaß beim Spielen und Feiern! 🎁</item>
+    </string-array>
+
+    <string-array name="greetings_teen">
+        <item>Happy Birthday, %1$s! 🎂 %2$d Jahre - genieß die Zeit und lass dich heute ordentlich feiern! 🤘✨</item>
+        <item>Alles Gute zum %1$d.! 🎉 Ich wünsch dir einen mega Tag mit deinen Freunden und alles Gute für das neue Lebensjahr! 🚀</item>
+        <item>Glückwunsch zum Geburtstag! 🥳 %1$d Jahre alt zu sein ist echt cool. Hab einen entspannten Tag! 🎈</item>
+    </string-array>
+
+    <string-array name="greetings_adult">
+        <item>Herzlichen Glückwunsch zum %1$d. Geburtstag, %2$s! 🎉 Ich wünsche dir einen wundervollen Tag im Kreise deiner Liebsten. 🎂✨</item>
+        <item>Alles Liebe zum Geburtstag! 🥂 %1$d Jahre sind ein tolles Alter. Ich wünsche dir viel Gesundheit und Freude für dein neues Lebensjahr! 🎈</item>
+        <item>Happy Birthday! 🥳 Lass dich heute verwöhnen und genieß deinen Ehrentag in vollen Zügen. Alles Gute! 🎁✨</item>
+        <item>Ich wünsche dir alles erdenklich Gute zu deinem %1$d. Geburtstag! 🎂 Auf ein weiteres Jahr voller schöner Momente! 🥂</item>
+    </string-array>
+
+    <string-array name="greetings_round">
+        <item>Wow, %1$d Jahre! 🎉 Herzlichen Glückwunsch zu diesem tollen Meilenstein, %2$s! Lass es heute richtig krachen! 🥂🎂</item>
+        <item>Happy Birthday zur runden %1$d! 🥳 Ein neues Jahrzehnt voller Möglichkeiten beginnt. Alles Liebe und viel Erfolg! ✨🚀</item>
+        <item>Alles Gute zum %1$d. Geburtstag! 🎈 So ein besonderes Jubiläum muss gebührend gefeiert werden. Hab einen unvergesslichen Tag! 🥂🎁</item>
+    </string-array>
+</resources>
