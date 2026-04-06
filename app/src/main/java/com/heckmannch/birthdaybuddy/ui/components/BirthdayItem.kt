@@ -75,7 +75,7 @@ fun BirthdayItem(
     }
 
     val isBirthdayToday = contact.remainingDays == 0
-    val isKidBirthday = contact.age in 1..9
+    val isKidBirthday = contact.age in 0..9
     val isRoundBirthday = contact.age > 0 && contact.age % 10 == 0
 
     val borderBrush = when {
