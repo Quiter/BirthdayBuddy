@@ -7,8 +7,8 @@ import androidx.core.app.ActivityCompat
 import androidx.glance.appwidget.updateAll
 import androidx.hilt.work.HiltWorker
 import androidx.work.*
-import com.heckmannch.birthdaybuddy.data.BirthdayRepository
-import com.heckmannch.birthdaybuddy.data.FilterManager
+import com.heckmannch.birthdaybuddy.data.repository.BirthdayRepository
+import com.heckmannch.birthdaybuddy.data.preferences.FilterManager
 import com.heckmannch.birthdaybuddy.widget.BirthdayGlanceWidget
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject

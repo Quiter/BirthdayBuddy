@@ -16,8 +16,8 @@ import androidx.glance.text.TextStyle
 import androidx.glance.unit.ColorProvider
 import com.heckmannch.birthdaybuddy.MainActivity
 import com.heckmannch.birthdaybuddy.R
-import com.heckmannch.birthdaybuddy.data.BirthdayRepository
-import com.heckmannch.birthdaybuddy.data.FilterManager
+import com.heckmannch.birthdaybuddy.data.repository.BirthdayRepository
+import com.heckmannch.birthdaybuddy.data.preferences.FilterManager
 import com.heckmannch.birthdaybuddy.model.BirthdayContact
 import dagger.hilt.EntryPoint
 import dagger.hilt.InstallIn

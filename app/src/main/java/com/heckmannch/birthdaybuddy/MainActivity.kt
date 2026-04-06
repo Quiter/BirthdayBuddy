@@ -16,10 +16,12 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.heckmannch.birthdaybuddy.ui.theme.BirthdayBuddyTheme
-import com.heckmannch.birthdaybuddy.ui.screens.*
+import com.heckmannch.birthdaybuddy.ui.main.*
+import com.heckmannch.birthdaybuddy.ui.settings.*
+import com.heckmannch.birthdaybuddy.ui.labels.*
 import com.heckmannch.birthdaybuddy.ui.Route
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
-import com.heckmannch.birthdaybuddy.data.FilterManager
+import com.heckmannch.birthdaybuddy.data.preferences.FilterManager
 import com.heckmannch.birthdaybuddy.utils.ScreenOnReceiver
 import com.heckmannch.birthdaybuddy.utils.updateWidget
 import dagger.hilt.android.AndroidEntryPoint

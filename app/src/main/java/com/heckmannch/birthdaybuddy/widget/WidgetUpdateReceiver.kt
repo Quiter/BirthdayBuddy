@@ -3,7 +3,7 @@ package com.heckmannch.birthdaybuddy.widget
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
-import com.heckmannch.birthdaybuddy.data.FilterManager
+import com.heckmannch.birthdaybuddy.data.preferences.FilterManager
 import com.heckmannch.birthdaybuddy.utils.updateWidget
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope

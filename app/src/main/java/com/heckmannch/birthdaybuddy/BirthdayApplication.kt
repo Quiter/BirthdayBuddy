@@ -5,6 +5,7 @@ import android.app.NotificationChannel
 import android.app.NotificationManager
 import androidx.hilt.work.HiltWorkerFactory
 import androidx.work.Configuration
+import com.heckmannch.birthdaybuddy.utils.NotificationHelper
 import dagger.hilt.android.HiltAndroidApp
 import javax.inject.Inject
 
@@ -24,6 +25,9 @@ class BirthdayApplication : Application(), Configuration.Provider {
     // @HiltWorker-Annotation (wie unseren BirthdayWorker) instanziieren kann.
     @Inject
     lateinit var workerFactory: HiltWorkerFactory
+
+    @Inject
+    lateinit var notificationHelper: NotificationHelper
 
     /**
      * Konfiguriert den WorkManager so, dass er Hilt für die Erstellung von Workern nutzt.
@@ -52,7 +56,7 @@ class BirthdayApplication : Application(), Configuration.Provider {
         val importance = NotificationManager.IMPORTANCE_HIGH
         
         // Die ID "birthday_channel" muss konsistent mit der ID im NotificationHelper sein.
-        val channel = NotificationChannel("birthday_channel", name, importance).apply {
+        val channel = NotificationChannel(NotificationHelper.CHANNEL_ID, name, importance).apply {
             description = descriptionText
         }
 
