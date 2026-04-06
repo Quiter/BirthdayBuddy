@@ -79,11 +79,12 @@ class BirthdayWorker @AssistedInject constructor(
 
 fun scheduleDailyBirthdayWork(context: Context, hour: Int, minute: Int) {
     val workManager = WorkManager.getInstance(context)
+    
+    // Keine harten Constraints für das tägliche Update, damit es zuverlässiger läuft
     val constraints = Constraints.Builder()
-        .setRequiresBatteryNotLow(true)
         .build()
 
-    val workRequest = PeriodicWorkRequestBuilder<BirthdayWorker>(24, TimeUnit.HOURS)
+    val workRequest = PeriodicWorkRequestBuilder<BirthdayWorker>(12, TimeUnit.HOURS) // Alle 12h statt 24h für mehr Redundanz
         .setConstraints(constraints)
         .addTag("birthday_daily_sync")
         .build()
@@ -91,6 +92,20 @@ fun scheduleDailyBirthdayWork(context: Context, hour: Int, minute: Int) {
     workManager.enqueueUniquePeriodicWork(
         "birthday_daily_sync",
         ExistingPeriodicWorkPolicy.UPDATE,
+        workRequest
+    )
+}
+
+fun triggerImmediateWidgetUpdate(context: Context) {
+    val workRequest = OneTimeWorkRequestBuilder<BirthdayWorker>()
+        .setInputData(workDataOf(BirthdayWorker.KEY_AFFECTS_NOTIFICATIONS to false))
+        .setExpedited(OutOfQuotaPolicy.RUN_AS_NON_EXPEDITED_WORK_REQUEST)
+        .addTag("immediate_widget_update")
+        .build()
+
+    WorkManager.getInstance(context).enqueueUniqueWork(
+        "immediate_widget_update",
+        ExistingWorkPolicy.REPLACE,
         workRequest
     )
 }
