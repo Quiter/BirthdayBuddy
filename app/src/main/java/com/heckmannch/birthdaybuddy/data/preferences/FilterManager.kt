@@ -72,15 +72,11 @@ class FilterManager @Inject constructor(
         )
     }
 
-    val selectedLabelsFlow = preferencesFlow.map { it.selectedLabels }
-
     suspend fun saveSelectedLabels(labels: Set<String>) = edit { it[Keys.SELECTED_LABELS] = labels }
     suspend fun saveExcludedLabels(labels: Set<String>) = edit { it[Keys.EXCLUDED_LABELS] = labels }
     suspend fun saveHiddenDrawerLabels(labels: Set<String>) = edit { it[Keys.HIDDEN_DRAWER_LABELS] = labels }
     suspend fun saveWidgetSelectedLabels(labels: Set<String>) = edit { it[Keys.WIDGET_SELECTED_LABELS] = labels }
-    suspend fun saveWidgetExcludedLabels(labels: Set<String>) = edit { it[Keys.WIDGET_EXCLUDED_LABELS] = labels }
     suspend fun saveNotificationSelectedLabels(labels: Set<String>) = edit { it[Keys.NOTIFICATION_SELECTED_LABELS] = labels }
-    suspend fun saveNotificationExcludedLabels(labels: Set<String>) = edit { it[Keys.NOTIFICATION_EXCLUDED_LABELS] = labels }
     suspend fun saveLastBackgroundTime(time: Long) = edit { it[Keys.LAST_BACKGROUND_TIME] = time }
     suspend fun saveLastWidgetUpdateDate(date: String) = edit { it[Keys.LAST_WIDGET_UPDATE_DATE] = date }
     suspend fun setInitialized(value: Boolean) = edit { it[Keys.IS_INITIALIZED] = value }

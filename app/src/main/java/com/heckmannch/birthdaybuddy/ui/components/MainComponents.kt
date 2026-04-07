@@ -1,9 +1,9 @@
 package com.heckmannch.birthdaybuddy.ui.components
 
 import android.content.Intent
-import android.net.Uri
 import android.provider.ContactsContract
 import androidx.compose.animation.*
+import androidx.core.net.toUri
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -53,11 +53,25 @@ fun MainSearchBar(
     onMenuClick: () -> Unit,        // Öffnet das Seitenmenü
     modifier: Modifier = Modifier
 ) {
+    // Lokaler State für den Suchtext, um Cursor-Sprünge zu verhindern.
+    // Dieser synchronisiert sich mit dem query-Parameter vom ViewModel.
+    var text by remember { mutableStateOf(query) }
+    
+    // Synchronisiert den lokalen Text, wenn die Suche von außen gelöscht wird (z.B. über das "X")
+    LaunchedEffect(query) {
+        if (text != query) {
+            text = query
+        }
+    }
+
     SearchBar(
         inputField = {
             SearchBarDefaults.InputField(
-                query = query,
-                onQueryChange = onQueryChange,
+                query = text,
+                onQueryChange = { 
+                    text = it
+                    onQueryChange(it) 
+                },
                 onSearch = { }, // Wir suchen live, daher ist kein "Enter"-Event nötig
                 expanded = false,
                 onExpandedChange = { },
@@ -80,22 +94,23 @@ fun MainSearchBar(
                 trailingIcon = {
                     // Das "X" zum Löschen erscheint nur, wenn Text eingegeben wurde
                     AnimatedVisibility(
-                        visible = query.isNotEmpty(),
+                        visible = text.isNotEmpty(),
                         enter = fadeIn(),
                         exit = fadeOut()
                     ) {
-                        IconButton(onClick = { onQueryChange("") }) {
+                        IconButton(onClick = { 
+                            text = ""
+                            onQueryChange("") 
+                        }) {
                             Icon(Icons.Default.Clear, contentDescription = stringResource(R.string.drawer_search_clear))
                         }
                     }
                 },
-                colors = TextFieldDefaults.colors(
+                colors = SearchBarDefaults.inputFieldColors(
                     focusedContainerColor = Color.Transparent,
                     unfocusedContainerColor = Color.Transparent,
                     disabledContainerColor = Color.Transparent,
                     cursorColor = MaterialTheme.colorScheme.primary,
-                    focusedIndicatorColor = Color.Transparent,
-                    unfocusedIndicatorColor = Color.Transparent,
                 )
             )
         },
@@ -204,7 +219,7 @@ fun MainDrawerContent(
                     label = { Text(stringResource(R.string.drawer_calendar)) },
                     selected = false,
                     onClick = {
-                        val intent = Intent(Intent.ACTION_VIEW).setData(Uri.parse("content://com.android.calendar/time/"))
+                        val intent = Intent(Intent.ACTION_VIEW).setData("content://com.android.calendar/time/".toUri())
                         context.startActivity(intent)
                     },
                     icon = { Icon(Icons.Default.CalendarToday, contentDescription = stringResource(R.string.drawer_calendar)) },

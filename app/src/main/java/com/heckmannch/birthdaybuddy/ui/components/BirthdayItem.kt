@@ -47,7 +47,7 @@ import com.heckmannch.birthdaybuddy.R
 import com.heckmannch.birthdaybuddy.model.BirthdayContact
 import com.heckmannch.birthdaybuddy.ui.theme.BirthdayColors
 import com.heckmannch.birthdaybuddy.utils.GreetingGenerator
-import com.heckmannch.birthdaybuddy.utils.formatGermanDate
+import com.heckmannch.birthdaybuddy.utils.toGermanDate
 import nl.dionsegijn.konfetti.compose.KonfettiView
 import nl.dionsegijn.konfetti.core.Party
 import nl.dionsegijn.konfetti.core.Position
@@ -153,7 +153,7 @@ fun BirthdayItem(
                     },
                     supportingContent = {
                         Text(
-                            text = formatGermanDate(contact.birthday),
+                            text = contact.birthday.toGermanDate(),
                             style = MaterialTheme.typography.bodyMedium
                         )
                     },

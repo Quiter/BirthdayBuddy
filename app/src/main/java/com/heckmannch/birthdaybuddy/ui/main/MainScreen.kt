@@ -115,8 +115,8 @@ fun MainScreen(
         ) { padding ->
             val listState = rememberLazyListState()
             
-            // Automatisch nach oben scrollen, wenn sich die Label-Auswahl ändert
-            LaunchedEffect(uiState.selectedLabels, uiState.hiddenDrawerLabels) {
+            // Automatisch nach oben scrollen, wenn sich Filter oder Suche ändern
+            LaunchedEffect(uiState.selectedLabels, uiState.hiddenDrawerLabels, uiState.searchQuery) {
                 if (uiState.contacts.isNotEmpty()) {
                     listState.scrollToItem(0)
                 }

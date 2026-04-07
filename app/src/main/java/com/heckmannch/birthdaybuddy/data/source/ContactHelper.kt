@@ -118,7 +118,7 @@ fun fetchBirthdays(context: Context): List<BirthdayContact> {
     }
 
     return birthdayContacts.values.map { builder ->
-        val (age, remainingDays) = calculateAgeAndDays(builder.birthday)
+        val (age, remainingDays) = builder.birthday.calculateAgeAndDays()
         val photoUri = builder.photoUri ?: ContentUris.withAppendedId(Contacts.CONTENT_URI, builder.id).toString()
 
         val labels = mutableSetOf<String>()
