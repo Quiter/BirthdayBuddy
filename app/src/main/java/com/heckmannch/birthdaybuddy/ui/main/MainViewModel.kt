@@ -37,15 +37,26 @@ class MainViewModel @Inject constructor(
     private val _isLoading = MutableStateFlow(false)
     private val _searchQuery = MutableStateFlow("")
 
-    val uiState: StateFlow<MainUiState> = combine(
+    // Heavy computation: Filtering and label extraction runs on Default dispatcher
+    private val _filteredData = combine(
         repository.allBirthdays.distinctUntilChanged(),
+        _searchQuery,
+        filterManager.preferencesFlow.distinctUntilChanged()
+    ) { contacts, query, prefs ->
+        val filtered = filterContacts(contacts, query, prefs)
+        val availableLabels = contacts.flatMap { it.labels }.toSortedSet()
+        filtered to availableLabels
+    }.flowOn(Dispatchers.Default)
+
+    // UI State combines the results. This is collected on the Main thread.
+    // Note: No flowOn(Default) at the end, so _searchQuery updates are immediate in the UI State.
+    val uiState: StateFlow<MainUiState> = combine(
+        _filteredData,
         _isLoading,
         _searchQuery,
         filterManager.preferencesFlow.distinctUntilChanged()
-    ) { contacts, loading, query, prefs ->
-        val filtered = filterContacts(contacts, query, prefs)
-        val availableLabels = contacts.flatMap { it.labels }.toSortedSet()
-
+    ) { filteredResult, loading, query, prefs ->
+        val (filtered, availableLabels) = filteredResult
         MainUiState(
             contacts = filtered,
             isLoading = loading,
@@ -54,12 +65,11 @@ class MainViewModel @Inject constructor(
             selectedLabels = prefs.selectedLabels,
             hiddenDrawerLabels = prefs.hiddenDrawerLabels
         )
-    }.flowOn(Dispatchers.Default)
-        .stateIn(
-            scope = viewModelScope,
-            started = SharingStarted.WhileSubscribed(5000),
-            initialValue = MainUiState(isLoading = true)
-        )
+    }.stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(5000),
+        initialValue = MainUiState(isLoading = true)
+    )
 
     init {
         loadContacts(isInitial = true)
