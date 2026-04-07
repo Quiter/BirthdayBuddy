@@ -4,23 +4,18 @@ import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.widget.Toast
-import androidx.compose.animation.animateContentSize
+import androidx.compose.animation.*
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.spring
-import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.background
-import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
+import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.Notes
 import androidx.compose.material.icons.automirrored.filled.Send
-import androidx.compose.material.icons.filled.Call
-import androidx.compose.material.icons.filled.Email
-import androidx.compose.material.icons.filled.Person
-import androidx.compose.material.icons.filled.Cake
+import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -56,10 +51,12 @@ import java.util.concurrent.TimeUnit
 
 @Composable
 fun BirthdayItem(
+    modifier: Modifier = Modifier,
     contact: BirthdayContact,
-    modifier: Modifier = Modifier
+    onUpdateGiftIdea: (String, String) -> Unit = { _, _ -> }
 ) {
     var expanded by remember { mutableStateOf(false) }
+    var showGiftDialog by remember { mutableStateOf(false) }
     val context = LocalContext.current
     val keyboardController = LocalSoftwareKeyboardController.current
     
@@ -228,7 +225,7 @@ fun BirthdayItem(
                         LazyRow(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .padding(horizontal = 16.dp, vertical = 8.dp),
+                                .padding(horizontal = 16.dp, vertical = 4.dp),
                             horizontalArrangement = Arrangement.spacedBy(4.dp)
                         ) {
                             items(sortedLabels) { label ->
@@ -244,6 +241,41 @@ fun BirthdayItem(
                             }
                         }
                     }
+
+                    // GESCHENKIDEE SEKTION
+                    ListItem(
+                        colors = ListItemDefaults.colors(containerColor = Color.Transparent),
+                        headlineContent = {
+                            Text(
+                                text = contact.giftIdea.ifEmpty { stringResource(R.string.gift_idea_empty) },
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = if (contact.giftIdea.isEmpty()) MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f) else MaterialTheme.colorScheme.onSurface,
+                                maxLines = 2
+                            )
+                        },
+                        leadingContent = {
+                            Icon(
+                                Icons.AutoMirrored.Filled.Notes,
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.primary.copy(alpha = 0.7f),
+                                modifier = Modifier.size(20.dp)
+                            )
+                        },
+                        trailingContent = {
+                            IconButton(onClick = { showGiftDialog = true }) {
+                                Icon(
+                                    if (contact.giftIdea.isEmpty()) Icons.Default.AddCircleOutline else Icons.Default.Edit,
+                                    contentDescription = stringResource(R.string.gift_idea_edit),
+                                    modifier = Modifier.size(20.dp)
+                                )
+                            }
+                        },
+                        modifier = Modifier
+                            .padding(horizontal = 8.dp)
+                            .clickable { showGiftDialog = true }
+                    )
+
+                    Spacer(modifier = Modifier.height(8.dp))
 
                     Row(
                         modifier = Modifier
@@ -319,6 +351,50 @@ fun BirthdayItem(
             KonfettiView(modifier = Modifier.matchParentSize(), parties = listOf(party))
         }
     }
+
+    if (showGiftDialog) {
+        GiftIdeaDialog(
+            initialText = contact.giftIdea,
+            onDismiss = { showGiftDialog = false },
+            onConfirm = { newIdea ->
+                onUpdateGiftIdea(contact.id, newIdea)
+                showGiftDialog = false
+            }
+        )
+    }
+}
+
+@Composable
+fun GiftIdeaDialog(
+    initialText: String,
+    onDismiss: () -> Unit,
+    onConfirm: (String) -> Unit
+) {
+    var text by remember { mutableStateOf(initialText) }
+    
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text(stringResource(R.string.gift_idea_dialog_title)) },
+        text = {
+            OutlinedTextField(
+                value = text,
+                onValueChange = { text = it },
+                modifier = Modifier.fillMaxWidth(),
+                placeholder = { Text(stringResource(R.string.gift_idea_dialog_hint)) },
+                minLines = 3
+            )
+        },
+        confirmButton = {
+            Button(onClick = { onConfirm(text) }) {
+                Text(stringResource(R.string.save))
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text(stringResource(R.string.cancel))
+            }
+        }
+    )
 }
 
 private fun launchMessenger(context: Context, number: String, text: String, isToday: Boolean, packageName: String, urlPrefix: String) {

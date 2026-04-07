@@ -158,4 +158,10 @@ class MainViewModel @Inject constructor(
             filterManager.saveSelectedLabels(newSelection)
         }
     }
+
+    fun updateGiftIdea(contactId: String, giftIdea: String) {
+        viewModelScope.launch {
+            repository.updateGiftIdea(contactId, giftIdea)
+        }
+    }
 }

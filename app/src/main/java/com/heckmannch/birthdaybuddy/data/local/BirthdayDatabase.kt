@@ -10,7 +10,7 @@ import com.heckmannch.birthdaybuddy.model.BirthdayContact
 /**
  * Die Room-Datenbank-Klasse.
  */
-@Database(entities = [BirthdayContact::class], version = 1, exportSchema = false)
+@Database(entities = [BirthdayContact::class], version = 2, exportSchema = false)
 @TypeConverters(DataConverters::class)
 abstract class BirthdayDatabase : RoomDatabase() {
     
@@ -26,7 +26,9 @@ abstract class BirthdayDatabase : RoomDatabase() {
                     context.applicationContext,
                     BirthdayDatabase::class.java,
                     "birthday_database"
-                ).build()
+                )
+                    .fallbackToDestructiveMigration(dropAllTables = true)
+                    .build()
                 INSTANCE = instance
                 instance
             }

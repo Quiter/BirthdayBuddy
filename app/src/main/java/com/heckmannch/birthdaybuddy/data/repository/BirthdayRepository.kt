@@ -42,4 +42,13 @@ class BirthdayRepository @Inject constructor(
             }
         }
     }
+
+    /**
+     * Aktualisiert die Geschenkidee für einen Kontakt in der lokalen Datenbank.
+     */
+    suspend fun updateGiftIdea(id: String, giftIdea: String) {
+        withContext(Dispatchers.IO) {
+            birthdayDao.updateGiftIdea(id, giftIdea)
+        }
+    }
 }

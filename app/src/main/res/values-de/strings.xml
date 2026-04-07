@@ -156,6 +156,14 @@
     <string name="share_subject">Herzlichen Glückwunsch!</string>
     <string name="error_no_contact_data">Keine Kontaktdaten</string>
     <string name="error_app_not_found">%1$s nicht gefunden</string>
+    <string name="save">Speichern</string>
+    <string name="cancel">Abbrechen</string>
+
+    <!-- Gift Ideas -->
+    <string name="gift_idea_empty">Noch keine Geschenkideen…</string>
+    <string name="gift_idea_edit">Geschenkidee bearbeiten</string>
+    <string name="gift_idea_dialog_title">Geschenkidee</string>
+    <string name="gift_idea_dialog_hint">Gib hier eine Geschenkidee ein…</string>
 
     <!-- Birthday Greetings -->
     <string-array name="greetings_kid">

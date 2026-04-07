@@ -156,6 +156,14 @@
     <string name="share_subject">Happy Birthday!</string>
     <string name="error_no_contact_data">No contact details</string>
     <string name="error_app_not_found">%1$s not found</string>
+    <string name="save">Save</string>
+    <string name="cancel">Cancel</string>
+
+    <!-- Gift Ideas -->
+    <string name="gift_idea_empty">No gift ideas yet…</string>
+    <string name="gift_idea_edit">Edit gift idea</string>
+    <string name="gift_idea_dialog_title">Gift Idea</string>
+    <string name="gift_idea_dialog_hint">Enter a gift idea here…</string>
 
     <!-- Internal Labels (Don't translate) -->
     <string name="label_system_all" translatable="false">My Contacts</string>

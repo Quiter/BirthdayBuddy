@@ -29,7 +29,8 @@ data class BirthdayContact(
     val remainingDays: Int,
     val age: Int,
     val actions: ContactActions = ContactActions(),
-    val photoUri: String? = null
+    val photoUri: String? = null,
+    val giftIdea: String = ""
 )
 
 /**

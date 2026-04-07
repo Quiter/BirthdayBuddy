@@ -178,7 +178,8 @@ fun MainScreen(
                         } else {
                             BirthdayList(
                                 contacts = uiState.contacts, 
-                                listState = listState
+                                listState = listState,
+                                onUpdateGiftIdea = { id, idea -> mainViewModel.updateGiftIdea(id, idea) }
                             )
                         }
                     }

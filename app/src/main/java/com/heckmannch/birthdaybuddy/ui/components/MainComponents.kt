@@ -307,6 +307,7 @@ private val NavigationDrawerItemPadding = PaddingValues(horizontal = 12.dp, vert
 fun BirthdayList(
     contacts: List<BirthdayContact>,
     listState: LazyListState,
+    onUpdateGiftIdea: (String, String) -> Unit,
     modifier: Modifier = Modifier
 ) {
     LazyColumn(
@@ -323,6 +324,7 @@ fun BirthdayList(
         ) { contact ->
             BirthdayItem(
                 contact = contact,
+                onUpdateGiftIdea = onUpdateGiftIdea,
                 modifier = Modifier.animateItem() // Sorgt für sanftes Verschieben beim Filtern
             )
         }
