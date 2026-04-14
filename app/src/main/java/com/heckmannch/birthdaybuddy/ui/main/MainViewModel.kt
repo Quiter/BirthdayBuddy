@@ -73,6 +73,13 @@ class MainViewModel @Inject constructor(
 
     init {
         loadContacts(isInitial = true)
+        syncGiftsFromCloud()
+    }
+
+    private fun syncGiftsFromCloud() {
+        viewModelScope.launch {
+            repository.syncGiftsFromCloud()
+        }
     }
 
     private fun filterContacts(

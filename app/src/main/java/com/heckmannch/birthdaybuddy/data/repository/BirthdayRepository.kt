@@ -17,7 +17,8 @@ import javax.inject.Singleton
 @Singleton
 class BirthdayRepository @Inject constructor(
     private val contactDataSource: ContactDataSource,
-    private val birthdayDao: BirthdayDao
+    private val birthdayDao: BirthdayDao,
+    private val giftSyncRepository: GiftSyncRepository
 ) {
 
     /**
@@ -49,6 +50,14 @@ class BirthdayRepository @Inject constructor(
     suspend fun updateGiftIdea(id: String, giftIdea: String) {
         withContext(Dispatchers.IO) {
             birthdayDao.updateGiftIdea(id, giftIdea)
+            giftSyncRepository.uploadGiftIdea(id, giftIdea)
         }
+    }
+
+    /**
+     * Lädt die Geschenkideen aus der Cloud und aktualisiert die lokale DB.
+     */
+    suspend fun syncGiftsFromCloud() {
+        giftSyncRepository.syncGiftsFromCloud()
     }
 }

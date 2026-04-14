@@ -41,6 +41,7 @@
 
     <!-- Settings Menu -->
     <string name="settings_title">Settings</string>
+    <string name="settings_section_account">Account &amp; Sync</string>
     <string name="settings_section_display">Display &amp; Filter</string>
     <string name="settings_section_notifications">Notifications</string>
     <string name="settings_section_widget">Widget</string>
@@ -61,6 +62,12 @@
     <string name="settings_theme_light">Light</string>
     <string name="settings_theme_dark">Dark</string>
     <string name="settings_theme_dialog_title">Choose Theme</string>
+
+    <string name="settings_account_signin_google">Sign in with Google</string>
+    <string name="settings_account_signout">Sign out</string>
+    <string name="settings_account_sync_desc">Sync gift ideas across devices</string>
+    <string name="settings_account_status_signed_in">Signed in as %1$s</string>
+    <string name="settings_account_status_signed_out">Not signed in</string>
 
     <string name="footer_slogan">Made with ❤ in Dortmund</string>
     <string name="settings_github_project">GitHub Project</string>

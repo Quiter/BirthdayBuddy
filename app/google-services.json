@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "353477971160",
+    "project_id": "birthdaybuddy-1af73564",
+    "storage_bucket": "birthdaybuddy-1af73564.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:353477971160:android:da6ada61831bbd5878dbad",
+        "android_client_info": {
+          "package_name": "com.heckmannch.birthdaybuddy"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "353477971160-p309adgfu5u5f9ju7p5j8b5jo2t2t1am.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.heckmannch.birthdaybuddy",
+            "certificate_hash": "34c7a3ec897b06df62410f09d2935335af7d47ec"
+          }
+        },
+        {
+          "client_id": "353477971160-32q5fi3dbolgc2qu04978jqte60n4603.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAtPO8vFQcYQGiHPV8WbfvjkyTA_CLJho4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "353477971160-32q5fi3dbolgc2qu04978jqte60n4603.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

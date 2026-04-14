@@ -41,6 +41,7 @@
 
     <!-- Settings Menu -->
     <string name="settings_title">Einstellungen</string>
+    <string name="settings_section_account">Konto &amp; Synchronisation</string>
     <string name="settings_section_display">Anzeige &amp; Filter</string>
     <string name="settings_section_notifications">Benachrichtigungen</string>
     <string name="settings_section_widget">Widget</string>
@@ -60,7 +61,13 @@
     <string name="settings_theme_system">System</string>
     <string name="settings_theme_light">Hell</string>
     <string name="settings_theme_dark">Dunkel</string>
-    <string name="settings_theme_dialog_title">Theme wählen</string>
+    <string name="settings_theme_dialog_title">Thema wählen</string>
+
+    <string name="settings_account_signin_google">Mit Google anmelden</string>
+    <string name="settings_account_signout">Abmelden</string>
+    <string name="settings_account_sync_desc">Geschenkideen geräteübergreifend synchronisieren</string>
+    <string name="settings_account_status_signed_in">Angemeldet als %1$s</string>
+    <string name="settings_account_status_signed_out">Nicht angemeldet</string>
 
     <string name="footer_slogan">Made with ❤ in Dortmund</string>
     <string name="settings_github_project">GitHub Projekt</string>

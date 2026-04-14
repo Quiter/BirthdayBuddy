@@ -1,6 +1,10 @@
 package com.heckmannch.birthdaybuddy.ui.settings
 
 import android.content.Intent
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import com.google.android.gms.auth.api.signin.GoogleSignIn
+import com.google.android.gms.common.api.ApiException
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -38,7 +42,20 @@ fun SettingsMenuScreen(
     val scope = rememberCoroutineScope()
 
     val currentTheme by viewModel.themeFlow.collectAsState(initial = 0)
+    val currentUser by viewModel.currentUser.collectAsState()
     val versionName = getAppVersionName()
+
+    val launcher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.StartActivityForResult()
+    ) { result ->
+        val task = GoogleSignIn.getSignedInAccountFromIntent(result.data)
+        try {
+            val account = task.getResult(ApiException::class.java)
+            account.idToken?.let { viewModel.signInWithGoogle(it) }
+        } catch (e: Exception) {
+            // Fehlerbehandlung
+        }
+    }
     
     val showThemeDialog = remember { mutableStateOf(false) }
     val dismissThemeDialog = { showThemeDialog.value = false }
@@ -68,6 +85,33 @@ fun SettingsMenuScreen(
                 .padding(bottom = 16.dp)
         ) {
             Spacer(modifier = Modifier.height(8.dp))
+
+            // SEKTION: KONTO
+            SectionHeader(stringResource(R.string.settings_section_account))
+            SettingsGroup {
+                val accountSubtitle = if (currentUser != null) {
+                    stringResource(R.string.settings_account_status_signed_in, currentUser?.email ?: "")
+                } else {
+                    stringResource(R.string.settings_account_status_signed_out)
+                }
+
+                SettingsBlockRow(
+                    title = if (currentUser == null) stringResource(R.string.settings_account_signin_google) else stringResource(R.string.settings_account_signout),
+                    subtitle = accountSubtitle,
+                    icon = if (currentUser == null) Icons.Default.Login else Icons.Default.Logout,
+                    iconContainerColor = if (currentUser == null) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.errorContainer,
+                    isTop = true,
+                    isBottom = true
+                ) {
+                    if (currentUser == null) {
+                        launcher.launch(viewModel.authRepository.getGoogleSignInClient().signInIntent)
+                    } else {
+                        viewModel.signOut()
+                    }
+                }
+            }
+
+            Spacer(modifier = Modifier.height(24.dp))
 
             // SEKTION: ORGANISATION
             SectionHeader(stringResource(R.string.label_manager_section_org))

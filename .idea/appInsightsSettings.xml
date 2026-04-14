@@ -37,10 +37,10 @@
             <InsightsFilterSettings>
               <option name="connection">
                 <ConnectionSetting>
-                  <option name="appId" value="PLACEHOLDER" />
-                  <option name="mobileSdkAppId" value="" />
-                  <option name="projectId" value="" />
-                  <option name="projectNumber" value="" />
+                  <option name="appId" value="com.heckmannch.birthdaybuddy" />
+                  <option name="mobileSdkAppId" value="1:353477971160:android:da6ada61831bbd5878dbad" />
+                  <option name="projectId" value="birthdaybuddy-1af73564" />
+                  <option name="projectNumber" value="353477971160" />
                 </ConnectionSetting>
               </option>
               <option name="signal" value="SIGNAL_UNSPECIFIED" />
