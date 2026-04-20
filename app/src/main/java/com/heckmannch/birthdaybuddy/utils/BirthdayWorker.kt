@@ -13,7 +13,10 @@ import com.heckmannch.birthdaybuddy.widget.BirthdayGlanceWidget
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
 import kotlinx.coroutines.flow.first
+import java.time.Duration
 import java.time.LocalDate
+import java.time.LocalDateTime
+import java.time.LocalTime
 import java.util.concurrent.TimeUnit
 
 /**
@@ -80,11 +83,24 @@ class BirthdayWorker @AssistedInject constructor(
 fun scheduleDailyBirthdayWork(context: Context, hour: Int, minute: Int) {
     val workManager = WorkManager.getInstance(context)
     
-    // Keine harten Constraints für das tägliche Update, damit es zuverlässiger läuft
+    // Berechnung des initialen Delays, um zur Wunschuhrzeit zu starten
+    val now = LocalDateTime.now()
+    val targetTime = LocalTime.of(hour, minute)
+    var targetDateTime = LocalDateTime.of(now.toLocalDate(), targetTime)
+
+    // Falls die Uhrzeit heute schon vorbei ist, planen wir für morgen
+    if (now.isAfter(targetDateTime)) {
+        targetDateTime = targetDateTime.plusDays(1)
+    }
+
+    val initialDelay = Duration.between(now, targetDateTime)
+
     val constraints = Constraints.Builder()
         .build()
 
-    val workRequest = PeriodicWorkRequestBuilder<BirthdayWorker>(12, TimeUnit.HOURS) // Alle 12h statt 24h für mehr Redundanz
+    // 24-Stunden-Intervall, damit die Benachrichtigung genau 1x am Tag kommt
+    val workRequest = PeriodicWorkRequestBuilder<BirthdayWorker>(24, TimeUnit.HOURS)
+        .setInitialDelay(initialDelay.toMinutes(), TimeUnit.MINUTES)
         .setConstraints(constraints)
         .addTag("birthday_daily_sync")
         .build()
