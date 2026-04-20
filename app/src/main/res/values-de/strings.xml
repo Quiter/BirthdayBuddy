@@ -4,7 +4,6 @@
     <!-- Main Screen -->
     <string name="main_search_hint">Suchen…</string>
     <string name="main_no_birthdays">Keine Geburtstage gefunden.</string>
-    <string name="main_loading">Lade Daten…</string>
     <string name="permission_required_desc">GeburtstagsBuddy benötigt die Berechtigung, deine Kontakte zu lesen, um Geburtstage anzuzeigen.</string>
     <string name="open_settings">Einstellungen öffnen</string>
     <string name="add_contact">Kontakt hinzufügen</string>
@@ -17,9 +16,7 @@
     <!-- Drawer / Navigation -->
     <string name="drawer_title">Geburtstags\nBuddy</string>
     <string name="drawer_labels_header">Labels</string>
-    <string name="drawer_reload_contacts">Kontakte synchronisieren</string>
     <string name="drawer_settings">Einstellungen</string>
-    <string name="drawer_no_labels">Keine Labels verfügbar</string>
     <string name="drawer_contacts">Kontakte</string>
     <string name="drawer_calendar">Kalender</string>
     <string name="drawer_menu_open">Menü öffnen</string>
@@ -44,18 +41,9 @@
     <string name="settings_section_account">Konto &amp; Synchronisation</string>
     <string name="settings_section_display">Anzeige &amp; Filter</string>
     <string name="settings_section_notifications">Benachrichtigungen</string>
-    <string name="settings_section_widget">Widget</string>
-    <string name="settings_section_advanced">Erweitert</string>
-
-    <string name="settings_labels_show_title">Labels anzeigen</string>
-    <string name="settings_labels_show_desc">Sichtbarkeit im Seitenmenü</string>
-    <string name="settings_labels_block_title">Labels blockieren</string>
-    <string name="settings_labels_block_desc">Kontakte global ignorieren</string>
 
     <string name="settings_alarms_title">Alarme</string>
     <string name="settings_alarms_desc">Erinnerungszeiten konfigurieren</string>
-    <string name="settings_notifications_include_title">Filter: Einschließen</string>
-    <string name="settings_notifications_exclude_title">Filter: Ausschließen</string>
 
     <string name="settings_theme_title">Theme</string>
     <string name="settings_theme_system">System</string>
@@ -65,29 +53,18 @@
 
     <string name="settings_account_signin_google">Mit Google anmelden</string>
     <string name="settings_account_signout">Abmelden</string>
-    <string name="settings_account_sync_desc">Geschenkideen geräteübergreifend synchronisieren</string>
     <string name="settings_account_status_signed_in">Angemeldet als %1$s</string>
     <string name="settings_account_status_signed_out">Nicht angemeldet</string>
 
-    <string name="footer_slogan">Made with ❤ in Dortmund</string>
     <string name="settings_github_project">GitHub Projekt</string>
     <string name="version_label">Version %1$s</string>
 
     <!-- Labels Selection -->
-    <string name="label_selection_save">Speichern</string>
-    <string name="label_selection_none">No Labels verfügbar</string>
     <string name="label_selection_back">Zurück</string>
 
     <!-- Alarms Screen -->
-    <string name="alarms_header_title">Benachrichtigungen</string>
-    <string name="alarms_time_label">Zeitpunkt der Benachrichtigung</string>
-    <string name="alarms_days_header">Wann möchtest du erinnert werden?</string>
     <string name="alarms_day_0">Am Tag selbst</string>
     <string name="alarms_day_1">1 Tag vorher</string>
-    <string name="alarms_day_3">3 Tage vorher</string>
-    <string name="alarms_day_7">1 Woche vorher</string>
-    <string name="alarms_day_14">2 Wochen vorher</string>
-    <string name="alarms_day_30">1 Monat vorher</string>
 
     <string name="alarms_add_button">Hinzufügen</string>
     <string name="alarms_time_section">Uhrzeit</string>
@@ -112,20 +89,13 @@
     <string name="label_manager_tab_app">App</string>
     <string name="label_manager_tab_widget">Widget</string>
     <string name="label_manager_tab_alarms">Alarme</string>
-    <string name="label_manager_tab_global">Sperrliste</string>
     <string name="label_manager_desc_app">Wähle Labels für das Seitenmenü.</string>
     <string name="label_manager_desc_widget">Wähle Labels für das Homescreen-Widget.</string>
     <string name="label_manager_desc_alarms">Wähle Labels für Benachrichtigungen.</string>
-    <string name="label_manager_desc_global">Diese Labels werden überall ausgeblendet.</string>
     <string name="label_manager_empty">Keine Labels gefunden. Bitte Kontakte synchronisieren.</string>
     <string name="label_manager_section_org">Organisation</string>
     <string name="label_manager_subtitle">Zentrale Sichtbarkeitssteuerung</string>
     <string name="label_manager_status_blocked">Vollständig ignoriert</string>
-
-    <string name="label_matrix_legend_title">Icon-Legende</string>
-    <string name="label_matrix_legend_show">Anzeigen: In diesem Bereich sichtbar.</string>
-    <string name="label_matrix_legend_hide">Ausblenden: Nicht explizit gefiltert (Neutral).</string>
-    <string name="label_matrix_legend_block">Blockieren: Kontakte mit diesem Label werden ignoriert.</string>
 
     <string name="label_manager_intro_title">Willkommen im Label-Manager! 🎯</string>
     <string name="label_manager_intro_desc">Hier steuerst du präzise, welche Geburtstage wo erscheinen:\n\n• Tabs: Wechsel zwischen App, Widget und Alarmen.\n• Auge-Icon: Labels gezielt für diesen Bereich ein- oder ausblenden.\n• Sperr-Icon: Labels global überall ignorieren.\n\nSo behältst du immer den Überblick!</string>
@@ -133,21 +103,12 @@
     <string name="label_manager_intro_button">Verstanden!</string>
 
     <!-- Sync Status -->
-    <string name="sync_success">Kontakte erfolgreich synchronisiert</string>
-    <string name="sync_error_permission">Berechtigung fehlt</string>
-    <string name="sync_error_unknown">Fehler: %1$s</string>
-    <string name="sync_desc">Lade alle Geburtstage aus deinen Kontakten neu</string>
 
     <!-- Standard Labels -->
     <string name="label_all">Alle</string>
     <string name="label_favorites">Favoriten</string>
-    <string name="label_none">Ohne Label</string>
 
     <!-- Widget -->
-    <string name="settings_widget_filters_title">Widget-Filter</string>
-    <string name="settings_widget_filters_desc">Konfiguriere, welche Labels auf dem Homescreen erscheinen</string>
-    <string name="settings_widget_include_title">Filter: Einschließen</string>
-    <string name="settings_widget_exclude_title">Filter: Ausschließen</string>
     <string name="widget_today">Heute</string>
     <string name="widget_tomorrow">Morgen</string>
     <string name="widget_in_days">In %1$d Tagen</string>

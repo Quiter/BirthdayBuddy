@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <!-- Splash Screen -->
-    <color name="splash_background">#FFFFFF</color>
 
     <!-- Widget Colors (Zwingend in XML für Glance) -->
     <color name="widget_gold">#FFFFD700</color>
