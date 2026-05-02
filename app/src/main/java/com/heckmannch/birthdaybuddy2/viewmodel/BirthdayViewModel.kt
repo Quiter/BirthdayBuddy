@@ -19,6 +19,8 @@ import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import java.time.format.FormatStyle
 import java.time.temporal.ChronoUnit
+import androidx.glance.appwidget.updateAll
+import com.heckmannch.birthdaybuddy2.widget.BirthdayWidget
 
 @Immutable
 data class ContactUiModel(
@@ -85,6 +87,8 @@ class BirthdayViewModel(application: Application) : AndroidViewModel(application
             systemContacts.forEach { contact ->
                 contactDao.insertContact(contact)
             }
+            // Widget nach dem Sync aktualisieren
+            BirthdayWidget().updateAll(getApplication())
         }
     }
 
