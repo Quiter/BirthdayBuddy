@@ -18,7 +18,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.KeyboardArrowUp
+import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -33,7 +33,6 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
 import com.heckmannch.birthdaybuddy2.database.Contact
 import com.heckmannch.birthdaybuddy2.ui.theme.BirthdayBuddy2Theme
-import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import java.time.format.FormatStyle
 import kotlinx.coroutines.launch
@@ -119,7 +118,7 @@ class MainActivity : ComponentActivity() {
                                 label = "FAB Icon Change"
                             ) { isUp ->
                                 if (isUp) {
-                                    Icon(Icons.Default.KeyboardArrowUp, contentDescription = "Nach oben")
+                                    Icon(Icons.Default.KeyboardArrowDown, contentDescription = "Nach oben")
                                 } else {
                                     Icon(Icons.Default.Add, contentDescription = "Kontakt hinzufügen")
                                 }
@@ -165,9 +164,22 @@ fun BirthdayList(
 
 @Composable
 fun BirthdayItem(contact: Contact) {
-    // Nutze den Standard des Systems für die Region (FormatStyle.LONG zeigt das Jahr voll an)
-    val dateFormatter = DateTimeFormatter.ofLocalizedDate(FormatStyle.LONG)
-    val daysLeft = contact.birthday.daysUntilNext()
+    // Optimierung: Teure Objekte und Berechnungen cachen
+    val dateFormatter = remember { DateTimeFormatter.ofLocalizedDate(FormatStyle.LONG) }
+    val dayMonthFormatter = remember { DateTimeFormatter.ofPattern("d. MMMM") }
+    
+    val daysLeft = remember(contact.birthday) { contact.birthday.daysUntilNext() }
+    val nextAge = remember(contact.birthday) { contact.birthday.nextAge() }
+    
+    val dateText = remember(contact.birthday) {
+        if (contact.birthday.year == 1900) {
+            contact.birthday.format(dayMonthFormatter)
+        } else {
+            contact.birthday.format(dateFormatter)
+        }
+    }
+    
+    val initial = remember(contact.fullName) { contact.fullName.take(1).uppercase() }
     
     Card(
         modifier = Modifier
@@ -182,13 +194,6 @@ fun BirthdayItem(contact: Contact) {
                 Text(text = contact.fullName, style = MaterialTheme.typography.titleMedium) 
             },
             supportingContent = {
-                // Wenn das Jahr 1900 ist, bedeutet das bei Android-Kontakten oft, dass kein Jahr gespeichert war.
-                // In diesem Fall zeigen wir nur Tag und Monat. Ansonsten das volle Datum.
-                val dateText = if (contact.birthday.year == 1900) {
-                    contact.birthday.format(DateTimeFormatter.ofPattern("d. MMMM"))
-                } else {
-                    contact.birthday.format(dateFormatter)
-                }
                 Text(
                     text = dateText,
                     style = MaterialTheme.typography.bodyMedium,
@@ -211,7 +216,7 @@ fun BirthdayItem(contact: Contact) {
                     } else {
                         Box(contentAlignment = Alignment.Center) {
                             Text(
-                                text = contact.fullName.take(1).uppercase(),
+                                text = initial,
                                 style = MaterialTheme.typography.titleLarge
                             )
                         }
@@ -222,7 +227,7 @@ fun BirthdayItem(contact: Contact) {
                 Column(horizontalAlignment = Alignment.End) {
                     if (contact.birthday.year != 1900) {
                         Text(
-                            text = "wird ${contact.birthday.nextAge()}",
+                            text = "wird $nextAge",
                             style = MaterialTheme.typography.labelLarge,
                             color = MaterialTheme.colorScheme.primary
                         )
