@@ -18,23 +18,24 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.rotate
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
-import com.heckmannch.birthdaybuddy2.database.Contact
 import com.heckmannch.birthdaybuddy2.ui.theme.BirthdayBuddy2Theme
-import java.time.format.DateTimeFormatter
-import java.time.format.FormatStyle
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -48,6 +49,15 @@ class MainActivity : ComponentActivity() {
                 val context = LocalContext.current
                 val scope = rememberCoroutineScope()
                 val listState = rememberLazyListState()
+                
+                val searchQuery by viewModel.searchQuery.collectAsState()
+                var animatedPlaceholder by remember { mutableStateOf("BirthdayBuddy") }
+
+                // Gmail-Style Animation: Erst Name, dann Placeholder
+                LaunchedEffect(Unit) {
+                    delay(2000) // 2 Sekunden BirthdayBuddy zeigen
+                    animatedPlaceholder = "Kontakt suchen"
+                }
                 
                 // FAB Logik: Zeige Pfeil oben, wenn wir nicht am Anfang der Liste sind
                 val showScrollUp by remember {
@@ -67,26 +77,63 @@ class MainActivity : ComponentActivity() {
                 Scaffold(
                     modifier = Modifier.fillMaxSize(),
                     topBar = {
-                        CenterAlignedTopAppBar(
-                            title = { Text("BirthdayBuddy") },
-                            actions = {
-                                IconButton(onClick = {
-                                    when (PackageManager.PERMISSION_GRANTED) {
-                                        ContextCompat.checkSelfPermission(
-                                            context,
-                                            Manifest.permission.READ_CONTACTS
-                                        ) -> {
-                                            viewModel.syncContacts()
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 16.dp)
+                                .padding(top = 16.dp)
+                                .statusBarsPadding()
+                        ) {
+                            DockedSearchBar(
+                                modifier = Modifier.fillMaxWidth(),
+                                expanded = false,
+                                onExpandedChange = { },
+                                inputField = {
+                                    SearchBarDefaults.InputField(
+                                        query = searchQuery,
+                                        onQueryChange = { viewModel.onSearchQueryChange(it) },
+                                        onSearch = { },
+                                        expanded = false,
+                                        onExpandedChange = { },
+                                        placeholder = {
+                                            AnimatedContent(
+                                                targetState = animatedPlaceholder,
+                                                transitionSpec = {
+                                                    fadeIn() togetherWith fadeOut()
+                                                },
+                                                label = "Placeholder Animation"
+                                            ) { text ->
+                                                Text(text)
+                                            }
+                                        },
+                                        leadingIcon = { Icon(Icons.Default.Search, contentDescription = null) },
+                                        trailingIcon = {
+                                            if (searchQuery.isNotEmpty()) {
+                                                IconButton(onClick = { viewModel.onSearchQueryChange("") }) {
+                                                    Icon(Icons.Default.Close, contentDescription = "Suche löschen")
+                                                }
+                                            } else {
+                                                IconButton(onClick = {
+                                                    when (PackageManager.PERMISSION_GRANTED) {
+                                                        ContextCompat.checkSelfPermission(
+                                                            context,
+                                                            Manifest.permission.READ_CONTACTS
+                                                        ) -> {
+                                                            viewModel.syncContacts()
+                                                        }
+                                                        else -> {
+                                                            permissionLauncher.launch(Manifest.permission.READ_CONTACTS)
+                                                        }
+                                                    }
+                                                }) {
+                                                    Icon(Icons.Default.Refresh, contentDescription = "Synchronisieren")
+                                                }
+                                            }
                                         }
-                                        else -> {
-                                            permissionLauncher.launch(Manifest.permission.READ_CONTACTS)
-                                        }
-                                    }
-                                }) {
-                                    Icon(Icons.Default.Refresh, contentDescription = "Kontakte synchronisieren")
+                                    )
                                 }
-                            }
-                        )
+                            ) { }
+                        }
                     },
                     floatingActionButton = {
                         val rotation by animateFloatAsState(
@@ -155,7 +202,11 @@ fun BirthdayList(
             modifier = modifier.fillMaxSize(),
             contentPadding = PaddingValues(bottom = 80.dp) // Platz für FAB
         ) {
-            items(contacts, key = { it.id }) { contact ->
+            items(
+                items = contacts, 
+                key = { it.id },
+                contentType = { "birthdayItem" }
+            ) { contact ->
                 BirthdayItem(contact)
             }
         }
@@ -163,24 +214,7 @@ fun BirthdayList(
 }
 
 @Composable
-fun BirthdayItem(contact: Contact) {
-    // Optimierung: Teure Objekte und Berechnungen cachen
-    val dateFormatter = remember { DateTimeFormatter.ofLocalizedDate(FormatStyle.LONG) }
-    val dayMonthFormatter = remember { DateTimeFormatter.ofPattern("d. MMMM") }
-    
-    val daysLeft = remember(contact.birthday) { contact.birthday.daysUntilNext() }
-    val nextAge = remember(contact.birthday) { contact.birthday.nextAge() }
-    
-    val dateText = remember(contact.birthday) {
-        if (contact.birthday.year == 1900) {
-            contact.birthday.format(dayMonthFormatter)
-        } else {
-            contact.birthday.format(dateFormatter)
-        }
-    }
-    
-    val initial = remember(contact.fullName) { contact.fullName.take(1).uppercase() }
-    
+fun BirthdayItem(contact: ContactUiModel) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -195,7 +229,7 @@ fun BirthdayItem(contact: Contact) {
             },
             supportingContent = {
                 Text(
-                    text = dateText,
+                    text = contact.dateText,
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -216,7 +250,7 @@ fun BirthdayItem(contact: Contact) {
                     } else {
                         Box(contentAlignment = Alignment.Center) {
                             Text(
-                                text = initial,
+                                text = contact.initials,
                                 style = MaterialTheme.typography.titleLarge
                             )
                         }
@@ -225,22 +259,22 @@ fun BirthdayItem(contact: Contact) {
             },
             trailingContent = {
                 Column(horizontalAlignment = Alignment.End) {
-                    if (contact.birthday.year != 1900) {
+                    if (contact.nextAgeText != null) {
                         Text(
-                            text = "wird $nextAge",
+                            text = contact.nextAgeText,
                             style = MaterialTheme.typography.labelLarge,
                             color = MaterialTheme.colorScheme.primary
                         )
                     }
                     Text(
-                        text = if (daysLeft == 0L) "Heute!" else "In $daysLeft T.",
+                        text = contact.daysLeftText,
                         style = MaterialTheme.typography.labelSmall,
-                        color = if (daysLeft == 0L) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurfaceVariant
+                        color = if (contact.isToday) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
             },
             colors = ListItemDefaults.colors(
-                containerColor = androidx.compose.ui.graphics.Color.Transparent
+                containerColor = Color.Transparent
             )
         )
     }
