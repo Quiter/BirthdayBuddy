@@ -1,4 +1,4 @@
-package com.heckmannch.birthdaybuddy2
+package com.heckmannch.birthdaybuddy2.viewmodel
 
 import android.app.Application
 import android.provider.ContactsContract
@@ -7,21 +7,67 @@ import androidx.lifecycle.viewModelScope
 import com.heckmannch.birthdaybuddy2.database.AppDatabase
 import com.heckmannch.birthdaybuddy2.database.Contact
 import kotlinx.coroutines.Dispatchers
+import androidx.compose.runtime.Immutable
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.time.LocalDate
+import java.time.format.DateTimeFormatter
+import java.time.format.FormatStyle
 import java.time.temporal.ChronoUnit
+
+@Immutable
+data class ContactUiModel(
+    val id: String,
+    val fullName: String,
+    val dateText: String,
+    val imageUri: String?,
+    val initials: String,
+    val nextAgeText: String?,
+    val daysLeftText: String,
+    val isToday: Boolean
+)
 
 class BirthdayViewModel(application: Application) : AndroidViewModel(application) {
     private val contactDao = AppDatabase.getDatabase(application).contactDao()
+    private val dateFormatter = DateTimeFormatter.ofLocalizedDate(FormatStyle.LONG)
+    private val dayMonthFormatter = DateTimeFormatter.ofPattern("d. MMMM")
 
-    val contacts: StateFlow<List<Contact>> = contactDao.getAllContacts()
-        .map { list ->
-            list.sortedBy { it.birthday.daysUntilNext() }
+    private val _searchQuery = MutableStateFlow("")
+    val searchQuery: StateFlow<String> = _searchQuery
+
+    val contacts: StateFlow<List<ContactUiModel>> = contactDao.getAllContacts()
+        .combine(_searchQuery) { list, query ->
+            val filteredList = if (query.isEmpty()) {
+                list
+            } else {
+                list.filter { it.fullName.contains(query, ignoreCase = true) }
+            }
+            
+            filteredList.sortedBy { it.birthday.daysUntilNext() }
+                .map { contact ->
+                    val daysLeft = contact.birthday.daysUntilNext()
+                    ContactUiModel(
+                        id = contact.id,
+                        fullName = contact.fullName,
+                        dateText = if (contact.birthday.year == 1900) {
+                            contact.birthday.format(dayMonthFormatter)
+                        } else {
+                            contact.birthday.format(dateFormatter)
+                        },
+                        imageUri = contact.imageUri,
+                        initials = contact.fullName.take(1).uppercase(),
+                        nextAgeText = if (contact.birthday.year != 1900) {
+                            "wird ${contact.birthday.nextAge()}"
+                        } else null,
+                        daysLeftText = if (daysLeft == 0L) "Heute!" else "In $daysLeft T.",
+                        isToday = daysLeft == 0L
+                    )
+                }
         }
         .stateIn(
             scope = viewModelScope,
@@ -29,21 +75,21 @@ class BirthdayViewModel(application: Application) : AndroidViewModel(application
             initialValue = emptyList(),
         )
 
+    fun onSearchQueryChange(newQuery: String) {
+        _searchQuery.value = newQuery
+    }
+
     fun syncContacts() {
         viewModelScope.launch {
             val systemContacts = fetchBirthdaysFromSystem()
-            // Erst alle bestehenden IDs holen, um zu prüfen, ob wir alte Kontakte löschen müssen,
-            // die im System nicht mehr existieren (optional, aber sauber).
-            // Hier konzentrieren wir uns auf das Vermeiden von Duplikaten durch Eindeutigkeit:
             systemContacts.forEach { contact ->
-                // Da id der PrimaryKey ist, überschreibt insertContact mit REPLACE Strategie den alten Eintrag.
                 contactDao.insertContact(contact)
             }
         }
     }
 
     private suspend fun fetchBirthdaysFromSystem(): List<Contact> = withContext(Dispatchers.IO) {
-        val contactsMap = mutableMapOf<String, Contact>() // Map nutzen, um Duplikate im Cursor-Resultat zu vermeiden
+        val contactsMap = mutableMapOf<String, Contact>()
         val contentResolver = getApplication<Application>().contentResolver
 
         val projection = arrayOf(
@@ -96,28 +142,13 @@ class BirthdayViewModel(application: Application) : AndroidViewModel(application
     private fun parseDate(dateStr: String?): LocalDate? {
         if (dateStr == null) return null
         return try {
-            // Kontakte speichern Geburtstage oft in verschiedenen Formaten: YYYY-MM-DD oder --MM-DD
             if (dateStr.startsWith("--")) {
-                // Jahr fehlt, wir nehmen das aktuelle Jahr als Platzhalter (wird bei daysUntilNext ignoriert)
                 LocalDate.parse("1900-${dateStr.substring(2)}")
             } else {
                 LocalDate.parse(dateStr)
             }
         } catch (e: Exception) {
             null
-        }
-    }
-
-    fun addTestContact(name: String, date: LocalDate) {
-        viewModelScope.launch {
-            contactDao.insertContact(
-                Contact(
-                    id = "test_${System.currentTimeMillis()}",
-                    fullName = name,
-                    birthday = date,
-                    imageUri = null
-                )
-            )
         }
     }
 }
