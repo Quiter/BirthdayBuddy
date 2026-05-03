@@ -7,6 +7,7 @@ import android.provider.ContactsContract
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.*
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
@@ -20,6 +21,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.rotate
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
@@ -27,6 +29,9 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import coil.compose.AsyncImage
+import com.heckmannch.birthdaybuddy2.ui.theme.BirthdayGold
+import com.heckmannch.birthdaybuddy2.ui.theme.BirthdaySilver
+import com.heckmannch.birthdaybuddy2.ui.theme.KidColors
 import com.heckmannch.birthdaybuddy2.viewmodel.BirthdayViewModel
 import com.heckmannch.birthdaybuddy2.viewmodel.ContactUiModel
 import kotlinx.coroutines.delay
@@ -277,13 +282,35 @@ fun BirthdayList(
 
 @Composable
 fun BirthdayItem(contact: ContactUiModel) {
+    val borderStroke = remember(contact) {
+        if (contact.isToday && contact.nextAge != null) {
+            when {
+                contact.nextAge <= 10 -> {
+                    BorderStroke(
+                        width = 2.dp,
+                        brush = Brush.linearGradient(KidColors)
+                    )
+                }
+                contact.nextAge >= 20 && contact.nextAge % 10 == 0 -> {
+                    BorderStroke(2.dp, BirthdayGold)
+                }
+                else -> {
+                    BorderStroke(2.dp, BirthdaySilver)
+                }
+            }
+        } else {
+            null
+        }
+    }
+
     Card(
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = 16.dp, vertical = 4.dp),
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.surfaceContainerLow
-        )
+        ),
+        border = borderStroke
     ) {
         ListItem(
             headlineContent = {

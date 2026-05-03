@@ -30,6 +30,7 @@ data class ContactUiModel(
     val dateText: String,
     val imageUri: String?,
     val initials: String,
+    val nextAge: Int?,
     val nextAgeText: String?,
     val daysLeftText: String,
     val isToday: Boolean
@@ -70,6 +71,10 @@ class BirthdayViewModel(application: Application) : AndroidViewModel(application
         filteredList.sortedBy { it.birthday.daysUntilNext() }
             .map { contact ->
                     val daysLeft = contact.birthday.daysUntilNext()
+                    val nextAgeValue = if (contact.birthday.year != 1900) {
+                        contact.birthday.nextAge()
+                    } else null
+
                     ContactUiModel(
                         id = contact.id,
                         fullName = contact.fullName,
@@ -80,8 +85,9 @@ class BirthdayViewModel(application: Application) : AndroidViewModel(application
                         },
                         imageUri = contact.imageUri,
                         initials = contact.fullName.take(1).uppercase(),
-                        nextAgeText = if (contact.birthday.year != 1900) {
-                            "wird ${contact.birthday.nextAge()}"
+                        nextAge = nextAgeValue,
+                        nextAgeText = if (nextAgeValue != null) {
+                            "wird $nextAgeValue"
                         } else null,
                         daysLeftText = if (daysLeft == 0L) "Heute!" else "In $daysLeft T.",
                         isToday = daysLeft == 0L
