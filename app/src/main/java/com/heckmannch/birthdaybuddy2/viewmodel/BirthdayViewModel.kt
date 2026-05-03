@@ -49,7 +49,9 @@ class BirthdayViewModel(application: Application) : AndroidViewModel(application
 
     val availableLabels: StateFlow<List<String>> = contactDao.getAllContacts()
         .map { list ->
-            list.flatMap { it.labels }.distinct().sorted()
+            list.flatMap { it.labels }
+                .distinct()
+                .sorted()
         }
         .stateIn(
             scope = viewModelScope,
@@ -128,7 +130,8 @@ class BirthdayViewModel(application: Application) : AndroidViewModel(application
         
         val projection = arrayOf(
             ContactsContract.Groups._ID,
-            ContactsContract.Groups.TITLE
+            ContactsContract.Groups.TITLE,
+            ContactsContract.Groups.SYSTEM_ID
         )
         
         contentResolver.query(
@@ -140,9 +143,18 @@ class BirthdayViewModel(application: Application) : AndroidViewModel(application
         )?.use { cursor ->
             val idIndex = cursor.getColumnIndex(ContactsContract.Groups._ID)
             val titleIndex = cursor.getColumnIndex(ContactsContract.Groups.TITLE)
+            val systemIdIndex = cursor.getColumnIndex(ContactsContract.Groups.SYSTEM_ID)
+            
             while (cursor.moveToNext()) {
                 val id = cursor.getLong(idIndex)
                 val title = cursor.getString(titleIndex)
+                val systemId = cursor.getString(systemIdIndex)
+                
+                // Schließe Systemgruppen aus, die keine echten Nutzer-Labels sind
+                if (systemId == "Contacts" || systemId == "Favorites") {
+                    continue
+                }
+
                 if (!title.isNullOrBlank()) {
                     groupsMap[id] = title
                 }

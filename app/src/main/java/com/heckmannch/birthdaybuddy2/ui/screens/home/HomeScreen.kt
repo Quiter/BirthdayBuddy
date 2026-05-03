@@ -9,6 +9,8 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.*
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.LazyRow
@@ -25,6 +27,8 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
@@ -44,6 +48,8 @@ fun HomeScreen(
     onNavigateToSettings: () -> Unit
 ) {
     val context = LocalContext.current
+    val focusManager = LocalFocusManager.current
+    val keyboardController = LocalSoftwareKeyboardController.current
     val listState = rememberLazyListState()
     val scope = rememberCoroutineScope()
     
@@ -91,44 +97,74 @@ fun HomeScreen(
                     .statusBarsPadding()
                     .padding(top = 16.dp)
             ) {
-                Box(modifier = Modifier.padding(horizontal = 16.dp)) {
-                    DockedSearchBar(
-                        modifier = Modifier.fillMaxWidth(),
-                        expanded = false,
-                        onExpandedChange = { },
-                        inputField = {
-                            SearchBarDefaults.InputField(
-                                query = searchQuery,
-                                onQueryChange = { viewModel.onSearchQueryChange(it) },
-                                onSearch = { },
-                                expanded = false,
-                                onExpandedChange = { },
-                                placeholder = {
-                                    AnimatedContent(
-                                        targetState = animatedPlaceholder,
-                                        transitionSpec = {
-                                            fadeIn() togetherWith fadeOut()
-                                        },
-                                        label = "Placeholder Animation"
-                                    ) { text ->
-                                        Text(text)
-                                    }
-                                },
-                                leadingIcon = { Icon(Icons.Default.Search, contentDescription = null) },
-                                trailingIcon = {
-                                    if (searchQuery.isNotEmpty()) {
-                                        IconButton(onClick = { viewModel.onSearchQueryChange("") }) {
-                                            Icon(Icons.Default.Close, contentDescription = "Suche löschen")
-                                        }
-                                    } else {
-                                        IconButton(onClick = onNavigateToSettings) {
-                                            Icon(Icons.Default.Settings, contentDescription = "Einstellungen")
-                                        }
-                                    }
+                // Suchleiste manuell aufgebaut für perfekte Ausrichtung auf allen Geräten
+                Surface(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp)
+                        .height(56.dp),
+                    shape = CircleShape,
+                    color = MaterialTheme.colorScheme.surfaceContainerHigh,
+                    tonalElevation = 2.dp
+                ) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(horizontal = 16.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Search,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                        
+                        Box(
+                            modifier = Modifier
+                                .weight(1f)
+                                .padding(horizontal = 12.dp),
+                            contentAlignment = Alignment.CenterStart
+                        ) {
+                            if (searchQuery.isEmpty()) {
+                                AnimatedContent(
+                                    targetState = animatedPlaceholder,
+                                    transitionSpec = { fadeIn() togetherWith fadeOut() },
+                                    label = "Placeholder"
+                                ) { text ->
+                                    Text(
+                                        text = text,
+                                        style = MaterialTheme.typography.bodyLarge,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                                    )
                                 }
+                            }
+                            
+                            BasicTextField(
+                                value = searchQuery,
+                                onValueChange = { viewModel.onSearchQueryChange(it) },
+                                modifier = Modifier.fillMaxWidth(),
+                                textStyle = MaterialTheme.typography.bodyLarge.copy(
+                                    color = MaterialTheme.colorScheme.onSurface
+                                ),
+                                singleLine = true
                             )
                         }
-                    ) { }
+
+                        if (searchQuery.isNotEmpty()) {
+                            IconButton(onClick = { 
+                                viewModel.onSearchQueryChange("")
+                                focusManager.clearFocus()
+                                keyboardController?.hide()
+                                scope.launch { listState.scrollToItem(0) }
+                            }) {
+                                Icon(Icons.Default.Close, contentDescription = "Suche löschen")
+                            }
+                        } else {
+                            IconButton(onClick = onNavigateToSettings) {
+                                Icon(Icons.Default.Settings, contentDescription = "Einstellungen")
+                            }
+                        }
+                    }
                 }
 
                 // Filter-Chips: Nur anzeigen, wenn Labels vorhanden sind
@@ -145,7 +181,10 @@ fun HomeScreen(
                             items(availableLabels) { label ->
                                 FilterChip(
                                     selected = selectedLabel == label,
-                                    onClick = { viewModel.onLabelSelected(label) },
+                                    onClick = { 
+                                        viewModel.onLabelSelected(label)
+                                        scope.launch { listState.scrollToItem(0) }
+                                    },
                                     label = { Text(label) },
                                     leadingIcon = if (selectedLabel == label) {
                                         { Icon(Icons.Default.Check, contentDescription = null, modifier = Modifier.size(18.dp)) }
