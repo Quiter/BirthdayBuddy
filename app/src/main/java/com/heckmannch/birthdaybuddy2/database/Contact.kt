@@ -15,6 +15,7 @@ data class Contact(
     val fullName: String,
     val birthday: LocalDate,
     val imageUri: String? = null,
+    val labels: List<String> = emptyList(),
     // Platzhalter für zukünftige Erweiterungen
     val giftIdeas: String? = null,
     val remoteId: String? = null

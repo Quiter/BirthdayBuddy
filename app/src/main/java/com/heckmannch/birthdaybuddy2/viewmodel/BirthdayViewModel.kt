@@ -12,6 +12,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -42,16 +43,32 @@ class BirthdayViewModel(application: Application) : AndroidViewModel(application
     private val _searchQuery = MutableStateFlow("")
     val searchQuery: StateFlow<String> = _searchQuery
 
-    val contacts: StateFlow<List<ContactUiModel>> = contactDao.getAllContacts()
-        .combine(_searchQuery) { list, query ->
-            val filteredList = if (query.isEmpty()) {
-                list
-            } else {
-                list.filter { it.fullName.contains(query, ignoreCase = true) }
-            }
-            
-            filteredList.sortedBy { it.birthday.daysUntilNext() }
-                .map { contact ->
+    private val _selectedLabel = MutableStateFlow<String?>(null)
+    val selectedLabel: StateFlow<String?> = _selectedLabel
+
+    val availableLabels: StateFlow<List<String>> = contactDao.getAllContacts()
+        .map { list ->
+            list.flatMap { it.labels }.distinct().sorted()
+        }
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = emptyList()
+        )
+
+    val contacts: StateFlow<List<ContactUiModel>> = combine(
+        contactDao.getAllContacts(),
+        _searchQuery,
+        _selectedLabel
+    ) { list, query, label ->
+        val filteredList = list.filter { contact ->
+            val matchesQuery = query.isEmpty() || contact.fullName.contains(query, ignoreCase = true)
+            val matchesLabel = label == null || contact.labels.contains(label)
+            matchesQuery && matchesLabel
+        }
+        
+        filteredList.sortedBy { it.birthday.daysUntilNext() }
+            .map { contact ->
                     val daysLeft = contact.birthday.daysUntilNext()
                     ContactUiModel(
                         id = contact.id,
@@ -81,15 +98,78 @@ class BirthdayViewModel(application: Application) : AndroidViewModel(application
         _searchQuery.value = newQuery
     }
 
+    fun onLabelSelected(label: String?) {
+        _selectedLabel.value = if (_selectedLabel.value == label) null else label
+    }
+
     fun syncContacts() {
         viewModelScope.launch {
             val systemContacts = fetchBirthdaysFromSystem()
+            val contactGroups = fetchContactGroups()
+            
             systemContacts.forEach { contact ->
-                contactDao.insertContact(contact)
+                val labels = fetchLabelsForContact(contact.id, contactGroups)
+                contactDao.insertContact(contact.copy(labels = labels))
             }
             // Widget nach dem Sync aktualisieren
             BirthdayWidget().updateAll(getApplication())
         }
+    }
+
+    private suspend fun fetchContactGroups(): Map<Long, String> = withContext(Dispatchers.IO) {
+        val groupsMap = mutableMapOf<Long, String>()
+        val contentResolver = getApplication<Application>().contentResolver
+        
+        val projection = arrayOf(
+            ContactsContract.Groups._ID,
+            ContactsContract.Groups.TITLE
+        )
+        
+        contentResolver.query(
+            ContactsContract.Groups.CONTENT_URI,
+            projection,
+            null,
+            null,
+            null
+        )?.use { cursor ->
+            val idIndex = cursor.getColumnIndex(ContactsContract.Groups._ID)
+            val titleIndex = cursor.getColumnIndex(ContactsContract.Groups.TITLE)
+            while (cursor.moveToNext()) {
+                val id = cursor.getLong(idIndex)
+                val title = cursor.getString(titleIndex)
+                if (!title.isNullOrBlank()) {
+                    groupsMap[id] = title
+                }
+            }
+        }
+        groupsMap
+    }
+
+    private suspend fun fetchLabelsForContact(contactId: String, groupsMap: Map<Long, String>): List<String> = withContext(Dispatchers.IO) {
+        val labels = mutableListOf<String>()
+        val contentResolver = getApplication<Application>().contentResolver
+        
+        val projection = arrayOf(ContactsContract.CommonDataKinds.GroupMembership.GROUP_ROW_ID)
+        val selection = "${ContactsContract.Data.CONTACT_ID} = ? AND ${ContactsContract.Data.MIMETYPE} = ?"
+        val selectionArgs = arrayOf(
+            contactId,
+            ContactsContract.CommonDataKinds.GroupMembership.CONTENT_ITEM_TYPE
+        )
+        
+        contentResolver.query(
+            ContactsContract.Data.CONTENT_URI,
+            projection,
+            selection,
+            selectionArgs,
+            null
+        )?.use { cursor ->
+            val groupRowIdIndex = cursor.getColumnIndex(ContactsContract.CommonDataKinds.GroupMembership.GROUP_ROW_ID)
+            while (cursor.moveToNext()) {
+                val groupId = cursor.getLong(groupRowIdIndex)
+                groupsMap[groupId]?.let { labels.add(it) }
+            }
+        }
+        labels.distinct()
     }
 
     private suspend fun fetchBirthdaysFromSystem(): List<Contact> = withContext(Dispatchers.IO) {
@@ -160,7 +240,7 @@ class BirthdayViewModel(application: Application) : AndroidViewModel(application
 fun LocalDate.daysUntilNext(): Long {
     val today = LocalDate.now()
     var nextBirthday = this.withYear(today.year)
-    if (nextBirthday.isBefore(today) || nextBirthday.isEqual(today)) {
+    if (nextBirthday.isBefore(today)) {
         nextBirthday = nextBirthday.plusYears(1)
     }
     return ChronoUnit.DAYS.between(today, nextBirthday)
@@ -169,7 +249,7 @@ fun LocalDate.daysUntilNext(): Long {
 fun LocalDate.nextAge(): Int {
     val today = LocalDate.now()
     var nextBirthday = this.withYear(today.year)
-    if (nextBirthday.isBefore(today) || nextBirthday.isEqual(today)) {
+    if (nextBirthday.isBefore(today)) {
         nextBirthday = nextBirthday.plusYears(1)
     }
     return nextBirthday.year - this.year

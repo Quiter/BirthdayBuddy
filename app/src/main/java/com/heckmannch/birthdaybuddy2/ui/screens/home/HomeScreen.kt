@@ -1,16 +1,16 @@
 package com.heckmannch.birthdaybuddy2.ui.screens.home
 
 import android.Manifest
+import android.content.Intent
 import android.content.pm.PackageManager
+import android.provider.ContactsContract
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.animation.AnimatedContent
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
-import androidx.compose.animation.togetherWith
+import androidx.compose.animation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
@@ -41,10 +41,13 @@ fun HomeScreen(
     val context = LocalContext.current
     val listState = rememberLazyListState()
     val scope = rememberCoroutineScope()
+    
     val searchQuery by viewModel.searchQuery.collectAsState()
+    val availableLabels by viewModel.availableLabels.collectAsState()
+    val selectedLabel by viewModel.selectedLabel.collectAsState()
+    
     var animatedPlaceholder by remember { mutableStateOf("BirthdayBuddy") }
 
-    // Berechtigungs-Launcher
     val permissionLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.RequestPermission()
     ) { isGranted ->
@@ -53,7 +56,6 @@ fun HomeScreen(
         }
     }
 
-    // Beim ersten Start automatisch fragen
     LaunchedEffect(Unit) {
         if (ContextCompat.checkSelfPermission(
                 context,
@@ -62,7 +64,6 @@ fun HomeScreen(
         ) {
             permissionLauncher.launch(Manifest.permission.READ_CONTACTS)
         } else {
-            // Wenn Berechtigung schon da ist, einmal syncen (optional, aber sinnvoll)
             viewModel.syncContacts()
         }
         
@@ -79,50 +80,76 @@ fun HomeScreen(
     Scaffold(
         modifier = Modifier.fillMaxSize(),
         topBar = {
-            Box(
+            Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 16.dp)
-                    .padding(top = 16.dp)
                     .statusBarsPadding()
+                    .padding(top = 16.dp)
             ) {
-                DockedSearchBar(
-                    modifier = Modifier.fillMaxWidth(),
-                    expanded = false,
-                    onExpandedChange = { },
-                    inputField = {
-                        SearchBarDefaults.InputField(
-                            query = searchQuery,
-                            onQueryChange = { viewModel.onSearchQueryChange(it) },
-                            onSearch = { },
-                            expanded = false,
-                            onExpandedChange = { },
-                            placeholder = {
-                                AnimatedContent(
-                                    targetState = animatedPlaceholder,
-                                    transitionSpec = {
-                                        fadeIn() togetherWith fadeOut()
-                                    },
-                                    label = "Placeholder Animation"
-                                ) { text ->
-                                    Text(text)
-                                }
-                            },
-                            leadingIcon = { Icon(Icons.Default.Search, contentDescription = null) },
-                            trailingIcon = {
-                                if (searchQuery.isNotEmpty()) {
-                                    IconButton(onClick = { viewModel.onSearchQueryChange("") }) {
-                                        Icon(Icons.Default.Close, contentDescription = "Suche löschen")
+                Box(modifier = Modifier.padding(horizontal = 16.dp)) {
+                    DockedSearchBar(
+                        modifier = Modifier.fillMaxWidth(),
+                        expanded = false,
+                        onExpandedChange = { },
+                        inputField = {
+                            SearchBarDefaults.InputField(
+                                query = searchQuery,
+                                onQueryChange = { viewModel.onSearchQueryChange(it) },
+                                onSearch = { },
+                                expanded = false,
+                                onExpandedChange = { },
+                                placeholder = {
+                                    AnimatedContent(
+                                        targetState = animatedPlaceholder,
+                                        transitionSpec = {
+                                            fadeIn() togetherWith fadeOut()
+                                        },
+                                        label = "Placeholder Animation"
+                                    ) { text ->
+                                        Text(text)
                                     }
-                                } else {
-                                    IconButton(onClick = onNavigateToSettings) {
-                                        Icon(Icons.Default.Settings, contentDescription = "Einstellungen")
+                                },
+                                leadingIcon = { Icon(Icons.Default.Search, contentDescription = null) },
+                                trailingIcon = {
+                                    if (searchQuery.isNotEmpty()) {
+                                        IconButton(onClick = { viewModel.onSearchQueryChange("") }) {
+                                            Icon(Icons.Default.Close, contentDescription = "Suche löschen")
+                                        }
+                                    } else {
+                                        IconButton(onClick = onNavigateToSettings) {
+                                            Icon(Icons.Default.Settings, contentDescription = "Einstellungen")
+                                        }
                                     }
                                 }
+                            )
+                        }
+                    ) { }
+                }
+
+                // Filter-Chips: Nur anzeigen, wenn Labels vorhanden sind
+                if (availableLabels.isNotEmpty()) {
+                    AnimatedVisibility(
+                        visible = !showScrollUp || selectedLabel != null,
+                        enter = expandVertically() + fadeIn(),
+                        exit = shrinkVertically() + fadeOut()
+                    ) {
+                        LazyRow(
+                            contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            items(availableLabels) { label ->
+                                FilterChip(
+                                    selected = selectedLabel == label,
+                                    onClick = { viewModel.onLabelSelected(label) },
+                                    label = { Text(label) },
+                                    leadingIcon = if (selectedLabel == label) {
+                                        { Icon(Icons.Default.Check, contentDescription = null, modifier = Modifier.size(18.dp)) }
+                                    } else null
+                                )
                             }
-                        )
+                        }
                     }
-                ) { }
+                }
             }
         },
         floatingActionButton = {
@@ -136,7 +163,10 @@ fun HomeScreen(
                     if (showScrollUp) {
                         scope.launch { listState.animateScrollToItem(0) }
                     } else {
-                        // Später: Kontakt hinzufügen
+                        val intent = Intent(Intent.ACTION_INSERT).apply {
+                            type = ContactsContract.Contacts.CONTENT_TYPE
+                        }
+                        context.startActivity(intent)
                     }
                 },
                 modifier = Modifier.rotate(rotation)
@@ -187,7 +217,6 @@ fun BirthdayList(
         )
     }
 
-    // UI aktualisieren, wenn sich Kontakte ändern (hilft beim Sync-Check)
     LaunchedEffect(contacts) {
         hasPermission.value = ContextCompat.checkSelfPermission(
             context,
