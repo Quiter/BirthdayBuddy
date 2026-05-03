@@ -8,8 +8,11 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.*
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.background
+import androidx.compose.foundation.gestures.detectVerticalDragGestures
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
@@ -22,14 +25,18 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import coil.compose.AsyncImage
@@ -231,16 +238,129 @@ fun HomeScreen(
             }
         }
     ) { innerPadding ->
-        BirthdayList(
-            viewModel = viewModel,
-            modifier = Modifier.padding(innerPadding),
-            listState = listState,
-            onRequestPermission = {
-                permissionLauncher.launch(Manifest.permission.READ_CONTACTS)
+        Box(modifier = Modifier.padding(innerPadding)) {
+            BirthdayList(
+                viewModel = viewModel,
+                modifier = Modifier.fillMaxSize(),
+                listState = listState,
+                onRequestPermission = {
+                    permissionLauncher.launch(Manifest.permission.READ_CONTACTS)
+                }
+            )
+            
+            val contacts by viewModel.contacts.collectAsState()
+            if (contacts.isNotEmpty()) {
+                FastScrollbar(
+                    listState = listState,
+                    contacts = contacts,
+                    modifier = Modifier
+                        .align(Alignment.CenterEnd)
+                        .fillMaxHeight()
+                        .padding(vertical = 8.dp)
+                )
             }
-        )
+        }
     }
 }
+
+@Composable
+fun FastScrollbar(
+    listState: LazyListState,
+    contacts: List<ContactUiModel>,
+    modifier: Modifier = Modifier
+) {
+    val scope = rememberCoroutineScope()
+    var isDragging by remember { mutableStateOf(false) }
+    
+    // Berechne den Monat des ersten sichtbaren Items
+    val currentMonth = remember {
+        derivedStateOf {
+            val index = listState.firstVisibleItemIndex
+            if (index in contacts.indices) contacts[index].monthName else ""
+        }
+    }
+
+    // Scrollbar-Logik: Position berechnen
+    BoxWithConstraints(modifier = modifier.width(80.dp)) {
+        val totalItems = contacts.size
+        
+        val canScroll = remember {
+            derivedStateOf {
+                val visibleItems = listState.layoutInfo.visibleItemsInfo.size
+                totalItems > visibleItems
+            }
+        }
+        
+        if (canScroll.value) {
+            val viewHeight = maxHeight
+            val thumbHeight = 40.dp
+            val trackHeight = viewHeight - thumbHeight
+            
+            val thumbOffset = remember {
+                derivedStateOf {
+                    val scrollPercent = if (totalItems > 1) {
+                        listState.firstVisibleItemIndex.toFloat() / (totalItems - 1)
+                    } else 0f
+                    trackHeight * scrollPercent
+                }
+            }
+
+            // Die Bubble (erscheint beim Scrollen oder Ziehen)
+            AnimatedVisibility(
+                visible = listState.isScrollInProgress || isDragging,
+                enter = fadeIn() + slideInHorizontally { it / 2 },
+                exit = fadeOut() + slideOutHorizontally { it / 2 },
+                modifier = Modifier
+                    .offset { IntOffset(0, (thumbOffset.value.toPx() - 4.dp.toPx()).toInt()) }
+                    .align(Alignment.TopStart)
+            ) {
+                Surface(
+                    shape = RoundedCornerShape(topStart = 16.dp, bottomStart = 16.dp, topEnd = 4.dp, bottomEnd = 16.dp),
+                    color = MaterialTheme.colorScheme.primary,
+                    tonalElevation = 4.dp,
+                    modifier = Modifier.padding(end = 12.dp)
+                ) {
+                    Text(
+                        text = currentMonth.value,
+                        modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
+                        color = MaterialTheme.colorScheme.onPrimary,
+                        style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.Bold)
+                    )
+                }
+            }
+
+            // Der eigentliche Scroll-Griff (Thumb)
+            Box(
+                modifier = Modifier
+                    .offset { IntOffset(0, thumbOffset.value.toPx().toInt()) }
+                    .align(Alignment.TopEnd)
+                    .padding(end = 4.dp)
+                    .size(width = 4.dp, height = thumbHeight)
+                    .clip(CircleShape)
+                    .background(
+                        if (isDragging) MaterialTheme.colorScheme.primary 
+                        else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)
+                    )
+                    .pointerInput(Unit) {
+                        detectVerticalDragGestures(
+                            onDragStart = { isDragging = true },
+                            onDragEnd = { isDragging = false },
+                            onDragCancel = { isDragging = false },
+                            onVerticalDrag = { change, _ ->
+                                val dragY = change.position.y + thumbOffset.value.toPx()
+                                val newScrollPercent = (dragY / viewHeight.toPx()).coerceIn(0f, 1f)
+                                val targetIndex = (newScrollPercent * totalItems).toInt().coerceIn(0, totalItems - 1)
+                                scope.launch {
+                                    listState.scrollToItem(targetIndex)
+                                }
+                            }
+                        )
+                    }
+            )
+        }
+    }
+}
+
 
 @Composable
 fun BirthdayList(

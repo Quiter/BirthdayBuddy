@@ -28,6 +28,7 @@ data class ContactUiModel(
     val id: String,
     val fullName: String,
     val dateText: String,
+    val monthName: String,
     val imageUri: String?,
     val initials: String,
     val nextAge: Int?,
@@ -40,6 +41,7 @@ class BirthdayViewModel(application: Application) : AndroidViewModel(application
     private val contactDao = AppDatabase.getDatabase(application).contactDao()
     private val dateFormatter = DateTimeFormatter.ofLocalizedDate(FormatStyle.LONG)
     private val dayMonthFormatter = DateTimeFormatter.ofPattern("d. MMMM")
+    private val monthFormatter = DateTimeFormatter.ofPattern("MMMM")
 
     private val _searchQuery = MutableStateFlow("")
     val searchQuery: StateFlow<String> = _searchQuery
@@ -85,6 +87,7 @@ class BirthdayViewModel(application: Application) : AndroidViewModel(application
                         } else {
                             contact.birthday.format(dateFormatter)
                         },
+                        monthName = contact.birthday.format(monthFormatter),
                         imageUri = contact.imageUri,
                         initials = contact.fullName.take(1).uppercase(),
                         nextAge = nextAgeValue,
