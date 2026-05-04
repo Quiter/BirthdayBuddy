@@ -38,3 +38,25 @@ Die App ist eine moderne Geburtstags-Verwaltung, die Kontakte aus dem Android-Sy
 - **Erklärungen:** Jede technische Änderung muss erklärt werden (Was & Warum).
 - **Performance:** Teure Berechnungen gehören ins ViewModel oder in `remember`-Blöcke.
 - **UI:** Material 3 Standards einhalten.
+
+## 📜 Historie der Änderungen (Changelog)
+1. **Performance & Daten-Modell:**
+   - Einführung von `ContactUiModel` zur Entlastung der UI.
+   - Alle Datumsberechnungen (Tage bis zum Geburtstag, Alter) ins ViewModel verschoben.
+   - Optimierung der `LazyColumn` durch `contentType`.
+2. **Navigation & Struktur:**
+   - Projektstruktur auf Layer-Prinzip umgestellt (`ui.screens.home`, `ui.screens.settings`).
+   - Jetpack Navigation integriert.
+   - Übergangsanimationen nach Material 3 (Shared-Axis Z / Scale + Fade) implementiert.
+3. **Features & UI:**
+   - Gmail-Style Suchleiste mit animiertem Textübergang („BirthdayBuddy“ -> „Kontakt suchen“).
+   - Filter-Chips für Android-Labels (Systemgruppen wie „My Contacts“ werden via `SYSTEM_ID` ignoriert).
+   - Fast-Scrollbar (Google Photos Style) inkl. Monats-Bubble und Timeline-Beschriftung.
+   - FAB-Doppelfunktion: Scroll-to-Top (wenn gescrollt) / Kontakt hinzufügen (wenn oben).
+4. **Geburtstags-Speziallogik:**
+   - Korrektur der „Heute“-Logik (0 Tage verbleibend).
+   - Visuelle Rahmen: Regenbogen-Gradient (Kinder <= 10), Gold (Runde ab 20), Silber (Standard heute).
+5. **Widget & Background:**
+   - Jetpack Glance Widget mit dynamischer Größenanpassung.
+   - Anzeige der nächsten 5 Geburtstage inkl. Alter & Initialen.
+   - WorkManager-Integration für tägliches Update (Mitternacht) und Trigger bei App-Sync.
