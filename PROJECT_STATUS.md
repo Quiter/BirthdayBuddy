@@ -60,3 +60,9 @@ Die App ist eine moderne Geburtstags-Verwaltung, die Kontakte aus dem Android-Sy
    - Jetpack Glance Widget mit dynamischer Größenanpassung.
    - Anzeige der nächsten 5 Geburtstage inkl. Alter & Initialen.
    - WorkManager-Integration für tägliches Update (Mitternacht) und Trigger bei App-Sync.
+6. **Optimierung Scrollbar & Widget-Layout:**
+   - **Scrollbar:** Vergrößerte Touch-Area (48dp) und dynamische Breiten-Animation (6dp -> 12dp) beim Ziehen für bessere Bedienbarkeit.
+   - **Scrollbar:** Überarbeitete Monats-Bubble mit optimierten Abständen und Material 3 Elevation.
+   - **Widget:** Umstellung auf `SizeMode.Exact` zur dynamischen Berechnung der verfügbaren Höhe.
+   - **Widget:** Automatisierte Item-Anzahl und gleichmäßige vertikale Verteilung (via `defaultWeight`) zur Vermeidung von Scrollbalken.
+   - **Widget:** Design-Bereinigung durch Entfernung der Initialen für eine minimalistische Text-Optik.
