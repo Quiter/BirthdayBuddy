@@ -11,6 +11,10 @@ import androidx.glance.LocalSize
 import androidx.glance.appwidget.GlanceAppWidget
 import androidx.glance.appwidget.SizeMode
 import androidx.glance.appwidget.provideContent
+import androidx.glance.appwidget.action.actionStartActivity
+import androidx.glance.action.clickable
+import android.content.Intent
+import androidx.glance.LocalContext
 import androidx.glance.layout.*
 import androidx.glance.text.Text
 import androidx.glance.text.TextStyle
@@ -18,6 +22,7 @@ import androidx.glance.text.FontWeight
 import androidx.glance.background
 import com.heckmannch.birthdaybuddy2.database.AppDatabase
 import com.heckmannch.birthdaybuddy2.database.Contact
+import com.heckmannch.birthdaybuddy2.MainActivity
 import com.heckmannch.birthdaybuddy2.viewmodel.daysUntilNext
 import com.heckmannch.birthdaybuddy2.viewmodel.nextAge
 import kotlinx.coroutines.flow.first
@@ -46,6 +51,7 @@ class BirthdayWidget : GlanceAppWidget() {
     @Composable
     private fun WidgetContent(contacts: List<Contact>) {
         val size = LocalSize.current
+        val context = LocalContext.current
         val dateFormatter = DateTimeFormatter.ofLocalizedDate(FormatStyle.MEDIUM)
         val dayMonthFormatter = DateTimeFormatter.ofPattern("d. MMM")
 
@@ -59,6 +65,15 @@ class BirthdayWidget : GlanceAppWidget() {
                 .fillMaxSize()
                 .background(GlanceTheme.colors.surface)
                 .padding(8.dp)
+                .clickable(
+                    actionStartActivity(
+                        Intent(context, MainActivity::class.java).apply {
+                            putExtra("SCROLL_TO_TOP", true)
+                            // SINGLE_TOP verhindert unnötiges Neuerstellen der Activity
+                            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_SINGLE_TOP
+                        }
+                    )
+                )
         ) {
             if (displayContacts.isEmpty()) {
                 Box(modifier = GlanceModifier.fillMaxSize(), contentAlignment = Alignment.Center) {

@@ -6,25 +6,24 @@ Die App ist eine moderne Geburtstags-Verwaltung, die Kontakte aus dem Android-Sy
 ## 🛠 Architektur & Struktur
 - **Package-Struktur:** Organisiert nach Layer/Feature (`ui.screens.home`, `ui.screens.settings`, `viewmodel`, `database`, `widget`).
 - **ViewModel-Pattern:** `BirthdayViewModel` fungiert als Single Source of Truth.
-- **UI-Modelle:** Nutzung von `@Immutable ContactUiModel` zur Performance-Optimierung (alle Berechnungen finden im ViewModel statt).
+- **UI-Modelle:** Nutzung von `@Immutable ContactUiModel` zur Performance-Optimierung (alle Berechnungen im ViewModel statt in der UI).
 - **Navigation:** Jetpack Navigation mit Shared-Axis-Z-Animationen (Scale + Fade) für moderne Übergänge.
 
 ## ✨ Features
 1. **HomeScreen:** 
    - Gmail-Style Suchleiste mit animiertem Placeholder.
-   - Filter-Chips basierend auf Android-Kontakt-Labels (Systemgruppen wie "My Contacts" werden via `SYSTEM_ID` gefiltert).
-   - Fast-Scrollbar (Google Photos Style) mit Monats-Bubble und Timeline-Markierungen.
-   - Floating Action Button (FAB) mit Doppelfunktion (Scroll-to-Top / Kontakt hinzufügen).
+   - Filter-Chips basierend auf Android-Kontakt-Labels.
+   - High-End Fast-Scrollbar (Google Photos Style): 48dp Touch-Area, dynamische Breite beim Ziehen, Monats-Bubble.
+   - FAB mit Doppelfunktion (Scroll-to-Top / Kontakt hinzufügen).
 2. **Geburtstags-Logik:**
-   - Spezial-Rahmen für heutige Geburtstage: Regenbogen-Gradient (Kinder <= 10), Gold (Runde ab 20), Silber (Rest).
-   - Korrekte Berechnung für "Heute" (0 Tage verbleibend).
+   - Spezial-Highlights: Regenbogen (Kinder <= 10), Gold (Runde ab 20), Silber (Standard heute).
 3. **SettingsScreen:**
-   - Zentrale Synchronisation der Kontakte.
-   - Berechtigungs-Management (automatischer Request beim Start + manueller Button im Empty-State).
+   - Zentrale Synchronisation der Kontakte & Berechtigungs-Management.
 4. **Widget (Jetpack Glance):**
-   - Zeigt die nächsten 5 Geburtstage an.
-   - Tägliche Aktualisierung via `WorkManager` (Mitternacht) + Trigger bei App-Sync.
-   - Responsive Design für verschiedene Größen.
+   - Dynamisches Layout: Berechnet Item-Anzahl basierend auf Widget-Größe (kein Scrollen nötig).
+   - Gleichmäßige Verteilung der Elemente via `defaultWeight`.
+   - Click-to-App: Klick auf das Widget öffnet die App und scrollt automatisch nach oben.
+   - Hintergrund-Updates via `WorkManager` (Mitternacht) & On-Sync.
 
 ## 📦 Abhängigkeiten
 - Compose BOM (2026.04.01)
@@ -41,28 +40,16 @@ Die App ist eine moderne Geburtstags-Verwaltung, die Kontakte aus dem Android-Sy
 
 ## 📜 Historie der Änderungen (Changelog)
 1. **Performance & Daten-Modell:**
-   - Einführung von `ContactUiModel` zur Entlastung der UI.
-   - Alle Datumsberechnungen (Tage bis zum Geburtstag, Alter) ins ViewModel verschoben.
-   - Optimierung der `LazyColumn` durch `contentType`.
+   - Einführung von `ContactUiModel` zur Entlastung der UI. Alle Berechnungen (Tage bis zum Geburtstag, Alter) ins ViewModel verschoben. Optimierung via `contentType`.
 2. **Navigation & Struktur:**
-   - Projektstruktur auf Layer-Prinzip umgestellt (`ui.screens.home`, `ui.screens.settings`).
-   - Jetpack Navigation integriert.
-   - Übergangsanimationen nach Material 3 (Shared-Axis Z / Scale + Fade) implementiert.
-3. **Features & UI:**
-   - Gmail-Style Suchleiste mit animiertem Textübergang („BirthdayBuddy“ -> „Kontakt suchen“).
-   - Filter-Chips für Android-Labels (Systemgruppen wie „My Contacts“ werden via `SYSTEM_ID` ignoriert).
-   - Fast-Scrollbar (Google Photos Style) inkl. Monats-Bubble und Timeline-Beschriftung.
-   - FAB-Doppelfunktion: Scroll-to-Top (wenn gescrollt) / Kontakt hinzufügen (wenn oben).
+   - Umstellung auf Layer-Prinzip (`ui.screens.home`, etc.). Integration von Jetpack Navigation mit Shared-Axis Animationen.
+3. **HomeScreen & UX:**
+   - Implementierung der Gmail-Searchbar und FAB-Logik.
+   - **Scrollbar-Upgrade:** Ausbau zur Fast-Scrollbar mit 48dp Touch-Area und dynamischer Animation (6dp -> 12dp) für optimale Bedienbarkeit.
 4. **Geburtstags-Speziallogik:**
-   - Korrektur der „Heute“-Logik (0 Tage verbleibend).
-   - Visuelle Rahmen: Regenbogen-Gradient (Kinder <= 10), Gold (Runde ab 20), Silber (Standard heute).
-5. **Widget & Background:**
-   - Jetpack Glance Widget mit dynamischer Größenanpassung.
-   - Anzeige der nächsten 5 Geburtstage inkl. Alter & Initialen.
-   - WorkManager-Integration für tägliches Update (Mitternacht) und Trigger bei App-Sync.
-6. **Optimierung Scrollbar & Widget-Layout:**
-   - **Scrollbar:** Vergrößerte Touch-Area (48dp) und dynamische Breiten-Animation (6dp -> 12dp) beim Ziehen für bessere Bedienbarkeit.
-   - **Scrollbar:** Überarbeitete Monats-Bubble mit optimierten Abständen und Material 3 Elevation.
-   - **Widget:** Umstellung auf `SizeMode.Exact` zur dynamischen Berechnung der verfügbaren Höhe.
-   - **Widget:** Automatisierte Item-Anzahl und gleichmäßige vertikale Verteilung (via `defaultWeight`) zur Vermeidung von Scrollbalken.
-   - **Widget:** Design-Bereinigung durch Entfernung der Initialen für eine minimalistische Text-Optik.
+   - Korrektur der „Heute“-Logik (0 Tage). Visuelle Rahmen für Kinder, runde und normale heutige Geburtstage.
+5. **Widget & App-Polish:**
+   - **Glance Widget:** Umstellung auf `SizeMode.Exact`. Dynamische Berechnung der Items pro Höhe und vertikale Gleichverteilung.
+   - **Interaktion:** Widget klickbar gemacht; Übergabe von `SCROLL_TO_TOP` Intent an `MainActivity` zur automatischen Listen-Positionierung.
+   - **App-Icon:** Integration eines SVG-Icons (50% Scale für Safe-Area) auf weißem Hintergrund. Fix von XML-Syntaxfehlern.
+   - **Theming:** Umstellung auf `Material3.DayNight` in XML zur Vermeidung des "weißen Flackerns" beim App-Start über das Widget.

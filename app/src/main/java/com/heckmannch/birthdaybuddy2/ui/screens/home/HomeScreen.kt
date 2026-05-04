@@ -41,12 +41,14 @@ import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import coil.compose.AsyncImage
+import com.heckmannch.birthdaybuddy2.MainActivity
 import com.heckmannch.birthdaybuddy2.ui.theme.BirthdayGold
 import com.heckmannch.birthdaybuddy2.ui.theme.BirthdaySilver
 import com.heckmannch.birthdaybuddy2.ui.theme.KidColors
 import com.heckmannch.birthdaybuddy2.viewmodel.BirthdayViewModel
 import com.heckmannch.birthdaybuddy2.viewmodel.ContactUiModel
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -88,6 +90,23 @@ fun HomeScreen(
         
         delay(2000)
         animatedPlaceholder = "Kontakt suchen"
+    }
+
+    // Scroll to Top Event vom ViewModel oder Intent verarbeiten
+    LaunchedEffect(Unit) {
+        viewModel.scrollToTopEvent.collectLatest {
+            listState.animateScrollToItem(0)
+        }
+    }
+
+    // Falls die Activity bereits offen war und ein neuer Intent (via onNewIntent) reinkommt
+    val activity = context as? MainActivity
+    LaunchedEffect(activity?.intent) {
+        if (activity?.intent?.getBooleanExtra("SCROLL_TO_TOP", false) == true) {
+            listState.animateScrollToItem(0)
+            // Intent extra zurücksetzen, damit nicht bei jedem Recompose gescrollt wird
+            activity.intent.removeExtra("SCROLL_TO_TOP")
+        }
     }
 
     val showScrollUp by remember {

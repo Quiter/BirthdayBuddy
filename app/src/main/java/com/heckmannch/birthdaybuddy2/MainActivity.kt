@@ -1,5 +1,6 @@
 package com.heckmannch.birthdaybuddy2
 
+import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -38,6 +39,11 @@ class MainActivity : ComponentActivity() {
             BirthdayBuddy2Theme {
                 val viewModel: BirthdayViewModel = viewModel()
                 val navController = rememberNavController()
+
+                // Intent beim Start prüfen
+                if (intent?.getBooleanExtra("SCROLL_TO_TOP", false) == true) {
+                    viewModel.triggerScrollToTop()
+                }
 
                 Surface(
                     modifier = Modifier.fillMaxSize(),
@@ -101,5 +107,10 @@ class MainActivity : ComponentActivity() {
                 }
             }
         }
+    }
+
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        setIntent(intent)
     }
 }

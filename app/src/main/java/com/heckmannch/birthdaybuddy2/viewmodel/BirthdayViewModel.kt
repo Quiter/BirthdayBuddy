@@ -8,9 +8,12 @@ import com.heckmannch.birthdaybuddy2.database.AppDatabase
 import com.heckmannch.birthdaybuddy2.database.Contact
 import kotlinx.coroutines.Dispatchers
 import androidx.compose.runtime.Immutable
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
@@ -48,6 +51,9 @@ class BirthdayViewModel(application: Application) : AndroidViewModel(application
 
     private val _selectedLabel = MutableStateFlow<String?>(null)
     val selectedLabel: StateFlow<String?> = _selectedLabel
+
+    private val _scrollToTopEvent = MutableSharedFlow<Unit>(replay = 0)
+    val scrollToTopEvent: SharedFlow<Unit> = _scrollToTopEvent.asSharedFlow()
 
     val availableLabels: StateFlow<List<String>> = contactDao.getAllContacts()
         .map { list ->
@@ -111,6 +117,12 @@ class BirthdayViewModel(application: Application) : AndroidViewModel(application
 
     fun onLabelSelected(label: String?) {
         _selectedLabel.value = if (_selectedLabel.value == label) null else label
+    }
+
+    fun triggerScrollToTop() {
+        viewModelScope.launch {
+            _scrollToTopEvent.emit(Unit)
+        }
     }
 
     fun syncContacts() {
