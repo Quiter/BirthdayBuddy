@@ -10,7 +10,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -22,11 +22,12 @@ import com.heckmannch.birthdaybuddy2.viewmodel.BirthdayViewModel
 @Composable
 fun SettingsScreen(
     viewModel: BirthdayViewModel,
-    onNavigateBack: () -> Unit
+    onNavigateToLabels: () -> Unit,
+    onNavigateBack: () -> Unit,
 ) {
     val context = LocalContext.current
     val permissionLauncher = rememberLauncherForActivityResult(
-        ActivityResultContracts.RequestPermission()
+        ActivityResultContracts.RequestPermission(),
     ) { isGranted ->
         if (isGranted) {
             viewModel.syncContacts()
@@ -41,17 +42,17 @@ fun SettingsScreen(
                     IconButton(onClick = onNavigateBack) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "Zurück"
+                            contentDescription = "Zurück",
                         )
                     }
-                }
+                },
             )
-        }
+        },
     ) { innerPadding ->
         LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(innerPadding)
+                .padding(innerPadding),
         ) {
             item {
                 ListItem(
@@ -64,15 +65,24 @@ fun SettingsScreen(
                         when (PackageManager.PERMISSION_GRANTED) {
                             ContextCompat.checkSelfPermission(
                                 context,
-                                Manifest.permission.READ_CONTACTS
-                            ) -> {
+                                Manifest.permission.READ_CONTACTS,
+                            ) ->
                                 viewModel.syncContacts()
-                            }
-                            else -> {
+                            else ->
                                 permissionLauncher.launch(Manifest.permission.READ_CONTACTS)
-                            }
                         }
                     }
+                )
+            }
+
+            item {
+                ListItem(
+                    headlineContent = { Text("Labels verwalten") },
+                    supportingContent = { Text("Filter anpassen und Kontakte nach Gruppen ausblenden") },
+                    leadingContent = {
+                        Icon(Icons.Default.Settings, contentDescription = null)
+                    },
+                    modifier = Modifier.clickable { onNavigateToLabels() }
                 )
             }
         }

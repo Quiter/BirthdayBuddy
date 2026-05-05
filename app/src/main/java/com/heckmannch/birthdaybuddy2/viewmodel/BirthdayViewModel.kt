@@ -11,8 +11,10 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.heckmannch.birthdaybuddy2.database.AppDatabase
 import com.heckmannch.birthdaybuddy2.database.Contact
+import com.heckmannch.birthdaybuddy2.database.LabelConfig
 import com.heckmannch.birthdaybuddy2.widget.BirthdayWidget
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -38,8 +40,16 @@ data class ContactUiModel(
     val isToday: Boolean,
 )
 
+@Immutable
+data class LabelManagementModel(
+    val name: String,
+    val isHiddenFromFilter: Boolean,
+    val isIgnored: Boolean,
+)
+
 class BirthdayViewModel(application: Application) : AndroidViewModel(application) {
     private val contactDao = AppDatabase.getDatabase(application).contactDao()
+    private val labelConfigDao = AppDatabase.getDatabase(application).labelConfigDao()
     
     private val dateFormatter = DateTimeFormatter.ofLocalizedDate(FormatStyle.LONG)
     private val dayMonthFormatter = DateTimeFormatter.ofPattern("d. MMMM")
@@ -54,24 +64,32 @@ class BirthdayViewModel(application: Application) : AndroidViewModel(application
     private val _scrollToTopEvent = MutableSharedFlow<Unit>(replay = 0)
     val scrollToTopEvent: SharedFlow<Unit> = _scrollToTopEvent.asSharedFlow()
 
-    val availableLabels: StateFlow<List<String>> = contactDao.getAllContacts()
-        .map { list ->
-            try {
-                list.asSequence()
-                    .flatMap { it.labels }
-                    .distinct()
-                    .sorted()
-                    .toList()
-            } catch (_: Exception) {
-                emptyList()
-            }
+    val availableLabels: StateFlow<List<String>> = combine(
+        contactDao.getAllContacts(),
+        labelConfigDao.getAllConfigs(),
+    ) { list, configs ->
+        // Labels ausblenden, wenn sie manuell verborgen ODER ignoriert werden
+        val hiddenLabels = configs.asSequence()
+            .filter { it.isHiddenFromFilter || it.isIgnored }
+            .map { it.name }
+            .toSet()
+        try {
+            list.asSequence()
+                .flatMap { it.labels }
+                .distinct()
+                .filter { it !in hiddenLabels }
+                .sorted()
+                .toList()
+        } catch (_: Exception) {
+            emptyList()
         }
-        .flowOn(Dispatchers.Default)
-        .stateIn(
-            scope = viewModelScope,
-            started = SharingStarted.WhileSubscribed(5000),
-            initialValue = emptyList(),
-        )
+    }
+    .flowOn(Dispatchers.Default)
+    .stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(5000),
+        initialValue = emptyList(),
+    )
 
     /**
      * Die Haupt-Liste der Kontakte. 
@@ -82,10 +100,22 @@ class BirthdayViewModel(application: Application) : AndroidViewModel(application
         contactDao.getAllContacts(),
         _searchQuery,
         _selectedLabel,
-    ) { list, query, label ->
+        labelConfigDao.getAllConfigs(),
+    ) { list, query, label, configs ->
+        val ignoredLabels = configs.asSequence()
+            .filter { it.isIgnored }
+            .map { it.name }
+            .toSet()
+        val isSearching = query.isNotEmpty()
+        
         try {
             list.asSequence()
                 .filter { contact ->
+                    // Verbergen, wenn eines der Labels auf "Ignorieren" steht
+                    // ABER: Wenn gesucht wird, zeigen wir auch ignorierte Kontakte an
+                    val isIgnored = contact.labels.any { it in ignoredLabels }
+                    if (isIgnored && !isSearching) return@filter false
+
                     val matchesQuery = query.isEmpty() || contact.fullName.contains(query, ignoreCase = true)
                     val matchesLabel = (label == null) || contact.labels.contains(label)
                     matchesQuery && matchesLabel
@@ -111,15 +141,67 @@ class BirthdayViewModel(application: Application) : AndroidViewModel(application
     )
 
     fun onSearchQueryChange(newQuery: String) {
+        val wasEmpty = _searchQuery.value.isEmpty()
         _searchQuery.value = newQuery
+        // Scroll nach oben, wenn die Suche gelöscht wurde
+        if (newQuery.isEmpty() && !wasEmpty) {
+            triggerScrollToTop()
+        }
     }
 
     fun onLabelSelected(label: String?) {
         _selectedLabel.value = if (_selectedLabel.value == label) null else label
+        triggerScrollToTop()
+    }
+
+    /**
+     * Alle Labels inkl. ihrer Konfiguration für die Einstellungen.
+     */
+    val labelManagementList: StateFlow<List<LabelManagementModel>> = combine(
+        contactDao.getAllContacts(),
+        labelConfigDao.getAllConfigs(),
+    ) { contacts, configs ->
+        val allLabelNames = contacts.asSequence()
+            .flatMap { it.labels }
+            .distinct()
+            .sorted()
+            .toList()
+        val configMap = configs.associateBy { it.name }
+        
+        allLabelNames.map { name ->
+            val config = configMap[name]
+            LabelManagementModel(
+                name = name,
+                isHiddenFromFilter = config?.isHiddenFromFilter ?: false,
+                isIgnored = config?.isIgnored ?: false
+            )
+        }
+    }
+    .flowOn(Dispatchers.Default)
+    .stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(5000),
+        initialValue = emptyList()
+    )
+
+    fun updateLabelConfig(name: String, isHiddenFromFilter: Boolean, isIgnored: Boolean) {
+        viewModelScope.launch {
+            labelConfigDao.insertConfig(
+                LabelConfig(name, isHiddenFromFilter, isIgnored)
+            )
+            try {
+                BirthdayWidget().updateAll(getApplication())
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+        }
     }
 
     fun triggerScrollToTop() {
         viewModelScope.launch {
+            // Ein kleiner Delay stellt sicher, dass die Liste die neuen Daten bereits erhalten hat,
+            // bevor wir den Scroll-Befehl an die UI senden.
+            delay(100)
             _scrollToTopEvent.emit(Unit)
         }
     }
@@ -144,8 +226,9 @@ class BirthdayViewModel(application: Application) : AndroidViewModel(application
                         contact.copy(labels = labels)
                     }
                     
-                    // Batch-Insert statt hunderte Einzel-Updates (massiver Performance-Gewinn)
+                    // Echter Clean-Sync: Erst löschen, dann Batch-Insert
                     if (updatedContacts.isNotEmpty()) {
+                        contactDao.deleteAllContacts()
                         contactDao.insertContacts(updatedContacts)
                     }
                 } catch (e: Exception) {
@@ -203,9 +286,16 @@ class BirthdayViewModel(application: Application) : AndroidViewModel(application
 
                 while (cursor.moveToNext()) {
                     val systemId = cursor.getString(systemIdIdx)
-                    if ((systemId != "Contacts") && (systemId != "Favorites")) {
-                        val title = cursor.getString(titleIdx)
-                        if (!title.isNullOrBlank()) {
+                    val title = cursor.getString(titleIdx)
+                    
+                    // Radikaler Filter:
+                    // 1. Nur Gruppen OHNE System-ID (echte Nutzer-Labels)
+                    // 2. Fallback: Titel darf nicht nach Android-System klingen
+                    if ((systemId == null) && !title.isNullOrBlank()) {
+                        val lowerTitle = title.lowercase()
+                        if (!lowerTitle.contains("starred") && 
+                            !lowerTitle.contains("favorite") && 
+                            !lowerTitle.contains("my contacts")) {
                             groupsMap[cursor.getLong(idIdx)] = title
                         }
                     }

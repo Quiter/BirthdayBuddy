@@ -17,6 +17,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.heckmannch.birthdaybuddy2.ui.screens.home.HomeScreen
+import com.heckmannch.birthdaybuddy2.ui.screens.settings.LabelSettingsScreen
 import com.heckmannch.birthdaybuddy2.ui.screens.settings.SettingsScreen
 import com.heckmannch.birthdaybuddy2.ui.theme.BirthdayBuddy2Theme
 import com.heckmannch.birthdaybuddy2.viewmodel.BirthdayViewModel
@@ -42,7 +43,7 @@ class MainActivity : ComponentActivity() {
 
                 Surface(
                     modifier = Modifier.fillMaxSize(),
-                    color = MaterialTheme.colorScheme.background
+                    color = MaterialTheme.colorScheme.background,
                 ) {
                     NavHost(
                         navController = navController,
@@ -50,23 +51,27 @@ class MainActivity : ComponentActivity() {
                         enterTransition = { materialSharedAxisZIn() },
                         exitTransition = { materialSharedAxisZOut() },
                         popEnterTransition = { materialSharedAxisZIn() },
-                        popExitTransition = { materialSharedAxisZOut() }
+                        popExitTransition = { materialSharedAxisZOut() },
                     ) {
                         composable("home") {
-                            HomeScreen(
-                                viewModel = viewModel,
-                                onNavigateToSettings = {
-                                    navController.navigate("settings")
-                                }
-                            )
+                            HomeScreen(viewModel = viewModel) {
+                                navController.navigate("settings")
+                            }
                         }
                         composable("settings") {
                             SettingsScreen(
                                 viewModel = viewModel,
-                                onNavigateBack = {
-                                    navController.popBackStack()
-                                }
-                            )
+                                onNavigateToLabels = {
+                                    navController.navigate("label_settings")
+                                },
+                            ) {
+                                navController.popBackStack()
+                            }
+                        }
+                        composable("label_settings") {
+                            LabelSettingsScreen(viewModel = viewModel) {
+                                navController.popBackStack()
+                            }
                         }
                     }
                 }
@@ -86,11 +91,11 @@ class MainActivity : ComponentActivity() {
 private fun materialSharedAxisZIn(): EnterTransition {
     return slideInHorizontally(
         initialOffsetX = { (it * 0.1f).toInt() },
-        animationSpec = tween(400, easing = FastOutSlowInEasing)
+        animationSpec = tween(400, easing = FastOutSlowInEasing),
     ) + fadeIn(animationSpec = tween(400)) +
             scaleIn(
                 initialScale = 0.92f,
-                animationSpec = tween(400, easing = FastOutSlowInEasing)
+                animationSpec = tween(400, easing = FastOutSlowInEasing),
             )
 }
 
@@ -100,10 +105,10 @@ private fun materialSharedAxisZIn(): EnterTransition {
 private fun materialSharedAxisZOut(): ExitTransition {
     return slideOutHorizontally(
         targetOffsetX = { (it * 0.1f).toInt() },
-        animationSpec = tween(400, easing = FastOutSlowInEasing)
+        animationSpec = tween(400, easing = FastOutSlowInEasing),
     ) + fadeOut(animationSpec = tween(400)) +
             scaleOut(
                 targetScale = 0.92f,
-                animationSpec = tween(400, easing = FastOutSlowInEasing)
+                animationSpec = tween(400, easing = FastOutSlowInEasing),
             )
 }

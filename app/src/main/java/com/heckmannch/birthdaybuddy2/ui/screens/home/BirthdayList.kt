@@ -1,8 +1,12 @@
 package com.heckmannch.birthdaybuddy2.ui.screens.home
 
 import android.Manifest
+import android.content.ContentUris
+import android.content.Intent
 import android.content.pm.PackageManager
+import android.provider.ContactsContract
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
@@ -62,13 +66,13 @@ fun BirthdayList(
                 .fillMaxSize()
                 .padding(32.dp),
             verticalArrangement = Arrangement.Center,
-            horizontalAlignment = Alignment.CenterHorizontally
+            horizontalAlignment = Alignment.CenterHorizontally,
         ) {
             Icon(
                 imageVector = Icons.Default.Face,
                 contentDescription = null,
                 modifier = Modifier.size(64.dp),
-                tint = MaterialTheme.colorScheme.primary.copy(alpha = 0.6f)
+                tint = MaterialTheme.colorScheme.primary.copy(alpha = 0.6f),
             )
             Spacer(modifier = Modifier.height(16.dp))
             
@@ -109,6 +113,7 @@ fun BirthdayList(
 
 @Composable
 fun BirthdayItem(contact: ContactUiModel) {
+    val context = LocalContext.current
     val borderStroke = remember(contact) {
         if (contact.isToday && (contact.nextAge != null)) {
             when {
@@ -152,7 +157,20 @@ fun BirthdayItem(contact: ContactUiModel) {
             },
             leadingContent = {
                 Surface(
-                    modifier = Modifier.size(48.dp),
+                    modifier = Modifier
+                        .size(48.dp)
+                        .clickable {
+                            try {
+                                val contactUri = ContentUris.withAppendedId(
+                                    ContactsContract.Contacts.CONTENT_URI,
+                                    contact.id.toLong()
+                                )
+                                val intent = Intent(Intent.ACTION_VIEW, contactUri)
+                                context.startActivity(intent)
+                            } catch (e: Exception) {
+                                e.printStackTrace()
+                            }
+                        },
                     shape = MaterialTheme.shapes.medium,
                     color = MaterialTheme.colorScheme.primaryContainer
                 ) {

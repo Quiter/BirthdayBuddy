@@ -25,6 +25,7 @@ import com.heckmannch.birthdaybuddy2.database.Contact
 import com.heckmannch.birthdaybuddy2.MainActivity
 import com.heckmannch.birthdaybuddy2.viewmodel.safeDaysUntilNext
 import com.heckmannch.birthdaybuddy2.viewmodel.safeNextAge
+import kotlinx.coroutines.flow.combine
 import java.time.format.DateTimeFormatter
 import java.time.format.FormatStyle
 
@@ -33,12 +34,28 @@ class BirthdayWidget : GlanceAppWidget() {
     override val sizeMode: SizeMode = SizeMode.Exact
 
     override suspend fun provideGlance(context: Context, id: GlanceId) {
-        val contactDao = AppDatabase.getDatabase(context).contactDao()
+        val db = AppDatabase.getDatabase(context)
+        val contactDao = db.contactDao()
+        val labelConfigDao = db.labelConfigDao()
         
         provideContent {
             val contactsState = androidx.compose.runtime.produceState(initialValue = emptyList()) {
-                contactDao.getAllContacts().collect { list ->
-                    value = list.sortedBy { it.birthday.safeDaysUntilNext() }
+                combine(
+                    contactDao.getAllContacts(),
+                    labelConfigDao.getAllConfigs(),
+                ) { list, configs ->
+                    val ignoredLabels = configs.asSequence()
+                        .filter { it.isIgnored }
+                        .map { it.name }
+                        .toSet()
+                    list.asSequence()
+                        .filter { contact ->
+                            contact.labels.none { it in ignoredLabels }
+                        }
+                        .sortedBy { it.birthday.safeDaysUntilNext() }
+                        .toList()
+                }.collect {
+                    value = it
                 }
             }
             val contacts = contactsState.value
@@ -72,9 +89,9 @@ class BirthdayWidget : GlanceAppWidget() {
                             putExtra("SCROLL_TO_TOP", true)
                             // SINGLE_TOP verhindert unnötiges Neuerstellen der Activity
                             flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_SINGLE_TOP
-                        }
-                    )
-                )
+                        },
+                    ),
+                ),
         ) {
             if (displayContacts.isEmpty()) {
                 Box(modifier = GlanceModifier.fillMaxSize(), contentAlignment = Alignment.Center) {

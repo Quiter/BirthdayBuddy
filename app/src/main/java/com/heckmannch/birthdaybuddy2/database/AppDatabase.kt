@@ -6,10 +6,11 @@ import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
 
-@Database(entities = [Contact::class], version = 2, exportSchema = false)
+@Database(entities = [Contact::class, LabelConfig::class], version = 3, exportSchema = false)
 @TypeConverters(Converters::class)
 abstract class AppDatabase : RoomDatabase() {
     abstract fun contactDao(): ContactDao
+    abstract fun labelConfigDao(): LabelConfigDao
 
     companion object {
         @Volatile

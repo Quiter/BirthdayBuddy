@@ -116,16 +116,12 @@ fun HomeScreen(
                 selectedLabel = selectedLabel,
                 showScrollUp = showScrollUp,
                 onSearchQueryChange = { viewModel.onSearchQueryChange(it) },
-                onLabelSelected = { 
-                    viewModel.onLabelSelected(it)
-                    scope.launch { listState.scrollToItem(0) }
-                },
+                onLabelSelected = { viewModel.onLabelSelected(it) },
                 onNavigateToSettings = onNavigateToSettings,
             ) {
                 viewModel.onSearchQueryChange("")
                 focusManager.clearFocus()
                 keyboardController?.hide()
-                scope.launch { listState.scrollToItem(0) }
             }
         },
         floatingActionButton = {
@@ -138,7 +134,7 @@ fun HomeScreen(
                 }
                 context.startActivity(intent)
             }
-        }
+        },
     ) { innerPadding ->
         Box(
             modifier = Modifier
@@ -147,7 +143,7 @@ fun HomeScreen(
                 .pointerInput(Unit) {
                     // Fokus verlieren, wenn man neben die Liste tippt
                     detectTapGestures { focusManager.clearFocus() }
-                }
+                },
         ) {
             BirthdayList(
                 viewModel = viewModel,
@@ -165,7 +161,7 @@ fun HomeScreen(
                     modifier = Modifier
                         .align(Alignment.CenterEnd)
                         .fillMaxHeight()
-                        .padding(vertical = 8.dp)
+                        .padding(vertical = 8.dp),
                 )
             }
         }
