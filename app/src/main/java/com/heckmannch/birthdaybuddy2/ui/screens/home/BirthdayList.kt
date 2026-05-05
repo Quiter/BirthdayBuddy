@@ -35,8 +35,11 @@ fun BirthdayList(
     onRequestPermission: () -> Unit,
 ) {
     val context = LocalContext.current
-    val contacts by viewModel.contacts.collectAsState()
+    val contactsState by viewModel.contacts.collectAsState()
     
+    // Nichts anzeigen, während die Daten das erste Mal geladen werden (verhindert Flackern)
+    val contacts = contactsState ?: return
+
     val hasPermission = remember {
         mutableStateOf(
             ContextCompat.checkSelfPermission(

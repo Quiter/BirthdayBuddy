@@ -73,7 +73,12 @@ class BirthdayViewModel(application: Application) : AndroidViewModel(application
             initialValue = emptyList(),
         )
 
-    val contacts: StateFlow<List<ContactUiModel>> = combine(
+    /**
+     * Die Haupt-Liste der Kontakte. 
+     * Kombiniert Datenbank-Inhalt mit Suchanfrage und Label-Filter.
+     * Initialwert ist null, um "Laden" von "Leer" zu unterscheiden.
+     */
+    val contacts: StateFlow<List<ContactUiModel>?> = combine(
         contactDao.getAllContacts(),
         _searchQuery,
         _selectedLabel,
@@ -85,7 +90,7 @@ class BirthdayViewModel(application: Application) : AndroidViewModel(application
                     val matchesLabel = (label == null) || contact.labels.contains(label)
                     matchesQuery && matchesLabel
                 }
-                .sortedBy { it.birthday.safeDaysUntilNext() } // Sortierung auf Original-Daten
+                .sortedBy { it.birthday.safeDaysUntilNext() }
                 .mapNotNull { contact -> 
                     try {
                         contact.toUiModel()
@@ -102,7 +107,7 @@ class BirthdayViewModel(application: Application) : AndroidViewModel(application
     .stateIn(
         scope = viewModelScope,
         started = SharingStarted.WhileSubscribed(5000),
-        initialValue = emptyList(),
+        initialValue = null,
     )
 
     fun onSearchQueryChange(newQuery: String) {
@@ -130,13 +135,18 @@ class BirthdayViewModel(application: Application) : AndroidViewModel(application
                     val systemContacts = fetchBirthdaysFromSystem()
                     val contactGroups = fetchContactGroups()
                     
-                    systemContacts.forEach { contact ->
-                        try {
-                            val labels = fetchLabelsForContact(contact.id, contactGroups)
-                            contactDao.insertContact(contact.copy(labels = labels))
+                    val updatedContacts = systemContacts.map { contact ->
+                        val labels = try {
+                            fetchLabelsForContact(contact.id, contactGroups)
                         } catch (_: Exception) {
-                            // Einzelner Kontakt-Sync Fehler ignorieren
+                            emptyList()
                         }
+                        contact.copy(labels = labels)
+                    }
+                    
+                    // Batch-Insert statt hunderte Einzel-Updates (massiver Performance-Gewinn)
+                    if (updatedContacts.isNotEmpty()) {
+                        contactDao.insertContacts(updatedContacts)
                     }
                 } catch (e: Exception) {
                     e.printStackTrace()

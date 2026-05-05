@@ -158,10 +158,10 @@ fun HomeScreen(
             }
             
             val contacts by viewModel.contacts.collectAsState()
-            if (contacts.isNotEmpty()) {
+            if (contacts?.isNotEmpty() == true) {
                 FastScrollbar(
                     listState = listState,
-                    contacts = contacts,
+                    contacts = contacts!!,
                     modifier = Modifier
                         .align(Alignment.CenterEnd)
                         .fillMaxHeight()
