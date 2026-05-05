@@ -1,68 +1,39 @@
 # Project Status: BirthdayBuddy 2
 
 ## 🚀 Aktueller Stand
-Die App ist eine moderne Geburtstags-Verwaltung, die Kontakte aus dem Android-System synchronisiert, filtert und in einem Widget anzeigt. Sie folgt strengen Material 3 Richtlinien und Clean Architecture Prinzipien.
+Die App ist eine moderne Geburtstags-Verwaltung, die Kontakte aus dem Android-System synchronisiert, filtert und in einem Widget anzeigt. Sie folgt Material 3 Richtlinien und Clean Architecture Prinzipien.
 
 ## 🛠 Architektur & Struktur
-- **Package-Struktur:** Organisiert nach Layer/Feature (`ui.screens.home`, `ui.screens.settings`, `viewmodel`, `database`, `widget`).
-- **ViewModel-Pattern:** `BirthdayViewModel` fungiert als Single Source of Truth.
-- **UI-Modelle:** Nutzung von `@Immutable ContactUiModel` zur Performance-Optimierung (alle Berechnungen finden im ViewModel statt).
-- **Navigation:** Jetpack Navigation mit Shared-Axis-Z-Animationen (Scale + Fade) für moderne Übergänge.
+- **Package-Struktur:** Feature-basierte Layer (`ui.screens.home`, `ui.screens.settings`, `viewmodel`, `database`, `widget`).
+- **ViewModel:** `BirthdayViewModel` als Single Source of Truth; nutzt `SharedFlow` für UI-Events (z.B. Scroll-to-Top).
+- **Data:** `ContactUiModel` (@Immutable) für performante UI-Updates; alle Berechnungen im ViewModel.
+- **Navigation:** Jetpack Navigation mit Shared-Axis-Z-Animationen (Scale + Fade).
 
-## ✨ Features
+## ✨ Key Features
 1. **HomeScreen:** 
-   - Gmail-Style Suchleiste mit animiertem Placeholder.
-   - Filter-Chips basierend auf Android-Kontakt-Labels (Systemgruppen wie "My Contacts" werden via `SYSTEM_ID` gefiltert).
-   - Fast-Scrollbar (Google Photos Style) mit Monats-Bubble und Timeline-Markierungen.
-   - Floating Action Button (FAB) mit Doppelfunktion (Scroll-to-Top / Kontakt hinzufügen).
+   - Gmail-Style Suche mit animiertem Placeholder.
+   - High-End Fast-Scrollbar (Google Photos Style): 48dp Touch-Area, dynamische Breite beim Ziehen (6dp -> 12dp), vorausschauende Monats-Bubble.
+   - Präzise Scroll-Logik: Slider erreicht immer 100% (Anschlag), auch bei gefilterten Listen.
+   - FAB mit Doppelfunktion: Scroll-to-Top (wenn gescrollt) / System-Kontakt hinzufügen (wenn oben).
 2. **Geburtstags-Logik:**
-   - Spezial-Rahmen für heutige Geburtstage: Regenbogen-Gradient (Kinder <= 10), Gold (Runde ab 20), Silber (Rest).
-   - Korrekte Berechnung für "Heute" (0 Tage verbleibend).
-3. **SettingsScreen:**
-   - Zentrale Synchronisation der Kontakte.
-   - Berechtigungs-Management (automatischer Request beim Start + manueller Button im Empty-State).
-4. **Widget (Jetpack Glance):**
-   - Zeigt die nächsten 5 Geburtstage an.
-   - Tägliche Aktualisierung via `WorkManager` (Mitternacht) + Trigger bei App-Sync.
-   - Responsive Design für verschiedene Größen.
+   - Highlights: Regenbogen (Kids <= 10), Gold (Runde ab 20), Silber (Standard heute).
+3. **Widget (Jetpack Glance):**
+   - Dynamisches Layout (`SizeMode.Exact`): Berechnet Item-Anzahl basierend auf verfügbarer Höhe; gleichmäßige Verteilung via `defaultWeight`.
+   - Click-to-App: Klick auf das Widget öffnet die App und triggert via Intent-Extra (`SCROLL_TO_TOP`) einen automatischen Scroll nach oben.
 
-## 📦 Abhängigkeiten
-- Compose BOM (2026.04.01)
-- Room Database (v2.8.4)
-- Jetpack Navigation
-- Jetpack Glance (Widgets)
-- WorkManager (Hintergrund-Updates)
-- Coil (Bilder-Laden)
-
-## 📝 Konventionen für die KI
-- **Erklärungen:** Jede technische Änderung muss erklärt werden (Was & Warum).
-- **Performance:** Teure Berechnungen gehören ins ViewModel oder in `remember`-Blöcke.
-- **UI:** Material 3 Standards einhalten.
+## 📦 Abhängigkeiten & Polish
+- **Core:** Compose BOM (2026.04.01), Room (2.8.4), Glance (1.1.1), WorkManager.
+- **Icon:** SVG-Asset (50% Scale) auf weißem Hintergrund; adaptive Icons korrekt konfiguriert.
+- **UX:** `Theme.Material3.DayNight` in XML verhindert weißes Flackern beim App-Start (besonders via Widget).
 
 ## 📜 Historie der Änderungen (Changelog)
-1. **Performance & Daten-Modell:**
-   - Einführung von `ContactUiModel` zur Entlastung der UI.
-   - Alle Datumsberechnungen (Tage bis zum Geburtstag, Alter) ins ViewModel verschoben.
-   - Optimierung der `LazyColumn` durch `contentType`.
-2. **Navigation & Struktur:**
-   - Projektstruktur auf Layer-Prinzip umgestellt (`ui.screens.home`, `ui.screens.settings`).
-   - Jetpack Navigation integriert.
-   - Übergangsanimationen nach Material 3 (Shared-Axis Z / Scale + Fade) implementiert.
-3. **Features & UI:**
-   - Gmail-Style Suchleiste mit animiertem Textübergang („BirthdayBuddy“ -> „Kontakt suchen“).
-   - Filter-Chips für Android-Labels (Systemgruppen wie „My Contacts“ werden via `SYSTEM_ID` ignoriert).
-   - Fast-Scrollbar (Google Photos Style) inkl. Monats-Bubble und Timeline-Beschriftung.
-   - FAB-Doppelfunktion: Scroll-to-Top (wenn gescrollt) / Kontakt hinzufügen (wenn oben).
-4. **Geburtstags-Speziallogik:**
-   - Korrektur der „Heute“-Logik (0 Tage verbleibend).
-   - Visuelle Rahmen: Regenbogen-Gradient (Kinder <= 10), Gold (Runde ab 20), Silber (Standard heute).
-5. **Widget & Background:**
-   - Jetpack Glance Widget mit dynamischer Größenanpassung.
-   - Anzeige der nächsten 5 Geburtstage inkl. Alter & Initialen.
-   - WorkManager-Integration für tägliches Update (Mitternacht) und Trigger bei App-Sync.
-6. **Optimierung Scrollbar & Widget-Layout:**
-   - **Scrollbar:** Vergrößerte Touch-Area (48dp) und dynamische Breiten-Animation (6dp -> 12dp) beim Ziehen für bessere Bedienbarkeit.
-   - **Scrollbar:** Überarbeitete Monats-Bubble mit optimierten Abständen und Material 3 Elevation.
-   - **Widget:** Umstellung auf `SizeMode.Exact` zur dynamischen Berechnung der verfügbaren Höhe.
-   - **Widget:** Automatisierte Item-Anzahl und gleichmäßige vertikale Verteilung (via `defaultWeight`) zur Vermeidung von Scrollbalken.
-   - **Widget:** Design-Bereinigung durch Entfernung der Initialen für eine minimalistische Text-Optik.
+1. **Architektur & Performance:** Initiales Setup mit `ContactUiModel` und ViewModel-Logik-Migration.
+2. **Navigation:** Einführung von Shared-Axis Übergängen.
+3. **Scrollbar-Evolution:** Von einer einfachen Leiste zu einer hochpräzisen Fast-Scrollbar mit `LocalDensity`-Unterstützung und index-basierter Monats-Vorschau beim Ziehen. Fix für 0-100% Reach in gefilterten Zuständen.
+4. **Widget-Rebirth:** Kompletter Umbau von `LazyColumn` auf ein dynamisch berechnetes Spalten-Layout zur Vermeidung von Scrollbalken im Widget.
+5. **Deep Linking:** Implementierung der `SCROLL_TO_TOP` Logik via `onNewIntent` in der `MainActivity` zur nahtlosen Widget-App-Interaktion.
+6. **Branding & Launch:** SVG-Icon Integration und XML-Theme-Optimierung für flüssige Übergänge im Dark Mode.
+7. **Architectural Refactoring & UX Polish:**
+   - **Modularization:** Extracted `FastScrollbar` and `BirthdayList` into separate files for better maintainability and cleaner `HomeScreen` structure.
+   - **UX Enhancements:** Implemented auto-keyboard dismissal on scroll and tap-to-dismiss focus logic for the search bar.
+   - **Performance:** Optimized state management using `mutableFloatStateOf` and stabilized gesture detection via `rememberUpdatedState` in the scrollbar.
