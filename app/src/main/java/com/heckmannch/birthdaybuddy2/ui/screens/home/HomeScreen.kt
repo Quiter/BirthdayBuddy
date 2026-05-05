@@ -41,7 +41,7 @@ import kotlinx.coroutines.launch
 @Composable
 fun HomeScreen(
     viewModel: BirthdayViewModel,
-    onNavigateToSettings: () -> Unit
+    onNavigateToSettings: () -> Unit,
 ) {
     val context = LocalContext.current
     val focusManager = LocalFocusManager.current
@@ -56,18 +56,21 @@ fun HomeScreen(
     var animatedPlaceholder by remember { mutableStateOf("BirthdayBuddy") }
 
     val permissionLauncher = rememberLauncherForActivityResult(
-        ActivityResultContracts.RequestPermission()
+        ActivityResultContracts.RequestPermission(),
     ) { isGranted ->
-        if (isGranted) viewModel.syncContacts()
+        if (isGranted) {
+            viewModel.syncContacts()
+        }
     }
 
     // Initialisierung & Berechtigungsprüfung
     LaunchedEffect(Unit) {
-        if (ContextCompat.checkSelfPermission(context, Manifest.permission.READ_CONTACTS) 
-            != PackageManager.PERMISSION_GRANTED
-        ) {
+        val hasPermission = ContextCompat.checkSelfPermission(context, Manifest.permission.READ_CONTACTS) == PackageManager.PERMISSION_GRANTED
+        
+        if (!hasPermission) {
             permissionLauncher.launch(Manifest.permission.READ_CONTACTS)
         } else {
+            // Nur syncen, wenn Berechtigung bereits da ist
             viewModel.syncContacts()
         }
         
@@ -118,25 +121,23 @@ fun HomeScreen(
                     scope.launch { listState.scrollToItem(0) }
                 },
                 onNavigateToSettings = onNavigateToSettings,
-                onClearSearch = {
-                    viewModel.onSearchQueryChange("")
-                    focusManager.clearFocus()
-                    keyboardController?.hide()
-                    scope.launch { listState.scrollToItem(0) }
-                }
-            )
+            ) {
+                viewModel.onSearchQueryChange("")
+                focusManager.clearFocus()
+                keyboardController?.hide()
+                scope.launch { listState.scrollToItem(0) }
+            }
         },
         floatingActionButton = {
             HomeFAB(
                 showScrollUp = showScrollUp,
                 onScrollToTop = { scope.launch { listState.animateScrollToItem(0) } },
-                onAddContact = {
-                    val intent = Intent(Intent.ACTION_INSERT).apply {
-                        type = ContactsContract.Contacts.CONTENT_TYPE
-                    }
-                    context.startActivity(intent)
+            ) {
+                val intent = Intent(Intent.ACTION_INSERT).apply {
+                    type = ContactsContract.Contacts.CONTENT_TYPE
                 }
-            )
+                context.startActivity(intent)
+            }
         }
     ) { innerPadding ->
         Box(
@@ -145,17 +146,16 @@ fun HomeScreen(
                 .padding(innerPadding)
                 .pointerInput(Unit) {
                     // Fokus verlieren, wenn man neben die Liste tippt
-                    detectTapGestures(onTap = { focusManager.clearFocus() })
+                    detectTapGestures { focusManager.clearFocus() }
                 }
         ) {
             BirthdayList(
                 viewModel = viewModel,
                 modifier = Modifier.fillMaxSize(),
                 listState = listState,
-                onRequestPermission = {
-                    permissionLauncher.launch(Manifest.permission.READ_CONTACTS)
-                }
-            )
+            ) {
+                permissionLauncher.launch(Manifest.permission.READ_CONTACTS)
+            }
             
             val contacts by viewModel.contacts.collectAsState()
             if (contacts.isNotEmpty()) {
@@ -183,7 +183,7 @@ private fun HomeTopBar(
     onSearchQueryChange: (String) -> Unit,
     onLabelSelected: (String) -> Unit,
     onNavigateToSettings: () -> Unit,
-    onClearSearch: () -> Unit
+    onClearSearch: () -> Unit,
 ) {
     Column(
         modifier = Modifier
@@ -259,7 +259,7 @@ private fun HomeTopBar(
         // Filter-Chips
         if (availableLabels.isNotEmpty()) {
             AnimatedVisibility(
-                visible = !showScrollUp || selectedLabel != null,
+                visible = ((!showScrollUp) || (selectedLabel != null)),
                 enter = expandVertically() + fadeIn(),
                 exit = shrinkVertically() + fadeOut()
             ) {
@@ -287,7 +287,7 @@ private fun HomeTopBar(
 private fun HomeFAB(
     showScrollUp: Boolean,
     onScrollToTop: () -> Unit,
-    onAddContact: () -> Unit
+    onAddContact: () -> Unit,
 ) {
     val rotation by androidx.compose.animation.core.animateFloatAsState(
         targetValue = if (showScrollUp) 180f else 0f,

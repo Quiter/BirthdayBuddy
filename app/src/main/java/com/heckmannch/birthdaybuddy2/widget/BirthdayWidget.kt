@@ -23,9 +23,8 @@ import androidx.glance.background
 import com.heckmannch.birthdaybuddy2.database.AppDatabase
 import com.heckmannch.birthdaybuddy2.database.Contact
 import com.heckmannch.birthdaybuddy2.MainActivity
-import com.heckmannch.birthdaybuddy2.viewmodel.daysUntilNext
-import com.heckmannch.birthdaybuddy2.viewmodel.nextAge
-import kotlinx.coroutines.flow.first
+import com.heckmannch.birthdaybuddy2.viewmodel.safeDaysUntilNext
+import com.heckmannch.birthdaybuddy2.viewmodel.safeNextAge
 import java.time.format.DateTimeFormatter
 import java.time.format.FormatStyle
 
@@ -37,10 +36,12 @@ class BirthdayWidget : GlanceAppWidget() {
         val contactDao = AppDatabase.getDatabase(context).contactDao()
         
         provideContent {
-            val contacts = androidx.compose.runtime.produceState<List<Contact>>(initialValue = emptyList()) {
-                value = contactDao.getAllContacts().first()
-                    .sortedBy { it.birthday.daysUntilNext() }
-            }.value
+            val contactsState = androidx.compose.runtime.produceState(initialValue = emptyList()) {
+                contactDao.getAllContacts().collect { list ->
+                    value = list.sortedBy { it.birthday.safeDaysUntilNext() }
+                }
+            }
+            val contacts = contactsState.value
             
             GlanceTheme {
                 WidgetContent(contacts)
@@ -85,8 +86,8 @@ class BirthdayWidget : GlanceAppWidget() {
             } else {
                 // Wir nutzen Boxen mit defaultWeight(1f), damit sie den Platz gleichmäßig füllen
                 displayContacts.forEach { contact ->
-                    val daysLeft = contact.birthday.daysUntilNext()
-                    val nextAgeValue = contact.birthday.nextAge()
+                    val daysLeft = contact.birthday.safeDaysUntilNext()
+                    val nextAgeValue = contact.birthday.safeNextAge()
                     
                     val dateText = if (contact.birthday.year == 1900) {
                         contact.birthday.format(dayMonthFormatter)
@@ -98,7 +99,7 @@ class BirthdayWidget : GlanceAppWidget() {
                         modifier = GlanceModifier
                             .defaultWeight()
                             .fillMaxWidth(),
-                        contentAlignment = Alignment.Center
+                        contentAlignment = Alignment.Center,
                     ) {
                         Row(
                             modifier = GlanceModifier.fillMaxWidth(),
@@ -118,7 +119,7 @@ class BirthdayWidget : GlanceAppWidget() {
                                     text = dateText,
                                     style = TextStyle(
                                         color = GlanceTheme.colors.onSurfaceVariant,
-                                        fontSize = 12.sp
+                                        fontSize = 12.sp,
                                     )
                                 )
                             }
@@ -130,7 +131,7 @@ class BirthdayWidget : GlanceAppWidget() {
                                         style = TextStyle(
                                             color = GlanceTheme.colors.primary,
                                             fontWeight = FontWeight.Bold,
-                                            fontSize = 12.sp
+                                            fontSize = 12.sp,
                                         )
                                     )
                                 }
@@ -138,7 +139,7 @@ class BirthdayWidget : GlanceAppWidget() {
                                     text = if (daysLeft == 0L) "Heute!" else "In $daysLeft T.",
                                     style = TextStyle(
                                         color = if (daysLeft == 0L) GlanceTheme.colors.error else GlanceTheme.colors.onSurfaceVariant,
-                                        fontSize = 11.sp
+                                        fontSize = 11.sp,
                                     )
                                 )
                             }

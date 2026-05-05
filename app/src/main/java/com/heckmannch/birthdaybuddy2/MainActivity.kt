@@ -5,6 +5,13 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.animation.*
+import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.tween
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
+import androidx.compose.ui.Modifier
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -14,18 +21,6 @@ import com.heckmannch.birthdaybuddy2.ui.screens.settings.SettingsScreen
 import com.heckmannch.birthdaybuddy2.ui.theme.BirthdayBuddy2Theme
 import com.heckmannch.birthdaybuddy2.viewmodel.BirthdayViewModel
 import com.heckmannch.birthdaybuddy2.widget.BirthdayWidgetWorker
-import androidx.compose.animation.core.FastOutSlowInEasing
-import androidx.compose.animation.core.tween
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
-import androidx.compose.animation.scaleIn
-import androidx.compose.animation.scaleOut
-import androidx.compose.animation.slideInHorizontally
-import androidx.compose.animation.slideOutHorizontally
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
-import androidx.compose.ui.Modifier
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -52,40 +47,10 @@ class MainActivity : ComponentActivity() {
                     NavHost(
                         navController = navController,
                         startDestination = "home",
-                        enterTransition = {
-                            slideInHorizontally(
-                                initialOffsetX = { (it * 0.1f).toInt() },
-                                animationSpec = tween(400, easing = FastOutSlowInEasing)
-                            ) + fadeIn(animationSpec = tween(400)) +
-                                    scaleIn(
-                                        initialScale = 0.92f,
-                                        animationSpec = tween(400, easing = FastOutSlowInEasing)
-                                    )
-                        },
-                        exitTransition = {
-                            fadeOut(animationSpec = tween(300)) +
-                                    scaleOut(
-                                        targetScale = 0.92f,
-                                        animationSpec = tween(400, easing = FastOutSlowInEasing)
-                                    )
-                        },
-                        popEnterTransition = {
-                            fadeIn(animationSpec = tween(400)) +
-                                    scaleIn(
-                                        initialScale = 0.92f,
-                                        animationSpec = tween(400, easing = FastOutSlowInEasing)
-                                    )
-                        },
-                        popExitTransition = {
-                            slideOutHorizontally(
-                                targetOffsetX = { (it * 0.1f).toInt() },
-                                animationSpec = tween(400, easing = FastOutSlowInEasing)
-                            ) + fadeOut(animationSpec = tween(400)) +
-                                    scaleOut(
-                                        targetScale = 0.92f,
-                                        animationSpec = tween(400, easing = FastOutSlowInEasing)
-                                    )
-                        }
+                        enterTransition = { materialSharedAxisZIn() },
+                        exitTransition = { materialSharedAxisZOut() },
+                        popEnterTransition = { materialSharedAxisZIn() },
+                        popExitTransition = { materialSharedAxisZOut() }
                     ) {
                         composable("home") {
                             HomeScreen(
@@ -113,4 +78,32 @@ class MainActivity : ComponentActivity() {
         super.onNewIntent(intent)
         setIntent(intent)
     }
+}
+
+/**
+ * Material 3 Shared Axis Z-Axis Transition (In)
+ */
+private fun materialSharedAxisZIn(): EnterTransition {
+    return slideInHorizontally(
+        initialOffsetX = { (it * 0.1f).toInt() },
+        animationSpec = tween(400, easing = FastOutSlowInEasing)
+    ) + fadeIn(animationSpec = tween(400)) +
+            scaleIn(
+                initialScale = 0.92f,
+                animationSpec = tween(400, easing = FastOutSlowInEasing)
+            )
+}
+
+/**
+ * Material 3 Shared Axis Z-Axis Transition (Out)
+ */
+private fun materialSharedAxisZOut(): ExitTransition {
+    return slideOutHorizontally(
+        targetOffsetX = { (it * 0.1f).toInt() },
+        animationSpec = tween(400, easing = FastOutSlowInEasing)
+    ) + fadeOut(animationSpec = tween(400)) +
+            scaleOut(
+                targetScale = 0.92f,
+                animationSpec = tween(400, easing = FastOutSlowInEasing)
+            )
 }
