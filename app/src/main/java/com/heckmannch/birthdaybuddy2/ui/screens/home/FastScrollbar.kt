@@ -30,11 +30,11 @@ fun FastScrollbar(
 ) {
     val scope = rememberCoroutineScope()
     val density = LocalDensity.current
-    var isDragging by remember { mutableStateOf(false) }
+    var isDragging by remember { mutableStateOf(value = false) }
     var dragOffsetPx by remember { mutableFloatStateOf(0f) }
     
     // Bubble Sichtbarkeit mit Verzögerung für weicheres Ausblenden
-    var showBubble by remember { mutableStateOf(false) }
+    var showBubble by remember { mutableStateOf(value = false) }
     LaunchedEffect(isDragging, listState.isScrollInProgress) {
         showBubble = if (isDragging || listState.isScrollInProgress) {
             true
@@ -148,18 +148,17 @@ fun FastScrollbar(
                             },
                             onDragEnd = { isDragging = false },
                             onDragCancel = { isDragging = false },
-                            onVerticalDrag = { change, dragAmount ->
-                                dragOffsetPx = (dragOffsetPx + dragAmount).coerceIn(0f, currentTrackHeightPx)
-                                val newScrollPercent = if (currentTrackHeightPx > 0) dragOffsetPx / currentTrackHeightPx else 0f
-                                val targetIndex = (newScrollPercent * (currentTotalItems - 1))
-                                    .toInt()
-                                    .coerceIn(0, currentTotalItems - 1)
-                                scope.launch {
-                                    listState.scrollToItem(targetIndex)
-                                }
-                                change.consume()
-                            },
-                        )
+                        ) { change, dragAmount ->
+                            dragOffsetPx = (dragOffsetPx + dragAmount).coerceIn(0f, currentTrackHeightPx)
+                            val newScrollPercent = if (currentTrackHeightPx > 0) dragOffsetPx / currentTrackHeightPx else 0f
+                            val targetIndex = (newScrollPercent * (currentTotalItems - 1))
+                                .toInt()
+                                .coerceIn(0, currentTotalItems - 1)
+                            scope.launch {
+                                listState.scrollToItem(targetIndex)
+                            }
+                            change.consume()
+                        }
                     },
                 contentAlignment = Alignment.CenterEnd,
             ) {

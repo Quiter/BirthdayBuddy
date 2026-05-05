@@ -41,15 +41,15 @@ fun BirthdayList(
         mutableStateOf(
             ContextCompat.checkSelfPermission(
                 context,
-                Manifest.permission.READ_CONTACTS
-            ) == PackageManager.PERMISSION_GRANTED
+                Manifest.permission.READ_CONTACTS,
+            ) == PackageManager.PERMISSION_GRANTED,
         )
     }
 
     LaunchedEffect(contacts) {
         hasPermission.value = ContextCompat.checkSelfPermission(
             context,
-            Manifest.permission.READ_CONTACTS
+            Manifest.permission.READ_CONTACTS,
         ) == PackageManager.PERMISSION_GRANTED
     }
 
@@ -115,7 +115,7 @@ fun BirthdayItem(contact: ContactUiModel) {
                         brush = Brush.linearGradient(KidColors)
                     )
                 }
-                contact.nextAge >= 20 && contact.nextAge % 10 == 0 -> {
+                ((contact.nextAge >= 20) && ((contact.nextAge % 10) == 0)) -> {
                     BorderStroke(2.dp, BirthdayGold)
                 }
                 else -> {

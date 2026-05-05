@@ -7,7 +7,7 @@ import java.util.concurrent.TimeUnit
 
 class BirthdayWidgetWorker(
     private val context: Context,
-    workerParameters: WorkerParameters
+    workerParameters: WorkerParameters,
 ) : CoroutineWorker(context, workerParameters) {
 
     override suspend fun doWork(): Result {
@@ -18,7 +18,8 @@ class BirthdayWidgetWorker(
     companion object {
         fun enqueueDailyUpdate(context: Context) {
             val request = PeriodicWorkRequestBuilder<BirthdayWidgetWorker>(
-                1, TimeUnit.DAYS
+                1,
+                TimeUnit.DAYS,
             ).setInitialDelay(calculateDelayUntilMidnight(), TimeUnit.MILLISECONDS)
                 .addTag("daily_widget_update")
                 .build()
