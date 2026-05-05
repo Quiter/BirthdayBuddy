@@ -6,23 +6,9 @@ on:
       - 'app/build.gradle.kts'
     branches:
       - master
-      
-name: Build on Version Change
-
-on:
-  push:
-    paths:
-      - 'app/build.gradle.kts'
-    branches:
-      - master
 
 permissions:
   contents: write
-
-jobs:
-  build:
-    runs-on: ubuntu-latest
-    # ... rest bleibt gleich
 
 jobs:
   build:
