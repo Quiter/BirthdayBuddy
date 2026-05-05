@@ -292,8 +292,8 @@ fun FastScrollbar(
     val scope = rememberCoroutineScope()
     var isDragging by remember { mutableStateOf(false) }
 
-    // Berechne den Monat des ersten sichtbaren Items
-    val currentMonth = remember {
+    // Berechne den Monat des ersten sichtbaren Items - Keyed by contacts
+    val currentMonth = remember(contacts) {
         derivedStateOf {
             val index = listState.firstVisibleItemIndex
             if (index in contacts.indices) contacts[index].monthName else ""
@@ -304,7 +304,7 @@ fun FastScrollbar(
     BoxWithConstraints(modifier = modifier.width(150.dp)) {
         val totalItems = contacts.size
 
-        val canScroll = remember {
+        val canScroll = remember(totalItems) {
             derivedStateOf {
                 val visibleItems = listState.layoutInfo.visibleItemsInfo.size
                 totalItems > visibleItems
@@ -316,7 +316,7 @@ fun FastScrollbar(
             val thumbHeight = 48.dp
             val trackHeight = viewHeight - thumbHeight
 
-            val thumbOffset = remember {
+            val thumbOffset = remember(totalItems) {
                 derivedStateOf {
                     val scrollPercent = if (totalItems > 1) {
                         listState.firstVisibleItemIndex.toFloat() / (totalItems - 1)
@@ -371,7 +371,7 @@ fun FastScrollbar(
                     .align(Alignment.TopEnd)
                     .width(48.dp) // Großzügige Touch-Area (Material-Standard 48dp)
                     .height(thumbHeight)
-                    .pointerInput(Unit) {
+                    .pointerInput(totalItems) {
                         detectVerticalDragGestures(
                             onDragStart = { isDragging = true },
                             onDragEnd = { isDragging = false },
