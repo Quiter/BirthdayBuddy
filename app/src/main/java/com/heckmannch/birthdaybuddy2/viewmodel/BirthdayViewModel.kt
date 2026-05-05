@@ -173,7 +173,7 @@ class BirthdayViewModel(application: Application) : AndroidViewModel(application
             LabelManagementModel(
                 name = name,
                 isHiddenFromFilter = config?.isHiddenFromFilter ?: false,
-                isIgnored = config?.isIgnored ?: false
+                isIgnored = config?.isIgnored ?: false,
             )
         }
     }

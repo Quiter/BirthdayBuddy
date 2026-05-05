@@ -185,7 +185,7 @@ private fun HomeTopBar(
         modifier = Modifier
             .fillMaxWidth()
             .statusBarsPadding()
-            .padding(top = 16.dp)
+            .padding(top = 16.dp),
     ) {
         // Suchleiste
         Surface(
