@@ -84,13 +84,17 @@ class BirthdayViewModel(application: Application) : AndroidViewModel(application
         
         // Prüfung: Gibt es mindestens ein Label, das KEIN System-Label ist?
         val hasUserLabels = allLabelsInContacts.any { name ->
-            configMap[name]?.isSystem == false
+            val config = configMap[name]
+            // Ein Label gilt als User-Label, wenn es in der DB als isSystem == false markiert ist
+            // ODER wenn wir es noch gar nicht in der Config haben (dann ist es neu/unbekannt)
+            config?.isSystem == false
         }
 
         // Wenn NUR System-Labels vorhanden sind, blenden wir die Filterbar komplett aus
         if (!hasUserLabels) return@combine emptyList()
 
-        // Ansonsten zeigen wir alle Labels an, die nicht manuell verborgen oder ignoriert werden
+        // Sobald ein User-Label existiert, zeigen wir ALLE an (auch System-Labels wie "Family"),
+        // sofern sie nicht manuell in den Settings verborgen wurden.
         allLabelsInContacts.asSequence()
             .filter { name ->
                 val config = configMap[name]
@@ -371,13 +375,14 @@ class BirthdayViewModel(application: Application) : AndroidViewModel(application
                     
                     if (!title.isNullOrBlank()) {
                         val lowerTitle = title.lowercase()
-                        // Wir filtern nur noch extrem "rauscharme" System-Labels komplett aus
-                        val isNoisy = lowerTitle.contains("starred") || 
-                                     lowerTitle.contains("favorite") || 
-                                     lowerTitle.contains("my contacts") ||
-                                     lowerTitle == "contacts"
+                        // Wir filtern nur noch die absolut redundanten System-Listen aus.
+                        // "Family", "Friends" etc. bleiben erhalten.
+                        val isRedundant = lowerTitle == "my contacts" || 
+                                         lowerTitle == "contacts" ||
+                                         lowerTitle == "ich" ||
+                                         lowerTitle == "me"
                                      
-                        if (!isNoisy) {
+                        if (!isRedundant) {
                             groupsMap[cursor.getLong(idIdx)] = GroupInfo(
                                 title = title,
                                 isSystem = systemId != null
