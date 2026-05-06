@@ -21,6 +21,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.heckmannch.birthdaybuddy2.ui.screens.home.HomeScreen
 import com.heckmannch.birthdaybuddy2.ui.screens.settings.LabelSettingsScreen
+import com.heckmannch.birthdaybuddy2.ui.screens.settings.NotificationSettingsScreen
 import com.heckmannch.birthdaybuddy2.ui.screens.settings.SettingsScreen
 import com.heckmannch.birthdaybuddy2.ui.theme.BirthdayBuddy2Theme
 import com.heckmannch.birthdaybuddy2.viewmodel.BirthdayViewModel
@@ -33,6 +34,7 @@ private object Routes {
     const val HOME = "home"
     const val SETTINGS = "settings"
     const val LABEL_SETTINGS = "label_settings"
+    const val NOTIFICATION_SETTINGS = "notification_settings"
 }
 
 class MainActivity : ComponentActivity() {
@@ -92,6 +94,9 @@ class MainActivity : ComponentActivity() {
                     onNavigateToLabels = {
                         navController.navigate(Routes.LABEL_SETTINGS)
                     },
+                    onNavigateToNotifications = {
+                        navController.navigate(Routes.NOTIFICATION_SETTINGS)
+                    },
                     onNavigateBack = {
                         navController.popBackStack()
                     }
@@ -99,6 +104,11 @@ class MainActivity : ComponentActivity() {
             }
             composable(Routes.LABEL_SETTINGS) {
                 LabelSettingsScreen(viewModel = viewModel) {
+                    navController.popBackStack()
+                }
+            }
+            composable(Routes.NOTIFICATION_SETTINGS) {
+                NotificationSettingsScreen(viewModel = viewModel) {
                     navController.popBackStack()
                 }
             }

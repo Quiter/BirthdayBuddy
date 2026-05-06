@@ -7,7 +7,7 @@
 Die App ist eine moderne Geburtstags-Verwaltung, die Kontakte aus dem Android-System synchronisiert, filtert und in einem Widget anzeigt. Sie folgt Material 3 Richtlinien und Clean Architecture Prinzipien.
 
 ## 🛠 Architektur & Struktur
-- **Package-Struktur:** Feature-basierte Layer (`ui.screens.home`, `viewmodel`, `database`, `widget`).
+- **Package-Struktur:** Feature-basierte Layer (`ui.screens.home`, `ui.screens.settings`, `viewmodel`, `database`, `widget`). Alles, was zu einem Feature gehört (UI, Worker, Preferences), liegt im entsprechenden Package.
 - **ViewModel:** `BirthdayViewModel` als Single Source of Truth für den UI-State; nutzt `SharedFlow` für UI-Events.
 - **Data:** 
     - `ContactUiModel` (@Immutable) für performante UI-Updates; robuste Datums-Berechnungen (Schaltjahr-sicher).
@@ -67,8 +67,13 @@ Die App ist eine moderne Geburtstags-Verwaltung, die Kontakte aus dem Android-Sy
     - **MainActivity Refactoring:** Zentralisierung des Intent-Handlings für Widget-Clicks; sauberes Routing via `Routes`-Objekt; Verfeinerung der M3 Shared-Axis-Animationen.
     - **Label Logic Finalization:** Letzter Schliff an der hybriden Sichtbarkeit: Minimale Filterung von System-Labels bei gleichzeitiger voller Kontrolle für User mit eigenen Labels.
     - **Code Quality:** Eliminierung von redundantem Code, ungenutzten Variablen und Optimierung von Datenbank-Operationen auf Room v6 Standards.
+13. **Notification System & Settings:**
+    - **Persistent Settings:** Einführung von `DataStore` zur Speicherung von Nutzerpräferenzen (Benachrichtigungen, Uhrzeit).
+    - **Daily Notifications:** Implementierung des `NotificationWorker` für tägliche Checks; nutzt `WorkManager` für präzises Scheduling.
+    - **Permissions:** Sauberes Handling der `POST_NOTIFICATIONS` Berechtigung ab Android 13.
+    - **Settings UI:** Erweiterung der Einstellungen um einen Notification-Switch und einen M3 `TimePicker`.
 
 ## 🎯 Kommende Aufgaben (Backlog)
 - **Quick-Actions:** Implementierung von Swipe-Gesten in der Liste (z.B. Swipe-to-Ignore).
-- **Label-Visualisierung:** Optionale Farben für Labels zur besseren Unterscheidung in der Liste.
+- **Label-Visualisierung:** Optionale Farben für Labels zur besseren Sichtbarkeit.
 - **Benachrichtigungen:** Einstellbare Erinnerungen (1 Tag vorher, am Tag selbst) via WorkManager.

@@ -13,6 +13,8 @@ import androidx.lifecycle.viewModelScope
 import com.heckmannch.birthdaybuddy2.database.AppDatabase
 import com.heckmannch.birthdaybuddy2.database.Contact
 import com.heckmannch.birthdaybuddy2.database.LabelConfig
+import com.heckmannch.birthdaybuddy2.ui.screens.settings.PreferenceManager
+import com.heckmannch.birthdaybuddy2.ui.screens.settings.NotificationWorker
 import com.heckmannch.birthdaybuddy2.widget.BirthdayWidget
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
@@ -57,6 +59,58 @@ private data class GroupInfo(val title: String, val isSystem: Boolean)
 class BirthdayViewModel(application: Application) : AndroidViewModel(application) {
     private val contactDao = AppDatabase.getDatabase(application).contactDao()
     private val labelConfigDao = AppDatabase.getDatabase(application).labelConfigDao()
+    private val preferenceManager = PreferenceManager(application)
+
+    val notificationsEnabled: StateFlow<Boolean> = preferenceManager.notificationsEnabled
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = false
+        )
+
+    val notificationHour: StateFlow<Int> = preferenceManager.notificationHour
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = 9
+        )
+
+    val notificationMinute: StateFlow<Int> = preferenceManager.notificationMinute
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = 0
+        )
+
+    init {
+        viewModelScope.launch {
+            combine(
+                notificationsEnabled,
+                notificationHour,
+                notificationMinute
+            ) { enabled, hour, minute ->
+                Triple(enabled, hour, minute)
+            }.collect { (enabled, hour, minute) ->
+                if (enabled) {
+                    NotificationWorker.enqueueDailyNotification(getApplication(), hour, minute)
+                } else {
+                    NotificationWorker.cancelNotification(getApplication())
+                }
+            }
+        }
+    }
+
+    fun setNotificationsEnabled(enabled: Boolean) {
+        viewModelScope.launch {
+            preferenceManager.setNotificationsEnabled(enabled)
+        }
+    }
+
+    fun setNotificationTime(hour: Int, minute: Int) {
+        viewModelScope.launch {
+            preferenceManager.setNotificationTime(hour, minute)
+        }
+    }
     
     private val dateFormatter = DateTimeFormatter.ofLocalizedDate(FormatStyle.LONG)
     private val dayMonthFormatter = DateTimeFormatter.ofPattern("d. MMMM")
@@ -246,7 +300,7 @@ class BirthdayViewModel(application: Application) : AndroidViewModel(application
                     val allConfigs = labelConfigDao.getAllConfigsImmediate().associateBy { it.name }
                     contactGroups.values.distinctBy { it.title }.forEach { group ->
                         val existing = allConfigs[group.title]
-                        if (existing == null || existing.isSystem != group.isSystem) {
+                        if (existing == null || (existing.isSystem != group.isSystem)) {
                             labelConfigDao.insertConfig(
                                 LabelConfig(
                                     name = group.title,

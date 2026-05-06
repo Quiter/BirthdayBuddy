@@ -11,7 +11,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -24,9 +24,11 @@ import com.heckmannch.birthdaybuddy2.viewmodel.BirthdayViewModel
 fun SettingsScreen(
     viewModel: BirthdayViewModel,
     onNavigateToLabels: () -> Unit,
+    onNavigateToNotifications: () -> Unit,
     onNavigateBack: () -> Unit,
 ) {
     val context = LocalContext.current
+
     val permissionLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.RequestPermission(),
     ) { isGranted ->
@@ -84,6 +86,17 @@ fun SettingsScreen(
                         Icon(Icons.Default.Settings, contentDescription = null)
                     },
                     modifier = Modifier.clickable { onNavigateToLabels() }
+                )
+            }
+
+            item {
+                ListItem(
+                    headlineContent = { Text("Benachrichtigungen") },
+                    supportingContent = { Text("Erinnerungen und Uhrzeit verwalten") },
+                    leadingContent = {
+                        Icon(Icons.Default.Notifications, contentDescription = null)
+                    },
+                    modifier = Modifier.clickable { onNavigateToNotifications() }
                 )
             }
 
