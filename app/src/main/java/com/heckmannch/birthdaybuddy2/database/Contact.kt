@@ -17,6 +17,5 @@ data class Contact(
     val birthday: LocalDate,
     val imageUri: String? = null,
     val labels: List<String> = emptyList(),
-    val giftIdeas: String? = null,
-    val remoteId: String? = null
+    val giftIdeas: String? = null
 )

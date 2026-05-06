@@ -58,19 +58,15 @@ fun HomeScreen(
     val permissionLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.RequestPermission(),
     ) { isGranted ->
-        if (isGranted) {
-            viewModel.syncContacts()
-        }
+        if (isGranted) viewModel.syncContacts()
     }
 
     // Initialisierung & Berechtigungsprüfung
     LaunchedEffect(Unit) {
         val hasPermission = ContextCompat.checkSelfPermission(context, Manifest.permission.READ_CONTACTS) == PackageManager.PERMISSION_GRANTED
-        
         if (!hasPermission) {
             permissionLauncher.launch(Manifest.permission.READ_CONTACTS)
         } else {
-            // Nur syncen, wenn Berechtigung bereits da ist
             viewModel.syncContacts()
         }
         
@@ -79,7 +75,7 @@ fun HomeScreen(
     }
 
     // ViewModel Events verarbeiten (z.B. Scroll-to-Top vom Widget)
-    LaunchedEffect(Unit) {
+    LaunchedEffect(viewModel.scrollToTopEvent) {
         viewModel.scrollToTopEvent.collectLatest {
             listState.animateScrollToItem(0)
         }
@@ -118,22 +114,24 @@ fun HomeScreen(
                 onSearchQueryChange = { viewModel.onSearchQueryChange(it) },
                 onLabelSelected = { viewModel.onLabelSelected(it) },
                 onNavigateToSettings = onNavigateToSettings,
-            ) {
-                viewModel.onSearchQueryChange("")
-                focusManager.clearFocus()
-                keyboardController?.hide()
-            }
+                onClearSearch = {
+                    viewModel.onSearchQueryChange("")
+                    focusManager.clearFocus()
+                    keyboardController?.hide()
+                }
+            )
         },
         floatingActionButton = {
             HomeFAB(
                 showScrollUp = showScrollUp,
                 onScrollToTop = { scope.launch { listState.animateScrollToItem(0) } },
-            ) {
-                val intent = Intent(Intent.ACTION_INSERT).apply {
-                    type = ContactsContract.Contacts.CONTENT_TYPE
+                onAddContact = {
+                    val intent = Intent(Intent.ACTION_INSERT).apply {
+                        type = ContactsContract.Contacts.CONTENT_TYPE
+                    }
+                    context.startActivity(intent)
                 }
-                context.startActivity(intent)
-            }
+            )
         },
     ) { innerPadding ->
         Box(
@@ -141,7 +139,6 @@ fun HomeScreen(
                 .fillMaxSize()
                 .padding(innerPadding)
                 .pointerInput(Unit) {
-                    // Fokus verlieren, wenn man neben die Liste tippt
                     detectTapGestures { focusManager.clearFocus() }
                 },
         ) {
@@ -149,12 +146,11 @@ fun HomeScreen(
                 viewModel = viewModel,
                 modifier = Modifier.fillMaxSize(),
                 listState = listState,
-            ) {
-                permissionLauncher.launch(Manifest.permission.READ_CONTACTS)
-            }
+                onRequestPermission = { permissionLauncher.launch(Manifest.permission.READ_CONTACTS) }
+            )
             
             val contacts by viewModel.contacts.collectAsState()
-            if (contacts?.isNotEmpty() == true) {
+            if (!contacts.isNullOrEmpty()) {
                 FastScrollbar(
                     listState = listState,
                     contacts = contacts!!,
@@ -255,7 +251,7 @@ private fun HomeTopBar(
         // Filter-Chips
         if (availableLabels.isNotEmpty()) {
             AnimatedVisibility(
-                visible = ((!showScrollUp) || (selectedLabel != null)),
+                visible = !showScrollUp || selectedLabel != null,
                 enter = expandVertically() + fadeIn(),
                 exit = shrinkVertically() + fadeOut()
             ) {
@@ -299,11 +295,10 @@ private fun HomeFAB(
             transitionSpec = { fadeIn() togetherWith fadeOut() },
             label = "FAB Icon Animation"
         ) { isUp ->
-            if (isUp) {
-                Icon(Icons.Default.KeyboardArrowDown, contentDescription = "Nach oben")
-            } else {
-                Icon(Icons.Default.Add, contentDescription = "Kontakt hinzufügen")
-            }
+            Icon(
+                imageVector = if (isUp) Icons.Default.KeyboardArrowDown else Icons.Default.Add,
+                contentDescription = if (isUp) "Nach oben" else "Kontakt hinzufügen"
+            )
         }
     }
 }

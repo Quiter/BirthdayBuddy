@@ -2,6 +2,7 @@ package com.heckmannch.birthdaybuddy2.ui.screens.home
 
 import androidx.compose.animation.*
 import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectVerticalDragGestures
 import androidx.compose.foundation.layout.*
@@ -30,21 +31,20 @@ fun FastScrollbar(
 ) {
     val scope = rememberCoroutineScope()
     val density = LocalDensity.current
-    var isDragging by remember { mutableStateOf(value = false) }
+    var isDragging by remember { mutableStateOf(false) }
     var dragOffsetPx by remember { mutableFloatStateOf(0f) }
     
-    // Bubble Sichtbarkeit mit Verzögerung für weicheres Ausblenden
-    var showBubble by remember { mutableStateOf(value = false) }
+    // Bubble visibility with delay for smoother transition
+    var showBubble by remember { mutableStateOf(false) }
     LaunchedEffect(isDragging, listState.isScrollInProgress) {
         showBubble = if (isDragging || listState.isScrollInProgress) {
             true
         } else {
-            delay(1000) // 1 Sekunde warten bevor die Bubble verschwindet
+            delay(1000)
             false
         }
     }
 
-    // Scrollbar-Logik: Position berechnen
     BoxWithConstraints(modifier = modifier.width(150.dp)) {
         val totalItems = contacts.size
         val viewHeight = maxHeight
@@ -52,19 +52,17 @@ fun FastScrollbar(
         val trackHeight = viewHeight - thumbHeight
         val trackHeightPx = with(density) { trackHeight.toPx() }
         
-        // Aktuelle Werte für den Gesten-Handler stabil halten
         val currentTotalItems by rememberUpdatedState(totalItems)
         val currentTrackHeightPx by rememberUpdatedState(trackHeightPx)
 
-        val canScroll = remember(totalItems) {
+        val canScroll by remember(totalItems) {
             derivedStateOf {
                 val visibleItems = listState.layoutInfo.visibleItemsInfo.size
                 totalItems > visibleItems
             }
         }
 
-        // Berechne den anzuzeigenden Monat basierend auf der aktuellen Position
-        val currentMonth = remember(contacts, isDragging, dragOffsetPx) {
+        val currentMonth by remember(contacts, isDragging, dragOffsetPx) {
             derivedStateOf {
                 val index = if (isDragging) {
                     val percent = (dragOffsetPx / trackHeightPx).coerceIn(0f, 1f)
@@ -72,12 +70,12 @@ fun FastScrollbar(
                 } else {
                     listState.firstVisibleItemIndex
                 }
-                if (index in contacts.indices) contacts[index].monthName else ""
+                contacts.getOrNull(index)?.monthName ?: ""
             }
         }
 
-        if (canScroll.value) {
-            val thumbOffset = remember(totalItems, isDragging, dragOffsetPx) {
+        if (canScroll) {
+            val thumbOffset by remember(totalItems, isDragging, dragOffsetPx) {
                 derivedStateOf {
                     if (isDragging) {
                         with(density) { dragOffsetPx.toDp() }.coerceIn(0.dp, trackHeight)
@@ -86,7 +84,6 @@ fun FastScrollbar(
                         val visibleItemsCount = layoutInfo.visibleItemsInfo.size
                         if (visibleItemsCount == 0) return@derivedStateOf 0.dp
                         
-                        // Berechne den Fortschritt so, dass 100% erreicht werden, wenn das Ende sichtbar ist
                         val maxScrollIndex = (totalItems - visibleItemsCount).coerceAtLeast(1)
                         val scrollPercent = (listState.firstVisibleItemIndex.toFloat() / maxScrollIndex).coerceIn(0f, 1f)
                         trackHeight * scrollPercent
@@ -99,33 +96,28 @@ fun FastScrollbar(
                 label = "Thumb Width",
             )
 
-            val thumbAlpha by androidx.compose.animation.core.animateFloatAsState(
+            val thumbAlpha by animateFloatAsState(
                 targetValue = if (isDragging || listState.isScrollInProgress) 1f else 0.4f,
                 label = "Thumb Alpha",
             )
 
-            // Die Bubble (erscheint beim Scrollen oder Ziehen) - Links vom Griff
+            // Bubble
             AnimatedVisibility(
                 visible = showBubble,
                 enter = fadeIn() + slideInHorizontally { it / 2 },
                 exit = fadeOut() + slideOutHorizontally { it / 2 },
                 modifier = Modifier
-                    .offset { IntOffset(0, (thumbOffset.value.toPx() - 4.dp.toPx()).toInt()) }
+                    .offset { IntOffset(0, (thumbOffset.toPx() - 4.dp.toPx()).toInt()) }
                     .align(Alignment.TopStart),
             ) {
                 Surface(
-                    shape = RoundedCornerShape(
-                        topStart = 24.dp,
-                        bottomStart = 24.dp,
-                        topEnd = 4.dp,
-                        bottomEnd = 24.dp,
-                    ),
+                    shape = RoundedCornerShape(topStart = 24.dp, bottomStart = 24.dp, topEnd = 4.dp, bottomEnd = 24.dp),
                     color = MaterialTheme.colorScheme.primary,
                     tonalElevation = 6.dp,
                     modifier = Modifier.padding(end = 16.dp),
                 ) {
                     Text(
-                        text = currentMonth.value,
+                        text = currentMonth,
                         modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
                         color = MaterialTheme.colorScheme.onPrimary,
                         style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
@@ -133,45 +125,39 @@ fun FastScrollbar(
                 }
             }
 
-            // Der Scroll-Griff (Thumb) mit vergrößerter Touch-Area
+            // Thumb
             Box(
                 modifier = Modifier
-                    .offset { IntOffset(0, thumbOffset.value.toPx().toInt()) }
+                    .offset { IntOffset(0, thumbOffset.toPx().toInt()) }
                     .align(Alignment.TopEnd)
-                    .width(48.dp) // Großzügige Touch-Area (Material-Standard 48dp)
+                    .width(48.dp)
                     .height(thumbHeight)
                     .pointerInput(Unit) {
                         detectVerticalDragGestures(
                             onDragStart = { 
                                 isDragging = true 
-                                dragOffsetPx = with(density) { thumbOffset.value.toPx() }
+                                dragOffsetPx = with(density) { thumbOffset.toPx() }
                             },
                             onDragEnd = { isDragging = false },
                             onDragCancel = { isDragging = false },
                         ) { change, dragAmount ->
                             dragOffsetPx = (dragOffsetPx + dragAmount).coerceIn(0f, currentTrackHeightPx)
                             val newScrollPercent = if (currentTrackHeightPx > 0) dragOffsetPx / currentTrackHeightPx else 0f
-                            val targetIndex = (newScrollPercent * (currentTotalItems - 1))
-                                .toInt()
+                            val targetIndex = (newScrollPercent * (currentTotalItems - 1)).toInt()
                                 .coerceIn(0, currentTotalItems - 1)
-                            scope.launch {
-                                listState.scrollToItem(targetIndex)
-                            }
+                            scope.launch { listState.scrollToItem(targetIndex) }
                             change.consume()
                         }
                     },
                 contentAlignment = Alignment.CenterEnd,
             ) {
-                // Visual Handle
                 Box(
                     modifier = Modifier
                         .padding(end = 6.dp)
                         .width(thumbWidth)
                         .height(if (isDragging) 32.dp else 24.dp)
                         .clip(CircleShape)
-                        .background(
-                            MaterialTheme.colorScheme.primary.copy(alpha = thumbAlpha),
-                        ),
+                        .background(MaterialTheme.colorScheme.primary.copy(alpha = thumbAlpha)),
                 )
             }
         }

@@ -3,6 +3,9 @@ package com.heckmannch.birthdaybuddy2.widget
 import android.content.Context
 import androidx.glance.appwidget.updateAll
 import androidx.work.*
+import java.time.Duration
+import java.time.LocalDateTime
+import java.time.LocalTime
 import java.util.concurrent.TimeUnit
 
 class BirthdayWidgetWorker(
@@ -11,30 +14,39 @@ class BirthdayWidgetWorker(
 ) : CoroutineWorker(context, workerParameters) {
 
     override suspend fun doWork(): Result {
-        BirthdayWidget().updateAll(context)
-        return Result.success()
+        try {
+            BirthdayWidget().updateAll(context)
+            return Result.success()
+        } catch (e: Exception) {
+            return Result.retry()
+        }
     }
 
     companion object {
         fun enqueueDailyUpdate(context: Context) {
             val request = PeriodicWorkRequestBuilder<BirthdayWidgetWorker>(
-                1,
-                TimeUnit.DAYS,
+                24, TimeUnit.HOURS, // Explizit 24 Stunden
+                15, TimeUnit.MINUTES // Flex Interval für System-Optimierung
             ).setInitialDelay(calculateDelayUntilMidnight(), TimeUnit.MILLISECONDS)
                 .addTag("daily_widget_update")
+                .setConstraints(
+                    Constraints.Builder()
+                        .setRequiresBatteryNotLow(true)
+                        .build()
+                )
                 .build()
 
             WorkManager.getInstance(context).enqueueUniquePeriodicWork(
                 "DailyBirthdayUpdate",
-                ExistingPeriodicWorkPolicy.KEEP,
+                ExistingPeriodicWorkPolicy.UPDATE,
                 request
             )
         }
 
         private fun calculateDelayUntilMidnight(): Long {
-            // Vereinfachte Berechnung: In einer echten App würde man 
-            // die Zeit bis exakt 00:00:01 Uhr berechnen.
-            return TimeUnit.HOURS.toMillis(1) // Hier als Platzhalter
+            val now = LocalDateTime.now()
+            val midnight = LocalDateTime.of(now.toLocalDate().plusDays(1), LocalTime.MIDNIGHT)
+            return Duration.between(now, midnight).toMillis()
         }
     }
 }

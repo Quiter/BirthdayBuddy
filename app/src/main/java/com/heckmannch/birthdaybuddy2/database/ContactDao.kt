@@ -8,26 +8,11 @@ interface ContactDao {
     @Query("SELECT * FROM contacts ORDER BY birthday ASC")
     fun getAllContacts(): Flow<List<Contact>>
 
-    @Query("SELECT * FROM contacts")
-    suspend fun getAllContactsImmediate(): List<Contact>
-
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertContact(contact: Contact)
-
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertContacts(contacts: List<Contact>)
 
-    @Update
-    suspend fun updateContact(contact: Contact)
-
-    @Delete
-    suspend fun deleteContact(contact: Contact)
-
     @Query("SELECT * FROM contacts WHERE lookupKey = :lookupKey")
     suspend fun getContactByLookupKey(lookupKey: String): Contact?
-
-    @Query("SELECT * FROM contacts WHERE contactId = :contactId")
-    suspend fun getContactByContactId(contactId: String): Contact?
 
     @Query("DELETE FROM contacts")
     suspend fun deleteAllContacts()

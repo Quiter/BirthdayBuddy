@@ -1,4 +1,4 @@
-name: Build on Version Change
+name: Build and Release
 
 on:
   push:
@@ -29,47 +29,46 @@ jobs:
             echo "version_changed=false" >> $GITHUB_OUTPUT
           fi
 
-      - name: Set up JDK 11
+      - name: Set up JDK 17
         if: steps.version_check.outputs.version_changed == 'true'
         uses: actions/setup-java@v4
         with:
-          java-version: '11'
+          java-version: '17'
           distribution: 'temurin'
+          cache: gradle
 
       - name: Grant execute permission for gradlew
         if: steps.version_check.outputs.version_changed == 'true'
         run: chmod +x gradlew
 
-      - name: Run Gradle build
+      - name: Build Release APK
         if: steps.version_check.outputs.version_changed == 'true'
-        run: ./gradlew build
+        run: ./gradlew assembleRelease
 
-      - name: Extract version from build.gradle.kts
+      - name: Sign APK
+        if: steps.version_check.outputs.version_changed == 'true'
+        uses: r0adkll/sign-android-release@v1
+        id: sign_app
+        with:
+          releaseDirectory: app/build/outputs/apk/release
+          signingKeyBase64: ${{ secrets.SIGNING_KEY }}
+          alias: ${{ secrets.ALIAS }}
+          keyStorePassword: ${{ secrets.KEY_STORE_PASSWORD }}
+          keyPassword: ${{ secrets.KEY_PASSWORD }}
+
+      - name: Extract version
         if: steps.version_check.outputs.version_changed == 'true'
         id: extract_version
         run: |
           version=$(grep 'versionName' app/build.gradle.kts | sed 's/.*versionName = "\([^"]*\)".*/\1/')
           echo "version=$version" >> $GITHUB_OUTPUT
 
-      - name: Find APK file
+      - name: Create Release and Upload
         if: steps.version_check.outputs.version_changed == 'true'
-        id: find_apk
-        run: |
-          apk_file=$(find app/build/outputs/apk -name '*.apk' -type f | head -n 1)
-          if [ -z "$apk_file" ]; then
-            echo "APK file not found!"
-            exit 1
-          fi
-          echo "apk_path=$apk_file" >> $GITHUB_OUTPUT
-
-      - name: Create Release and Upload APK
-        if: steps.version_check.outputs.version_changed == 'true'
-        uses: softprops/action-gh-release@v1
+        uses: softprops/action-gh-release@v2
         with:
           tag_name: v${{ steps.extract_version.outputs.version }}
           name: Release v${{ steps.extract_version.outputs.version }}
-          files: ${{ steps.find_apk.outputs.apk_path }}
-          draft: false
-          prerelease: false
+          files: ${{ steps.sign_app.outputs.signedReleaseFile }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

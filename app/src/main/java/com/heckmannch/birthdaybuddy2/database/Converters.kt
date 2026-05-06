@@ -5,22 +5,14 @@ import java.time.LocalDate
 
 class Converters {
     @TypeConverter
-    fun fromString(value: String?): LocalDate? {
-        return value?.let { LocalDate.parse(it) }
-    }
+    fun fromString(value: String?): LocalDate? = value?.let { LocalDate.parse(it) }
 
     @TypeConverter
-    fun dateToString(date: LocalDate?): String? {
-        return date?.toString()
-    }
+    fun dateToString(date: LocalDate?): String? = date?.toString()
 
     @TypeConverter
-    fun fromList(list: List<String>): String {
-        return list.joinToString(",")
-    }
+    fun fromList(list: List<String>): String = list.joinToString(",")
 
     @TypeConverter
-    fun toList(data: String): List<String> {
-        return if (data.isBlank()) emptyList() else data.split(",")
-    }
+    fun toList(data: String): List<String> = if (data.isBlank()) emptyList() else data.split(",")
 }

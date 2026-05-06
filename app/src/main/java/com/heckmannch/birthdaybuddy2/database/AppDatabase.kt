@@ -6,7 +6,7 @@ import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
 
-@Database(entities = [Contact::class, LabelConfig::class], version = 5, exportSchema = false)
+@Database(entities = [Contact::class, LabelConfig::class], version = 6, exportSchema = false)
 @TypeConverters(Converters::class)
 abstract class AppDatabase : RoomDatabase() {
     abstract fun contactDao(): ContactDao
@@ -16,18 +16,13 @@ abstract class AppDatabase : RoomDatabase() {
         @Volatile
         private var INSTANCE: AppDatabase? = null
 
-        fun getDatabase(context: Context): AppDatabase {
-            return INSTANCE ?: synchronized(this) {
-                val instance = Room.databaseBuilder(
+        fun getDatabase(context: Context): AppDatabase =
+            INSTANCE ?: synchronized(this) {
+                INSTANCE ?: Room.databaseBuilder(
                     context.applicationContext,
                     AppDatabase::class.java,
                     "birthday_database",
-                )
-                .fallbackToDestructiveMigration(true) // Löscht die DB bei Versionsänderung (behebt den Absturz)
-                .build()
-                INSTANCE = instance
-                instance
+                ).fallbackToDestructiveMigration(true).build().also { INSTANCE = it }
             }
-        }
     }
 }

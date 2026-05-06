@@ -84,10 +84,7 @@ class BirthdayViewModel(application: Application) : AndroidViewModel(application
         
         // Prüfung: Gibt es mindestens ein Label, das KEIN System-Label ist?
         val hasUserLabels = allLabelsInContacts.any { name ->
-            val config = configMap[name]
-            // Ein Label gilt als User-Label, wenn es in der DB als isSystem == false markiert ist
-            // ODER wenn wir es noch gar nicht in der Config haben (dann ist es neu/unbekannt)
-            config?.isSystem == false
+            configMap[name]?.isSystem == false
         }
 
         // Wenn NUR System-Labels vorhanden sind, blenden wir die Filterbar komplett aus
@@ -283,12 +280,7 @@ class BirthdayViewModel(application: Application) : AndroidViewModel(application
 
     private fun Contact.toUiModel(today: LocalDate): ContactUiModel {
         val hasYear = birthday.year != 1900
-        
-        var nextBirthday = birthday.toCurrentYear(today.year)
-        if (nextBirthday.isBefore(today)) {
-            nextBirthday = birthday.toCurrentYear(today.year + 1)
-        }
-        
+        val nextBirthday = birthday.toNextOccurrence(today)
         val daysLeft = ChronoUnit.DAYS.between(today, nextBirthday)
         val nextAgeValue = if (hasYear) nextBirthday.year - birthday.year else null
 
@@ -375,8 +367,6 @@ class BirthdayViewModel(application: Application) : AndroidViewModel(application
                     
                     if (!title.isNullOrBlank()) {
                         val lowerTitle = title.lowercase()
-                        // Wir filtern nur noch die absolut redundanten System-Listen aus.
-                        // "Family", "Friends" etc. bleiben erhalten.
                         val isRedundant = lowerTitle == "my contacts" || 
                                          lowerTitle == "contacts" ||
                                          lowerTitle == "ich" ||
@@ -466,37 +456,27 @@ class BirthdayViewModel(application: Application) : AndroidViewModel(application
 // --- Robuste Extensions für Datumsberechnungen ---
 
 fun LocalDate.safeDaysUntilNext(): Long {
-    return try {
-        val today = LocalDate.now()
-        var nextBirthday = this.toCurrentYear(today.year)
-        
-        if (nextBirthday.isBefore(today)) {
-            nextBirthday = this.toCurrentYear(today.year + 1)
-        }
-        ChronoUnit.DAYS.between(today, nextBirthday)
-    } catch (_: Exception) {
-        Long.MAX_VALUE
-    }
+    val today = LocalDate.now()
+    return ChronoUnit.DAYS.between(today, toNextOccurrence(today))
 }
 
 fun LocalDate.safeNextAge(): Int {
-    return try {
-        val today = LocalDate.now()
-        var nextBirthday = this.toCurrentYear(today.year)
-        
-        if (nextBirthday.isBefore(today)) {
-            nextBirthday = this.toCurrentYear(today.year + 1)
-        }
-        nextBirthday.year - this.year
-    } catch (_: Exception) {
-        0
-    }
+    val today = LocalDate.now()
+    return toNextOccurrence(today).year - this.year
 }
 
 /**
- * Hilfsfunktion um ein Datum sicher in ein Zieljahr zu überführen (Handling für 29. Feb).
+ * Hilfsfunktion um das nächste Vorkommen eines Datums zu finden (Handling für 29. Feb).
  */
-private fun LocalDate.toCurrentYear(targetYear: Int): LocalDate {
+fun LocalDate.toNextOccurrence(today: LocalDate): LocalDate {
+    var next = this.toYear(today.year)
+    if (next.isBefore(today)) {
+        next = this.toYear(today.year + 1)
+    }
+    return next
+}
+
+private fun LocalDate.toYear(targetYear: Int): LocalDate {
     return if (this.monthValue == 2 && this.dayOfMonth == 29 && !java.time.Year.isLeap(targetYear.toLong())) {
         LocalDate.of(targetYear, 2, 28)
     } else {
