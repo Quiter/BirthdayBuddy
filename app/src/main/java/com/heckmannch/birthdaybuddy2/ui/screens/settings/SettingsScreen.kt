@@ -69,8 +69,9 @@ fun SettingsScreen(
                             ContextCompat.checkSelfPermission(
                                 context,
                                 Manifest.permission.READ_CONTACTS,
-                            ) ->
+                            ) -> {
                                 viewModel.syncContacts()
+                            }
                             else ->
                                 permissionLauncher.launch(Manifest.permission.READ_CONTACTS)
                         }

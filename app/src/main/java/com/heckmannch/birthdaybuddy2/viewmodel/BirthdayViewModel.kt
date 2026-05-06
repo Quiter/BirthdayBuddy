@@ -65,21 +65,21 @@ class BirthdayViewModel(application: Application) : AndroidViewModel(application
         .stateIn(
             scope = viewModelScope,
             started = SharingStarted.WhileSubscribed(5000),
-            initialValue = false
+            initialValue = false,
         )
 
     val notificationHour: StateFlow<Int> = preferenceManager.notificationHour
         .stateIn(
             scope = viewModelScope,
             started = SharingStarted.WhileSubscribed(5000),
-            initialValue = 9
+            initialValue = 9,
         )
 
     val notificationMinute: StateFlow<Int> = preferenceManager.notificationMinute
         .stateIn(
             scope = viewModelScope,
             started = SharingStarted.WhileSubscribed(5000),
-            initialValue = 0
+            initialValue = 0,
         )
 
     init {
@@ -87,7 +87,7 @@ class BirthdayViewModel(application: Application) : AndroidViewModel(application
             combine(
                 notificationsEnabled,
                 notificationHour,
-                notificationMinute
+                notificationMinute,
             ) { enabled, hour, minute ->
                 Triple(enabled, hour, minute)
             }.collect { (enabled, hour, minute) ->
@@ -300,7 +300,7 @@ class BirthdayViewModel(application: Application) : AndroidViewModel(application
                     val allConfigs = labelConfigDao.getAllConfigsImmediate().associateBy { it.name }
                     contactGroups.values.distinctBy { it.title }.forEach { group ->
                         val existing = allConfigs[group.title]
-                        if (existing == null || (existing.isSystem != group.isSystem)) {
+                        if ((existing == null) || (existing.isSystem != group.isSystem)) {
                             labelConfigDao.insertConfig(
                                 LabelConfig(
                                     name = group.title,
@@ -312,7 +312,10 @@ class BirthdayViewModel(application: Application) : AndroidViewModel(application
                         }
                     }
 
-                    val labelsMap = fetchLabelsForContacts(systemContacts.map { it.contactId }.toSet(), contactGroups)
+                    val labelsMap = fetchLabelsForContacts(
+                        systemContacts.asSequence().map { it.contactId }.toSet(),
+                        contactGroups
+                    )
                     
                     val updatedContacts = systemContacts.map { contact ->
                         contact.copy(labels = labelsMap[contact.contactId] ?: emptyList())
@@ -375,7 +378,7 @@ class BirthdayViewModel(application: Application) : AndroidViewModel(application
                 val idIdx = cursor.getColumnIndex(ContactsContract.Data.CONTACT_ID)
                 val groupRowIdIdx = cursor.getColumnIndex(ContactsContract.CommonDataKinds.GroupMembership.GROUP_ROW_ID)
                 
-                if (idIdx != -1 && groupRowIdIdx != -1) {
+                if ((idIdx != -1) && (groupRowIdIdx != -1)) {
                     while (cursor.moveToNext()) {
                         val contactId = cursor.getString(idIdx)
                         if (contactId in contactIds) {

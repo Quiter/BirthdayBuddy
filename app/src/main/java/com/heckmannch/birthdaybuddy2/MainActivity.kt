@@ -97,10 +97,9 @@ class MainActivity : ComponentActivity() {
                     onNavigateToNotifications = {
                         navController.navigate(Routes.NOTIFICATION_SETTINGS)
                     },
-                    onNavigateBack = {
-                        navController.popBackStack()
-                    }
-                )
+                ) {
+                    navController.popBackStack()
+                }
             }
             composable(Routes.LABEL_SETTINGS) {
                 LabelSettingsScreen(viewModel = viewModel) {

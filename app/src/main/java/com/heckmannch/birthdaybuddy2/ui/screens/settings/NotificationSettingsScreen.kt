@@ -22,20 +22,20 @@ import com.heckmannch.birthdaybuddy2.viewmodel.BirthdayViewModel
 @Composable
 fun NotificationSettingsScreen(
     viewModel: BirthdayViewModel,
-    onNavigateBack: () -> Unit
+    onNavigateBack: () -> Unit,
 ) {
     val context = LocalContext.current
     val notificationsEnabled by viewModel.notificationsEnabled.collectAsState()
     val notificationHour by viewModel.notificationHour.collectAsState()
     val notificationMinute by viewModel.notificationMinute.collectAsState()
 
-    var showTimePicker by remember { mutableStateOf(false) }
+    val showTimePicker = remember { mutableStateOf(value = false) }
 
     val notificationPermissionLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.RequestPermission(),
     ) { isGranted ->
         if (isGranted) {
-            viewModel.setNotificationsEnabled(true)
+            viewModel.setNotificationsEnabled(enabled = true)
         }
     }
 
@@ -73,7 +73,7 @@ fun NotificationSettingsScreen(
                                             Manifest.permission.POST_NOTIFICATIONS
                                         ) == PackageManager.PERMISSION_GRANTED
                                     ) {
-                                        viewModel.setNotificationsEnabled(true)
+                                        viewModel.setNotificationsEnabled(enabled = true)
                                     } else {
                                         notificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
                                     }
@@ -99,13 +99,13 @@ fun NotificationSettingsScreen(
                     leadingContent = {
                         Icon(Icons.Default.Notifications, contentDescription = null)
                     },
-                    modifier = Modifier.clickable { showTimePicker = true }
+                    modifier = Modifier.clickable { showTimePicker.value = true },
                 )
             }
         }
     }
 
-    if (showTimePicker) {
+    if (showTimePicker.value) {
         val timePickerState = rememberTimePickerState(
             initialHour = notificationHour,
             initialMinute = notificationMinute,
@@ -113,17 +113,21 @@ fun NotificationSettingsScreen(
         )
 
         AlertDialog(
-            onDismissRequest = { showTimePicker = false },
+            onDismissRequest = { showTimePicker.value = false },
             confirmButton = {
-                TextButton(onClick = {
-                    viewModel.setNotificationTime(timePickerState.hour, timePickerState.minute)
-                    showTimePicker = false
-                }) {
+                TextButton(
+                    onClick = {
+                        viewModel.setNotificationTime(timePickerState.hour, timePickerState.minute)
+                        showTimePicker.value = false
+                    },
+                ) {
                     Text("OK")
                 }
             },
             dismissButton = {
-                TextButton(onClick = { showTimePicker = false }) {
+                TextButton(
+                    onClick = { showTimePicker.value = false }
+                ) {
                     Text("Abbrechen")
                 }
             },
