@@ -27,7 +27,6 @@ import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
-import com.heckmannch.birthdaybuddy2.MainActivity
 import com.heckmannch.birthdaybuddy2.viewmodel.BirthdayViewModel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.collectLatest
@@ -78,15 +77,6 @@ fun HomeScreen(
     LaunchedEffect(viewModel.scrollToTopEvent) {
         viewModel.scrollToTopEvent.collectLatest {
             listState.animateScrollToItem(0)
-        }
-    }
-
-    // Intent-Handling (z.B. App-Start via Widget)
-    val activity = context as? MainActivity
-    LaunchedEffect(activity?.intent) {
-        if (activity?.intent?.getBooleanExtra("SCROLL_TO_TOP", false) == true) {
-            listState.animateScrollToItem(0)
-            activity.intent.removeExtra("SCROLL_TO_TOP")
         }
     }
 

@@ -1,6 +1,9 @@
 # Project Status: BirthdayBuddy 2
 
+> **TL;DR für neue Sessions:** Moderne M3 Geburtstags-App. Android-Kontakte sind die Single-Source-of-Truth. Migration auf `LOOKUP_KEY` & `localId` abgeschlossen (zukunftssicher). High-Performance Sync (Batch-Labels), hybride Filter-Logik (Filterleiste nur bei Bedarf), präzises Widget-Update (Mitternacht via WorkManager). Architektur ist sauber, modular und performant (Room v6, Compose BOM 2026.04).
+
 ## 🚀 Aktueller Stand
+...
 Die App ist eine moderne Geburtstags-Verwaltung, die Kontakte aus dem Android-System synchronisiert, filtert und in einem Widget anzeigt. Sie folgt Material 3 Richtlinien und Clean Architecture Prinzipien.
 
 ## 🛠 Architektur & Struktur
@@ -59,6 +62,11 @@ Die App ist eine moderne Geburtstags-Verwaltung, die Kontakte aus dem Android-Sy
     - **ViewModel Layer:** Zentralisierung der Geburtsdatums-Logik (`toNextOccurrence`); Optimierung des UI-Mappings zur Reduzierung redundanter Berechnungen.
     - **Widget Layer:** Präzise Mitternachts-Aktualisierung via `WorkManager` (Duration-basiert); Refactoring der Widget-UI in modulare Komponenten.
     - **Home UI Layer:** Umfassendes Refactoring von `HomeScreen`, `BirthdayList` und `FastScrollbar` für bessere Wartbarkeit und Performance (Einsatz von `derivedStateOf`).
+12. **Final Deep Review & Consistency Polish:**
+    - **End-to-End Review:** Vollständige Überprüfung aller Layer (Database -> ViewModel -> UI -> Widget) auf Konsistenz bei der Verwendung von stabilen Identifikatoren (`LOOKUP_KEY`).
+    - **MainActivity Refactoring:** Zentralisierung des Intent-Handlings für Widget-Clicks; sauberes Routing via `Routes`-Objekt; Verfeinerung der M3 Shared-Axis-Animationen.
+    - **Label Logic Finalization:** Letzter Schliff an der hybriden Sichtbarkeit: Minimale Filterung von System-Labels bei gleichzeitiger voller Kontrolle für User mit eigenen Labels.
+    - **Code Quality:** Eliminierung von redundantem Code, ungenutzten Variablen und Optimierung von Datenbank-Operationen auf Room v6 Standards.
 
 ## 🎯 Kommende Aufgaben (Backlog)
 - **Quick-Actions:** Implementierung von Swipe-Gesten in der Liste (z.B. Swipe-to-Ignore).

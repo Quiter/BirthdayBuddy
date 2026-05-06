@@ -11,8 +11,11 @@ import androidx.compose.animation.core.tween
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
@@ -23,12 +26,21 @@ import com.heckmannch.birthdaybuddy2.ui.theme.BirthdayBuddy2Theme
 import com.heckmannch.birthdaybuddy2.viewmodel.BirthdayViewModel
 import com.heckmannch.birthdaybuddy2.widget.BirthdayWidgetWorker
 
+/**
+ * Navigation Routes
+ */
+private object Routes {
+    const val HOME = "home"
+    const val SETTINGS = "settings"
+    const val LABEL_SETTINGS = "label_settings"
+}
+
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         
-        // Tägliches Widget-Update planen
+        // Schedule daily widget updates
         BirthdayWidgetWorker.enqueueDailyUpdate(this)
 
         setContent {
@@ -36,44 +48,58 @@ class MainActivity : ComponentActivity() {
                 val viewModel: BirthdayViewModel = viewModel()
                 val navController = rememberNavController()
 
-                // Intent beim Start prüfen
-                if (intent?.getBooleanExtra("SCROLL_TO_TOP", false) == true) {
-                    viewModel.triggerScrollToTop()
-                }
+                // React to intent changes (Initial start and onNewIntent)
+                HandleIntents(intent, viewModel)
 
                 Surface(
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background,
                 ) {
-                    NavHost(
-                        navController = navController,
-                        startDestination = "home",
-                        enterTransition = { materialSharedAxisZIn() },
-                        exitTransition = { materialSharedAxisZOut() },
-                        popEnterTransition = { materialSharedAxisZIn() },
-                        popExitTransition = { materialSharedAxisZOut() },
-                    ) {
-                        composable("home") {
-                            HomeScreen(viewModel = viewModel) {
-                                navController.navigate("settings")
-                            }
-                        }
-                        composable("settings") {
-                            SettingsScreen(
-                                viewModel = viewModel,
-                                onNavigateToLabels = {
-                                    navController.navigate("label_settings")
-                                },
-                            ) {
-                                navController.popBackStack()
-                            }
-                        }
-                        composable("label_settings") {
-                            LabelSettingsScreen(viewModel = viewModel) {
-                                navController.popBackStack()
-                            }
-                        }
+                    AppNavigation(navController, viewModel)
+                }
+            }
+        }
+    }
+
+    @Composable
+    private fun HandleIntents(intent: Intent?, viewModel: BirthdayViewModel) {
+        LaunchedEffect(intent) {
+            if (intent?.getBooleanExtra("SCROLL_TO_TOP", false) == true) {
+                viewModel.triggerScrollToTop()
+                intent.removeExtra("SCROLL_TO_TOP")
+            }
+        }
+    }
+
+    @Composable
+    private fun AppNavigation(navController: NavHostController, viewModel: BirthdayViewModel) {
+        NavHost(
+            navController = navController,
+            startDestination = Routes.HOME,
+            enterTransition = { sharedAxisZIn() },
+            exitTransition = { sharedAxisZOut() },
+            popEnterTransition = { sharedAxisZIn() },
+            popExitTransition = { sharedAxisZOut() },
+        ) {
+            composable(Routes.HOME) {
+                HomeScreen(viewModel = viewModel) {
+                    navController.navigate(Routes.SETTINGS)
+                }
+            }
+            composable(Routes.SETTINGS) {
+                SettingsScreen(
+                    viewModel = viewModel,
+                    onNavigateToLabels = {
+                        navController.navigate(Routes.LABEL_SETTINGS)
+                    },
+                    onNavigateBack = {
+                        navController.popBackStack()
                     }
+                )
+            }
+            composable(Routes.LABEL_SETTINGS) {
+                LabelSettingsScreen(viewModel = viewModel) {
+                    navController.popBackStack()
                 }
             }
         }
@@ -81,20 +107,19 @@ class MainActivity : ComponentActivity() {
 
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
+        // Update activity intent so LaunchedEffect in setContent can react to it
         setIntent(intent)
     }
 }
 
 /**
  * Material 3 Shared Axis Z-Axis Transition (In)
+ * Refined for a smoother feel.
  */
-private fun materialSharedAxisZIn(): EnterTransition {
-    return slideInHorizontally(
-        initialOffsetX = { (it * 0.1f).toInt() },
-        animationSpec = tween(400, easing = FastOutSlowInEasing),
-    ) + fadeIn(animationSpec = tween(400)) +
+private fun sharedAxisZIn(): EnterTransition {
+    return fadeIn(animationSpec = tween(300)) +
             scaleIn(
-                initialScale = 0.92f,
+                initialScale = 0.94f,
                 animationSpec = tween(400, easing = FastOutSlowInEasing),
             )
 }
@@ -102,13 +127,10 @@ private fun materialSharedAxisZIn(): EnterTransition {
 /**
  * Material 3 Shared Axis Z-Axis Transition (Out)
  */
-private fun materialSharedAxisZOut(): ExitTransition {
-    return slideOutHorizontally(
-        targetOffsetX = { (it * 0.1f).toInt() },
-        animationSpec = tween(400, easing = FastOutSlowInEasing),
-    ) + fadeOut(animationSpec = tween(400)) +
+private fun sharedAxisZOut(): ExitTransition {
+    return fadeOut(animationSpec = tween(300)) +
             scaleOut(
-                targetScale = 0.92f,
+                targetScale = 0.94f,
                 animationSpec = tween(400, easing = FastOutSlowInEasing),
             )
 }
