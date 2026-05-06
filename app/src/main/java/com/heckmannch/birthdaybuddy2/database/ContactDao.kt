@@ -23,9 +23,18 @@ interface ContactDao {
     @Delete
     suspend fun deleteContact(contact: Contact)
 
-    @Query("SELECT * FROM contacts WHERE id = :id")
-    suspend fun getContactById(id: String): Contact?
+    @Query("SELECT * FROM contacts WHERE lookupKey = :lookupKey")
+    suspend fun getContactByLookupKey(lookupKey: String): Contact?
+
+    @Query("SELECT * FROM contacts WHERE contactId = :contactId")
+    suspend fun getContactByContactId(contactId: String): Contact?
 
     @Query("DELETE FROM contacts")
     suspend fun deleteAllContacts()
+
+    @Transaction
+    suspend fun refreshContacts(contacts: List<Contact>) {
+        deleteAllContacts()
+        insertContacts(contacts)
+    }
 }

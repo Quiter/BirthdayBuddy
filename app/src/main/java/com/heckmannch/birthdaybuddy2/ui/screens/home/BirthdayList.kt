@@ -1,7 +1,6 @@
 package com.heckmannch.birthdaybuddy2.ui.screens.home
 
 import android.Manifest
-import android.content.ContentUris
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.provider.ContactsContract
@@ -161,11 +160,11 @@ fun BirthdayItem(contact: ContactUiModel) {
                         .size(48.dp)
                         .clickable {
                             try {
-                                val contactUri = ContentUris.withAppendedId(
-                                    ContactsContract.Contacts.CONTENT_URI,
-                                    contact.id.toLong()
+                                val lookupUri = ContactsContract.Contacts.getLookupUri(
+                                    contact.contactId.toLong(),
+                                    contact.lookupKey
                                 )
-                                val intent = Intent(Intent.ACTION_VIEW, contactUri)
+                                val intent = Intent(Intent.ACTION_VIEW, lookupUri)
                                 context.startActivity(intent)
                             } catch (e: Exception) {
                                 e.printStackTrace()

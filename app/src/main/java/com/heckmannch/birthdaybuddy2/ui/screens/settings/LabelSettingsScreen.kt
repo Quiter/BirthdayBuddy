@@ -60,8 +60,9 @@ fun LabelSettingsScreen(
                         name = label.name,
                         isHiddenFromFilter = label.isHiddenFromFilter,
                         isIgnored = label.isIgnored,
+                        isSystem = label.isSystem
                     ) { hidden, ignored ->
-                        viewModel.updateLabelConfig(label.name, hidden, ignored)
+                        viewModel.updateLabelConfig(label.name, hidden, ignored, label.isSystem)
                     }
                     HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp))
                 }
@@ -75,6 +76,7 @@ private fun LabelConfigItem(
     name: String,
     isHiddenFromFilter: Boolean,
     isIgnored: Boolean,
+    isSystem: Boolean,
     onConfigChanged: (Boolean, Boolean) -> Unit
 ) {
     Column(
@@ -82,11 +84,27 @@ private fun LabelConfigItem(
             .fillMaxWidth()
             .padding(16.dp)
     ) {
-        Text(
-            text = name,
-            style = MaterialTheme.typography.titleLarge,
-            color = MaterialTheme.colorScheme.primary
-        )
+        Row(verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
+            Text(
+                text = name,
+                style = MaterialTheme.typography.titleLarge,
+                color = MaterialTheme.colorScheme.primary,
+                modifier = Modifier.weight(1f)
+            )
+            if (isSystem) {
+                Surface(
+                    color = MaterialTheme.colorScheme.surfaceVariant,
+                    shape = MaterialTheme.shapes.extraSmall,
+                ) {
+                    Text(
+                        text = "SYSTEM",
+                        style = MaterialTheme.typography.labelSmall,
+                        modifier = Modifier.padding(horizontal = 4.dp, vertical = 2.dp),
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+            }
+        }
         
         Spacer(modifier = Modifier.height(8.dp))
         

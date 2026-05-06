@@ -8,6 +8,9 @@ interface LabelConfigDao {
     @Query("SELECT * FROM label_configs")
     fun getAllConfigs(): Flow<List<LabelConfig>>
 
+    @Query("SELECT * FROM label_configs")
+    suspend fun getAllConfigsImmediate(): List<LabelConfig>
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertConfig(config: LabelConfig)
 

@@ -8,5 +8,6 @@ data class LabelConfig(
     @PrimaryKey
     val name: String,
     val isHiddenFromFilter: Boolean = false,
-    val isIgnored: Boolean = false
+    val isIgnored: Boolean = false,
+    val isSystem: Boolean = false
 )

@@ -9,6 +9,7 @@ Die App ist eine moderne Geburtstags-Verwaltung, die Kontakte aus dem Android-Sy
 - **Data:** 
     - `ContactUiModel` (@Immutable) für performante UI-Updates; robuste Datums-Berechnungen (Schaltjahr-sicher).
     - **Single Source of Truth:** Das Android-System (Kontakte-Provider) bleibt die einzige Quelle für Personendaten. Die App pflegt keine eigenen Kontaktdaten, sondern reichert diese nur für Filterzwecke (Labels) an.
+    - **Stabile Identifikatoren:** Migration von der numerischen System-ID auf den `LOOKUP_KEY` als Primärschlüssel für UI-Stabilität und Robustheit bei Geräte-Wechseln oder System-Syncs. Interner Room-Key (`localId`) sorgt für performante Relationen.
 - **Navigation:** Jetpack Navigation mit Material 3 Shared-Axis-Animationen.
 
 ## ✨ Key Features
@@ -46,5 +47,15 @@ Die App ist eine moderne Geburtstags-Verwaltung, die Kontakte aus dem Android-Sy
 9. **Advanced Label Management:**
    - **Individuelle Konfiguration:** Einführung einer `LabelConfig` Datenbank zur Steuerung der Sichtbarkeit pro Label (Verbergen in Filterbar / Komplettes Ignorieren von Kontakten).
    - **Smart Search:** Die Suche umgeht nun den "Ignorieren"-Status, sodass auch ausgeblendete Personen (z.B. verstorbene Kontakte) gezielt gefunden werden können.
-   - **Deep System Integration:** Implementierung eines Click-to-Edit Features auf dem Kontaktbild, das via Intent direkt in die Android-Kontakte-App abspringt (Single Source of Truth Prinzip).
+   - **Deep System Integration:** Implementierung eines Click-to-Edit Features auf dem Kontaktbild, das via Intent direkt in die Android-Kontakte-App abspringt (Single Source of Truth Prinzip). Nutzt nun stabile `Lookup-URIs` zur Identifikation.
    - **UX-Stabilisierung:** Optimierung der Scroll-to-Top Logik mit intelligenten Delays zur Synchronisation von Daten-Updates und UI-Animationen.
+10. **Intelligent Label Visibility & Stability Upgrade:**
+    - **Hybride Sichtbarkeit:** Einführung einer Logik, die die Filterleiste nur einblendet, wenn der Nutzer aktiv eigene Labels verwendet. System-Labels (wie "Family") werden dabei intelligent einbezogen, sobald eine Filter-Relevanz besteht.
+    - **Technischer Unterbau:** Migration auf `LOOKUP_KEY` für geräteübergreifende Kontakt-Stabilität und Einführung eines internen Primary-Keys (`localId`) für performante Datenbank-Relationen.
+    - **Visual Cues:** Kennzeichnung von System-Labels in den Einstellungen zur besseren Unterscheidung für den Endanwender.
+    - **Performance:** Umstellung auf Batch-Label-Abfragen (N+1 Query Fix) zur drastischen Beschleunigung der Synchronisation bei großen Kontaktmengen.
+
+## 🎯 Kommende Aufgaben (Backlog)
+- **Quick-Actions:** Implementierung von Swipe-Gesten in der Liste (z.B. Swipe-to-Ignore).
+- **Label-Visualisierung:** Optionale Farben für Labels zur besseren Unterscheidung in der Liste.
+- **Benachrichtigungen:** Einstellbare Erinnerungen (1 Tag vorher, am Tag selbst) via WorkManager.

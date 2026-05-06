@@ -6,17 +6,17 @@ import java.time.LocalDate
 
 /**
  * Repräsentiert einen Kontakt mit Geburtstag.
- * Diese Klasse kann später um Felder wie Geschenkideen oder Synchronisations-IDs erweitert werden.
  */
 @Entity(tableName = "contacts")
 data class Contact(
-    @PrimaryKey
-    val id: String, // Hier nutzen wir die Android Contact ID
+    @PrimaryKey(autoGenerate = true)
+    val localId: Long = 0,      // Interner Key für Room-Relationen
+    val contactId: String,       // Aktuelle _ID vom Android-System (für schnellen Zugriff)
+    val lookupKey: String,       // Stabiler Key vom Android-System (für Re-Sync)
     val fullName: String,
     val birthday: LocalDate,
     val imageUri: String? = null,
     val labels: List<String> = emptyList(),
-    // Platzhalter für zukünftige Erweiterungen
     val giftIdeas: String? = null,
     val remoteId: String? = null
 )
