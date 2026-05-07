@@ -22,7 +22,7 @@ fun HomeFAB(
 ) {
     val rotation by androidx.compose.animation.core.animateFloatAsState(
         targetValue = if (showScrollUp) 180f else 0f,
-        label = "FAB Rotation"
+        label = "FAB Rotation",
     )
 
     FloatingActionButton(

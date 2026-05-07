@@ -168,7 +168,7 @@ class BirthdayViewModel(application: Application) : AndroidViewModel(application
     private val _scrollToTopEvent = MutableSharedFlow<Unit>(replay = 0)
     val scrollToTopEvent: SharedFlow<Unit> = _scrollToTopEvent.asSharedFlow()
 
-    private val _isFastScrolling = MutableStateFlow(false)
+    private val _isFastScrolling = MutableStateFlow(value = false)
     val isFastScrolling: StateFlow<Boolean> = _isFastScrolling.asStateFlow()
 
     fun setFastScrolling(isScrolling: Boolean) {
@@ -311,7 +311,7 @@ class BirthdayViewModel(application: Application) : AndroidViewModel(application
     fun updateLabelConfig(name: String, isHiddenFromFilter: Boolean, isIgnored: Boolean, isSystem: Boolean) {
         viewModelScope.launch {
             labelConfigDao.insertConfig(
-                LabelConfig(name, isHiddenFromFilter, isIgnored, isSystem)
+                LabelConfig(name, isHiddenFromFilter, isIgnored, isSystem),
             )
             try {
                 BirthdayWidget().updateAll(getApplication())
@@ -366,7 +366,7 @@ class BirthdayViewModel(application: Application) : AndroidViewModel(application
                     
                     // Bestehende Geschenkideen erhalten
                     val existingGiftIdeas: Map<String, String?> = contactDao.getAllContactsImmediate()
-                        .associateBy({ it.lookupKey }, { it.giftIdeas })
+                        .associateBy({ it.lookupKey }) { it.giftIdeas }
 
                     val updatedContacts = systemContacts.map { contact ->
                         contact.copy(
@@ -417,7 +417,7 @@ class BirthdayViewModel(application: Application) : AndroidViewModel(application
         val labelsMap = mutableMapOf<String, MutableList<String>>()
         val projection = arrayOf(
             ContactsContract.Data.CONTACT_ID,
-            ContactsContract.CommonDataKinds.GroupMembership.GROUP_ROW_ID
+            ContactsContract.CommonDataKinds.GroupMembership.GROUP_ROW_ID,
         )
         val selection = "${ContactsContract.Data.MIMETYPE} = ?"
         val selectionArgs = arrayOf(ContactsContract.CommonDataKinds.GroupMembership.CONTENT_ITEM_TYPE)

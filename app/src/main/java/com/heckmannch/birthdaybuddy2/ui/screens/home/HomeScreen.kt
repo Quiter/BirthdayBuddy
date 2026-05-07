@@ -9,27 +9,24 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.*
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.text.BasicTextField
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
+import com.heckmannch.birthdaybuddy2.ui.screens.home.components.HomeFAB
+import com.heckmannch.birthdaybuddy2.ui.screens.home.components.HomeTopBar
 import com.heckmannch.birthdaybuddy2.viewmodel.BirthdayViewModel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.filter
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 
 /**
@@ -51,6 +48,7 @@ fun HomeScreen(
     val searchQuery by viewModel.searchQuery.collectAsState()
     val availableLabels by viewModel.availableLabels.collectAsState()
     val selectedLabel by viewModel.selectedLabel.collectAsState()
+    val isFastScrolling by viewModel.isFastScrolling.collectAsState()
     
     var animatedPlaceholder by remember { mutableStateOf("BirthdayBuddy") }
 
@@ -84,6 +82,20 @@ fun HomeScreen(
         derivedStateOf { listState.firstVisibleItemIndex > 0 }
     }
 
+    // Verhinderung des Flimmerns der Filterbar beim Deaktivieren eines Filters
+    var isResettingFilter by remember { mutableStateOf(value = false) }
+    LaunchedEffect(selectedLabel) {
+        if (selectedLabel == null) {
+            isResettingFilter = true
+            snapshotFlow { listState.firstVisibleItemIndex }.filter { it == 0 }.first()
+            isResettingFilter = false
+        }
+    }
+
+    val isFilterBarVisible by remember {
+        derivedStateOf { (!showScrollUp) || (selectedLabel != null) || isResettingFilter }
+    }
+
     // Tastatur schließen, wenn die Liste gescrollt wird
     LaunchedEffect(listState.isScrollInProgress) {
         if (listState.isScrollInProgress) {
@@ -100,28 +112,33 @@ fun HomeScreen(
                 animatedPlaceholder = animatedPlaceholder,
                 availableLabels = availableLabels,
                 selectedLabel = selectedLabel,
-                showScrollUp = showScrollUp,
+                isFilterBarVisible = isFilterBarVisible,
                 onSearchQueryChange = { viewModel.onSearchQueryChange(it) },
                 onLabelSelected = { viewModel.onLabelSelected(it) },
                 onNavigateToSettings = onNavigateToSettings,
-                onClearSearch = {
-                    viewModel.onSearchQueryChange("")
-                    focusManager.clearFocus()
-                    keyboardController?.hide()
-                }
-            )
+            ) {
+                viewModel.onSearchQueryChange("")
+                focusManager.clearFocus()
+                keyboardController?.hide()
+            }
         },
         floatingActionButton = {
-            HomeFAB(
-                showScrollUp = showScrollUp,
-                onScrollToTop = { scope.launch { listState.animateScrollToItem(0) } },
-                onAddContact = {
-                    val intent = Intent(Intent.ACTION_INSERT).apply {
-                        type = ContactsContract.Contacts.CONTENT_TYPE
+            AnimatedVisibility(
+                visible = !isFastScrolling,
+                enter = scaleIn() + fadeIn(),
+                exit = scaleOut() + fadeOut()
+            ) {
+                HomeFAB(
+                    showScrollUp = showScrollUp,
+                    onScrollToTop = { scope.launch { listState.animateScrollToItem(0) } },
+                    onAddContact = {
+                        val intent = Intent(Intent.ACTION_INSERT).apply {
+                            type = ContactsContract.Contacts.CONTENT_TYPE
+                        }
+                        context.startActivity(intent)
                     }
-                    context.startActivity(intent)
-                }
-            )
+                )
+            }
         },
     ) { innerPadding ->
         Box(
@@ -142,6 +159,7 @@ fun HomeScreen(
             val contacts by viewModel.contacts.collectAsState()
             if (!contacts.isNullOrEmpty()) {
                 FastScrollbar(
+                    viewModel = viewModel,
                     listState = listState,
                     contacts = contacts!!,
                     modifier = Modifier
@@ -150,145 +168,6 @@ fun HomeScreen(
                         .padding(vertical = 8.dp),
                 )
             }
-        }
-    }
-}
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-private fun HomeTopBar(
-    searchQuery: String,
-    animatedPlaceholder: String,
-    availableLabels: List<String>,
-    selectedLabel: String?,
-    showScrollUp: Boolean,
-    onSearchQueryChange: (String) -> Unit,
-    onLabelSelected: (String) -> Unit,
-    onNavigateToSettings: () -> Unit,
-    onClearSearch: () -> Unit,
-) {
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .statusBarsPadding()
-            .padding(top = 16.dp),
-    ) {
-        // Suchleiste
-        Surface(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 16.dp)
-                .height(56.dp),
-            shape = CircleShape,
-            color = MaterialTheme.colorScheme.surfaceContainerHigh,
-            tonalElevation = 2.dp
-        ) {
-            Row(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(horizontal = 16.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Icon(
-                    imageVector = Icons.Default.Search,
-                    contentDescription = null,
-                    tint = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-                
-                Box(
-                    modifier = Modifier
-                        .weight(1f)
-                        .padding(horizontal = 12.dp),
-                    contentAlignment = Alignment.CenterStart
-                ) {
-                    if (searchQuery.isEmpty()) {
-                        AnimatedContent(
-                            targetState = animatedPlaceholder,
-                            transitionSpec = { fadeIn() togetherWith fadeOut() },
-                            label = "Placeholder"
-                        ) { text ->
-                            Text(
-                                text = text,
-                                style = MaterialTheme.typography.bodyLarge,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
-                        }
-                    }
-                    
-                    BasicTextField(
-                        value = searchQuery,
-                        onValueChange = onSearchQueryChange,
-                        modifier = Modifier.fillMaxWidth(),
-                        textStyle = MaterialTheme.typography.bodyLarge.copy(
-                            color = MaterialTheme.colorScheme.onSurface
-                        ),
-                        singleLine = true
-                    )
-                }
-
-                if (searchQuery.isNotEmpty()) {
-                    IconButton(onClick = onClearSearch) {
-                        Icon(Icons.Default.Close, contentDescription = "Suche löschen")
-                    }
-                } else {
-                    IconButton(onClick = onNavigateToSettings) {
-                        Icon(Icons.Default.Settings, contentDescription = "Einstellungen")
-                    }
-                }
-            }
-        }
-
-        // Filter-Chips
-        if (availableLabels.isNotEmpty()) {
-            AnimatedVisibility(
-                visible = !showScrollUp || selectedLabel != null,
-                enter = expandVertically() + fadeIn(),
-                exit = shrinkVertically() + fadeOut()
-            ) {
-                LazyRow(
-                    contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    items(availableLabels) { label ->
-                        FilterChip(
-                            selected = selectedLabel == label,
-                            onClick = { onLabelSelected(label) },
-                            label = { Text(label) },
-                            leadingIcon = if (selectedLabel == label) {
-                                { Icon(Icons.Default.Check, contentDescription = null, modifier = Modifier.size(18.dp)) }
-                            } else null
-                        )
-                    }
-                }
-            }
-        }
-    }
-}
-
-@Composable
-private fun HomeFAB(
-    showScrollUp: Boolean,
-    onScrollToTop: () -> Unit,
-    onAddContact: () -> Unit,
-) {
-    val rotation by androidx.compose.animation.core.animateFloatAsState(
-        targetValue = if (showScrollUp) 180f else 0f,
-        label = "FAB Rotation"
-    )
-
-    FloatingActionButton(
-        onClick = { if (showScrollUp) onScrollToTop() else onAddContact() },
-        modifier = Modifier.rotate(rotation)
-    ) {
-        AnimatedContent(
-            targetState = showScrollUp,
-            transitionSpec = { fadeIn() togetherWith fadeOut() },
-            label = "FAB Icon Animation"
-        ) { isUp ->
-            Icon(
-                imageVector = if (isUp) Icons.Default.KeyboardArrowDown else Icons.Default.Add,
-                contentDescription = if (isUp) "Nach oben" else "Kontakt hinzufügen"
-            )
         }
     }
 }

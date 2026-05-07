@@ -2,7 +2,6 @@ package com.heckmannch.birthdaybuddy2.ui.screens.home.components
 
 import android.content.Intent
 import android.provider.ContactsContract
-import android.util.Log
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
@@ -12,7 +11,6 @@ import androidx.compose.foundation.gestures.Orientation
 import androidx.compose.foundation.gestures.anchoredDraggable
 import androidx.compose.foundation.gestures.animateTo
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
@@ -26,7 +24,6 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
@@ -48,14 +45,13 @@ enum class DragValue { Closed, Open }
 fun BirthdayItem(
     contact: ContactUiModel,
     viewModel: BirthdayViewModel,
-    isFirstItem: Boolean,
     showHint: Boolean,
     isExpanded: Boolean,
     onExpand: () -> Unit,
 ) {
     val density = LocalDensity.current
     val scope = rememberCoroutineScope()
-    var showGiftDialog by remember { mutableStateOf(false) }
+    var showGiftDialog by remember { mutableStateOf(value = false) }
 
     // AnchoredDraggable Setup
     val buttonWidth = 50.dp
@@ -71,9 +67,9 @@ fun BirthdayItem(
             velocityThreshold = { with(density) { 100.dp.toPx() } },
             snapAnimationSpec = spring(
                 dampingRatio = Spring.DampingRatioNoBouncy,
-                stiffness = Spring.StiffnessMedium
+                stiffness = Spring.StiffnessMedium,
             ),
-            decayAnimationSpec = exponentialDecay()
+            decayAnimationSpec = exponentialDecay(),
         ).apply {
             updateAnchors(
                 DraggableAnchors {
@@ -95,8 +91,8 @@ fun BirthdayItem(
     }
 
     LaunchedEffect(isExpanded) {
-        if (!isExpanded && draggableState.currentValue == DragValue.Open) {
-            draggableState.animateTo(DragValue.Closed)
+        if (!isExpanded && (draggableState.currentValue == DragValue.Open)) {
+            draggableState.animateTo(targetValue = DragValue.Closed)
         }
     }
 
@@ -110,19 +106,18 @@ fun BirthdayItem(
         GiftIdeaDialog(
             initialIdeas = GiftIdea.fromString(contact.giftIdeas),
             onDismiss = { showGiftDialog = false },
-            onConfirm = { ideas ->
-                viewModel.updateGiftIdeas(contact.lookupKey, GiftIdea.toString(ideas))
-                showGiftDialog = false
-                scope.launch { draggableState.animateTo(DragValue.Closed) }
-            }
-        )
+        ) { ideas ->
+            viewModel.updateGiftIdeas(contact.lookupKey, GiftIdea.toString(ideas))
+            showGiftDialog = false
+            scope.launch { draggableState.animateTo(targetValue = DragValue.Closed) }
+        }
     }
 
     val borderStroke = remember(contact) {
         if (contact.isToday && (contact.nextAge != null)) {
             when {
                 contact.nextAge <= 10 -> BorderStroke(2.dp, Brush.linearGradient(KidColors))
-                contact.nextAge >= 20 && contact.nextAge % 10 == 0 -> BorderStroke(2.dp, BirthdayGold)
+                (contact.nextAge >= 20) && (contact.nextAge % 10 == 0) -> BorderStroke(2.dp, BirthdayGold)
                 else -> BorderStroke(2.dp, BirthdaySilver)
             }
         } else null
@@ -145,8 +140,7 @@ fun BirthdayItem(
             SwipeActionButton(
                 icon = Icons.Default.Edit,
                 color = Color(0xFFFFB300),
-                onClick = { showGiftDialog = true }
-            )
+            ) { showGiftDialog = true }
             SwipeActionButton(
                 icon = Icons.Default.Person,
                 color = MaterialTheme.colorScheme.primary,

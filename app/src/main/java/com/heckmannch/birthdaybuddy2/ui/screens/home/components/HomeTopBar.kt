@@ -50,7 +50,7 @@ fun HomeTopBar(
                 .height(56.dp),
             shape = CircleShape,
             color = MaterialTheme.colorScheme.surfaceContainerHigh,
-            tonalElevation = 2.dp
+            tonalElevation = 2.dp,
         ) {
             Row(
                 modifier = Modifier

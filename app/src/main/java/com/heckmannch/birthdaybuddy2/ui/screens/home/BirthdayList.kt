@@ -45,7 +45,7 @@ fun BirthdayList(
         LazyColumn(
             state = listState,
             modifier = modifier.fillMaxSize(),
-            contentPadding = PaddingValues(bottom = 80.dp)
+            contentPadding = PaddingValues(bottom = 80.dp),
         ) {
             itemsIndexed(
                 items = contacts,
@@ -55,11 +55,11 @@ fun BirthdayList(
                 BirthdayItem(
                     contact = contact,
                     viewModel = viewModel,
-                    isFirstItem = index == 0,
-                    showHint = !swipeHintShown && index == 0,
+                    showHint = !swipeHintShown && (index == 0),
                     isExpanded = expandedContactId == contact.id,
-                    onExpand = { expandedContactId = contact.id }
-                )
+                ) {
+                    expandedContactId = contact.id
+                }
             }
         }
     }

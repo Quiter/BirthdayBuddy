@@ -21,7 +21,7 @@ import com.heckmannch.birthdaybuddy2.viewmodel.GiftIdea
 fun GiftIdeaDialog(
     initialIdeas: List<GiftIdea>,
     onDismiss: () -> Unit,
-    onConfirm: (List<GiftIdea>) -> Unit
+    onConfirm: (List<GiftIdea>) -> Unit,
 ) {
     var ideas by remember { mutableStateOf(initialIdeas) }
     
@@ -32,7 +32,7 @@ fun GiftIdeaDialog(
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .heightIn(max = 450.dp)
+                    .heightIn(max = 450.dp),
             ) {
                 LazyColumn(
                     modifier = Modifier.weight(1f, fill = false),
@@ -95,7 +95,7 @@ fun GiftIdeaDialog(
                     verticalAlignment = Alignment.CenterVertically,
                     modifier = Modifier
                         .fillMaxWidth()
-                        .clickable { ideas = ideas + GiftIdea(text = "") }
+                        .clickable { ideas += GiftIdea(text = "") }
                         .padding(vertical = 8.dp)
                 ) {
                     Icon(

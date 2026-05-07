@@ -33,7 +33,7 @@ fun FastScrollbar(
 ) {
     val scope = rememberCoroutineScope()
     val density = LocalDensity.current
-    var isDragging by remember { mutableStateOf(false) }
+    var isDragging by remember { mutableStateOf(value = false) }
     var dragOffsetPx by remember { mutableFloatStateOf(0f) }
 
     // Synchronisierung des Drag-Status mit dem ViewModel
