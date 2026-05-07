@@ -4,6 +4,7 @@ import android.Manifest
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.provider.ContactsContract
+import android.util.Log
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -156,7 +157,7 @@ private fun ContactImage(contact: ContactUiModel) {
                     val lookupUri = ContactsContract.Contacts.getLookupUri(contact.contactId.toLong(), contact.lookupKey)
                     context.startActivity(Intent(Intent.ACTION_VIEW, lookupUri))
                 } catch (e: Exception) {
-                    e.printStackTrace()
+                    Log.e("BirthdayList", "Error opening contact", e)
                 }
             },
         shape = MaterialTheme.shapes.medium,
