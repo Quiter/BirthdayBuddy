@@ -1,6 +1,7 @@
 package com.heckmannch.birthdaybuddy2.ui.screens.home.components
 
 import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.togetherWith
@@ -12,7 +13,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.rotate
+import androidx.compose.ui.graphics.graphicsLayer
 
 @Composable
 fun HomeFAB(
@@ -20,14 +21,16 @@ fun HomeFAB(
     onScrollToTop: () -> Unit,
     onAddContact: () -> Unit,
 ) {
-    val rotation by androidx.compose.animation.core.animateFloatAsState(
+    val rotation by animateFloatAsState(
         targetValue = if (showScrollUp) 180f else 0f,
         label = "FAB Rotation",
     )
 
     FloatingActionButton(
         onClick = { if (showScrollUp) onScrollToTop() else onAddContact() },
-        modifier = Modifier.rotate(rotation)
+        modifier = Modifier.graphicsLayer { 
+            rotationZ = rotation 
+        }
     ) {
         AnimatedContent(
             targetState = showScrollUp,

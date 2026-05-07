@@ -1,4 +1,4 @@
-package com.heckmannch.birthdaybuddy2.ui.screens.home
+package com.heckmannch.birthdaybuddy2.ui.screens.home.components
 
 import android.Manifest
 import android.content.pm.PackageManager
@@ -16,7 +16,6 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
-import com.heckmannch.birthdaybuddy2.ui.screens.home.components.BirthdayItem
 import com.heckmannch.birthdaybuddy2.viewmodel.BirthdayViewModel
 
 @Composable
@@ -30,7 +29,7 @@ fun BirthdayList(
     val contactsState by viewModel.contacts.collectAsState()
     val contacts = contactsState ?: return
 
-    val hasPermission by remember(contacts) {
+    val hasPermission by remember {
         derivedStateOf {
             ContextCompat.checkSelfPermission(context, Manifest.permission.READ_CONTACTS) == PackageManager.PERMISSION_GRANTED
         }
@@ -42,6 +41,11 @@ fun BirthdayList(
         val swipeHintShown by viewModel.swipeHintShown.collectAsState()
         var expandedContactId by remember { mutableStateOf<String?>(null) }
         
+        // Stabilisierung des Expand-Handlers zur Vermeidung von unnötigen Re-Compositions
+        val onExpand = remember {
+            { id: String -> expandedContactId = id }
+        }
+
         LazyColumn(
             state = listState,
             modifier = modifier.fillMaxSize(),
@@ -52,14 +56,17 @@ fun BirthdayList(
                 key = { _, it -> it.id },
                 contentType = { _, _ -> "birthdayItem" }
             ) { index, contact ->
+                // derivedStateOf hier nicht nötig, da einfache Booleans
+                val isExpanded = expandedContactId == contact.id
+                val isFirstItem = index == 0
+                
                 BirthdayItem(
                     contact = contact,
                     viewModel = viewModel,
-                    showHint = !swipeHintShown && (index == 0),
-                    isExpanded = expandedContactId == contact.id,
-                ) {
-                    expandedContactId = contact.id
-                }
+                    showHint = !swipeHintShown && isFirstItem,
+                    isExpanded = isExpanded,
+                    onExpand = { onExpand(contact.id) }
+                )
             }
         }
     }

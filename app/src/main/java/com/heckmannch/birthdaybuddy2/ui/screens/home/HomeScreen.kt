@@ -20,13 +20,13 @@ import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
+import com.heckmannch.birthdaybuddy2.ui.screens.home.components.BirthdayList
+import com.heckmannch.birthdaybuddy2.ui.screens.home.components.FastScrollbar
 import com.heckmannch.birthdaybuddy2.ui.screens.home.components.HomeFAB
 import com.heckmannch.birthdaybuddy2.ui.screens.home.components.HomeTopBar
 import com.heckmannch.birthdaybuddy2.viewmodel.BirthdayViewModel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.collectLatest
-import kotlinx.coroutines.flow.filter
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 
 /**
@@ -51,6 +51,9 @@ fun HomeScreen(
     val isFastScrolling by viewModel.isFastScrolling.collectAsState()
     
     var animatedPlaceholder by remember { mutableStateOf("BirthdayBuddy") }
+    
+    // Verhinderung des Flimmerns der Filterbar beim Deaktivieren eines Filters oder Suche
+    var isResettingFilter by remember { mutableStateOf(value = false) }
 
     val permissionLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.RequestPermission(),
@@ -74,7 +77,13 @@ fun HomeScreen(
     // ViewModel Events verarbeiten (z.B. Scroll-to-Top vom Widget)
     LaunchedEffect(viewModel.scrollToTopEvent) {
         viewModel.scrollToTopEvent.collectLatest {
-            listState.animateScrollToItem(0)
+            isResettingFilter = true
+            // Wir nutzen scrollToItem(0) für Filter/Suche, weil es robuster gegen Inhaltsänderungen ist
+            listState.scrollToItem(0)
+            // Kurze Verzögerung, um auf das asynchrone Update der Kontaktliste zu warten
+            delay(150)
+            listState.scrollToItem(0)
+            isResettingFilter = false
         }
     }
 
@@ -82,18 +91,8 @@ fun HomeScreen(
         derivedStateOf { listState.firstVisibleItemIndex > 0 }
     }
 
-    // Verhinderung des Flimmerns der Filterbar beim Deaktivieren eines Filters
-    var isResettingFilter by remember { mutableStateOf(value = false) }
-    LaunchedEffect(selectedLabel) {
-        if (selectedLabel == null) {
-            isResettingFilter = true
-            snapshotFlow { listState.firstVisibleItemIndex }.filter { it == 0 }.first()
-            isResettingFilter = false
-        }
-    }
-
     val isFilterBarVisible by remember {
-        derivedStateOf { (!showScrollUp) || (selectedLabel != null) || isResettingFilter }
+        derivedStateOf { (!showScrollUp) || isResettingFilter }
     }
 
     // Tastatur schließen, wenn die Liste gescrollt wird
@@ -101,6 +100,27 @@ fun HomeScreen(
         if (listState.isScrollInProgress) {
             focusManager.clearFocus()
             keyboardController?.hide()
+        }
+    }
+
+    val onSearchQueryChange = remember(viewModel) {
+        { query: String -> viewModel.onSearchQueryChange(query) }
+    }
+
+    val onLabelSelected = remember(viewModel) {
+        { label: String ->
+            isResettingFilter = true
+            viewModel.onLabelSelected(label)
+        }
+    }
+
+    val onClearSearch = remember(viewModel, focusManager, keyboardController) {
+        {
+            isResettingFilter = true
+            viewModel.onSearchQueryChange("")
+            focusManager.clearFocus()
+            keyboardController?.hide()
+            Unit
         }
     }
 
@@ -113,14 +133,11 @@ fun HomeScreen(
                 availableLabels = availableLabels,
                 selectedLabel = selectedLabel,
                 isFilterBarVisible = isFilterBarVisible,
-                onSearchQueryChange = { viewModel.onSearchQueryChange(it) },
-                onLabelSelected = { viewModel.onLabelSelected(it) },
+                onSearchQueryChange = onSearchQueryChange,
+                onLabelSelected = onLabelSelected,
                 onNavigateToSettings = onNavigateToSettings,
-            ) {
-                viewModel.onSearchQueryChange("")
-                focusManager.clearFocus()
-                keyboardController?.hide()
-            }
+                onClearSearch = onClearSearch
+            )
         },
         floatingActionButton = {
             AnimatedVisibility(

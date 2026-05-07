@@ -205,6 +205,7 @@ class BirthdayViewModel(application: Application) : AndroidViewModel(application
             .toList()
     }
     .flowOn(Dispatchers.Default)
+    .distinctUntilChanged()
     .stateIn(
         scope = viewModelScope,
         started = SharingStarted.WhileSubscribed(5000),
@@ -257,6 +258,7 @@ class BirthdayViewModel(application: Application) : AndroidViewModel(application
         }
     }
     .flowOn(Dispatchers.Default)
+    .distinctUntilChanged()
     .stateIn(
         scope = viewModelScope,
         started = SharingStarted.WhileSubscribed(5000),
@@ -302,6 +304,7 @@ class BirthdayViewModel(application: Application) : AndroidViewModel(application
         }
     }
     .flowOn(Dispatchers.Default)
+    .distinctUntilChanged()
     .stateIn(
         scope = viewModelScope,
         started = SharingStarted.WhileSubscribed(5000),

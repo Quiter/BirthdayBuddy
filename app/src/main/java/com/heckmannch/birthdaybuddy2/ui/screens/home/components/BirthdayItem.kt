@@ -22,10 +22,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import com.heckmannch.birthdaybuddy2.ui.theme.BirthdayGold
@@ -51,16 +51,23 @@ fun BirthdayItem(
 ) {
     val density = LocalDensity.current
     val scope = rememberCoroutineScope()
-    var showGiftDialog by remember { mutableStateOf(value = false) }
+    var showGiftDialog by remember { mutableStateOf(false) }
 
-    // AnchoredDraggable Setup
+    // Maße und Anker-Berechnungen (Optimiert durch remember)
     val buttonWidth = 50.dp
     val buttonSpacing = 4.dp
     val gapToContact = 4.dp
-    val totalButtonsWidth = (buttonWidth * 3) + (buttonSpacing * 2)
-    val openAnchorPx = with(density) { (totalButtonsWidth + gapToContact).toPx() }
+    
+    val anchors = remember(density) {
+        val totalButtonsWidth = (buttonWidth * 3) + (buttonSpacing * 2)
+        val openAnchorPx = with(density) { (totalButtonsWidth + gapToContact).toPx() }
+        DraggableAnchors {
+            DragValue.Closed at 0f
+            DragValue.Open at -openAnchorPx
+        }
+    }
 
-    val draggableState = remember {
+    val draggableState = remember(density) {
         AnchoredDraggableState(
             initialValue = DragValue.Closed,
             positionalThreshold = { distance: Float -> distance * 0.5f },
@@ -70,14 +77,12 @@ fun BirthdayItem(
                 stiffness = Spring.StiffnessMedium,
             ),
             decayAnimationSpec = exponentialDecay(),
-        ).apply {
-            updateAnchors(
-                DraggableAnchors {
-                    DragValue.Closed at 0f
-                    DragValue.Open at -openAnchorPx
-                }
-            )
-        }
+        )
+    }
+    
+    // Anker bei Dichte-Änderung aktualisieren
+    SideEffect {
+        draggableState.updateAnchors(anchors)
     }
 
     LaunchedEffect(showHint) {
@@ -113,7 +118,7 @@ fun BirthdayItem(
         }
     }
 
-    val borderStroke = remember(contact) {
+    val borderStroke = remember(contact.isToday, contact.nextAge) {
         if (contact.isToday && (contact.nextAge != null)) {
             when {
                 contact.nextAge <= 10 -> BorderStroke(2.dp, Brush.linearGradient(KidColors))
@@ -133,14 +138,15 @@ fun BirthdayItem(
             modifier = Modifier
                 .align(Alignment.CenterEnd)
                 .padding(end = 16.dp)
-                .width(totalButtonsWidth),
+                .width((buttonWidth * 3) + (buttonSpacing * 2)),
             horizontalArrangement = Arrangement.spacedBy(buttonSpacing),
             verticalAlignment = Alignment.CenterVertically
         ) {
             SwipeActionButton(
                 icon = Icons.Default.Edit,
                 color = Color(0xFFFFB300),
-            ) { showGiftDialog = true }
+                onClick = { showGiftDialog = true }
+            )
             SwipeActionButton(
                 icon = Icons.Default.Person,
                 color = MaterialTheme.colorScheme.primary,
@@ -173,9 +179,8 @@ fun BirthdayItem(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = 16.dp)
-                .offset { 
-                    val offset = if (draggableState.offset.isNaN()) 0f else draggableState.offset
-                    IntOffset(offset.roundToInt(), 0) 
+                .graphicsLayer { 
+                    translationX = if (draggableState.offset.isNaN()) 0f else draggableState.offset
                 }
                 .anchoredDraggable(draggableState, Orientation.Horizontal),
             colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow),

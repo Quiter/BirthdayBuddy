@@ -1,4 +1,4 @@
-package com.heckmannch.birthdaybuddy2.ui.screens.home
+package com.heckmannch.birthdaybuddy2.ui.screens.home.components
 
 import androidx.compose.animation.*
 import androidx.compose.animation.core.animateDpAsState
@@ -33,21 +33,21 @@ fun FastScrollbar(
 ) {
     val scope = rememberCoroutineScope()
     val density = LocalDensity.current
-    var isDragging by remember { mutableStateOf(value = false) }
+    var isDragging by remember { mutableStateOf(false) }
     var dragOffsetPx by remember { mutableFloatStateOf(0f) }
 
     // Synchronisierung des Drag-Status mit dem ViewModel
     LaunchedEffect(isDragging) {
         viewModel.setFastScrolling(isDragging)
     }
-    
+
     // Bubble visibility with delay for smoother transition
     var showBubble by remember { mutableStateOf(false) }
-    LaunchedEffect(isDragging, listState.isScrollInProgress) {
-        showBubble = if (isDragging || listState.isScrollInProgress) {
+    LaunchedEffect(isDragging) {
+        showBubble = if (isDragging) {
             true
         } else {
-            delay(1000)
+            delay(500)
             false
         }
     }
@@ -58,31 +58,29 @@ fun FastScrollbar(
         val thumbHeight = 48.dp
         val trackHeight = viewHeight - thumbHeight
         val trackHeightPx = with(density) { trackHeight.toPx() }
-        
-        val currentTotalItems by rememberUpdatedState(totalItems)
-        val currentTrackHeightPx by rememberUpdatedState(trackHeightPx)
 
         val canScroll by remember(totalItems) {
             derivedStateOf {
-                val visibleItems = listState.layoutInfo.visibleItemsInfo.size
+                val layoutInfo = listState.layoutInfo
+                val visibleItems = layoutInfo.visibleItemsInfo.size
                 totalItems > visibleItems
             }
         }
 
-        val currentMonth by remember(contacts, isDragging, dragOffsetPx) {
-            derivedStateOf {
-                val index = if (isDragging) {
-                    val percent = (dragOffsetPx / trackHeightPx).coerceIn(0f, 1f)
-                    (percent * (totalItems - 1)).toInt()
-                } else {
-                    listState.firstVisibleItemIndex
-                }
-                contacts.getOrNull(index)?.monthName ?: ""
-            }
-        }
-
         if (canScroll) {
-            val thumbOffset by remember(totalItems, isDragging, dragOffsetPx) {
+            val currentMonth by remember(contacts) {
+                derivedStateOf {
+                    val index = if (isDragging) {
+                        val percent = (dragOffsetPx / trackHeightPx).coerceIn(0f, 1f)
+                        (percent * (totalItems - 1)).toInt()
+                    } else {
+                        listState.firstVisibleItemIndex
+                    }
+                    contacts.getOrNull(index)?.monthName ?: ""
+                }
+            }
+
+            val thumbOffset by remember(trackHeight) {
                 derivedStateOf {
                     if (isDragging) {
                         with(density) { dragOffsetPx.toDp() }.coerceIn(0.dp, trackHeight)
@@ -90,7 +88,7 @@ fun FastScrollbar(
                         val layoutInfo = listState.layoutInfo
                         val visibleItemsCount = layoutInfo.visibleItemsInfo.size
                         if (visibleItemsCount == 0) return@derivedStateOf 0.dp
-                        
+
                         val maxScrollIndex = (totalItems - visibleItemsCount).coerceAtLeast(1)
                         val scrollPercent = (listState.firstVisibleItemIndex.toFloat() / maxScrollIndex).coerceIn(0f, 1f)
                         trackHeight * scrollPercent
@@ -114,11 +112,21 @@ fun FastScrollbar(
                 enter = fadeIn() + slideInHorizontally { it / 2 },
                 exit = fadeOut() + slideOutHorizontally { it / 2 },
                 modifier = Modifier
-                    .offset { IntOffset(0, (thumbOffset.toPx() - 4.dp.toPx()).toInt()) }
+                    .offset {
+                        IntOffset(
+                            x = 0,
+                            y = (thumbOffset.toPx() - 4.dp.toPx()).toInt()
+                        )
+                    }
                     .align(Alignment.TopStart),
             ) {
                 Surface(
-                    shape = RoundedCornerShape(topStart = 24.dp, bottomStart = 24.dp, topEnd = 4.dp, bottomEnd = 24.dp),
+                    shape = RoundedCornerShape(
+                        topStart = 24.dp,
+                        bottomStart = 24.dp,
+                        topEnd = 4.dp,
+                        bottomEnd = 24.dp
+                    ),
                     color = MaterialTheme.colorScheme.primary,
                     tonalElevation = 6.dp,
                     modifier = Modifier.padding(end = 16.dp),
@@ -139,19 +147,20 @@ fun FastScrollbar(
                     .align(Alignment.TopEnd)
                     .width(48.dp)
                     .height(thumbHeight)
-                    .pointerInput(Unit) {
+                    .pointerInput(totalItems, trackHeightPx) {
                         detectVerticalDragGestures(
-                            onDragStart = { 
-                                isDragging = true 
+                            onDragStart = {
+                                isDragging = true
                                 dragOffsetPx = with(density) { thumbOffset.toPx() }
                             },
                             onDragEnd = { isDragging = false },
                             onDragCancel = { isDragging = false },
                         ) { change, dragAmount ->
-                            dragOffsetPx = (dragOffsetPx + dragAmount).coerceIn(0f, currentTrackHeightPx)
-                            val newScrollPercent = if (currentTrackHeightPx > 0) dragOffsetPx / currentTrackHeightPx else 0f
-                            val targetIndex = (newScrollPercent * (currentTotalItems - 1)).toInt()
-                                .coerceIn(0, currentTotalItems - 1)
+                            dragOffsetPx = (dragOffsetPx + dragAmount).coerceIn(0f, trackHeightPx)
+                            val newScrollPercent = if (trackHeightPx > 0) dragOffsetPx / trackHeightPx else 0f
+                            val targetIndex = (newScrollPercent * (totalItems - 1))
+                                .toInt()
+                                .coerceIn(0, totalItems - 1)
                             scope.launch { listState.scrollToItem(targetIndex) }
                             change.consume()
                         }
