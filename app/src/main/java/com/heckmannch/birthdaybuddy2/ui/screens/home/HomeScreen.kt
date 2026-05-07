@@ -30,6 +30,8 @@ import androidx.core.content.ContextCompat
 import com.heckmannch.birthdaybuddy2.viewmodel.BirthdayViewModel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.filter
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 
 /**
@@ -84,6 +86,20 @@ fun HomeScreen(
         derivedStateOf { listState.firstVisibleItemIndex > 0 }
     }
 
+    // Verhinderung des Flimmerns der Filterbar beim Deaktivieren eines Filters
+    var isResettingFilter by remember { mutableStateOf(false) }
+    LaunchedEffect(selectedLabel) {
+        if (selectedLabel == null) {
+            isResettingFilter = true
+            snapshotFlow { listState.firstVisibleItemIndex }.filter { it == 0 }.first()
+            isResettingFilter = false
+        }
+    }
+
+    val isFilterBarVisible by remember {
+        derivedStateOf { !showScrollUp || selectedLabel != null || isResettingFilter }
+    }
+
     // Tastatur schließen, wenn die Liste gescrollt wird
     LaunchedEffect(listState.isScrollInProgress) {
         if (listState.isScrollInProgress) {
@@ -100,7 +116,7 @@ fun HomeScreen(
                 animatedPlaceholder = animatedPlaceholder,
                 availableLabels = availableLabels,
                 selectedLabel = selectedLabel,
-                showScrollUp = showScrollUp,
+                isFilterBarVisible = isFilterBarVisible,
                 onSearchQueryChange = { viewModel.onSearchQueryChange(it) },
                 onLabelSelected = { viewModel.onLabelSelected(it) },
                 onNavigateToSettings = onNavigateToSettings,
@@ -161,7 +177,7 @@ private fun HomeTopBar(
     animatedPlaceholder: String,
     availableLabels: List<String>,
     selectedLabel: String?,
-    showScrollUp: Boolean,
+    isFilterBarVisible: Boolean,
     onSearchQueryChange: (String) -> Unit,
     onLabelSelected: (String) -> Unit,
     onNavigateToSettings: () -> Unit,
@@ -241,7 +257,7 @@ private fun HomeTopBar(
         // Filter-Chips
         if (availableLabels.isNotEmpty()) {
             AnimatedVisibility(
-                visible = !showScrollUp || selectedLabel != null,
+                visible = isFilterBarVisible,
                 enter = expandVertically() + fadeIn(),
                 exit = shrinkVertically() + fadeOut()
             ) {

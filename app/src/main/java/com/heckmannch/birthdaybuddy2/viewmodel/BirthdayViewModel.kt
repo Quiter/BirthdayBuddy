@@ -17,7 +17,6 @@ import com.heckmannch.birthdaybuddy2.ui.screens.settings.notifications.Preferenc
 import com.heckmannch.birthdaybuddy2.ui.screens.settings.notifications.NotificationWorker
 import com.heckmannch.birthdaybuddy2.widget.BirthdayWidget
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -273,9 +272,6 @@ class BirthdayViewModel(application: Application) : AndroidViewModel(application
 
     fun triggerScrollToTop() {
         viewModelScope.launch {
-            // Ein kleiner Delay stellt sicher, dass die Liste die neuen Daten bereits erhalten hat,
-            // bevor wir den Scroll-Befehl an die UI senden.
-            delay(100)
             _scrollToTopEvent.emit(Unit)
         }
     }
