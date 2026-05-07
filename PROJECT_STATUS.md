@@ -7,7 +7,7 @@
 Die App ist eine moderne Geburtstags-Verwaltung, die Kontakte aus dem Android-System synchronisiert, filtert und in einem Widget anzeigt. Sie folgt Material 3 Richtlinien und Clean Architecture Prinzipien.
 
 ## 🛠 Architektur & Struktur
-- **Package-Struktur:** Feature-basierte Layer (`ui.screens.home`, `ui.screens.settings`, `viewmodel`, `database`, `widget`). Alles, was zu einem Feature gehört (UI, Worker, Preferences), liegt im entsprechenden Package.
+- **Package-Struktur:** Feature-basierte Layer (`ui.screens.home`, `ui.screens.settings.labels`, `ui.screens.settings.notifications`, `viewmodel`, `database`, `widget`). Alles, was zu einem Feature gehört (UI, Worker, Preferences), liegt im entsprechenden Package.
 - **ViewModel:** `BirthdayViewModel` als Single Source of Truth für den UI-State; nutzt `SharedFlow` für UI-Events.
 - **Data:** 
     - `ContactUiModel` (@Immutable) für performante UI-Updates; robuste Datums-Berechnungen (Schaltjahr-sicher).

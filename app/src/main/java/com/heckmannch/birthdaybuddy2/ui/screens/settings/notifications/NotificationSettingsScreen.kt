@@ -1,4 +1,4 @@
-package com.heckmannch.birthdaybuddy2.ui.screens.settings
+package com.heckmannch.birthdaybuddy2.ui.screens.settings.notifications
 
 import android.Manifest
 import android.content.pm.PackageManager
@@ -78,10 +78,10 @@ fun NotificationSettingsScreen(
                                         notificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
                                     }
                                 } else {
-                                    viewModel.setNotificationsEnabled(true)
+                                    viewModel.setNotificationsEnabled(enabled = true)
                                 }
                             } else {
-                                viewModel.setNotificationsEnabled(false)
+                                viewModel.setNotificationsEnabled(enabled = false)
                             }
                         }
                     )

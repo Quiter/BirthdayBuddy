@@ -1,4 +1,4 @@
-package com.heckmannch.birthdaybuddy2.ui.screens.settings
+package com.heckmannch.birthdaybuddy2.ui.screens.settings.labels
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn

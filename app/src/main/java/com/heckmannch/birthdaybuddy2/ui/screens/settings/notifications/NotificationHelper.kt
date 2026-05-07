@@ -1,4 +1,4 @@
-package com.heckmannch.birthdaybuddy2.ui.screens.settings
+package com.heckmannch.birthdaybuddy2.ui.screens.settings.notifications
 
 import android.app.NotificationChannel
 import android.app.NotificationManager

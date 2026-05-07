@@ -1,4 +1,4 @@
-package com.heckmannch.birthdaybuddy2.ui.screens.settings
+package com.heckmannch.birthdaybuddy2.ui.screens.settings.notifications
 
 import android.content.Context
 import androidx.datastore.core.DataStore

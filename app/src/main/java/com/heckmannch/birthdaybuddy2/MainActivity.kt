@@ -20,9 +20,9 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.heckmannch.birthdaybuddy2.ui.screens.home.HomeScreen
-import com.heckmannch.birthdaybuddy2.ui.screens.settings.LabelSettingsScreen
-import com.heckmannch.birthdaybuddy2.ui.screens.settings.NotificationSettingsScreen
 import com.heckmannch.birthdaybuddy2.ui.screens.settings.SettingsScreen
+import com.heckmannch.birthdaybuddy2.ui.screens.settings.labels.LabelSettingsScreen
+import com.heckmannch.birthdaybuddy2.ui.screens.settings.notifications.NotificationSettingsScreen
 import com.heckmannch.birthdaybuddy2.ui.theme.BirthdayBuddy2Theme
 import com.heckmannch.birthdaybuddy2.viewmodel.BirthdayViewModel
 import com.heckmannch.birthdaybuddy2.widget.BirthdayWidgetWorker
@@ -42,8 +42,8 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         
-        // Schedule daily widget updates
-        BirthdayWidgetWorker.enqueueDailyUpdate(this)
+        // Schedule next widget update
+        BirthdayWidgetWorker.enqueueNextUpdate(this)
 
         setContent {
             BirthdayBuddy2Theme {

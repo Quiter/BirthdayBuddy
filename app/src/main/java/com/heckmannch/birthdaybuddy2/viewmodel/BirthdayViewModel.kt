@@ -13,8 +13,8 @@ import androidx.lifecycle.viewModelScope
 import com.heckmannch.birthdaybuddy2.database.AppDatabase
 import com.heckmannch.birthdaybuddy2.database.Contact
 import com.heckmannch.birthdaybuddy2.database.LabelConfig
-import com.heckmannch.birthdaybuddy2.ui.screens.settings.PreferenceManager
-import com.heckmannch.birthdaybuddy2.ui.screens.settings.NotificationWorker
+import com.heckmannch.birthdaybuddy2.ui.screens.settings.notifications.PreferenceManager
+import com.heckmannch.birthdaybuddy2.ui.screens.settings.notifications.NotificationWorker
 import com.heckmannch.birthdaybuddy2.widget.BirthdayWidget
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
@@ -255,7 +255,7 @@ class BirthdayViewModel(application: Application) : AndroidViewModel(application
     .stateIn(
         scope = viewModelScope,
         started = SharingStarted.WhileSubscribed(5000),
-        initialValue = emptyList()
+        initialValue = emptyList(),
     )
 
     fun updateLabelConfig(name: String, isHiddenFromFilter: Boolean, isIgnored: Boolean, isSystem: Boolean) {
@@ -266,7 +266,7 @@ class BirthdayViewModel(application: Application) : AndroidViewModel(application
             try {
                 BirthdayWidget().updateAll(getApplication())
             } catch (e: Exception) {
-                e.printStackTrace()
+                Log.e("BirthdayViewModel", "Widget update failed in updateLabelConfig", e)
             }
         }
     }
@@ -424,10 +424,10 @@ class BirthdayViewModel(application: Application) : AndroidViewModel(application
                     
                     if (!title.isNullOrBlank()) {
                         val lowerTitle = title.lowercase()
-                        val isRedundant = lowerTitle == "my contacts" || 
-                                         lowerTitle == "contacts" ||
-                                         lowerTitle == "ich" ||
-                                         lowerTitle == "me"
+                        val isRedundant = (lowerTitle == "my contacts") || 
+                                         (lowerTitle == "contacts") ||
+                                         (lowerTitle == "ich") ||
+                                         (lowerTitle == "me")
                                      
                         if (!isRedundant) {
                             groupsMap[cursor.getLong(idIdx)] = GroupInfo(
@@ -439,7 +439,7 @@ class BirthdayViewModel(application: Application) : AndroidViewModel(application
                 }
             }
         } catch (e: Exception) {
-            e.printStackTrace()
+            Log.e("BirthdayViewModel", "Error in fetchContactGroups", e)
         }
         groupsMap
     }
@@ -491,7 +491,7 @@ class BirthdayViewModel(application: Application) : AndroidViewModel(application
                 }
             }
         } catch (e: Exception) {
-            e.printStackTrace()
+            Log.e("BirthdayViewModel", "Error in fetchBirthdaysFromSystem", e)
         }
         contactsMap.values.toList()
     }

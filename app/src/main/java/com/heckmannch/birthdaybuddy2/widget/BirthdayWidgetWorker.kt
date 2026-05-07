@@ -16,36 +16,35 @@ class BirthdayWidgetWorker(
     override suspend fun doWork(): Result {
         try {
             BirthdayWidget().updateAll(context)
+            // Plane den nächsten Lauf für morgen Mitternacht
+            enqueueNextUpdate(context)
             return Result.success()
         } catch (e: Exception) {
+            e.printStackTrace()
             return Result.retry()
         }
     }
 
     companion object {
-        fun enqueueDailyUpdate(context: Context) {
-            val request = PeriodicWorkRequestBuilder<BirthdayWidgetWorker>(
-                24, TimeUnit.HOURS, // Explizit 24 Stunden
-                15, TimeUnit.MINUTES // Flex Interval für System-Optimierung
-            ).setInitialDelay(calculateDelayUntilMidnight(), TimeUnit.MILLISECONDS)
+        private const val WORK_NAME = "DailyWidgetUpdateSingle"
+
+        fun enqueueNextUpdate(context: Context) {
+            val request = OneTimeWorkRequestBuilder<BirthdayWidgetWorker>()
+                .setInitialDelay(calculateDelayUntilMidnight(), TimeUnit.MILLISECONDS)
                 .addTag("daily_widget_update")
-                .setConstraints(
-                    Constraints.Builder()
-                        .setRequiresBatteryNotLow(true)
-                        .build()
-                )
                 .build()
 
-            WorkManager.getInstance(context).enqueueUniquePeriodicWork(
-                "DailyBirthdayUpdate",
-                ExistingPeriodicWorkPolicy.UPDATE,
+            WorkManager.getInstance(context).enqueueUniqueWork(
+                WORK_NAME,
+                ExistingWorkPolicy.REPLACE,
                 request
             )
         }
 
         private fun calculateDelayUntilMidnight(): Long {
             val now = LocalDateTime.now()
-            val midnight = LocalDateTime.of(now.toLocalDate().plusDays(1), LocalTime.MIDNIGHT)
+            // Wir planen für 00:01 Uhr, um sicherzustellen, dass das Datum wirklich umgesprungen ist
+            val midnight = LocalDateTime.of(now.toLocalDate().plusDays(1), LocalTime.of(0, 1))
             return Duration.between(now, midnight).toMillis()
         }
     }
