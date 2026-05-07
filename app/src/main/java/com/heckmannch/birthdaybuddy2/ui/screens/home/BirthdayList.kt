@@ -1,35 +1,23 @@
 package com.heckmannch.birthdaybuddy2.ui.screens.home
 
 import android.Manifest
-import android.content.Intent
 import android.content.pm.PackageManager
-import android.provider.ContactsContract
-import android.util.Log
-import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Face
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
-import coil.compose.AsyncImage
-import com.heckmannch.birthdaybuddy2.ui.theme.BirthdayGold
-import com.heckmannch.birthdaybuddy2.ui.theme.BirthdaySilver
-import com.heckmannch.birthdaybuddy2.ui.theme.KidColors
+import com.heckmannch.birthdaybuddy2.ui.screens.home.components.BirthdayItem
 import com.heckmannch.birthdaybuddy2.viewmodel.BirthdayViewModel
-import com.heckmannch.birthdaybuddy2.viewmodel.ContactUiModel
 
 @Composable
 fun BirthdayList(
@@ -51,17 +39,27 @@ fun BirthdayList(
     if (contacts.isEmpty()) {
         EmptyListState(hasPermission = hasPermission, onRequestPermission = onRequestPermission)
     } else {
+        val swipeHintShown by viewModel.swipeHintShown.collectAsState()
+        var expandedContactId by remember { mutableStateOf<String?>(null) }
+        
         LazyColumn(
             state = listState,
             modifier = modifier.fillMaxSize(),
-            contentPadding = PaddingValues(bottom = 80.dp)
+            contentPadding = PaddingValues(bottom = 80.dp),
         ) {
-            items(
+            itemsIndexed(
                 items = contacts,
-                key = { it.id },
-                contentType = { "birthdayItem" }
-            ) { contact ->
-                BirthdayItem(contact)
+                key = { _, it -> it.id },
+                contentType = { _, _ -> "birthdayItem" }
+            ) { index, contact ->
+                BirthdayItem(
+                    contact = contact,
+                    viewModel = viewModel,
+                    showHint = !swipeHintShown && (index == 0),
+                    isExpanded = expandedContactId == contact.id,
+                ) {
+                    expandedContactId = contact.id
+                }
             }
         }
     }
@@ -104,94 +102,5 @@ private fun EmptyListState(
                 style = MaterialTheme.typography.bodyLarge
             )
         }
-    }
-}
-
-@Composable
-fun BirthdayItem(contact: ContactUiModel) {
-    val borderStroke = remember(contact) {
-        if (contact.isToday && (contact.nextAge != null)) {
-            when {
-                contact.nextAge <= 10 -> BorderStroke(2.dp, Brush.linearGradient(KidColors))
-                contact.nextAge >= 20 && contact.nextAge % 10 == 0 -> BorderStroke(2.dp, BirthdayGold)
-                else -> BorderStroke(2.dp, BirthdaySilver)
-            }
-        } else null
-    }
-
-    Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 4.dp),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow),
-        border = borderStroke
-    ) {
-        ListItem(
-            headlineContent = { Text(text = contact.fullName, style = MaterialTheme.typography.titleMedium) },
-            supportingContent = {
-                Text(
-                    text = contact.dateText,
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            },
-            leadingContent = {
-                ContactImage(contact = contact)
-            },
-            trailingContent = {
-                BirthdayStatus(contact = contact)
-            },
-            colors = ListItemDefaults.colors(containerColor = Color.Transparent)
-        )
-    }
-}
-
-@Composable
-private fun ContactImage(contact: ContactUiModel) {
-    val context = LocalContext.current
-    Surface(
-        modifier = Modifier
-            .size(48.dp)
-            .clickable {
-                try {
-                    val lookupUri = ContactsContract.Contacts.getLookupUri(contact.contactId.toLong(), contact.lookupKey)
-                    context.startActivity(Intent(Intent.ACTION_VIEW, lookupUri))
-                } catch (e: Exception) {
-                    Log.e("BirthdayList", "Error opening contact", e)
-                }
-            },
-        shape = MaterialTheme.shapes.medium,
-        color = MaterialTheme.colorScheme.primaryContainer
-    ) {
-        if (contact.imageUri != null) {
-            AsyncImage(
-                model = contact.imageUri,
-                contentDescription = "Kontaktbild von ${contact.fullName}",
-                modifier = Modifier.fillMaxSize(),
-                contentScale = ContentScale.Crop
-            )
-        } else {
-            Box(contentAlignment = Alignment.Center) {
-                Text(text = contact.initials, style = MaterialTheme.typography.titleLarge)
-            }
-        }
-    }
-}
-
-@Composable
-private fun BirthdayStatus(contact: ContactUiModel) {
-    Column(horizontalAlignment = Alignment.End) {
-        contact.nextAgeText?.let {
-            Text(
-                text = it,
-                style = MaterialTheme.typography.labelLarge,
-                color = MaterialTheme.colorScheme.primary
-            )
-        }
-        Text(
-            text = contact.daysLeftText,
-            style = MaterialTheme.typography.labelSmall,
-            color = if (contact.isToday) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurfaceVariant
-        )
     }
 }

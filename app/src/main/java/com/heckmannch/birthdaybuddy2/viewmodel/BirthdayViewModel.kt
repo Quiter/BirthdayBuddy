@@ -17,7 +17,6 @@ import com.heckmannch.birthdaybuddy2.ui.screens.settings.notifications.Preferenc
 import com.heckmannch.birthdaybuddy2.ui.screens.settings.notifications.NotificationWorker
 import com.heckmannch.birthdaybuddy2.widget.BirthdayWidget
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -25,6 +24,29 @@ import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import java.time.format.FormatStyle
 import java.time.temporal.ChronoUnit
+
+@Immutable
+data class GiftIdea(
+    val id: String = java.util.UUID.randomUUID().toString(),
+    val text: String,
+    val isChecked: Boolean = false,
+) {
+    companion object {
+        fun fromString(encoded: String?): List<GiftIdea> {
+            if (encoded.isNullOrBlank()) return emptyList()
+            return encoded.split(";;").mapNotNull {
+                val parts = it.split("|", limit = 2)
+                if (parts.size == 2) {
+                    GiftIdea(text = parts[1], isChecked = parts[0] == "1")
+                } else null
+            }
+        }
+
+        fun toString(ideas: List<GiftIdea>): String {
+            return ideas.joinToString(";;") { "${if (it.isChecked) "1" else "0"}|${it.text}" }
+        }
+    }
+}
 
 /**
  * UI-Modell für einen Kontakt. 
@@ -44,6 +66,7 @@ data class ContactUiModel(
     val daysUntilNext: Long,
     val daysLeftText: String,
     val isToday: Boolean,
+    val giftIdeas: String?,
 )
 
 @Immutable
@@ -111,6 +134,26 @@ class BirthdayViewModel(application: Application) : AndroidViewModel(application
             preferenceManager.setNotificationTime(hour, minute)
         }
     }
+
+    val swipeHintShown: StateFlow<Boolean> = preferenceManager.swipeHintShown
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = true, // Default true to avoid flash before load
+        )
+
+    fun setSwipeHintShown() {
+        viewModelScope.launch {
+            preferenceManager.setSwipeHintShown(shown = true)
+        }
+    }
+
+    fun updateGiftIdeas(lookupKey: String, ideas: String) {
+        viewModelScope.launch {
+            val contact = contactDao.getContactByLookupKey(lookupKey) ?: return@launch
+            contactDao.insertContact(contact.copy(giftIdeas = ideas))
+        }
+    }
     
     private val dateFormatter = DateTimeFormatter.ofLocalizedDate(FormatStyle.LONG)
     private val dayMonthFormatter = DateTimeFormatter.ofPattern("d. MMMM")
@@ -124,6 +167,13 @@ class BirthdayViewModel(application: Application) : AndroidViewModel(application
 
     private val _scrollToTopEvent = MutableSharedFlow<Unit>(replay = 0)
     val scrollToTopEvent: SharedFlow<Unit> = _scrollToTopEvent.asSharedFlow()
+
+    private val _isFastScrolling = MutableStateFlow(value = false)
+    val isFastScrolling: StateFlow<Boolean> = _isFastScrolling.asStateFlow()
+
+    fun setFastScrolling(isScrolling: Boolean) {
+        _isFastScrolling.value = isScrolling
+    }
 
     val availableLabels: StateFlow<List<String>> = combine(
         contactDao.getAllContacts(),
@@ -261,7 +311,7 @@ class BirthdayViewModel(application: Application) : AndroidViewModel(application
     fun updateLabelConfig(name: String, isHiddenFromFilter: Boolean, isIgnored: Boolean, isSystem: Boolean) {
         viewModelScope.launch {
             labelConfigDao.insertConfig(
-                LabelConfig(name, isHiddenFromFilter, isIgnored, isSystem)
+                LabelConfig(name, isHiddenFromFilter, isIgnored, isSystem),
             )
             try {
                 BirthdayWidget().updateAll(getApplication())
@@ -273,9 +323,6 @@ class BirthdayViewModel(application: Application) : AndroidViewModel(application
 
     fun triggerScrollToTop() {
         viewModelScope.launch {
-            // Ein kleiner Delay stellt sicher, dass die Liste die neuen Daten bereits erhalten hat,
-            // bevor wir den Scroll-Befehl an die UI senden.
-            delay(100)
             _scrollToTopEvent.emit(Unit)
         }
     }
@@ -317,8 +364,15 @@ class BirthdayViewModel(application: Application) : AndroidViewModel(application
                         contactGroups
                     )
                     
+                    // Bestehende Geschenkideen erhalten
+                    val existingGiftIdeas: Map<String, String?> = contactDao.getAllContactsImmediate()
+                        .associateBy({ it.lookupKey }) { it.giftIdeas }
+
                     val updatedContacts = systemContacts.map { contact ->
-                        contact.copy(labels = labelsMap[contact.contactId] ?: emptyList())
+                        contact.copy(
+                            labels = labelsMap[contact.contactId] ?: emptyList(),
+                            giftIdeas = existingGiftIdeas[contact.lookupKey]
+                        )
                     }
                     
                     // Transaktionaler Sync zur Vermeidung von UI-Flimmern
@@ -355,6 +409,7 @@ class BirthdayViewModel(application: Application) : AndroidViewModel(application
             daysUntilNext = daysLeft,
             daysLeftText = if (daysLeft == 0L) "Heute!" else "In $daysLeft T.",
             isToday = daysLeft == 0L,
+            giftIdeas = giftIdeas,
         )
     }
 
@@ -362,7 +417,7 @@ class BirthdayViewModel(application: Application) : AndroidViewModel(application
         val labelsMap = mutableMapOf<String, MutableList<String>>()
         val projection = arrayOf(
             ContactsContract.Data.CONTACT_ID,
-            ContactsContract.CommonDataKinds.GroupMembership.GROUP_ROW_ID
+            ContactsContract.CommonDataKinds.GroupMembership.GROUP_ROW_ID,
         )
         val selection = "${ContactsContract.Data.MIMETYPE} = ?"
         val selectionArgs = arrayOf(ContactsContract.CommonDataKinds.GroupMembership.CONTENT_ITEM_TYPE)
@@ -534,7 +589,7 @@ fun LocalDate.toNextOccurrence(today: LocalDate): LocalDate {
 }
 
 private fun LocalDate.toYear(targetYear: Int): LocalDate {
-    return if (this.monthValue == 2 && this.dayOfMonth == 29 && !java.time.Year.isLeap(targetYear.toLong())) {
+    return if ((this.monthValue == 2) && (this.dayOfMonth == 29) && !java.time.Year.isLeap(targetYear.toLong())) {
         LocalDate.of(targetYear, 2, 28)
     } else {
         this.withYear(targetYear)

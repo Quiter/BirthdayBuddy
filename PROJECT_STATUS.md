@@ -3,11 +3,12 @@
 > **TL;DR für neue Sessions:** Moderne M3 Geburtstags-App. Android-Kontakte sind die Single-Source-of-Truth. Migration auf `LOOKUP_KEY` & `localId` abgeschlossen (zukunftssicher). High-Performance Sync (Batch-Labels), hybride Filter-Logik (Filterleiste nur bei Bedarf), präzises Widget-Update (Mitternacht via WorkManager). Architektur ist sauber, modular und performant (Room v6, Compose BOM 2026.04).
 
 ## 🚀 Aktueller Stand
-...
 Die App ist eine moderne Geburtstags-Verwaltung, die Kontakte aus dem Android-System synchronisiert, filtert und in einem Widget anzeigt. Sie folgt Material 3 Richtlinien und Clean Architecture Prinzipien.
 
+**WICHTIG:** Bei jeder strukturellen Änderung (neue Dateien, Refactoring) muss die `PROJECT_STRUCTURE.md` zwingend aktualisiert werden, um die Dokumentation konsistent zu halten.
+
 ## 🛠 Architektur & Struktur
-- **Package-Struktur:** Feature-basierte Layer (`ui.screens.home`, `ui.screens.settings.labels`, `ui.screens.settings.notifications`, `viewmodel`, `database`, `widget`). Alles, was zu einem Feature gehört (UI, Worker, Preferences), liegt im entsprechenden Package.
+- **Package-Struktur:** Feature-basierte Layer (`ui.screens.home`, `ui.screens.settings.labels`, `ui.screens.settings.notifications`, `viewmodel`, `database`, `widget`). Alles, was zu einem Feature gehört (UI, Worker, Preferences), liegt im entsprechenden Package. Komplexe Screens nutzen ein `components` Sub-Package zur Modularisierung.
 - **ViewModel:** `BirthdayViewModel` als Single Source of Truth für den UI-State; nutzt `SharedFlow` für UI-Events.
 - **Data:** 
     - `ContactUiModel` (@Immutable) für performante UI-Updates; robuste Datums-Berechnungen (Schaltjahr-sicher).
@@ -75,8 +76,12 @@ Die App ist eine moderne Geburtstags-Verwaltung, die Kontakte aus dem Android-Sy
 14. **Widget Stability Upgrade:**
     - **Midnight Precision:** Umstellung des `BirthdayWidgetWorker` von `PeriodicWork` auf einen selbst-erneuernden `OneTimeWorkRequest`.
     - **Reliability:** Verschiebung des Update-Zeitpunkts auf 00:01 Uhr und Entfernung von Akku-Beschränkungen, um Doze-Mode-Verzögerungen auf modernen Geräten (z.B. Pixel 10 Pro) zu minimieren.
+15. **Swipe-Actions & Gift Ideas:**
+    - **Sticky-Swipe:** Implementierung eines "Now Playing Style" Swipe-Systems (Sticky Reveal) mit drei Aktions-Buttons (Geschenkideen, Kontakt öffnen, Ignorieren).
+    - **Discovery:** Hinzufügen eines "Hint-Bounce" Effekts beim ersten App-Start zur spielerischen Vermittlung der Geste.
+    - **Gift Management:** Einführung eines Google Keep Style Checklisten-Dialogs für Geschenkideen inkl. lokaler Persistenz in Room.
+    - **Clean UI:** Refactoring des Home-Screens in modulare Sub-Komponenten und Entfernen redundanter Interaktionen (z.B. Klick auf Kontaktbild).
 
 ## 🎯 Kommende Aufgaben (Backlog)
-- **Quick-Actions:** Implementierung von Swipe-Gesten in der Liste (z.B. Swipe-to-Ignore).
-- **Label-Visualisierung:** Optionale Farben für Labels zur besseren Sichtbarkeit.
-- **Benachrichtigungen:** Einstellbare Erinnerungen (1 Tag vorher, am Tag selbst) via WorkManager.
+- **Label-Visualisierung:** Subtile Farbakzente für Labels zur besseren Unterscheidung.
+- **Erweiterte Benachrichtigungen:** Einstellbare Erinnerungen (1 Tag vorher, am Tag selbst) via WorkManager.

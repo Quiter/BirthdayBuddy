@@ -15,6 +15,7 @@ class PreferenceManager(private val context: Context) {
         val NOTIFICATIONS_ENABLED = booleanPreferencesKey("notifications_enabled")
         val NOTIFICATION_HOUR = intPreferencesKey("notification_hour")
         val NOTIFICATION_MINUTE = intPreferencesKey("notification_minute")
+        val SWIPE_HINT_SHOWN = booleanPreferencesKey("swipe_hint_shown")
     }
 
     val notificationsEnabled: Flow<Boolean> = context.dataStore.data
@@ -32,6 +33,11 @@ class PreferenceManager(private val context: Context) {
             preferences[NOTIFICATION_MINUTE] ?: 0
         }
 
+    val swipeHintShown: Flow<Boolean> = context.dataStore.data
+        .map { preferences ->
+            preferences[SWIPE_HINT_SHOWN] ?: false
+        }
+
     suspend fun setNotificationsEnabled(enabled: Boolean) {
         context.dataStore.edit { preferences ->
             preferences[NOTIFICATIONS_ENABLED] = enabled
@@ -42,6 +48,12 @@ class PreferenceManager(private val context: Context) {
         context.dataStore.edit { preferences ->
             preferences[NOTIFICATION_HOUR] = hour
             preferences[NOTIFICATION_MINUTE] = minute
+        }
+    }
+
+    suspend fun setSwipeHintShown(shown: Boolean) {
+        context.dataStore.edit { preferences ->
+            preferences[SWIPE_HINT_SHOWN] = shown
         }
     }
 }
