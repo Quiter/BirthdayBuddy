@@ -1,4 +1,4 @@
-package com.heckmannch.birthdaybuddy2.ui.screens.home
+package com.heckmannch.birthdaybuddy2.ui.screens.home.components
 
 import androidx.compose.animation.*
 import androidx.compose.animation.core.animateDpAsState
@@ -43,11 +43,11 @@ fun FastScrollbar(
     
     // Bubble visibility with delay for smoother transition
     var showBubble by remember { mutableStateOf(false) }
-    LaunchedEffect(isDragging, listState.isScrollInProgress) {
-        showBubble = if (isDragging || listState.isScrollInProgress) {
+    LaunchedEffect(isDragging) {
+        showBubble = if (isDragging) {
             true
         } else {
-            delay(1000)
+            delay(500)
             false
         }
     }

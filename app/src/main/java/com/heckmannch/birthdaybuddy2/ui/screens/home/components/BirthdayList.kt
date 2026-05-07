@@ -1,4 +1,4 @@
-package com.heckmannch.birthdaybuddy2.ui.screens.home
+package com.heckmannch.birthdaybuddy2.ui.screens.home.components
 
 import android.Manifest
 import android.content.pm.PackageManager
@@ -16,7 +16,6 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
-import com.heckmannch.birthdaybuddy2.ui.screens.home.components.BirthdayItem
 import com.heckmannch.birthdaybuddy2.viewmodel.BirthdayViewModel
 
 @Composable
