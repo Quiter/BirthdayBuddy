@@ -29,7 +29,7 @@ import java.time.temporal.ChronoUnit
 data class GiftIdea(
     val id: String = java.util.UUID.randomUUID().toString(),
     val text: String,
-    val isChecked: Boolean = false
+    val isChecked: Boolean = false,
 ) {
     companion object {
         fun fromString(encoded: String?): List<GiftIdea> {
@@ -144,7 +144,7 @@ class BirthdayViewModel(application: Application) : AndroidViewModel(application
 
     fun setSwipeHintShown() {
         viewModelScope.launch {
-            preferenceManager.setSwipeHintShown(true)
+            preferenceManager.setSwipeHintShown(shown = true)
         }
     }
 
@@ -366,7 +366,7 @@ class BirthdayViewModel(application: Application) : AndroidViewModel(application
                     
                     // Bestehende Geschenkideen erhalten
                     val existingGiftIdeas: Map<String, String?> = contactDao.getAllContactsImmediate()
-                        .associate { it.lookupKey to it.giftIdeas }
+                        .associateBy({ it.lookupKey }, { it.giftIdeas })
 
                     val updatedContacts = systemContacts.map { contact ->
                         contact.copy(
@@ -589,7 +589,7 @@ fun LocalDate.toNextOccurrence(today: LocalDate): LocalDate {
 }
 
 private fun LocalDate.toYear(targetYear: Int): LocalDate {
-    return if (this.monthValue == 2 && this.dayOfMonth == 29 && !java.time.Year.isLeap(targetYear.toLong())) {
+    return if ((this.monthValue == 2) && (this.dayOfMonth == 29) && !java.time.Year.isLeap(targetYear.toLong())) {
         LocalDate.of(targetYear, 2, 28)
     } else {
         this.withYear(targetYear)
