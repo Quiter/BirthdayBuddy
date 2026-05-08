@@ -41,14 +41,14 @@ fun FastScrollbar(
         viewModel.setFastScrolling(isDragging)
     }
 
-    // Bubble visibility with delay for smoother transition
-    var showBubble by remember { mutableStateOf(false) }
-    LaunchedEffect(isDragging) {
-        showBubble = if (isDragging) {
-            true
+    // Bubble visibility: Zeigt die Bubble NUR beim Ziehen der Scrollbar
+    // produceState ist robuster für zeitgesteuerte Zustandsänderungen
+    val showBubble by produceState(initialValue = false, key1 = isDragging) {
+        if (isDragging) {
+            value = true
         } else {
             delay(500)
-            false
+            value = false
         }
     }
 
@@ -68,10 +68,10 @@ fun FastScrollbar(
         }
 
         if (canScroll) {
-            val currentMonth by remember(contacts) {
+            val currentMonth by remember(contacts, trackHeightPx) {
                 derivedStateOf {
                     val index = if (isDragging) {
-                        val percent = (dragOffsetPx / trackHeightPx).coerceIn(0f, 1f)
+                        val percent = if (trackHeightPx > 0) (dragOffsetPx / trackHeightPx).coerceIn(0f, 1f) else 0f
                         (percent * (totalItems - 1)).toInt()
                     } else {
                         listState.firstVisibleItemIndex
@@ -148,21 +148,25 @@ fun FastScrollbar(
                     .width(48.dp)
                     .height(thumbHeight)
                     .pointerInput(totalItems, trackHeightPx) {
-                        detectVerticalDragGestures(
-                            onDragStart = {
-                                isDragging = true
-                                dragOffsetPx = with(density) { thumbOffset.toPx() }
-                            },
-                            onDragEnd = { isDragging = false },
-                            onDragCancel = { isDragging = false },
-                        ) { change, dragAmount ->
-                            dragOffsetPx = (dragOffsetPx + dragAmount).coerceIn(0f, trackHeightPx)
-                            val newScrollPercent = if (trackHeightPx > 0) dragOffsetPx / trackHeightPx else 0f
-                            val targetIndex = (newScrollPercent * (totalItems - 1))
-                                .toInt()
-                                .coerceIn(0, totalItems - 1)
-                            scope.launch { listState.scrollToItem(targetIndex) }
-                            change.consume()
+                        try {
+                            detectVerticalDragGestures(
+                                onDragStart = {
+                                    isDragging = true
+                                    dragOffsetPx = with(density) { thumbOffset.toPx() }
+                                },
+                                onDragEnd = { isDragging = false },
+                                onDragCancel = { isDragging = false },
+                            ) { change, dragAmount ->
+                                dragOffsetPx = (dragOffsetPx + dragAmount).coerceIn(0f, trackHeightPx)
+                                val newScrollPercent = if (trackHeightPx > 0) dragOffsetPx / trackHeightPx else 0f
+                                val targetIndex = (newScrollPercent * (totalItems - 1))
+                                    .toInt()
+                                    .coerceIn(0, totalItems - 1)
+                                scope.launch { listState.scrollToItem(targetIndex) }
+                                change.consume()
+                            }
+                        } finally {
+                            isDragging = false
                         }
                     },
                 contentAlignment = Alignment.CenterEnd,
