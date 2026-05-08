@@ -127,6 +127,24 @@ fun HomeScreen(
         }
     }
 
+    val onSetSwipeHintShown = remember(viewModel) {
+        { viewModel.setSwipeHintShown() }
+    }
+
+    val onUpdateGiftIdeas = remember(viewModel) {
+        { key: String, ideas: String -> viewModel.updateGiftIdeas(key, ideas) }
+    }
+
+    val onOpenContact = remember(context) {
+        { id: String, key: String ->
+            try {
+                val lookupUri = ContactsContract.Contacts.getLookupUri(id.toLong(), key)
+                context.startActivity(Intent(Intent.ACTION_VIEW, lookupUri))
+            } catch (_: Exception) {
+            }
+        }
+    }
+
     Scaffold(
         modifier = Modifier.fillMaxSize(),
         topBar = {
@@ -174,34 +192,23 @@ fun HomeScreen(
                 modifier = Modifier.fillMaxSize(),
                 listState = listState,
                 onRequestPermission = { permissionLauncher.launch(Manifest.permission.READ_CONTACTS) },
-                onSetSwipeHintShown = { viewModel.setSwipeHintShown() },
-                onUpdateGiftIdeas = { key, ideas -> viewModel.updateGiftIdeas(key, ideas) },
-                onOpenContact = { id, key ->
-                    try {
-                        val lookupUri = ContactsContract.Contacts.getLookupUri(id.toLong(), key)
-                        context.startActivity(Intent(Intent.ACTION_VIEW, lookupUri))
-                    } catch (_: Exception) {}
-                },
-                onIgnoreContact = { name ->
-                    viewModel.updateLabelConfig(
-                        name = name,
-                        isHiddenFromFilter = true,
-                        isIgnored = true,
-                        isSystem = false,
-                    )
-                },
+                onSetSwipeHintShown = onSetSwipeHintShown,
+                onUpdateGiftIdeas = onUpdateGiftIdeas,
+                onOpenContact = onOpenContact,
             )
             
-            if (!contacts.isNullOrEmpty()) {
-                FastScrollbar(
-                    listState = listState,
-                    contacts = contacts!!,
-                    onSetFastScrolling = { viewModel.setFastScrolling(it) },
-                    modifier = Modifier
-                        .align(Alignment.CenterEnd)
-                        .fillMaxHeight()
-                        .padding(vertical = 8.dp),
-                )
+            contacts?.let { contactList ->
+                if (contactList.isNotEmpty()) {
+                    FastScrollbar(
+                        listState = listState,
+                        contacts = contactList,
+                        onSetFastScrolling = { viewModel.setFastScrolling(it) },
+                        modifier = Modifier
+                            .align(Alignment.CenterEnd)
+                            .fillMaxHeight()
+                            .padding(vertical = 8.dp),
+                    )
+                }
             }
         }
     }

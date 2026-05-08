@@ -1,17 +1,23 @@
 package com.heckmannch.birthdaybuddy2.util
 
 import java.time.LocalDate
+import java.time.Month
+import java.time.Year
 import java.time.temporal.ChronoUnit
 
 // --- Robuste Extensions für Datumsberechnungen ---
 
-fun LocalDate.safeDaysUntilNext(): Long {
-    val today = LocalDate.now()
+/**
+ * Berechnet die Tage bis zum nächsten Vorkommen dieses Datums.
+ */
+fun LocalDate.safeDaysUntilNext(today: LocalDate = LocalDate.now()): Long {
     return ChronoUnit.DAYS.between(today, toNextOccurrence(today))
 }
 
-fun LocalDate.safeNextAge(): Int {
-    val today = LocalDate.now()
+/**
+ * Berechnet das Alter, das die Person am nächsten Geburtstag erreicht.
+ */
+fun LocalDate.safeNextAge(today: LocalDate = LocalDate.now()): Int {
     return toNextOccurrence(today).year - this.year
 }
 
@@ -19,16 +25,21 @@ fun LocalDate.safeNextAge(): Int {
  * Hilfsfunktion um das nächste Vorkommen eines Datums zu finden (Handling für 29. Feb).
  */
 fun LocalDate.toNextOccurrence(today: LocalDate): LocalDate {
-    var next = this.toYear(today.year)
-    if (next.isBefore(today)) {
-        next = this.toYear(today.year + 1)
+    val next = this.toYear(today.year)
+    return if (next.isBefore(today)) {
+        this.toYear(today.year + 1)
+    } else {
+        next
     }
-    return next
 }
 
+/**
+ * Projiziert ein Datum auf ein Zieljahr und korrigiert den 29. Februar auf den 28., 
+ * falls das Zieljahr kein Schaltjahr ist.
+ */
 fun LocalDate.toYear(targetYear: Int): LocalDate {
-    return if ((this.monthValue == 2) && (this.dayOfMonth == 29) && !java.time.Year.isLeap(targetYear.toLong())) {
-        LocalDate.of(targetYear, 2, 28)
+    return if (this.month == Month.FEBRUARY && this.dayOfMonth == 29 && !Year.isLeap(targetYear.toLong())) {
+        LocalDate.of(targetYear, Month.FEBRUARY, 28)
     } else {
         this.withYear(targetYear)
     }

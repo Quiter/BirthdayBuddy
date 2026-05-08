@@ -23,12 +23,14 @@
 ## 📁 Home Screen (`ui.screens.home`)
 - `HomeScreen.kt`: Haupt-Container des Home-Screens. Orchestriert TopBar, List und FAB.
 - ### 📁 Components (`home.components`)
+    - `BirthdayItem.kt`: Einzelnes Listenelement mit Sticky-Swipe (Now Playing Style) und Aktions-Buttons.
     - `BirthdayList.kt`: Verwaltet die LazyColumn der Geburtstage und den exklusiven Swipe-Status.
     - `FastScrollbar.kt`: Implementierung der Google-Photos-Style Scrollbar mit Monats-Bubble.
-    - `BirthdayItem.kt`: Einzelnes Listenelement mit Sticky-Swipe (Now Playing Style) und Aktions-Buttons.
     - `GiftIdeaDialog.kt`: Checklisten-Dialog (Google Keep Style) für Geschenkideen.
     - `HomeFAB.kt`: Animierter Floating Action Button für Scroll-to-Top und Kontakt-Hinzufügen.
-    - `HomeTopBar.kt`: Suchleiste und Filter-Chips Bereich.
+    - `HomeTopBar.kt`: Orchestriert SearchBar und LabelFilterBar.
+    - `SearchBar.kt`: Die Suchleiste mit Settings-Integration.
+    - `LabelFilterBar.kt`: Horizontale Liste der Filter-Chips.
 
 ## 📁 Settings (`ui.screens.settings`)
 - `SettingsScreen.kt`: Haupt-Einstellungsmenü.

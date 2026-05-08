@@ -28,7 +28,6 @@ fun BirthdayList(
     onSetSwipeHintShown: () -> Unit,
     onUpdateGiftIdeas: (String, String) -> Unit,
     onOpenContact: (String, String) -> Unit,
-    onIgnoreContact: (String) -> Unit,
 ) {
     val context = LocalContext.current
     val hasPermission by remember {
@@ -58,16 +57,16 @@ fun BirthdayList(
             ) { index, contact ->
                 val isExpanded = expandedContactId == contact.id
                 val isFirstItem = index == 0
+                val itemOnExpand = remember(contact.id) { { onExpand(contact.id) } }
                 
                 BirthdayItem(
                     contact = contact,
                     showHint = !swipeHintShown && isFirstItem,
                     isExpanded = isExpanded,
-                    onExpand = { onExpand(contact.id) },
+                    onExpand = itemOnExpand,
                     onSetSwipeHintShown = onSetSwipeHintShown,
                     onUpdateGiftIdeas = onUpdateGiftIdeas,
                     onOpenContact = onOpenContact,
-                    onIgnoreContact = onIgnoreContact
                 )
             }
         }

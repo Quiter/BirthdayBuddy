@@ -105,6 +105,13 @@ Die App befindet sich gerade in einer umfassenden Refactoring-Phase (V3), um die
     - **UX Overhaul:** Implementierung von Auto-Fokus und automatischer Tastatur-Öffnung beim Erstellen neuer Geschenkideen.
     - **Smart Sorting:** Automatisches Verschieben abgehakter Einträge nach unten inkl. M3-Animationen (`animateItem`).
     - **Data Integrity:** Erzwingen von Großbuchstaben am Zeilenanfang und robuste ID-basierte Item-Verwaltung zur Vermeidung von Index-Fehlern während Animationen.
+21. **Component Refinement & Re-Composition Guard:**
+    - **UI Cleanup:** Entfernung redundanter Swipe-Aktionen (Löschen-Button) für ein fokussierteres Nutzererlebnis.
+    - **Memoization Hardening:** Umfassender Einsatz von `remember` für alle Callback-Lambdas im Home-Screen und auf Item-Ebene zur Vermeidung unnötiger UI-Aktualisierungen.
+    - **Parameter Optimization:** Standardisierung der Kompomenten-Signaturen (z. B. `HomeFAB`) für bessere Wartbarkeit und IDE-Konformität.
+22. **Label Logic & UI Refactoring:**
+    - **Filter Precision Fix:** Korrektur der Label-Logik; es werden nun nur noch Labels in der Filterleiste angezeigt, die tatsächlich aktuell von Kontakten verwendet werden.
+    - **Modular TopBar:** Vollständiges Refactoring der TopBar in drei Dateien (`HomeTopBar.kt`, `SearchBar.kt`, `LabelFilterBar.kt`) zur maximalen Wartbarkeit und Code-Klarheit.
 
 ## 🎯 Kommende Aufgaben (Backlog)
 - **Erweiterte Benachrichtigungen:** Einstellbare Erinnerungen (1 Tag vorher, am Tag selbst) via WorkManager.

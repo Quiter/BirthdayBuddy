@@ -19,6 +19,7 @@ import androidx.compose.ui.graphics.graphicsLayer
 fun HomeFAB(
     showScrollUp: Boolean,
     onScrollToTop: () -> Unit,
+    modifier: Modifier = Modifier,
     onAddContact: () -> Unit,
 ) {
     val rotation by animateFloatAsState(
@@ -28,7 +29,7 @@ fun HomeFAB(
 
     FloatingActionButton(
         onClick = { if (showScrollUp) onScrollToTop() else onAddContact() },
-        modifier = Modifier.graphicsLayer { 
+        modifier = modifier.graphicsLayer { 
             rotationZ = rotation 
         }
     ) {
@@ -39,7 +40,7 @@ fun HomeFAB(
         ) { isUp ->
             Icon(
                 imageVector = if (isUp) Icons.Default.KeyboardArrowDown else Icons.Default.Add,
-                contentDescription = if (isUp) "Nach oben" else "Kontakt hinzufügen"
+                contentDescription = if (isUp) "Nach oben" else "Kontakt hinzufügen",
             )
         }
     }

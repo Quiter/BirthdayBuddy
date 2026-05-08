@@ -12,7 +12,6 @@ import androidx.compose.foundation.gestures.animateTo
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.*
@@ -47,7 +46,6 @@ fun BirthdayItem(
     onSetSwipeHintShown: () -> Unit,
     onUpdateGiftIdeas: (String, String) -> Unit,
     onOpenContact: (String, String) -> Unit,
-    onIgnoreContact: (String) -> Unit,
 ) {
     val density = LocalDensity.current
     val scope = rememberCoroutineScope()
@@ -59,7 +57,7 @@ fun BirthdayItem(
     val gapToContact = 4.dp
     
     val anchors = remember(density) {
-        val totalButtonsWidth = (buttonWidth * 3) + (buttonSpacing * 2)
+        val totalButtonsWidth = (buttonWidth * 2) + buttonSpacing
         val openAnchorPx = with(density) { (totalButtonsWidth + gapToContact).toPx() }
         DraggableAnchors {
             DragValue.Closed at 0f
@@ -131,7 +129,7 @@ fun BirthdayItem(
             modifier = Modifier
                 .align(Alignment.CenterEnd)
                 .padding(end = 16.dp)
-                .width((buttonWidth * 3) + (buttonSpacing * 2)),
+                .width((buttonWidth * 2) + buttonSpacing),
             horizontalArrangement = Arrangement.spacedBy(buttonSpacing),
             verticalAlignment = Alignment.CenterVertically
         ) {
@@ -144,13 +142,6 @@ fun BirthdayItem(
                 color = MaterialTheme.colorScheme.primary,
             ) {
                 onOpenContact(contact.contactId, contact.lookupKey)
-                scope.launch { draggableState.animateTo(DragValue.Closed) }
-            }
-            SwipeActionButton(
-                icon = Icons.Default.Delete,
-                color = MaterialTheme.colorScheme.outline,
-            ) {
-                onIgnoreContact(contact.fullName)
                 scope.launch { draggableState.animateTo(DragValue.Closed) }
             }
         }

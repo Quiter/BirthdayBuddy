@@ -14,10 +14,10 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import com.heckmannch.birthdaybuddy2.viewmodel.ContactUiModel
 import kotlinx.coroutines.delay
@@ -110,13 +110,10 @@ fun FastScrollbar(
                 enter = fadeIn() + slideInHorizontally { it / 2 },
                 exit = fadeOut() + slideOutHorizontally { it / 2 },
                 modifier = Modifier
-                    .offset {
-                        IntOffset(
-                            x = 0,
-                            y = (thumbOffset.toPx() - 4.dp.toPx()).toInt()
-                        )
-                    }
-                    .align(Alignment.TopStart),
+                    .align(Alignment.TopStart)
+                    .graphicsLayer {
+                        translationY = thumbOffset.toPx() - 4.dp.toPx()
+                    },
             ) {
                 Surface(
                     shape = RoundedCornerShape(
@@ -141,10 +138,12 @@ fun FastScrollbar(
             // Thumb
             Box(
                 modifier = Modifier
-                    .offset { IntOffset(0, thumbOffset.toPx().toInt()) }
                     .align(Alignment.TopEnd)
                     .width(48.dp)
                     .height(thumbHeight)
+                    .graphicsLayer {
+                        translationY = thumbOffset.toPx()
+                    }
                     .pointerInput(totalItems, trackHeightPx) {
                         try {
                             detectVerticalDragGestures(

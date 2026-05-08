@@ -120,13 +120,24 @@ class BirthdayViewModel @Inject constructor(
         _isFastScrolling.value = isScrolling
     }
 
-    val availableLabels: StateFlow<List<String>> = contactRepository.labelConfigs.map { configs ->
-        val hasUserLabels = configs.any { !it.isSystem }
-        if (!hasUserLabels) return@map emptyList()
+    val availableLabels: StateFlow<List<String>> = combine(
+        contactRepository.allContacts,
+        contactRepository.labelConfigs,
+    ) { contacts, configs ->
+        val inUseLabels = contacts.asSequence().flatMap { it.labels }.toSet()
+        val configMap = configs.associateBy { it.name }
+        
+        val hasUserLabels = inUseLabels.any { name ->
+            configMap[name]?.isSystem == false
+        }
 
-        configs.asSequence()
-            .filter { !it.isHiddenFromFilter && !it.isIgnored }
-            .map { it.name }
+        if (!hasUserLabels) return@combine emptyList()
+
+        inUseLabels.asSequence()
+            .filter { name ->
+                val config = configMap[name]
+                !(config?.isHiddenFromFilter ?: false) && !(config?.isIgnored ?: false)
+            }
             .sorted()
             .toList()
     }
