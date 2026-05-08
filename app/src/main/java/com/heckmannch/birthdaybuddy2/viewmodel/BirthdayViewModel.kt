@@ -8,6 +8,7 @@ import androidx.lifecycle.viewModelScope
 import com.heckmannch.birthdaybuddy2.database.LabelConfig
 import com.heckmannch.birthdaybuddy2.repository.ContactRepository
 import com.heckmannch.birthdaybuddy2.repository.PreferenceRepository
+import com.heckmannch.birthdaybuddy2.repository.TimeRepository
 import com.heckmannch.birthdaybuddy2.ui.screens.settings.notifications.NotificationWorker
 import com.heckmannch.birthdaybuddy2.util.toNextOccurrence
 import com.heckmannch.birthdaybuddy2.widget.BirthdayWidget
@@ -26,6 +27,7 @@ class BirthdayViewModel @Inject constructor(
     application: Application,
     private val contactRepository: ContactRepository,
     private val preferenceRepository: PreferenceRepository,
+    timeRepository: TimeRepository,
 ) : AndroidViewModel(application) {
 
     val notificationsEnabled: StateFlow<Boolean> = preferenceRepository.notificationsEnabled
@@ -118,28 +120,13 @@ class BirthdayViewModel @Inject constructor(
         _isFastScrolling.value = isScrolling
     }
 
-    val availableLabels: StateFlow<List<String>> = combine(
-        contactRepository.allContacts,
-        contactRepository.labelConfigs,
-    ) { contacts, configs ->
-        val configMap = configs.associateBy { it.name }
-        
-        val allLabelsInContacts = contacts.asSequence()
-            .flatMap { it.labels }
-            .distinct()
-            .toList()
-        
-        val hasUserLabels = allLabelsInContacts.any { name ->
-            configMap[name]?.isSystem == false
-        }
+    val availableLabels: StateFlow<List<String>> = contactRepository.labelConfigs.map { configs ->
+        val hasUserLabels = configs.any { !it.isSystem }
+        if (!hasUserLabels) return@map emptyList()
 
-        if (!hasUserLabels) return@combine emptyList()
-
-        allLabelsInContacts.asSequence()
-            .filter { name ->
-                val config = configMap[name]
-                !(config?.isHiddenFromFilter ?: false) && !(config?.isIgnored ?: false)
-            }
+        configs.asSequence()
+            .filter { !it.isHiddenFromFilter && !it.isIgnored }
+            .map { it.name }
             .sorted()
             .toList()
     }
@@ -156,13 +143,13 @@ class BirthdayViewModel @Inject constructor(
         _searchQuery,
         _selectedLabel,
         contactRepository.labelConfigs,
-    ) { list, query, label, configs ->
+        timeRepository.currentDate,
+    ) { list, query, label, configs, today ->
         val ignoredLabels = configs.asSequence()
             .filter { it.isIgnored }
             .map { it.name }
             .toSet()
         val isSearching = query.isNotEmpty()
-        val today = LocalDate.now()
         
         try {
             list.asSequence()
@@ -210,26 +197,15 @@ class BirthdayViewModel @Inject constructor(
         triggerScrollToTop()
     }
 
-    val labelManagementList: StateFlow<List<LabelManagementModel>> = combine(
-        contactRepository.allContacts,
-        contactRepository.labelConfigs,
-    ) { contacts, configs ->
-        val allLabelNames = contacts.asSequence()
-            .flatMap { it.labels }
-            .distinct()
-            .sorted()
-            .toList()
-        val configMap = configs.associateBy { it.name }
-        
-        allLabelNames.map { name ->
-            val config = configMap[name]
+    val labelManagementList: StateFlow<List<LabelManagementModel>> = contactRepository.labelConfigs.map { configs ->
+        configs.asSequence().map { config ->
             LabelManagementModel(
-                name = name,
-                isHiddenFromFilter = config?.isHiddenFromFilter ?: false,
-                isIgnored = config?.isIgnored ?: false,
-                isSystem = config?.isSystem ?: false,
+                name = config.name,
+                isHiddenFromFilter = config.isHiddenFromFilter,
+                isIgnored = config.isIgnored,
+                isSystem = config.isSystem,
             )
-        }
+        }.sortedBy { it.name }.toList()
     }
     .flowOn(Dispatchers.Default)
     .distinctUntilChanged()

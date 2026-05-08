@@ -18,6 +18,7 @@
 ## 📁 Repository (`repository`)
 - `ContactRepository.kt`: Zentrale Instanz für Kontakt-Daten (Room + System-Provider).
 - `PreferenceRepository.kt`: Verwaltung von App-Einstellungen via DataStore.
+- `TimeRepository.kt`: Reaktive Zeitquelle für automatische UI-Updates um Mitternacht.
 
 ## 📁 Home Screen (`ui.screens.home`)
 - `HomeScreen.kt`: Haupt-Container des Home-Screens. Orchestriert TopBar, List und FAB.

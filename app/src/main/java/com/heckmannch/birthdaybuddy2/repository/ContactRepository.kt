@@ -10,22 +10,31 @@ import com.heckmannch.birthdaybuddy2.database.Contact
 import com.heckmannch.birthdaybuddy2.database.ContactDao
 import com.heckmannch.birthdaybuddy2.database.LabelConfig
 import com.heckmannch.birthdaybuddy2.database.LabelConfigDao
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.withContext
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
+import javax.inject.Inject
+import javax.inject.Singleton
 
 data class GroupInfo(val title: String, val isSystem: Boolean)
 
-class ContactRepository(
-    private val context: Context,
+@Singleton
+class ContactRepository @Inject constructor(
+    @param:ApplicationContext private val context: Context,
     private val contactDao: ContactDao,
     private val labelConfigDao: LabelConfigDao,
 ) {
 
     val allContacts: Flow<List<Contact>> = contactDao.getAllContacts()
     val labelConfigs: Flow<List<LabelConfig>> = labelConfigDao.getAllConfigs()
+
+    private val dateFormats = listOf(
+        DateTimeFormatter.ISO_LOCAL_DATE,
+        DateTimeFormatter.ofPattern("yyyyMMdd"),
+    )
 
     /**
      * Intelligenter Sync: Vergleicht System-Kontakte mit DB, erhält lokale Daten (Geschenkideen)
@@ -77,12 +86,13 @@ class ContactRepository(
     ) {
         val groups = fetchContactGroups()
         val allLabelsInSystem = systemContacts.asSequence().flatMap { it.labels }.toSet()
+        val configsToInsert = mutableListOf<LabelConfig>()
         
         // Alle System-Gruppen verarbeiten
         groups.values.distinctBy { it.title }.forEach { group ->
             val existing = existingConfigs[group.title]
-            if (existing == null || (existing.isSystem != group.isSystem)) {
-                labelConfigDao.insertConfig(
+            if (existing == null || existing.isSystem != group.isSystem) {
+                configsToInsert.add(
                     LabelConfig(
                         name = group.title,
                         isHiddenFromFilter = existing?.isHiddenFromFilter ?: false,
@@ -96,8 +106,12 @@ class ContactRepository(
         // Fehlende Labels (die vielleicht keine System-Gruppe haben) hinzufügen
         allLabelsInSystem.forEach { label ->
             if (!existingConfigs.containsKey(label) && groups.values.none { it.title == label }) {
-                labelConfigDao.insertConfig(LabelConfig(name = label))
+                configsToInsert.add(LabelConfig(name = label))
             }
+        }
+
+        if (configsToInsert.isNotEmpty()) {
+            labelConfigDao.insertConfigs(configsToInsert)
         }
     }
 
@@ -178,7 +192,7 @@ class ContactRepository(
         contactIds: Set<String>,
         groups: Map<Long, GroupInfo>
     ): Map<String, List<String>> = withContext(Dispatchers.IO) {
-        val result = mutableMapOf<String, MutableList<String>>()
+        val result = mutableMapOf<String, MutableSet<String>>()
         if (contactIds.isEmpty()) return@withContext emptyMap()
 
         val projection = arrayOf(
@@ -186,35 +200,38 @@ class ContactRepository(
             ContactsContract.CommonDataKinds.GroupMembership.GROUP_ROW_ID
         )
 
-        val idList = contactIds.joinToString(",") { "'$it'" }
-        val selection = "${ContactsContract.Data.MIMETYPE} = ? AND ${ContactsContract.Data.CONTACT_ID} IN ($idList)"
-        val selectionArgs = arrayOf(ContactsContract.CommonDataKinds.GroupMembership.CONTENT_ITEM_TYPE)
+        // Verhindern von SQL-Injection und Handling großer Listen via Chunking
+        contactIds.chunked(900).forEach { chunk ->
+            val placeholders = chunk.joinToString(",") { "?" }
+            val selection = "${ContactsContract.Data.MIMETYPE} = ? AND ${ContactsContract.Data.CONTACT_ID} IN ($placeholders)"
+            val selectionArgs = arrayOf(ContactsContract.CommonDataKinds.GroupMembership.CONTENT_ITEM_TYPE, *chunk.toTypedArray())
 
-        context.contentResolver.query(
-            ContactsContract.Data.CONTENT_URI,
-            projection,
-            selection,
-            selectionArgs,
-            null
-        )?.use { cursor ->
-            val idIdx = cursor.getColumnIndex(ContactsContract.CommonDataKinds.GroupMembership.CONTACT_ID)
-            val groupRowIdIdx = cursor.getColumnIndex(ContactsContract.CommonDataKinds.GroupMembership.GROUP_ROW_ID)
+            context.contentResolver.query(
+                ContactsContract.Data.CONTENT_URI,
+                projection,
+                selection,
+                selectionArgs,
+                null
+            )?.use { cursor ->
+                val idIdx = cursor.getColumnIndex(ContactsContract.CommonDataKinds.GroupMembership.CONTACT_ID)
+                val groupRowIdIdx = cursor.getColumnIndex(ContactsContract.CommonDataKinds.GroupMembership.GROUP_ROW_ID)
 
-            while (cursor.moveToNext()) {
-                val contactId = cursor.getString(idIdx)
-                val groupId = cursor.getLong(groupRowIdIdx)
-                groups[groupId]?.let { groupInfo ->
-                    // Redundante System-Labels wie "My Contacts" filtern
-                    val lowerTitle = groupInfo.title.lowercase()
-                    val isRedundant = lowerTitle == "my contacts" || lowerTitle == "contacts" || lowerTitle == "ich" || lowerTitle == "me"
-                    
-                    if (!isRedundant) {
-                        result.getOrPut(contactId) { mutableListOf() }.add(groupInfo.title)
+                while (cursor.moveToNext()) {
+                    val contactId = cursor.getString(idIdx)
+                    val groupId = cursor.getLong(groupRowIdIdx)
+                    groups[groupId]?.let { groupInfo ->
+                        // Redundante System-Labels wie "My Contacts" filtern
+                        val lowerTitle = groupInfo.title.lowercase()
+                        val isRedundant = lowerTitle == "my contacts" || lowerTitle == "contacts" || lowerTitle == "ich" || lowerTitle == "me"
+                        
+                        if (!isRedundant) {
+                            result.getOrPut(contactId) { mutableSetOf() }.add(groupInfo.title)
+                        }
                     }
                 }
             }
         }
-        result.mapValues { it.value.distinct() }
+        result.mapValues { it.value.toList() }
     }
 
     private suspend fun fetchContactGroups(): Map<Long, GroupInfo> = withContext(Dispatchers.IO) {
@@ -237,9 +254,9 @@ class ContactRepository(
             val systemIdIdx = cursor.getColumnIndex(ContactsContract.Groups.SYSTEM_ID)
 
             while (cursor.moveToNext()) {
-                val id = cursor.getLong(idIdx)
-                val title = cursor.getString(titleIdx)
-                val systemId = cursor.getString(systemIdIdx)
+                val id = idIdx.takeIf { it != -1 }?.let { cursor.getLong(it) } ?: continue
+                val title = titleIdx.takeIf { it != -1 }?.let { cursor.getString(it) }
+                val systemId = systemIdIdx.takeIf { it != -1 }?.let { cursor.getString(it) }
                 if (!title.isNullOrBlank()) {
                     groups[id] = GroupInfo(title, systemId != null)
                 }
@@ -254,13 +271,8 @@ class ContactRepository(
             if (dateStr.startsWith("--")) {
                 LocalDate.parse("1900-${dateStr.substring(2)}")
             } else {
-                // Manche Systeme liefern yyyy-MM-dd, andere yyyyMMdd
-                val formats = listOf(
-                    DateTimeFormatter.ISO_LOCAL_DATE,
-                    DateTimeFormatter.ofPattern("yyyyMMdd")
-                )
                 var result: LocalDate? = null
-                for (format in formats) {
+                for (format in dateFormats) {
                     try {
                         result = LocalDate.parse(dateStr, format)
                         break

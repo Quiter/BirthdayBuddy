@@ -146,7 +146,7 @@ fun HomeScreen(
             AnimatedVisibility(
                 visible = !isFastScrolling,
                 enter = scaleIn() + fadeIn(),
-                exit = scaleOut() + fadeOut()
+                exit = scaleOut() + fadeOut(),
             ) {
                 HomeFAB(
                     showScrollUp = showScrollUp,
@@ -187,9 +187,9 @@ fun HomeScreen(
                         name = name,
                         isHiddenFromFilter = true,
                         isIgnored = true,
-                        isSystem = false
+                        isSystem = false,
                     )
-                }
+                },
             )
             
             if (!contacts.isNullOrEmpty()) {

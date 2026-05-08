@@ -4,8 +4,6 @@ import android.content.Context
 import com.heckmannch.birthdaybuddy2.database.AppDatabase
 import com.heckmannch.birthdaybuddy2.database.ContactDao
 import com.heckmannch.birthdaybuddy2.database.LabelConfigDao
-import com.heckmannch.birthdaybuddy2.repository.ContactRepository
-import com.heckmannch.birthdaybuddy2.repository.PreferenceRepository
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -31,21 +29,5 @@ object AppModule {
     @Provides
     fun provideLabelConfigDao(database: AppDatabase): LabelConfigDao {
         return database.labelConfigDao()
-    }
-
-    @Provides
-    @Singleton
-    fun provideContactRepository(
-        @ApplicationContext context: Context,
-        contactDao: ContactDao,
-        labelConfigDao: LabelConfigDao,
-    ): ContactRepository {
-        return ContactRepository(context, contactDao, labelConfigDao)
-    }
-
-    @Provides
-    @Singleton
-    fun providePreferenceRepository(@ApplicationContext context: Context): PreferenceRepository {
-        return PreferenceRepository(context)
     }
 }

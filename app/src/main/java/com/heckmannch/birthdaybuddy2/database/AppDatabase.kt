@@ -22,7 +22,7 @@ abstract class AppDatabase : RoomDatabase() {
                     context.applicationContext,
                     AppDatabase::class.java,
                     "birthday_database",
-                ).fallbackToDestructiveMigration(true).build().also { INSTANCE = it }
+                ).fallbackToDestructiveMigration(dropAllTables = true).build().also { INSTANCE = it }
             }
     }
 }

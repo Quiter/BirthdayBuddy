@@ -16,4 +16,7 @@ interface LabelConfigDao {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertConfig(config: LabelConfig)
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertConfigs(configs: List<LabelConfig>)
 }

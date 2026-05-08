@@ -115,7 +115,7 @@ fun BirthdayItem(
         if (contact.isToday && (contact.nextAge != null)) {
             when {
                 contact.nextAge <= 10 -> BorderStroke(2.dp, Brush.linearGradient(KidColors))
-                (contact.nextAge >= 20) && (contact.nextAge % 10 == 0) -> BorderStroke(2.dp, BirthdayGold)
+                (contact.nextAge >= 20 && contact.nextAge % 10 == 0) -> BorderStroke(2.dp, BirthdayGold)
                 else -> BorderStroke(2.dp, BirthdaySilver)
             }
         } else null
@@ -125,7 +125,7 @@ fun BirthdayItem(
         modifier = Modifier
             .fillMaxWidth()
             .padding(vertical = 4.dp)
-            .height(IntrinsicSize.Min)
+            .height(IntrinsicSize.Min),
     ) {
         Row(
             modifier = Modifier
@@ -142,19 +142,17 @@ fun BirthdayItem(
             SwipeActionButton(
                 icon = Icons.Default.Person,
                 color = MaterialTheme.colorScheme.primary,
-                onClick = {
-                    onOpenContact(contact.contactId, contact.lookupKey)
-                    scope.launch { draggableState.animateTo(DragValue.Closed) }
-                }
-            )
+            ) {
+                onOpenContact(contact.contactId, contact.lookupKey)
+                scope.launch { draggableState.animateTo(DragValue.Closed) }
+            }
             SwipeActionButton(
                 icon = Icons.Default.Delete,
                 color = MaterialTheme.colorScheme.outline,
-                onClick = {
-                    onIgnoreContact(contact.fullName)
-                    scope.launch { draggableState.animateTo(DragValue.Closed) }
-                }
-            )
+            ) {
+                onIgnoreContact(contact.fullName)
+                scope.launch { draggableState.animateTo(DragValue.Closed) }
+            }
         }
 
         Card(
