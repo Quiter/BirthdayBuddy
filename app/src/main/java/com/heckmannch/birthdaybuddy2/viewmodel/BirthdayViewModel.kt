@@ -25,7 +25,7 @@ import javax.inject.Inject
 class BirthdayViewModel @Inject constructor(
     application: Application,
     private val contactRepository: ContactRepository,
-    private val preferenceRepository: PreferenceRepository
+    private val preferenceRepository: PreferenceRepository,
 ) : AndroidViewModel(application) {
 
     val notificationsEnabled: StateFlow<Boolean> = preferenceRepository.notificationsEnabled

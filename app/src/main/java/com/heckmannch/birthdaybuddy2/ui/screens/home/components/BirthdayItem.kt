@@ -50,7 +50,7 @@ fun BirthdayItem(
 ) {
     val density = LocalDensity.current
     val scope = rememberCoroutineScope()
-    var showGiftDialog by remember { mutableStateOf(false) }
+    var showGiftDialog by remember { mutableStateOf(value = false) }
 
     // Maße und Anker-Berechnungen (Optimiert durch remember)
     val buttonWidth = 50.dp
@@ -143,9 +143,8 @@ fun BirthdayItem(
         ) {
             SwipeActionButton(
                 icon = Icons.Default.Edit,
-                color = Color(0xFFFFB300),
-                onClick = { showGiftDialog = true }
-            )
+                color = Color(0xFFFFB300)
+            ) { showGiftDialog = true }
             SwipeActionButton(
                 icon = Icons.Default.Person,
                 color = MaterialTheme.colorScheme.primary,

@@ -21,7 +21,7 @@ data class GroupInfo(val title: String, val isSystem: Boolean)
 class ContactRepository(
     private val context: Context,
     private val contactDao: ContactDao,
-    private val labelConfigDao: LabelConfigDao
+    private val labelConfigDao: LabelConfigDao,
 ) {
 
     val allContacts: Flow<List<Contact>> = contactDao.getAllContacts()
@@ -76,12 +76,12 @@ class ContactRepository(
         existingConfigs: Map<String, LabelConfig>
     ) {
         val groups = fetchContactGroups()
-        val allLabelsInSystem = systemContacts.flatMap { it.labels }.toSet()
+        val allLabelsInSystem = systemContacts.asSequence().flatMap { it.labels }.toSet()
         
         // Alle System-Gruppen verarbeiten
         groups.values.distinctBy { it.title }.forEach { group ->
             val existing = existingConfigs[group.title]
-            if (existing == null || existing.isSystem != group.isSystem) {
+            if (existing == null || (existing.isSystem != group.isSystem)) {
                 labelConfigDao.insertConfig(
                     LabelConfig(
                         name = group.title,
@@ -103,8 +103,7 @@ class ContactRepository(
 
     suspend fun updateGiftIdeas(lookupKey: String, ideas: String) {
         withContext(Dispatchers.IO) {
-            val contact = contactDao.getContactByLookupKey(lookupKey)
-            if (contact != null) {
+            contactDao.getContactByLookupKey(lookupKey)?.let { contact ->
                 contactDao.insertContact(contact.copy(giftIdeas = ideas))
             }
         }
