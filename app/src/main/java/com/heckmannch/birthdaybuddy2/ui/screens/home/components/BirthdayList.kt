@@ -16,19 +16,21 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
-import com.heckmannch.birthdaybuddy2.viewmodel.BirthdayViewModel
+import com.heckmannch.birthdaybuddy2.viewmodel.ContactUiModel
 
 @Composable
 fun BirthdayList(
-    viewModel: BirthdayViewModel,
+    contacts: List<ContactUiModel>,
+    swipeHintShown: Boolean,
     modifier: Modifier = Modifier,
     listState: LazyListState,
     onRequestPermission: () -> Unit,
+    onSetSwipeHintShown: () -> Unit,
+    onUpdateGiftIdeas: (String, String) -> Unit,
+    onOpenContact: (String, String) -> Unit,
+    onIgnoreContact: (String) -> Unit,
 ) {
     val context = LocalContext.current
-    val contactsState by viewModel.contacts.collectAsState()
-    val contacts = contactsState ?: return
-
     val hasPermission by remember {
         derivedStateOf {
             ContextCompat.checkSelfPermission(context, Manifest.permission.READ_CONTACTS) == PackageManager.PERMISSION_GRANTED
@@ -38,10 +40,8 @@ fun BirthdayList(
     if (contacts.isEmpty()) {
         EmptyListState(hasPermission = hasPermission, onRequestPermission = onRequestPermission)
     } else {
-        val swipeHintShown by viewModel.swipeHintShown.collectAsState()
         var expandedContactId by remember { mutableStateOf<String?>(null) }
         
-        // Stabilisierung des Expand-Handlers zur Vermeidung von unnötigen Re-Compositions
         val onExpand = remember {
             { id: String -> expandedContactId = id }
         }
@@ -56,16 +56,18 @@ fun BirthdayList(
                 key = { _, it -> it.id },
                 contentType = { _, _ -> "birthdayItem" }
             ) { index, contact ->
-                // derivedStateOf hier nicht nötig, da einfache Booleans
                 val isExpanded = expandedContactId == contact.id
                 val isFirstItem = index == 0
                 
                 BirthdayItem(
                     contact = contact,
-                    viewModel = viewModel,
                     showHint = !swipeHintShown && isFirstItem,
                     isExpanded = isExpanded,
-                    onExpand = { onExpand(contact.id) }
+                    onExpand = { onExpand(contact.id) },
+                    onSetSwipeHintShown = onSetSwipeHintShown,
+                    onUpdateGiftIdeas = onUpdateGiftIdeas,
+                    onOpenContact = onOpenContact,
+                    onIgnoreContact = onIgnoreContact
                 )
             }
         }

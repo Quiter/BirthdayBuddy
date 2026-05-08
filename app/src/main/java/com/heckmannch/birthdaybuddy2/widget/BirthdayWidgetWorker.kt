@@ -2,15 +2,19 @@ package com.heckmannch.birthdaybuddy2.widget
 
 import android.content.Context
 import androidx.glance.appwidget.updateAll
+import androidx.hilt.work.HiltWorker
 import androidx.work.*
+import dagger.assisted.Assisted
+import dagger.assisted.AssistedInject
 import java.time.Duration
 import java.time.LocalDateTime
 import java.time.LocalTime
 import java.util.concurrent.TimeUnit
 
-class BirthdayWidgetWorker(
-    private val context: Context,
-    workerParameters: WorkerParameters,
+@HiltWorker
+class BirthdayWidgetWorker @AssistedInject constructor(
+    @Assisted private val context: Context,
+    @Assisted workerParameters: WorkerParameters,
 ) : CoroutineWorker(context, workerParameters) {
 
     override suspend fun doWork(): Result {

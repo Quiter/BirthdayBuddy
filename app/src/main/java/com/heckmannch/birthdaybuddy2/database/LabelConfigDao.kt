@@ -11,6 +11,9 @@ interface LabelConfigDao {
     @Query("SELECT * FROM label_configs")
     suspend fun getAllConfigsImmediate(): List<LabelConfig>
 
+    @Query("SELECT * FROM label_configs WHERE name = :name")
+    suspend fun getConfigForLabel(name: String): LabelConfig?
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertConfig(config: LabelConfig)
 }

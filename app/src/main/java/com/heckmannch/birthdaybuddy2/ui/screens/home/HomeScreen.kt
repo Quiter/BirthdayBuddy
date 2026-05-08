@@ -20,6 +20,7 @@ import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.heckmannch.birthdaybuddy2.ui.screens.home.components.BirthdayList
 import com.heckmannch.birthdaybuddy2.ui.screens.home.components.FastScrollbar
 import com.heckmannch.birthdaybuddy2.ui.screens.home.components.HomeFAB
@@ -45,10 +46,12 @@ fun HomeScreen(
     val listState = rememberLazyListState()
     val scope = rememberCoroutineScope()
     
-    val searchQuery by viewModel.searchQuery.collectAsState()
-    val availableLabels by viewModel.availableLabels.collectAsState()
-    val selectedLabel by viewModel.selectedLabel.collectAsState()
-    val isFastScrolling by viewModel.isFastScrolling.collectAsState()
+    val searchQuery by viewModel.searchQuery.collectAsStateWithLifecycle()
+    val availableLabels by viewModel.availableLabels.collectAsStateWithLifecycle()
+    val selectedLabel by viewModel.selectedLabel.collectAsStateWithLifecycle()
+    val isFastScrolling by viewModel.isFastScrolling.collectAsStateWithLifecycle()
+    val contacts by viewModel.contacts.collectAsStateWithLifecycle()
+    val swipeHintShown by viewModel.swipeHintShown.collectAsStateWithLifecycle()
     
     var animatedPlaceholder by remember { mutableStateOf("BirthdayBuddy") }
     
@@ -167,18 +170,34 @@ fun HomeScreen(
                 },
         ) {
             BirthdayList(
-                viewModel = viewModel,
+                contacts = contacts ?: emptyList(),
+                swipeHintShown = swipeHintShown,
                 modifier = Modifier.fillMaxSize(),
                 listState = listState,
-                onRequestPermission = { permissionLauncher.launch(Manifest.permission.READ_CONTACTS) }
+                onRequestPermission = { permissionLauncher.launch(Manifest.permission.READ_CONTACTS) },
+                onSetSwipeHintShown = { viewModel.setSwipeHintShown() },
+                onUpdateGiftIdeas = { key, ideas -> viewModel.updateGiftIdeas(key, ideas) },
+                onOpenContact = { id, key ->
+                    try {
+                        val lookupUri = ContactsContract.Contacts.getLookupUri(id.toLong(), key)
+                        context.startActivity(Intent(Intent.ACTION_VIEW, lookupUri))
+                    } catch (_: Exception) {}
+                },
+                onIgnoreContact = { name ->
+                    viewModel.updateLabelConfig(
+                        name = name,
+                        isHiddenFromFilter = true,
+                        isIgnored = true,
+                        isSystem = false
+                    )
+                }
             )
             
-            val contacts by viewModel.contacts.collectAsState()
             if (!contacts.isNullOrEmpty()) {
                 FastScrollbar(
-                    viewModel = viewModel,
                     listState = listState,
                     contacts = contacts!!,
+                    onSetFastScrolling = { viewModel.setFastScrolling(it) },
                     modifier = Modifier
                         .align(Alignment.CenterEnd)
                         .fillMaxHeight()

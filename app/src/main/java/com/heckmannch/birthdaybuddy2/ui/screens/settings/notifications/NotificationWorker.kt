@@ -1,8 +1,12 @@
 package com.heckmannch.birthdaybuddy2.ui.screens.settings.notifications
 
 import android.content.Context
+import androidx.hilt.work.HiltWorker
 import androidx.work.*
-import com.heckmannch.birthdaybuddy2.database.AppDatabase
+import com.heckmannch.birthdaybuddy2.repository.ContactRepository
+import com.heckmannch.birthdaybuddy2.repository.PreferenceRepository
+import dagger.assisted.Assisted
+import dagger.assisted.AssistedInject
 import kotlinx.coroutines.flow.first
 import java.time.Duration
 import java.time.LocalDate
@@ -10,19 +14,20 @@ import java.time.LocalDateTime
 import java.time.LocalTime
 import java.util.concurrent.TimeUnit
 
-class NotificationWorker(
-    private val context: Context,
-    workerParameters: WorkerParameters,
+@HiltWorker
+class NotificationWorker @AssistedInject constructor(
+    @Assisted private val context: Context,
+    @Assisted workerParameters: WorkerParameters,
+    private val contactRepository: ContactRepository,
+    private val preferenceRepository: PreferenceRepository
 ) : CoroutineWorker(context, workerParameters) {
 
     override suspend fun doWork(): Result {
-        val preferenceManager = PreferenceManager(context)
-        val isEnabled = preferenceManager.notificationsEnabled.first()
+        val isEnabled = preferenceRepository.notificationsEnabled.first()
         
         if (!isEnabled) return Result.success()
 
-        val database = AppDatabase.getDatabase(context)
-        val allContacts = database.contactDao().getAllContacts().first()
+        val allContacts = contactRepository.allContacts.first()
         
         val today = LocalDate.now()
         val todayBirthdays = allContacts.filter { 

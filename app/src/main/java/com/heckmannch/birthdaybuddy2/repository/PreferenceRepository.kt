@@ -1,4 +1,4 @@
-package com.heckmannch.birthdaybuddy2.ui.screens.settings.notifications
+package com.heckmannch.birthdaybuddy2.repository
 
 import android.content.Context
 import androidx.datastore.core.DataStore
@@ -9,13 +9,13 @@ import kotlinx.coroutines.flow.map
 
 private val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = "settings")
 
-class PreferenceManager(private val context: Context) {
+class PreferenceRepository(private val context: Context) {
 
     companion object {
-        val NOTIFICATIONS_ENABLED = booleanPreferencesKey("notifications_enabled")
-        val NOTIFICATION_HOUR = intPreferencesKey("notification_hour")
-        val NOTIFICATION_MINUTE = intPreferencesKey("notification_minute")
-        val SWIPE_HINT_SHOWN = booleanPreferencesKey("swipe_hint_shown")
+        private val NOTIFICATIONS_ENABLED = booleanPreferencesKey("notifications_enabled")
+        private val NOTIFICATION_HOUR = intPreferencesKey("notification_hour")
+        private val NOTIFICATION_MINUTE = intPreferencesKey("notification_minute")
+        private val SWIPE_HINT_SHOWN = booleanPreferencesKey("swipe_hint_shown")
     }
 
     val notificationsEnabled: Flow<Boolean> = context.dataStore.data

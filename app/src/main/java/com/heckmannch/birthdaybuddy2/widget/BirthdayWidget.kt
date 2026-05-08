@@ -19,8 +19,8 @@ import androidx.glance.text.TextStyle
 import com.heckmannch.birthdaybuddy2.MainActivity
 import com.heckmannch.birthdaybuddy2.database.AppDatabase
 import com.heckmannch.birthdaybuddy2.database.Contact
-import com.heckmannch.birthdaybuddy2.viewmodel.safeDaysUntilNext
-import com.heckmannch.birthdaybuddy2.viewmodel.safeNextAge
+import com.heckmannch.birthdaybuddy2.util.safeDaysUntilNext
+import com.heckmannch.birthdaybuddy2.util.safeNextAge
 import kotlinx.coroutines.flow.combine
 import java.time.format.DateTimeFormatter
 import java.time.format.FormatStyle

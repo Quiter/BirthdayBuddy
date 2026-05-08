@@ -3,7 +3,7 @@
 > **TL;DR für neue Sessions:** Moderne M3 Geburtstags-App. Android-Kontakte sind die Single-Source-of-Truth. Migration auf `LOOKUP_KEY` & `localId` abgeschlossen (zukunftssicher). High-Performance Sync (Batch-Labels), hybride Filter-Logik (Filterleiste nur bei Bedarf), präzises Widget-Update (Mitternacht via WorkManager). Architektur ist sauber, modular und performant (Room v6, Compose BOM 2026.04).
 
 ## 🚀 Aktueller Stand
-Die App ist eine moderne Geburtstags-Verwaltung, die Kontakte aus dem Android-System synchronisiert, filtert und in einem Widget anzeigt. Sie folgt Material 3 Richtlinien und Clean Architecture Prinzipien.
+Die App befindet sich gerade in einer umfassenden Refactoring-Phase (V3), um die Skalierbarkeit und Testbarkeit zu erhöhen. Fokus liegt auf der Trennung von Business-Logik und UI-State durch das Repository-Pattern und moderner Lifecycle-Integration.
 
 **WICHTIG:** Bei jeder strukturellen Änderung (neue Dateien, Refactoring) muss die `PROJECT_STRUCTURE.md` zwingend aktualisiert werden, um die Dokumentation konsistent zu halten.
 
@@ -14,7 +14,8 @@ Die App ist eine moderne Geburtstags-Verwaltung, die Kontakte aus dem Android-Sy
     - `ContactUiModel` (@Immutable) für performante UI-Updates; robuste Datums-Berechnungen (Schaltjahr-sicher).
     - **Single Source of Truth:** Das Android-System (Kontakte-Provider) bleibt die einzige Quelle für Personendaten. Die App pflegt keine eigenen Kontaktdaten, sondern reichert diese nur für Filterzwecke (Labels) an.
     - **Stabile Identifikatoren:** Migration von der numerischen System-ID auf den `LOOKUP_KEY` als Primärschlüssel für UI-Stabilität und Robustheit bei Geräte-Wechseln oder System-Syncs. Interner Room-Key (`localId`) sorgt für performante Relationen.
-- **Navigation:** Jetpack Navigation mit Material 3 Shared-Axis-Animationen.
+- **Dependency Injection:** Vollständige Integration von Hilt für ViewModels, Repositories und WorkManager.
+- **Navigation:** Jetpack Navigation mit Material 3 Shared-Axis-Animationen und Hilt-Integration.
 
 ## ✨ Key Features
 1. **HomeScreen:** 
@@ -87,7 +88,12 @@ Die App ist eine moderne Geburtstags-Verwaltung, die Kontakte aus dem Android-Sy
     - **Re-Composition Guard:** Umfassende Memoization von UI-Handlern (`remember`) und Einsatz von `distinctUntilChanged` im ViewModel zur Minimierung redundanter View-Updates.
     - **UX Refinement:** Präzise Steuerung der Scrollbar-Bubble (Anzeige nur bei aktivem Drag) und verbesserte Tastatur-Integration (Search-Action, automatisches Schließen).
     - **Density Independence:** Stabilisierung der Swipe-Anker gegen Änderungen der System-Schriftgröße/Dichte.
+17. **Architecture Refactoring (Completed):**
+    - **Repository Pattern:** Auslagerung der Daten-Logik aus dem `BirthdayViewModel` in spezialisierte Repositories (`ContactRepository`, `PreferenceRepository`).
+    - **Lifecycle Awareness:** Umstellung auf `collectAsStateWithLifecycle` zur Ressourcenschonung.
+    - **Stateless Components:** Refactoring der UI-Komponenten auf State Hoisting (Entfernung der ViewModel-Abhängigkeit in `BirthdayList`, `BirthdayItem` und `FastScrollbar`).
+    - **Dependency Injection:** Einführung von Hilt zur sauberen Verwaltung von Abhängigkeiten (Database, DAOs, Repositories).
 
 ## 🎯 Kommende Aufgaben (Backlog)
-- **Label-Visualisierung:** Subtile Farbakzente für Labels zur besseren Unterscheidung.
+- **Geschenk Ideen:** Das Eingabefeld für die Geschenk Ideen optimieren.
 - **Erweiterte Benachrichtigungen:** Einstellbare Erinnerungen (1 Tag vorher, am Tag selbst) via WorkManager.

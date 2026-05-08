@@ -1,7 +1,5 @@
 package com.heckmannch.birthdaybuddy2.ui.screens.home.components
 
-import android.content.Intent
-import android.provider.ContactsContract
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
@@ -31,12 +29,10 @@ import coil.compose.AsyncImage
 import com.heckmannch.birthdaybuddy2.ui.theme.BirthdayGold
 import com.heckmannch.birthdaybuddy2.ui.theme.BirthdaySilver
 import com.heckmannch.birthdaybuddy2.ui.theme.KidColors
-import com.heckmannch.birthdaybuddy2.viewmodel.BirthdayViewModel
 import com.heckmannch.birthdaybuddy2.viewmodel.ContactUiModel
 import com.heckmannch.birthdaybuddy2.viewmodel.GiftIdea
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import kotlin.math.roundToInt
 
 enum class DragValue { Closed, Open }
 
@@ -44,10 +40,13 @@ enum class DragValue { Closed, Open }
 @Composable
 fun BirthdayItem(
     contact: ContactUiModel,
-    viewModel: BirthdayViewModel,
     showHint: Boolean,
     isExpanded: Boolean,
     onExpand: () -> Unit,
+    onSetSwipeHintShown: () -> Unit,
+    onUpdateGiftIdeas: (String, String) -> Unit,
+    onOpenContact: (String, String) -> Unit,
+    onIgnoreContact: (String) -> Unit,
 ) {
     val density = LocalDensity.current
     val scope = rememberCoroutineScope()
@@ -91,7 +90,7 @@ fun BirthdayItem(
             draggableState.animateTo(DragValue.Open)
             delay(1000)
             draggableState.animateTo(DragValue.Closed)
-            viewModel.setSwipeHintShown()
+            onSetSwipeHintShown()
         }
     }
 
@@ -112,7 +111,7 @@ fun BirthdayItem(
             initialIdeas = GiftIdea.fromString(contact.giftIdeas),
             onDismiss = { showGiftDialog = false },
         ) { ideas ->
-            viewModel.updateGiftIdeas(contact.lookupKey, GiftIdea.toString(ideas))
+            onUpdateGiftIdeas(contact.lookupKey, GiftIdea.toString(ideas))
             showGiftDialog = false
             scope.launch { draggableState.animateTo(targetValue = DragValue.Closed) }
         }
@@ -151,25 +150,15 @@ fun BirthdayItem(
                 icon = Icons.Default.Person,
                 color = MaterialTheme.colorScheme.primary,
                 onClick = {
-                    try {
-                        val lookupUri = ContactsContract.Contacts.getLookupUri(contact.contactId.toLong(), contact.lookupKey)
-                        viewModel.getApplication<android.app.Application>().startActivity(
-                            Intent(Intent.ACTION_VIEW, lookupUri).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                        )
-                        scope.launch { draggableState.animateTo(DragValue.Closed) }
-                    } catch (_: Exception) {}
+                    onOpenContact(contact.contactId, contact.lookupKey)
+                    scope.launch { draggableState.animateTo(DragValue.Closed) }
                 }
             )
             SwipeActionButton(
                 icon = Icons.Default.Delete,
                 color = MaterialTheme.colorScheme.outline,
                 onClick = {
-                    viewModel.updateLabelConfig(
-                        name = contact.fullName,
-                        isHiddenFromFilter = true,
-                        isIgnored = true,
-                        isSystem = false
-                    )
+                    onIgnoreContact(contact.fullName)
                     scope.launch { draggableState.animateTo(DragValue.Closed) }
                 }
             )

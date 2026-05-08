@@ -14,11 +14,12 @@ import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import dagger.hilt.android.AndroidEntryPoint
 import com.heckmannch.birthdaybuddy2.ui.screens.home.HomeScreen
 import com.heckmannch.birthdaybuddy2.ui.screens.settings.SettingsScreen
 import com.heckmannch.birthdaybuddy2.ui.screens.settings.labels.LabelSettingsScreen
@@ -37,6 +38,7 @@ private object Routes {
     const val NOTIFICATION_SETTINGS = "notification_settings"
 }
 
+@AndroidEntryPoint
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -47,7 +49,7 @@ class MainActivity : ComponentActivity() {
 
         setContent {
             BirthdayBuddy2Theme {
-                val viewModel: BirthdayViewModel = viewModel()
+                val viewModel: BirthdayViewModel = hiltViewModel()
                 val navController = rememberNavController()
 
                 // React to intent changes (Initial start and onNewIntent)

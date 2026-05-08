@@ -19,30 +19,28 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
-import com.heckmannch.birthdaybuddy2.viewmodel.BirthdayViewModel
 import com.heckmannch.birthdaybuddy2.viewmodel.ContactUiModel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 @Composable
 fun FastScrollbar(
-    viewModel: BirthdayViewModel,
     listState: LazyListState,
     contacts: List<ContactUiModel>,
     modifier: Modifier = Modifier,
+    onSetFastScrolling: (Boolean) -> Unit = {},
 ) {
     val scope = rememberCoroutineScope()
     val density = LocalDensity.current
     var isDragging by remember { mutableStateOf(false) }
     var dragOffsetPx by remember { mutableFloatStateOf(0f) }
 
-    // Synchronisierung des Drag-Status mit dem ViewModel
+    // Synchronisierung des Drag-Status
     LaunchedEffect(isDragging) {
-        viewModel.setFastScrolling(isDragging)
+        onSetFastScrolling(isDragging)
     }
 
     // Bubble visibility: Zeigt die Bubble NUR beim Ziehen der Scrollbar
-    // produceState ist robuster für zeitgesteuerte Zustandsänderungen
     val showBubble by produceState(initialValue = false, key1 = isDragging) {
         if (isDragging) {
             value = true

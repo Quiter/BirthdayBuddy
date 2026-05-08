@@ -16,6 +16,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.core.content.ContextCompat
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.heckmannch.birthdaybuddy2.viewmodel.BirthdayViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -25,9 +26,9 @@ fun NotificationSettingsScreen(
     onNavigateBack: () -> Unit,
 ) {
     val context = LocalContext.current
-    val notificationsEnabled by viewModel.notificationsEnabled.collectAsState()
-    val notificationHour by viewModel.notificationHour.collectAsState()
-    val notificationMinute by viewModel.notificationMinute.collectAsState()
+    val notificationsEnabled by viewModel.notificationsEnabled.collectAsStateWithLifecycle()
+    val notificationHour by viewModel.notificationHour.collectAsStateWithLifecycle()
+    val notificationMinute by viewModel.notificationMinute.collectAsStateWithLifecycle()
 
     val showTimePicker = remember { mutableStateOf(value = false) }
 

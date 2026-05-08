@@ -2,6 +2,10 @@
 
 ## 📁 Root
 - `MainActivity.kt`: Einstiegspunkt der App. Regelt Navigation (NavHost) und Intent-Handling (z.B. vom Widget).
+- `BirthdayBuddyApplication.kt`: Hilt-Application Klasse und WorkManager-Konfiguration.
+
+## 📁 DI (`di`)
+- `AppModule.kt`: Hilt-Module zur Bereitstellung von Singleton-Instanzen (DB, Repos).
 
 ## 📁 Database (`database`)
 - `AppDatabase.kt`: Room-Datenbank Definition mit Singleton-Pattern.
@@ -10,6 +14,10 @@
 - `LabelConfig.kt`: Entity für Label-Konfigurationen (Sichtbarkeit/Ignorieren).
 - `LabelConfigDao.kt`: DAO für Label-Einstellungen.
 - `Converters.kt`: TypeConverters für `LocalDate` und Listen-Encoding.
+
+## 📁 Repository (`repository`)
+- `ContactRepository.kt`: Zentrale Instanz für Kontakt-Daten (Room + System-Provider).
+- `PreferenceRepository.kt`: Verwaltung von App-Einstellungen via DataStore.
 
 ## 📁 Home Screen (`ui.screens.home`)
 - `HomeScreen.kt`: Haupt-Container des Home-Screens. Orchestriert TopBar, List und FAB.
@@ -27,7 +35,6 @@
 - `notifications/NotificationSettingsScreen.kt`: Einstellungen für tägliche Erinnerungen und Uhrzeit.
 - `notifications/NotificationWorker.kt`: WorkManager-Logik für tägliche Benachrichtigungen.
 - `notifications/NotificationHelper.kt`: Utility zum Erstellen und Anzeigen der System-Notifications.
-- `notifications/PreferenceManager.kt`: DataStore-Anbindung für Nutzerpräferenzen.
 
 ## 📁 Theme & Design (`ui.theme`)
 - `Theme.kt`: Material 3 Theme-Definition mit Dynamic Color Support.
@@ -36,6 +43,10 @@
 
 ## 📁 ViewModel (`viewmodel`)
 - `BirthdayViewModel.kt`: Zentrales ViewModel (Single Source of Truth). Regelt Sync, Filterung und Business-Logik.
+- `ContactUiModel.kt`: UI-Modelle für Kontakte, Labels und Geschenkideen.
+
+## 📁 Utilities (`util`)
+- `DateUtils.kt`: Robuste Extensions für Datumsberechnungen (Schaltjahr-Support).
 
 ## 📁 Widget (`widget`)
 - `BirthdayWidget.kt`: Glance-basierte Widget-UI.
