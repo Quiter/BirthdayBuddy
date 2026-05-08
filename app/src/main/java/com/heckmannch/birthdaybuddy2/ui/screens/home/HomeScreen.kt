@@ -139,7 +139,7 @@ fun HomeScreen(
                 onSearchQueryChange = onSearchQueryChange,
                 onLabelSelected = onLabelSelected,
                 onNavigateToSettings = onNavigateToSettings,
-                onClearSearch = onClearSearch
+                onClearSearch = onClearSearch,
             )
         },
         floatingActionButton = {
@@ -150,14 +150,13 @@ fun HomeScreen(
             ) {
                 HomeFAB(
                     showScrollUp = showScrollUp,
-                    onScrollToTop = { scope.launch { listState.animateScrollToItem(0) } },
-                    onAddContact = {
-                        val intent = Intent(Intent.ACTION_INSERT).apply {
-                            type = ContactsContract.Contacts.CONTENT_TYPE
-                        }
-                        context.startActivity(intent)
+                    onScrollToTop = { scope.launch { listState.animateScrollToItem(0) } }
+                ) {
+                    val intent = Intent(Intent.ACTION_INSERT).apply {
+                        type = ContactsContract.Contacts.CONTENT_TYPE
                     }
-                )
+                    context.startActivity(intent)
+                }
             }
         },
     ) { innerPadding ->

@@ -54,7 +54,7 @@ fun BirthdayList(
             itemsIndexed(
                 items = contacts,
                 key = { _, it -> it.id },
-                contentType = { _, _ -> "birthdayItem" }
+                contentType = { _, _ -> "birthdayItem" },
             ) { index, contact ->
                 val isExpanded = expandedContactId == contact.id
                 val isFirstItem = index == 0

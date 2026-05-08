@@ -38,7 +38,7 @@ object AppModule {
     fun provideContactRepository(
         @ApplicationContext context: Context,
         contactDao: ContactDao,
-        labelConfigDao: LabelConfigDao
+        labelConfigDao: LabelConfigDao,
     ): ContactRepository {
         return ContactRepository(context, contactDao, labelConfigDao)
     }

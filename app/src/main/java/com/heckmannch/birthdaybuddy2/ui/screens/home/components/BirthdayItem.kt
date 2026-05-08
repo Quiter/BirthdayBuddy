@@ -3,6 +3,7 @@ package com.heckmannch.birthdaybuddy2.ui.screens.home.components
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.AnchoredDraggableDefaults
 import androidx.compose.foundation.gestures.AnchoredDraggableState
 import androidx.compose.foundation.gestures.DraggableAnchors
 import androidx.compose.foundation.gestures.Orientation
@@ -66,16 +67,9 @@ fun BirthdayItem(
         }
     }
 
-    val draggableState = remember(density) {
+    val draggableState = remember {
         AnchoredDraggableState(
             initialValue = DragValue.Closed,
-            positionalThreshold = { distance: Float -> distance * 0.5f },
-            velocityThreshold = { with(density) { 100.dp.toPx() } },
-            snapAnimationSpec = spring(
-                dampingRatio = Spring.DampingRatioNoBouncy,
-                stiffness = Spring.StiffnessMedium,
-            ),
-            decayAnimationSpec = exponentialDecay(),
         )
     }
     
@@ -170,7 +164,18 @@ fun BirthdayItem(
                 .graphicsLayer { 
                     translationX = if (draggableState.offset.isNaN()) 0f else draggableState.offset
                 }
-                .anchoredDraggable(draggableState, Orientation.Horizontal),
+                .anchoredDraggable(
+                    state = draggableState,
+                    orientation = Orientation.Horizontal,
+                    flingBehavior = AnchoredDraggableDefaults.flingBehavior(
+                        state = draggableState,
+                        positionalThreshold = { distance: Float -> distance * 0.5f },
+                        animationSpec = spring(
+                            dampingRatio = Spring.DampingRatioNoBouncy,
+                            stiffness = Spring.StiffnessMedium,
+                        )
+                    )
+                ),
             colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow),
             border = borderStroke
         ) {

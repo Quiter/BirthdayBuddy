@@ -42,7 +42,7 @@ fun GiftIdeaDialog(
             ) {
                 LazyColumn(
                     modifier = Modifier.weight(1f, fill = false),
-                    verticalArrangement = Arrangement.spacedBy(0.dp)
+                    verticalArrangement = Arrangement.spacedBy(0.dp),
                 ) {
                     itemsIndexed(
                         items = ideas, 

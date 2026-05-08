@@ -43,7 +43,7 @@ fun HomeTopBar(
 ) {
     val focusManager = LocalFocusManager.current
     val textStyle = MaterialTheme.typography.bodyLarge.copy(
-        color = MaterialTheme.colorScheme.onSurface
+        color = MaterialTheme.colorScheme.onSurface,
     )
 
     Column(
