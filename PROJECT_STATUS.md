@@ -97,7 +97,14 @@ Die App befindet sich gerade in einer umfassenden Refactoring-Phase (V3), um die
     - **API Migration:** Umstellung von `AnchoredDraggableState` auf das moderne `flingBehavior` Muster zur Behebung von Deprecation-Warnings.
     - **CI/CD Fix:** Korrektur der WorkManager-Initialisierung im Manifest für Hilt-Kompatibilität; Update der GitHub Actions auf Node.js 24.
     - **Inspection Cleanup:** Projektweite Bereinigung von IDE-Warnungen (Trailing Commas, Lambda-Syntax, optimierte Sequences).
+19. **Technical Excellence & Midnight Precision:**
+    - **Reactive Time Source:** Einführung des `TimeRepository` für automatisierte UI-Updates bei Datumswechseln um Mitternacht.
+    - **Repository Hardening:** Implementierung von SQL-Chunking zur Vermeidung von Parameter-Limits bei großen Kontaktmengen; Umstellung auf typsichere Hilt-Injektionen.
+    - **Performance:** Optimierung der Flow-Ketten im ViewModel zur Reduzierung redundanter Berechnungen bei Label-Änderungen.
+20. **Google Keep Style Gift Management:**
+    - **UX Overhaul:** Implementierung von Auto-Fokus und automatischer Tastatur-Öffnung beim Erstellen neuer Geschenkideen.
+    - **Smart Sorting:** Automatisches Verschieben abgehakter Einträge nach unten inkl. M3-Animationen (`animateItem`).
+    - **Data Integrity:** Erzwingen von Großbuchstaben am Zeilenanfang und robuste ID-basierte Item-Verwaltung zur Vermeidung von Index-Fehlern während Animationen.
 
 ## 🎯 Kommende Aufgaben (Backlog)
-- **Geschenk Ideen:** Das Eingabefeld für die Geschenk Ideen optimieren.
 - **Erweiterte Benachrichtigungen:** Einstellbare Erinnerungen (1 Tag vorher, am Tag selbst) via WorkManager.

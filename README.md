@@ -1,48 +1,51 @@
 # 🎂 BirthdayBuddy 2
 
-> **"Because the first version was a mess – and Google just can't get it right."**
+> **"Because Google keeps losing your birthdays – so I built the solution that just works."**
 
-BirthdayBuddy 2 is the definitive answer to unreliable birthday reminders. While Google keeps hiding reminders in the calendar, moving them to Assistant, or letting them disappear into the system void, this app brings everything together in one place: **Stable, modern, and reliable.**
+BirthdayBuddy 2 is a modern, reliable, and high-performance birthday management app for Android. While other apps rely on flaky calendar syncs or hidden assistant settings, BirthdayBuddy 2 treats your **Android System Contacts** as the single source of truth, enriching them with powerful features and a state-of-the-art Material 3 interface.
 
 ---
 
-## 🚀 Why this app?
+## 🚀 Why BirthdayBuddy 2?
 
-1.  **V1 was a dead end:** My first attempt was technically messy ("crap"). Version 2 is a complete rewrite with a modern architecture.
-2.  **Google Frustration:** I was tired of hoping that Google would keep calendar sync or Assistant notifications stable. BirthdayBuddy 2 is the solution that just works.
-3.  **Centralization:** One place for all birthdays, without having to search through three different Google apps.
+1.  **System-First:** No proprietary database for contacts. Your data stays where it belongs – in the Android Contacts Provider.
+2.  **Modern Architecture:** A complete rewrite (V3) from the ground up using the latest Android best practices (BOM 2026.04).
+3.  **Performance & UX:** Designed for 60fps scrolling and instant updates, even with thousands of contacts.
+4.  **Privacy:** No cloud, no tracking, no account required. Everything stays on your device.
 
 ---
 
 ## ✨ Key Features
 
-*   **Single Source of Truth:** The app uses the **Android ContactsProvider** directly. Your contacts stay in the system – the app only enriches them locally without duplicating data.
-*   **Material 3 Design:** A state-of-the-art UI built with Jetpack Compose, featuring "Gmail-style" search and an extremely high-performance fast-scrollbar.
-*   **Intelligent Widget:** A reactive homescreen widget (Jetpack Glance) that automatically updates at midnight.
-*   **Reliable Notifications:** Powered by WorkManager, notifications arrive exactly when you need them – independent of Google servers.
-*   **Hybrid Filtering:** A smart filter bar that only appears when you actually need it (based on your contact labels).
+*   **Intelligent Sync:** Uses `LOOKUP_KEY` and `localId` for cross-device consistency and robust system-sync handling.
+*   **GPU-Accelerated UI:** All animations (FAB, Swiping, Transitions) use `graphicsLayer` for GPU-side calculations, ensuring a stutter-free experience.
+*   **Sticky-Swipe Actions:** "Now Playing Style" swipe gestures for quick access to gift ideas, contact editing, or ignoring specific people.
+*   **Smart Filter Bar:** A hybrid filtering system that intelligently shows or hides labels based on your active usage.
+*   **Reactive Widget:** A Jetpack Glance homescreen widget that updates precisely at midnight (00:01 AM) via WorkManager.
+*   **Gift Management:** A Google Keep style checklist for each contact to keep track of gift ideas locally.
+*   **High-End Fast-Scrollbar:** A Google Photos style scrollbar with a predictive month-bubble and 48dp touch-area for precision navigation.
 
 ---
 
 ## 🛠 Tech Stack
 
-This app is a playground for modern Android development:
-
-*   **UI:** 100% Jetpack Compose (BOM 2026.05) with Material 3.
-*   **Persistence:** Room v6 (for labels, sync metadata, and settings).
-*   **Background:** WorkManager for precise widget updates and daily notification checks.
-*   **Preferences:** Jetpack DataStore for reactive settings.
-*   **Architecture:** Clean Architecture with ViewModel, Repository Pattern, and stable identifiers (`LOOKUP_KEY`) for cross-device consistency.
-*   **Optimization:** R8 Minification & Resource Shrinking for a minimal APK size.
-
----
-
-## 📦 Installation & Sync
-
-Just install, grant contact access, and hit "Sync". The app automatically detects all birthdays in your system and organizes them clearly.
-
-*No cloud, no tracking – everything stays on your device.*
+*   **UI:** 100% Jetpack Compose (BOM 2026.04) with Material 3.
+*   **Persistence:** Room v6 (with Batch-Insert optimizations) & Jetpack DataStore.
+*   **Background:** WorkManager for midnight widget refreshes and daily notification checks.
+*   **DI:** Hilt for clean dependency management (ViewModels, Repositories, DAOs).
+*   **Architecture:** Clean Repository Pattern with MVI-style UI state management.
+*   **Time Management:** Custom reactive `TimeRepository` for automated UI updates at midnight.
+*   **Image Loading:** Coil for efficient contact photo rendering.
 
 ---
 
-**Developed with ❤️ in Dortmund, Germany.**
+## 📦 Architecture Highlights
+
+*   **Stateless Components:** UI components utilize State Hoisting for maximum testability and reusability.
+*   **Lifecycle Awareness:** Uses `collectAsStateWithLifecycle` to minimize resource consumption when the app is in the background.
+*   **Memoization:** Strategic use of `derivedStateOf` and `remember` to prevent redundant UI computations.
+*   **Scalability:** Optimized for large datasets using Kotlin Sequences and SQL chunking.
+
+---
+
+**Developed with ❤️ – Stable, Modern, and Future-Proof.**
