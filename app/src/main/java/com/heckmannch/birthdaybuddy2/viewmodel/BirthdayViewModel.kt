@@ -1,9 +1,9 @@
 package com.heckmannch.birthdaybuddy2.viewmodel
 
-import android.app.Application
+import android.content.Context
 import android.util.Log
 import androidx.glance.appwidget.updateAll
-import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.heckmannch.birthdaybuddy2.database.LabelConfig
 import com.heckmannch.birthdaybuddy2.repository.ContactRepository
@@ -13,6 +13,7 @@ import com.heckmannch.birthdaybuddy2.ui.screens.settings.notifications.Notificat
 import com.heckmannch.birthdaybuddy2.util.toNextOccurrence
 import com.heckmannch.birthdaybuddy2.widget.BirthdayWidget
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
@@ -24,11 +25,11 @@ import javax.inject.Inject
 
 @HiltViewModel
 class BirthdayViewModel @Inject constructor(
-    application: Application,
+    @param:ApplicationContext private val context: Context,
     private val contactRepository: ContactRepository,
     private val preferenceRepository: PreferenceRepository,
     timeRepository: TimeRepository,
-) : AndroidViewModel(application) {
+) : ViewModel() {
 
     val notificationsEnabled: StateFlow<Boolean> = preferenceRepository.notificationsEnabled
         .stateIn(
@@ -61,9 +62,9 @@ class BirthdayViewModel @Inject constructor(
                 Triple(enabled, hour, minute)
             }.collect { (enabled, hour, minute) ->
                 if (enabled) {
-                    NotificationWorker.enqueueDailyNotification(getApplication(), hour, minute)
+                    NotificationWorker.enqueueDailyNotification(context, hour, minute)
                 } else {
-                    NotificationWorker.cancelNotification(getApplication())
+                    NotificationWorker.cancelNotification(context)
                 }
             }
         }
@@ -232,7 +233,7 @@ class BirthdayViewModel @Inject constructor(
                 LabelConfig(name, isHiddenFromFilter, isIgnored, isSystem),
             )
             try {
-                BirthdayWidget().updateAll(getApplication())
+                BirthdayWidget().updateAll(context)
             } catch (e: Exception) {
                 Log.e("BirthdayViewModel", "Widget update failed", e)
             }
@@ -249,7 +250,7 @@ class BirthdayViewModel @Inject constructor(
         viewModelScope.launch {
             contactRepository.syncContacts()
             try {
-                BirthdayWidget().updateAll(getApplication())
+                BirthdayWidget().updateAll(context)
             } catch (e: Exception) {
                 Log.e("BirthdayViewModel", "Widget update failed", e)
             }
@@ -276,7 +277,7 @@ class BirthdayViewModel @Inject constructor(
             daysUntilNext = daysLeft,
             daysLeftText = if (daysLeft == 0L) "Heute!" else "In $daysLeft T.",
             isToday = daysLeft == 0L,
-            giftIdeas = giftIdeas,
+            giftIdeas = GiftIdea.fromString(giftIdeas),
         )
     }
 }

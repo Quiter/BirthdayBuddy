@@ -4,10 +4,11 @@ import androidx.compose.runtime.Immutable
 
 /**
  * UI-Modell für einen Kontakt. 
+ * Alle Daten sind bereits für die Anzeige vorformatiert.
  */
 @Immutable
 data class ContactUiModel(
-    val id: String, // Interner Key oder lookupKey
+    val id: String, 
     val contactId: String,
     val lookupKey: String,
     val fullName: String,
@@ -20,8 +21,10 @@ data class ContactUiModel(
     val daysUntilNext: Long,
     val daysLeftText: String,
     val isToday: Boolean,
-    val giftIdeas: String?,
-)
+    val giftIdeas: List<GiftIdea>,
+) {
+    val hasGiftIdeas: Boolean get() = giftIdeas.any { it.text.isNotBlank() }
+}
 
 @Immutable
 data class LabelManagementModel(
@@ -38,6 +41,9 @@ data class GiftIdea(
     val isChecked: Boolean = false,
 ) {
     companion object {
+        /**
+         * Dekodiert den in der DB gespeicherten String in eine Liste von Objekten.
+         */
         fun fromString(encoded: String?): List<GiftIdea> {
             if (encoded.isNullOrBlank()) return emptyList()
             return encoded.split(";;").mapNotNull {
@@ -48,6 +54,9 @@ data class GiftIdea(
             }
         }
 
+        /**
+         * Enkodiert die Liste für die Speicherung in der Datenbank.
+         */
         fun toString(ideas: List<GiftIdea>): String {
             return ideas.joinToString(";;") { "${if (it.isChecked) "1" else "0"}|${it.text}" }
         }

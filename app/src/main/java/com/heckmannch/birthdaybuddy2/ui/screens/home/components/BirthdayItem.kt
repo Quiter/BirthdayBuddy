@@ -100,7 +100,7 @@ fun BirthdayItem(
 
     if (showGiftDialog) {
         GiftIdeaDialog(
-            initialIdeas = GiftIdea.fromString(contact.giftIdeas),
+            initialIdeas = contact.giftIdeas,
             onDismiss = { showGiftDialog = false },
         ) { ideas ->
             onUpdateGiftIdeas(contact.lookupKey, GiftIdea.toString(ideas))
@@ -172,7 +172,7 @@ fun BirthdayItem(
                 headlineContent = {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Text(text = contact.fullName, style = MaterialTheme.typography.titleMedium)
-                        if (!contact.giftIdeas.isNullOrBlank()) {
+                        if (contact.hasGiftIdeas) {
                             Spacer(modifier = Modifier.width(8.dp))
                             Icon(
                                 Icons.Default.Edit,

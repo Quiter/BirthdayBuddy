@@ -112,6 +112,10 @@ Die App befindet sich gerade in einer umfassenden Refactoring-Phase (V3), um die
 22. **Label Logic & UI Refactoring:**
     - **Filter Precision Fix:** Korrektur der Label-Logik; es werden nun nur noch Labels in der Filterleiste angezeigt, die tatsächlich aktuell von Kontakten verwendet werden.
     - **Modular TopBar:** Vollständiges Refactoring der TopBar in drei Dateien (`HomeTopBar.kt`, `SearchBar.kt`, `LabelFilterBar.kt`) zur maximalen Wartbarkeit und Code-Klarheit.
+23. **Core Utility & ViewModel Hardening:**
+    - **Modernized DateUtils:** Refactoring der Datumsberechnungen auf semantische Enums (`Month.FEBRUARY`) und verbesserte Testbarkeit durch Standard-Parameter.
+    - **Advanced UI-Mapping:** Verschiebung der Geschenkideen-Dekodierung in den ViewModel-Hintergrund-Prozess zur Entlastung des UI-Threads.
+    - **Best Practice DI:** Umstellung des ViewModels auf reines Hilt-Injektionsmuster (Entfernung von `AndroidViewModel`).
 
 ## 🎯 Kommende Aufgaben (Backlog)
 - **Erweiterte Benachrichtigungen:** Einstellbare Erinnerungen (1 Tag vorher, am Tag selbst) via WorkManager.
