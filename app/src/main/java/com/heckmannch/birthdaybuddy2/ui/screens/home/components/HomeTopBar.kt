@@ -17,7 +17,7 @@ fun HomeTopBar(
     selectedLabel: String?,
     isFilterBarVisible: Boolean,
     onSearchQueryChange: (String) -> Unit,
-    onLabelSelected: (String) -> Unit,
+    onLabelSelected: (String?) -> Unit,
     onNavigateToSettings: () -> Unit,
     onClearSearch: () -> Unit,
 ) {

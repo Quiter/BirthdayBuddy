@@ -7,11 +7,8 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Check
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -23,7 +20,7 @@ fun LabelFilterBar(
     visible: Boolean,
     labels: List<String>,
     selectedLabel: String?,
-    onLabelSelected: (String) -> Unit,
+    onLabelSelected: (String?) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     if (labels.isNotEmpty()) {
@@ -37,6 +34,14 @@ fun LabelFilterBar(
                 contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
+                item {
+                    FilterChip(
+                        selected = selectedLabel == null,
+                        onClick = { onLabelSelected(null) },
+                        label = { Text("Alle") }
+                    )
+                }
+
                 items(
                     items = labels,
                     key = { it }
@@ -44,10 +49,7 @@ fun LabelFilterBar(
                     FilterChip(
                         selected = selectedLabel == label,
                         onClick = { onLabelSelected(label) },
-                        label = { Text(label) },
-                        leadingIcon = if (selectedLabel == label) {
-                            { Icon(Icons.Default.Check, contentDescription = null, modifier = Modifier.size(18.dp)) }
-                        } else null
+                        label = { Text(label) }
                     )
                 }
             }

@@ -10,7 +10,6 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Close
-import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -74,12 +73,6 @@ fun GiftIdeaDialog(
                                 .fillMaxWidth()
                                 .animateItem() // Sorgt für flüssiges Verschieben
                         ) {
-                            Icon(
-                                imageVector = Icons.Default.Menu,
-                                contentDescription = "Sortieren",
-                                modifier = Modifier.size(20.dp),
-                                tint = MaterialTheme.colorScheme.outline.copy(alpha = 0.4f)
-                            )
                             Checkbox(
                                 checked = item.isChecked,
                                 onCheckedChange = { checked ->
@@ -174,7 +167,7 @@ fun GiftIdeaDialog(
                         Icon(
                             imageVector = Icons.Default.Add,
                             contentDescription = null,
-                            modifier = Modifier.size(24.dp).padding(start = 28.dp),
+                            modifier = Modifier.size(24.dp).padding(start = 12.dp),
                             tint = MaterialTheme.colorScheme.primary
                         )
                         Spacer(modifier = Modifier.width(12.dp))

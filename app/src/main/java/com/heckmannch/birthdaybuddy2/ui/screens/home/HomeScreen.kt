@@ -111,7 +111,7 @@ fun HomeScreen(
     }
 
     val onLabelSelected = remember(viewModel) {
-        { label: String ->
+        { label: String? ->
             isResettingFilter = true
             viewModel.onLabelSelected(label)
         }
