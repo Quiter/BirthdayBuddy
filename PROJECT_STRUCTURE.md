@@ -3,6 +3,9 @@
 ## 📁 Root
 - `MainActivity.kt`: Einstiegspunkt der App. Regelt Navigation (NavHost) und Intent-Handling (z.B. vom Widget).
 - `BirthdayBuddyApplication.kt`: Hilt-Application Klasse und WorkManager-Konfiguration.
+- `PROJECT_STATUS.md`: Aktueller Fokus und Meilensteine.
+- `PROJECT_STRUCTURE.md`: Diese Datei (Struktur-Dokumentation).
+- `CHANGELOG.md`: Vollständige Historie aller Änderungen.
 
 ## 📁 DI (`di`)
 - `AppModule.kt`: Hilt-Module zur Bereitstellung von Singleton-Instanzen (DB, Repos).
