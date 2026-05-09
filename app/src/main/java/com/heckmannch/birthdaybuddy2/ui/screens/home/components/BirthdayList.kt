@@ -18,6 +18,10 @@ import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import com.heckmannch.birthdaybuddy2.viewmodel.ContactUiModel
 
+/**
+ * Verwaltet die Liste der Geburtstage.
+ * Kümmert sich um den Empty-State und die exklusive Expansion von Items.
+ */
 @Composable
 fun BirthdayList(
     contacts: List<ContactUiModel>,
@@ -30,15 +34,24 @@ fun BirthdayList(
     onOpenContact: (String, String) -> Unit,
 ) {
     val context = LocalContext.current
+    
+    // Berechtigungsstatus reaktiv halten
     val hasPermission by remember {
         derivedStateOf {
-            ContextCompat.checkSelfPermission(context, Manifest.permission.READ_CONTACTS) == PackageManager.PERMISSION_GRANTED
+            ContextCompat.checkSelfPermission(
+                context, 
+                Manifest.permission.READ_CONTACTS
+            ) == PackageManager.PERMISSION_GRANTED
         }
     }
 
     if (contacts.isEmpty()) {
-        EmptyListState(hasPermission = hasPermission, onRequestPermission = onRequestPermission)
+        EmptyListState(
+            hasPermission = hasPermission, 
+            onRequestPermission = onRequestPermission,
+        )
     } else {
+        // State, welches Item gerade geswiped/expandiert ist (nur eines gleichzeitig)
         var expandedContactId by remember { mutableStateOf<String?>(null) }
         
         val onExpand = remember {
@@ -57,6 +70,8 @@ fun BirthdayList(
             ) { index, contact ->
                 val isExpanded = expandedContactId == contact.id
                 val isFirstItem = index == 0
+                
+                // Stabiler Callback für dieses spezifische Item
                 val itemOnExpand = remember(contact.id) { { onExpand(contact.id) } }
                 
                 BirthdayItem(
@@ -67,7 +82,6 @@ fun BirthdayList(
                     onSetSwipeHintShown = onSetSwipeHintShown,
                     onUpdateGiftIdeas = onUpdateGiftIdeas,
                     onOpenContact = onOpenContact,
-                    modifier = Modifier.animateItem(),
                 )
             }
         }
@@ -77,7 +91,7 @@ fun BirthdayList(
 @Composable
 private fun EmptyListState(
     hasPermission: Boolean,
-    onRequestPermission: () -> Unit
+    onRequestPermission: () -> Unit,
 ) {
     Column(
         modifier = Modifier
@@ -98,7 +112,7 @@ private fun EmptyListState(
             Text(
                 text = "Um deine Geburtstage zu sehen, benötigt BirthdayBuddy Zugriff auf deine Kontakte.",
                 textAlign = TextAlign.Center,
-                style = MaterialTheme.typography.bodyLarge
+                style = MaterialTheme.typography.bodyLarge,
             )
             Spacer(modifier = Modifier.height(24.dp))
             Button(onClick = onRequestPermission) {
@@ -108,7 +122,7 @@ private fun EmptyListState(
             Text(
                 text = "Keine Geburtstage gefunden. Synchronisiere deine Kontakte in den Einstellungen oder füge neue hinzu.",
                 textAlign = TextAlign.Center,
-                style = MaterialTheme.typography.bodyLarge
+                style = MaterialTheme.typography.bodyLarge,
             )
         }
     }

@@ -7,6 +7,7 @@ import android.provider.ContactsContract
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.*
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.rememberLazyListState
@@ -32,7 +33,7 @@ import kotlinx.coroutines.launch
 
 /**
  * Der Hauptbildschirm der App.
- * Enthält die Suchleiste, Filter-Chips, die Geburtstagsliste und die Fast-Scrollbar.
+ * Orchestriert die Suche, Filterung, Geburtstagsliste und die Fast-Scrollbar.
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -46,6 +47,7 @@ fun HomeScreen(
     val listState = rememberLazyListState()
     val scope = rememberCoroutineScope()
     
+    // UI State aus dem ViewModel
     val searchQuery by viewModel.searchQuery.collectAsStateWithLifecycle()
     val availableLabels by viewModel.availableLabels.collectAsStateWithLifecycle()
     val selectedLabel by viewModel.selectedLabel.collectAsStateWithLifecycle()
@@ -53,18 +55,18 @@ fun HomeScreen(
     val contacts by viewModel.contacts.collectAsStateWithLifecycle()
     val swipeHintShown by viewModel.swipeHintShown.collectAsStateWithLifecycle()
     
+    // Lokaler UI State
     var animatedPlaceholder by remember { mutableStateOf("BirthdayBuddy") }
-    
-    // Verhinderung des Flimmerns der Filterbar beim Deaktivieren eines Filters oder Suche
-    var isResettingFilter by remember { mutableStateOf(value = false) }
+    var isResettingFilter by remember { mutableStateOf(false) }
+    var resetScrollRequested by remember { mutableStateOf(false) }
 
+    // Berechtigungsprüfung & Initialisierung
     val permissionLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.RequestPermission(),
     ) { isGranted ->
         if (isGranted) viewModel.syncContacts()
     }
 
-    // Initialisierung & Berechtigungsprüfung
     LaunchedEffect(Unit) {
         val hasPermission = ContextCompat.checkSelfPermission(context, Manifest.permission.READ_CONTACTS) == PackageManager.PERMISSION_GRANTED
         if (!hasPermission) {
@@ -77,32 +79,43 @@ fun HomeScreen(
         animatedPlaceholder = "Kontakt suchen"
     }
 
-    // Strategie für geschmeidigen Filter-Reset
-    var pendingReset by remember { mutableStateOf(false) }
+    // --- Scroll- & Filter-Logik ---
 
-    // ViewModel Events verarbeiten (z.B. Scroll-to-Top vom Widget oder Filterwechsel)
+    // Reaktion auf externe Events (Widget) oder interne Filter-Wechsel
     LaunchedEffect(viewModel.scrollToTopEvent) {
         viewModel.scrollToTopEvent.collectLatest {
-            pendingReset = true
+            resetScrollRequested = true
             isResettingFilter = true
-            // Erster Versuch: Sofort hochspringen, falls wir bereits gescrollt waren
-            if (listState.firstVisibleItemIndex > 0 || listState.firstVisibleItemScrollOffset > 0) {
-                listState.scrollToItem(0)
-            }
         }
     }
 
-    // Sobald sich die Kontakte ändern UND ein Reset ansteht -> Finaler Scroll & Abschluss
+    // Zusätzlicher Trigger für manuelle Suche/Label Auswahl
+    LaunchedEffect(searchQuery, selectedLabel) {
+        resetScrollRequested = true
+        isResettingFilter = true
+    }
+
+    // Präziser Scroll-Reset sobald Daten geladen sind
     LaunchedEffect(contacts) {
-        if (pendingReset) {
+        if (resetScrollRequested && contacts != null) {
             listState.scrollToItem(0)
-            // Kurze Atempause, damit UI-Elemente (FAB/Scrollbar) nicht flackern
-            delay(50)
+            delay(100) // Puffer für UI-Stabilität
+            listState.scrollToItem(0)
             isResettingFilter = false
-            pendingReset = false
+            resetScrollRequested = false
         }
     }
 
+    // Tastatur-Handling beim Scrollen
+    LaunchedEffect(listState.isScrollInProgress) {
+        if (listState.isScrollInProgress) {
+            focusManager.clearFocus()
+            keyboardController?.hide()
+            Unit
+        }
+    }
+
+    // Abgeleiteter State für UI-Komponenten (Re-Composition Guard)
     val showScrollUp by remember {
         derivedStateOf { listState.firstVisibleItemIndex > 0 && !isResettingFilter }
     }
@@ -111,13 +124,7 @@ fun HomeScreen(
         derivedStateOf { (!showScrollUp) || isResettingFilter }
     }
 
-    // Tastatur schließen, wenn die Liste gescrollt wird
-    LaunchedEffect(listState.isScrollInProgress) {
-        if (listState.isScrollInProgress) {
-            focusManager.clearFocus()
-            keyboardController?.hide()
-        }
-    }
+    // --- Callbacks (Memoized) ---
 
     val onSearchQueryChange = remember(viewModel) {
         { query: String -> viewModel.onSearchQueryChange(query) }
@@ -154,9 +161,12 @@ fun HomeScreen(
                 val lookupUri = ContactsContract.Contacts.getLookupUri(id.toLong(), key)
                 context.startActivity(Intent(Intent.ACTION_VIEW, lookupUri))
             } catch (_: Exception) {
+                // Fehler silent handhaben (z.B. Kontakt gelöscht)
             }
         }
     }
+
+    // --- UI Struktur ---
 
     Scaffold(
         modifier = Modifier.fillMaxSize(),
@@ -181,13 +191,14 @@ fun HomeScreen(
             ) {
                 HomeFAB(
                     showScrollUp = showScrollUp,
-                    onScrollToTop = { scope.launch { listState.animateScrollToItem(0) } }
-                ) {
-                    val intent = Intent(Intent.ACTION_INSERT).apply {
-                        type = ContactsContract.Contacts.CONTENT_TYPE
+                    onScrollToTop = { scope.launch { listState.animateScrollToItem(0) } },
+                    onAddContact = {
+                        val intent = Intent(Intent.ACTION_INSERT).apply {
+                            type = ContactsContract.Contacts.CONTENT_TYPE
+                        }
+                        context.startActivity(intent)
                     }
-                    context.startActivity(intent)
-                }
+                )
             }
         },
     ) { innerPadding ->
@@ -199,17 +210,28 @@ fun HomeScreen(
                     detectTapGestures { focusManager.clearFocus() }
                 },
         ) {
-            BirthdayList(
-                contacts = contacts ?: emptyList(),
-                swipeHintShown = swipeHintShown,
-                modifier = Modifier.fillMaxSize(),
-                listState = listState,
-                onRequestPermission = { permissionLauncher.launch(Manifest.permission.READ_CONTACTS) },
-                onSetSwipeHintShown = onSetSwipeHintShown,
-                onUpdateGiftIdeas = onUpdateGiftIdeas,
-                onOpenContact = onOpenContact,
-            )
+            // Die Liste mit Crossfade für weiche Übergänge beim Filtern
+            AnimatedContent(
+                targetState = contacts,
+                transitionSpec = {
+                    fadeIn(animationSpec = tween(400)) togetherWith
+                    fadeOut(animationSpec = tween(400))
+                },
+                label = "ListCrossfade"
+            ) { targetContacts ->
+                BirthdayList(
+                    contacts = targetContacts ?: emptyList(),
+                    swipeHintShown = swipeHintShown,
+                    modifier = Modifier.fillMaxSize(),
+                    listState = listState,
+                    onRequestPermission = { permissionLauncher.launch(Manifest.permission.READ_CONTACTS) },
+                    onSetSwipeHintShown = onSetSwipeHintShown,
+                    onUpdateGiftIdeas = onUpdateGiftIdeas,
+                    onOpenContact = onOpenContact,
+                )
+            }
             
+            // FastScrollbar (Overlay)
             contacts?.let { contactList ->
                 if (contactList.isNotEmpty()) {
                     FastScrollbar(
