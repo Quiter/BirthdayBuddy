@@ -5,13 +5,22 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Info
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.heckmannch.birthdaybuddy2.ui.theme.BirthdayBuddy2Theme
 import com.heckmannch.birthdaybuddy2.viewmodel.BirthdayViewModel
+import com.heckmannch.birthdaybuddy2.viewmodel.LabelManagementModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -21,6 +30,22 @@ fun LabelSettingsScreen(
 ) {
     val labels by viewModel.labelManagementList.collectAsStateWithLifecycle()
 
+    LabelSettingsContent(
+        labels = labels,
+        onNavigateBack = onNavigateBack,
+        onConfigChanged = { name, hidden, ignored, isSystem ->
+            viewModel.updateLabelConfig(name, hidden, ignored, isSystem)
+        }
+    )
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun LabelSettingsContent(
+    labels: List<LabelManagementModel>,
+    onNavigateBack: () -> Unit,
+    onConfigChanged: (String, Boolean, Boolean, Boolean) -> Unit
+) {
     Scaffold(
         topBar = {
             TopAppBar(
@@ -37,34 +62,34 @@ fun LabelSettingsScreen(
         }
     ) { innerPadding ->
         if (labels.isEmpty()) {
-            Box(modifier = Modifier.fillMaxSize().padding(innerPadding), contentAlignment = androidx.compose.ui.Alignment.Center) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(innerPadding),
+                contentAlignment = Alignment.Center
+            ) {
                 Text("Keine Labels gefunden", style = MaterialTheme.typography.bodyLarge)
             }
         } else {
             LazyColumn(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(innerPadding)
+                    .padding(innerPadding),
+                contentPadding = PaddingValues(16.dp),
+                verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
                 item {
-                    Text(
-                        text = "Hier kannst du festlegen, wie Labels in der App behandelt werden.",
-                        modifier = Modifier.padding(16.dp),
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
+                    InfoCard()
                 }
-                
-                items(labels) { label ->
-                    LabelConfigItem(
-                        name = label.name,
-                        isHiddenFromFilter = label.isHiddenFromFilter,
-                        isIgnored = label.isIgnored,
-                        isSystem = label.isSystem
-                    ) { hidden, ignored ->
-                        viewModel.updateLabelConfig(label.name, hidden, ignored, label.isSystem)
-                    }
-                    HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp))
+
+                items(
+                    items = labels,
+                    key = { it.name } // Optimierung 1: Stabiler Key für Performance
+                ) { label ->
+                    LabelConfigCard(
+                        label = label,
+                        onConfigChanged = onConfigChanged
+                    )
                 }
             }
         }
@@ -72,80 +97,141 @@ fun LabelSettingsScreen(
 }
 
 @Composable
-private fun LabelConfigItem(
-    name: String,
-    isHiddenFromFilter: Boolean,
-    isIgnored: Boolean,
-    isSystem: Boolean,
-    onConfigChanged: (Boolean, Boolean) -> Unit
-) {
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(16.dp)
+private fun InfoCard() {
+    Card(
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.3f)
+        ),
+        shape = MaterialTheme.shapes.medium,
+        modifier = Modifier.padding(bottom = 4.dp)
     ) {
-        Row(verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
-            Text(
-                text = name,
-                style = MaterialTheme.typography.titleLarge,
-                color = MaterialTheme.colorScheme.primary,
-                modifier = Modifier.weight(1f)
+        Row(
+            modifier = Modifier.padding(12.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Icon(
+                imageVector = Icons.Default.Info,
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.secondary,
+                modifier = Modifier.size(20.dp)
             )
-            if (isSystem) {
-                Surface(
-                    color = MaterialTheme.colorScheme.surfaceVariant,
-                    shape = MaterialTheme.shapes.extraSmall,
-                ) {
-                    Text(
-                        text = "SYSTEM",
-                        style = MaterialTheme.typography.labelSmall,
-                        modifier = Modifier.padding(horizontal = 4.dp, vertical = 2.dp),
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
+            Spacer(modifier = Modifier.width(12.dp))
+            Column {
+                Text(
+                    text = "Filter verbergen: Label erscheint nicht in der Leiste zum Filtern der Kontakte.",
+                    style = MaterialTheme.typography.labelMedium,
+                    color = MaterialTheme.colorScheme.onSecondaryContainer
+                )
+                Text(
+                    text = "Ignorieren: Kontakte werden komplett ausgeblendet, sind aber in der Suche auffindbar.",
+                    style = MaterialTheme.typography.labelMedium,
+                    color = MaterialTheme.colorScheme.onSecondaryContainer
+                )
+            }
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun LabelConfigCard(
+    label: LabelManagementModel,
+    onConfigChanged: (String, Boolean, Boolean, Boolean) -> Unit
+) {
+    // Optimierung 2: Callbacks memoizen, um unnötige Recompositions zu vermeiden
+    val onHideToggle = remember(label) { 
+        { onConfigChanged(label.name, !label.isHiddenFromFilter, label.isIgnored, label.isSystem) } 
+    }
+    val onIgnoreToggle = remember(label) { 
+        { onConfigChanged(label.name, label.isHiddenFromFilter, !label.isIgnored, label.isSystem) } 
+    }
+
+    OutlinedCard(
+        modifier = Modifier.fillMaxWidth(),
+        shape = MaterialTheme.shapes.medium
+    ) {
+        Column(
+            modifier = Modifier
+                .padding(16.dp)
+                .fillMaxWidth()
+        ) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text(
+                    text = label.name,
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+                
+                if (label.isSystem) {
+                    Surface(
+                        color = MaterialTheme.colorScheme.secondaryContainer,
+                        shape = MaterialTheme.shapes.extraSmall,
+                    ) {
+                        Text(
+                            text = "SYSTEM",
+                            style = MaterialTheme.typography.labelSmall,
+                            modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp),
+                            color = MaterialTheme.colorScheme.onSecondaryContainer
+                        )
+                    }
                 }
             }
-        }
-        
-        Spacer(modifier = Modifier.height(8.dp))
-        
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = androidx.compose.ui.Alignment.CenterVertically
-        ) {
-            Column(modifier = Modifier.weight(1f)) {
-                Text("In Filterleiste verbergen", style = MaterialTheme.typography.bodyLarge)
-                Text(
-                    "Das Label wird nicht mehr oben auf dem Homescreen angezeigt.",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                FilterChip(
+                    selected = label.isHiddenFromFilter,
+                    onClick = onHideToggle,
+                    label = { Text("Verbergen") },
+                    leadingIcon = if (label.isHiddenFromFilter) {
+                        { Icon(Icons.Default.Check, contentDescription = null, modifier = Modifier.size(18.dp)) }
+                    } else null,
+                    colors = FilterChipDefaults.filterChipColors(
+                        selectedContainerColor = MaterialTheme.colorScheme.surfaceVariant,
+                        selectedLabelColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                        selectedLeadingIconColor = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                )
+
+                FilterChip(
+                    selected = label.isIgnored,
+                    onClick = onIgnoreToggle,
+                    label = { Text("Ignorieren") },
+                    leadingIcon = if (label.isIgnored) {
+                        { Icon(Icons.Default.Close, contentDescription = null, modifier = Modifier.size(18.dp)) }
+                    } else null,
+                    colors = FilterChipDefaults.filterChipColors(
+                        selectedContainerColor = MaterialTheme.colorScheme.errorContainer,
+                        selectedLabelColor = MaterialTheme.colorScheme.onErrorContainer,
+                        selectedLeadingIconColor = MaterialTheme.colorScheme.onErrorContainer
+                    )
                 )
             }
-            Switch(
-                checked = isHiddenFromFilter,
-                onCheckedChange = { onConfigChanged(it, isIgnored) }
-            )
         }
-        
-        Spacer(modifier = Modifier.height(16.dp))
-        
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = androidx.compose.ui.Alignment.CenterVertically
-        ) {
-            Column(modifier = Modifier.weight(1f)) {
-                Text("Kontakte ignorieren", style = MaterialTheme.typography.bodyLarge)
-                Text(
-                    "Kontakte mit diesem Label werden komplett aus der Liste und dem Widget ausgeblendet.",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            }
-            Switch(
-                checked = isIgnored,
-                onCheckedChange = { onConfigChanged(isHiddenFromFilter, it) }
-            )
-        }
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun LabelSettingsPreview() {
+    BirthdayBuddy2Theme {
+        LabelSettingsContent(
+            labels = listOf(
+                LabelManagementModel("Familie", isHiddenFromFilter = false, isIgnored = false, isSystem = true),
+                LabelManagementModel("Arbeit", isHiddenFromFilter = true, isIgnored = false, isSystem = false),
+                LabelManagementModel("Ex-Kollegen", isHiddenFromFilter = false, isIgnored = true, isSystem = false)
+            ),
+            onNavigateBack = {},
+            onConfigChanged = { _, _, _, _ -> }
+        )
     }
 }

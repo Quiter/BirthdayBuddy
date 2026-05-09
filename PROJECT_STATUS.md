@@ -132,6 +132,10 @@ Die App befindet sich gerade in einer umfassenden Refactoring-Phase (V3), um die
     - **Import/Export:** Implementierung einer Backup-Funktion für Geschenkideen im JSON-Format via `ActivityResultContracts`.
     - **Robust Matching:** Beim Import werden Geschenkideen primär über den `LOOKUP_KEY` und sekundär über den `fullName` den Kontakten zugeordnet, um eine maximale Erfolgsquote bei Geräte-Wechseln zu garantieren.
     - **UI Integration:** Neuer Backup-Screen in den Einstellungen mit detaillierten Hinweisen zur Zuordnungs-Logik.
+31. **Modern Label Management UI & Performance:**
+    - **UX Overhaul:** Neugestaltung des Label-Einstellungsbildschirms mit Material 3 `OutlinedCard` Elementen und interaktiven `FilterChip` Komponenten für eine intuitive Bedienung.
+    - **Performance Hardening:** Implementierung von stabilen Keys in der LazyColumn und Memoization von Callbacks (`remember`) zur Vermeidung unnötiger Re-Compositions.
+    - **Developer Experience:** Einführung von Compose Previews für den Einstellungsbereich zur schnelleren UI-Iteration.
 
 ## 🎯 Kommende Aufgaben (Backlog)
 - **Erweiterte Benachrichtigungen:** Einstellbare Erinnerungen (1 Tag vorher, am Tag selbst) via WorkManager.
