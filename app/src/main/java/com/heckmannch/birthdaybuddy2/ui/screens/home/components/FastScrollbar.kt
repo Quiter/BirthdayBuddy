@@ -61,8 +61,18 @@ fun FastScrollbar(
         val canScroll by remember(totalItems) {
             derivedStateOf {
                 val layoutInfo = listState.layoutInfo
-                val visibleItems = layoutInfo.visibleItemsInfo.size
-                totalItems > visibleItems
+                val visibleItemsInfo = layoutInfo.visibleItemsInfo
+                if (visibleItemsInfo.isEmpty()) return@derivedStateOf false
+
+                val lastItem = visibleItemsInfo.last()
+                val isLastItemVisible = lastItem.index == totalItems - 1
+                
+                // Falls das letzte Item noch nicht mal in der Liste der sichtbaren ist -> Scrollbar anzeigen
+                if (!isLastItemVisible) return@derivedStateOf true
+                
+                // Falls das letzte Item in der Liste ist, prüfen ob es nach unten übersteht
+                val viewportEnd = layoutInfo.viewportEndOffset - layoutInfo.afterContentPadding
+                (lastItem.offset + lastItem.size) > viewportEnd
             }
         }
 
@@ -79,7 +89,7 @@ fun FastScrollbar(
                 }
             }
 
-            val thumbOffset by remember(trackHeight, isResettingFilter) {
+            val thumbOffset by remember(trackHeight, isResettingFilter, totalItems) {
                 derivedStateOf {
                     if (isResettingFilter) return@derivedStateOf 0.dp
 
@@ -87,11 +97,23 @@ fun FastScrollbar(
                         with(density) { dragOffsetPx.toDp() }.coerceIn(0.dp, trackHeight)
                     } else {
                         val layoutInfo = listState.layoutInfo
-                        val visibleItemsCount = layoutInfo.visibleItemsInfo.size
-                        if (visibleItemsCount == 0) return@derivedStateOf 0.dp
+                        val visibleItems = layoutInfo.visibleItemsInfo
+                        if (visibleItems.isEmpty()) return@derivedStateOf 0.dp
 
-                        val maxScrollIndex = (totalItems - visibleItemsCount).coerceAtLeast(1)
-                        val scrollPercent = (listState.firstVisibleItemIndex.toFloat() / maxScrollIndex).coerceIn(0f, 1f)
+                        val firstItem = visibleItems.first()
+                        val scrollOffset = listState.firstVisibleItemScrollOffset.toFloat()
+                        val itemSize = firstItem.size.toFloat()
+                        
+                        // Präziser fraktionaler Index (z.B. 5.5 wenn man zur Hälfte in Item 5 ist)
+                        val fractionalIndex = listState.firstVisibleItemIndex.toFloat() + 
+                            (scrollOffset / itemSize).coerceIn(0f, 1f)
+                        
+                        // Schätzung der Items im Viewport für eine genauere Max-Range
+                        val viewportHeight = layoutInfo.viewportEndOffset - layoutInfo.viewportStartOffset
+                        val itemsInViewport = if (itemSize > 0) viewportHeight.toFloat() / itemSize else 1f
+                        val maxIndex = (totalItems.toFloat() - itemsInViewport).coerceAtLeast(1f)
+                        
+                        val scrollPercent = (fractionalIndex / maxIndex).coerceIn(0f, 1f)
                         trackHeight * scrollPercent
                     }
                 }
@@ -158,11 +180,21 @@ fun FastScrollbar(
                                 onDragCancel = { isDragging = false },
                             ) { change, dragAmount ->
                                 dragOffsetPx = (dragOffsetPx + dragAmount).coerceIn(0f, trackHeightPx)
-                                val newScrollPercent = if (trackHeightPx > 0) dragOffsetPx / trackHeightPx else 0f
-                                val targetIndex = (newScrollPercent * (totalItems - 1))
-                                    .toInt()
-                                    .coerceIn(0, totalItems - 1)
-                                scope.launch { listState.scrollToItem(targetIndex) }
+                                val scrollPercent = if (trackHeightPx > 0) dragOffsetPx / trackHeightPx else 0f
+                                
+                                val layoutInfo = listState.layoutInfo
+                                val itemSize = layoutInfo.visibleItemsInfo.firstOrNull()?.size ?: 1
+                                val viewportHeight = layoutInfo.viewportEndOffset - layoutInfo.viewportStartOffset
+                                val itemsInViewport = viewportHeight.toFloat() / itemSize
+                                val maxIndex = (totalItems.toFloat() - itemsInViewport).coerceAtLeast(1f)
+                                
+                                val targetFractionalIndex = scrollPercent * maxIndex
+                                val targetIndex = targetFractionalIndex.toInt().coerceIn(0, totalItems - 1)
+                                val targetOffset = ((targetFractionalIndex - targetIndex) * itemSize).toInt()
+                                
+                                scope.launch { 
+                                    listState.scrollToItem(targetIndex, targetOffset) 
+                                }
                                 change.consume()
                             }
                         } finally {
