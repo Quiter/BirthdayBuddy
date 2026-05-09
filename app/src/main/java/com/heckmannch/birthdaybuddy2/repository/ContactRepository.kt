@@ -12,8 +12,12 @@ import com.heckmannch.birthdaybuddy2.database.LabelConfig
 import com.heckmannch.birthdaybuddy2.database.LabelConfigDao
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.withContext
+import org.json.JSONArray
+import org.json.JSONObject
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import javax.inject.Inject
@@ -40,56 +44,55 @@ class ContactRepository @Inject constructor(
      * Intelligenter Sync: Vergleicht System-Kontakte mit DB, erhält lokale Daten (Geschenkideen)
      * und führt nur notwendige Änderungen durch (Diffing).
      */
-    suspend fun syncContacts() {
-        withContext(Dispatchers.IO) {
-            try {
-                if (ContextCompat.checkSelfPermission(context, Manifest.permission.READ_CONTACTS) 
-                    != PackageManager.PERMISSION_GRANTED) return@withContext
+    suspend fun syncContacts() = withContext(Dispatchers.IO) {
+        try {
+            if (ContextCompat.checkSelfPermission(context, Manifest.permission.READ_CONTACTS)
+                != PackageManager.PERMISSION_GRANTED
+            ) return@withContext
 
-                // 1. Daten aus beiden Quellen holen
-                val systemContacts = fetchBirthdaysFromSystem()
-                val dbContacts = contactDao.getAllContactsImmediate().associateBy { it.lookupKey }
-                val dbConfigs = labelConfigDao.getAllConfigsImmediate().associateBy { it.name }
-                
-                // 2. Labels synchronisieren (isSystem Status und neue Labels)
-                syncLabelConfigs(systemContacts, dbConfigs)
+            coroutineScope {
+                // 1. Daten aus allen Quellen parallel laden
+                val groupsDeferred = async { fetchContactGroups() }
+                val dbContactsDeferred = async { contactDao.getAllContactsImmediate().associateBy { it.lookupKey } }
+                val dbConfigsDeferred = async { labelConfigDao.getAllConfigsImmediate().associateBy { it.name } }
+
+                val groups = groupsDeferred.await()
+                val systemContacts = fetchBirthdaysFromSystem(groups)
+                val dbContacts = dbContactsDeferred.await()
+                val dbConfigs = dbConfigsDeferred.await()
+
+                // 2. Labels synchronisieren
+                syncLabelConfigs(systemContacts, dbConfigs, groups)
 
                 // 3. Diffing: Kontakte abgleichen
                 val finalContacts = systemContacts.map { systemContact ->
-                    val existing = dbContacts[systemContact.lookupKey]
-                    if (existing != null) {
-                        // Update: Bestehende localId und Geschenkideen erhalten
+                    dbContacts[systemContact.lookupKey]?.let { existing ->
+                        // Update: localId und Geschenkideen erhalten
                         systemContact.copy(
                             localId = existing.localId,
                             giftIdeas = existing.giftIdeas
                         )
-                    } else {
-                        // Neu: Einfach übernehmen (localId = 0 sorgt für Insert)
-                        systemContact
-                    }
+                    } ?: systemContact
                 }
 
-                // 4. Batch Update (Room Transaction via refreshContacts löscht alles, was nicht mehr da ist)
-                // Da wir die localIds der bestehenden Kontakte erhalten haben, 
-                // bleibt die DB-Konsistenz gewahrt.
+                // 4. Batch Update via Transaction
                 contactDao.refreshContacts(finalContacts)
-
-            } catch (e: Exception) {
-                Log.e("ContactRepository", "Fehler beim Sync: ${e.message}", e)
             }
+        } catch (e: Exception) {
+            Log.e("ContactRepository", "Fehler beim Sync: ${e.message}", e)
         }
     }
 
     private suspend fun syncLabelConfigs(
         systemContacts: List<Contact>,
-        existingConfigs: Map<String, LabelConfig>
+        existingConfigs: Map<String, LabelConfig>,
+        groups: Map<Long, GroupInfo>
     ) {
-        val groups = fetchContactGroups()
         val allLabelsInSystem = systemContacts.asSequence().flatMap { it.labels }.toSet()
         val configsToInsert = mutableListOf<LabelConfig>()
-        
+
         // Alle System-Gruppen verarbeiten
-        groups.values.distinctBy { it.title }.forEach { group ->
+        groups.values.asSequence().distinctBy { it.title }.forEach { group ->
             val existing = existingConfigs[group.title]
             if (existing == null || existing.isSystem != group.isSystem) {
                 configsToInsert.add(
@@ -127,10 +130,55 @@ class ContactRepository @Inject constructor(
         labelConfigDao.insertConfig(config)
     }
 
-    private suspend fun fetchBirthdaysFromSystem(): List<Contact> = withContext(Dispatchers.IO) {
+    suspend fun exportGiftIdeas(): String = withContext(Dispatchers.IO) {
+        val contacts = contactDao.getAllContactsImmediate().filter { !it.giftIdeas.isNullOrBlank() }
+        val root = JSONArray()
+        contacts.forEach { contact ->
+            val obj = JSONObject().apply {
+                put("lookupKey", contact.lookupKey)
+                put("fullName", contact.fullName)
+                put("giftIdeas", contact.giftIdeas)
+            }
+            root.put(obj)
+        }
+        root.toString(2)
+    }
+
+    suspend fun importGiftIdeas(jsonString: String): Int = withContext(Dispatchers.IO) {
+        try {
+            val root = JSONArray(jsonString)
+            if (root.length() == 0) return@withContext 0
+
+            val dbContacts = contactDao.getAllContactsImmediate()
+            val contactsByLookup = dbContacts.associateBy { it.lookupKey }
+            val contactsByName = dbContacts.associateBy { it.fullName }
+            var count = 0
+
+            for (i in 0 until root.length()) {
+                val obj = root.getJSONObject(i)
+                val lookupKey = obj.optString("lookupKey")
+                val giftIdeas = obj.optString("giftIdeas")
+                val fullName = obj.optString("fullName")
+
+                if (giftIdeas.isNullOrBlank()) continue
+
+                // Match via LookupKey (Best) oder Name (Fallback)
+                val target = contactsByLookup[lookupKey] ?: contactsByName[fullName]
+
+                if (target != null) {
+                    contactDao.insertContact(target.copy(giftIdeas = giftIdeas))
+                    count++
+                }
+            }
+            count
+        } catch (e: Exception) {
+            Log.e("ContactRepository", "Import fehlgeschlagen", e)
+            -1
+        }
+    }
+
+    private suspend fun fetchBirthdaysFromSystem(groups: Map<Long, GroupInfo>): List<Contact> = withContext(Dispatchers.IO) {
         val contacts = mutableListOf<Contact>()
-        val groups = fetchContactGroups()
-        
         val projection = arrayOf(
             ContactsContract.Data.CONTACT_ID,
             ContactsContract.Data.LOOKUP_KEY,
@@ -162,25 +210,21 @@ class ContactRepository @Inject constructor(
 
             while (cursor.moveToNext()) {
                 val contactId = cursor.getString(idIdx) ?: continue
-                val lookupKey = cursor.getString(lookupIdx) ?: ""
-                val name = cursor.getString(nameIdx) ?: "Unbekannt"
-                val dateStr = cursor.getString(dateIdx)
-                val photoUri = cursor.getString(photoIdx)
-
-                val birthday = parseDate(dateStr)
-                if (birthday != null) {
-                    contactIds.add(contactId)
-                    contacts.add(
-                        Contact(
-                            contactId = contactId,
-                            lookupKey = lookupKey,
-                            fullName = name,
-                            birthday = birthday,
-                            imageUri = photoUri
-                        )
+                val birthday = parseDate(cursor.getString(dateIdx)) ?: continue
+                
+                contactIds.add(contactId)
+                contacts.add(
+                    Contact(
+                        contactId = contactId,
+                        lookupKey = cursor.getString(lookupIdx) ?: "",
+                        fullName = cursor.getString(nameIdx) ?: "Unbekannt",
+                        birthday = birthday,
+                        imageUri = cursor.getString(photoIdx)
                     )
-                }
+                )
             }
+
+            if (contacts.isEmpty()) return@withContext emptyList()
             
             val labelsMap = fetchLabelsForContacts(contactIds, groups)
             return@withContext contacts.map { it.copy(labels = labelsMap[it.contactId] ?: emptyList()) }
@@ -193,14 +237,11 @@ class ContactRepository @Inject constructor(
         groups: Map<Long, GroupInfo>
     ): Map<String, List<String>> = withContext(Dispatchers.IO) {
         val result = mutableMapOf<String, MutableSet<String>>()
-        if (contactIds.isEmpty()) return@withContext emptyMap()
-
         val projection = arrayOf(
             ContactsContract.CommonDataKinds.GroupMembership.CONTACT_ID,
             ContactsContract.CommonDataKinds.GroupMembership.GROUP_ROW_ID
         )
 
-        // Verhindern von SQL-Injection und Handling großer Listen via Chunking
         contactIds.chunked(900).forEach { chunk ->
             val placeholders = chunk.joinToString(",") { "?" }
             val selection = "${ContactsContract.Data.MIMETYPE} = ? AND ${ContactsContract.Data.CONTACT_ID} IN ($placeholders)"
@@ -220,10 +261,8 @@ class ContactRepository @Inject constructor(
                     val contactId = cursor.getString(idIdx)
                     val groupId = cursor.getLong(groupRowIdIdx)
                     groups[groupId]?.let { groupInfo ->
-                        // Redundante System-Labels wie "My Contacts" filtern
                         val lowerTitle = groupInfo.title.lowercase()
-                        val isRedundant = lowerTitle == "my contacts" || lowerTitle == "contacts" || lowerTitle == "ich" || lowerTitle == "me"
-                        
+                        val isRedundant = lowerTitle in REDUNDANT_LABELS
                         if (!isRedundant) {
                             result.getOrPut(contactId) { mutableSetOf() }.add(groupInfo.title)
                         }
@@ -254,9 +293,9 @@ class ContactRepository @Inject constructor(
             val systemIdIdx = cursor.getColumnIndex(ContactsContract.Groups.SYSTEM_ID)
 
             while (cursor.moveToNext()) {
-                val id = idIdx.takeIf { it != -1 }?.let { cursor.getLong(it) } ?: continue
-                val title = titleIdx.takeIf { it != -1 }?.let { cursor.getString(it) }
-                val systemId = systemIdIdx.takeIf { it != -1 }?.let { cursor.getString(it) }
+                val id = cursor.getLong(idIdx)
+                val title = cursor.getString(titleIdx)
+                val systemId = cursor.getString(systemIdIdx)
                 if (!title.isNullOrBlank()) {
                     groups[id] = GroupInfo(title, systemId != null)
                 }
@@ -271,17 +310,16 @@ class ContactRepository @Inject constructor(
             if (dateStr.startsWith("--")) {
                 LocalDate.parse("1900-${dateStr.substring(2)}")
             } else {
-                var result: LocalDate? = null
-                for (format in dateFormats) {
-                    try {
-                        result = LocalDate.parse(dateStr, format)
-                        break
-                    } catch (_: Exception) {}
+                dateFormats.firstNotNullOfOrNull { format ->
+                    runCatching { LocalDate.parse(dateStr, format) }.getOrNull()
                 }
-                result
             }
         } catch (_: Exception) {
             null
         }
+    }
+
+    companion object {
+        private val REDUNDANT_LABELS = setOf("my contacts", "contacts", "ich", "me")
     }
 }

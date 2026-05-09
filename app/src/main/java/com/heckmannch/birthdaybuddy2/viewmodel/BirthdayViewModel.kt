@@ -265,6 +265,22 @@ class BirthdayViewModel @Inject constructor(
         }
     }
 
+    suspend fun exportGiftIdeas(): String {
+        return contactRepository.exportGiftIdeas()
+    }
+
+    suspend fun importGiftIdeas(json: String): Int {
+        val count = contactRepository.importGiftIdeas(json)
+        if (count > 0) {
+            try {
+                BirthdayWidget().updateAll(context)
+            } catch (e: Exception) {
+                Log.e("BirthdayViewModel", "Widget update failed", e)
+            }
+        }
+        return count
+    }
+
     private fun com.heckmannch.birthdaybuddy2.database.Contact.toUiModel(today: LocalDate): ContactUiModel {
         val hasYear = birthday.year != 1900
         val nextBirthday = birthday.toNextOccurrence(today)

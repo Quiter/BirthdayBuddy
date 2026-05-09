@@ -38,6 +38,7 @@
 - `notifications/NotificationSettingsScreen.kt`: Einstellungen für tägliche Erinnerungen und Uhrzeit.
 - `notifications/NotificationWorker.kt`: WorkManager-Logik für tägliche Benachrichtigungen.
 - `notifications/NotificationHelper.kt`: Utility zum Erstellen und Anzeigen der System-Notifications.
+- `backup/BackupScreen.kt`: Import/Export von Geschenkideen (JSON-Format).
 
 ## 📁 Theme & Design (`ui.theme`)
 - `Theme.kt`: Material 3 Theme-Definition mit Dynamic Color Support.

@@ -25,6 +25,7 @@ fun SettingsScreen(
     viewModel: BirthdayViewModel,
     onNavigateToLabels: () -> Unit,
     onNavigateToNotifications: () -> Unit,
+    onNavigateToBackup: () -> Unit,
     onNavigateBack: () -> Unit,
 ) {
     val context = LocalContext.current
@@ -98,6 +99,17 @@ fun SettingsScreen(
                         Icon(Icons.Default.Notifications, contentDescription = null)
                     },
                     modifier = Modifier.clickable { onNavigateToNotifications() }
+                )
+            }
+
+            item {
+                ListItem(
+                    headlineContent = { Text("Daten sichern") },
+                    supportingContent = { Text("Geschenkideen exportieren oder importieren") },
+                    leadingContent = {
+                        Icon(Icons.Default.Share, contentDescription = null)
+                    },
+                    modifier = Modifier.clickable { onNavigateToBackup() }
                 )
             }
 

@@ -24,6 +24,7 @@ import com.heckmannch.birthdaybuddy2.ui.screens.home.HomeScreen
 import com.heckmannch.birthdaybuddy2.ui.screens.settings.SettingsScreen
 import com.heckmannch.birthdaybuddy2.ui.screens.settings.labels.LabelSettingsScreen
 import com.heckmannch.birthdaybuddy2.ui.screens.settings.notifications.NotificationSettingsScreen
+import com.heckmannch.birthdaybuddy2.ui.screens.settings.backup.BackupScreen
 import com.heckmannch.birthdaybuddy2.ui.theme.BirthdayBuddy2Theme
 import com.heckmannch.birthdaybuddy2.viewmodel.BirthdayViewModel
 import com.heckmannch.birthdaybuddy2.widget.BirthdayWidgetWorker
@@ -36,6 +37,7 @@ private object Routes {
     const val SETTINGS = "settings"
     const val LABEL_SETTINGS = "label_settings"
     const val NOTIFICATION_SETTINGS = "notification_settings"
+    const val BACKUP_SETTINGS = "backup_settings"
 }
 
 @AndroidEntryPoint
@@ -117,6 +119,9 @@ class MainActivity : ComponentActivity() {
                     onNavigateToNotifications = {
                         navController.navigate(Routes.NOTIFICATION_SETTINGS)
                     },
+                    onNavigateToBackup = {
+                        navController.navigate(Routes.BACKUP_SETTINGS)
+                    },
                 ) {
                     navController.popBackStack()
                 }
@@ -128,6 +133,11 @@ class MainActivity : ComponentActivity() {
             }
             composable(Routes.NOTIFICATION_SETTINGS) {
                 NotificationSettingsScreen(viewModel = viewModel) {
+                    navController.popBackStack()
+                }
+            }
+            composable(Routes.BACKUP_SETTINGS) {
+                BackupScreen(viewModel = viewModel) {
                     navController.popBackStack()
                 }
             }
