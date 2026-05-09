@@ -15,8 +15,12 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalHapticFeedback
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.heckmannch.birthdaybuddy2.viewmodel.ContactUiModel
@@ -33,6 +37,7 @@ fun FastScrollbar(
 ) {
     val scope = rememberCoroutineScope()
     val density = LocalDensity.current
+    val haptic = LocalHapticFeedback.current
     var isDragging by remember { mutableStateOf(false) }
     var dragOffsetPx by remember { mutableFloatStateOf(0f) }
 
@@ -86,6 +91,13 @@ fun FastScrollbar(
                         listState.firstVisibleItemIndex
                     }
                     contacts.getOrNull(index)?.monthName ?: ""
+                }
+            }
+            
+            // Haptisches Feedback bei Monatswechsel während des Drags
+            LaunchedEffect(currentMonth) {
+                if (isDragging) {
+                    haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                 }
             }
 
@@ -168,6 +180,9 @@ fun FastScrollbar(
                     .height(thumbHeight)
                     .graphicsLayer {
                         translationY = thumbOffset.toPx()
+                    }
+                    .semantics { 
+                        contentDescription = "Schnell-Scrollleiste, aktueller Monat: $currentMonth"
                     }
                     .pointerInput(totalItems, trackHeightPx) {
                         try {
