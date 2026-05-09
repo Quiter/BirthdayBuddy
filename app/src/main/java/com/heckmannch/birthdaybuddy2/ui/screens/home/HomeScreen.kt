@@ -10,6 +10,7 @@ import androidx.compose.animation.*
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -19,6 +20,7 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -26,7 +28,9 @@ import com.heckmannch.birthdaybuddy2.ui.screens.home.components.BirthdayList
 import com.heckmannch.birthdaybuddy2.ui.screens.home.components.FastScrollbar
 import com.heckmannch.birthdaybuddy2.ui.screens.home.components.HomeFAB
 import com.heckmannch.birthdaybuddy2.ui.screens.home.components.HomeTopBar
+import com.heckmannch.birthdaybuddy2.ui.theme.BirthdayBuddy2Theme
 import com.heckmannch.birthdaybuddy2.viewmodel.BirthdayViewModel
+import com.heckmannch.birthdaybuddy2.viewmodel.ContactUiModel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
@@ -35,7 +39,6 @@ import kotlinx.coroutines.launch
  * Der Hauptbildschirm der App.
  * Orchestriert die Suche, Filterung, Geburtstagsliste und die Fast-Scrollbar.
  */
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(
     viewModel: BirthdayViewModel,
@@ -45,7 +48,6 @@ fun HomeScreen(
     val focusManager = LocalFocusManager.current
     val keyboardController = LocalSoftwareKeyboardController.current
     val listState = rememberLazyListState()
-    val scope = rememberCoroutineScope()
     
     // UI State aus dem ViewModel
     val searchQuery by viewModel.searchQuery.collectAsStateWithLifecycle()
@@ -111,62 +113,99 @@ fun HomeScreen(
         if (listState.isScrollInProgress) {
             focusManager.clearFocus()
             keyboardController?.hide()
-            Unit
         }
     }
 
-    // Abgeleiteter State für UI-Komponenten (Re-Composition Guard)
+    HomeContent(
+        searchQuery = searchQuery,
+        animatedPlaceholder = animatedPlaceholder,
+        availableLabels = availableLabels,
+        selectedLabel = selectedLabel,
+        isFastScrolling = isFastScrolling,
+        contacts = contacts,
+        swipeHintShown = swipeHintShown,
+        isResettingFilter = isResettingFilter,
+        listState = listState,
+        onSearchQueryChange = { viewModel.onSearchQueryChange(it) },
+        onLabelSelected = { label ->
+            isResettingFilter = true
+            viewModel.onLabelSelected(label)
+        },
+        onClearSearch = {
+            isResettingFilter = true
+            viewModel.onSearchQueryChange("")
+            focusManager.clearFocus()
+            keyboardController?.hide()
+        },
+        onNavigateToSettings = onNavigateToSettings,
+        onAddContact = {
+            val intent = Intent(Intent.ACTION_INSERT).apply {
+                type = ContactsContract.Contacts.CONTENT_TYPE
+            }
+            context.startActivity(intent)
+        },
+        onRequestPermission = { permissionLauncher.launch(Manifest.permission.READ_CONTACTS) },
+        onSetSwipeHintShown = { viewModel.setSwipeHintShown() },
+        onUpdateGiftIdeas = { key, ideas -> viewModel.updateGiftIdeas(key, ideas) },
+        onOpenContact = { id, key ->
+            try {
+                val lookupUri = ContactsContract.Contacts.getLookupUri(id.toLong(), key)
+                context.startActivity(Intent(Intent.ACTION_VIEW, lookupUri))
+            } catch (_: Exception) {}
+        },
+        onSetFastScrolling = { viewModel.setFastScrolling(it) }
+    )
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun HomeContent(
+    searchQuery: String,
+    animatedPlaceholder: String,
+    availableLabels: List<String>,
+    selectedLabel: String?,
+    isFastScrolling: Boolean,
+    contacts: List<ContactUiModel>?,
+    swipeHintShown: Boolean,
+    isResettingFilter: Boolean,
+    listState: LazyListState,
+    onSearchQueryChange: (String) -> Unit,
+    onLabelSelected: (String?) -> Unit,
+    onClearSearch: () -> Unit,
+    onNavigateToSettings: () -> Unit,
+    onAddContact: () -> Unit,
+    onRequestPermission: () -> Unit,
+    onSetSwipeHintShown: () -> Unit,
+    onUpdateGiftIdeas: (String, String) -> Unit,
+    onOpenContact: (String, String) -> Unit,
+    onSetFastScrolling: (Boolean) -> Unit,
+) {
+    val focusManager = LocalFocusManager.current
+    val scope = rememberCoroutineScope()
+
+    // Verhindert Layout-Sprünge: Wir "merken" uns die Sichtbarkeit der Filterleiste,
+    // sobald ein Schnell-Scrollvorgang startet, damit sie sich währenddessen nicht ändert.
+    var filterVisibilityLock by remember { mutableStateOf<Boolean?>(null) }
+    
+    LaunchedEffect(isFastScrolling) {
+        if (isFastScrolling) {
+            // Aktuellen Zustand einfrieren
+            filterVisibilityLock = (listState.firstVisibleItemIndex == 0) || isResettingFilter
+        } else {
+            // Nach dem Loslassen wieder der Automatik überlassen
+            filterVisibilityLock = null
+        }
+    }
+
     val showScrollUp by remember {
         derivedStateOf { listState.firstVisibleItemIndex > 0 && !isResettingFilter }
     }
 
     val isFilterBarVisible by remember {
-        derivedStateOf { (!showScrollUp) || isResettingFilter }
-    }
-
-    // --- Callbacks (Memoized) ---
-
-    val onSearchQueryChange = remember(viewModel) {
-        { query: String -> viewModel.onSearchQueryChange(query) }
-    }
-
-    val onLabelSelected = remember(viewModel) {
-        { label: String? ->
-            isResettingFilter = true
-            viewModel.onLabelSelected(label)
+        derivedStateOf { 
+            filterVisibilityLock ?: ((!showScrollUp) || isResettingFilter)
         }
     }
-
-    val onClearSearch = remember(viewModel, focusManager, keyboardController) {
-        {
-            isResettingFilter = true
-            viewModel.onSearchQueryChange("")
-            focusManager.clearFocus()
-            keyboardController?.hide()
-            Unit
-        }
-    }
-
-    val onSetSwipeHintShown = remember(viewModel) {
-        { viewModel.setSwipeHintShown() }
-    }
-
-    val onUpdateGiftIdeas = remember(viewModel) {
-        { key: String, ideas: String -> viewModel.updateGiftIdeas(key, ideas) }
-    }
-
-    val onOpenContact = remember(context) {
-        { id: String, key: String ->
-            try {
-                val lookupUri = ContactsContract.Contacts.getLookupUri(id.toLong(), key)
-                context.startActivity(Intent(Intent.ACTION_VIEW, lookupUri))
-            } catch (_: Exception) {
-                // Fehler silent handhaben (z.B. Kontakt gelöscht)
-            }
-        }
-    }
-
-    // --- UI Struktur ---
 
     Scaffold(
         modifier = Modifier.fillMaxSize(),
@@ -192,12 +231,7 @@ fun HomeScreen(
                 HomeFAB(
                     showScrollUp = showScrollUp,
                     onScrollToTop = { scope.launch { listState.animateScrollToItem(0) } },
-                    onAddContact = {
-                        val intent = Intent(Intent.ACTION_INSERT).apply {
-                            type = ContactsContract.Contacts.CONTENT_TYPE
-                        }
-                        context.startActivity(intent)
-                    }
+                    onAddContact = onAddContact
                 )
             }
         },
@@ -210,7 +244,6 @@ fun HomeScreen(
                     detectTapGestures { focusManager.clearFocus() }
                 },
         ) {
-            // Die Liste mit Crossfade für weiche Übergänge beim Filtern
             AnimatedContent(
                 targetState = contacts,
                 transitionSpec = {
@@ -224,21 +257,20 @@ fun HomeScreen(
                     swipeHintShown = swipeHintShown,
                     modifier = Modifier.fillMaxSize(),
                     listState = listState,
-                    onRequestPermission = { permissionLauncher.launch(Manifest.permission.READ_CONTACTS) },
+                    onRequestPermission = onRequestPermission,
                     onSetSwipeHintShown = onSetSwipeHintShown,
                     onUpdateGiftIdeas = onUpdateGiftIdeas,
                     onOpenContact = onOpenContact,
                 )
             }
             
-            // FastScrollbar (Overlay)
             contacts?.let { contactList ->
                 if (contactList.isNotEmpty()) {
                     FastScrollbar(
                         listState = listState,
                         contacts = contactList,
                         isResettingFilter = isResettingFilter,
-                        onSetFastScrolling = { viewModel.setFastScrolling(it) },
+                        onSetFastScrolling = onSetFastScrolling,
                         modifier = Modifier
                             .align(Alignment.CenterEnd)
                             .fillMaxHeight()
@@ -247,5 +279,68 @@ fun HomeScreen(
                 }
             }
         }
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun HomePreview() {
+    BirthdayBuddy2Theme {
+        HomeContent(
+            searchQuery = "",
+            animatedPlaceholder = "Kontakt suchen",
+            availableLabels = listOf("Familie", "Freunde", "Arbeit"),
+            selectedLabel = null,
+            isFastScrolling = false,
+            contacts = listOf(
+                ContactUiModel(
+                    id = "1",
+                    contactId = "1",
+                    lookupKey = "key1",
+                    fullName = "Max Mustermann",
+                    dateText = "15. Mai",
+                    monthName = "Mai",
+                    imageUri = null,
+                    initials = "M",
+                    nextAge = 30,
+                    nextAgeText = "wird 30",
+                    daysUntilNext = 0,
+                    daysLeftText = "Heute!",
+                    isToday = true,
+                    labels = listOf("Familie"),
+                    giftIdeas = emptyList()
+                ),
+                ContactUiModel(
+                    id = "2",
+                    contactId = "2",
+                    lookupKey = "key2",
+                    fullName = "Erika Musterfrau",
+                    dateText = "20. Mai",
+                    monthName = "Mai",
+                    imageUri = null,
+                    initials = "E",
+                    nextAge = 25,
+                    nextAgeText = "wird 25",
+                    daysUntilNext = 5,
+                    daysLeftText = "In 5 T.",
+                    isToday = false,
+                    labels = emptyList(),
+                    giftIdeas = emptyList()
+                )
+            ),
+            swipeHintShown = true,
+            isResettingFilter = false,
+            listState = rememberLazyListState(),
+            onSearchQueryChange = {},
+            onLabelSelected = {},
+            onClearSearch = {},
+            onNavigateToSettings = {},
+            onAddContact = {},
+            onRequestPermission = {},
+            onSetSwipeHintShown = {},
+            onUpdateGiftIdeas = { _, _ -> },
+            onOpenContact = { _, _ -> },
+            onSetFastScrolling = {}
+        )
     }
 }

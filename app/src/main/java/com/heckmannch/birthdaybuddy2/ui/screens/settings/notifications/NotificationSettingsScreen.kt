@@ -15,11 +15,12 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.heckmannch.birthdaybuddy2.ui.theme.BirthdayBuddy2Theme
 import com.heckmannch.birthdaybuddy2.viewmodel.BirthdayViewModel
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun NotificationSettingsScreen(
     viewModel: BirthdayViewModel,
@@ -30,8 +31,6 @@ fun NotificationSettingsScreen(
     val notificationHour by viewModel.notificationHour.collectAsStateWithLifecycle()
     val notificationMinute by viewModel.notificationMinute.collectAsStateWithLifecycle()
 
-    val showTimePicker = remember { mutableStateOf(value = false) }
-
     val notificationPermissionLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.RequestPermission(),
     ) { isGranted ->
@@ -39,6 +38,48 @@ fun NotificationSettingsScreen(
             viewModel.setNotificationsEnabled(enabled = true)
         }
     }
+
+    NotificationSettingsContent(
+        notificationsEnabled = notificationsEnabled,
+        notificationHour = notificationHour,
+        notificationMinute = notificationMinute,
+        onToggleNotifications = { enabled ->
+            if (enabled) {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                    if (ContextCompat.checkSelfPermission(
+                            context,
+                            Manifest.permission.POST_NOTIFICATIONS
+                        ) == PackageManager.PERMISSION_GRANTED
+                    ) {
+                        viewModel.setNotificationsEnabled(enabled = true)
+                    } else {
+                        notificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+                    }
+                } else {
+                    viewModel.setNotificationsEnabled(enabled = true)
+                }
+            } else {
+                viewModel.setNotificationsEnabled(enabled = false)
+            }
+        },
+        onSetNotificationTime = { hour, minute ->
+            viewModel.setNotificationTime(hour, minute)
+        },
+        onNavigateBack = onNavigateBack
+    )
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun NotificationSettingsContent(
+    notificationsEnabled: Boolean,
+    notificationHour: Int,
+    notificationMinute: Int,
+    onToggleNotifications: (Boolean) -> Unit,
+    onSetNotificationTime: (Int, Int) -> Unit,
+    onNavigateBack: () -> Unit,
+) {
+    val showTimePicker = remember { mutableStateOf(value = false) }
 
     Scaffold(
         topBar = {
@@ -66,25 +107,7 @@ fun NotificationSettingsScreen(
                 trailingContent = {
                     Switch(
                         checked = notificationsEnabled,
-                        onCheckedChange = { checked ->
-                            if (checked) {
-                                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                                    if (ContextCompat.checkSelfPermission(
-                                            context,
-                                            Manifest.permission.POST_NOTIFICATIONS
-                                        ) == PackageManager.PERMISSION_GRANTED
-                                    ) {
-                                        viewModel.setNotificationsEnabled(enabled = true)
-                                    } else {
-                                        notificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
-                                    }
-                                } else {
-                                    viewModel.setNotificationsEnabled(enabled = true)
-                                }
-                            } else {
-                                viewModel.setNotificationsEnabled(enabled = false)
-                            }
-                        }
+                        onCheckedChange = onToggleNotifications
                     )
                 }
             )
@@ -118,7 +141,7 @@ fun NotificationSettingsScreen(
             confirmButton = {
                 TextButton(
                     onClick = {
-                        viewModel.setNotificationTime(timePickerState.hour, timePickerState.minute)
+                        onSetNotificationTime(timePickerState.hour, timePickerState.minute)
                         showTimePicker.value = false
                     },
                 ) {
@@ -135,6 +158,21 @@ fun NotificationSettingsScreen(
             text = {
                 TimePicker(state = timePickerState)
             }
+        )
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun NotificationSettingsPreview() {
+    BirthdayBuddy2Theme {
+        NotificationSettingsContent(
+            notificationsEnabled = true,
+            notificationHour = 9,
+            notificationMinute = 0,
+            onToggleNotifications = {},
+            onSetNotificationTime = { _, _ -> },
+            onNavigateBack = {}
         )
     }
 }

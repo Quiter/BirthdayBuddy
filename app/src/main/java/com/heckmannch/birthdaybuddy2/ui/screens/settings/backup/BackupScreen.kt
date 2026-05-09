@@ -13,11 +13,12 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.heckmannch.birthdaybuddy2.ui.theme.BirthdayBuddy2Theme
 import com.heckmannch.birthdaybuddy2.viewmodel.BirthdayViewModel
 import kotlinx.coroutines.launch
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun BackupScreen(
     viewModel: BirthdayViewModel,
@@ -75,6 +76,22 @@ fun BackupScreen(
         }
     }
 
+    BackupContent(
+        isLoading = isLoading,
+        onExportClick = { exportLauncher.launch("birthday_buddy_backup.json") },
+        onImportClick = { importLauncher.launch(arrayOf("application/json", "application/octet-stream", "*/*")) },
+        onNavigateBack = onNavigateBack
+    )
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun BackupContent(
+    isLoading: Boolean,
+    onExportClick: () -> Unit,
+    onImportClick: () -> Unit,
+    onNavigateBack: () -> Unit
+) {
     Scaffold(
         topBar = {
             TopAppBar(
@@ -101,7 +118,7 @@ fun BackupScreen(
             )
 
             Card(
-                onClick = { exportLauncher.launch("birthday_buddy_backup.json") },
+                onClick = onExportClick,
                 modifier = Modifier.fillMaxWidth(),
                 enabled = !isLoading
             ) {
@@ -114,7 +131,7 @@ fun BackupScreen(
             }
 
             Card(
-                onClick = { importLauncher.launch(arrayOf("application/json", "application/octet-stream", "*/*")) },
+                onClick = onImportClick,
                 modifier = Modifier.fillMaxWidth(),
                 enabled = !isLoading
             ) {
@@ -158,5 +175,18 @@ private fun InfoSection() {
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
         }
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun BackupPreview() {
+    BirthdayBuddy2Theme {
+        BackupContent(
+            isLoading = false,
+            onExportClick = {},
+            onImportClick = {},
+            onNavigateBack = {}
+        )
     }
 }

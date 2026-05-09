@@ -21,6 +21,7 @@ data class ContactUiModel(
     val daysUntilNext: Long,
     val daysLeftText: String,
     val isToday: Boolean,
+    val labels: List<String>,
     val giftIdeas: List<GiftIdea>,
 ) {
     val hasGiftIdeas: Boolean get() = giftIdeas.any { it.text.isNotBlank() }

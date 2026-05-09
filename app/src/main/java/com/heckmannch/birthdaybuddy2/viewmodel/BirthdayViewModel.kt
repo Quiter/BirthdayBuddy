@@ -31,34 +31,21 @@ class BirthdayViewModel @Inject constructor(
     timeRepository: TimeRepository,
 ) : ViewModel() {
 
+    // --- Settings & Preferences ---
+
     val notificationsEnabled: StateFlow<Boolean> = preferenceRepository.notificationsEnabled
-        .stateIn(
-            scope = viewModelScope,
-            started = SharingStarted.WhileSubscribed(5000),
-            initialValue = false,
-        )
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), false)
 
     val notificationHour: StateFlow<Int> = preferenceRepository.notificationHour
-        .stateIn(
-            scope = viewModelScope,
-            started = SharingStarted.WhileSubscribed(5000),
-            initialValue = 9,
-        )
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 9)
 
     val notificationMinute: StateFlow<Int> = preferenceRepository.notificationMinute
-        .stateIn(
-            scope = viewModelScope,
-            started = SharingStarted.WhileSubscribed(5000),
-            initialValue = 0,
-        )
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 0)
 
     init {
+        // Automatische Worker-Synchronisation bei Einstellungsänderungen
         viewModelScope.launch {
-            combine(
-                notificationsEnabled,
-                notificationHour,
-                notificationMinute,
-            ) { enabled, hour, minute ->
+            combine(notificationsEnabled, notificationHour, notificationMinute) { enabled, hour, minute ->
                 Triple(enabled, hour, minute)
             }.collect { (enabled, hour, minute) ->
                 if (enabled) {
@@ -70,40 +57,22 @@ class BirthdayViewModel @Inject constructor(
         }
     }
 
-    fun setNotificationsEnabled(enabled: Boolean) {
-        viewModelScope.launch {
-            preferenceRepository.setNotificationsEnabled(enabled)
-        }
+    fun setNotificationsEnabled(enabled: Boolean) = viewModelScope.launch {
+        preferenceRepository.setNotificationsEnabled(enabled)
     }
 
-    fun setNotificationTime(hour: Int, minute: Int) {
-        viewModelScope.launch {
-            preferenceRepository.setNotificationTime(hour, minute)
-        }
+    fun setNotificationTime(hour: Int, minute: Int) = viewModelScope.launch {
+        preferenceRepository.setNotificationTime(hour, minute)
     }
 
     val swipeHintShown: StateFlow<Boolean> = preferenceRepository.swipeHintShown
-        .stateIn(
-            scope = viewModelScope,
-            started = SharingStarted.WhileSubscribed(5000),
-            initialValue = true,
-        )
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), true)
 
-    fun setSwipeHintShown() {
-        viewModelScope.launch {
-            preferenceRepository.setSwipeHintShown(shown = true)
-        }
+    fun setSwipeHintShown() = viewModelScope.launch {
+        preferenceRepository.setSwipeHintShown(shown = true)
     }
 
-    fun updateGiftIdeas(lookupKey: String, ideas: String) {
-        viewModelScope.launch {
-            contactRepository.updateGiftIdeas(lookupKey, ideas)
-        }
-    }
-    
-    private val dateFormatter = DateTimeFormatter.ofLocalizedDate(FormatStyle.LONG)
-    private val dayMonthFormatter = DateTimeFormatter.ofPattern("d. MMMM")
-    private val monthFormatter = DateTimeFormatter.ofPattern("MMMM")
+    // --- Search & Filter State ---
 
     private val _searchQuery = MutableStateFlow("")
     val searchQuery: StateFlow<String> = _searchQuery.asStateFlow()
@@ -114,12 +83,55 @@ class BirthdayViewModel @Inject constructor(
     private val _scrollToTopEvent = MutableSharedFlow<Unit>(replay = 0)
     val scrollToTopEvent: SharedFlow<Unit> = _scrollToTopEvent.asSharedFlow()
 
-    private val _isFastScrolling = MutableStateFlow(value = false)
+    private val _isFastScrolling = MutableStateFlow(false)
     val isFastScrolling: StateFlow<Boolean> = _isFastScrolling.asStateFlow()
 
-    fun setFastScrolling(isScrolling: Boolean) {
-        _isFastScrolling.value = isScrolling
-    }
+    fun setFastScrolling(isScrolling: Boolean) { _isFastScrolling.value = isScrolling }
+
+    // --- Data Processing (Optimized) ---
+
+    private val dateFormatter = DateTimeFormatter.ofLocalizedDate(FormatStyle.LONG)
+    private val dayMonthFormatter = DateTimeFormatter.ofPattern("d. MMMM")
+    private val monthFormatter = DateTimeFormatter.ofPattern("MMMM")
+
+    /**
+     * Schritt 1: Basale Umwandlung der DB-Modelle in UI-Modelle (Reaktive Zeitquelle einbezogen).
+     * Wird nur ausgeführt, wenn sich die DB-Daten oder das Datum ändern.
+     */
+    private val allUiContacts: Flow<List<ContactUiModel>> = combine(
+        contactRepository.allContacts,
+        timeRepository.currentDate
+    ) { list, today ->
+        list.asSequence()
+            .map { it.toUiModel(today) }
+            .sortedBy { it.daysUntilNext }
+            .toList()
+    }.flowOn(Dispatchers.Default)
+
+    /**
+     * Schritt 2: Filtern der fertigen UI-Modelle basierend auf Suche und Labels.
+     * Extrem performant beim Tippen, da keine Datumsberechnungen mehr stattfinden.
+     */
+    val contacts: StateFlow<List<ContactUiModel>?> = combine(
+        allUiContacts,
+        _searchQuery,
+        _selectedLabel,
+        contactRepository.labelConfigs
+    ) { uiList, query, label, configs ->
+        val ignoredLabels = configs.asSequence().filter { it.isIgnored }.map { it.name }.toSet()
+        val isSearching = query.isNotEmpty()
+
+        uiList.asSequence()
+            .filter { contact ->
+                val isIgnored = contact.labels.any { it in ignoredLabels }
+                if (isIgnored && !isSearching) return@filter false
+
+                val matchesQuery = query.isEmpty() || contact.fullName.contains(query, ignoreCase = true)
+                val matchesLabel = (label == null) || contact.labels.contains(label)
+                matchesQuery && matchesLabel
+            }
+            .toList()
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), null)
 
     val availableLabels: StateFlow<List<String>> = combine(
         contactRepository.allContacts,
@@ -128,11 +140,7 @@ class BirthdayViewModel @Inject constructor(
         val inUseLabels = contacts.asSequence().flatMap { it.labels }.toSet()
         val configMap = configs.associateBy { it.name }
         
-        val hasUserLabels = inUseLabels.any { name ->
-            configMap[name]?.isSystem == false
-        }
-
-        if (!hasUserLabels) return@combine emptyList()
+        if (inUseLabels.none { configMap[it]?.isSystem == false }) return@combine emptyList()
 
         inUseLabels.asSequence()
             .filter { name ->
@@ -141,81 +149,7 @@ class BirthdayViewModel @Inject constructor(
             }
             .sorted()
             .toList()
-    }
-    .flowOn(Dispatchers.Default)
-    .distinctUntilChanged()
-    .stateIn(
-        scope = viewModelScope,
-        started = SharingStarted.WhileSubscribed(5000),
-        initialValue = emptyList(),
-    )
-
-    val contacts: StateFlow<List<ContactUiModel>?> = combine(
-        contactRepository.allContacts,
-        _searchQuery,
-        _selectedLabel,
-        contactRepository.labelConfigs,
-        timeRepository.currentDate,
-    ) { list, query, label, configs, today ->
-        val ignoredLabels = configs.asSequence()
-            .filter { it.isIgnored }
-            .map { it.name }
-            .toSet()
-        val isSearching = query.isNotEmpty()
-        
-        try {
-            list.asSequence()
-                .filter { contact ->
-                    val isIgnored = contact.labels.any { it in ignoredLabels }
-                    if (isIgnored && !isSearching) return@filter false
-
-                    val matchesQuery = query.isEmpty() || contact.fullName.contains(query, ignoreCase = true)
-                    val matchesLabel = (label == null) || contact.labels.contains(label)
-                    matchesQuery && matchesLabel
-                }
-                .mapNotNull { contact -> 
-                    try {
-                        contact.toUiModel(today)
-                    } catch (e: Exception) {
-                        Log.e("BirthdayViewModel", "Error mapping contact ${contact.contactId}", e)
-                        null
-                    }
-                }
-                .sortedBy { it.daysUntilNext }
-                .toList()
-        } catch (e: Exception) {
-            Log.e("BirthdayViewModel", "Error in contacts flow", e)
-            emptyList()
-        }
-    }
-    .flowOn(Dispatchers.Default)
-    .distinctUntilChanged()
-    .stateIn(
-        scope = viewModelScope,
-        started = SharingStarted.WhileSubscribed(5000),
-        initialValue = null,
-    )
-
-    fun onSearchQueryChange(newQuery: String) {
-        val wasEmpty = _searchQuery.value.isEmpty()
-        _searchQuery.value = newQuery
-        if (newQuery.isEmpty() && !wasEmpty) {
-            triggerScrollToTop()
-        }
-    }
-
-    fun onLabelSelected(label: String?) {
-        _selectedLabel.value = if (_selectedLabel.value == label) null else label
-        triggerScrollToTop()
-    }
-
-    fun resetFilters() {
-        if ((_searchQuery.value.isNotEmpty()) || (_selectedLabel.value != null)) {
-            _searchQuery.value = ""
-            _selectedLabel.value = null
-            triggerScrollToTop()
-        }
-    }
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
     val labelManagementList: StateFlow<List<LabelManagementModel>> = combine(
         contactRepository.labelConfigs,
@@ -226,65 +160,67 @@ class BirthdayViewModel @Inject constructor(
             .filter { it.name in labelsInUse }
             .map { config ->
                 LabelManagementModel(
-                    name = config.name,
-                    isHiddenFromFilter = config.isHiddenFromFilter,
-                    isIgnored = config.isIgnored,
-                    isSystem = config.isSystem,
+                    config.name,
+                    config.isHiddenFromFilter,
+                    config.isIgnored,
+                    config.isSystem
                 )
             }.sortedBy { it.name }.toList()
-    }
-    .flowOn(Dispatchers.Default)
-    .distinctUntilChanged()
-    .stateIn(
-        scope = viewModelScope,
-        started = SharingStarted.WhileSubscribed(5000),
-        initialValue = emptyList(),
-    )
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
-    fun updateLabelConfig(name: String, isHiddenFromFilter: Boolean, isIgnored: Boolean, isSystem: Boolean) {
-        viewModelScope.launch {
-            contactRepository.updateLabelConfig(
-                LabelConfig(name, isHiddenFromFilter, isIgnored, isSystem),
-            )
-            try {
-                BirthdayWidget().updateAll(context)
-            } catch (e: Exception) {
-                Log.e("BirthdayViewModel", "Widget update failed", e)
-            }
+    // --- Actions ---
+
+    fun onSearchQueryChange(newQuery: String) {
+        val wasEmpty = _searchQuery.value.isEmpty()
+        _searchQuery.value = newQuery
+        if (newQuery.isEmpty() && !wasEmpty) triggerScrollToTop()
+    }
+
+    fun onLabelSelected(label: String?) {
+        _selectedLabel.value = if (_selectedLabel.value == label) null else label
+        triggerScrollToTop()
+    }
+
+    fun resetFilters() {
+        if (_searchQuery.value.isNotEmpty() || _selectedLabel.value != null) {
+            _searchQuery.value = ""
+            _selectedLabel.value = null
+            triggerScrollToTop()
         }
     }
 
-    fun triggerScrollToTop() {
-        viewModelScope.launch {
-            _scrollToTopEvent.emit(Unit)
-        }
+    fun updateGiftIdeas(lookupKey: String, ideas: String) = viewModelScope.launch {
+        contactRepository.updateGiftIdeas(lookupKey, ideas)
     }
 
-    fun syncContacts() {
-        viewModelScope.launch {
-            contactRepository.syncContacts()
-            try {
-                BirthdayWidget().updateAll(context)
-            } catch (e: Exception) {
-                Log.e("BirthdayViewModel", "Widget update failed", e)
-            }
-        }
+    fun updateLabelConfig(name: String, hidden: Boolean, ignored: Boolean, isSystem: Boolean) = viewModelScope.launch {
+        contactRepository.updateLabelConfig(LabelConfig(name, hidden, ignored, isSystem))
+        updateWidget()
     }
 
-    suspend fun exportGiftIdeas(): String {
-        return contactRepository.exportGiftIdeas()
+    fun syncContacts() = viewModelScope.launch {
+        contactRepository.syncContacts()
+        updateWidget()
     }
+
+    fun triggerScrollToTop() = viewModelScope.launch {
+        _scrollToTopEvent.emit(Unit)
+    }
+
+    suspend fun exportGiftIdeas() = contactRepository.exportGiftIdeas()
 
     suspend fun importGiftIdeas(json: String): Int {
         val count = contactRepository.importGiftIdeas(json)
-        if (count > 0) {
-            try {
-                BirthdayWidget().updateAll(context)
-            } catch (e: Exception) {
-                Log.e("BirthdayViewModel", "Widget update failed", e)
-            }
-        }
+        if (count > 0) updateWidget()
         return count
+    }
+
+    private fun updateWidget() = viewModelScope.launch {
+        try {
+            BirthdayWidget().updateAll(context)
+        } catch (e: Exception) {
+            Log.e("BirthdayViewModel", "Widget update failed", e)
+        }
     }
 
     private fun com.heckmannch.birthdaybuddy2.database.Contact.toUiModel(today: LocalDate): ContactUiModel {
@@ -307,6 +243,7 @@ class BirthdayViewModel @Inject constructor(
             daysUntilNext = daysLeft,
             daysLeftText = if (daysLeft == 0L) "Heute!" else "In $daysLeft T.",
             isToday = daysLeft == 0L,
+            labels = labels,
             giftIdeas = GiftIdea.fromString(giftIdeas),
         )
     }

@@ -21,7 +21,7 @@ Die App befindet sich gerade in einer umfassenden Refactoring-Phase (V3), um die
 2. **Geschenkideen & Backup:** Google Keep Style Checklisten mit lokalem JSON-Backup/Restore (Auto-Matching).
 3. **Label-Management:** Modernes M3-Interface zur Steuerung der Sichtbarkeit und hybride Filter-Logik.
 4. **Widget (Jetpack Glance):** Dynamisches Layout mit präzisen Mitternachts-Updates.
-5. **Performance:** Paralleler High-Performance Sync; GPU-beschleunigte UI-Animationen.
+5. **Performance:** Zweistufige ViewModel-Pipeline für verzögerungsfreies Filtern; paralleler Sync; GPU-beschleunigte UI-Animationen.
 
 ## 📦 Abhängigkeiten & Polish
 - **Core:** Compose BOM (2026.05.00), Room (2.8.4), Glance (1.1.1).

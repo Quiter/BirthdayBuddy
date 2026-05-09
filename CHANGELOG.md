@@ -105,3 +105,6 @@ Alle signifikanten Änderungen am Projekt werden hier dokumentiert.
     - **Developer Experience:** Einführung von Compose Previews für den Einstellungsbereich zur schnelleren UI-Iteration.
 32. **Label Filtering Precision:**
     - **UX Fix:** In den Label-Einstellungen werden nun nur noch Gruppen/Labels angezeigt, die auch tatsächlich mindestens einen Kontakt mit hinterlegtem Geburtsdatum enthalten. Dies eliminiert verwaiste System-Labels und sorgt für eine fokussierte Konfiguration.
+33. **ViewModel Performance Architecture:**
+    - **Pipeline Optimization:** Umstellung der Kontakt-Datenverarbeitung auf eine zweistufige Pipeline. Datumsberechnungen (Alter, Tage bis Geburtstag) werden nun von Filter-Operationen (Suche, Label-Auswahl) getrennt. Dies resultiert in einer massiv verbesserten UI-Reaktionszeit beim Tippen in der Suche, da rechenintensive Operationen nur noch bei echten Datenänderungen stattfinden.
+    - **State Management:** Konsolidierung der Widget-Update-Logik und Optimierung der Flow-Ketten zur Reduzierung der CPU-Last.
