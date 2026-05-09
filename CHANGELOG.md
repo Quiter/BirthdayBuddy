@@ -103,3 +103,5 @@ Alle signifikanten Änderungen am Projekt werden hier dokumentiert.
     - **UX Overhaul:** Neugestaltung des Label-Einstellungsbildschirms mit Material 3 `OutlinedCard` Elementen und interaktiven `FilterChip` Komponenten für eine intuitive Bedienung.
     - **Performance Hardening:** Implementierung von stabilen Keys in der LazyColumn und Memoization von Callbacks (`remember`) zur Vermeidung unnötiger Re-Compositions.
     - **Developer Experience:** Einführung von Compose Previews für den Einstellungsbereich zur schnelleren UI-Iteration.
+32. **Label Filtering Precision:**
+    - **UX Fix:** In den Label-Einstellungen werden nun nur noch Gruppen/Labels angezeigt, die auch tatsächlich mindestens einen Kontakt mit hinterlegtem Geburtsdatum enthalten. Dies eliminiert verwaiste System-Labels und sorgt für eine fokussierte Konfiguration.

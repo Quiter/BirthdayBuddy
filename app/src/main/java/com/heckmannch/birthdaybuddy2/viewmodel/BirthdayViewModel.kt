@@ -217,15 +217,21 @@ class BirthdayViewModel @Inject constructor(
         }
     }
 
-    val labelManagementList: StateFlow<List<LabelManagementModel>> = contactRepository.labelConfigs.map { configs ->
-        configs.asSequence().map { config ->
-            LabelManagementModel(
-                name = config.name,
-                isHiddenFromFilter = config.isHiddenFromFilter,
-                isIgnored = config.isIgnored,
-                isSystem = config.isSystem,
-            )
-        }.sortedBy { it.name }.toList()
+    val labelManagementList: StateFlow<List<LabelManagementModel>> = combine(
+        contactRepository.labelConfigs,
+        contactRepository.allContacts
+    ) { configs, contacts ->
+        val labelsInUse = contacts.flatMap { it.labels }.toSet()
+        configs.asSequence()
+            .filter { it.name in labelsInUse }
+            .map { config ->
+                LabelManagementModel(
+                    name = config.name,
+                    isHiddenFromFilter = config.isHiddenFromFilter,
+                    isIgnored = config.isIgnored,
+                    isSystem = config.isSystem,
+                )
+            }.sortedBy { it.name }.toList()
     }
     .flowOn(Dispatchers.Default)
     .distinctUntilChanged()

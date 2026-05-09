@@ -33,7 +33,7 @@ Die App befindet sich gerade in einer umfassenden Refactoring-Phase (V3), um die
 
 - **V3 Refactoring (Abgeschlossen):** Einführung des Repository-Patterns, Hilt-Integration und vollständiges State-Hoisting in der UI.
 - **Backup System:** Implementierung von robustem Import/Export für Geschenkideen inkl. Fallback-Matching.
-- **UI Modernization:** Neugestaltung des Label-Managements mit Material 3 Cards und FilterChips; Performance-Optimierung durch Memoization.
+- **UI Modernization:** Neugestaltung des Label-Managements mit Material 3 Cards und FilterChips; intelligente Filterung verwaister Labels für mehr Übersichtlichkeit.
 
 ## 🎯 Kommende Aufgaben (Backlog)
 - **Erweiterte Benachrichtigungen:** Einstellbare Erinnerungen (1 Tag vorher, am Tag selbst) via WorkManager.
