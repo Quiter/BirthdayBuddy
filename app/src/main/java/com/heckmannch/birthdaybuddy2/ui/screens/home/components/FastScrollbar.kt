@@ -28,6 +28,7 @@ fun FastScrollbar(
     listState: LazyListState,
     contacts: List<ContactUiModel>,
     modifier: Modifier = Modifier,
+    isResettingFilter: Boolean = false,
     onSetFastScrolling: (Boolean) -> Unit = {},
 ) {
     val scope = rememberCoroutineScope()
@@ -78,8 +79,10 @@ fun FastScrollbar(
                 }
             }
 
-            val thumbOffset by remember(trackHeight) {
+            val thumbOffset by remember(trackHeight, isResettingFilter) {
                 derivedStateOf {
+                    if (isResettingFilter) return@derivedStateOf 0.dp
+
                     if (isDragging) {
                         with(density) { dragOffsetPx.toDp() }.coerceIn(0.dp, trackHeight)
                     } else {

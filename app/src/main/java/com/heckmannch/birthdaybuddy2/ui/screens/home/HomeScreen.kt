@@ -91,7 +91,7 @@ fun HomeScreen(
     }
 
     val showScrollUp by remember {
-        derivedStateOf { listState.firstVisibleItemIndex > 0 }
+        derivedStateOf { listState.firstVisibleItemIndex > 0 && !isResettingFilter }
     }
 
     val isFilterBarVisible by remember {
@@ -202,6 +202,7 @@ fun HomeScreen(
                     FastScrollbar(
                         listState = listState,
                         contacts = contactList,
+                        isResettingFilter = isResettingFilter,
                         onSetFastScrolling = { viewModel.setFastScrolling(it) },
                         modifier = Modifier
                             .align(Alignment.CenterEnd)
