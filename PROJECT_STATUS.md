@@ -122,6 +122,8 @@ Die App befindet sich gerade in einer umfassenden Refactoring-Phase (V3), um die
     - **Signature Update:** Umstellung der Callback-Logik auf Nullable-Strings zur sauberen Repräsentation des "Alle"-Zustands.
 25. **Gift Management UI Refinement:**
     - **UX Cleanup:** Entfernung der Sortier-Icons im Geschenkideen-Dialog, da kein manuelles Sortieren unterstützt wird. Die Liste beginnt nun direkt mit dem Checkbox-Element für ein cleaneress Erscheinungsbild.
+26. **Auto-Reset Logic:**
+    - **Inactivity Handling:** Implementierung einer automatischen Reset-Logik in der `MainActivity`. Wenn die App länger als 5 Minuten nicht genutzt wird (Inaktivität im Vordergrund oder Zeit im Hintergrund), werden Suchfilter und Label-Auswahl automatisch zurückgesetzt, um dem Nutzer beim nächsten Start eine frische Übersicht zu präsentieren.
 
 ## 🎯 Kommende Aufgaben (Backlog)
 - **Erweiterte Benachrichtigungen:** Einstellbare Erinnerungen (1 Tag vorher, am Tag selbst) via WorkManager.

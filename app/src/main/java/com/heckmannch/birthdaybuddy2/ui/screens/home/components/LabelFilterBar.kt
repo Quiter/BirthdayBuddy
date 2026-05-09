@@ -28,11 +28,11 @@ fun LabelFilterBar(
             visible = visible,
             enter = expandVertically() + fadeIn(),
             exit = shrinkVertically() + fadeOut(),
-            modifier = modifier
+            modifier = modifier,
         ) {
             LazyRow(
                 contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
             ) {
                 item {
                     FilterChip(

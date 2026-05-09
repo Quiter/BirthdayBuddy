@@ -55,7 +55,7 @@ fun GiftIdeaDialog(
                 ) {
                     itemsIndexed(
                         items = ideas, 
-                        key = { _, item -> item.id }
+                        key = { _, item -> item.id },
                     ) { index, item ->
                         val focusRequester = remember { FocusRequester() }
                         
@@ -71,7 +71,7 @@ fun GiftIdeaDialog(
                             verticalAlignment = Alignment.CenterVertically,
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .animateItem() // Sorgt für flüssiges Verschieben
+                                .animateItem(), // Sorgt für flüssiges Verschieben
                         ) {
                             Checkbox(
                                 checked = item.isChecked,
@@ -93,7 +93,7 @@ fun GiftIdeaDialog(
                                             }
                                         }
                                     }
-                                }
+                                },
                             )
                             BasicTextField(
                                 value = item.text,
@@ -113,19 +113,19 @@ fun GiftIdeaDialog(
                                     .focusRequester(focusRequester),
                                 textStyle = MaterialTheme.typography.bodyLarge.copy(
                                     color = if (item.isChecked) MaterialTheme.colorScheme.outline else MaterialTheme.colorScheme.onSurface,
-                                    textDecoration = if (item.isChecked) TextDecoration.LineThrough else TextDecoration.None
+                                    textDecoration = if (item.isChecked) TextDecoration.LineThrough else TextDecoration.None,
                                 ),
                                 singleLine = true,
                                 cursorBrush = SolidColor(MaterialTheme.colorScheme.primary),
                                 keyboardOptions = KeyboardOptions(
                                     imeAction = ImeAction.Done,
-                                    capitalization = KeyboardCapitalization.Sentences
+                                    capitalization = KeyboardCapitalization.Sentences,
                                 ),
-                                keyboardActions = KeyboardActions(onDone = { focusManager.clearFocus() })
+                                keyboardActions = KeyboardActions(onDone = { focusManager.clearFocus() }),
                             )
                             
                             IconButton(
-                                onClick = { ideas.removeAt(index) }
+                                onClick = { ideas.removeAt(index) },
                             ) {
                                 Icon(
                                     imageVector = Icons.Default.Close,
@@ -158,7 +158,7 @@ fun GiftIdeaDialog(
                         }
                     },
                     modifier = Modifier.fillMaxWidth(),
-                    color = androidx.compose.ui.graphics.Color.Transparent
+                    color = androidx.compose.ui.graphics.Color.Transparent,
                 ) {
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
@@ -168,7 +168,7 @@ fun GiftIdeaDialog(
                             imageVector = Icons.Default.Add,
                             contentDescription = null,
                             modifier = Modifier.size(24.dp).padding(start = 12.dp),
-                            tint = MaterialTheme.colorScheme.primary
+                            tint = MaterialTheme.colorScheme.primary,
                         )
                         Spacer(modifier = Modifier.width(12.dp))
                         Text(

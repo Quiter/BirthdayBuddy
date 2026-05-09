@@ -209,6 +209,14 @@ class BirthdayViewModel @Inject constructor(
         triggerScrollToTop()
     }
 
+    fun resetFilters() {
+        if ((_searchQuery.value.isNotEmpty()) || (_selectedLabel.value != null)) {
+            _searchQuery.value = ""
+            _selectedLabel.value = null
+            triggerScrollToTop()
+        }
+    }
+
     val labelManagementList: StateFlow<List<LabelManagementModel>> = contactRepository.labelConfigs.map { configs ->
         configs.asSequence().map { config ->
             LabelManagementModel(

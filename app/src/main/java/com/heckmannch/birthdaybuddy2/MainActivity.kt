@@ -14,7 +14,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
-import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -40,6 +40,9 @@ private object Routes {
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
+
+    private var lastInteractionTime: Long = System.currentTimeMillis()
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
@@ -52,6 +55,16 @@ class MainActivity : ComponentActivity() {
                 val viewModel: BirthdayViewModel = hiltViewModel()
                 val navController = rememberNavController()
 
+                // Inaktivitäts-Check: Filter nach 5 Minuten zurücksetzen
+                LaunchedEffect(Unit) {
+                    while (true) {
+                        kotlinx.coroutines.delay(10000) // Alle 10 Sekunden prüfen
+                        if (System.currentTimeMillis() - lastInteractionTime > 5 * 60 * 1000) {
+                            viewModel.resetFilters()
+                        }
+                    }
+                }
+
                 // React to intent changes (Initial start and onNewIntent)
                 HandleIntents(intent, viewModel)
 
@@ -63,6 +76,11 @@ class MainActivity : ComponentActivity() {
                 }
             }
         }
+    }
+
+    override fun onUserInteraction() {
+        super.onUserInteraction()
+        lastInteractionTime = System.currentTimeMillis()
     }
 
     @Composable
