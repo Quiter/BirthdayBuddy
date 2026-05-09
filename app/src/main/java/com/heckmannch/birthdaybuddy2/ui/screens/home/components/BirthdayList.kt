@@ -67,6 +67,7 @@ fun BirthdayList(
                     onSetSwipeHintShown = onSetSwipeHintShown,
                     onUpdateGiftIdeas = onUpdateGiftIdeas,
                     onOpenContact = onOpenContact,
+                    modifier = Modifier.animateItem(),
                 )
             }
         }

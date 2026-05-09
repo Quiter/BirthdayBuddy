@@ -46,6 +46,7 @@ fun BirthdayItem(
     onSetSwipeHintShown: () -> Unit,
     onUpdateGiftIdeas: (String, String) -> Unit,
     onOpenContact: (String, String) -> Unit,
+    modifier: Modifier = Modifier,
 ) {
     val density = LocalDensity.current
     val scope = rememberCoroutineScope()
@@ -120,7 +121,7 @@ fun BirthdayItem(
     }
 
     Box(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxWidth()
             .padding(vertical = 4.dp)
             .height(IntrinsicSize.Min),

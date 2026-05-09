@@ -85,8 +85,9 @@ Die App befindet sich gerade in einer umfassenden Refactoring-Phase (V3), um die
 16. **Performance & UX Deep Polish:**
     - **GPU-Accelerated UI:** Umstellung von Animationen (FAB-Rotation, Item-Swipe) auf `graphicsLayer`. Berechnungen erfolgen nun auf der GPU, was Re-Compositions eliminiert und 60fps Scrolling/Swiping garantiert.
     - **Stabilized Navigation:** Einführung eines zweistufigen Scroll-to-Top Prozesses zur sicheren Handhabung asynchroner Listen-Updates beim Filterwechsel.
+    - **Stabilized Navigation:** Einführung eines zweistufigen Scroll-to-Top Prozesses zur sicheren Handhabung asynchroner Listen-Updates beim Filterwechsel.
     - **Re-Composition Guard:** Umfassende Memoization von UI-Handlern (`remember`) und Einsatz von `distinctUntilChanged` im ViewModel zur Minimierung redundanter View-Updates.
-    - **UX Refinement:** Präzise Steuerung der Scrollbar-Bubble (Anzeige nur bei aktivem Drag) und verbesserte Tastatur-Integration (Search-Action, automatisches Schließen).
+    - **UX Refinement:** Präzise Steuerung der Scrollbar-Bubble (Anzeige nur bei aktivem Drag) und verbesserte Tastatur-Integration (Search-Action, automatisches Schließen, erzwungene Großschreibung am Zeilenanfang).
     - **Density Independence:** Stabilisierung der Swipe-Anker gegen Änderungen der System-Schriftgröße/Dichte.
 17. **Architecture Refactoring (Completed):**
     - **Repository Pattern:** Auslagerung der Daten-Logik aus dem `BirthdayViewModel` in spezialisierte Repositories (`ContactRepository`, `PreferenceRepository`).
@@ -124,6 +125,8 @@ Die App befindet sich gerade in einer umfassenden Refactoring-Phase (V3), um die
     - **UX Cleanup:** Entfernung der Sortier-Icons im Geschenkideen-Dialog, da kein manuelles Sortieren unterstützt wird. Die Liste beginnt nun direkt mit dem Checkbox-Element für ein cleaneress Erscheinungsbild.
 26. **Auto-Reset Logic:**
     - **Inactivity Handling:** Implementierung einer automatischen Reset-Logik in der `MainActivity`. Wenn die App länger als 5 Minuten nicht genutzt wird (Inaktivität im Vordergrund oder Zeit im Hintergrund), werden Suchfilter und Label-Auswahl automatisch zurückgesetzt, um dem Nutzer beim nächsten Start eine frische Übersicht zu präsentieren.
+27. **Inspection Cleanup & Modernization:** Systemweite Bereinigung von IDE-Warnungen; Migration auf das moderne `hiltViewModel` Package; Einführung von Trailing Commas und Optimierung der logischen Ausdrücke im ViewModel zur Steigerung der Code-Qualität.
+28. **Premium Fast-Scrollbar & UI Stability:** Implementierung von Sub-Pixel-Präzision und haptischem Feedback beim Monatswechsel in der Scrollbar. Stabilisierung von FAB und Scroll-Indikator während Filter-Resets durch State-Guarding zur Eliminierung visueller Sprünge. Einführung von Accessibility-Semantics für eine barrierefreie Navigation.
 
 ## 🎯 Kommende Aufgaben (Backlog)
 - **Erweiterte Benachrichtigungen:** Einstellbare Erinnerungen (1 Tag vorher, am Tag selbst) via WorkManager.

@@ -77,16 +77,29 @@ fun HomeScreen(
         animatedPlaceholder = "Kontakt suchen"
     }
 
-    // ViewModel Events verarbeiten (z.B. Scroll-to-Top vom Widget)
+    // Strategie für geschmeidigen Filter-Reset
+    var pendingReset by remember { mutableStateOf(false) }
+
+    // ViewModel Events verarbeiten (z.B. Scroll-to-Top vom Widget oder Filterwechsel)
     LaunchedEffect(viewModel.scrollToTopEvent) {
         viewModel.scrollToTopEvent.collectLatest {
+            pendingReset = true
             isResettingFilter = true
-            // Wir nutzen scrollToItem(0) für Filter/Suche, weil es robuster gegen Inhaltsänderungen ist
+            // Erster Versuch: Sofort hochspringen, falls wir bereits gescrollt waren
+            if (listState.firstVisibleItemIndex > 0 || listState.firstVisibleItemScrollOffset > 0) {
+                listState.scrollToItem(0)
+            }
+        }
+    }
+
+    // Sobald sich die Kontakte ändern UND ein Reset ansteht -> Finaler Scroll & Abschluss
+    LaunchedEffect(contacts) {
+        if (pendingReset) {
             listState.scrollToItem(0)
-            // Kurze Verzögerung, um auf das asynchrone Update der Kontaktliste zu warten
-            delay(150)
-            listState.scrollToItem(0)
+            // Kurze Atempause, damit UI-Elemente (FAB/Scrollbar) nicht flackern
+            delay(50)
             isResettingFilter = false
+            pendingReset = false
         }
     }
 

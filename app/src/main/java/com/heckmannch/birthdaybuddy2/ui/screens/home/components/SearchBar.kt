@@ -20,6 +20,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.unit.dp
 
 @Composable
@@ -79,13 +80,21 @@ fun SearchBar(
                 
                 BasicTextField(
                     value = query,
-                    onValueChange = onQueryChange,
+                    onValueChange = { newText ->
+                        val capitalizedText = newText.replaceFirstChar {
+                            if (it.isLowerCase()) it.titlecase() else it.toString()
+                        }
+                        onQueryChange(capitalizedText)
+                    },
                     modifier = Modifier.fillMaxWidth(),
                     textStyle = textStyle,
                     singleLine = true,
                     cursorBrush = SolidColor(MaterialTheme.colorScheme.primary),
-                    keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
-                    keyboardActions = KeyboardActions(onSearch = { focusManager.clearFocus() })
+                    keyboardOptions = KeyboardOptions(
+                        imeAction = ImeAction.Search,
+                        capitalization = KeyboardCapitalization.Sentences,
+                    ),
+                    keyboardActions = KeyboardActions(onSearch = { focusManager.clearFocus() }),
                 )
             }
 
