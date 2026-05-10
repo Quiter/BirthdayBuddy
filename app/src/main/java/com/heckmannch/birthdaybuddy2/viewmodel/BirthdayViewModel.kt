@@ -119,14 +119,18 @@ class BirthdayViewModel @Inject constructor(
         contactRepository.labelConfigs,
     ) { uiList, query, label, configs ->
         val ignoredLabels = configs.asSequence().filter { it.isIgnored }.map { it.name }.toSet()
-        val isSearching = query.isNotEmpty()
+        val trimmedQuery = query.trim()
+        val isSearching = trimmedQuery.isNotEmpty()
+        val searchKeywords = if (isSearching) trimmedQuery.split("\\s+".toRegex()) else emptyList()
 
         uiList.asSequence()
             .filter { contact ->
                 val isIgnored = contact.labels.any { it in ignoredLabels }
                 if (isIgnored && !isSearching) return@filter false
 
-                val matchesQuery = query.isEmpty() || contact.fullName.contains(query, ignoreCase = true)
+                val matchesQuery = !isSearching || searchKeywords.all { keyword ->
+                    contact.fullName.contains(keyword, ignoreCase = true)
+                }
                 val matchesLabel = (label == null) || contact.labels.contains(label)
                 matchesQuery && matchesLabel
             }

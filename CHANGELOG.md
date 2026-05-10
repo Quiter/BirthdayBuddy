@@ -108,3 +108,19 @@ Alle signifikanten Änderungen am Projekt werden hier dokumentiert.
 33. **ViewModel Performance Architecture:**
     - **Pipeline Optimization:** Umstellung der Kontakt-Datenverarbeitung auf eine zweistufige Pipeline. Datumsberechnungen (Alter, Tage bis Geburtstag) werden nun von Filter-Operationen (Suche, Label-Auswahl) getrennt. Dies resultiert in einer massiv verbesserten UI-Reaktionszeit beim Tippen in der Suche, da rechenintensive Operationen nur noch bei echten Datenänderungen stattfinden.
     - **State Management:** Konsolidierung der Widget-Update-Logik und Optimierung der Flow-Ketten zur Reduzierung der CPU-Last.
+34. **Global Search UX Logic:**
+    - Implementierung eines "Search First"-Ansatzes. Beim Tippen in die Suchleiste wird ein eventuell aktives Label automatisch zurückgesetzt, um sicherzustellen, dass der Nutzer den gewünschten Kontakt findet. Filter können nach dem Start der Suche wieder hinzugefügt werden.
+35. **Refined Birthday Visuals:**
+    - Neue Rahmen-Logik für Kontakte, die heute Geburtstag haben:
+        - **Gold:** Runde Geburtstage (Alter durch 10 teilbar), jetzt inklusive des 10. Geburtstags.
+        - **Bunt:** Kinder im Alter von 0-9 Jahren.
+        - **Silber:** Alle anderen Geburtstage, auch solche ohne hinterlegtes Geburtsjahr.
+36. **Technical Excellence & Cleanup:**
+    - Projektweite Bereinigung von IDE-Warnungen und Einträgen im "Problems"-Tab.
+    - Systematische Einführung von Trailing Commas und Named Arguments zur Verbesserung der Code-Klarheit.
+    - Optimierung von Sammlungs-Operationen durch Sequences (`asSequence`) in datenintensiven Flows.
+    - Synchrones Locking der Label-Sichtbarkeit während des Fast-Scrollings zur Eliminierung von Layout-Sprüngen.
+    - Einführung von flächendeckendem Preview-Support für alle Screens.
+37. **Smart Keyword Search:**
+    - Die Suche ignoriert nun führende/nachfolgende Leerzeichen (Fix für Autocomplete-Probleme).
+    - Umstellung auf Keyword-basierte Suche: Kontakte werden gefunden, egal in welcher Reihenfolge Vor- und Nachname eingegeben werden (z. B. findet "Mustermann Max" auch "Max Mustermann").
