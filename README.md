@@ -22,8 +22,9 @@ BirthdayBuddy 2 is a modern, reliable, and high-performance birthday management 
 *   **Sticky-Swipe Actions:** "Now Playing Style" swipe gestures for quick access to gift ideas, contact editing, or ignoring specific people.
 *   **Smart Filter Bar:** A hybrid filtering system that intelligently shows or hides labels based on your active usage.
 *   **Reactive Widget:** A Jetpack Glance homescreen widget that updates precisely at midnight (00:01 AM) via WorkManager.
-*   **Gift Management:** A Google Keep style checklist for each contact to keep track of gift ideas locally.
+*   **Gift Management:** A Google Keep style checklist for each contact with local persistence and JSON-based Backup/Restore.
 *   **High-End Fast-Scrollbar:** A Google Photos style scrollbar with a predictive month-bubble and 48dp touch-area for precision navigation.
+*   **Smart Search:** Keyword-based search logic that finds contacts regardless of name order.
 
 ---
 
@@ -32,8 +33,8 @@ BirthdayBuddy 2 is a modern, reliable, and high-performance birthday management 
 *   **UI:** 100% Jetpack Compose (BOM 2026.04) with Material 3.
 *   **Persistence:** Room v6 (with Batch-Insert optimizations) & Jetpack DataStore.
 *   **Background:** WorkManager for midnight widget refreshes and daily notification checks.
-*   **DI:** Hilt for clean dependency management (ViewModels, Repositories, DAOs).
-*   **Architecture:** Clean Repository Pattern with MVI-style UI state management.
+*   **DI:** Hilt for clean dependency management (ViewModels, Repositories, DAOs, DataSources).
+*   **Architecture:** Clean Repository Pattern with specialized DataSources and MVI-style UI state management.
 *   **Time Management:** Custom reactive `TimeRepository` for automated UI updates at midnight.
 *   **Image Loading:** Coil for efficient contact photo rendering.
 
@@ -41,10 +42,11 @@ BirthdayBuddy 2 is a modern, reliable, and high-performance birthday management 
 
 ## 📦 Architecture Highlights
 
+*   **Separation of Concerns:** Decoupled data layer using specialized `SystemContactDataSource` and `GiftIdeaBackupManager`.
 *   **Stateless Components:** UI components utilize State Hoisting for maximum testability and reusability.
-*   **Lifecycle Awareness:** Uses `collectAsStateWithLifecycle` to minimize resource consumption when the app is in the background.
+*   **Lifecycle Awareness:** Uses `collectAsStateWithLifecycle` to minimize resource consumption.
 *   **Memoization:** Strategic use of `derivedStateOf` and `remember` to prevent redundant UI computations.
-*   **Scalability:** Optimized for large datasets using Kotlin Sequences and SQL chunking.
+*   **Scalability:** Optimized for large datasets using Kotlin Sequences, SQL chunking, and parallel background processing.
 
 ---
 
