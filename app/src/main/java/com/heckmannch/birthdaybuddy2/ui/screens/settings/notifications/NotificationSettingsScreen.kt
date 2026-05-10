@@ -48,7 +48,7 @@ fun NotificationSettingsScreen(
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
                     if (ContextCompat.checkSelfPermission(
                             context,
-                            Manifest.permission.POST_NOTIFICATIONS
+                            Manifest.permission.POST_NOTIFICATIONS,
                         ) == PackageManager.PERMISSION_GRANTED
                     ) {
                         viewModel.setNotificationsEnabled(enabled = true)
@@ -172,7 +172,6 @@ private fun NotificationSettingsPreview() {
             notificationMinute = 0,
             onToggleNotifications = {},
             onSetNotificationTime = { _, _ -> },
-            onNavigateBack = {}
-        )
+        ) { }
     }
 }

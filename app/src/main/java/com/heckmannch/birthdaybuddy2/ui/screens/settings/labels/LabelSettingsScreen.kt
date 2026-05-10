@@ -33,10 +33,9 @@ fun LabelSettingsScreen(
     LabelSettingsContent(
         labels = labels,
         onNavigateBack = onNavigateBack,
-        onConfigChanged = { name, hidden, ignored, isSystem ->
-            viewModel.updateLabelConfig(name, hidden, ignored, isSystem)
-        }
-    )
+    ) { name, hidden, ignored, isSystem ->
+        viewModel.updateLabelConfig(name, hidden, ignored, isSystem)
+    }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)

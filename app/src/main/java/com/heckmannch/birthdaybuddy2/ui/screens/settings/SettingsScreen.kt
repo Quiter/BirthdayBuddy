@@ -52,7 +52,7 @@ fun SettingsScreen(
         onNavigateToLabels = onNavigateToLabels,
         onNavigateToNotifications = onNavigateToNotifications,
         onNavigateToBackup = onNavigateToBackup,
-        onNavigateBack = onNavigateBack
+        onNavigateBack = onNavigateBack,
     )
 }
 
@@ -183,7 +183,6 @@ private fun SettingsPreview() {
             onNavigateToLabels = {},
             onNavigateToNotifications = {},
             onNavigateToBackup = {},
-            onNavigateBack = {}
-        )
+        ) { }
     }
 }

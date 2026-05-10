@@ -34,7 +34,7 @@ class BirthdayViewModel @Inject constructor(
     // --- Settings & Preferences ---
 
     val notificationsEnabled: StateFlow<Boolean> = preferenceRepository.notificationsEnabled
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), false)
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), initialValue = false)
 
     val notificationHour: StateFlow<Int> = preferenceRepository.notificationHour
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 9)
@@ -100,7 +100,7 @@ class BirthdayViewModel @Inject constructor(
      */
     private val allUiContacts: Flow<List<ContactUiModel>> = combine(
         contactRepository.allContacts,
-        timeRepository.currentDate
+        timeRepository.currentDate,
     ) { list, today ->
         list.asSequence()
             .map { it.toUiModel(today) }
@@ -155,7 +155,7 @@ class BirthdayViewModel @Inject constructor(
         contactRepository.labelConfigs,
         contactRepository.allContacts
     ) { configs, contacts ->
-        val labelsInUse = contacts.flatMap { it.labels }.toSet()
+        val labelsInUse = contacts.asSequence().flatMap { it.labels }.toSet()
         configs.asSequence()
             .filter { it.name in labelsInUse }
             .map { config ->
@@ -182,7 +182,7 @@ class BirthdayViewModel @Inject constructor(
     }
 
     fun resetFilters() {
-        if (_searchQuery.value.isNotEmpty() || _selectedLabel.value != null) {
+        if ((_searchQuery.value.isNotEmpty()) || (_selectedLabel.value != null)) {
             _searchQuery.value = ""
             _selectedLabel.value = null
             triggerScrollToTop()

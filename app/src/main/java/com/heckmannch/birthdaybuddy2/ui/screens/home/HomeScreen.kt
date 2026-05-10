@@ -59,7 +59,7 @@ fun HomeScreen(
     
     // Lokaler UI State
     var animatedPlaceholder by remember { mutableStateOf("BirthdayBuddy") }
-    var isResettingFilter by remember { mutableStateOf(false) }
+    var isResettingFilter by remember { mutableStateOf(value = false) }
     var resetScrollRequested by remember { mutableStateOf(false) }
 
     // Berechtigungsprüfung & Initialisierung
@@ -99,7 +99,7 @@ fun HomeScreen(
 
     // Präziser Scroll-Reset sobald Daten geladen sind
     LaunchedEffect(contacts) {
-        if (resetScrollRequested && contacts != null) {
+        if (resetScrollRequested && (contacts != null)) {
             listState.scrollToItem(0)
             delay(100) // Puffer für UI-Stabilität
             listState.scrollToItem(0)
@@ -153,7 +153,7 @@ fun HomeScreen(
                 context.startActivity(Intent(Intent.ACTION_VIEW, lookupUri))
             } catch (_: Exception) {}
         },
-        onSetFastScrolling = { viewModel.setFastScrolling(it) }
+        onSetFastScrolling = { viewModel.setFastScrolling(it) },
     )
 }
 
@@ -187,13 +187,16 @@ private fun HomeContent(
     // sobald ein Schnell-Scrollvorgang startet, damit sie sich währenddessen nicht ändert.
     var filterVisibilityLock by remember { mutableStateOf<Boolean?>(null) }
     
-    LaunchedEffect(isFastScrolling) {
-        if (isFastScrolling) {
-            // Aktuellen Zustand einfrieren
-            filterVisibilityLock = (listState.firstVisibleItemIndex == 0) || isResettingFilter
-        } else {
-            // Nach dem Loslassen wieder der Automatik überlassen
-            filterVisibilityLock = null
+    val onSetFastScrollingLocal = remember(listState, isResettingFilter) {
+        { isScrolling: Boolean ->
+            filterVisibilityLock = if (isScrolling) {
+                // Sofort den aktuellen Zustand einfrieren
+                (listState.firstVisibleItemIndex == 0) || isResettingFilter
+            } else {
+                // Erst nach dem Loslassen wieder freigeben
+                null
+            }
+            onSetFastScrolling(isScrolling)
         }
     }
 
@@ -270,7 +273,7 @@ private fun HomeContent(
                         listState = listState,
                         contacts = contactList,
                         isResettingFilter = isResettingFilter,
-                        onSetFastScrolling = onSetFastScrolling,
+                        onSetFastScrolling = onSetFastScrollingLocal,
                         modifier = Modifier
                             .align(Alignment.CenterEnd)
                             .fillMaxHeight()

@@ -41,11 +41,6 @@ fun FastScrollbar(
     var isDragging by remember { mutableStateOf(false) }
     var dragOffsetPx by remember { mutableFloatStateOf(0f) }
 
-    // Synchronisierung des Drag-Status
-    LaunchedEffect(isDragging) {
-        onSetFastScrolling(isDragging)
-    }
-
     // Bubble visibility: Zeigt die Bubble NUR beim Ziehen der Scrollbar
     val showBubble by produceState(initialValue = false, key1 = isDragging) {
         if (isDragging) {
@@ -189,10 +184,17 @@ fun FastScrollbar(
                             detectVerticalDragGestures(
                                 onDragStart = {
                                     isDragging = true
+                                    onSetFastScrolling(true)
                                     dragOffsetPx = with(density) { thumbOffset.toPx() }
                                 },
-                                onDragEnd = { isDragging = false },
-                                onDragCancel = { isDragging = false },
+                                onDragEnd = { 
+                                    isDragging = false
+                                    onSetFastScrolling(false)
+                                },
+                                onDragCancel = { 
+                                    isDragging = false
+                                    onSetFastScrolling(false)
+                                },
                             ) { change, dragAmount ->
                                 dragOffsetPx = (dragOffsetPx + dragAmount).coerceIn(0f, trackHeightPx)
                                 val scrollPercent = if (trackHeightPx > 0) dragOffsetPx / trackHeightPx else 0f

@@ -70,7 +70,7 @@ class ContactRepository @Inject constructor(
                         // Update: localId und Geschenkideen erhalten
                         systemContact.copy(
                             localId = existing.localId,
-                            giftIdeas = existing.giftIdeas
+                            giftIdeas = existing.giftIdeas,
                         )
                     } ?: systemContact
                 }
@@ -94,7 +94,7 @@ class ContactRepository @Inject constructor(
         // Alle System-Gruppen verarbeiten
         groups.values.asSequence().distinctBy { it.title }.forEach { group ->
             val existing = existingConfigs[group.title]
-            if (existing == null || existing.isSystem != group.isSystem) {
+            if ((existing == null) || (existing.isSystem != group.isSystem)) {
                 configsToInsert.add(
                     LabelConfig(
                         name = group.title,
