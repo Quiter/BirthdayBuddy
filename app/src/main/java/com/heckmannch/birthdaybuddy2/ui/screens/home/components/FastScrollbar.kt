@@ -58,8 +58,19 @@ fun FastScrollbar(
         val trackHeight = viewHeight - thumbHeight
         val trackHeightPx = with(density) { trackHeight.toPx() }
 
-        val canScroll by remember(totalItems) {
+        // Zurücksetzen des Offsets bei Filter-Wechsel
+        LaunchedEffect(contacts, isResettingFilter) {
+            if (isResettingFilter) {
+                dragOffsetPx = 0f
+            }
+        }
+
+        val canScroll by remember(contacts) {
             derivedStateOf {
+                // Wenn wir gerade den Filter zurücksetzen, zeigen wir die Scrollbar vorsorglich an,
+                // falls die Liste potenziell lang genug ist (> 10 Items).
+                if (isResettingFilter && totalItems > 10) return@derivedStateOf true
+
                 val layoutInfo = listState.layoutInfo
                 val visibleItemsInfo = layoutInfo.visibleItemsInfo
                 if (visibleItemsInfo.isEmpty()) return@derivedStateOf false
@@ -76,7 +87,7 @@ fun FastScrollbar(
             }
         }
 
-        if (canScroll) {
+        if (canScroll && totalItems > 0) {
             val currentMonth by remember(contacts, trackHeightPx) {
                 derivedStateOf {
                     val index = if (isDragging) {
@@ -85,7 +96,7 @@ fun FastScrollbar(
                     } else {
                         listState.firstVisibleItemIndex
                     }
-                    contacts.getOrNull(index)?.monthName ?: ""
+                    contacts.getOrNull(index.coerceIn(0, totalItems - 1))?.monthName ?: ""
                 }
             }
             
@@ -96,7 +107,7 @@ fun FastScrollbar(
                 }
             }
 
-            val thumbOffset by remember(trackHeight, isResettingFilter, totalItems) {
+            val thumbOffset by remember(trackHeight, isResettingFilter, contacts) {
                 derivedStateOf {
                     if (isResettingFilter) return@derivedStateOf 0.dp
 
@@ -111,11 +122,10 @@ fun FastScrollbar(
                         val scrollOffset = listState.firstVisibleItemScrollOffset.toFloat()
                         val itemSize = firstItem.size.toFloat()
                         
-                        // Präziser fraktionaler Index (z.B. 5.5 wenn man zur Hälfte in Item 5 ist)
+                        // Präziser fraktionaler Index
                         val fractionalIndex = listState.firstVisibleItemIndex.toFloat() + 
                             (scrollOffset / itemSize).coerceIn(0f, 1f)
                         
-                        // Schätzung der Items im Viewport für eine genauere Max-Range
                         val viewportHeight = layoutInfo.viewportEndOffset - layoutInfo.viewportStartOffset
                         val itemsInViewport = if (itemSize > 0) viewportHeight.toFloat() / itemSize else 1f
                         val maxIndex = (totalItems.toFloat() - itemsInViewport).coerceAtLeast(1f)
