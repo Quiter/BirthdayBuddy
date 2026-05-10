@@ -124,3 +124,13 @@ Alle signifikanten Änderungen am Projekt werden hier dokumentiert.
 37. **Smart Keyword Search:**
     - Die Suche ignoriert nun führende/nachfolgende Leerzeichen (Fix für Autocomplete-Probleme).
     - Umstellung auf Keyword-basierte Suche: Kontakte werden gefunden, egal in welcher Reihenfolge Vor- und Nachname eingegeben werden (z. B. findet "Mustermann Max" auch "Max Mustermann").
+38. **Scrollbar & Header Stability (Deep Fix):**
+    - **Synchronous Locking:** Implementierung eines sofortigen, synchronen "Locks" für die TopBar-Sichtbarkeit beim Berühren der Scrollbar, um Layout-Sprünge zu verhindern, bevor das ViewModel reagieren kann.
+    - **Predictive Visibility:** Die Scrollbar bleibt bei Filter-Wechseln nun vorsorglich eingeblendet, wenn die neue Liste potenziell lang ist, was den Abbruch von Gesten verhindert.
+    - **State Recovery:** Automatischer Reset interner Scrollbar-Offsets bei Filter-Resets sorgt für konsistentes Verhalten über verschiedene Listen hinweg.
+39. **Repository Refactoring & Data Source Extraction:**
+    - **Separation of Concerns:** Extraktion der System-Abfragen (ContentResolver) aus dem `ContactRepository` in die neue `SystemContactDataSource`.
+    - **Code Quality:** Reduzierung der Komplexität im Repository-Layer zur Verbesserung der Testbarkeit und Wartbarkeit.
+40. **Backup Logic Decoupling:**
+    - **GiftIdeaBackupManager:** Auslagerung der JSON-Import/Export-Logik für Geschenkideen in einen spezialisierten Manager.
+    - **Repository Slimming:** Das `ContactRepository` ist nun frei von Low-Level JSON-Parsing und konzentriert sich rein auf die Daten-Orchestrierung.
