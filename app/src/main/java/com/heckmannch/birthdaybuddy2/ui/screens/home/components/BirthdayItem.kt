@@ -111,10 +111,14 @@ fun BirthdayItem(
     }
 
     val borderStroke = remember(contact.isToday, contact.nextAge) {
-        if (contact.isToday && (contact.nextAge != null)) {
+        if (contact.isToday) {
+            val age = contact.nextAge
             when {
-                contact.nextAge <= 10 -> BorderStroke(2.dp, Brush.linearGradient(KidColors))
-                (contact.nextAge >= 20 && contact.nextAge % 10 == 0) -> BorderStroke(2.dp, BirthdayGold)
+                // Alle durch 10 teilbaren (10, 20, 30...) sind Gold
+                (age != null) && (age % 10 == 0) -> BorderStroke(2.dp, BirthdayGold)
+                // Kinder von 0 bis 9 sind Bunt
+                (age != null) && (age in 0..9) -> BorderStroke(2.dp, Brush.linearGradient(KidColors))
+                // Alle anderen (inkl. ohne Jahr) sind Silber
                 else -> BorderStroke(2.dp, BirthdaySilver)
             }
         } else null
@@ -132,7 +136,7 @@ fun BirthdayItem(
                 .padding(end = 16.dp)
                 .width((buttonWidth * 2) + buttonSpacing),
             horizontalArrangement = Arrangement.spacedBy(buttonSpacing),
-            verticalAlignment = Alignment.CenterVertically
+            verticalAlignment = Alignment.CenterVertically,
         ) {
             SwipeActionButton(
                 icon = Icons.Default.Edit,

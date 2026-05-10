@@ -60,7 +60,7 @@ fun HomeScreen(
     // Lokaler UI State
     var animatedPlaceholder by remember { mutableStateOf("BirthdayBuddy") }
     var isResettingFilter by remember { mutableStateOf(value = false) }
-    var resetScrollRequested by remember { mutableStateOf(false) }
+    var resetScrollRequested by remember { mutableStateOf(value = false) }
 
     // Berechtigungsprüfung & Initialisierung
     val permissionLauncher = rememberLauncherForActivityResult(
@@ -201,12 +201,12 @@ private fun HomeContent(
     }
 
     val showScrollUp by remember {
-        derivedStateOf { listState.firstVisibleItemIndex > 0 && !isResettingFilter }
+        derivedStateOf { (listState.firstVisibleItemIndex > 0) && !isResettingFilter }
     }
 
     val isFilterBarVisible by remember {
         derivedStateOf { 
-            filterVisibilityLock ?: ((!showScrollUp) || isResettingFilter)
+            filterVisibilityLock ?: ((!showScrollUp) || isResettingFilter || searchQuery.isNotEmpty())
         }
     }
 
@@ -234,7 +234,7 @@ private fun HomeContent(
                 HomeFAB(
                     showScrollUp = showScrollUp,
                     onScrollToTop = { scope.launch { listState.animateScrollToItem(0) } },
-                    onAddContact = onAddContact
+                    onAddContact = onAddContact,
                 )
             }
         },

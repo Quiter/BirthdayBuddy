@@ -66,7 +66,7 @@ class BirthdayViewModel @Inject constructor(
     }
 
     val swipeHintShown: StateFlow<Boolean> = preferenceRepository.swipeHintShown
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), true)
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), initialValue = true)
 
     fun setSwipeHintShown() = viewModelScope.launch {
         preferenceRepository.setSwipeHintShown(shown = true)
@@ -116,7 +116,7 @@ class BirthdayViewModel @Inject constructor(
         allUiContacts,
         _searchQuery,
         _selectedLabel,
-        contactRepository.labelConfigs
+        contactRepository.labelConfigs,
     ) { uiList, query, label, configs ->
         val ignoredLabels = configs.asSequence().filter { it.isIgnored }.map { it.name }.toSet()
         val isSearching = query.isNotEmpty()
@@ -172,6 +172,10 @@ class BirthdayViewModel @Inject constructor(
 
     fun onSearchQueryChange(newQuery: String) {
         val wasEmpty = _searchQuery.value.isEmpty()
+        // Falls eine neue Suche gestartet wird, aktives Label zurücksetzen (Global Search)
+        if (newQuery.isNotEmpty() && wasEmpty) {
+            _selectedLabel.value = null
+        }
         _searchQuery.value = newQuery
         if (newQuery.isEmpty() && !wasEmpty) triggerScrollToTop()
     }
