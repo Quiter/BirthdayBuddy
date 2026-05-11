@@ -23,6 +23,9 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.unit.dp
 
+import androidx.compose.ui.res.stringResource
+import com.heckmannch.birthdaybuddy2.R
+
 @Composable
 fun SearchBar(
     query: String,
@@ -100,11 +103,11 @@ fun SearchBar(
 
             if (query.isNotEmpty()) {
                 IconButton(onClick = onClearQuery) {
-                    Icon(Icons.Default.Close, contentDescription = "Suche löschen")
+                    Icon(Icons.Default.Close, contentDescription = stringResource(R.string.home_search_clear))
                 }
             } else {
                 IconButton(onClick = onSettingsClick) {
-                    Icon(Icons.Default.Settings, contentDescription = "Einstellungen")
+                    Icon(Icons.Default.Settings, contentDescription = stringResource(R.string.home_settings))
                 }
             }
         }

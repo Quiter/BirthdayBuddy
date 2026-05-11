@@ -16,6 +16,8 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
+import androidx.compose.ui.res.stringResource
+import com.heckmannch.birthdaybuddy2.R
 import com.heckmannch.birthdaybuddy2.viewmodel.ContactUiModel
 
 /**
@@ -40,7 +42,7 @@ fun BirthdayList(
         derivedStateOf {
             ContextCompat.checkSelfPermission(
                 context, 
-                Manifest.permission.READ_CONTACTS
+                Manifest.permission.READ_CONTACTS,
             ) == PackageManager.PERMISSION_GRANTED
         }
     }
@@ -110,17 +112,17 @@ private fun EmptyListState(
         
         if (!hasPermission) {
             Text(
-                text = "Um deine Geburtstage zu sehen, benötigt BirthdayBuddy Zugriff auf deine Kontakte.",
+                text = stringResource(R.string.empty_permission_desc),
                 textAlign = TextAlign.Center,
                 style = MaterialTheme.typography.bodyLarge,
             )
             Spacer(modifier = Modifier.height(24.dp))
             Button(onClick = onRequestPermission) {
-                Text("Berechtigung erteilen")
+                Text(stringResource(R.string.empty_permission_btn))
             }
         } else {
             Text(
-                text = "Keine Geburtstage gefunden. Synchronisiere deine Kontakte in den Einstellungen oder füge neue hinzu.",
+                text = stringResource(R.string.empty_no_birthdays),
                 textAlign = TextAlign.Center,
                 style = MaterialTheme.typography.bodyLarge,
             )

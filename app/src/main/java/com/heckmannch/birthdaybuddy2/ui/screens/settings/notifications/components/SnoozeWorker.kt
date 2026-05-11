@@ -1,4 +1,4 @@
-package com.heckmannch.birthdaybuddy2.ui.screens.settings.notifications
+package com.heckmannch.birthdaybuddy2.ui.screens.settings.notifications.components
 
 import android.content.Context
 import androidx.hilt.work.HiltWorker
@@ -13,7 +13,8 @@ import kotlinx.coroutines.flow.first
 class SnoozeWorker @AssistedInject constructor(
     @Assisted private val context: Context,
     @Assisted workerParameters: WorkerParameters,
-    private val contactRepository: ContactRepository
+    private val contactRepository: ContactRepository,
+    private val notificationHelper: NotificationHelper,
 ) : CoroutineWorker(context, workerParameters) {
 
     override suspend fun doWork(): Result {
@@ -24,7 +25,7 @@ class SnoozeWorker @AssistedInject constructor(
         val targetContacts = allContacts.filter { it.lookupKey in lookupKeys }
 
         if (targetContacts.isNotEmpty()) {
-            NotificationHelper(context).showBirthdayNotification(targetContacts, daysBefore)
+            notificationHelper.showBirthdayNotification(targetContacts, daysBefore)
         }
 
         return Result.success()

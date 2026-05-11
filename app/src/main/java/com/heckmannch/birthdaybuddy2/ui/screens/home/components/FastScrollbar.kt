@@ -23,6 +23,8 @@ import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.res.stringResource
+import com.heckmannch.birthdaybuddy2.R
 import com.heckmannch.birthdaybuddy2.viewmodel.ContactUiModel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -177,6 +179,8 @@ fun FastScrollbar(
                 }
             }
 
+            val scrollbarDesc = stringResource(R.string.home_scrollbar_desc, currentMonth)
+
             // Thumb
             Box(
                 modifier = Modifier
@@ -187,7 +191,7 @@ fun FastScrollbar(
                         translationY = thumbOffset.toPx()
                     }
                     .semantics { 
-                        contentDescription = "Schnell-Scrollleiste, aktueller Monat: $currentMonth"
+                        contentDescription = scrollbarDesc
                     }
                     .pointerInput(totalItems, trackHeightPx) {
                         try {

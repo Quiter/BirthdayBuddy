@@ -24,6 +24,8 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.compose.ui.res.stringResource
+import com.heckmannch.birthdaybuddy2.R
 import com.heckmannch.birthdaybuddy2.ui.screens.home.components.BirthdayList
 import com.heckmannch.birthdaybuddy2.ui.screens.home.components.FastScrollbar
 import com.heckmannch.birthdaybuddy2.ui.screens.home.components.HomeFAB
@@ -57,8 +59,11 @@ fun HomeScreen(
     val contacts by viewModel.contacts.collectAsStateWithLifecycle()
     val swipeHintShown by viewModel.swipeHintShown.collectAsStateWithLifecycle()
     
+    val appPlaceholder = stringResource(R.string.home_placeholder_app)
+    val searchPlaceholder = stringResource(R.string.home_placeholder_search)
+    
     // Lokaler UI State
-    var animatedPlaceholder by remember { mutableStateOf("BirthdayBuddy") }
+    var animatedPlaceholder by remember { mutableStateOf(appPlaceholder) }
     var isResettingFilter by remember { mutableStateOf(value = false) }
     var resetScrollRequested by remember { mutableStateOf(value = false) }
 
@@ -78,7 +83,7 @@ fun HomeScreen(
         }
         
         delay(2000)
-        animatedPlaceholder = "Kontakt suchen"
+        animatedPlaceholder = searchPlaceholder
     }
 
     // --- Scroll- & Filter-Logik ---
@@ -128,11 +133,9 @@ fun HomeScreen(
         listState = listState,
         onSearchQueryChange = { viewModel.onSearchQueryChange(it) },
         onLabelSelected = { label ->
-            isResettingFilter = true
             viewModel.onLabelSelected(label)
         },
         onClearSearch = {
-            isResettingFilter = true
             viewModel.onSearchQueryChange("")
             focusManager.clearFocus()
             keyboardController?.hide()
@@ -153,7 +156,7 @@ fun HomeScreen(
                 context.startActivity(Intent(Intent.ACTION_VIEW, lookupUri))
             } catch (_: Exception) {}
         },
-        onSetFastScrolling = { viewModel.setFastScrolling(it) },
+        onSetFastScrolling = viewModel::setFastScrolling,
     )
 }
 
@@ -253,7 +256,7 @@ private fun HomeContent(
                     fadeIn(animationSpec = tween(400)) togetherWith
                     fadeOut(animationSpec = tween(400))
                 },
-                label = "ListCrossfade"
+                label = "ListCrossfade",
             ) { targetContacts ->
                 BirthdayList(
                     contacts = targetContacts ?: emptyList(),

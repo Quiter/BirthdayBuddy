@@ -26,6 +26,9 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
+import androidx.compose.ui.res.pluralStringResource
+import androidx.compose.ui.res.stringResource
+import com.heckmannch.birthdaybuddy2.R
 import com.heckmannch.birthdaybuddy2.ui.theme.BirthdayGold
 import com.heckmannch.birthdaybuddy2.ui.theme.BirthdaySilver
 import com.heckmannch.birthdaybuddy2.ui.theme.KidColors
@@ -50,7 +53,7 @@ fun BirthdayItem(
 ) {
     val density = LocalDensity.current
     val scope = rememberCoroutineScope()
-    var showGiftDialog by remember { mutableStateOf(value = false) }
+    val showGiftDialogState = remember { mutableStateOf(false) }
 
     // Maße und Anker-Berechnungen (Optimiert durch remember)
     val buttonWidth = 50.dp
@@ -99,13 +102,13 @@ fun BirthdayItem(
         }
     }
 
-    if (showGiftDialog) {
+    if (showGiftDialogState.value) {
         GiftIdeaDialog(
             initialIdeas = contact.giftIdeas,
-            onDismiss = { showGiftDialog = false },
+            onDismiss = { showGiftDialogState.value = false },
         ) { ideas ->
             onUpdateGiftIdeas(contact.lookupKey, GiftIdea.toString(ideas))
-            showGiftDialog = false
+            showGiftDialogState.value = false
             scope.launch { draggableState.animateTo(targetValue = DragValue.Closed) }
         }
     }
@@ -115,7 +118,7 @@ fun BirthdayItem(
             val age = contact.nextAge
             when {
                 // Alle durch 10 teilbaren (10, 20, 30...) sind Gold
-                (age != null) && (age % 10 == 0) -> BorderStroke(2.dp, BirthdayGold)
+                (age != null && age % 10 == 0) -> BorderStroke(2.dp, BirthdayGold)
                 // Kinder von 0 bis 9 sind Bunt
                 (age != null) && (age in 0..9) -> BorderStroke(2.dp, Brush.linearGradient(KidColors))
                 // Alle anderen (inkl. ohne Jahr) sind Silber
@@ -140,11 +143,13 @@ fun BirthdayItem(
         ) {
             SwipeActionButton(
                 icon = Icons.Default.Edit,
-                color = Color(0xFFFFB300)
-            ) { showGiftDialog = true }
+                color = Color(0xFFFFB300),
+                contentDescription = stringResource(R.string.item_action_gifts),
+            ) { showGiftDialogState.value = true }
             SwipeActionButton(
                 icon = Icons.Default.Person,
                 color = MaterialTheme.colorScheme.primary,
+                contentDescription = stringResource(R.string.item_action_contact),
             ) {
                 onOpenContact(contact.contactId, contact.lookupKey)
                 scope.launch { draggableState.animateTo(DragValue.Closed) }
@@ -181,7 +186,7 @@ fun BirthdayItem(
                             Spacer(modifier = Modifier.width(8.dp))
                             Icon(
                                 Icons.Default.Edit,
-                                contentDescription = "Geschenkideen vorhanden",
+                                contentDescription = stringResource(R.string.item_gift_ideas_hint),
                                 modifier = Modifier.size(14.dp),
                                 tint = Color(0xFFFFB300)
                             )
@@ -211,6 +216,7 @@ fun BirthdayItem(
 private fun SwipeActionButton(
     icon: ImageVector,
     color: Color,
+    contentDescription: String?,
     width: androidx.compose.ui.unit.Dp = 50.dp,
     onClick: () -> Unit
 ) {
@@ -224,7 +230,7 @@ private fun SwipeActionButton(
         contentColor = color
     ) {
         Box(contentAlignment = Alignment.Center) {
-            Icon(imageVector = icon, contentDescription = null, modifier = Modifier.size(24.dp))
+            Icon(imageVector = icon, contentDescription = contentDescription, modifier = Modifier.size(24.dp))
         }
     }
 }
@@ -239,7 +245,7 @@ private fun ContactImage(contact: ContactUiModel) {
         if (contact.imageUri != null) {
             AsyncImage(
                 model = contact.imageUri,
-                contentDescription = "Kontaktbild von ${contact.fullName}",
+                contentDescription = stringResource(R.string.item_image_desc, contact.fullName),
                 modifier = Modifier.fillMaxSize(),
                 contentScale = ContentScale.Crop
             )
@@ -262,7 +268,7 @@ private fun BirthdayStatus(contact: ContactUiModel) {
             )
         }
         Text(
-            text = contact.daysLeftText,
+            text = if (contact.isToday) stringResource(R.string.item_today) else pluralStringResource(R.plurals.item_days_left, contact.daysUntilNext.toInt(), contact.daysUntilNext.toInt()),
             style = MaterialTheme.typography.labelSmall,
             color = if (contact.isToday) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurfaceVariant
         )

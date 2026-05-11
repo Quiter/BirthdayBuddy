@@ -22,6 +22,8 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.res.stringResource
+import com.heckmannch.birthdaybuddy2.R
 import com.heckmannch.birthdaybuddy2.viewmodel.GiftIdea
 import kotlinx.coroutines.launch
 
@@ -41,7 +43,7 @@ fun GiftIdeaDialog(
 
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text("Geschenkideen") },
+        title = { Text(stringResource(R.string.gift_dialog_title)) },
         text = {
             Column(
                 modifier = Modifier
@@ -129,9 +131,9 @@ fun GiftIdeaDialog(
                             ) {
                                 Icon(
                                     imageVector = Icons.Default.Close,
-                                    contentDescription = "Löschen",
+                                    contentDescription = stringResource(R.string.gift_dialog_delete),
                                     modifier = Modifier.size(20.dp),
-                                    tint = MaterialTheme.colorScheme.outline.copy(alpha = 0.6f)
+                                    tint = MaterialTheme.colorScheme.outline.copy(alpha = 0.6f),
                                 )
                             }
                         }
@@ -162,7 +164,7 @@ fun GiftIdeaDialog(
                 ) {
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier.padding(vertical = 12.dp)
+                        modifier = Modifier.padding(vertical = 12.dp),
                     ) {
                         Icon(
                             imageVector = Icons.Default.Add,
@@ -172,9 +174,9 @@ fun GiftIdeaDialog(
                         )
                         Spacer(modifier = Modifier.width(12.dp))
                         Text(
-                            text = "Listeneintrag",
+                            text = stringResource(R.string.gift_dialog_add),
                             style = MaterialTheme.typography.bodyLarge,
-                            color = MaterialTheme.colorScheme.outline
+                            color = MaterialTheme.colorScheme.outline,
                         )
                     }
                 }
@@ -182,12 +184,12 @@ fun GiftIdeaDialog(
         },
         confirmButton = {
             Button(onClick = { onConfirm(ideas.filter { it.text.isNotBlank() }) }) {
-                Text("Speichern")
+                Text(stringResource(R.string.gift_dialog_save))
             }
         },
         dismissButton = {
             TextButton(onClick = onDismiss) {
-                Text("Abbrechen")
+                Text(stringResource(R.string.gift_dialog_cancel))
             }
         }
     )

@@ -1,11 +1,14 @@
-package com.heckmannch.birthdaybuddy2.ui.screens.settings.notifications
+package com.heckmannch.birthdaybuddy2.ui.screens.settings.notifications.components
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.pluralStringResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import com.heckmannch.birthdaybuddy2.R
 import com.heckmannch.birthdaybuddy2.database.NotificationRule
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -21,14 +24,20 @@ fun EditRuleDialog(
     if (!showTimePickerState.value) {
         AlertDialog(
             onDismissRequest = onDismiss,
-            title = { Text(if (rule == null) "Regel hinzufügen" else "Regel bearbeiten") },
+            title = { 
+                Text(
+                    stringResource(
+                        if (rule == null) R.string.notifications_add_rule else R.string.notifications_edit_rule
+                    )
+                ) 
+            },
             text = {
                 Column(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalAlignment = Alignment.CenterHorizontally,
                 ) {
                     Text(
-                        "Wann möchtest du erinnert werden?",
+                        stringResource(R.string.dialog_rule_question),
                         style = MaterialTheme.typography.bodyMedium,
                         modifier = Modifier.align(Alignment.Start),
                     )
@@ -46,9 +55,9 @@ fun EditRuleDialog(
                                 label = {
                                     Text(
                                         when (preset) {
-                                            0 -> "Heute"
-                                            1 -> "Morgen"
-                                            7 -> "1 Woche"
+                                            0 -> stringResource(R.string.dialog_preset_today)
+                                            1 -> stringResource(R.string.dialog_preset_tomorrow)
+                                            7 -> stringResource(R.string.dialog_preset_week)
                                             else -> ""
                                         },
                                     )
@@ -61,10 +70,10 @@ fun EditRuleDialog(
                     
                     Text(
                         text = when (daysBeforeState.intValue) {
-                            0 -> "Am Tag selbst"
-                            1 -> "1 Tag vorher"
-                            7 -> "1 Woche vorher"
-                            else -> "${daysBeforeState.intValue} Tage vorher"
+                            0 -> stringResource(R.string.rule_today)
+                            1 -> stringResource(R.string.rule_tomorrow)
+                            7 -> stringResource(R.string.rule_one_week)
+                            else -> pluralStringResource(R.plurals.rule_days_before, daysBeforeState.intValue, daysBeforeState.intValue)
                         },
                         style = MaterialTheme.typography.headlineSmall,
                         color = MaterialTheme.colorScheme.primary,
@@ -82,19 +91,19 @@ fun EditRuleDialog(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.SpaceBetween,
                     ) {
-                        Text("Heute", style = MaterialTheme.typography.labelSmall)
-                        Text("30 Tage", style = MaterialTheme.typography.labelSmall)
+                        Text(stringResource(R.string.dialog_slider_today), style = MaterialTheme.typography.labelSmall)
+                        Text(stringResource(R.string.dialog_slider_max), style = MaterialTheme.typography.labelSmall)
                     }
                 }
             },
             confirmButton = {
                 TextButton(onClick = { showTimePickerState.value = true }) {
-                    Text("Weiter")
+                    Text(stringResource(R.string.dialog_next))
                 }
             },
             dismissButton = {
                 TextButton(onClick = onDismiss) {
-                    Text("Abbrechen")
+                    Text(stringResource(R.string.dialog_cancel))
                 }
             },
         )
@@ -107,7 +116,7 @@ fun EditRuleDialog(
 
         AlertDialog(
             onDismissRequest = onDismiss,
-            title = { Text("Uhrzeit wählen") },
+            title = { Text(stringResource(R.string.dialog_time_title)) },
             text = {
                 TimePicker(state = timePickerState)
             },
@@ -117,12 +126,12 @@ fun EditRuleDialog(
                         onConfirm(daysBeforeState.intValue, timePickerState.hour, timePickerState.minute)
                     },
                 ) {
-                    Text("Speichern")
+                    Text(stringResource(R.string.dialog_save))
                 }
             },
             dismissButton = {
                 TextButton(onClick = { showTimePickerState.value = false }) {
-                    Text("Zurück")
+                    Text(stringResource(R.string.dialog_back))
                 }
             },
         )

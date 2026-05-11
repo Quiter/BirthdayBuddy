@@ -16,11 +16,15 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.heckmannch.birthdaybuddy2.R
 import com.heckmannch.birthdaybuddy2.database.NotificationRule
+import com.heckmannch.birthdaybuddy2.ui.screens.settings.notifications.components.EditRuleDialog
+import com.heckmannch.birthdaybuddy2.ui.screens.settings.notifications.components.NotificationRuleItem
 import com.heckmannch.birthdaybuddy2.ui.theme.BirthdayBuddy2Theme
 import com.heckmannch.birthdaybuddy2.viewmodel.BirthdayViewModel
 
@@ -93,12 +97,12 @@ private fun NotificationSettingsContent(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Benachrichtigungen") },
+                title = { Text(stringResource(R.string.notifications_title)) },
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "Zurück",
+                            contentDescription = stringResource(R.string.notifications_back),
                         )
                     }
                 },
@@ -107,7 +111,7 @@ private fun NotificationSettingsContent(
         floatingActionButton = {
             if (notificationsEnabled) {
                 FloatingActionButton(onClick = { showAddDialogState.value = true }) {
-                    Icon(Icons.Default.Add, contentDescription = "Regel hinzufügen")
+                    Icon(Icons.Default.Add, contentDescription = stringResource(R.string.notifications_add_rule))
                 }
             }
         }
@@ -119,8 +123,8 @@ private fun NotificationSettingsContent(
         ) {
             item {
                 ListItem(
-                    headlineContent = { Text("Geburtstags-Erinnerungen") },
-                    supportingContent = { Text("Erhalte personalisierte Benachrichtigungen") },
+                    headlineContent = { Text(stringResource(R.string.notifications_header)) },
+                    supportingContent = { Text(stringResource(R.string.notifications_desc)) },
                     trailingContent = {
                         Switch(
                             checked = notificationsEnabled,
@@ -140,7 +144,7 @@ private fun NotificationSettingsContent(
                             contentAlignment = Alignment.Center
                         ) {
                             Text(
-                                "Keine Erinnerungen geplant",
+                                stringResource(R.string.notifications_empty),
                                 style = MaterialTheme.typography.bodyMedium,
                                 color = MaterialTheme.colorScheme.outline
                             )
@@ -149,7 +153,7 @@ private fun NotificationSettingsContent(
                 } else {
                     item {
                         Text(
-                            "Geplante Erinnerungen",
+                            stringResource(R.string.notifications_planned_header),
                             style = MaterialTheme.typography.labelLarge,
                             color = MaterialTheme.colorScheme.primary,
                             modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)

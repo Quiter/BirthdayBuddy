@@ -15,6 +15,9 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.graphicsLayer
 
+import androidx.compose.ui.res.stringResource
+import com.heckmannch.birthdaybuddy2.R
+
 @Composable
 fun HomeFAB(
     showScrollUp: Boolean,
@@ -40,7 +43,9 @@ fun HomeFAB(
         ) { isUp ->
             Icon(
                 imageVector = if (isUp) Icons.Default.KeyboardArrowDown else Icons.Default.Add,
-                contentDescription = if (isUp) "Nach oben" else "Kontakt hinzufügen",
+                contentDescription = stringResource(
+                    if (isUp) R.string.home_scroll_to_top else R.string.home_add_contact
+                ),
             )
         }
     }

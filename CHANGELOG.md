@@ -145,3 +145,7 @@ Alle signifikanten Änderungen am Projekt werden hier dokumentiert.
 42. **UI Polish & Icons:**
     - **Icon Update:** Das Icon für "Labels verwalten" im `SettingsScreen` wurde von einem Zahnrad auf das Gmail-Style Label-Symbol umgestellt.
     - **Extended Icons:** Integration der `material-icons-extended` Bibliothek zur Nutzung hochwertigerer Icons.
+43. **Notification Layer Refactoring:**
+    - **Reorganization:** Verschiebung von `NotificationWorker`, `SnoozeWorker`, `NotificationActionReceiver` und `NotificationHelper` in das `components`-Unterpaket zur besseren Strukturierung des `notifications`-Features.
+    - **Clean Manifest:** Aktualisierung der Receiver-Deklaration im AndroidManifest entsprechend der neuen Paketstruktur.
+

@@ -1,4 +1,4 @@
-package com.heckmannch.birthdaybuddy2.ui.screens.settings.notifications
+package com.heckmannch.birthdaybuddy2.ui.screens.settings.notifications.components
 
 import android.content.Context
 import androidx.hilt.work.HiltWorker
@@ -22,6 +22,7 @@ class NotificationWorker @AssistedInject constructor(
     private val contactRepository: ContactRepository,
     private val notificationRepository: NotificationRepository,
     private val preferenceRepository: PreferenceRepository,
+    private val notificationHelper: NotificationHelper,
 ) : CoroutineWorker(context, workerParameters) {
 
     override suspend fun doWork(): Result {
@@ -41,7 +42,6 @@ class NotificationWorker @AssistedInject constructor(
 
         if (currentRules.isNotEmpty()) {
             val allContacts = contactRepository.allContacts.first()
-            val helper = NotificationHelper(context)
             val today = LocalDate.now()
 
             currentRules.forEach { rule ->
@@ -51,7 +51,7 @@ class NotificationWorker @AssistedInject constructor(
                 }
                 
                 if (birthdays.isNotEmpty()) {
-                    helper.showBirthdayNotification(birthdays, daysBefore = rule.daysBefore)
+                    notificationHelper.showBirthdayNotification(birthdays, daysBefore = rule.daysBefore)
                 }
             }
         }
@@ -101,7 +101,7 @@ class NotificationWorker @AssistedInject constructor(
             WorkManager.getInstance(context).enqueueUniqueWork(
                 WORK_NAME,
                 ExistingWorkPolicy.REPLACE,
-                request
+                request,
             )
         }
 

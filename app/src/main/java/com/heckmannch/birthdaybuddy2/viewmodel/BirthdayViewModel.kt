@@ -10,7 +10,7 @@ import com.heckmannch.birthdaybuddy2.repository.ContactRepository
 import com.heckmannch.birthdaybuddy2.repository.NotificationRepository
 import com.heckmannch.birthdaybuddy2.repository.PreferenceRepository
 import com.heckmannch.birthdaybuddy2.repository.TimeRepository
-import com.heckmannch.birthdaybuddy2.ui.screens.settings.notifications.NotificationWorker
+import com.heckmannch.birthdaybuddy2.ui.screens.settings.notifications.components.NotificationWorker
 import com.heckmannch.birthdaybuddy2.util.toNextOccurrence
 import com.heckmannch.birthdaybuddy2.widget.BirthdayWidget
 import dagger.hilt.android.lifecycle.HiltViewModel

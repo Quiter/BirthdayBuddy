@@ -14,6 +14,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 
+import androidx.compose.ui.res.stringResource
+import com.heckmannch.birthdaybuddy2.R
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun LabelFilterBar(
@@ -38,7 +41,7 @@ fun LabelFilterBar(
                     FilterChip(
                         selected = selectedLabel == null,
                         onClick = { onLabelSelected(null) },
-                        label = { Text("Alle") }
+                        label = { Text(stringResource(R.string.home_filter_all)) }
                     )
                 }
 

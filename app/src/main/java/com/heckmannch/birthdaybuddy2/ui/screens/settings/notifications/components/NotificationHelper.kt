@@ -1,4 +1,4 @@
-package com.heckmannch.birthdaybuddy2.ui.screens.settings.notifications
+package com.heckmannch.birthdaybuddy2.ui.screens.settings.notifications.components
 
 import android.app.NotificationChannel
 import android.app.NotificationManager
@@ -9,12 +9,17 @@ import androidx.core.app.NotificationCompat
 import com.heckmannch.birthdaybuddy2.MainActivity
 import com.heckmannch.birthdaybuddy2.R
 import com.heckmannch.birthdaybuddy2.database.Contact
+import dagger.hilt.android.qualifiers.ApplicationContext
+import javax.inject.Inject
+import javax.inject.Singleton
 
-class NotificationHelper(private val context: Context) {
+@Singleton
+class NotificationHelper @Inject constructor(
+    @param:ApplicationContext private val context: Context
+) {
 
     companion object {
         const val CHANNEL_ID = "birthday_reminders"
-        const val CHANNEL_NAME = "Geburtstags-Erinnerungen"
     }
 
     fun showBirthdayNotification(contacts: List<Contact>, daysBefore: Int) {
@@ -23,7 +28,7 @@ class NotificationHelper(private val context: Context) {
 
         val channel = NotificationChannel(
             CHANNEL_ID,
-            CHANNEL_NAME,
+            context.getString(R.string.notif_channel_name),
             NotificationManager.IMPORTANCE_DEFAULT
         )
         notificationManager.createNotificationChannel(channel)
@@ -52,10 +57,26 @@ class NotificationHelper(private val context: Context) {
         )
 
         val title = when (daysBefore) {
-            0 -> if (contacts.size == 1) "Heute hat jemand Geburtstag!" else "Heute haben ${contacts.size} Personen Geburtstag!"
-            1 -> if (contacts.size == 1) "Morgen hat jemand Geburtstag!" else "Morgen haben ${contacts.size} Personen Geburtstag!"
-            7 -> if (contacts.size == 1) "In einer Woche hat jemand Geburtstag!" else "In einer Woche haben ${contacts.size} Personen Geburtstag!"
-            else -> if (contacts.size == 1) "In $daysBefore Tagen hat jemand Geburtstag!" else "In $daysBefore Tagen haben ${contacts.size} Personen Geburtstag!"
+            0 -> if (contacts.size == 1) {
+                context.getString(R.string.notif_title_today_singular)
+            } else {
+                context.getString(R.string.notif_title_today_plural, contacts.size)
+            }
+            1 -> if (contacts.size == 1) {
+                context.getString(R.string.notif_title_tomorrow_singular)
+            } else {
+                context.getString(R.string.notif_title_tomorrow_plural, contacts.size)
+            }
+            7 -> if (contacts.size == 1) {
+                context.getString(R.string.notif_title_week_singular)
+            } else {
+                context.getString(R.string.notif_title_week_plural, contacts.size)
+            }
+            else -> if (contacts.size == 1) {
+                context.resources.getQuantityString(R.plurals.notif_title_days_singular, daysBefore, daysBefore)
+            } else {
+                context.resources.getQuantityString(R.plurals.notif_title_days_plural, daysBefore, daysBefore, contacts.size)
+            }
         }
 
         val contentText = contacts.joinToString(", ") { it.fullName }
@@ -66,7 +87,7 @@ class NotificationHelper(private val context: Context) {
             .setContentText(contentText)
             .setPriority(NotificationCompat.PRIORITY_DEFAULT)
             .setContentIntent(pendingIntent)
-            .addAction(0, "Später", snoozePendingIntent) // Quick Action
+            .addAction(0, context.getString(R.string.notif_action_snooze), snoozePendingIntent)
             .setAutoCancel(true)
             .build()
 
