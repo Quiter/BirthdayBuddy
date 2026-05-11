@@ -39,4 +39,5 @@ Die App befindet sich gerade in einer umfassenden Refactoring-Phase (V3), um die
 - **UX & Technical Polish:** Einführung einer Global Search Logik mit Keyword-Matching (Reihenfolge-unabhängig), verfeinerte visuelle Status-Indikatoren für Geburtstage, Integration der Extended Material Icons für präzisere Symbolik und projektweite Bereinigung technischer Schulden (Code Analysis).
 
 ## 🎯 Kommende Aufgaben (Backlog)
+- **Persistent Notifications:** Implementierung eines "Erledigt"-Status für Benachrichtigungen, sodass diese bis zur aktiven Quittierung erhalten bleiben.
 - **Leistungsoptimierung:** Weitere Reduzierung der Re-Compositions in der Hauptliste bei großen Datenmengen.

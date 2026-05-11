@@ -57,6 +57,9 @@ class BirthdayViewModel @Inject constructor(
     }
 
     fun setNotificationsEnabled(enabled: Boolean) = viewModelScope.launch {
+        if (enabled && notificationRules.value.isEmpty()) {
+            addNotificationRule(daysBefore = 0, hour = 9, minute = 0)
+        }
         preferenceRepository.setNotificationsEnabled(enabled)
     }
 

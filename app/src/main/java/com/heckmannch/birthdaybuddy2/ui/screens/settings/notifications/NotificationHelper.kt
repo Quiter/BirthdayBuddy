@@ -28,14 +28,26 @@ class NotificationHelper(private val context: Context) {
         )
         notificationManager.createNotificationChannel(channel)
 
+        // Haupt-Intent: App öffnen
         val intent = Intent(context, MainActivity::class.java).apply {
             flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
         }
         
-        // Eindeutige ID für verschiedene Abstände, damit sie sich nicht überschreiben
         val pendingIntentId = 200 + daysBefore
         val pendingIntent = PendingIntent.getActivity(
             context, pendingIntentId, intent,
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        )
+
+        // Action-Intent: Später erinnern (Snooze)
+        val snoozeIntent = Intent(context, NotificationActionReceiver::class.java).apply {
+            action = "SNOOZE"
+            putExtra("NOTIFICATION_ID", pendingIntentId)
+            putExtra("DAYS_BEFORE", daysBefore)
+            putExtra("LOOKUP_KEYS", contacts.map { it.lookupKey }.toTypedArray())
+        }
+        val snoozePendingIntent = PendingIntent.getBroadcast(
+            context, pendingIntentId + 1000, snoozeIntent,
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
 
@@ -54,6 +66,7 @@ class NotificationHelper(private val context: Context) {
             .setContentText(contentText)
             .setPriority(NotificationCompat.PRIORITY_DEFAULT)
             .setContentIntent(pendingIntent)
+            .addAction(0, "Später", snoozePendingIntent) // Quick Action
             .setAutoCancel(true)
             .build()
 

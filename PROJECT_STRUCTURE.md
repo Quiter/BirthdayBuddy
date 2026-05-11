@@ -47,6 +47,8 @@
 - `notifications/NotificationRuleItem.kt`: Listen-Element für eine Benachrichtigungsregel.
 - `notifications/EditRuleDialog.kt`: Dialog zum Erstellen/Bearbeiten von Regeln.
 - `notifications/NotificationWorker.kt`: WorkManager-Logik für tägliche Benachrichtigungen.
+- `notifications/SnoozeWorker.kt`: Hintergrund-Job für die "Später"-Funktion.
+- `notifications/NotificationActionReceiver.kt`: Empfänger für Quick Actions in Benachrichtigungen.
 - `notifications/NotificationHelper.kt`: Utility zum Erstellen und Anzeigen der System-Notifications.
 - `backup/BackupScreen.kt`: Import/Export von Geschenkideen (JSON-Format).
 

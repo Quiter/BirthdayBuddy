@@ -49,6 +49,14 @@
                 android:name="android.appwidget.provider"
                 android:resource="@xml/birthday_widget_info" />
         </receiver>
+
+        <receiver
+            android:name=".ui.screens.settings.notifications.NotificationActionReceiver"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="SNOOZE" />
+            </intent-filter>
+        </receiver>
     </application>
 
 </manifest>
