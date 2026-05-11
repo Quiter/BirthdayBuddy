@@ -37,6 +37,11 @@ fun BirthdayList(
 ) {
     val context = LocalContext.current
     
+    // Callbacks für stabilen Zugriff in LazyColumn-Items
+    val currentOnSetSwipeHintShown by rememberUpdatedState(onSetSwipeHintShown)
+    val currentOnUpdateGiftIdeas by rememberUpdatedState(onUpdateGiftIdeas)
+    val currentOnOpenContact by rememberUpdatedState(onOpenContact)
+
     // Berechtigungsstatus reaktiv halten
     val hasPermission by remember {
         derivedStateOf {
@@ -81,9 +86,9 @@ fun BirthdayList(
                     showHint = !swipeHintShown && isFirstItem,
                     isExpanded = isExpanded,
                     onExpand = itemOnExpand,
-                    onSetSwipeHintShown = onSetSwipeHintShown,
-                    onUpdateGiftIdeas = onUpdateGiftIdeas,
-                    onOpenContact = onOpenContact,
+                    onSetSwipeHintShown = currentOnSetSwipeHintShown,
+                    onUpdateGiftIdeas = currentOnUpdateGiftIdeas,
+                    onOpenContact = currentOnOpenContact,
                 )
             }
         }

@@ -51,7 +51,15 @@ class NotificationWorker @AssistedInject constructor(
                 }
                 
                 if (birthdays.isNotEmpty()) {
-                    notificationHelper.showBirthdayNotification(birthdays, daysBefore = rule.daysBefore)
+                    // In DB speichern für Persistenz
+                    val pending = com.heckmannch.birthdaybuddy2.database.PendingNotification(
+                        contactLookupKeys = birthdays.map { it.lookupKey },
+                        daysBefore = rule.daysBefore,
+                        year = today.year
+                    )
+                    val pendingId = notificationRepository.insertPendingNotification(pending).toInt()
+                    
+                    notificationHelper.showBirthdayNotification(birthdays, daysBefore = rule.daysBefore, pendingId = pendingId)
                 }
             }
         }

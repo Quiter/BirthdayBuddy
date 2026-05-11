@@ -5,6 +5,7 @@ import com.heckmannch.birthdaybuddy2.database.AppDatabase
 import com.heckmannch.birthdaybuddy2.database.ContactDao
 import com.heckmannch.birthdaybuddy2.database.LabelConfigDao
 import com.heckmannch.birthdaybuddy2.database.NotificationRuleDao
+import com.heckmannch.birthdaybuddy2.database.PendingNotificationDao
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -35,5 +36,10 @@ object AppModule {
     @Provides
     fun provideNotificationRuleDao(database: AppDatabase): NotificationRuleDao {
         return database.notificationRuleDao()
+    }
+
+    @Provides
+    fun providePendingNotificationDao(database: AppDatabase): PendingNotificationDao {
+        return database.pendingNotificationDao()
     }
 }

@@ -76,6 +76,7 @@
     <!-- Notification Helper -->
     <string name="notif_channel_name">Geburtstags-Erinnerungen</string>
     <string name="notif_action_snooze">Später</string>
+    <string name="notif_action_done">Erledigt</string>
 
     <string name="notif_title_today_singular">Heute hat jemand Geburtstag!</string>
     <string name="notif_title_today_plural">Heute haben %d Personen Geburtstag!</string>

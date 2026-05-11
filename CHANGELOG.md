@@ -164,4 +164,13 @@ Alle signifikanten Änderungen am Projekt werden hier dokumentiert.
     - **Localization:** Vollständige Internationalisierung des `BirthdayWidget` via `strings.xml`. Nutzt nun `plurals` für Datumsangaben und kontextsensitive Texte.
     - **Architecture:** Migration des Widgets auf das Hilt-EntryPoint-Muster zur sauberen Nutzung des `ContactRepository`. Entfernung direkter Datenbank-Abhängigkeiten im UI-Code.
     - **Code Quality:** Systematische Bereinigung von IDE-Warnungen, Einführung von Trailing Commas und Optimierung der Flow-Ketten im Widget.
+48. **Persistent Notifications:**
+    - **Persistence:** Implementierung von persistenten Benachrichtigungen (`setOngoing`), die bis zur aktiven Quittierung im Tray verbleiben.
+    - **Action System:** Einführung von "Erledigt" und "Später" (Snooze) Buttons direkt in der Benachrichtigung.
+    - **Data Tracking:** Neue `PendingNotification` Datenbank zur Nachverfolgung aktiver Erinnerungen.
+    - **Hilt Integration:** Umstellung des `NotificationActionReceiver` auf Hilt zur sicheren Datenverarbeitung im Hintergrund.
+49. **Performance & Re-Composition Guard:**
+    - **Lambda Stabilization:** Umfassende Memoization (`remember`) aller UI-Callbacks im `HomeScreen`, um unnötige Re-Compositions der Listen-Komponenten zu verhindern.
+    - **Component Decomposition:** Refactoring von `BirthdayItem` in feinere Sub-Komponenten (`ContactImage`, `BirthdayStatus`), die nur noch primitive Datentypen statt des kompletten Modells erhalten.
+    - **State Management:** Einsatz von `rememberUpdatedState` in der `BirthdayList` zur Absicherung der Callbacks innerhalb der LazyColumn.
 

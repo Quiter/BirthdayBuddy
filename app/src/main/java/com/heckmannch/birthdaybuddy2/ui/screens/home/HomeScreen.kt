@@ -121,6 +121,38 @@ fun HomeScreen(
         }
     }
 
+    // --- Callbacks stabilisieren ---
+    val onSearchQueryChange = remember(viewModel) { { query: String -> viewModel.onSearchQueryChange(query) } }
+    val onLabelSelected = remember(viewModel) { { label: String? -> viewModel.onLabelSelected(label) } }
+    val onClearSearch = remember(viewModel, focusManager, keyboardController) {
+        {
+            viewModel.onSearchQueryChange("")
+            focusManager.clearFocus()
+            keyboardController?.hide()
+            Unit
+        }
+    }
+    val onAddContact = remember(context) {
+        {
+            val intent = Intent(Intent.ACTION_INSERT).apply {
+                type = ContactsContract.Contacts.CONTENT_TYPE
+            }
+            context.startActivity(intent)
+        }
+    }
+    val onRequestPermission = remember(permissionLauncher) { { permissionLauncher.launch(Manifest.permission.READ_CONTACTS) } }
+    val onSetSwipeHintShown = remember(viewModel) { { viewModel.setSwipeHintShown(); Unit } }
+    val onUpdateGiftIdeas = remember(viewModel) { { key: String, ideas: String -> viewModel.updateGiftIdeas(key, ideas); Unit } }
+    val onOpenContact = remember(context) {
+        { id: String, key: String ->
+            try {
+                val lookupUri = ContactsContract.Contacts.getLookupUri(id.toLong(), key)
+                context.startActivity(Intent(Intent.ACTION_VIEW, lookupUri))
+            } catch (_: Exception) {}
+        }
+    }
+    val onSetFastScrolling = remember(viewModel) { { scrolling: Boolean -> viewModel.setFastScrolling(scrolling) } }
+
     HomeContent(
         searchQuery = searchQuery,
         animatedPlaceholder = animatedPlaceholder,
@@ -131,32 +163,16 @@ fun HomeScreen(
         swipeHintShown = swipeHintShown,
         isResettingFilter = isResettingFilter,
         listState = listState,
-        onSearchQueryChange = { viewModel.onSearchQueryChange(it) },
-        onLabelSelected = { label ->
-            viewModel.onLabelSelected(label)
-        },
-        onClearSearch = {
-            viewModel.onSearchQueryChange("")
-            focusManager.clearFocus()
-            keyboardController?.hide()
-        },
+        onSearchQueryChange = onSearchQueryChange,
+        onLabelSelected = onLabelSelected,
+        onClearSearch = onClearSearch,
         onNavigateToSettings = onNavigateToSettings,
-        onAddContact = {
-            val intent = Intent(Intent.ACTION_INSERT).apply {
-                type = ContactsContract.Contacts.CONTENT_TYPE
-            }
-            context.startActivity(intent)
-        },
-        onRequestPermission = { permissionLauncher.launch(Manifest.permission.READ_CONTACTS) },
-        onSetSwipeHintShown = { viewModel.setSwipeHintShown() },
-        onUpdateGiftIdeas = { key, ideas -> viewModel.updateGiftIdeas(key, ideas) },
-        onOpenContact = { id, key ->
-            try {
-                val lookupUri = ContactsContract.Contacts.getLookupUri(id.toLong(), key)
-                context.startActivity(Intent(Intent.ACTION_VIEW, lookupUri))
-            } catch (_: Exception) {}
-        },
-        onSetFastScrolling = viewModel::setFastScrolling,
+        onAddContact = onAddContact,
+        onRequestPermission = onRequestPermission,
+        onSetSwipeHintShown = onSetSwipeHintShown,
+        onUpdateGiftIdeas = onUpdateGiftIdeas,
+        onOpenContact = onOpenContact,
+        onSetFastScrolling = onSetFastScrolling,
     )
 }
 

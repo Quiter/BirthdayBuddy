@@ -55,6 +55,8 @@
             android:exported="false">
             <intent-filter>
                 <action android:name="SNOOZE" />
+                <action android:name="DONE" />
+                <action android:name="DISMISSED" />
             </intent-filter>
         </receiver>
     </application>

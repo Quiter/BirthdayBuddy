@@ -19,13 +19,14 @@ class SnoozeWorker @AssistedInject constructor(
 
     override suspend fun doWork(): Result {
         val daysBefore = inputData.getInt("DAYS_BEFORE", 0)
+        val pendingId = inputData.getInt("PENDING_ID", -1)
         val lookupKeys = inputData.getStringArray("LOOKUP_KEYS") ?: return Result.failure()
 
         val allContacts = contactRepository.allContacts.first()
         val targetContacts = allContacts.filter { it.lookupKey in lookupKeys }
 
         if (targetContacts.isNotEmpty()) {
-            notificationHelper.showBirthdayNotification(targetContacts, daysBefore)
+            notificationHelper.showBirthdayNotification(targetContacts, daysBefore, pendingId)
         }
 
         return Result.success()

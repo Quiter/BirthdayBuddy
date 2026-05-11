@@ -19,17 +19,17 @@ class NotificationHelper @Inject constructor(
 ) {
 
     companion object {
-        const val CHANNEL_ID = "birthday_reminders"
+        const val CHANNEL_ID = "birthday_reminders_v2"
     }
 
-    fun showBirthdayNotification(contacts: List<Contact>, daysBefore: Int) {
+    fun showBirthdayNotification(contacts: List<Contact>, daysBefore: Int, pendingId: Int = -1) {
         val notificationManager =
             context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
 
         val channel = NotificationChannel(
             CHANNEL_ID,
             context.getString(R.string.notif_channel_name),
-            NotificationManager.IMPORTANCE_DEFAULT
+            NotificationManager.IMPORTANCE_HIGH // Höhere Wichtigkeit für persistente Erinnnerungen
         )
         notificationManager.createNotificationChannel(channel)
 
@@ -38,21 +38,46 @@ class NotificationHelper @Inject constructor(
             flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
         }
         
-        val pendingIntentId = 200 + daysBefore
+        val notificationId = 200 + daysBefore
         val pendingIntent = PendingIntent.getActivity(
-            context, pendingIntentId, intent,
+            context, notificationId, intent,
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        )
+
+        // Action-Intent: Erledigt
+        val doneIntent = Intent(context, NotificationActionReceiver::class.java).apply {
+            action = "DONE"
+            putExtra("NOTIFICATION_ID", notificationId)
+            putExtra("PENDING_ID", pendingId)
+        }
+        val donePendingIntent = PendingIntent.getBroadcast(
+            context, notificationId + 2000, doneIntent,
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
 
         // Action-Intent: Später erinnern (Snooze)
         val snoozeIntent = Intent(context, NotificationActionReceiver::class.java).apply {
             action = "SNOOZE"
-            putExtra("NOTIFICATION_ID", pendingIntentId)
+            putExtra("NOTIFICATION_ID", notificationId)
+            putExtra("PENDING_ID", pendingId)
             putExtra("DAYS_BEFORE", daysBefore)
             putExtra("LOOKUP_KEYS", contacts.map { it.lookupKey }.toTypedArray())
         }
         val snoozePendingIntent = PendingIntent.getBroadcast(
-            context, pendingIntentId + 1000, snoozeIntent,
+            context, notificationId + 1000, snoozeIntent,
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        )
+
+        // Delete-Intent: Falls weggeschoben wird -> Re-post (für echte Persistenz)
+        val deleteIntent = Intent(context, NotificationActionReceiver::class.java).apply {
+            action = "DISMISSED"
+            putExtra("NOTIFICATION_ID", notificationId)
+            putExtra("PENDING_ID", pendingId)
+            putExtra("DAYS_BEFORE", daysBefore)
+            putExtra("LOOKUP_KEYS", contacts.map { it.lookupKey }.toTypedArray())
+        }
+        val deletePendingIntent = PendingIntent.getBroadcast(
+            context, notificationId + 3000, deleteIntent,
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
 
@@ -85,12 +110,15 @@ class NotificationHelper @Inject constructor(
             .setSmallIcon(R.drawable.ic_launcher_foreground)
             .setContentTitle(title)
             .setContentText(contentText)
-            .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+            .setPriority(NotificationCompat.PRIORITY_HIGH)
             .setContentIntent(pendingIntent)
+            .setOngoing(true) // Persistent!
+            .setDeleteIntent(deletePendingIntent)
+            .addAction(0, context.getString(R.string.notif_action_done), donePendingIntent)
             .addAction(0, context.getString(R.string.notif_action_snooze), snoozePendingIntent)
-            .setAutoCancel(true)
+            .setAutoCancel(false)
             .build()
 
-        notificationManager.notify(pendingIntentId, notification)
+        notificationManager.notify(notificationId, notification)
     }
 }

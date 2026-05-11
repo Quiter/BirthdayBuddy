@@ -38,7 +38,8 @@ Die App befindet sich gerade in einer umfassenden Refactoring-Phase (V3), um die
 - **Advanced Notifications:** Implementierung eines dynamischen Regelsystems für Benachrichtigungen (beliebige Tage vorher & Uhrzeiten) via WorkManager und Room.
 - **Localization & Technical Polish:** Vollständige Internationalisierung der App (inkl. Widget) via `strings.xml`. Systemweite Bereinigung von IDE-Warnungen, Optimierung der Dependency Injection (Hilt) für Worker und Widgets (EntryPoint) sowie Refactoring der Package-Struktur für bessere Modularität. Einführung eines "Über die App" Screens zur transparenten Darstellung von Versionsinformationen.
 - **UX & Technical Polish:** Einführung einer Global Search Logik mit Keyword-Matching (Reihenfolge-unabhängig), verfeinerte visuelle Status-Indikatoren für Geburtstage, Integration der Extended Material Icons für präzisere Symbolik.
+- **Persistent Notifications:** Implementierung eines robusten Quittierungssystems für Erinnerungen. Benachrichtigungen bleiben nun so lange aktiv (persistent), bis sie explizit als "Erledigt" markiert oder "Gesnoozed" werden. Inklusive Datenbank-Tracking zur Status-Erhaltung.
+- **Performance & Re-Composition Guard:** Drastische Reduzierung der Re-Compositions in der Hauptliste durch Lambda-Stabilisierung und Dekomposition der UI-Komponenten.
 
 ## 🎯 Kommende Aufgaben (Backlog)
-- **Persistent Notifications:** Implementierung eines "Erledigt"-Status für Benachrichtigungen, sodass diese bis zur aktiven Quittierung erhalten bleiben.
-- **Leistungsoptimierung:** Weitere Reduzierung der Re-Compositions in der Hauptliste bei großen Datenmengen.
+- **Edge-Cases:** Verfeinerung des Verhaltens bei extrem vielen Kontakten (> 1000) und weitere Reduzierung der Initial-Ladezeit.

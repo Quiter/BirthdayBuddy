@@ -201,10 +201,18 @@ fun BirthdayItem(
                     )
                 },
                 leadingContent = {
-                    ContactImage(contact = contact)
+                    ContactImage(
+                        imageUri = contact.imageUri,
+                        fullName = contact.fullName,
+                        initials = contact.initials
+                    )
                 },
                 trailingContent = {
-                    BirthdayStatus(contact = contact)
+                    BirthdayStatus(
+                        isToday = contact.isToday,
+                        nextAgeText = contact.nextAgeText,
+                        daysUntilNext = contact.daysUntilNext
+                    )
                 },
                 colors = ListItemDefaults.colors(containerColor = Color.Transparent)
             )
@@ -236,31 +244,39 @@ private fun SwipeActionButton(
 }
 
 @Composable
-private fun ContactImage(contact: ContactUiModel) {
+private fun ContactImage(
+    imageUri: String?,
+    fullName: String,
+    initials: String
+) {
     Surface(
         modifier = Modifier.size(48.dp),
         shape = MaterialTheme.shapes.medium,
         color = MaterialTheme.colorScheme.primaryContainer
     ) {
-        if (contact.imageUri != null) {
+        if (imageUri != null) {
             AsyncImage(
-                model = contact.imageUri,
-                contentDescription = stringResource(R.string.item_image_desc, contact.fullName),
+                model = imageUri,
+                contentDescription = stringResource(R.string.item_image_desc, fullName),
                 modifier = Modifier.fillMaxSize(),
                 contentScale = ContentScale.Crop
             )
         } else {
             Box(contentAlignment = Alignment.Center) {
-                Text(text = contact.initials, style = MaterialTheme.typography.titleLarge)
+                Text(text = initials, style = MaterialTheme.typography.titleLarge)
             }
         }
     }
 }
 
 @Composable
-private fun BirthdayStatus(contact: ContactUiModel) {
+private fun BirthdayStatus(
+    isToday: Boolean,
+    nextAgeText: String?,
+    daysUntilNext: Long
+) {
     Column(horizontalAlignment = Alignment.End) {
-        contact.nextAgeText?.let {
+        nextAgeText?.let {
             Text(
                 text = it,
                 style = MaterialTheme.typography.labelLarge,
@@ -268,9 +284,9 @@ private fun BirthdayStatus(contact: ContactUiModel) {
             )
         }
         Text(
-            text = if (contact.isToday) stringResource(R.string.item_today) else pluralStringResource(R.plurals.item_days_left, contact.daysUntilNext.toInt(), contact.daysUntilNext.toInt()),
+            text = if (isToday) stringResource(R.string.item_today) else pluralStringResource(R.plurals.item_days_left, daysUntilNext.toInt(), daysUntilNext.toInt()),
             style = MaterialTheme.typography.labelSmall,
-            color = if (contact.isToday) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurfaceVariant
+            color = if (isToday) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurfaceVariant
         )
     }
 }

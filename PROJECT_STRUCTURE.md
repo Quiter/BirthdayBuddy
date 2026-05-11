@@ -18,6 +18,8 @@
 - `LabelConfigDao.kt`: DAO für Label-Einstellungen.
 - `NotificationRule.kt`: Entity für flexible Benachrichtigungsregeln (Abstand & Uhrzeit).
 - `NotificationRuleDao.kt`: DAO für Benachrichtigungsregeln.
+- `PendingNotification.kt`: Entity für aktive, noch nicht quittierte Benachrichtigungen.
+- `PendingNotificationDao.kt`: DAO für die Verwaltung persistenter Erinnerungen.
 - `Converters.kt`: TypeConverters für `LocalDate` und Listen-Encoding.
 
 ## 📁 Repository (`repository`)
