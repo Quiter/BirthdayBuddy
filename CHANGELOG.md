@@ -156,4 +156,8 @@ Alle signifikanten Änderungen am Projekt werden hier dokumentiert.
     - **DI Hardening:** Umstellung des `NotificationHelper` auf ein Singleton-Muster mit Hilt-Injektion (@ApplicationContext).
     - **Worker Refinement:** Refactoring von `NotificationWorker` und `SnoozeWorker` zur Nutzung des injizierten Helpers, was die Testbarkeit und Code-Qualität verbessert.
     - **IDE Warning Cleanup:** Systematische Bereinigung von IDE-Warnungen ("Problems"-Tab): Korrektur von ungenutzten Zuweisungen, Ergänzung fehlender Trailing-Commas und Optimierung von Kotlin-Annotationen (`@param:ApplicationContext`).
+46. **About Screen:**
+    - **New Screen:** Einführung eines "Über die App" Bildschirms mit Informationen zur Version, dem Entwickler und dem Standort.
+    - **Settings Integration:** Hinzufügen eines entsprechenden Menüpunkts in den Haupteinstellungen.
+    - **Localization:** Vollständige Internationalisierung der neuen Inhalte via `strings.xml`.
 

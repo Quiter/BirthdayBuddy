@@ -52,6 +52,7 @@
     - `NotificationActionReceiver.kt`: Empfänger für Quick Actions in Benachrichtigungen.
     - `NotificationHelper.kt`: Utility zum Erstellen und Anzeigen der System-Notifications.
 - `backup/BackupScreen.kt`: Import/Export von Geschenkideen (JSON-Format).
+- `about/AboutScreen.kt`: Informationen über die App und Entwickler.
 
 ## 📁 Theme & Design (`ui.theme`)
 - `Theme.kt`: Material 3 Theme-Definition mit Dynamic Color Support.

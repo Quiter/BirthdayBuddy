@@ -30,6 +30,7 @@ fun SettingsScreen(
     onNavigateToLabels: () -> Unit,
     onNavigateToNotifications: () -> Unit,
     onNavigateToBackup: () -> Unit,
+    onNavigateToAbout: () -> Unit,
     onNavigateBack: () -> Unit,
 ) {
     val context = LocalContext.current
@@ -53,6 +54,7 @@ fun SettingsScreen(
         onNavigateToLabels = onNavigateToLabels,
         onNavigateToNotifications = onNavigateToNotifications,
         onNavigateToBackup = onNavigateToBackup,
+        onNavigateToAbout = onNavigateToAbout,
         onNavigateBack = onNavigateBack,
     )
 }
@@ -64,6 +66,7 @@ private fun SettingsContent(
     onNavigateToLabels: () -> Unit,
     onNavigateToNotifications: () -> Unit,
     onNavigateToBackup: () -> Unit,
+    onNavigateToAbout: () -> Unit,
     onNavigateBack: () -> Unit,
 ) {
     Scaffold(
@@ -126,6 +129,15 @@ private fun SettingsContent(
                         modifier = Modifier.clickable { onNavigateToBackup() }
                     )
                 }
+
+                item {
+                    ListItem(
+                        headlineContent = { Text("Über die App") },
+                        supportingContent = { Text("Informationen zu BirthdayBuddy") },
+                        leadingContent = { Icon(Icons.Default.Info, contentDescription = null) },
+                        modifier = Modifier.clickable { onNavigateToAbout() }
+                    )
+                }
             }
 
             SettingsFooter()
@@ -144,9 +156,9 @@ private fun SettingsFooter() {
                 @Suppress("DEPRECATION")
                 context.packageManager.getPackageInfo(context.packageName, 0)
             }
-            packageInfo.versionName ?: "1.1.3"
+            packageInfo.versionName ?: "1.4.4"
         } catch (_: Exception) {
-            "1.1.3"
+            "1.4.4"
         }
     }
 
@@ -184,6 +196,7 @@ private fun SettingsPreview() {
             onNavigateToLabels = {},
             onNavigateToNotifications = {},
             onNavigateToBackup = {},
+            onNavigateToAbout = {},
         ) { }
     }
 }

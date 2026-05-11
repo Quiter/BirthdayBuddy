@@ -36,7 +36,7 @@ Die App befindet sich gerade in einer umfassenden Refactoring-Phase (V3), um die
 - **Backup System:** Implementierung von robustem Import/Export für Geschenkideen inkl. Fallback-Matching.
 - **UI Modernization:** Neugestaltung des Label-Managements mit Material 3 Cards und FilterChips; intelligente Filterung verwaister Labels für mehr Übersichtlichkeit.
 - **Advanced Notifications:** Implementierung eines dynamischen Regelsystems für Benachrichtigungen (beliebige Tage vorher & Uhrzeiten) via WorkManager und Room.
-- **Localization & Technical Polish:** Vollständige Internationalisierung des Home-Screens und des Benachrichtigungssystems via `strings.xml`. Systemweite Bereinigung von IDE-Warnungen, Optimierung der Dependency Injection (Hilt) für Worker und Refactoring der Package-Struktur für bessere Modularität.
+- **Localization & Technical Polish:** Vollständige Internationalisierung des Home-Screens und des Benachrichtigungssystems via `strings.xml`. Systemweite Bereinigung von IDE-Warnungen, Optimierung der Dependency Injection (Hilt) für Worker und Refactoring der Package-Struktur für bessere Modularität. Einführung eines "Über die App" Screens zur transparenten Darstellung von Versionsinformationen.
 - **UX & Technical Polish:** Einführung einer Global Search Logik mit Keyword-Matching (Reihenfolge-unabhängig), verfeinerte visuelle Status-Indikatoren für Geburtstage, Integration der Extended Material Icons für präzisere Symbolik.
 
 ## 🎯 Kommende Aufgaben (Backlog)

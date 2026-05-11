@@ -25,6 +25,7 @@ import com.heckmannch.birthdaybuddy2.ui.screens.settings.SettingsScreen
 import com.heckmannch.birthdaybuddy2.ui.screens.settings.labels.LabelSettingsScreen
 import com.heckmannch.birthdaybuddy2.ui.screens.settings.notifications.NotificationSettingsScreen
 import com.heckmannch.birthdaybuddy2.ui.screens.settings.backup.BackupScreen
+import com.heckmannch.birthdaybuddy2.ui.screens.settings.about.AboutScreen
 import com.heckmannch.birthdaybuddy2.ui.theme.BirthdayBuddy2Theme
 import com.heckmannch.birthdaybuddy2.viewmodel.BirthdayViewModel
 import com.heckmannch.birthdaybuddy2.widget.BirthdayWidgetWorker
@@ -38,6 +39,7 @@ private object Routes {
     const val LABEL_SETTINGS = "label_settings"
     const val NOTIFICATION_SETTINGS = "notification_settings"
     const val BACKUP_SETTINGS = "backup_settings"
+    const val ABOUT = "about"
 }
 
 @AndroidEntryPoint
@@ -122,6 +124,9 @@ class MainActivity : ComponentActivity() {
                     onNavigateToBackup = {
                         navController.navigate(Routes.BACKUP_SETTINGS)
                     },
+                    onNavigateToAbout = {
+                        navController.navigate(Routes.ABOUT)
+                    },
                 ) {
                     navController.popBackStack()
                 }
@@ -138,6 +143,11 @@ class MainActivity : ComponentActivity() {
             }
             composable(Routes.BACKUP_SETTINGS) {
                 BackupScreen(viewModel = viewModel) {
+                    navController.popBackStack()
+                }
+            }
+            composable(Routes.ABOUT) {
+                AboutScreen {
                     navController.popBackStack()
                 }
             }

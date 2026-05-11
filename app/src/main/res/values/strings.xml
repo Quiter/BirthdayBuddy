@@ -87,4 +87,10 @@
         <item quantity="one">In einem Tag haben %d Personen Geburtstag!</item>
         <item quantity="other">In %d Tagen haben %d Personen Geburtstag!</item>
     </plurals>
+
+    <!-- About Screen -->
+    <string name="about_title">Über die App</string>
+    <string name="about_description">BirthdayBuddy hilft dir dabei, nie wieder einen Geburtstag zu vergessen. Erhalte rechtzeitig Erinnerungen und verwalte Geschenkideen direkt in der App.</string>
+    <string name="about_developer_title">Entwickler</string>
+    <string name="about_location_title">Standort</string>
 </resources>
