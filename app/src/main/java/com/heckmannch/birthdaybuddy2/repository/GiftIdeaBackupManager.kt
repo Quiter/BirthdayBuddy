@@ -55,7 +55,7 @@ class GiftIdeaBackupManager @Inject constructor(
                 val target = contactsByLookup[lookupKey] ?: contactsByName[fullName]
 
                 if (target != null) {
-                    contactDao.insertContact(target.copy(giftIdeas = giftIdeas))
+                    contactDao.upsertContact(target.copy(giftIdeas = giftIdeas))
                     count++
                 }
             }

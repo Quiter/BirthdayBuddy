@@ -1,13 +1,17 @@
 package com.heckmannch.birthdaybuddy2.database
 
 import androidx.room.Entity
+import androidx.room.Index
 import androidx.room.PrimaryKey
 import java.time.LocalDate
 
 /**
  * Repräsentiert einen Kontakt mit Geburtstag.
  */
-@Entity(tableName = "contacts")
+@Entity(
+    tableName = "contacts",
+    indices = [Index(value = ["lookupKey"], unique = true)]
+)
 data class Contact(
     @PrimaryKey(autoGenerate = true)
     val localId: Long = 0,      // Interner Key für Room-Relationen

@@ -17,7 +17,7 @@ class NotificationRepository @Inject constructor(
 
     suspend fun getAllRulesImmediate(): List<NotificationRule> = notificationRuleDao.getAllRulesImmediate()
 
-    suspend fun insertRule(rule: NotificationRule) = notificationRuleDao.insertRule(rule)
+    suspend fun insertRule(rule: NotificationRule) = notificationRuleDao.upsertRule(rule)
 
     suspend fun updateRule(rule: NotificationRule) = notificationRuleDao.updateRule(rule)
 
@@ -28,7 +28,7 @@ class NotificationRepository @Inject constructor(
         pendingNotificationDao.getActiveNotificationsImmediate()
 
     suspend fun insertPendingNotification(notification: PendingNotification) = 
-        pendingNotificationDao.insert(notification)
+        pendingNotificationDao.upsert(notification)
 
     suspend fun markAsDone(id: Int) = pendingNotificationDao.markAsDone(id)
 }

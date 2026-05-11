@@ -104,20 +104,20 @@ class ContactRepository @Inject constructor(
         }
 
         if (configsToInsert.isNotEmpty()) {
-            labelConfigDao.insertConfigs(configsToInsert)
+            labelConfigDao.upsertConfigs(configsToInsert)
         }
     }
 
     suspend fun updateGiftIdeas(lookupKey: String, ideas: String) {
         withContext(Dispatchers.IO) {
             contactDao.getContactByLookupKey(lookupKey)?.let { contact ->
-                contactDao.insertContact(contact.copy(giftIdeas = ideas))
+                contactDao.upsertContact(contact.copy(giftIdeas = ideas))
             }
         }
     }
 
     suspend fun updateLabelConfig(config: LabelConfig) {
-        labelConfigDao.insertConfig(config)
+        labelConfigDao.upsertConfig(config)
     }
 
     suspend fun exportGiftIdeas(): String = giftIdeaBackupManager.exportGiftIdeas()

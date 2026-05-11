@@ -11,8 +11,8 @@ interface NotificationRuleDao {
     @Query("SELECT * FROM notification_rules ORDER BY daysBefore ASC, hour ASC, minute ASC")
     suspend fun getAllRulesImmediate(): List<NotificationRule>
 
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertRule(rule: NotificationRule)
+    @Upsert
+    suspend fun upsertRule(rule: NotificationRule)
 
     @Update
     suspend fun updateRule(rule: NotificationRule)

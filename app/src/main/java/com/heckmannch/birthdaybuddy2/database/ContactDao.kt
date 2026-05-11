@@ -11,11 +11,11 @@ interface ContactDao {
     @Query("SELECT * FROM contacts")
     suspend fun getAllContactsImmediate(): List<Contact>
 
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertContacts(contacts: List<Contact>)
+    @Upsert
+    suspend fun upsertContacts(contacts: List<Contact>)
 
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertContact(contact: Contact)
+    @Upsert
+    suspend fun upsertContact(contact: Contact)
 
     @Query("SELECT * FROM contacts WHERE lookupKey = :lookupKey")
     suspend fun getContactByLookupKey(lookupKey: String): Contact?
@@ -26,6 +26,6 @@ interface ContactDao {
     @Transaction
     suspend fun refreshContacts(contacts: List<Contact>) {
         deleteAllContacts()
-        insertContacts(contacts)
+        upsertContacts(contacts)
     }
 }

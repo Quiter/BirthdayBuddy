@@ -173,4 +173,9 @@ Alle signifikanten Änderungen am Projekt werden hier dokumentiert.
     - **Lambda Stabilization:** Umfassende Memoization (`remember`) aller UI-Callbacks im `HomeScreen`, um unnötige Re-Compositions der Listen-Komponenten zu verhindern.
     - **Component Decomposition:** Refactoring von `BirthdayItem` in feinere Sub-Komponenten (`ContactImage`, `BirthdayStatus`), die nur noch primitive Datentypen statt des kompletten Modells erhalten.
     - **State Management:** Einsatz von `rememberUpdatedState` in der `BirthdayList` zur Absicherung der Callbacks innerhalb der LazyColumn.
+50. **Database Excellence & Optimization:**
+    - **Indexing:** Einführung eines eindeutigen Indizes für den `lookupKey` in der `Contact` Tabelle zur Beschleunigung von Suchanfragen und Synchronisationsvorgängen.
+    - **Modern DAOs:** Umstellung von `@Insert(onConflict = REPLACE)` auf das modernere `@Upsert` Pattern in allen DAOs für saubereren Code und bessere Performance.
+    - **Robust Converters:** Optimierung der `Converters` für Listen; Umstellung des Trennzeichens auf `|` zur Vermeidung von Fehlern bei Sonderzeichen in Labels.
+    - **Clean Singleton:** Verfeinerung des Singleton-Patterns in `AppDatabase` nach aktuellen Best Practices.
 

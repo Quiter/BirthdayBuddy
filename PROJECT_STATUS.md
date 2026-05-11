@@ -40,6 +40,7 @@ Die App befindet sich gerade in einer umfassenden Refactoring-Phase (V3), um die
 - **UX & Technical Polish:** Einführung einer Global Search Logik mit Keyword-Matching (Reihenfolge-unabhängig), verfeinerte visuelle Status-Indikatoren für Geburtstage, Integration der Extended Material Icons für präzisere Symbolik.
 - **Persistent Notifications:** Implementierung eines robusten Quittierungssystems für Erinnerungen. Benachrichtigungen bleiben nun so lange aktiv (persistent), bis sie explizit als "Erledigt" markiert oder "Gesnoozed" werden. Inklusive Datenbank-Tracking zur Status-Erhaltung.
 - **Performance & Re-Composition Guard:** Drastische Reduzierung der Re-Compositions in der Hauptliste durch Lambda-Stabilisierung und Dekomposition der UI-Komponenten.
+- **Database Layer Optimization:** Vollständige Bereinigung der DAOs; Einführung von Indizes für performante Lookups; Upgrade auf das moderne `@Upsert` Pattern.
 
 ## 🎯 Kommende Aufgaben (Backlog)
 - **Edge-Cases:** Verfeinerung des Verhaltens bei extrem vielen Kontakten (> 1000) und weitere Reduzierung der Initial-Ladezeit.

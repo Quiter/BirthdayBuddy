@@ -6,7 +6,7 @@ import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
 
-@Database(entities = [Contact::class, LabelConfig::class, NotificationRule::class, PendingNotification::class], version = 8, exportSchema = false)
+@Database(entities = [Contact::class, LabelConfig::class, NotificationRule::class, PendingNotification::class], version = 9, exportSchema = false)
 @TypeConverters(Converters::class)
 abstract class AppDatabase : RoomDatabase() {
     abstract fun contactDao(): ContactDao
@@ -24,7 +24,10 @@ abstract class AppDatabase : RoomDatabase() {
                     context.applicationContext,
                     AppDatabase::class.java,
                     "birthday_database",
-                ).fallbackToDestructiveMigration(dropAllTables = true).build().also { INSTANCE = it }
+                )
+                    .fallbackToDestructiveMigration(dropAllTables = true)
+                    .build()
+                    .also { INSTANCE = it }
             }
     }
 }
