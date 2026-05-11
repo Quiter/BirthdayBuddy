@@ -27,6 +27,10 @@
         <item quantity="other">In %d T.</item>
     </plurals>
 
+    <!-- Widget -->
+    <string name="widget_no_birthdays">Keine Geburtstage</string>
+    <string name="widget_turns_age">wird %d</string>
+
     <!-- Gift Idea Dialog -->
     <string name="gift_dialog_title">Geschenkideen</string>
     <string name="gift_dialog_delete">Löschen</string>

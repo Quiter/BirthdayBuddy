@@ -160,4 +160,8 @@ Alle signifikanten Änderungen am Projekt werden hier dokumentiert.
     - **New Screen:** Einführung eines "Über die App" Bildschirms mit Informationen zur Version, dem Entwickler und dem Standort.
     - **Settings Integration:** Hinzufügen eines entsprechenden Menüpunkts in den Haupteinstellungen.
     - **Localization:** Vollständige Internationalisierung der neuen Inhalte via `strings.xml`.
+47. **Widget Localization & Architecture Hardening:**
+    - **Localization:** Vollständige Internationalisierung des `BirthdayWidget` via `strings.xml`. Nutzt nun `plurals` für Datumsangaben und kontextsensitive Texte.
+    - **Architecture:** Migration des Widgets auf das Hilt-EntryPoint-Muster zur sauberen Nutzung des `ContactRepository`. Entfernung direkter Datenbank-Abhängigkeiten im UI-Code.
+    - **Code Quality:** Systematische Bereinigung von IDE-Warnungen, Einführung von Trailing Commas und Optimierung der Flow-Ketten im Widget.
 

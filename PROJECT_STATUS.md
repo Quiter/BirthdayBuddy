@@ -1,6 +1,6 @@
 # Project Status: BirthdayBuddy 2
 
-> **TL;DR für neue Sessions:** Moderne M3 Geburtstags-App. Android-Kontakte sind die Single-Source-of-Truth. Migration auf `LOOKUP_KEY` & `localId` abgeschlossen (zukunftssicher). High-Performance Sync (Parallel/Batch), hybride Filter-Logik, präzises Widget-Update (Mitternacht). **Neu: Robustes Backup/Restore für Geschenkideen (JSON) & modernisiertes M3 Label-Management.** Architektur sauber & performant (Room v6, Compose BOM 2026.04).
+> **TL;DR für neue Sessions:** Moderne M3 Geburtstags-App. Android-Kontakte sind die Single-Source-of-Truth. Migration auf `LOOKUP_KEY` & `localId` abgeschlossen (zukunftssicher). High-Performance Sync (Parallel/Batch), hybride Filter-Logik, präzises Widget-Update (Mitternacht). **Neu: Vollständige Lokalisierung der App & des Widgets sowie Hilt-Integration für alle Komponenten.** Architektur sauber & performant (Room v6, Compose BOM 2026.05).
 
 ## 🚀 Aktueller Stand
 Die App befindet sich gerade in einer umfassenden Refactoring-Phase (V3), um die Skalierbarkeit und Testbarkeit zu erhöhen. Fokus liegt auf der Trennung von Business-Logik und UI-State durch das Repository-Pattern und moderner Lifecycle-Integration.
@@ -36,7 +36,7 @@ Die App befindet sich gerade in einer umfassenden Refactoring-Phase (V3), um die
 - **Backup System:** Implementierung von robustem Import/Export für Geschenkideen inkl. Fallback-Matching.
 - **UI Modernization:** Neugestaltung des Label-Managements mit Material 3 Cards und FilterChips; intelligente Filterung verwaister Labels für mehr Übersichtlichkeit.
 - **Advanced Notifications:** Implementierung eines dynamischen Regelsystems für Benachrichtigungen (beliebige Tage vorher & Uhrzeiten) via WorkManager und Room.
-- **Localization & Technical Polish:** Vollständige Internationalisierung des Home-Screens und des Benachrichtigungssystems via `strings.xml`. Systemweite Bereinigung von IDE-Warnungen, Optimierung der Dependency Injection (Hilt) für Worker und Refactoring der Package-Struktur für bessere Modularität. Einführung eines "Über die App" Screens zur transparenten Darstellung von Versionsinformationen.
+- **Localization & Technical Polish:** Vollständige Internationalisierung der App (inkl. Widget) via `strings.xml`. Systemweite Bereinigung von IDE-Warnungen, Optimierung der Dependency Injection (Hilt) für Worker und Widgets (EntryPoint) sowie Refactoring der Package-Struktur für bessere Modularität. Einführung eines "Über die App" Screens zur transparenten Darstellung von Versionsinformationen.
 - **UX & Technical Polish:** Einführung einer Global Search Logik mit Keyword-Matching (Reihenfolge-unabhängig), verfeinerte visuelle Status-Indikatoren für Geburtstage, Integration der Extended Material Icons für präzisere Symbolik.
 
 ## 🎯 Kommende Aufgaben (Backlog)

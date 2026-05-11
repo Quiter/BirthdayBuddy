@@ -17,26 +17,39 @@ import androidx.glance.text.FontWeight
 import androidx.glance.text.Text
 import androidx.glance.text.TextStyle
 import com.heckmannch.birthdaybuddy2.MainActivity
-import com.heckmannch.birthdaybuddy2.database.AppDatabase
+import com.heckmannch.birthdaybuddy2.R
 import com.heckmannch.birthdaybuddy2.database.Contact
+import com.heckmannch.birthdaybuddy2.repository.ContactRepository
 import com.heckmannch.birthdaybuddy2.util.safeDaysUntilNext
 import com.heckmannch.birthdaybuddy2.util.safeNextAge
+import dagger.hilt.EntryPoint
+import dagger.hilt.InstallIn
+import dagger.hilt.android.EntryPointAccessors
+import dagger.hilt.components.SingletonComponent
 import kotlinx.coroutines.flow.combine
 import java.time.format.DateTimeFormatter
 import java.time.format.FormatStyle
+
+@EntryPoint
+@InstallIn(SingletonComponent::class)
+interface WidgetEntryPoint {
+    fun contactRepository(): ContactRepository
+}
 
 class BirthdayWidget : GlanceAppWidget() {
     override val sizeMode: SizeMode = SizeMode.Exact
 
     override suspend fun provideGlance(context: Context, id: GlanceId) {
-        val contactDao = AppDatabase.getDatabase(context).contactDao()
-        val labelConfigDao = AppDatabase.getDatabase(context).labelConfigDao()
-        
+        val repository = EntryPointAccessors.fromApplication(
+            context.applicationContext,
+            WidgetEntryPoint::class.java,
+        ).contactRepository()
+
         provideContent {
             val contactsState = produceState<List<Contact>>(initialValue = emptyList()) {
                 combine(
-                    contactDao.getAllContacts(),
-                    labelConfigDao.getAllConfigs(),
+                    repository.allContacts,
+                    repository.labelConfigs,
                 ) { list, configs ->
                     val ignoredLabels = configs.asSequence()
                         .filter { it.isIgnored }
@@ -50,7 +63,7 @@ class BirthdayWidget : GlanceAppWidget() {
                         .toList()
                 }.collect { value = it }
             }
-            
+
             GlanceTheme {
                 WidgetContent(contactsState.value)
             }
@@ -93,27 +106,39 @@ class BirthdayWidget : GlanceAppWidget() {
 
     @Composable
     private fun EmptyState() {
+        val context = LocalContext.current
         Box(modifier = GlanceModifier.fillMaxSize(), contentAlignment = Alignment.Center) {
             Text(
-                text = "Keine Geburtstage",
-                style = TextStyle(color = GlanceTheme.colors.onSurface)
+                text = context.getString(R.string.widget_no_birthdays),
+                style = TextStyle(color = GlanceTheme.colors.onSurface),
             )
         }
     }
 
     @Composable
     private fun ColumnScope.BirthdayRow(contact: Contact) {
+        val context = LocalContext.current
         val dateFormatter = DateTimeFormatter.ofLocalizedDate(FormatStyle.MEDIUM)
         val dayMonthFormatter = DateTimeFormatter.ofPattern("d. MMM")
-        
+
         val daysLeft = contact.birthday.safeDaysUntilNext()
         val nextAgeValue = contact.birthday.safeNextAge()
         val hasYear = contact.birthday.year != 1900
-        
+
         val dateText = if (!hasYear) {
             contact.birthday.format(dayMonthFormatter)
         } else {
             contact.birthday.format(dateFormatter)
+        }
+
+        val daysLeftText = if (daysLeft == 0L) {
+            context.getString(R.string.item_today)
+        } else {
+            context.resources.getQuantityString(
+                R.plurals.item_days_left,
+                daysLeft.toInt(),
+                daysLeft.toInt(),
+            )
         }
 
         Box(
@@ -122,7 +147,7 @@ class BirthdayWidget : GlanceAppWidget() {
         ) {
             Row(
                 modifier = GlanceModifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically
+                verticalAlignment = Alignment.CenterVertically,
             ) {
                 Column(modifier = GlanceModifier.defaultWeight()) {
                     Text(
@@ -131,35 +156,39 @@ class BirthdayWidget : GlanceAppWidget() {
                         style = TextStyle(
                             color = GlanceTheme.colors.onSurface,
                             fontWeight = FontWeight.Medium,
-                            fontSize = 14.sp
-                        )
+                            fontSize = 14.sp,
+                        ),
                     )
                     Text(
                         text = dateText,
                         style = TextStyle(
                             color = GlanceTheme.colors.onSurfaceVariant,
                             fontSize = 12.sp,
-                        )
+                        ),
                     )
                 }
 
                 Column(horizontalAlignment = Alignment.End) {
                     if (hasYear) {
                         Text(
-                            text = "wird $nextAgeValue",
+                            text = context.getString(R.string.widget_turns_age, nextAgeValue),
                             style = TextStyle(
                                 color = GlanceTheme.colors.primary,
                                 fontWeight = FontWeight.Bold,
                                 fontSize = 12.sp,
-                            )
+                            ),
                         )
                     }
                     Text(
-                        text = if (daysLeft == 0L) "Heute!" else "In $daysLeft T.",
+                        text = daysLeftText,
                         style = TextStyle(
-                            color = if (daysLeft == 0L) GlanceTheme.colors.error else GlanceTheme.colors.onSurfaceVariant,
+                            color = if (daysLeft == 0L) {
+                                GlanceTheme.colors.error
+                            } else {
+                                GlanceTheme.colors.onSurfaceVariant
+                            },
                             fontSize = 11.sp,
-                        )
+                        ),
                     )
                 }
             }
