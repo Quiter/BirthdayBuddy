@@ -148,4 +148,12 @@ Alle signifikanten Änderungen am Projekt werden hier dokumentiert.
 43. **Notification Layer Refactoring:**
     - **Reorganization:** Verschiebung von `NotificationWorker`, `SnoozeWorker`, `NotificationActionReceiver` und `NotificationHelper` in das `components`-Unterpaket zur besseren Strukturierung des `notifications`-Features.
     - **Clean Manifest:** Aktualisierung der Receiver-Deklaration im AndroidManifest entsprechend der neuen Paketstruktur.
+44. **Full Localization (Home & Notifications):**
+    - **Resource Extraction:** Vollständige Auslagerung aller hartkodierten Strings aus `HomeScreen`, `BirthdayList`, `BirthdayItem`, `GiftIdeaDialog`, `SearchBar`, `LabelFilterBar`, `HomeFAB` und `FastScrollbar` in die `strings.xml`.
+    - **Plurals Support:** Implementierung von `plurals`-Ressourcen für eine grammatikalisch korrekte Anzeige von Tagen ("In 1 T." vs. "In 5 T.").
+    - **Dynamic Formatting:** Nutzung von String-Placeholdern für kontextsensitive Texte (z. B. Bildbeschreibungen und Scrollbar-Status).
+45. **Technical Excellence & Dependency Injection:**
+    - **DI Hardening:** Umstellung des `NotificationHelper` auf ein Singleton-Muster mit Hilt-Injektion (@ApplicationContext).
+    - **Worker Refinement:** Refactoring von `NotificationWorker` und `SnoozeWorker` zur Nutzung des injizierten Helpers, was die Testbarkeit und Code-Qualität verbessert.
+    - **IDE Warning Cleanup:** Systematische Bereinigung von IDE-Warnungen ("Problems"-Tab): Korrektur von ungenutzten Zuweisungen, Ergänzung fehlender Trailing-Commas und Optimierung von Kotlin-Annotationen (`@param:ApplicationContext`).
 
