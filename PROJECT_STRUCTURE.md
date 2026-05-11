@@ -44,6 +44,8 @@
 - `SettingsScreen.kt`: Haupt-Einstellungsmenü.
 - `labels/LabelSettingsScreen.kt`: Verwaltung der Label-Sichtbarkeit und Filter-Regeln.
 - `notifications/NotificationSettingsScreen.kt`: Einstellungen für tägliche Erinnerungen und Uhrzeit.
+- `notifications/NotificationRuleItem.kt`: Listen-Element für eine Benachrichtigungsregel.
+- `notifications/EditRuleDialog.kt`: Dialog zum Erstellen/Bearbeiten von Regeln.
 - `notifications/NotificationWorker.kt`: WorkManager-Logik für tägliche Benachrichtigungen.
 - `notifications/NotificationHelper.kt`: Utility zum Erstellen und Anzeigen der System-Notifications.
 - `backup/BackupScreen.kt`: Import/Export von Geschenkideen (JSON-Format).

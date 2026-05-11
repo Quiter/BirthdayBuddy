@@ -139,6 +139,7 @@ Alle signifikanten Änderungen am Projekt werden hier dokumentiert.
     - **NotificationRule Persistence:** Umstellung der Benachrichtigungs-Einstellungen von statischen Preferences auf eine Room-Datenbank (`NotificationRule`).
     - **Smart Worker Rescheduling:** Der `NotificationWorker` wurde auf ein selbst-rescheduling Modell umgestellt, das präzise den jeweils nächsten fälligen Zeitpunkt aus allen aktiven Regeln berechnet.
     - **UX Overhaul:** Neugestaltung des `NotificationSettingsScreen` mit einer Liste von Regeln, einem FAB zum Hinzufügen und einem zweistufigen Dialog (Tage-Slider & TimePicker).
+    - **Code Reorganization:** Modularisierung des Benachrichtigungs-Screens durch Auslagerung von `NotificationRuleItem` und `EditRuleDialog` zur Verbesserung der Wartbarkeit.
     - **Cleanup:** Entfernung veralteter Benachrichtigungs-Einstellungen aus dem `PreferenceRepository`, da diese nun vollständig durch das Datenbank-basierte Regelsystem ersetzt wurden.
 42. **UI Polish & Icons:**
     - **Icon Update:** Das Icon für "Labels verwalten" im `SettingsScreen` wurde von einem Zahnrad auf das Gmail-Style Label-Symbol umgestellt.
