@@ -4,6 +4,7 @@ import android.content.Context
 import androidx.hilt.work.HiltWorker
 import androidx.work.*
 import com.heckmannch.birthdaybuddy2.repository.ContactRepository
+import com.heckmannch.birthdaybuddy2.repository.NotificationRepository
 import com.heckmannch.birthdaybuddy2.repository.PreferenceRepository
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
@@ -19,62 +20,93 @@ class NotificationWorker @AssistedInject constructor(
     @Assisted private val context: Context,
     @Assisted workerParameters: WorkerParameters,
     private val contactRepository: ContactRepository,
-    private val preferenceRepository: PreferenceRepository
+    private val notificationRepository: NotificationRepository,
+    private val preferenceRepository: PreferenceRepository,
 ) : CoroutineWorker(context, workerParameters) {
 
     override suspend fun doWork(): Result {
         val isEnabled = preferenceRepository.notificationsEnabled.first()
-        
         if (!isEnabled) return Result.success()
 
-        val allContacts = contactRepository.allContacts.first()
-        
-        val today = LocalDate.now()
-        val todayBirthdays = allContacts.filter { 
-            (it.birthday.month == today.month) && (it.birthday.dayOfMonth == today.dayOfMonth) 
+        val rules = notificationRepository.getAllRulesImmediate()
+        if (rules.isEmpty()) return Result.success()
+
+        val now = LocalDateTime.now()
+        val currentLocalTime = now.toLocalTime().withSecond(0).withNano(0)
+
+        // Finde Regeln, die jetzt (oder in der letzten Minute) fällig sind
+        val currentRules = rules.filter { 
+            (it.hour == currentLocalTime.hour) && (it.minute == currentLocalTime.minute) 
         }
 
-        if (todayBirthdays.isNotEmpty()) {
-            NotificationHelper(context).showBirthdayNotification(todayBirthdays)
+        if (currentRules.isNotEmpty()) {
+            val allContacts = contactRepository.allContacts.first()
+            val helper = NotificationHelper(context)
+            val today = LocalDate.now()
+
+            currentRules.forEach { rule ->
+                val targetDate = today.plusDays(rule.daysBefore.toLong())
+                val birthdays = allContacts.filter { 
+                    (it.birthday.month == targetDate.month) && (it.birthday.dayOfMonth == targetDate.dayOfMonth) 
+                }
+                
+                if (birthdays.isNotEmpty()) {
+                    helper.showBirthdayNotification(birthdays, daysBefore = rule.daysBefore)
+                }
+            }
         }
+
+        // Plane den nächsten Lauf
+        scheduleNext(context, rules)
 
         return Result.success()
     }
 
     companion object {
-        private const val WORK_NAME = "DailyNotificationUpdate"
+        private const val WORK_NAME = "FlexibleNotificationUpdate"
 
-        fun enqueueDailyNotification(context: Context, hour: Int, minute: Int) {
-            val constraints = Constraints.Builder()
-                .setRequiresBatteryNotLow(requiresBatteryNotLow = true)
-                .build()
+        /**
+         * Plant den nächsten fälligen Zeitpunkt basierend auf allen Regeln.
+         */
+        fun scheduleNext(context: Context, rules: List<com.heckmannch.birthdaybuddy2.database.NotificationRule>) {
+            if (rules.isEmpty()) {
+                cancelNotification(context)
+                return
+            }
 
-            val request = PeriodicWorkRequestBuilder<NotificationWorker>(24, TimeUnit.HOURS)
-                .setInitialDelay(calculateDelay(hour, minute), TimeUnit.MILLISECONDS)
-                .setConstraints(constraints)
+            val now = LocalDateTime.now()
+            val uniqueTimes = rules.asSequence()
+                .map { LocalTime.of(it.hour, it.minute) }
+                .distinct()
+                .sorted()
+                .toList()
+            
+            // Finde die nächste Zeit heute oder die erste Zeit morgen
+            val nextTime = uniqueTimes.firstOrNull { it.isAfter(now.toLocalTime()) } 
+                ?: uniqueTimes.first()
+            
+            var targetDateTime = LocalDateTime.of(now.toLocalDate(), nextTime)
+            if (!targetDateTime.isAfter(now)) {
+                targetDateTime = targetDateTime.plusDays(1)
+            }
+
+            val delay = Duration.between(now, targetDateTime).toMillis()
+
+            val request = OneTimeWorkRequestBuilder<NotificationWorker>()
+                .setInitialDelay(delay, TimeUnit.MILLISECONDS)
+                .setConstraints(Constraints.Builder().setRequiresBatteryNotLow(requiresBatteryNotLow = true).build())
                 .addTag("birthday_notification")
                 .build()
 
-            WorkManager.getInstance(context).enqueueUniquePeriodicWork(
+            WorkManager.getInstance(context).enqueueUniqueWork(
                 WORK_NAME,
-                ExistingPeriodicWorkPolicy.UPDATE,
-                request,
+                ExistingWorkPolicy.REPLACE,
+                request
             )
         }
 
         fun cancelNotification(context: Context) {
             WorkManager.getInstance(context).cancelUniqueWork(WORK_NAME)
-        }
-
-        private fun calculateDelay(hour: Int, minute: Int): Long {
-            val now = LocalDateTime.now()
-            var target = LocalDateTime.of(now.toLocalDate(), LocalTime.of(hour, minute))
-            
-            if (now.isAfter(target)) {
-                target = target.plusDays(1)
-            }
-            
-            return Duration.between(now, target).toMillis()
         }
     }
 }

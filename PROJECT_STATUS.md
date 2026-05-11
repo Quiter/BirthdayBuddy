@@ -35,7 +35,8 @@ Die App befindet sich gerade in einer umfassenden Refactoring-Phase (V3), um die
 - **Data Layer Optimization:** Extraktion von System-Abfragen in spezialisierte DataSources zur Entlastung der Repositories.
 - **Backup System:** Implementierung von robustem Import/Export für Geschenkideen inkl. Fallback-Matching.
 - **UI Modernization:** Neugestaltung des Label-Managements mit Material 3 Cards und FilterChips; intelligente Filterung verwaister Labels für mehr Übersichtlichkeit.
-- **UX & Technical Polish:** Einführung einer Global Search Logik mit Keyword-Matching (Reihenfolge-unabhängig), verfeinerte visuelle Status-Indikatoren für Geburtstage und projektweite Bereinigung technischer Schulden (Code Analysis).
+- **Advanced Notifications:** Implementierung eines dynamischen Regelsystems für Benachrichtigungen (beliebige Tage vorher & Uhrzeiten) via WorkManager und Room.
+- **UX & Technical Polish:** Einführung einer Global Search Logik mit Keyword-Matching (Reihenfolge-unabhängig), verfeinerte visuelle Status-Indikatoren für Geburtstage, Integration der Extended Material Icons für präzisere Symbolik und projektweite Bereinigung technischer Schulden (Code Analysis).
 
 ## 🎯 Kommende Aufgaben (Backlog)
-- **Erweiterte Benachrichtigungen:** Einstellbare Erinnerungen (1 Tag vorher, am Tag selbst) via WorkManager.
+- **Leistungsoptimierung:** Weitere Reduzierung der Re-Compositions in der Hauptliste bei großen Datenmengen.

@@ -29,7 +29,7 @@ class SystemContactDataSource @Inject constructor(
         val projection = arrayOf(
             ContactsContract.Groups._ID,
             ContactsContract.Groups.TITLE,
-            ContactsContract.Groups.SYSTEM_ID
+            ContactsContract.Groups.SYSTEM_ID,
         )
 
         context.contentResolver.query(

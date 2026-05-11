@@ -17,7 +17,7 @@ class NotificationHelper(private val context: Context) {
         const val CHANNEL_NAME = "Geburtstags-Erinnerungen"
     }
 
-    fun showBirthdayNotification(contacts: List<Contact>) {
+    fun showBirthdayNotification(contacts: List<Contact>, daysBefore: Int) {
         val notificationManager =
             context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
 
@@ -31,21 +31,25 @@ class NotificationHelper(private val context: Context) {
         val intent = Intent(context, MainActivity::class.java).apply {
             flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
         }
+        
+        // Eindeutige ID für verschiedene Abstände, damit sie sich nicht überschreiben
+        val pendingIntentId = 200 + daysBefore
         val pendingIntent = PendingIntent.getActivity(
-            context, 0, intent,
+            context, pendingIntentId, intent,
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
 
-        val title = if (contacts.size == 1) {
-            "Heute hat jemand Geburtstag!"
-        } else {
-            "Heute haben ${contacts.size} Personen Geburtstag!"
+        val title = when (daysBefore) {
+            0 -> if (contacts.size == 1) "Heute hat jemand Geburtstag!" else "Heute haben ${contacts.size} Personen Geburtstag!"
+            1 -> if (contacts.size == 1) "Morgen hat jemand Geburtstag!" else "Morgen haben ${contacts.size} Personen Geburtstag!"
+            7 -> if (contacts.size == 1) "In einer Woche hat jemand Geburtstag!" else "In einer Woche haben ${contacts.size} Personen Geburtstag!"
+            else -> if (contacts.size == 1) "In $daysBefore Tagen hat jemand Geburtstag!" else "In $daysBefore Tagen haben ${contacts.size} Personen Geburtstag!"
         }
 
         val contentText = contacts.joinToString(", ") { it.fullName }
 
         val notification = NotificationCompat.Builder(context, CHANNEL_ID)
-            .setSmallIcon(R.drawable.ic_launcher_foreground) 
+            .setSmallIcon(R.drawable.ic_launcher_foreground)
             .setContentTitle(title)
             .setContentText(contentText)
             .setPriority(NotificationCompat.PRIORITY_DEFAULT)
@@ -53,6 +57,6 @@ class NotificationHelper(private val context: Context) {
             .setAutoCancel(true)
             .build()
 
-        notificationManager.notify(1, notification)
+        notificationManager.notify(pendingIntentId, notification)
     }
 }

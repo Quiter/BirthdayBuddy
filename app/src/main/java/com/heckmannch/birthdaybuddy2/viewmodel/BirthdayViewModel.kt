@@ -7,6 +7,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.heckmannch.birthdaybuddy2.database.LabelConfig
 import com.heckmannch.birthdaybuddy2.repository.ContactRepository
+import com.heckmannch.birthdaybuddy2.repository.NotificationRepository
 import com.heckmannch.birthdaybuddy2.repository.PreferenceRepository
 import com.heckmannch.birthdaybuddy2.repository.TimeRepository
 import com.heckmannch.birthdaybuddy2.ui.screens.settings.notifications.NotificationWorker
@@ -28,6 +29,7 @@ class BirthdayViewModel @Inject constructor(
     @param:ApplicationContext private val context: Context,
     private val contactRepository: ContactRepository,
     private val preferenceRepository: PreferenceRepository,
+    private val notificationRepository: NotificationRepository,
     timeRepository: TimeRepository,
 ) : ViewModel() {
 
@@ -36,20 +38,17 @@ class BirthdayViewModel @Inject constructor(
     val notificationsEnabled: StateFlow<Boolean> = preferenceRepository.notificationsEnabled
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), initialValue = false)
 
-    val notificationHour: StateFlow<Int> = preferenceRepository.notificationHour
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 9)
-
-    val notificationMinute: StateFlow<Int> = preferenceRepository.notificationMinute
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 0)
+    val notificationRules: StateFlow<List<com.heckmannch.birthdaybuddy2.database.NotificationRule>> = notificationRepository.allRules
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
     init {
-        // Automatische Worker-Synchronisation bei Einstellungsänderungen
+        // Automatische Worker-Synchronisation bei Einstellungsänderungen oder Regeländerungen
         viewModelScope.launch {
-            combine(notificationsEnabled, notificationHour, notificationMinute) { enabled, hour, minute ->
-                Triple(enabled, hour, minute)
-            }.collect { (enabled, hour, minute) ->
-                if (enabled) {
-                    NotificationWorker.enqueueDailyNotification(context, hour, minute)
+            combine(notificationsEnabled, notificationRules) { enabled, rules ->
+                enabled to rules
+            }.collect { (enabled, rules) ->
+                if (enabled && rules.isNotEmpty()) {
+                    NotificationWorker.scheduleNext(context, rules)
                 } else {
                     NotificationWorker.cancelNotification(context)
                 }
@@ -61,8 +60,16 @@ class BirthdayViewModel @Inject constructor(
         preferenceRepository.setNotificationsEnabled(enabled)
     }
 
-    fun setNotificationTime(hour: Int, minute: Int) = viewModelScope.launch {
-        preferenceRepository.setNotificationTime(hour, minute)
+    fun addNotificationRule(daysBefore: Int, hour: Int, minute: Int) = viewModelScope.launch {
+        notificationRepository.insertRule(com.heckmannch.birthdaybuddy2.database.NotificationRule(daysBefore = daysBefore, hour = hour, minute = minute))
+    }
+
+    fun updateNotificationRule(rule: com.heckmannch.birthdaybuddy2.database.NotificationRule) = viewModelScope.launch {
+        notificationRepository.updateRule(rule)
+    }
+
+    fun deleteNotificationRule(rule: com.heckmannch.birthdaybuddy2.database.NotificationRule) = viewModelScope.launch {
+        notificationRepository.deleteRule(rule)
     }
 
     val swipeHintShown: StateFlow<Boolean> = preferenceRepository.swipeHintShown
@@ -83,7 +90,7 @@ class BirthdayViewModel @Inject constructor(
     private val _scrollToTopEvent = MutableSharedFlow<Unit>(replay = 0)
     val scrollToTopEvent: SharedFlow<Unit> = _scrollToTopEvent.asSharedFlow()
 
-    private val _isFastScrolling = MutableStateFlow(false)
+    private val _isFastScrolling = MutableStateFlow(value = false)
     val isFastScrolling: StateFlow<Boolean> = _isFastScrolling.asStateFlow()
 
     fun setFastScrolling(isScrolling: Boolean) { _isFastScrolling.value = isScrolling }
@@ -157,7 +164,7 @@ class BirthdayViewModel @Inject constructor(
 
     val labelManagementList: StateFlow<List<LabelManagementModel>> = combine(
         contactRepository.labelConfigs,
-        contactRepository.allContacts
+        contactRepository.allContacts,
     ) { configs, contacts ->
         val labelsInUse = contacts.asSequence().flatMap { it.labels }.toSet()
         configs.asSequence()
@@ -167,7 +174,7 @@ class BirthdayViewModel @Inject constructor(
                     config.name,
                     config.isHiddenFromFilter,
                     config.isIgnored,
-                    config.isSystem
+                    config.isSystem,
                 )
             }.sortedBy { it.name }.toList()
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())

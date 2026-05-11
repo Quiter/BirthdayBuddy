@@ -4,6 +4,7 @@ import android.content.Context
 import com.heckmannch.birthdaybuddy2.database.AppDatabase
 import com.heckmannch.birthdaybuddy2.database.ContactDao
 import com.heckmannch.birthdaybuddy2.database.LabelConfigDao
+import com.heckmannch.birthdaybuddy2.database.NotificationRuleDao
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -29,5 +30,10 @@ object AppModule {
     @Provides
     fun provideLabelConfigDao(database: AppDatabase): LabelConfigDao {
         return database.labelConfigDao()
+    }
+
+    @Provides
+    fun provideNotificationRuleDao(database: AppDatabase): NotificationRuleDao {
+        return database.notificationRuleDao()
     }
 }

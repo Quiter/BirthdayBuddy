@@ -11,7 +11,7 @@ import javax.inject.Singleton
 
 @Singleton
 class GiftIdeaBackupManager @Inject constructor(
-    private val contactDao: ContactDao
+    private val contactDao: ContactDao,
 ) {
     /**
      * Exportiert alle Kontakte mit Geschenkideen als JSON-String.

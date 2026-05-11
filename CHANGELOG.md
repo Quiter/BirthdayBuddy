@@ -134,3 +134,12 @@ Alle signifikanten Änderungen am Projekt werden hier dokumentiert.
 40. **Backup Logic Decoupling:**
     - **GiftIdeaBackupManager:** Auslagerung der JSON-Import/Export-Logik für Geschenkideen in einen spezialisierten Manager.
     - **Repository Slimming:** Das `ContactRepository` ist nun frei von Low-Level JSON-Parsing und konzentriert sich rein auf die Daten-Orchestrierung.
+41. **Advanced Notifications:**
+    - **Flexible Notification Rules:** Einführung eines dynamischen Benachrichtigungssystems. Nutzer können nun beliebig viele Erinnerungszeitpunkte definieren (z. B. am Tag selbst, 1 Tag vorher, 1 Woche vorher).
+    - **NotificationRule Persistence:** Umstellung der Benachrichtigungs-Einstellungen von statischen Preferences auf eine Room-Datenbank (`NotificationRule`).
+    - **Smart Worker Rescheduling:** Der `NotificationWorker` wurde auf ein selbst-rescheduling Modell umgestellt, das präzise den jeweils nächsten fälligen Zeitpunkt aus allen aktiven Regeln berechnet.
+    - **UX Overhaul:** Neugestaltung des `NotificationSettingsScreen` mit einer Liste von Regeln, einem FAB zum Hinzufügen und einem zweistufigen Dialog (Tage-Slider & TimePicker).
+    - **Cleanup:** Entfernung veralteter Benachrichtigungs-Einstellungen aus dem `PreferenceRepository`, da diese nun vollständig durch das Datenbank-basierte Regelsystem ersetzt wurden.
+42. **UI Polish & Icons:**
+    - **Icon Update:** Das Icon für "Labels verwalten" im `SettingsScreen` wurde von einem Zahnrad auf das Gmail-Style Label-Symbol umgestellt.
+    - **Extended Icons:** Integration der `material-icons-extended` Bibliothek zur Nutzung hochwertigerer Icons.

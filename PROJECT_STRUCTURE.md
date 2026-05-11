@@ -16,12 +16,15 @@
 - `ContactDao.kt`: Data Access Object für Kontakte (CRUD-Operationen & Sync-Logik).
 - `LabelConfig.kt`: Entity für Label-Konfigurationen (Sichtbarkeit/Ignorieren).
 - `LabelConfigDao.kt`: DAO für Label-Einstellungen.
+- `NotificationRule.kt`: Entity für flexible Benachrichtigungsregeln (Abstand & Uhrzeit).
+- `NotificationRuleDao.kt`: DAO für Benachrichtigungsregeln.
 - `Converters.kt`: TypeConverters für `LocalDate` und Listen-Encoding.
 
 ## 📁 Repository (`repository`)
 - `ContactRepository.kt`: Zentrale Instanz für Kontakt-Daten (Room + System-Provider).
 - `SystemContactDataSource.kt`: Kapselt den Zugriff auf den Android ContentResolver (Kontakte, Gruppen).
 - `GiftIdeaBackupManager.kt`: Handhabt den Im- und Export von Geschenkideen (JSON-Logik).
+- `NotificationRepository.kt`: Verwaltung der flexiblen Benachrichtigungsregeln.
 - `PreferenceRepository.kt`: Verwaltung von App-Einstellungen via DataStore.
 - `TimeRepository.kt`: Reaktive Zeitquelle für automatische UI-Updates um Mitternacht.
 

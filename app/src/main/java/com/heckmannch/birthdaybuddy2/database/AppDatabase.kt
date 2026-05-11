@@ -6,11 +6,12 @@ import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
 
-@Database(entities = [Contact::class, LabelConfig::class], version = 6, exportSchema = false)
+@Database(entities = [Contact::class, LabelConfig::class, NotificationRule::class], version = 7, exportSchema = false)
 @TypeConverters(Converters::class)
 abstract class AppDatabase : RoomDatabase() {
     abstract fun contactDao(): ContactDao
     abstract fun labelConfigDao(): LabelConfigDao
+    abstract fun notificationRuleDao(): NotificationRuleDao
 
     companion object {
         @Volatile

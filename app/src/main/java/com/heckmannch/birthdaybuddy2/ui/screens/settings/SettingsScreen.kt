@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.Label
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -92,10 +93,10 @@ private fun SettingsContent(
             ) {
                 item {
                     ListItem(
-                        headlineContent = { Text("Kontakte synchronisieren") },
-                        supportingContent = { Text("Geburtstage aus deinen System-Kontakten laden") },
-                        leadingContent = { Icon(Icons.Default.Refresh, contentDescription = null) },
-                        modifier = Modifier.clickable { onSyncClick() }
+                        headlineContent = { Text("Benachrichtigungen") },
+                        supportingContent = { Text("Erinnerungen und Uhrzeit verwalten") },
+                        leadingContent = { Icon(Icons.Default.Notifications, contentDescription = null) },
+                        modifier = Modifier.clickable { onNavigateToNotifications() }
                     )
                 }
 
@@ -103,17 +104,17 @@ private fun SettingsContent(
                     ListItem(
                         headlineContent = { Text("Labels verwalten") },
                         supportingContent = { Text("Filter anpassen und Kontakte nach Gruppen ausblenden") },
-                        leadingContent = { Icon(Icons.Default.Settings, contentDescription = null) },
+                        leadingContent = { Icon(Icons.AutoMirrored.Filled.Label, contentDescription = null) },
                         modifier = Modifier.clickable { onNavigateToLabels() }
                     )
                 }
 
                 item {
                     ListItem(
-                        headlineContent = { Text("Benachrichtigungen") },
-                        supportingContent = { Text("Erinnerungen und Uhrzeit verwalten") },
-                        leadingContent = { Icon(Icons.Default.Notifications, contentDescription = null) },
-                        modifier = Modifier.clickable { onNavigateToNotifications() }
+                        headlineContent = { Text("Kontakte synchronisieren") },
+                        supportingContent = { Text("Geburtstage aus deinen System-Kontakten laden") },
+                        leadingContent = { Icon(Icons.Default.Refresh, contentDescription = null) },
+                        modifier = Modifier.clickable { onSyncClick() }
                     )
                 }
 
