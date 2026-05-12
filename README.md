@@ -31,7 +31,7 @@ BirthdayBuddy 2 is a modern, reliable, and high-performance birthday management 
 ## 🛠 Tech Stack
 
 *   **UI:** 100% Jetpack Compose (BOM 2026.04) with Material 3.
-*   **Persistence:** Room v6 (with Batch-Insert optimizations) & Jetpack DataStore.
+*   **Persistence:** Room v6 (with Batch-Insert optimizations).
 *   **Background:** WorkManager for midnight widget refreshes and daily notification checks.
 *   **DI:** Hilt for clean dependency management (ViewModels, Repositories, DAOs, DataSources).
 *   **Architecture:** Clean Repository Pattern with specialized DataSources and MVI-style UI state management.
