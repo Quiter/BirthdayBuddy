@@ -48,16 +48,21 @@ class NotificationWorker @AssistedInject constructor(
                     (it.birthday.month == targetDate.month) && (it.birthday.dayOfMonth == targetDate.dayOfMonth) 
                 }
                 
-                if (birthdays.isNotEmpty()) {
+                // Für jeden Kontakt eine eigene Benachrichtigung erstellen
+                birthdays.forEach { contact ->
                     // In DB speichern für Persistenz
                     val pending = com.heckmannch.birthdaybuddy2.database.PendingNotification(
-                        contactLookupKeys = birthdays.map { it.lookupKey },
+                        contactLookupKeys = listOf(contact.lookupKey),
                         daysBefore = rule.daysBefore,
                         year = today.year
                     )
                     val pendingId = notificationRepository.insertPendingNotification(pending).toInt()
                     
-                    notificationHelper.showBirthdayNotification(birthdays, daysBefore = rule.daysBefore, pendingId = pendingId)
+                    notificationHelper.showBirthdayNotification(
+                        contacts = listOf(contact), 
+                        daysBefore = rule.daysBefore, 
+                        pendingId = pendingId
+                    )
                 }
             }
         }

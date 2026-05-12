@@ -35,6 +35,7 @@ fun NotificationSettingsScreen(
 ) {
     val context = LocalContext.current
     val notificationsEnabled by viewModel.notificationsEnabled.collectAsStateWithLifecycle()
+    val persistentNotifications by viewModel.persistentNotifications.collectAsStateWithLifecycle()
     val rules by viewModel.notificationRules.collectAsStateWithLifecycle()
 
     val notificationPermissionLauncher = rememberLauncherForActivityResult(
@@ -47,6 +48,7 @@ fun NotificationSettingsScreen(
 
     NotificationSettingsContent(
         notificationsEnabled = notificationsEnabled,
+        persistentNotifications = persistentNotifications,
         rules = rules,
         onToggleNotifications = { enabled ->
             if (enabled) {
@@ -67,6 +69,7 @@ fun NotificationSettingsScreen(
                 viewModel.setNotificationsEnabled(enabled = false)
             }
         },
+        onTogglePersistent = { viewModel.setPersistentNotifications(it) },
         onAddRule = { days, hour, minute ->
             viewModel.addNotificationRule(days, hour, minute)
         },
@@ -84,8 +87,10 @@ fun NotificationSettingsScreen(
 @Composable
 private fun NotificationSettingsContent(
     notificationsEnabled: Boolean,
+    persistentNotifications: Boolean,
     rules: List<NotificationRule>,
     onToggleNotifications: (Boolean) -> Unit,
+    onTogglePersistent: (Boolean) -> Unit,
     onAddRule: (Int, Int, Int) -> Unit,
     onUpdateRule: (NotificationRule) -> Unit,
     onDeleteRule: (NotificationRule) -> Unit,
@@ -135,6 +140,19 @@ private fun NotificationSettingsContent(
             }
 
             if (notificationsEnabled) {
+                item {
+                    ListItem(
+                        headlineContent = { Text(stringResource(R.string.notifications_persistent_header)) },
+                        supportingContent = { Text(stringResource(R.string.notifications_persistent_desc)) },
+                        trailingContent = {
+                            Switch(
+                                checked = persistentNotifications,
+                                onCheckedChange = onTogglePersistent
+                            )
+                        }
+                    )
+                }
+
                 if (rules.isEmpty()) {
                     item {
                         Box(
@@ -199,11 +217,13 @@ private fun NotificationSettingsPreview() {
     BirthdayBuddy2Theme {
         NotificationSettingsContent(
             notificationsEnabled = true,
+            persistentNotifications = true,
             rules = listOf(
                 NotificationRule(1, 0, 9, 0),
                 NotificationRule(2, 1, 18, 0),
             ),
             onToggleNotifications = {},
+            onTogglePersistent = {},
             onAddRule = { _, _, _ -> },
             onUpdateRule = { _ -> },
             onDeleteRule = { _ -> },

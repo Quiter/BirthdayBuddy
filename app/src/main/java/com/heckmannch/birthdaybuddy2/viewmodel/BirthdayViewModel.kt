@@ -37,6 +37,10 @@ class BirthdayViewModel @Inject constructor(
         .map { it.notificationsEnabled }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), initialValue = false)
 
+    val persistentNotifications: StateFlow<Boolean> = notificationRepository.settings
+        .map { it.persistentNotifications }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), initialValue = true)
+
     val notificationRules: StateFlow<List<com.heckmannch.birthdaybuddy2.database.NotificationRule>> = notificationRepository.allRules
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
@@ -66,6 +70,10 @@ class BirthdayViewModel @Inject constructor(
             addNotificationRule(daysBefore = 0, hour = 9, minute = 0)
         }
         notificationRepository.updateSettings(notificationsEnabled = enabled)
+    }
+
+    fun setPersistentNotifications(persistent: Boolean) = viewModelScope.launch {
+        notificationRepository.updateSettings(persistentNotifications = persistent)
     }
 
     fun addNotificationRule(daysBefore: Int, hour: Int, minute: Int) = viewModelScope.launch {

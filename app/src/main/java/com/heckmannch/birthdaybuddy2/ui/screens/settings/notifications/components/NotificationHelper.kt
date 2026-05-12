@@ -9,13 +9,17 @@ import androidx.core.app.NotificationCompat
 import com.heckmannch.birthdaybuddy2.MainActivity
 import com.heckmannch.birthdaybuddy2.R
 import com.heckmannch.birthdaybuddy2.database.Contact
+import com.heckmannch.birthdaybuddy2.repository.NotificationRepository
 import dagger.hilt.android.qualifiers.ApplicationContext
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.runBlocking
 import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
 class NotificationHelper @Inject constructor(
-    @param:ApplicationContext private val context: Context
+    @param:ApplicationContext private val context: Context,
+    private val notificationRepository: NotificationRepository
 ) {
 
     companion object {
@@ -23,6 +27,9 @@ class NotificationHelper @Inject constructor(
     }
 
     fun showBirthdayNotification(contacts: List<Contact>, daysBefore: Int, pendingId: Int = -1) {
+        val settings = runBlocking { notificationRepository.settings.first() }
+        val isPersistent = settings.persistentNotifications
+
         val notificationManager =
             context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
 
@@ -33,12 +40,14 @@ class NotificationHelper @Inject constructor(
         )
         notificationManager.createNotificationChannel(channel)
 
-        // Haupt-Intent: App öffnen
         val intent = Intent(context, MainActivity::class.java).apply {
             flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
         }
         
-        val notificationId = 200 + daysBefore
+        // Wir nutzen die Datenbank-ID (pendingId) als eindeutige System-Notification-ID
+        // Falls keine pendingId da ist (Snooze-Fallback), nutzen wir den Standard-Algorithmus
+        val notificationId = if (pendingId != -1) pendingId else (200 + daysBefore)
+
         val pendingIntent = PendingIntent.getActivity(
             context, notificationId, intent,
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
@@ -81,30 +90,28 @@ class NotificationHelper @Inject constructor(
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
 
-        val title = when (daysBefore) {
-            0 -> if (contacts.size == 1) {
-                context.getString(R.string.notif_title_today_singular)
-            } else {
-                context.getString(R.string.notif_title_today_plural, contacts.size)
+        val title = if (contacts.size == 1) {
+            val name = contacts.first().fullName
+            when (daysBefore) {
+                0 -> context.getString(R.string.notif_title_today_named, name)
+                1 -> context.getString(R.string.notif_title_tomorrow_named, name)
+                7 -> context.getString(R.string.notif_title_week_named, name)
+                else -> context.resources.getQuantityString(R.plurals.notif_title_days_named, daysBefore, daysBefore, name)
             }
-            1 -> if (contacts.size == 1) {
-                context.getString(R.string.notif_title_tomorrow_singular)
-            } else {
-                context.getString(R.string.notif_title_tomorrow_plural, contacts.size)
-            }
-            7 -> if (contacts.size == 1) {
-                context.getString(R.string.notif_title_week_singular)
-            } else {
-                context.getString(R.string.notif_title_week_plural, contacts.size)
-            }
-            else -> if (contacts.size == 1) {
-                context.resources.getQuantityString(R.plurals.notif_title_days_singular, daysBefore, daysBefore)
-            } else {
-                context.resources.getQuantityString(R.plurals.notif_title_days_plural, daysBefore, daysBefore, contacts.size)
+        } else {
+            when (daysBefore) {
+                0 -> context.getString(R.string.notif_title_today_plural, contacts.size)
+                1 -> context.getString(R.string.notif_title_tomorrow_plural, contacts.size)
+                7 -> context.getString(R.string.notif_title_week_plural, contacts.size)
+                else -> context.resources.getQuantityString(R.plurals.notif_title_days_plural, daysBefore, daysBefore, contacts.size)
             }
         }
 
-        val contentText = contacts.joinToString(", ") { it.fullName }
+        val contentText = if (contacts.size == 1) {
+            context.getString(R.string.notif_desc_named)
+        } else {
+            contacts.joinToString(", ") { it.fullName }
+        }
 
         val notification = NotificationCompat.Builder(context, CHANNEL_ID)
             .setSmallIcon(R.drawable.ic_launcher_foreground)
@@ -112,11 +119,15 @@ class NotificationHelper @Inject constructor(
             .setContentText(contentText)
             .setPriority(NotificationCompat.PRIORITY_HIGH)
             .setContentIntent(pendingIntent)
-            .setOngoing(true) // Persistent!
-            .setDeleteIntent(deletePendingIntent)
-            .addAction(0, context.getString(R.string.notif_action_done), donePendingIntent)
+            .setOngoing(isPersistent) // Bedingt persistent!
+            .apply {
+                if (isPersistent) {
+                    setDeleteIntent(deletePendingIntent)
+                    addAction(0, context.getString(R.string.notif_action_done), donePendingIntent)
+                }
+            }
             .addAction(0, context.getString(R.string.notif_action_snooze), snoozePendingIntent)
-            .setAutoCancel(false)
+            .setAutoCancel(!isPersistent)
             .build()
 
         notificationManager.notify(notificationId, notification)

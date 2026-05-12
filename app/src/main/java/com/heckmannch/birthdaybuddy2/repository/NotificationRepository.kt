@@ -24,6 +24,7 @@ class NotificationRepository @Inject constructor(
 
     suspend fun updateSettings(
         notificationsEnabled: Boolean? = null,
+        persistentNotifications: Boolean? = null,
         swipeHintShown: Boolean? = null,
         lastSyncTimestamp: Long? = null
     ) {
@@ -31,6 +32,7 @@ class NotificationRepository @Inject constructor(
         appSettingsDao.upsertSettings(
             current.copy(
                 notificationsEnabled = notificationsEnabled ?: current.notificationsEnabled,
+                persistentNotifications = persistentNotifications ?: current.persistentNotifications,
                 swipeHintShown = swipeHintShown ?: current.swipeHintShown,
                 lastSyncTimestamp = lastSyncTimestamp ?: current.lastSyncTimestamp
             )
