@@ -200,9 +200,14 @@ Alle signifikanten Änderungen am Projekt werden hier dokumentiert.
     - **Database Reset:** Zurücksetzen der Datenbank auf Version 1 und vollständige Entfernung der Legacy-Migrationslogik (v1 -> v13). Dies sorgt für eine saubere, performante Basis ohne technischen Ballast.
 55. **Refactoring & Clean Code (Release Prep):**
     - **HomeUiState:** Bündelung des UI-States im HomeScreen zur Reduzierung von Prop-Drilling.
+    - **ContactUiModel:** Migration auf vollständig immutable Modelle zur Optimierung der Re-Composition.
     - **ContactMapper:** Auslagerung der UI-Transformationslogik aus dem ViewModel zur Steigerung der Übersichtlichkeit.
     - **GiftIdea:** Modularisierung des Geschenkideen-Modells in eine eigenständige Datei.
     - **NotificationHelper:** Umstellung auf `suspend` Funktionen zur Vermeidung von `runBlocking`.
     - **HomeScreen:** Drastische Reduzierung der Parameteranzahl in `HomeContent` (von 19 auf 13).
+56. **UI & Stability Polish:**
+    - **FastScrollbar Fix:** Korrektur der Ausrichtung (rechtsbündig) und Wiederherstellung der dynamischen Höhenberechnung (`fillMaxHeight`) nach dem Refactoring.
+    - **Warning Cleanup:** Beseitigung von "Unchecked Cast" Warnungen im ViewModel durch gezielten Einsatz von `@Suppress` bei komplexen Flow-Kombinationen.
+    - **Architecture Consistency:** Sicherstellung, dass alle UI-Komponenten den zentralen `HomeUiState` konsistent nutzen.
 
 
