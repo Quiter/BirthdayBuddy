@@ -26,7 +26,7 @@ import com.heckmannch.birthdaybuddy2.ui.screens.settings.labels.LabelSettingsScr
 import com.heckmannch.birthdaybuddy2.ui.screens.settings.notifications.NotificationSettingsScreen
 import com.heckmannch.birthdaybuddy2.ui.screens.settings.backup.BackupScreen
 import com.heckmannch.birthdaybuddy2.ui.screens.settings.about.AboutScreen
-import com.heckmannch.birthdaybuddy2.ui.theme.BirthdayBuddy2Theme
+import com.heckmannch.birthdaybuddy2.ui.theme.BirthdayBuddyTheme
 import com.heckmannch.birthdaybuddy2.viewmodel.BirthdayViewModel
 import com.heckmannch.birthdaybuddy2.widget.BirthdayWidgetWorker
 
@@ -55,7 +55,7 @@ class MainActivity : ComponentActivity() {
         BirthdayWidgetWorker.enqueueNextUpdate(this)
 
         setContent {
-            BirthdayBuddy2Theme {
+            BirthdayBuddyTheme {
                 val viewModel: BirthdayViewModel = hiltViewModel()
                 val navController = rememberNavController()
 

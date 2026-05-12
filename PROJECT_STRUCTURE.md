@@ -1,4 +1,4 @@
-# Project Structure: BirthdayBuddy 2
+# Project Structure: BirthdayBuddy
 
 ## 📁 Root
 - `MainActivity.kt`: Einstiegspunkt der App. Regelt Navigation (NavHost) und Intent-Handling (z.B. vom Widget).

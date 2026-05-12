@@ -30,7 +30,7 @@ import com.heckmannch.birthdaybuddy2.ui.screens.home.components.BirthdayList
 import com.heckmannch.birthdaybuddy2.ui.screens.home.components.FastScrollbar
 import com.heckmannch.birthdaybuddy2.ui.screens.home.components.HomeFAB
 import com.heckmannch.birthdaybuddy2.ui.screens.home.components.HomeTopBar
-import com.heckmannch.birthdaybuddy2.ui.theme.BirthdayBuddy2Theme
+import com.heckmannch.birthdaybuddy2.ui.theme.BirthdayBuddyTheme
 import com.heckmannch.birthdaybuddy2.viewmodel.BirthdayViewModel
 import com.heckmannch.birthdaybuddy2.viewmodel.ContactUiModel
 import kotlinx.coroutines.delay
@@ -307,7 +307,7 @@ private fun HomeContent(
 @Preview(showBackground = true)
 @Composable
 private fun HomePreview() {
-    BirthdayBuddy2Theme {
+    BirthdayBuddyTheme {
         HomeContent(
             searchQuery = "",
             animatedPlaceholder = "Kontakt suchen",

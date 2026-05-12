@@ -1,4 +1,4 @@
-# Project Status: BirthdayBuddy 2
+# Project Status: BirthdayBuddy
 
 > **TL;DR für neue Sessions:** Moderne M3 Geburtstags-App. Android-Kontakte sind die Single-Source-of-Truth. Migration auf `LOOKUP_KEY` & `localId` abgeschlossen. High-Performance Sync (Parallel/Batch), hybride Filter-Logik, präzises Widget-Update (Mitternacht). Architektur sauber & performant (Room v13, Compose BOM 2026.05). **Alle Einstellungen & Benachrichtigungsregeln sind in Room konsolidiert (kein DataStore mehr).**
 

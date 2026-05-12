@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">BirthdayBuddy2</string>
+    <string name="app_name">BirthdayBuddy</string>
 
     <!-- HomeScreen & General -->
     <string name="home_placeholder_app">BirthdayBuddy</string>

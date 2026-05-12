@@ -25,7 +25,7 @@ import com.heckmannch.birthdaybuddy2.R
 import com.heckmannch.birthdaybuddy2.database.NotificationRule
 import com.heckmannch.birthdaybuddy2.ui.screens.settings.notifications.components.EditRuleDialog
 import com.heckmannch.birthdaybuddy2.ui.screens.settings.notifications.components.NotificationRuleItem
-import com.heckmannch.birthdaybuddy2.ui.theme.BirthdayBuddy2Theme
+import com.heckmannch.birthdaybuddy2.ui.theme.BirthdayBuddyTheme
 import com.heckmannch.birthdaybuddy2.viewmodel.BirthdayViewModel
 
 @Composable
@@ -214,7 +214,7 @@ private fun NotificationSettingsContent(
 @Preview(showBackground = true)
 @Composable
 private fun NotificationSettingsPreview() {
-    BirthdayBuddy2Theme {
+    BirthdayBuddyTheme {
         NotificationSettingsContent(
             notificationsEnabled = true,
             persistentNotifications = true,

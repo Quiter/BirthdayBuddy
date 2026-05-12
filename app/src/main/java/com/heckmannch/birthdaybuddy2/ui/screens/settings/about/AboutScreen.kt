@@ -22,7 +22,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.heckmannch.birthdaybuddy2.R
-import com.heckmannch.birthdaybuddy2.ui.theme.BirthdayBuddy2Theme
+import com.heckmannch.birthdaybuddy2.ui.theme.BirthdayBuddyTheme
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -156,7 +156,7 @@ private fun AboutSection(title: String, content: String) {
 @Preview(showBackground = true)
 @Composable
 private fun AboutPreview() {
-    BirthdayBuddy2Theme {
+    BirthdayBuddyTheme {
         AboutScreen(onNavigateBack = {})
     }
 }

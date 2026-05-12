@@ -1,4 +1,4 @@
-# Changelog: BirthdayBuddy 2
+# Changelog: BirthdayBuddy
 
 Alle signifikanten Änderungen am Projekt werden hier dokumentiert.
 

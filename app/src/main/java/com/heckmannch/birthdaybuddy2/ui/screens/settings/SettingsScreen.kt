@@ -21,7 +21,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
-import com.heckmannch.birthdaybuddy2.ui.theme.BirthdayBuddy2Theme
+import com.heckmannch.birthdaybuddy2.ui.theme.BirthdayBuddyTheme
 import com.heckmannch.birthdaybuddy2.viewmodel.BirthdayViewModel
 
 @Composable
@@ -190,7 +190,7 @@ private fun SettingsFooter() {
 @Preview(showBackground = true)
 @Composable
 private fun SettingsPreview() {
-    BirthdayBuddy2Theme {
+    BirthdayBuddyTheme {
         SettingsContent(
             onSyncClick = {},
             onNavigateToLabels = {},

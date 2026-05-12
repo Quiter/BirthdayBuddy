@@ -18,7 +18,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.heckmannch.birthdaybuddy2.ui.theme.BirthdayBuddy2Theme
+import com.heckmannch.birthdaybuddy2.ui.theme.BirthdayBuddyTheme
 import com.heckmannch.birthdaybuddy2.viewmodel.BirthdayViewModel
 import com.heckmannch.birthdaybuddy2.viewmodel.LabelManagementModel
 
@@ -222,7 +222,7 @@ private fun LabelConfigCard(
 @Preview(showBackground = true)
 @Composable
 private fun LabelSettingsPreview() {
-    BirthdayBuddy2Theme {
+    BirthdayBuddyTheme {
         LabelSettingsContent(
             labels = listOf(
                 LabelManagementModel("Familie", isHiddenFromFilter = false, isIgnored = false, isSystem = true),
