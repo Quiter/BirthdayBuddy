@@ -44,6 +44,7 @@ Diese Punkte sind Kernentscheidungen und sollen nicht zur Optimierung oder Ände
 - **Settings Consolidation (Room-only):** Alle Einstellungen liegen in der `AppSettings` Room-Tabelle.
 - **Advanced Notifications:** Dynamisches Regelsystem für Benachrichtigungen via WorkManager und Room.
 - **Persistent Notifications:** Robustes Quittierungssystem für Erinnerungen.
+- **Code Quality & Refactoring:** Einführung von `HomeUiState` und `ContactMapper` zur Verbesserung der Wartbarkeit und Reduzierung von Boilerplate (Release-Ready).
 
 ## 🎯 Kommende Aufgaben (Backlog)
 - **Edge-Cases:** Verfeinerung des Verhaltens bei extrem vielen Kontakten (> 1000).

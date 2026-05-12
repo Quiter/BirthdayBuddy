@@ -198,5 +198,11 @@ Alle signifikanten Änderungen am Projekt werden hier dokumentiert.
     - **Package Rename:** Migration aller Dateien auf den neuen Package-Namespace `com.heckmannch.birthdaybuddy`.
     - **Application ID Swap:** Aktualisierung der `applicationId` in Gradle, was die App für Android zu einer neuen, unabhängigen Anwendung macht.
     - **Database Reset:** Zurücksetzen der Datenbank auf Version 1 und vollständige Entfernung der Legacy-Migrationslogik (v1 -> v13). Dies sorgt für eine saubere, performante Basis ohne technischen Ballast.
+55. **Refactoring & Clean Code (Release Prep):**
+    - **HomeUiState:** Bündelung des UI-States im HomeScreen zur Reduzierung von Prop-Drilling.
+    - **ContactMapper:** Auslagerung der UI-Transformationslogik aus dem ViewModel zur Steigerung der Übersichtlichkeit.
+    - **GiftIdea:** Modularisierung des Geschenkideen-Modells in eine eigenständige Datei.
+    - **NotificationHelper:** Umstellung auf `suspend` Funktionen zur Vermeidung von `runBlocking`.
+    - **HomeScreen:** Drastische Reduzierung der Parameteranzahl in `HomeContent` (von 19 auf 13).
 
 

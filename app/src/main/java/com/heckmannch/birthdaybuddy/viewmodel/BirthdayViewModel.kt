@@ -6,21 +6,17 @@ import androidx.glance.appwidget.updateAll
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.heckmannch.birthdaybuddy.database.LabelConfig
+import com.heckmannch.birthdaybuddy.database.NotificationRule
 import com.heckmannch.birthdaybuddy.repository.ContactRepository
 import com.heckmannch.birthdaybuddy.repository.NotificationRepository
 import com.heckmannch.birthdaybuddy.repository.TimeRepository
 import com.heckmannch.birthdaybuddy.ui.screens.settings.notifications.components.NotificationWorker
-import com.heckmannch.birthdaybuddy.util.toNextOccurrence
 import com.heckmannch.birthdaybuddy.widget.BirthdayWidget
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
-import java.time.LocalDate
-import java.time.format.DateTimeFormatter
-import java.time.format.FormatStyle
-import java.time.temporal.ChronoUnit
 import javax.inject.Inject
 
 @HiltViewModel
@@ -28,6 +24,7 @@ class BirthdayViewModel @Inject constructor(
     @param:ApplicationContext private val context: Context,
     private val contactRepository: ContactRepository,
     private val notificationRepository: NotificationRepository,
+    private val mapper: ContactMapper,
     timeRepository: TimeRepository,
 ) : ViewModel() {
 
@@ -41,7 +38,7 @@ class BirthdayViewModel @Inject constructor(
         .map { it.persistentNotifications }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), initialValue = true)
 
-    val notificationRules: StateFlow<List<com.heckmannch.birthdaybuddy.database.NotificationRule>> = notificationRepository.allRules
+    val notificationRules: StateFlow<List<NotificationRule>> = notificationRepository.allRules
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
     init {
@@ -52,8 +49,6 @@ class BirthdayViewModel @Inject constructor(
             }.collect { (enabled, rules) ->
                 if (enabled) {
                     if (rules.isEmpty()) {
-                        // Falls aktiv aber keine Regeln da (z.B. nach Datenbank-Update/Wipe)
-                        // Wir fügen eine Standard-Regel hinzu (Heute, 09:00 Uhr)
                         addNotificationRule(daysBefore = 0, hour = 9, minute = 0)
                     } else {
                         NotificationWorker.scheduleNext(context, rules)
@@ -77,14 +72,14 @@ class BirthdayViewModel @Inject constructor(
     }
 
     fun addNotificationRule(daysBefore: Int, hour: Int, minute: Int) = viewModelScope.launch {
-        notificationRepository.insertRule(com.heckmannch.birthdaybuddy.database.NotificationRule(daysBefore = daysBefore, hour = hour, minute = minute))
+        notificationRepository.insertRule(NotificationRule(daysBefore = daysBefore, hour = hour, minute = minute))
     }
 
-    fun updateNotificationRule(rule: com.heckmannch.birthdaybuddy.database.NotificationRule) = viewModelScope.launch {
+    fun updateNotificationRule(rule: NotificationRule) = viewModelScope.launch {
         notificationRepository.updateRule(rule)
     }
 
-    fun deleteNotificationRule(rule: com.heckmannch.birthdaybuddy.database.NotificationRule) = viewModelScope.launch {
+    fun deleteNotificationRule(rule: NotificationRule) = viewModelScope.launch {
         notificationRepository.deleteRule(rule)
     }
 
@@ -99,44 +94,35 @@ class BirthdayViewModel @Inject constructor(
     // --- Search & Filter State ---
 
     private val _searchQuery = MutableStateFlow("")
-    val searchQuery: StateFlow<String> = _searchQuery.asStateFlow()
-
     private val _selectedLabel = MutableStateFlow<String?>(null)
-    val selectedLabel: StateFlow<String?> = _selectedLabel.asStateFlow()
+    private val _isFastScrolling = MutableStateFlow(value = false)
+    private val _isResettingFilter = MutableStateFlow(value = false)
 
     private val _scrollToTopEvent = MutableSharedFlow<Unit>(replay = 0)
     val scrollToTopEvent: SharedFlow<Unit> = _scrollToTopEvent.asSharedFlow()
 
-    private val _isFastScrolling = MutableStateFlow(value = false)
-    val isFastScrolling: StateFlow<Boolean> = _isFastScrolling.asStateFlow()
-
     fun setFastScrolling(isScrolling: Boolean) { _isFastScrolling.value = isScrolling }
+    fun setIsResettingFilter(isResetting: Boolean) { _isResettingFilter.value = isResetting }
 
-    // --- Data Processing (Optimized) ---
-
-    private val dateFormatter = DateTimeFormatter.ofLocalizedDate(FormatStyle.LONG)
-    private val dayMonthFormatter = DateTimeFormatter.ofPattern("d. MMMM")
-    private val monthFormatter = DateTimeFormatter.ofPattern("MMMM")
+    // --- Data Processing ---
 
     /**
-     * Schritt 1: Basale Umwandlung der DB-Modelle in UI-Modelle (Reaktive Zeitquelle einbezogen).
-     * Wird nur ausgeführt, wenn sich die DB-Daten oder das Datum ändern.
+     * Basale Umwandlung der DB-Modelle in UI-Modelle.
      */
     private val allUiContacts: Flow<List<ContactUiModel>> = combine(
         contactRepository.allContacts,
         timeRepository.currentDate,
     ) { list, today ->
         list.asSequence()
-            .map { it.toUiModel(today) }
+            .map { mapper.toUiModel(it, today) }
             .sortedBy { it.daysUntilNext }
             .toList()
     }.flowOn(Dispatchers.Default)
 
     /**
-     * Schritt 2: Filtern der fertigen UI-Modelle basierend auf Suche und Labels.
-     * Extrem performant beim Tippen, da keine Datumsberechnungen mehr stattfinden.
+     * Filtern der fertigen UI-Modelle basierend auf Suche und Labels.
      */
-    val contacts: StateFlow<List<ContactUiModel>?> = combine(
+    private val filteredContacts: Flow<List<ContactUiModel>?> = combine(
         allUiContacts,
         _searchQuery,
         _selectedLabel,
@@ -159,9 +145,9 @@ class BirthdayViewModel @Inject constructor(
                 matchesQuery && matchesLabel
             }
             .toList()
-    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), null)
+    }
 
-    val availableLabels: StateFlow<List<String>> = combine(
+    val availableLabels: Flow<List<String>> = combine(
         contactRepository.allContacts,
         contactRepository.labelConfigs,
     ) { contacts, configs ->
@@ -177,7 +163,31 @@ class BirthdayViewModel @Inject constructor(
             }
             .sorted()
             .toList()
-    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+    }
+
+    /**
+     * Gebündelter UI-State für den Home-Bildschirm.
+     */
+    @Suppress("UNCHECKED_CAST")
+    val uiState: StateFlow<HomeUiState> = combine(
+        filteredContacts,
+        _searchQuery,
+        _selectedLabel,
+        _isFastScrolling,
+        _isResettingFilter,
+        availableLabels,
+        swipeHintShown,
+    ) { flows ->
+        HomeUiState(
+            contacts = flows[0] as List<ContactUiModel>?,
+            searchQuery = flows[1] as String,
+            selectedLabel = flows[2] as String?,
+            isFastScrolling = flows[3] as Boolean,
+            isResettingFilter = flows[4] as Boolean,
+            availableLabels = flows[5] as List<String>,
+            swipeHintShown = flows[6] as Boolean
+        )
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), HomeUiState())
 
     val labelManagementList: StateFlow<List<LabelManagementModel>> = combine(
         contactRepository.labelConfigs,
@@ -200,7 +210,6 @@ class BirthdayViewModel @Inject constructor(
 
     fun onSearchQueryChange(newQuery: String) {
         val wasEmpty = _searchQuery.value.isEmpty()
-        // Falls eine neue Suche gestartet wird, aktives Label zurücksetzen (Global Search)
         if (newQuery.isNotEmpty() && wasEmpty) {
             _selectedLabel.value = null
         }
@@ -253,30 +262,5 @@ class BirthdayViewModel @Inject constructor(
         } catch (e: Exception) {
             Log.e("BirthdayViewModel", "Widget update failed", e)
         }
-    }
-
-    private fun com.heckmannch.birthdaybuddy.database.Contact.toUiModel(today: LocalDate): ContactUiModel {
-        val hasYear = birthday.year != 1900
-        val nextBirthday = birthday.toNextOccurrence(today)
-        val daysLeft = ChronoUnit.DAYS.between(today, nextBirthday)
-        val nextAgeValue = if (hasYear) nextBirthday.year - birthday.year else null
-
-        return ContactUiModel(
-            id = lookupKey, 
-            contactId = contactId,
-            lookupKey = lookupKey,
-            fullName = fullName,
-            dateText = if (!hasYear) birthday.format(dayMonthFormatter) else birthday.format(dateFormatter),
-            monthName = birthday.format(monthFormatter),
-            imageUri = imageUri,
-            initials = fullName.take(1).uppercase(),
-            nextAge = nextAgeValue,
-            nextAgeText = nextAgeValue?.let { "wird $it" },
-            daysUntilNext = daysLeft,
-            daysLeftText = if (daysLeft == 0L) "Heute!" else "In $daysLeft T.",
-            isToday = daysLeft == 0L,
-            labels = labels,
-            giftIdeas = GiftIdea.fromString(giftIdeas),
-        )
     }
 }

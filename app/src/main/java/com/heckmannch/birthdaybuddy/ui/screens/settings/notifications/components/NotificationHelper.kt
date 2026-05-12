@@ -12,7 +12,6 @@ import com.heckmannch.birthdaybuddy.database.Contact
 import com.heckmannch.birthdaybuddy.repository.NotificationRepository
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.runBlocking
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -26,8 +25,8 @@ class NotificationHelper @Inject constructor(
         const val CHANNEL_ID = "birthday_reminders_v2"
     }
 
-    fun showBirthdayNotification(contacts: List<Contact>, daysBefore: Int, pendingId: Int = -1) {
-        val settings = runBlocking { notificationRepository.settings.first() }
+    suspend fun showBirthdayNotification(contacts: List<Contact>, daysBefore: Int, pendingId: Int = -1) {
+        val settings = notificationRepository.settings.first()
         val isPersistent = settings.persistentNotifications
 
         val notificationManager =

@@ -64,7 +64,10 @@
 
 ## 📁 ViewModel (`viewmodel`)
 - `BirthdayViewModel.kt`: Zentrales ViewModel (Single Source of Truth). Regelt Sync, Filterung und Business-Logik.
-- `ContactUiModel.kt`: UI-Modelle für Kontakte, Labels und Geschenkideen.
+- `ContactUiModel.kt`: UI-Modelle für Kontakte und Labels.
+- `HomeUiState.kt`: Gebündelter UI-State für den Home-Bildschirm.
+- `GiftIdea.kt`: Modell für Geschenkideen inkl. DB-Mapping Logik.
+- `ContactMapper.kt`: Hilfsklasse zur Umwandlung von Domain- in UI-Modelle.
 
 ## 📁 Utilities (`util`)
 - `DateUtils.kt`: Robuste Extensions für Datumsberechnungen (Schaltjahr-Support).
