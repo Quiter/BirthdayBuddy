@@ -1,12 +1,12 @@
-# 🎂 BirthdayBuddy 2
+# 🎂 BirthdayBuddy
 
 > **"Because Google keeps losing your birthdays – so I built the solution that just works."**
 
-BirthdayBuddy 2 is a modern, reliable, and high-performance birthday management app for Android. While other apps rely on flaky calendar syncs or hidden assistant settings, BirthdayBuddy 2 treats your **Android System Contacts** as the single source of truth, enriching them with powerful features and a state-of-the-art Material 3 interface.
+BirthdayBuddy is a modern, reliable, and high-performance birthday management app for Android. While other apps rely on flaky calendar syncs or hidden assistant settings, BirthdayBuddy treats your **Android System Contacts** as the single source of truth, enriching them with powerful features and a state-of-the-art Material 3 interface.
 
 ---
 
-## 🚀 Why BirthdayBuddy 2?
+## 🚀 Why BirthdayBuddy?
 
 1.  **System-First:** No proprietary database for contacts. Your data stays where it belongs – in the Android Contacts Provider.
 2.  **Modern Architecture:** A complete rewrite (V3) from the ground up using the latest Android best practices (BOM 2026.04).
