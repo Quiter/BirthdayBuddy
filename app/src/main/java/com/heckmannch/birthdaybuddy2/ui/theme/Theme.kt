@@ -1,4 +1,4 @@
-package com.heckmannch.birthdaybuddy2.ui.theme
+package com.heckmannch.birthdaybuddy.ui.theme
 
 import android.os.Build
 import androidx.compose.foundation.isSystemInDarkTheme

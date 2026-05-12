@@ -1,17 +1,17 @@
-package com.heckmannch.birthdaybuddy2.viewmodel
+package com.heckmannch.birthdaybuddy.viewmodel
 
 import android.content.Context
 import android.util.Log
 import androidx.glance.appwidget.updateAll
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.heckmannch.birthdaybuddy2.database.LabelConfig
-import com.heckmannch.birthdaybuddy2.repository.ContactRepository
-import com.heckmannch.birthdaybuddy2.repository.NotificationRepository
-import com.heckmannch.birthdaybuddy2.repository.TimeRepository
-import com.heckmannch.birthdaybuddy2.ui.screens.settings.notifications.components.NotificationWorker
-import com.heckmannch.birthdaybuddy2.util.toNextOccurrence
-import com.heckmannch.birthdaybuddy2.widget.BirthdayWidget
+import com.heckmannch.birthdaybuddy.database.LabelConfig
+import com.heckmannch.birthdaybuddy.repository.ContactRepository
+import com.heckmannch.birthdaybuddy.repository.NotificationRepository
+import com.heckmannch.birthdaybuddy.repository.TimeRepository
+import com.heckmannch.birthdaybuddy.ui.screens.settings.notifications.components.NotificationWorker
+import com.heckmannch.birthdaybuddy.util.toNextOccurrence
+import com.heckmannch.birthdaybuddy.widget.BirthdayWidget
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
@@ -41,7 +41,7 @@ class BirthdayViewModel @Inject constructor(
         .map { it.persistentNotifications }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), initialValue = true)
 
-    val notificationRules: StateFlow<List<com.heckmannch.birthdaybuddy2.database.NotificationRule>> = notificationRepository.allRules
+    val notificationRules: StateFlow<List<com.heckmannch.birthdaybuddy.database.NotificationRule>> = notificationRepository.allRules
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
     init {
@@ -77,14 +77,14 @@ class BirthdayViewModel @Inject constructor(
     }
 
     fun addNotificationRule(daysBefore: Int, hour: Int, minute: Int) = viewModelScope.launch {
-        notificationRepository.insertRule(com.heckmannch.birthdaybuddy2.database.NotificationRule(daysBefore = daysBefore, hour = hour, minute = minute))
+        notificationRepository.insertRule(com.heckmannch.birthdaybuddy.database.NotificationRule(daysBefore = daysBefore, hour = hour, minute = minute))
     }
 
-    fun updateNotificationRule(rule: com.heckmannch.birthdaybuddy2.database.NotificationRule) = viewModelScope.launch {
+    fun updateNotificationRule(rule: com.heckmannch.birthdaybuddy.database.NotificationRule) = viewModelScope.launch {
         notificationRepository.updateRule(rule)
     }
 
-    fun deleteNotificationRule(rule: com.heckmannch.birthdaybuddy2.database.NotificationRule) = viewModelScope.launch {
+    fun deleteNotificationRule(rule: com.heckmannch.birthdaybuddy.database.NotificationRule) = viewModelScope.launch {
         notificationRepository.deleteRule(rule)
     }
 
@@ -255,7 +255,7 @@ class BirthdayViewModel @Inject constructor(
         }
     }
 
-    private fun com.heckmannch.birthdaybuddy2.database.Contact.toUiModel(today: LocalDate): ContactUiModel {
+    private fun com.heckmannch.birthdaybuddy.database.Contact.toUiModel(today: LocalDate): ContactUiModel {
         val hasYear = birthday.year != 1900
         val nextBirthday = birthday.toNextOccurrence(today)
         val daysLeft = ChronoUnit.DAYS.between(today, nextBirthday)

@@ -1,4 +1,4 @@
-package com.heckmannch.birthdaybuddy2.widget
+package com.heckmannch.birthdaybuddy.widget
 
 import androidx.glance.appwidget.GlanceAppWidget
 import androidx.glance.appwidget.GlanceAppWidgetReceiver

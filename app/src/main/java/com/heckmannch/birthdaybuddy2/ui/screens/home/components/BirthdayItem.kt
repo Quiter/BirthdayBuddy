@@ -1,4 +1,4 @@
-package com.heckmannch.birthdaybuddy2.ui.screens.home.components
+package com.heckmannch.birthdaybuddy.ui.screens.home.components
 
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.BorderStroke
@@ -28,12 +28,12 @@ import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
-import com.heckmannch.birthdaybuddy2.R
-import com.heckmannch.birthdaybuddy2.ui.theme.BirthdayGold
-import com.heckmannch.birthdaybuddy2.ui.theme.BirthdaySilver
-import com.heckmannch.birthdaybuddy2.ui.theme.KidColors
-import com.heckmannch.birthdaybuddy2.viewmodel.ContactUiModel
-import com.heckmannch.birthdaybuddy2.viewmodel.GiftIdea
+import com.heckmannch.birthdaybuddy.R
+import com.heckmannch.birthdaybuddy.ui.theme.BirthdayGold
+import com.heckmannch.birthdaybuddy.ui.theme.BirthdaySilver
+import com.heckmannch.birthdaybuddy.ui.theme.KidColors
+import com.heckmannch.birthdaybuddy.viewmodel.ContactUiModel
+import com.heckmannch.birthdaybuddy.viewmodel.GiftIdea
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 

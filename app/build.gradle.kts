@@ -6,7 +6,7 @@ plugins {
 }
 
 android {
-    namespace = "com.heckmannch.birthdaybuddy2"
+    namespace = "com.heckmannch.birthdaybuddy"
     compileSdk {
         version = release(36) {
             minorApiLevel = 1
@@ -14,15 +14,16 @@ android {
     }
 
     defaultConfig {
-        applicationId = "com.heckmannch.birthdaybuddy2"
+        applicationId = "com.heckmannch.birthdaybuddy"
         minSdk = 28
         targetSdk = 36
         versionCode = 1
-        versionName = "1.5.2"
+        versionName = "2.0.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
+    @Suppress("UnstableApiUsage")
     androidResources {
         localeFilters += listOf("en", "de")
     }

@@ -1,4 +1,4 @@
-package com.heckmannch.birthdaybuddy2.ui.screens.settings.notifications.components
+package com.heckmannch.birthdaybuddy.ui.screens.settings.notifications.components
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
@@ -8,8 +8,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import com.heckmannch.birthdaybuddy2.R
-import com.heckmannch.birthdaybuddy2.database.NotificationRule
+import com.heckmannch.birthdaybuddy.R
+import com.heckmannch.birthdaybuddy.database.NotificationRule
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

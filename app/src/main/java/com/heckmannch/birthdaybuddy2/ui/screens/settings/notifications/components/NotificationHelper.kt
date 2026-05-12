@@ -1,4 +1,4 @@
-package com.heckmannch.birthdaybuddy2.ui.screens.settings.notifications.components
+package com.heckmannch.birthdaybuddy.ui.screens.settings.notifications.components
 
 import android.app.NotificationChannel
 import android.app.NotificationManager
@@ -6,10 +6,10 @@ import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
 import androidx.core.app.NotificationCompat
-import com.heckmannch.birthdaybuddy2.MainActivity
-import com.heckmannch.birthdaybuddy2.R
-import com.heckmannch.birthdaybuddy2.database.Contact
-import com.heckmannch.birthdaybuddy2.repository.NotificationRepository
+import com.heckmannch.birthdaybuddy.MainActivity
+import com.heckmannch.birthdaybuddy.R
+import com.heckmannch.birthdaybuddy.database.Contact
+import com.heckmannch.birthdaybuddy.repository.NotificationRepository
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking

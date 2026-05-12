@@ -1,4 +1,4 @@
-package com.heckmannch.birthdaybuddy2.ui.screens.settings.notifications
+package com.heckmannch.birthdaybuddy.ui.screens.settings.notifications
 
 import android.Manifest
 import android.content.pm.PackageManager
@@ -21,12 +21,12 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.heckmannch.birthdaybuddy2.R
-import com.heckmannch.birthdaybuddy2.database.NotificationRule
-import com.heckmannch.birthdaybuddy2.ui.screens.settings.notifications.components.EditRuleDialog
-import com.heckmannch.birthdaybuddy2.ui.screens.settings.notifications.components.NotificationRuleItem
-import com.heckmannch.birthdaybuddy2.ui.theme.BirthdayBuddyTheme
-import com.heckmannch.birthdaybuddy2.viewmodel.BirthdayViewModel
+import com.heckmannch.birthdaybuddy.R
+import com.heckmannch.birthdaybuddy.database.NotificationRule
+import com.heckmannch.birthdaybuddy.ui.screens.settings.notifications.components.EditRuleDialog
+import com.heckmannch.birthdaybuddy.ui.screens.settings.notifications.components.NotificationRuleItem
+import com.heckmannch.birthdaybuddy.ui.theme.BirthdayBuddyTheme
+import com.heckmannch.birthdaybuddy.viewmodel.BirthdayViewModel
 
 @Composable
 fun NotificationSettingsScreen(

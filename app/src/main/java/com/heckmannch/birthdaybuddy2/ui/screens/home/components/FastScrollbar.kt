@@ -1,4 +1,4 @@
-package com.heckmannch.birthdaybuddy2.ui.screens.home.components
+package com.heckmannch.birthdaybuddy.ui.screens.home.components
 
 import androidx.compose.animation.*
 import androidx.compose.animation.core.animateDpAsState
@@ -24,8 +24,8 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.res.stringResource
-import com.heckmannch.birthdaybuddy2.R
-import com.heckmannch.birthdaybuddy2.viewmodel.ContactUiModel
+import com.heckmannch.birthdaybuddy.R
+import com.heckmannch.birthdaybuddy.viewmodel.ContactUiModel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 

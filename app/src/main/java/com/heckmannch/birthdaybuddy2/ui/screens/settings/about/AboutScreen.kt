@@ -1,4 +1,4 @@
-package com.heckmannch.birthdaybuddy2.ui.screens.settings.about
+package com.heckmannch.birthdaybuddy.ui.screens.settings.about
 
 import android.content.pm.PackageInfo
 import android.content.pm.PackageManager
@@ -21,8 +21,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.heckmannch.birthdaybuddy2.R
-import com.heckmannch.birthdaybuddy2.ui.theme.BirthdayBuddyTheme
+import com.heckmannch.birthdaybuddy.R
+import com.heckmannch.birthdaybuddy.ui.theme.BirthdayBuddyTheme
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

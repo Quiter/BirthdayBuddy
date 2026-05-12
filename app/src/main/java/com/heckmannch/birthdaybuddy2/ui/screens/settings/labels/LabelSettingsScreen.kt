@@ -1,4 +1,4 @@
-package com.heckmannch.birthdaybuddy2.ui.screens.settings.labels
+package com.heckmannch.birthdaybuddy.ui.screens.settings.labels
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -18,9 +18,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.heckmannch.birthdaybuddy2.ui.theme.BirthdayBuddyTheme
-import com.heckmannch.birthdaybuddy2.viewmodel.BirthdayViewModel
-import com.heckmannch.birthdaybuddy2.viewmodel.LabelManagementModel
+import com.heckmannch.birthdaybuddy.ui.theme.BirthdayBuddyTheme
+import com.heckmannch.birthdaybuddy.viewmodel.BirthdayViewModel
+import com.heckmannch.birthdaybuddy.viewmodel.LabelManagementModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

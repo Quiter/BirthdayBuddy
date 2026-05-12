@@ -1,4 +1,4 @@
-package com.heckmannch.birthdaybuddy2.util
+package com.heckmannch.birthdaybuddy.util
 
 import java.time.LocalDate
 import java.time.Month

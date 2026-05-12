@@ -1,4 +1,4 @@
-package com.heckmannch.birthdaybuddy2.ui.theme
+package com.heckmannch.birthdaybuddy.ui.theme
 
 import androidx.compose.material3.Typography
 import androidx.compose.ui.text.TextStyle

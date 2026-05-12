@@ -1,4 +1,4 @@
-package com.heckmannch.birthdaybuddy2.ui.screens.home.components
+package com.heckmannch.birthdaybuddy.ui.screens.home.components
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.runtime.Composable

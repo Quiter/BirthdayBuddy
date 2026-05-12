@@ -1,10 +1,10 @@
-package com.heckmannch.birthdaybuddy2.ui.screens.settings.notifications.components
+package com.heckmannch.birthdaybuddy.ui.screens.settings.notifications.components
 
 import android.content.Context
 import androidx.hilt.work.HiltWorker
 import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
-import com.heckmannch.birthdaybuddy2.repository.ContactRepository
+import com.heckmannch.birthdaybuddy.repository.ContactRepository
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
 import kotlinx.coroutines.flow.first

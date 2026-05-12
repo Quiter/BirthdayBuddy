@@ -1,4 +1,4 @@
-package com.heckmannch.birthdaybuddy2.ui.screens.home.components
+package com.heckmannch.birthdaybuddy.ui.screens.home.components
 
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.core.animateFloatAsState
@@ -16,7 +16,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.graphicsLayer
 
 import androidx.compose.ui.res.stringResource
-import com.heckmannch.birthdaybuddy2.R
+import com.heckmannch.birthdaybuddy.R
 
 @Composable
 fun HomeFAB(

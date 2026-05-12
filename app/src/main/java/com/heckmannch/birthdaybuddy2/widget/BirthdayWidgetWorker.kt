@@ -1,4 +1,4 @@
-package com.heckmannch.birthdaybuddy2.widget
+package com.heckmannch.birthdaybuddy.widget
 
 import android.content.Context
 import androidx.glance.appwidget.updateAll

@@ -1,14 +1,14 @@
-package com.heckmannch.birthdaybuddy2.repository
+package com.heckmannch.birthdaybuddy.repository
 
 import android.Manifest
 import android.content.Context
 import android.content.pm.PackageManager
 import android.util.Log
 import androidx.core.content.ContextCompat
-import com.heckmannch.birthdaybuddy2.database.Contact
-import com.heckmannch.birthdaybuddy2.database.ContactDao
-import com.heckmannch.birthdaybuddy2.database.LabelConfig
-import com.heckmannch.birthdaybuddy2.database.LabelConfigDao
+import com.heckmannch.birthdaybuddy.database.Contact
+import com.heckmannch.birthdaybuddy.database.ContactDao
+import com.heckmannch.birthdaybuddy.database.LabelConfig
+import com.heckmannch.birthdaybuddy.database.LabelConfigDao
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
@@ -23,7 +23,7 @@ class ContactRepository @Inject constructor(
     @param:ApplicationContext private val context: Context,
     private val contactDao: ContactDao,
     private val labelConfigDao: LabelConfigDao,
-    private val appSettingsDao: com.heckmannch.birthdaybuddy2.database.AppSettingsDao,
+    private val appSettingsDao: com.heckmannch.birthdaybuddy.database.AppSettingsDao,
     private val systemContactDataSource: SystemContactDataSource,
     private val giftIdeaBackupManager: GiftIdeaBackupManager,
 ) {
@@ -70,7 +70,7 @@ class ContactRepository @Inject constructor(
                 contactDao.refreshContacts(finalContacts)
 
                 // 5. Zeitstempel aktualisieren
-                val settings = appSettingsDao.getSettingsImmediate() ?: com.heckmannch.birthdaybuddy2.database.AppSettings()
+                val settings = appSettingsDao.getSettingsImmediate() ?: com.heckmannch.birthdaybuddy.database.AppSettings()
                 appSettingsDao.upsertSettings(settings.copy(lastSyncTimestamp = System.currentTimeMillis()))
             }
         } catch (e: Exception) {

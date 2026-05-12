@@ -1,4 +1,4 @@
-package com.heckmannch.birthdaybuddy2.database
+package com.heckmannch.birthdaybuddy.database
 
 import androidx.room.TypeConverter
 import java.time.LocalDate

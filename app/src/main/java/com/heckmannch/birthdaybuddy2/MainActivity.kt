@@ -1,4 +1,4 @@
-package com.heckmannch.birthdaybuddy2
+package com.heckmannch.birthdaybuddy
 
 import android.content.Intent
 import android.os.Bundle
@@ -20,15 +20,15 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import dagger.hilt.android.AndroidEntryPoint
-import com.heckmannch.birthdaybuddy2.ui.screens.home.HomeScreen
-import com.heckmannch.birthdaybuddy2.ui.screens.settings.SettingsScreen
-import com.heckmannch.birthdaybuddy2.ui.screens.settings.labels.LabelSettingsScreen
-import com.heckmannch.birthdaybuddy2.ui.screens.settings.notifications.NotificationSettingsScreen
-import com.heckmannch.birthdaybuddy2.ui.screens.settings.backup.BackupScreen
-import com.heckmannch.birthdaybuddy2.ui.screens.settings.about.AboutScreen
-import com.heckmannch.birthdaybuddy2.ui.theme.BirthdayBuddyTheme
-import com.heckmannch.birthdaybuddy2.viewmodel.BirthdayViewModel
-import com.heckmannch.birthdaybuddy2.widget.BirthdayWidgetWorker
+import com.heckmannch.birthdaybuddy.ui.screens.home.HomeScreen
+import com.heckmannch.birthdaybuddy.ui.screens.settings.SettingsScreen
+import com.heckmannch.birthdaybuddy.ui.screens.settings.labels.LabelSettingsScreen
+import com.heckmannch.birthdaybuddy.ui.screens.settings.notifications.NotificationSettingsScreen
+import com.heckmannch.birthdaybuddy.ui.screens.settings.backup.BackupScreen
+import com.heckmannch.birthdaybuddy.ui.screens.settings.about.AboutScreen
+import com.heckmannch.birthdaybuddy.ui.theme.BirthdayBuddyTheme
+import com.heckmannch.birthdaybuddy.viewmodel.BirthdayViewModel
+import com.heckmannch.birthdaybuddy.widget.BirthdayWidgetWorker
 
 /**
  * Navigation Routes

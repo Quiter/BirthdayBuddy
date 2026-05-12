@@ -1,4 +1,4 @@
-package com.heckmannch.birthdaybuddy2.ui.screens.home.components
+package com.heckmannch.birthdaybuddy.ui.screens.home.components
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -23,8 +23,8 @@ import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.res.stringResource
-import com.heckmannch.birthdaybuddy2.R
-import com.heckmannch.birthdaybuddy2.viewmodel.GiftIdea
+import com.heckmannch.birthdaybuddy.R
+import com.heckmannch.birthdaybuddy.viewmodel.GiftIdea
 import kotlinx.coroutines.launch
 
 @Composable

@@ -1,4 +1,4 @@
-package com.heckmannch.birthdaybuddy2.ui.screens.home.components
+package com.heckmannch.birthdaybuddy.ui.screens.home.components
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.expandVertically
@@ -15,7 +15,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 
 import androidx.compose.ui.res.stringResource
-import com.heckmannch.birthdaybuddy2.R
+import com.heckmannch.birthdaybuddy.R
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

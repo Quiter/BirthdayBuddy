@@ -1,7 +1,7 @@
-package com.heckmannch.birthdaybuddy2.repository
+package com.heckmannch.birthdaybuddy.repository
 
 import android.util.Log
-import com.heckmannch.birthdaybuddy2.database.ContactDao
+import com.heckmannch.birthdaybuddy.database.ContactDao
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.json.JSONArray

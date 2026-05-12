@@ -1,4 +1,4 @@
-package com.heckmannch.birthdaybuddy2.ui.screens.home
+package com.heckmannch.birthdaybuddy.ui.screens.home
 
 import android.Manifest
 import android.content.Intent
@@ -25,14 +25,14 @@ import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.ui.res.stringResource
-import com.heckmannch.birthdaybuddy2.R
-import com.heckmannch.birthdaybuddy2.ui.screens.home.components.BirthdayList
-import com.heckmannch.birthdaybuddy2.ui.screens.home.components.FastScrollbar
-import com.heckmannch.birthdaybuddy2.ui.screens.home.components.HomeFAB
-import com.heckmannch.birthdaybuddy2.ui.screens.home.components.HomeTopBar
-import com.heckmannch.birthdaybuddy2.ui.theme.BirthdayBuddyTheme
-import com.heckmannch.birthdaybuddy2.viewmodel.BirthdayViewModel
-import com.heckmannch.birthdaybuddy2.viewmodel.ContactUiModel
+import com.heckmannch.birthdaybuddy.R
+import com.heckmannch.birthdaybuddy.ui.screens.home.components.BirthdayList
+import com.heckmannch.birthdaybuddy.ui.screens.home.components.FastScrollbar
+import com.heckmannch.birthdaybuddy.ui.screens.home.components.HomeFAB
+import com.heckmannch.birthdaybuddy.ui.screens.home.components.HomeTopBar
+import com.heckmannch.birthdaybuddy.ui.theme.BirthdayBuddyTheme
+import com.heckmannch.birthdaybuddy.viewmodel.BirthdayViewModel
+import com.heckmannch.birthdaybuddy.viewmodel.ContactUiModel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch

@@ -1,4 +1,4 @@
-package com.heckmannch.birthdaybuddy2.ui.screens.home.components
+package com.heckmannch.birthdaybuddy.ui.screens.home.components
 
 import android.Manifest
 import android.content.pm.PackageManager
@@ -17,8 +17,8 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import androidx.compose.ui.res.stringResource
-import com.heckmannch.birthdaybuddy2.R
-import com.heckmannch.birthdaybuddy2.viewmodel.ContactUiModel
+import com.heckmannch.birthdaybuddy.R
+import com.heckmannch.birthdaybuddy.viewmodel.ContactUiModel
 
 /**
  * Verwaltet die Liste der Geburtstage.

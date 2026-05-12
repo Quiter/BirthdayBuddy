@@ -1,8 +1,8 @@
-package com.heckmannch.birthdaybuddy2.repository
+package com.heckmannch.birthdaybuddy.repository
 
 import android.content.Context
 import android.provider.ContactsContract
-import com.heckmannch.birthdaybuddy2.database.Contact
+import com.heckmannch.birthdaybuddy.database.Contact
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext

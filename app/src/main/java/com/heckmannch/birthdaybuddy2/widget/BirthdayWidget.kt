@@ -1,4 +1,4 @@
-package com.heckmannch.birthdaybuddy2.widget
+package com.heckmannch.birthdaybuddy.widget
 
 import android.content.Context
 import android.content.Intent
@@ -16,12 +16,12 @@ import androidx.glance.layout.*
 import androidx.glance.text.FontWeight
 import androidx.glance.text.Text
 import androidx.glance.text.TextStyle
-import com.heckmannch.birthdaybuddy2.MainActivity
-import com.heckmannch.birthdaybuddy2.R
-import com.heckmannch.birthdaybuddy2.database.Contact
-import com.heckmannch.birthdaybuddy2.repository.ContactRepository
-import com.heckmannch.birthdaybuddy2.util.safeDaysUntilNext
-import com.heckmannch.birthdaybuddy2.util.safeNextAge
+import com.heckmannch.birthdaybuddy.MainActivity
+import com.heckmannch.birthdaybuddy.R
+import com.heckmannch.birthdaybuddy.database.Contact
+import com.heckmannch.birthdaybuddy.repository.ContactRepository
+import com.heckmannch.birthdaybuddy.util.safeDaysUntilNext
+import com.heckmannch.birthdaybuddy.util.safeNextAge
 import dagger.hilt.EntryPoint
 import dagger.hilt.InstallIn
 import dagger.hilt.android.EntryPointAccessors

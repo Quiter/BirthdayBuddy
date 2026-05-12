@@ -1,4 +1,4 @@
-package com.heckmannch.birthdaybuddy2.repository
+package com.heckmannch.birthdaybuddy.repository
 
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow

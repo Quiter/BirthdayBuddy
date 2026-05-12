@@ -1,4 +1,4 @@
-package com.heckmannch.birthdaybuddy2.ui.screens.settings
+package com.heckmannch.birthdaybuddy.ui.screens.settings
 
 import android.Manifest
 import android.content.pm.PackageInfo
@@ -21,8 +21,8 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
-import com.heckmannch.birthdaybuddy2.ui.theme.BirthdayBuddyTheme
-import com.heckmannch.birthdaybuddy2.viewmodel.BirthdayViewModel
+import com.heckmannch.birthdaybuddy.ui.theme.BirthdayBuddyTheme
+import com.heckmannch.birthdaybuddy.viewmodel.BirthdayViewModel
 
 @Composable
 fun SettingsScreen(

@@ -1,11 +1,11 @@
-package com.heckmannch.birthdaybuddy2.repository
+package com.heckmannch.birthdaybuddy.repository
 
-import com.heckmannch.birthdaybuddy2.database.AppSettings
-import com.heckmannch.birthdaybuddy2.database.AppSettingsDao
-import com.heckmannch.birthdaybuddy2.database.NotificationRule
-import com.heckmannch.birthdaybuddy2.database.NotificationRuleDao
-import com.heckmannch.birthdaybuddy2.database.PendingNotification
-import com.heckmannch.birthdaybuddy2.database.PendingNotificationDao
+import com.heckmannch.birthdaybuddy.database.AppSettings
+import com.heckmannch.birthdaybuddy.database.AppSettingsDao
+import com.heckmannch.birthdaybuddy.database.NotificationRule
+import com.heckmannch.birthdaybuddy.database.NotificationRuleDao
+import com.heckmannch.birthdaybuddy.database.PendingNotification
+import com.heckmannch.birthdaybuddy.database.PendingNotificationDao
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import javax.inject.Inject

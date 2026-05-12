@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <style name="Theme.BirthdayBuddy2" parent="Theme.Material3.DayNight.NoActionBar">
+    <style name="Theme.BirthdayBuddy" parent="Theme.Material3.DayNight.NoActionBar">
         <!-- Window background folgt dem System (Dark/Light) -->
         <item name="android:windowBackground">?android:attr/colorBackground</item>
         <item name="android:statusBarColor">@android:color/transparent</item>

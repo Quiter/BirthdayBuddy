@@ -193,4 +193,10 @@ Alle signifikanten Änderungen am Projekt werden hier dokumentiert.
     - **Personalisierung:** Dynamische Benachrichtigungstitel mit namentlicher Nennung (z. B. "Max Mustermann hat heute Geburtstag!").
     - **Eindeutigkeit:** Nutzung der internen Datenbank-ID (`pendingId`) als System-Notification-ID zur präzisen Status-Verfolgung.
     - **Sicherheits-Finalisierung:** Endgültiges Entfernen der destruktiven Migration (`fallbackToDestructiveMigration`) in der `AppDatabase`, um Nutzerdaten (wie die 07:30 Uhr Zeit) dauerhaft gegen Löschung bei Updates abzusichern.
+54. **App Rebranding & Clean Start:**
+    - **Naming:** Vollständige Umstellung des Projekts von "BirthdayBuddy2" auf "BirthdayBuddy" (GitHub & Local).
+    - **Package Rename:** Migration aller Dateien auf den neuen Package-Namespace `com.heckmannch.birthdaybuddy`.
+    - **Application ID Swap:** Aktualisierung der `applicationId` in Gradle, was die App für Android zu einer neuen, unabhängigen Anwendung macht.
+    - **Database Reset:** Zurücksetzen der Datenbank auf Version 1 und vollständige Entfernung der Legacy-Migrationslogik (v1 -> v13). Dies sorgt für eine saubere, performante Basis ohne technischen Ballast.
+
 

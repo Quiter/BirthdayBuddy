@@ -1,4 +1,4 @@
-package com.heckmannch.birthdaybuddy2.viewmodel
+package com.heckmannch.birthdaybuddy.viewmodel
 
 import androidx.compose.runtime.Immutable
 

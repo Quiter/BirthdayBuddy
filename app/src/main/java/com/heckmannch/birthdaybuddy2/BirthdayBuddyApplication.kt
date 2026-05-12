@@ -1,4 +1,4 @@
-package com.heckmannch.birthdaybuddy2
+package com.heckmannch.birthdaybuddy
 
 import android.app.Application
 import android.content.pm.ApplicationInfo
