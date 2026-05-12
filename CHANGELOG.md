@@ -187,4 +187,10 @@ Alle signifikanten Änderungen am Projekt werden hier dokumentiert.
     - **Schema Hardening:** Finalisierung des "Room-only" Wechsels durch Bereinigung verwaister Repository-Abhängigkeiten und Schema-Optimierung (Version 12).
     - **Widget Resilience:** Implementierung einer Begrenzung auf maximal 10 Elemente im `BirthdayWidget`, um Abstürze durch das interne Android Glance/RemoteViews Limit zu verhindern.
     - **Migration Safety:** Einmalige forcierte Schema-Aktualisierung zur Herstellung einer stabilen Basis für zukünftige migrationslose Updates.
+53. **Individual & Persistent Notifications:**
+    - **Granularität:** Umstellung des `NotificationWorker` auf Einzelbenachrichtigungen pro Kontakt. Jede Person erhält eine eigene Kachel im Benachrichtigungs-Tray, die unabhängig verwaltet werden kann.
+    - **Persistenz-Steuerung:** Einführung der Option "Wichtige Benachrichtigungen" in den Einstellungen. Ermöglicht das Umschalten zwischen normalen (wegwischbaren) und persistenten (quittierpflichtigen) Erinnerungen.
+    - **Personalisierung:** Dynamische Benachrichtigungstitel mit namentlicher Nennung (z. B. "Max Mustermann hat heute Geburtstag!").
+    - **Eindeutigkeit:** Nutzung der internen Datenbank-ID (`pendingId`) als System-Notification-ID zur präzisen Status-Verfolgung.
+    - **Sicherheits-Finalisierung:** Endgültiges Entfernen der destruktiven Migration (`fallbackToDestructiveMigration`) in der `AppDatabase`, um Nutzerdaten (wie die 07:30 Uhr Zeit) dauerhaft gegen Löschung bei Updates abzusichern.
 
