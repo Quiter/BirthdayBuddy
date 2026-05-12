@@ -5,7 +5,6 @@ import androidx.hilt.work.HiltWorker
 import androidx.work.*
 import com.heckmannch.birthdaybuddy2.repository.ContactRepository
 import com.heckmannch.birthdaybuddy2.repository.NotificationRepository
-import com.heckmannch.birthdaybuddy2.repository.PreferenceRepository
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
 import kotlinx.coroutines.flow.first
@@ -21,13 +20,12 @@ class NotificationWorker @AssistedInject constructor(
     @Assisted workerParameters: WorkerParameters,
     private val contactRepository: ContactRepository,
     private val notificationRepository: NotificationRepository,
-    private val preferenceRepository: PreferenceRepository,
     private val notificationHelper: NotificationHelper,
 ) : CoroutineWorker(context, workerParameters) {
 
     override suspend fun doWork(): Result {
-        val isEnabled = preferenceRepository.notificationsEnabled.first()
-        if (!isEnabled) return Result.success()
+        val settings = notificationRepository.settings.first()
+        if (!settings.notificationsEnabled) return Result.success()
 
         val rules = notificationRepository.getAllRulesImmediate()
         if (rules.isEmpty()) return Result.success()

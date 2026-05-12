@@ -8,7 +8,6 @@ import androidx.lifecycle.viewModelScope
 import com.heckmannch.birthdaybuddy2.database.LabelConfig
 import com.heckmannch.birthdaybuddy2.repository.ContactRepository
 import com.heckmannch.birthdaybuddy2.repository.NotificationRepository
-import com.heckmannch.birthdaybuddy2.repository.PreferenceRepository
 import com.heckmannch.birthdaybuddy2.repository.TimeRepository
 import com.heckmannch.birthdaybuddy2.ui.screens.settings.notifications.components.NotificationWorker
 import com.heckmannch.birthdaybuddy2.util.toNextOccurrence
@@ -28,14 +27,14 @@ import javax.inject.Inject
 class BirthdayViewModel @Inject constructor(
     @param:ApplicationContext private val context: Context,
     private val contactRepository: ContactRepository,
-    private val preferenceRepository: PreferenceRepository,
     private val notificationRepository: NotificationRepository,
     timeRepository: TimeRepository,
 ) : ViewModel() {
 
     // --- Settings & Preferences ---
 
-    val notificationsEnabled: StateFlow<Boolean> = preferenceRepository.notificationsEnabled
+    val notificationsEnabled: StateFlow<Boolean> = notificationRepository.settings
+        .map { it.notificationsEnabled }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), initialValue = false)
 
     val notificationRules: StateFlow<List<com.heckmannch.birthdaybuddy2.database.NotificationRule>> = notificationRepository.allRules
@@ -47,8 +46,14 @@ class BirthdayViewModel @Inject constructor(
             combine(notificationsEnabled, notificationRules) { enabled, rules ->
                 enabled to rules
             }.collect { (enabled, rules) ->
-                if (enabled && rules.isNotEmpty()) {
-                    NotificationWorker.scheduleNext(context, rules)
+                if (enabled) {
+                    if (rules.isEmpty()) {
+                        // Falls aktiv aber keine Regeln da (z.B. nach Datenbank-Update/Wipe)
+                        // Wir fügen eine Standard-Regel hinzu (Heute, 09:00 Uhr)
+                        addNotificationRule(daysBefore = 0, hour = 9, minute = 0)
+                    } else {
+                        NotificationWorker.scheduleNext(context, rules)
+                    }
                 } else {
                     NotificationWorker.cancelNotification(context)
                 }
@@ -60,7 +65,7 @@ class BirthdayViewModel @Inject constructor(
         if (enabled && notificationRules.value.isEmpty()) {
             addNotificationRule(daysBefore = 0, hour = 9, minute = 0)
         }
-        preferenceRepository.setNotificationsEnabled(enabled)
+        notificationRepository.updateSettings(notificationsEnabled = enabled)
     }
 
     fun addNotificationRule(daysBefore: Int, hour: Int, minute: Int) = viewModelScope.launch {
@@ -75,11 +80,12 @@ class BirthdayViewModel @Inject constructor(
         notificationRepository.deleteRule(rule)
     }
 
-    val swipeHintShown: StateFlow<Boolean> = preferenceRepository.swipeHintShown
+    val swipeHintShown: StateFlow<Boolean> = notificationRepository.settings
+        .map { it.swipeHintShown }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), initialValue = true)
 
     fun setSwipeHintShown() = viewModelScope.launch {
-        preferenceRepository.setSwipeHintShown(shown = true)
+        notificationRepository.updateSettings(swipeHintShown = true)
     }
 
     // --- Search & Filter State ---

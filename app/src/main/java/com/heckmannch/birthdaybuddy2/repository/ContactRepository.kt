@@ -23,6 +23,7 @@ class ContactRepository @Inject constructor(
     @param:ApplicationContext private val context: Context,
     private val contactDao: ContactDao,
     private val labelConfigDao: LabelConfigDao,
+    private val appSettingsDao: com.heckmannch.birthdaybuddy2.database.AppSettingsDao,
     private val systemContactDataSource: SystemContactDataSource,
     private val giftIdeaBackupManager: GiftIdeaBackupManager,
 ) {
@@ -67,6 +68,10 @@ class ContactRepository @Inject constructor(
 
                 // 4. Batch Update via Transaction
                 contactDao.refreshContacts(finalContacts)
+
+                // 5. Zeitstempel aktualisieren
+                val settings = appSettingsDao.getSettingsImmediate() ?: com.heckmannch.birthdaybuddy2.database.AppSettings()
+                appSettingsDao.upsertSettings(settings.copy(lastSyncTimestamp = System.currentTimeMillis()))
             }
         } catch (e: Exception) {
             Log.e("ContactRepository", "Fehler beim Sync: ${e.message}", e)

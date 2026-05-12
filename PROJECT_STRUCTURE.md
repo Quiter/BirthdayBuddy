@@ -20,14 +20,15 @@
 - `NotificationRuleDao.kt`: DAO für Benachrichtigungsregeln.
 - `PendingNotification.kt`: Entity für aktive, noch nicht quittierte Benachrichtigungen.
 - `PendingNotificationDao.kt`: DAO für die Verwaltung persistenter Erinnerungen.
+- `AppSettings.kt`: Entity für globale App-Einstellungen (Benachrichtigungen, Sync-Zeit).
+- `AppSettingsDao.kt`: DAO für App-Einstellungen.
 - `Converters.kt`: TypeConverters für `LocalDate` und Listen-Encoding.
 
 ## 📁 Repository (`repository`)
 - `ContactRepository.kt`: Zentrale Instanz für Kontakt-Daten (Room + System-Provider).
 - `SystemContactDataSource.kt`: Kapselt den Zugriff auf den Android ContentResolver (Kontakte, Gruppen).
 - `GiftIdeaBackupManager.kt`: Handhabt den Im- und Export von Geschenkideen (JSON-Logik).
-- `NotificationRepository.kt`: Verwaltung der flexiblen Benachrichtigungsregeln.
-- `PreferenceRepository.kt`: Verwaltung von App-Einstellungen via DataStore.
+- `NotificationRepository.kt`: Verwaltung der Benachrichtigungsregeln und App-Einstellungen.
 - `TimeRepository.kt`: Reaktive Zeitquelle für automatische UI-Updates um Mitternacht.
 
 ## 📁 Home Screen (`ui.screens.home`)

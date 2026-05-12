@@ -42,4 +42,9 @@ object AppModule {
     fun providePendingNotificationDao(database: AppDatabase): PendingNotificationDao {
         return database.pendingNotificationDao()
     }
+
+    @Provides
+    fun provideAppSettingsDao(database: AppDatabase): com.heckmannch.birthdaybuddy2.database.AppSettingsDao {
+        return database.appSettingsDao()
+    }
 }

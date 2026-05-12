@@ -8,18 +8,21 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.Cake
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.heckmannch.birthdaybuddy2.R
+import com.heckmannch.birthdaybuddy2.ui.theme.BirthdayBuddy2Theme
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -65,16 +68,17 @@ fun AboutScreen(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Surface(
-                modifier = Modifier.size(100.dp),
+                modifier = Modifier.size(180.dp),
                 shape = MaterialTheme.shapes.extraLarge,
-                color = MaterialTheme.colorScheme.primaryContainer
+                color = MaterialTheme.colorScheme.surfaceVariant,
+                tonalElevation = 2.dp
             ) {
-                Box(contentAlignment = Alignment.Center) {
+                Box(contentAlignment = Alignment.Center, modifier = Modifier.padding(24.dp)) {
                     Icon(
-                        imageVector = Icons.Default.Cake,
+                        painter = painterResource(id = R.drawable.ic_app_logo),
                         contentDescription = null,
-                        modifier = Modifier.size(60.dp),
-                        tint = MaterialTheme.colorScheme.onPrimaryContainer
+                        modifier = Modifier.fillMaxSize(),
+                        tint = Color.Unspecified
                     )
                 }
             }
@@ -146,5 +150,13 @@ private fun AboutSection(title: String, content: String) {
             style = MaterialTheme.typography.bodyLarge,
             color = MaterialTheme.colorScheme.onSurface
         )
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun AboutPreview() {
+    BirthdayBuddy2Theme {
+        AboutScreen(onNavigateBack = {})
     }
 }

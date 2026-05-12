@@ -77,7 +77,8 @@ class BirthdayWidget : GlanceAppWidget() {
 
         // Minimale Item-Höhe von 56dp für Touch-Ziele und Lesbarkeit
         val minItemHeight = 56.dp
-        val maxItems = (size.height.value / minItemHeight.value).toInt().coerceAtLeast(1)
+        // Glance Columns haben ein Limit von 10 Kindern
+        val maxItems = (size.height.value / minItemHeight.value).toInt().coerceIn(1, 10)
         val displayContacts = contacts.take(maxItems)
 
         Column(

@@ -174,8 +174,17 @@ Alle signifikanten Änderungen am Projekt werden hier dokumentiert.
     - **Component Decomposition:** Refactoring von `BirthdayItem` in feinere Sub-Komponenten (`ContactImage`, `BirthdayStatus`), die nur noch primitive Datentypen statt des kompletten Modells erhalten.
     - **State Management:** Einsatz von `rememberUpdatedState` in der `BirthdayList` zur Absicherung der Callbacks innerhalb der LazyColumn.
 50. **Database Excellence & Optimization:**
-    - **Indexing:** Einführung eines eindeutigen Indizes für den `lookupKey` in der `Contact` Tabelle zur Beschleunigung von Suchanfragen und Synchronisationsvorgängen.
+    - **Performance Indexing:** Ergänzung eines Datenbank-Indizes für den bestehenden `lookupKey` zur massiven Beschleunigung von Suchanfragen und Synchronisationsvorgängen.
     - **Modern DAOs:** Umstellung von `@Insert(onConflict = REPLACE)` auf das modernere `@Upsert` Pattern in allen DAOs für saubereren Code und bessere Performance.
     - **Robust Converters:** Optimierung der `Converters` für Listen; Umstellung des Trennzeichens auf `|` zur Vermeidung von Fehlern bei Sonderzeichen in Labels.
     - **Clean Singleton:** Verfeinerung des Singleton-Patterns in `AppDatabase` nach aktuellen Best Practices.
+51. **Settings Consolidation & Architecture Hardening:**
+    - **Room-only Strategy:** Vollständige Entfernung des `DataStore` (PreferenceRepository). Alle App-Einstellungen (Benachrichtigungen aktiviert, Swipe-Hint) wurden in die neue `AppSettings` Room-Tabelle migriert. Dies garantiert Datenkonsistenz bei App-Updates.
+    - **Data Integrity:** Deaktivierung der destruktiven Migration (`fallbackToDestructiveMigration`) in Room, um Datenverlust bei Schema-Updates zu verhindern.
+    - **Sync Tracking:** Einführung eines `lastSyncTimestamp` in `AppSettings` zur Dokumentation des letzten erfolgreichen System-Abgleichs.
+    - **Self-Healing Logic:** Implementierung einer automatischen Wiederherstellung von Standard-Benachrichtigungsregeln im ViewModel, falls die Datenbank nach einem Update oder Wipe keine Regeln mehr enthält.
+52. **Stability & Data Preservation:**
+    - **Schema Hardening:** Finalisierung des "Room-only" Wechsels durch Bereinigung verwaister Repository-Abhängigkeiten und Schema-Optimierung (Version 12).
+    - **Widget Resilience:** Implementierung einer Begrenzung auf maximal 10 Elemente im `BirthdayWidget`, um Abstürze durch das interne Android Glance/RemoteViews Limit zu verhindern.
+    - **Migration Safety:** Einmalige forcierte Schema-Aktualisierung zur Herstellung einer stabilen Basis für zukünftige migrationslose Updates.
 
