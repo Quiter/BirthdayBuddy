@@ -226,8 +226,10 @@ private fun LabelSettingsPreview() {
         LabelSettingsContent(
             labels = listOf(
                 LabelManagementModel("Familie", isHiddenFromFilter = false, isIgnored = false, isSystem = true),
-                LabelManagementModel("Arbeit", isHiddenFromFilter = true, isIgnored = false, isSystem = false),
-                LabelManagementModel("Ex-Kollegen", isHiddenFromFilter = false, isIgnored = true, isSystem = false)
+                LabelManagementModel("Freunde", isHiddenFromFilter = true, isIgnored = false, isSystem = false),
+                LabelManagementModel("Arbeit", isHiddenFromFilter = false, isIgnored = false, isSystem = false),
+                LabelManagementModel("Ex-Kollegen", isHiddenFromFilter = false, isIgnored = true, isSystem = false),
+                LabelManagementModel("Sport", isHiddenFromFilter = true, isIgnored = true, isSystem = false)
             ),
             onNavigateBack = {},
             onConfigChanged = { _, _, _, _ -> }

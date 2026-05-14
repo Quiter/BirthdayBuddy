@@ -16,6 +16,7 @@ import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
@@ -25,12 +26,14 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import com.heckmannch.birthdaybuddy.R
+import com.heckmannch.birthdaybuddy.ui.theme.BirthdayBuddyTheme
 import com.heckmannch.birthdaybuddy.ui.theme.BirthdayGold
 import com.heckmannch.birthdaybuddy.ui.theme.BirthdaySilver
 import com.heckmannch.birthdaybuddy.ui.theme.KidColors
@@ -55,7 +58,7 @@ fun BirthdayItem(
 ) {
     val density = LocalDensity.current
     val scope = rememberCoroutineScope()
-    val showGiftDialogState = remember { mutableStateOf(false) }
+    var showGiftDialog by rememberSaveable { mutableStateOf(false) }
 
     // Maße und Anker-Berechnungen (Optimiert durch remember)
     val buttonWidth = 50.dp
@@ -104,13 +107,13 @@ fun BirthdayItem(
         }
     }
 
-    if (showGiftDialogState.value) {
+    if (showGiftDialog) {
         GiftIdeaDialog(
             initialIdeas = contact.giftIdeas,
-            onDismiss = { showGiftDialogState.value = false },
+            onDismiss = { showGiftDialog = false },
         ) { ideas ->
             onUpdateGiftIdeas(contact.lookupKey, GiftIdea.toString(ideas))
-            showGiftDialogState.value = false
+            showGiftDialog = false
             scope.launch { draggableState.animateTo(targetValue = DragValue.Closed) }
         }
     }
@@ -132,11 +135,13 @@ fun BirthdayItem(
     Box(
         modifier = modifier
             .fillMaxWidth()
+            .height(IntrinsicSize.Min)
             .padding(vertical = 4.dp),
     ) {
         Row(
             modifier = Modifier
                 .align(Alignment.CenterEnd)
+                .fillMaxHeight()
                 .padding(end = 16.dp)
                 .width((buttonWidth * 2) + buttonSpacing),
             horizontalArrangement = Arrangement.spacedBy(buttonSpacing),
@@ -146,7 +151,7 @@ fun BirthdayItem(
                 icon = Icons.Default.Edit,
                 color = Color(0xFFFFB300),
                 contentDescription = stringResource(R.string.item_action_gifts),
-            ) { showGiftDialogState.value = true }
+            ) { showGiftDialog = true }
             SwipeActionButton(
                 icon = Icons.Default.Person,
                 color = Color(0xFF2196F3),
@@ -309,5 +314,68 @@ private fun BirthdayStatus(
             style = MaterialTheme.typography.labelSmall,
             color = if (isToday) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurfaceVariant
         )
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun BirthdayItemPreview() {
+    val sampleContact = ContactUiModel(
+        id = "1",
+        contactId = "1",
+        lookupKey = "k1",
+        fullName = "Max Mustermann",
+        dateText = "12. Mai",
+        monthName = "Mai",
+        imageUri = null,
+        initials = "M",
+        nextAge = 30,
+        daysUntilNext = 5,
+        isToday = false,
+        labels = listOf("Freunde"),
+        giftIdeas = emptyList()
+    )
+    BirthdayBuddyTheme {
+        Column(modifier = Modifier.padding(16.dp)) {
+            BirthdayItem(
+                contact = sampleContact,
+                showHint = false,
+                isExpanded = false,
+                onExpand = {},
+                onSetSwipeHintShown = {},
+                onUpdateGiftIdeas = { _, _ -> },
+                onOpenContact = { _, _ -> }
+            )
+            
+            BirthdayItem(
+                contact = sampleContact.copy(
+                    fullName = "Runder Geburtstag",
+                    isToday = true,
+                    nextAge = 40,
+                    daysUntilNext = 0
+                ),
+                showHint = false,
+                isExpanded = false,
+                onExpand = {},
+                onSetSwipeHintShown = {},
+                onUpdateGiftIdeas = { _, _ -> },
+                onOpenContact = { _, _ -> }
+            )
+
+            BirthdayItem(
+                contact = sampleContact.copy(
+                    fullName = "Kind",
+                    isToday = true,
+                    nextAge = 5,
+                    daysUntilNext = 0
+                ),
+                showHint = false,
+                isExpanded = false,
+                onExpand = {},
+                onSetSwipeHintShown = {},
+                onUpdateGiftIdeas = { _, _ -> },
+                onOpenContact = { _, _ -> }
+            )
+        }
     }
 }

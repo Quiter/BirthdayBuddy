@@ -12,12 +12,18 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.Saver
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.role
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.style.TextDecoration
@@ -33,13 +39,36 @@ fun GiftIdeaDialog(
     onDismiss: () -> Unit,
     onConfirm: (List<GiftIdea>) -> Unit,
 ) {
-    val ideas = remember { mutableStateListOf<GiftIdea>().apply { addAll(initialIdeas) } }
+    // Saver für die Liste der Geschenkideen
+    val giftIdeaSaver = Saver<SnapshotStateList<GiftIdea>, String>(
+        save = { GiftIdea.toString(it.toList()) },
+        restore = { GiftIdea.fromString(it).toMutableStateList() }
+    )
+    val ideas = rememberSaveable(saver = giftIdeaSaver) { 
+        mutableStateListOf<GiftIdea>().apply { addAll(initialIdeas) } 
+    }
+    
     val focusManager = LocalFocusManager.current
     val listState = rememberLazyListState()
     val scope = rememberCoroutineScope()
     
     // Tracking für das neu hinzugefügte Element
-    var newlyAddedId by remember { mutableStateOf<String?>(null) }
+    var newlyAddedId by rememberSaveable { mutableStateOf<String?>(null) }
+
+    val onAddNewIdea = {
+        val newIdea = GiftIdea(text = "")
+        val firstCheckedIndex = ideas.indexOfFirst { it.isChecked }
+        if (firstCheckedIndex != -1) {
+            ideas.add(firstCheckedIndex, newIdea)
+        } else {
+            ideas.add(newIdea)
+        }
+        newlyAddedId = newIdea.id
+        scope.launch {
+            val targetIdx = ideas.indexOfFirst { it.id == newIdea.id }
+            if (targetIdx != -1) listState.animateScrollToItem(targetIdx)
+        }
+    }
 
     AlertDialog(
         onDismissRequest = onDismiss,
@@ -53,112 +82,56 @@ fun GiftIdeaDialog(
                 LazyColumn(
                     state = listState,
                     modifier = Modifier.weight(1f, fill = false),
-                    verticalArrangement = Arrangement.spacedBy(0.dp),
                 ) {
                     itemsIndexed(
                         items = ideas, 
                         key = { _, item -> item.id },
-                    ) { index, item ->
-                        val focusRequester = remember { FocusRequester() }
-                        
-                        // Fokus anfordern, wenn dies das neu hinzugefügte Element ist
-                        LaunchedEffect(newlyAddedId) {
-                            if (newlyAddedId == item.id) {
-                                focusRequester.requestFocus()
-                                newlyAddedId = null // Zurücksetzen, damit es nicht erneut fokussiert
+                    ) { _, item ->
+                        GiftIdeaItemRow(
+                            item = item,
+                            newlyAddedId = newlyAddedId,
+                            modifier = Modifier.animateItem(),
+                            onFocusRequested = { newlyAddedId = null },
+                            onCheckedChange = { checked ->
+                                val newItem = item.copy(isChecked = checked)
+                                val currentIndex = ideas.indexOfFirst { it.id == item.id }
+                                if (currentIndex != -1) {
+                                    ideas.removeAt(currentIndex)
+                                    if (checked) {
+                                        ideas.add(newItem)
+                                    } else {
+                                        val firstCheckedIndex = ideas.indexOfFirst { it.isChecked }
+                                        if (firstCheckedIndex != -1) ideas.add(firstCheckedIndex, newItem)
+                                        else ideas.add(0, newItem)
+                                    }
+                                }
+                            },
+                            onTextChange = { newText ->
+                                val idx = ideas.indexOfFirst { it.id == item.id }
+                                if (idx != -1) {
+                                    ideas[idx] = item.copy(text = newText)
+                                }
+                            },
+                            onDelete = {
+                                val idx = ideas.indexOfFirst { it.id == item.id }
+                                if (idx != -1) ideas.removeAt(idx)
+                            },
+                            onDone = {
+                                if (item.text.isNotBlank()) onAddNewIdea()
+                                else focusManager.clearFocus()
                             }
-                        }
-
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .animateItem(), // Sorgt für flüssiges Verschieben
-                        ) {
-                            Checkbox(
-                                checked = item.isChecked,
-                                onCheckedChange = { checked ->
-                                    val newItem = item.copy(isChecked = checked)
-                                    val currentIndex = ideas.indexOfFirst { it.id == item.id }
-                                    if (currentIndex != -1) {
-                                        ideas.removeAt(currentIndex)
-                                        if (checked) {
-                                            // Abgehakt? Ganz nach unten
-                                            ideas.add(newItem)
-                                        } else {
-                                            // Wieder offen? An den Anfang der Liste (oder vor die ersten Abgehakten)
-                                            val firstCheckedIndex = ideas.indexOfFirst { it.isChecked }
-                                            if (firstCheckedIndex != -1) {
-                                                ideas.add(firstCheckedIndex, newItem)
-                                            } else {
-                                                ideas.add(0, newItem)
-                                            }
-                                        }
-                                    }
-                                },
-                            )
-                            BasicTextField(
-                                value = item.text,
-                                onValueChange = { newText ->
-                                    val capitalizedText = newText.replaceFirstChar { 
-                                        if (it.isLowerCase()) it.titlecase() else it.toString() 
-                                    }
-                                    // Index neu finden, da er sich durch Animationen verschoben haben könnte
-                                    val idx = ideas.indexOfFirst { it.id == item.id }
-                                    if (idx != -1) {
-                                        ideas[idx] = item.copy(text = capitalizedText)
-                                    }
-                                },
-                                modifier = Modifier
-                                    .weight(1f)
-                                    .padding(vertical = 12.dp)
-                                    .focusRequester(focusRequester),
-                                textStyle = MaterialTheme.typography.bodyLarge.copy(
-                                    color = if (item.isChecked) MaterialTheme.colorScheme.outline else MaterialTheme.colorScheme.onSurface,
-                                    textDecoration = if (item.isChecked) TextDecoration.LineThrough else TextDecoration.None,
-                                ),
-                                singleLine = true,
-                                cursorBrush = SolidColor(MaterialTheme.colorScheme.primary),
-                                keyboardOptions = KeyboardOptions(
-                                    imeAction = ImeAction.Done,
-                                    capitalization = KeyboardCapitalization.Sentences,
-                                ),
-                                keyboardActions = KeyboardActions(onDone = { focusManager.clearFocus() }),
-                            )
-                            
-                            IconButton(
-                                onClick = { ideas.removeAt(index) },
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Default.Close,
-                                    contentDescription = stringResource(R.string.gift_dialog_delete),
-                                    modifier = Modifier.size(20.dp),
-                                    tint = MaterialTheme.colorScheme.outline.copy(alpha = 0.6f),
-                                )
-                            }
-                        }
+                        )
                     }
                 }
                 
+                HorizontalDivider(
+                    modifier = Modifier.padding(vertical = 4.dp),
+                    color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)
+                )
+
                 // "Listeneintrag hinzufügen" Bereich
                 Surface(
-                    onClick = { 
-                        val newIdea = GiftIdea(text = "")
-                        // Vor dem ersten abgehakten Element einfügen, oder ans Ende
-                        val firstCheckedIndex = ideas.indexOfFirst { it.isChecked }
-                        if (firstCheckedIndex != -1) {
-                            ideas.add(firstCheckedIndex, newIdea)
-                        } else {
-                            ideas.add(newIdea)
-                        }
-                        
-                        newlyAddedId = newIdea.id
-                        // Scrolle zum neuen Item
-                        scope.launch {
-                            val targetIdx = ideas.indexOfFirst { it.id == newIdea.id }
-                            if (targetIdx != -1) listState.animateScrollToItem(targetIdx)
-                        }
-                    },
+                    onClick = { onAddNewIdea() },
                     modifier = Modifier.fillMaxWidth(),
                     color = androidx.compose.ui.graphics.Color.Transparent,
                 ) {
@@ -193,4 +166,70 @@ fun GiftIdeaDialog(
             }
         }
     )
+}
+
+@Composable
+private fun GiftIdeaItemRow(
+    item: GiftIdea,
+    newlyAddedId: String?,
+    modifier: Modifier = Modifier,
+    onFocusRequested: () -> Unit,
+    onCheckedChange: (Boolean) -> Unit,
+    onTextChange: (String) -> Unit,
+    onDelete: () -> Unit,
+    onDone: () -> Unit,
+) {
+    val focusRequester = remember { FocusRequester() }
+    
+    LaunchedEffect(newlyAddedId) {
+        if (newlyAddedId == item.id) {
+            focusRequester.requestFocus()
+            onFocusRequested()
+        }
+    }
+
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = modifier
+            .fillMaxWidth()
+            .semantics { role = Role.Checkbox },
+    ) {
+        Checkbox(
+            checked = item.isChecked,
+            onCheckedChange = onCheckedChange,
+        )
+        BasicTextField(
+            value = item.text,
+            onValueChange = { newText ->
+                val capitalizedText = newText.replaceFirstChar { 
+                    if (it.isLowerCase()) it.titlecase() else it.toString() 
+                }
+                onTextChange(capitalizedText)
+            },
+            modifier = Modifier
+                .weight(1f)
+                .padding(vertical = 12.dp)
+                .focusRequester(focusRequester),
+            textStyle = MaterialTheme.typography.bodyLarge.copy(
+                color = if (item.isChecked) MaterialTheme.colorScheme.outline else MaterialTheme.colorScheme.onSurface,
+                textDecoration = if (item.isChecked) TextDecoration.LineThrough else TextDecoration.None,
+            ),
+            singleLine = true,
+            cursorBrush = SolidColor(MaterialTheme.colorScheme.primary),
+            keyboardOptions = KeyboardOptions(
+                imeAction = ImeAction.Next, // "Next" statt "Done" für besseren Flow
+                capitalization = KeyboardCapitalization.Sentences,
+            ),
+            keyboardActions = KeyboardActions(onNext = { onDone() }),
+        )
+        
+        IconButton(onClick = onDelete) {
+            Icon(
+                imageVector = Icons.Default.Close,
+                contentDescription = stringResource(R.string.gift_dialog_delete),
+                modifier = Modifier.size(20.dp),
+                tint = MaterialTheme.colorScheme.outline.copy(alpha = 0.6f),
+            )
+        }
+    }
 }

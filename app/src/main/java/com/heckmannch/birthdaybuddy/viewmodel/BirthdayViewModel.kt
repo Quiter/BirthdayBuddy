@@ -102,6 +102,16 @@ class BirthdayViewModel @Inject constructor(
 
     // --- Data Processing ---
 
+    private val ignoredLabels: Flow<Set<String>> = contactRepository.labelConfigs
+        .map { configs -> 
+            configs.asSequence()
+                .filter { it.isIgnored }
+                .map { it.name }
+                .toSet() 
+        }
+        .distinctUntilChanged()
+        .flowOn(Dispatchers.Default)
+
     private val allUiContacts: Flow<List<ContactUiModel>> = combine(
         contactRepository.allContacts,
         timeRepository.currentDate,
@@ -156,12 +166,12 @@ class BirthdayViewModel @Inject constructor(
         allUiContacts,
         searchKeywords,
         _selectedLabel,
-        contactRepository.labelConfigs,
-    ) { uiList, keywords, label, configs ->
-        val ignoredLabels = configs.asSequence().filter { it.isIgnored }.map { it.name }.toSet()
+        ignoredLabels,
+    ) { uiList, keywords, label, ignoredLabels ->
         val isSearching = keywords.isNotEmpty()
+        val startTime = System.currentTimeMillis()
 
-        uiList.asSequence()
+        val result = uiList.asSequence()
             .filter { contact ->
                 val isIgnored = contact.labels.any { it in ignoredLabels }
                 if (isIgnored && !isSearching) return@filter false
@@ -173,6 +183,11 @@ class BirthdayViewModel @Inject constructor(
                 matchesQuery && matchesLabel
             }
             .toList()
+        
+        if (uiList.size > 1000) {
+            Log.d("BirthdayViewModel", "Filtering ${uiList.size} contacts took ${System.currentTimeMillis() - startTime}ms")
+        }
+        result
     }
 
     val availableLabels: Flow<List<String>> = combine(

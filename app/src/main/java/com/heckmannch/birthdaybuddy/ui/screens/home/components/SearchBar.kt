@@ -21,10 +21,12 @@ import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardCapitalization
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 
 import androidx.compose.ui.res.stringResource
 import com.heckmannch.birthdaybuddy.R
+import com.heckmannch.birthdaybuddy.ui.theme.BirthdayBuddyTheme
 
 @Composable
 fun SearchBar(
@@ -76,7 +78,8 @@ fun SearchBar(
                         Text(
                             text = text,
                             style = MaterialTheme.typography.bodyLarge,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            maxLines = 1
                         )
                     }
                 }
@@ -89,7 +92,7 @@ fun SearchBar(
                         }
                         onQueryChange(capitalizedText)
                     },
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier = Modifier.fillMaxWidth().fillMaxHeight().wrapContentHeight(),
                     textStyle = textStyle,
                     singleLine = true,
                     cursorBrush = SolidColor(MaterialTheme.colorScheme.primary),
@@ -103,13 +106,42 @@ fun SearchBar(
 
             if (query.isNotEmpty()) {
                 IconButton(onClick = onClearQuery) {
-                    Icon(Icons.Default.Close, contentDescription = stringResource(R.string.home_search_clear))
+                    Icon(
+                        imageVector = Icons.Default.Close,
+                        contentDescription = stringResource(R.string.home_search_clear)
+                    )
                 }
             } else {
                 IconButton(onClick = onSettingsClick) {
-                    Icon(Icons.Default.Settings, contentDescription = stringResource(R.string.home_settings))
+                    Icon(
+                        imageVector = Icons.Default.Settings,
+                        contentDescription = stringResource(R.string.home_settings)
+                    )
                 }
             }
+        }
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun SearchBarPreview() {
+    BirthdayBuddyTheme {
+        Column(verticalArrangement = Arrangement.spacedBy(16.dp), modifier = Modifier.padding(vertical = 16.dp)) {
+            SearchBar(
+                query = "",
+                placeholder = "Kontakte durchsuchen",
+                onQueryChange = {},
+                onClearQuery = {},
+                onSettingsClick = {}
+            )
+            SearchBar(
+                query = "Max",
+                placeholder = "Kontakte durchsuchen",
+                onQueryChange = {},
+                onClearQuery = {},
+                onSettingsClick = {}
+            )
         }
     }
 }

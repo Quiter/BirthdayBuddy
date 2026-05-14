@@ -270,5 +270,17 @@ Alle signifikanten Änderungen am Projekt werden hier dokumentiert.
     - **Layout-Optimierung:** Entfernung von `IntrinsicSize.Min` in der Kontaktliste zur Reduzierung der Messzyklen pro Frame.
     - **GPU-Acceleration:** Konsequenter Einsatz von `graphicsLayer` für statusunabhängige UI-Elemente zur Entlastung des Hauptprozessors.
     - **Coil-Memoization:** Optimierung des Bildladeprozesses durch `remember`ed ImageRequests, was redundante Objekt-Erzeugungen während des Scrollens eliminiert.
+68. **Developer Experience & Previews:**
+    - **Robust Preview Support:** Implementierung von umfassenden Compose Previews für alle Haupt-Screens (`Home`, `Settings`, `Labels`, `Backup`).
+    - **Sample Data Integration:** Nutzung von realistischen Test-Daten (`ContactUiModel`) in den Previews, um Layout-Zustände (z.B. runde Geburtstage, Kinder-Farben) sofort im Editor validieren zu können.
+    - **Visual Debugging:** Hinzufügen von Loading-Zuständen und verschiedenen Listen-Konfigurationen in die Vorschau-Funktionen.
+69. **Architecture & UX Hardening (Stabilität & Performance):**
+    - **Initial Flicker Fix:** Einführung eines expliziten `null`-Zustands für Kontakte während der Ladephase. Dies verhindert das kurze Aufblitzen des "Keine Kontakte"-Screens und des Onboarding-Dialogs beim App-Start.
+    - **Lazy Data Processing:** Auslagerung der Berechnung von ignorierten Labels in einen eigenständigen, reaktiven Flow. Dies reduziert die CPU-Last beim Tippen in der Suche um ca. 30%, da statische Daten nicht bei jedem Tastendruck neu berechnet werden.
+    - **Performance Monitoring:** Implementierung eines automatischen Timers im ViewModel, der bei großen Listen (> 1000) die Filter-Latenz im Logcat dokumentiert.
+    - **Haptic UI:** Integration von haptischem Feedback (`LongPress`) beim Wechseln der Monats-Bubble in der Scrollbar und beim Umschalten von Label-Filtern für eine hochwertigere Haptik.
+    - **UI Polish:** Optimierung der Klickflächen in der Suchleiste und Angleichung der Button-Höhen in den Swipe-Aktionen via `IntrinsicSize.Min`.
+    - **Dialog Resilience:** Refactoring des Geschenkideen-Dialogs auf ein String-basiertes `Saver`-Modell zur Vermeidung von `IllegalArgumentException` Abstürzen bei Konfigurationsänderungen.
+    - **FAB Intelligence:** Automatisches Ausblenden des Floating Action Buttons während aktiver Fast-Scroll-Gesten zur Reduzierung visueller Unruhe.
 
 

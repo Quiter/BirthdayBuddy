@@ -12,10 +12,13 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.platform.LocalHapticFeedback
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-
 import androidx.compose.ui.res.stringResource
 import com.heckmannch.birthdaybuddy.R
+import com.heckmannch.birthdaybuddy.ui.theme.BirthdayBuddyTheme
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -26,6 +29,8 @@ fun LabelFilterBar(
     onLabelSelected: (String?) -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    val haptic = LocalHapticFeedback.current
+
     if (labels.isNotEmpty()) {
         AnimatedVisibility(
             visible = visible,
@@ -40,7 +45,10 @@ fun LabelFilterBar(
                 item {
                     FilterChip(
                         selected = selectedLabel == null,
-                        onClick = { onLabelSelected(null) },
+                        onClick = {
+                            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                            onLabelSelected(null)
+                        },
                         label = { Text(stringResource(R.string.home_filter_all)) }
                     )
                 }
@@ -51,11 +59,27 @@ fun LabelFilterBar(
                 ) { label ->
                     FilterChip(
                         selected = selectedLabel == label,
-                        onClick = { onLabelSelected(label) },
+                        onClick = {
+                            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                            onLabelSelected(label)
+                        },
                         label = { Text(label) }
                     )
                 }
             }
         }
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun LabelFilterBarPreview() {
+    BirthdayBuddyTheme {
+        LabelFilterBar(
+            visible = true,
+            labels = listOf("Familie", "Freunde", "Arbeit"),
+            selectedLabel = "Freunde",
+            onLabelSelected = {}
+        )
     }
 }

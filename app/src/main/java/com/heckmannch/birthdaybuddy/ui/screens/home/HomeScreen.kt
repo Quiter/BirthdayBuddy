@@ -10,6 +10,7 @@ import android.provider.ContactsContract
 import android.provider.Settings
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.animation.*
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -25,6 +26,7 @@ import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -32,6 +34,7 @@ import com.heckmannch.birthdaybuddy.R
 import com.heckmannch.birthdaybuddy.ui.screens.home.components.*
 import com.heckmannch.birthdaybuddy.ui.theme.BirthdayBuddyTheme
 import com.heckmannch.birthdaybuddy.viewmodel.BirthdayViewModel
+import com.heckmannch.birthdaybuddy.viewmodel.ContactUiModel
 import com.heckmannch.birthdaybuddy.viewmodel.HomeUiState
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
@@ -110,7 +113,7 @@ fun HomeScreen(
     }
 
     // --- Onboarding ---
-    if (!onboardingCompleted && ContextCompat.checkSelfPermission(context, Manifest.permission.READ_CONTACTS) == PackageManager.PERMISSION_GRANTED && !onboardingDismissed) {
+    if (uiState.contacts != null && !onboardingCompleted && ContextCompat.checkSelfPermission(context, Manifest.permission.READ_CONTACTS) == PackageManager.PERMISSION_GRANTED && !onboardingDismissed) {
         OnboardingDialog(
             onConfirm = {
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
@@ -187,6 +190,7 @@ class HomeState(
     var resetScrollRequested by mutableStateOf(false)
     var animatedPlaceholder by mutableStateOf("")
     var filterVisibilityLock by mutableStateOf<Boolean?>(null)
+    var isFastScrolling by mutableStateOf(false)
 
     val showScrollUp by derivedStateOf { listState.firstVisibleItemIndex > 0 }
 
@@ -195,6 +199,7 @@ class HomeState(
     }
 
     fun onSetFastScrolling(isScrolling: Boolean) {
+        isFastScrolling = isScrolling
         filterVisibilityLock = if (isScrolling) (listState.firstVisibleItemIndex == 0) else null
     }
 
@@ -261,14 +266,21 @@ private fun HomeContent(
             )
         },
         floatingActionButton = {
-            HomeFAB(
-                showScrollUp = homeState.showScrollUp,
-                onAddContact = onAddContact,
-                onScrollToTop = {
-                    focusManager.clearFocus()
-                    homeState.scrollToTop()
-                }
-            )
+            AnimatedVisibility(
+                visible = !homeState.isFastScrolling,
+                enter = scaleIn() + fadeIn(),
+                exit = scaleOut() + fadeOut()
+            ) {
+                HomeFAB(
+                    showScrollUp = homeState.showScrollUp,
+                    onAddContact = onAddContact,
+                    onScrollToTop = {
+                        focusManager.clearFocus()
+                        homeState.scrollToTop()
+                    },
+                    modifier = Modifier.padding(8.dp) // Bewegt den FAB zusätzlich 8dp vom Rand weg
+                )
+            }
         }
     ) { padding ->
         PullToRefreshBox(
@@ -277,7 +289,7 @@ private fun HomeContent(
             modifier = Modifier.fillMaxSize().padding(padding)
         ) {
             BirthdayList(
-                contacts = uiState.contacts ?: emptyList(),
+                contacts = uiState.contacts, // Hier das ?: emptyList() entfernt
                 swipeHintShown = uiState.swipeHintShown,
                 listState = homeState.listState,
                 onRequestPermission = onRequestPermission,
@@ -297,12 +309,48 @@ private fun HomeContent(
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Preview(showBackground = true)
 @Composable
 fun HomePreview() {
+    val sampleContacts = listOf(
+        ContactUiModel(
+            id = "1",
+            contactId = "1",
+            lookupKey = "k1",
+            fullName = "Max Mustermann",
+            dateText = "12. Mai",
+            monthName = "Mai",
+            imageUri = null,
+            initials = "M",
+            nextAge = 30,
+            daysUntilNext = 5,
+            isToday = false,
+            labels = listOf("Freunde"),
+            giftIdeas = emptyList()
+        ),
+        ContactUiModel(
+            id = "2",
+            contactId = "2",
+            lookupKey = "k2",
+            fullName = "Erika Mustermann",
+            dateText = "Heute",
+            monthName = "Mai",
+            imageUri = null,
+            initials = "E",
+            nextAge = 40,
+            daysUntilNext = 0,
+            isToday = true,
+            labels = listOf("Familie"),
+            giftIdeas = emptyList()
+        )
+    )
     BirthdayBuddyTheme {
         HomeContent(
-            uiState = HomeUiState(contacts = emptyList()),
+            uiState = HomeUiState(
+                contacts = sampleContacts,
+                availableLabels = listOf("Familie", "Freunde", "Arbeit")
+            ),
             homeState = rememberHomeState(),
             onSearchQueryChange = {},
             onLabelSelected = {},

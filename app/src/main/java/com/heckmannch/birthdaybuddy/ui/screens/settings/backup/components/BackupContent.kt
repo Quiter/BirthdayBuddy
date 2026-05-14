@@ -122,3 +122,16 @@ private fun BackupPreview() {
         )
     }
 }
+
+@Preview(showBackground = true)
+@Composable
+private fun BackupLoadingPreview() {
+    BirthdayBuddyTheme {
+        BackupContent(
+            isLoading = true,
+            onExportClick = {},
+            onImportClick = {},
+            onNavigateBack = {}
+        )
+    }
+}

@@ -10,6 +10,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Face
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -26,7 +27,7 @@ import com.heckmannch.birthdaybuddy.viewmodel.ContactUiModel
  */
 @Composable
 fun BirthdayList(
-    contacts: List<ContactUiModel>,
+    contacts: List<ContactUiModel>?, // Jetzt nullable
     swipeHintShown: Boolean,
     modifier: Modifier = Modifier,
     listState: LazyListState,
@@ -37,12 +38,11 @@ fun BirthdayList(
 ) {
     val context = LocalContext.current
     
-    // Callbacks für stabilen Zugriff in LazyColumn-Items
+    // ... Callbacks und Permission-Check bleiben gleich ...
     val currentOnSetSwipeHintShown by rememberUpdatedState(onSetSwipeHintShown)
     val currentOnUpdateGiftIdeas by rememberUpdatedState(onUpdateGiftIdeas)
     val currentOnOpenContact by rememberUpdatedState(onOpenContact)
 
-    // Berechtigungsstatus reaktiv halten
     val hasPermission by remember {
         derivedStateOf {
             ContextCompat.checkSelfPermission(
@@ -52,14 +52,20 @@ fun BirthdayList(
         }
     }
 
+    // WICHTIG: Wenn contacts null ist, laden wir noch. Zeige nichts an, um Flicker zu vermeiden.
+    if (contacts == null) {
+        Box(modifier = modifier.fillMaxSize()) // Leer oder optional ein CircularProgressIndicator
+        return
+    }
+
     if (contacts.isEmpty()) {
         EmptyListState(
             hasPermission = hasPermission, 
             onRequestPermission = onRequestPermission,
         )
     } else {
-        // State, welches Item gerade geswiped/expandiert ist (nur eines gleichzeitig)
-        var expandedContactId by remember { mutableStateOf<String?>(null) }
+        // ... LazyColumn Logik bleibt gleich ...
+        var expandedContactId by rememberSaveable { mutableStateOf<String?>(null) }
         
         val onExpand = remember {
             { id: String -> expandedContactId = id }

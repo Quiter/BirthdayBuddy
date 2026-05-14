@@ -197,6 +197,7 @@ private fun SettingsPreview() {
             onNavigateToNotifications = {},
             onNavigateToBackup = {},
             onNavigateToAbout = {},
-        ) { }
+            onNavigateBack = {}
+        )
     }
 }

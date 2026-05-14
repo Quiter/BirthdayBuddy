@@ -19,10 +19,12 @@ data class GiftIdea(
         fun fromString(encoded: String?): List<GiftIdea> {
             if (encoded.isNullOrBlank()) return emptyList()
             return encoded.split(";;").mapNotNull {
-                val parts = it.split("|", limit = 2)
-                if (parts.size == 2) {
-                    GiftIdea(text = parts[1], isChecked = parts[0] == "1")
-                } else null
+                val parts = it.split("|", limit = 3)
+                when (parts.size) {
+                    3 -> GiftIdea(id = parts[0], isChecked = parts[1] == "1", text = parts[2])
+                    2 -> GiftIdea(isChecked = parts[0] == "1", text = parts[1])
+                    else -> null
+                }
             }
         }
 
@@ -30,7 +32,7 @@ data class GiftIdea(
          * Enkodiert die Liste für die Speicherung in der Datenbank.
          */
         fun toString(ideas: List<GiftIdea>): String {
-            return ideas.joinToString(";;") { "${if (it.isChecked) "1" else "0"}|${it.text}" }
+            return ideas.joinToString(";;") { "${it.id}|${if (it.isChecked) "1" else "0"}|${it.text}" }
         }
     }
 }

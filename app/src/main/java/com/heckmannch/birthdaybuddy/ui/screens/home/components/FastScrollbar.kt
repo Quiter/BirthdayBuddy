@@ -6,6 +6,7 @@ import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectVerticalDragGestures
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyListLayoutInfo
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -29,6 +30,23 @@ import com.heckmannch.birthdaybuddy.viewmodel.ContactUiModel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
+private object ScrollbarDefaults {
+    val BarWidth = 150.dp
+    val ThumbSize = 48.dp
+    const val BubbleDelay = 500L
+    const val MinItemsThreshold = 10
+    val ThumbWidthDragging = 12.dp
+    val ThumbWidthIdle = 6.dp
+    val ThumbHeightDragging = 32.dp
+    val ThumbHeightIdle = 24.dp
+    const val ThumbAlphaIdle = 0.4f
+    val BubbleOffsetY = 4.dp
+    val BubbleCornerLarge = 24.dp
+    val BubbleCornerSmall = 4.dp
+    val BubbleElevation = 6.dp
+    val ThumbPaddingEnd = 6.dp
+}
+
 @Composable
 fun FastScrollbar(
     listState: LazyListState,
@@ -48,15 +66,15 @@ fun FastScrollbar(
         if (isDragging) {
             value = true
         } else {
-            delay(500)
+            delay(ScrollbarDefaults.BubbleDelay)
             value = false
         }
     }
 
-    BoxWithConstraints(modifier = modifier.width(150.dp)) {
+    BoxWithConstraints(modifier = modifier.width(ScrollbarDefaults.BarWidth)) {
         val totalItems = contacts.size
         val viewHeight = maxHeight
-        val thumbHeight = 48.dp
+        val thumbHeight = ScrollbarDefaults.ThumbSize
         val trackHeight = viewHeight - thumbHeight
         val trackHeightPx = with(density) { trackHeight.toPx() }
 
@@ -70,8 +88,8 @@ fun FastScrollbar(
         val canScroll by remember(contacts) {
             derivedStateOf {
                 // Wenn wir gerade den Filter zurücksetzen, zeigen wir die Scrollbar vorsorglich an,
-                // falls die Liste potenziell lang genug ist (> 10 Items).
-                if (isResettingFilter && totalItems > 10) return@derivedStateOf true
+                // falls die Liste potenziell lang genug ist.
+                if (isResettingFilter && totalItems > ScrollbarDefaults.MinItemsThreshold) return@derivedStateOf true
 
                 val layoutInfo = listState.layoutInfo
                 val visibleItemsInfo = layoutInfo.visibleItemsInfo
@@ -139,13 +157,13 @@ fun FastScrollbar(
             }
 
             val thumbWidth by animateDpAsState(
-                targetValue = if (isDragging) 12.dp else 6.dp,
+                targetValue = if (isDragging) ScrollbarDefaults.ThumbWidthDragging else ScrollbarDefaults.ThumbWidthIdle,
                 label = "Thumb Width",
             )
 
             val thumbAlpha by remember {
                 derivedStateOf {
-                    if (isDragging || listState.isScrollInProgress) 1f else 0.4f
+                    if (isDragging || listState.isScrollInProgress) 1f else ScrollbarDefaults.ThumbAlphaIdle
                 }
             }
             val animatedThumbAlpha by animateFloatAsState(
@@ -161,18 +179,18 @@ fun FastScrollbar(
                 modifier = Modifier
                     .align(Alignment.TopStart)
                     .graphicsLayer {
-                        translationY = thumbOffset.toPx() - 4.dp.toPx()
+                        translationY = thumbOffset.toPx() - ScrollbarDefaults.BubbleOffsetY.toPx()
                     },
             ) {
                 Surface(
                     shape = RoundedCornerShape(
-                        topStart = 24.dp,
-                        bottomStart = 24.dp,
-                        topEnd = 4.dp,
-                        bottomEnd = 24.dp
+                        topStart = ScrollbarDefaults.BubbleCornerLarge,
+                        bottomStart = ScrollbarDefaults.BubbleCornerLarge,
+                        topEnd = ScrollbarDefaults.BubbleCornerSmall,
+                        bottomEnd = ScrollbarDefaults.BubbleCornerLarge
                     ),
                     color = MaterialTheme.colorScheme.primary,
-                    tonalElevation = 6.dp,
+                    tonalElevation = ScrollbarDefaults.BubbleElevation,
                     modifier = Modifier.padding(end = 16.dp),
                 ) {
                     Text(
@@ -190,7 +208,7 @@ fun FastScrollbar(
             Box(
                 modifier = Modifier
                     .align(Alignment.TopEnd)
-                    .width(48.dp)
+                    .width(ScrollbarDefaults.ThumbSize)
                     .height(thumbHeight)
                     .graphicsLayer {
                         translationY = thumbOffset.toPx()
@@ -218,15 +236,11 @@ fun FastScrollbar(
                                 dragOffsetPx = (dragOffsetPx + dragAmount).coerceIn(0f, trackHeightPx)
                                 val scrollPercent = if (trackHeightPx > 0) dragOffsetPx / trackHeightPx else 0f
                                 
-                                val layoutInfo = listState.layoutInfo
-                                val itemSize = layoutInfo.visibleItemsInfo.firstOrNull()?.size ?: 1
-                                val viewportHeight = layoutInfo.viewportEndOffset - layoutInfo.viewportStartOffset
-                                val itemsInViewport = viewportHeight.toFloat() / itemSize
-                                val maxIndex = (totalItems.toFloat() - itemsInViewport).coerceAtLeast(1f)
-                                
-                                val targetFractionalIndex = scrollPercent * maxIndex
-                                val targetIndex = targetFractionalIndex.toInt().coerceIn(0, totalItems - 1)
-                                val targetOffset = ((targetFractionalIndex - targetIndex) * itemSize).toInt()
+                                val (targetIndex, targetOffset) = calculateScrollTarget(
+                                    scrollPercent = scrollPercent,
+                                    totalItems = totalItems,
+                                    layoutInfo = listState.layoutInfo
+                                )
                                 
                                 scope.launch { 
                                     listState.scrollToItem(targetIndex, targetOffset) 
@@ -241,13 +255,33 @@ fun FastScrollbar(
             ) {
                 Box(
                     modifier = Modifier
-                        .padding(end = 6.dp)
+                        .padding(end = ScrollbarDefaults.ThumbPaddingEnd)
                         .width(thumbWidth)
-                        .height(if (isDragging) 32.dp else 24.dp)
+                        .height(if (isDragging) ScrollbarDefaults.ThumbHeightDragging else ScrollbarDefaults.ThumbHeightIdle)
                         .clip(CircleShape)
                         .background(MaterialTheme.colorScheme.primary.copy(alpha = animatedThumbAlpha)),
                 )
             }
         }
     }
+}
+
+/**
+ * Berechnet den Ziel-Index und Offset basierend auf der Scroll-Position in Prozent.
+ */
+private fun calculateScrollTarget(
+    scrollPercent: Float,
+    totalItems: Int,
+    layoutInfo: LazyListLayoutInfo
+): Pair<Int, Int> {
+    val itemSize = layoutInfo.visibleItemsInfo.firstOrNull()?.size ?: 1
+    val viewportHeight = layoutInfo.viewportEndOffset - layoutInfo.viewportStartOffset
+    val itemsInViewport = viewportHeight.toFloat() / itemSize
+    val maxIndex = (totalItems.toFloat() - itemsInViewport).coerceAtLeast(1f)
+    
+    val targetFractionalIndex = scrollPercent * maxIndex
+    val targetIndex = targetFractionalIndex.toInt().coerceIn(0, totalItems - 1)
+    val targetOffset = ((targetFractionalIndex - targetIndex) * itemSize).toInt()
+    
+    return targetIndex to targetOffset
 }
