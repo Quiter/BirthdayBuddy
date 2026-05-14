@@ -62,7 +62,6 @@ fun HomeScreen(
     val appPlaceholder = stringResource(R.string.home_placeholder_app)
     val searchPlaceholder = stringResource(R.string.home_placeholder_search)
     val onboardingNotifMsg = stringResource(R.string.onboarding_notif_enabled_msg)
-    var onboardingDismissed by remember { mutableStateOf(false) }
 
     // --- Launchers ---
     val permissionLauncher = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted ->
@@ -113,20 +112,18 @@ fun HomeScreen(
     }
 
     // --- Onboarding ---
-    if (uiState.contacts != null && !onboardingCompleted && ContextCompat.checkSelfPermission(context, Manifest.permission.READ_CONTACTS) == PackageManager.PERMISSION_GRANTED && !onboardingDismissed) {
+    if (uiState.contacts != null && !onboardingCompleted && ContextCompat.checkSelfPermission(context, Manifest.permission.READ_CONTACTS) == PackageManager.PERMISSION_GRANTED) {
         OnboardingDialog(
             onConfirm = {
+                viewModel.setOnboardingCompleted(true)
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
                     notificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
                 } else {
                     viewModel.setNotificationsEnabled(true)
-                    viewModel.setOnboardingCompleted(true)
                 }
-                onboardingDismissed = true
                 scope.launch { homeState.snackbarHostState.showSnackbar(onboardingNotifMsg) }
             },
             onDismiss = {
-                onboardingDismissed = true
                 viewModel.setOnboardingCompleted(true)
             }
         )
