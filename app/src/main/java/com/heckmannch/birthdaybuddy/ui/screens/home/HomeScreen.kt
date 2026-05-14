@@ -71,6 +71,9 @@ fun HomeScreen(
     val notificationPermissionLauncher = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted ->
         viewModel.setNotificationsEnabled(isGranted)
         viewModel.setOnboardingCompleted(true)
+        if (isGranted) {
+            scope.launch { homeState.snackbarHostState.showSnackbar(onboardingNotifMsg) }
+        }
     }
 
     // --- Effekte ---
@@ -115,13 +118,13 @@ fun HomeScreen(
     if (uiState.contacts != null && !onboardingCompleted && ContextCompat.checkSelfPermission(context, Manifest.permission.READ_CONTACTS) == PackageManager.PERMISSION_GRANTED) {
         OnboardingDialog(
             onConfirm = {
-                viewModel.setOnboardingCompleted(true)
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
                     notificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
                 } else {
                     viewModel.setNotificationsEnabled(true)
+                    viewModel.setOnboardingCompleted(true)
+                    scope.launch { homeState.snackbarHostState.showSnackbar(onboardingNotifMsg) }
                 }
-                scope.launch { homeState.snackbarHostState.showSnackbar(onboardingNotifMsg) }
             },
             onDismiss = {
                 viewModel.setOnboardingCompleted(true)
