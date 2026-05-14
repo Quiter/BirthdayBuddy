@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BirthdayBuddy Testen</title>
+    <title>BirthdayBuddy Testen / Testing</title>
     <style>
         body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px; text-align: center; background-color: #f9f9f9; }
         .card { background: white; padding: 30px; border-radius: 16px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); margin-top: 40px; }
@@ -15,36 +15,93 @@
         .footer { margin-top: 40px; font-size: 0.8em; color: #666; }
         .footer a { color: #6200ee; text-decoration: none; font-weight: bold; }
         .footer a:hover { text-decoration: underline; }
+
+        /* Language toggling classes */
+        .lang-content { display: none; }
     </style>
 </head>
 <body>
-<div class="card">
-    <h1>🎂 BirthdayBuddy</h1>
-    <p>Werde Teil der Beta-Testgruppe und hilf mir, die App zu verbessern!</p>
 
-    <div class="step">
-        <span class="step-number">Schritt 1: Gruppe beitreten</span>
-        Um Zugriff auf den Play Store Test zu erhalten, musst du zuerst meiner Google Gruppe beitreten:
-        <br>
-        <a href="https://groups.google.com/g/birthdaybuddy" class="btn">Gruppe beitreten</a>
+<!-- German Content -->
+<div id="lang-de" class="lang-content">
+    <div class="card">
+        <h1>🎂 BirthdayBuddy</h1>
+        <p>Werde Teil der Beta-Testgruppe und hilf mir, die App zu verbessern!</p>
+
+        <div class="step">
+            <span class="step-number">Schritt 1: Gruppe beitreten</span>
+            Um Zugriff auf den Play Store Test zu erhalten, musst du zuerst meiner Google Gruppe beitreten:
+            <br>
+            <a href="https://groups.google.com/g/birthdaybuddy" class="btn">Gruppe beitreten</a>
+        </div>
+
+        <div class="step">
+            <span class="step-number">Schritt 2: App laden</span>
+            Nachdem du der Gruppe beigetreten bist, kannst du die App über diesen Link im Play Store installieren:
+            <br>
+            <a href="https://play.google.com/store/apps/details?id=com.heckmannch.birthdaybuddy" class="btn">Im Play Store öffnen</a>
+        </div>
+
+        <p><strong>Wichtig:</strong> Bitte verwende für beide Schritte das gleiche Google-Konto!</p>
     </div>
-
-    <div class="step">
-        <span class="step-number">Schritt 2: App laden</span>
-        Nachdem du der Gruppe beigetreten bist, kannst du die App über diesen Link im Play Store installieren:
-        <br>
-        <a href="https://play.google.com/store/apps/details?id=com.heckmannch.birthdaybuddy" class="btn">Im Play Store öffnen</a>
+    <div class="footer">
+        <p>Interessiert an der Entwicklung? Hier gibt es mehr Infos:</p>
+        <a href="https://github.com/Quiter/BirthdayBuddy/blob/master/docs/PROJECT_STATUS.md">Projekt-Status</a> |
+        <a href="https://github.com/Quiter/BirthdayBuddy/blob/master/docs/PROJECT_STRUCTURE.md">Projekt-Struktur</a> |
+        <a href="https://github.com/Quiter/BirthdayBuddy/blob/master/docs/CHANGELOG.md">Changelog</a>
+        <br><br>
+        Entwickelt mit ❤️ in Dortmund. Danke für deine Unterstützung!
     </div>
+</div>
 
-    <p><strong>Wichtig:</strong> Bitte verwende für beide Schritte das gleiche Google-Konto!</p>
+<!-- English Content -->
+<div id="lang-en" class="lang-content">
+    <div class="card">
+        <h1>🎂 BirthdayBuddy</h1>
+        <p>Become a beta tester and help me improve the app!</p>
+
+        <div class="step">
+            <span class="step-number">Step 1: Join the Group</span>
+            To get access to the Play Store test, you must first join my Google Group:
+            <br>
+            <a href="https://groups.google.com/g/birthdaybuddy" class="btn">Join Group</a>
+        </div>
+
+        <div class="step">
+            <span class="step-number">Step 2: Get the App</span>
+            After joining the group, you can install the app from the Play Store via this link:
+            <br>
+            <a href="https://play.google.com/store/apps/details?id=com.heckmannch.birthdaybuddy" class="btn">Open in Play Store</a>
+        </div>
+
+        <p><strong>Important:</strong> Please use the same Google account for both steps!</p>
+    </div>
+    <div class="footer">
+        <p>Interested in the development? Find more info here:</p>
+        <a href="https://github.com/Quiter/BirthdayBuddy/blob/master/docs/PROJECT_STATUS.md">Project Status</a> |
+        <a href="https://github.com/Quiter/BirthdayBuddy/blob/master/docs/PROJECT_STRUCTURE.md">Project Structure</a> |
+        <a href="https://github.com/Quiter/BirthdayBuddy/blob/master/docs/CHANGELOG.md">Changelog</a>
+        <br><br>
+        Developed with ❤️ in Dortmund, Germany. Thanks for your support!
+    </div>
 </div>
-<div class="footer">
-    <p>Interessiert an der Entwicklung? Hier gibt es mehr Infos:</p>
-    <a href="https://github.com/Quiter/BirthdayBuddy/blob/master/docs/PROJECT_STATUS.md">Projekt-Status</a> |
-    <a href="https://github.com/Quiter/BirthdayBuddy/blob/master/docs/PROJECT_STRUCTURE.md">Projekt-Struktur</a> |
-    <a href="https://github.com/Quiter/BirthdayBuddy/blob/master/docs/CHANGELOG.md">Changelog</a>
-    <br><br>
-    Entwickelt mit ❤️ in Dortmund. Danke für deine Unterstützung!
-</div>
+
+<script>
+    function detectLanguage() {
+        // Get browser language (e.g. "de-DE", "en-US")
+        const userLang = navigator.language || navigator.userLanguage;
+
+        // Default to English, switch to German if "de" is detected
+        if (userLang.startsWith('de')) {
+            document.getElementById('lang-de').style.display = 'block';
+        } else {
+            document.getElementById('lang-en').style.display = 'block';
+        }
+    }
+
+    // Run detection on load
+    detectLanguage();
+</script>
+
 </body>
 </html>
