@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<shortcuts xmlns:android="http://schemas.android.com/apk/res/android">
+    <shortcut
+        android:shortcutId="add_contact"
+        android:enabled="true"
+        android:icon="@drawable/ic_app_logo"
+        android:shortcutShortLabel="@string/shortcut_add_contact">
+        <intent
+            android:action="android.intent.action.VIEW"
+            android:targetPackage="com.heckmannch.birthdaybuddy"
+            android:targetClass="com.heckmannch.birthdaybuddy.MainActivity">
+            <extra android:name="OPEN_ADD_CONTACT" android:value="true" />
+        </intent>
+        <intent
+            android:action="android.intent.action.INSERT"
+            android:data="content://com.android.contacts/contacts" />
+        <categories android:name="android.shortcut.conversation" />
+    </shortcut>
+    <shortcut
+        android:shortcutId="search_contact"
+        android:enabled="true"
+        android:icon="@drawable/ic_app_logo"
+        android:shortcutShortLabel="@string/shortcut_search">
+        <intent
+            android:action="android.intent.action.VIEW"
+            android:targetPackage="com.heckmannch.birthdaybuddy"
+            android:targetClass="com.heckmannch.birthdaybuddy.MainActivity">
+            <extra android:name="OPEN_SEARCH" android:value="true" />
+        </intent>
+    </shortcut>
+</shortcuts>

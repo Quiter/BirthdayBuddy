@@ -119,4 +119,8 @@
     <string name="onboarding_notif_yes">Yes, please</string>
     <string name="onboarding_notif_no">Later</string>
     <string name="onboarding_notif_enabled_msg">Reminders are active (Default: 09:00 AM). You can adjust them in the settings.</string>
+
+    <!-- App Shortcuts -->
+    <string name="shortcut_add_contact">Add contact</string>
+    <string name="shortcut_search">Search</string>
 </resources>

@@ -14,4 +14,5 @@ data class HomeUiState(
     val swipeHintShown: Boolean = true,
     val isResettingFilter: Boolean = false,
     val isSyncing: Boolean = false,
+    val searchFocusRequested: Boolean = false,
 )

@@ -119,4 +119,8 @@
     <string name="onboarding_notif_yes">Ja, gerne</string>
     <string name="onboarding_notif_no">Später</string>
     <string name="onboarding_notif_enabled_msg">Erinnerungen sind aktiv (Standard: 09:00 Uhr). In den Einstellungen kannst du sie anpassen.</string>
+
+    <!-- App Shortcuts -->
+    <string name="shortcut_add_contact">Kontakt hinzufügen</string>
+    <string name="shortcut_search">Suche</string>
 </resources>

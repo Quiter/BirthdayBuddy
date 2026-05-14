@@ -98,6 +98,13 @@ class MainActivity : ComponentActivity() {
                 navController.navigate(Routes.NOTIFICATION_SETTINGS)
                 intent.removeExtra("NAVIGATE_TO_NOTIFICATIONS")
             }
+            if (intent?.getBooleanExtra("OPEN_SEARCH", false) == true) {
+                navController.navigate(Routes.HOME) {
+                    popUpTo(Routes.HOME) { inclusive = true }
+                }
+                viewModel.triggerSearchFocus()
+                intent.removeExtra("OPEN_SEARCH")
+            }
         }
     }
 

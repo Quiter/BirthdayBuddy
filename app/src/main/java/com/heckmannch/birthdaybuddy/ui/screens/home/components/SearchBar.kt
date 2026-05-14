@@ -15,8 +15,11 @@ import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.input.ImeAction
@@ -36,6 +39,7 @@ fun SearchBar(
     onClearQuery: () -> Unit,
     onSettingsClick: () -> Unit,
     modifier: Modifier = Modifier,
+    focusRequester: FocusRequester = remember { FocusRequester() },
 ) {
     val focusManager = LocalFocusManager.current
     val textStyle = MaterialTheme.typography.bodyLarge.copy(
@@ -92,7 +96,11 @@ fun SearchBar(
                         }
                         onQueryChange(capitalizedText)
                     },
-                    modifier = Modifier.fillMaxWidth().fillMaxHeight().wrapContentHeight(),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .fillMaxHeight()
+                        .wrapContentHeight()
+                        .focusRequester(focusRequester),
                     textStyle = textStyle,
                     singleLine = true,
                     cursorBrush = SolidColor(MaterialTheme.colorScheme.primary),

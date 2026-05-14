@@ -21,6 +21,7 @@ import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
@@ -92,6 +93,15 @@ fun HomeScreen(
         viewModel.scrollToTopEvent.collectLatest {
             homeState.resetScrollRequested = true
             viewModel.setIsResettingFilter(true)
+        }
+    }
+
+    LaunchedEffect(uiState.searchFocusRequested) {
+        if (uiState.searchFocusRequested) {
+            delay(500)
+            homeState.searchFocusRequester.requestFocus()
+            keyboardController?.show()
+            viewModel.consumeSearchFocus()
         }
     }
 
@@ -184,6 +194,7 @@ fun HomeScreen(
 class HomeState(
     val listState: LazyListState,
     val snackbarHostState: SnackbarHostState,
+    val searchFocusRequester: FocusRequester,
     private val scope: CoroutineScope,
 ) {
     var hasAttemptedContactPermission by mutableStateOf(false)
@@ -223,8 +234,11 @@ class HomeState(
 fun rememberHomeState(
     listState: LazyListState = rememberLazyListState(),
     snackbarHostState: SnackbarHostState = remember { SnackbarHostState() },
+    searchFocusRequester: FocusRequester = remember { FocusRequester() },
     scope: CoroutineScope = rememberCoroutineScope(),
-) = remember(listState, snackbarHostState, scope) { HomeState(listState, snackbarHostState, scope) }
+) = remember(listState, snackbarHostState, searchFocusRequester, scope) { 
+    HomeState(listState, snackbarHostState, searchFocusRequester, scope) 
+}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -263,6 +277,7 @@ private fun HomeContent(
                 onLabelSelected = onLabelSelected,
                 onNavigateToSettings = onNavigateToSettings,
                 onClearSearch = onClearSearch,
+                searchFocusRequester = homeState.searchFocusRequester
             )
         },
         floatingActionButton = {

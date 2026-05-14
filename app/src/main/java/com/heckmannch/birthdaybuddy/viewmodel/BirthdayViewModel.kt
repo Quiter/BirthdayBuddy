@@ -94,6 +94,7 @@ class BirthdayViewModel @Inject constructor(
     private val _selectedLabel = MutableStateFlow<String?>(null)
     private val _isResettingFilter = MutableStateFlow(value = false)
     private val _isSyncing = MutableStateFlow(value = false)
+    private val _searchFocusRequested = MutableStateFlow(value = false)
 
     private val _scrollToTopEvent = MutableSharedFlow<Unit>(replay = 0)
     val scrollToTopEvent: SharedFlow<Unit> = _scrollToTopEvent.asSharedFlow()
@@ -217,6 +218,7 @@ class BirthdayViewModel @Inject constructor(
         _isSyncing,
         availableLabels,
         swipeHintShown,
+        _searchFocusRequested,
     ) { flows ->
         HomeUiState(
             contacts = flows[0] as List<ContactUiModel>?,
@@ -226,6 +228,7 @@ class BirthdayViewModel @Inject constructor(
             isSyncing = flows[4] as Boolean,
             availableLabels = flows[5] as List<String>,
             swipeHintShown = flows[6] as Boolean,
+            searchFocusRequested = flows[7] as Boolean,
         )
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), HomeUiState())
 
@@ -297,6 +300,14 @@ class BirthdayViewModel @Inject constructor(
 
     fun triggerScrollToTop() = viewModelScope.launch {
         _scrollToTopEvent.emit(Unit)
+    }
+
+    fun triggerSearchFocus() {
+        _searchFocusRequested.value = true
+    }
+
+    fun consumeSearchFocus() {
+        _searchFocusRequested.value = false
     }
 
     suspend fun exportGiftIdeas() = contactRepository.exportGiftIdeas()
