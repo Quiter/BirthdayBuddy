@@ -40,8 +40,9 @@
     - `GiftIdeaDialog.kt`: Checklisten-Dialog (Google Keep Style) für die schnelle Verwaltung von Geschenkideen.
     - `HomeFAB.kt`: Multifunktionaler FAB mit Morphing-Animation (Add-Contact vs. Scroll-to-Top).
     - `HomeTopBar.kt`: Kombiniert die SearchBar und die LabelFilterBar zu einer responsiven Kopfleiste.
-    - `SearchBar.kt`: M3 SearchBar-Integration mit Fokus-Management und Settings-Link.
     - `LabelFilterBar.kt`: Horizontale Chip-Leiste zur Filterung der Kontakte nach Labels.
+    - `OnboardingDialog.kt`: M3 Dialog zur Abfrage der Benachrichtigungs-Präferenz beim Erststart.
+    - `SearchBar.kt`: M3 SearchBar-Integration mit Fokus-Management und Settings-Link.
 
 ## 📁 Settings (`ui.screens.settings`)
 - `SettingsScreen.kt`: Haupteinstellungsmenü mit kategorialer Unterteilung.

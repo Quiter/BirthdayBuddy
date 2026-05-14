@@ -9,5 +9,6 @@ data class AppSettings(
     val notificationsEnabled: Boolean = false,
     val persistentNotifications: Boolean = true, // NEU: Benachrichtigungen müssen aktiv quittiert werden
     val swipeHintShown: Boolean = false,
+    val onboardingCompleted: Boolean = false, // NEU: Flag für den Erststart
     val lastSyncTimestamp: Long = 0L // Zeitstempel des letzten erfolgreichen Syncs
 )

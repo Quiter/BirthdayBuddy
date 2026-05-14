@@ -10,8 +10,10 @@ import com.heckmannch.birthdaybuddy.MainActivity
 import com.heckmannch.birthdaybuddy.R
 import com.heckmannch.birthdaybuddy.database.Contact
 import com.heckmannch.birthdaybuddy.repository.NotificationRepository
+import com.heckmannch.birthdaybuddy.util.safeNextAge
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.first
+import java.time.LocalDate
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -28,6 +30,11 @@ class NotificationHelper @Inject constructor(
     suspend fun showBirthdayNotification(contacts: List<Contact>, daysBefore: Int, pendingId: Int = -1) {
         val settings = notificationRepository.settings.first()
         val isPersistent = settings.persistentNotifications
+        
+        // Wisch-Zähler prüfen für Hilfetext
+        val pendingNotification = if (pendingId != -1) notificationRepository.getPendingNotificationById(pendingId) else null
+        val dismissCount = pendingNotification?.dismissCount ?: 0
+        val showHint = isPersistent && dismissCount >= 3
 
         val notificationManager =
             context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
@@ -76,6 +83,16 @@ class NotificationHelper @Inject constructor(
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
 
+        // Action-Intent: Einstellungen öffnen
+        val settingsIntent = Intent(context, MainActivity::class.java).apply {
+            putExtra("NAVIGATE_TO_NOTIFICATIONS", true)
+            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+        }
+        val settingsPendingIntent = PendingIntent.getActivity(
+            context, notificationId + 4000, settingsIntent,
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        )
+
         // Delete-Intent: Falls weggeschoben wird -> Re-post (für echte Persistenz)
         val deleteIntent = Intent(context, NotificationActionReceiver::class.java).apply {
             action = "DISMISSED"
@@ -90,12 +107,23 @@ class NotificationHelper @Inject constructor(
         )
 
         val title = if (contacts.size == 1) {
-            val name = contacts.first().fullName
+            val contact = contacts.first()
+            val name = contact.fullName
+            val birthday = contact.birthday
+            // Wir zeigen das Alter nur an, wenn ein Jahr im Geburtstag vorhanden ist (Room speichert 0000 oder 1900 wenn nicht bekannt)
+            // Hier prüfen wir auf > 1900, da Android bei "Jahr weglassen" oft 1900 oder 0004 nutzt.
+            val hasYear = birthday.year > 1900 
+            val nextAge = if (hasYear) birthday.safeNextAge(LocalDate.now()) else -1
+
             when (daysBefore) {
-                0 -> context.getString(R.string.notif_title_today_named, name)
-                1 -> context.getString(R.string.notif_title_tomorrow_named, name)
-                7 -> context.getString(R.string.notif_title_week_named, name)
-                else -> context.resources.getQuantityString(R.plurals.notif_title_days_named, daysBefore, daysBefore, name)
+                0 -> if (hasYear) context.getString(R.string.notif_title_today_age, name, nextAge) 
+                     else context.getString(R.string.notif_title_today_named, name)
+                1 -> if (hasYear) context.getString(R.string.notif_title_tomorrow_age, name, nextAge)
+                     else context.getString(R.string.notif_title_tomorrow_named, name)
+                7 -> if (hasYear) context.getString(R.string.notif_title_week_age, name, nextAge)
+                     else context.getString(R.string.notif_title_week_named, name)
+                else -> if (hasYear) context.resources.getQuantityString(R.plurals.notif_title_days_age, daysBefore, daysBefore, name, nextAge)
+                        else context.resources.getQuantityString(R.plurals.notif_title_days_named, daysBefore, daysBefore, name)
             }
         } else {
             when (daysBefore) {
@@ -107,13 +135,16 @@ class NotificationHelper @Inject constructor(
         }
 
         val contentText = if (contacts.size == 1) {
-            context.getString(R.string.notif_desc_named)
+            if (showHint) context.getString(R.string.notif_hint_persistent)
+            else context.getString(R.string.notif_desc_named)
         } else {
-            contacts.joinToString(", ") { it.fullName }
+            val list = contacts.joinToString(", ") { it.fullName }
+            if (showHint) "${context.getString(R.string.notif_hint_persistent)} ($list)"
+            else list
         }
 
         val notification = NotificationCompat.Builder(context, CHANNEL_ID)
-            .setSmallIcon(R.drawable.ic_launcher_foreground)
+            .setSmallIcon(R.drawable.ic_notification)
             .setContentTitle(title)
             .setContentText(contentText)
             .setPriority(NotificationCompat.PRIORITY_HIGH)
@@ -123,6 +154,9 @@ class NotificationHelper @Inject constructor(
                 if (isPersistent) {
                     setDeleteIntent(deletePendingIntent)
                     addAction(0, context.getString(R.string.notif_action_done), donePendingIntent)
+                }
+                if (showHint) {
+                    addAction(0, context.getString(R.string.notif_action_settings), settingsPendingIntent)
                 }
             }
             .addAction(0, context.getString(R.string.notif_action_snooze), snoozePendingIntent)

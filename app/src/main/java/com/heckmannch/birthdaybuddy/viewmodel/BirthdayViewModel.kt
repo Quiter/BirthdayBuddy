@@ -39,8 +39,12 @@ class BirthdayViewModel @Inject constructor(
         .map { it.persistentNotifications }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), initialValue = true)
 
-    val notificationRules: StateFlow<List<NotificationRule>> = notificationRepository.allRules
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+    val notificationRules: StateFlow<List<NotificationRule>?> = notificationRepository.allRules
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), null)
+
+    val onboardingCompleted: StateFlow<Boolean> = notificationRepository.settings
+        .map { it.onboardingCompleted }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), initialValue = true)
 
     init {
         // Automatische Worker-Synchronisation bei Einstellungsänderungen oder Regeländerungen
@@ -48,12 +52,10 @@ class BirthdayViewModel @Inject constructor(
             combine(notificationsEnabled, notificationRules) { enabled, rules ->
                 enabled to rules
             }.collect { (enabled, rules) ->
-                if (enabled) {
-                    if (rules.isEmpty()) {
-                        addNotificationRule(daysBefore = 0, hour = 9, minute = 0)
-                    } else {
-                        NotificationWorker.scheduleNext(context, rules)
-                    }
+                if (rules == null) return@collect // Noch am Laden
+                
+                if (enabled && rules.isNotEmpty()) {
+                    NotificationWorker.scheduleNext(context, rules)
                 } else {
                     NotificationWorker.cancelNotification(context)
                 }
@@ -62,10 +64,16 @@ class BirthdayViewModel @Inject constructor(
     }
 
     fun setNotificationsEnabled(enabled: Boolean) = viewModelScope.launch {
-        if (enabled && notificationRules.value.isEmpty()) {
+        // Wir fügen eine Standard-Regel hinzu, falls noch keine existiert und eingeschaltet wird
+        val rules = notificationRules.value
+        if (enabled && (rules != null) && rules.isEmpty()) {
             addNotificationRule(daysBefore = 0, hour = 9, minute = 0)
         }
         notificationRepository.updateSettings(notificationsEnabled = enabled)
+    }
+
+    fun setOnboardingCompleted(completed: Boolean) = viewModelScope.launch {
+        notificationRepository.updateSettings(onboardingCompleted = completed)
     }
 
     fun setPersistentNotifications(persistent: Boolean) = viewModelScope.launch {
@@ -96,14 +104,12 @@ class BirthdayViewModel @Inject constructor(
 
     private val _searchQuery = MutableStateFlow("")
     private val _selectedLabel = MutableStateFlow<String?>(null)
-    private val _isFastScrolling = MutableStateFlow(value = false)
     private val _isResettingFilter = MutableStateFlow(value = false)
     private val _isSyncing = MutableStateFlow(value = false)
 
     private val _scrollToTopEvent = MutableSharedFlow<Unit>(replay = 0)
     val scrollToTopEvent: SharedFlow<Unit> = _scrollToTopEvent.asSharedFlow()
 
-    fun setFastScrolling(isScrolling: Boolean) { _isFastScrolling.value = isScrolling }
     fun setIsResettingFilter(isResetting: Boolean) { _isResettingFilter.value = isResetting }
 
     // --- Data Processing ---
@@ -175,7 +181,6 @@ class BirthdayViewModel @Inject constructor(
         filteredContacts,
         _searchQuery,
         _selectedLabel,
-        _isFastScrolling,
         _isResettingFilter,
         _isSyncing,
         availableLabels,
@@ -185,11 +190,10 @@ class BirthdayViewModel @Inject constructor(
             contacts = flows[0] as List<ContactUiModel>?,
             searchQuery = flows[1] as String,
             selectedLabel = flows[2] as String?,
-            isFastScrolling = flows[3] as Boolean,
-            isResettingFilter = flows[4] as Boolean,
-            isSyncing = flows[5] as Boolean,
-            availableLabels = flows[6] as List<String>,
-            swipeHintShown = flows[7] as Boolean
+            isResettingFilter = flows[3] as Boolean,
+            isSyncing = flows[4] as Boolean,
+            availableLabels = flows[5] as List<String>,
+            swipeHintShown = flows[6] as Boolean,
         )
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), HomeUiState())
 

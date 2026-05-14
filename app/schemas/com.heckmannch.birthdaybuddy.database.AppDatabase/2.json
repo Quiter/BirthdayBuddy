@@ -1,8 +1,8 @@
 {
   "formatVersion": 1,
   "database": {
-    "version": 1,
-    "identityHash": "6aad5828b02f2726e65de725f652621d",
+    "version": 2,
+    "identityHash": "85d4f631c6be6a3244ef06be18428a9b",
     "entities": [
       {
         "tableName": "contacts",
@@ -147,7 +147,7 @@
       },
       {
         "tableName": "pending_notifications",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `contactLookupKeys` TEXT NOT NULL, `daysBefore` INTEGER NOT NULL, `year` INTEGER NOT NULL, `isDone` INTEGER NOT NULL)",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `contactLookupKeys` TEXT NOT NULL, `daysBefore` INTEGER NOT NULL, `year` INTEGER NOT NULL, `isDone` INTEGER NOT NULL, `dismissCount` INTEGER NOT NULL DEFAULT 0)",
         "fields": [
           {
             "fieldPath": "id",
@@ -178,6 +178,13 @@
             "columnName": "isDone",
             "affinity": "INTEGER",
             "notNull": true
+          },
+          {
+            "fieldPath": "dismissCount",
+            "columnName": "dismissCount",
+            "affinity": "INTEGER",
+            "notNull": true,
+            "defaultValue": "0"
           }
         ],
         "primaryKey": {
@@ -238,7 +245,7 @@
     ],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '6aad5828b02f2726e65de725f652621d')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '85d4f631c6be6a3244ef06be18428a9b')"
     ]
   }
 }

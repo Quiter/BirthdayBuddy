@@ -2,6 +2,7 @@ package com.heckmannch.birthdaybuddy.database
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey
+import androidx.room.ColumnInfo
 
 @Entity(tableName = "pending_notifications")
 data class PendingNotification(
@@ -9,5 +10,6 @@ data class PendingNotification(
     val contactLookupKeys: List<String>, // Liste der LookupKeys der betroffenen Kontakte
     val daysBefore: Int,
     val year: Int,
-    val isDone: Boolean = false
+    val isDone: Boolean = false,
+    @ColumnInfo(defaultValue = "0") val dismissCount: Int = 0 // NEU: Zähler für Wisch-Versuche
 )

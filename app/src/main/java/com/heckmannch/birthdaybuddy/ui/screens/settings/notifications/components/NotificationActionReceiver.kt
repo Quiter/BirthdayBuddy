@@ -64,6 +64,9 @@ class NotificationActionReceiver : BroadcastReceiver() {
             // (Das erzwingt die Persistenz auch auf Android 14+)
             if (pendingId != -1) {
                 CoroutineScope(Dispatchers.IO).launch {
+                    // Zähler für Wisch-Versuche erhöhen
+                    notificationRepository.incrementDismissCount(pendingId)
+
                     val allContacts = notificationRepository.getActiveNotificationsImmediate()
                     val isStillActive = allContacts.any { it.id == pendingId }
                     if (isStillActive) {

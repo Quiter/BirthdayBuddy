@@ -217,5 +217,22 @@ Alle signifikanten Änderungen am Projekt werden hier dokumentiert.
     - **UX Implementation:** Hinzufügen der Pull-to-Refresh Geste im Home-Screen zur manuellen Kontakt-Synchronisation.
     - **Visual Feedback:** Implementierung eines garantierten Mindest-Delays für den Ladeindikator zur Verbesserung der wahrgenommenen Funktionalität.
     - **State Management:** Integration des Sync-Status in den zentralen `HomeUiState`.
+59. **Onboarding & Notification Fix:**
+    - **Bugfix Rule Duplication:** Behebung eines Fehlers, bei dem die 09:00 Uhr Standard-Erinnerung bei jedem App-Start fälschlicherweise neu angelegt wurde (Fix via Null-Initialisierung im ViewModel).
+    - **Notification Onboarding:** Implementierung eines Erststart-Dialogs zur Abfrage der Benachrichtigungs-Präferenz, der erst nach Erteilung der Kontakt-Berechtigung erscheint.
+    - **UX Polish:** Sofortige Aktivierung der Standard-Regel bei Zustimmung inkl. Snackbar-Bestätigung, um einen reibungslosen "Out-of-the-box" Betrieb zu garantieren.
+    - **State Persistence:** Einführung des `onboardingCompleted` Flags in den `AppSettings` zur dauerhaften Speicherung des Onboarding-Status.
+60. **Advanced Notification Personalization:**
+    - **Age Integration:** Dynamische Erweiterung der Benachrichtigungstexte um das zukünftige Alter (z. B. "wird heute 30").
+    - **Smart Fallback:** Automatische Erkennung fehlender Geburtsjahre in den System-Kontakten; in diesen Fällen wird weiterhin ein neutraler Gratulationstext ohne Altersangabe verwendet, um Daten-Inkonsistenzen zu vermeiden.
+61. **Notification UX Polish:**
+    - **Icon Optimization:** Einführung eines dedizierten `ic_notification` Icons für die Statusleiste. Das neue Icon nutzt die volle verfügbare Fläche ohne das künstliche Padding des Launcher-Icons, was die Sichtbarkeit in der Benachrichtigungsleiste massiv verbessert.
+62. **Smart Persistence Feedback:**
+    - **Swipe Detection:** Implementierung eines Zählers für Wisch-Versuche (`dismissCount`) bei persistenten Benachrichtigungen.
+    - **Contextual Help:** Wenn ein User mehrfach versucht, eine wichtige Benachrichtigung wegzuwischen (>= 3 Versuche), wird der Text automatisch um einen Hilfshinweis ergänzt. Dieser erklärt, dass die Benachrichtigung aktiv quittiert werden muss und bietet über einen neuen "Einstellungen"-Button einen direkten Deep-Link zur Konfiguration an.
+    - **Database Hardening:** Migration der Datenbank auf Version 2 (Auto-Migration) und endgültiges Entfernen der destruktiven Migrations-Policy zur Absicherung der Nutzerdaten.
+63. **Architecture Best Practices (Plain State Holders):**
+    - **UI Logic Decoupling:** Einführung von spezialisierten State-Holder-Klassen (`HomeState`, `NotificationSettingsState`) zur Kapselung von komplexer UI-Logik (Scroll-Verhalten, Dialog-Management).
+    - **Code Quality:** Drastische Reduzierung des Boilerplate-Codes und der Parameteranzahl in UI-Komponenten durch State-Hoisting. Dies verbessert die Wartbarkeit und Testbarkeit der Screens erheblich.
 
 

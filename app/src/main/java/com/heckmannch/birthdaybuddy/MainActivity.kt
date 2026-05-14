@@ -70,7 +70,7 @@ class MainActivity : ComponentActivity() {
                 }
 
                 // React to intent changes (Initial start and onNewIntent)
-                HandleIntents(intent, viewModel)
+                HandleIntents(intent, viewModel, navController)
 
                 Surface(
                     modifier = Modifier.fillMaxSize(),
@@ -88,11 +88,15 @@ class MainActivity : ComponentActivity() {
     }
 
     @Composable
-    private fun HandleIntents(intent: Intent?, viewModel: BirthdayViewModel) {
+    private fun HandleIntents(intent: Intent?, viewModel: BirthdayViewModel, navController: NavHostController) {
         LaunchedEffect(intent) {
             if (intent?.getBooleanExtra("SCROLL_TO_TOP", false) == true) {
                 viewModel.triggerScrollToTop()
                 intent.removeExtra("SCROLL_TO_TOP")
+            }
+            if (intent?.getBooleanExtra("NAVIGATE_TO_NOTIFICATIONS", false) == true) {
+                navController.navigate(Routes.NOTIFICATION_SETTINGS)
+                intent.removeExtra("NAVIGATE_TO_NOTIFICATIONS")
             }
         }
     }

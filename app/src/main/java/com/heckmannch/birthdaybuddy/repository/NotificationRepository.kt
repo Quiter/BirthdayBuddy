@@ -26,6 +26,7 @@ class NotificationRepository @Inject constructor(
         notificationsEnabled: Boolean? = null,
         persistentNotifications: Boolean? = null,
         swipeHintShown: Boolean? = null,
+        onboardingCompleted: Boolean? = null,
         lastSyncTimestamp: Long? = null
     ) {
         val current = appSettingsDao.getSettingsImmediate() ?: AppSettings()
@@ -34,6 +35,7 @@ class NotificationRepository @Inject constructor(
                 notificationsEnabled = notificationsEnabled ?: current.notificationsEnabled,
                 persistentNotifications = persistentNotifications ?: current.persistentNotifications,
                 swipeHintShown = swipeHintShown ?: current.swipeHintShown,
+                onboardingCompleted = onboardingCompleted ?: current.onboardingCompleted,
                 lastSyncTimestamp = lastSyncTimestamp ?: current.lastSyncTimestamp
             )
         )
@@ -53,6 +55,10 @@ class NotificationRepository @Inject constructor(
 
     suspend fun insertPendingNotification(notification: PendingNotification) = 
         pendingNotificationDao.upsert(notification)
+
+    suspend fun getPendingNotificationById(id: Int) = pendingNotificationDao.getNotificationById(id)
+
+    suspend fun incrementDismissCount(id: Int) = pendingNotificationDao.incrementDismissCount(id)
 
     suspend fun markAsDone(id: Int) = pendingNotificationDao.markAsDone(id)
 }

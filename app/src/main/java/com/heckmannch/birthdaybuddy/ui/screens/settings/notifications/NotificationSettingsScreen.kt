@@ -49,7 +49,8 @@ fun NotificationSettingsScreen(
     NotificationSettingsContent(
         notificationsEnabled = notificationsEnabled,
         persistentNotifications = persistentNotifications,
-        rules = rules,
+        rules = rules ?: emptyList(),
+        state = rememberNotificationSettingsState(),
         onToggleNotifications = { enabled ->
             if (enabled) {
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
@@ -83,12 +84,34 @@ fun NotificationSettingsScreen(
     )
 }
 
+/**
+ * Plain State Holder für die UI-Logik der Benachrichtigungs-Einstellungen.
+ * Kapselt die Sichtbarkeit der Dialoge.
+ */
+@Stable
+class NotificationSettingsState {
+    var ruleToEdit by mutableStateOf<NotificationRule?>(null)
+    var showAddDialog by mutableStateOf(value = false)
+
+    fun openAddDialog() { showAddDialog = true }
+    fun closeAddDialog() { showAddDialog = false }
+    
+    fun openEditDialog(rule: NotificationRule) { ruleToEdit = rule }
+    fun closeEditDialog() { ruleToEdit = null }
+}
+
+@Composable
+fun rememberNotificationSettingsState(): NotificationSettingsState {
+    return remember { NotificationSettingsState() }
+}
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun NotificationSettingsContent(
     notificationsEnabled: Boolean,
     persistentNotifications: Boolean,
     rules: List<NotificationRule>,
+    state: NotificationSettingsState,
     onToggleNotifications: (Boolean) -> Unit,
     onTogglePersistent: (Boolean) -> Unit,
     onAddRule: (Int, Int, Int) -> Unit,
@@ -96,9 +119,6 @@ private fun NotificationSettingsContent(
     onDeleteRule: (NotificationRule) -> Unit,
     onNavigateBack: () -> Unit,
 ) {
-    val ruleToEditState = remember { mutableStateOf<NotificationRule?>(value = null) }
-    val showAddDialogState = remember { mutableStateOf(value = false) }
-
     Scaffold(
         topBar = {
             TopAppBar(
@@ -115,7 +135,7 @@ private fun NotificationSettingsContent(
         },
         floatingActionButton = {
             if (notificationsEnabled) {
-                FloatingActionButton(onClick = { showAddDialogState.value = true }) {
+                FloatingActionButton(onClick = { state.openAddDialog() }) {
                     Icon(Icons.Default.Add, contentDescription = stringResource(R.string.notifications_add_rule))
                 }
             }
@@ -180,7 +200,7 @@ private fun NotificationSettingsContent(
                     items(rules, key = { it.id }) { rule ->
                         NotificationRuleItem(
                             rule = rule,
-                            onEditRule = { ruleToEditState.value = it },
+                            onEditRule = { state.openEditDialog(it) },
                             onDeleteRule = onDeleteRule,
                         )
                     }
@@ -189,23 +209,23 @@ private fun NotificationSettingsContent(
         }
     }
 
-    if (showAddDialogState.value) {
+    if (state.showAddDialog) {
         EditRuleDialog(
-            onDismiss = { showAddDialogState.value = false },
+            onDismiss = { state.closeAddDialog() },
             onConfirm = { days, hour, minute ->
                 onAddRule(days, hour, minute)
-                showAddDialogState.value = false
+                state.closeAddDialog()
             },
         )
     }
 
-    ruleToEditState.value?.let { rule ->
+    state.ruleToEdit?.let { rule ->
         EditRuleDialog(
             rule = rule,
-            onDismiss = { ruleToEditState.value = null },
+            onDismiss = { state.closeEditDialog() },
             onConfirm = { days, hour, minute ->
                 onUpdateRule(rule.copy(daysBefore = days, hour = hour, minute = minute))
-                ruleToEditState.value = null
+                state.closeEditDialog()
             },
         )
     }
@@ -222,6 +242,7 @@ private fun NotificationSettingsPreview() {
                 NotificationRule(1, 0, 9, 0),
                 NotificationRule(2, 1, 18, 0),
             ),
+            state = rememberNotificationSettingsState(),
             onToggleNotifications = {},
             onTogglePersistent = {},
             onAddRule = { _, _, _ -> },

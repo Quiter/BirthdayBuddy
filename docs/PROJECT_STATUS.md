@@ -7,7 +7,7 @@ Die App wurde erfolgreich von BirthdayBuddy2 in BirthdayBuddy umbenannt. In dies
 
 **WICHTIG FÜR NEUE SESSIONS:**
 1. **Dokumentations-Pflicht:** Bei jeder strukturellen Änderung (neue Dateien, Refactoring) muss die `PROJECT_STRUCTURE.md` zwingend aktualisiert werden.
-2. **Changelog-Pflicht:** Jede signifikante Änderung muss in der `CHANGELOG.md` dokumentiert werden.
+2. **Changelog-Pflicht:** Jede signifikante Änderung muss in der `CHANGELOG.md` dokumentiert werden. **WICHTIG:** Bestehende Einträge im Changelog dürfen niemals nachträglich bearbeitet werden. Neue Änderungen müssen immer als neue Punkte am Ende der Liste ergänzt werden, um eine lückenlose Historie zu gewährleisten.
 3. **Status-Relevanz:** Nur Meilensteine und aktuell relevante Fokus-Themen verbleiben in dieser Datei. Der detaillierte Verlauf findet sich in der `CHANGELOG.md`.
 
 ## 🛠 Architektur & Struktur

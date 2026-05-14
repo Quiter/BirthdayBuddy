@@ -11,7 +11,6 @@ data class HomeUiState(
     val searchQuery: String = "",
     val availableLabels: List<String> = emptyList(),
     val selectedLabel: String? = null,
-    val isFastScrolling: Boolean = false,
     val swipeHintShown: Boolean = true,
     val isResettingFilter: Boolean = false,
     val isSyncing: Boolean = false,
