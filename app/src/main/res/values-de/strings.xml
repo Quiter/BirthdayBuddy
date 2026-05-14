@@ -1,0 +1,122 @@
+<resources>
+    <string name="app_name">BirthdayBuddy</string>
+
+    <!-- HomeScreen & General -->
+    <string name="home_placeholder_app">BirthdayBuddy</string>
+    <string name="home_placeholder_search">Kontakt suchen</string>
+    <string name="home_search_clear">Suche löschen</string>
+    <string name="home_settings">Einstellungen</string>
+    <string name="home_filter_all">Alle</string>
+    <string name="home_scroll_to_top">Nach oben scrollen</string>
+    <string name="home_add_contact">Kontakt hinzufügen</string>
+    <string name="home_scrollbar_desc">Schnell-Scrollleiste, aktueller Monat: %1$s</string>
+
+    <!-- Birthday List -->
+    <string name="empty_permission_desc">Um deine Geburtstage zu sehen, benötigt BirthdayBuddy Zugriff auf deine Kontakte.</string>
+    <string name="empty_permission_btn">Berechtigung erteilen</string>
+    <string name="empty_no_birthdays">Keine Geburtstage gefunden. Synchronisiere deine Kontakte in den Einstellungen oder füge neue hinzu.</string>
+
+    <!-- Birthday Item -->
+    <string name="item_gift_ideas_hint">Geschenkideen vorhanden</string>
+    <string name="item_image_desc">Kontaktbild von %1$s</string>
+    <string name="item_action_gifts">Geschenkideen bearbeiten</string>
+    <string name="item_action_contact">Kontakt öffnen</string>
+    <string name="item_today">Heute!</string>
+    <plurals name="item_days_left">
+        <item quantity="one">In %d T.</item>
+        <item quantity="other">In %d T.</item>
+    </plurals>
+
+    <!-- Widget -->
+    <string name="widget_no_birthdays">Keine Geburtstage</string>
+    <string name="widget_turns_age">wird %d</string>
+
+    <!-- Gift Idea Dialog -->
+    <string name="gift_dialog_title">Geschenkideen</string>
+    <string name="gift_dialog_delete">Löschen</string>
+    <string name="gift_dialog_add">Listeneintrag</string>
+    <string name="gift_dialog_save">Speichern</string>
+    <string name="gift_dialog_cancel">Abbrechen</string>
+
+    <!-- Notification Settings -->
+    <string name="notifications_title">Benachrichtigungen</string>
+    <string name="notifications_back">Zurück</string>
+    <string name="notifications_add_rule">Regel hinzufügen</string>
+    <string name="notifications_edit_rule">Regel bearbeiten</string>
+    <string name="notifications_header">Geburtstags-Erinnerungen</string>
+    <string name="notifications_desc">Erhalte personalisierte Benachrichtigungen</string>
+    <string name="notifications_persistent_header">Wichtige Benachrichtigungen</string>
+    <string name="notifications_persistent_desc">Müssen aktiv als erledigt markiert werden</string>
+    <string name="notifications_empty">Keine Erinnerungen geplant</string>
+    <string name="notifications_permission_missing_desc">Um Benachrichtigungen zu erhalten, benötigt BirthdayBuddy die Berechtigung, dir Mitteilungen senden zu dürfen.</string>
+    <string name="notifications_permission_btn">Berechtigung erteilen</string>
+    <string name="notifications_planned_header">Geplante Erinnerungen</string>
+    <string name="notifications_delete">Löschen</string>
+
+    <!-- Notification Rules -->
+    <string name="rule_today">Am Tag selbst</string>
+    <string name="rule_tomorrow">Einen Tag vorher</string>
+    <string name="rule_one_week">Eine Woche vorher</string>
+    <plurals name="rule_days_before">
+        <item quantity="one">Einen Tag vorher</item>
+        <item quantity="other">%d Tage vorher</item>
+    </plurals>
+    <string name="rule_time_format">Um %1$02d:%2$02d Uhr</string>
+    <string name="rule_time_display">%1$02d:%2$02d Uhr</string>
+
+    <!-- Edit Rule Dialog -->
+    <string name="dialog_rule_question">Wann möchtest du erinnert werden?</string>
+    <string name="dialog_preset_today">Heute</string>
+    <string name="dialog_preset_tomorrow">Morgen</string>
+    <string name="dialog_preset_week">1 Woche</string>
+    <string name="dialog_cancel">Abbrechen</string>
+    <string name="dialog_next">Weiter</string>
+    <string name="dialog_back">Zurück</string>
+    <string name="dialog_save">Speichern</string>
+    <string name="dialog_time_title">Uhrzeit wählen</string>
+    <string name="dialog_slider_today">Heute</string>
+    <string name="dialog_slider_max">30 Tage</string>
+
+    <!-- Notification Helper -->
+    <string name="notif_channel_name">Geburtstags-Erinnerungen</string>
+    <string name="notif_action_snooze">Später</string>
+    <string name="notif_action_done">Erledigt</string>
+    <string name="notif_action_settings">Einstellungen</string>
+    <string name="notif_hint_persistent">Hinweis: Diese Benachrichtigung bleibt aktiv, bis sie als erledigt markiert wird. Du kannst dies in den Einstellungen deaktivieren.</string>
+
+    <string name="notif_title_today_named">%1$s hat heute Geburtstag!</string>
+    <string name="notif_title_today_age">%1$s wird heute %2$d!</string>
+    <string name="notif_title_today_plural">Heute haben %d Personen Geburtstag!</string>
+    <string name="notif_title_tomorrow_named">%1$s hat morgen Geburtstag!</string>
+    <string name="notif_title_tomorrow_age">%1$s wird morgen %2$d!</string>
+    <string name="notif_title_tomorrow_plural">Morgen haben %d Personen Geburtstag!</string>
+    <string name="notif_title_week_named">%1$s hat in einer Woche Geburtstag!</string>
+    <string name="notif_title_week_age">%1$s wird in einer Woche %2$d!</string>
+    <string name="notif_title_week_plural">In einer Woche haben %d Personen Geburtstag!</string>
+    <plurals name="notif_title_days_named">
+        <item quantity="one">In einem Tag hat %1$s Geburtstag!</item>
+        <item quantity="other">In %d Tagen hat %s Geburtstag!</item>
+    </plurals>
+    <plurals name="notif_title_days_age">
+        <item quantity="one">In einem Tag wird %1$s %2$d!</item>
+        <item quantity="other">In %1$d Tagen wird %2$s %3$d!</item>
+    </plurals>
+    <plurals name="notif_title_days_plural">
+        <item quantity="one">In einem Tag haben %d Personen Geburtstag!</item>
+        <item quantity="other">In %d Tagen haben %d Personen Geburtstag!</item>
+    </plurals>
+    <string name="notif_desc_named">Vergiss nicht zu gratulieren!</string>
+
+    <!-- About Screen -->
+    <string name="about_title">Über die App</string>
+    <string name="about_description">BirthdayBuddy hilft dir dabei, nie wieder einen Geburtstag zu vergessen. Erhalte rechtzeitig Erinnerungen und verwalte Geschenkideen direkt in der App.</string>
+    <string name="about_developer_title">Entwickler</string>
+    <string name="about_location_title">Standort</string>
+
+    <!-- Onboarding -->
+    <string name="onboarding_notif_title">Erinnerungen einschalten?</string>
+    <string name="onboarding_notif_desc">Möchtest du rechtzeitig an anstehende Geburtstage erinnert werden? Du kannst dies jederzeit in den Einstellungen ändern.</string>
+    <string name="onboarding_notif_yes">Ja, gerne</string>
+    <string name="onboarding_notif_no">Später</string>
+    <string name="onboarding_notif_enabled_msg">Erinnerungen sind aktiv (Standard: 09:00 Uhr). In den Einstellungen kannst du sie anpassen.</string>
+</resources>

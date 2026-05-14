@@ -10,6 +10,7 @@ Die App wurde erfolgreich von BirthdayBuddy2 in BirthdayBuddy umbenannt. In dies
 2. **Changelog-Pflicht:** Jede signifikante Änderung muss in der `CHANGELOG.md` dokumentiert werden. **WICHTIG:** Bestehende Einträge im Changelog dürfen niemals nachträglich bearbeitet werden. Neue Änderungen müssen immer als neue Punkte am Ende der Liste ergänzt werden, um eine lückenlose Historie zu gewährleisten.
 3. **Datenbank-Migration:** Bei JEDER Änderung an einer Entity-Klasse (Package `database`) MUSS die Version in der `AppDatabase` erhöht und eine Migration (AutoMigration) definiert werden. Ein Datenverlust beim Nutzer ist unter allen Umständen zu vermeiden.
 4. **Status-Relevanz:** Nur Meilensteine und aktuell relevante Fokus-Themen verbleiben in dieser Datei. Der detaillierte Verlauf findet sich in der `CHANGELOG.md`.
+5. **Internationalisierungs-Pflicht:** Bei jeder Änderung an den Sprachressourcen (`strings.xml`) müssen **zwingend sowohl die englische (Standard) als auch die deutsche Version** aktualisiert werden.
 
 ## 🛠 Architektur & Struktur
 - **Package-Struktur:** Feature-basierte Layer (`ui.screens.home`, `ui.screens.settings.labels`, `ui.screens.settings.notifications`, `viewmodel`, `database`, `widget`).

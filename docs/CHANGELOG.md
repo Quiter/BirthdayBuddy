@@ -282,5 +282,8 @@ Alle signifikanten Änderungen am Projekt werden hier dokumentiert.
     - **UI Polish:** Optimierung der Klickflächen in der Suchleiste und Angleichung der Button-Höhen in den Swipe-Aktionen via `IntrinsicSize.Min`.
     - **Dialog Resilience:** Refactoring des Geschenkideen-Dialogs auf ein String-basiertes `Saver`-Modell zur Vermeidung von `IllegalArgumentException` Abstürzen bei Konfigurationsänderungen.
     - **FAB Intelligence:** Automatisches Ausblenden des Floating Action Buttons während aktiver Fast-Scroll-Gesten zur Reduzierung visueller Unruhe.
+70. **Internationalisierung (I18n):**
+    - **Multi-Language Support:** Einführung von Englisch als Standardsprache (`values/strings.xml`) und Deutsch als lokalisierte Version (`values-de/strings.xml`).
+    - **Vollständige Übersetzung:** Alle UI-Texte, Benachrichtigungen und Widget-Inhalte wurden übersetzt, um die App für ein internationales Publikum zugänglich zu machen.
 
 

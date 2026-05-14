@@ -80,3 +80,8 @@
 - `BirthdayWidget.kt`: Glance-basierte Widget-UI mit Unterstützung für dynamische Layouts und Glance-State.
 - `BirthdayWidgetReceiver.kt`: Einstiegspunkt für das Widget-System und Trigger für Daten-Updates.
 - `BirthdayWidgetWorker.kt`: WorkManager-Job für die präzise Aktualisierung des Widgets um Mitternacht.
+
+## 🌍 Internationalisierung (I18n)
+- `res/values/strings.xml`: Standard-Sprachressourcen (**Englisch**).
+- `res/values-de/strings.xml`: Lokalisierte Sprachressourcen (**Deutsch**).
+- **WICHTIGER CONSTRAINT:** Bei der Erstellung neuer Strings oder der Bearbeitung bestehender Texte müssen **zwingend immer beide Dateien** (`values` und `values-de`) synchron gehalten werden, um eine konsistente Nutzererfahrung in beiden Sprachen zu gewährleisten.
