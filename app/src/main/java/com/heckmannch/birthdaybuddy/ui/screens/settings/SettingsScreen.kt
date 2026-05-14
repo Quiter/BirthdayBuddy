@@ -114,19 +114,19 @@ private fun SettingsContent(
 
                 item {
                     ListItem(
-                        headlineContent = { Text("Kontakte synchronisieren") },
-                        supportingContent = { Text("Geburtstage aus deinen System-Kontakten laden") },
-                        leadingContent = { Icon(Icons.Default.Refresh, contentDescription = null) },
-                        modifier = Modifier.clickable { onSyncClick() }
+                        headlineContent = { Text("Daten sichern") },
+                        supportingContent = { Text("Geschenkideen exportieren oder importieren") },
+                        leadingContent = { Icon(Icons.Default.Share, contentDescription = null) },
+                        modifier = Modifier.clickable { onNavigateToBackup() }
                     )
                 }
 
                 item {
                     ListItem(
-                        headlineContent = { Text("Daten sichern") },
-                        supportingContent = { Text("Geschenkideen exportieren oder importieren") },
-                        leadingContent = { Icon(Icons.Default.Share, contentDescription = null) },
-                        modifier = Modifier.clickable { onNavigateToBackup() }
+                        headlineContent = { Text("Kontakte synchronisieren") },
+                        supportingContent = { Text("Geburtstage aus deinen System-Kontakten laden") },
+                        leadingContent = { Icon(Icons.Default.Refresh, contentDescription = null) },
+                        modifier = Modifier.clickable { onSyncClick() }
                     )
                 }
 

@@ -17,20 +17,10 @@ data class ContactUiModel(
     val imageUri: String?,
     val initials: String,
     val nextAge: Int?,
-    val nextAgeText: String?,
     val daysUntilNext: Long,
-    val daysLeftText: String,
     val isToday: Boolean,
     val labels: List<String>,
     val giftIdeas: List<GiftIdea>,
 ) {
     val hasGiftIdeas: Boolean get() = giftIdeas.any { it.text.isNotBlank() }
 }
-
-@Immutable
-data class LabelManagementModel(
-    val name: String,
-    val isHiddenFromFilter: Boolean,
-    val isIgnored: Boolean,
-    val isSystem: Boolean,
-)

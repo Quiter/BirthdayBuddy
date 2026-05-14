@@ -33,23 +33,30 @@ class BirthdayViewModel @Inject constructor(
 
     // --- Settings & Preferences ---
 
-    val notificationsEnabled: StateFlow<Boolean> = notificationRepository.settings
-        .map { it.notificationsEnabled }
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), initialValue = false)
+    // Zentraler Flow für App-Einstellungen zur Vermeidung mehrfacher DB-Abos
+    private val settings = notificationRepository.settings
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), com.heckmannch.birthdaybuddy.database.AppSettings())
 
-    val persistentNotifications: StateFlow<Boolean> = notificationRepository.settings
+    val notificationsEnabled: StateFlow<Boolean> = settings
+        .map { it.notificationsEnabled }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), false)
+
+    val persistentNotifications: StateFlow<Boolean> = settings
         .map { it.persistentNotifications }
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), initialValue = true)
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), true)
 
     val notificationRules: StateFlow<List<NotificationRule>?> = notificationRepository.allRules
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), null)
 
-    val onboardingCompleted: StateFlow<Boolean> = notificationRepository.settings
+    val onboardingCompleted: StateFlow<Boolean> = settings
         .map { it.onboardingCompleted }
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), initialValue = true)
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), true)
+
+    val swipeHintShown: StateFlow<Boolean> = settings
+        .map { it.swipeHintShown }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), true)
 
     fun setNotificationsEnabled(enabled: Boolean) = viewModelScope.launch {
-        // Wir fügen eine Standard-Regel hinzu, falls noch keine existiert und eingeschaltet wird
         val rules = notificationRules.value
         if (enabled && (rules != null) && rules.isEmpty()) {
             addNotificationRule(daysBefore = 0, hour = 9, minute = 0)
@@ -77,10 +84,6 @@ class BirthdayViewModel @Inject constructor(
         notificationRepository.deleteRule(rule)
     }
 
-    val swipeHintShown: StateFlow<Boolean> = notificationRepository.settings
-        .map { it.swipeHintShown }
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), initialValue = true)
-
     fun setSwipeHintShown() = viewModelScope.launch {
         notificationRepository.updateSettings(swipeHintShown = true)
     }
@@ -99,9 +102,6 @@ class BirthdayViewModel @Inject constructor(
 
     // --- Data Processing ---
 
-    /**
-     * Basale Umwandlung der DB-Modelle in UI-Modelle.
-     */
     private val allUiContacts: Flow<List<ContactUiModel>> = combine(
         contactRepository.allContacts,
         timeRepository.currentDate,
@@ -113,12 +113,12 @@ class BirthdayViewModel @Inject constructor(
     }.flowOn(Dispatchers.Default)
 
     init {
-        // Automatische Worker-Synchronisation bei Einstellungsänderungen oder Regeländerungen
+        // Automatische Worker-Synchronisation
         viewModelScope.launch {
             combine(notificationsEnabled, notificationRules) { enabled, rules ->
                 enabled to rules
             }.collect { (enabled, rules) ->
-                if (rules == null) return@collect // Noch am Laden
+                if (rules == null) return@collect 
                 
                 if (enabled && rules.isNotEmpty()) {
                     NotificationWorker.scheduleNext(context, rules)
@@ -128,13 +128,13 @@ class BirthdayViewModel @Inject constructor(
             }
         }
 
-        // Pre-fetch der ersten Kontaktbilder zur Vermeidung von Rucklern beim Start
+        // Pre-fetch der ersten Kontaktbilder
         viewModelScope.launch {
             allUiContacts.filter { it.isNotEmpty() }.first().take(20).forEach { contact ->
                 if (contact.imageUri != null) {
                     val request = ImageRequest.Builder(context)
                         .data(contact.imageUri)
-                        .size(150) // Daumenwert für Thumbnails
+                        .size(150)
                         .build()
                     context.imageLoader.enqueue(request)
                 }
@@ -144,24 +144,29 @@ class BirthdayViewModel @Inject constructor(
 
     /**
      * Filtern der fertigen UI-Modelle basierend auf Suche und Labels.
+     * Optimierung: Such-Keywords werden nur berechnet, wenn sich die Suche ändert.
      */
+    private val searchKeywords = _searchQuery
+        .map { it.trim() }
+        .distinctUntilChanged()
+        .map { if (it.isEmpty()) emptyList() else it.split("\\s+".toRegex()) }
+        .flowOn(Dispatchers.Default)
+
     private val filteredContacts: Flow<List<ContactUiModel>?> = combine(
         allUiContacts,
-        _searchQuery,
+        searchKeywords,
         _selectedLabel,
         contactRepository.labelConfigs,
-    ) { uiList, query, label, configs ->
+    ) { uiList, keywords, label, configs ->
         val ignoredLabels = configs.asSequence().filter { it.isIgnored }.map { it.name }.toSet()
-        val trimmedQuery = query.trim()
-        val isSearching = trimmedQuery.isNotEmpty()
-        val searchKeywords = if (isSearching) trimmedQuery.split("\\s+".toRegex()) else emptyList()
+        val isSearching = keywords.isNotEmpty()
 
         uiList.asSequence()
             .filter { contact ->
                 val isIgnored = contact.labels.any { it in ignoredLabels }
                 if (isIgnored && !isSearching) return@filter false
 
-                val matchesQuery = !isSearching || searchKeywords.all { keyword ->
+                val matchesQuery = !isSearching || keywords.all { keyword ->
                     contact.fullName.contains(keyword, ignoreCase = true)
                 }
                 val matchesLabel = (label == null) || contact.labels.contains(label)
@@ -188,9 +193,6 @@ class BirthdayViewModel @Inject constructor(
             .toList()
     }
 
-    /**
-     * Gebündelter UI-State für den Home-Bildschirm.
-     */
     @Suppress("UNCHECKED_CAST")
     val uiState: StateFlow<HomeUiState> = combine(
         filteredContacts,
@@ -269,7 +271,6 @@ class BirthdayViewModel @Inject constructor(
         contactRepository.syncContacts()
         updateWidget()
         
-        // Sicherstellen, dass der Ladekreis mindestens 800ms sichtbar ist (UX)
         val elapsedTime = System.currentTimeMillis() - startTime
         if (elapsedTime < 800) {
             delay(800 - elapsedTime)

@@ -8,7 +8,8 @@ Die App wurde erfolgreich von BirthdayBuddy2 in BirthdayBuddy umbenannt. In dies
 **WICHTIG FÜR NEUE SESSIONS:**
 1. **Dokumentations-Pflicht:** Bei jeder strukturellen Änderung (neue Dateien, Refactoring) muss die `PROJECT_STRUCTURE.md` zwingend aktualisiert werden.
 2. **Changelog-Pflicht:** Jede signifikante Änderung muss in der `CHANGELOG.md` dokumentiert werden. **WICHTIG:** Bestehende Einträge im Changelog dürfen niemals nachträglich bearbeitet werden. Neue Änderungen müssen immer als neue Punkte am Ende der Liste ergänzt werden, um eine lückenlose Historie zu gewährleisten.
-3. **Status-Relevanz:** Nur Meilensteine und aktuell relevante Fokus-Themen verbleiben in dieser Datei. Der detaillierte Verlauf findet sich in der `CHANGELOG.md`.
+3. **Datenbank-Migration:** Bei JEDER Änderung an einer Entity-Klasse (Package `database`) MUSS die Version in der `AppDatabase` erhöht und eine Migration (AutoMigration) definiert werden. Ein Datenverlust beim Nutzer ist unter allen Umständen zu vermeiden.
+4. **Status-Relevanz:** Nur Meilensteine und aktuell relevante Fokus-Themen verbleiben in dieser Datei. Der detaillierte Verlauf findet sich in der `CHANGELOG.md`.
 
 ## 🛠 Architektur & Struktur
 - **Package-Struktur:** Feature-basierte Layer (`ui.screens.home`, `ui.screens.settings.labels`, `ui.screens.settings.notifications`, `viewmodel`, `database`, `widget`).
@@ -22,7 +23,14 @@ Diese Punkte sind Kernentscheidungen und sollen nicht zur Optimierung oder Ände
 1. **Kontakt-Sortierung:** Die Kontakte in der Hauptliste sind immer nach "Tagen bis zum nächsten Geburtstag" sortiert.
 2. **Single Source of Truth:** Android-Kontakte sind die führende Quelle; die lokale DB ist ein Cache mit Anreicherungen (Geschenkideen).
 3. **Persistence-Wahl:** Room ist der einzige Speicherort für strukturierte und unstrukturierte Einstellungen (AppSettings).
-4. **Migration-First Policy:** Bei zukünftigen Schema-Änderungen müssen Migrationen definiert werden.
+4. **Migration-First Policy:** Bei zukünftigen Schema-Änderungen müssen Migrationen definiert werden. Destruktive Migrationen (`fallbackToDestructiveMigration`) sind im Release-Zweig streng verboten.
+
+## 🛡 Datenbank-Migrationen & Sicherheit (Zwingend!)
+Um Start-Abstürze und Datenverlust nach Updates zu verhindern, müssen folgende Schritte bei jeder Änderung an der Datenbank-Struktur (Entities) befolgt werden:
+1. **Versions-Bump:** Die `version` in `AppDatabase.kt` um 1 erhöhen.
+2. **Auto-Migration:** Die neue Migration in das `autoMigrations` Array der `@Database` Annotation aufnehmen (z. B. `AutoMigration(from = 2, to = 3)`).
+3. **Schema-Erhalt:** Die generierten JSON-Dateien im Ordner `app/schemas/` müssen zwingend in Git eingecheckt werden. Sie dienen Room als Referenz für den Strukturvergleich.
+4. **Verifikations-Pflicht:** Vor jedem Release muss ein Update-Szenario (Installation der alten Version -> Daten anlegen -> Installation der neuen Version als Update) erfolgreich getestet werden.
 
 ## ✨ Key Features
 1. **HomeScreen:** High-End Fast-Scrollbar, Gmail-Style Suche, intelligenter FAB.

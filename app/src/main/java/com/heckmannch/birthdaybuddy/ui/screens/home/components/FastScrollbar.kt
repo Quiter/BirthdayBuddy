@@ -143,8 +143,13 @@ fun FastScrollbar(
                 label = "Thumb Width",
             )
 
-            val thumbAlpha by animateFloatAsState(
-                targetValue = if (isDragging || listState.isScrollInProgress) 1f else 0.4f,
+            val thumbAlpha by remember {
+                derivedStateOf {
+                    if (isDragging || listState.isScrollInProgress) 1f else 0.4f
+                }
+            }
+            val animatedThumbAlpha by animateFloatAsState(
+                targetValue = thumbAlpha,
                 label = "Thumb Alpha",
             )
 
@@ -240,7 +245,7 @@ fun FastScrollbar(
                         .width(thumbWidth)
                         .height(if (isDragging) 32.dp else 24.dp)
                         .clip(CircleShape)
-                        .background(MaterialTheme.colorScheme.primary.copy(alpha = thumbAlpha)),
+                        .background(MaterialTheme.colorScheme.primary.copy(alpha = animatedThumbAlpha)),
                 )
             }
         }

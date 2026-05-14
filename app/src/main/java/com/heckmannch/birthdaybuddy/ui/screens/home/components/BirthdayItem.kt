@@ -132,8 +132,7 @@ fun BirthdayItem(
     Box(
         modifier = modifier
             .fillMaxWidth()
-            .padding(vertical = 4.dp)
-            .height(IntrinsicSize.Min),
+            .padding(vertical = 4.dp),
     ) {
         Row(
             modifier = Modifier
@@ -150,7 +149,7 @@ fun BirthdayItem(
             ) { showGiftDialogState.value = true }
             SwipeActionButton(
                 icon = Icons.Default.Person,
-                color = MaterialTheme.colorScheme.primary,
+                color = Color(0xFF2196F3),
                 contentDescription = stringResource(R.string.item_action_contact),
             ) {
                 onOpenContact(contact.contactId, contact.lookupKey)
@@ -212,7 +211,7 @@ fun BirthdayItem(
                 trailingContent = {
                     BirthdayStatus(
                         isToday = contact.isToday,
-                        nextAgeText = contact.nextAgeText,
+                        nextAge = contact.nextAge,
                         daysUntilNext = contact.daysUntilNext
                     )
                 },
@@ -251,17 +250,24 @@ private fun ContactImage(
     fullName: String,
     initials: String
 ) {
+    val context = LocalContext.current
+    val imageRequest = remember(imageUri) {
+        if (imageUri != null) {
+            ImageRequest.Builder(context)
+                .data(imageUri)
+                .crossfade(true)
+                .build()
+        } else null
+    }
+
     Surface(
         modifier = Modifier.size(48.dp),
         shape = MaterialTheme.shapes.medium,
         color = MaterialTheme.colorScheme.primaryContainer
     ) {
-        if (imageUri != null) {
+        if (imageRequest != null) {
             AsyncImage(
-                model = ImageRequest.Builder(LocalContext.current)
-                    .data(imageUri)
-                    .crossfade(true)
-                    .build(),
+                model = imageRequest,
                 contentDescription = stringResource(R.string.item_image_desc, fullName),
                 modifier = Modifier.fillMaxSize(),
                 contentScale = ContentScale.Crop
@@ -277,19 +283,29 @@ private fun ContactImage(
 @Composable
 private fun BirthdayStatus(
     isToday: Boolean,
-    nextAgeText: String?,
+    nextAge: Int?,
     daysUntilNext: Long
 ) {
-    Column(horizontalAlignment = Alignment.End) {
-        nextAgeText?.let {
+    val ageText = nextAge?.let { stringResource(R.string.widget_turns_age, it) }
+    val daysText = if (isToday) {
+        stringResource(R.string.item_today)
+    } else {
+        pluralStringResource(R.plurals.item_days_left, daysUntilNext.toInt(), daysUntilNext.toInt())
+    }
+
+    Column(
+        horizontalAlignment = Alignment.End,
+        modifier = Modifier.graphicsLayer()
+    ) {
+        if (ageText != null) {
             Text(
-                text = it,
+                text = ageText,
                 style = MaterialTheme.typography.labelLarge,
                 color = MaterialTheme.colorScheme.primary
             )
         }
         Text(
-            text = if (isToday) stringResource(R.string.item_today) else pluralStringResource(R.plurals.item_days_left, daysUntilNext.toInt(), daysUntilNext.toInt()),
+            text = daysText,
             style = MaterialTheme.typography.labelSmall,
             color = if (isToday) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurfaceVariant
         )

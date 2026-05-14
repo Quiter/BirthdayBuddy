@@ -32,9 +32,7 @@ class ContactMapper @Inject constructor() {
             imageUri = contact.imageUri,
             initials = contact.fullName.take(1).uppercase(),
             nextAge = nextAgeValue,
-            nextAgeText = nextAgeValue?.let { "wird $it" }, // TODO: Could be formatted in UI with stringResource
             daysUntilNext = daysLeft,
-            daysLeftText = if (daysLeft == 0L) "Heute!" else "In $daysLeft T.",
             isToday = daysLeft == 0L,
             labels = contact.labels,
             giftIdeas = GiftIdea.fromString(contact.giftIdeas),

@@ -227,20 +227,19 @@ Alle signifikanten Änderungen am Projekt werden hier dokumentiert.
 **Hinweis:** Bis zu diesem Punkt (Meilenstein 59/60) wurden alle Änderungen im **Beta-Kanal des Google Play Stores** dokumentiert. Ab der nächsten Version wird die Historie hier direkt mit der offiziellen Release-Ausgabe im Play Store fortgeführt.
 
 ## 🚀 Play Store Release Notes (Beta Cycle)
+**englisch**
+- Individual & persistent reminders with age display.
+- Improved onboarding for a smoother start.
+- High-performance UI with Material 3 design.
+- Gift ideas backup & restore (JSON).
+- 
+**german**
+- Individuelle & wichtige Erinnerungen inkl. Altersanzeige.
+- Optimiertes Onboarding für einen reibungslosen Start.
+- Performance-Upgrade & modernes Material 3 Design.
+- Backup für Geschenkideen (JSON Export/Import).
+---
 
-<en-US>
-• Individual & persistent reminders with age display.
-• Improved onboarding for a smoother start.
-• High-performance UI with Material 3 design.
-• Gift ideas backup & restore (JSON).
-</en-US>
-
-<de-DE>
-• Individuelle & wichtige Erinnerungen inkl. Altersanzeige.
-• Optimiertes Onboarding für einen reibungslosen Start.
-• Performance-Upgrade & modernes Material 3 Design.
-• Backup für Geschenkideen (JSON Export/Import).
-</de-DE>
 60. **Advanced Notification Personalization:**
     - **Age Integration:** Dynamische Erweiterung der Benachrichtigungstexte um das zukünftige Alter (z. B. "wird heute 30").
     - **Smart Fallback:** Automatische Erkennung fehlender Geburtsjahre in den System-Kontakten; in diesen Fällen wird weiterhin ein neutraler Gratulationstext ohne Altersangabe verwendet, um Daten-Inkonsistenzen zu vermeiden.
@@ -261,5 +260,15 @@ Alle signifikanten Änderungen am Projekt werden hier dokumentiert.
     - **Smart Permission Handling:** Implementierung einer intelligenten Rationale-Logik für Benachrichtigungs- und Kontaktberechtigungen. Die App erkennt nun, wenn das System den Berechtigungs-Dialog blockiert (nach mehrfacher Ablehnung) und leitet den Nutzer proaktiv in die Systemeinstellungen weiter.
     - **HomeScreen Refactoring:** Massive Kürzung und Optimierung des `HomeScreen.kt`. Komplexer UI-Zustand und Scroll-Logik wurden in den `HomeState` State-Holder ausgelagert, was die Wartbarkeit und Lesbarkeit deutlich verbessert.
     - **Onboarding Fix:** Synchronisation der Benachrichtigungs-Einstellung mit der tatsächlichen System-Zustimmung im Onboarding-Dialog zur Vermeidung von Fehlkonfigurationen.
+66. **Performance & Clean Code Refinement:**
+    - **ViewModel Optimization:** Einführung eines zentralen, geteilten `settings` Flows zur Reduzierung von Datenbank-Subskriptionen.
+    - **Search Performance:** Vorabberechnung von Suchbegriffen (Keywords) via Flow-Mapping, um rechenintensive String-Operationen während der Listen-Filterung zu minimieren.
+    - **Semantic Data Models:** Umstellung des `ContactUiModel` auf reine Datenwerte. Die Formatierung von Texten (z.B. Alter, Tage bis Geburtstag) wurde in die UI-Komponenten verschoben, was die Lokalisierung verbessert und die Geschäftslogik sauberer von der Darstellung trennt.
+    - **UI Polish:** Beseitigung hartkodierter Farben in den Swipe-Aktionen zugunsten des Material 3 Themes.
+67. **Performance & Rendering Deep Polish:**
+    - **Re-Composition Guard:** Umstellung der TopBar-Sichtbarkeit auf `derivedStateOf`. Dies verhindert, dass der gesamte Home-Screen bei jedem Scroll-Pixel neu gezeichnet wird, was besonders auf älteren Geräten (z. B. OnePlus 6) für eine flüssige Darstellung sorgt.
+    - **Layout-Optimierung:** Entfernung von `IntrinsicSize.Min` in der Kontaktliste zur Reduzierung der Messzyklen pro Frame.
+    - **GPU-Acceleration:** Konsequenter Einsatz von `graphicsLayer` für statusunabhängige UI-Elemente zur Entlastung des Hauptprozessors.
+    - **Coil-Memoization:** Optimierung des Bildladeprozesses durch `remember`ed ImageRequests, was redundante Objekt-Erzeugungen während des Scrollens eliminiert.
 
 

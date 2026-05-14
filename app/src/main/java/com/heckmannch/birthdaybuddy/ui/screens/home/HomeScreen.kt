@@ -190,7 +190,9 @@ class HomeState(
 
     val showScrollUp by derivedStateOf { listState.firstVisibleItemIndex > 0 }
 
-    fun isFilterBarVisible(isResetting: Boolean) = if (isResetting) true else filterVisibilityLock ?: (listState.firstVisibleItemIndex == 0)
+    fun isFilterBarVisible(isResetting: Boolean): Boolean {
+        return if (isResetting) true else filterVisibilityLock ?: (listState.firstVisibleItemIndex == 0)
+    }
 
     fun onSetFastScrolling(isScrolling: Boolean) {
         filterVisibilityLock = if (isScrolling) (listState.firstVisibleItemIndex == 0) else null
@@ -236,6 +238,12 @@ private fun HomeContent(
     onRefresh: () -> Unit,
 ) {
     val focusManager = LocalFocusManager.current
+    
+    // Optimierung: Filter-Sichtbarkeit in derivedStateOf kapseln, damit HomeContent 
+    // nicht bei jedem Scroll-Pixel re-composed.
+    val isFilterBarVisible by remember(uiState.isResettingFilter, homeState) {
+        derivedStateOf { homeState.isFilterBarVisible(uiState.isResettingFilter) }
+    }
 
     Scaffold(
         snackbarHost = { SnackbarHost(hostState = homeState.snackbarHostState) },
@@ -245,7 +253,7 @@ private fun HomeContent(
                 animatedPlaceholder = homeState.animatedPlaceholder,
                 availableLabels = uiState.availableLabels,
                 selectedLabel = uiState.selectedLabel,
-                isFilterBarVisible = homeState.isFilterBarVisible(uiState.isResettingFilter),
+                isFilterBarVisible = isFilterBarVisible,
                 onSearchQueryChange = onSearchQueryChange,
                 onLabelSelected = onLabelSelected,
                 onNavigateToSettings = onNavigateToSettings,

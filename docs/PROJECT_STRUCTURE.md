@@ -67,7 +67,8 @@
 
 ## 📁 ViewModel (`viewmodel`)
 - `BirthdayViewModel.kt`: Zentrales ViewModel (Single Source of Truth); orchestriert State-Flows für Suche, Filter und Daten-Sync.
-- `ContactUiModel.kt`: Immutable UI-Modelle für Kontakte und Label-Management; optimiert für Jetpack Compose.
+- `ContactUiModel.kt`: Immutable UI-Modell für Kontakte; optimiert für Jetpack Compose.
+- `LabelManagementModel.kt`: Immutable UI-Modell für die Verwaltung von Labels in den Einstellungen.
 - `HomeUiState.kt`: Gebündelter State für den Home-Screen zur Reduzierung von Prop-Drilling und Steigerung der Performance.
 - `GiftIdea.kt`: Eigenständiges Modell für Geschenkideen mit integrierter JSON-Mapping-Logik für die Persistenz.
 - `ContactMapper.kt`: Reine Logik-Komponente zur Transformation von Datenbank-Entitäten in Anzeige-Modelle.
