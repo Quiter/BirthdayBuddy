@@ -222,6 +222,25 @@ Alle signifikanten Änderungen am Projekt werden hier dokumentiert.
     - **Notification Onboarding:** Implementierung eines Erststart-Dialogs zur Abfrage der Benachrichtigungs-Präferenz, der erst nach Erteilung der Kontakt-Berechtigung erscheint.
     - **UX Polish:** Sofortige Aktivierung der Standard-Regel bei Zustimmung inkl. Snackbar-Bestätigung, um einen reibungslosen "Out-of-the-box" Betrieb zu garantieren.
     - **State Persistence:** Einführung des `onboardingCompleted` Flags in den `AppSettings` zur dauerhaften Speicherung des Onboarding-Status.
+
+---
+**Hinweis:** Bis zu diesem Punkt (Meilenstein 59/60) wurden alle Änderungen im **Beta-Kanal des Google Play Stores** dokumentiert. Ab der nächsten Version wird die Historie hier direkt mit der offiziellen Release-Ausgabe im Play Store fortgeführt.
+
+## 🚀 Play Store Release Notes (Beta Cycle)
+
+<en-US>
+• Individual & persistent reminders with age display.
+• Improved onboarding for a smoother start.
+• High-performance UI with Material 3 design.
+• Gift ideas backup & restore (JSON).
+</en-US>
+
+<de-DE>
+• Individuelle & wichtige Erinnerungen inkl. Altersanzeige.
+• Optimiertes Onboarding für einen reibungslosen Start.
+• Performance-Upgrade & modernes Material 3 Design.
+• Backup für Geschenkideen (JSON Export/Import).
+</de-DE>
 60. **Advanced Notification Personalization:**
     - **Age Integration:** Dynamische Erweiterung der Benachrichtigungstexte um das zukünftige Alter (z. B. "wird heute 30").
     - **Smart Fallback:** Automatische Erkennung fehlender Geburtsjahre in den System-Kontakten; in diesen Fällen wird weiterhin ein neutraler Gratulationstext ohne Altersangabe verwendet, um Daten-Inkonsistenzen zu vermeiden.
