@@ -83,6 +83,7 @@
 
 ## 📁 Resources (`res/xml`)
 - `locales_config.xml`: Konfiguration der unterstützten Sprachen für die systemseitigen App-Spracheinstellungen (Android 13+).
+- `shortcuts.xml`: Definition der App Shortcuts (Schnellzugriffe) für den Homescreen.
 - `birthday_widget_info.xml`: Metadaten für das Startbildschirm-Widget.
 - `backup_rules.xml` & `data_extraction_rules.xml`: Konfiguration für das Android Backup-System.
 

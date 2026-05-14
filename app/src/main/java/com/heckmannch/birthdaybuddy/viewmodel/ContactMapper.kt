@@ -1,11 +1,11 @@
 package com.heckmannch.birthdaybuddy.viewmodel
 
 import com.heckmannch.birthdaybuddy.database.Contact
-import com.heckmannch.birthdaybuddy.util.toNextOccurrence
+import com.heckmannch.birthdaybuddy.util.safeDaysUntilNext
+import com.heckmannch.birthdaybuddy.util.safeNextAge
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import java.time.format.FormatStyle
-import java.time.temporal.ChronoUnit
 import javax.inject.Inject
 
 /**
@@ -18,9 +18,8 @@ class ContactMapper @Inject constructor() {
 
     fun toUiModel(contact: Contact, today: LocalDate): ContactUiModel {
         val hasYear = contact.birthday.year != 1900
-        val nextBirthday = contact.birthday.toNextOccurrence(today)
-        val daysLeft = ChronoUnit.DAYS.between(today, nextBirthday)
-        val nextAgeValue = if (hasYear) nextBirthday.year - contact.birthday.year else null
+        val daysLeft = contact.birthday.safeDaysUntilNext(today)
+        val nextAgeValue = if (hasYear) contact.birthday.safeNextAge(today) else null
 
         return ContactUiModel(
             id = contact.lookupKey, 

@@ -288,5 +288,16 @@ Alle signifikanten Änderungen am Projekt werden hier dokumentiert.
 71. **Database Hardening (JSON Converters):**
     - **Robustheit:** Umstellung der `Converters` für Listen von Pipe-separierten Strings auf JSON-Format (`JSONArray`).
     - **Abwärtskompatibilität:** Der neue Converter enthält eine Fallback-Logik, die alte Daten im Pipe-Format weiterhin korrekt einliest, aber neue Daten sicher als JSON speichert. Dies verhindert Fehler bei Sonderzeichen in Labels.
+72. **Gift Idea Hardening (JSON Mapping):**
+    - **Robustheit:** Umstellung der Geschenkideen-Speicherung auf JSON-Format. Dies verhindert Parsing-Fehler, wenn Nutzer Sonderzeichen wie `|` oder `;;` in ihren Geschenkideen verwenden.
+    - **Fallback:** Alte Geschenkideen werden weiterhin erkannt und beim nächsten Speichern automatisch in das neue Format migriert.
+73. **Android 14 Features & Shortcuts:**
+    - Implementation of App Shortcuts ("Search", "Add Contact") for faster access from the home screen.
+    - Integration of Predictive Back support (`enableOnBackInvokedCallback`) for a modern navigation experience.
+74. **Per-App Language Support:**
+    - Implementation of `locales_config.xml` to allow users to select the app language independently of the system language (Android 13+).
+75. **Architecture Polish & Robustness:**
+    - Refactoring of `ContactMapper` to consistently use the robust extension functions from `DateUtils`.
+    - Implementation of a state-based automatic search focus logic that works reliably even during screen transitions or cold starts.
 
 

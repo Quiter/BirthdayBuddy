@@ -105,6 +105,11 @@ class MainActivity : ComponentActivity() {
                 viewModel.triggerSearchFocus()
                 intent.removeExtra("OPEN_SEARCH")
             }
+            if (intent?.getBooleanExtra("OPEN_ADD_CONTACT", false) == true) {
+                // Sync triggern, falls ein neuer Kontakt hinzugefügt wurde
+                viewModel.syncContacts()
+                intent.removeExtra("OPEN_ADD_CONTACT")
+            }
         }
     }
 
