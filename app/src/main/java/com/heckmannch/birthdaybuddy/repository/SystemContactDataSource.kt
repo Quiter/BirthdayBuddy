@@ -62,7 +62,7 @@ class SystemContactDataSource @Inject constructor(
             ContactsContract.Data.LOOKUP_KEY,
             ContactsContract.CommonDataKinds.Event.START_DATE,
             ContactsContract.Contacts.DISPLAY_NAME,
-            ContactsContract.Contacts.PHOTO_URI,
+            ContactsContract.Contacts.PHOTO_THUMBNAIL_URI,
         )
 
         val selection = "${ContactsContract.Data.MIMETYPE} = ? AND ${ContactsContract.CommonDataKinds.Event.TYPE} = ?"
@@ -82,7 +82,7 @@ class SystemContactDataSource @Inject constructor(
             val lookupIdx = cursor.getColumnIndex(ContactsContract.Data.LOOKUP_KEY)
             val nameIdx = cursor.getColumnIndex(ContactsContract.Contacts.DISPLAY_NAME)
             val dateIdx = cursor.getColumnIndex(ContactsContract.CommonDataKinds.Event.START_DATE)
-            val photoIdx = cursor.getColumnIndex(ContactsContract.Contacts.PHOTO_URI)
+            val photoIdx = cursor.getColumnIndex(ContactsContract.Contacts.PHOTO_THUMBNAIL_URI)
 
             val contactIds = mutableSetOf<String>()
 

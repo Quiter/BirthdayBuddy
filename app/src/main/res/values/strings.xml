@@ -48,6 +48,8 @@
     <string name="notifications_persistent_header">Wichtige Benachrichtigungen</string>
     <string name="notifications_persistent_desc">Müssen aktiv als erledigt markiert werden</string>
     <string name="notifications_empty">Keine Erinnerungen geplant</string>
+    <string name="notifications_permission_missing_desc">Um Benachrichtigungen zu erhalten, benötigt BirthdayBuddy die Berechtigung, dir Mitteilungen senden zu dürfen.</string>
+    <string name="notifications_permission_btn">Berechtigung erteilen</string>
     <string name="notifications_planned_header">Geplante Erinnerungen</string>
     <string name="notifications_delete">Löschen</string>
 

@@ -1,9 +1,13 @@
 package com.heckmannch.birthdaybuddy.ui.screens.home
 
 import android.Manifest
+import android.app.Activity
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.net.Uri
+import android.os.Build
 import android.provider.ContactsContract
+import android.provider.Settings
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.fillMaxHeight
@@ -21,19 +25,18 @@ import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.heckmannch.birthdaybuddy.R
 import com.heckmannch.birthdaybuddy.ui.screens.home.components.*
 import com.heckmannch.birthdaybuddy.ui.theme.BirthdayBuddyTheme
 import com.heckmannch.birthdaybuddy.viewmodel.BirthdayViewModel
-import com.heckmannch.birthdaybuddy.viewmodel.ContactUiModel
 import com.heckmannch.birthdaybuddy.viewmodel.HomeUiState
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
-import android.os.Build
 
 /**
  * Der Hauptbildschirm der App.
@@ -49,68 +52,75 @@ fun HomeScreen(
     val keyboardController = LocalSoftwareKeyboardController.current
     val scope = rememberCoroutineScope()
     
-    // UI State aus dem ViewModel
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val onboardingCompleted by viewModel.onboardingCompleted.collectAsStateWithLifecycle()
-    
-    // Unser neuer Plain State Holder für die UI-Logik
     val homeState = rememberHomeState()
     
     val appPlaceholder = stringResource(R.string.home_placeholder_app)
     val searchPlaceholder = stringResource(R.string.home_placeholder_search)
-    val enabledMsg = stringResource(R.string.onboarding_notif_enabled_msg)
-    
-    // Lokaler UI State
-    var animatedPlaceholder by remember { mutableStateOf(appPlaceholder) }
-    var resetScrollRequested by remember { mutableStateOf(value = false) }
+    val onboardingNotifMsg = stringResource(R.string.onboarding_notif_enabled_msg)
     var onboardingDismissed by remember { mutableStateOf(false) }
-    
-    val hasContactPermission = ContextCompat.checkSelfPermission(context, Manifest.permission.READ_CONTACTS) == PackageManager.PERMISSION_GRANTED
-    val showOnboarding = !onboardingCompleted && hasContactPermission && !onboardingDismissed
 
-    // Berechtigungsprüfung & Initialisierung
-    val permissionLauncher = rememberLauncherForActivityResult(
-        ActivityResultContracts.RequestPermission(),
-    ) { isGranted ->
-        if (isGranted) {
-            viewModel.syncContacts()
-        }
+    // --- Launchers ---
+    val permissionLauncher = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted ->
+        if (isGranted) viewModel.syncContacts()
     }
 
-    val notificationPermissionLauncher = rememberLauncherForActivityResult(
-        ActivityResultContracts.RequestPermission(),
-    ) { _ ->
+    val notificationPermissionLauncher = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted ->
+        viewModel.setNotificationsEnabled(isGranted)
         viewModel.setOnboardingCompleted(true)
     }
 
+    // --- Effekte ---
     LaunchedEffect(Unit) {
+        homeState.animatedPlaceholder = appPlaceholder
         val hasPermission = ContextCompat.checkSelfPermission(context, Manifest.permission.READ_CONTACTS) == PackageManager.PERMISSION_GRANTED
-        if (!hasPermission) {
-            permissionLauncher.launch(Manifest.permission.READ_CONTACTS)
-        } else {
-            viewModel.syncContacts()
-        }
+        if (!hasPermission) permissionLauncher.launch(Manifest.permission.READ_CONTACTS) 
+        else viewModel.syncContacts()
         
         delay(2000)
-        animatedPlaceholder = searchPlaceholder
+        homeState.animatedPlaceholder = searchPlaceholder
     }
 
-    // --- Onboarding Dialog ---
-    if (showOnboarding) {
+    // Scroll-Reset Trigger (Widget Events oder Filterwechsel)
+    LaunchedEffect(viewModel.scrollToTopEvent) {
+        viewModel.scrollToTopEvent.collectLatest {
+            homeState.resetScrollRequested = true
+            viewModel.setIsResettingFilter(true)
+        }
+    }
+
+    LaunchedEffect(uiState.searchQuery, uiState.selectedLabel) {
+        homeState.resetScrollRequested = true
+        viewModel.setIsResettingFilter(true)
+    }
+
+    // Durchführung des Scroll-Resets
+    LaunchedEffect(uiState.contacts) {
+        if (homeState.resetScrollRequested && uiState.contacts != null) {
+            homeState.performScrollReset { viewModel.setIsResettingFilter(false) }
+        }
+    }
+
+    LaunchedEffect(homeState.listState.isScrollInProgress) {
+        if (homeState.listState.isScrollInProgress) {
+            focusManager.clearFocus()
+            keyboardController?.hide()
+        }
+    }
+
+    // --- Onboarding ---
+    if (!onboardingCompleted && ContextCompat.checkSelfPermission(context, Manifest.permission.READ_CONTACTS) == PackageManager.PERMISSION_GRANTED && !onboardingDismissed) {
         OnboardingDialog(
             onConfirm = {
-                viewModel.setNotificationsEnabled(true)
-                
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
                     notificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
                 } else {
+                    viewModel.setNotificationsEnabled(true)
                     viewModel.setOnboardingCompleted(true)
                 }
-                
                 onboardingDismissed = true
-                scope.launch {
-                    homeState.snackbarHostState.showSnackbar(enabledMsg)
-                }
+                scope.launch { homeState.snackbarHostState.showSnackbar(onboardingNotifMsg) }
             },
             onDismiss = {
                 onboardingDismissed = true
@@ -119,92 +129,53 @@ fun HomeScreen(
         )
     }
 
-    // --- Scroll- & Filter-Logik ---
-
-    // Reaktion auf externe Events (Widget) oder interne Filter-Wechsel
-    LaunchedEffect(viewModel.scrollToTopEvent) {
-        viewModel.scrollToTopEvent.collectLatest {
-            resetScrollRequested = true
-            viewModel.setIsResettingFilter(true)
-        }
-    }
-
-    // Zusätzlicher Trigger für manuelle Suche/Label Auswahl
-    LaunchedEffect(uiState.searchQuery, uiState.selectedLabel) {
-        resetScrollRequested = true
-        viewModel.setIsResettingFilter(true)
-    }
-
-    // Präziser Scroll-Reset sobald Daten geladen sind
-    LaunchedEffect(uiState.contacts) {
-        if (resetScrollRequested && (uiState.contacts != null)) {
-            homeState.scrollToTop(animate = false)
-            delay(100) // Puffer für UI-Stabilität
-            homeState.scrollToTop(animate = false)
-            viewModel.setIsResettingFilter(false)
-            resetScrollRequested = false
-        }
-    }
-
-    // Tastatur-Handling beim Scrollen
-    LaunchedEffect(homeState.listState.isScrollInProgress) {
-        if (homeState.listState.isScrollInProgress) {
-            focusManager.clearFocus()
-            keyboardController?.hide()
-        }
-    }
-
-    // --- Callbacks stabilisieren ---
-    val onSearchQueryChange = remember(viewModel) { { query: String -> viewModel.onSearchQueryChange(query) } }
-    val onLabelSelected = remember(viewModel) { { label: String? -> viewModel.onLabelSelected(label) } }
-    val onClearSearch = remember(viewModel, focusManager, keyboardController) {
+    // --- Callbacks ---
+    val onRequestPermission = remember(context, homeState) {
         {
-            viewModel.onSearchQueryChange("")
-            focusManager.clearFocus()
-            keyboardController?.hide()
-            Unit
-        }
-    }
-    val onAddContact = remember(context) {
-        {
-            val intent = Intent(Intent.ACTION_INSERT).apply {
-                type = ContactsContract.Contacts.CONTENT_TYPE
+            val activity = context as? Activity
+            val shouldShowRationale = activity?.let { ActivityCompat.shouldShowRequestPermissionRationale(it, Manifest.permission.READ_CONTACTS) } ?: false
+            if (shouldShowRationale || !homeState.hasAttemptedContactPermission) {
+                permissionLauncher.launch(Manifest.permission.READ_CONTACTS)
+                homeState.hasAttemptedContactPermission = true
+            } else {
+                try {
+                    val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply { data = Uri.fromParts("package", context.packageName, null) }
+                    context.startActivity(intent)
+                } catch (_: Exception) {}
             }
-            context.startActivity(intent)
-        }
-    }
-    val onRequestPermission = remember(permissionLauncher) { { permissionLauncher.launch(Manifest.permission.READ_CONTACTS) } }
-    val onSetSwipeHintShown = remember(viewModel) { { viewModel.setSwipeHintShown(); Unit } }
-    val onUpdateGiftIdeas = remember(viewModel) { { key: String, ideas: String -> viewModel.updateGiftIdeas(key, ideas); Unit } }
-    val onOpenContact = remember(context) {
-        { id: String, key: String ->
-            try {
-                val lookupUri = ContactsContract.Contacts.getLookupUri(id.toLong(), key)
-                context.startActivity(Intent(Intent.ACTION_VIEW, lookupUri))
-            } catch (_: Exception) {}
         }
     }
 
     HomeContent(
         uiState = uiState,
         homeState = homeState,
-        animatedPlaceholder = animatedPlaceholder,
-        onSearchQueryChange = onSearchQueryChange,
-        onLabelSelected = onLabelSelected,
-        onClearSearch = onClearSearch,
+        onSearchQueryChange = viewModel::onSearchQueryChange,
+        onLabelSelected = viewModel::onLabelSelected,
+        onClearSearch = {
+            viewModel.onSearchQueryChange("")
+            focusManager.clearFocus()
+            keyboardController?.hide()
+        },
         onNavigateToSettings = onNavigateToSettings,
-        onAddContact = onAddContact,
+        onAddContact = {
+            val intent = Intent(Intent.ACTION_INSERT).apply { type = ContactsContract.Contacts.CONTENT_TYPE }
+            context.startActivity(intent)
+        },
         onRequestPermission = onRequestPermission,
-        onSetSwipeHintShown = onSetSwipeHintShown,
-        onUpdateGiftIdeas = onUpdateGiftIdeas,
-        onOpenContact = onOpenContact,
-        onRefresh = { viewModel.syncContacts() },
+        onSetSwipeHintShown = viewModel::setSwipeHintShown,
+        onUpdateGiftIdeas = viewModel::updateGiftIdeas,
+        onOpenContact = { id, key ->
+            try {
+                val lookupUri = ContactsContract.Contacts.getLookupUri(id.toLong(), key)
+                context.startActivity(Intent(Intent.ACTION_VIEW, lookupUri))
+            } catch (_: Exception) {}
+        },
+        onRefresh = viewModel::syncContacts,
     )
 }
 
 /**
  * Plain State Holder für die UI-Logik des HomeScreens.
- * Kapselt Scroll-Zustand, SnackBar-Management und Sichtbarkeiten.
  */
 @Stable
 class HomeState(
@@ -212,25 +183,17 @@ class HomeState(
     val snackbarHostState: SnackbarHostState,
     private val scope: CoroutineScope,
 ) {
-    // Verhindert Layout-Sprünge beim Fast-Scrolling
+    var hasAttemptedContactPermission by mutableStateOf(false)
+    var resetScrollRequested by mutableStateOf(false)
+    var animatedPlaceholder by mutableStateOf("")
     var filterVisibilityLock by mutableStateOf<Boolean?>(null)
 
-    fun isFilterBarVisible(isResetting: Boolean): Boolean {
-        if (isResetting) return true
-        return filterVisibilityLock ?: (listState.firstVisibleItemIndex == 0)
-    }
+    val showScrollUp by derivedStateOf { listState.firstVisibleItemIndex > 0 }
 
-    val showScrollUp by derivedStateOf {
-        listState.firstVisibleItemIndex > 0
-    }
+    fun isFilterBarVisible(isResetting: Boolean) = if (isResetting) true else filterVisibilityLock ?: (listState.firstVisibleItemIndex == 0)
 
     fun onSetFastScrolling(isScrolling: Boolean) {
-        filterVisibilityLock = if (isScrolling) {
-            // Bei Start des Drags Zustand einfrieren (basierend auf dem ersten sichtbaren Item)
-            listState.firstVisibleItemIndex == 0
-        } else {
-            null
-        }
+        filterVisibilityLock = if (isScrolling) (listState.firstVisibleItemIndex == 0) else null
     }
 
     fun scrollToTop(animate: Boolean = true) {
@@ -239,6 +202,14 @@ class HomeState(
             else listState.scrollToItem(0)
         }
     }
+
+    suspend fun performScrollReset(onComplete: () -> Unit) {
+        scrollToTop(animate = false)
+        delay(100)
+        scrollToTop(animate = false)
+        onComplete()
+        resetScrollRequested = false
+    }
 }
 
 @Composable
@@ -246,18 +217,13 @@ fun rememberHomeState(
     listState: LazyListState = rememberLazyListState(),
     snackbarHostState: SnackbarHostState = remember { SnackbarHostState() },
     scope: CoroutineScope = rememberCoroutineScope(),
-): HomeState {
-    return remember(listState, snackbarHostState, scope) {
-        HomeState(listState, snackbarHostState, scope)
-    }
-}
+) = remember(listState, snackbarHostState, scope) { HomeState(listState, snackbarHostState, scope) }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun HomeContent(
     uiState: HomeUiState,
     homeState: HomeState,
-    animatedPlaceholder: String,
     onSearchQueryChange: (String) -> Unit,
     onLabelSelected: (String?) -> Unit,
     onClearSearch: () -> Unit,
@@ -276,7 +242,7 @@ private fun HomeContent(
         topBar = {
             HomeTopBar(
                 searchQuery = uiState.searchQuery,
-                animatedPlaceholder = animatedPlaceholder,
+                animatedPlaceholder = homeState.animatedPlaceholder,
                 availableLabels = uiState.availableLabels,
                 selectedLabel = uiState.selectedLabel,
                 isFilterBarVisible = homeState.isFilterBarVisible(uiState.isResettingFilter),
@@ -300,9 +266,7 @@ private fun HomeContent(
         PullToRefreshBox(
             isRefreshing = uiState.isSyncing,
             onRefresh = onRefresh,
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(padding)
+            modifier = Modifier.fillMaxSize().padding(padding)
         ) {
             BirthdayList(
                 contacts = uiState.contacts ?: emptyList(),
@@ -317,9 +281,7 @@ private fun HomeContent(
             FastScrollbar(
                 listState = homeState.listState,
                 contacts = uiState.contacts ?: emptyList(),
-                modifier = Modifier
-                    .align(Alignment.CenterEnd)
-                    .fillMaxHeight(),
+                modifier = Modifier.align(Alignment.CenterEnd).fillMaxHeight(),
                 isResettingFilter = uiState.isResettingFilter,
                 onSetFastScrolling = { homeState.onSetFastScrolling(it) },
             )
@@ -332,35 +294,8 @@ private fun HomeContent(
 fun HomePreview() {
     BirthdayBuddyTheme {
         HomeContent(
-            uiState = HomeUiState(
-                contacts = listOf(
-                    ContactUiModel(
-                        id = "1",
-                        contactId = "1",
-                        lookupKey = "key1",
-                        fullName = "Max Mustermann",
-                        dateText = "12. Mai",
-                        monthName = "Mai",
-                        imageUri = null,
-                        initials = "M",
-                        nextAge = 30,
-                        nextAgeText = "wird 30",
-                        daysUntilNext = 5,
-                        daysLeftText = "In 5 T.",
-                        isToday = false,
-                        labels = listOf("Freunde"),
-                        giftIdeas = emptyList()
-                    )
-                ),
-                searchQuery = "",
-                availableLabels = listOf("Freunde", "Familie"),
-                selectedLabel = null,
-                swipeHintShown = true,
-                isResettingFilter = false,
-                isSyncing = false
-            ),
+            uiState = HomeUiState(contacts = emptyList()),
             homeState = rememberHomeState(),
-            animatedPlaceholder = "Suchen...",
             onSearchQueryChange = {},
             onLabelSelected = {},
             onClearSearch = {},

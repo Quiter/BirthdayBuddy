@@ -23,9 +23,11 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
+import coil.request.ImageRequest
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import com.heckmannch.birthdaybuddy.R
@@ -256,7 +258,10 @@ private fun ContactImage(
     ) {
         if (imageUri != null) {
             AsyncImage(
-                model = imageUri,
+                model = ImageRequest.Builder(LocalContext.current)
+                    .data(imageUri)
+                    .crossfade(true)
+                    .build(),
                 contentDescription = stringResource(R.string.item_image_desc, fullName),
                 modifier = Modifier.fillMaxSize(),
                 contentScale = ContentScale.Crop

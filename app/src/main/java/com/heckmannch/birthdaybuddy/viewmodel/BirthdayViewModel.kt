@@ -5,6 +5,8 @@ import android.util.Log
 import androidx.glance.appwidget.updateAll
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import coil.imageLoader
+import coil.request.ImageRequest
 import com.heckmannch.birthdaybuddy.database.LabelConfig
 import com.heckmannch.birthdaybuddy.database.NotificationRule
 import com.heckmannch.birthdaybuddy.repository.ContactRepository
@@ -45,23 +47,6 @@ class BirthdayViewModel @Inject constructor(
     val onboardingCompleted: StateFlow<Boolean> = notificationRepository.settings
         .map { it.onboardingCompleted }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), initialValue = true)
-
-    init {
-        // Automatische Worker-Synchronisation bei Einstellungsänderungen oder Regeländerungen
-        viewModelScope.launch {
-            combine(notificationsEnabled, notificationRules) { enabled, rules ->
-                enabled to rules
-            }.collect { (enabled, rules) ->
-                if (rules == null) return@collect // Noch am Laden
-                
-                if (enabled && rules.isNotEmpty()) {
-                    NotificationWorker.scheduleNext(context, rules)
-                } else {
-                    NotificationWorker.cancelNotification(context)
-                }
-            }
-        }
-    }
 
     fun setNotificationsEnabled(enabled: Boolean) = viewModelScope.launch {
         // Wir fügen eine Standard-Regel hinzu, falls noch keine existiert und eingeschaltet wird
@@ -126,6 +111,36 @@ class BirthdayViewModel @Inject constructor(
             .sortedBy { it.daysUntilNext }
             .toList()
     }.flowOn(Dispatchers.Default)
+
+    init {
+        // Automatische Worker-Synchronisation bei Einstellungsänderungen oder Regeländerungen
+        viewModelScope.launch {
+            combine(notificationsEnabled, notificationRules) { enabled, rules ->
+                enabled to rules
+            }.collect { (enabled, rules) ->
+                if (rules == null) return@collect // Noch am Laden
+                
+                if (enabled && rules.isNotEmpty()) {
+                    NotificationWorker.scheduleNext(context, rules)
+                } else {
+                    NotificationWorker.cancelNotification(context)
+                }
+            }
+        }
+
+        // Pre-fetch der ersten Kontaktbilder zur Vermeidung von Rucklern beim Start
+        viewModelScope.launch {
+            allUiContacts.filter { it.isNotEmpty() }.first().take(20).forEach { contact ->
+                if (contact.imageUri != null) {
+                    val request = ImageRequest.Builder(context)
+                        .data(contact.imageUri)
+                        .size(150) // Daumenwert für Thumbnails
+                        .build()
+                    context.imageLoader.enqueue(request)
+                }
+            }
+        }
+    }
 
     /**
      * Filtern der fertigen UI-Modelle basierend auf Suche und Labels.

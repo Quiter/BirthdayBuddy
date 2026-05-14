@@ -253,5 +253,13 @@ Alle signifikanten Änderungen am Projekt werden hier dokumentiert.
 63. **Architecture Best Practices (Plain State Holders):**
     - **UI Logic Decoupling:** Einführung von spezialisierten State-Holder-Klassen (`HomeState`, `NotificationSettingsState`) zur Kapselung von komplexer UI-Logik (Scroll-Verhalten, Dialog-Management).
     - **Code Quality:** Drastische Reduzierung des Boilerplate-Codes und der Parameteranzahl in UI-Komponenten durch State-Hoisting. Dies verbessert die Wartbarkeit und Testbarkeit der Screens erheblich.
+64. **Performance Optimization (Smooth Scrolling):**
+    - **Image Loading:** Umstellung der Kontaktbild-Abfrage auf `PHOTO_THUMBNAIL_URI`. Dies reduziert die zu ladende Datenmenge drastisch und eliminiert Ruckler beim schnellen Scrollen durch große Kontaktlisten.
+    - **Coil Global Configuration:** Zentrale Optimierung des Image-Loaders in der Application-Klasse. Einführung eines vergrößerten Memory-Caches (25% des verfügbaren RAM) und eines dedizierten Disk-Caches zur Beschleunigung der Bildwiedergabe bei wiederholten App-Besuchen.
+    - **Visual Polish:** Aktivierung von Crossfade-Animationen für alle Kontaktbilder zur Vermeidung von abrupten Bildsprüngen während des Nachladens.
+65. **UI Logic & Permission Hardening:**
+    - **Smart Permission Handling:** Implementierung einer intelligenten Rationale-Logik für Benachrichtigungs- und Kontaktberechtigungen. Die App erkennt nun, wenn das System den Berechtigungs-Dialog blockiert (nach mehrfacher Ablehnung) und leitet den Nutzer proaktiv in die Systemeinstellungen weiter.
+    - **HomeScreen Refactoring:** Massive Kürzung und Optimierung des `HomeScreen.kt`. Komplexer UI-Zustand und Scroll-Logik wurden in den `HomeState` State-Holder ausgelagert, was die Wartbarkeit und Lesbarkeit deutlich verbessert.
+    - **Onboarding Fix:** Synchronisation der Benachrichtigungs-Einstellung mit der tatsächlichen System-Zustimmung im Onboarding-Dialog zur Vermeidung von Fehlkonfigurationen.
 
 
