@@ -81,6 +81,11 @@
 - `BirthdayWidgetReceiver.kt`: Einstiegspunkt für das Widget-System und Trigger für Daten-Updates.
 - `BirthdayWidgetWorker.kt`: WorkManager-Job für die präzise Aktualisierung des Widgets um Mitternacht.
 
+## 📁 Resources (`res/xml`)
+- `locales_config.xml`: Konfiguration der unterstützten Sprachen für die systemseitigen App-Spracheinstellungen (Android 13+).
+- `birthday_widget_info.xml`: Metadaten für das Startbildschirm-Widget.
+- `backup_rules.xml` & `data_extraction_rules.xml`: Konfiguration für das Android Backup-System.
+
 ## 🌍 Internationalisierung (I18n)
 - `res/values/strings.xml`: Standard-Sprachressourcen (**Englisch**).
 - `res/values-de/strings.xml`: Lokalisierte Sprachressourcen (**Deutsch**).
