@@ -14,4 +14,5 @@ data class HomeUiState(
     val isFastScrolling: Boolean = false,
     val swipeHintShown: Boolean = true,
     val isResettingFilter: Boolean = false,
+    val isSyncing: Boolean = false,
 )

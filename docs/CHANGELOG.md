@@ -213,5 +213,9 @@ Alle signifikanten Änderungen am Projekt werden hier dokumentiert.
     - **Modularization:** Auslagerung der UI des Backup-Screens in `BackupContent.kt` (components).
     - **Smart Naming:** Einführung eines automatischen Datums-Stempels im Dateinamen beim Export (z. B. `birthday_buddy_backup_2024-05-23.json`).
     - **Code Quality:** Entschlackung der Launcher-Logik im `BackupScreen`.
+58. **Pull-to-Refresh Integration:**
+    - **UX Implementation:** Hinzufügen der Pull-to-Refresh Geste im Home-Screen zur manuellen Kontakt-Synchronisation.
+    - **Visual Feedback:** Implementierung eines garantierten Mindest-Delays für den Ladeindikator zur Verbesserung der wahrgenommenen Funktionalität.
+    - **State Management:** Integration des Sync-Status in den zentralen `HomeUiState`.
 
 

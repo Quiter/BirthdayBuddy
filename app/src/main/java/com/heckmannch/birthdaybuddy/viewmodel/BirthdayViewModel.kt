@@ -15,6 +15,7 @@ import com.heckmannch.birthdaybuddy.widget.BirthdayWidget
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -97,6 +98,7 @@ class BirthdayViewModel @Inject constructor(
     private val _selectedLabel = MutableStateFlow<String?>(null)
     private val _isFastScrolling = MutableStateFlow(value = false)
     private val _isResettingFilter = MutableStateFlow(value = false)
+    private val _isSyncing = MutableStateFlow(value = false)
 
     private val _scrollToTopEvent = MutableSharedFlow<Unit>(replay = 0)
     val scrollToTopEvent: SharedFlow<Unit> = _scrollToTopEvent.asSharedFlow()
@@ -175,6 +177,7 @@ class BirthdayViewModel @Inject constructor(
         _selectedLabel,
         _isFastScrolling,
         _isResettingFilter,
+        _isSyncing,
         availableLabels,
         swipeHintShown,
     ) { flows ->
@@ -184,8 +187,9 @@ class BirthdayViewModel @Inject constructor(
             selectedLabel = flows[2] as String?,
             isFastScrolling = flows[3] as Boolean,
             isResettingFilter = flows[4] as Boolean,
-            availableLabels = flows[5] as List<String>,
-            swipeHintShown = flows[6] as Boolean
+            isSyncing = flows[5] as Boolean,
+            availableLabels = flows[6] as List<String>,
+            swipeHintShown = flows[7] as Boolean
         )
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), HomeUiState())
 
@@ -240,8 +244,18 @@ class BirthdayViewModel @Inject constructor(
     }
 
     fun syncContacts() = viewModelScope.launch {
+        _isSyncing.value = true
+        val startTime = System.currentTimeMillis()
+        
         contactRepository.syncContacts()
         updateWidget()
+        
+        // Sicherstellen, dass der Ladekreis mindestens 800ms sichtbar ist (UX)
+        val elapsedTime = System.currentTimeMillis() - startTime
+        if (elapsedTime < 800) {
+            delay(800 - elapsedTime)
+        }
+        _isSyncing.value = false
     }
 
     fun triggerScrollToTop() = viewModelScope.launch {

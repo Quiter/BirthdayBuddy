@@ -6,7 +6,6 @@ import android.content.pm.PackageManager
 import android.provider.ContactsContract
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -14,6 +13,7 @@ import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -158,6 +158,7 @@ fun HomeScreen(
         onUpdateGiftIdeas = onUpdateGiftIdeas,
         onOpenContact = onOpenContact,
         onSetFastScrolling = onSetFastScrolling,
+        onRefresh = { viewModel.syncContacts() },
     )
 }
 
@@ -177,6 +178,7 @@ private fun HomeContent(
     onUpdateGiftIdeas: (String, String) -> Unit,
     onOpenContact: (String, String) -> Unit,
     onSetFastScrolling: (Boolean) -> Unit,
+    onRefresh: () -> Unit,
 ) {
     val focusManager = LocalFocusManager.current
     val scope = rememberCoroutineScope()
@@ -235,10 +237,13 @@ private fun HomeContent(
             )
         }
     ) { padding ->
-        Box(modifier = Modifier
-            .fillMaxSize()
-            .padding(padding)) {
-            
+        PullToRefreshBox(
+            isRefreshing = uiState.isSyncing,
+            onRefresh = onRefresh,
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(padding)
+        ) {
             BirthdayList(
                 contacts = uiState.contacts ?: emptyList(),
                 swipeHintShown = uiState.swipeHintShown,
@@ -292,7 +297,8 @@ fun HomePreview() {
                 selectedLabel = null,
                 isFastScrolling = false,
                 swipeHintShown = true,
-                isResettingFilter = false
+                isResettingFilter = false,
+                isSyncing = false
             ),
             animatedPlaceholder = "Suchen...",
             listState = rememberLazyListState(),
@@ -305,7 +311,8 @@ fun HomePreview() {
             onSetSwipeHintShown = {},
             onUpdateGiftIdeas = { _, _ -> },
             onOpenContact = { _, _ -> },
-            onSetFastScrolling = {}
+            onSetFastScrolling = {},
+            onRefresh = {}
         )
     }
 }
