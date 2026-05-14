@@ -285,5 +285,8 @@ Alle signifikanten Änderungen am Projekt werden hier dokumentiert.
 70. **Internationalisierung (I18n):**
     - **Multi-Language Support:** Einführung von Englisch als Standardsprache (`values/strings.xml`) und Deutsch als lokalisierte Version (`values-de/strings.xml`).
     - **Vollständige Übersetzung:** Alle UI-Texte, Benachrichtigungen und Widget-Inhalte wurden übersetzt, um die App für ein internationales Publikum zugänglich zu machen.
+71. **Database Hardening (JSON Converters):**
+    - **Robustheit:** Umstellung der `Converters` für Listen von Pipe-separierten Strings auf JSON-Format (`JSONArray`).
+    - **Abwärtskompatibilität:** Der neue Converter enthält eine Fallback-Logik, die alte Daten im Pipe-Format weiterhin korrekt einliest, aber neue Daten sicher als JSON speichert. Dies verhindert Fehler bei Sonderzeichen in Labels.
 
 
