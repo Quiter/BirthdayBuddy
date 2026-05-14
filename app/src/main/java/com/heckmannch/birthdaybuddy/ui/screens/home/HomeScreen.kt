@@ -170,7 +170,7 @@ fun HomeScreen(
                 context.startActivity(Intent(Intent.ACTION_VIEW, lookupUri))
             } catch (_: Exception) {}
         },
-        onRefresh = viewModel::syncContacts,
+        onRefresh = { viewModel.syncContacts(showLoading = true) },
     )
 }
 

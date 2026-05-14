@@ -279,18 +279,20 @@ class BirthdayViewModel @Inject constructor(
         updateWidget()
     }
 
-    fun syncContacts() = viewModelScope.launch {
-        _isSyncing.value = true
+    fun syncContacts(showLoading: Boolean = false) = viewModelScope.launch {
+        if (showLoading) _isSyncing.value = true
         val startTime = System.currentTimeMillis()
         
         contactRepository.syncContacts()
         updateWidget()
         
-        val elapsedTime = System.currentTimeMillis() - startTime
-        if (elapsedTime < 800) {
-            delay(800 - elapsedTime)
+        if (showLoading) {
+            val elapsedTime = System.currentTimeMillis() - startTime
+            if (elapsedTime < 800) {
+                delay(800 - elapsedTime)
+            }
+            _isSyncing.value = false
         }
-        _isSyncing.value = false
     }
 
     fun triggerScrollToTop() = viewModelScope.launch {
