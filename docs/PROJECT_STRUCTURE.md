@@ -54,7 +54,9 @@
     - `SnoozeWorker.kt`: Ermöglicht das zeitversetzte Wiederholen von Benachrichtigungen.
     - `NotificationActionReceiver.kt`: BroadcastReceiver für Quick Actions (Erledigt, Später) direkt im Tray.
     - `NotificationHelper.kt`: Utility zum Aufbau und Anzeigen von System-Benachrichtigungen (inkl. Persistenz-Support).
-- `backup/BackupScreen.kt`: Interface für die Datensicherung der Geschenkideen.
+- `backup/BackupScreen.kt`: Orchestriert die Logik für Import/Export von Geschenkideen.
+- ### 📁 Components (`backup.components`)
+    - `BackupContent.kt`: Die UI-Darstellung der Backup-Seite.
 - `about/AboutScreen.kt`: Informationsseite mit App-Details und rechtlichen Hinweisen.
 
 ## 📁 Theme & Design (`ui.theme`)

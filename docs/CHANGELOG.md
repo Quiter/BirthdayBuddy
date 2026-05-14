@@ -209,5 +209,9 @@ Alle signifikanten Änderungen am Projekt werden hier dokumentiert.
     - **FastScrollbar Fix:** Korrektur der Ausrichtung (rechtsbündig) und Wiederherstellung der dynamischen Höhenberechnung (`fillMaxHeight`) nach dem Refactoring.
     - **Warning Cleanup:** Beseitigung von "Unchecked Cast" Warnungen im ViewModel durch gezielten Einsatz von `@Suppress` bei komplexen Flow-Kombinationen.
     - **Architecture Consistency:** Sicherstellung, dass alle UI-Komponenten den zentralen `HomeUiState` konsistent nutzen.
+57. **Gift Ideas Backup Refactoring:**
+    - **Modularization:** Auslagerung der UI des Backup-Screens in `BackupContent.kt` (components).
+    - **Smart Naming:** Einführung eines automatischen Datums-Stempels im Dateinamen beim Export (z. B. `birthday_buddy_backup_2024-05-23.json`).
+    - **Code Quality:** Entschlackung der Launcher-Logik im `BackupScreen`.
 
 
