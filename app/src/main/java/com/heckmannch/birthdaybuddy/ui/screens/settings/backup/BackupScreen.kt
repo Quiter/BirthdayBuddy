@@ -6,6 +6,8 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.runtime.*
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
+import com.heckmannch.birthdaybuddy.R
 import com.heckmannch.birthdaybuddy.ui.screens.settings.backup.components.BackupContent
 import com.heckmannch.birthdaybuddy.viewmodel.BirthdayViewModel
 import kotlinx.coroutines.launch
@@ -25,6 +27,12 @@ fun BackupScreen(
     val scope = rememberCoroutineScope()
     var isLoading by remember { mutableStateOf(false) }
 
+    val exportSuccessMsg = stringResource(R.string.backup_export_success)
+    val exportFailedMsg = stringResource(R.string.backup_export_failed)
+    val importSuccessMsg = stringResource(R.string.backup_import_success)
+    val importInvalidMsg = stringResource(R.string.backup_import_invalid)
+    val importFailedMsg = stringResource(R.string.backup_import_failed)
+
     val exportLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.CreateDocument("application/json")
     ) { uri: Uri? ->
@@ -36,9 +44,9 @@ fun BackupScreen(
                     context.contentResolver.openOutputStream(uri)?.use { outputStream ->
                         outputStream.write(json.toByteArray())
                     }
-                    Toast.makeText(context, "Export erfolgreich!", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(context, exportSuccessMsg, Toast.LENGTH_SHORT).show()
                 } catch (e: Exception) {
-                    Toast.makeText(context, "Export fehlgeschlagen: ${e.message}", Toast.LENGTH_LONG).show()
+                    Toast.makeText(context, exportFailedMsg.format(e.message), Toast.LENGTH_LONG).show()
                 } finally {
                     isLoading = false
                 }
@@ -59,13 +67,13 @@ fun BackupScreen(
                     if (json != null) {
                         val count = viewModel.importGiftIdeas(json)
                         if (count >= 0) {
-                            Toast.makeText(context, "$count Geschenkideen importiert!", Toast.LENGTH_SHORT).show()
+                            Toast.makeText(context, importSuccessMsg.format(count), Toast.LENGTH_SHORT).show()
                         } else {
-                            Toast.makeText(context, "Ungültiges Dateiformat", Toast.LENGTH_SHORT).show()
+                            Toast.makeText(context, importInvalidMsg, Toast.LENGTH_SHORT).show()
                         }
                     }
                 } catch (e: Exception) {
-                    Toast.makeText(context, "Import fehlgeschlagen: ${e.message}", Toast.LENGTH_LONG).show()
+                    Toast.makeText(context, importFailedMsg.format(e.message), Toast.LENGTH_LONG).show()
                 } finally {
                     isLoading = false
                 }

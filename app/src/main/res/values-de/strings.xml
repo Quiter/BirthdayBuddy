@@ -112,6 +112,7 @@
     <string name="about_description">BirthdayBuddy hilft dir dabei, nie wieder einen Geburtstag zu vergessen. Erhalte rechtzeitig Erinnerungen und verwalte Geschenkideen direkt in der App.</string>
     <string name="about_developer_title">Entwickler</string>
     <string name="about_location_title">Standort</string>
+    <string name="about_copyright">© 2024–2026 Christof Heckmann</string>
 
     <!-- Onboarding -->
     <string name="onboarding_notif_title">Erinnerungen einschalten?</string>
@@ -123,4 +124,43 @@
     <!-- App Shortcuts -->
     <string name="shortcut_add_contact">Kontakt hinzufügen</string>
     <string name="shortcut_search">Suche</string>
+
+    <!-- Settings Screen -->
+    <string name="settings_title">Einstellungen</string>
+    <string name="settings_notifications_title">Benachrichtigungen</string>
+    <string name="settings_notifications_desc">Erinnerungen und Uhrzeit verwalten</string>
+    <string name="settings_labels_title">Labels verwalten</string>
+    <string name="settings_labels_desc">Filter anpassen und Kontakte nach Gruppen ausblenden</string>
+    <string name="settings_backup_title">Daten sichern</string>
+    <string name="settings_backup_desc">Geschenkideen exportieren oder importieren</string>
+    <string name="settings_sync_title">Kontakte synchronisieren</string>
+    <string name="settings_sync_desc">Geburtstage aus deinen System-Kontakten laden</string>
+    <string name="settings_about_title">Über die App</string>
+    <string name="settings_about_desc">Informationen zu BirthdayBuddy</string>
+    <string name="settings_version">Version %1$s</string>
+    <string name="settings_made_with">Made with ❤️ in Dortmund</string>
+
+    <!-- Label Settings Screen -->
+    <string name="labels_title">Labels verwalten</string>
+    <string name="labels_empty">Keine Labels gefunden</string>
+    <string name="labels_info_hide">Filter verbergen: Label erscheint nicht in der Leiste zum Filtern der Kontakte.</string>
+    <string name="labels_info_ignore">Ignorieren: Kontakte werden komplett ausgeblendet, sind aber in der Suche auffindbar.</string>
+    <string name="labels_system_tag">SYSTEM</string>
+    <string name="labels_action_hide">Verbergen</string>
+    <string name="labels_action_ignore">Ignorieren</string>
+
+    <!-- Backup Screen -->
+    <string name="backup_title">Daten sichern</string>
+    <string name="backup_desc">Exportiere deine Geschenkideen in eine Datei, um sie später wiederherzustellen oder auf ein anderes Gerät zu übertragen.</string>
+    <string name="backup_export_title">Geschenkideen exportieren</string>
+    <string name="backup_export_desc">Speichert alle Ideen in einer JSON-Datei</string>
+    <string name="backup_import_title">Geschenkideen importieren</string>
+    <string name="backup_import_desc">Wiederherstellen aus einer Backup-Datei</string>
+    <string name="backup_info_title">Wichtige Hinweise:</string>
+    <string name="backup_info_content">"• Der Import ordnet die Ideen automatisch deinen Kontakten zu.\n• Kontakte werden zuerst über den stabilen System-Key (Lookup) und dann über den Namen gesucht.\n• Existierende Geschenkideen für einen Kontakt werden beim Import überschrieben."</string>
+    <string name="backup_export_success">Export erfolgreich!</string>
+    <string name="backup_export_failed">Export fehlgeschlagen: %1$s</string>
+    <string name="backup_import_success">%1$d Geschenkideen importiert!</string>
+    <string name="backup_import_invalid">Ungültiges Dateiformat</string>
+    <string name="backup_import_failed">Import fehlgeschlagen: %1$s</string>
 </resources>

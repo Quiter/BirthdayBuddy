@@ -14,10 +14,12 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.heckmannch.birthdaybuddy.R
 import com.heckmannch.birthdaybuddy.ui.theme.BirthdayBuddyTheme
 import com.heckmannch.birthdaybuddy.viewmodel.BirthdayViewModel
 import com.heckmannch.birthdaybuddy.viewmodel.LabelManagementModel
@@ -48,12 +50,12 @@ private fun LabelSettingsContent(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Labels verwalten") },
+                title = { Text(stringResource(R.string.labels_title)) },
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "Zurück",
+                            contentDescription = stringResource(R.string.notifications_back),
                         )
                     }
                 }
@@ -67,7 +69,7 @@ private fun LabelSettingsContent(
                     .padding(innerPadding),
                 contentAlignment = Alignment.Center
             ) {
-                Text("Keine Labels gefunden", style = MaterialTheme.typography.bodyLarge)
+                Text(stringResource(R.string.labels_empty), style = MaterialTheme.typography.bodyLarge)
             }
         } else {
             LazyColumn(
@@ -117,12 +119,12 @@ private fun InfoCard() {
             Spacer(modifier = Modifier.width(12.dp))
             Column {
                 Text(
-                    text = "Filter verbergen: Label erscheint nicht in der Leiste zum Filtern der Kontakte.",
+                    text = stringResource(R.string.labels_info_hide),
                     style = MaterialTheme.typography.labelMedium,
                     color = MaterialTheme.colorScheme.onSecondaryContainer
                 )
                 Text(
-                    text = "Ignorieren: Kontakte werden komplett ausgeblendet, sind aber in der Suche auffindbar.",
+                    text = stringResource(R.string.labels_info_ignore),
                     style = MaterialTheme.typography.labelMedium,
                     color = MaterialTheme.colorScheme.onSecondaryContainer
                 )
@@ -172,7 +174,7 @@ private fun LabelConfigCard(
                         shape = MaterialTheme.shapes.extraSmall,
                     ) {
                         Text(
-                            text = "SYSTEM",
+                            text = stringResource(R.string.labels_system_tag),
                             style = MaterialTheme.typography.labelSmall,
                             modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp),
                             color = MaterialTheme.colorScheme.onSecondaryContainer
@@ -190,7 +192,7 @@ private fun LabelConfigCard(
                 FilterChip(
                     selected = label.isHiddenFromFilter,
                     onClick = onHideToggle,
-                    label = { Text("Verbergen") },
+                    label = { Text(stringResource(R.string.labels_action_hide)) },
                     leadingIcon = if (label.isHiddenFromFilter) {
                         { Icon(Icons.Default.Check, contentDescription = null, modifier = Modifier.size(18.dp)) }
                     } else null,
@@ -204,7 +206,7 @@ private fun LabelConfigCard(
                 FilterChip(
                     selected = label.isIgnored,
                     onClick = onIgnoreToggle,
-                    label = { Text("Ignorieren") },
+                    label = { Text(stringResource(R.string.labels_action_ignore)) },
                     leadingIcon = if (label.isIgnored) {
                         { Icon(Icons.Default.Close, contentDescription = null, modifier = Modifier.size(18.dp)) }
                     } else null,

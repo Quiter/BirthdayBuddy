@@ -18,9 +18,11 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
+import com.heckmannch.birthdaybuddy.R
 import com.heckmannch.birthdaybuddy.ui.theme.BirthdayBuddyTheme
 import com.heckmannch.birthdaybuddy.viewmodel.BirthdayViewModel
 
@@ -72,12 +74,12 @@ private fun SettingsContent(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Einstellungen") },
+                title = { Text(stringResource(R.string.settings_title)) },
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "Zurück",
+                            contentDescription = stringResource(R.string.notifications_back),
                         )
                     }
                 },
@@ -96,8 +98,8 @@ private fun SettingsContent(
             ) {
                 item {
                     ListItem(
-                        headlineContent = { Text("Benachrichtigungen") },
-                        supportingContent = { Text("Erinnerungen und Uhrzeit verwalten") },
+                        headlineContent = { Text(stringResource(R.string.settings_notifications_title)) },
+                        supportingContent = { Text(stringResource(R.string.settings_notifications_desc)) },
                         leadingContent = { Icon(Icons.Default.Notifications, contentDescription = null) },
                         modifier = Modifier.clickable { onNavigateToNotifications() }
                     )
@@ -105,8 +107,8 @@ private fun SettingsContent(
 
                 item {
                     ListItem(
-                        headlineContent = { Text("Labels verwalten") },
-                        supportingContent = { Text("Filter anpassen und Kontakte nach Gruppen ausblenden") },
+                        headlineContent = { Text(stringResource(R.string.settings_labels_title)) },
+                        supportingContent = { Text(stringResource(R.string.settings_labels_desc)) },
                         leadingContent = { Icon(Icons.AutoMirrored.Filled.Label, contentDescription = null) },
                         modifier = Modifier.clickable { onNavigateToLabels() }
                     )
@@ -114,8 +116,8 @@ private fun SettingsContent(
 
                 item {
                     ListItem(
-                        headlineContent = { Text("Daten sichern") },
-                        supportingContent = { Text("Geschenkideen exportieren oder importieren") },
+                        headlineContent = { Text(stringResource(R.string.settings_backup_title)) },
+                        supportingContent = { Text(stringResource(R.string.settings_backup_desc)) },
                         leadingContent = { Icon(Icons.Default.Share, contentDescription = null) },
                         modifier = Modifier.clickable { onNavigateToBackup() }
                     )
@@ -123,8 +125,8 @@ private fun SettingsContent(
 
                 item {
                     ListItem(
-                        headlineContent = { Text("Kontakte synchronisieren") },
-                        supportingContent = { Text("Geburtstage aus deinen System-Kontakten laden") },
+                        headlineContent = { Text(stringResource(R.string.settings_sync_title)) },
+                        supportingContent = { Text(stringResource(R.string.settings_sync_desc)) },
                         leadingContent = { Icon(Icons.Default.Refresh, contentDescription = null) },
                         modifier = Modifier.clickable { onSyncClick() }
                     )
@@ -132,8 +134,8 @@ private fun SettingsContent(
 
                 item {
                     ListItem(
-                        headlineContent = { Text("Über die App") },
-                        supportingContent = { Text("Informationen zu BirthdayBuddy") },
+                        headlineContent = { Text(stringResource(R.string.settings_about_title)) },
+                        supportingContent = { Text(stringResource(R.string.settings_about_desc)) },
                         leadingContent = { Icon(Icons.Default.Info, contentDescription = null) },
                         modifier = Modifier.clickable { onNavigateToAbout() }
                     )
@@ -169,18 +171,18 @@ private fun SettingsFooter() {
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Text(
-            text = "BirthdayBuddy",
+            text = stringResource(R.string.app_name),
             style = MaterialTheme.typography.titleMedium,
             color = MaterialTheme.colorScheme.primary
         )
         Text(
-            text = "Version $versionName",
+            text = stringResource(R.string.settings_version, versionName),
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
         Spacer(modifier = Modifier.height(8.dp))
         Text(
-            text = "Made with ❤️ in Dortmund",
+            text = stringResource(R.string.settings_made_with),
             style = MaterialTheme.typography.labelMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )

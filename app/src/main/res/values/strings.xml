@@ -112,6 +112,7 @@
     <string name="about_description">BirthdayBuddy helps you never forget a birthday again. Receive reminders in time and manage gift ideas directly in the app.</string>
     <string name="about_developer_title">Developer</string>
     <string name="about_location_title">Location</string>
+    <string name="about_copyright">© 2024–2026 Christof Heckmann</string>
 
     <!-- Onboarding -->
     <string name="onboarding_notif_title">Turn on reminders?</string>
@@ -123,4 +124,43 @@
     <!-- App Shortcuts -->
     <string name="shortcut_add_contact">Add contact</string>
     <string name="shortcut_search">Search</string>
+
+    <!-- Settings Screen -->
+    <string name="settings_title">Settings</string>
+    <string name="settings_notifications_title">Notifications</string>
+    <string name="settings_notifications_desc">Manage reminders and time</string>
+    <string name="settings_labels_title">Manage labels</string>
+    <string name="settings_labels_desc">Adjust filters and hide contacts by groups</string>
+    <string name="settings_backup_title">Backup data</string>
+    <string name="settings_backup_desc">Export or import gift ideas</string>
+    <string name="settings_sync_title">Sync contacts</string>
+    <string name="settings_sync_desc">Load birthdays from your system contacts</string>
+    <string name="settings_about_title">About the app</string>
+    <string name="settings_about_desc">Information about BirthdayBuddy</string>
+    <string name="settings_version">Version %1$s</string>
+    <string name="settings_made_with">Made with ❤️ in Dortmund</string>
+
+    <!-- Label Settings Screen -->
+    <string name="labels_title">Manage labels</string>
+    <string name="labels_empty">No labels found</string>
+    <string name="labels_info_hide">Hide filter: Label does not appear in the bar to filter contacts.</string>
+    <string name="labels_info_ignore">Ignore: Contacts are completely hidden, but can be found in the search.</string>
+    <string name="labels_system_tag">SYSTEM</string>
+    <string name="labels_action_hide">Hide</string>
+    <string name="labels_action_ignore">Ignore</string>
+
+    <!-- Backup Screen -->
+    <string name="backup_title">Backup data</string>
+    <string name="backup_desc">Export your gift ideas to a file to restore them later or transfer them to another device.</string>
+    <string name="backup_export_title">Export gift ideas</string>
+    <string name="backup_export_desc">Saves all ideas in a JSON file</string>
+    <string name="backup_import_title">Import gift ideas</string>
+    <string name="backup_import_desc">Restore from a backup file</string>
+    <string name="backup_info_title">Important notes:</string>
+    <string name="backup_info_content">"• The import automatically assigns the ideas to your contacts.\n• Contacts are searched first via the stable system key (Lookup) and then via the name.\n• Existing gift ideas for a contact will be overwritten during import."</string>
+    <string name="backup_export_success">Export successful!</string>
+    <string name="backup_export_failed">Export failed: %1$s</string>
+    <string name="backup_import_success">%1$d gift ideas imported!</string>
+    <string name="backup_import_invalid">Invalid file format</string>
+    <string name="backup_import_failed">Import failed: %1$s</string>
 </resources>

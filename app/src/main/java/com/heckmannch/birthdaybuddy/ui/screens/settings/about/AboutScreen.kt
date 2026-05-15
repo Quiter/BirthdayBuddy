@@ -93,7 +93,7 @@ fun AboutScreen(
             )
             
             Text(
-                text = "Version $versionName",
+                text = stringResource(R.string.settings_version, versionName),
                 style = MaterialTheme.typography.bodyLarge,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
@@ -118,13 +118,13 @@ fun AboutScreen(
             
             AboutSection(
                 title = stringResource(R.string.about_location_title),
-                content = "Made with ❤️ in Dortmund"
+                content = stringResource(R.string.settings_made_with).removePrefix("Made with ❤️ in ")
             )
             
             Spacer(modifier = Modifier.height(64.dp))
             
             Text(
-                text = "© 2024-2026 Christof Heckmann",
+                text = stringResource(R.string.about_copyright),
                 style = MaterialTheme.typography.labelMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )

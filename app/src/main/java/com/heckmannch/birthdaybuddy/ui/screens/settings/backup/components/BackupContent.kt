@@ -9,8 +9,10 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.heckmannch.birthdaybuddy.R
 import com.heckmannch.birthdaybuddy.ui.theme.BirthdayBuddyTheme
 
 /**
@@ -27,10 +29,13 @@ fun BackupContent(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Daten sichern") },
+                title = { Text(stringResource(R.string.backup_title)) },
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Zurück")
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                            contentDescription = stringResource(R.string.notifications_back)
+                        )
                     }
                 }
             )
@@ -44,7 +49,7 @@ fun BackupContent(
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             Text(
-                "Exportiere deine Geschenkideen in eine Datei, um sie später wiederherzustellen oder auf ein anderes Gerät zu übertragen.",
+                stringResource(R.string.backup_desc),
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
@@ -55,8 +60,8 @@ fun BackupContent(
                 enabled = !isLoading
             ) {
                 ListItem(
-                    headlineContent = { Text("Geschenkideen exportieren") },
-                    supportingContent = { Text("Speichert alle Ideen in einer JSON-Datei") },
+                    headlineContent = { Text(stringResource(R.string.backup_export_title)) },
+                    supportingContent = { Text(stringResource(R.string.backup_export_desc)) },
                     leadingContent = { Icon(Icons.Default.Share, contentDescription = null) },
                     colors = ListItemDefaults.colors(containerColor = Color.Transparent)
                 )
@@ -68,8 +73,8 @@ fun BackupContent(
                 enabled = !isLoading
             ) {
                 ListItem(
-                    headlineContent = { Text("Geschenkideen importieren") },
-                    supportingContent = { Text("Wiederherstellen aus einer Backup-Datei") },
+                    headlineContent = { Text(stringResource(R.string.backup_import_title)) },
+                    supportingContent = { Text(stringResource(R.string.backup_import_desc)) },
                     leadingContent = { Icon(Icons.Default.Add, contentDescription = null) },
                     colors = ListItemDefaults.colors(containerColor = Color.Transparent)
                 )
@@ -94,15 +99,13 @@ private fun InfoSection() {
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
             Text(
-                "Wichtige Hinweise:",
+                stringResource(R.string.backup_info_title),
                 style = MaterialTheme.typography.titleSmall,
                 color = MaterialTheme.colorScheme.primary
             )
             Spacer(modifier = Modifier.height(4.dp))
             Text(
-                "• Der Import ordnet die Ideen automatisch deinen Kontakten zu.\n" +
-                "• Kontakte werden zuerst über den stabilen System-Key (Lookup) und dann über den Namen gesucht.\n" +
-                "• Existierende Geschenkideen für einen Kontakt werden beim Import überschrieben.",
+                stringResource(R.string.backup_info_content),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
