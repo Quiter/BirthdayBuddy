@@ -59,6 +59,7 @@
 - ### 📁 Components (`backup.components`)
     - `BackupContent.kt`: Die UI-Darstellung der Backup-Seite.
 - `about/AboutScreen.kt`: Informationsseite mit App-Details und rechtlichen Hinweisen.
+- `about/PrivacyPolicyScreen.kt`: Anzeige der Datenschutzerklärung (Markdown-Support via Text).
 
 ## 📁 Theme & Design (`ui.theme`)
 - `Theme.kt`: Material 3 Theme-Konfiguration mit Support für Dynamic Color und Dark Mode.

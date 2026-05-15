@@ -27,7 +27,8 @@ import com.heckmannch.birthdaybuddy.ui.theme.BirthdayBuddyTheme
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AboutScreen(
-    onNavigateBack: () -> Unit
+    onNavigateBack: () -> Unit,
+    onNavigateToPrivacyPolicy: () -> Unit
 ) {
     val context = LocalContext.current
     val versionName = remember {
@@ -121,7 +122,17 @@ fun AboutScreen(
                 content = stringResource(R.string.settings_made_with).removePrefix("Made with ❤️ in ")
             )
             
-            Spacer(modifier = Modifier.height(64.dp))
+            Spacer(modifier = Modifier.height(32.dp))
+            
+            TextButton(onClick = onNavigateToPrivacyPolicy) {
+                Text(
+                    text = stringResource(R.string.about_privacy_policy),
+                    style = MaterialTheme.typography.labelLarge,
+                    color = MaterialTheme.colorScheme.primary
+                )
+            }
+            
+            Spacer(modifier = Modifier.height(48.dp))
             
             Text(
                 text = stringResource(R.string.about_copyright),
@@ -157,6 +168,6 @@ private fun AboutSection(title: String, content: String) {
 @Composable
 private fun AboutPreview() {
     BirthdayBuddyTheme {
-        AboutScreen(onNavigateBack = {})
+        AboutScreen(onNavigateBack = {}, onNavigateToPrivacyPolicy = {})
     }
 }

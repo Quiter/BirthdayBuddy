@@ -299,5 +299,8 @@ Alle signifikanten Änderungen am Projekt werden hier dokumentiert.
 75. **Architecture Polish & Robustness:**
     - Refactoring of `ContactMapper` to consistently use the robust extension functions from `DateUtils`.
     - Implementation of a state-based automatic search focus logic that works reliably even during screen transitions or cold starts.
+76. **Privacy Policy Integration:**
+    - **New Sub-page:** Einführung einer dedizierten "Datenschutzerklärung" Seite, die über den "Über die App" Screen erreichbar ist.
+    - **Localization:** Vollständige Unterstützung für Deutsch und Englisch inkl. Navigation und TopBar-Integration.
 
 

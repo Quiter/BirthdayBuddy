@@ -26,6 +26,7 @@ import com.heckmannch.birthdaybuddy.ui.screens.settings.labels.LabelSettingsScre
 import com.heckmannch.birthdaybuddy.ui.screens.settings.notifications.NotificationSettingsScreen
 import com.heckmannch.birthdaybuddy.ui.screens.settings.backup.BackupScreen
 import com.heckmannch.birthdaybuddy.ui.screens.settings.about.AboutScreen
+import com.heckmannch.birthdaybuddy.ui.screens.settings.about.PrivacyPolicyScreen
 import com.heckmannch.birthdaybuddy.ui.theme.BirthdayBuddyTheme
 import com.heckmannch.birthdaybuddy.viewmodel.BirthdayViewModel
 import com.heckmannch.birthdaybuddy.widget.BirthdayWidgetWorker
@@ -40,6 +41,7 @@ private object Routes {
     const val NOTIFICATION_SETTINGS = "notification_settings"
     const val BACKUP_SETTINGS = "backup_settings"
     const val ABOUT = "about"
+    const val PRIVACY_POLICY = "privacy_policy"
 }
 
 @AndroidEntryPoint
@@ -163,7 +165,17 @@ class MainActivity : ComponentActivity() {
                 }
             }
             composable(Routes.ABOUT) {
-                AboutScreen {
+                AboutScreen(
+                    onNavigateBack = {
+                        navController.popBackStack()
+                    },
+                    onNavigateToPrivacyPolicy = {
+                        navController.navigate(Routes.PRIVACY_POLICY)
+                    }
+                )
+            }
+            composable(Routes.PRIVACY_POLICY) {
+                PrivacyPolicyScreen {
                     navController.popBackStack()
                 }
             }

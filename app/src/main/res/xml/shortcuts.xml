@@ -3,7 +3,7 @@
     <shortcut
         android:shortcutId="add_contact"
         android:enabled="true"
-        android:icon="@drawable/ic_app_logo"
+        android:icon="@drawable/ic_shortcut_add"
         android:shortcutShortLabel="@string/shortcut_add_contact">
         <intent
             android:action="android.intent.action.VIEW"
@@ -19,7 +19,7 @@
     <shortcut
         android:shortcutId="search_contact"
         android:enabled="true"
-        android:icon="@drawable/ic_app_logo"
+        android:icon="@drawable/ic_shortcut_search"
         android:shortcutShortLabel="@string/shortcut_search">
         <intent
             android:action="android.intent.action.VIEW"
