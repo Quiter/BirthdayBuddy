@@ -8,6 +8,12 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.heckmannch.birthdaybuddy.R
@@ -17,6 +23,19 @@ import com.heckmannch.birthdaybuddy.R
 fun PrivacyPolicyScreen(
     onNavigateBack: () -> Unit
 ) {
+    val context = LocalContext.current
+    var policyText by remember { mutableStateOf("") }
+
+    LaunchedEffect(Unit) {
+        try {
+            context.resources.openRawResource(R.raw.privacy_policy).bufferedReader().use {
+                policyText = it.readText()
+            }
+        } catch (e: Exception) {
+            policyText = "Error loading privacy policy."
+        }
+    }
+
     Scaffold(
         topBar = {
             TopAppBar(
@@ -39,11 +58,18 @@ fun PrivacyPolicyScreen(
                 .verticalScroll(rememberScrollState())
                 .padding(24.dp)
         ) {
-            // Der Text wird jetzt aus den strings.xml geladen (Deutsch/Englisch)
             Text(
-                text = stringResource(R.string.privacy_policy_content),
+                text = policyText,
                 style = MaterialTheme.typography.bodyMedium
             )
         }
+    }
+}
+
+@Composable
+@androidx.compose.ui.tooling.preview.Preview(showBackground = true)
+fun PrivacyPolicyScreenPreview() {
+    MaterialTheme {
+        PrivacyPolicyScreen(onNavigateBack = {})
     }
 }

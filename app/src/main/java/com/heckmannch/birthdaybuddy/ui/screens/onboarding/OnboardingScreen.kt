@@ -207,7 +207,7 @@ private fun ContactsPage(isGranted: Boolean, onGrant: () -> Unit, onSkip: () -> 
             ) {
                 Text(
                     if (!shouldShowRationale && ContextCompat.checkSelfPermission(context, Manifest.permission.READ_CONTACTS) != PackageManager.PERMISSION_GRANTED) 
-                        "Einstellungen öffnen" // Hier könnte man noch einen String-Resource-Eintrag erstellen
+                        stringResource(R.string.onboarding_contacts_settings)
                     else stringResource(R.string.onboarding_contacts_btn)
                 )
             }
@@ -216,7 +216,7 @@ private fun ContactsPage(isGranted: Boolean, onGrant: () -> Unit, onSkip: () -> 
             
             TextButton(onClick = onSkip) {
                 Text(
-                    text = "Ohne Kontakte fortfahren",
+                    text = stringResource(R.string.onboarding_contacts_skip),
                     style = MaterialTheme.typography.bodyMedium,
                     textDecoration = TextDecoration.Underline,
                     color = MaterialTheme.colorScheme.outline

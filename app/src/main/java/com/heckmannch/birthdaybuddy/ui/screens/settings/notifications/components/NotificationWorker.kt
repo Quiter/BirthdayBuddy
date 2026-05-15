@@ -79,6 +79,7 @@ class NotificationWorker @AssistedInject constructor(
         /**
          * Plant den nächsten fälligen Zeitpunkt basierend auf allen Regeln.
          */
+        @JvmStatic
         fun scheduleNext(context: Context, rules: List<com.heckmannch.birthdaybuddy.database.NotificationRule>) {
             if (rules.isEmpty()) {
                 cancelNotification(context)
@@ -116,6 +117,7 @@ class NotificationWorker @AssistedInject constructor(
             )
         }
 
+        @JvmStatic
         fun cancelNotification(context: Context) {
             WorkManager.getInstance(context).cancelUniqueWork(WORK_NAME)
         }

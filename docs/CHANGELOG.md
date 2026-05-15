@@ -316,5 +316,11 @@ Alle signifikanten Änderungen am Projekt werden hier dokumentiert.
     - **Automated Testing:** Einführung einer Test-Infrastruktur mit Unit-Tests (`DateUtils`) und Instrumented Tests (`NotificationRepository`).
     - **CI/CD Integration:** Automatisierte Test-Ausführung in der GitHub Actions Pipeline vor jedem Release-Build.
     - **Cleanup:** Entfernung veralteter Onboarding-Dialoge und Konsolidierung der UI-Logik im Home-Screen.
+78. **Resource Consolidation & Testing Excellence:**
+    - **String Cleanup:** Zusammenführung aller Onboarding-Strings in die zentrale `strings.xml` und Entfernung redundanter Ressourcendateien zur besseren Wartbarkeit.
+    - **Privacy Policy Extraction:** Auslagerung der umfangreichen Datenschutzerklärung in lokalisierte Markdown-Dateien (`res/raw`), um die App-Ressourcen übersichtlich zu halten und die Lesbarkeit zu verbessern.
+    - **Testing Stability:** Vereinheitlichung der Coroutines-Bibliotheken (v1.10.1) zur Behebung von Laufzeitfehlern in der Test-Umgebung.
+    - **Test Infrastructure:** Migration der ViewModel-Tests auf instrumentierte Tests (`androidTest`) inklusive Integration von `mockito-android`, um eine stabile Validierung der Such- und Filterlogik auf echten Geräten zu gewährleisten.
+    - **Policy Update:** Einführung einer verbindlichen Test-Pflicht vor jedem Release-Build in der Projektdokumentation.
 
 

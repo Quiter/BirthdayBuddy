@@ -8,7 +8,7 @@ import com.google.common.truth.Truth.assertThat
 import com.heckmannch.birthdaybuddy.database.*
 import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.test.runTest
 import org.junit.After
 import org.junit.Before
 import org.junit.Test
@@ -37,7 +37,7 @@ class NotificationRepositoryTest {
     }
 
     @Test
-    fun updateSettings_consecutiveUpdates_areConsistent() = runBlocking {
+    fun updateSettings_consecutiveUpdates_areConsistent() = runTest {
         // Initial state
         repository.updateSettings(notificationsEnabled = false, onboardingCompleted = false)
         
@@ -58,7 +58,7 @@ class NotificationRepositoryTest {
     }
     
     @Test
-    fun updateSettings_partialUpdates_doNotOverwriteOthers() = runBlocking {
+    fun updateSettings_partialUpdates_doNotOverwriteOthers() = runTest {
         // Set something first
         repository.updateSettings(persistentNotifications = false)
         

@@ -11,6 +11,7 @@ Die App wurde erfolgreich von BirthdayBuddy2 in BirthdayBuddy umbenannt. In dies
 3. **Datenbank-Migration:** Bei JEDER Änderung an einer Entity-Klasse (Package `database`) MUSS die Version in der `AppDatabase` erhöht und eine Migration (AutoMigration) definiert werden. Ein Datenverlust beim Nutzer ist unter allen Umständen zu vermeiden.
 4. **Status-Relevanz:** Nur Meilensteine und aktuell relevante Fokus-Themen verbleiben in dieser Datei. Der detaillierte Verlauf findet sich in der `CHANGELOG.md`.
 5. **Internationalisierungs-Pflicht:** Bei jeder Änderung an den Sprachressourcen (`strings.xml`) müssen **zwingend sowohl die englische (Standard) als auch die deutsche Version** aktualisiert werden.
+6. **Test-Pflicht:** Vor jedem Build für einen Meilenstein oder ein Play Store Release müssen zwingend alle automatisierten Tests (Package `test` und `androidTest`) erfolgreich durchlaufen. Best Practice: Lokale Tests sollten bereits während der Entwicklung nach jeder Logik-Änderung ausgeführt werden.
 
 ## 🛠 Architektur & Struktur
 - **Package-Struktur:** Feature-basierte Layer (`ui.screens.home`, `ui.screens.settings.labels`, `ui.screens.settings.notifications`, `viewmodel`, `database`, `widget`).
