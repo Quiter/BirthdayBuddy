@@ -59,6 +59,7 @@ Um Start-Abstürze und Datenverlust nach Updates zu verhindern, müssen folgende
 - **Gift Idea Security:** Geschenkideen nutzen nun JSON-Mapping zur sicheren Speicherung beliebiger Sonderzeichen.
 - **Android Modernization:** Einführung von App Shortcuts, Predictive Back Support und Per-App Language Settings.
 - **Architecture Refinement:** Konsolidierung der Datumslogik und Implementierung einer robusten, State-basierten Fokus-Steuerung für die Suche.
+- **Privacy Policy Integration:** Implementierung einer dedizierten, lokalisierten Datenschutzerklärung innerhalb der App.
 
 ## 🎯 Kommende Aufgaben (Backlog)
 - **Edge-Cases:** Verfeinerung des Verhaltens bei extrem vielen Kontakten (> 1000).

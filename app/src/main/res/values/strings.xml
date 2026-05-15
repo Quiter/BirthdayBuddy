@@ -86,13 +86,22 @@
 
     <string name="notif_title_today_named">It\'s %1$s\'s birthday today!</string>
     <string name="notif_title_today_age">%1$s turns %2$d today!</string>
-    <string name="notif_title_today_plural">%d people have their birthday today!</string>
+    <plurals name="notif_title_today_plural">
+        <item quantity="one">One person has their birthday today!</item>
+        <item quantity="other">%d people have their birthday today!</item>
+    </plurals>
     <string name="notif_title_tomorrow_named">It\'s %1$s\'s birthday tomorrow!</string>
     <string name="notif_title_tomorrow_age">%1$s turns %2$d tomorrow!</string>
-    <string name="notif_title_tomorrow_plural">%d people have their birthday tomorrow!</string>
+    <plurals name="notif_title_tomorrow_plural">
+        <item quantity="one">One person has their birthday tomorrow!</item>
+        <item quantity="other">%d people have their birthday tomorrow!</item>
+    </plurals>
     <string name="notif_title_week_named">%1$s has a birthday in one week!</string>
     <string name="notif_title_week_age">%1$s turns %2$d in one week!</string>
-    <string name="notif_title_week_plural">%d people have their birthday in one week!</string>
+    <plurals name="notif_title_week_plural">
+        <item quantity="one">One person has their birthday in one week!</item>
+        <item quantity="other">%d people have their birthday in one week!</item>
+    </plurals>
     <plurals name="notif_title_days_named">
         <item quantity="one">In one day it\'s %1$s\'s birthday!</item>
         <item quantity="other">In %d days it\'s %s\'s birthday!</item>

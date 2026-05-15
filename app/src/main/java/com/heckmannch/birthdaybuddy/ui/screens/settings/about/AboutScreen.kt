@@ -39,9 +39,9 @@ fun AboutScreen(
                 @Suppress("DEPRECATION")
                 context.packageManager.getPackageInfo(context.packageName, 0)
             }
-            packageInfo.versionName ?: "1.4.4"
+            packageInfo.versionName ?: "2.1.0"
         } catch (_: Exception) {
-            "1.4.4"
+            "2.1.0"
         }
     }
 

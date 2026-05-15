@@ -224,20 +224,26 @@ Alle signifikanten Änderungen am Projekt werden hier dokumentiert.
     - **State Persistence:** Einführung des `onboardingCompleted` Flags in den `AppSettings` zur dauerhaften Speicherung des Onboarding-Status.
 
 ---
-**Hinweis:** Bis zu diesem Punkt (Meilenstein 59/60) wurden alle Änderungen im **Beta-Kanal des Google Play Stores** dokumentiert. Ab der nächsten Version wird die Historie hier direkt mit der offiziellen Release-Ausgabe im Play Store fortgeführt.
+**Hinweis:** Bis zu diesem Punkt (Meilenstein 59/60) wurden alle Änderungen im **Beta-Kanal des Google Play Stores** dokumentiert. Ab der Version 2.1.0 wird die Historie hier direkt mit der offiziellen Release-Ausgabe im Play Store fortgeführt.
 
-## 🚀 Play Store Release Notes (Beta Cycle)
+## 🚀 Play Store Release Notes (v2.1.0)
 **englisch**
-- Individual & persistent reminders with age display.
-- Improved onboarding for a smoother start.
-- High-performance UI with Material 3 design.
-- Gift ideas backup & restore (JSON).
-- 
+- **New:** Integrated Privacy Policy & Terms of Service directly in the app.
+- **New:** Pull-to-refresh on home screen for manual sync.
+- **New:** Improved onboarding process.
+- **Improved:** Faster search performance and smoother scrolling.
+- **Improved:** High-performance UI with Material 3 design and GPU acceleration.
+- **Feature:** Gift ideas backup & restore (JSON).
+- **Bugfixes:** Fixed various stability issues and UI glitches.
+
 **german**
-- Individuelle & wichtige Erinnerungen inkl. Altersanzeige.
-- Optimiertes Onboarding für einen reibungslosen Start.
-- Performance-Upgrade & modernes Material 3 Design.
-- Backup für Geschenkideen (JSON Export/Import).
+- **Neu:** Integrierte Datenschutzerklärung & AGB direkt in der App.
+- **Neu:** Pull-to-Refresh auf dem Startbildschirm für manuellen Abgleich.
+- **Neu:** Optimierter Onboarding-Prozess.
+- **Verbessert:** Schnellere Suche und flüssigeres Scrollen.
+- **Verbessert:** Performance-Upgrade & modernes Material 3 Design mit GPU-Beschleunigung.
+- **Feature:** Backup für Geschenkideen (JSON Export/Import).
+- **Bugfixes:** Diverse Stabilitätsverbesserungen und UI-Fixes.
 ---
 
 60. **Advanced Notification Personalization:**

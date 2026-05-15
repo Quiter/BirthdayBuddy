@@ -127,9 +127,9 @@ class NotificationHelper @Inject constructor(
             }
         } else {
             when (daysBefore) {
-                0 -> context.getString(R.string.notif_title_today_plural, contacts.size)
-                1 -> context.getString(R.string.notif_title_tomorrow_plural, contacts.size)
-                7 -> context.getString(R.string.notif_title_week_plural, contacts.size)
+                0 -> context.resources.getQuantityString(R.plurals.notif_title_today_plural, contacts.size, contacts.size)
+                1 -> context.resources.getQuantityString(R.plurals.notif_title_tomorrow_plural, contacts.size, contacts.size)
+                7 -> context.resources.getQuantityString(R.plurals.notif_title_week_plural, contacts.size, contacts.size)
                 else -> context.resources.getQuantityString(R.plurals.notif_title_days_plural, daysBefore, daysBefore, contacts.size)
             }
         }
