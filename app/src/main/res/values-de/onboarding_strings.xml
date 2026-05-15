@@ -1,0 +1,22 @@
+<resources>
+    <string name="onboarding_welcome_title">Willkommen bei BirthdayBuddy</string>
+    <string name="onboarding_welcome_desc">Dein zuverlässiger Begleiter, um nie wieder einen Geburtstag zu vergessen. Alle Kontakte an einem Ort, sortiert nach ihrem großen Tag.</string>
+
+    <string name="onboarding_contacts_title">Deine Kontakte</string>
+    <string name="onboarding_contacts_desc">Um dir Geburtstage anzuzeigen, benötigt BirthdayBuddy Zugriff auf deine System-Kontakte. Deine Daten bleiben lokal auf deinem Gerät.</string>
+    <string name="onboarding_contacts_btn">Zugriff erlauben</string>
+    <string name="onboarding_contacts_granted">Zugriff gewährt!</string>
+
+    <string name="onboarding_notif_page_title">Erinnerungen</string>
+    <string name="onboarding_notif_page_desc">Wann sollen wir dich erinnern? Du kannst auch entscheiden, ob Erinnerungen aktiv bleiben sollen, bis du sie erledigst.</string>
+    <string name="onboarding_notif_enable">Benachrichtigungen aktivieren</string>
+    <string name="onboarding_notif_persistent">Persistente Erinnerungen</string>
+    <string name="onboarding_notif_btn">Berechtigung erteilen</string>
+
+    <string name="onboarding_ready_title">Alles startklar!</string>
+    <string name="onboarding_ready_desc">Alles ist konfiguriert. Wir synchronisieren jetzt deine Kontakte. Viel Spaß mit BirthdayBuddy!</string>
+    <string name="onboarding_ready_btn">Los geht\'s</string>
+
+    <string name="onboarding_next">Weiter</string>
+    <string name="onboarding_skip">Überspringen</string>
+</resources>

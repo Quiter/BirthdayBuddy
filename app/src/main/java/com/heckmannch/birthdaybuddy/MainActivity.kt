@@ -13,14 +13,17 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import dagger.hilt.android.AndroidEntryPoint
 import com.heckmannch.birthdaybuddy.ui.screens.home.HomeScreen
+import com.heckmannch.birthdaybuddy.ui.screens.onboarding.OnboardingScreen
 import com.heckmannch.birthdaybuddy.ui.screens.settings.SettingsScreen
 import com.heckmannch.birthdaybuddy.ui.screens.settings.labels.LabelSettingsScreen
 import com.heckmannch.birthdaybuddy.ui.screens.settings.notifications.NotificationSettingsScreen
@@ -36,6 +39,7 @@ import com.heckmannch.birthdaybuddy.widget.BirthdayWidgetWorker
  */
 private object Routes {
     const val HOME = "home"
+    const val ONBOARDING = "onboarding"
     const val SETTINGS = "settings"
     const val LABEL_SETTINGS = "label_settings"
     const val NOTIFICATION_SETTINGS = "notification_settings"
@@ -65,7 +69,7 @@ class MainActivity : ComponentActivity() {
                 LaunchedEffect(Unit) {
                     while (true) {
                         kotlinx.coroutines.delay(10000) // Alle 10 Sekunden prüfen
-                        if (System.currentTimeMillis() - lastInteractionTime > 5 * 60 * 1000) {
+                        if ((System.currentTimeMillis() - lastInteractionTime) > (5 * 60 * 1000)) {
                             viewModel.resetFilters()
                         }
                     }
@@ -117,14 +121,23 @@ class MainActivity : ComponentActivity() {
 
     @Composable
     private fun AppNavigation(navController: NavHostController, viewModel: BirthdayViewModel) {
+        val onboardingCompleted by viewModel.onboardingCompleted.collectAsStateWithLifecycle()
+
         NavHost(
             navController = navController,
-            startDestination = Routes.HOME,
+            startDestination = if (onboardingCompleted) Routes.HOME else Routes.ONBOARDING,
             enterTransition = { sharedAxisZIn() },
             exitTransition = { sharedAxisZOut() },
             popEnterTransition = { sharedAxisZIn() },
             popExitTransition = { sharedAxisZOut() },
         ) {
+            composable(Routes.ONBOARDING) {
+                OnboardingScreen(viewModel = viewModel) {
+                    navController.navigate(Routes.HOME) {
+                        popUpTo(Routes.ONBOARDING) { inclusive = true }
+                    }
+                }
+            }
             composable(Routes.HOME) {
                 HomeScreen(viewModel = viewModel) {
                     navController.navigate(Routes.SETTINGS)
@@ -171,7 +184,7 @@ class MainActivity : ComponentActivity() {
                     },
                     onNavigateToPrivacyPolicy = {
                         navController.navigate(Routes.PRIVACY_POLICY)
-                    }
+                    },
                 )
             }
             composable(Routes.PRIVACY_POLICY) {

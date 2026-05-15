@@ -33,6 +33,8 @@
 
 ## 📁 Home Screen (`ui.screens.home`)
 - `HomeScreen.kt`: Container-Composable des Hauptbildschirms; verwaltet den Lebenszyklus des UI-States und Callbacks.
+- ### 📁 Onboarding (`ui.screens.onboarding`)
+    - `OnboardingScreen.kt`: Multi-Page Setup (HorizontalPager) für die initiale App-Konfiguration.
 - ### 📁 Components (`home.components`)
     - `BirthdayItem.kt`: Listen-Element mit Sticky-Swipe-Logik, Aktions-Buttons und dynamischen Rahmen-Farben.
     - `BirthdayList.kt`: LazyColumn-Implementierung mit Optimierungen für Re-Compositions und exklusive Item-Expansion.
@@ -89,6 +91,10 @@
 - `backup_rules.xml` & `data_extraction_rules.xml`: Konfiguration für das Android Backup-System.
 
 ## 🌍 Internationalisierung (I18n)
-- `res/values/strings.xml`: Standard-Sprachressourcen (**Englisch**).
-- `res/values-de/strings.xml`: Lokalisierte Sprachressourcen (**Deutsch**).
+- `res/values/strings.xml` & `onboarding_strings.xml`: Standard-Sprachressourcen (**Englisch**).
+- `res/values-de/strings.xml` & `onboarding_strings.xml`: Lokalisierte Sprachressourcen (**Deutsch**).
+
+## 🧪 Testing (`src/test` & `src/androidTest`)
+- `DateUtilsTest.kt`: Unit-Tests für die zentrale Datums-Logik (Schaltjahre, Alter).
+- `NotificationRepositoryTest.kt`: Instrumented Tests zur Absicherung der Thread-Sicherheit und Datenbank-Integrität.
 - **WICHTIGER CONSTRAINT:** Bei der Erstellung neuer Strings oder der Bearbeitung bestehender Texte müssen **zwingend immer beide Dateien** (`values` und `values-de`) synchron gehalten werden, um eine konsistente Nutzererfahrung in beiden Sprachen zu gewährleisten.

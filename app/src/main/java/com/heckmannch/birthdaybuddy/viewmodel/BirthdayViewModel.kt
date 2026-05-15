@@ -50,22 +50,33 @@ class BirthdayViewModel @Inject constructor(
 
     val onboardingCompleted: StateFlow<Boolean> = settings
         .map { it.onboardingCompleted }
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), true)
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), false)
 
     val swipeHintShown: StateFlow<Boolean> = settings
         .map { it.swipeHintShown }
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), true)
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), false)
 
     fun setNotificationsEnabled(enabled: Boolean) = viewModelScope.launch {
-        val rules = notificationRules.value
-        if (enabled && (rules != null) && rules.isEmpty()) {
-            addNotificationRule(daysBefore = 0, hour = 9, minute = 0)
+        if (enabled) {
+            val rules = notificationRepository.getAllRulesImmediate()
+            if (rules.isEmpty()) {
+                addNotificationRule(daysBefore = 0, hour = 9, minute = 0)
+            }
         }
         notificationRepository.updateSettings(notificationsEnabled = enabled)
     }
 
-    fun setOnboardingCompleted(completed: Boolean) = viewModelScope.launch {
-        notificationRepository.updateSettings(onboardingCompleted = completed)
+    fun completeOnboarding(notificationsEnabled: Boolean) = viewModelScope.launch {
+        if (notificationsEnabled) {
+            val rules = notificationRepository.getAllRulesImmediate()
+            if (rules.isEmpty()) {
+                addNotificationRule(daysBefore = 0, hour = 9, minute = 0)
+            }
+        }
+        notificationRepository.updateSettings(
+            notificationsEnabled = notificationsEnabled,
+            onboardingCompleted = true,
+        )
     }
 
     fun setPersistentNotifications(persistent: Boolean) = viewModelScope.launch {

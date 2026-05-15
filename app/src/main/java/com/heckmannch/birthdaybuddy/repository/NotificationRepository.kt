@@ -8,6 +8,8 @@ import com.heckmannch.birthdaybuddy.database.PendingNotification
 import com.heckmannch.birthdaybuddy.database.PendingNotificationDao
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -17,6 +19,8 @@ class NotificationRepository @Inject constructor(
     private val pendingNotificationDao: PendingNotificationDao,
     private val appSettingsDao: AppSettingsDao,
 ) {
+    private val settingsMutex = Mutex()
+
     val allRules: Flow<List<NotificationRule>> = notificationRuleDao.getAllRules()
 
     val settings: Flow<AppSettings> = appSettingsDao.getSettings()
@@ -28,7 +32,7 @@ class NotificationRepository @Inject constructor(
         swipeHintShown: Boolean? = null,
         onboardingCompleted: Boolean? = null,
         lastSyncTimestamp: Long? = null
-    ) {
+    ) = settingsMutex.withLock {
         val current = appSettingsDao.getSettingsImmediate() ?: AppSettings()
         appSettingsDao.upsertSettings(
             current.copy(

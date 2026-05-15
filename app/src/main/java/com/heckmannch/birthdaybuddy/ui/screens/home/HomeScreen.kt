@@ -5,7 +5,6 @@ import android.app.Activity
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.net.Uri
-import android.os.Build
 import android.provider.ContactsContract
 import android.provider.Settings
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -54,35 +53,24 @@ fun HomeScreen(
     val context = LocalContext.current
     val focusManager = LocalFocusManager.current
     val keyboardController = LocalSoftwareKeyboardController.current
-    val scope = rememberCoroutineScope()
     
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-    val onboardingCompleted by viewModel.onboardingCompleted.collectAsStateWithLifecycle()
     val homeState = rememberHomeState()
     
     val appPlaceholder = stringResource(R.string.home_placeholder_app)
     val searchPlaceholder = stringResource(R.string.home_placeholder_search)
-    val onboardingNotifMsg = stringResource(R.string.onboarding_notif_enabled_msg)
 
     // --- Launchers ---
     val permissionLauncher = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted ->
         if (isGranted) viewModel.syncContacts()
     }
 
-    val notificationPermissionLauncher = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted ->
-        viewModel.setNotificationsEnabled(isGranted)
-        viewModel.setOnboardingCompleted(true)
-        if (isGranted) {
-            scope.launch { homeState.snackbarHostState.showSnackbar(onboardingNotifMsg) }
-        }
-    }
-
     // --- Effekte ---
     LaunchedEffect(Unit) {
         homeState.animatedPlaceholder = appPlaceholder
-        val hasPermission = ContextCompat.checkSelfPermission(context, Manifest.permission.READ_CONTACTS) == PackageManager.PERMISSION_GRANTED
-        if (!hasPermission) permissionLauncher.launch(Manifest.permission.READ_CONTACTS) 
-        else viewModel.syncContacts()
+        if (ContextCompat.checkSelfPermission(context, Manifest.permission.READ_CONTACTS) == PackageManager.PERMISSION_GRANTED) {
+            viewModel.syncContacts()
+        }
         
         delay(2000)
         homeState.animatedPlaceholder = searchPlaceholder
@@ -92,7 +80,7 @@ fun HomeScreen(
     LaunchedEffect(viewModel.scrollToTopEvent) {
         viewModel.scrollToTopEvent.collectLatest {
             homeState.resetScrollRequested = true
-            viewModel.setIsResettingFilter(true)
+            viewModel.setIsResettingFilter(isResetting = true)
         }
     }
 
@@ -107,13 +95,13 @@ fun HomeScreen(
 
     LaunchedEffect(uiState.searchQuery, uiState.selectedLabel) {
         homeState.resetScrollRequested = true
-        viewModel.setIsResettingFilter(true)
+        viewModel.setIsResettingFilter(isResetting = true)
     }
 
     // Durchführung des Scroll-Resets
     LaunchedEffect(uiState.contacts) {
-        if (homeState.resetScrollRequested && uiState.contacts != null) {
-            homeState.performScrollReset { viewModel.setIsResettingFilter(false) }
+        if (homeState.resetScrollRequested && (uiState.contacts != null)) {
+            homeState.performScrollReset { viewModel.setIsResettingFilter(isResetting = false) }
         }
     }
 
@@ -122,24 +110,6 @@ fun HomeScreen(
             focusManager.clearFocus()
             keyboardController?.hide()
         }
-    }
-
-    // --- Onboarding ---
-    if (uiState.contacts != null && !onboardingCompleted && ContextCompat.checkSelfPermission(context, Manifest.permission.READ_CONTACTS) == PackageManager.PERMISSION_GRANTED) {
-        OnboardingDialog(
-            onConfirm = {
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                    notificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
-                } else {
-                    viewModel.setNotificationsEnabled(true)
-                    viewModel.setOnboardingCompleted(true)
-                    scope.launch { homeState.snackbarHostState.showSnackbar(onboardingNotifMsg) }
-                }
-            },
-            onDismiss = {
-                viewModel.setOnboardingCompleted(true)
-            }
-        )
     }
 
     // --- Callbacks ---
@@ -183,7 +153,7 @@ fun HomeScreen(
                 context.startActivity(Intent(Intent.ACTION_VIEW, lookupUri))
             } catch (_: Exception) {}
         },
-        onRefresh = { viewModel.syncContacts(showLoading = true) },
+        onRefresh = { viewModel.syncContacts(showLoading = true) }
     )
 }
 

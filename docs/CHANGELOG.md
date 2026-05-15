@@ -308,5 +308,13 @@ Alle signifikanten Änderungen am Projekt werden hier dokumentiert.
 76. **Privacy Policy Integration:**
     - **New Sub-page:** Einführung einer dedizierten "Datenschutzerklärung" Seite, die über den "Über die App" Screen erreichbar ist.
     - **Localization:** Vollständige Unterstützung für Deutsch und Englisch inkl. Navigation und TopBar-Integration.
+77. **Advanced Onboarding & Stability Overhaul:**
+    - **Onboarding Screen:** Einführung eines geführten Multi-Page Onboarding-Screens (Willkommen, Kontakte, Benachrichtigungen) mit `HorizontalPager`. Ersetzt die fehleranfälligen Dialog-Popups.
+    - **UX Polish:** Deaktivierung des freien Swipens im Onboarding zur Sicherstellung einer vollständigen Konfiguration. Implementierung von intelligenten "Einstellungen öffnen" Fallbacks und "Ohne Kontakte fortfahren" Optionen.
+    - **Branding:** Integration des farbigen App-Logos im Willkommens-Screen zur Stärkung der Markenidentität.
+    - **Technical Stability:** Implementierung eines `Mutex` im `NotificationRepository` zur Beseitigung von Race-Conditions bei parallelen Einstellungs-Updates.
+    - **Automated Testing:** Einführung einer Test-Infrastruktur mit Unit-Tests (`DateUtils`) und Instrumented Tests (`NotificationRepository`).
+    - **CI/CD Integration:** Automatisierte Test-Ausführung in der GitHub Actions Pipeline vor jedem Release-Build.
+    - **Cleanup:** Entfernung veralteter Onboarding-Dialoge und Konsolidierung der UI-Logik im Home-Screen.
 
 

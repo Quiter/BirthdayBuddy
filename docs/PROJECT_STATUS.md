@@ -1,6 +1,6 @@
 # Project Status: BirthdayBuddy
 
-> **TL;DR für neue Sessions:** Moderne M3 Geburtstags-App. Android-Kontakte sind die Single-Source-of-Truth. App-Rename von BirthdayBuddy2 auf BirthdayBuddy abgeschlossen. **Datenbank auf Version 1 zurückgesetzt (Clean Start nach App-ID Wechsel).** Architektur sauber & performant. Alle Einstellungen & Benachrichtigungsregeln sind in Room konsolidiert.
+> **TL;DR für neue Sessions:** Moderne M3 Geburtstags-App. Android-Kontakte sind die Single-Source-of-Truth. Architektur sauber & performant. Alle Einstellungen & Benachrichtigungsregeln sind in Room konsolidiert.
 
 ## 🚀 Aktueller Stand
 Die App wurde erfolgreich von BirthdayBuddy2 in BirthdayBuddy umbenannt. In diesem Zuge wurde die `applicationId` angepasst und die Datenbank auf Version 1 zurückgesetzt, um einen sauberen Neustart zu ermöglichen. Der Fokus liegt weiterhin auf maximaler Stabilität, exzellenter Code-Qualität nach Clean-Code-Prinzipien und der kontinuierlichen Verfeinerung der Nutzererfahrung (UX-Polish).
@@ -34,9 +34,9 @@ Um Start-Abstürze und Datenverlust nach Updates zu verhindern, müssen folgende
 4. **Verifikations-Pflicht:** Vor jedem Release muss ein Update-Szenario (Installation der alten Version -> Daten anlegen -> Installation der neuen Version als Update) erfolgreich getestet werden.
 
 ## ✨ Key Features
-1. **HomeScreen:** High-End Fast-Scrollbar, Gmail-Style Suche, intelligenter FAB.
-2. **Geschenkideen & Backup:** Google Keep Style Checklisten mit lokalem JSON-Backup/Restore.
-3. **Label-Management:** Modernes M3-Interface zur Steuerung der Sichtbarkeit.
+1. **HomeScreen:** High-End Fast-Scrollbar, Gmail-Style Suche, intelligenter FAB, Pull-to-Refresh.
+2. **Onboarding (New):** Geführter Multi-Page Flow zur sicheren Einrichtung von Berechtigungen (Kontakte, Benachrichtigungen).
+3. **Geschenkideen & Backup:** Google Keep Style Checklisten mit lokalem JSON-Backup/Restore.
 4. **Widget (Jetpack Glance):** Dynamisches Layout mit präzisen Mitternachts-Updates.
 5. **Database Safety:** Schema-Export aktiviert (`app/schemas`) zur Unterstützung von Auto-Migrations.
 
@@ -52,6 +52,7 @@ Um Start-Abstürze und Datenverlust nach Updates zu verhindern, müssen folgende
 - **Database Reset (v1):** Zurücksetzen der Datenbank auf Version 1 und Bereinigung alter Migrations-Logik nach dem App-ID Wechsel.
 - **Settings Consolidation (Room-only):** Alle Einstellungen liegen in der `AppSettings` Room-Tabelle.
 - **Advanced Notifications:** Dynamisches Regelsystem für Benachrichtigungen via WorkManager und Room.
+- **Automated Testing:** Integration von Unit-Tests (JVM) und Instrumented Tests (Emulator) zur Absicherung der Kern-Logik und Daten-Integrität.
 - **Persistent Notifications:** Robustes Quittierungssystem für Erinnerungen.
 - **Code Quality & Refactoring:** Einführung von `HomeUiState`, `ContactUiModel` und `ContactMapper` zur Verbesserung der Wartbarkeit und Reduzierung von Boilerplate (Release-Ready).
 - **UI & Stability Polish:** Optimierung der Fast-Scrollbar und Beseitigung technischer Warnungen für maximale Robustheit.
@@ -60,6 +61,8 @@ Um Start-Abstürze und Datenverlust nach Updates zu verhindern, müssen folgende
 - **Android Modernization:** Einführung von App Shortcuts, Predictive Back Support und Per-App Language Settings.
 - **Architecture Refinement:** Konsolidierung der Datumslogik und Implementierung einer robusten, State-basierten Fokus-Steuerung für die Suche.
 - **Privacy Policy Integration:** Implementierung einer dedizierten, lokalisierten Datenschutzerklärung innerhalb der App.
+- **UX & Stability Overhaul:** Einführung eines geführten Onboarding-Screens zur Vermeidung von Race-Conditions; Implementierung eines Thread-sicheren Repository-Musters (Mutex) und flächendeckende Bereinigung der UI-Logik.
+- **CI/CD Excellence:** Automatisierte Test-Pipeline in GitHub Actions zur Sicherstellung der Release-Qualität.
 
 ## 🎯 Kommende Aufgaben (Backlog)
 - **Edge-Cases:** Verfeinerung des Verhaltens bei extrem vielen Kontakten (> 1000).
