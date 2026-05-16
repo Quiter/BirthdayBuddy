@@ -7,7 +7,7 @@ import android.content.Intent
 import androidx.work.Data
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
-import com.heckmannch.birthdaybuddy.repository.NotificationRepository
+import com.heckmannch.birthdaybuddy.data.repository.NotificationRepository
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers

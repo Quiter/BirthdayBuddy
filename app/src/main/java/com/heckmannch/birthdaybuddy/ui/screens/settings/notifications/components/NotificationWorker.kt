@@ -3,8 +3,10 @@ package com.heckmannch.birthdaybuddy.ui.screens.settings.notifications.component
 import android.content.Context
 import androidx.hilt.work.HiltWorker
 import androidx.work.*
-import com.heckmannch.birthdaybuddy.repository.ContactRepository
-import com.heckmannch.birthdaybuddy.repository.NotificationRepository
+import com.heckmannch.birthdaybuddy.data.local.NotificationRule
+import com.heckmannch.birthdaybuddy.data.local.PendingNotification
+import com.heckmannch.birthdaybuddy.data.repository.ContactRepository
+import com.heckmannch.birthdaybuddy.data.repository.NotificationRepository
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
 import kotlinx.coroutines.flow.first
@@ -51,7 +53,7 @@ class NotificationWorker @AssistedInject constructor(
                 // Für jeden Kontakt eine eigene Benachrichtigung erstellen
                 birthdays.forEach { contact ->
                     // In DB speichern für Persistenz
-                    val pending = com.heckmannch.birthdaybuddy.database.PendingNotification(
+                    val pending = PendingNotification(
                         contactLookupKeys = listOf(contact.lookupKey),
                         daysBefore = rule.daysBefore,
                         year = today.year
@@ -80,7 +82,7 @@ class NotificationWorker @AssistedInject constructor(
          * Plant den nächsten fälligen Zeitpunkt basierend auf allen Regeln.
          */
         @JvmStatic
-        fun scheduleNext(context: Context, rules: List<com.heckmannch.birthdaybuddy.database.NotificationRule>) {
+        fun scheduleNext(context: Context, rules: List<NotificationRule>) {
             if (rules.isEmpty()) {
                 cancelNotification(context)
                 return

@@ -127,13 +127,6 @@
     <!-- Privacy Policy -->
     <string name="privacy_policy_title">Privacy Policy</string>
 
-    <!-- Onboarding Dialog -->
-    <string name="onboarding_notif_title">Turn on reminders?</string>
-    <string name="onboarding_notif_desc">Would you like to be reminded of upcoming birthdays in time? You can change this anytime in the settings.</string>
-    <string name="onboarding_notif_yes">Yes, please</string>
-    <string name="onboarding_notif_no">Later</string>
-    <string name="onboarding_notif_enabled_msg">Reminders are active (Default: 09:00 AM). You can adjust them in the settings.</string>
-
     <!-- Onboarding Screen -->
     <string name="onboarding_welcome_title">Welcome to BirthdayBuddy</string>
     <string name="onboarding_welcome_desc">Your reliable companion to never forget a birthday again. All your contacts in one place, sorted by their big day.</string>

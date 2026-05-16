@@ -9,7 +9,7 @@ import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.heckmannch.birthdaybuddy.R
-import com.heckmannch.birthdaybuddy.database.NotificationRule
+import com.heckmannch.birthdaybuddy.data.local.NotificationRule
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

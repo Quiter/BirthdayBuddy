@@ -30,7 +30,7 @@ import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.res.stringResource
 import com.heckmannch.birthdaybuddy.R
-import com.heckmannch.birthdaybuddy.viewmodel.GiftIdea
+import com.heckmannch.birthdaybuddy.ui.model.GiftIdea
 import kotlinx.coroutines.launch
 
 @Composable

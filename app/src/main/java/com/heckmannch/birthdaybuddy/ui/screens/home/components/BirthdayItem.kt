@@ -37,8 +37,8 @@ import com.heckmannch.birthdaybuddy.ui.theme.BirthdayBuddyTheme
 import com.heckmannch.birthdaybuddy.ui.theme.BirthdayGold
 import com.heckmannch.birthdaybuddy.ui.theme.BirthdaySilver
 import com.heckmannch.birthdaybuddy.ui.theme.KidColors
-import com.heckmannch.birthdaybuddy.viewmodel.ContactUiModel
-import com.heckmannch.birthdaybuddy.viewmodel.GiftIdea
+import com.heckmannch.birthdaybuddy.ui.model.ContactUiModel
+import com.heckmannch.birthdaybuddy.ui.model.GiftIdea
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 

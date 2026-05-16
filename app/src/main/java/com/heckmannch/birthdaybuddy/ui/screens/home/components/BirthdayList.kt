@@ -19,7 +19,7 @@ import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import androidx.compose.ui.res.stringResource
 import com.heckmannch.birthdaybuddy.R
-import com.heckmannch.birthdaybuddy.viewmodel.ContactUiModel
+import com.heckmannch.birthdaybuddy.ui.model.ContactUiModel
 
 /**
  * Verwaltet die Liste der Geburtstage.

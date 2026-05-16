@@ -66,4 +66,4 @@ Um Start-Abstürze und Datenverlust nach Updates zu verhindern, müssen folgende
 - **CI/CD Excellence:** Automatisierte Test-Pipeline in GitHub Actions zur Sicherstellung der Release-Qualität.
 
 ## 🎯 Kommende Aufgaben (Backlog)
-- **Edge-Cases:** Verfeinerung des Verhaltens bei extrem vielen Kontakten (> 1000).
+- **Kontinuierliche Verbesserung:** Checke den Code nach größeren Änderungen auf Fehler und überflüssigen Code

@@ -13,7 +13,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import com.heckmannch.birthdaybuddy.R
-import com.heckmannch.birthdaybuddy.database.NotificationRule
+import com.heckmannch.birthdaybuddy.data.local.NotificationRule
 
 @Composable
 fun NotificationRuleItem(

@@ -322,5 +322,11 @@ Alle signifikanten Änderungen am Projekt werden hier dokumentiert.
     - **Testing Stability:** Vereinheitlichung der Coroutines-Bibliotheken (v1.10.1) zur Behebung von Laufzeitfehlern in der Test-Umgebung.
     - **Test Infrastructure:** Migration der ViewModel-Tests auf instrumentierte Tests (`androidTest`) inklusive Integration von `mockito-android`, um eine stabile Validierung der Such- und Filterlogik auf echten Geräten zu gewährleisten.
     - **Policy Update:** Einführung einer verbindlichen Test-Pflicht vor jedem Release-Build in der Projektdokumentation.
+79. **Architecture Best Practices (Restructuring):**
+    - **Data Layer:** Bündelung von Datenbank-Entitäten und Repositories unter dem gemeinsamen `data`-Package (`data.local`, `data.repository`).
+    - **Mapper Layer:** Einführung des `data.mapper` Packages für reine Logik-Komponenten wie den `ContactMapper`.
+    - **UI Models:** Verschiebung von reinen UI-Datenstrukturen (`ContactUiModel`, `HomeUiState`, `GiftIdea`) in das neue `ui.model` Package zur strikten Trennung von ViewModels und deren State-Definitionen.
+    - **Project Cleanup:** Vollständige Aktualisierung aller Paket-Deklarationen und Importe im gesamten Projekt sowie Synchronisation der Test-Ordnerstruktur.
+
 
 

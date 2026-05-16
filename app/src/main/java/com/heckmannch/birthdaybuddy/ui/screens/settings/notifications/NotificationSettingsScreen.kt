@@ -31,7 +31,7 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LifecycleEventEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.heckmannch.birthdaybuddy.R
-import com.heckmannch.birthdaybuddy.database.NotificationRule
+import com.heckmannch.birthdaybuddy.data.local.NotificationRule
 import com.heckmannch.birthdaybuddy.ui.screens.settings.notifications.components.EditRuleDialog
 import com.heckmannch.birthdaybuddy.ui.screens.settings.notifications.components.NotificationRuleItem
 import com.heckmannch.birthdaybuddy.ui.theme.BirthdayBuddyTheme

@@ -127,13 +127,6 @@
     <!-- Privacy Policy -->
     <string name="privacy_policy_title">Datenschutzerklärung</string>
 
-    <!-- Onboarding Dialog -->
-    <string name="onboarding_notif_title">Erinnerungen einschalten?</string>
-    <string name="onboarding_notif_desc">Möchtest du rechtzeitig an anstehende Geburtstage erinnert werden? Du kannst dies jederzeit in den Einstellungen ändern.</string>
-    <string name="onboarding_notif_yes">Ja, gerne</string>
-    <string name="onboarding_notif_no">Später</string>
-    <string name="onboarding_notif_enabled_msg">Erinnerungen sind aktiv (Standard: 09:00 Uhr). In den Einstellungen kannst du sie anpassen.</string>
-
     <!-- Onboarding Screen -->
     <string name="onboarding_welcome_title">Willkommen bei BirthdayBuddy</string>
     <string name="onboarding_welcome_desc">Dein zuverlässiger Begleiter, um nie wieder einen Geburtstag zu vergessen. Alle Kontakte an einem Ort, sortiert nach ihrem großen Tag.</string>

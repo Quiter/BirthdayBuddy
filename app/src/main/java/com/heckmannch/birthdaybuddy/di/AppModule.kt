@@ -1,11 +1,12 @@
 package com.heckmannch.birthdaybuddy.di
 
 import android.content.Context
-import com.heckmannch.birthdaybuddy.database.AppDatabase
-import com.heckmannch.birthdaybuddy.database.ContactDao
-import com.heckmannch.birthdaybuddy.database.LabelConfigDao
-import com.heckmannch.birthdaybuddy.database.NotificationRuleDao
-import com.heckmannch.birthdaybuddy.database.PendingNotificationDao
+import com.heckmannch.birthdaybuddy.data.local.AppDatabase
+import com.heckmannch.birthdaybuddy.data.local.AppSettingsDao
+import com.heckmannch.birthdaybuddy.data.local.ContactDao
+import com.heckmannch.birthdaybuddy.data.local.LabelConfigDao
+import com.heckmannch.birthdaybuddy.data.local.NotificationRuleDao
+import com.heckmannch.birthdaybuddy.data.local.PendingNotificationDao
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -44,7 +45,7 @@ object AppModule {
     }
 
     @Provides
-    fun provideAppSettingsDao(database: AppDatabase): com.heckmannch.birthdaybuddy.database.AppSettingsDao {
+    fun provideAppSettingsDao(database: AppDatabase): AppSettingsDao {
         return database.appSettingsDao()
     }
 }

@@ -22,7 +22,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.heckmannch.birthdaybuddy.R
 import com.heckmannch.birthdaybuddy.ui.theme.BirthdayBuddyTheme
 import com.heckmannch.birthdaybuddy.viewmodel.BirthdayViewModel
-import com.heckmannch.birthdaybuddy.viewmodel.LabelManagementModel
+import com.heckmannch.birthdaybuddy.ui.model.LabelManagementModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

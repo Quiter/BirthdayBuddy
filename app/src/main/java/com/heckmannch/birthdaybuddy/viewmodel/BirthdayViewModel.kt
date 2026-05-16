@@ -7,11 +7,16 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import coil.imageLoader
 import coil.request.ImageRequest
-import com.heckmannch.birthdaybuddy.database.LabelConfig
-import com.heckmannch.birthdaybuddy.database.NotificationRule
-import com.heckmannch.birthdaybuddy.repository.ContactRepository
-import com.heckmannch.birthdaybuddy.repository.NotificationRepository
-import com.heckmannch.birthdaybuddy.repository.TimeRepository
+import com.heckmannch.birthdaybuddy.data.local.AppSettings
+import com.heckmannch.birthdaybuddy.data.local.LabelConfig
+import com.heckmannch.birthdaybuddy.data.local.NotificationRule
+import com.heckmannch.birthdaybuddy.data.repository.ContactRepository
+import com.heckmannch.birthdaybuddy.data.repository.NotificationRepository
+import com.heckmannch.birthdaybuddy.data.repository.TimeRepository
+import com.heckmannch.birthdaybuddy.data.mapper.ContactMapper
+import com.heckmannch.birthdaybuddy.ui.model.ContactUiModel
+import com.heckmannch.birthdaybuddy.ui.model.HomeUiState
+import com.heckmannch.birthdaybuddy.ui.model.LabelManagementModel
 import com.heckmannch.birthdaybuddy.ui.screens.settings.notifications.components.NotificationWorker
 import com.heckmannch.birthdaybuddy.widget.BirthdayWidget
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -35,7 +40,7 @@ class BirthdayViewModel @Inject constructor(
 
     // Zentraler Flow für App-Einstellungen zur Vermeidung mehrfacher DB-Abos
     private val settings = notificationRepository.settings
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), com.heckmannch.birthdaybuddy.database.AppSettings())
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), AppSettings())
 
     val notificationsEnabled: StateFlow<Boolean> = settings
         .map { it.notificationsEnabled }
