@@ -16,7 +16,6 @@ import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CheckCircle
-import androidx.compose.material.icons.filled.Contacts
 import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -34,8 +33,10 @@ import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import androidx.annotation.RawRes
 import com.heckmannch.birthdaybuddy.R
 import com.heckmannch.birthdaybuddy.viewmodel.SettingsViewModel
+import com.airbnb.lottie.compose.*
 import kotlinx.coroutines.launch
 
 @Composable
@@ -163,6 +164,7 @@ private fun WelcomePage() {
         title = stringResource(R.string.onboarding_welcome_title),
         description = stringResource(R.string.onboarding_welcome_desc),
         icon = painterResource(R.drawable.ic_app_logo),
+        // lottieRes = R.raw.anim_welcome, // Sobald die Datei existiert, hier einkommentieren
         tint = Color.Unspecified
     )
 }
@@ -174,12 +176,19 @@ private fun ContactsPage(isGranted: Boolean, onGrant: () -> Unit, onSkip: () -> 
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
-        Icon(
-            imageVector = if (isGranted) Icons.Default.CheckCircle else Icons.Default.Contacts,
-            contentDescription = null,
-            modifier = Modifier.size(100.dp),
-            tint = if (isGranted) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.secondary
-        )
+        if (isGranted) {
+            Icon(
+                imageVector = Icons.Default.CheckCircle,
+                contentDescription = null,
+                modifier = Modifier.size(100.dp),
+                tint = MaterialTheme.colorScheme.primary
+            )
+        } else {
+            LottieIllustration(
+                resId = R.raw.anim_contacts,
+                modifier = Modifier.size(200.dp)
+            )
+        }
         Spacer(modifier = Modifier.height(32.dp))
         Text(
             text = stringResource(R.string.onboarding_contacts_title),
@@ -239,6 +248,12 @@ private fun NotificationsPage(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
+        /*
+        LottieIllustration(
+            resId = R.raw.anim_notifications,
+            modifier = Modifier.size(200.dp)
+        )
+        */
         Icon(
             imageVector = Icons.Default.Notifications,
             contentDescription = null,
@@ -306,6 +321,12 @@ private fun ReadyPage(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
+        /*
+        LottieIllustration(
+            resId = R.raw.anim_ready,
+            modifier = Modifier.size(200.dp)
+        )
+        */
         Icon(
             imageVector = Icons.Default.CheckCircle,
             contentDescription = null,
@@ -379,7 +400,8 @@ private fun ReadyPage(
 private fun OnboardingPageContent(
     title: String,
     description: String,
-    icon: Painter,
+    icon: Painter? = null,
+    @RawRes lottieRes: Int? = null,
     tint: Color = MaterialTheme.colorScheme.primary
 ) {
     Column(
@@ -387,12 +409,20 @@ private fun OnboardingPageContent(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
-        Icon(
-            painter = icon,
-            contentDescription = null,
-            modifier = Modifier.size(120.dp),
-            tint = tint
-        )
+        if (lottieRes != null) {
+            LottieIllustration(
+                resId = lottieRes,
+                modifier = Modifier.size(200.dp)
+            )
+        } else if (icon != null) {
+            Icon(
+                painter = icon,
+                contentDescription = null,
+                modifier = Modifier.size(120.dp),
+                tint = tint
+            )
+        }
+        
         Spacer(modifier = Modifier.height(48.dp))
         Text(
             text = title,
@@ -409,6 +439,23 @@ private fun OnboardingPageContent(
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
     }
+}
+
+@Composable
+private fun LottieIllustration(
+    @RawRes resId: Int,
+    modifier: Modifier = Modifier
+) {
+    val composition by rememberLottieComposition(LottieCompositionSpec.RawRes(resId))
+    val progress by animateLottieCompositionAsState(
+        composition,
+        iterations = LottieConstants.IterateForever
+    )
+    LottieAnimation(
+        composition = composition,
+        progress = { progress },
+        modifier = modifier
+    )
 }
 
 @Composable
