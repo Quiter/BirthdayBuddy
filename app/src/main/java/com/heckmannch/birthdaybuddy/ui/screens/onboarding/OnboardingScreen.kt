@@ -16,6 +16,7 @@ import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.Contacts
 import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -176,19 +177,19 @@ private fun ContactsPage(isGranted: Boolean, onGrant: () -> Unit, onSkip: () -> 
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
-        if (isGranted) {
-            Icon(
-                imageVector = Icons.Default.CheckCircle,
-                contentDescription = null,
-                modifier = Modifier.size(100.dp),
-                tint = MaterialTheme.colorScheme.primary
-            )
-        } else {
-            LottieIllustration(
-                resId = R.raw.anim_contacts,
-                modifier = Modifier.size(200.dp)
-            )
-        }
+        /*
+        LottieIllustration(
+            resId = R.raw.anim_contacts,
+            modifier = Modifier.size(200.dp)
+        )
+        */
+        // Fallback Icon solange keine Lottie Animation da ist
+        Icon(
+            imageVector = if (isGranted) Icons.Default.CheckCircle else Icons.Default.Contacts,
+            contentDescription = null,
+            modifier = Modifier.size(100.dp),
+            tint = if (isGranted) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.secondary
+        )
         Spacer(modifier = Modifier.height(32.dp))
         Text(
             text = stringResource(R.string.onboarding_contacts_title),
