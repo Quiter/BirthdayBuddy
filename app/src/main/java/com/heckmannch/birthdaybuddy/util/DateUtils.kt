@@ -8,6 +8,16 @@ import java.time.temporal.ChronoUnit
 // --- Robuste Extensions für Datumsberechnungen ---
 
 /**
+ * Standard-Jahr für Kontakte ohne hinterlegtes Geburtsjahr in Android.
+ */
+const val NO_YEAR_MARKER = 1900
+
+/**
+ * Prüft, ob ein Datum ein gültiges Geburtsjahr enthält.
+ */
+val LocalDate.hasYear: Boolean get() = this.year != NO_YEAR_MARKER
+
+/**
  * Berechnet die Tage bis zum nächsten Vorkommen dieses Datums.
  */
 fun LocalDate.safeDaysUntilNext(today: LocalDate = LocalDate.now()): Long {
