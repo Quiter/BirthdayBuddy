@@ -336,6 +336,9 @@ Alle signifikanten Änderungen am Projekt werden hier dokumentiert.
     - **Architecture:** Aufteilung des monolithischen `BirthdayViewModel` in fünf spezialisierte ViewModels (`HomeViewModel`, `NotificationViewModel`, `SettingsViewModel`, `LabelViewModel`, `BackupViewModel`). Dies verbessert die Wartbarkeit, reduziert die Code-Komplexität pro Datei und ermöglicht eine gezieltere Testbarkeit.
     - **Navigation:** Anpassung des `NavHost` in der `MainActivity` zur Bereitstellung der spezifischen ViewModels für die jeweiligen Screens.
     - **Testing:** Migration und Umbenennung des Such-Logik-Tests zu `HomeViewModelSearchTest` unter Berücksichtigung der neuen Architektur.
+82. **UX & UI Spacing Polish:**
+    - **Pull-to-Refresh:** Refactoring der `BirthdayList`, sodass die Pull-to-Refresh Geste nun auch bei einer leeren Liste (Empty State) einwandfrei funktioniert.
+    - **Layout Consistency:** Standardisierung der vertikalen Abstände im Home-Header. Einführung eines festen 8dp Paddings für die `SearchBar` zur Gewährleistung eines harmonischen Layout-Rhythmus, unabhängig von der Sichtbarkeit der Label-Filterbar.
 
 
 

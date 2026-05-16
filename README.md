@@ -1,53 +1,50 @@
 # 🎂 BirthdayBuddy
 
-> **"Because Google keeps losing your birthdays – so I built the solution that just works."**
+> **"Because Google knows your search history from 2008 but somehow 'forgets' your mom's birthday – so I built the solution that actually works."**
 
-BirthdayBuddy is a modern, reliable, and high-performance birthday management app for Android. While other apps rely on flaky calendar syncs or hidden assistant settings, BirthdayBuddy treats your **Android System Contacts** as the single source of truth, enriching them with powerful features and a state-of-the-art Material 3 interface.
+BirthdayBuddy is a modern, high-performance birthday management app for Android. Let's be honest: Google is great at many things, but reliable birthday notifications isn't one of them. Whether it's hidden Assistant settings, flaky Calendar syncs, or the mysterious disappearance of notification toggles – we've all been there. 
+
+BirthdayBuddy fixes this by treating your **Android System Contacts** as the single source of truth, adding a layer of rock-solid reliability and a gorgeous Material 3 interface.
 
 ---
 
 ## 🚀 Why BirthdayBuddy?
 
-1.  **System-First:** No proprietary database for contacts. Your data stays where it belongs – in the Android Contacts Provider.
-2.  **Modern Architecture:** A complete rewrite (V3) from the ground up using the latest Android best practices (BOM 2026.04).
-3.  **Performance & UX:** Designed for 60fps scrolling and instant updates, even with thousands of contacts.
-4.  **Privacy:** No cloud, no tracking, no account required. Everything stays on your device.
+1.  **Stop the Ghosting:** No more "Oh, was that yesterday?" moments. We use a dedicated WorkManager-based notification engine that doesn't care about your phone's deep sleep or Google's mood.
+2.  **System-First:** No proprietary contact database. Your data stays in the Android Contacts Provider. If you delete this app, your birthdays are still there. (But why would you? Look at those animations!)
+3.  **Privacy-Minded:** No cloud, no tracking, no "AI-powered birthday suggestions" sent to some server. It's just you, your phone, and your friends' birth dates.
+4.  **Performance:** Designed for 60fps scrolling and instant filtering, even if you happen to know everyone in the city.
 
 ---
 
 ## ✨ Key Features
 
-*   **Intelligent Sync:** Uses `LOOKUP_KEY` and `localId` for cross-device consistency and robust system-sync handling.
-*   **GPU-Accelerated UI:** All animations (FAB, Swiping, Transitions) use `graphicsLayer` for GPU-side calculations, ensuring a stutter-free experience.
-*   **Sticky-Swipe Actions:** "Now Playing Style" swipe gestures for quick access to gift ideas, contact editing, or ignoring specific people.
-*   **Smart Filter Bar:** A hybrid filtering system that intelligently shows or hides labels based on your active usage.
-*   **Reactive Widget:** A Jetpack Glance homescreen widget that updates precisely at midnight (00:01 AM) via WorkManager.
-*   **Gift Management:** A Google Keep style checklist for each contact with local persistence and JSON-based Backup/Restore.
-*   **High-End Fast-Scrollbar:** A Google Photos style scrollbar with a predictive month-bubble and 48dp touch-area for precision navigation.
-*   **Smart Search:** Keyword-based search logic that finds contacts regardless of name order.
+*   **Intelligent Sync:** Uses `LOOKUP_KEY` for cross-device consistency. Your contacts are the boss; we are just the very efficient assistant.
+*   **GPU-Accelerated UI:** All animations use `graphicsLayer` to keep things buttery smooth. 
+*   **Sticky-Swipe Actions:** "Now Playing Style" gestures to manage gift ideas, edit contacts, or hide that one uncle you'd rather ignore.
+*   **High-End Fast-Scrollbar:** A Google Photos style scrollbar with a predictive month-bubble for lightning-fast navigation.
+*   **Smart Search:** Keyword-based search that finds "John Doe" even if you type "Doe John". Because order shouldn't matter.
+*   **Gift Management:** A Google Keep style checklist for each contact. Because a birthday without a gift idea is just a missed opportunity for stress.
 
 ---
 
-## 🛠 Tech Stack
+## 🛠 Tech Stack & Architecture
 
 *   **UI:** 100% Jetpack Compose (BOM 2026.04) with Material 3.
-*   **Persistence:** Room v6 (with Batch-Insert optimizations).
-*   **Background:** WorkManager for midnight widget refreshes and daily notification checks.
-*   **DI:** Hilt for clean dependency management (ViewModels, Repositories, DAOs, DataSources).
-*   **Architecture:** Clean Repository Pattern with specialized DataSources and MVI-style UI state management.
-*   **Time Management:** Custom reactive `TimeRepository` for automated UI updates at midnight.
-*   **Image Loading:** Coil for efficient contact photo rendering.
+*   **Architecture:** Clean, modularized architecture with **5 specialized ViewModels** (`Home`, `Notification`, `Settings`, `Label`, `Backup`) for maximum maintainability.
+*   **Persistence:** Room v6 (serving as a high-performance cache and storage for gift ideas & app settings).
+*   **DI:** Hilt for clean dependency management.
+*   **Background:** Self-rescheduling WorkManager tasks for midnight widget updates and notification precision.
 
 ---
 
 ## 📦 Architecture Highlights
 
-*   **Separation of Concerns:** Decoupled data layer using specialized `SystemContactDataSource` and `GiftIdeaBackupManager`.
-*   **Stateless Components:** UI components utilize State Hoisting for maximum testability and reusability.
-*   **Lifecycle Awareness:** Uses `collectAsStateWithLifecycle` to minimize resource consumption.
-*   **Memoization:** Strategic use of `derivedStateOf` and `remember` to prevent redundant UI computations.
-*   **Scalability:** Optimized for large datasets using Kotlin Sequences, SQL chunking, and parallel background processing.
+*   **Separation of Concerns:** Pure data layer with specialized `SystemContactDataSource`.
+*   **Stateless Components:** UI components leverage State Hoisting for testability.
+*   **Re-Composition Guard:** Strategic use of `derivedStateOf`, `remember`, and `distinctUntilChanged` to keep the UI thread focused on rendering, not calculating.
+*   **Scalability:** SQL chunking and Kotlin Sequences ensure large contact lists are handled with ease.
 
 ---
 
-**Developed with ❤️ – Stable, Modern, and Future-Proof.**
+**Developed with ❤️ – Because forgetting birthdays is so 2023.**
