@@ -68,5 +68,6 @@ Um Start-Abstürze und Datenverlust nach Updates zu verhindern, müssen folgende
 
 ## 🎯 Kommende Aufgaben (Backlog)
 - **Kontinuierliche Verbesserung:** Checke den Code nach größeren Änderungen auf Fehler und überflüssigen Code
+- **Lottie Animationen:** Wir versuchen passende Lottie Animationen zu suchen oder zu erstellen um das onboarding noch besser zu gestalten
 - **WearOS:** Die App für WearOS bereit machen
 

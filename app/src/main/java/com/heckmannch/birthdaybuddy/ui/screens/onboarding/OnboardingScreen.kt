@@ -48,16 +48,16 @@ fun OnboardingScreen(
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
     val pagerState = rememberPagerState(pageCount = { 4 })
-    
+
     // Lokale States für die Einstellungen während des Onboardings
     var notificationsEnabled by remember { mutableStateOf(true) }
     var persistentEnabled by remember { mutableStateOf(true) }
     var contactSkipped by remember { mutableStateOf(false) }
-    
+
     var hasContactPermission by remember {
         mutableStateOf(ContextCompat.checkSelfPermission(context, Manifest.permission.READ_CONTACTS) == PackageManager.PERMISSION_GRANTED)
     }
-    
+
     var hasNotifPermission by remember {
         mutableStateOf(
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
@@ -75,17 +75,17 @@ fun OnboardingScreen(
 
     val onRequestContactPermission = {
         val activity = context as? Activity
-        val shouldShowRationale = activity?.let { 
-            ActivityCompat.shouldShowRequestPermissionRationale(it, Manifest.permission.READ_CONTACTS) 
+        val shouldShowRationale = activity?.let {
+            ActivityCompat.shouldShowRequestPermissionRationale(it, Manifest.permission.READ_CONTACTS)
         } ?: false
-        
+
         if (shouldShowRationale || hasContactPermission == false) {
             contactLauncher.launch(Manifest.permission.READ_CONTACTS)
         } else {
             // Fallback: Einstellungen öffnen
             try {
-                val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply { 
-                    data = Uri.fromParts("package", context.packageName, null) 
+                val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
+                    data = Uri.fromParts("package", context.packageName, null)
                 }
                 context.startActivity(intent)
             } catch (_: Exception) {}
@@ -103,7 +103,7 @@ fun OnboardingScreen(
         HorizontalPager(
             state = pagerState,
             modifier = Modifier.weight(1f),
-            userScrollEnabled = false 
+            userScrollEnabled = false
         ) { page ->
             when (page) {
                 0 -> WelcomePage()
@@ -205,7 +205,7 @@ private fun ContactsPage(isGranted: Boolean, onGrant: () -> Unit, onSkip: () -> 
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
         Spacer(modifier = Modifier.height(48.dp))
-        
+
         if (!isGranted) {
             Button(
                 onClick = onGrant,
@@ -213,9 +213,9 @@ private fun ContactsPage(isGranted: Boolean, onGrant: () -> Unit, onSkip: () -> 
             ) {
                 Text(stringResource(R.string.onboarding_contacts_btn))
             }
-            
+
             Spacer(modifier = Modifier.height(16.dp))
-            
+
             TextButton(onClick = onSkip) {
                 Text(
                     text = stringResource(R.string.onboarding_contacts_skip),
@@ -299,7 +299,7 @@ private fun NotificationsPage(
         }
 
         Spacer(modifier = Modifier.height(32.dp))
-        
+
         if (enabled && !isGranted) {
             Button(
                 onClick = onGrant,
@@ -348,7 +348,7 @@ private fun ReadyPage(
             textAlign = TextAlign.Center,
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
-        
+
         Spacer(modifier = Modifier.height(32.dp))
 
         // Zusammenfassung
@@ -423,7 +423,7 @@ private fun OnboardingPageContent(
                 tint = tint
             )
         }
-        
+
         Spacer(modifier = Modifier.height(48.dp))
         Text(
             text = title,
@@ -473,7 +473,7 @@ private fun OnboardingFooter(
     ) {
         // Spacer links um Dots zu zentrieren
         Spacer(modifier = Modifier.width(80.dp))
-        
+
         // Dots
         Row(modifier = Modifier.weight(1f), horizontalArrangement = Arrangement.Center) {
             repeat(pageCount) { index ->
@@ -483,7 +483,7 @@ private fun OnboardingFooter(
                         .size(if (index == currentPage) 12.dp else 8.dp)
                         .clip(CircleShape)
                         .background(
-                            if (index == currentPage) MaterialTheme.colorScheme.primary 
+                            if (index == currentPage) MaterialTheme.colorScheme.primary
                             else MaterialTheme.colorScheme.primary.copy(alpha = 0.2f)
                         )
                 )
