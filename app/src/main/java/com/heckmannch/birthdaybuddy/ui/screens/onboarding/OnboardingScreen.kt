@@ -129,6 +129,8 @@ fun OnboardingScreen(
                     }
                 )
                 3 -> ReadyPage(
+                    hasContactPermission = hasContactPermission,
+                    notificationsEnabled = notificationsEnabled && hasNotifPermission,
                     onStart = {
                         viewModel.setPersistentNotifications(persistentEnabled)
                         viewModel.completeOnboarding(notificationsEnabled && hasNotifPermission)
@@ -167,12 +169,6 @@ private fun WelcomePage() {
 
 @Composable
 private fun ContactsPage(isGranted: Boolean, onGrant: () -> Unit, onSkip: () -> Unit) {
-    val context = LocalContext.current
-    val activity = context as? Activity
-    val shouldShowRationale = activity?.let { 
-        ActivityCompat.shouldShowRequestPermissionRationale(it, Manifest.permission.READ_CONTACTS) 
-    } ?: false
-
     Column(
         modifier = Modifier.fillMaxSize().padding(32.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -205,11 +201,7 @@ private fun ContactsPage(isGranted: Boolean, onGrant: () -> Unit, onSkip: () -> 
                 onClick = onGrant,
                 modifier = Modifier.fillMaxWidth().height(56.dp)
             ) {
-                Text(
-                    if (!shouldShowRationale && ContextCompat.checkSelfPermission(context, Manifest.permission.READ_CONTACTS) != PackageManager.PERMISSION_GRANTED) 
-                        stringResource(R.string.onboarding_contacts_settings)
-                    else stringResource(R.string.onboarding_contacts_btn)
-                )
+                Text(stringResource(R.string.onboarding_contacts_btn))
             }
             
             Spacer(modifier = Modifier.height(16.dp))
@@ -304,7 +296,11 @@ private fun NotificationsPage(
 }
 
 @Composable
-private fun ReadyPage(onStart: () -> Unit) {
+private fun ReadyPage(
+    hasContactPermission: Boolean,
+    notificationsEnabled: Boolean,
+    onStart: () -> Unit
+) {
     Column(
         modifier = Modifier.fillMaxSize().padding(32.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -313,24 +309,63 @@ private fun ReadyPage(onStart: () -> Unit) {
         Icon(
             imageVector = Icons.Default.CheckCircle,
             contentDescription = null,
-            modifier = Modifier.size(120.dp),
+            modifier = Modifier.size(100.dp),
             tint = MaterialTheme.colorScheme.primary
         )
-        Spacer(modifier = Modifier.height(32.dp))
+        Spacer(modifier = Modifier.height(24.dp))
         Text(
             text = stringResource(R.string.onboarding_ready_title),
             style = MaterialTheme.typography.headlineMedium,
             fontWeight = FontWeight.Bold,
             textAlign = TextAlign.Center
         )
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(8.dp))
         Text(
             text = stringResource(R.string.onboarding_ready_desc),
             style = MaterialTheme.typography.bodyLarge,
             textAlign = TextAlign.Center,
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
-        Spacer(modifier = Modifier.height(64.dp))
+        
+        Spacer(modifier = Modifier.height(32.dp))
+
+        // Zusammenfassung
+        Card(
+            modifier = Modifier.fillMaxWidth(),
+            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f))
+        ) {
+            Column(modifier = Modifier.padding(16.dp)) {
+                Text(
+                    text = stringResource(R.string.onboarding_summary_header),
+                    style = MaterialTheme.typography.titleSmall,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.primary
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+                Text(
+                    text = if (hasContactPermission) stringResource(R.string.onboarding_summary_contacts_enabled)
+                           else stringResource(R.string.onboarding_summary_contacts_disabled),
+                    style = MaterialTheme.typography.bodyMedium
+                )
+                Text(
+                    text = if (notificationsEnabled) stringResource(R.string.onboarding_summary_notif_enabled)
+                           else stringResource(R.string.onboarding_summary_notif_disabled),
+                    style = MaterialTheme.typography.bodyMedium
+                )
+            }
+        }
+
+        Spacer(modifier = Modifier.height(32.dp))
+
+        Text(
+            text = if (hasContactPermission) stringResource(R.string.onboarding_ready_sync_info)
+                   else stringResource(R.string.onboarding_ready_no_sync_info),
+            style = MaterialTheme.typography.bodyMedium,
+            textAlign = TextAlign.Center,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+
+        Spacer(modifier = Modifier.height(48.dp))
         Button(
             onClick = onStart,
             modifier = Modifier.fillMaxWidth().height(56.dp)

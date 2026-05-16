@@ -132,7 +132,7 @@
     <string name="onboarding_welcome_desc">Your reliable companion to never forget a birthday again. All your contacts in one place, sorted by their big day.</string>
     <string name="onboarding_contacts_title">Your Contacts</string>
     <string name="onboarding_contacts_desc">To show you birthdays, BirthdayBuddy needs access to your system contacts. Your data stays locally on your device.</string>
-    <string name="onboarding_contacts_btn">Grant Access</string>
+    <string name="onboarding_contacts_btn">Grant Permission</string>
     <string name="onboarding_contacts_settings">Open Settings</string>
     <string name="onboarding_contacts_skip">Continue without contacts</string>
     <string name="onboarding_contacts_granted">Access granted!</string>
@@ -142,7 +142,14 @@
     <string name="onboarding_notif_persistent">Persistent Reminders</string>
     <string name="onboarding_notif_btn">Grant Permission</string>
     <string name="onboarding_ready_title">All set!</string>
-    <string name="onboarding_ready_desc">Everything is configured. We are syncing your contacts now. Have fun with BirthdayBuddy!</string>
+    <string name="onboarding_ready_desc">Everything is configured.</string>
+    <string name="onboarding_ready_sync_info">We are syncing your contacts now. Have fun with BirthdayBuddy!</string>
+    <string name="onboarding_ready_no_sync_info">To see your birthdays and use all features, you will need to enable contact synchronization in the settings later.</string>
+    <string name="onboarding_summary_header">Summary:</string>
+    <string name="onboarding_summary_contacts_enabled">✓ Contacts enabled</string>
+    <string name="onboarding_summary_contacts_disabled">✗ No contact access</string>
+    <string name="onboarding_summary_notif_enabled">✓ Notifications enabled</string>
+    <string name="onboarding_summary_notif_disabled">✗ Notifications disabled</string>
     <string name="onboarding_ready_btn">Get Started</string>
     <string name="onboarding_next">Next</string>
     <string name="onboarding_skip">Skip</string>

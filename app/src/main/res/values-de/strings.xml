@@ -132,7 +132,7 @@
     <string name="onboarding_welcome_desc">Dein zuverlässiger Begleiter, um nie wieder einen Geburtstag zu vergessen. Alle Kontakte an einem Ort, sortiert nach ihrem großen Tag.</string>
     <string name="onboarding_contacts_title">Deine Kontakte</string>
     <string name="onboarding_contacts_desc">Um dir Geburtstage anzuzeigen, benötigt BirthdayBuddy Zugriff auf deine System-Kontakte. Deine Daten bleiben lokal auf deinem Gerät.</string>
-    <string name="onboarding_contacts_btn">Zugriff erlauben</string>
+    <string name="onboarding_contacts_btn">Berechtigung erteilen</string>
     <string name="onboarding_contacts_settings">Einstellungen öffnen</string>
     <string name="onboarding_contacts_skip">Ohne Kontakte fortfahren</string>
     <string name="onboarding_contacts_granted">Zugriff gewährt!</string>
@@ -142,7 +142,14 @@
     <string name="onboarding_notif_persistent">Persistente Erinnerungen</string>
     <string name="onboarding_notif_btn">Berechtigung erteilen</string>
     <string name="onboarding_ready_title">Alles startklar!</string>
-    <string name="onboarding_ready_desc">Alles ist konfiguriert. Wir synchronisieren jetzt deine Kontakte. Viel Spaß mit BirthdayBuddy!</string>
+    <string name="onboarding_ready_desc">Alles ist konfiguriert.</string>
+    <string name="onboarding_ready_sync_info">Wir synchronisieren jetzt deine Kontakte. Viel Spaß mit BirthdayBuddy!</string>
+    <string name="onboarding_ready_no_sync_info">Um deine Geburtstage zu sehen und alle Funktionen nutzen zu können, musst du die Kontakt-Synchronisierung später in den Einstellungen aktivieren.</string>
+    <string name="onboarding_summary_header">Zusammenfassung:</string>
+    <string name="onboarding_summary_contacts_enabled">✓ Kontakte aktiviert</string>
+    <string name="onboarding_summary_contacts_disabled">✗ Kein Kontaktzugriff</string>
+    <string name="onboarding_summary_notif_enabled">✓ Benachrichtigungen aktiv</string>
+    <string name="onboarding_summary_notif_disabled">✗ Benachrichtigungen aus</string>
     <string name="onboarding_ready_btn">Los geht\'s</string>
     <string name="onboarding_next">Weiter</string>
     <string name="onboarding_skip">Überspringen</string>

@@ -68,3 +68,5 @@ Um Start-Abstürze und Datenverlust nach Updates zu verhindern, müssen folgende
 
 ## 🎯 Kommende Aufgaben (Backlog)
 - **Kontinuierliche Verbesserung:** Checke den Code nach größeren Änderungen auf Fehler und überflüssigen Code
+- **WearOS:** Die App für WearOS bereit machen
+

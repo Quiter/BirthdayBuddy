@@ -18,6 +18,9 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import androidx.compose.ui.res.stringResource
+import androidx.compose.animation.core.*
+import androidx.compose.foundation.background
+import androidx.compose.foundation.shape.RoundedCornerShape
 import com.heckmannch.birthdaybuddy.R
 import com.heckmannch.birthdaybuddy.ui.model.ContactUiModel
 
@@ -52,9 +55,17 @@ fun BirthdayList(
         }
     }
 
-    // WICHTIG: Wenn contacts null ist, laden wir noch. Zeige nichts an, um Flicker zu vermeiden.
+    // WICHTIG: Wenn contacts null ist, zeigen wir einen Shimmer-Loader
     if (contacts == null) {
-        Box(modifier = modifier.fillMaxSize()) 
+        LazyColumn(
+            modifier = modifier.fillMaxSize(),
+            contentPadding = PaddingValues(bottom = 80.dp),
+            userScrollEnabled = false
+        ) {
+            items(10) {
+                BirthdayItemSkeleton()
+            }
+        }
         return
     }
 
@@ -67,7 +78,7 @@ fun BirthdayList(
         contentPadding = PaddingValues(bottom = 80.dp),
     ) {
         if (contacts.isEmpty()) {
-            item {
+            item(key = "empty_state") {
                 EmptyListState(
                     hasPermission = hasPermission,
                     onRequestPermission = onRequestPermission,
@@ -93,6 +104,66 @@ fun BirthdayList(
                     onSetSwipeHintShown = currentOnSetSwipeHintShown,
                     onUpdateGiftIdeas = currentOnUpdateGiftIdeas,
                     onOpenContact = currentOnOpenContact,
+                    modifier = Modifier.animateItem()
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun BirthdayItemSkeleton() {
+    val transition = rememberInfiniteTransition(label = "shimmer")
+    val alpha by transition.animateFloat(
+        initialValue = 0.3f,
+        targetValue = 0.7f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(1000, easing = LinearEasing),
+            repeatMode = RepeatMode.Reverse
+        ),
+        label = "alpha"
+    )
+
+    Surface(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp, vertical = 4.dp)
+            .height(72.dp),
+        shape = MaterialTheme.shapes.medium,
+        color = MaterialTheme.colorScheme.surfaceContainerLow.copy(alpha = alpha)
+    ) {
+        Row(
+            modifier = Modifier.padding(16.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Box(
+                modifier = Modifier
+                    .size(40.dp)
+                    .background(
+                        MaterialTheme.colorScheme.onSurface.copy(alpha = 0.1f),
+                        MaterialTheme.shapes.medium
+                    )
+            )
+            Spacer(modifier = Modifier.width(16.dp))
+            Column(modifier = Modifier.weight(1f)) {
+                Box(
+                    modifier = Modifier
+                        .width(120.dp)
+                        .height(16.dp)
+                        .background(
+                            MaterialTheme.colorScheme.onSurface.copy(alpha = 0.1f),
+                            RoundedCornerShape(4.dp)
+                        )
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+                Box(
+                    modifier = Modifier
+                        .width(80.dp)
+                        .height(12.dp)
+                        .background(
+                            MaterialTheme.colorScheme.onSurface.copy(alpha = 0.1f),
+                            RoundedCornerShape(4.dp)
+                        )
                 )
             }
         }

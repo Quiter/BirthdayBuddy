@@ -26,6 +26,8 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalHapticFeedback
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
@@ -57,8 +59,9 @@ fun BirthdayItem(
     modifier: Modifier = Modifier,
 ) {
     val density = LocalDensity.current
+    val haptic = LocalHapticFeedback.current
     val scope = rememberCoroutineScope()
-    var showGiftDialog by rememberSaveable { mutableStateOf(false) }
+    val showGiftDialog = rememberSaveable { mutableStateOf(false) }
 
     // Maße und Anker-Berechnungen (Optimiert durch remember)
     val buttonWidth = 50.dp
@@ -103,17 +106,18 @@ fun BirthdayItem(
 
     LaunchedEffect(draggableState.targetValue) {
         if (draggableState.targetValue == DragValue.Open) {
+            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
             onExpand()
         }
     }
 
-    if (showGiftDialog) {
+    if (showGiftDialog.value) {
         GiftIdeaDialog(
             initialIdeas = contact.giftIdeas,
-            onDismiss = { showGiftDialog = false },
+            onDismiss = { showGiftDialog.value = false },
         ) { ideas ->
             onUpdateGiftIdeas(contact.lookupKey, GiftIdea.toString(ideas))
-            showGiftDialog = false
+            showGiftDialog.value = false
             scope.launch { draggableState.animateTo(targetValue = DragValue.Closed) }
         }
     }
@@ -151,7 +155,7 @@ fun BirthdayItem(
                 icon = Icons.Default.Edit,
                 color = Color(0xFFFFB300),
                 contentDescription = stringResource(R.string.item_action_gifts),
-            ) { showGiftDialog = true }
+            ) { showGiftDialog.value = true }
             SwipeActionButton(
                 icon = Icons.Default.Person,
                 color = Color(0xFF2196F3),
