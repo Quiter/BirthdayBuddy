@@ -21,13 +21,13 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.heckmannch.birthdaybuddy.R
 import com.heckmannch.birthdaybuddy.ui.theme.BirthdayBuddyTheme
-import com.heckmannch.birthdaybuddy.viewmodel.BirthdayViewModel
+import com.heckmannch.birthdaybuddy.viewmodel.LabelViewModel
 import com.heckmannch.birthdaybuddy.ui.model.LabelManagementModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun LabelSettingsScreen(
-    viewModel: BirthdayViewModel,
+    viewModel: LabelViewModel,
     onNavigateBack: () -> Unit,
 ) {
     val labels by viewModel.labelManagementList.collectAsStateWithLifecycle()

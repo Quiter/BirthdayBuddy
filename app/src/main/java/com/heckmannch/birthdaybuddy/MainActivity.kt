@@ -5,6 +5,7 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.compose.animation.*
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.tween
@@ -31,7 +32,7 @@ import com.heckmannch.birthdaybuddy.ui.screens.settings.backup.BackupScreen
 import com.heckmannch.birthdaybuddy.ui.screens.settings.about.AboutScreen
 import com.heckmannch.birthdaybuddy.ui.screens.settings.about.PrivacyPolicyScreen
 import com.heckmannch.birthdaybuddy.ui.theme.BirthdayBuddyTheme
-import com.heckmannch.birthdaybuddy.viewmodel.BirthdayViewModel
+import com.heckmannch.birthdaybuddy.viewmodel.*
 import com.heckmannch.birthdaybuddy.widget.BirthdayWidgetWorker
 
 /**
@@ -54,6 +55,7 @@ class MainActivity : ComponentActivity() {
     private var lastInteractionTime: Long = System.currentTimeMillis()
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        val splashScreen = installSplashScreen()
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         
@@ -61,8 +63,16 @@ class MainActivity : ComponentActivity() {
         BirthdayWidgetWorker.enqueueNextUpdate(this)
 
         setContent {
+            val homeViewModel: HomeViewModel = hiltViewModel()
+            val settingsViewModel: SettingsViewModel = hiltViewModel()
+            val onboardingCompleted by settingsViewModel.onboardingCompleted.collectAsStateWithLifecycle()
+
+            // Splash Screen so lange anzeigen, bis wir wissen, wo es hingeht
+            splashScreen.setKeepOnScreenCondition {
+                onboardingCompleted == null
+            }
+
             BirthdayBuddyTheme {
-                val viewModel: BirthdayViewModel = hiltViewModel()
                 val navController = rememberNavController()
 
                 // Inaktivitäts-Check: Filter nach 5 Minuten zurücksetzen
@@ -70,19 +80,19 @@ class MainActivity : ComponentActivity() {
                     while (true) {
                         kotlinx.coroutines.delay(10000) // Alle 10 Sekunden prüfen
                         if ((System.currentTimeMillis() - lastInteractionTime) > (5 * 60 * 1000)) {
-                            viewModel.resetFilters()
+                            homeViewModel.resetFilters()
                         }
                     }
                 }
 
                 // React to intent changes (Initial start and onNewIntent)
-                HandleIntents(intent, viewModel, navController)
+                HandleIntents(intent, homeViewModel, navController)
 
                 Surface(
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background,
                 ) {
-                    AppNavigation(navController, viewModel)
+                    AppNavigation(navController, homeViewModel, settingsViewModel)
                 }
             }
         }
@@ -94,10 +104,10 @@ class MainActivity : ComponentActivity() {
     }
 
     @Composable
-    private fun HandleIntents(intent: Intent?, viewModel: BirthdayViewModel, navController: NavHostController) {
+    private fun HandleIntents(intent: Intent?, homeViewModel: HomeViewModel, navController: NavHostController) {
         LaunchedEffect(intent) {
             if (intent?.getBooleanExtra("SCROLL_TO_TOP", false) == true) {
-                viewModel.triggerScrollToTop()
+                homeViewModel.triggerScrollToTop()
                 intent.removeExtra("SCROLL_TO_TOP")
             }
             if (intent?.getBooleanExtra("NAVIGATE_TO_NOTIFICATIONS", false) == true) {
@@ -108,44 +118,51 @@ class MainActivity : ComponentActivity() {
                 navController.navigate(Routes.HOME) {
                     popUpTo(Routes.HOME) { inclusive = true }
                 }
-                viewModel.triggerSearchFocus()
+                homeViewModel.triggerSearchFocus()
                 intent.removeExtra("OPEN_SEARCH")
             }
             if (intent?.getBooleanExtra("OPEN_ADD_CONTACT", false) == true) {
                 // Sync triggern, falls ein neuer Kontakt hinzugefügt wurde
-                viewModel.syncContacts()
+                homeViewModel.syncContacts()
                 intent.removeExtra("OPEN_ADD_CONTACT")
             }
         }
     }
 
     @Composable
-    private fun AppNavigation(navController: NavHostController, viewModel: BirthdayViewModel) {
-        val onboardingCompleted by viewModel.onboardingCompleted.collectAsStateWithLifecycle()
+    private fun AppNavigation(
+        navController: NavHostController,
+        homeViewModel: HomeViewModel,
+        settingsViewModel: SettingsViewModel
+    ) {
+        val onboardingCompleted by settingsViewModel.onboardingCompleted.collectAsStateWithLifecycle()
+
+        // Warten bis der Status geladen wurde, um Flackern zu vermeiden
+        if (onboardingCompleted == null) return
 
         NavHost(
             navController = navController,
-            startDestination = if (onboardingCompleted) Routes.HOME else Routes.ONBOARDING,
+            startDestination = if (onboardingCompleted == true) Routes.HOME else Routes.ONBOARDING,
             enterTransition = { sharedAxisZIn() },
             exitTransition = { sharedAxisZOut() },
             popEnterTransition = { sharedAxisZIn() },
             popExitTransition = { sharedAxisZOut() },
         ) {
             composable(Routes.ONBOARDING) {
-                OnboardingScreen(viewModel = viewModel) {
+                OnboardingScreen(viewModel = settingsViewModel) {
                     navController.navigate(Routes.HOME) {
                         popUpTo(Routes.ONBOARDING) { inclusive = true }
                     }
                 }
             }
             composable(Routes.HOME) {
-                HomeScreen(viewModel = viewModel) {
+                HomeScreen(viewModel = homeViewModel) {
                     navController.navigate(Routes.SETTINGS)
                 }
             }
             composable(Routes.SETTINGS) {
                 SettingsScreen(
-                    viewModel = viewModel,
+                    viewModel = homeViewModel,
                     onNavigateToLabels = {
                         navController.navigate(Routes.LABEL_SETTINGS)
                     },
@@ -163,17 +180,20 @@ class MainActivity : ComponentActivity() {
                 }
             }
             composable(Routes.LABEL_SETTINGS) {
-                LabelSettingsScreen(viewModel = viewModel) {
+                val labelViewModel: LabelViewModel = hiltViewModel()
+                LabelSettingsScreen(viewModel = labelViewModel) {
                     navController.popBackStack()
                 }
             }
             composable(Routes.NOTIFICATION_SETTINGS) {
-                NotificationSettingsScreen(viewModel = viewModel) {
+                val notificationViewModel: NotificationViewModel = hiltViewModel()
+                NotificationSettingsScreen(viewModel = notificationViewModel) {
                     navController.popBackStack()
                 }
             }
             composable(Routes.BACKUP_SETTINGS) {
-                BackupScreen(viewModel = viewModel) {
+                val backupViewModel: BackupViewModel = hiltViewModel()
+                BackupScreen(viewModel = backupViewModel) {
                     navController.popBackStack()
                 }
             }

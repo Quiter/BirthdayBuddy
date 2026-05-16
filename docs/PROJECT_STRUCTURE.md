@@ -65,7 +65,11 @@
     - `Theme.kt`, `Color.kt`, `Type.kt`: Design-System Definitionen.
 
 ## 📁 ViewModel (`viewmodel`)
-- `BirthdayViewModel.kt`: Zentrales ViewModel (Single Source of Truth); orchestriert State-Flows.
+- `HomeViewModel.kt`: Zuständig für die Kontaktliste, Suche, Filterung und den Home-Screen State.
+- `NotificationViewModel.kt`: Verwaltung der Benachrichtigungsregeln und deren Synchronisation mit dem WorkManager.
+- `SettingsViewModel.kt`: Onboarding-Status und globale App-Einstellungen.
+- `LabelViewModel.kt`: Spezielle Logik für die Label-Verwaltung und Konfiguration.
+- `BackupViewModel.kt`: Logik für den Import und Export von Geschenkideen.
 
 ## 📁 Utilities (`util`)
 - `DateUtils.kt`: Robuste Erweiterungsfunktionen für LocalDate.
@@ -80,4 +84,4 @@
 ## 🧪 Testing (`src/test` & `src/androidTest`)
 - `data/local/ConvertersTest.kt`: Tests für TypeConverter.
 - `data/repository/NotificationRepositoryTest.kt`: Integrationstests für das Repository.
-- `viewmodel/BirthdayViewModelSearchTest.kt`: Tests der Suchlogik.
+- `viewmodel/HomeViewModelSearchTest.kt`: Tests der Suchlogik im HomeViewModel.

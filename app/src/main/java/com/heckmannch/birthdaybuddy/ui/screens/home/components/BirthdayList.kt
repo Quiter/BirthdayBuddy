@@ -54,28 +54,27 @@ fun BirthdayList(
 
     // WICHTIG: Wenn contacts null ist, laden wir noch. Zeige nichts an, um Flicker zu vermeiden.
     if (contacts == null) {
-        Box(modifier = modifier.fillMaxSize()) // Leer oder optional ein CircularProgressIndicator
+        Box(modifier = modifier.fillMaxSize()) 
         return
     }
 
-    if (contacts.isEmpty()) {
-        EmptyListState(
-            hasPermission = hasPermission, 
-            onRequestPermission = onRequestPermission,
-        )
-    } else {
-        // ... LazyColumn Logik bleibt gleich ...
-        var expandedContactId by rememberSaveable { mutableStateOf<String?>(null) }
-        
-        val onExpand = remember {
-            { id: String -> expandedContactId = id }
-        }
+    var expandedContactId by rememberSaveable { mutableStateOf<String?>(null) }
+    val onExpand = remember { { id: String -> expandedContactId = id } }
 
-        LazyColumn(
-            state = listState,
-            modifier = modifier.fillMaxSize(),
-            contentPadding = PaddingValues(bottom = 80.dp),
-        ) {
+    LazyColumn(
+        state = listState,
+        modifier = modifier.fillMaxSize(),
+        contentPadding = PaddingValues(bottom = 80.dp),
+    ) {
+        if (contacts.isEmpty()) {
+            item {
+                EmptyListState(
+                    hasPermission = hasPermission,
+                    onRequestPermission = onRequestPermission,
+                    modifier = Modifier.fillParentMaxSize()
+                )
+            }
+        } else {
             itemsIndexed(
                 items = contacts,
                 key = { _, it -> it.id },
@@ -84,7 +83,6 @@ fun BirthdayList(
                 val isExpanded = expandedContactId == contact.id
                 val isFirstItem = index == 0
                 
-                // Stabiler Callback für dieses spezifische Item
                 val itemOnExpand = remember(contact.id) { { onExpand(contact.id) } }
                 
                 BirthdayItem(
@@ -105,10 +103,10 @@ fun BirthdayList(
 private fun EmptyListState(
     hasPermission: Boolean,
     onRequestPermission: () -> Unit,
+    modifier: Modifier = Modifier,
 ) {
     Column(
-        modifier = Modifier
-            .fillMaxSize()
+        modifier = modifier
             .padding(32.dp),
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally,

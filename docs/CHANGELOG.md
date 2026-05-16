@@ -327,6 +327,16 @@ Alle signifikanten Änderungen am Projekt werden hier dokumentiert.
     - **Mapper Layer:** Einführung des `data.mapper` Packages für reine Logik-Komponenten wie den `ContactMapper`.
     - **UI Models:** Verschiebung von reinen UI-Datenstrukturen (`ContactUiModel`, `HomeUiState`, `GiftIdea`) in das neue `ui.model` Package zur strikten Trennung von ViewModels und deren State-Definitionen.
     - **Project Cleanup:** Vollständige Aktualisierung aller Paket-Deklarationen und Importe im gesamten Projekt sowie Synchronisation der Test-Ordnerstruktur.
+80. **UI Polish & Performance (Startup & I18n):**
+    - **Instant Start:** Integration der Android Splash Screen API (`core-splashscreen`) zur Eliminierung von Start-Flickern; die App hält das System-Logo nun aktiv fest, bis der Onboarding-Status aus der Datenbank geladen wurde.
+    - **Expert Date Logic:** Zentralisierung der Geburtsdatums-Logik in den `DateUtils`. Einführung von `isBirthdayToday`, `hasYear` und einem typsicheren `safeNextAge` (nullable), was den Code in Mappern und Repositories deutlich lesbarer macht.
+    - **Full I18n Support:** Umstellung der Datumsformatierung im Mapper und Widget auf systemseitige Patterns (`getBestDateTimePattern`), wodurch Tag und Monat nun weltweit in der jeweils korrekten Reihenfolge und Schreibweise angezeigt werden.
+    - **Resource Cleanup:** Entfernung veralteter Onboarding-Dialog-Strings und Konsolidierung der Ressourcen.
+81. **ViewModel Refactoring & Modularization:**
+    - **Architecture:** Aufteilung des monolithischen `BirthdayViewModel` in fünf spezialisierte ViewModels (`HomeViewModel`, `NotificationViewModel`, `SettingsViewModel`, `LabelViewModel`, `BackupViewModel`). Dies verbessert die Wartbarkeit, reduziert die Code-Komplexität pro Datei und ermöglicht eine gezieltere Testbarkeit.
+    - **Navigation:** Anpassung des `NavHost` in der `MainActivity` zur Bereitstellung der spezifischen ViewModels für die jeweiligen Screens.
+    - **Testing:** Migration und Umbenennung des Such-Logik-Tests zu `HomeViewModelSearchTest` unter Berücksichtigung der neuen Architektur.
+
 
 
 

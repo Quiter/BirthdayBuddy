@@ -7,17 +7,12 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import coil.imageLoader
 import coil.request.ImageRequest
-import com.heckmannch.birthdaybuddy.data.local.AppSettings
-import com.heckmannch.birthdaybuddy.data.local.LabelConfig
-import com.heckmannch.birthdaybuddy.data.local.NotificationRule
+import com.heckmannch.birthdaybuddy.data.mapper.ContactMapper
 import com.heckmannch.birthdaybuddy.data.repository.ContactRepository
 import com.heckmannch.birthdaybuddy.data.repository.NotificationRepository
 import com.heckmannch.birthdaybuddy.data.repository.TimeRepository
-import com.heckmannch.birthdaybuddy.data.mapper.ContactMapper
 import com.heckmannch.birthdaybuddy.ui.model.ContactUiModel
 import com.heckmannch.birthdaybuddy.ui.model.HomeUiState
-import com.heckmannch.birthdaybuddy.ui.model.LabelManagementModel
-import com.heckmannch.birthdaybuddy.ui.screens.settings.notifications.components.NotificationWorker
 import com.heckmannch.birthdaybuddy.widget.BirthdayWidget
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -28,7 +23,7 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
-class BirthdayViewModel @Inject constructor(
+class HomeViewModel @Inject constructor(
     @param:ApplicationContext private val context: Context,
     private val contactRepository: ContactRepository,
     private val notificationRepository: NotificationRepository,
@@ -36,76 +31,7 @@ class BirthdayViewModel @Inject constructor(
     timeRepository: TimeRepository,
 ) : ViewModel() {
 
-    // --- Settings & Preferences ---
-
-    // Zentraler Flow für App-Einstellungen zur Vermeidung mehrfacher DB-Abos
-    private val settings = notificationRepository.settings
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), AppSettings())
-
-    val notificationsEnabled: StateFlow<Boolean> = settings
-        .map { it.notificationsEnabled }
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), false)
-
-    val persistentNotifications: StateFlow<Boolean> = settings
-        .map { it.persistentNotifications }
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), true)
-
-    val notificationRules: StateFlow<List<NotificationRule>?> = notificationRepository.allRules
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), null)
-
-    val onboardingCompleted: StateFlow<Boolean> = settings
-        .map { it.onboardingCompleted }
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), false)
-
-    val swipeHintShown: StateFlow<Boolean> = settings
-        .map { it.swipeHintShown }
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), false)
-
-    fun setNotificationsEnabled(enabled: Boolean) = viewModelScope.launch {
-        if (enabled) {
-            val rules = notificationRepository.getAllRulesImmediate()
-            if (rules.isEmpty()) {
-                addNotificationRule(daysBefore = 0, hour = 9, minute = 0)
-            }
-        }
-        notificationRepository.updateSettings(notificationsEnabled = enabled)
-    }
-
-    fun completeOnboarding(notificationsEnabled: Boolean) = viewModelScope.launch {
-        if (notificationsEnabled) {
-            val rules = notificationRepository.getAllRulesImmediate()
-            if (rules.isEmpty()) {
-                addNotificationRule(daysBefore = 0, hour = 9, minute = 0)
-            }
-        }
-        notificationRepository.updateSettings(
-            notificationsEnabled = notificationsEnabled,
-            onboardingCompleted = true,
-        )
-    }
-
-    fun setPersistentNotifications(persistent: Boolean) = viewModelScope.launch {
-        notificationRepository.updateSettings(persistentNotifications = persistent)
-    }
-
-    fun addNotificationRule(daysBefore: Int, hour: Int, minute: Int) = viewModelScope.launch {
-        notificationRepository.insertRule(NotificationRule(daysBefore = daysBefore, hour = hour, minute = minute))
-    }
-
-    fun updateNotificationRule(rule: NotificationRule) = viewModelScope.launch {
-        notificationRepository.updateRule(rule)
-    }
-
-    fun deleteNotificationRule(rule: NotificationRule) = viewModelScope.launch {
-        notificationRepository.deleteRule(rule)
-    }
-
-    fun setSwipeHintShown() = viewModelScope.launch {
-        notificationRepository.updateSettings(swipeHintShown = true)
-    }
-
     // --- Search & Filter State ---
-
     private val _searchQuery = MutableStateFlow("")
     private val _selectedLabel = MutableStateFlow<String?>(null)
     private val _isResettingFilter = MutableStateFlow(value = false)
@@ -117,8 +43,16 @@ class BirthdayViewModel @Inject constructor(
 
     fun setIsResettingFilter(isResetting: Boolean) { _isResettingFilter.value = isResetting }
 
-    // --- Data Processing ---
+    // --- Settings related to Home ---
+    val swipeHintShown: StateFlow<Boolean> = notificationRepository.settings
+        .map { it.swipeHintShown }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), false)
 
+    fun setSwipeHintShown() = viewModelScope.launch {
+        notificationRepository.updateSettings(swipeHintShown = true)
+    }
+
+    // --- Data Processing ---
     private val ignoredLabels: Flow<Set<String>> = contactRepository.labelConfigs
         .map { configs -> 
             configs.asSequence()
@@ -140,21 +74,6 @@ class BirthdayViewModel @Inject constructor(
     }.flowOn(Dispatchers.Default)
 
     init {
-        // Automatische Worker-Synchronisation
-        viewModelScope.launch {
-            combine(notificationsEnabled, notificationRules) { enabled, rules ->
-                enabled to rules
-            }.collect { (enabled, rules) ->
-                if (rules == null) return@collect 
-                
-                if (enabled && rules.isNotEmpty()) {
-                    NotificationWorker.scheduleNext(context, rules)
-                } else {
-                    NotificationWorker.cancelNotification(context)
-                }
-            }
-        }
-
         // Pre-fetch der ersten Kontaktbilder
         viewModelScope.launch {
             allUiContacts.filter { it.isNotEmpty() }.first().take(20).forEach { contact ->
@@ -169,10 +88,6 @@ class BirthdayViewModel @Inject constructor(
         }
     }
 
-    /**
-     * Filtern der fertigen UI-Modelle basierend auf Suche und Labels.
-     * Optimierung: Such-Keywords werden nur berechnet, wenn sich die Suche ändert.
-     */
     private val searchKeywords = _searchQuery
         .map { it.trim() }
         .distinctUntilChanged()
@@ -202,7 +117,7 @@ class BirthdayViewModel @Inject constructor(
             .toList()
         
         if (uiList.size > 1000) {
-            Log.d("BirthdayViewModel", "Filtering ${uiList.size} contacts took ${System.currentTimeMillis() - startTime}ms")
+            Log.d("HomeViewModel", "Filtering ${uiList.size} contacts took ${System.currentTimeMillis() - startTime}ms")
         }
         result
     }
@@ -248,25 +163,7 @@ class BirthdayViewModel @Inject constructor(
         )
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), HomeUiState())
 
-    val labelManagementList: StateFlow<List<LabelManagementModel>> = combine(
-        contactRepository.labelConfigs,
-        contactRepository.allContacts,
-    ) { configs, contacts ->
-        val labelsInUse = contacts.asSequence().flatMap { it.labels }.toSet()
-        configs.asSequence()
-            .filter { it.name in labelsInUse }
-            .map { config ->
-                LabelManagementModel(
-                    config.name,
-                    config.isHiddenFromFilter,
-                    config.isIgnored,
-                    config.isSystem,
-                )
-            }.sortedBy { it.name }.toList()
-    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
-
     // --- Actions ---
-
     fun onSearchQueryChange(newQuery: String) {
         val wasEmpty = _searchQuery.value.isEmpty()
         if (newQuery.isNotEmpty() && wasEmpty) {
@@ -291,11 +188,6 @@ class BirthdayViewModel @Inject constructor(
 
     fun updateGiftIdeas(lookupKey: String, ideas: String) = viewModelScope.launch {
         contactRepository.updateGiftIdeas(lookupKey, ideas)
-    }
-
-    fun updateLabelConfig(name: String, hidden: Boolean, ignored: Boolean, isSystem: Boolean) = viewModelScope.launch {
-        contactRepository.updateLabelConfig(LabelConfig(name, hidden, ignored, isSystem))
-        updateWidget()
     }
 
     fun syncContacts(showLoading: Boolean = false) = viewModelScope.launch {
@@ -326,19 +218,11 @@ class BirthdayViewModel @Inject constructor(
         _searchFocusRequested.value = false
     }
 
-    suspend fun exportGiftIdeas() = contactRepository.exportGiftIdeas()
-
-    suspend fun importGiftIdeas(json: String): Int {
-        val count = contactRepository.importGiftIdeas(json)
-        if (count > 0) updateWidget()
-        return count
-    }
-
     private fun updateWidget() = viewModelScope.launch {
         try {
             BirthdayWidget().updateAll(context)
         } catch (e: Exception) {
-            Log.e("BirthdayViewModel", "Widget update failed", e)
+            Log.e("HomeViewModel", "Widget update failed", e)
         }
     }
 }

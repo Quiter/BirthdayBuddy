@@ -2,6 +2,7 @@ package com.heckmannch.birthdaybuddy.widget
 
 import android.content.Context
 import android.content.Intent
+import android.text.format.DateFormat
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.produceState
 import androidx.compose.ui.unit.dp
@@ -20,6 +21,7 @@ import com.heckmannch.birthdaybuddy.MainActivity
 import com.heckmannch.birthdaybuddy.R
 import com.heckmannch.birthdaybuddy.data.local.Contact
 import com.heckmannch.birthdaybuddy.data.repository.ContactRepository
+import com.heckmannch.birthdaybuddy.util.hasYear
 import com.heckmannch.birthdaybuddy.util.safeDaysUntilNext
 import com.heckmannch.birthdaybuddy.util.safeNextAge
 import dagger.hilt.EntryPoint
@@ -119,12 +121,16 @@ class BirthdayWidget : GlanceAppWidget() {
     @Composable
     private fun ColumnScope.BirthdayRow(contact: Contact) {
         val context = LocalContext.current
+        val locale = context.resources.configuration.locales[0]
         val dateFormatter = DateTimeFormatter.ofLocalizedDate(FormatStyle.MEDIUM)
-        val dayMonthFormatter = DateTimeFormatter.ofPattern("d. MMM")
+        val dayMonthFormatter = DateTimeFormatter.ofPattern(
+            DateFormat.getBestDateTimePattern(locale, "dMMM"),
+            locale
+        )
 
         val daysLeft = contact.birthday.safeDaysUntilNext()
         val nextAgeValue = contact.birthday.safeNextAge()
-        val hasYear = contact.birthday.year != 1900
+        val hasYear = contact.birthday.hasYear
 
         val dateText = if (!hasYear) {
             contact.birthday.format(dayMonthFormatter)

@@ -33,7 +33,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.heckmannch.birthdaybuddy.R
 import com.heckmannch.birthdaybuddy.ui.screens.home.components.*
 import com.heckmannch.birthdaybuddy.ui.theme.BirthdayBuddyTheme
-import com.heckmannch.birthdaybuddy.viewmodel.BirthdayViewModel
+import com.heckmannch.birthdaybuddy.viewmodel.HomeViewModel
 import com.heckmannch.birthdaybuddy.ui.model.ContactUiModel
 import com.heckmannch.birthdaybuddy.ui.model.HomeUiState
 import kotlinx.coroutines.CoroutineScope
@@ -47,7 +47,7 @@ import kotlinx.coroutines.launch
  */
 @Composable
 fun HomeScreen(
-    viewModel: BirthdayViewModel,
+    viewModel: HomeViewModel,
     onNavigateToSettings: () -> Unit,
 ) {
     val context = LocalContext.current

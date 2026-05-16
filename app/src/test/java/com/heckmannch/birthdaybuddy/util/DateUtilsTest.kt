@@ -46,4 +46,24 @@ class DateUtilsTest {
         
         assertThat(age).isEqualTo(35) // Next birthday is the 35th
     }
+
+    @Test
+    fun `isBirthdayToday returns true for current day`() {
+        val birthday = LocalDate.of(1995, 10, 20)
+        val today = LocalDate.of(2024, 10, 20)
+        
+        assertThat(birthday.isBirthdayToday(today)).isTrue()
+    }
+
+    @Test
+    fun `hasYear returns false for NO_YEAR_MARKER`() {
+        val birthday = LocalDate.of(NO_YEAR_MARKER, 5, 15)
+        assertThat(birthday.hasYear).isFalse()
+    }
+
+    @Test
+    fun `safeNextAge returns null for contacts without year`() {
+        val birthday = LocalDate.of(NO_YEAR_MARKER, 5, 15)
+        assertThat(birthday.safeNextAge()).isNull()
+    }
 }

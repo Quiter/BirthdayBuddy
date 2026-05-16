@@ -10,6 +10,7 @@ import com.heckmannch.birthdaybuddy.MainActivity
 import com.heckmannch.birthdaybuddy.R
 import com.heckmannch.birthdaybuddy.data.local.Contact
 import com.heckmannch.birthdaybuddy.data.repository.NotificationRepository
+import com.heckmannch.birthdaybuddy.util.hasYear
 import com.heckmannch.birthdaybuddy.util.safeNextAge
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.first
@@ -110,10 +111,8 @@ class NotificationHelper @Inject constructor(
             val contact = contacts.first()
             val name = contact.fullName
             val birthday = contact.birthday
-            // Wir zeigen das Alter nur an, wenn ein Jahr im Geburtstag vorhanden ist (Room speichert 0000 oder 1900 wenn nicht bekannt)
-            // Hier prüfen wir auf > 1900, da Android bei "Jahr weglassen" oft 1900 oder 0004 nutzt.
-            val hasYear = birthday.year > 1900 
-            val nextAge = if (hasYear) birthday.safeNextAge(LocalDate.now()) else -1
+            val hasYear = birthday.hasYear
+            val nextAge = birthday.safeNextAge(LocalDate.now()) ?: -1
 
             when (daysBefore) {
                 0 -> if (hasYear) context.getString(R.string.notif_title_today_age, name, nextAge) 

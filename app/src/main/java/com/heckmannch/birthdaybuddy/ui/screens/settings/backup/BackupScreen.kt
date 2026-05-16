@@ -9,7 +9,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import com.heckmannch.birthdaybuddy.R
 import com.heckmannch.birthdaybuddy.ui.screens.settings.backup.components.BackupContent
-import com.heckmannch.birthdaybuddy.viewmodel.BirthdayViewModel
+import com.heckmannch.birthdaybuddy.viewmodel.BackupViewModel
 import kotlinx.coroutines.launch
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
@@ -20,7 +20,7 @@ import java.time.format.DateTimeFormatter
  */
 @Composable
 fun BackupScreen(
-    viewModel: BirthdayViewModel,
+    viewModel: BackupViewModel,
     onNavigateBack: () -> Unit
 ) {
     val context = LocalContext.current

@@ -10,7 +10,6 @@ import com.heckmannch.birthdaybuddy.data.repository.ContactRepository
 import com.heckmannch.birthdaybuddy.data.repository.NotificationRepository
 import com.heckmannch.birthdaybuddy.data.repository.TimeRepository
 import com.heckmannch.birthdaybuddy.data.mapper.ContactMapper
-import com.heckmannch.birthdaybuddy.ui.model.ContactUiModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.first
@@ -26,7 +25,7 @@ import java.time.LocalDate
 
 @RunWith(AndroidJUnit4::class)
 @OptIn(ExperimentalCoroutinesApi::class)
-class BirthdayViewModelSearchTest {
+class HomeViewModelSearchTest {
 
     private val contactRepository: ContactRepository = mock()
     private val notificationRepository: NotificationRepository = mock()
@@ -54,7 +53,7 @@ class BirthdayViewModelSearchTest {
         )
         whenever(contactRepository.allContacts).thenReturn(flowOf(contacts))
 
-        val viewModel = BirthdayViewModel(context, contactRepository, notificationRepository, mapper, timeRepository)
+        val viewModel = HomeViewModel(context, contactRepository, notificationRepository, mapper, timeRepository)
         
         // Suche nach "Mustermann Max"
         viewModel.onSearchQueryChange("Mustermann Max")
@@ -75,7 +74,7 @@ class BirthdayViewModelSearchTest {
         )
         whenever(contactRepository.allContacts).thenReturn(flowOf(contacts))
 
-        val viewModel = BirthdayViewModel(context, contactRepository, notificationRepository, mapper, timeRepository)
+        val viewModel = HomeViewModel(context, contactRepository, notificationRepository, mapper, timeRepository)
         
         viewModel.onSearchQueryChange("  Max  ")
 

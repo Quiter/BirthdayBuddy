@@ -38,7 +38,8 @@ fun HomeTopBar(
             onQueryChange = onSearchQueryChange,
             onClearQuery = onClearSearch,
             onSettingsClick = onNavigateToSettings,
-            focusRequester = searchFocusRequester
+            focusRequester = searchFocusRequester,
+            modifier = Modifier.padding(bottom = 8.dp)
         )
 
         LabelFilterBar(

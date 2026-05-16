@@ -15,7 +15,7 @@ Die App wurde erfolgreich von BirthdayBuddy2 in BirthdayBuddy umbenannt. In dies
 
 ## 🛠 Architektur & Struktur
 - **Package-Struktur:** Feature-basierte Layer (`ui.screens.home`, `ui.screens.settings.labels`, `ui.screens.settings.notifications`, `viewmodel`, `database`, `widget`).
-- **ViewModel:** `BirthdayViewModel` als Single Source of Truth; nutzt `SharedFlow` für UI-Events.
+- **ViewModel:** Spezialisierte ViewModels (`HomeViewModel`, `NotificationViewModel`, `SettingsViewModel`, `LabelViewModel`, `BackupViewModel`) pro Feature/Screen zur Verbesserung der Wartbarkeit und Testbarkeit.
 - **Data:** `ContactUiModel` (@Immutable) für performante Updates; stabile Identifikatoren via `LOOKUP_KEY`.
 - **Dependency Injection:** Vollständige Integration von Hilt für alle Layer.
 - **Persistence:** **Room-only Strategie.** Alle App-Einstellungen, Benachrichtigungsregeln und Kontaktdaten liegen in der Room-Datenbank.
@@ -63,6 +63,7 @@ Um Start-Abstürze und Datenverlust nach Updates zu verhindern, müssen folgende
 - **Architecture Refinement:** Konsolidierung der Datumslogik und Implementierung einer robusten, State-basierten Fokus-Steuerung für die Suche.
 - **Privacy Policy Integration:** Implementierung einer dedizierten, lokalisierten Datenschutzerklärung innerhalb der App.
 - **UX & Stability Overhaul:** Einführung eines geführten Onboarding-Screens zur Vermeidung von Race-Conditions; Implementierung eines Thread-sicheren Repository-Musters (Mutex) und flächendeckende Bereinigung der UI-Logik.
+- **ViewModel Refactoring:** Aufteilung des monolithischen `BirthdayViewModel` in spezialisierte ViewModels (`Home`, `Notification`, `Settings`, `Label`, `Backup`) zur Steigerung der Modularität und Übersichtlichkeit.
 - **CI/CD Excellence:** Automatisierte Test-Pipeline in GitHub Actions zur Sicherstellung der Release-Qualität.
 
 ## 🎯 Kommende Aufgaben (Backlog)

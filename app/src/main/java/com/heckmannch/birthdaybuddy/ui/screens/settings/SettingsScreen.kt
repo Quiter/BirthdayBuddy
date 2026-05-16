@@ -24,11 +24,11 @@ import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import com.heckmannch.birthdaybuddy.R
 import com.heckmannch.birthdaybuddy.ui.theme.BirthdayBuddyTheme
-import com.heckmannch.birthdaybuddy.viewmodel.BirthdayViewModel
+import com.heckmannch.birthdaybuddy.viewmodel.HomeViewModel
 
 @Composable
 fun SettingsScreen(
-    viewModel: BirthdayViewModel,
+    viewModel: HomeViewModel,
     onNavigateToLabels: () -> Unit,
     onNavigateToNotifications: () -> Unit,
     onNavigateToBackup: () -> Unit,

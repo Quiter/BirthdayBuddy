@@ -35,11 +35,11 @@ import com.heckmannch.birthdaybuddy.data.local.NotificationRule
 import com.heckmannch.birthdaybuddy.ui.screens.settings.notifications.components.EditRuleDialog
 import com.heckmannch.birthdaybuddy.ui.screens.settings.notifications.components.NotificationRuleItem
 import com.heckmannch.birthdaybuddy.ui.theme.BirthdayBuddyTheme
-import com.heckmannch.birthdaybuddy.viewmodel.BirthdayViewModel
+import com.heckmannch.birthdaybuddy.viewmodel.NotificationViewModel
 
 @Composable
 fun NotificationSettingsScreen(
-    viewModel: BirthdayViewModel,
+    viewModel: NotificationViewModel,
     onNavigateBack: () -> Unit,
 ) {
     val context = LocalContext.current

@@ -35,12 +35,12 @@ import androidx.compose.ui.unit.dp
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import com.heckmannch.birthdaybuddy.R
-import com.heckmannch.birthdaybuddy.viewmodel.BirthdayViewModel
+import com.heckmannch.birthdaybuddy.viewmodel.SettingsViewModel
 import kotlinx.coroutines.launch
 
 @Composable
 fun OnboardingScreen(
-    viewModel: BirthdayViewModel,
+    viewModel: SettingsViewModel,
     onFinish: () -> Unit,
 ) {
     val context = LocalContext.current
