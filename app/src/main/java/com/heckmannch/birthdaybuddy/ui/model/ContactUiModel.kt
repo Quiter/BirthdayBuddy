@@ -15,6 +15,7 @@ data class ContactUiModel(
     val dateText: String,
     val monthName: String,
     val imageUri: String?,
+    val phoneNumber: String?,
     val initials: String,
     val nextAge: Int?,
     val daysUntilNext: Long,

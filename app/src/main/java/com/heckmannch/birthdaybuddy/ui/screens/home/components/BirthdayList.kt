@@ -30,19 +30,15 @@ import com.heckmannch.birthdaybuddy.ui.model.ContactUiModel
  */
 @Composable
 fun BirthdayList(
-    contacts: List<ContactUiModel>?, // Jetzt nullable
-    swipeHintShown: Boolean,
+    contacts: List<ContactUiModel>?,
     modifier: Modifier = Modifier,
     listState: LazyListState,
     onRequestPermission: () -> Unit,
-    onSetSwipeHintShown: () -> Unit,
     onUpdateGiftIdeas: (String, String) -> Unit,
     onOpenContact: (String, String) -> Unit,
 ) {
     val context = LocalContext.current
     
-    // ... Callbacks und Permission-Check bleiben gleich ...
-    val currentOnSetSwipeHintShown by rememberUpdatedState(onSetSwipeHintShown)
     val currentOnUpdateGiftIdeas by rememberUpdatedState(onUpdateGiftIdeas)
     val currentOnOpenContact by rememberUpdatedState(onOpenContact)
 
@@ -70,7 +66,6 @@ fun BirthdayList(
     }
 
     var expandedContactId by rememberSaveable { mutableStateOf<String?>(null) }
-    val onExpand = remember { { id: String -> expandedContactId = id } }
 
     LazyColumn(
         state = listState,
@@ -90,18 +85,15 @@ fun BirthdayList(
                 items = contacts,
                 key = { _, it -> it.id },
                 contentType = { _, _ -> "birthdayItem" },
-            ) { index, contact ->
+            ) { _, contact ->
                 val isExpanded = expandedContactId == contact.id
-                val isFirstItem = index == 0
-                
-                val itemOnExpand = remember(contact.id) { { onExpand(contact.id) } }
                 
                 BirthdayItem(
                     contact = contact,
-                    showHint = !swipeHintShown && isFirstItem,
                     isExpanded = isExpanded,
-                    onExpand = itemOnExpand,
-                    onSetSwipeHintShown = currentOnSetSwipeHintShown,
+                    onExpand = {
+                        expandedContactId = if (isExpanded) null else contact.id
+                    },
                     onUpdateGiftIdeas = currentOnUpdateGiftIdeas,
                     onOpenContact = currentOnOpenContact,
                     modifier = Modifier.animateItem()

@@ -339,6 +339,18 @@ Alle signifikanten Änderungen am Projekt werden hier dokumentiert.
 82. **UX & UI Spacing Polish:**
     - **Pull-to-Refresh:** Refactoring der `BirthdayList`, sodass die Pull-to-Refresh Geste nun auch bei einer leeren Liste (Empty State) einwandfrei funktioniert.
     - **Layout Consistency:** Standardisierung der vertikalen Abstände im Home-Header. Einführung eines festen 8dp Paddings für die `SearchBar` zur Gewährleistung eines harmonischen Layout-Rhythmus, unabhängig von der Sichtbarkeit der Label-Filterbar.
+83. **UI Interaction Overhaul (Expandable Cards):**
+    - **UX Evolution:** Ersatz der versteckten Swipe-Geste durch ein intuitives "Tap-to-Expand" System. Die Kontakt-Karten lassen sich nun durch einfaches Antippen aufklappen.
+    - **Direct Access:** Die Aktions-Buttons wurden durch kompakte, intuitive Icons ersetzt. Der Button zum Öffnen des Kontakts ist nun als Icon in der Form des Kontaktbildes direkt darunter platziert.
+    - **Messenger Integration:** Einführung von Schnellzugriff-Links für Telefonate, SMS und WhatsApp direkt in der aufgeklappten Karte (vorausgesetzt eine Telefonnummer ist hinterlegt).
+    - **Gift Idea Visibility:** Die Verwaltung von Geschenkideen erfolgt nun vollständig inline. Der separate "Hinzufügen"-Button wurde entfernt, da Einträge direkt in der Karte erstellt und bearbeitet werden können.
+    - **Data Layer Upgrade:** Die Kontakt-Synchronisation erfasst nun auch Telefonnummern vom System, um die Messenger-Integration zu ermöglichen (Datenbank v4).
+    - **Performance:** Implementierung flüssiger Animationen (`animateContentSize`) beim Aufklappen und Reduzierung der UI-Komplexität durch Entfernung der Swipe-Logik und des `GiftIdeaDialog`.
+    - **Clean UI:** Bereinigung des Home-Screens von Hilfe-Animationen (Swipe-Hint), da die neue Interaktion selbsterklärend ist.
+84. **Architecture Refinement (Component Splitting):**
+    - **Modularization:** Aufteilung der massiven `BirthdayItem.kt` in kleinere, spezialisierte Komponenten (`GiftIdeaList`, `ContactActionRow`, `ContactImage`, `BirthdayStatus`).
+    - **Maintainability:** Deutliche Verbesserung der Lesbarkeit und Wartbarkeit durch Trennung von Layout-Koordination und spezialisierter UI-Logik.
+    - **Reusability:** Die neuen Komponenten sind nun eigenständig und können bei Bedarf an anderen Stellen der App leichter wiederverwendet werden.
 
 
 

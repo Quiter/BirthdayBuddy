@@ -20,6 +20,7 @@ data class Contact(
     val fullName: String,
     val birthday: LocalDate,
     val imageUri: String? = null,
+    val phoneNumber: String? = null,
     val labels: List<String> = emptyList(),
     val giftIdeas: String? = null
 )

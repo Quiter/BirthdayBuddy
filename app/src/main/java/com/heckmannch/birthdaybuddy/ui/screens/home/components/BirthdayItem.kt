@@ -1,19 +1,10 @@
 package com.heckmannch.birthdaybuddy.ui.screens.home.components
 
-import androidx.compose.animation.core.*
+import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.gestures.AnchoredDraggableDefaults
-import androidx.compose.foundation.gestures.AnchoredDraggableState
-import androidx.compose.foundation.gestures.DraggableAnchors
-import androidx.compose.foundation.gestures.Orientation
-import androidx.compose.foundation.gestures.anchoredDraggable
-import androidx.compose.foundation.gestures.animateTo
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Edit
-import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -21,105 +12,37 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.platform.LocalHapticFeedback
-import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import coil.compose.AsyncImage
-import coil.request.ImageRequest
-import androidx.compose.ui.res.pluralStringResource
-import androidx.compose.ui.res.stringResource
-import com.heckmannch.birthdaybuddy.R
-import com.heckmannch.birthdaybuddy.ui.theme.BirthdayBuddyTheme
-import com.heckmannch.birthdaybuddy.ui.theme.BirthdayGold
-import com.heckmannch.birthdaybuddy.ui.theme.BirthdaySilver
-import com.heckmannch.birthdaybuddy.ui.theme.KidColors
 import com.heckmannch.birthdaybuddy.ui.model.ContactUiModel
 import com.heckmannch.birthdaybuddy.ui.model.GiftIdea
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
+import com.heckmannch.birthdaybuddy.ui.theme.*
 
-enum class DragValue { Closed, Open }
-
-@OptIn(ExperimentalMaterial3Api::class, androidx.compose.foundation.ExperimentalFoundationApi::class)
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun BirthdayItem(
     contact: ContactUiModel,
-    showHint: Boolean,
     isExpanded: Boolean,
     onExpand: () -> Unit,
-    onSetSwipeHintShown: () -> Unit,
     onUpdateGiftIdeas: (String, String) -> Unit,
     onOpenContact: (String, String) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    val density = LocalDensity.current
-    val haptic = LocalHapticFeedback.current
-    val scope = rememberCoroutineScope()
-    val showGiftDialog = rememberSaveable { mutableStateOf(false) }
+    val focusManager = LocalFocusManager.current
+    var newlyAddedId by rememberSaveable { mutableStateOf<String?>(null) }
 
-    // Maße und Anker-Berechnungen (Optimiert durch remember)
-    val buttonWidth = 50.dp
-    val buttonSpacing = 4.dp
-    val gapToContact = 4.dp
-    
-    val anchors = remember(density) {
-        val totalButtonsWidth = (buttonWidth * 2) + buttonSpacing
-        val openAnchorPx = with(density) { (totalButtonsWidth + gapToContact).toPx() }
-        DraggableAnchors {
-            DragValue.Closed at 0f
-            DragValue.Open at -openAnchorPx
+    val onAddNewIdea = {
+        val newIdea = GiftIdea(text = "")
+        val newIdeas = contact.giftIdeas.toMutableList()
+        val firstCheckedIndex = newIdeas.indexOfFirst { it.isChecked }
+        if (firstCheckedIndex != -1) {
+            newIdeas.add(firstCheckedIndex, newIdea)
+        } else {
+            newIdeas.add(newIdea)
         }
-    }
-
-    val draggableState = remember {
-        AnchoredDraggableState(
-            initialValue = DragValue.Closed,
-        )
-    }
-    
-    // Anker bei Dichte-Änderung aktualisieren
-    SideEffect {
-        draggableState.updateAnchors(anchors)
-    }
-
-    LaunchedEffect(showHint) {
-        if (showHint) {
-            delay(1000)
-            draggableState.animateTo(DragValue.Open)
-            delay(1000)
-            draggableState.animateTo(DragValue.Closed)
-            onSetSwipeHintShown()
-        }
-    }
-
-    LaunchedEffect(isExpanded) {
-        if (!isExpanded && (draggableState.currentValue == DragValue.Open)) {
-            draggableState.animateTo(targetValue = DragValue.Closed)
-        }
-    }
-
-    LaunchedEffect(draggableState.targetValue) {
-        if (draggableState.targetValue == DragValue.Open) {
-            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-            onExpand()
-        }
-    }
-
-    if (showGiftDialog.value) {
-        GiftIdeaDialog(
-            initialIdeas = contact.giftIdeas,
-            onDismiss = { showGiftDialog.value = false },
-        ) { ideas ->
-            onUpdateGiftIdeas(contact.lookupKey, GiftIdea.toString(ideas))
-            showGiftDialog.value = false
-            scope.launch { draggableState.animateTo(targetValue = DragValue.Closed) }
-        }
+        newlyAddedId = newIdea.id
+        onUpdateGiftIdeas(contact.lookupKey, GiftIdea.toString(newIdeas))
     }
 
     val borderStroke = remember(contact.isToday, contact.nextAge) {
@@ -136,58 +59,15 @@ fun BirthdayItem(
         } else null
     }
 
-    Box(
+    Card(
         modifier = modifier
             .fillMaxWidth()
-            .height(IntrinsicSize.Min)
-            .padding(vertical = 4.dp),
+            .padding(horizontal = 16.dp, vertical = 4.dp),
+        onClick = onExpand,
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow),
+        border = borderStroke
     ) {
-        Row(
-            modifier = Modifier
-                .align(Alignment.CenterEnd)
-                .fillMaxHeight()
-                .padding(end = 16.dp)
-                .width((buttonWidth * 2) + buttonSpacing),
-            horizontalArrangement = Arrangement.spacedBy(buttonSpacing),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            SwipeActionButton(
-                icon = Icons.Default.Edit,
-                color = Color(0xFFFFB300),
-                contentDescription = stringResource(R.string.item_action_gifts),
-            ) { showGiftDialog.value = true }
-            SwipeActionButton(
-                icon = Icons.Default.Person,
-                color = Color(0xFF2196F3),
-                contentDescription = stringResource(R.string.item_action_contact),
-            ) {
-                onOpenContact(contact.contactId, contact.lookupKey)
-                scope.launch { draggableState.animateTo(DragValue.Closed) }
-            }
-        }
-
-        Card(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 16.dp)
-                .graphicsLayer { 
-                    translationX = if (draggableState.offset.isNaN()) 0f else draggableState.offset
-                }
-                .anchoredDraggable(
-                    state = draggableState,
-                    orientation = Orientation.Horizontal,
-                    flingBehavior = AnchoredDraggableDefaults.flingBehavior(
-                        state = draggableState,
-                        positionalThreshold = { distance: Float -> distance * 0.5f },
-                        animationSpec = spring(
-                            dampingRatio = Spring.DampingRatioNoBouncy,
-                            stiffness = Spring.StiffnessMedium,
-                        )
-                    )
-                ),
-            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow),
-            border = borderStroke
-        ) {
+        Column(modifier = Modifier.animateContentSize()) {
             ListItem(
                 headlineContent = {
                     Row(verticalAlignment = Alignment.CenterVertically) {
@@ -196,7 +76,7 @@ fun BirthdayItem(
                             Spacer(modifier = Modifier.width(8.dp))
                             Icon(
                                 Icons.Default.Edit,
-                                contentDescription = stringResource(R.string.item_gift_ideas_hint),
+                                contentDescription = null,
                                 modifier = Modifier.size(14.dp),
                                 tint = Color(0xFFFFB300)
                             )
@@ -226,98 +106,58 @@ fun BirthdayItem(
                 },
                 colors = ListItemDefaults.colors(containerColor = Color.Transparent)
             )
-        }
-    }
-}
 
-@Composable
-private fun SwipeActionButton(
-    icon: ImageVector,
-    color: Color,
-    contentDescription: String?,
-    width: androidx.compose.ui.unit.Dp = 50.dp,
-    onClick: () -> Unit
-) {
-    Surface(
-        modifier = Modifier
-            .width(width)
-            .fillMaxHeight()
-            .clickable { onClick() },
-        shape = RoundedCornerShape(20.dp),
-        color = color.copy(alpha = 0.15f),
-        contentColor = color
-    ) {
-        Box(contentAlignment = Alignment.Center) {
-            Icon(imageVector = icon, contentDescription = contentDescription, modifier = Modifier.size(24.dp))
-        }
-    }
-}
+            if (isExpanded) {
+                ContactActionRow(
+                    contactId = contact.contactId,
+                    lookupKey = contact.lookupKey,
+                    phoneNumber = contact.phoneNumber,
+                    onOpenContact = onOpenContact
+                )
 
-@Composable
-private fun ContactImage(
-    imageUri: String?,
-    fullName: String,
-    initials: String
-) {
-    val context = LocalContext.current
-    val imageRequest = remember(imageUri) {
-        if (imageUri != null) {
-            ImageRequest.Builder(context)
-                .data(imageUri)
-                .crossfade(true)
-                .build()
-        } else null
-    }
+                HorizontalDivider(
+                    modifier = Modifier.padding(horizontal = 16.dp),
+                    color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)
+                )
 
-    Surface(
-        modifier = Modifier.size(48.dp),
-        shape = MaterialTheme.shapes.medium,
-        color = MaterialTheme.colorScheme.primaryContainer
-    ) {
-        if (imageRequest != null) {
-            AsyncImage(
-                model = imageRequest,
-                contentDescription = stringResource(R.string.item_image_desc, fullName),
-                modifier = Modifier.fillMaxSize(),
-                contentScale = ContentScale.Crop
-            )
-        } else {
-            Box(contentAlignment = Alignment.Center) {
-                Text(text = initials, style = MaterialTheme.typography.titleLarge)
+                GiftIdeaList(
+                    giftIdeas = contact.giftIdeas,
+                    newlyAddedId = newlyAddedId,
+                    onAddNewIdea = onAddNewIdea,
+                    onFocusRequested = { newlyAddedId = null },
+                    onCheckedChange = { idea, checked ->
+                        val newIdeas = contact.giftIdeas.toMutableList()
+                        val idx = newIdeas.indexOfFirst { it.id == idea.id }
+                        if (idx != -1) {
+                            newIdeas.removeAt(idx)
+                            val newItem = idea.copy(isChecked = checked)
+                            if (checked) {
+                                newIdeas.add(newItem)
+                            } else {
+                                val firstCheckedIndex = newIdeas.indexOfFirst { it.isChecked }
+                                if (firstCheckedIndex != -1) newIdeas.add(firstCheckedIndex, newItem)
+                                else newIdeas.add(0, newItem)
+                            }
+                            onUpdateGiftIdeas(contact.lookupKey, GiftIdea.toString(newIdeas))
+                        }
+                    },
+                    onTextChange = { idea, newText ->
+                        val newIdeas = contact.giftIdeas.map {
+                            if (it.id == idea.id) it.copy(text = newText) else it
+                        }
+                        onUpdateGiftIdeas(contact.lookupKey, GiftIdea.toString(newIdeas))
+                    },
+                    onDelete = { idea ->
+                        val newIdeas = contact.giftIdeas.filter { it.id != idea.id }
+                        onUpdateGiftIdeas(contact.lookupKey, GiftIdea.toString(newIdeas))
+                    },
+                    onDone = { idea ->
+                        if (idea.text.isNotBlank()) onAddNewIdea()
+                        else focusManager.clearFocus()
+                    }
+                )
             }
         }
-    }
-}
-
-@Composable
-private fun BirthdayStatus(
-    isToday: Boolean,
-    nextAge: Int?,
-    daysUntilNext: Long
-) {
-    val ageText = nextAge?.let { stringResource(R.string.widget_turns_age, it) }
-    val daysText = if (isToday) {
-        stringResource(R.string.item_today)
-    } else {
-        pluralStringResource(R.plurals.item_days_left, daysUntilNext.toInt(), daysUntilNext.toInt())
-    }
-
-    Column(
-        horizontalAlignment = Alignment.End,
-        modifier = Modifier.graphicsLayer()
-    ) {
-        if (ageText != null) {
-            Text(
-                text = ageText,
-                style = MaterialTheme.typography.labelLarge,
-                color = MaterialTheme.colorScheme.primary
-            )
-        }
-        Text(
-            text = daysText,
-            style = MaterialTheme.typography.labelSmall,
-            color = if (isToday) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurfaceVariant
-        )
     }
 }
 
@@ -332,6 +172,7 @@ private fun BirthdayItemPreview() {
         dateText = "12. Mai",
         monthName = "Mai",
         imageUri = null,
+        phoneNumber = "+49 123 456789",
         initials = "M",
         nextAge = 30,
         daysUntilNext = 5,
@@ -343,40 +184,20 @@ private fun BirthdayItemPreview() {
         Column(modifier = Modifier.padding(16.dp)) {
             BirthdayItem(
                 contact = sampleContact,
-                showHint = false,
                 isExpanded = false,
                 onExpand = {},
-                onSetSwipeHintShown = {},
                 onUpdateGiftIdeas = { _, _ -> },
                 onOpenContact = { _, _ -> }
             )
             
             BirthdayItem(
                 contact = sampleContact.copy(
-                    fullName = "Runder Geburtstag",
-                    isToday = true,
-                    nextAge = 40,
-                    daysUntilNext = 0
+                    fullName = "Ausgeklappt",
+                    phoneNumber = "+49 123 456789",
+                    giftIdeas = listOf(GiftIdea(text = "Socken"), GiftIdea(text = "Wein", isChecked = true))
                 ),
-                showHint = false,
-                isExpanded = false,
+                isExpanded = true,
                 onExpand = {},
-                onSetSwipeHintShown = {},
-                onUpdateGiftIdeas = { _, _ -> },
-                onOpenContact = { _, _ -> }
-            )
-
-            BirthdayItem(
-                contact = sampleContact.copy(
-                    fullName = "Kind",
-                    isToday = true,
-                    nextAge = 5,
-                    daysUntilNext = 0
-                ),
-                showHint = false,
-                isExpanded = false,
-                onExpand = {},
-                onSetSwipeHintShown = {},
                 onUpdateGiftIdeas = { _, _ -> },
                 onOpenContact = { _, _ -> }
             )

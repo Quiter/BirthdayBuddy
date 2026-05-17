@@ -145,7 +145,6 @@ fun HomeScreen(
             context.startActivity(intent)
         },
         onRequestPermission = onRequestPermission,
-        onSetSwipeHintShown = viewModel::setSwipeHintShown,
         onUpdateGiftIdeas = viewModel::updateGiftIdeas,
         onOpenContact = { id, key ->
             try {
@@ -221,7 +220,6 @@ private fun HomeContent(
     onNavigateToSettings: () -> Unit,
     onAddContact: () -> Unit,
     onRequestPermission: () -> Unit,
-    onSetSwipeHintShown: () -> Unit,
     onUpdateGiftIdeas: (String, String) -> Unit,
     onOpenContact: (String, String) -> Unit,
     onRefresh: () -> Unit,
@@ -274,11 +272,9 @@ private fun HomeContent(
             modifier = Modifier.fillMaxSize().padding(padding)
         ) {
             BirthdayList(
-                contacts = uiState.contacts, // Hier das ?: emptyList() entfernt
-                swipeHintShown = uiState.swipeHintShown,
+                contacts = uiState.contacts, 
                 listState = homeState.listState,
                 onRequestPermission = onRequestPermission,
-                onSetSwipeHintShown = onSetSwipeHintShown,
                 onUpdateGiftIdeas = onUpdateGiftIdeas,
                 onOpenContact = onOpenContact,
             )
@@ -307,6 +303,7 @@ fun HomePreview() {
             dateText = "12. Mai",
             monthName = "Mai",
             imageUri = null,
+            phoneNumber = null,
             initials = "M",
             nextAge = 30,
             daysUntilNext = 5,
@@ -322,6 +319,7 @@ fun HomePreview() {
             dateText = "Heute",
             monthName = "Mai",
             imageUri = null,
+            phoneNumber = null,
             initials = "E",
             nextAge = 40,
             daysUntilNext = 0,
@@ -343,7 +341,6 @@ fun HomePreview() {
             onNavigateToSettings = {},
             onAddContact = {},
             onRequestPermission = {},
-            onSetSwipeHintShown = {},
             onUpdateGiftIdeas = { _, _ -> },
             onOpenContact = { _, _ -> },
             onRefresh = {}

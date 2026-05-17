@@ -35,9 +35,9 @@ Um Start-Abstürze und Datenverlust nach Updates zu verhindern, müssen folgende
 4. **Verifikations-Pflicht:** Vor jedem Release muss ein Update-Szenario (Installation der alten Version -> Daten anlegen -> Installation der neuen Version als Update) erfolgreich getestet werden.
 
 ## ✨ Key Features
-1. **HomeScreen:** High-End Fast-Scrollbar, Gmail-Style Suche, intelligenter FAB, Pull-to-Refresh.
+1. **HomeScreen:** Expandable Cards (Tap-to-Expand), Gmail-Style Suche, intelligenter FAB, Pull-to-Refresh.
 2. **Onboarding (New):** Geführter Multi-Page Flow zur sicheren Einrichtung von Berechtigungen (Kontakte, Benachrichtigungen).
-3. **Geschenkideen & Backup:** Google Keep Style Checklisten mit lokalem JSON-Backup/Restore.
+3. **Geschenkideen & Messenger:** Inline-Verwaltung von Ideen und Schnellzugriff auf WhatsApp/Anruf.
 4. **Widget (Jetpack Glance):** Dynamisches Layout mit präzisen Mitternachts-Updates.
 5. **Database Safety:** Schema-Export aktiviert (`app/schemas`) zur Unterstützung von Auto-Migrations.
 
@@ -57,6 +57,7 @@ Um Start-Abstürze und Datenverlust nach Updates zu verhindern, müssen folgende
 - **Persistent Notifications:** Robustes Quittierungssystem für Erinnerungen.
 - **Code Quality & Refactoring:** Einführung von `HomeUiState`, `ContactUiModel` und `ContactMapper` zur Verbesserung der Wartbarkeit und Reduzierung von Boilerplate (Release-Ready).
 - **UI & Stability Polish:** Optimierung der Fast-Scrollbar und Beseitigung technischer Warnungen für maximale Robustheit.
+- **UX Evolution:** Umstellung von Swipe-Gesten auf intuitive Expandable Cards zur Verbesserung der Feature-Entdeckbarkeit.
 - **Database Hardening:** Umstellung der Listen-Konvertierung auf JSON-Format zur Vermeidung von Fehlern bei Sonderzeichen in Labels.
 - **Gift Idea Security:** Geschenkideen nutzen nun JSON-Mapping zur sicheren Speicherung beliebiger Sonderzeichen.
 - **Android Modernization:** Einführung von App Shortcuts, Predictive Back Support und Per-App Language Settings.

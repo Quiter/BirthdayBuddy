@@ -9,7 +9,6 @@ import coil.imageLoader
 import coil.request.ImageRequest
 import com.heckmannch.birthdaybuddy.data.mapper.ContactMapper
 import com.heckmannch.birthdaybuddy.data.repository.ContactRepository
-import com.heckmannch.birthdaybuddy.data.repository.NotificationRepository
 import com.heckmannch.birthdaybuddy.data.repository.TimeRepository
 import com.heckmannch.birthdaybuddy.ui.model.ContactUiModel
 import com.heckmannch.birthdaybuddy.ui.model.HomeUiState
@@ -26,7 +25,6 @@ import javax.inject.Inject
 class HomeViewModel @Inject constructor(
     @param:ApplicationContext private val context: Context,
     private val contactRepository: ContactRepository,
-    private val notificationRepository: NotificationRepository,
     private val mapper: ContactMapper,
     timeRepository: TimeRepository,
 ) : ViewModel() {
@@ -42,15 +40,6 @@ class HomeViewModel @Inject constructor(
     val scrollToTopEvent: SharedFlow<Unit> = _scrollToTopEvent.asSharedFlow()
 
     fun setIsResettingFilter(isResetting: Boolean) { _isResettingFilter.value = isResetting }
-
-    // --- Settings related to Home ---
-    val swipeHintShown: StateFlow<Boolean> = notificationRepository.settings
-        .map { it.swipeHintShown }
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), false)
-
-    fun setSwipeHintShown() = viewModelScope.launch {
-        notificationRepository.updateSettings(swipeHintShown = true)
-    }
 
     // --- Data Processing ---
     private val ignoredLabels: Flow<Set<String>> = contactRepository.labelConfigs
@@ -148,7 +137,6 @@ class HomeViewModel @Inject constructor(
         _isResettingFilter,
         _isSyncing,
         availableLabels,
-        swipeHintShown,
         _searchFocusRequested,
     ) { flows ->
         HomeUiState(
@@ -158,8 +146,7 @@ class HomeViewModel @Inject constructor(
             isResettingFilter = flows[3] as Boolean,
             isSyncing = flows[4] as Boolean,
             availableLabels = flows[5] as List<String>,
-            swipeHintShown = flows[6] as Boolean,
-            searchFocusRequested = flows[7] as Boolean,
+            searchFocusRequested = flows[6] as Boolean,
         )
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), HomeUiState())
 

@@ -41,6 +41,7 @@ class ContactMapper @Inject constructor() {
             dateText = if (!hasYear) contact.birthday.format(dayMonthFormatter) else contact.birthday.format(dateFormatter),
             monthName = contact.birthday.format(monthFormatter),
             imageUri = contact.imageUri,
+            phoneNumber = contact.phoneNumber,
             initials = contact.fullName.take(1).ifBlank { "?" }.uppercase(),
             nextAge = nextAgeValue,
             daysUntilNext = daysLeft,

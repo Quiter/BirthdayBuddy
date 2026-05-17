@@ -106,9 +106,51 @@ class SystemContactDataSource @Inject constructor(
             if (contacts.isEmpty()) return@withContext emptyList()
             
             val labelsMap = fetchLabelsForContacts(contactIds, groups)
-            return@withContext contacts.map { it.copy(labels = labelsMap[it.contactId] ?: emptyList()) }
+            val phonesMap = fetchPhoneNumbersForContacts(contactIds)
+            return@withContext contacts.map { 
+                it.copy(
+                    labels = labelsMap[it.contactId] ?: emptyList(),
+                    phoneNumber = phonesMap[it.contactId]
+                ) 
+            }
         }
         emptyList()
+    }
+
+    private suspend fun fetchPhoneNumbersForContacts(contactIds: Set<String>): Map<String, String> = withContext(Dispatchers.IO) {
+        val result = mutableMapOf<String, String>()
+        val projection = arrayOf(
+            ContactsContract.CommonDataKinds.Phone.CONTACT_ID,
+            ContactsContract.CommonDataKinds.Phone.NUMBER,
+            ContactsContract.CommonDataKinds.Phone.IS_PRIMARY
+        )
+
+        contactIds.chunked(900).forEach { chunk ->
+            val placeholders = chunk.joinToString(",") { "?" }
+            val selection = "${ContactsContract.CommonDataKinds.Phone.CONTACT_ID} IN ($placeholders)"
+            val selectionArgs = chunk.toTypedArray()
+
+            context.contentResolver.query(
+                ContactsContract.CommonDataKinds.Phone.CONTENT_URI,
+                projection,
+                selection,
+                selectionArgs,
+                "${ContactsContract.CommonDataKinds.Phone.IS_PRIMARY} DESC"
+            )?.use { cursor ->
+                val idIdx = cursor.getColumnIndex(ContactsContract.CommonDataKinds.Phone.CONTACT_ID)
+                val numberIdx = cursor.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER)
+
+                while (cursor.moveToNext()) {
+                    val contactId = cursor.getString(idIdx)
+                    val number = cursor.getString(numberIdx)
+                    // Wir nehmen die erste (primäre) Nummer
+                    if (!result.containsKey(contactId)) {
+                        result[contactId] = number
+                    }
+                }
+            }
+        }
+        result
     }
 
     private suspend fun fetchLabelsForContacts(
