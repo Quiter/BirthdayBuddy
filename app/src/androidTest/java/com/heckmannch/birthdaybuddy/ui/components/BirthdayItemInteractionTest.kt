@@ -1,8 +1,9 @@
 package com.heckmannch.birthdaybuddy.ui.components
 
+import androidx.activity.ComponentActivity
 import androidx.compose.runtime.*
 import androidx.compose.ui.test.*
-import androidx.compose.ui.test.junit4.createComposeRule
+import androidx.compose.ui.test.junit4.v2.createAndroidComposeRule
 import com.heckmannch.birthdaybuddy.ui.model.ContactUiModel
 import com.heckmannch.birthdaybuddy.ui.model.GiftIdea
 import com.heckmannch.birthdaybuddy.ui.screens.home.components.BirthdayItem
@@ -13,7 +14,7 @@ import org.junit.Test
 class BirthdayItemInteractionTest {
 
     @get:Rule
-    val composeTestRule = createComposeRule()
+    val composeTestRule = createAndroidComposeRule<ComponentActivity>()
 
     @Test
     fun expandingItem_allowsAddingAndTypingGiftIdeas() {
@@ -35,7 +36,6 @@ class BirthdayItemInteractionTest {
         )
 
         composeTestRule.setContent {
-            // Wir nutzen ein mutableStateOf, um das reaktive Verhalten der App zu simulieren
             var contactState by remember { mutableStateOf(sampleContact) }
 
             BirthdayBuddyTheme {
@@ -44,7 +44,6 @@ class BirthdayItemInteractionTest {
                     isExpanded = true,
                     onExpand = {},
                     onUpdateGiftIdeas = { _, ideasJson ->
-                        // Simuliere DB-Update: Wandle JSON zurück in Liste und aktualisiere State
                         contactState = contactState.copy(giftIdeas = GiftIdea.fromString(ideasJson))
                     },
                     onOpenContact = { _: String, _: String -> },
@@ -52,14 +51,16 @@ class BirthdayItemInteractionTest {
             }
         }
 
+        // Warte bis UI bereit ist
+        composeTestRule.waitForIdle()
+
         // 1. Klicke auf den "Eintrag hinzufügen" Button
         composeTestRule.onNodeWithTag("add_gift_idea_button").performClick()
         
-        // Warte bis die UI stabil ist (State Update -> Recomposition)
+        // Warte auf Recomposition
         composeTestRule.waitForIdle()
 
         // 2. Prüfe ob das Textfeld erscheint und tippe etwas ein
-        // Da das Textfeld nun Teil des giftIdeas-Liste ist
         composeTestRule.onNodeWithTag("gift_text_field").assertIsDisplayed()
         composeTestRule.onNodeWithTag("gift_text_field").performTextInput("Socken")
         
