@@ -35,6 +35,7 @@
     <string name="gift_dialog_title">Geschenkideen</string>
     <string name="gift_dialog_delete">Löschen</string>
     <string name="gift_dialog_add">Listeneintrag</string>
+    <string name="gift_idea_placeholder">Geschenkidee</string>
     <string name="gift_dialog_save">Speichern</string>
     <string name="gift_dialog_cancel">Abbrechen</string>
 

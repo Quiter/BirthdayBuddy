@@ -88,3 +88,4 @@
 - `data/local/ConvertersTest.kt`: Tests für TypeConverter.
 - `data/repository/NotificationRepositoryTest.kt`: Integrationstests für das Repository.
 - `viewmodel/HomeViewModelSearchTest.kt`: Tests der Suchlogik im HomeViewModel.
+- `ui/components/BirthdayItemInteractionTest.kt`: UI-Tests für die Interaktion mit Kontakt-Karten.

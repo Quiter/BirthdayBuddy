@@ -2,6 +2,7 @@ package com.heckmannch.birthdaybuddy.ui.screens.home.components
 
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Edit
@@ -63,12 +64,12 @@ fun BirthdayItem(
         modifier = modifier
             .fillMaxWidth()
             .padding(horizontal = 16.dp, vertical = 4.dp),
-        onClick = onExpand,
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow),
         border = borderStroke
     ) {
         Column(modifier = Modifier.animateContentSize()) {
             ListItem(
+                modifier = Modifier.clickable { onExpand() },
                 headlineContent = {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Text(text = contact.fullName, style = MaterialTheme.typography.titleMedium)

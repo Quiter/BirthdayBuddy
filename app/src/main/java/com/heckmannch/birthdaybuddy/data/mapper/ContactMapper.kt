@@ -23,7 +23,7 @@ class ContactMapper @Inject constructor() {
     // Erzeugt das beste Format NUR für Tag/Monat basierend auf der Sprache des Nutzers (z.B. "12. Mai" vs "May 12")
     private val dayMonthFormatter = DateTimeFormatter.ofPattern(
         DateFormat.getBestDateTimePattern(Locale.getDefault(), "dMMMM"),
-        Locale.getDefault()
+        Locale.getDefault(),
     )
     
     private val monthFormatter = DateTimeFormatter.ofPattern("MMMM", Locale.getDefault())

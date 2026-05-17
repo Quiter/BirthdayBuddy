@@ -38,7 +38,7 @@ class SystemContactDataSource @Inject constructor(
             projection,
             null,
             null,
-            null
+            null,
         )?.use { cursor ->
             val idIdx = cursor.getColumnIndex(ContactsContract.Groups._ID)
             val titleIdx = cursor.getColumnIndex(ContactsContract.Groups.TITLE)

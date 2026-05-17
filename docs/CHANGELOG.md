@@ -351,6 +351,12 @@ Alle signifikanten Änderungen am Projekt werden hier dokumentiert.
     - **Modularization:** Aufteilung der massiven `BirthdayItem.kt` in kleinere, spezialisierte Komponenten (`GiftIdeaList`, `ContactActionRow`, `ContactImage`, `BirthdayStatus`).
     - **Maintainability:** Deutliche Verbesserung der Lesbarkeit und Wartbarkeit durch Trennung von Layout-Koordination und spezialisierter UI-Logik.
     - **Reusability:** Die neuen Komponenten sind nun eigenständig und können bei Bedarf an anderen Stellen der App leichter wiederverwendet werden.
+85. **UX & Performance Polish (Input & Stability):**
+    - **Smooth Input:** Einführung eines lokalen States für Geschenkideen-Textfelder zur Eliminierung von Verzögerungen und Cursor-Sprüngen während der Datenbank-Synchronisation.
+    - **Focus Management:** Optimierung der Tastatur-Steuerung im Home-Screen; automatisches Schließen der Tastatur beim Scrollen wurde auf die Suchfunktion begrenzt, um die Bearbeitung von Geschenkideen nicht zu unterbrechen.
+    - **Dynamic Labels:** Kontextsensitive Beschriftung für das Hinzufügen von Geschenkideen ("Geschenkidee" bei leerer Liste vs. "Listeneintrag").
+    - **Automated UI Testing:** Implementierung von instrumentierten Tests (`BirthdayItemInteractionTest`) zur Absicherung der Interaktions-Logik in den Kontakt-Karten.
+    - **Code Quality:** Systematische Bereinigung von IDE-Warnungen (ungenutzte Parameter, KTX-Migration zu `toUri()`).
 
 
 

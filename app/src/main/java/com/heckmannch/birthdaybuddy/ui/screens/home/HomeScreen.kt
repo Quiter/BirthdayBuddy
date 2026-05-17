@@ -106,7 +106,7 @@ fun HomeScreen(
     }
 
     LaunchedEffect(homeState.listState.isScrollInProgress) {
-        if (homeState.listState.isScrollInProgress) {
+        if (homeState.listState.isScrollInProgress && uiState.searchQuery.isNotEmpty()) {
             focusManager.clearFocus()
             keyboardController?.hide()
         }

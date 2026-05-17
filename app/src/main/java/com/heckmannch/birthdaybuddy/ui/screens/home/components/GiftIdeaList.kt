@@ -9,16 +9,17 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.role
 import androidx.compose.ui.semantics.semantics
@@ -54,22 +55,27 @@ fun GiftIdeaList(
                 color = MaterialTheme.colorScheme.primary
             )
             giftIdeas.forEach { idea ->
-                GiftIdeaItemRow(
-                    item = idea,
-                    newlyAddedId = newlyAddedId,
-                    onFocusRequested = onFocusRequested,
-                    onCheckedChange = { onCheckedChange(idea, it) },
-                    onTextChange = { onTextChange(idea, it) },
-                    onDelete = { onDelete(idea) },
-                    onDone = { onDone(idea) }
-                )
+                key(idea.id) {
+                    GiftIdeaItemRow(
+                        item = idea,
+                        newlyAddedId = newlyAddedId,
+                        onFocusRequested = onFocusRequested,
+                        onCheckedChange = { onCheckedChange(idea, it) },
+                        onTextChange = { onTextChange(idea, it) },
+                        onDelete = { onDelete(idea) },
+                        onDone = { onDone(idea) }
+                    )
+                }
             }
         }
 
         // "Eintrag hinzufügen" Schnellzugriff
         Surface(
             onClick = onAddNewIdea,
-            modifier = Modifier.fillMaxWidth().padding(horizontal = 4.dp),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 4.dp)
+                .testTag("add_gift_idea_button"),
             color = Color.Transparent,
             shape = RoundedCornerShape(8.dp)
         ) {
@@ -85,7 +91,7 @@ fun GiftIdeaList(
                 )
                 Spacer(Modifier.width(12.dp))
                 Text(
-                    text = stringResource(R.string.gift_dialog_add),
+                    text = if (giftIdeas.isEmpty()) stringResource(R.string.gift_idea_placeholder) else stringResource(R.string.gift_dialog_add),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.outline
                 )
@@ -106,6 +112,18 @@ private fun GiftIdeaItemRow(
     onDone: () -> Unit,
 ) {
     val focusRequester = remember { FocusRequester() }
+    
+    // Lokaler State für flüssiges Tippen ohne DB-Latenz-Probleme
+    var localText by remember(item.id) { mutableStateOf(item.text) }
+    
+    // Falls sich der Text von außen ändert (z.B. durch Sync), aktualisieren wir den lokalen State,
+    // aber nur wenn wir nicht gerade selbst fokussiert sind (um Cursor-Sprünge zu vermeiden).
+    var isFocused by remember { mutableStateOf(false) }
+    LaunchedEffect(item.text) {
+        if (!isFocused && localText != item.text) {
+            localText = item.text
+        }
+    }
 
     LaunchedEffect(newlyAddedId) {
         if (newlyAddedId == item.id) {
@@ -126,17 +144,20 @@ private fun GiftIdeaItemRow(
             onCheckedChange = onCheckedChange,
         )
         BasicTextField(
-            value = item.text,
+            value = localText,
             onValueChange = { newText ->
                 val capitalizedText = newText.replaceFirstChar {
                     if (it.isLowerCase()) it.titlecase() else it.toString()
                 }
+                localText = capitalizedText
                 onTextChange(capitalizedText)
             },
             modifier = Modifier
                 .weight(1f)
                 .padding(vertical = 8.dp)
-                .focusRequester(focusRequester),
+                .testTag("gift_text_field")
+                .focusRequester(focusRequester)
+                .onFocusChanged { isFocused = it.isFocused },
             textStyle = MaterialTheme.typography.bodyMedium.copy(
                 color = if (item.isChecked) MaterialTheme.colorScheme.outline else MaterialTheme.colorScheme.onSurface,
                 textDecoration = if (item.isChecked) TextDecoration.LineThrough else TextDecoration.None,

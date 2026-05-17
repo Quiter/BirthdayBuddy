@@ -37,7 +37,7 @@ fun ContactActionRow(
         modifier = modifier
             .padding(start = 16.dp, bottom = 8.dp),
         horizontalArrangement = Arrangement.spacedBy(12.dp),
-        verticalAlignment = Alignment.CenterVertically
+        verticalAlignment = Alignment.CenterVertically,
     ) {
         // Kontakt öffnen (Blau)
         ActionIcon(Icons.Default.Person, Color(0xFF2196F3)) {
