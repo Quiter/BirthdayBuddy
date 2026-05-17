@@ -357,6 +357,11 @@ Alle signifikanten Änderungen am Projekt werden hier dokumentiert.
     - **Dynamic Labels:** Kontextsensitive Beschriftung für das Hinzufügen von Geschenkideen ("Geschenkidee" bei leerer Liste vs. "Listeneintrag").
     - **Automated UI Testing:** Implementierung von instrumentierten Tests (`BirthdayItemInteractionTest`) zur Absicherung der Interaktions-Logik in den Kontakt-Karten.
     - **Code Quality:** Systematische Bereinigung von IDE-Warnungen (ungenutzte Parameter, KTX-Migration zu `toUri()`).
+86. **UX Refinement (Expandable Card Polish):**
+    - **Visual Consistency:** Korrektur des Highlight-Effekts beim Aufklappen; die gesamte Karte nutzt nun einen einheitlichen Hintergrund zur besseren Abgrenzung.
+    - **Smart Interaction:** Implementierung einer "Auto-Collapse" Logik; geöffnete Karten schließen sich nun automatisch beim Scrollen der Liste.
+    - **Label Optimization:** Verlagerung der Label-Anzeige in den erweiterten Bereich der Karte, um die Hauptliste für alle Nutzer (auch ohne eigene Labels) kompakt und übersichtlich zu halten.
+    - **Icon Reset:** Rückkehr zum klassischen Kontakt-Symbol für die Verknüpfung zur Android-Kontakte-App zur besseren Wiedererkennbarkeit.
 
 
 

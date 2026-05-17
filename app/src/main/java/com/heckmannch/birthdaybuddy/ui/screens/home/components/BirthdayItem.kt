@@ -8,12 +8,15 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.platform.LocalHapticFeedback
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.heckmannch.birthdaybuddy.ui.model.ContactUiModel
@@ -25,26 +28,15 @@ import com.heckmannch.birthdaybuddy.ui.theme.*
 fun BirthdayItem(
     contact: ContactUiModel,
     isExpanded: Boolean,
+    newlyAddedIdeaId: String?,
     onExpand: () -> Unit,
+    onAddGiftIdea: (String) -> Unit,
     onUpdateGiftIdeas: (String, String) -> Unit,
     onOpenContact: (String, String) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val focusManager = LocalFocusManager.current
-    var newlyAddedId by rememberSaveable { mutableStateOf<String?>(null) }
-
-    val onAddNewIdea = {
-        val newIdea = GiftIdea(text = "")
-        val newIdeas = contact.giftIdeas.toMutableList()
-        val firstCheckedIndex = newIdeas.indexOfFirst { it.isChecked }
-        if (firstCheckedIndex != -1) {
-            newIdeas.add(firstCheckedIndex, newIdea)
-        } else {
-            newIdeas.add(newIdea)
-        }
-        newlyAddedId = newIdea.id
-        onUpdateGiftIdeas(contact.lookupKey, GiftIdea.toString(newIdeas))
-    }
+    val haptic = LocalHapticFeedback.current
 
     val borderStroke = remember(contact.isToday, contact.nextAge) {
         if (contact.isToday) {
@@ -63,13 +55,20 @@ fun BirthdayItem(
     Card(
         modifier = modifier
             .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 4.dp),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow),
+            .padding(horizontal = 16.dp, vertical = 4.dp)
+            .graphicsLayer(),
+        colors = CardDefaults.cardColors(
+            containerColor = if (isExpanded) MaterialTheme.colorScheme.surfaceContainerHigh
+            else MaterialTheme.colorScheme.surfaceContainerLow
+        ),
         border = borderStroke
     ) {
         Column(modifier = Modifier.animateContentSize()) {
             ListItem(
-                modifier = Modifier.clickable { onExpand() },
+                modifier = Modifier.clickable {
+                    haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                    onExpand()
+                },
                 headlineContent = {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Text(text = contact.fullName, style = MaterialTheme.typography.titleMedium)
@@ -109,6 +108,17 @@ fun BirthdayItem(
             )
 
             if (isExpanded) {
+                if (contact.labels.isNotEmpty()) {
+                    Text(
+                        text = contact.labels.joinToString(", "),
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.primary.copy(alpha = 0.7f),
+                        modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                }
+
                 ContactActionRow(
                     contactId = contact.contactId,
                     lookupKey = contact.lookupKey,
@@ -123,9 +133,9 @@ fun BirthdayItem(
 
                 GiftIdeaList(
                     giftIdeas = contact.giftIdeas,
-                    newlyAddedId = newlyAddedId,
-                    onAddNewIdea = onAddNewIdea,
-                    onFocusRequested = { newlyAddedId = null },
+                    newlyAddedId = newlyAddedIdeaId,
+                    onAddNewIdea = { onAddGiftIdea(contact.lookupKey) },
+                    onFocusRequested = { }, // Wird nun durch newlyAddedIdeaId gesteuert
                     onCheckedChange = { idea, checked ->
                         val newIdeas = contact.giftIdeas.toMutableList()
                         val idx = newIdeas.indexOfFirst { it.id == idea.id }
@@ -153,7 +163,7 @@ fun BirthdayItem(
                         onUpdateGiftIdeas(contact.lookupKey, GiftIdea.toString(newIdeas))
                     },
                     onDone = { idea ->
-                        if (idea.text.isNotBlank()) onAddNewIdea()
+                        if (idea.text.isNotBlank()) onAddGiftIdea(contact.lookupKey)
                         else focusManager.clearFocus()
                     }
                 )
@@ -186,7 +196,9 @@ private fun BirthdayItemPreview() {
             BirthdayItem(
                 contact = sampleContact,
                 isExpanded = false,
+                newlyAddedIdeaId = null,
                 onExpand = {},
+                onAddGiftIdea = {},
                 onUpdateGiftIdeas = { _, _ -> },
                 onOpenContact = { _, _ -> }
             )
@@ -198,7 +210,9 @@ private fun BirthdayItemPreview() {
                     giftIdeas = listOf(GiftIdea(text = "Socken"), GiftIdea(text = "Wein", isChecked = true))
                 ),
                 isExpanded = true,
+                newlyAddedIdeaId = null,
                 onExpand = {},
+                onAddGiftIdea = {},
                 onUpdateGiftIdeas = { _, _ -> },
                 onOpenContact = { _, _ -> }
             )

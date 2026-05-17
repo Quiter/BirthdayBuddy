@@ -38,13 +38,13 @@
     - #### 📁 Home (`home`)
         - `HomeScreen.kt`: Container-Composable des Hauptbildschirms; verwaltet den UI-State.
         - ##### 📁 Components (`home.components`)
-            - `BirthdayItem.kt`: Listen-Element mit Tap-to-Expand Logik und Koordination der Sub-Komponenten.
-            - `BirthdayList.kt`: LazyColumn-Implementierung mit Optimierungen.
+            - `BirthdayItem.kt`: Zentrales Koordinationselement der Kontaktkarte; verwaltet den Expand-State und delegiert an spezialisierte Sub-Komponenten.
+            - `BirthdayList.kt`: LazyColumn-Implementierung mit Optimierungen (Auto-Collapse beim Scrollen).
             - `BirthdayStatus.kt`: Anzeige des Alters und der verbleibenden Tage.
             - `ContactActionRow.kt`: Reihe mit Messenger- und Kontakt-Aktionen.
             - `ContactImage.kt`: Komponente für das Kontaktbild oder die Initialen.
             - `FastScrollbar.kt`: Hochperformante Scrollbar mit Sub-Pixel-Präzision.
-            - `GiftIdeaList.kt`: Inline-Verwaltung von Geschenkideen.
+            - `GiftIdeaList.kt`: Spezialisierte Komponente für die Inline-Verwaltung von Geschenkideen.
             - `HomeFAB.kt`: Multifunktionaler FAB mit Morphing-Animation.
             - `HomeTopBar.kt`: Kombiniert SearchBar und LabelFilterBar.
             - `LabelFilterBar.kt`: Chip-Leiste zur Filterung nach Labels.

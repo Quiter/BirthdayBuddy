@@ -13,6 +13,7 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Call
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -35,7 +36,7 @@ fun ContactActionRow(
 
     Row(
         modifier = modifier
-            .padding(start = 16.dp, bottom = 8.dp),
+            .padding(start = 16.dp, bottom = 12.dp),
         horizontalArrangement = Arrangement.spacedBy(12.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
@@ -67,9 +68,9 @@ fun ContactActionRow(
 
 @Composable
 private fun ActionIcon(
-    icon: ImageVector,
-    color: Color,
-    onClick: () -> Unit
+    color: Color = MaterialTheme.colorScheme.primary,
+    onClick: () -> Unit,
+    content: @Composable () -> Unit,
 ) {
     Surface(
         modifier = Modifier.size(32.dp),
@@ -79,7 +80,18 @@ private fun ActionIcon(
         onClick = onClick
     ) {
         Box(contentAlignment = Alignment.Center) {
-            Icon(icon, contentDescription = null, modifier = Modifier.size(18.dp))
+            content()
         }
+    }
+}
+
+@Composable
+private fun ActionIcon(
+    icon: ImageVector,
+    color: Color,
+    onClick: () -> Unit
+) {
+    ActionIcon(color = color, onClick = onClick) {
+        Icon(icon, contentDescription = null, modifier = Modifier.size(18.dp))
     }
 }

@@ -35,6 +35,7 @@ class HomeViewModel @Inject constructor(
     private val _isResettingFilter = MutableStateFlow(value = false)
     private val _isSyncing = MutableStateFlow(value = false)
     private val _searchFocusRequested = MutableStateFlow(value = false)
+    private val _newlyAddedIdeaId = MutableStateFlow<String?>(null)
 
     private val _scrollToTopEvent = MutableSharedFlow<Unit>(replay = 0)
     val scrollToTopEvent: SharedFlow<Unit> = _scrollToTopEvent.asSharedFlow()
@@ -138,6 +139,7 @@ class HomeViewModel @Inject constructor(
         _isSyncing,
         availableLabels,
         _searchFocusRequested,
+        _newlyAddedIdeaId,
     ) { flows ->
         HomeUiState(
             contacts = flows[0] as List<ContactUiModel>?,
@@ -147,6 +149,7 @@ class HomeViewModel @Inject constructor(
             isSyncing = flows[4] as Boolean,
             availableLabels = flows[5] as List<String>,
             searchFocusRequested = flows[6] as Boolean,
+            newlyAddedIdeaId = flows[7] as String?,
         )
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), HomeUiState())
 
@@ -174,7 +177,22 @@ class HomeViewModel @Inject constructor(
     }
 
     fun updateGiftIdeas(lookupKey: String, ideas: String) = viewModelScope.launch {
+        _newlyAddedIdeaId.value = null
         contactRepository.updateGiftIdeas(lookupKey, ideas)
+    }
+
+    fun addGiftIdea(lookupKey: String) = viewModelScope.launch {
+        val contact = allUiContacts.first().find { it.lookupKey == lookupKey } ?: return@launch
+        val newIdea = com.heckmannch.birthdaybuddy.ui.model.GiftIdea(text = "")
+        val newIdeas = contact.giftIdeas.toMutableList()
+        val firstCheckedIndex = newIdeas.indexOfFirst { it.isChecked }
+        if (firstCheckedIndex != -1) {
+            newIdeas.add(firstCheckedIndex, newIdea)
+        } else {
+            newIdeas.add(newIdea)
+        }
+        _newlyAddedIdeaId.value = newIdea.id
+        contactRepository.updateGiftIdeas(lookupKey, com.heckmannch.birthdaybuddy.ui.model.GiftIdea.toString(newIdeas))
     }
 
     fun syncContacts(showLoading: Boolean = false) = viewModelScope.launch {

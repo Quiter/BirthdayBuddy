@@ -12,6 +12,15 @@ Die App wurde erfolgreich von BirthdayBuddy2 in BirthdayBuddy umbenannt. In dies
 4. **Status-Relevanz:** Nur Meilensteine und aktuell relevante Fokus-Themen verbleiben in dieser Datei. Der detaillierte Verlauf findet sich in der `CHANGELOG.md`.
 5. **Internationalisierungs-Pflicht:** Bei jeder Änderung an den Sprachressourcen (`strings.xml`) müssen **zwingend sowohl die englische (Standard) als auch die deutsche Version** aktualisiert werden.
 6. **Test-Pflicht:** Vor jedem Build für einen Meilenstein oder ein Play Store Release müssen zwingend alle automatisierten Tests (Package `test` und `androidTest`) erfolgreich durchlaufen. Best Practice: Lokale Tests sollten bereits während der Entwicklung nach jeder Logik-Änderung ausgeführt werden. Befehl: `./gradlew test connectedDebugAndroidTest`
+7. **Play Store Changelog:** Bei Anfragen für Play Store Release Notes ist zwingend folgendes Format zu verwenden:
+   ```xml
+   <en-US>
+   Füge oder gib deine Versionshinweise für en-US hier ein
+   </en-US>
+   <de-DE>
+   Füge oder gib deine Versionshinweise für de-DE hier ein
+   </de-DE>
+   ```
 
 ## 🛠 Architektur & Struktur
 - **Package-Struktur:** Feature-basierte Layer (`ui.screens.home`, `ui.screens.settings.labels`, `ui.screens.settings.notifications`, `viewmodel`, `database`, `widget`).

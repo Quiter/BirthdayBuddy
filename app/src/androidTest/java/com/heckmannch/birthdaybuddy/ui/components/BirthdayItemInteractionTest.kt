@@ -42,7 +42,9 @@ class BirthdayItemInteractionTest {
                 BirthdayItem(
                     contact = contactState,
                     isExpanded = true,
+                    newlyAddedIdeaId = null,
                     onExpand = {},
+                    onAddGiftIdea = {},
                     onUpdateGiftIdeas = { _, ideasJson ->
                         contactState = contactState.copy(giftIdeas = GiftIdea.fromString(ideasJson))
                     },

@@ -31,9 +31,11 @@ import com.heckmannch.birthdaybuddy.ui.model.ContactUiModel
 @Composable
 fun BirthdayList(
     contacts: List<ContactUiModel>?,
+    newlyAddedIdeaId: String?,
     modifier: Modifier = Modifier,
     listState: LazyListState,
     onRequestPermission: () -> Unit,
+    onAddGiftIdea: (String) -> Unit,
     onUpdateGiftIdeas: (String, String) -> Unit,
     onOpenContact: (String, String) -> Unit,
 ) {
@@ -67,6 +69,12 @@ fun BirthdayList(
 
     var expandedContactId by rememberSaveable { mutableStateOf<String?>(null) }
 
+    LaunchedEffect(listState.isScrollInProgress) {
+        if (listState.isScrollInProgress) {
+            expandedContactId = null
+        }
+    }
+
     LazyColumn(
         state = listState,
         modifier = modifier.fillMaxSize(),
@@ -91,9 +99,11 @@ fun BirthdayList(
                 BirthdayItem(
                     contact = contact,
                     isExpanded = isExpanded,
+                    newlyAddedIdeaId = newlyAddedIdeaId,
                     onExpand = {
                         expandedContactId = if (isExpanded) null else contact.id
                     },
+                    onAddGiftIdea = onAddGiftIdea,
                     onUpdateGiftIdeas = currentOnUpdateGiftIdeas,
                     onOpenContact = currentOnOpenContact,
                     modifier = Modifier.animateItem()

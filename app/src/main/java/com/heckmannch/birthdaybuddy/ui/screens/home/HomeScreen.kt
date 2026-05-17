@@ -145,6 +145,7 @@ fun HomeScreen(
             context.startActivity(intent)
         },
         onRequestPermission = onRequestPermission,
+        onAddGiftIdea = viewModel::addGiftIdea,
         onUpdateGiftIdeas = viewModel::updateGiftIdeas,
         onOpenContact = { id, key ->
             try {
@@ -220,6 +221,7 @@ private fun HomeContent(
     onNavigateToSettings: () -> Unit,
     onAddContact: () -> Unit,
     onRequestPermission: () -> Unit,
+    onAddGiftIdea: (String) -> Unit,
     onUpdateGiftIdeas: (String, String) -> Unit,
     onOpenContact: (String, String) -> Unit,
     onRefresh: () -> Unit,
@@ -273,8 +275,10 @@ private fun HomeContent(
         ) {
             BirthdayList(
                 contacts = uiState.contacts, 
+                newlyAddedIdeaId = uiState.newlyAddedIdeaId,
                 listState = homeState.listState,
                 onRequestPermission = onRequestPermission,
+                onAddGiftIdea = onAddGiftIdea,
                 onUpdateGiftIdeas = onUpdateGiftIdeas,
                 onOpenContact = onOpenContact,
             )
@@ -341,6 +345,7 @@ fun HomePreview() {
             onNavigateToSettings = {},
             onAddContact = {},
             onRequestPermission = {},
+            onAddGiftIdea = {},
             onUpdateGiftIdeas = { _, _ -> },
             onOpenContact = { _, _ -> },
             onRefresh = {}
