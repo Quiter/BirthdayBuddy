@@ -31,7 +31,9 @@ fun BirthdayItem(
     newlyAddedIdeaId: String?,
     onExpand: () -> Unit,
     onAddGiftIdea: (String) -> Unit,
-    onUpdateGiftIdeas: (String, String) -> Unit,
+    onToggleGiftIdea: (String, GiftIdea, Boolean) -> Unit,
+    onUpdateGiftIdeaText: (String, String, String) -> Unit,
+    onDeleteGiftIdea: (String, String) -> Unit,
     onOpenContact: (String, String) -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -123,6 +125,8 @@ fun BirthdayItem(
                     contactId = contact.contactId,
                     lookupKey = contact.lookupKey,
                     phoneNumber = contact.phoneNumber,
+                    hasWhatsApp = contact.hasWhatsApp,
+                    hasSignal = contact.hasSignal,
                     onOpenContact = onOpenContact
                 )
 
@@ -135,32 +139,14 @@ fun BirthdayItem(
                     giftIdeas = contact.giftIdeas,
                     newlyAddedId = newlyAddedIdeaId,
                     onAddNewIdea = { onAddGiftIdea(contact.lookupKey) },
-                    onFocusRequested = { }, // Wird nun durch newlyAddedIdeaId gesteuert
-                    onCheckedChange = { idea, checked ->
-                        val newIdeas = contact.giftIdeas.toMutableList()
-                        val idx = newIdeas.indexOfFirst { it.id == idea.id }
-                        if (idx != -1) {
-                            newIdeas.removeAt(idx)
-                            val newItem = idea.copy(isChecked = checked)
-                            if (checked) {
-                                newIdeas.add(newItem)
-                            } else {
-                                val firstCheckedIndex = newIdeas.indexOfFirst { it.isChecked }
-                                if (firstCheckedIndex != -1) newIdeas.add(firstCheckedIndex, newItem)
-                                else newIdeas.add(0, newItem)
-                            }
-                            onUpdateGiftIdeas(contact.lookupKey, GiftIdea.toString(newIdeas))
-                        }
+                    onCheckedChange = { idea, checked -> 
+                        onToggleGiftIdea(contact.lookupKey, idea, checked) 
                     },
-                    onTextChange = { idea, newText ->
-                        val newIdeas = contact.giftIdeas.map {
-                            if (it.id == idea.id) it.copy(text = newText) else it
-                        }
-                        onUpdateGiftIdeas(contact.lookupKey, GiftIdea.toString(newIdeas))
+                    onTextChange = { idea, newText -> 
+                        onUpdateGiftIdeaText(contact.lookupKey, idea.id, newText) 
                     },
-                    onDelete = { idea ->
-                        val newIdeas = contact.giftIdeas.filter { it.id != idea.id }
-                        onUpdateGiftIdeas(contact.lookupKey, GiftIdea.toString(newIdeas))
+                    onDelete = { idea -> 
+                        onDeleteGiftIdea(contact.lookupKey, idea.id)
                     },
                     onDone = { idea ->
                         if (idea.text.isNotBlank()) onAddGiftIdea(contact.lookupKey)
@@ -188,6 +174,8 @@ private fun BirthdayItemPreview() {
         nextAge = 30,
         daysUntilNext = 5,
         isToday = false,
+        hasWhatsApp = true,
+        hasSignal = false,
         labels = listOf("Freunde"),
         giftIdeas = emptyList()
     )
@@ -199,7 +187,9 @@ private fun BirthdayItemPreview() {
                 newlyAddedIdeaId = null,
                 onExpand = {},
                 onAddGiftIdea = {},
-                onUpdateGiftIdeas = { _, _ -> },
+                onToggleGiftIdea = { _, _, _ -> },
+                onUpdateGiftIdeaText = { _, _, _ -> },
+                onDeleteGiftIdea = { _, _ -> },
                 onOpenContact = { _, _ -> }
             )
             
@@ -207,13 +197,17 @@ private fun BirthdayItemPreview() {
                 contact = sampleContact.copy(
                     fullName = "Ausgeklappt",
                     phoneNumber = "+49 123 456789",
+                    hasWhatsApp = true,
+                    hasSignal = true,
                     giftIdeas = listOf(GiftIdea(text = "Socken"), GiftIdea(text = "Wein", isChecked = true))
                 ),
                 isExpanded = true,
                 newlyAddedIdeaId = null,
                 onExpand = {},
                 onAddGiftIdea = {},
-                onUpdateGiftIdeas = { _, _ -> },
+                onToggleGiftIdea = { _, _, _ -> },
+                onUpdateGiftIdeaText = { _, _, _ -> },
+                onDeleteGiftIdea = { _, _ -> },
                 onOpenContact = { _, _ -> }
             )
         }

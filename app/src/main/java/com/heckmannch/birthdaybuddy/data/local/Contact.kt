@@ -1,5 +1,6 @@
 package com.heckmannch.birthdaybuddy.data.local
 
+import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.Index
 import androidx.room.PrimaryKey
@@ -21,6 +22,10 @@ data class Contact(
     val birthday: LocalDate,
     val imageUri: String? = null,
     val phoneNumber: String? = null,
+    @ColumnInfo(defaultValue = "0")
+    val hasWhatsApp: Boolean = false,
+    @ColumnInfo(defaultValue = "0")
+    val hasSignal: Boolean = false,
     val labels: List<String> = emptyList(),
     val giftIdeas: String? = null
 )

@@ -187,11 +187,6 @@ class HomeViewModel @Inject constructor(
         }
     }
 
-    fun updateGiftIdeas(lookupKey: String, ideas: String) = viewModelScope.launch {
-        _newlyAddedIdeaId.value = null
-        contactRepository.updateGiftIdeas(lookupKey, ideas)
-    }
-
     fun addGiftIdea(lookupKey: String) = viewModelScope.launch {
         val contact = allUiContacts.first().find { it.lookupKey == lookupKey } ?: return@launch
         val newIdea = com.heckmannch.birthdaybuddy.ui.model.GiftIdea(text = "")
@@ -203,6 +198,39 @@ class HomeViewModel @Inject constructor(
             newIdeas.add(newIdea)
         }
         _newlyAddedIdeaId.value = newIdea.id
+        contactRepository.updateGiftIdeas(lookupKey, com.heckmannch.birthdaybuddy.ui.model.GiftIdea.toString(newIdeas))
+    }
+
+    fun toggleGiftIdea(lookupKey: String, idea: com.heckmannch.birthdaybuddy.ui.model.GiftIdea, isChecked: Boolean) = viewModelScope.launch {
+        val contact = allUiContacts.first().find { it.lookupKey == lookupKey } ?: return@launch
+        val newIdeas = contact.giftIdeas.toMutableList()
+        val idx = newIdeas.indexOfFirst { it.id == idea.id }
+        
+        if (idx != -1) {
+            newIdeas.removeAt(idx)
+            val newItem = idea.copy(isChecked = isChecked)
+            if (isChecked) {
+                newIdeas.add(newItem)
+            } else {
+                val firstCheckedIndex = newIdeas.indexOfFirst { it.isChecked }
+                if (firstCheckedIndex != -1) newIdeas.add(firstCheckedIndex, newItem)
+                else newIdeas.add(0, newItem)
+            }
+            contactRepository.updateGiftIdeas(lookupKey, com.heckmannch.birthdaybuddy.ui.model.GiftIdea.toString(newIdeas))
+        }
+    }
+
+    fun deleteGiftIdea(lookupKey: String, ideaId: String) = viewModelScope.launch {
+        val contact = allUiContacts.first().find { it.lookupKey == lookupKey } ?: return@launch
+        val newIdeas = contact.giftIdeas.filter { it.id != ideaId }
+        contactRepository.updateGiftIdeas(lookupKey, com.heckmannch.birthdaybuddy.ui.model.GiftIdea.toString(newIdeas))
+    }
+
+    fun updateGiftIdeaText(lookupKey: String, ideaId: String, newText: String) = viewModelScope.launch {
+        val contact = allUiContacts.first().find { it.lookupKey == lookupKey } ?: return@launch
+        val newIdeas = contact.giftIdeas.map {
+            if (it.id == ideaId) it.copy(text = newText) else it
+        }
         contactRepository.updateGiftIdeas(lookupKey, com.heckmannch.birthdaybuddy.ui.model.GiftIdea.toString(newIdeas))
     }
 

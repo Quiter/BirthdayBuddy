@@ -9,7 +9,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Message
-import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Call
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.Icon
@@ -21,14 +20,18 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.core.net.toUri
+import com.heckmannch.birthdaybuddy.R
 
 @Composable
 fun ContactActionRow(
     contactId: String,
     lookupKey: String,
     phoneNumber: String?,
+    hasWhatsApp: Boolean,
+    hasSignal: Boolean,
     onOpenContact: (String, String) -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -46,20 +49,53 @@ fun ContactActionRow(
         }
 
         if (!phoneNumber.isNullOrBlank()) {
+            // Anrufen
             ActionIcon(Icons.Default.Call, Color(0xFF4CAF50)) {
-                context.startActivity(Intent(Intent.ACTION_DIAL, "tel:$phoneNumber".toUri()))
+                try {
+                    context.startActivity(Intent(Intent.ACTION_DIAL, "tel:$phoneNumber".toUri()))
+                } catch (_: Exception) {}
             }
+            // SMS
             ActionIcon(Icons.AutoMirrored.Filled.Message, Color(0xFF2196F3)) {
-                context.startActivity(Intent(Intent.ACTION_SENDTO, "smsto:$phoneNumber".toUri()))
+                try {
+                    context.startActivity(Intent(Intent.ACTION_SENDTO, "smsto:$phoneNumber".toUri()))
+                } catch (_: Exception) {}
             }
-            // WhatsApp
-            ActionIcon(Icons.Default.Add, Color(0xFF25D366)) {
-                val cleanNumber = phoneNumber.replace("\\s+".toRegex(), "").replace("+", "")
-                context.startActivity(
-                    Intent(
-                        Intent.ACTION_VIEW,
-                        "https://api.whatsapp.com/send?phone=$cleanNumber".toUri()
-                    )
+
+            // WhatsApp (Nur wenn verfügbar)
+            if (hasWhatsApp) {
+                ActionIcon(
+                    icon = painterResource(R.drawable.ic_whatsapp),
+                    color = Color(0xFF25D366),
+                    onClick = {
+                        try {
+                            val cleanNumber = phoneNumber.replace("\\s+".toRegex(), "").replace("+", "")
+                            context.startActivity(
+                                Intent(
+                                    Intent.ACTION_VIEW,
+                                    "https://api.whatsapp.com/send?phone=$cleanNumber".toUri()
+                                )
+                            )
+                        } catch (_: Exception) {}
+                    }
+                )
+            }
+
+            // Signal (Nur wenn verfügbar)
+            if (hasSignal) {
+                ActionIcon(
+                    icon = painterResource(R.drawable.ic_signal),
+                    color = Color(0xFF3A76F0),
+                    onClick = {
+                        try {
+                            context.startActivity(
+                                Intent(
+                                    Intent.ACTION_VIEW,
+                                    "https://signal.me/#p/$phoneNumber".toUri()
+                                )
+                            )
+                        } catch (_: Exception) {}
+                    }
                 )
             }
         }
@@ -88,6 +124,17 @@ private fun ActionIcon(
 @Composable
 private fun ActionIcon(
     icon: ImageVector,
+    color: Color,
+    onClick: () -> Unit
+) {
+    ActionIcon(color = color, onClick = onClick) {
+        Icon(icon, contentDescription = null, modifier = Modifier.size(18.dp))
+    }
+}
+
+@Composable
+private fun ActionIcon(
+    icon: androidx.compose.ui.graphics.painter.Painter,
     color: Color,
     onClick: () -> Unit
 ) {

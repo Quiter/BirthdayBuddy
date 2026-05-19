@@ -107,14 +107,60 @@ class SystemContactDataSource @Inject constructor(
             
             val labelsMap = fetchLabelsForContacts(contactIds, groups)
             val phonesMap = fetchPhoneNumbersForContacts(contactIds)
+            val messengerMap = fetchMessengerAvailabilityForContacts(contactIds)
+
             return@withContext contacts.map { 
                 it.copy(
                     labels = labelsMap[it.contactId] ?: emptyList(),
-                    phoneNumber = phonesMap[it.contactId]
+                    phoneNumber = phonesMap[it.contactId],
+                    hasWhatsApp = messengerMap[it.contactId]?.first ?: false,
+                    hasSignal = messengerMap[it.contactId]?.second ?: false
                 ) 
             }
         }
         emptyList()
+    }
+
+    private suspend fun fetchMessengerAvailabilityForContacts(contactIds: Set<String>): Map<String, Pair<Boolean, Boolean>> = withContext(Dispatchers.IO) {
+        val result = mutableMapOf<String, Pair<Boolean, Boolean>>() // contactId -> (hasWhatsApp, hasSignal)
+        
+        val whatsappMimeType = "vnd.android.cursor.item/vnd.com.whatsapp.profile"
+        val signalMimeType = "vnd.android.cursor.item/vnd.org.thoughtcrime.securesms.contact"
+
+        val projection = arrayOf(
+            ContactsContract.Data.CONTACT_ID,
+            ContactsContract.Data.MIMETYPE
+        )
+
+        contactIds.chunked(900).forEach { chunk ->
+            val placeholders = chunk.joinToString(",") { "?" }
+            val selection = "${ContactsContract.Data.MIMETYPE} IN (?, ?) AND ${ContactsContract.Data.CONTACT_ID} IN ($placeholders)"
+            val selectionArgs = arrayOf(whatsappMimeType, signalMimeType, *chunk.toTypedArray())
+
+            context.contentResolver.query(
+                ContactsContract.Data.CONTENT_URI,
+                projection,
+                selection,
+                selectionArgs,
+                null
+            )?.use { cursor ->
+                val idIdx = cursor.getColumnIndex(ContactsContract.Data.CONTACT_ID)
+                val mimeIdx = cursor.getColumnIndex(ContactsContract.Data.MIMETYPE)
+
+                while (cursor.moveToNext()) {
+                    val id = cursor.getString(idIdx)
+                    val mime = cursor.getString(mimeIdx)
+                    
+                    val current = result.getOrDefault(id, Pair(false, false))
+                    if (mime == whatsappMimeType) {
+                        result[id] = current.copy(first = true)
+                    } else if (mime == signalMimeType) {
+                        result[id] = current.copy(second = true)
+                    }
+                }
+            }
+        }
+        result
     }
 
     private suspend fun fetchPhoneNumbersForContacts(contactIds: Set<String>): Map<String, String> = withContext(Dispatchers.IO) {

@@ -46,6 +46,8 @@ class ContactMapper @Inject constructor() {
             nextAge = nextAgeValue,
             daysUntilNext = daysLeft,
             isToday = contact.birthday.isBirthdayToday(today),
+            hasWhatsApp = contact.hasWhatsApp,
+            hasSignal = contact.hasSignal,
             labels = contact.labels,
             giftIdeas = GiftIdea.fromString(contact.giftIdeas),
         )

@@ -366,6 +366,7 @@ Alle signifikanten Änderungen am Projekt werden hier dokumentiert.
     - **Separation of Concerns:** Auslagerung des `HomeState` in eine eigene Datei (`HomeState.kt`) zur Verschlankung der `HomeScreen.kt`.
     - **State Management:** Konsolidierung der Side-Effects durch Verlagerung der Filter-Reset-Logik in das `HomeViewModel`. Das ViewModel steuert nun zentral den `isResettingFilter` Zustand.
     - **Stability:** Einführung von sicherem Parsen für Kontakt-IDs (`toLongOrNull`) und Bereinigung redundanter `LaunchedEffect`-Blöcke.
+    - **Component Polish:** Refactoring von `ContactActionRow` mit sicherem Intent-Handling (try-catch) für Anrufe, SMS und WhatsApp sowie Korrektur der Icon-Inkonsistenzen.
     - **Structure:** Aktualisierung der `PROJECT_STRUCTURE.md` zur Abbildung der neuen Dateistruktur.
 
 

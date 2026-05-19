@@ -20,6 +20,8 @@ data class ContactUiModel(
     val nextAge: Int?,
     val daysUntilNext: Long,
     val isToday: Boolean,
+    val hasWhatsApp: Boolean,
+    val hasSignal: Boolean,
     val labels: List<String>,
     val giftIdeas: List<GiftIdea>,
 ) {

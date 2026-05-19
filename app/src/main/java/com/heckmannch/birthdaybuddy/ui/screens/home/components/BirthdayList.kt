@@ -36,12 +36,16 @@ fun BirthdayList(
     listState: LazyListState,
     onRequestPermission: () -> Unit,
     onAddGiftIdea: (String) -> Unit,
-    onUpdateGiftIdeas: (String, String) -> Unit,
+    onToggleGiftIdea: (String, com.heckmannch.birthdaybuddy.ui.model.GiftIdea, Boolean) -> Unit,
+    onUpdateGiftIdeaText: (String, String, String) -> Unit,
+    onDeleteGiftIdea: (String, String) -> Unit,
     onOpenContact: (String, String) -> Unit,
 ) {
     val context = LocalContext.current
     
-    val currentOnUpdateGiftIdeas by rememberUpdatedState(onUpdateGiftIdeas)
+    val currentOnToggleGiftIdea by rememberUpdatedState(onToggleGiftIdea)
+    val currentOnUpdateGiftIdeaText by rememberUpdatedState(onUpdateGiftIdeaText)
+    val currentOnDeleteGiftIdea by rememberUpdatedState(onDeleteGiftIdea)
     val currentOnOpenContact by rememberUpdatedState(onOpenContact)
 
     val hasPermission by remember {
@@ -104,7 +108,9 @@ fun BirthdayList(
                         expandedContactId = if (isExpanded) null else contact.id
                     },
                     onAddGiftIdea = onAddGiftIdea,
-                    onUpdateGiftIdeas = currentOnUpdateGiftIdeas,
+                    onToggleGiftIdea = currentOnToggleGiftIdea,
+                    onUpdateGiftIdeaText = currentOnUpdateGiftIdeaText,
+                    onDeleteGiftIdea = currentOnDeleteGiftIdea,
                     onOpenContact = currentOnOpenContact,
                     modifier = Modifier.animateItem()
                 )

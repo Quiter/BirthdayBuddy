@@ -33,6 +33,7 @@ import com.heckmannch.birthdaybuddy.ui.theme.BirthdayBuddyTheme
 import com.heckmannch.birthdaybuddy.viewmodel.HomeViewModel
 import com.heckmannch.birthdaybuddy.ui.model.ContactUiModel
 import com.heckmannch.birthdaybuddy.ui.model.HomeUiState
+import com.heckmannch.birthdaybuddy.ui.model.GiftIdea
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.collectLatest
 
@@ -152,7 +153,9 @@ fun HomeScreen(
         onAddContact = onAddContact,
         onRequestPermission = onRequestPermission,
         onAddGiftIdea = viewModel::addGiftIdea,
-        onUpdateGiftIdeas = viewModel::updateGiftIdeas,
+        onToggleGiftIdea = viewModel::toggleGiftIdea,
+        onUpdateGiftIdeaText = viewModel::updateGiftIdeaText,
+        onDeleteGiftIdea = viewModel::deleteGiftIdea,
         onOpenContact = onOpenContact,
         onRefresh = { viewModel.syncContacts(showLoading = true) }
     )
@@ -170,7 +173,9 @@ private fun HomeContent(
     onAddContact: () -> Unit,
     onRequestPermission: () -> Unit,
     onAddGiftIdea: (String) -> Unit,
-    onUpdateGiftIdeas: (String, String) -> Unit,
+    onToggleGiftIdea: (String, GiftIdea, Boolean) -> Unit,
+    onUpdateGiftIdeaText: (String, String, String) -> Unit,
+    onDeleteGiftIdea: (String, String) -> Unit,
     onOpenContact: (String, String) -> Unit,
     onRefresh: () -> Unit,
 ) {
@@ -227,7 +232,9 @@ private fun HomeContent(
                 listState = homeState.listState,
                 onRequestPermission = onRequestPermission,
                 onAddGiftIdea = onAddGiftIdea,
-                onUpdateGiftIdeas = onUpdateGiftIdeas,
+                onToggleGiftIdea = onToggleGiftIdea,
+                onUpdateGiftIdeaText = onUpdateGiftIdeaText,
+                onDeleteGiftIdea = onDeleteGiftIdea,
                 onOpenContact = onOpenContact,
             )
 
@@ -260,6 +267,8 @@ fun HomePreview() {
             nextAge = 30,
             daysUntilNext = 5,
             isToday = false,
+            hasWhatsApp = true,
+            hasSignal = false,
             labels = listOf("Freunde"),
             giftIdeas = emptyList()
         ),
@@ -276,6 +285,8 @@ fun HomePreview() {
             nextAge = 40,
             daysUntilNext = 0,
             isToday = true,
+            hasWhatsApp = false,
+            hasSignal = false,
             labels = listOf("Familie"),
             giftIdeas = emptyList()
         )
@@ -294,7 +305,9 @@ fun HomePreview() {
             onAddContact = {},
             onRequestPermission = {},
             onAddGiftIdea = {},
-            onUpdateGiftIdeas = { _, _ -> },
+            onToggleGiftIdea = { _, _, _ -> },
+            onUpdateGiftIdeaText = { _, _, _ -> },
+            onDeleteGiftIdea = { _, _ -> },
             onOpenContact = { _, _ -> },
             onRefresh = {}
         )

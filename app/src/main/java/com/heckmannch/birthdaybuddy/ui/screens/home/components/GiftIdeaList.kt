@@ -18,7 +18,6 @@ import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.role
@@ -35,7 +34,6 @@ fun GiftIdeaList(
     giftIdeas: List<GiftIdea>,
     newlyAddedId: String?,
     onAddNewIdea: () -> Unit,
-    onFocusRequested: () -> Unit,
     onCheckedChange: (GiftIdea, Boolean) -> Unit,
     onTextChange: (GiftIdea, String) -> Unit,
     onDelete: (GiftIdea) -> Unit,
@@ -59,7 +57,6 @@ fun GiftIdeaList(
                     GiftIdeaItemRow(
                         item = idea,
                         newlyAddedId = newlyAddedId,
-                        onFocusRequested = onFocusRequested,
                         onCheckedChange = { onCheckedChange(idea, it) },
                         onTextChange = { onTextChange(idea, it) },
                         onDelete = { onDelete(idea) },
@@ -105,7 +102,6 @@ private fun GiftIdeaItemRow(
     item: GiftIdea,
     newlyAddedId: String?,
     modifier: Modifier = Modifier,
-    onFocusRequested: () -> Unit,
     onCheckedChange: (Boolean) -> Unit,
     onTextChange: (String) -> Unit,
     onDelete: () -> Unit,
@@ -128,7 +124,6 @@ private fun GiftIdeaItemRow(
     LaunchedEffect(newlyAddedId) {
         if (newlyAddedId == item.id) {
             focusRequester.requestFocus()
-            onFocusRequested()
         }
     }
 
