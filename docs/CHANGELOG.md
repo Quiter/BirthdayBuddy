@@ -109,3 +109,8 @@
     - **Unit Tests:** Einführung von `ContactMapperTest` zur Absicherung der Transformations-Logik und Datumsformatierung.
     - **ViewModel Tests:** Erweiterung der Testsuite um `HomeViewModelTest`, inklusive Validierung der Label-Filterung und des Ignorieren-Status.
     - **Stability:** Sicherstellung korrekter Altersberechnungen und "Heute"-Status Logik über verschiedene Test-Szenarien.
+98. **Onboarding UX & Architecture Refactoring:**
+    - **Edge-to-Edge Fix:** Behebung von UI-Überlagerungen durch die 3-Button Systemnavigation im Onboarding-Screen. Einführung eines scrollbaren Seiten-Wrappers und eines optisch abgesetzten Footers zur Sicherstellung der Erreichbarkeit aller Steuerelemente.
+    - **Modularization:** Aufteilung der monolithischen `OnboardingScreen.kt` in spezialisierte Komponenten (`WelcomePage`, `ContactsPage`, `NotificationsPage`, `ReadyPage`, `OnboardingFooter`).
+    - **Code Quality:** Einführung von `OnboardingPageWrapper` in `OnboardingCommon.kt` zur Reduzierung von Code-Duplikaten und Gewährleistung eines einheitlichen Layout-Verhaltens.
+    - **Documentation:** Aktualisierung von `PROJECT_STRUCTURE.md` zur Abbildung der neuen Onboarding-Komponentenstruktur.

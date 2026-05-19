@@ -54,6 +54,10 @@
             - `SearchBar.kt`: M3 SearchBar-Integration.
     - #### 📁 Onboarding (`onboarding`)
         - `OnboardingScreen.kt`: Multi-Page Flow für die initiale Konfiguration.
+        - ##### 📁 Components (`onboarding.components`)
+            - `OnboardingCommon.kt`: Gemeinsame UI-Komponenten und Wrapper.
+            - `WelcomePage.kt`, `ContactsPage.kt`, `NotificationsPage.kt`, `ReadyPage.kt`: Individuelle Onboarding-Seiten.
+            - `OnboardingFooter.kt`: Navigations-Footer mit Dots.
     - #### 📁 Settings (`settings`)
         - `SettingsScreen.kt`: Haupteinstellungsmenü.
         - `labels/LabelSettingsScreen.kt`: Verwaltung der Label-Sichtbarkeit.
