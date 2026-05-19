@@ -2,10 +2,14 @@ package com.heckmannch.birthdaybuddy.ui.screens.home.components
 
 import android.Manifest
 import android.content.pm.PackageManager
+import androidx.compose.animation.core.*
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Face
 import androidx.compose.material3.*
@@ -14,16 +18,16 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
-import androidx.compose.ui.res.stringResource
-import androidx.compose.animation.core.*
-import androidx.compose.foundation.background
-import androidx.compose.foundation.shape.RoundedCornerShape
 import com.heckmannch.birthdaybuddy.R
 import com.heckmannch.birthdaybuddy.ui.model.ContactUiModel
 import com.heckmannch.birthdaybuddy.ui.model.GiftIdea
+import com.heckmannch.birthdaybuddy.ui.model.SampleData
+import com.heckmannch.birthdaybuddy.ui.theme.BirthdayBuddyTheme
 
 /**
  * Verwaltet die Liste der Geburtstage.
@@ -223,5 +227,23 @@ private fun EmptyListState(
                 style = MaterialTheme.typography.bodyLarge,
             )
         }
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun BirthdayListPreview() {
+    BirthdayBuddyTheme {
+        BirthdayList(
+            contacts = SampleData.sampleContacts,
+            newlyAddedIdeaId = null,
+            listState = rememberLazyListState(),
+            onRequestPermission = {},
+            onAddGiftIdea = {},
+            onToggleGiftIdea = { _, _, _ -> },
+            onUpdateGiftIdeaText = { _, _, _ -> },
+            onDeleteGiftIdea = { _, _ -> },
+            onOpenContact = { _, _ -> }
+        )
     }
 }

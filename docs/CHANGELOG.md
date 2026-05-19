@@ -88,3 +88,24 @@
     - **API Migration:** Entfernung veralteter XML-Attribute (`statusBarColor`, `navigationBarColor`) im App-Theme zur Erfüllung der neuen Play Store Anforderungen für SDK 35/36.
     - **Code Quality Offensive:** Systematische Behebung von Linter-Warnungen im Home- und Onboarding-Bereich (vereinfachte Booleans, explizite Parameternamen bei `mutableStateOf`).
     - **Stability Validation:** Erfolgreiche Validierung der Gesamtstabilität durch Ausführung der Unit-Test-Suite und Durchführung eines vollständigen Projekt-Builds.
+93. **Widget Excellence (3x2 & Adaptive Preview):**
+    - **Sizing:** Das Widget wird nun standardmäßig als 3x2 Grid (3 Spalten, 2 Zeilen) vorgeschlagen (`targetCellWidth/Height`), um mehr Platz für die Geburtstagsliste zu bieten.
+    - **Adaptive Preview:** Einführung eines hochwertigen Vorschaubildes im Widget-Picker. Durch die Bereitstellung separater Ressourcen in `drawable` und `drawable-night` passt sich die Vorschau nun automatisch dem Hell/Dunkel-Modus des Systems an.
+    - **I18n:** Lokalisierung der Widget-Beschreibung und Optimierung der Metadaten (`birthday_widget_info.xml`) für moderne Android-Versionen (API 31+).
+    - **UX:** Das Widget führt beim Klick nun gezielt zum Home-Screen mit einem automatischen "Scroll-to-Top" Reset.
+94. **Preview Data Centralization:**
+    - **Architecture:** Einführung von `SampleData.kt` im `ui.model` Package. Dies dient als zentrale Quelle für konsistente Testdaten über alle Previews hinweg.
+    - **HomeScreen:** Refactoring der `HomePreview` zur Nutzung der zentralen `SampleData`, was die Datei übersichtlicher macht.
+    - **Component Previews:** Aktualisierung von `BirthdayItem`, `BirthdayList` und `GiftIdeaList` mit aussagekräftigen Previews auf Basis der neuen Sample-Daten.
+95. **External Actions & Permission Refactoring:**
+    - **Architecture:** Einführung von `ContactActions.kt` (`ui.util`) zur Zentralisierung aller externen Intents (Anrufe, SMS, WhatsApp, Signal, Kontakte öffnen).
+    - **Stability:** Einführung einer robusten `findActivity()` Extension (`util`), um Activity-bezogene Operationen (wie Permission-Rationales) sicher aus tief verschachtelten Context-Wrappern heraus auszuführen.
+    - **Clean UI:** Massive Reduzierung von Boilerplate-Code in `HomeScreen.kt` und `ContactActionRow.kt` durch Delegation der Intent-Logik an den neuen Handler.
+    - **Consistency:** Vereinheitlichung der Rufnummern-Formatierung für WhatsApp und Signal an einer zentralen Stelle.
+96. **Prop Drilling Reduction:**
+    - **Architecture:** Einführung von `HomeActions.kt` zur Bündelung aller Callbacks des Home-Screens.
+    - **Refactoring:** Vereinfachung der `HomeContent` Signatur durch Nutzung des neuen Action-Wrappers. Dies verbessert die Lesbarkeit und vereinfacht die Wartung des Screens.
+97. **Test Coverage Offensive:**
+    - **Unit Tests:** Einführung von `ContactMapperTest` zur Absicherung der Transformations-Logik und Datumsformatierung.
+    - **ViewModel Tests:** Erweiterung der Testsuite um `HomeViewModelTest`, inklusive Validierung der Label-Filterung und des Ignorieren-Status.
+    - **Stability:** Sicherstellung korrekter Altersberechnungen und "Heute"-Status Logik über verschiedene Test-Szenarien.

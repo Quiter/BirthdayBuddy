@@ -1,6 +1,5 @@
 package com.heckmannch.birthdaybuddy.ui.screens.home.components
 
-import android.content.Intent
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
@@ -15,6 +14,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -22,8 +22,8 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
-import androidx.core.net.toUri
 import com.heckmannch.birthdaybuddy.R
+import com.heckmannch.birthdaybuddy.ui.util.ContactActions
 
 @Composable
 fun ContactActionRow(
@@ -36,6 +36,7 @@ fun ContactActionRow(
     modifier: Modifier = Modifier,
 ) {
     val context = LocalContext.current
+    val actions = remember(context) { ContactActions(context) }
 
     Row(
         modifier = modifier
@@ -51,15 +52,11 @@ fun ContactActionRow(
         if (!phoneNumber.isNullOrBlank()) {
             // Anrufen
             ActionIcon(Icons.Default.Call, Color(0xFF4CAF50)) {
-                try {
-                    context.startActivity(Intent(Intent.ACTION_DIAL, "tel:$phoneNumber".toUri()))
-                } catch (_: Exception) {}
+                actions.dialNumber(phoneNumber)
             }
             // SMS
             ActionIcon(Icons.AutoMirrored.Filled.Message, Color(0xFF2196F3)) {
-                try {
-                    context.startActivity(Intent(Intent.ACTION_SENDTO, "smsto:$phoneNumber".toUri()))
-                } catch (_: Exception) {}
+                actions.sendSms(phoneNumber)
             }
 
             // WhatsApp (Nur wenn verfügbar)
@@ -67,17 +64,7 @@ fun ContactActionRow(
                 ActionIcon(
                     icon = painterResource(R.drawable.ic_whatsapp),
                     color = Color(0xFF25D366),
-                    onClick = {
-                        try {
-                            val cleanNumber = phoneNumber.replace("\\s+".toRegex(), "").replace("+", "")
-                            context.startActivity(
-                                Intent(
-                                    Intent.ACTION_VIEW,
-                                    "https://api.whatsapp.com/send?phone=$cleanNumber".toUri()
-                                )
-                            )
-                        } catch (_: Exception) {}
-                    }
+                    onClick = { actions.openWhatsApp(phoneNumber) }
                 )
             }
 
@@ -86,16 +73,7 @@ fun ContactActionRow(
                 ActionIcon(
                     icon = painterResource(R.drawable.ic_signal),
                     color = Color(0xFF3A76F0),
-                    onClick = {
-                        try {
-                            context.startActivity(
-                                Intent(
-                                    Intent.ACTION_VIEW,
-                                    "https://signal.me/#p/$phoneNumber".toUri()
-                                )
-                            )
-                        } catch (_: Exception) {}
-                    }
+                    onClick = { actions.openSignal(phoneNumber) }
                 )
             }
         }

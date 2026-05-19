@@ -25,9 +25,12 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.style.TextDecoration
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.heckmannch.birthdaybuddy.R
 import com.heckmannch.birthdaybuddy.ui.model.GiftIdea
+import com.heckmannch.birthdaybuddy.ui.model.SampleData
+import com.heckmannch.birthdaybuddy.ui.theme.BirthdayBuddyTheme
 
 @Composable
 fun GiftIdeaList(
@@ -168,5 +171,21 @@ private fun GiftIdeaItemRow(
                 tint = MaterialTheme.colorScheme.outline.copy(alpha = 0.6f),
             )
         }
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun GiftIdeaListPreview() {
+    BirthdayBuddyTheme {
+        GiftIdeaList(
+            giftIdeas = SampleData.contact3.giftIdeas,
+            newlyAddedId = null,
+            onAddNewIdea = {},
+            onCheckedChange = { _, _ -> },
+            onTextChange = { _, _ -> },
+            onDelete = {},
+            onDone = {}
+        )
     }
 }

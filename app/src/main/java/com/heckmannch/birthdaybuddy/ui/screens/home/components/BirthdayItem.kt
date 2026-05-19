@@ -27,6 +27,7 @@ import androidx.compose.ui.unit.dp
 import com.heckmannch.birthdaybuddy.R
 import com.heckmannch.birthdaybuddy.ui.model.ContactUiModel
 import com.heckmannch.birthdaybuddy.ui.model.GiftIdea
+import com.heckmannch.birthdaybuddy.ui.model.SampleData
 import com.heckmannch.birthdaybuddy.ui.theme.*
 import kotlinx.coroutines.delay
 
@@ -244,28 +245,10 @@ fun BirthdayItem(
 @Preview(showBackground = true)
 @Composable
 fun BirthdayItemPreview() {
-    val sampleContact = ContactUiModel(
-        id = "1",
-        contactId = "1",
-        lookupKey = "k1",
-        fullName = "Max Mustermann",
-        dateText = "12. Mai",
-        monthName = "Mai",
-        imageUri = null,
-        phoneNumber = "+49 123 456789",
-        initials = "M",
-        nextAge = 30,
-        daysUntilNext = 5,
-        isToday = false,
-        hasWhatsApp = true,
-        hasSignal = false,
-        labels = listOf("Freunde"),
-        giftIdeas = emptyList()
-    )
     BirthdayBuddyTheme {
         Column(modifier = Modifier.padding(16.dp)) {
             BirthdayItem(
-                contact = sampleContact,
+                contact = SampleData.contact1,
                 isExpanded = false,
                 newlyAddedIdeaId = null,
                 onExpand = {},
@@ -277,13 +260,7 @@ fun BirthdayItemPreview() {
             )
             
             BirthdayItem(
-                contact = sampleContact.copy(
-                    fullName = "Ausgeklappt",
-                    phoneNumber = "+49 123 456789",
-                    hasWhatsApp = true,
-                    hasSignal = true,
-                    giftIdeas = listOf(GiftIdea(text = "Socken"), GiftIdea(text = "Wein", isChecked = true))
-                ),
+                contact = SampleData.contact3.copy(fullName = "Ausgeklappt (5. Geb.)"),
                 isExpanded = true,
                 newlyAddedIdeaId = null,
                 onExpand = {},

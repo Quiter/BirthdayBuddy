@@ -38,6 +38,7 @@
     - #### 📁 Home (`home`)
         - `HomeScreen.kt`: Container-Composable des Hauptbildschirms; verwaltet den UI-State.
         - `HomeState.kt`: Plain State Holder für die UI-Logik (Scroll-Zustand, Fokus).
+        - `HomeActions.kt`: Wrapper für Benutzeraktionen zur Reduzierung von Prop-Drilling.
         - ##### 📁 Components (`home.components`)
             - `BirthdayItem.kt`: Zentrales Koordinationselement der Kontaktkarte; verwaltet den Expand-State und delegiert an spezialisierte Sub-Komponenten.
             - `BirthdayList.kt`: LazyColumn-Implementierung mit Optimierungen (Auto-Collapse beim Scrollen und Filterwechsel).
@@ -78,6 +79,10 @@
 
 ## 📁 Utilities (`util`)
 - `DateUtils.kt`: Robuste Erweiterungsfunktionen für LocalDate.
+- `ContextExtensions.kt`: Hilfsfunktionen für die sichere Navigation im Android-Context.
+
+## 📁 UI Utilities (`ui.util`)
+- `ContactActions.kt`: Zentraler Handler für externe System-Aktionen (Intents, Permissions).
 
 ## 📁 Widget (`widget`)
 - `BirthdayWidget.kt`, `BirthdayWidgetReceiver.kt`, `BirthdayWidgetWorker.kt`: Glance-basierte Widget-Komponenten.
@@ -88,6 +93,8 @@
 
 ## 🧪 Testing (`src/test` & `src/androidTest`)
 - `data/local/ConvertersTest.kt`: Tests für TypeConverter.
+- `data/mapper/ContactMapperTest.kt`: Tests für die Transformation in UI-Modelle.
 - `data/repository/NotificationRepositoryTest.kt`: Integrationstests für das Repository.
 - `viewmodel/HomeViewModelSearchTest.kt`: Tests der Suchlogik im HomeViewModel.
+- `viewmodel/HomeViewModelTest.kt`: Tests für Label-Filterung und State-Management.
 - `ui/components/BirthdayItemInteractionTest.kt`: UI-Tests für die Interaktion mit Kontakt-Karten.

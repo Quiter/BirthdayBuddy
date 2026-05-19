@@ -21,7 +21,7 @@
 - **Messenger:** Smarte Erkennung (WhatsApp/Signal) via MIME-Type Check.
 - **Onboarding:** Geführter Permission-Flow (Kontakte/Benachrichtigungen).
 - **Gift Ideas:** Inline-Edit mit lokalem State (kein Lag), JSON-persistiert, jetzt platzsparend einklappbar.
-- **Widget:** Jetpack Glance mit präzisen Mitternachts-Updates.
+- **Widget:** Jetpack Glance mit präzisen Mitternachts-Updates, optimiert für 3x2 Layout mit adaptivem Dark-Mode Preview.
 
 ## 📜 Aktuelle Struktur-Meilensteine
 *Historie siehe `CHANGELOG.md`*
