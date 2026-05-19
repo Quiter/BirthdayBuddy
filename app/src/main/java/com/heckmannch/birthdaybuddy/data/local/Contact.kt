@@ -11,7 +11,10 @@ import java.time.LocalDate
  */
 @Entity(
     tableName = "contacts",
-    indices = [Index(value = ["lookupKey"], unique = true)]
+    indices = [
+        Index(value = ["lookupKey"], unique = true),
+        Index(value = ["birthday"])
+    ]
 )
 data class Contact(
     @PrimaryKey(autoGenerate = true)
@@ -19,7 +22,7 @@ data class Contact(
     val contactId: String,       // Aktuelle _ID vom Android-System (für schnellen Zugriff)
     val lookupKey: String,       // Stabiler Key vom Android-System (für Re-Sync)
     val fullName: String,
-    val birthday: LocalDate,
+    val birthday: LocalDate? = null,
     val imageUri: String? = null,
     val phoneNumber: String? = null,
     @ColumnInfo(defaultValue = "0")

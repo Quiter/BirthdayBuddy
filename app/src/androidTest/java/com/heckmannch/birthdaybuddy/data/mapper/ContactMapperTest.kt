@@ -96,4 +96,21 @@ class ContactMapperTest {
         assertThat(mapper.toUiModel(contact1, today).initials).isEqualTo("M")
         assertThat(mapper.toUiModel(contact2, today).initials).isEqualTo("?")
     }
+
+    @Test
+    fun toUiModel_handlesNullBirthdayCorrectly() {
+        val contact = Contact(
+            contactId = "null_bday",
+            lookupKey = "null_key",
+            fullName = "No Birthday",
+            birthday = null
+        )
+
+        val uiModel = mapper.toUiModel(contact, today)
+
+        assertThat(uiModel.daysUntilNext).isEqualTo(Long.MAX_VALUE)
+        assertThat(uiModel.nextAge).isNull()
+        assertThat(uiModel.isToday).isFalse()
+        assertThat(uiModel.dateText).isEqualTo("-")
+    }
 }

@@ -111,8 +111,8 @@ class NotificationHelper @Inject constructor(
             val contact = contacts.first()
             val name = contact.fullName
             val birthday = contact.birthday
-            val hasYear = birthday.hasYear
-            val nextAge = birthday.safeNextAge(LocalDate.now()) ?: -1
+            val hasYear = birthday?.hasYear ?: false
+            val nextAge = birthday?.safeNextAge(LocalDate.now()) ?: -1
 
             when (daysBefore) {
                 0 -> if (hasYear) context.getString(R.string.notif_title_today_age, name, nextAge) 

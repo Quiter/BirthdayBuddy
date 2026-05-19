@@ -50,7 +50,7 @@ class ContactRepository @Inject constructor(
                 val dbConfigsDeferred = async { labelConfigDao.getAllConfigsImmediate().associateBy { it.name } }
 
                 val groups = groupsDeferred.await()
-                val systemContacts = systemContactDataSource.fetchBirthdaysFromSystem(groups)
+                val systemContacts = systemContactDataSource.fetchContactsFromSystem(groups)
                 val dbContacts = dbContactsDeferred.await()
                 val dbConfigs = dbConfigsDeferred.await()
 
@@ -125,6 +125,14 @@ class ContactRepository @Inject constructor(
 
     suspend fun updateLabelConfig(config: LabelConfig) {
         labelConfigDao.upsertConfig(config)
+    }
+
+    suspend fun updateContactBirthday(contactId: String, birthday: java.time.LocalDate): Boolean {
+        val success = systemContactDataSource.updateContactBirthday(contactId, birthday)
+        if (success) {
+            syncContacts()
+        }
+        return success
     }
 
     suspend fun exportGiftIdeas(): String = giftIdeaBackupManager.exportGiftIdeas()

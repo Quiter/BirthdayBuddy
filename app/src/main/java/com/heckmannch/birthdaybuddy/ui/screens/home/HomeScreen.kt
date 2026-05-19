@@ -21,6 +21,8 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import coil.imageLoader
+import coil.request.ImageRequest
 import com.heckmannch.birthdaybuddy.R
 import com.heckmannch.birthdaybuddy.ui.model.HomeUiState
 import com.heckmannch.birthdaybuddy.ui.model.SampleData
@@ -96,6 +98,21 @@ fun HomeScreen(
         }
     }
 
+    // --- Bild-Preloading für flüssigeres Scrollen ---
+    val imageLoader = context.imageLoader
+    LaunchedEffect(uiState.contacts) {
+        // Preloade die ersten 25 Bilder, sobald die Liste geladen ist.
+        // Das füllt den Memory- & Disk-Cache, bevor der User scrollt.
+        uiState.contacts?.take(25)?.forEach { contact ->
+            if (contact.imageUri != null) {
+                val request = ImageRequest.Builder(context)
+                    .data(contact.imageUri)
+                    .build()
+                imageLoader.enqueue(request)
+            }
+        }
+    }
+
     val actions = remember(viewModel, onNavigateToSettings, contactActions, permissionLauncher, homeState) {
         HomeActions(
             onSearchQueryChange = viewModel::onSearchQueryChange,
@@ -118,6 +135,7 @@ fun HomeScreen(
             onToggleGiftIdea = viewModel::toggleGiftIdea,
             onUpdateGiftIdeaText = viewModel::updateGiftIdeaText,
             onDeleteGiftIdea = viewModel::deleteGiftIdea,
+            onUpdateBirthday = viewModel::updateBirthday,
             onOpenContact = contactActions::openContact,
             onRefresh = { viewModel.syncContacts(showLoading = true) },
         )
@@ -195,6 +213,7 @@ private fun HomeContent(
                 onToggleGiftIdea = actions.onToggleGiftIdea,
                 onUpdateGiftIdeaText = actions.onUpdateGiftIdeaText,
                 onDeleteGiftIdea = actions.onDeleteGiftIdea,
+                onUpdateBirthday = actions.onUpdateBirthday,
                 onOpenContact = actions.onOpenContact,
             )
 
@@ -224,6 +243,7 @@ fun HomePreview() {
         onToggleGiftIdea = { _, _, _ -> },
         onUpdateGiftIdeaText = { _, _, _ -> },
         onDeleteGiftIdea = { _, _ -> },
+        onUpdateBirthday = { _, _ -> },
         onOpenContact = { _, _ -> },
         onRefresh = {},
     )

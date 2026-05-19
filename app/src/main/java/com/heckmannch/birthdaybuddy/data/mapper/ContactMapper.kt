@@ -29,23 +29,28 @@ class ContactMapper @Inject constructor() {
     private val monthFormatter = DateTimeFormatter.ofPattern("MMMM", Locale.getDefault())
 
     fun toUiModel(contact: Contact, today: LocalDate): ContactUiModel {
-        val hasYear = contact.birthday.hasYear
-        val daysLeft = contact.birthday.safeDaysUntilNext(today)
-        val nextAgeValue = contact.birthday.safeNextAge(today)
+        val birthday = contact.birthday
+        val hasYear = birthday?.hasYear ?: false
+        val daysLeft = birthday?.safeDaysUntilNext(today) ?: Long.MAX_VALUE
+        val nextAgeValue = birthday?.safeNextAge(today)
 
         return ContactUiModel(
             id = contact.lookupKey, 
             contactId = contact.contactId,
             lookupKey = contact.lookupKey,
             fullName = contact.fullName,
-            dateText = if (!hasYear) contact.birthday.format(dayMonthFormatter) else contact.birthday.format(dateFormatter),
-            monthName = contact.birthday.format(monthFormatter),
+            dateText = when {
+                birthday == null -> "-"
+                !hasYear -> birthday.format(dayMonthFormatter)
+                else -> birthday.format(dateFormatter)
+            },
+            monthName = birthday?.format(monthFormatter) ?: "",
             imageUri = contact.imageUri,
             phoneNumber = contact.phoneNumber,
             initials = contact.fullName.take(1).ifBlank { "?" }.uppercase(),
             nextAge = nextAgeValue,
             daysUntilNext = daysLeft,
-            isToday = contact.birthday.isBirthdayToday(today),
+            isToday = birthday?.isBirthdayToday(today) ?: false,
             hasWhatsApp = contact.hasWhatsApp,
             hasSignal = contact.hasSignal,
             labels = contact.labels,

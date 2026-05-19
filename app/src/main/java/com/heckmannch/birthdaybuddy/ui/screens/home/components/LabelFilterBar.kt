@@ -19,6 +19,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.res.stringResource
 import com.heckmannch.birthdaybuddy.R
 import com.heckmannch.birthdaybuddy.ui.theme.BirthdayBuddyTheme
+import com.heckmannch.birthdaybuddy.viewmodel.HomeViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -57,13 +58,17 @@ fun LabelFilterBar(
                     items = labels,
                     key = { it }
                 ) { label ->
+                    val displayLabel = if (label == HomeViewModel.LABEL_NO_BIRTHDAY) {
+                        stringResource(R.string.home_filter_no_birthday)
+                    } else label
+
                     FilterChip(
                         selected = selectedLabel == label,
                         onClick = {
                             haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                             onLabelSelected(label)
                         },
-                        label = { Text(label) }
+                        label = { Text(displayLabel) }
                     )
                 }
             }

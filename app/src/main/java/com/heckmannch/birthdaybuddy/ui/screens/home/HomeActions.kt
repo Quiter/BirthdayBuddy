@@ -16,6 +16,7 @@ data class HomeActions(
     val onToggleGiftIdea: (String, GiftIdea, Boolean) -> Unit,
     val onUpdateGiftIdeaText: (String, String, String) -> Unit,
     val onDeleteGiftIdea: (String, String) -> Unit,
+    val onUpdateBirthday: (String, java.time.LocalDate) -> Unit,
     val onOpenContact: (String, String) -> Unit,
     val onRefresh: () -> Unit,
 )

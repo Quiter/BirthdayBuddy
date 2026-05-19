@@ -38,6 +38,10 @@ class HomeViewModel @Inject constructor(
     private val _searchFocusRequested = MutableStateFlow(value = false)
     private val _newlyAddedIdeaId = MutableStateFlow<String?>(null)
 
+    companion object {
+        const val LABEL_NO_BIRTHDAY = "special:no_birthday"
+    }
+
     private val _scrollToTopEvent = MutableSharedFlow<Unit>(replay = 0)
     val scrollToTopEvent: SharedFlow<Unit> = _scrollToTopEvent.asSharedFlow()
 
@@ -60,7 +64,10 @@ class HomeViewModel @Inject constructor(
     ) { list, today ->
         list.asSequence()
             .map { mapper.toUiModel(it, today) }
-            .sortedBy { it.daysUntilNext }
+            .sortedWith(
+                compareBy<ContactUiModel> { it.daysUntilNext }
+                    .thenBy { it.fullName }
+            )
             .toList()
     }.flowOn(Dispatchers.Default)
 
@@ -96,13 +103,26 @@ class HomeViewModel @Inject constructor(
 
         val result = uiList.asSequence()
             .filter { contact ->
+                // Kontakte ohne Geburtstag werden in der Hauptliste ausgeblendet, 
+                // ES SEI DENN wir suchen gerade oder haben den "Ohne Datum" Filter aktiv.
+                val isMissingBirthday = contact.dateText == "-"
+                val isNoBirthdayFilter = label == LABEL_NO_BIRTHDAY
+                
+                if (isMissingBirthday && !isSearching && !isNoBirthdayFilter) return@filter false
+
                 val isIgnored = contact.labels.any { it in ignoredLabels }
                 if (isIgnored && !isSearching) return@filter false
 
                 val matchesQuery = !isSearching || keywords.all { keyword ->
                     contact.fullName.contains(keyword, ignoreCase = true)
                 }
-                val matchesLabel = (label == null) || contact.labels.contains(label)
+                
+                val matchesLabel = when (label) {
+                    null -> true
+                    LABEL_NO_BIRTHDAY -> isMissingBirthday
+                    else -> contact.labels.contains(label)
+                }
+                
                 matchesQuery && matchesLabel
             }
             .toList()
@@ -120,15 +140,31 @@ class HomeViewModel @Inject constructor(
         val inUseLabels = contacts.asSequence().flatMap { it.labels }.toSet()
         val configMap = configs.associateBy { it.name }
         
-        if (inUseLabels.none { configMap[it]?.isSystem == false }) return@combine emptyList()
+        val hasUserLabels = inUseLabels.any { configMap[it]?.isSystem == false }
+        val hasMissingBirthdays = contacts.any { it.birthday == null }
+        
+        // Wenn weder User-Label noch fehlende Geburtstage da sind -> Bar verstecken
+        if (!hasUserLabels && !hasMissingBirthdays) return@combine emptyList()
 
-        inUseLabels.asSequence()
-            .filter { name ->
-                val config = configMap[name]
-                !(config?.isHiddenFromFilter ?: false) && !(config?.isIgnored ?: false)
-            }
-            .sorted()
-            .toList()
+        val labels = mutableListOf<String>()
+        
+        // Zuerst die User-Label
+        if (hasUserLabels) {
+            inUseLabels.asSequence()
+                .filter { name ->
+                    val config = configMap[name]
+                    config?.isSystem == false && !(config.isHiddenFromFilter) && !(config.isIgnored)
+                }
+                .sorted()
+                .forEach { labels.add(it) }
+        }
+
+        // "Ohne Datum" immer als letztes, falls vorhanden
+        if (hasMissingBirthdays) {
+            labels.add(LABEL_NO_BIRTHDAY)
+        }
+        
+        labels
     }
 
     @Suppress("UNCHECKED_CAST")
@@ -240,6 +276,9 @@ class HomeViewModel @Inject constructor(
         }
     }
 
+    fun updateBirthday(contactId: String, birthday: java.time.LocalDate) = viewModelScope.launch {
+        contactRepository.updateContactBirthday(contactId, birthday)
+    }
 
     fun syncContacts(showLoading: Boolean = false) = viewModelScope.launch {
         if (showLoading) _isSyncing.value = true

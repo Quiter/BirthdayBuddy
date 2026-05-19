@@ -46,6 +46,7 @@ fun BirthdayList(
     onToggleGiftIdea: (String, GiftIdea, Boolean) -> Unit,
     onUpdateGiftIdeaText: (String, String, String) -> Unit,
     onDeleteGiftIdea: (String, String) -> Unit,
+    onUpdateBirthday: (String, java.time.LocalDate) -> Unit,
     onOpenContact: (String, String) -> Unit,
 ) {
     val context = LocalContext.current
@@ -53,6 +54,7 @@ fun BirthdayList(
     val currentOnToggleGiftIdea by rememberUpdatedState(onToggleGiftIdea)
     val currentOnUpdateGiftIdeaText by rememberUpdatedState(onUpdateGiftIdeaText)
     val currentOnDeleteGiftIdea by rememberUpdatedState(onDeleteGiftIdea)
+    val currentOnUpdateBirthday by rememberUpdatedState(onUpdateBirthday)
     val currentOnOpenContact by rememberUpdatedState(onOpenContact)
 
     val hasPermission by remember {
@@ -123,6 +125,7 @@ fun BirthdayList(
                     onToggleGiftIdea = currentOnToggleGiftIdea,
                     onUpdateGiftIdeaText = currentOnUpdateGiftIdeaText,
                     onDeleteGiftIdea = currentOnDeleteGiftIdea,
+                    onUpdateBirthday = currentOnUpdateBirthday,
                     onOpenContact = currentOnOpenContact,
                     modifier = Modifier.animateItem()
                 )
@@ -243,6 +246,7 @@ fun BirthdayListPreview() {
             onToggleGiftIdea = { _, _, _ -> },
             onUpdateGiftIdeaText = { _, _, _ -> },
             onDeleteGiftIdea = { _, _ -> },
+            onUpdateBirthday = { _, _ -> },
             onOpenContact = { _, _ -> }
         )
     }

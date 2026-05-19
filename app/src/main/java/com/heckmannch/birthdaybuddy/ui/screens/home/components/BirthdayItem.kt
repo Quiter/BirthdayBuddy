@@ -1,6 +1,8 @@
 package com.heckmannch.birthdaybuddy.ui.screens.home.components
 
 import androidx.compose.animation.animateContentSize
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.spring
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -42,6 +44,7 @@ fun BirthdayItem(
     onToggleGiftIdea: (String, GiftIdea, Boolean) -> Unit,
     onUpdateGiftIdeaText: (String, String, String) -> Unit,
     onDeleteGiftIdea: (String, String) -> Unit,
+    onUpdateBirthday: (String, java.time.LocalDate) -> Unit,
     onOpenContact: (String, String) -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -49,6 +52,34 @@ fun BirthdayItem(
     val haptic = LocalHapticFeedback.current
 
     var giftIdeasExpanded by remember(isExpanded) { mutableStateOf(value = false) }
+    var showDatePicker by remember { mutableStateOf(false) }
+
+    if (showDatePicker) {
+        val datePickerState = rememberDatePickerState()
+        DatePickerDialog(
+            onDismissRequest = { showDatePicker = false },
+            confirmButton = {
+                TextButton(onClick = {
+                    datePickerState.selectedDateMillis?.let { millis ->
+                        val date = java.time.Instant.ofEpochMilli(millis)
+                            .atZone(java.time.ZoneId.systemDefault())
+                            .toLocalDate()
+                        onUpdateBirthday(contact.contactId, date)
+                    }
+                    showDatePicker = false
+                }) {
+                    Text(stringResource(R.string.gift_dialog_save))
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showDatePicker = false }) {
+                    Text(stringResource(R.string.gift_dialog_cancel))
+                }
+            }
+        ) {
+            DatePicker(state = datePickerState)
+        }
+    }
 
     // Automatisches Aufklappen, wenn eine neue Idee hinzugefügt wurde
     LaunchedEffect(newlyAddedIdeaId) {
@@ -102,7 +133,16 @@ fun BirthdayItem(
         border = borderStroke
     ) {
         Box {
-            Column(modifier = Modifier.animateContentSize()) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .animateContentSize(
+                        animationSpec = spring(
+                            dampingRatio = Spring.DampingRatioNoBouncy,
+                            stiffness = Spring.StiffnessMediumLow
+                        )
+                    )
+            ) {
                 ListItem(
                     modifier = Modifier.clickable {
                         haptic.performHapticFeedback(HapticFeedbackType.LongPress)
@@ -140,7 +180,8 @@ fun BirthdayItem(
                         BirthdayStatus(
                             isToday = contact.isToday,
                             nextAge = contact.nextAge,
-                            daysUntilNext = contact.daysUntilNext
+                            daysUntilNext = contact.daysUntilNext,
+                            onAddClick = { showDatePicker = true }
                         )
                     },
                     colors = ListItemDefaults.colors(containerColor = Color.Transparent)
@@ -256,6 +297,7 @@ fun BirthdayItemPreview() {
                 onToggleGiftIdea = { _, _, _ -> },
                 onUpdateGiftIdeaText = { _, _, _ -> },
                 onDeleteGiftIdea = { _, _ -> },
+                onUpdateBirthday = { _, _ -> },
                 onOpenContact = { _, _ -> }
             )
             
@@ -268,6 +310,7 @@ fun BirthdayItemPreview() {
                 onToggleGiftIdea = { _, _, _ -> },
                 onUpdateGiftIdeaText = { _, _, _ -> },
                 onDeleteGiftIdea = { _, _ -> },
+                onUpdateBirthday = { _, _ -> },
                 onOpenContact = { _, _ -> }
             )
         }

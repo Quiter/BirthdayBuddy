@@ -11,12 +11,13 @@ import androidx.room.migration.AutoMigrationSpec
 
 @Database(
     entities = [Contact::class, LabelConfig::class, NotificationRule::class, PendingNotification::class, AppSettings::class],
-    version = 5,
+    version = 6,
     autoMigrations = [
         AutoMigration(from = 1, to = 2),
         AutoMigration(from = 2, to = 3, spec = AppDatabase.DeleteSwipeHintMigration::class),
         AutoMigration(from = 3, to = 4),
-        AutoMigration(from = 4, to = 5)
+        AutoMigration(from = 4, to = 5),
+        AutoMigration(from = 5, to = 6)
     ],
     exportSchema = true
 )

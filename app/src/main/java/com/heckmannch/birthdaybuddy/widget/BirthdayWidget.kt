@@ -59,9 +59,9 @@ class BirthdayWidget : GlanceAppWidget() {
                         .toSet()
                     list.asSequence()
                         .filter { contact ->
-                            contact.labels.none { it in ignoredLabels }
+                            contact.birthday != null && contact.labels.none { it in ignoredLabels }
                         }
-                        .sortedBy { it.birthday.safeDaysUntilNext() }
+                        .sortedBy { it.birthday!!.safeDaysUntilNext() }
                         .toList()
                 }.collect { value = it }
             }
@@ -120,6 +120,7 @@ class BirthdayWidget : GlanceAppWidget() {
 
     @Composable
     private fun ColumnScope.BirthdayRow(contact: Contact) {
+        val birthday = contact.birthday ?: return
         val context = LocalContext.current
         val locale = context.resources.configuration.locales[0]
         val dateFormatter = DateTimeFormatter.ofLocalizedDate(FormatStyle.MEDIUM)
@@ -128,14 +129,14 @@ class BirthdayWidget : GlanceAppWidget() {
             locale
         )
 
-        val daysLeft = contact.birthday.safeDaysUntilNext()
-        val nextAgeValue = contact.birthday.safeNextAge()
-        val hasYear = contact.birthday.hasYear
+        val daysLeft = birthday.safeDaysUntilNext()
+        val nextAgeValue = birthday.safeNextAge()
+        val hasYear = birthday.hasYear
 
         val dateText = if (!hasYear) {
-            contact.birthday.format(dayMonthFormatter)
+            birthday.format(dayMonthFormatter)
         } else {
-            contact.birthday.format(dateFormatter)
+            birthday.format(dateFormatter)
         }
 
         val daysLeftText = if (daysLeft == 0L) {

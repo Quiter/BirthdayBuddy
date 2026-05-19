@@ -46,8 +46,10 @@ class NotificationWorker @AssistedInject constructor(
 
             currentRules.forEach { rule ->
                 val targetDate = today.plusDays(rule.daysBefore.toLong())
-                val birthdays = allContacts.filter { 
-                    (it.birthday.month == targetDate.month) && (it.birthday.dayOfMonth == targetDate.dayOfMonth) 
+                val birthdays = allContacts.filter { contact ->
+                    contact.birthday?.let { bday ->
+                        (bday.month == targetDate.month) && (bday.dayOfMonth == targetDate.dayOfMonth)
+                    } ?: false
                 }
                 
                 // Für jeden Kontakt eine eigene Benachrichtigung erstellen
