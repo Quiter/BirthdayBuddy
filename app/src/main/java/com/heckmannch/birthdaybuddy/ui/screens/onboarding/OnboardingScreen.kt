@@ -78,7 +78,7 @@ fun OnboardingScreen(
             ActivityCompat.shouldShowRequestPermissionRationale(it, Manifest.permission.READ_CONTACTS)
         } ?: false
 
-        if (shouldShowRationale || hasContactPermission == false) {
+        if (shouldShowRationale || !hasContactPermission) {
             contactLauncher.launch(Manifest.permission.READ_CONTACTS)
         } else {
             // Fallback: Einstellungen öffnen

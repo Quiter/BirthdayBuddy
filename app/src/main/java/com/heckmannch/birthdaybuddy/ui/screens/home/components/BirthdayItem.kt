@@ -47,7 +47,7 @@ fun BirthdayItem(
     val focusManager = LocalFocusManager.current
     val haptic = LocalHapticFeedback.current
 
-    var giftIdeasExpanded by remember(isExpanded) { mutableStateOf(false) }
+    var giftIdeasExpanded by remember(isExpanded) { mutableStateOf(value = false) }
 
     // Automatisches Aufklappen, wenn eine neue Idee hinzugefügt wurde
     LaunchedEffect(newlyAddedIdeaId) {
@@ -61,7 +61,7 @@ fun BirthdayItem(
             val age = contact.nextAge
             when {
                 // Alle durch 10 teilbaren (10, 20, 30...) sind Gold
-                (age != null && age % 10 == 0) -> BorderStroke(2.dp, BirthdayGold)
+                (age != null && (age % 10 == 0)) -> BorderStroke(2.dp, BirthdayGold)
                 // Kinder von 0 bis 9 sind Bunt
                 (age != null) && (age in 0..9) -> BorderStroke(2.dp, Brush.linearGradient(KidColors))
                 // Alle anderen (inkl. ohne Jahr) sind Silber
