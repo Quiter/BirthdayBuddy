@@ -30,6 +30,7 @@
     <!-- Widget -->
     <string name="widget_no_birthdays">No birthdays</string>
     <string name="widget_turns_age">turns %d</string>
+    <string name="widget_description">Shows upcoming birthdays of your contacts.</string>
 
     <!-- Gift Idea Dialog -->
     <string name="gift_dialog_title">Gift Ideas</string>

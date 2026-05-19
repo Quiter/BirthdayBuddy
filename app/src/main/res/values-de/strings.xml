@@ -30,6 +30,7 @@
     <!-- Widget -->
     <string name="widget_no_birthdays">Keine Geburtstage</string>
     <string name="widget_turns_age">wird %d</string>
+    <string name="widget_description">Zeigt anstehende Geburtstage deiner Kontakte an.</string>
 
     <!-- Gift Idea Dialog -->
     <string name="gift_dialog_title">Geschenkideen</string>

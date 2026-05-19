@@ -83,3 +83,8 @@
     - **Navigation Intelligence:** Geöffnete Kontaktkarten schließen sich nun automatisch, wenn der Nutzer die Filter-Kategorie (Label) wechselt oder eine Suche startet, um eine konsistente Ergebnisliste zu gewährleisten.
     - **UI Cleanup:** Entfernung der redundanten "Geschenkideen"-Überschrift innerhalb der Liste, da die neue Toggle-Zeile diese Rolle übernimmt.
     - **Auto-Expand:** Beim Hinzufügen einer neuen Geschenkidee klappt der Bereich automatisch auf, um einen nahtlosen Workflow zu ermöglichen.
+92. **Android 15 Compatibility & Technical Debt Cleanup:**
+    - **Edge-to-Edge Optimization:** Anpassung des Onboarding-Screens an die erzwungene randlose Anzeige unter Android 15. Verwendung von `Scaffold` und `navigationBarsPadding()`, um die Überlagerung interaktiver Elemente durch die System-Navigation zu verhindern.
+    - **API Migration:** Entfernung veralteter XML-Attribute (`statusBarColor`, `navigationBarColor`) im App-Theme zur Erfüllung der neuen Play Store Anforderungen für SDK 35/36.
+    - **Code Quality Offensive:** Systematische Behebung von Linter-Warnungen im Home- und Onboarding-Bereich (vereinfachte Booleans, explizite Parameternamen bei `mutableStateOf`).
+    - **Stability Validation:** Erfolgreiche Validierung der Gesamtstabilität durch Ausführung der Unit-Test-Suite und Durchführung eines vollständigen Projekt-Builds.
