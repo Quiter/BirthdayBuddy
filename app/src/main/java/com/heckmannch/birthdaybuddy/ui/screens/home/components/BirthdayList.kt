@@ -23,6 +23,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.shape.RoundedCornerShape
 import com.heckmannch.birthdaybuddy.R
 import com.heckmannch.birthdaybuddy.ui.model.ContactUiModel
+import com.heckmannch.birthdaybuddy.ui.model.GiftIdea
 
 /**
  * Verwaltet die Liste der Geburtstage.
@@ -36,7 +37,7 @@ fun BirthdayList(
     listState: LazyListState,
     onRequestPermission: () -> Unit,
     onAddGiftIdea: (String) -> Unit,
-    onToggleGiftIdea: (String, com.heckmannch.birthdaybuddy.ui.model.GiftIdea, Boolean) -> Unit,
+    onToggleGiftIdea: (String, GiftIdea, Boolean) -> Unit,
     onUpdateGiftIdeaText: (String, String, String) -> Unit,
     onDeleteGiftIdea: (String, String) -> Unit,
     onOpenContact: (String, String) -> Unit,
@@ -62,7 +63,7 @@ fun BirthdayList(
         LazyColumn(
             modifier = modifier.fillMaxSize(),
             contentPadding = PaddingValues(bottom = 80.dp),
-            userScrollEnabled = false
+            userScrollEnabled = false,
         ) {
             items(10) {
                 BirthdayItemSkeleton()

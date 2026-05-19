@@ -49,7 +49,7 @@ fun LabelFilterBar(
                             haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                             onLabelSelected(null)
                         },
-                        label = { Text(stringResource(R.string.home_filter_all)) }
+                        label = { Text(stringResource(R.string.home_filter_all)) },
                     )
                 }
 

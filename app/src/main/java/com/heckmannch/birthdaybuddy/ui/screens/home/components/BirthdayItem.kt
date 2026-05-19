@@ -22,6 +22,7 @@ import androidx.compose.ui.unit.dp
 import com.heckmannch.birthdaybuddy.ui.model.ContactUiModel
 import com.heckmannch.birthdaybuddy.ui.model.GiftIdea
 import com.heckmannch.birthdaybuddy.ui.theme.*
+import kotlinx.coroutines.delay
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -54,6 +55,25 @@ fun BirthdayItem(
         } else null
     }
 
+    val confettiColors = remember(contact.isToday, contact.nextAge) {
+        if (!contact.isToday) return@remember emptyList<Color>()
+        val age = contact.nextAge
+        when {
+            (age != null && age % 10 == 0) -> listOf(BirthdayGold)
+            (age != null) && (age in 0..9) -> KidColors
+            else -> listOf(BirthdaySilver, Color.White)
+        }
+    }
+
+    var showConfetti by remember { mutableStateOf(false) }
+    LaunchedEffect(isExpanded) {
+        if (isExpanded && contact.isToday) {
+            showConfetti = true
+            delay(3000)
+            showConfetti = false
+        }
+    }
+
     Card(
         modifier = modifier
             .fillMaxWidth()
@@ -65,93 +85,102 @@ fun BirthdayItem(
         ),
         border = borderStroke
     ) {
-        Column(modifier = Modifier.animateContentSize()) {
-            ListItem(
-                modifier = Modifier.clickable {
-                    haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                    onExpand()
-                },
-                headlineContent = {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Text(text = contact.fullName, style = MaterialTheme.typography.titleMedium)
-                        if (contact.hasGiftIdeas) {
-                            Spacer(modifier = Modifier.width(8.dp))
-                            Icon(
-                                Icons.Default.Edit,
-                                contentDescription = null,
-                                modifier = Modifier.size(14.dp),
-                                tint = Color(0xFFFFB300)
-                            )
+        Box {
+            Column(modifier = Modifier.animateContentSize()) {
+                ListItem(
+                    modifier = Modifier.clickable {
+                        haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                        onExpand()
+                    },
+                    headlineContent = {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Text(text = contact.fullName, style = MaterialTheme.typography.titleMedium)
+                            if (contact.hasGiftIdeas) {
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Icon(
+                                    Icons.Default.Edit,
+                                    contentDescription = null,
+                                    modifier = Modifier.size(14.dp),
+                                    tint = Color(0xFFFFB300)
+                                )
+                            }
                         }
-                    }
-                },
-                supportingContent = {
-                    Text(
-                        text = contact.dateText,
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                },
-                leadingContent = {
-                    ContactImage(
-                        imageUri = contact.imageUri,
-                        fullName = contact.fullName,
-                        initials = contact.initials
-                    )
-                },
-                trailingContent = {
-                    BirthdayStatus(
-                        isToday = contact.isToday,
-                        nextAge = contact.nextAge,
-                        daysUntilNext = contact.daysUntilNext
-                    )
-                },
-                colors = ListItemDefaults.colors(containerColor = Color.Transparent)
-            )
+                    },
+                    supportingContent = {
+                        Text(
+                            text = contact.dateText,
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    },
+                    leadingContent = {
+                        ContactImage(
+                            imageUri = contact.imageUri,
+                            fullName = contact.fullName,
+                            initials = contact.initials
+                        )
+                    },
+                    trailingContent = {
+                        BirthdayStatus(
+                            isToday = contact.isToday,
+                            nextAge = contact.nextAge,
+                            daysUntilNext = contact.daysUntilNext
+                        )
+                    },
+                    colors = ListItemDefaults.colors(containerColor = Color.Transparent)
+                )
 
-            if (isExpanded) {
-                if (contact.labels.isNotEmpty()) {
-                    Text(
-                        text = contact.labels.joinToString(", "),
-                        style = MaterialTheme.typography.labelSmall,
-                        color = MaterialTheme.colorScheme.primary.copy(alpha = 0.7f),
-                        modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis
+                if (isExpanded) {
+                    if (contact.labels.isNotEmpty()) {
+                        Text(
+                            text = contact.labels.joinToString(", "),
+                            style = MaterialTheme.typography.labelSmall,
+                            color = MaterialTheme.colorScheme.primary.copy(alpha = 0.7f),
+                            modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis
+                        )
+                    }
+
+                    ContactActionRow(
+                        contactId = contact.contactId,
+                        lookupKey = contact.lookupKey,
+                        phoneNumber = contact.phoneNumber,
+                        hasWhatsApp = contact.hasWhatsApp,
+                        hasSignal = contact.hasSignal,
+                        onOpenContact = onOpenContact
+                    )
+
+                    HorizontalDivider(
+                        modifier = Modifier.padding(horizontal = 16.dp),
+                        color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)
+                    )
+
+                    GiftIdeaList(
+                        giftIdeas = contact.giftIdeas,
+                        newlyAddedId = newlyAddedIdeaId,
+                        onAddNewIdea = { onAddGiftIdea(contact.lookupKey) },
+                        onCheckedChange = { idea, checked -> 
+                            onToggleGiftIdea(contact.lookupKey, idea, checked) 
+                        },
+                        onTextChange = { idea, newText -> 
+                            onUpdateGiftIdeaText(contact.lookupKey, idea.id, newText) 
+                        },
+                        onDelete = { idea -> 
+                            onDeleteGiftIdea(contact.lookupKey, idea.id)
+                        },
+                        onDone = { idea ->
+                            if (idea.text.isNotBlank()) onAddGiftIdea(contact.lookupKey)
+                            else focusManager.clearFocus()
+                        }
                     )
                 }
+            }
 
-                ContactActionRow(
-                    contactId = contact.contactId,
-                    lookupKey = contact.lookupKey,
-                    phoneNumber = contact.phoneNumber,
-                    hasWhatsApp = contact.hasWhatsApp,
-                    hasSignal = contact.hasSignal,
-                    onOpenContact = onOpenContact
-                )
-
-                HorizontalDivider(
-                    modifier = Modifier.padding(horizontal = 16.dp),
-                    color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)
-                )
-
-                GiftIdeaList(
-                    giftIdeas = contact.giftIdeas,
-                    newlyAddedId = newlyAddedIdeaId,
-                    onAddNewIdea = { onAddGiftIdea(contact.lookupKey) },
-                    onCheckedChange = { idea, checked -> 
-                        onToggleGiftIdea(contact.lookupKey, idea, checked) 
-                    },
-                    onTextChange = { idea, newText -> 
-                        onUpdateGiftIdeaText(contact.lookupKey, idea.id, newText) 
-                    },
-                    onDelete = { idea -> 
-                        onDeleteGiftIdea(contact.lookupKey, idea.id)
-                    },
-                    onDone = { idea ->
-                        if (idea.text.isNotBlank()) onAddGiftIdea(contact.lookupKey)
-                        else focusManager.clearFocus()
-                    }
+            if (showConfetti) {
+                ConfettiEffect(
+                    colors = confettiColors,
+                    modifier = Modifier.matchParentSize()
                 )
             }
         }
@@ -160,7 +189,7 @@ fun BirthdayItem(
 
 @Preview(showBackground = true)
 @Composable
-private fun BirthdayItemPreview() {
+fun BirthdayItemPreview() {
     val sampleContact = ContactUiModel(
         id = "1",
         contactId = "1",

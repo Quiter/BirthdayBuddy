@@ -42,6 +42,7 @@
             - `BirthdayItem.kt`: Zentrales Koordinationselement der Kontaktkarte; verwaltet den Expand-State und delegiert an spezialisierte Sub-Komponenten.
             - `BirthdayList.kt`: LazyColumn-Implementierung mit Optimierungen (Auto-Collapse beim Scrollen).
             - `BirthdayStatus.kt`: Anzeige des Alters und der verbleibenden Tage.
+            - `ConfettiEffect.kt`: Hochperformantes Partikelsystem für Geburtstags-Animationen.
             - `ContactActionRow.kt`: Reihe mit Messenger- und Kontakt-Aktionen.
             - `ContactImage.kt`: Komponente für das Kontaktbild oder die Initialen.
             - `FastScrollbar.kt`: Hochperformante Scrollbar mit Sub-Pixel-Präzision.

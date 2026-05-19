@@ -33,13 +33,13 @@ import kotlinx.coroutines.launch
 private object ScrollbarDefaults {
     val BarWidth = 150.dp
     val ThumbSize = 48.dp
-    const val BubbleDelay = 500L
-    const val MinItemsThreshold = 10
+    const val BUBBLE_DELAY = 500L
+    const val MIN_ITEMS_THRESHOLD = 10
     val ThumbWidthDragging = 12.dp
     val ThumbWidthIdle = 6.dp
     val ThumbHeightDragging = 32.dp
     val ThumbHeightIdle = 24.dp
-    const val ThumbAlphaIdle = 0.4f
+    const val THUMB_ALPHA_IDLE = 0.4f
     val BubbleOffsetY = 4.dp
     val BubbleCornerLarge = 24.dp
     val BubbleCornerSmall = 4.dp
@@ -63,11 +63,11 @@ fun FastScrollbar(
 
     // Bubble visibility: Zeigt die Bubble NUR beim Ziehen der Scrollbar
     val showBubble by produceState(initialValue = false, key1 = isDragging) {
-        if (isDragging) {
-            value = true
+        value = if (isDragging) {
+            true
         } else {
-            delay(ScrollbarDefaults.BubbleDelay)
-            value = false
+            delay(ScrollbarDefaults.BUBBLE_DELAY)
+            false
         }
     }
 
@@ -89,7 +89,7 @@ fun FastScrollbar(
             derivedStateOf {
                 // Wenn wir gerade den Filter zurücksetzen, zeigen wir die Scrollbar vorsorglich an,
                 // falls die Liste potenziell lang genug ist.
-                if (isResettingFilter && totalItems > ScrollbarDefaults.MinItemsThreshold) return@derivedStateOf true
+                if (isResettingFilter && (totalItems > ScrollbarDefaults.MIN_ITEMS_THRESHOLD)) return@derivedStateOf true
 
                 val layoutInfo = listState.layoutInfo
                 val visibleItemsInfo = layoutInfo.visibleItemsInfo
@@ -163,7 +163,7 @@ fun FastScrollbar(
 
             val thumbAlpha by remember {
                 derivedStateOf {
-                    if (isDragging || listState.isScrollInProgress) 1f else ScrollbarDefaults.ThumbAlphaIdle
+                    if (isDragging || listState.isScrollInProgress) 1f else ScrollbarDefaults.THUMB_ALPHA_IDLE
                 }
             }
             val animatedThumbAlpha by animateFloatAsState(
@@ -187,7 +187,7 @@ fun FastScrollbar(
                         topStart = ScrollbarDefaults.BubbleCornerLarge,
                         bottomStart = ScrollbarDefaults.BubbleCornerLarge,
                         topEnd = ScrollbarDefaults.BubbleCornerSmall,
-                        bottomEnd = ScrollbarDefaults.BubbleCornerLarge
+                        bottomEnd = ScrollbarDefaults.BubbleCornerLarge,
                     ),
                     color = MaterialTheme.colorScheme.primary,
                     tonalElevation = ScrollbarDefaults.BubbleElevation,

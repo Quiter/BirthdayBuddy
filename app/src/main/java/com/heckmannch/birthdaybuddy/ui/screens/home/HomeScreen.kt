@@ -90,8 +90,8 @@ fun HomeScreen(
 
     // Durchführung des Scroll-Resets sobald Daten da sind
     LaunchedEffect(uiState.contacts) {
-        if (homeState.resetScrollRequested && uiState.contacts != null) {
-            homeState.performScrollReset { viewModel.setIsResettingFilter(false) }
+        if (homeState.resetScrollRequested && (uiState.contacts != null)) {
+            homeState.performScrollReset { viewModel.setIsResettingFilter(isResetting = false) }
         }
     }
 
@@ -157,7 +157,7 @@ fun HomeScreen(
         onUpdateGiftIdeaText = viewModel::updateGiftIdeaText,
         onDeleteGiftIdea = viewModel::deleteGiftIdea,
         onOpenContact = onOpenContact,
-        onRefresh = { viewModel.syncContacts(showLoading = true) }
+        onRefresh = { viewModel.syncContacts(showLoading = true) },
     )
 }
 
@@ -200,7 +200,7 @@ private fun HomeContent(
                 onLabelSelected = onLabelSelected,
                 onNavigateToSettings = onNavigateToSettings,
                 onClearSearch = onClearSearch,
-                searchFocusRequester = homeState.searchFocusRequester
+                searchFocusRequester = homeState.searchFocusRequester,
             )
         },
         floatingActionButton = {
@@ -224,7 +224,7 @@ private fun HomeContent(
         PullToRefreshBox(
             isRefreshing = uiState.isSyncing,
             onRefresh = onRefresh,
-            modifier = Modifier.fillMaxSize().padding(padding)
+            modifier = Modifier.fillMaxSize().padding(padding),
         ) {
             BirthdayList(
                 contacts = uiState.contacts, 
@@ -270,7 +270,7 @@ fun HomePreview() {
             hasWhatsApp = true,
             hasSignal = false,
             labels = listOf("Freunde"),
-            giftIdeas = emptyList()
+            giftIdeas = emptyList(),
         ),
         ContactUiModel(
             id = "2",
@@ -288,14 +288,14 @@ fun HomePreview() {
             hasWhatsApp = false,
             hasSignal = false,
             labels = listOf("Familie"),
-            giftIdeas = emptyList()
-        )
+            giftIdeas = emptyList(),
+        ),
     )
     BirthdayBuddyTheme {
         HomeContent(
             uiState = HomeUiState(
                 contacts = sampleContacts,
-                availableLabels = listOf("Familie", "Freunde", "Arbeit")
+                availableLabels = listOf("Familie", "Freunde", "Arbeit"),
             ),
             homeState = rememberHomeState(),
             onSearchQueryChange = {},
@@ -309,7 +309,7 @@ fun HomePreview() {
             onUpdateGiftIdeaText = { _, _, _ -> },
             onDeleteGiftIdea = { _, _ -> },
             onOpenContact = { _, _ -> },
-            onRefresh = {}
+            onRefresh = {},
         )
     }
 }
