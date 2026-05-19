@@ -86,7 +86,7 @@ fun HomeScreen(
 
     // Führt den Scroll-Reset durch, sobald Daten geladen wurden
     LaunchedEffect(uiState.contacts, homeState.resetScrollRequested) {
-        if (homeState.resetScrollRequested && uiState.contacts != null) {
+        if (homeState.resetScrollRequested && (uiState.contacts != null)) {
             homeState.performScrollReset { viewModel.setIsResettingFilter(isResetting = false) }
         }
     }
@@ -128,8 +128,7 @@ fun HomeScreen(
                 contactActions.requestContactPermission(
                     launcher = permissionLauncher,
                     hasAttemptedBefore = homeState.hasAttemptedContactPermission,
-                    onSetAttempted = { homeState.hasAttemptedContactPermission = true }
-                )
+                ) { homeState.hasAttemptedContactPermission = true }
             },
             onAddGiftIdea = viewModel::addGiftIdea,
             onToggleGiftIdea = viewModel::toggleGiftIdea,

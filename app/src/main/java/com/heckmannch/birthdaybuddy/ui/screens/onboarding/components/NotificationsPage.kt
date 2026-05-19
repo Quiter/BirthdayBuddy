@@ -20,7 +20,7 @@ fun NotificationsPage(
     persistent: Boolean,
     onPersistentChange: (Boolean) -> Unit,
     isGranted: Boolean,
-    onGrant: () -> Unit
+    onGrant: () -> Unit,
 ) {
     OnboardingPageWrapper {
         Icon(

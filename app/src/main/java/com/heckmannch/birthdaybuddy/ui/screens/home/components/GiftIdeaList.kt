@@ -46,7 +46,7 @@ fun GiftIdeaList(
     Column(
         modifier = modifier
             .fillMaxWidth()
-            .padding(bottom = 12.dp)
+            .padding(bottom = 12.dp),
     ) {
         if (giftIdeas.isNotEmpty()) {
             giftIdeas.forEach { idea ->
@@ -57,8 +57,7 @@ fun GiftIdeaList(
                         onCheckedChange = { onCheckedChange(idea, it) },
                         onTextChange = { onTextChange(idea, it) },
                         onDelete = { onDelete(idea) },
-                        onDone = { onDone(idea) }
-                    )
+                    ) { onDone(idea) }
                 }
             }
         }
@@ -111,9 +110,9 @@ private fun GiftIdeaItemRow(
     
     // Falls sich der Text von außen ändert (z.B. durch Sync), aktualisieren wir den lokalen State,
     // aber nur wenn wir nicht gerade selbst fokussiert sind (um Cursor-Sprünge zu vermeiden).
-    var isFocused by remember { mutableStateOf(false) }
+    var isFocused by remember { mutableStateOf(value = false) }
     LaunchedEffect(item.text) {
-        if (!isFocused && localText != item.text) {
+        if (!isFocused && (localText != item.text)) {
             localText = item.text
         }
     }

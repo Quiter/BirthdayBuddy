@@ -1,7 +1,6 @@
 package com.heckmannch.birthdaybuddy.ui.screens.onboarding.components
 
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import com.heckmannch.birthdaybuddy.R
@@ -13,6 +12,5 @@ fun WelcomePage() {
         description = stringResource(R.string.onboarding_welcome_desc),
         icon = painterResource(R.drawable.ic_app_logo),
         // lottieRes = R.raw.anim_welcome,
-        tint = Color.Unspecified
     )
 }

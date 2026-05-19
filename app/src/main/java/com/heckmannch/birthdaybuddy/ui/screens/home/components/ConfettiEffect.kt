@@ -30,7 +30,7 @@ fun ConfettiEffect(
             ConfettiParticle(
                 color = colors[Random.nextInt(colors.size)],
                 initialX = Random.nextFloat(),
-                initialY = -0.2f, // Startet etwas weiter oben
+                initialY = -(Random.nextFloat() * 0.2f + 0.1f), // Variabler Start über dem Sichtfeld
                 speed = (Random.nextFloat() * 1.5f) + 1.0f, // Schnellerer Fall
                 drift = (Random.nextFloat() * 300f) - 150f,
                 rotationSpeed = (Random.nextFloat() * 1080f) - 540f,

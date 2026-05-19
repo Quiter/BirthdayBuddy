@@ -115,9 +115,9 @@ class NotificationHelper @Inject constructor(
             val nextAge = birthday?.safeNextAge(LocalDate.now()) ?: -1
 
             when (daysBefore) {
-                0 -> if (hasYear) context.getString(R.string.notif_title_today_age, name, nextAge) 
+                0 -> if (hasYear) context.resources.getQuantityString(R.plurals.notif_title_today_age, nextAge, name, nextAge) 
                      else context.getString(R.string.notif_title_today_named, name)
-                1 -> if (hasYear) context.getString(R.string.notif_title_tomorrow_age, name, nextAge)
+                1 -> if (hasYear) context.resources.getQuantityString(R.plurals.notif_title_tomorrow_age, nextAge, name, nextAge)
                      else context.getString(R.string.notif_title_tomorrow_named, name)
                 7 -> if (hasYear) context.getString(R.string.notif_title_week_age, name, nextAge)
                      else context.getString(R.string.notif_title_week_named, name)

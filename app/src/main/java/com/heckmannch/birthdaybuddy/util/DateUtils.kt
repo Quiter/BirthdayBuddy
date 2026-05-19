@@ -57,7 +57,7 @@ fun LocalDate.toNextOccurrence(today: LocalDate): LocalDate {
  * falls das Zieljahr kein Schaltjahr ist.
  */
 fun LocalDate.toYear(targetYear: Int): LocalDate {
-    val isLeapDay = this.month == Month.FEBRUARY && this.dayOfMonth == 29
+    val isLeapDay = (this.month == Month.FEBRUARY) && (this.dayOfMonth == 29)
     return if (isLeapDay && !Year.isLeap(targetYear.toLong())) {
         LocalDate.of(targetYear, Month.FEBRUARY, 28)
     } else {

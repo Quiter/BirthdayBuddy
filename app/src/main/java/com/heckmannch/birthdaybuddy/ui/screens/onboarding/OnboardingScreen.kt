@@ -29,11 +29,11 @@ fun OnboardingScreen(
 ) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
-    val pagerState = rememberPagerState(pageCount = { 4 })
+    val pagerState = rememberPagerState { 4 }
 
     // Lokale States für die Einstellungen während des Onboardings
-    var notificationsEnabled by remember { mutableStateOf(true) }
-    var persistentEnabled by remember { mutableStateOf(true) }
+    var notificationsEnabled by remember { mutableStateOf(value = true) }
+    var persistentEnabled by remember { mutableStateOf(value = true) }
 
     var hasContactPermission by remember {
         mutableStateOf(ContextCompat.checkSelfPermission(context, Manifest.permission.READ_CONTACTS) == PackageManager.PERMISSION_GRANTED)
@@ -43,7 +43,9 @@ fun OnboardingScreen(
         mutableStateOf(
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
                 ContextCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED
-            } else true
+            } else {
+                true
+            }
         )
     }
 
@@ -109,35 +111,32 @@ fun OnboardingScreen(
                     0 -> WelcomePage()
                     1 -> ContactsPage(
                         isGranted = hasContactPermission,
-                        onGrant = onRequestContactPermission,
-                        onSkip = {
-                            scope.launch { pagerState.animateScrollToPage(2) }
-                        }
-                    )
+                        onGrant = onRequestContactPermission
+                    ) {
+                        scope.launch { pagerState.animateScrollToPage(2) }
+                    }
                     2 -> NotificationsPage(
                         enabled = notificationsEnabled,
                         onEnabledChange = { notificationsEnabled = it },
                         persistent = persistentEnabled,
                         onPersistentChange = { persistentEnabled = it },
-                        isGranted = hasNotifPermission,
-                        onGrant = {
-                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                                notifLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
-                            } else {
-                                hasNotifPermission = true
-                                scope.launch { pagerState.animateScrollToPage(3) }
-                            }
+                        isGranted = hasNotifPermission
+                    ) {
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                            notifLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+                        } else {
+                            hasNotifPermission = true
+                            scope.launch { pagerState.animateScrollToPage(3) }
                         }
-                    )
+                    }
                     3 -> ReadyPage(
                         hasContactPermission = hasContactPermission,
-                        notificationsEnabled = notificationsEnabled && hasNotifPermission,
-                        onStart = {
-                            viewModel.setPersistentNotifications(persistentEnabled)
-                            viewModel.completeOnboarding(notificationsEnabled && hasNotifPermission)
-                            onFinish()
-                        }
-                    )
+                        notificationsEnabled = notificationsEnabled && hasNotifPermission
+                    ) {
+                        viewModel.setPersistentNotifications(persistentEnabled)
+                        viewModel.completeOnboarding(notificationsEnabled && hasNotifPermission)
+                        onFinish()
+                    }
                 }
             }
         }

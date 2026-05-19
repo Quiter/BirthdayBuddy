@@ -21,7 +21,7 @@ fun ContactsPage(isGranted: Boolean, onGrant: () -> Unit, onSkip: () -> Unit) {
             imageVector = if (isGranted) Icons.Default.CheckCircle else Icons.Default.Contacts,
             contentDescription = null,
             modifier = Modifier.size(100.dp),
-            tint = if (isGranted) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.secondary
+            tint = if (isGranted) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.secondary,
         )
         Spacer(modifier = Modifier.height(32.dp))
         Text(

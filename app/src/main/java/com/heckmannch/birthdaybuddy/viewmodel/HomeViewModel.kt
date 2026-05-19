@@ -66,7 +66,7 @@ class HomeViewModel @Inject constructor(
             .map { mapper.toUiModel(it, today) }
             .sortedWith(
                 compareBy<ContactUiModel> { it.daysUntilNext }
-                    .thenBy { it.fullName }
+                    .thenBy { it.fullName },
             )
             .toList()
     }.flowOn(Dispatchers.Default)
@@ -153,7 +153,7 @@ class HomeViewModel @Inject constructor(
             inUseLabels.asSequence()
                 .filter { name ->
                     val config = configMap[name]
-                    config?.isSystem == false && !(config.isHiddenFromFilter) && !(config.isIgnored)
+                    (config?.isSystem == false) && !(config.isHiddenFromFilter) && !(config.isIgnored)
                 }
                 .sorted()
                 .forEach { labels.add(it) }

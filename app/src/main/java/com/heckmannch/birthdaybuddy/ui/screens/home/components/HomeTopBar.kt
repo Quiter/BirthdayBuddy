@@ -46,7 +46,7 @@ fun HomeTopBar(
             visible = isFilterBarVisible,
             labels = availableLabels,
             selectedLabel = selectedLabel,
-            onLabelSelected = onLabelSelected
+            onLabelSelected = onLabelSelected,
         )
     }
 }

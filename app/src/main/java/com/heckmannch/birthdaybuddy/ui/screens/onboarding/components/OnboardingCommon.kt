@@ -28,7 +28,7 @@ import com.airbnb.lottie.compose.*
 @Composable
 fun OnboardingPageWrapper(
     modifier: Modifier = Modifier,
-    content: @Composable ColumnScope.() -> Unit
+    content: @Composable ColumnScope.() -> Unit,
 ) {
     Column(
         modifier = modifier
@@ -47,7 +47,7 @@ fun OnboardingPageContent(
     description: String,
     icon: Painter? = null,
     @RawRes lottieRes: Int? = null,
-    tint: Color = MaterialTheme.colorScheme.primary
+    tint: Color = Color.Unspecified
 ) {
     OnboardingPageWrapper {
         if (lottieRes != null) {

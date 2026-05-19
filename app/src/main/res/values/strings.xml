@@ -88,13 +88,19 @@
     <string name="notif_hint_persistent">Note: This notification stays active until it is marked as done. You can deactivate this in the settings.</string>
 
     <string name="notif_title_today_named">It\'s %1$s\'s birthday today!</string>
-    <string name="notif_title_today_age">%1$s turns %2$d today!</string>
+    <plurals name="notif_title_today_age">
+        <item quantity="one">%1$s turns %2$d today!</item>
+        <item quantity="other">%1$s turns %2$d today!</item>
+    </plurals>
     <plurals name="notif_title_today_plural">
         <item quantity="one">One person has their birthday today!</item>
         <item quantity="other">%d people have their birthday today!</item>
     </plurals>
     <string name="notif_title_tomorrow_named">It\'s %1$s\'s birthday tomorrow!</string>
-    <string name="notif_title_tomorrow_age">%1$s turns %2$d tomorrow!</string>
+    <plurals name="notif_title_tomorrow_age">
+        <item quantity="one">%1$s turns %2$d tomorrow!</item>
+        <item quantity="other">%1$s turns %2$d tomorrow!</item>
+    </plurals>
     <plurals name="notif_title_tomorrow_plural">
         <item quantity="one">One person has their birthday tomorrow!</item>
         <item quantity="other">%d people have their birthday tomorrow!</item>
@@ -196,7 +202,10 @@
     <string name="backup_info_content">"• The import automatically assigns the ideas to your contacts.\n• Contacts are searched first via the stable system key (Lookup) and then via the name.\n• Existing gift ideas for a contact will be overwritten during import."</string>
     <string name="backup_export_success">Export successful!</string>
     <string name="backup_export_failed">Export failed: %1$s</string>
-    <string name="backup_import_success">%1$d gift ideas imported!</string>
+    <plurals name="backup_import_success">
+        <item quantity="one">1 gift idea imported!</item>
+        <item quantity="other">%d gift ideas imported!</item>
+    </plurals>
     <string name="backup_import_invalid">Invalid file format</string>
     <string name="backup_import_failed">Import failed: %1$s</string>
 </resources>

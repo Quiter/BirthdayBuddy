@@ -16,7 +16,7 @@ import com.heckmannch.birthdaybuddy.R
 fun ReadyPage(
     hasContactPermission: Boolean,
     notificationsEnabled: Boolean,
-    onStart: () -> Unit
+    onStart: () -> Unit,
 ) {
     OnboardingPageWrapper {
         Icon(

@@ -55,7 +55,7 @@ class SystemContactDataSource @Inject constructor(
             val selectionArgs = arrayOf(
                 contactId,
                 ContactsContract.CommonDataKinds.Event.CONTENT_ITEM_TYPE,
-                ContactsContract.CommonDataKinds.Event.TYPE_BIRTHDAY.toString()
+                ContactsContract.CommonDataKinds.Event.TYPE_BIRTHDAY.toString(),
             )
 
             var existingDataId: Long? = null
@@ -94,7 +94,7 @@ class SystemContactDataSource @Inject constructor(
 
             context.contentResolver.applyBatch(ContactsContract.AUTHORITY, ops)
             true
-        } catch (e: Exception) {
+        } catch (_: Exception) {
             false
         }
     }
@@ -142,10 +142,9 @@ class SystemContactDataSource @Inject constructor(
                 val systemId = cursor.getString(systemIdIdx)
                 
                 if (!title.isNullOrBlank()) {
-                    val lowerTitle = title.lowercase()
-                    val isSystem = when {
-                        lowerTitle in userRelevantGroups -> false
-                        lowerTitle in pureSystemGroups -> true
+                    val isSystem = when (title.lowercase()) {
+                        in userRelevantGroups -> false
+                        in pureSystemGroups -> true
                         else -> systemId != null
                     }
                     groups[id] = GroupInfo(title, isSystem)

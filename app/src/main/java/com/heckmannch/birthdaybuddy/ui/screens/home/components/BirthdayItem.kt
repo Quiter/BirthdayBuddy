@@ -52,30 +52,32 @@ fun BirthdayItem(
     val haptic = LocalHapticFeedback.current
 
     var giftIdeasExpanded by remember(isExpanded) { mutableStateOf(value = false) }
-    var showDatePicker by remember { mutableStateOf(false) }
+    val showDatePicker = remember { mutableStateOf(value = false) }
 
-    if (showDatePicker) {
+    if (showDatePicker.value) {
         val datePickerState = rememberDatePickerState()
         DatePickerDialog(
-            onDismissRequest = { showDatePicker = false },
+            onDismissRequest = { showDatePicker.value = false },
             confirmButton = {
-                TextButton(onClick = {
-                    datePickerState.selectedDateMillis?.let { millis ->
+                TextButton(
+                    onClick = {
+                        datePickerState.selectedDateMillis?.let { millis ->
                         val date = java.time.Instant.ofEpochMilli(millis)
                             .atZone(java.time.ZoneId.systemDefault())
                             .toLocalDate()
                         onUpdateBirthday(contact.contactId, date)
                     }
-                    showDatePicker = false
-                }) {
+                    showDatePicker.value = false
+                }
+                ) {
                     Text(stringResource(R.string.gift_dialog_save))
                 }
             },
             dismissButton = {
-                TextButton(onClick = { showDatePicker = false }) {
+                TextButton(onClick = { showDatePicker.value = false }) {
                     Text(stringResource(R.string.gift_dialog_cancel))
                 }
-            }
+            },
         ) {
             DatePicker(state = datePickerState)
         }
@@ -93,9 +95,9 @@ fun BirthdayItem(
             val age = contact.nextAge
             when {
                 // Alle durch 10 teilbaren (10, 20, 30...) sind Gold
-                (age != null && (age % 10 == 0)) -> BorderStroke(2.dp, BirthdayGold)
+                (age != null && age % 10 == 0) -> BorderStroke(2.dp, BirthdayGold)
                 // Kinder von 0 bis 9 sind Bunt
-                (age != null) && (age in 0..9) -> BorderStroke(2.dp, Brush.linearGradient(KidColors))
+                (age != null && age in 0..9) -> BorderStroke(2.dp, Brush.linearGradient(KidColors))
                 // Alle anderen (inkl. ohne Jahr) sind Silber
                 else -> BorderStroke(2.dp, BirthdaySilver)
             }
@@ -103,16 +105,16 @@ fun BirthdayItem(
     }
 
     val confettiColors = remember(contact.isToday, contact.nextAge) {
-        if (!contact.isToday) return@remember emptyList<Color>()
+        if (!contact.isToday) return@remember emptyList()
         val age = contact.nextAge
         when {
             (age != null && age % 10 == 0) -> listOf(BirthdayGold)
-            (age != null) && (age in 0..9) -> KidColors
+            (age != null && age in 0..9) -> KidColors
             else -> listOf(BirthdaySilver, Color.White)
         }
     }
 
-    var showConfetti by remember { mutableStateOf(false) }
+    var showConfetti by remember { mutableStateOf(value = false) }
     LaunchedEffect(isExpanded) {
         if (isExpanded && contact.isToday) {
             showConfetti = true
@@ -128,9 +130,9 @@ fun BirthdayItem(
             .graphicsLayer(),
         colors = CardDefaults.cardColors(
             containerColor = if (isExpanded) MaterialTheme.colorScheme.surfaceContainerHigh
-            else MaterialTheme.colorScheme.surfaceContainerLow
+            else MaterialTheme.colorScheme.surfaceContainerLow,
         ),
-        border = borderStroke
+        border = borderStroke,
     ) {
         Box {
             Column(
@@ -139,7 +141,7 @@ fun BirthdayItem(
                     .animateContentSize(
                         animationSpec = spring(
                             dampingRatio = Spring.DampingRatioNoBouncy,
-                            stiffness = Spring.StiffnessMediumLow
+                            stiffness = Spring.StiffnessMediumLow,
                         )
                     )
             ) {
@@ -180,9 +182,10 @@ fun BirthdayItem(
                         BirthdayStatus(
                             isToday = contact.isToday,
                             nextAge = contact.nextAge,
-                            daysUntilNext = contact.daysUntilNext,
-                            onAddClick = { showDatePicker = true }
-                        )
+                            daysUntilNext = contact.daysUntilNext
+                        ) {
+                            showDatePicker.value = true
+                        }
                     },
                     colors = ListItemDefaults.colors(containerColor = Color.Transparent)
                 )

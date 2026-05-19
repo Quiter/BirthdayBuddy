@@ -26,7 +26,7 @@
 ## 📜 Aktuelle Struktur-Meilensteine
 *Historie siehe `CHANGELOG.md`*
 
-- **Refactoring (Current):** `HomeViewModel` Konsolidierung, typsicheres State-Management, globale Code-Qualitäts-Offensive (Linting).
+- **Refactoring (Current):** `HomeViewModel` Konsolidierung, typsicheres State-Management, globale Code-Qualitäts-Offensive (Linting) abgeschlossen.
 - **Messenger Logic:** Dynamische Erkennung von WhatsApp/Signal Verfügbarkeit pro Kontakt.
 - **Architecture Swap:** Umstellung auf spezialisierte ViewModels (`Home`, `Notification`, `Settings`, `Label`, `Backup`).
 - **Persistence:** Alle App-Settings & Benachrichtigungs-Regeln sind in Room konsolidiert.

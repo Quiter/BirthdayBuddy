@@ -48,7 +48,7 @@ class BirthdayWidget : GlanceAppWidget() {
         ).contactRepository()
 
         provideContent {
-            val contactsState = produceState<List<Contact>>(initialValue = emptyList()) {
+            val contactsState = produceState(initialValue = emptyList()) {
                 combine(
                     repository.allContacts,
                     repository.labelConfigs,
@@ -59,7 +59,7 @@ class BirthdayWidget : GlanceAppWidget() {
                         .toSet()
                     list.asSequence()
                         .filter { contact ->
-                            contact.birthday != null && contact.labels.none { it in ignoredLabels }
+                            (contact.birthday != null) && contact.labels.none { it in ignoredLabels }
                         }
                         .sortedBy { it.birthday!!.safeDaysUntilNext() }
                         .toList()
@@ -126,7 +126,7 @@ class BirthdayWidget : GlanceAppWidget() {
         val dateFormatter = DateTimeFormatter.ofLocalizedDate(FormatStyle.MEDIUM)
         val dayMonthFormatter = DateTimeFormatter.ofPattern(
             DateFormat.getBestDateTimePattern(locale, "dMMM"),
-            locale
+            locale,
         )
 
         val daysLeft = birthday.safeDaysUntilNext()

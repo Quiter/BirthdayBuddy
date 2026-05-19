@@ -114,3 +114,15 @@
     - **Modularization:** Aufteilung der monolithischen `OnboardingScreen.kt` in spezialisierte Komponenten (`WelcomePage`, `ContactsPage`, `NotificationsPage`, `ReadyPage`, `OnboardingFooter`).
     - **Code Quality:** Einführung von `OnboardingPageWrapper` in `OnboardingCommon.kt` zur Reduzierung von Code-Duplikaten und Gewährleistung eines einheitlichen Layout-Verhaltens.
     - **Documentation:** Aktualisierung von `PROJECT_STRUCTURE.md` zur Abbildung der neuen Onboarding-Komponentenstruktur.
+99. **Global Code Quality & Linting Offensive:**
+    - **I18n Excellence:** Migration von String-Ressourcen mit variablen Zahlenwerten zu `plurals` (Quantity Strings) zur Behebung von Linter-Warnungen und Verbesserung der Lokalisierung (z.B. Altersangaben, Import-Bestätigungen).
+    - **Type Safety & Inference:** Systematische Bereinigung redundanter Typ-Parameter im gesamten Projekt (z.B. in `BirthdayWidget`, `BirthdayItem`) zur Verschlankung des Codes.
+    - **Idiomatic Kotlin:** Refactoring von `when`-Ausdrücken zu Ausdrücken mit Subjekt und Inlining von Hilfsvariablen (z.B. in `SystemContactDataSource`).
+    - **UI Stability:** Umstellung kritischer UI-States auf explizite `MutableState`-Objekte zur Vermeidung von "Value never read" Fehlinterpretationen durch die statische Code-Analyse.
+    - **Formatting:** Projektweite Konsolidierung von Trailing Commas, Zeilenumbrüchen und Klammersetzung gemäß den neuesten Android-Coding-Standards.
+    - **Visual Polish:** Optimierung der Konfetti-Animation durch variable Startpositionen für ein natürlicheres Erscheinungsbild.
+100. **Code Analysis & Linting Finalization:**
+    - **Final Polish:** Systematische Behebung verbleibender Code-Analysis Warnungen in zentralen Komponenten (`HomeViewModel`, `HomeScreen`, `BirthdayItem`, `FastScrollbar`, `DateUtils`, `SystemContactDataSource`).
+    - **Clarity:** Einführung von "Clarifying Parentheses" für komplexe logische Ausdrücke und flächendeckende Integration von Trailing Commas zur Verbesserung der Diff-Lesbarkeit.
+    - **Refined State:** Optimierung der `mutableStateOf` Initialisierungen durch explizite Parameterbenennung (`value = ...`).
+

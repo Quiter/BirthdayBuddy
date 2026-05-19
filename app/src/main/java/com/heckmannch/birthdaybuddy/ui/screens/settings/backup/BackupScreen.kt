@@ -29,7 +29,6 @@ fun BackupScreen(
 
     val exportSuccessMsg = stringResource(R.string.backup_export_success)
     val exportFailedMsg = stringResource(R.string.backup_export_failed)
-    val importSuccessMsg = stringResource(R.string.backup_import_success)
     val importInvalidMsg = stringResource(R.string.backup_import_invalid)
     val importFailedMsg = stringResource(R.string.backup_import_failed)
 
@@ -67,7 +66,11 @@ fun BackupScreen(
                     if (json != null) {
                         val count = viewModel.importGiftIdeas(json)
                         if (count >= 0) {
-                            Toast.makeText(context, importSuccessMsg.format(count), Toast.LENGTH_SHORT).show()
+                            // Wir nutzen hier den count für den Singular/Plural-Check
+                            // Da Toast außerhalb der UI-Komposition aufgerufen wird, 
+                            // holen wir uns den String über den Context-Helper
+                            val message = context.resources.getQuantityString(R.plurals.backup_import_success, count, count)
+                            Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
                         } else {
                             Toast.makeText(context, importInvalidMsg, Toast.LENGTH_SHORT).show()
                         }

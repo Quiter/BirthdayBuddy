@@ -58,7 +58,7 @@ fun FastScrollbar(
     val scope = rememberCoroutineScope()
     val density = LocalDensity.current
     val haptic = LocalHapticFeedback.current
-    var isDragging by remember { mutableStateOf(false) }
+    var isDragging by remember { mutableStateOf(value = false) }
     var dragOffsetPx by remember { mutableFloatStateOf(0f) }
 
     // Bubble visibility: Zeigt die Bubble NUR beim Ziehen der Scrollbar
@@ -96,7 +96,7 @@ fun FastScrollbar(
                 if (visibleItemsInfo.isEmpty()) return@derivedStateOf false
 
                 val lastItem = visibleItemsInfo.last()
-                val isLastItemVisible = lastItem.index == totalItems - 1
+                val isLastItemVisible = (lastItem.index == (totalItems - 1))
                 
                 // Falls das letzte Item noch nicht mal in der Liste der sichtbaren ist -> Scrollbar anzeigen
                 if (!isLastItemVisible) return@derivedStateOf true
@@ -239,7 +239,7 @@ fun FastScrollbar(
                                 val (targetIndex, targetOffset) = calculateScrollTarget(
                                     scrollPercent = scrollPercent,
                                     totalItems = totalItems,
-                                    layoutInfo = listState.layoutInfo
+                                    layoutInfo = listState.layoutInfo,
                                 )
                                 
                                 scope.launch { 
@@ -272,7 +272,7 @@ fun FastScrollbar(
 private fun calculateScrollTarget(
     scrollPercent: Float,
     totalItems: Int,
-    layoutInfo: LazyListLayoutInfo
+    layoutInfo: LazyListLayoutInfo,
 ): Pair<Int, Int> {
     val itemSize = layoutInfo.visibleItemsInfo.firstOrNull()?.size ?: 1
     val viewportHeight = layoutInfo.viewportEndOffset - layoutInfo.viewportStartOffset
