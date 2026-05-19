@@ -77,3 +77,9 @@
     - **Contextual Animation:** Die App feiert nun Geburtstage visuell beim Aufklappen einer Kontaktkarte. Der Effekt regnet über den Inhalt der Karte, ohne das Layout zu blockieren.
     - **Age-Based Coloring:** Dynamische Farbwahl für das Konfetti passend zur Umrandung: Gold für runde Geburtstage, bunte `KidColors` für Kinder (0-9) und Silber/Weiß für alle anderen.
     - **Performance:** Nutzung von `matchParentSize()` und `LocalDensity` für eine präzise, GPU-beschleunigte Darstellung unabhängig von der Bildschirmauflösung.
+91. **UX Polish (Gift Idea Management):**
+    - **Smart Collapsing:** Geschenkideen sind in der Kontaktkarte nun standardmäßig eingeklappt. Ein neuer, interaktiver Toggle-Bereich mit passendem Icon ermöglicht das gezielte Auf- und Zuklappen.
+    - **Contextual Reset:** Um die Übersichtlichkeit zu wahren, klappt sich die Geschenkideen-Liste automatisch zu, wenn die Kontaktkarte geschlossen wird (`remember(isExpanded)`).
+    - **Navigation Intelligence:** Geöffnete Kontaktkarten schließen sich nun automatisch, wenn der Nutzer die Filter-Kategorie (Label) wechselt oder eine Suche startet, um eine konsistente Ergebnisliste zu gewährleisten.
+    - **UI Cleanup:** Entfernung der redundanten "Geschenkideen"-Überschrift innerhalb der Liste, da die neue Toggle-Zeile diese Rolle übernimmt.
+    - **Auto-Expand:** Beim Hinzufügen einer neuen Geschenkidee klappt der Bereich automatisch auf, um einen nahtlosen Workflow zu ermöglichen.

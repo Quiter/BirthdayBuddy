@@ -40,7 +40,7 @@
         - `HomeState.kt`: Plain State Holder für die UI-Logik (Scroll-Zustand, Fokus).
         - ##### 📁 Components (`home.components`)
             - `BirthdayItem.kt`: Zentrales Koordinationselement der Kontaktkarte; verwaltet den Expand-State und delegiert an spezialisierte Sub-Komponenten.
-            - `BirthdayList.kt`: LazyColumn-Implementierung mit Optimierungen (Auto-Collapse beim Scrollen).
+            - `BirthdayList.kt`: LazyColumn-Implementierung mit Optimierungen (Auto-Collapse beim Scrollen und Filterwechsel).
             - `BirthdayStatus.kt`: Anzeige des Alters und der verbleibenden Tage.
             - `ConfettiEffect.kt`: Hochperformantes Partikelsystem für Geburtstags-Animationen.
             - `ContactActionRow.kt`: Reihe mit Messenger- und Kontakt-Aktionen.

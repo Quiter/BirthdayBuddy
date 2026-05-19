@@ -20,7 +20,7 @@
 - **Home:** Expandable Cards, Gmail-Style Suche, Label-Filter, Fast-Scrollbar, Konfetti-Effekt.
 - **Messenger:** Smarte Erkennung (WhatsApp/Signal) via MIME-Type Check.
 - **Onboarding:** Geführter Permission-Flow (Kontakte/Benachrichtigungen).
-- **Gift Ideas:** Inline-Edit mit lokalem State (kein Lag), JSON-persistiert.
+- **Gift Ideas:** Inline-Edit mit lokalem State (kein Lag), JSON-persistiert, jetzt platzsparend einklappbar.
 - **Widget:** Jetpack Glance mit präzisen Mitternachts-Updates.
 
 ## 📜 Aktuelle Struktur-Meilensteine
