@@ -46,12 +46,6 @@ fun GiftIdeaList(
             .padding(bottom = 12.dp)
     ) {
         if (giftIdeas.isNotEmpty()) {
-            Text(
-                text = stringResource(R.string.gift_dialog_title),
-                style = MaterialTheme.typography.labelLarge,
-                modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
-                color = MaterialTheme.colorScheme.primary
-            )
             giftIdeas.forEach { idea ->
                 key(idea.id) {
                     GiftIdeaItemRow(

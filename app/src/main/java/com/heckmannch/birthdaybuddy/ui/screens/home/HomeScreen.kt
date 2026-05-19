@@ -230,6 +230,8 @@ private fun HomeContent(
                 contacts = uiState.contacts, 
                 newlyAddedIdeaId = uiState.newlyAddedIdeaId,
                 listState = homeState.listState,
+                selectedLabel = uiState.selectedLabel,
+                searchQuery = uiState.searchQuery,
                 onRequestPermission = onRequestPermission,
                 onAddGiftIdea = onAddGiftIdea,
                 onToggleGiftIdea = onToggleGiftIdea,

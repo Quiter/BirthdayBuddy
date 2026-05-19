@@ -35,6 +35,8 @@ fun BirthdayList(
     newlyAddedIdeaId: String?,
     modifier: Modifier = Modifier,
     listState: LazyListState,
+    selectedLabel: String? = null,
+    searchQuery: String = "",
     onRequestPermission: () -> Unit,
     onAddGiftIdea: (String) -> Unit,
     onToggleGiftIdea: (String, GiftIdea, Boolean) -> Unit,
@@ -78,6 +80,11 @@ fun BirthdayList(
         if (listState.isScrollInProgress) {
             expandedContactId = null
         }
+    }
+
+    // Schließen, wenn sich Filter oder Suche ändern
+    LaunchedEffect(selectedLabel, searchQuery) {
+        expandedContactId = null
     }
 
     LazyColumn(

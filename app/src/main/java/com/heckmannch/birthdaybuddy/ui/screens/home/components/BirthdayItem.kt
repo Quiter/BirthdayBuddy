@@ -4,8 +4,12 @@ import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.CardGiftcard
 import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.ExpandLess
+import androidx.compose.material.icons.filled.ExpandMore
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -16,9 +20,11 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalHapticFeedback
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.heckmannch.birthdaybuddy.R
 import com.heckmannch.birthdaybuddy.ui.model.ContactUiModel
 import com.heckmannch.birthdaybuddy.ui.model.GiftIdea
 import com.heckmannch.birthdaybuddy.ui.theme.*
@@ -40,6 +46,15 @@ fun BirthdayItem(
 ) {
     val focusManager = LocalFocusManager.current
     val haptic = LocalHapticFeedback.current
+
+    var giftIdeasExpanded by remember(isExpanded) { mutableStateOf(false) }
+
+    // Automatisches Aufklappen, wenn eine neue Idee hinzugefügt wurde
+    LaunchedEffect(newlyAddedIdeaId) {
+        if (newlyAddedIdeaId != null) {
+            giftIdeasExpanded = true
+        }
+    }
 
     val borderStroke = remember(contact.isToday, contact.nextAge) {
         if (contact.isToday) {
@@ -156,24 +171,63 @@ fun BirthdayItem(
                         color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)
                     )
 
-                    GiftIdeaList(
-                        giftIdeas = contact.giftIdeas,
-                        newlyAddedId = newlyAddedIdeaId,
-                        onAddNewIdea = { onAddGiftIdea(contact.lookupKey) },
-                        onCheckedChange = { idea, checked -> 
-                            onToggleGiftIdea(contact.lookupKey, idea, checked) 
-                        },
-                        onTextChange = { idea, newText -> 
-                            onUpdateGiftIdeaText(contact.lookupKey, idea.id, newText) 
-                        },
-                        onDelete = { idea -> 
-                            onDeleteGiftIdea(contact.lookupKey, idea.id)
-                        },
-                        onDone = { idea ->
-                            if (idea.text.isNotBlank()) onAddGiftIdea(contact.lookupKey)
-                            else focusManager.clearFocus()
+                    // Toggle-Bereich für Geschenkideen
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clickable { giftIdeasExpanded = !giftIdeasExpanded }
+                            .padding(horizontal = 16.dp, vertical = 12.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(12.dp)
+                    ) {
+                        Surface(
+                            modifier = Modifier.size(32.dp),
+                            shape = RoundedCornerShape(8.dp),
+                            color = MaterialTheme.colorScheme.primary.copy(alpha = 0.15f),
+                            contentColor = MaterialTheme.colorScheme.primary
+                        ) {
+                            Box(contentAlignment = Alignment.Center) {
+                                Icon(
+                                    imageVector = Icons.Default.CardGiftcard,
+                                    contentDescription = null,
+                                    modifier = Modifier.size(18.dp)
+                                )
+                            }
                         }
-                    )
+
+                        Text(
+                            text = stringResource(R.string.item_action_gifts),
+                            style = MaterialTheme.typography.titleSmall,
+                            modifier = Modifier.weight(1f)
+                        )
+
+                        Icon(
+                            imageVector = if (giftIdeasExpanded) Icons.Default.ExpandLess else Icons.Default.ExpandMore,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+
+                    if (giftIdeasExpanded) {
+                        GiftIdeaList(
+                            giftIdeas = contact.giftIdeas,
+                            newlyAddedId = newlyAddedIdeaId,
+                            onAddNewIdea = { onAddGiftIdea(contact.lookupKey) },
+                            onCheckedChange = { idea, checked -> 
+                                onToggleGiftIdea(contact.lookupKey, idea, checked) 
+                            },
+                            onTextChange = { idea, newText -> 
+                                onUpdateGiftIdeaText(contact.lookupKey, idea.id, newText) 
+                            },
+                            onDelete = { idea -> 
+                                onDeleteGiftIdea(contact.lookupKey, idea.id)
+                            },
+                            onDone = { idea ->
+                                if (idea.text.isNotBlank()) onAddGiftIdea(contact.lookupKey)
+                                else focusManager.clearFocus()
+                            }
+                        )
+                    }
                 }
             }
 
