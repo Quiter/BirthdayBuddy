@@ -52,7 +52,6 @@ fun OnboardingScreen(
     // Lokale States für die Einstellungen während des Onboardings
     var notificationsEnabled by remember { mutableStateOf(true) }
     var persistentEnabled by remember { mutableStateOf(true) }
-    var contactSkipped by remember { mutableStateOf(false) }
 
     var hasContactPermission by remember {
         mutableStateOf(ContextCompat.checkSelfPermission(context, Manifest.permission.READ_CONTACTS) == PackageManager.PERMISSION_GRANTED)
@@ -99,63 +98,68 @@ fun OnboardingScreen(
         }
     }
 
-    Column(modifier = Modifier.fillMaxSize().background(MaterialTheme.colorScheme.surface)) {
-        HorizontalPager(
-            state = pagerState,
-            modifier = Modifier.weight(1f),
-            userScrollEnabled = false
-        ) { page ->
-            when (page) {
-                0 -> WelcomePage()
-                1 -> ContactsPage(
-                    isGranted = hasContactPermission,
-                    onGrant = onRequestContactPermission,
-                    onSkip = {
-                        contactSkipped = true
-                        scope.launch { pagerState.animateScrollToPage(2) }
-                    }
-                )
-                2 -> NotificationsPage(
-                    enabled = notificationsEnabled,
-                    onEnabledChange = { notificationsEnabled = it },
-                    persistent = persistentEnabled,
-                    onPersistentChange = { persistentEnabled = it },
-                    isGranted = hasNotifPermission,
-                    onGrant = {
-                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                            notifLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
-                        } else {
-                            hasNotifPermission = true
-                            scope.launch { pagerState.animateScrollToPage(3) }
+    Scaffold(
+        modifier = Modifier.fillMaxSize(),
+        containerColor = MaterialTheme.colorScheme.surface,
+        bottomBar = {
+            // Footer mit Dots und Navigation
+            OnboardingFooter(
+                currentPage = pagerState.currentPage,
+                pageCount = pagerState.pageCount,
+                isNextEnabled = when (pagerState.currentPage) {
+                    0 -> true
+                    1 -> hasContactPermission
+                    2 -> !notificationsEnabled || hasNotifPermission
+                    else -> true
+                },
+                onNext = {
+                    scope.launch { pagerState.animateScrollToPage(pagerState.currentPage + 1) }
+                },
+            )
+        }
+    ) { innerPadding ->
+        Column(modifier = Modifier.fillMaxSize().padding(innerPadding)) {
+            HorizontalPager(
+                state = pagerState,
+                modifier = Modifier.fillMaxSize(),
+                userScrollEnabled = false
+            ) { page ->
+                when (page) {
+                    0 -> WelcomePage()
+                    1 -> ContactsPage(
+                        isGranted = hasContactPermission,
+                        onGrant = onRequestContactPermission,
+                        onSkip = {
+                            scope.launch { pagerState.animateScrollToPage(2) }
                         }
-                    }
-                )
-                3 -> ReadyPage(
-                    hasContactPermission = hasContactPermission,
-                    notificationsEnabled = notificationsEnabled && hasNotifPermission,
-                    onStart = {
-                        viewModel.setPersistentNotifications(persistentEnabled)
-                        viewModel.completeOnboarding(notificationsEnabled && hasNotifPermission)
-                        onFinish()
-                    }
-                )
+                    )
+                    2 -> NotificationsPage(
+                        enabled = notificationsEnabled,
+                        onEnabledChange = { notificationsEnabled = it },
+                        persistent = persistentEnabled,
+                        onPersistentChange = { persistentEnabled = it },
+                        isGranted = hasNotifPermission,
+                        onGrant = {
+                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                                notifLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+                            } else {
+                                hasNotifPermission = true
+                                scope.launch { pagerState.animateScrollToPage(3) }
+                            }
+                        }
+                    )
+                    3 -> ReadyPage(
+                        hasContactPermission = hasContactPermission,
+                        notificationsEnabled = notificationsEnabled && hasNotifPermission,
+                        onStart = {
+                            viewModel.setPersistentNotifications(persistentEnabled)
+                            viewModel.completeOnboarding(notificationsEnabled && hasNotifPermission)
+                            onFinish()
+                        }
+                    )
+                }
             }
         }
-
-        // Footer mit Dots und Navigation
-        OnboardingFooter(
-            currentPage = pagerState.currentPage,
-            pageCount = pagerState.pageCount,
-            isNextEnabled = when (pagerState.currentPage) {
-                0 -> true
-                1 -> hasContactPermission || contactSkipped
-                2 -> !notificationsEnabled || hasNotifPermission
-                else -> true
-            },
-            onNext = {
-                scope.launch { pagerState.animateScrollToPage(pagerState.currentPage + 1) }
-            },
-        )
     }
 }
 
@@ -467,7 +471,10 @@ private fun OnboardingFooter(
     onNext: () -> Unit
 ) {
     Row(
-        modifier = Modifier.fillMaxWidth().padding(24.dp),
+        modifier = Modifier
+            .fillMaxWidth()
+            .navigationBarsPadding()
+            .padding(24.dp),
         horizontalArrangement = Arrangement.Center,
         verticalAlignment = Alignment.CenterVertically
     ) {
