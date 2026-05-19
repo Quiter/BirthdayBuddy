@@ -19,8 +19,8 @@
     <!-- Birthday Item -->
     <string name="item_gift_ideas_hint">Geschenkideen vorhanden</string>
     <string name="item_image_desc">Kontaktbild von %1$s</string>
-    <string name="item_action_gifts">Geschenkideen bearbeiten</string>
-    <string name="item_action_contact">Kontakt öffnen</string>
+    <string name="item_action_gifts">Geschenkideen</string>
+    <string name="item_action_contact">Kontakt</string>
     <string name="item_today">Heute!</string>
     <plurals name="item_days_left">
         <item quantity="one">In %d T.</item>
@@ -35,6 +35,7 @@
     <string name="gift_dialog_title">Geschenkideen</string>
     <string name="gift_dialog_delete">Löschen</string>
     <string name="gift_dialog_add">Listeneintrag</string>
+    <string name="gift_idea_placeholder">Geschenkidee</string>
     <string name="gift_dialog_save">Speichern</string>
     <string name="gift_dialog_cancel">Abbrechen</string>
 

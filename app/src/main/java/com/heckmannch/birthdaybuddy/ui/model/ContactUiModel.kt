@@ -15,10 +15,13 @@ data class ContactUiModel(
     val dateText: String,
     val monthName: String,
     val imageUri: String?,
+    val phoneNumber: String?,
     val initials: String,
     val nextAge: Int?,
     val daysUntilNext: Long,
     val isToday: Boolean,
+    val hasWhatsApp: Boolean,
+    val hasSignal: Boolean,
     val labels: List<String>,
     val giftIdeas: List<GiftIdea>,
 ) {

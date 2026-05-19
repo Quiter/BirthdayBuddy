@@ -13,14 +13,11 @@ import androidx.compose.animation.*
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.LazyListState
-import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.*
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
@@ -36,10 +33,9 @@ import com.heckmannch.birthdaybuddy.ui.theme.BirthdayBuddyTheme
 import com.heckmannch.birthdaybuddy.viewmodel.HomeViewModel
 import com.heckmannch.birthdaybuddy.ui.model.ContactUiModel
 import com.heckmannch.birthdaybuddy.ui.model.HomeUiState
-import kotlinx.coroutines.CoroutineScope
+import com.heckmannch.birthdaybuddy.ui.model.GiftIdea
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.collectLatest
-import kotlinx.coroutines.launch
 
 /**
  * Der Hauptbildschirm der App.
@@ -76,11 +72,10 @@ fun HomeScreen(
         homeState.animatedPlaceholder = searchPlaceholder
     }
 
-    // Scroll-Reset Trigger (Widget Events oder Filterwechsel)
+    // Scroll-Reset Trigger (Widget Events, Suche oder Filterwechsel)
     LaunchedEffect(viewModel.scrollToTopEvent) {
         viewModel.scrollToTopEvent.collectLatest {
             homeState.resetScrollRequested = true
-            viewModel.setIsResettingFilter(isResetting = true)
         }
     }
 
@@ -93,40 +88,55 @@ fun HomeScreen(
         }
     }
 
-    LaunchedEffect(uiState.searchQuery, uiState.selectedLabel) {
-        homeState.resetScrollRequested = true
-        viewModel.setIsResettingFilter(isResetting = true)
-    }
-
-    // Durchführung des Scroll-Resets
+    // Durchführung des Scroll-Resets sobald Daten da sind
     LaunchedEffect(uiState.contacts) {
-        if (homeState.resetScrollRequested && (uiState.contacts != null)) {
-            homeState.performScrollReset { viewModel.setIsResettingFilter(isResetting = false) }
+        if (homeState.resetScrollRequested && uiState.contacts != null) {
+            homeState.performScrollReset { viewModel.setIsResettingFilter(false) }
         }
     }
 
     LaunchedEffect(homeState.listState.isScrollInProgress) {
-        if (homeState.listState.isScrollInProgress) {
+        if (homeState.listState.isScrollInProgress && uiState.searchQuery.isNotEmpty()) {
             focusManager.clearFocus()
             keyboardController?.hide()
         }
     }
 
     // --- Callbacks ---
-    val onRequestPermission = remember(context, homeState) {
-        {
-            val activity = context as? Activity
-            val shouldShowRationale = activity?.let { ActivityCompat.shouldShowRequestPermissionRationale(it, Manifest.permission.READ_CONTACTS) } ?: false
-            if (shouldShowRationale || !homeState.hasAttemptedContactPermission) {
-                permissionLauncher.launch(Manifest.permission.READ_CONTACTS)
-                homeState.hasAttemptedContactPermission = true
-            } else {
-                try {
-                    val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply { data = Uri.fromParts("package", context.packageName, null) }
-                    context.startActivity(intent)
-                } catch (_: Exception) {}
-            }
+    val onRequestPermission = {
+        val activity = context as? Activity
+        val shouldShowRationale = activity?.let { 
+            ActivityCompat.shouldShowRequestPermissionRationale(it, Manifest.permission.READ_CONTACTS) 
+        } ?: false
+
+        if (shouldShowRationale || !homeState.hasAttemptedContactPermission) {
+            permissionLauncher.launch(Manifest.permission.READ_CONTACTS)
+            homeState.hasAttemptedContactPermission = true
+        } else {
+            try {
+                val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply { 
+                    data = Uri.fromParts("package", context.packageName, null) 
+                }
+                context.startActivity(intent)
+            } catch (_: Exception) {}
         }
+    }
+
+    val onAddContact = {
+        val intent = Intent(Intent.ACTION_INSERT).apply { 
+            type = ContactsContract.Contacts.CONTENT_TYPE 
+        }
+        context.startActivity(intent)
+    }
+
+    val onOpenContact = { id: String, key: String ->
+        try {
+            id.toLongOrNull()?.let { numericId ->
+                val lookupUri = ContactsContract.Contacts.getLookupUri(numericId, key)
+                context.startActivity(Intent(Intent.ACTION_VIEW, lookupUri))
+            }
+        } catch (_: Exception) {}
+        Unit
     }
 
     HomeContent(
@@ -140,74 +150,15 @@ fun HomeScreen(
             keyboardController?.hide()
         },
         onNavigateToSettings = onNavigateToSettings,
-        onAddContact = {
-            val intent = Intent(Intent.ACTION_INSERT).apply { type = ContactsContract.Contacts.CONTENT_TYPE }
-            context.startActivity(intent)
-        },
+        onAddContact = onAddContact,
         onRequestPermission = onRequestPermission,
-        onSetSwipeHintShown = viewModel::setSwipeHintShown,
-        onUpdateGiftIdeas = viewModel::updateGiftIdeas,
-        onOpenContact = { id, key ->
-            try {
-                val lookupUri = ContactsContract.Contacts.getLookupUri(id.toLong(), key)
-                context.startActivity(Intent(Intent.ACTION_VIEW, lookupUri))
-            } catch (_: Exception) {}
-        },
+        onAddGiftIdea = viewModel::addGiftIdea,
+        onToggleGiftIdea = viewModel::toggleGiftIdea,
+        onUpdateGiftIdeaText = viewModel::updateGiftIdeaText,
+        onDeleteGiftIdea = viewModel::deleteGiftIdea,
+        onOpenContact = onOpenContact,
         onRefresh = { viewModel.syncContacts(showLoading = true) }
     )
-}
-
-/**
- * Plain State Holder für die UI-Logik des HomeScreens.
- */
-@Stable
-class HomeState(
-    val listState: LazyListState,
-    val snackbarHostState: SnackbarHostState,
-    val searchFocusRequester: FocusRequester,
-    private val scope: CoroutineScope,
-) {
-    var hasAttemptedContactPermission by mutableStateOf(false)
-    var resetScrollRequested by mutableStateOf(false)
-    var animatedPlaceholder by mutableStateOf("")
-    var filterVisibilityLock by mutableStateOf<Boolean?>(null)
-    var isFastScrolling by mutableStateOf(false)
-
-    val showScrollUp by derivedStateOf { listState.firstVisibleItemIndex > 0 }
-
-    fun isFilterBarVisible(isResetting: Boolean): Boolean {
-        return if (isResetting) true else filterVisibilityLock ?: (listState.firstVisibleItemIndex == 0)
-    }
-
-    fun onSetFastScrolling(isScrolling: Boolean) {
-        isFastScrolling = isScrolling
-        filterVisibilityLock = if (isScrolling) (listState.firstVisibleItemIndex == 0) else null
-    }
-
-    fun scrollToTop(animate: Boolean = true) {
-        scope.launch {
-            if (animate) listState.animateScrollToItem(0)
-            else listState.scrollToItem(0)
-        }
-    }
-
-    suspend fun performScrollReset(onComplete: () -> Unit) {
-        scrollToTop(animate = false)
-        delay(100)
-        scrollToTop(animate = false)
-        onComplete()
-        resetScrollRequested = false
-    }
-}
-
-@Composable
-fun rememberHomeState(
-    listState: LazyListState = rememberLazyListState(),
-    snackbarHostState: SnackbarHostState = remember { SnackbarHostState() },
-    searchFocusRequester: FocusRequester = remember { FocusRequester() },
-    scope: CoroutineScope = rememberCoroutineScope(),
-) = remember(listState, snackbarHostState, searchFocusRequester, scope) { 
-    HomeState(listState, snackbarHostState, searchFocusRequester, scope) 
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -221,8 +172,10 @@ private fun HomeContent(
     onNavigateToSettings: () -> Unit,
     onAddContact: () -> Unit,
     onRequestPermission: () -> Unit,
-    onSetSwipeHintShown: () -> Unit,
-    onUpdateGiftIdeas: (String, String) -> Unit,
+    onAddGiftIdea: (String) -> Unit,
+    onToggleGiftIdea: (String, GiftIdea, Boolean) -> Unit,
+    onUpdateGiftIdeaText: (String, String, String) -> Unit,
+    onDeleteGiftIdea: (String, String) -> Unit,
     onOpenContact: (String, String) -> Unit,
     onRefresh: () -> Unit,
 ) {
@@ -274,12 +227,14 @@ private fun HomeContent(
             modifier = Modifier.fillMaxSize().padding(padding)
         ) {
             BirthdayList(
-                contacts = uiState.contacts, // Hier das ?: emptyList() entfernt
-                swipeHintShown = uiState.swipeHintShown,
+                contacts = uiState.contacts, 
+                newlyAddedIdeaId = uiState.newlyAddedIdeaId,
                 listState = homeState.listState,
                 onRequestPermission = onRequestPermission,
-                onSetSwipeHintShown = onSetSwipeHintShown,
-                onUpdateGiftIdeas = onUpdateGiftIdeas,
+                onAddGiftIdea = onAddGiftIdea,
+                onToggleGiftIdea = onToggleGiftIdea,
+                onUpdateGiftIdeaText = onUpdateGiftIdeaText,
+                onDeleteGiftIdea = onDeleteGiftIdea,
                 onOpenContact = onOpenContact,
             )
 
@@ -307,10 +262,13 @@ fun HomePreview() {
             dateText = "12. Mai",
             monthName = "Mai",
             imageUri = null,
+            phoneNumber = null,
             initials = "M",
             nextAge = 30,
             daysUntilNext = 5,
             isToday = false,
+            hasWhatsApp = true,
+            hasSignal = false,
             labels = listOf("Freunde"),
             giftIdeas = emptyList()
         ),
@@ -322,10 +280,13 @@ fun HomePreview() {
             dateText = "Heute",
             monthName = "Mai",
             imageUri = null,
+            phoneNumber = null,
             initials = "E",
             nextAge = 40,
             daysUntilNext = 0,
             isToday = true,
+            hasWhatsApp = false,
+            hasSignal = false,
             labels = listOf("Familie"),
             giftIdeas = emptyList()
         )
@@ -343,8 +304,10 @@ fun HomePreview() {
             onNavigateToSettings = {},
             onAddContact = {},
             onRequestPermission = {},
-            onSetSwipeHintShown = {},
-            onUpdateGiftIdeas = { _, _ -> },
+            onAddGiftIdea = {},
+            onToggleGiftIdea = { _, _, _ -> },
+            onUpdateGiftIdeaText = { _, _, _ -> },
+            onDeleteGiftIdea = { _, _ -> },
             onOpenContact = { _, _ -> },
             onRefresh = {}
         )

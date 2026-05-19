@@ -38,7 +38,7 @@ class SystemContactDataSource @Inject constructor(
             projection,
             null,
             null,
-            null
+            null,
         )?.use { cursor ->
             val idIdx = cursor.getColumnIndex(ContactsContract.Groups._ID)
             val titleIdx = cursor.getColumnIndex(ContactsContract.Groups.TITLE)
@@ -106,9 +106,97 @@ class SystemContactDataSource @Inject constructor(
             if (contacts.isEmpty()) return@withContext emptyList()
             
             val labelsMap = fetchLabelsForContacts(contactIds, groups)
-            return@withContext contacts.map { it.copy(labels = labelsMap[it.contactId] ?: emptyList()) }
+            val phonesMap = fetchPhoneNumbersForContacts(contactIds)
+            val messengerMap = fetchMessengerAvailabilityForContacts(contactIds)
+
+            return@withContext contacts.map { 
+                it.copy(
+                    labels = labelsMap[it.contactId] ?: emptyList(),
+                    phoneNumber = phonesMap[it.contactId],
+                    hasWhatsApp = messengerMap[it.contactId]?.first ?: false,
+                    hasSignal = messengerMap[it.contactId]?.second ?: false
+                ) 
+            }
         }
         emptyList()
+    }
+
+    private suspend fun fetchMessengerAvailabilityForContacts(contactIds: Set<String>): Map<String, Pair<Boolean, Boolean>> = withContext(Dispatchers.IO) {
+        val result = mutableMapOf<String, Pair<Boolean, Boolean>>() // contactId -> (hasWhatsApp, hasSignal)
+        
+        val whatsappMimeType = "vnd.android.cursor.item/vnd.com.whatsapp.profile"
+        val signalMimeType = "vnd.android.cursor.item/vnd.org.thoughtcrime.securesms.contact"
+
+        val projection = arrayOf(
+            ContactsContract.Data.CONTACT_ID,
+            ContactsContract.Data.MIMETYPE
+        )
+
+        contactIds.chunked(900).forEach { chunk ->
+            val placeholders = chunk.joinToString(",") { "?" }
+            val selection = "${ContactsContract.Data.MIMETYPE} IN (?, ?) AND ${ContactsContract.Data.CONTACT_ID} IN ($placeholders)"
+            val selectionArgs = arrayOf(whatsappMimeType, signalMimeType, *chunk.toTypedArray())
+
+            context.contentResolver.query(
+                ContactsContract.Data.CONTENT_URI,
+                projection,
+                selection,
+                selectionArgs,
+                null
+            )?.use { cursor ->
+                val idIdx = cursor.getColumnIndex(ContactsContract.Data.CONTACT_ID)
+                val mimeIdx = cursor.getColumnIndex(ContactsContract.Data.MIMETYPE)
+
+                while (cursor.moveToNext()) {
+                    val id = cursor.getString(idIdx)
+                    val mime = cursor.getString(mimeIdx)
+                    
+                    val current = result.getOrDefault(id, Pair(false, false))
+                    if (mime == whatsappMimeType) {
+                        result[id] = current.copy(first = true)
+                    } else if (mime == signalMimeType) {
+                        result[id] = current.copy(second = true)
+                    }
+                }
+            }
+        }
+        result
+    }
+
+    private suspend fun fetchPhoneNumbersForContacts(contactIds: Set<String>): Map<String, String> = withContext(Dispatchers.IO) {
+        val result = mutableMapOf<String, String>()
+        val projection = arrayOf(
+            ContactsContract.CommonDataKinds.Phone.CONTACT_ID,
+            ContactsContract.CommonDataKinds.Phone.NUMBER,
+            ContactsContract.CommonDataKinds.Phone.IS_PRIMARY
+        )
+
+        contactIds.chunked(900).forEach { chunk ->
+            val placeholders = chunk.joinToString(",") { "?" }
+            val selection = "${ContactsContract.CommonDataKinds.Phone.CONTACT_ID} IN ($placeholders)"
+            val selectionArgs = chunk.toTypedArray()
+
+            context.contentResolver.query(
+                ContactsContract.CommonDataKinds.Phone.CONTENT_URI,
+                projection,
+                selection,
+                selectionArgs,
+                "${ContactsContract.CommonDataKinds.Phone.IS_PRIMARY} DESC"
+            )?.use { cursor ->
+                val idIdx = cursor.getColumnIndex(ContactsContract.CommonDataKinds.Phone.CONTACT_ID)
+                val numberIdx = cursor.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER)
+
+                while (cursor.moveToNext()) {
+                    val contactId = cursor.getString(idIdx)
+                    val number = cursor.getString(numberIdx)
+                    // Wir nehmen die erste (primäre) Nummer
+                    if (!result.containsKey(contactId)) {
+                        result[contactId] = number
+                    }
+                }
+            }
+        }
+        result
     }
 
     private suspend fun fetchLabelsForContacts(

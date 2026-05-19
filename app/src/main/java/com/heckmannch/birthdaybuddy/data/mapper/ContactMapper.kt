@@ -23,7 +23,7 @@ class ContactMapper @Inject constructor() {
     // Erzeugt das beste Format NUR für Tag/Monat basierend auf der Sprache des Nutzers (z.B. "12. Mai" vs "May 12")
     private val dayMonthFormatter = DateTimeFormatter.ofPattern(
         DateFormat.getBestDateTimePattern(Locale.getDefault(), "dMMMM"),
-        Locale.getDefault()
+        Locale.getDefault(),
     )
     
     private val monthFormatter = DateTimeFormatter.ofPattern("MMMM", Locale.getDefault())
@@ -41,10 +41,13 @@ class ContactMapper @Inject constructor() {
             dateText = if (!hasYear) contact.birthday.format(dayMonthFormatter) else contact.birthday.format(dateFormatter),
             monthName = contact.birthday.format(monthFormatter),
             imageUri = contact.imageUri,
+            phoneNumber = contact.phoneNumber,
             initials = contact.fullName.take(1).ifBlank { "?" }.uppercase(),
             nextAge = nextAgeValue,
             daysUntilNext = daysLeft,
             isToday = contact.birthday.isBirthdayToday(today),
+            hasWhatsApp = contact.hasWhatsApp,
+            hasSignal = contact.hasSignal,
             labels = contact.labels,
             giftIdeas = GiftIdea.fromString(contact.giftIdeas),
         )

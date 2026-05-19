@@ -37,11 +37,15 @@
 - ### 📁 Screens (`ui.screens`)
     - #### 📁 Home (`home`)
         - `HomeScreen.kt`: Container-Composable des Hauptbildschirms; verwaltet den UI-State.
+        - `HomeState.kt`: Plain State Holder für die UI-Logik (Scroll-Zustand, Fokus).
         - ##### 📁 Components (`home.components`)
-            - `BirthdayItem.kt`: Listen-Element mit Sticky-Swipe-Logik und Aktions-Buttons.
-            - `BirthdayList.kt`: LazyColumn-Implementierung mit Optimierungen.
+            - `BirthdayItem.kt`: Zentrales Koordinationselement der Kontaktkarte; verwaltet den Expand-State und delegiert an spezialisierte Sub-Komponenten.
+            - `BirthdayList.kt`: LazyColumn-Implementierung mit Optimierungen (Auto-Collapse beim Scrollen).
+            - `BirthdayStatus.kt`: Anzeige des Alters und der verbleibenden Tage.
+            - `ContactActionRow.kt`: Reihe mit Messenger- und Kontakt-Aktionen.
+            - `ContactImage.kt`: Komponente für das Kontaktbild oder die Initialen.
             - `FastScrollbar.kt`: Hochperformante Scrollbar mit Sub-Pixel-Präzision.
-            - `GiftIdeaDialog.kt`: Checklisten-Dialog für die Verwaltung von Geschenkideen.
+            - `GiftIdeaList.kt`: Spezialisierte Komponente für die Inline-Verwaltung von Geschenkideen.
             - `HomeFAB.kt`: Multifunktionaler FAB mit Morphing-Animation.
             - `HomeTopBar.kt`: Kombiniert SearchBar und LabelFilterBar.
             - `LabelFilterBar.kt`: Chip-Leiste zur Filterung nach Labels.
@@ -85,3 +89,4 @@
 - `data/local/ConvertersTest.kt`: Tests für TypeConverter.
 - `data/repository/NotificationRepositoryTest.kt`: Integrationstests für das Repository.
 - `viewmodel/HomeViewModelSearchTest.kt`: Tests der Suchlogik im HomeViewModel.
+- `ui/components/BirthdayItemInteractionTest.kt`: UI-Tests für die Interaktion mit Kontakt-Karten.

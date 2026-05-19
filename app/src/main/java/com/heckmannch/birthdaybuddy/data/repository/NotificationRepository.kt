@@ -29,7 +29,6 @@ class NotificationRepository @Inject constructor(
     suspend fun updateSettings(
         notificationsEnabled: Boolean? = null,
         persistentNotifications: Boolean? = null,
-        swipeHintShown: Boolean? = null,
         onboardingCompleted: Boolean? = null,
         lastSyncTimestamp: Long? = null
     ) = settingsMutex.withLock {
@@ -38,7 +37,6 @@ class NotificationRepository @Inject constructor(
             current.copy(
                 notificationsEnabled = notificationsEnabled ?: current.notificationsEnabled,
                 persistentNotifications = persistentNotifications ?: current.persistentNotifications,
-                swipeHintShown = swipeHintShown ?: current.swipeHintShown,
                 onboardingCompleted = onboardingCompleted ?: current.onboardingCompleted,
                 lastSyncTimestamp = lastSyncTimestamp ?: current.lastSyncTimestamp
             )
