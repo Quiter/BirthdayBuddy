@@ -13,14 +13,11 @@ import androidx.compose.animation.*
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.LazyListState
-import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.*
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
@@ -36,10 +33,8 @@ import com.heckmannch.birthdaybuddy.ui.theme.BirthdayBuddyTheme
 import com.heckmannch.birthdaybuddy.viewmodel.HomeViewModel
 import com.heckmannch.birthdaybuddy.ui.model.ContactUiModel
 import com.heckmannch.birthdaybuddy.ui.model.HomeUiState
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.collectLatest
-import kotlinx.coroutines.launch
 
 /**
  * Der Hauptbildschirm der App.
@@ -76,11 +71,10 @@ fun HomeScreen(
         homeState.animatedPlaceholder = searchPlaceholder
     }
 
-    // Scroll-Reset Trigger (Widget Events oder Filterwechsel)
+    // Scroll-Reset Trigger (Widget Events, Suche oder Filterwechsel)
     LaunchedEffect(viewModel.scrollToTopEvent) {
         viewModel.scrollToTopEvent.collectLatest {
             homeState.resetScrollRequested = true
-            viewModel.setIsResettingFilter(isResetting = true)
         }
     }
 
@@ -93,15 +87,10 @@ fun HomeScreen(
         }
     }
 
-    LaunchedEffect(uiState.searchQuery, uiState.selectedLabel) {
-        homeState.resetScrollRequested = true
-        viewModel.setIsResettingFilter(isResetting = true)
-    }
-
-    // Durchführung des Scroll-Resets
+    // Durchführung des Scroll-Resets sobald Daten da sind
     LaunchedEffect(uiState.contacts) {
-        if (homeState.resetScrollRequested && (uiState.contacts != null)) {
-            homeState.performScrollReset { viewModel.setIsResettingFilter(isResetting = false) }
+        if (homeState.resetScrollRequested && uiState.contacts != null) {
+            homeState.performScrollReset { viewModel.setIsResettingFilter(false) }
         }
     }
 
@@ -113,20 +102,40 @@ fun HomeScreen(
     }
 
     // --- Callbacks ---
-    val onRequestPermission = remember(context, homeState) {
-        {
-            val activity = context as? Activity
-            val shouldShowRationale = activity?.let { ActivityCompat.shouldShowRequestPermissionRationale(it, Manifest.permission.READ_CONTACTS) } ?: false
-            if (shouldShowRationale || !homeState.hasAttemptedContactPermission) {
-                permissionLauncher.launch(Manifest.permission.READ_CONTACTS)
-                homeState.hasAttemptedContactPermission = true
-            } else {
-                try {
-                    val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply { data = Uri.fromParts("package", context.packageName, null) }
-                    context.startActivity(intent)
-                } catch (_: Exception) {}
-            }
+    val onRequestPermission = {
+        val activity = context as? Activity
+        val shouldShowRationale = activity?.let { 
+            ActivityCompat.shouldShowRequestPermissionRationale(it, Manifest.permission.READ_CONTACTS) 
+        } ?: false
+
+        if (shouldShowRationale || !homeState.hasAttemptedContactPermission) {
+            permissionLauncher.launch(Manifest.permission.READ_CONTACTS)
+            homeState.hasAttemptedContactPermission = true
+        } else {
+            try {
+                val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply { 
+                    data = Uri.fromParts("package", context.packageName, null) 
+                }
+                context.startActivity(intent)
+            } catch (_: Exception) {}
         }
+    }
+
+    val onAddContact = {
+        val intent = Intent(Intent.ACTION_INSERT).apply { 
+            type = ContactsContract.Contacts.CONTENT_TYPE 
+        }
+        context.startActivity(intent)
+    }
+
+    val onOpenContact = { id: String, key: String ->
+        try {
+            id.toLongOrNull()?.let { numericId ->
+                val lookupUri = ContactsContract.Contacts.getLookupUri(numericId, key)
+                context.startActivity(Intent(Intent.ACTION_VIEW, lookupUri))
+            }
+        } catch (_: Exception) {}
+        Unit
     }
 
     HomeContent(
@@ -140,74 +149,13 @@ fun HomeScreen(
             keyboardController?.hide()
         },
         onNavigateToSettings = onNavigateToSettings,
-        onAddContact = {
-            val intent = Intent(Intent.ACTION_INSERT).apply { type = ContactsContract.Contacts.CONTENT_TYPE }
-            context.startActivity(intent)
-        },
+        onAddContact = onAddContact,
         onRequestPermission = onRequestPermission,
         onAddGiftIdea = viewModel::addGiftIdea,
         onUpdateGiftIdeas = viewModel::updateGiftIdeas,
-        onOpenContact = { id, key ->
-            try {
-                val lookupUri = ContactsContract.Contacts.getLookupUri(id.toLong(), key)
-                context.startActivity(Intent(Intent.ACTION_VIEW, lookupUri))
-            } catch (_: Exception) {}
-        },
+        onOpenContact = onOpenContact,
         onRefresh = { viewModel.syncContacts(showLoading = true) }
     )
-}
-
-/**
- * Plain State Holder für die UI-Logik des HomeScreens.
- */
-@Stable
-class HomeState(
-    val listState: LazyListState,
-    val snackbarHostState: SnackbarHostState,
-    val searchFocusRequester: FocusRequester,
-    private val scope: CoroutineScope,
-) {
-    var hasAttemptedContactPermission by mutableStateOf(false)
-    var resetScrollRequested by mutableStateOf(false)
-    var animatedPlaceholder by mutableStateOf("")
-    var filterVisibilityLock by mutableStateOf<Boolean?>(null)
-    var isFastScrolling by mutableStateOf(false)
-
-    val showScrollUp by derivedStateOf { listState.firstVisibleItemIndex > 0 }
-
-    fun isFilterBarVisible(isResetting: Boolean): Boolean {
-        return if (isResetting) true else filterVisibilityLock ?: (listState.firstVisibleItemIndex == 0)
-    }
-
-    fun onSetFastScrolling(isScrolling: Boolean) {
-        isFastScrolling = isScrolling
-        filterVisibilityLock = if (isScrolling) (listState.firstVisibleItemIndex == 0) else null
-    }
-
-    fun scrollToTop(animate: Boolean = true) {
-        scope.launch {
-            if (animate) listState.animateScrollToItem(0)
-            else listState.scrollToItem(0)
-        }
-    }
-
-    suspend fun performScrollReset(onComplete: () -> Unit) {
-        scrollToTop(animate = false)
-        delay(100)
-        scrollToTop(animate = false)
-        onComplete()
-        resetScrollRequested = false
-    }
-}
-
-@Composable
-fun rememberHomeState(
-    listState: LazyListState = rememberLazyListState(),
-    snackbarHostState: SnackbarHostState = remember { SnackbarHostState() },
-    searchFocusRequester: FocusRequester = remember { FocusRequester() },
-    scope: CoroutineScope = rememberCoroutineScope(),
-) = remember(listState, snackbarHostState, searchFocusRequester, scope) { 
-    HomeState(listState, snackbarHostState, searchFocusRequester, scope) 
 }
 
 @OptIn(ExperimentalMaterial3Api::class)

@@ -159,17 +159,28 @@ class HomeViewModel @Inject constructor(
         if (newQuery.isNotEmpty() && wasEmpty) {
             _selectedLabel.value = null
         }
+        
+        // Bei jeder Änderung der Suche scrollen wir hoch (Reset-Mode)
+        if (_searchQuery.value != newQuery) {
+            _isResettingFilter.value = true
+            triggerScrollToTop()
+        }
+        
         _searchQuery.value = newQuery
-        if (newQuery.isEmpty() && !wasEmpty) triggerScrollToTop()
     }
 
     fun onLabelSelected(label: String?) {
-        _selectedLabel.value = if (_selectedLabel.value == label) null else label
-        triggerScrollToTop()
+        val newLabel = if (_selectedLabel.value == label) null else label
+        if (_selectedLabel.value != newLabel) {
+            _isResettingFilter.value = true
+            _selectedLabel.value = newLabel
+            triggerScrollToTop()
+        }
     }
 
     fun resetFilters() {
         if ((_searchQuery.value.isNotEmpty()) || (_selectedLabel.value != null)) {
+            _isResettingFilter.value = true
             _searchQuery.value = ""
             _selectedLabel.value = null
             triggerScrollToTop()

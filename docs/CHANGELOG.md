@@ -362,6 +362,11 @@ Alle signifikanten Änderungen am Projekt werden hier dokumentiert.
     - **Smart Interaction:** Implementierung einer "Auto-Collapse" Logik; geöffnete Karten schließen sich nun automatisch beim Scrollen der Liste.
     - **Label Optimization:** Verlagerung der Label-Anzeige in den erweiterten Bereich der Karte, um die Hauptliste für alle Nutzer (auch ohne eigene Labels) kompakt und übersichtlich zu halten.
     - **Icon Reset:** Rückkehr zum klassischen Kontakt-Symbol für die Verknüpfung zur Android-Kontakte-App zur besseren Wiedererkennbarkeit.
+87. **Code Quality & Architecture Refinement (HomeScreen):**
+    - **Separation of Concerns:** Auslagerung des `HomeState` in eine eigene Datei (`HomeState.kt`) zur Verschlankung der `HomeScreen.kt`.
+    - **State Management:** Konsolidierung der Side-Effects durch Verlagerung der Filter-Reset-Logik in das `HomeViewModel`. Das ViewModel steuert nun zentral den `isResettingFilter` Zustand.
+    - **Stability:** Einführung von sicherem Parsen für Kontakt-IDs (`toLongOrNull`) und Bereinigung redundanter `LaunchedEffect`-Blöcke.
+    - **Structure:** Aktualisierung der `PROJECT_STRUCTURE.md` zur Abbildung der neuen Dateistruktur.
 
 
 
