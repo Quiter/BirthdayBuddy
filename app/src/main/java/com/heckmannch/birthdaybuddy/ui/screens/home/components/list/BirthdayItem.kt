@@ -1,4 +1,4 @@
-package com.heckmannch.birthdaybuddy.ui.screens.home.components
+package com.heckmannch.birthdaybuddy.ui.screens.home.components.list
 
 import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.Spring
@@ -28,8 +28,9 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.heckmannch.birthdaybuddy.R
 import com.heckmannch.birthdaybuddy.ui.model.ContactUiModel
-import com.heckmannch.birthdaybuddy.ui.model.GiftIdea
 import com.heckmannch.birthdaybuddy.ui.model.SampleData
+import com.heckmannch.birthdaybuddy.ui.screens.home.HomeActions
+import com.heckmannch.birthdaybuddy.ui.screens.home.components.actions.ContactActionRow
 import com.heckmannch.birthdaybuddy.ui.theme.*
 import kotlinx.coroutines.delay
 
@@ -40,12 +41,7 @@ fun BirthdayItem(
     isExpanded: Boolean,
     newlyAddedIdeaId: String?,
     onExpand: () -> Unit,
-    onAddGiftIdea: (String) -> Unit,
-    onToggleGiftIdea: (String, GiftIdea, Boolean) -> Unit,
-    onUpdateGiftIdeaText: (String, String, String) -> Unit,
-    onDeleteGiftIdea: (String, String) -> Unit,
-    onUpdateBirthday: (String, java.time.LocalDate) -> Unit,
-    onOpenContact: (String, String) -> Unit,
+    actions: HomeActions,
     modifier: Modifier = Modifier,
 ) {
     val focusManager = LocalFocusManager.current
@@ -65,7 +61,7 @@ fun BirthdayItem(
                         val date = java.time.Instant.ofEpochMilli(millis)
                             .atZone(java.time.ZoneId.systemDefault())
                             .toLocalDate()
-                        onUpdateBirthday(contact.contactId, date)
+                        actions.onUpdateBirthday(contact.contactId, date)
                     }
                     showDatePicker.value = false
                 }
@@ -95,7 +91,7 @@ fun BirthdayItem(
             val age = contact.nextAge
             when {
                 // Alle durch 10 teilbaren (10, 20, 30...) sind Gold
-                (age != null && age % 10 == 0) -> BorderStroke(2.dp, BirthdayGold)
+                (age != null && (age % 10 == 0)) -> BorderStroke(2.dp, BirthdayGold)
                 // Kinder von 0 bis 9 sind Bunt
                 (age != null && age in 0..9) -> BorderStroke(2.dp, Brush.linearGradient(KidColors))
                 // Alle anderen (inkl. ohne Jahr) sind Silber
@@ -209,7 +205,7 @@ fun BirthdayItem(
                         phoneNumber = contact.phoneNumber,
                         hasWhatsApp = contact.hasWhatsApp,
                         hasSignal = contact.hasSignal,
-                        onOpenContact = onOpenContact
+                        actions = actions
                     )
 
                     HorizontalDivider(
@@ -258,18 +254,18 @@ fun BirthdayItem(
                         GiftIdeaList(
                             giftIdeas = contact.giftIdeas,
                             newlyAddedId = newlyAddedIdeaId,
-                            onAddNewIdea = { onAddGiftIdea(contact.lookupKey) },
+                            onAddNewIdea = { actions.onAddGiftIdea(contact.lookupKey) },
                             onCheckedChange = { idea, checked -> 
-                                onToggleGiftIdea(contact.lookupKey, idea, checked) 
+                                actions.onToggleGiftIdea(contact.lookupKey, idea, checked) 
                             },
                             onTextChange = { idea, newText -> 
-                                onUpdateGiftIdeaText(contact.lookupKey, idea.id, newText) 
+                                actions.onUpdateGiftIdeaText(contact.lookupKey, idea.id, newText) 
                             },
                             onDelete = { idea -> 
-                                onDeleteGiftIdea(contact.lookupKey, idea.id)
+                                actions.onDeleteGiftIdea(contact.lookupKey, idea.id)
                             },
-                            onDone = { idea ->
-                                if (idea.text.isNotBlank()) onAddGiftIdea(contact.lookupKey)
+                            onDone = {
+                                if (it.text.isNotBlank()) actions.onAddGiftIdea(contact.lookupKey)
                                 else focusManager.clearFocus()
                             }
                         )
@@ -290,6 +286,26 @@ fun BirthdayItem(
 @Preview(showBackground = true)
 @Composable
 fun BirthdayItemPreview() {
+    val actions = HomeActions(
+        onSearchQueryChange = {},
+        onLabelSelected = {},
+        onClearSearch = {},
+        onNavigateToSettings = {},
+        onAddContact = {},
+        onRequestPermission = {},
+        onAddGiftIdea = {},
+        onToggleGiftIdea = { _, _, _ -> },
+        onUpdateGiftIdeaText = { _, _, _ -> },
+        onDeleteGiftIdea = { _, _ -> },
+        onUpdateBirthday = { _, _ -> },
+        onOpenContact = { _, _ -> },
+        onDial = {},
+        onSendSms = {},
+        onWhatsApp = {},
+        onSignal = {},
+        onRefresh = {}
+    )
+
     BirthdayBuddyTheme {
         Column(modifier = Modifier.padding(16.dp)) {
             BirthdayItem(
@@ -297,25 +313,7 @@ fun BirthdayItemPreview() {
                 isExpanded = false,
                 newlyAddedIdeaId = null,
                 onExpand = {},
-                onAddGiftIdea = {},
-                onToggleGiftIdea = { _, _, _ -> },
-                onUpdateGiftIdeaText = { _, _, _ -> },
-                onDeleteGiftIdea = { _, _ -> },
-                onUpdateBirthday = { _, _ -> },
-                onOpenContact = { _, _ -> }
-            )
-            
-            BirthdayItem(
-                contact = SampleData.contact3.copy(fullName = "Ausgeklappt (5. Geb.)"),
-                isExpanded = true,
-                newlyAddedIdeaId = null,
-                onExpand = {},
-                onAddGiftIdea = {},
-                onToggleGiftIdea = { _, _, _ -> },
-                onUpdateGiftIdeaText = { _, _, _ -> },
-                onDeleteGiftIdea = { _, _ -> },
-                onUpdateBirthday = { _, _ -> },
-                onOpenContact = { _, _ -> }
+                actions = actions
             )
         }
     }

@@ -28,7 +28,10 @@ import com.heckmannch.birthdaybuddy.R
 import com.heckmannch.birthdaybuddy.ui.components.AppResponsiveScaffold
 import com.heckmannch.birthdaybuddy.ui.model.HomeUiState
 import com.heckmannch.birthdaybuddy.ui.model.SampleData
-import com.heckmannch.birthdaybuddy.ui.screens.home.components.*
+import com.heckmannch.birthdaybuddy.ui.screens.home.components.actions.HomeFAB
+import com.heckmannch.birthdaybuddy.ui.screens.home.components.list.BirthdayList
+import com.heckmannch.birthdaybuddy.ui.screens.home.components.list.FastScrollbar
+import com.heckmannch.birthdaybuddy.ui.screens.home.components.topbar.HomeTopBar
 import com.heckmannch.birthdaybuddy.ui.theme.BirthdayBuddyTheme
 import com.heckmannch.birthdaybuddy.ui.util.ContactActions
 import com.heckmannch.birthdaybuddy.viewmodel.HomeViewModel
@@ -139,6 +142,10 @@ fun HomeScreen(
             onDeleteGiftIdea = viewModel::deleteGiftIdea,
             onUpdateBirthday = viewModel::updateBirthday,
             onOpenContact = contactActions::openContact,
+            onDial = contactActions::dialNumber,
+            onSendSms = contactActions::sendSms,
+            onWhatsApp = contactActions::openWhatsApp,
+            onSignal = contactActions::openSignal,
             onRefresh = { viewModel.syncContacts(showLoading = true) },
         )
     }
@@ -178,10 +185,7 @@ private fun HomeContent(
                 availableLabels = uiState.availableLabels,
                 selectedLabel = uiState.selectedLabel,
                 isFilterBarVisible = isFilterBarVisible,
-                onSearchQueryChange = actions.onSearchQueryChange,
-                onLabelSelected = actions.onLabelSelected,
-                onNavigateToSettings = actions.onNavigateToSettings,
-                onClearSearch = actions.onClearSearch,
+                actions = actions,
                 searchFocusRequester = homeState.searchFocusRequester,
             )
         },
@@ -214,13 +218,7 @@ private fun HomeContent(
                 listState = homeState.listState,
                 selectedLabel = uiState.selectedLabel,
                 searchQuery = uiState.searchQuery,
-                onRequestPermission = actions.onRequestPermission,
-                onAddGiftIdea = actions.onAddGiftIdea,
-                onToggleGiftIdea = actions.onToggleGiftIdea,
-                onUpdateGiftIdeaText = actions.onUpdateGiftIdeaText,
-                onDeleteGiftIdea = actions.onDeleteGiftIdea,
-                onUpdateBirthday = actions.onUpdateBirthday,
-                onOpenContact = actions.onOpenContact,
+                actions = actions,
                 onInteraction = {
                     focusManager.clearFocus()
                     keyboardController?.hide()
@@ -262,6 +260,10 @@ fun HomePreview() {
         onDeleteGiftIdea = { _, _ -> },
         onUpdateBirthday = { _, _ -> },
         onOpenContact = { _, _ -> },
+        onDial = {},
+        onSendSms = {},
+        onWhatsApp = {},
+        onSignal = {},
         onRefresh = {},
     )
 

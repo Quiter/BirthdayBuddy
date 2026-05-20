@@ -1,4 +1,4 @@
-package com.heckmannch.birthdaybuddy.ui.screens.home.components
+package com.heckmannch.birthdaybuddy.ui.screens.home.components.list
 
 import android.Manifest
 import android.content.pm.PackageManager
@@ -26,8 +26,8 @@ import androidx.core.content.ContextCompat
 import com.heckmannch.birthdaybuddy.R
 import com.heckmannch.birthdaybuddy.ui.components.LottieIllustration
 import com.heckmannch.birthdaybuddy.ui.model.ContactUiModel
-import com.heckmannch.birthdaybuddy.ui.model.GiftIdea
 import com.heckmannch.birthdaybuddy.ui.model.SampleData
+import com.heckmannch.birthdaybuddy.ui.screens.home.HomeActions
 import com.heckmannch.birthdaybuddy.ui.theme.BirthdayBuddyTheme
 
 /**
@@ -42,23 +42,11 @@ fun BirthdayList(
     listState: LazyListState,
     selectedLabel: String? = null,
     searchQuery: String = "",
-    onRequestPermission: () -> Unit,
-    onAddGiftIdea: (String) -> Unit,
-    onToggleGiftIdea: (String, GiftIdea, Boolean) -> Unit,
-    onUpdateGiftIdeaText: (String, String, String) -> Unit,
-    onDeleteGiftIdea: (String, String) -> Unit,
-    onUpdateBirthday: (String, java.time.LocalDate) -> Unit,
-    onOpenContact: (String, String) -> Unit,
+    actions: HomeActions,
     onInteraction: () -> Unit = {},
 ) {
     val context = LocalContext.current
     
-    val currentOnToggleGiftIdea by rememberUpdatedState(onToggleGiftIdea)
-    val currentOnUpdateGiftIdeaText by rememberUpdatedState(onUpdateGiftIdeaText)
-    val currentOnDeleteGiftIdea by rememberUpdatedState(onDeleteGiftIdea)
-    val currentOnUpdateBirthday by rememberUpdatedState(onUpdateBirthday)
-    val currentOnOpenContact by rememberUpdatedState(onOpenContact)
-
     val hasPermission by remember {
         derivedStateOf {
             ContextCompat.checkSelfPermission(
@@ -104,7 +92,7 @@ fun BirthdayList(
             item(key = "empty_state") {
                 EmptyListState(
                     hasPermission = hasPermission,
-                    onRequestPermission = onRequestPermission,
+                    onRequestPermission = actions.onRequestPermission,
                     modifier = Modifier.fillParentMaxSize()
                 )
             }
@@ -124,12 +112,7 @@ fun BirthdayList(
                         onInteraction()
                         expandedContactId = if (isExpanded) null else contact.id
                     },
-                    onAddGiftIdea = onAddGiftIdea,
-                    onToggleGiftIdea = currentOnToggleGiftIdea,
-                    onUpdateGiftIdeaText = currentOnUpdateGiftIdeaText,
-                    onDeleteGiftIdea = currentOnDeleteGiftIdea,
-                    onUpdateBirthday = currentOnUpdateBirthday,
-                    onOpenContact = currentOnOpenContact,
+                    actions = actions,
                     modifier = Modifier.animateItem()
                 )
             }
@@ -247,18 +230,32 @@ private fun EmptyListState(
 @Preview(showBackground = true)
 @Composable
 fun BirthdayListPreview() {
+    val actions = HomeActions(
+        onSearchQueryChange = {},
+        onLabelSelected = {},
+        onClearSearch = {},
+        onNavigateToSettings = {},
+        onAddContact = {},
+        onRequestPermission = {},
+        onAddGiftIdea = {},
+        onToggleGiftIdea = { _, _, _ -> },
+        onUpdateGiftIdeaText = { _, _, _ -> },
+        onDeleteGiftIdea = { _, _ -> },
+        onUpdateBirthday = { _, _ -> },
+        onOpenContact = { _, _ -> },
+        onDial = {},
+        onSendSms = {},
+        onWhatsApp = {},
+        onSignal = {},
+        onRefresh = {}
+    )
+
     BirthdayBuddyTheme {
         BirthdayList(
             contacts = SampleData.sampleContacts,
             newlyAddedIdeaId = null,
             listState = rememberLazyListState(),
-            onRequestPermission = {},
-            onAddGiftIdea = {},
-            onToggleGiftIdea = { _, _, _ -> },
-            onUpdateGiftIdeaText = { _, _, _ -> },
-            onDeleteGiftIdea = { _, _ -> },
-            onUpdateBirthday = { _, _ -> },
-            onOpenContact = { _, _ -> }
+            actions = actions,
         )
     }
 }

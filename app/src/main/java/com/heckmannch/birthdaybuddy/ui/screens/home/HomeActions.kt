@@ -18,5 +18,9 @@ data class HomeActions(
     val onDeleteGiftIdea: (String, String) -> Unit,
     val onUpdateBirthday: (String, java.time.LocalDate) -> Unit,
     val onOpenContact: (String, String) -> Unit,
+    val onDial: (String) -> Unit,
+    val onSendSms: (String) -> Unit,
+    val onWhatsApp: (String) -> Unit,
+    val onSignal: (String) -> Unit,
     val onRefresh: () -> Unit,
 )

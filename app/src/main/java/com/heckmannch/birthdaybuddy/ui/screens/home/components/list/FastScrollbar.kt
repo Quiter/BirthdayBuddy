@@ -1,4 +1,4 @@
-package com.heckmannch.birthdaybuddy.ui.screens.home.components
+package com.heckmannch.birthdaybuddy.ui.screens.home.components.list
 
 import androidx.compose.animation.*
 import androidx.compose.animation.core.animateDpAsState

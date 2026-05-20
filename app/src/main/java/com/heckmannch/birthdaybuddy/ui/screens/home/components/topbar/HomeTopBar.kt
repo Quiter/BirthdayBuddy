@@ -1,4 +1,4 @@
-package com.heckmannch.birthdaybuddy.ui.screens.home.components
+package com.heckmannch.birthdaybuddy.ui.screens.home.components.topbar
 
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.layout.*
@@ -10,6 +10,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.heckmannch.birthdaybuddy.ui.screens.home.HomeActions
 import com.heckmannch.birthdaybuddy.ui.theme.BirthdayBuddyTheme
 
 /**
@@ -23,10 +24,7 @@ fun HomeTopBar(
     availableLabels: List<String>,
     selectedLabel: String?,
     isFilterBarVisible: Boolean,
-    onSearchQueryChange: (String) -> Unit,
-    onLabelSelected: (String?) -> Unit,
-    onNavigateToSettings: () -> Unit,
-    onClearSearch: () -> Unit,
+    actions: HomeActions,
     searchFocusRequester: FocusRequester,
 ) {
     Column(
@@ -44,9 +42,9 @@ fun HomeTopBar(
                 SearchBar(
                     query = searchQuery,
                     placeholder = animatedPlaceholder,
-                    onQueryChange = onSearchQueryChange,
-                    onClearQuery = onClearSearch,
-                    onSettingsClick = onNavigateToSettings,
+                    onQueryChange = actions.onSearchQueryChange,
+                    onClearQuery = actions.onClearSearch,
+                    onSettingsClick = actions.onNavigateToSettings,
                     focusRequester = searchFocusRequester,
                     modifier = Modifier.padding(top = 8.dp, bottom = 8.dp),
                 )
@@ -58,7 +56,7 @@ fun HomeTopBar(
             visible = isFilterBarVisible,
             labels = availableLabels,
             selectedLabel = selectedLabel,
-            onLabelSelected = onLabelSelected,
+            onLabelSelected = actions.onLabelSelected,
         )
     }
 }
@@ -66,6 +64,26 @@ fun HomeTopBar(
 @Preview(showBackground = true)
 @Composable
 private fun HomeTopBarPreview() {
+    val actions = HomeActions(
+        onSearchQueryChange = {},
+        onLabelSelected = {},
+        onClearSearch = {},
+        onNavigateToSettings = {},
+        onAddContact = {},
+        onRequestPermission = {},
+        onAddGiftIdea = {},
+        onToggleGiftIdea = { _, _, _ -> },
+        onUpdateGiftIdeaText = { _, _, _ -> },
+        onDeleteGiftIdea = { _, _ -> },
+        onUpdateBirthday = { _, _ -> },
+        onOpenContact = { _, _ -> },
+        onDial = {},
+        onSendSms = {},
+        onWhatsApp = {},
+        onSignal = {},
+        onRefresh = {}
+    )
+
     BirthdayBuddyTheme {
         HomeTopBar(
             searchQuery = "",
@@ -73,10 +91,7 @@ private fun HomeTopBarPreview() {
             availableLabels = listOf("Familie", "Freunde"),
             selectedLabel = null,
             isFilterBarVisible = true,
-            onSearchQueryChange = {},
-            onLabelSelected = {},
-            onNavigateToSettings = {},
-            onClearSearch = {},
+            actions = actions,
             searchFocusRequester = remember { FocusRequester() }
         )
     }

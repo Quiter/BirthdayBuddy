@@ -27,7 +27,7 @@
 ## 📜 Aktuelle Struktur-Meilensteine
 *Historie siehe `CHANGELOG.md`*
 
-- **Refactoring (Current):** `HomeViewModel` Konsolidierung, typsicheres State-Management, globale Code-Qualitäts-Offensive (Linting) abgeschlossen.
+- **Refactoring (Current):** Strukturierung der Home-Komponenten in Sub-Packages und Eliminierung von Prop-Drilling durch konsequente Nutzung des `HomeActions` Wrappers.
 - **UX & Animation:** Integration von Lottie-Animationen im Onboarding und Home-Screen zur emotionalen Nutzerführung.
 - **Messenger Logic:** Dynamische Erkennung von WhatsApp/Signal Verfügbarkeit pro Kontakt.
 - **Architecture Swap:** Umstellung auf spezialisierte ViewModels (`Home`, `Notification`, `Settings`, `Label`, `Backup`).

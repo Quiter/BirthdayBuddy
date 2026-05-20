@@ -40,18 +40,21 @@
         - `HomeState.kt`: Plain State Holder für die UI-Logik (Scroll-Zustand, Fokus).
         - `HomeActions.kt`: Wrapper für Benutzeraktionen zur Reduzierung von Prop-Drilling.
         - ##### 📁 Components (`home.components`)
-            - `BirthdayItem.kt`: Zentrales Koordinationselement der Kontaktkarte; verwaltet den Expand-State und delegiert an spezialisierte Sub-Komponenten.
-            - `BirthdayList.kt`: LazyColumn-Implementierung mit Optimierungen (Auto-Collapse beim Scrollen und Filterwechsel).
-            - `BirthdayStatus.kt`: Anzeige des Alters und der verbleibenden Tage.
-            - `ConfettiEffect.kt`: Hochperformantes Partikelsystem für Geburtstags-Animationen.
-            - `ContactActionRow.kt`: Reihe mit Messenger- und Kontakt-Aktionen.
-            - `ContactImage.kt`: Komponente für das Kontaktbild oder die Initialen.
-            - `FastScrollbar.kt`: Hochperformante Scrollbar mit Sub-Pixel-Präzision.
-            - `GiftIdeaList.kt`: Spezialisierte Komponente für die Inline-Verwaltung von Geschenkideen.
-            - `HomeFAB.kt`: Multifunktionaler FAB mit Morphing-Animation.
-            - `HomeTopBar.kt`: Kombiniert SearchBar und LabelFilterBar.
-            - `LabelFilterBar.kt`: Chip-Leiste zur Filterung nach Labels.
-            - `SearchBar.kt`: M3 SearchBar-Integration.
+            - ###### 📁 List (`home.components.list`)
+                - `BirthdayItem.kt`: Zentrales Koordinationselement der Kontaktkarte; verwaltet den Expand-State und delegiert an spezialisierte Sub-Komponenten.
+                - `BirthdayList.kt`: LazyColumn-Implementierung mit Optimierungen (Auto-Collapse beim Scrollen und Filterwechsel).
+                - `BirthdayStatus.kt`: Anzeige des Alters und der verbleibenden Tage.
+                - `ConfettiEffect.kt`: Hochperformantes Partikelsystem für Geburtstags-Animationen.
+                - `ContactImage.kt`: Komponente für das Kontaktbild oder die Initialen.
+                - `FastScrollbar.kt`: Hochperformante Scrollbar mit Sub-Pixel-Präzision.
+                - `GiftIdeaList.kt`: Spezialisierte Komponente für die Inline-Verwaltung von Geschenkideen.
+            - ###### 📁 TopBar (`home.components.topbar`)
+                - `HomeTopBar.kt`: Kombiniert SearchBar und LabelFilterBar.
+                - `LabelFilterBar.kt`: Chip-Leiste zur Filterung nach Labels.
+                - `SearchBar.kt`: M3 SearchBar-Integration.
+            - ###### 📁 Actions (`home.components.actions`)
+                - `ContactActionRow.kt`: Reihe mit Messenger- und Kontakt-Aktionen.
+                - `HomeFAB.kt`: Multifunktionaler FAB mit Morphing-Animation.
     - #### 📁 Onboarding (`onboarding`)
         - `OnboardingScreen.kt`: Multi-Page Flow für die initiale Konfiguration.
         - ##### 📁 Components (`onboarding.components`)

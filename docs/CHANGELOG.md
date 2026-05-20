@@ -141,4 +141,10 @@
     - **Smart Focus Management:** Optimierung der Tastatur-Steuerung; der Fokus der Suche wird nun zuverlässig bei jeder Listen-Interaktion (Scrollen oder Aufklappen einer Karte) gelöscht, um eine freie Sicht auf die Inhalte zu gewährleisten.
     - **Layout Harmony:** Korrektur des Hintergrund-Übergangs in der `HomeTopBar`. Die Filter-Bar nutzt nun denselben Hintergrund wie die Liste, während der Suchbereich durch Elevation optisch abgehoben bleibt.
     - **Onboarding UX:** Verbesserung der Klickbarkeit und Sichtbarkeit der Onboarding-Buttons auf Geräten mit geringer Displayhöhe (z.B. Chromebooks im Landscape-Modus) durch optimiertes Spacing und Scrolling.
+104. **Home Architecture & UX Refinement:**
+    - **Sub-Component Grouping:** Strukturierung des `home.components` Ordners in spezialisierte Unterverzeichnisse (`list`, `topbar`, `actions`). Dies verbessert die Übersichtlichkeit bei wachsender Komponentenanzahl.
+    - **Prop Drilling Elimination:** Konsequente Nutzung des `HomeActions` Wrappers in der gesamten Home-Hierarchie. Dies reduziert die Komplexität der Funktionssignaturen und vereinfacht die Wartbarkeit.
+    - **Dynamic Scrollbar:** Die `FastScrollbar` unterstützt nun kontextsensitive Labels (Monat vs. Anfangsbuchstabe), was die Navigation im "Ohne Datum"-Tab signifikant verbessert.
+    - **Padding Rule Compliance:** Refactoring der `BirthdayItem` Abstände auf eine nicht-additive Strategie (`bottom = 8.dp`), um Layout-Sprünge bei Animationen zu vermeiden.
+    - **Consistency:** Vereinheitlichung der Accessibility-Beschreibungen und Trailing Commas im Home-Screen Bereich.
 
