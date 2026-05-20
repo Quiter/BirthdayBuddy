@@ -18,9 +18,15 @@ android {
         minSdk = 28
         targetSdk = 36
         versionCode = 24
-        versionName = "2.3.0"
+        versionName = "2.3.1"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+    }
+
+    sourceSets {
+        getByName("androidTest") {
+            assets.directories.add("schemas")
+        }
     }
 
     @Suppress("UnstableApiUsage")
@@ -72,6 +78,7 @@ dependencies {
     implementation(libs.androidx.work.runtime.ktx)
     implementation(libs.material)
     implementation(libs.lottie.compose)
+    implementation(libs.kotlinx.serialization.json)
 
     // Coroutines
     implementation(libs.kotlinx.coroutines.core)
@@ -96,6 +103,7 @@ dependencies {
     androidTestImplementation(libs.androidx.compose.ui.test.junit4)
     androidTestImplementation(libs.androidx.espresso.core)
     androidTestImplementation(libs.androidx.junit)
+    androidTestImplementation(libs.androidx.room.testing)
     androidTestImplementation(libs.kotlinx.coroutines.test)
     androidTestImplementation(libs.truth)
     androidTestImplementation(libs.mockito.core)
@@ -106,5 +114,5 @@ dependencies {
 }
 
 ksp {
-    arg("room.schemaLocation", "${projectDir}/schemas")
+    arg("room.schemaLocation", "$projectDir/schemas")
 }

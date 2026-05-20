@@ -4,16 +4,18 @@ import android.content.Context
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.google.common.truth.Truth.assertThat
+import com.heckmannch.birthdaybuddy.MainDispatcherRule
 import com.heckmannch.birthdaybuddy.data.local.Contact
 import com.heckmannch.birthdaybuddy.data.repository.ContactRepository
 import com.heckmannch.birthdaybuddy.data.repository.TimeRepository
 import com.heckmannch.birthdaybuddy.data.mapper.ContactMapper
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.runTest
 import org.junit.Before
+import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.kotlin.doReturn
@@ -25,6 +27,9 @@ import java.time.LocalDate
 @OptIn(ExperimentalCoroutinesApi::class)
 class HomeViewModelSearchTest {
 
+    @get:Rule
+    val mainDispatcherRule = MainDispatcherRule()
+
     private val contactRepository: ContactRepository = mock()
     private val timeRepository: TimeRepository = mock()
     private lateinit var context: Context
@@ -35,9 +40,9 @@ class HomeViewModelSearchTest {
         context = ApplicationProvider.getApplicationContext()
         
         // Basiskonfiguration für die Mocks
-        whenever(contactRepository.allContacts).doReturn(flowOf(emptyList()))
-        whenever(contactRepository.labelConfigs).doReturn(flowOf(emptyList()))
-        whenever(timeRepository.currentDate).doReturn(flowOf(LocalDate.of(2024, 5, 15)))
+        whenever(contactRepository.allContacts).doReturn(MutableStateFlow(emptyList()))
+        whenever(contactRepository.labelConfigs).doReturn(MutableStateFlow(emptyList()))
+        whenever(timeRepository.currentDate).doReturn(MutableStateFlow(LocalDate.of(2024, 5, 15)))
     }
 
     @Test
@@ -46,7 +51,7 @@ class HomeViewModelSearchTest {
             Contact(contactId = "1", lookupKey = "1", fullName = "Max Mustermann", birthday = LocalDate.of(1990, 1, 1)),
             Contact(contactId = "2", lookupKey = "2", fullName = "Erika Muster", birthday = LocalDate.of(1995, 1, 1))
         )
-        whenever(contactRepository.allContacts).thenReturn(flowOf(contacts))
+        whenever(contactRepository.allContacts).thenReturn(MutableStateFlow(contacts))
 
         val viewModel = HomeViewModel(context, contactRepository, mapper, timeRepository)
         
@@ -55,7 +60,7 @@ class HomeViewModelSearchTest {
 
         // Warten bis der State die Suche reflektiert und Ergebnisse liefert
         val state = viewModel.uiState
-            .filter { it.searchQuery == "Mustermann Max" && it.contacts != null }
+            .filter { (it.searchQuery == "Mustermann Max") && (it.contacts != null) }
             .first()
 
         assertThat(state.contacts).hasSize(1)
@@ -67,14 +72,14 @@ class HomeViewModelSearchTest {
         val contacts = listOf(
             Contact(contactId = "1", lookupKey = "1", fullName = "Max Mustermann", birthday = LocalDate.of(1990, 1, 1))
         )
-        whenever(contactRepository.allContacts).thenReturn(flowOf(contacts))
+        whenever(contactRepository.allContacts).thenReturn(MutableStateFlow(contacts))
 
         val viewModel = HomeViewModel(context, contactRepository, mapper, timeRepository)
         
         viewModel.onSearchQueryChange("  Max  ")
 
         val state = viewModel.uiState
-            .filter { it.searchQuery == "  Max  " && it.contacts != null }
+            .filter { (it.searchQuery == "  Max  ") && (it.contacts != null) }
             .first()
 
         assertThat(state.contacts).hasSize(1)

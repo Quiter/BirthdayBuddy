@@ -147,4 +147,12 @@
     - **Dynamic Scrollbar:** Die `FastScrollbar` unterstützt nun kontextsensitive Labels (Monat vs. Anfangsbuchstabe), was die Navigation im "Ohne Datum"-Tab signifikant verbessert.
     - **Padding Rule Compliance:** Refactoring der `BirthdayItem` Abstände auf eine nicht-additive Strategie (`bottom = 8.dp`), um Layout-Sprünge bei Animationen zu vermeiden.
     - **Consistency:** Vereinheitlichung der Accessibility-Beschreibungen und Trailing Commas im Home-Screen Bereich.
+105. **Database Migration Fix (Stability):**
+    - **Robust Migration:** Einführung einer manuellen Migration von Version 1 auf 2. Dies behebt einen kritischen Absturz (`SQLiteException: no such table: pending_notifications`), der bei einigen Nutzern auftrat, deren V1-Datenbank inkonsistent zum erwarteten Schema war.
+    - **Safety First:** Die Migration prüft nun aktiv auf die Existenz der Tabelle und der Spalte `dismissCount`, bevor Änderungen vorgenommen werden. Dies stellt sicher, dass sowohl saubere Installationen als auch historisch gewachsene Datenbanken stabil auf V6 aktualisiert werden können.
+    - **Quality Assurance:** Einführung von automatisierten Migrationstests (`MigrationTest.kt`), um die Korrektheit der manuellen und automatischen Migrationspfade vor jedem Release sicherzustellen.
+106. **Gradle & Dependency Polish:**
+    - **Deprecation Fix:** Umstellung der `sourceSets`-Konfiguration im `build.gradle.kts` auf die moderne `assets.directories.add()` API, um Warnungen bei der Schema-Bereitstellung für Tests zu vermeiden.
+    - **Dependency Stability:** Korrektur eines Auflösungsfehlers bei der `kotlinx-serialization-json` Bibliothek durch Synchronisation des Version Catalogs.
+    - **Code Quality:** Bereinigung redundanter String-Templates in der KSP-Konfiguration.
 

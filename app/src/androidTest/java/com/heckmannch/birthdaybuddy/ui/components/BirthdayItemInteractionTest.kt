@@ -4,9 +4,10 @@ import androidx.activity.ComponentActivity
 import androidx.compose.runtime.*
 import androidx.compose.ui.test.*
 import androidx.compose.ui.test.junit4.v2.createAndroidComposeRule
-import com.heckmannch.birthdaybuddy.ui.model.ContactUiModel
 import com.heckmannch.birthdaybuddy.ui.model.GiftIdea
-import com.heckmannch.birthdaybuddy.ui.screens.home.components.BirthdayItem
+import com.heckmannch.birthdaybuddy.ui.model.SampleData
+import com.heckmannch.birthdaybuddy.ui.screens.home.HomeActions
+import com.heckmannch.birthdaybuddy.ui.screens.home.components.list.BirthdayItem
 import com.heckmannch.birthdaybuddy.ui.theme.BirthdayBuddyTheme
 import org.junit.Rule
 import org.junit.Test
@@ -18,21 +19,26 @@ class BirthdayItemInteractionTest {
 
     @Test
     fun expandingItem_allowsAddingAndTypingGiftIdeas() {
-        val sampleContact = ContactUiModel(
-            id = "k1",
-            contactId = "1",
-            lookupKey = "k1",
-            fullName = "Test User",
-            dateText = "12. Mai",
-            monthName = "Mai",
-            imageUri = null,
-            phoneNumber = "+49123456",
-            initials = "T",
-            nextAge = 30,
-            daysUntilNext = 5,
-            isToday = false,
-            labels = emptyList(),
-            giftIdeas = emptyList(),
+        val sampleContact = SampleData.contact1.copy(giftIdeas = emptyList())
+
+        val actions = HomeActions(
+            onSearchQueryChange = {},
+            onLabelSelected = {},
+            onClearSearch = {},
+            onNavigateToSettings = {},
+            onAddContact = {},
+            onRequestPermission = {},
+            onAddGiftIdea = { _ -> },
+            onToggleGiftIdea = { _, _, _ -> },
+            onUpdateGiftIdeaText = { _, _, _ -> },
+            onDeleteGiftIdea = { _, _ -> },
+            onUpdateBirthday = { _, _ -> },
+            onOpenContact = { _, _ -> },
+            onDial = {},
+            onSendSms = {},
+            onWhatsApp = {},
+            onSignal = {},
+            onRefresh = {},
         )
 
         composeTestRule.setContent {
@@ -44,16 +50,27 @@ class BirthdayItemInteractionTest {
                     isExpanded = true,
                     newlyAddedIdeaId = null,
                     onExpand = {},
-                    onAddGiftIdea = {},
-                    onUpdateGiftIdeas = { _, ideasJson ->
-                        contactState = contactState.copy(giftIdeas = GiftIdea.fromString(ideasJson))
-                    },
-                    onOpenContact = { _: String, _: String -> },
+                    actions = actions.copy(
+                        onAddGiftIdea = { _ ->
+                            contactState = contactState.copy(giftIdeas = listOf(GiftIdea(text = "")))
+                        },
+                        onUpdateGiftIdeaText = { _, ideaId, text ->
+                            contactState = contactState.copy(
+                                giftIdeas = contactState.giftIdeas.map {
+                                    if (it.id == ideaId) it.copy(text = text) else it
+                                }
+                            )
+                        }
+                    )
                 )
             }
         }
 
         // Warte bis UI bereit ist
+        composeTestRule.waitForIdle()
+
+        // 0. Klappe den Geschenkideen-Bereich auf
+        composeTestRule.onNodeWithTag("gift_ideas_toggle").performClick()
         composeTestRule.waitForIdle()
 
         // 1. Klicke auf den "Eintrag hinzufügen" Button

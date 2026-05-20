@@ -33,6 +33,7 @@
 - **Architecture Swap:** Umstellung auf spezialisierte ViewModels (`Home`, `Notification`, `Settings`, `Label`, `Backup`).
 - **Adaptive UI:** Einführung eines responsiven App-Gerüsts (`AppResponsiveScaffold`) zur Unterstützung verschiedener Formfaktoren (Phone, Tablet, Chromebook) und Beseitigung von Layout-Sprüngen beim Start.
 - **Persistence:** Alle App-Settings & Benachrichtigungs-Regeln sind in Room konsolidiert.
+- **Stability Fix:** Manuelle Migration 1->2 zur Behebung von Schema-Inkonsistenzen bei Bestandsnutzern (inkl. instrumentiertem Migrationstest).
 
 ## 🎯 Kommende Aufgaben (Backlog)
 - **Polish:** Code-Review auf Redundanzen nach großen Refactorings.

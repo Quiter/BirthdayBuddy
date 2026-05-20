@@ -13,6 +13,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardCapitalization
@@ -48,7 +49,9 @@ fun GiftIdeaList(
 
         TextButton(
             onClick = onAddNewIdea,
-            modifier = Modifier.padding(start = 8.dp)
+            modifier = Modifier
+                .padding(start = 8.dp)
+                .testTag("add_gift_idea_button")
         ) {
             Icon(Icons.Default.Add, contentDescription = null, modifier = Modifier.size(18.dp))
             Spacer(modifier = Modifier.width(8.dp))
@@ -90,7 +93,8 @@ private fun GiftIdeaItem(
             onValueChange = onTextChange,
             modifier = Modifier
                 .weight(1f)
-                .focusRequester(focusRequester),
+                .focusRequester(focusRequester)
+                .testTag("gift_text_field"),
             placeholder = { Text(stringResource(R.string.gift_idea_placeholder)) },
             colors = TextFieldDefaults.colors(
                 focusedContainerColor = Color.Transparent,

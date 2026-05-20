@@ -9,11 +9,13 @@ import com.heckmannch.birthdaybuddy.data.local.LabelConfig
 import com.heckmannch.birthdaybuddy.data.repository.ContactRepository
 import com.heckmannch.birthdaybuddy.data.repository.TimeRepository
 import com.heckmannch.birthdaybuddy.data.mapper.ContactMapper
+import com.heckmannch.birthdaybuddy.MainDispatcherRule
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.runTest
 import org.junit.Before
+import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.kotlin.doReturn
@@ -25,6 +27,9 @@ import java.time.LocalDate
 @OptIn(ExperimentalCoroutinesApi::class)
 class HomeViewModelTest {
 
+    @get:Rule
+    val mainDispatcherRule = MainDispatcherRule()
+
     private val contactRepository: ContactRepository = mock()
     private val timeRepository: TimeRepository = mock()
     private lateinit var context: Context
@@ -34,9 +39,9 @@ class HomeViewModelTest {
     @Before
     fun setup() {
         context = ApplicationProvider.getApplicationContext()
-        whenever(timeRepository.currentDate).doReturn(flowOf(today))
-        whenever(contactRepository.labelConfigs).doReturn(flowOf(emptyList()))
-        whenever(contactRepository.allContacts).doReturn(flowOf(emptyList()))
+        whenever(timeRepository.currentDate).doReturn(MutableStateFlow(today))
+        whenever(contactRepository.labelConfigs).doReturn(MutableStateFlow(emptyList()))
+        whenever(contactRepository.allContacts).doReturn(MutableStateFlow(emptyList()))
     }
 
     @Test
@@ -54,7 +59,7 @@ class HomeViewModelTest {
         val viewModel = HomeViewModel(context, contactRepository, mapper, timeRepository)
         viewModel.onLabelSelected("Freunde")
 
-        val state = viewModel.uiState.first()
+        val state = viewModel.uiState.first { it.selectedLabel == "Freunde" }
         assertThat(state.selectedLabel).isEqualTo("Freunde")
     }
 
@@ -64,7 +69,7 @@ class HomeViewModelTest {
             Contact(contactId = "1", lookupKey = "k1", fullName = "Friend", birthday = today, labels = listOf("Freunde")),
             Contact(contactId = "2", lookupKey = "k2", fullName = "Family", birthday = today, labels = listOf("Familie"))
         )
-        whenever(contactRepository.allContacts).thenReturn(flowOf(contacts))
+        whenever(contactRepository.allContacts).thenReturn(MutableStateFlow(contacts))
 
         val viewModel = HomeViewModel(context, contactRepository, mapper, timeRepository)
         
@@ -84,11 +89,11 @@ class HomeViewModelTest {
         val labelConfigs = listOf(
             LabelConfig(name = "Ignored", isIgnored = true)
         )
-        whenever(contactRepository.allContacts).thenReturn(flowOf(contacts))
-        whenever(contactRepository.labelConfigs).thenReturn(flowOf(labelConfigs))
+        whenever(contactRepository.allContacts).thenReturn(MutableStateFlow(contacts))
+        whenever(contactRepository.labelConfigs).thenReturn(MutableStateFlow(labelConfigs))
 
         val viewModel = HomeViewModel(context, contactRepository, mapper, timeRepository)
-        val state = viewModel.uiState.first { it.contacts != null }
+        val state = viewModel.uiState.first { (it.contacts != null) }
 
         assertThat(state.contacts).hasSize(1)
         assertThat(state.contacts?.first()?.fullName).isEqualTo("Visible")
