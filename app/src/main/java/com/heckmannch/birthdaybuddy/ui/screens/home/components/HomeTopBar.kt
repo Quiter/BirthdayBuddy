@@ -1,6 +1,9 @@
 package com.heckmannch.birthdaybuddy.ui.screens.home.components
 
+import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.layout.*
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
@@ -26,28 +29,35 @@ fun HomeTopBar(
     onClearSearch: () -> Unit,
     searchFocusRequester: FocusRequester,
 ) {
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .statusBarsPadding()
-            .padding(top = 16.dp),
+    Surface(
+        color = MaterialTheme.colorScheme.surface,
+        tonalElevation = 2.dp,
+        modifier = Modifier.fillMaxWidth()
     ) {
-        SearchBar(
-            query = searchQuery,
-            placeholder = animatedPlaceholder,
-            onQueryChange = onSearchQueryChange,
-            onClearQuery = onClearSearch,
-            onSettingsClick = onNavigateToSettings,
-            focusRequester = searchFocusRequester,
-            modifier = Modifier.padding(bottom = 8.dp),
-        )
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .statusBarsPadding()
+                .padding(top = 8.dp, bottom = 8.dp)
+                .animateContentSize(),
+        ) {
+            SearchBar(
+                query = searchQuery,
+                placeholder = animatedPlaceholder,
+                onQueryChange = onSearchQueryChange,
+                onClearQuery = onClearSearch,
+                onSettingsClick = onNavigateToSettings,
+                focusRequester = searchFocusRequester,
+                modifier = Modifier.padding(bottom = 4.dp),
+            )
 
-        LabelFilterBar(
-            visible = isFilterBarVisible,
-            labels = availableLabels,
-            selectedLabel = selectedLabel,
-            onLabelSelected = onLabelSelected,
-        )
+            LabelFilterBar(
+                visible = isFilterBarVisible,
+                labels = availableLabels,
+                selectedLabel = selectedLabel,
+                onLabelSelected = onLabelSelected,
+            )
+        }
     }
 }
 

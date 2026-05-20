@@ -71,6 +71,9 @@
     - `HomeUiState.kt`: Gebündelter State für den Home-Screen.
     - `LabelManagementModel.kt`: Modell für die Label-Verwaltung.
     - `GiftIdea.kt`: Modell für Geschenkideen mit JSON-Logik.
+- ### 📁 UI Components (`ui.components`)
+    - `LottieIllustration.kt`: Wiederverwendbare Komponente für Lottie-Animationen.
+    - `ResponsiveLayout.kt`: Beinhaltet `AdaptiveContentContainer` und `AppResponsiveScaffold` für adaptive Layouts (Handy, Tablet, Chromebook).
 - ### 📁 Theme (`ui.theme`)
     - `Theme.kt`, `Color.kt`, `Type.kt`: Design-System Definitionen.
 

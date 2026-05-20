@@ -3,7 +3,6 @@ package com.heckmannch.birthdaybuddy.ui.screens.onboarding.components
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CheckCircle
-import androidx.compose.material.icons.filled.Contacts
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -13,16 +12,24 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import com.heckmannch.birthdaybuddy.R
+import com.heckmannch.birthdaybuddy.ui.components.LottieIllustration
 
 @Composable
 fun ContactsPage(isGranted: Boolean, onGrant: () -> Unit, onSkip: () -> Unit) {
     OnboardingPageWrapper {
-        Icon(
-            imageVector = if (isGranted) Icons.Default.CheckCircle else Icons.Default.Contacts,
-            contentDescription = null,
-            modifier = Modifier.size(100.dp),
-            tint = if (isGranted) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.secondary,
-        )
+        if (isGranted) {
+            Icon(
+                imageVector = Icons.Default.CheckCircle,
+                contentDescription = null,
+                modifier = Modifier.size(100.dp),
+                tint = MaterialTheme.colorScheme.primary,
+            )
+        } else {
+            LottieIllustration(
+                resId = R.raw.anim_contacts,
+                modifier = Modifier.size(200.dp)
+            )
+        }
         Spacer(modifier = Modifier.height(32.dp))
         Text(
             text = stringResource(R.string.onboarding_contacts_title),

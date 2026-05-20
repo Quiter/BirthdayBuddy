@@ -4,6 +4,7 @@ import android.net.Uri
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
 import androidx.compose.runtime.*
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
@@ -20,6 +21,7 @@ import java.time.format.DateTimeFormatter
  */
 @Composable
 fun BackupScreen(
+    windowWidthSizeClass: WindowWidthSizeClass,
     viewModel: BackupViewModel,
     onNavigateBack: () -> Unit
 ) {
@@ -66,9 +68,6 @@ fun BackupScreen(
                     if (json != null) {
                         val count = viewModel.importGiftIdeas(json)
                         if (count >= 0) {
-                            // Wir nutzen hier den count für den Singular/Plural-Check
-                            // Da Toast außerhalb der UI-Komposition aufgerufen wird, 
-                            // holen wir uns den String über den Context-Helper
                             val message = context.resources.getQuantityString(R.plurals.backup_import_success, count, count)
                             Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
                         } else {
@@ -85,6 +84,7 @@ fun BackupScreen(
     }
 
     BackupContent(
+        windowWidthSizeClass = windowWidthSizeClass,
         isLoading = isLoading,
         onExportClick = {
             val date = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd"))

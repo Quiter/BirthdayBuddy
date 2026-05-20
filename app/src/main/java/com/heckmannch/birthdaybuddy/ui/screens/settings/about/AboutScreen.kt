@@ -9,6 +9,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.*
+import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -22,11 +23,13 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.heckmannch.birthdaybuddy.R
+import com.heckmannch.birthdaybuddy.ui.components.AppResponsiveScaffold
 import com.heckmannch.birthdaybuddy.ui.theme.BirthdayBuddyTheme
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AboutScreen(
+    windowWidthSizeClass: WindowWidthSizeClass,
     onNavigateBack: () -> Unit,
     onNavigateToPrivacyPolicy: () -> Unit
 ) {
@@ -45,7 +48,8 @@ fun AboutScreen(
         }
     }
 
-    Scaffold(
+    AppResponsiveScaffold(
+        windowWidthSizeClass = windowWidthSizeClass,
         topBar = {
             TopAppBar(
                 title = { Text(stringResource(R.string.about_title)) },
@@ -59,11 +63,10 @@ fun AboutScreen(
                 }
             )
         }
-    ) { innerPadding ->
+    ) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(innerPadding)
                 .verticalScroll(rememberScrollState())
                 .padding(24.dp),
             horizontalAlignment = Alignment.CenterHorizontally
@@ -168,6 +171,10 @@ private fun AboutSection(title: String, content: String) {
 @Composable
 private fun AboutPreview() {
     BirthdayBuddyTheme {
-        AboutScreen(onNavigateBack = {}, onNavigateToPrivacyPolicy = {})
+        AboutScreen(
+            windowWidthSizeClass = WindowWidthSizeClass.Compact,
+            onNavigateBack = {},
+            onNavigateToPrivacyPolicy = {}
+        )
     }
 }

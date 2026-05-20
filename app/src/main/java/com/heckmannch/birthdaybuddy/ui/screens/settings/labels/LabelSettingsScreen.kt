@@ -9,6 +9,7 @@ import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material3.*
+import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
@@ -20,6 +21,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.heckmannch.birthdaybuddy.R
+import com.heckmannch.birthdaybuddy.ui.components.AppResponsiveScaffold
 import com.heckmannch.birthdaybuddy.ui.theme.BirthdayBuddyTheme
 import com.heckmannch.birthdaybuddy.viewmodel.LabelViewModel
 import com.heckmannch.birthdaybuddy.ui.model.LabelManagementModel
@@ -27,12 +29,14 @@ import com.heckmannch.birthdaybuddy.ui.model.LabelManagementModel
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun LabelSettingsScreen(
+    windowWidthSizeClass: WindowWidthSizeClass,
     viewModel: LabelViewModel,
     onNavigateBack: () -> Unit,
 ) {
     val labels by viewModel.labelManagementList.collectAsStateWithLifecycle()
 
     LabelSettingsContent(
+        windowWidthSizeClass = windowWidthSizeClass,
         labels = labels,
         onNavigateBack = onNavigateBack,
     ) { name, hidden, ignored, isSystem ->
@@ -43,11 +47,13 @@ fun LabelSettingsScreen(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun LabelSettingsContent(
+    windowWidthSizeClass: WindowWidthSizeClass,
     labels: List<LabelManagementModel>,
     onNavigateBack: () -> Unit,
     onConfigChanged: (String, Boolean, Boolean, Boolean) -> Unit
 ) {
-    Scaffold(
+    AppResponsiveScaffold(
+        windowWidthSizeClass = windowWidthSizeClass,
         topBar = {
             TopAppBar(
                 title = { Text(stringResource(R.string.labels_title)) },
@@ -61,21 +67,17 @@ private fun LabelSettingsContent(
                 }
             )
         }
-    ) { innerPadding ->
+    ) {
         if (labels.isEmpty()) {
             Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(innerPadding),
+                modifier = Modifier.fillMaxSize(),
                 contentAlignment = Alignment.Center
             ) {
                 Text(stringResource(R.string.labels_empty), style = MaterialTheme.typography.bodyLarge)
             }
         } else {
             LazyColumn(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(innerPadding),
+                modifier = Modifier.fillMaxSize(),
                 contentPadding = PaddingValues(16.dp),
                 verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
@@ -85,7 +87,7 @@ private fun LabelSettingsContent(
 
                 items(
                     items = labels,
-                    key = { it.name } // Optimierung 1: Stabiler Key für Performance
+                    key = { it.name }
                 ) { label ->
                     LabelConfigCard(
                         label = label,
@@ -226,6 +228,7 @@ private fun LabelConfigCard(
 private fun LabelSettingsPreview() {
     BirthdayBuddyTheme {
         LabelSettingsContent(
+            windowWidthSizeClass = WindowWidthSizeClass.Compact,
             labels = listOf(
                 LabelManagementModel("Familie", isHiddenFromFilter = false, isIgnored = false, isSystem = true),
                 LabelManagementModel("Freunde", isHiddenFromFilter = true, isIgnored = false, isSystem = false),

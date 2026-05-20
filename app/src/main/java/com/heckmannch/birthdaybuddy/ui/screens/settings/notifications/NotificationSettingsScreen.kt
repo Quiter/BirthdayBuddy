@@ -17,6 +17,7 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.NotificationsOff
 import androidx.compose.material3.*
+import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -32,6 +33,7 @@ import androidx.lifecycle.compose.LifecycleEventEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.heckmannch.birthdaybuddy.R
 import com.heckmannch.birthdaybuddy.data.local.NotificationRule
+import com.heckmannch.birthdaybuddy.ui.components.AppResponsiveScaffold
 import com.heckmannch.birthdaybuddy.ui.screens.settings.notifications.components.EditRuleDialog
 import com.heckmannch.birthdaybuddy.ui.screens.settings.notifications.components.NotificationRuleItem
 import com.heckmannch.birthdaybuddy.ui.theme.BirthdayBuddyTheme
@@ -39,6 +41,7 @@ import com.heckmannch.birthdaybuddy.viewmodel.NotificationViewModel
 
 @Composable
 fun NotificationSettingsScreen(
+    windowWidthSizeClass: WindowWidthSizeClass,
     viewModel: NotificationViewModel,
     onNavigateBack: () -> Unit,
 ) {
@@ -79,6 +82,7 @@ fun NotificationSettingsScreen(
     }
 
     NotificationSettingsContent(
+        windowWidthSizeClass = windowWidthSizeClass,
         notificationsEnabled = notificationsEnabled,
         persistentNotifications = persistentNotifications,
         rules = rules ?: emptyList(),
@@ -162,6 +166,7 @@ fun rememberNotificationSettingsState(): NotificationSettingsState {
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun NotificationSettingsContent(
+    windowWidthSizeClass: WindowWidthSizeClass,
     notificationsEnabled: Boolean,
     persistentNotifications: Boolean,
     rules: List<NotificationRule>,
@@ -175,7 +180,8 @@ private fun NotificationSettingsContent(
     onRequestPermission: () -> Unit,
     onNavigateBack: () -> Unit,
 ) {
-    Scaffold(
+    AppResponsiveScaffold(
+        windowWidthSizeClass = windowWidthSizeClass,
         topBar = {
             TopAppBar(
                 title = { Text(stringResource(R.string.notifications_title)) },
@@ -196,17 +202,14 @@ private fun NotificationSettingsContent(
                 }
             }
         }
-    ) { innerPadding ->
+    ) {
         if (!hasSystemPermission) {
             PermissionRequestState(
-                modifier = Modifier.padding(innerPadding),
                 onRequestPermission = onRequestPermission
             )
         } else {
             LazyColumn(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(innerPadding)
+                modifier = Modifier.fillMaxSize()
             ) {
                 item {
                     ListItem(
@@ -330,6 +333,7 @@ private fun PermissionRequestState(
 private fun NotificationSettingsPreview() {
     BirthdayBuddyTheme {
         NotificationSettingsContent(
+            windowWidthSizeClass = WindowWidthSizeClass.Compact,
             notificationsEnabled = true,
             persistentNotifications = true,
             rules = listOf(

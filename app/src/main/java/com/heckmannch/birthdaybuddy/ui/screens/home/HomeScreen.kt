@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.*
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
+import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -24,6 +25,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.imageLoader
 import coil.request.ImageRequest
 import com.heckmannch.birthdaybuddy.R
+import com.heckmannch.birthdaybuddy.ui.components.AppResponsiveScaffold
 import com.heckmannch.birthdaybuddy.ui.model.HomeUiState
 import com.heckmannch.birthdaybuddy.ui.model.SampleData
 import com.heckmannch.birthdaybuddy.ui.screens.home.components.*
@@ -40,6 +42,7 @@ import kotlinx.coroutines.flow.collectLatest
 @Composable
 fun HomeScreen(
     viewModel: HomeViewModel,
+    windowWidthSizeClass: WindowWidthSizeClass,
     onNavigateToSettings: () -> Unit,
 ) {
     val context = LocalContext.current
@@ -143,7 +146,8 @@ fun HomeScreen(
     HomeContent(
         uiState = uiState,
         homeState = homeState,
-        actions = actions
+        actions = actions,
+        windowWidthSizeClass = windowWidthSizeClass
     )
 }
 
@@ -153,6 +157,7 @@ private fun HomeContent(
     uiState: HomeUiState,
     homeState: HomeState,
     actions: HomeActions,
+    windowWidthSizeClass: WindowWidthSizeClass,
 ) {
     val focusManager = LocalFocusManager.current
     
@@ -162,7 +167,8 @@ private fun HomeContent(
         derivedStateOf { homeState.isFilterBarVisible(uiState.isResettingFilter) }
     }
 
-    Scaffold(
+    AppResponsiveScaffold(
+        windowWidthSizeClass = windowWidthSizeClass,
         snackbarHost = { SnackbarHost(hostState = homeState.snackbarHostState) },
         topBar = {
             HomeTopBar(
@@ -251,7 +257,8 @@ fun HomePreview() {
         HomeContent(
             uiState = SampleData.homeUiState,
             homeState = rememberHomeState(),
-            actions = actions
+            actions = actions,
+            windowWidthSizeClass = WindowWidthSizeClass.Compact
         )
     }
 }

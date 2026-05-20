@@ -27,11 +27,13 @@
 *Historie siehe `CHANGELOG.md`*
 
 - **Refactoring (Current):** `HomeViewModel` Konsolidierung, typsicheres State-Management, globale Code-Qualitäts-Offensive (Linting) abgeschlossen.
+- **UX & Animation:** Integration von Lottie-Animationen im Onboarding und Home-Screen zur emotionalen Nutzerführung.
 - **Messenger Logic:** Dynamische Erkennung von WhatsApp/Signal Verfügbarkeit pro Kontakt.
 - **Architecture Swap:** Umstellung auf spezialisierte ViewModels (`Home`, `Notification`, `Settings`, `Label`, `Backup`).
+- **Adaptive UI:** Einführung eines responsiven App-Gerüsts (`AppResponsiveScaffold`) zur Unterstützung verschiedener Formfaktoren (Phone, Tablet, Chromebook) und Beseitigung von Layout-Sprüngen beim Start.
 - **Persistence:** Alle App-Settings & Benachrichtigungs-Regeln sind in Room konsolidiert.
 
 ## 🎯 Kommende Aufgaben (Backlog)
 - **Polish:** Code-Review auf Redundanzen nach großen Refactorings.
-- **UX:** Lottie-Animationen für das Onboarding integrieren.
+- **UX:** Weitere Lottie-Animationen für das Onboarding (Welcome/Ready) integrieren, sobald Assets verfügbar sind.
 - **Plattform:** Vorbereitung für WearOS.

@@ -6,6 +6,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.*
+import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.runtime.LaunchedEffect
@@ -17,10 +18,12 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.heckmannch.birthdaybuddy.R
+import com.heckmannch.birthdaybuddy.ui.components.AppResponsiveScaffold
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PrivacyPolicyScreen(
+    windowWidthSizeClass: WindowWidthSizeClass,
     onNavigateBack: () -> Unit
 ) {
     val context = LocalContext.current
@@ -36,7 +39,8 @@ fun PrivacyPolicyScreen(
         }
     }
 
-    Scaffold(
+    AppResponsiveScaffold(
+        windowWidthSizeClass = windowWidthSizeClass,
         topBar = {
             TopAppBar(
                 title = { Text(stringResource(R.string.privacy_policy_title)) },
@@ -50,11 +54,10 @@ fun PrivacyPolicyScreen(
                 }
             )
         }
-    ) { innerPadding ->
+    ) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(innerPadding)
                 .verticalScroll(rememberScrollState())
                 .padding(24.dp)
         ) {
@@ -70,6 +73,9 @@ fun PrivacyPolicyScreen(
 @androidx.compose.ui.tooling.preview.Preview(showBackground = true)
 fun PrivacyPolicyScreenPreview() {
     MaterialTheme {
-        PrivacyPolicyScreen(onNavigateBack = {})
+        PrivacyPolicyScreen(
+            windowWidthSizeClass = WindowWidthSizeClass.Compact,
+            onNavigateBack = {}
+        )
     }
 }

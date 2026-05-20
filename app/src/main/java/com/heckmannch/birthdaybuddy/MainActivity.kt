@@ -18,6 +18,9 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.compose.material3.windowsizeclass.ExperimentalMaterial3WindowSizeClassApi
+import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
+import androidx.compose.material3.windowsizeclass.calculateWindowSizeClass
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -54,6 +57,7 @@ class MainActivity : ComponentActivity() {
 
     private var lastInteractionTime: Long = System.currentTimeMillis()
 
+    @OptIn(ExperimentalMaterial3WindowSizeClassApi::class)
     override fun onCreate(savedInstanceState: Bundle?) {
         val splashScreen = installSplashScreen()
         super.onCreate(savedInstanceState)
@@ -63,6 +67,7 @@ class MainActivity : ComponentActivity() {
         BirthdayWidgetWorker.enqueueNextUpdate(this)
 
         setContent {
+            val windowSizeClass = calculateWindowSizeClass(this)
             val homeViewModel: HomeViewModel = hiltViewModel()
             val settingsViewModel: SettingsViewModel = hiltViewModel()
             val onboardingCompleted by settingsViewModel.onboardingCompleted.collectAsStateWithLifecycle()
@@ -92,7 +97,7 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background,
                 ) {
-                    AppNavigation(navController, homeViewModel, settingsViewModel)
+                    AppNavigation(navController, homeViewModel, settingsViewModel, windowSizeClass.widthSizeClass)
                 }
             }
         }
@@ -133,7 +138,8 @@ class MainActivity : ComponentActivity() {
     private fun AppNavigation(
         navController: NavHostController,
         homeViewModel: HomeViewModel,
-        settingsViewModel: SettingsViewModel
+        settingsViewModel: SettingsViewModel,
+        windowWidthSizeClass: WindowWidthSizeClass,
     ) {
         val onboardingCompleted by settingsViewModel.onboardingCompleted.collectAsStateWithLifecycle()
 
@@ -149,20 +155,27 @@ class MainActivity : ComponentActivity() {
             popExitTransition = { sharedAxisZOut() },
         ) {
             composable(Routes.ONBOARDING) {
-                OnboardingScreen(viewModel = settingsViewModel) {
+                OnboardingScreen(
+                    viewModel = settingsViewModel,
+                    windowWidthSizeClass = windowWidthSizeClass
+                ) {
                     navController.navigate(Routes.HOME) {
                         popUpTo(Routes.ONBOARDING) { inclusive = true }
                     }
                 }
             }
             composable(Routes.HOME) {
-                HomeScreen(viewModel = homeViewModel) {
+                HomeScreen(
+                    viewModel = homeViewModel,
+                    windowWidthSizeClass = windowWidthSizeClass
+                ) {
                     navController.navigate(Routes.SETTINGS)
                 }
             }
             composable(Routes.SETTINGS) {
                 SettingsScreen(
                     viewModel = homeViewModel,
+                    windowWidthSizeClass = windowWidthSizeClass,
                     onNavigateToLabels = {
                         navController.navigate(Routes.LABEL_SETTINGS)
                     },
@@ -181,24 +194,34 @@ class MainActivity : ComponentActivity() {
             }
             composable(Routes.LABEL_SETTINGS) {
                 val labelViewModel: LabelViewModel = hiltViewModel()
-                LabelSettingsScreen(viewModel = labelViewModel) {
+                LabelSettingsScreen(
+                    windowWidthSizeClass = windowWidthSizeClass,
+                    viewModel = labelViewModel
+                ) {
                     navController.popBackStack()
                 }
             }
             composable(Routes.NOTIFICATION_SETTINGS) {
                 val notificationViewModel: NotificationViewModel = hiltViewModel()
-                NotificationSettingsScreen(viewModel = notificationViewModel) {
+                NotificationSettingsScreen(
+                    windowWidthSizeClass = windowWidthSizeClass,
+                    viewModel = notificationViewModel
+                ) {
                     navController.popBackStack()
                 }
             }
             composable(Routes.BACKUP_SETTINGS) {
                 val backupViewModel: BackupViewModel = hiltViewModel()
-                BackupScreen(viewModel = backupViewModel) {
+                BackupScreen(
+                    windowWidthSizeClass = windowWidthSizeClass,
+                    viewModel = backupViewModel
+                ) {
                     navController.popBackStack()
                 }
             }
             composable(Routes.ABOUT) {
                 AboutScreen(
+                    windowWidthSizeClass = windowWidthSizeClass,
                     onNavigateBack = {
                         navController.popBackStack()
                     },
@@ -208,7 +231,7 @@ class MainActivity : ComponentActivity() {
                 )
             }
             composable(Routes.PRIVACY_POLICY) {
-                PrivacyPolicyScreen {
+                PrivacyPolicyScreen(windowWidthSizeClass = windowWidthSizeClass) {
                     navController.popBackStack()
                 }
             }

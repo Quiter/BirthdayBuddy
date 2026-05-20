@@ -6,6 +6,7 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.material3.*
+import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -13,6 +14,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.heckmannch.birthdaybuddy.R
+import com.heckmannch.birthdaybuddy.ui.components.AppResponsiveScaffold
 import com.heckmannch.birthdaybuddy.ui.theme.BirthdayBuddyTheme
 
 /**
@@ -21,12 +23,14 @@ import com.heckmannch.birthdaybuddy.ui.theme.BirthdayBuddyTheme
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun BackupContent(
+    windowWidthSizeClass: WindowWidthSizeClass,
     isLoading: Boolean,
     onExportClick: () -> Unit,
     onImportClick: () -> Unit,
     onNavigateBack: () -> Unit
 ) {
-    Scaffold(
+    AppResponsiveScaffold(
+        windowWidthSizeClass = windowWidthSizeClass,
         topBar = {
             TopAppBar(
                 title = { Text(stringResource(R.string.backup_title)) },
@@ -40,11 +44,10 @@ fun BackupContent(
                 }
             )
         }
-    ) { innerPadding ->
+    ) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(innerPadding)
                 .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
@@ -118,6 +121,7 @@ private fun InfoSection() {
 private fun BackupPreview() {
     BirthdayBuddyTheme {
         BackupContent(
+            windowWidthSizeClass = WindowWidthSizeClass.Compact,
             isLoading = false,
             onExportClick = {},
             onImportClick = {},
@@ -131,6 +135,7 @@ private fun BackupPreview() {
 private fun BackupLoadingPreview() {
     BirthdayBuddyTheme {
         BackupContent(
+            windowWidthSizeClass = WindowWidthSizeClass.Compact,
             isLoading = true,
             onExportClick = {},
             onImportClick = {},

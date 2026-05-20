@@ -13,11 +13,13 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material3.*
+import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import com.heckmannch.birthdaybuddy.ui.components.AdaptiveContentContainer
 import com.heckmannch.birthdaybuddy.ui.screens.onboarding.components.*
 import com.heckmannch.birthdaybuddy.viewmodel.SettingsViewModel
 import kotlinx.coroutines.launch
@@ -25,6 +27,7 @@ import kotlinx.coroutines.launch
 @Composable
 fun OnboardingScreen(
     viewModel: SettingsViewModel,
+    windowWidthSizeClass: WindowWidthSizeClass,
     onFinish: () -> Unit,
 ) {
     val context = LocalContext.current
@@ -97,11 +100,14 @@ fun OnboardingScreen(
                 },
                 onNext = {
                     scope.launch { pagerState.animateScrollToPage(pagerState.currentPage + 1) }
-                },
+                }
             )
         }
     ) { innerPadding ->
-        Column(modifier = Modifier.fillMaxSize().padding(innerPadding)) {
+        AdaptiveContentContainer(
+            windowWidthSizeClass = windowWidthSizeClass,
+            modifier = Modifier.padding(innerPadding)
+        ) {
             HorizontalPager(
                 state = pagerState,
                 modifier = Modifier.fillMaxSize(),

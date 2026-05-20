@@ -14,6 +14,7 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.Label
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
+import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -23,12 +24,14 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import com.heckmannch.birthdaybuddy.R
+import com.heckmannch.birthdaybuddy.ui.components.AppResponsiveScaffold
 import com.heckmannch.birthdaybuddy.ui.theme.BirthdayBuddyTheme
 import com.heckmannch.birthdaybuddy.viewmodel.HomeViewModel
 
 @Composable
 fun SettingsScreen(
     viewModel: HomeViewModel,
+    windowWidthSizeClass: WindowWidthSizeClass,
     onNavigateToLabels: () -> Unit,
     onNavigateToNotifications: () -> Unit,
     onNavigateToBackup: () -> Unit,
@@ -45,6 +48,7 @@ fun SettingsScreen(
     }
 
     SettingsContent(
+        windowWidthSizeClass = windowWidthSizeClass,
         onSyncClick = {
             when (PackageManager.PERMISSION_GRANTED) {
                 ContextCompat.checkSelfPermission(context, Manifest.permission.READ_CONTACTS) -> {
@@ -64,6 +68,7 @@ fun SettingsScreen(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun SettingsContent(
+    windowWidthSizeClass: WindowWidthSizeClass,
     onSyncClick: () -> Unit,
     onNavigateToLabels: () -> Unit,
     onNavigateToNotifications: () -> Unit,
@@ -71,7 +76,8 @@ private fun SettingsContent(
     onNavigateToAbout: () -> Unit,
     onNavigateBack: () -> Unit,
 ) {
-    Scaffold(
+    AppResponsiveScaffold(
+        windowWidthSizeClass = windowWidthSizeClass,
         topBar = {
             TopAppBar(
                 title = { Text(stringResource(R.string.settings_title)) },
@@ -85,11 +91,9 @@ private fun SettingsContent(
                 },
             )
         },
-    ) { innerPadding ->
+    ) {
         Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(innerPadding)
+            modifier = Modifier.fillMaxSize()
         ) {
             LazyColumn(
                 modifier = Modifier
@@ -194,6 +198,7 @@ private fun SettingsFooter() {
 private fun SettingsPreview() {
     BirthdayBuddyTheme {
         SettingsContent(
+            windowWidthSizeClass = WindowWidthSizeClass.Compact,
             onSyncClick = {},
             onNavigateToLabels = {},
             onNavigateToNotifications = {},
