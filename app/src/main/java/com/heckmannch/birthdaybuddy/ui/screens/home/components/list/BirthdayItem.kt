@@ -205,6 +205,8 @@ fun BirthdayItem(
                         phoneNumber = contact.phoneNumber,
                         hasWhatsApp = contact.hasWhatsApp,
                         hasSignal = contact.hasSignal,
+                        hasBirthday = contact.daysUntilNext != Long.MAX_VALUE,
+                        onAddBirthday = { showDatePicker.value = true },
                         actions = actions
                     )
 

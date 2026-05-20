@@ -3,6 +3,7 @@ package com.heckmannch.birthdaybuddy.ui.screens.home.components.actions
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Message
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Call
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.*
@@ -25,6 +26,8 @@ fun ContactActionRow(
     phoneNumber: String?,
     hasWhatsApp: Boolean,
     hasSignal: Boolean,
+    hasBirthday: Boolean,
+    onAddBirthday: () -> Unit,
     actions: HomeActions,
     modifier: Modifier = Modifier,
 ) {
@@ -41,6 +44,14 @@ fun ContactActionRow(
             label = stringResource(R.string.item_action_contact),
             onClick = { actions.onOpenContact(contactId, lookupKey) }
         )
+
+        if (!hasBirthday) {
+            ActionItem(
+                icon = Icons.Default.Add,
+                label = stringResource(R.string.item_action_edit_birthday),
+                onClick = onAddBirthday
+            )
+        }
 
         if (phoneNumber != null) {
             // Anrufen
@@ -132,6 +143,8 @@ fun ContactActionRowPreview() {
             phoneNumber = "123",
             hasWhatsApp = true,
             hasSignal = true,
+            hasBirthday = false,
+            onAddBirthday = {},
             actions = actions
         )
     }

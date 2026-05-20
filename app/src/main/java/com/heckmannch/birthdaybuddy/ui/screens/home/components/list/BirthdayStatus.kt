@@ -3,6 +3,7 @@ package com.heckmannch.birthdaybuddy.ui.screens.home.components.list
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Cake
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
@@ -27,7 +28,14 @@ fun BirthdayStatus(
         horizontalAlignment = Alignment.End,
         modifier = Modifier.clickable { onEditBirthday() }
     ) {
-        if (isToday) {
+        if (daysUntilNext == Long.MAX_VALUE) {
+            Icon(
+                imageVector = Icons.Default.Add,
+                contentDescription = stringResource(R.string.item_action_edit_birthday),
+                tint = MaterialTheme.colorScheme.primary,
+                modifier = Modifier.size(24.dp)
+            )
+        } else if (isToday) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Icon(
                     imageVector = Icons.Default.Cake,

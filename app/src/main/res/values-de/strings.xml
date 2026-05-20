@@ -23,6 +23,7 @@
     <string name="item_action_gifts">Geschenkideen</string>
     <string name="item_action_contact">Kontakt</string>
     <string name="item_today">Heute!</string>
+    <string name="item_action_edit_birthday">Geburtstag hinzufügen</string>
     <plurals name="item_days_left">
         <item quantity="one">In %d T.</item>
         <item quantity="other">In %d T.</item>
