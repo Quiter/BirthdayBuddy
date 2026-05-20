@@ -126,7 +126,8 @@ fun BirthdayItem(
     Card(
         modifier = modifier
             .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 4.dp)
+            .padding(horizontal = 16.dp)
+            .padding(bottom = 8.dp)
             .graphicsLayer(),
         colors = CardDefaults.cardColors(
             containerColor = if (isExpanded) MaterialTheme.colorScheme.surfaceContainerHigh

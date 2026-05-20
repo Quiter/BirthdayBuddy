@@ -1,9 +1,12 @@
 package com.heckmannch.birthdaybuddy.ui.screens.home.components
 
 import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.togetherWith
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.BasicTextField
@@ -14,20 +17,19 @@ import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-
-import androidx.compose.ui.res.stringResource
 import com.heckmannch.birthdaybuddy.R
 import com.heckmannch.birthdaybuddy.ui.theme.BirthdayBuddyTheme
 
@@ -42,6 +44,20 @@ fun SearchBar(
     focusRequester: FocusRequester = remember { FocusRequester() },
 ) {
     val focusManager = LocalFocusManager.current
+    var isFocused by remember { mutableStateOf(value = false) }
+
+    // Wir nutzen animateColorAsState für weiche Übergänge
+    val borderColor by animateColorAsState(
+        targetValue = if (isFocused) MaterialTheme.colorScheme.primary 
+                      else MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.6f),
+        label = "SearchBorderColor"
+    )
+    
+    val borderWidth by animateDpAsState(
+        targetValue = if (isFocused) 1.5.dp else 1.dp,
+        label = "SearchBorderWidth"
+    )
+
     val textStyle = MaterialTheme.typography.bodyLarge.copy(
         color = MaterialTheme.colorScheme.onSurface,
     )
@@ -52,8 +68,9 @@ fun SearchBar(
             .padding(horizontal = 16.dp)
             .height(56.dp),
         shape = CircleShape,
-        color = MaterialTheme.colorScheme.surfaceContainerHigh,
-        tonalElevation = 2.dp,
+        color = MaterialTheme.colorScheme.surface, // Gleicher Hintergrund wie die Liste
+        tonalElevation = if (isFocused) 3.dp else 0.dp,
+        border = BorderStroke(borderWidth, borderColor),
     ) {
         Row(
             modifier = Modifier
@@ -64,7 +81,8 @@ fun SearchBar(
             Icon(
                 imageVector = Icons.Default.Search,
                 contentDescription = null,
-                tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                tint = if (isFocused) MaterialTheme.colorScheme.primary 
+                       else MaterialTheme.colorScheme.onSurfaceVariant,
             )
             
             Box(
@@ -100,7 +118,8 @@ fun SearchBar(
                         .fillMaxWidth()
                         .fillMaxHeight()
                         .wrapContentHeight()
-                        .focusRequester(focusRequester),
+                        .focusRequester(focusRequester)
+                        .onFocusChanged { isFocused = it.isFocused },
                     textStyle = textStyle,
                     singleLine = true,
                     cursorBrush = SolidColor(MaterialTheme.colorScheme.primary),
@@ -123,7 +142,9 @@ fun SearchBar(
                 IconButton(onClick = onSettingsClick) {
                     Icon(
                         imageVector = Icons.Default.Settings,
-                        contentDescription = stringResource(R.string.home_settings)
+                        contentDescription = stringResource(R.string.home_settings),
+                        tint = if (isFocused) MaterialTheme.colorScheme.primary 
+                               else MaterialTheme.colorScheme.onSurfaceVariant,
                     )
                 }
             }

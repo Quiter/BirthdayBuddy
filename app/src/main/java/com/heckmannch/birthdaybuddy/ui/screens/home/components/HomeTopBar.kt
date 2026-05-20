@@ -29,35 +29,37 @@ fun HomeTopBar(
     onClearSearch: () -> Unit,
     searchFocusRequester: FocusRequester,
 ) {
-    Surface(
-        color = MaterialTheme.colorScheme.surface,
-        tonalElevation = 2.dp,
-        modifier = Modifier.fillMaxWidth()
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .animateContentSize(),
     ) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .statusBarsPadding()
-                .padding(top = 8.dp, bottom = 8.dp)
-                .animateContentSize(),
+        // Oberer Teil (Suche) - jetzt ohne Elevation, damit es zur Liste passt
+        Surface(
+            color = MaterialTheme.colorScheme.surface,
+            modifier = Modifier.fillMaxWidth()
         ) {
-            SearchBar(
-                query = searchQuery,
-                placeholder = animatedPlaceholder,
-                onQueryChange = onSearchQueryChange,
-                onClearQuery = onClearSearch,
-                onSettingsClick = onNavigateToSettings,
-                focusRequester = searchFocusRequester,
-                modifier = Modifier.padding(bottom = 4.dp),
-            )
-
-            LabelFilterBar(
-                visible = isFilterBarVisible,
-                labels = availableLabels,
-                selectedLabel = selectedLabel,
-                onLabelSelected = onLabelSelected,
-            )
+            Column {
+                Spacer(modifier = Modifier.statusBarsPadding())
+                SearchBar(
+                    query = searchQuery,
+                    placeholder = animatedPlaceholder,
+                    onQueryChange = onSearchQueryChange,
+                    onClearQuery = onClearSearch,
+                    onSettingsClick = onNavigateToSettings,
+                    focusRequester = searchFocusRequester,
+                    modifier = Modifier.padding(top = 8.dp, bottom = 8.dp),
+                )
+            }
         }
+
+        // Unterer Teil (Filter) - nutzt den Standard-Hintergrund des Scaffolds (wie die Liste)
+        LabelFilterBar(
+            visible = isFilterBarVisible,
+            labels = availableLabels,
+            selectedLabel = selectedLabel,
+            onLabelSelected = onLabelSelected,
+        )
     }
 }
 

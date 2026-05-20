@@ -1,10 +1,12 @@
 package com.heckmannch.birthdaybuddy.ui.components
 
 import androidx.compose.foundation.layout.*
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 
 /**
@@ -40,19 +42,23 @@ fun AdaptiveContentContainer(
 @Composable
 fun AppResponsiveScaffold(
     windowWidthSizeClass: WindowWidthSizeClass,
+    modifier: Modifier = Modifier,
     topBar: @Composable () -> Unit = {},
     bottomBar: @Composable () -> Unit = {},
     floatingActionButton: @Composable () -> Unit = {},
     snackbarHost: @Composable () -> Unit = {},
+    containerColor: Color = Color.Unspecified,
     content: @Composable (PaddingValues) -> Unit
 ) {
     // Hier könnten wir später eine NavigationRail für Tablets hinzufügen.
     // Für jetzt konzentrieren wir uns auf die Zentrierung und Insets.
-    androidx.compose.material3.Scaffold(
+    Scaffold(
+        modifier = modifier,
         topBar = topBar,
         bottomBar = bottomBar,
         floatingActionButton = floatingActionButton,
         snackbarHost = snackbarHost,
+        containerColor = containerColor,
         content = { paddingValues ->
             AdaptiveContentContainer(
                 windowWidthSizeClass = windowWidthSizeClass,

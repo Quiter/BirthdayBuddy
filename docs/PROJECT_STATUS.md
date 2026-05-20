@@ -8,8 +8,9 @@
 3. **Database Safety:** Schema-Änderung = Version-Bump + Auto-Migration. `fallbackToDestructiveMigration` verboten. Schema-Exports in `app/schemas` einchecken.
 4. **Architektur:** Feature-basierte Layer. Spezialisierte ViewModels pro Screen. DI via Hilt.
 5. **UI-Prinzipien:** Kontakte nach "Tagen bis Geburtstag" sortiert. Tap-to-Expand Cards (kein Swipe).
-6. **Tests:** Vor Releases: `./gradlew test connectedDebugAndroidTest`.
-7. **Kommunikation:** GitHub-Summaries: Kurz, technisch, englisch. Play Store Notes: XML-Format (DE/EN).
+6. **Padding-Regel:** Keine additiven vertikalen Paddings. Abstand zwischen Komponenten wird primär durch die obere Komponente (`bottom-padding`) gesteuert, um Layout-Sprünge bei `AnimatedVisibility` zu vermeiden.
+7. **Tests:** Vor Releases: `./gradlew test connectedDebugAndroidTest`.
+8. **Kommunikation:** GitHub-Summaries: Kurz, technisch, englisch. Play Store Notes: XML-Format (DE/EN).
 
 ## 🏗 Technischer Stack
 - **UI:** Compose (BOM 2026.05.00), Material 3, Glance (Widget).
@@ -17,9 +18,9 @@
 - **Logic:** `ContactUiModel` (@Immutable), JSON-Mapping für GiftIdeas/Labels.
 
 ## ✨ Kern-Features (Status Quo)
-- **Home:** Expandable Cards, Gmail-Style Suche, Label-Filter, Fast-Scrollbar, Konfetti-Effekt.
+- **Home:** Expandable Cards, Gmail-Style Suche mit Fokus-Highlighting, Label-Filter, Fast-Scrollbar, Konfetti-Effekt.
 - **Messenger:** Smarte Erkennung (WhatsApp/Signal) via MIME-Type Check.
-- **Onboarding:** Geführter Permission-Flow (Kontakte/Benachrichtigungen).
+- **Onboarding:** Adaptiver Permission-Flow mit Lottie-Animationen (Kontakte/Benachrichtigungen).
 - **Gift Ideas:** Inline-Edit mit lokalem State (kein Lag), JSON-persistiert, jetzt platzsparend einklappbar.
 - **Widget:** Jetpack Glance mit präzisen Mitternachts-Updates, optimiert für 3x2 Layout mit adaptivem Dark-Mode Preview.
 

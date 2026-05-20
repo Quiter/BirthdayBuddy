@@ -19,7 +19,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
-import com.heckmannch.birthdaybuddy.ui.components.AdaptiveContentContainer
+import com.heckmannch.birthdaybuddy.ui.components.AppResponsiveScaffold
 import com.heckmannch.birthdaybuddy.ui.screens.onboarding.components.*
 import com.heckmannch.birthdaybuddy.viewmodel.SettingsViewModel
 import kotlinx.coroutines.launch
@@ -85,7 +85,8 @@ fun OnboardingScreen(
         }
     }
 
-    Scaffold(
+    AppResponsiveScaffold(
+        windowWidthSizeClass = windowWidthSizeClass,
         modifier = Modifier.fillMaxSize(),
         containerColor = MaterialTheme.colorScheme.surface,
         bottomBar = {
@@ -103,46 +104,41 @@ fun OnboardingScreen(
                 }
             )
         }
-    ) { innerPadding ->
-        AdaptiveContentContainer(
-            windowWidthSizeClass = windowWidthSizeClass,
-            modifier = Modifier.padding(innerPadding)
-        ) {
-            HorizontalPager(
-                state = pagerState,
-                modifier = Modifier.fillMaxSize(),
-                userScrollEnabled = false
-            ) { page ->
-                when (page) {
-                    0 -> WelcomePage()
-                    1 -> ContactsPage(
-                        isGranted = hasContactPermission,
-                        onGrant = onRequestContactPermission
-                    ) {
-                        scope.launch { pagerState.animateScrollToPage(2) }
+    ) {
+        HorizontalPager(
+            state = pagerState,
+            modifier = Modifier.fillMaxSize(),
+            userScrollEnabled = false
+        ) { page ->
+            when (page) {
+                0 -> WelcomePage()
+                1 -> ContactsPage(
+                    isGranted = hasContactPermission,
+                    onGrant = onRequestContactPermission
+                ) {
+                    scope.launch { pagerState.animateScrollToPage(2) }
+                }
+                2 -> NotificationsPage(
+                    enabled = notificationsEnabled,
+                    onEnabledChange = { notificationsEnabled = it },
+                    persistent = persistentEnabled,
+                    onPersistentChange = { persistentEnabled = it },
+                    isGranted = hasNotifPermission
+                ) {
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                        notifLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+                    } else {
+                        hasNotifPermission = true
+                        scope.launch { pagerState.animateScrollToPage(3) }
                     }
-                    2 -> NotificationsPage(
-                        enabled = notificationsEnabled,
-                        onEnabledChange = { notificationsEnabled = it },
-                        persistent = persistentEnabled,
-                        onPersistentChange = { persistentEnabled = it },
-                        isGranted = hasNotifPermission
-                    ) {
-                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                            notifLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
-                        } else {
-                            hasNotifPermission = true
-                            scope.launch { pagerState.animateScrollToPage(3) }
-                        }
-                    }
-                    3 -> ReadyPage(
-                        hasContactPermission = hasContactPermission,
-                        notificationsEnabled = notificationsEnabled && hasNotifPermission
-                    ) {
-                        viewModel.setPersistentNotifications(persistentEnabled)
-                        viewModel.completeOnboarding(notificationsEnabled && hasNotifPermission)
-                        onFinish()
-                    }
+                }
+                3 -> ReadyPage(
+                    hasContactPermission = hasContactPermission,
+                    notificationsEnabled = notificationsEnabled && hasNotifPermission
+                ) {
+                    viewModel.setPersistentNotifications(persistentEnabled)
+                    viewModel.completeOnboarding(notificationsEnabled && hasNotifPermission)
+                    onFinish()
                 }
             }
         }

@@ -51,6 +51,7 @@ private object ScrollbarDefaults {
 fun FastScrollbar(
     listState: LazyListState,
     contacts: List<ContactUiModel>,
+    getLabel: (ContactUiModel) -> String,
     modifier: Modifier = Modifier,
     isResettingFilter: Boolean = false,
     onSetFastScrolling: (Boolean) -> Unit = {},
@@ -108,7 +109,7 @@ fun FastScrollbar(
         }
 
         if (canScroll && totalItems > 0) {
-            val currentMonth by remember(contacts, trackHeightPx) {
+            val currentLabel by remember(contacts, trackHeightPx, getLabel) {
                 derivedStateOf {
                     val index = if (isDragging) {
                         val percent = if (trackHeightPx > 0) (dragOffsetPx / trackHeightPx).coerceIn(0f, 1f) else 0f
@@ -116,12 +117,13 @@ fun FastScrollbar(
                     } else {
                         listState.firstVisibleItemIndex
                     }
-                    contacts.getOrNull(index.coerceIn(0, totalItems - 1))?.monthName ?: ""
+                    val contact = contacts.getOrNull(index.coerceIn(0, totalItems - 1))
+                    if (contact != null) getLabel(contact) else ""
                 }
             }
             
-            // Haptisches Feedback bei Monatswechsel während des Drags
-            LaunchedEffect(currentMonth) {
+            // Haptisches Feedback bei Label-Wechsel während des Drags
+            LaunchedEffect(currentLabel) {
                 if (isDragging) {
                     haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                 }
@@ -194,7 +196,7 @@ fun FastScrollbar(
                     modifier = Modifier.padding(end = 16.dp),
                 ) {
                     Text(
-                        text = currentMonth,
+                        text = currentLabel,
                         modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
                         color = MaterialTheme.colorScheme.onPrimary,
                         style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
@@ -202,7 +204,7 @@ fun FastScrollbar(
                 }
             }
 
-            val scrollbarDesc = stringResource(R.string.home_scrollbar_desc, currentMonth)
+            val scrollbarDesc = stringResource(R.string.home_scrollbar_desc, currentLabel)
 
             // Thumb
             Box(

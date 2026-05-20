@@ -49,6 +49,7 @@ fun BirthdayList(
     onDeleteGiftIdea: (String, String) -> Unit,
     onUpdateBirthday: (String, java.time.LocalDate) -> Unit,
     onOpenContact: (String, String) -> Unit,
+    onInteraction: () -> Unit = {},
 ) {
     val context = LocalContext.current
     
@@ -120,6 +121,7 @@ fun BirthdayList(
                     isExpanded = isExpanded,
                     newlyAddedIdeaId = newlyAddedIdeaId,
                     onExpand = {
+                        onInteraction()
                         expandedContactId = if (isExpanded) null else contact.id
                     },
                     onAddGiftIdea = onAddGiftIdea,
@@ -151,7 +153,8 @@ private fun BirthdayItemSkeleton() {
     Surface(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 4.dp)
+            .padding(horizontal = 16.dp)
+            .padding(bottom = 8.dp)
             .height(72.dp),
         shape = MaterialTheme.shapes.medium,
         color = MaterialTheme.colorScheme.surfaceContainerLow.copy(alpha = alpha)

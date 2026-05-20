@@ -136,4 +136,9 @@
     - **Large Screen Optimization:** Auf breiten Bildschirmen wird der Inhalt nun zentriert und in der Breite begrenzt (max. 840dp), um eine bessere Lesbarkeit zu gewährleisten.
     - **Onboarding Fix:** Verbesserung der Onboarding-Seiten für kleine Displayhöhen (z.B. Chromebook im Landscape-Modus) durch flexiblere Abstände und optimiertes Scrolling.
     - **Dependency:** Integration von `material3-window-size-class` zur präzisen Erkennung der Bildschirmkonfiguration.
+103. **UX Polish & Search Highlighting:**
+    - **Visual Feedback:** Einführung eines dynamischen Highlighting-Effekts für die `SearchBar`. Bei Fokus wird nun eine animierte Umrandung gezeichnet und die Hintergrundfarbe sanft angepasst.
+    - **Smart Focus Management:** Optimierung der Tastatur-Steuerung; der Fokus der Suche wird nun zuverlässig bei jeder Listen-Interaktion (Scrollen oder Aufklappen einer Karte) gelöscht, um eine freie Sicht auf die Inhalte zu gewährleisten.
+    - **Layout Harmony:** Korrektur des Hintergrund-Übergangs in der `HomeTopBar`. Die Filter-Bar nutzt nun denselben Hintergrund wie die Liste, während der Suchbereich durch Elevation optisch abgehoben bleibt.
+    - **Onboarding UX:** Verbesserung der Klickbarkeit und Sichtbarkeit der Onboarding-Buttons auf Geräten mit geringer Displayhöhe (z.B. Chromebooks im Landscape-Modus) durch optimiertes Spacing und Scrolling.
 

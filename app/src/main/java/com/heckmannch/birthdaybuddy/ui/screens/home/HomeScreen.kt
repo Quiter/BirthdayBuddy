@@ -95,7 +95,7 @@ fun HomeScreen(
     }
 
     LaunchedEffect(homeState.listState.isScrollInProgress) {
-        if (homeState.listState.isScrollInProgress && uiState.searchQuery.isNotEmpty()) {
+        if (homeState.listState.isScrollInProgress) {
             focusManager.clearFocus()
             keyboardController?.hide()
         }
@@ -160,6 +160,7 @@ private fun HomeContent(
     windowWidthSizeClass: WindowWidthSizeClass,
 ) {
     val focusManager = LocalFocusManager.current
+    val keyboardController = LocalSoftwareKeyboardController.current
     
     // Optimierung: Filter-Sichtbarkeit in derivedStateOf kapseln, damit HomeContent 
     // nicht bei jedem Scroll-Pixel re-composed.
@@ -220,11 +221,22 @@ private fun HomeContent(
                 onDeleteGiftIdea = actions.onDeleteGiftIdea,
                 onUpdateBirthday = actions.onUpdateBirthday,
                 onOpenContact = actions.onOpenContact,
+                onInteraction = {
+                    focusManager.clearFocus()
+                    keyboardController?.hide()
+                }
             )
 
             FastScrollbar(
                 listState = homeState.listState,
                 contacts = uiState.contacts ?: emptyList(),
+                getLabel = { contact ->
+                    if (uiState.selectedLabel == HomeViewModel.LABEL_NO_BIRTHDAY) {
+                        contact.fullName.firstOrNull()?.uppercaseChar()?.toString() ?: ""
+                    } else {
+                        contact.monthName
+                    }
+                },
                 modifier = Modifier.align(Alignment.CenterEnd).fillMaxHeight(),
                 isResettingFilter = uiState.isResettingFilter,
                 onSetFastScrolling = { homeState.onSetFastScrolling(it) },

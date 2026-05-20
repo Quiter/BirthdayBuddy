@@ -10,7 +10,7 @@
     <string name="home_filter_no_birthday">No Birthday</string>
     <string name="home_scroll_to_top">Scroll to top</string>
     <string name="home_add_contact">Add contact</string>
-    <string name="home_scrollbar_desc">Fast scrollbar, current month: %1$s</string>
+    <string name="home_scrollbar_desc">Fast scrollbar, current: %1$s</string>
 
     <!-- Birthday List -->
     <string name="empty_permission_desc">To see your birthdays, BirthdayBuddy needs access to your contacts.</string>

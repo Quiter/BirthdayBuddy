@@ -10,7 +10,7 @@
     <string name="home_filter_no_birthday">Ohne Datum</string>
     <string name="home_scroll_to_top">Nach oben scrollen</string>
     <string name="home_add_contact">Kontakt hinzufügen</string>
-    <string name="home_scrollbar_desc">Schnell-Scrollleiste, aktueller Monat: %1$s</string>
+    <string name="home_scrollbar_desc">Schnell-Scrollleiste, aktuell: %1$s</string>
 
     <!-- Birthday List -->
     <string name="empty_permission_desc">Um deine Geburtstage zu sehen, benötigt BirthdayBuddy Zugriff auf deine Kontakte.</string>
