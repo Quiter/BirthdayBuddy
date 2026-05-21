@@ -34,6 +34,7 @@
 - **Adaptive UI:** Einführung eines responsiven App-Gerüsts (`AppResponsiveScaffold`) zur Unterstützung verschiedener Formfaktoren (Phone, Tablet, Chromebook) und Beseitigung von Layout-Sprüngen beim Start.
 - **Persistence:** Alle App-Settings & Benachrichtigungs-Regeln sind in Room konsolidiert.
 - **Stability Fix:** Manuelle Migration 1->2 zur Behebung von Schema-Inkonsistenzen bei Bestandsnutzern (inkl. instrumentiertem Migrationstest).
+- **Architecture Simplification:** Radikale Verschlankung der UI-Komponenten und ViewModels. Delegierung von Sortier-Logik an Modelle und Zentralisierung des Layout-Managements im adaptiven Scaffold zur Reduzierung von Redundanzen.
 
 ## 🎯 Kommende Aufgaben (Backlog)
 - **Polish:** Code-Review auf Redundanzen nach großen Refactorings.

@@ -73,7 +73,7 @@
     - `ContactUiModel.kt`: Immutable UI-Modell für Kontakte.
     - `HomeUiState.kt`: Gebündelter State für den Home-Screen.
     - `LabelManagementModel.kt`: Modell für die Label-Verwaltung.
-    - `GiftIdea.kt`: Modell für Geschenkideen mit JSON-Logik.
+    - `GiftIdea.kt`: Modell für Geschenkideen mit JSON- und Manipulations-Logik.
 - ### 📁 UI Components (`ui.components`)
     - `LottieIllustration.kt`: Wiederverwendbare Komponente für Lottie-Animationen.
     - `ResponsiveLayout.kt`: Beinhaltet `AdaptiveContentContainer` und `AppResponsiveScaffold` für adaptive Layouts (Handy, Tablet, Chromebook).

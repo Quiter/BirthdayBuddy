@@ -161,4 +161,14 @@
     - **Adaptive Header:** Integration des `AdaptiveContentContainer` in die TopBar. Suche und Filter-Chips sind nun auch auf Tablets und breiten Bildschirmen perfekt mittig über der Liste ausgerichtet.
     - **Animation Cleanup:** Entfernung redundanter `animateContentSize` Aufrufe in der TopBar zugunsten der nativen `AnimatedVisibility` Logik, um Layout-Zittern zu verhindern.
     - **Framework Stability:** Korrektur des `AdaptiveContentContainer` Verhaltens; das erzwungene `fillMaxSize()` wurde entfernt, um eine korrekte Höhenberechnung für Header-Komponenten zu ermöglichen.
+108. **Architecture Simplification & Code Cleanup:**
+    - **Logic Delegation:** Auslagerung der Manipulations-Logik für Geschenkideen (Sortierung, Status-Wechsel) vom `HomeViewModel` in das `GiftIdea` Modell zur besseren Testbarkeit und Verschlankung der ViewModels.
+    - **Filter Refactoring:** Extraktion der komplexen Kontakt-Filterlogik in die spezialisierte Hilfsfunktion `shouldShowContact` im `HomeViewModel`.
+    - **Action Consolidation:** Einführung von `requestFilterReset()` zur Vereinheitlichung von Scroll-Reset und Filter-Status Triggern bei Nutzerinteraktionen.
+    - **Linting & Stability:** Projektweite Behebung von Code-Analysis Warnungen (z.B. "Assigned value is never read" in der `SearchBar`) und Optimierung von Trailing Commas sowie Lambda-Syntax.
+109. **UI & UX Final Polish:**
+    - **Adaptive Framework:** Vereinfachung des `AppResponsiveScaffold` zur automatischen Verwaltung interner Paddings, was zu deutlich schlankeren und lesbareren Screen-Implementierungen führt.
+    - **Visual Symmetry:** Anpassung der Typografie im `BirthdayStatus` an den `headlineContent` (Name) und `supportingContent` (Datum) zur Schaffung einer harmonischen und balancierten Kartenansicht.
+    - **I18n Excellence:** Kleinschreibung des Präfix "in" für die Anzeige verbleibender Tage in Deutsch und Englisch zur Verbesserung des visuellen Rhythmus.
+    - **Pull-To-Refresh Stability:** Endgültige Behebung von fälschlichen Refresh-Triggern bei Layout-Änderungen durch konsequente Isolierung der `PullToRefreshBox` vom dynamischen Scaffold-Padding.
 
