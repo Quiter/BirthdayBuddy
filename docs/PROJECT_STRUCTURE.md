@@ -59,16 +59,25 @@
         - `OnboardingScreen.kt`: Multi-Page Flow für die initiale Konfiguration.
         - ##### 📁 Components (`onboarding.components`)
             - `OnboardingCommon.kt`: Gemeinsame UI-Komponenten und Wrapper.
-            - `WelcomePage.kt`, `ContactsPage.kt`, `NotificationsPage.kt`, `ReadyPage.kt`: Individuelle Onboarding-Seiten.
+            - `WelcomePage.kt`: Individuelle Onboarding-Seite für die Begrüßung.
+            - `ContactsPage.kt`: Individuelle Onboarding-Seite für die Kontaktberechtigung.
+            - `NotificationsPage.kt`: Individuelle Onboarding-Seite für die Benachrichtigungseinstellungen.
+            - `ReadyPage.kt`: Individuelle Onboarding-Seite für den Abschluss.
             - `OnboardingFooter.kt`: Navigations-Footer mit Dots.
     - #### 📁 Settings (`settings`)
         - `SettingsScreen.kt`: Haupteinstellungsmenü.
         - `labels/LabelSettingsScreen.kt`: Verwaltung der Label-Sichtbarkeit.
         - `notifications/NotificationSettingsScreen.kt`: Konfiguration des Erinnerungssystems.
         - ##### 📁 Components (`notifications.components`)
-            - `NotificationRuleItem.kt`, `EditRuleDialog.kt`, `NotificationWorker.kt`, `SnoozeWorker.kt`, `NotificationActionReceiver.kt`, `NotificationHelper.kt`.
-        - `backup/BackupScreen.kt`: Import/Export von Geschenkideen.
-        - `about/AboutScreen.kt` & `PrivacyPolicyScreen.kt`: App-Infos und Rechtliches.
+            - `NotificationRuleItem.kt`: UI-Element für eine einzelne Benachrichtigungsregel.
+            - `EditRuleDialog.kt`: Dialog zum Bearbeiten/Erstellen von Regeln.
+            - `NotificationWorker.kt`: Hintergrund-Prozess für die Benachrichtigungs-Logik.
+            - `SnoozeWorker.kt`: Hintergrund-Prozess für die "Später"-Funktion.
+            - `NotificationActionReceiver.kt`: Verarbeitet Klicks auf Benachrichtigungs-Buttons.
+            - `NotificationHelper.kt`: Hilfsklasse für den System-Notification-Manager.
+        - `backup/BackupScreen.kt`: Screen für den Import/Export von Geschenkideen.
+        - `about/AboutScreen.kt`: Anzeige von App-Informationen und Entwickler-Details.
+        - `about/PrivacyPolicyScreen.kt`: Anzeige der Datenschutzerklärung.
 - ### 📁 Models (`ui.model`)
     - `ContactUiModel.kt`: Immutable UI-Modell für Kontakte.
     - `HomeUiState.kt`: Gebündelter State für den Home-Screen.

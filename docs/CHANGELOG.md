@@ -170,5 +170,6 @@
     - **Adaptive Framework:** Vereinfachung des `AppResponsiveScaffold` zur automatischen Verwaltung interner Paddings, was zu deutlich schlankeren und lesbareren Screen-Implementierungen führt.
     - **Visual Symmetry:** Anpassung der Typografie im `BirthdayStatus` an den `headlineContent` (Name) und `supportingContent` (Datum) zur Schaffung einer harmonischen und balancierten Kartenansicht.
     - **I18n Excellence:** Kleinschreibung des Präfix "in" für die Anzeige verbleibender Tage in Deutsch und Englisch zur Verbesserung des visuellen Rhythmus.
-    - **Pull-To-Refresh Stability:** Endgültige Behebung von fälschlichen Refresh-Triggern bei Layout-Änderungen durch konsequente Isolierung der `PullToRefreshBox` vom dynamischen Scaffold-Padding.
+    - **Pull-To-Refresh Stability:** Endgültige Behebung von fälschlichen Refresh-Triggers bei Layout-Änderungen durch konsequente Isolierung der `PullToRefreshBox` vom dynamischen Scaffold-Padding.
+    - **Legal UI Polish:** Einführung eines simplen Markdown-Renderers für die Datenschutzerklärung. Die `privacy_policy.md` wurde strukturell überarbeitet (H1/H2 Header, Aufzählungen), um eine ansprechende und lesbare Darstellung der rechtlichen Informationen zu gewährleisten.
 
