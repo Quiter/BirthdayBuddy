@@ -44,7 +44,8 @@ abstract class AppDatabase : RoomDatabase() {
          */
         val MIGRATION_1_2 = object : Migration(1, 2) {
             override fun migrate(db: SupportSQLiteDatabase) {
-                val cursor = db.query("SELECT name FROM sqlite_master WHERE type='table' AND name='pending_notifications'")
+                val cursor =
+                    db.query("SELECT name FROM sqlite_master WHERE type='table' AND name='pending_notifications'")
                 val tableExists = cursor.count > 0
                 cursor.close()
 

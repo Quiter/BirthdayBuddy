@@ -20,7 +20,7 @@ data class GiftIdea(
          */
         fun fromString(encoded: String?): List<GiftIdea> {
             if (encoded.isNullOrBlank()) return emptyList()
-            
+
             return try {
                 val jsonArray = JSONArray(encoded)
                 List(jsonArray.length()) { i ->
@@ -74,7 +74,11 @@ data class GiftIdea(
         /**
          * Ändert den Status einer Idee und sortiert sie entsprechend um.
          */
-        fun withToggledIdea(currentIdeas: List<GiftIdea>, idea: GiftIdea, isChecked: Boolean): List<GiftIdea> {
+        fun withToggledIdea(
+            currentIdeas: List<GiftIdea>,
+            idea: GiftIdea,
+            isChecked: Boolean
+        ): List<GiftIdea> {
             val ideas = currentIdeas.toMutableList()
             val idx = ideas.indexOfFirst { it.id == idea.id }
             if (idx == -1) return currentIdeas

@@ -24,7 +24,8 @@ class ContactActions(private val context: Context) {
         try {
             val intent = Intent(Intent.ACTION_DIAL, "tel:$phoneNumber".toUri())
             context.startActivity(intent)
-        } catch (_: Exception) {}
+        } catch (_: Exception) {
+        }
     }
 
     /**
@@ -34,7 +35,8 @@ class ContactActions(private val context: Context) {
         try {
             val intent = Intent(Intent.ACTION_SENDTO, "smsto:$phoneNumber".toUri())
             context.startActivity(intent)
-        } catch (_: Exception) {}
+        } catch (_: Exception) {
+        }
     }
 
     /**
@@ -43,9 +45,13 @@ class ContactActions(private val context: Context) {
     fun openWhatsApp(phoneNumber: String) {
         try {
             val cleanNumber = phoneNumber.replace("\\s+".toRegex(), "").replace("+", "")
-            val intent = Intent(Intent.ACTION_VIEW, "https://api.whatsapp.com/send?phone=$cleanNumber".toUri())
+            val intent = Intent(
+                Intent.ACTION_VIEW,
+                "https://api.whatsapp.com/send?phone=$cleanNumber".toUri()
+            )
             context.startActivity(intent)
-        } catch (_: Exception) {}
+        } catch (_: Exception) {
+        }
     }
 
     /**
@@ -55,7 +61,8 @@ class ContactActions(private val context: Context) {
         try {
             val intent = Intent(Intent.ACTION_VIEW, "https://signal.me/#p/$phoneNumber".toUri())
             context.startActivity(intent)
-        } catch (_: Exception) {}
+        } catch (_: Exception) {
+        }
     }
 
     /**
@@ -67,7 +74,8 @@ class ContactActions(private val context: Context) {
                 val lookupUri = ContactsContract.Contacts.getLookupUri(numericId, lookupKey)
                 context.startActivity(Intent(Intent.ACTION_VIEW, lookupUri))
             }
-        } catch (_: Exception) {}
+        } catch (_: Exception) {
+        }
     }
 
     /**
@@ -79,7 +87,8 @@ class ContactActions(private val context: Context) {
                 type = ContactsContract.Contacts.CONTENT_TYPE
             }
             context.startActivity(intent)
-        } catch (_: Exception) {}
+        } catch (_: Exception) {
+        }
     }
 
     /**
@@ -91,7 +100,8 @@ class ContactActions(private val context: Context) {
                 data = Uri.fromParts("package", context.packageName, null)
             }
             context.startActivity(intent)
-        } catch (_: Exception) {}
+        } catch (_: Exception) {
+        }
     }
 
     /**
@@ -104,7 +114,10 @@ class ContactActions(private val context: Context) {
     ) {
         val activity = context.findActivity()
         val shouldShowRationale = activity?.let {
-            ActivityCompat.shouldShowRequestPermissionRationale(it, Manifest.permission.READ_CONTACTS)
+            ActivityCompat.shouldShowRequestPermissionRationale(
+                it,
+                Manifest.permission.READ_CONTACTS
+            )
         } ?: false
 
         if (shouldShowRationale || !hasAttemptedBefore) {

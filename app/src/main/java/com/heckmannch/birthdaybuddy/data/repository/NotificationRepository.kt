@@ -36,14 +36,16 @@ class NotificationRepository @Inject constructor(
         appSettingsDao.upsertSettings(
             current.copy(
                 notificationsEnabled = notificationsEnabled ?: current.notificationsEnabled,
-                persistentNotifications = persistentNotifications ?: current.persistentNotifications,
+                persistentNotifications = persistentNotifications
+                    ?: current.persistentNotifications,
                 onboardingCompleted = onboardingCompleted ?: current.onboardingCompleted,
                 lastSyncTimestamp = lastSyncTimestamp ?: current.lastSyncTimestamp
             )
         )
     }
 
-    suspend fun getAllRulesImmediate(): List<NotificationRule> = notificationRuleDao.getAllRulesImmediate()
+    suspend fun getAllRulesImmediate(): List<NotificationRule> =
+        notificationRuleDao.getAllRulesImmediate()
 
     suspend fun insertRule(rule: NotificationRule) = notificationRuleDao.upsertRule(rule)
 
@@ -52,10 +54,10 @@ class NotificationRepository @Inject constructor(
     suspend fun deleteRule(rule: NotificationRule) = notificationRuleDao.deleteRule(rule)
 
     // Pending Notifications
-    suspend fun getActiveNotificationsImmediate(): List<PendingNotification> = 
+    suspend fun getActiveNotificationsImmediate(): List<PendingNotification> =
         pendingNotificationDao.getActiveNotificationsImmediate()
 
-    suspend fun insertPendingNotification(notification: PendingNotification) = 
+    suspend fun insertPendingNotification(notification: PendingNotification) =
         pendingNotificationDao.upsert(notification)
 
     suspend fun getPendingNotificationById(id: Int) = pendingNotificationDao.getNotificationById(id)

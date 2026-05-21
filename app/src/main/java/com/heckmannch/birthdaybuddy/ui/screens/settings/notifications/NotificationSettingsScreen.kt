@@ -71,7 +71,7 @@ fun NotificationSettingsScreen(
     val notificationsEnabled by viewModel.notificationsEnabled.collectAsStateWithLifecycle()
     val persistentNotifications by viewModel.persistentNotifications.collectAsStateWithLifecycle()
     val rules by viewModel.notificationRules.collectAsStateWithLifecycle()
-    
+
     var hasAttemptedPermission by remember { mutableStateOf(false) }
 
     var hasSystemPermission by remember {
@@ -143,7 +143,10 @@ fun NotificationSettingsScreen(
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
                 val activity = context as? Activity
                 val shouldShowRationale = activity?.let {
-                    ActivityCompat.shouldShowRequestPermissionRationale(it, Manifest.permission.POST_NOTIFICATIONS)
+                    ActivityCompat.shouldShowRequestPermissionRationale(
+                        it,
+                        Manifest.permission.POST_NOTIFICATIONS
+                    )
                 } ?: false
 
                 if (shouldShowRationale || !hasAttemptedPermission) {
@@ -156,7 +159,8 @@ fun NotificationSettingsScreen(
                             data = Uri.fromParts("package", context.packageName, null)
                         }
                         context.startActivity(intent)
-                    } catch (_: Exception) {}
+                    } catch (_: Exception) {
+                    }
                 }
             }
         },
@@ -173,11 +177,21 @@ class NotificationSettingsState {
     var ruleToEdit by mutableStateOf<NotificationRule?>(null)
     var showAddDialog by mutableStateOf(value = false)
 
-    fun openAddDialog() { showAddDialog = true }
-    fun closeAddDialog() { showAddDialog = false }
-    
-    fun openEditDialog(rule: NotificationRule) { ruleToEdit = rule }
-    fun closeEditDialog() { ruleToEdit = null }
+    fun openAddDialog() {
+        showAddDialog = true
+    }
+
+    fun closeAddDialog() {
+        showAddDialog = false
+    }
+
+    fun openEditDialog(rule: NotificationRule) {
+        ruleToEdit = rule
+    }
+
+    fun closeEditDialog() {
+        ruleToEdit = null
+    }
 }
 
 @Composable
@@ -220,7 +234,10 @@ private fun NotificationSettingsContent(
         floatingActionButton = {
             if (notificationsEnabled && hasSystemPermission) {
                 FloatingActionButton(onClick = { state.openAddDialog() }) {
-                    Icon(Icons.Default.Add, contentDescription = stringResource(R.string.notifications_add_rule))
+                    Icon(
+                        Icons.Default.Add,
+                        contentDescription = stringResource(R.string.notifications_add_rule)
+                    )
                 }
             }
         }

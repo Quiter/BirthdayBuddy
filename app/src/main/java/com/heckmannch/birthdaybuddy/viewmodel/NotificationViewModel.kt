@@ -45,8 +45,8 @@ class NotificationViewModel @Inject constructor(
             combine(notificationsEnabled, notificationRules) { enabled, rules ->
                 enabled to rules
             }.collect { (enabled, rules) ->
-                if (rules == null) return@collect 
-                
+                if (rules == null) return@collect
+
                 if (enabled && rules.isNotEmpty()) {
                     NotificationWorker.scheduleNext(context, rules)
                 } else {
@@ -71,7 +71,13 @@ class NotificationViewModel @Inject constructor(
     }
 
     fun addNotificationRule(daysBefore: Int, hour: Int, minute: Int) = viewModelScope.launch {
-        notificationRepository.insertRule(NotificationRule(daysBefore = daysBefore, hour = hour, minute = minute))
+        notificationRepository.insertRule(
+            NotificationRule(
+                daysBefore = daysBefore,
+                hour = hour,
+                minute = minute
+            )
+        )
     }
 
     fun updateNotificationRule(rule: NotificationRule) = viewModelScope.launch {

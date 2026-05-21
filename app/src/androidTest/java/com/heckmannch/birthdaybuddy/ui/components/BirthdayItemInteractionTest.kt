@@ -59,7 +59,8 @@ class BirthdayItemInteractionTest {
                     onExpand = {},
                     actions = actions.copy(
                         onAddGiftIdea = { _ ->
-                            contactState = contactState.copy(giftIdeas = listOf(GiftIdea(text = "")))
+                            contactState =
+                                contactState.copy(giftIdeas = listOf(GiftIdea(text = "")))
                         },
                         onUpdateGiftIdeaText = { _, ideaId, text ->
                             contactState = contactState.copy(
@@ -82,14 +83,14 @@ class BirthdayItemInteractionTest {
 
         // 1. Klicke auf den "Eintrag hinzufügen" Button
         composeTestRule.onNodeWithTag("add_gift_idea_button").performClick()
-        
+
         // Warte auf Recomposition
         composeTestRule.waitForIdle()
 
         // 2. Prüfe ob das Textfeld erscheint und tippe etwas ein
         composeTestRule.onNodeWithTag("gift_text_field").assertIsDisplayed()
         composeTestRule.onNodeWithTag("gift_text_field").performTextInput("Socken")
-        
+
         // 3. Verifiziere dass der Text im Feld steht
         composeTestRule.onNodeWithText("Socken").assertExists()
     }

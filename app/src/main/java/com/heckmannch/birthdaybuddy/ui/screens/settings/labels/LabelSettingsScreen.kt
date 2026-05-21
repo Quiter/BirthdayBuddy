@@ -95,7 +95,10 @@ private fun LabelSettingsContent(
                 modifier = Modifier.fillMaxSize(),
                 contentAlignment = Alignment.Center
             ) {
-                Text(stringResource(R.string.labels_empty), style = MaterialTheme.typography.bodyLarge)
+                Text(
+                    stringResource(R.string.labels_empty),
+                    style = MaterialTheme.typography.bodyLarge
+                )
             }
         } else {
             LazyColumn(
@@ -164,11 +167,11 @@ private fun LabelConfigCard(
     onConfigChanged: (String, Boolean, Boolean, Boolean) -> Unit
 ) {
     // Optimierung 2: Callbacks memoizen, um unnötige Recompositions zu vermeiden
-    val onHideToggle = remember(label) { 
-        { onConfigChanged(label.name, !label.isHiddenFromFilter, label.isIgnored, label.isSystem) } 
+    val onHideToggle = remember(label) {
+        { onConfigChanged(label.name, !label.isHiddenFromFilter, label.isIgnored, label.isSystem) }
     }
-    val onIgnoreToggle = remember(label) { 
-        { onConfigChanged(label.name, label.isHiddenFromFilter, !label.isIgnored, label.isSystem) } 
+    val onIgnoreToggle = remember(label) {
+        { onConfigChanged(label.name, label.isHiddenFromFilter, !label.isIgnored, label.isSystem) }
     }
 
     OutlinedCard(
@@ -191,7 +194,7 @@ private fun LabelConfigCard(
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.onSurface
                 )
-                
+
                 if (label.isSystem) {
                     Surface(
                         color = MaterialTheme.colorScheme.secondaryContainer,
@@ -218,7 +221,13 @@ private fun LabelConfigCard(
                     onClick = onHideToggle,
                     label = { Text(stringResource(R.string.labels_action_hide)) },
                     leadingIcon = if (label.isHiddenFromFilter) {
-                        { Icon(Icons.Default.Check, contentDescription = null, modifier = Modifier.size(18.dp)) }
+                        {
+                            Icon(
+                                Icons.Default.Check,
+                                contentDescription = null,
+                                modifier = Modifier.size(18.dp)
+                            )
+                        }
                     } else null,
                     colors = FilterChipDefaults.filterChipColors(
                         selectedContainerColor = MaterialTheme.colorScheme.surfaceVariant,
@@ -232,7 +241,13 @@ private fun LabelConfigCard(
                     onClick = onIgnoreToggle,
                     label = { Text(stringResource(R.string.labels_action_ignore)) },
                     leadingIcon = if (label.isIgnored) {
-                        { Icon(Icons.Default.Close, contentDescription = null, modifier = Modifier.size(18.dp)) }
+                        {
+                            Icon(
+                                Icons.Default.Close,
+                                contentDescription = null,
+                                modifier = Modifier.size(18.dp)
+                            )
+                        }
                     } else null,
                     colors = FilterChipDefaults.filterChipColors(
                         selectedContainerColor = MaterialTheme.colorScheme.errorContainer,
@@ -252,11 +267,36 @@ private fun LabelSettingsPreview() {
         LabelSettingsContent(
             windowWidthSizeClass = WindowWidthSizeClass.Compact,
             labels = listOf(
-                LabelManagementModel("Familie", isHiddenFromFilter = false, isIgnored = false, isSystem = true),
-                LabelManagementModel("Freunde", isHiddenFromFilter = true, isIgnored = false, isSystem = false),
-                LabelManagementModel("Arbeit", isHiddenFromFilter = false, isIgnored = false, isSystem = false),
-                LabelManagementModel("Ex-Kollegen", isHiddenFromFilter = false, isIgnored = true, isSystem = false),
-                LabelManagementModel("Sport", isHiddenFromFilter = true, isIgnored = true, isSystem = false)
+                LabelManagementModel(
+                    "Familie",
+                    isHiddenFromFilter = false,
+                    isIgnored = false,
+                    isSystem = true
+                ),
+                LabelManagementModel(
+                    "Freunde",
+                    isHiddenFromFilter = true,
+                    isIgnored = false,
+                    isSystem = false
+                ),
+                LabelManagementModel(
+                    "Arbeit",
+                    isHiddenFromFilter = false,
+                    isIgnored = false,
+                    isSystem = false
+                ),
+                LabelManagementModel(
+                    "Ex-Kollegen",
+                    isHiddenFromFilter = false,
+                    isIgnored = true,
+                    isSystem = false
+                ),
+                LabelManagementModel(
+                    "Sport",
+                    isHiddenFromFilter = true,
+                    isIgnored = true,
+                    isSystem = false
+                )
             ),
             onNavigateBack = {},
             onConfigChanged = { _, _, _, _ -> }

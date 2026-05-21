@@ -55,7 +55,11 @@ fun ReadyPage(
         // Zusammenfassung
         Card(
             modifier = Modifier.fillMaxWidth(),
-            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f))
+            colors = CardDefaults.cardColors(
+                containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(
+                    alpha = 0.3f
+                )
+            )
         ) {
             Column(modifier = Modifier.padding(16.dp)) {
                 Text(
@@ -67,12 +71,12 @@ fun ReadyPage(
                 Spacer(modifier = Modifier.height(8.dp))
                 Text(
                     text = if (hasContactPermission) stringResource(R.string.onboarding_summary_contacts_enabled)
-                           else stringResource(R.string.onboarding_summary_contacts_disabled),
+                    else stringResource(R.string.onboarding_summary_contacts_disabled),
                     style = MaterialTheme.typography.bodyMedium
                 )
                 Text(
                     text = if (notificationsEnabled) stringResource(R.string.onboarding_summary_notif_enabled)
-                           else stringResource(R.string.onboarding_summary_notif_disabled),
+                    else stringResource(R.string.onboarding_summary_notif_disabled),
                     style = MaterialTheme.typography.bodyMedium
                 )
             }
@@ -82,7 +86,7 @@ fun ReadyPage(
 
         Text(
             text = if (hasContactPermission) stringResource(R.string.onboarding_ready_sync_info)
-                   else stringResource(R.string.onboarding_ready_no_sync_info),
+            else stringResource(R.string.onboarding_ready_no_sync_info),
             style = MaterialTheme.typography.bodyMedium,
             textAlign = TextAlign.Center,
             color = MaterialTheme.colorScheme.onSurfaceVariant
@@ -91,7 +95,9 @@ fun ReadyPage(
         Spacer(modifier = Modifier.height(48.dp))
         Button(
             onClick = onStart,
-            modifier = Modifier.fillMaxWidth().height(56.dp)
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(56.dp)
         ) {
             Text(stringResource(R.string.onboarding_ready_btn))
         }

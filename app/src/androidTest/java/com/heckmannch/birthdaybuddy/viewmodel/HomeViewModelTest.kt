@@ -66,16 +66,28 @@ class HomeViewModelTest {
     @Test
     fun labelFiltering_worksCorrectly() = runTest {
         val contacts = listOf(
-            Contact(contactId = "1", lookupKey = "k1", fullName = "Friend", birthday = today, labels = listOf("Freunde")),
-            Contact(contactId = "2", lookupKey = "k2", fullName = "Family", birthday = today, labels = listOf("Familie"))
+            Contact(
+                contactId = "1",
+                lookupKey = "k1",
+                fullName = "Friend",
+                birthday = today,
+                labels = listOf("Freunde")
+            ),
+            Contact(
+                contactId = "2",
+                lookupKey = "k2",
+                fullName = "Family",
+                birthday = today,
+                labels = listOf("Familie")
+            )
         )
         whenever(contactRepository.allContacts).thenReturn(MutableStateFlow(contacts))
 
         val viewModel = HomeViewModel(context, contactRepository, mapper, timeRepository)
-        
+
         viewModel.onLabelSelected("Freunde")
         val state = viewModel.uiState.first { it.selectedLabel == "Freunde" && it.contacts != null }
-        
+
         assertThat(state.contacts).hasSize(1)
         assertThat(state.contacts?.first()?.fullName).isEqualTo("Friend")
     }
@@ -83,8 +95,20 @@ class HomeViewModelTest {
     @Test
     fun ignoredLabels_areExcludedFromList() = runTest {
         val contacts = listOf(
-            Contact(contactId = "1", lookupKey = "k1", fullName = "Visible", birthday = today, labels = listOf("Normal")),
-            Contact(contactId = "2", lookupKey = "k2", fullName = "Hidden", birthday = today, labels = listOf("Ignored"))
+            Contact(
+                contactId = "1",
+                lookupKey = "k1",
+                fullName = "Visible",
+                birthday = today,
+                labels = listOf("Normal")
+            ),
+            Contact(
+                contactId = "2",
+                lookupKey = "k2",
+                fullName = "Hidden",
+                birthday = today,
+                labels = listOf("Ignored")
+            )
         )
         val labelConfigs = listOf(
             LabelConfig(name = "Ignored", isIgnored = true)

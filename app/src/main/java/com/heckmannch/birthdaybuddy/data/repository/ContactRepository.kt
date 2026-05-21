@@ -46,8 +46,10 @@ class ContactRepository @Inject constructor(
             coroutineScope {
                 // 1. Daten aus allen Quellen parallel laden
                 val groupsDeferred = async { systemContactDataSource.fetchContactGroups() }
-                val dbContactsDeferred = async { contactDao.getAllContactsImmediate().associateBy { it.lookupKey } }
-                val dbConfigsDeferred = async { labelConfigDao.getAllConfigsImmediate().associateBy { it.name } }
+                val dbContactsDeferred =
+                    async { contactDao.getAllContactsImmediate().associateBy { it.lookupKey } }
+                val dbConfigsDeferred =
+                    async { labelConfigDao.getAllConfigsImmediate().associateBy { it.name } }
 
                 val groups = groupsDeferred.await()
                 val systemContacts = systemContactDataSource.fetchContactsFromSystem(groups)
@@ -137,5 +139,6 @@ class ContactRepository @Inject constructor(
 
     suspend fun exportGiftIdeas(): String = giftIdeaBackupManager.exportGiftIdeas()
 
-    suspend fun importGiftIdeas(jsonString: String): Int = giftIdeaBackupManager.importGiftIdeas(jsonString)
+    suspend fun importGiftIdeas(jsonString: String): Int =
+        giftIdeaBackupManager.importGiftIdeas(jsonString)
 }

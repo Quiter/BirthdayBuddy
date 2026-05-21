@@ -88,13 +88,13 @@ fun BirthdayItem(
                 TextButton(
                     onClick = {
                         datePickerState.selectedDateMillis?.let { millis ->
-                        val date = java.time.Instant.ofEpochMilli(millis)
-                            .atZone(java.time.ZoneId.systemDefault())
-                            .toLocalDate()
-                        actions.onUpdateBirthday(contact.contactId, date)
-                    }
-                    showDatePicker.value = false
-                },
+                            val date = java.time.Instant.ofEpochMilli(millis)
+                                .atZone(java.time.ZoneId.systemDefault())
+                                .toLocalDate()
+                            actions.onUpdateBirthday(contact.contactId, date)
+                        }
+                        showDatePicker.value = false
+                    },
                 ) {
                     Text(stringResource(R.string.gift_dialog_save))
                 }
@@ -179,7 +179,10 @@ fun BirthdayItem(
                     },
                     headlineContent = {
                         Row(verticalAlignment = Alignment.CenterVertically) {
-                            Text(text = contact.fullName, style = MaterialTheme.typography.titleMedium)
+                            Text(
+                                text = contact.fullName,
+                                style = MaterialTheme.typography.titleMedium
+                            )
                             if (contact.hasGiftIdeas) {
                                 Spacer(modifier = Modifier.width(8.dp))
                                 Icon(
@@ -288,13 +291,13 @@ fun BirthdayItem(
                             giftIdeas = contact.giftIdeas,
                             newlyAddedId = newlyAddedIdeaId,
                             onAddNewIdea = { actions.onAddGiftIdea(contact.lookupKey) },
-                            onCheckedChange = { idea, checked -> 
-                                actions.onToggleGiftIdea(contact.lookupKey, idea, checked) 
+                            onCheckedChange = { idea, checked ->
+                                actions.onToggleGiftIdea(contact.lookupKey, idea, checked)
                             },
-                            onTextChange = { idea, newText -> 
-                                actions.onUpdateGiftIdeaText(contact.lookupKey, idea.id, newText) 
+                            onTextChange = { idea, newText ->
+                                actions.onUpdateGiftIdeaText(contact.lookupKey, idea.id, newText)
                             },
-                            onDelete = { idea -> 
+                            onDelete = { idea ->
                                 actions.onDeleteGiftIdea(contact.lookupKey, idea.id)
                             }
                         ) {

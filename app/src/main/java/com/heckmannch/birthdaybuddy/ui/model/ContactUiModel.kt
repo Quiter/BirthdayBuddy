@@ -8,7 +8,7 @@ import androidx.compose.runtime.Immutable
  */
 @Immutable
 data class ContactUiModel(
-    val id: String, 
+    val id: String,
     val contactId: String,
     val lookupKey: String,
     val fullName: String,

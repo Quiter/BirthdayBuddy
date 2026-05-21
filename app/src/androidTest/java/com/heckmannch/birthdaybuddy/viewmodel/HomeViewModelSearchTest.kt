@@ -38,7 +38,7 @@ class HomeViewModelSearchTest {
     @Before
     fun setup() {
         context = ApplicationProvider.getApplicationContext()
-        
+
         // Basiskonfiguration für die Mocks
         whenever(contactRepository.allContacts).doReturn(MutableStateFlow(emptyList()))
         whenever(contactRepository.labelConfigs).doReturn(MutableStateFlow(emptyList()))
@@ -48,13 +48,23 @@ class HomeViewModelSearchTest {
     @Test
     fun searchLogic_findsContactsRegardlessOfNameOrder() = runTest {
         val contacts = listOf(
-            Contact(contactId = "1", lookupKey = "1", fullName = "Max Mustermann", birthday = LocalDate.of(1990, 1, 1)),
-            Contact(contactId = "2", lookupKey = "2", fullName = "Erika Muster", birthday = LocalDate.of(1995, 1, 1))
+            Contact(
+                contactId = "1",
+                lookupKey = "1",
+                fullName = "Max Mustermann",
+                birthday = LocalDate.of(1990, 1, 1)
+            ),
+            Contact(
+                contactId = "2",
+                lookupKey = "2",
+                fullName = "Erika Muster",
+                birthday = LocalDate.of(1995, 1, 1)
+            )
         )
         whenever(contactRepository.allContacts).thenReturn(MutableStateFlow(contacts))
 
         val viewModel = HomeViewModel(context, contactRepository, mapper, timeRepository)
-        
+
         // Suche nach "Mustermann Max"
         viewModel.onSearchQueryChange("Mustermann Max")
 
@@ -70,12 +80,17 @@ class HomeViewModelSearchTest {
     @Test
     fun searchLogic_ignoresLeadingAndTrailingSpaces() = runTest {
         val contacts = listOf(
-            Contact(contactId = "1", lookupKey = "1", fullName = "Max Mustermann", birthday = LocalDate.of(1990, 1, 1))
+            Contact(
+                contactId = "1",
+                lookupKey = "1",
+                fullName = "Max Mustermann",
+                birthday = LocalDate.of(1990, 1, 1)
+            )
         )
         whenever(contactRepository.allContacts).thenReturn(MutableStateFlow(contacts))
 
         val viewModel = HomeViewModel(context, contactRepository, mapper, timeRepository)
-        
+
         viewModel.onSearchQueryChange("  Max  ")
 
         val state = viewModel.uiState

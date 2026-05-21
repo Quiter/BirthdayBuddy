@@ -38,7 +38,9 @@ fun HomeTopBar(
     // beim Scrollen sauber darunter verschwindet und keine "Geister-Flächen" entstehen.
     Surface(
         color = MaterialTheme.colorScheme.surface,
-        modifier = Modifier.fillMaxWidth().animateContentSize()
+        modifier = Modifier
+            .fillMaxWidth()
+            .animateContentSize()
     ) {
         // Wir nutzen den AdaptiveContentContainer auch hier, damit die Suche 
         // und die Filter auf Tablets zentriert über der Liste bleiben.

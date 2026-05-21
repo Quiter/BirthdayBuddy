@@ -19,10 +19,10 @@ class TimeRepository @Inject constructor() {
         while (true) {
             val now = LocalDateTime.now()
             emit(now.toLocalDate())
-            
+
             val nextMidnight = now.toLocalDate().plusDays(1).atStartOfDay()
             val millisUntilMidnight = ChronoUnit.MILLIS.between(now, nextMidnight)
-            
+
             // Warte bis Mitternacht + 1 Sekunde Puffer
             delay(millisUntilMidnight + 1000)
         }

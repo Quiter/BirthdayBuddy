@@ -40,8 +40,9 @@ class HomeState(
      * Sie ist nur sichtbar, wenn wir ganz oben in der Liste sind.
      */
     fun isFilterBarVisible(isResetting: Boolean): Boolean {
-        return if (isResetting) true 
-        else filterVisibilityLock ?: (listState.firstVisibleItemIndex == 0 && listState.firstVisibleItemScrollOffset == 0)
+        return if (isResetting) true
+        else filterVisibilityLock
+            ?: (listState.firstVisibleItemIndex == 0 && listState.firstVisibleItemScrollOffset == 0)
     }
 
     /**

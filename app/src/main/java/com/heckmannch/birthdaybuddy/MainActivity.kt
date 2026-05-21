@@ -71,7 +71,7 @@ class MainActivity : ComponentActivity() {
         val splashScreen = installSplashScreen()
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
-        
+
         // Schedule next widget update
         BirthdayWidgetWorker.enqueueNextUpdate(this)
 
@@ -106,7 +106,12 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background,
                 ) {
-                    AppNavigation(navController, homeViewModel, settingsViewModel, windowSizeClass.widthSizeClass)
+                    AppNavigation(
+                        navController,
+                        homeViewModel,
+                        settingsViewModel,
+                        windowSizeClass.widthSizeClass
+                    )
                 }
             }
         }
@@ -118,7 +123,11 @@ class MainActivity : ComponentActivity() {
     }
 
     @Composable
-    private fun HandleIntents(intent: Intent?, homeViewModel: HomeViewModel, navController: NavHostController) {
+    private fun HandleIntents(
+        intent: Intent?,
+        homeViewModel: HomeViewModel,
+        navController: NavHostController
+    ) {
         LaunchedEffect(intent) {
             if (intent?.getBooleanExtra("SCROLL_TO_TOP", false) == true) {
                 homeViewModel.triggerScrollToTop()

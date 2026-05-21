@@ -41,12 +41,12 @@ fun EditRuleDialog(
     if (!showTimePickerState.value) {
         AlertDialog(
             onDismissRequest = onDismiss,
-            title = { 
+            title = {
                 Text(
                     stringResource(
                         if (rule == null) R.string.notifications_add_rule else R.string.notifications_edit_rule
                     )
-                ) 
+                )
             },
             text = {
                 Column(
@@ -58,7 +58,7 @@ fun EditRuleDialog(
                         style = MaterialTheme.typography.bodyMedium,
                         modifier = Modifier.align(Alignment.Start),
                     )
-                    
+
                     Spacer(modifier = Modifier.height(16.dp))
 
                     Row(
@@ -84,13 +84,17 @@ fun EditRuleDialog(
                     }
 
                     Spacer(modifier = Modifier.height(24.dp))
-                    
+
                     Text(
                         text = when (daysBeforeState.intValue) {
                             0 -> stringResource(R.string.rule_today)
                             1 -> stringResource(R.string.rule_tomorrow)
                             7 -> stringResource(R.string.rule_one_week)
-                            else -> pluralStringResource(R.plurals.rule_days_before, daysBeforeState.intValue, daysBeforeState.intValue)
+                            else -> pluralStringResource(
+                                R.plurals.rule_days_before,
+                                daysBeforeState.intValue,
+                                daysBeforeState.intValue
+                            )
                         },
                         style = MaterialTheme.typography.headlineSmall,
                         color = MaterialTheme.colorScheme.primary,
@@ -103,13 +107,19 @@ fun EditRuleDialog(
                         steps = 29,
                         modifier = Modifier.padding(vertical = 8.dp),
                     )
-                    
+
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.SpaceBetween,
                     ) {
-                        Text(stringResource(R.string.dialog_slider_today), style = MaterialTheme.typography.labelSmall)
-                        Text(stringResource(R.string.dialog_slider_max), style = MaterialTheme.typography.labelSmall)
+                        Text(
+                            stringResource(R.string.dialog_slider_today),
+                            style = MaterialTheme.typography.labelSmall
+                        )
+                        Text(
+                            stringResource(R.string.dialog_slider_max),
+                            style = MaterialTheme.typography.labelSmall
+                        )
                     }
                 }
             },
@@ -140,7 +150,11 @@ fun EditRuleDialog(
             confirmButton = {
                 TextButton(
                     onClick = {
-                        onConfirm(daysBeforeState.intValue, timePickerState.hour, timePickerState.minute)
+                        onConfirm(
+                            daysBeforeState.intValue,
+                            timePickerState.hour,
+                            timePickerState.minute
+                        )
                     },
                 ) {
                     Text(stringResource(R.string.dialog_save))

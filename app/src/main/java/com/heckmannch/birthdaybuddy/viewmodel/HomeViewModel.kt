@@ -58,15 +58,17 @@ class HomeViewModel @Inject constructor(
     private val _scrollToTopEvent = MutableSharedFlow<Unit>(replay = 0)
     val scrollToTopEvent: SharedFlow<Unit> = _scrollToTopEvent.asSharedFlow()
 
-    fun setIsResettingFilter(isResetting: Boolean) { _isResettingFilter.value = isResetting }
+    fun setIsResettingFilter(isResetting: Boolean) {
+        _isResettingFilter.value = isResetting
+    }
 
     // --- Data Processing ---
     private val ignoredLabels: Flow<Set<String>> = contactRepository.labelConfigs
-        .map { configs -> 
+        .map { configs ->
             configs.asSequence()
                 .filter { it.isIgnored }
                 .map { it.name }
-                .toSet() 
+                .toSet()
         }
         .distinctUntilChanged()
         .flowOn(Dispatchers.Default)
@@ -116,9 +118,12 @@ class HomeViewModel @Inject constructor(
         val result = uiList.asSequence()
             .filter { shouldShowContact(it, keywords, label, ignoredLabels) }
             .toList()
-        
+
         if (uiList.size > 1000) {
-            Log.d("HomeViewModel", "Filtering ${uiList.size} contacts took ${System.currentTimeMillis() - startTime}ms")
+            Log.d(
+                "HomeViewModel",
+                "Filtering ${uiList.size} contacts took ${System.currentTimeMillis() - startTime}ms"
+            )
         }
         result
     }
@@ -133,11 +138,11 @@ class HomeViewModel @Inject constructor(
         ignoredLabels: Set<String>
     ): Boolean {
         val isSearching = keywords.isNotEmpty()
-        
+
         // 1. Sichtbarkeit prüfen (Geburtstag vorhanden & Ignoriert-Status)
         val isMissingBirthday = contact.dateText == "-"
         val isNoBirthdayFilter = label == LABEL_NO_BIRTHDAY
-        
+
         // Kontakte ohne Geburtstag ausblenden (außer bei Suche oder speziellem Filter)
         if (isMissingBirthday && !isSearching && !isNoBirthdayFilter) return false
 
@@ -165,15 +170,15 @@ class HomeViewModel @Inject constructor(
     ) { contacts, configs ->
         val inUseLabels = contacts.asSequence().flatMap { it.labels }.toSet()
         val configMap = configs.associateBy { it.name }
-        
+
         val hasUserLabels = inUseLabels.any { configMap[it]?.isSystem == false }
         val hasMissingBirthdays = contacts.any { it.birthday == null }
-        
+
         // Wenn weder User-Label noch fehlende Geburtstage da sind -> Bar verstecken
         if (!hasUserLabels && !hasMissingBirthdays) return@combine emptyList()
 
         val labels = mutableListOf<String>()
-        
+
         // Zuerst die User-Label
         if (hasUserLabels) {
             inUseLabels.asSequence()
@@ -189,7 +194,7 @@ class HomeViewModel @Inject constructor(
         if (hasMissingBirthdays) {
             labels.add(LABEL_NO_BIRTHDAY)
         }
-        
+
         labels
     }
 
@@ -223,7 +228,7 @@ class HomeViewModel @Inject constructor(
         if (newQuery.isNotEmpty() && _searchQuery.value.isEmpty()) {
             _selectedLabel.value = null
         }
-        
+
         _searchQuery.value = newQuery
         requestFilterReset()
     }
@@ -252,7 +257,10 @@ class HomeViewModel @Inject constructor(
         triggerScrollToTop()
     }
 
-    private suspend fun updateContactGiftIdeas(lookupKey: String, transform: (List<GiftIdea>) -> List<GiftIdea>) {
+    private suspend fun updateContactGiftIdeas(
+        lookupKey: String,
+        transform: (List<GiftIdea>) -> List<GiftIdea>
+    ) {
         val contact = allUiContacts.first().find { it.lookupKey == lookupKey } ?: return
         val newIdeas = transform(contact.giftIdeas)
         contactRepository.updateGiftIdeas(lookupKey, GiftIdea.toString(newIdeas))
@@ -264,9 +272,16 @@ class HomeViewModel @Inject constructor(
         updateContactGiftIdeas(lookupKey) { current -> GiftIdea.withNewIdea(current, newIdea) }
     }
 
-    fun toggleGiftIdea(lookupKey: String, idea: GiftIdea, isChecked: Boolean) = viewModelScope.launch {
-        updateContactGiftIdeas(lookupKey) { current -> GiftIdea.withToggledIdea(current, idea, isChecked) }
-    }
+    fun toggleGiftIdea(lookupKey: String, idea: GiftIdea, isChecked: Boolean) =
+        viewModelScope.launch {
+            updateContactGiftIdeas(lookupKey) { current ->
+                GiftIdea.withToggledIdea(
+                    current,
+                    idea,
+                    isChecked
+                )
+            }
+        }
 
     fun deleteGiftIdea(lookupKey: String, ideaId: String) = viewModelScope.launch {
         updateContactGiftIdeas(lookupKey) { currentIdeas ->
@@ -274,13 +289,14 @@ class HomeViewModel @Inject constructor(
         }
     }
 
-    fun updateGiftIdeaText(lookupKey: String, ideaId: String, newText: String) = viewModelScope.launch {
-        updateContactGiftIdeas(lookupKey) { currentIdeas ->
-            currentIdeas.map {
-                if (it.id == ideaId) it.copy(text = newText) else it
+    fun updateGiftIdeaText(lookupKey: String, ideaId: String, newText: String) =
+        viewModelScope.launch {
+            updateContactGiftIdeas(lookupKey) { currentIdeas ->
+                currentIdeas.map {
+                    if (it.id == ideaId) it.copy(text = newText) else it
+                }
             }
         }
-    }
 
     fun updateBirthday(contactId: String, birthday: java.time.LocalDate) = viewModelScope.launch {
         contactRepository.updateContactBirthday(contactId, birthday)
@@ -289,10 +305,10 @@ class HomeViewModel @Inject constructor(
     fun syncContacts(showLoading: Boolean = false) = viewModelScope.launch {
         if (showLoading) _isSyncing.value = true
         val startTime = System.currentTimeMillis()
-        
+
         contactRepository.syncContacts()
         updateWidget()
-        
+
         if (showLoading) {
             val elapsedTime = System.currentTimeMillis() - startTime
             if (elapsedTime < 800) {

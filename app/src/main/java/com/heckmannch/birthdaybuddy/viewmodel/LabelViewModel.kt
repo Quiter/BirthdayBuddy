@@ -41,10 +41,11 @@ class LabelViewModel @Inject constructor(
             }.sortedBy { it.name }.toList()
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
-    fun updateLabelConfig(name: String, hidden: Boolean, ignored: Boolean, isSystem: Boolean) = viewModelScope.launch {
-        contactRepository.updateLabelConfig(LabelConfig(name, hidden, ignored, isSystem))
-        updateWidget()
-    }
+    fun updateLabelConfig(name: String, hidden: Boolean, ignored: Boolean, isSystem: Boolean) =
+        viewModelScope.launch {
+            contactRepository.updateLabelConfig(LabelConfig(name, hidden, ignored, isSystem))
+            updateWidget()
+        }
 
     private fun updateWidget() = viewModelScope.launch {
         try {

@@ -70,7 +70,9 @@ fun OnboardingFooter(
                 ) {
                     Text(
                         text = stringResource(R.string.onboarding_next),
-                        color = if (isNextEnabled) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f)
+                        color = if (isNextEnabled) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface.copy(
+                            alpha = 0.38f
+                        )
                     )
                 }
             } else {

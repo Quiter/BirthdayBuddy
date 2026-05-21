@@ -56,7 +56,9 @@ fun ContactsPage(isGranted: Boolean, onGrant: () -> Unit, onSkip: () -> Unit) {
         if (!isGranted) {
             Button(
                 onClick = onGrant,
-                modifier = Modifier.fillMaxWidth().height(56.dp)
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(56.dp)
             ) {
                 Text(stringResource(R.string.onboarding_contacts_btn))
             }

@@ -32,8 +32,10 @@ class MigrationTest {
         // 1. Datenbank in Version 1 erstellen
         helper.createDatabase(TEST_DB, 1).apply {
             // Testdaten einfügen (V1-Schema)
-            execSQL("INSERT INTO contacts (contactId, lookupKey, fullName, birthday, labels) " +
-                    "VALUES ('1', 'key1', 'Max Mustermann', '1990-01-01', '[]')")
+            execSQL(
+                "INSERT INTO contacts (contactId, lookupKey, fullName, birthday, labels) " +
+                        "VALUES ('1', 'key1', 'Max Mustermann', '1990-01-01', '[]')"
+            )
             close()
         }
 
@@ -55,8 +57,8 @@ class MigrationTest {
             AppDatabase::class.java,
             TEST_DB
         ).addMigrations(AppDatabase.MIGRATION_1_2)
-         .build().apply {
-            openHelper.writableDatabase.close()
-        }
+            .build().apply {
+                openHelper.writableDatabase.close()
+            }
     }
 }

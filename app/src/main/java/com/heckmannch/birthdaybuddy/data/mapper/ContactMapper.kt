@@ -19,13 +19,13 @@ import javax.inject.Inject
  */
 class ContactMapper @Inject constructor() {
     private val dateFormatter = DateTimeFormatter.ofLocalizedDate(FormatStyle.LONG)
-    
+
     // Erzeugt das beste Format NUR für Tag/Monat basierend auf der Sprache des Nutzers (z.B. "12. Mai" vs "May 12")
     private val dayMonthFormatter = DateTimeFormatter.ofPattern(
         DateFormat.getBestDateTimePattern(Locale.getDefault(), "dMMMM"),
         Locale.getDefault(),
     )
-    
+
     private val monthFormatter = DateTimeFormatter.ofPattern("MMMM", Locale.getDefault())
 
     fun toUiModel(contact: Contact, today: LocalDate): ContactUiModel {
@@ -35,7 +35,7 @@ class ContactMapper @Inject constructor() {
         val nextAgeValue = birthday?.safeNextAge(today)
 
         return ContactUiModel(
-            id = contact.lookupKey, 
+            id = contact.lookupKey,
             contactId = contact.contactId,
             lookupKey = contact.lookupKey,
             fullName = contact.fullName,

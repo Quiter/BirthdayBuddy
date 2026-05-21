@@ -61,18 +61,32 @@ fun NotificationsPage(
         // Einstellungen
         Card(
             modifier = Modifier.fillMaxWidth(),
-            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f))
+            colors = CardDefaults.cardColors(
+                containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(
+                    alpha = 0.5f
+                )
+            )
         ) {
             Column(modifier = Modifier.padding(8.dp)) {
                 ListItem(
                     headlineContent = { Text(stringResource(R.string.onboarding_notif_enable)) },
-                    trailingContent = { Switch(checked = enabled, onCheckedChange = onEnabledChange) },
+                    trailingContent = {
+                        Switch(
+                            checked = enabled,
+                            onCheckedChange = onEnabledChange
+                        )
+                    },
                     colors = ListItemDefaults.colors(containerColor = Color.Transparent)
                 )
                 if (enabled) {
                     ListItem(
                         headlineContent = { Text(stringResource(R.string.onboarding_notif_persistent)) },
-                        trailingContent = { Switch(checked = persistent, onCheckedChange = onPersistentChange) },
+                        trailingContent = {
+                            Switch(
+                                checked = persistent,
+                                onCheckedChange = onPersistentChange
+                            )
+                        },
                         colors = ListItemDefaults.colors(containerColor = Color.Transparent)
                     )
                 }
@@ -84,7 +98,9 @@ fun NotificationsPage(
         if (enabled && !isGranted) {
             Button(
                 onClick = onGrant,
-                modifier = Modifier.fillMaxWidth().height(56.dp)
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(56.dp)
             ) {
                 Text(stringResource(R.string.onboarding_notif_btn))
             }

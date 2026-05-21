@@ -69,7 +69,7 @@ fun BirthdayStatus(
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
         }
-        
+
         if (nextAge != null) {
             Text(
                 text = stringResource(R.string.widget_turns_age, nextAge),

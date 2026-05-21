@@ -56,16 +56,16 @@ fun SearchBar(
 ) {
     val focusManager = LocalFocusManager.current
     val isFocused = remember { mutableStateOf(false) }
-    
+
     val containerColor by animateColorAsState(
-        targetValue = if (isFocused.value) MaterialTheme.colorScheme.surface 
-                      else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
+        targetValue = if (isFocused.value) MaterialTheme.colorScheme.surface
+        else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
         label = "SearchBarContainerColor"
     )
-    
+
     val borderColor by animateColorAsState(
-        targetValue = if (isFocused.value) MaterialTheme.colorScheme.primary.copy(alpha = 0.5f) 
-                      else Color.Transparent,
+        targetValue = if (isFocused.value) MaterialTheme.colorScheme.primary.copy(alpha = 0.5f)
+        else Color.Transparent,
         label = "SearchBarBorderColor"
     )
 
@@ -91,12 +91,12 @@ fun SearchBar(
                 .fillMaxSize()
                 .focusRequester(focusRequester)
                 .onFocusChanged { isFocused.value = it.isFocused },
-            placeholder = { 
+            placeholder = {
                 Text(
                     text = placeholder,
                     style = MaterialTheme.typography.bodyLarge,
                     color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
-                ) 
+                )
             },
             leadingIcon = {
                 Icon(

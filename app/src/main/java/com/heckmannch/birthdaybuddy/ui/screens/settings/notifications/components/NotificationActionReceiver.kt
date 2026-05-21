@@ -31,7 +31,8 @@ class NotificationActionReceiver : BroadcastReceiver() {
 
         if (intent.action == "SNOOZE") {
             // 1. Aktuelle Benachrichtigung schließen
-            val notificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+            val notificationManager =
+                context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
             notificationManager.cancel(notificationId)
 
             // 2. Erneute Erinnerung in 2 Stunden planen
@@ -50,7 +51,8 @@ class NotificationActionReceiver : BroadcastReceiver() {
             WorkManager.getInstance(context).enqueue(snoozeRequest)
         } else if (intent.action == "DONE") {
             // 1. Aktuelle Benachrichtigung schließen
-            val notificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+            val notificationManager =
+                context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
             notificationManager.cancel(notificationId)
 
             // 2. Als erledigt markieren

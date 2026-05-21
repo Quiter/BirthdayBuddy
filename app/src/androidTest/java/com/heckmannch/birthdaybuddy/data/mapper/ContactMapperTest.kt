@@ -90,7 +90,8 @@ class ContactMapperTest {
 
     @Test
     fun toUiModel_generatesInitialsCorrectly() {
-        val contact1 = Contact(contactId = "1", lookupKey = "1", fullName = "max mustermann", birthday = today)
+        val contact1 =
+            Contact(contactId = "1", lookupKey = "1", fullName = "max mustermann", birthday = today)
         val contact2 = Contact(contactId = "2", lookupKey = "2", fullName = "  ", birthday = today)
 
         assertThat(mapper.toUiModel(contact1, today).initials).isEqualTo("M")

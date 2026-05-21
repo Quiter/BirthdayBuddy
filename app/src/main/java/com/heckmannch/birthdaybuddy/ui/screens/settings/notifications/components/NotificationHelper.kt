@@ -28,12 +28,17 @@ class NotificationHelper @Inject constructor(
         const val CHANNEL_ID = "birthday_reminders_v2"
     }
 
-    suspend fun showBirthdayNotification(contacts: List<Contact>, daysBefore: Int, pendingId: Int = -1) {
+    suspend fun showBirthdayNotification(
+        contacts: List<Contact>,
+        daysBefore: Int,
+        pendingId: Int = -1
+    ) {
         val settings = notificationRepository.settings.first()
         val isPersistent = settings.persistentNotifications
-        
+
         // Wisch-Zähler prüfen für Hilfetext
-        val pendingNotification = if (pendingId != -1) notificationRepository.getPendingNotificationById(pendingId) else null
+        val pendingNotification =
+            if (pendingId != -1) notificationRepository.getPendingNotificationById(pendingId) else null
         val dismissCount = pendingNotification?.dismissCount ?: 0
         val showHint = isPersistent && dismissCount >= 3
 
@@ -50,7 +55,7 @@ class NotificationHelper @Inject constructor(
         val intent = Intent(context, MainActivity::class.java).apply {
             flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
         }
-        
+
         // Wir nutzen die Datenbank-ID (pendingId) als eindeutige System-Notification-ID
         // Falls keine pendingId da ist (Snooze-Fallback), nutzen wir den Standard-Algorithmus
         val notificationId = if (pendingId != -1) pendingId else (200 + daysBefore)
@@ -115,21 +120,65 @@ class NotificationHelper @Inject constructor(
             val nextAge = birthday?.safeNextAge(LocalDate.now()) ?: -1
 
             when (daysBefore) {
-                0 -> if (hasYear) context.resources.getQuantityString(R.plurals.notif_title_today_age, nextAge, name, nextAge) 
-                     else context.getString(R.string.notif_title_today_named, name)
-                1 -> if (hasYear) context.resources.getQuantityString(R.plurals.notif_title_tomorrow_age, nextAge, name, nextAge)
-                     else context.getString(R.string.notif_title_tomorrow_named, name)
+                0 -> if (hasYear) context.resources.getQuantityString(
+                    R.plurals.notif_title_today_age,
+                    nextAge,
+                    name,
+                    nextAge
+                )
+                else context.getString(R.string.notif_title_today_named, name)
+
+                1 -> if (hasYear) context.resources.getQuantityString(
+                    R.plurals.notif_title_tomorrow_age,
+                    nextAge,
+                    name,
+                    nextAge
+                )
+                else context.getString(R.string.notif_title_tomorrow_named, name)
+
                 7 -> if (hasYear) context.getString(R.string.notif_title_week_age, name, nextAge)
-                     else context.getString(R.string.notif_title_week_named, name)
-                else -> if (hasYear) context.resources.getQuantityString(R.plurals.notif_title_days_age, daysBefore, daysBefore, name, nextAge)
-                        else context.resources.getQuantityString(R.plurals.notif_title_days_named, daysBefore, daysBefore, name)
+                else context.getString(R.string.notif_title_week_named, name)
+
+                else -> if (hasYear) context.resources.getQuantityString(
+                    R.plurals.notif_title_days_age,
+                    daysBefore,
+                    daysBefore,
+                    name,
+                    nextAge
+                )
+                else context.resources.getQuantityString(
+                    R.plurals.notif_title_days_named,
+                    daysBefore,
+                    daysBefore,
+                    name
+                )
             }
         } else {
             when (daysBefore) {
-                0 -> context.resources.getQuantityString(R.plurals.notif_title_today_plural, contacts.size, contacts.size)
-                1 -> context.resources.getQuantityString(R.plurals.notif_title_tomorrow_plural, contacts.size, contacts.size)
-                7 -> context.resources.getQuantityString(R.plurals.notif_title_week_plural, contacts.size, contacts.size)
-                else -> context.resources.getQuantityString(R.plurals.notif_title_days_plural, daysBefore, daysBefore, contacts.size)
+                0 -> context.resources.getQuantityString(
+                    R.plurals.notif_title_today_plural,
+                    contacts.size,
+                    contacts.size
+                )
+
+                1 -> context.resources.getQuantityString(
+                    R.plurals.notif_title_tomorrow_plural,
+                    contacts.size,
+                    contacts.size
+                )
+
+                7 -> context.resources.getQuantityString(
+                    R.plurals.notif_title_week_plural,
+                    contacts.size,
+                    contacts.size
+                )
+
+                else -> context.resources.getQuantityString(
+                    R.plurals.notif_title_days_plural,
+                    daysBefore,
+                    daysBefore,
+                    contacts.size
+                )
             }
         }
 
@@ -155,7 +204,11 @@ class NotificationHelper @Inject constructor(
                     addAction(0, context.getString(R.string.notif_action_done), donePendingIntent)
                 }
                 if (showHint) {
-                    addAction(0, context.getString(R.string.notif_action_settings), settingsPendingIntent)
+                    addAction(
+                        0,
+                        context.getString(R.string.notif_action_settings),
+                        settingsPendingIntent
+                    )
                 }
             }
             .addAction(0, context.getString(R.string.notif_action_snooze), snoozePendingIntent)

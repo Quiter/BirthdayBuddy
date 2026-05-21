@@ -69,6 +69,7 @@ fun SettingsScreen(
                 ContextCompat.checkSelfPermission(context, Manifest.permission.READ_CONTACTS) -> {
                     viewModel.syncContacts(showLoading = true)
                 }
+
                 else -> permissionLauncher.launch(Manifest.permission.READ_CONTACTS)
             }
         },
@@ -119,7 +120,12 @@ private fun SettingsContent(
                     ListItem(
                         headlineContent = { Text(stringResource(R.string.settings_notifications_title)) },
                         supportingContent = { Text(stringResource(R.string.settings_notifications_desc)) },
-                        leadingContent = { Icon(Icons.Default.Notifications, contentDescription = null) },
+                        leadingContent = {
+                            Icon(
+                                Icons.Default.Notifications,
+                                contentDescription = null
+                            )
+                        },
                         modifier = Modifier.clickable { onNavigateToNotifications() }
                     )
                 }
@@ -128,7 +134,12 @@ private fun SettingsContent(
                     ListItem(
                         headlineContent = { Text(stringResource(R.string.settings_labels_title)) },
                         supportingContent = { Text(stringResource(R.string.settings_labels_desc)) },
-                        leadingContent = { Icon(Icons.AutoMirrored.Filled.Label, contentDescription = null) },
+                        leadingContent = {
+                            Icon(
+                                Icons.AutoMirrored.Filled.Label,
+                                contentDescription = null
+                            )
+                        },
                         modifier = Modifier.clickable { onNavigateToLabels() }
                     )
                 }
@@ -171,12 +182,16 @@ private fun SettingsFooter() {
     val context = LocalContext.current
     val versionName = remember {
         try {
-            val packageInfo: PackageInfo = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                context.packageManager.getPackageInfo(context.packageName, PackageManager.PackageInfoFlags.of(0))
-            } else {
-                @Suppress("DEPRECATION")
-                context.packageManager.getPackageInfo(context.packageName, 0)
-            }
+            val packageInfo: PackageInfo =
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                    context.packageManager.getPackageInfo(
+                        context.packageName,
+                        PackageManager.PackageInfoFlags.of(0)
+                    )
+                } else {
+                    @Suppress("DEPRECATION")
+                    context.packageManager.getPackageInfo(context.packageName, 0)
+                }
             packageInfo.versionName ?: "1.4.4"
         } catch (_: Exception) {
             "1.4.4"

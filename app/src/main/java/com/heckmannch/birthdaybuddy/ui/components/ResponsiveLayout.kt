@@ -26,8 +26,12 @@ fun AdaptiveContentContainer(
 ) {
     val maxWidth = when (windowWidthSizeClass) {
         WindowWidthSizeClass.Compact -> Modifier.fillMaxWidth()
-        WindowWidthSizeClass.Medium -> Modifier.widthIn(max = 600.dp).fillMaxWidth()
-        WindowWidthSizeClass.Expanded -> Modifier.widthIn(max = 840.dp).fillMaxWidth()
+        WindowWidthSizeClass.Medium -> Modifier
+            .widthIn(max = 600.dp)
+            .fillMaxWidth()
+        WindowWidthSizeClass.Expanded -> Modifier
+            .widthIn(max = 840.dp)
+            .fillMaxWidth()
         else -> Modifier.fillMaxWidth()
     }
 
@@ -66,7 +70,9 @@ fun AppResponsiveScaffold(
             // Die Zentrierung und das Padding für Top/BottomBar werden hier gebündelt.
             AdaptiveContentContainer(
                 windowWidthSizeClass = windowWidthSizeClass,
-                modifier = Modifier.fillMaxSize().padding(paddingValues)
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(paddingValues)
             ) {
                 content(PaddingValues(0.dp))
             }

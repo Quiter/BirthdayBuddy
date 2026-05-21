@@ -102,9 +102,9 @@ fun BackupContent(
             if (isLoading) {
                 LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
             }
-            
+
             Spacer(modifier = Modifier.weight(1f))
-            
+
             InfoSection()
         }
     }

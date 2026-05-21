@@ -101,7 +101,7 @@ fun PrivacyPolicyScreen(
 private fun MarkdownContent(text: String) {
     val lines = text.split("\n")
     val linkColor = MaterialTheme.colorScheme.primary
-    
+
     lines.forEach { line ->
         val trimmed = line.trim()
         when {
@@ -114,6 +114,7 @@ private fun MarkdownContent(text: String) {
                     modifier = Modifier.padding(top = 8.dp)
                 )
             }
+
             trimmed.startsWith("## ") -> {
                 Text(
                     text = trimmed.removePrefix("## "),
@@ -123,6 +124,7 @@ private fun MarkdownContent(text: String) {
                     modifier = Modifier.padding(top = 12.dp)
                 )
             }
+
             trimmed.startsWith("* ") -> {
                 Row(modifier = Modifier.padding(start = 8.dp)) {
                     Text("• ", style = MaterialTheme.typography.bodyLarge)
@@ -132,9 +134,11 @@ private fun MarkdownContent(text: String) {
                     )
                 }
             }
+
             trimmed == "***" || trimmed == "---" -> {
                 HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
             }
+
             trimmed.isNotBlank() -> {
                 Text(
                     text = parseMarkdownInline(trimmed, linkColor),
@@ -149,19 +153,22 @@ private fun MarkdownContent(text: String) {
 /**
  * Wandelt Markdown-Formatierungen (Fett, Links) in einen AnnotatedString um.
  */
-private fun parseMarkdownInline(text: String, linkColor: androidx.compose.ui.graphics.Color): AnnotatedString {
+private fun parseMarkdownInline(
+    text: String,
+    linkColor: androidx.compose.ui.graphics.Color
+): AnnotatedString {
     val linkRegex = Regex("\\[([^]]+)]\\(([^)]+)\\)")
-    
+
     return buildAnnotatedString {
         var currentIndex = 0
-        
+
         linkRegex.findAll(text).forEach { match ->
             // Text vor dem Link verarbeiten (Fett-Check)
             appendBoldText(text.substring(currentIndex, match.range.first))
-            
+
             val linkText = match.groupValues[1]
             val url = match.groupValues[2]
-            
+
             // Link hinzufügen
             val start = length
             append(linkText)
@@ -179,10 +186,10 @@ private fun parseMarkdownInline(text: String, linkColor: androidx.compose.ui.gra
                 start = start,
                 end = length
             )
-            
+
             currentIndex = match.range.last + 1
         }
-        
+
         // Restlichen Text nach dem letzten Link verarbeiten
         appendBoldText(text.substring(currentIndex))
     }

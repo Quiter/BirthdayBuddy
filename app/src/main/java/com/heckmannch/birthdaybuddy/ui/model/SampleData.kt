@@ -6,7 +6,7 @@ package com.heckmannch.birthdaybuddy.ui.model
 object SampleData {
     val giftIdea1 = GiftIdea(id = "g1", text = "Socken", isChecked = false)
     val giftIdea2 = GiftIdea(id = "g2", text = "Wein", isChecked = true)
-    
+
     val contact1 = ContactUiModel(
         id = "1",
         contactId = "1",

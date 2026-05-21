@@ -30,15 +30,18 @@ fun NotificationRuleItem(
 
     ListItem(
         headlineContent = { Text(daysStr) },
-        supportingContent = { 
-            Text(stringResource(R.string.rule_time_format, rule.hour, rule.minute)) 
+        supportingContent = {
+            Text(stringResource(R.string.rule_time_format, rule.hour, rule.minute))
         },
         leadingContent = {
             Icon(Icons.Default.Notifications, contentDescription = null)
         },
         trailingContent = {
             IconButton(onClick = { onDeleteRule(rule) }) {
-                Icon(Icons.Default.Delete, contentDescription = stringResource(R.string.notifications_delete))
+                Icon(
+                    Icons.Default.Delete,
+                    contentDescription = stringResource(R.string.notifications_delete)
+                )
             }
         },
         modifier = Modifier.clickable { onEditRule(rule) },

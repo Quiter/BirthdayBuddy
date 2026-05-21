@@ -27,10 +27,10 @@ fun HomeFAB(
     FloatingActionButton(
         onClick = if (showScrollUp) onScrollToTop else onAddContact,
         modifier = modifier,
-        containerColor = if (showScrollUp) MaterialTheme.colorScheme.secondaryContainer 
-                        else MaterialTheme.colorScheme.primaryContainer,
-        contentColor = if (showScrollUp) MaterialTheme.colorScheme.onSecondaryContainer 
-                      else MaterialTheme.colorScheme.onPrimaryContainer,
+        containerColor = if (showScrollUp) MaterialTheme.colorScheme.secondaryContainer
+        else MaterialTheme.colorScheme.primaryContainer,
+        contentColor = if (showScrollUp) MaterialTheme.colorScheme.onSecondaryContainer
+        else MaterialTheme.colorScheme.onPrimaryContainer,
     ) {
         AnimatedContent(
             targetState = showScrollUp,

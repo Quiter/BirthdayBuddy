@@ -52,7 +52,8 @@ fun BackupScreen(
                     }
                     Toast.makeText(context, exportSuccessMsg, Toast.LENGTH_SHORT).show()
                 } catch (e: Exception) {
-                    Toast.makeText(context, exportFailedMsg.format(e.message), Toast.LENGTH_LONG).show()
+                    Toast.makeText(context, exportFailedMsg.format(e.message), Toast.LENGTH_LONG)
+                        .show()
                 } finally {
                     isLoading = false
                 }
@@ -73,14 +74,19 @@ fun BackupScreen(
                     if (json != null) {
                         val count = viewModel.importGiftIdeas(json)
                         if (count >= 0) {
-                            val message = context.resources.getQuantityString(R.plurals.backup_import_success, count, count)
+                            val message = context.resources.getQuantityString(
+                                R.plurals.backup_import_success,
+                                count,
+                                count
+                            )
                             Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
                         } else {
                             Toast.makeText(context, importInvalidMsg, Toast.LENGTH_SHORT).show()
                         }
                     }
                 } catch (e: Exception) {
-                    Toast.makeText(context, importFailedMsg.format(e.message), Toast.LENGTH_LONG).show()
+                    Toast.makeText(context, importFailedMsg.format(e.message), Toast.LENGTH_LONG)
+                        .show()
                 } finally {
                     isLoading = false
                 }
@@ -95,7 +101,15 @@ fun BackupScreen(
             val date = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd"))
             exportLauncher.launch("birthday_buddy_backup_$date.json")
         },
-        onImportClick = { importLauncher.launch(arrayOf("application/json", "application/octet-stream", "*/*")) },
+        onImportClick = {
+            importLauncher.launch(
+                arrayOf(
+                    "application/json",
+                    "application/octet-stream",
+                    "*/*"
+                )
+            )
+        },
         onNavigateBack = onNavigateBack
     )
 }

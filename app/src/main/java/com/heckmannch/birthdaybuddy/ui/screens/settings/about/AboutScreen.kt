@@ -50,12 +50,16 @@ fun AboutScreen(
     val context = LocalContext.current
     val versionName = remember {
         try {
-            val packageInfo: PackageInfo = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                context.packageManager.getPackageInfo(context.packageName, PackageManager.PackageInfoFlags.of(0))
-            } else {
-                @Suppress("DEPRECATION")
-                context.packageManager.getPackageInfo(context.packageName, 0)
-            }
+            val packageInfo: PackageInfo =
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                    context.packageManager.getPackageInfo(
+                        context.packageName,
+                        PackageManager.PackageInfoFlags.of(0)
+                    )
+                } else {
+                    @Suppress("DEPRECATION")
+                    context.packageManager.getPackageInfo(context.packageName, 0)
+                }
             packageInfo.versionName ?: "2.1.0"
         } catch (_: Exception) {
             "2.1.0"
@@ -100,47 +104,47 @@ fun AboutScreen(
                     )
                 }
             }
-            
+
             Spacer(modifier = Modifier.height(24.dp))
-            
+
             Text(
                 text = stringResource(R.string.app_name),
                 style = MaterialTheme.typography.headlineMedium,
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.onSurface
             )
-            
+
             Text(
                 text = stringResource(R.string.settings_version, versionName),
                 style = MaterialTheme.typography.bodyLarge,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
-            
+
             Spacer(modifier = Modifier.height(32.dp))
-            
+
             Text(
                 text = stringResource(R.string.about_description),
                 style = MaterialTheme.typography.bodyLarge,
                 textAlign = TextAlign.Center,
                 modifier = Modifier.padding(horizontal = 16.dp)
             )
-            
+
             Spacer(modifier = Modifier.height(48.dp))
-            
+
             AboutSection(
                 title = stringResource(R.string.about_developer_title),
                 content = "Christof Heckmann"
             )
-            
+
             Spacer(modifier = Modifier.height(24.dp))
-            
+
             AboutSection(
                 title = stringResource(R.string.about_location_title),
                 content = stringResource(R.string.settings_made_with).removePrefix("Made with ❤️ in ")
             )
-            
+
             Spacer(modifier = Modifier.height(32.dp))
-            
+
             TextButton(onClick = onNavigateToPrivacyPolicy) {
                 Text(
                     text = stringResource(R.string.about_privacy_policy),
@@ -148,9 +152,9 @@ fun AboutScreen(
                     color = MaterialTheme.colorScheme.primary
                 )
             }
-            
+
             Spacer(modifier = Modifier.height(48.dp))
-            
+
             Text(
                 text = stringResource(R.string.about_copyright),
                 style = MaterialTheme.typography.labelMedium,

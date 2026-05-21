@@ -117,10 +117,10 @@ fun FastScrollbar(
 
                 val lastItem = visibleItemsInfo.last()
                 val isLastItemVisible = (lastItem.index == (totalItems - 1))
-                
+
                 // Falls das letzte Item noch nicht mal in der Liste der sichtbaren ist -> Scrollbar anzeigen
                 if (!isLastItemVisible) return@derivedStateOf true
-                
+
                 // Falls das letzte Item in der Liste ist, prüfen ob es nach unten übersteht
                 val viewportEnd = layoutInfo.viewportEndOffset - layoutInfo.afterContentPadding
                 (lastItem.offset + lastItem.size) > viewportEnd
@@ -131,7 +131,11 @@ fun FastScrollbar(
             val currentLabel by remember(contacts, trackHeightPx, getLabel) {
                 derivedStateOf {
                     val index = if (isDragging) {
-                        val percent = if (trackHeightPx > 0) (dragOffsetPx / trackHeightPx).coerceIn(0f, 1f) else 0f
+                        val percent =
+                            if (trackHeightPx > 0) (dragOffsetPx / trackHeightPx).coerceIn(
+                                0f,
+                                1f
+                            ) else 0f
                         (percent * (totalItems - 1)).toInt()
                     } else {
                         listState.firstVisibleItemIndex
@@ -140,7 +144,7 @@ fun FastScrollbar(
                     if (contact != null) getLabel(contact) else ""
                 }
             }
-            
+
             // Haptisches Feedback bei Label-Wechsel während des Drags
             LaunchedEffect(currentLabel) {
                 if (isDragging) {
@@ -162,15 +166,17 @@ fun FastScrollbar(
                         val firstItem = visibleItems.first()
                         val scrollOffset = listState.firstVisibleItemScrollOffset.toFloat()
                         val itemSize = firstItem.size.toFloat()
-                        
+
                         // Präziser fraktionaler Index
-                        val fractionalIndex = listState.firstVisibleItemIndex.toFloat() + 
-                            (scrollOffset / itemSize).coerceIn(0f, 1f)
-                        
-                        val viewportHeight = layoutInfo.viewportEndOffset - layoutInfo.viewportStartOffset
-                        val itemsInViewport = if (itemSize > 0) viewportHeight.toFloat() / itemSize else 1f
+                        val fractionalIndex = listState.firstVisibleItemIndex.toFloat() +
+                                (scrollOffset / itemSize).coerceIn(0f, 1f)
+
+                        val viewportHeight =
+                            layoutInfo.viewportEndOffset - layoutInfo.viewportStartOffset
+                        val itemsInViewport =
+                            if (itemSize > 0) viewportHeight.toFloat() / itemSize else 1f
                         val maxIndex = (totalItems.toFloat() - itemsInViewport).coerceAtLeast(1f)
-                        
+
                         val scrollPercent = (fractionalIndex / maxIndex).coerceIn(0f, 1f)
                         trackHeight * scrollPercent
                     }
@@ -234,7 +240,7 @@ fun FastScrollbar(
                     .graphicsLayer {
                         translationY = thumbOffset.toPx()
                     }
-                    .semantics { 
+                    .semantics {
                         contentDescription = scrollbarDesc
                     }
                     .pointerInput(totalItems, trackHeightPx) {
@@ -245,26 +251,28 @@ fun FastScrollbar(
                                     onSetFastScrolling(true)
                                     dragOffsetPx = with(density) { thumbOffset.toPx() }
                                 },
-                                onDragEnd = { 
+                                onDragEnd = {
                                     isDragging = false
                                     onSetFastScrolling(false)
                                 },
-                                onDragCancel = { 
+                                onDragCancel = {
                                     isDragging = false
                                     onSetFastScrolling(false)
                                 },
                             ) { change, dragAmount ->
-                                dragOffsetPx = (dragOffsetPx + dragAmount).coerceIn(0f, trackHeightPx)
-                                val scrollPercent = if (trackHeightPx > 0) dragOffsetPx / trackHeightPx else 0f
-                                
+                                dragOffsetPx =
+                                    (dragOffsetPx + dragAmount).coerceIn(0f, trackHeightPx)
+                                val scrollPercent =
+                                    if (trackHeightPx > 0) dragOffsetPx / trackHeightPx else 0f
+
                                 val (targetIndex, targetOffset) = calculateScrollTarget(
                                     scrollPercent = scrollPercent,
                                     totalItems = totalItems,
                                     layoutInfo = listState.layoutInfo,
                                 )
-                                
-                                scope.launch { 
-                                    listState.scrollToItem(targetIndex, targetOffset) 
+
+                                scope.launch {
+                                    listState.scrollToItem(targetIndex, targetOffset)
                                 }
                                 change.consume()
                             }
@@ -299,10 +307,10 @@ private fun calculateScrollTarget(
     val viewportHeight = layoutInfo.viewportEndOffset - layoutInfo.viewportStartOffset
     val itemsInViewport = viewportHeight.toFloat() / itemSize
     val maxIndex = (totalItems.toFloat() - itemsInViewport).coerceAtLeast(1f)
-    
+
     val targetFractionalIndex = scrollPercent * maxIndex
     val targetIndex = targetFractionalIndex.toInt().coerceIn(0, totalItems - 1)
     val targetOffset = ((targetFractionalIndex - targetIndex) * itemSize).toInt()
-    
+
     return targetIndex to targetOffset
 }

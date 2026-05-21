@@ -41,8 +41,8 @@ class NotificationWorker @AssistedInject constructor(
         val currentLocalTime = now.toLocalTime().withSecond(0).withNano(0)
 
         // Finde Regeln, die jetzt (oder in der letzten Minute) fällig sind
-        val currentRules = rules.filter { 
-            (it.hour == currentLocalTime.hour) && (it.minute == currentLocalTime.minute) 
+        val currentRules = rules.filter {
+            (it.hour == currentLocalTime.hour) && (it.minute == currentLocalTime.minute)
         }
 
         if (currentRules.isNotEmpty()) {
@@ -56,7 +56,7 @@ class NotificationWorker @AssistedInject constructor(
                         (bday.month == targetDate.month) && (bday.dayOfMonth == targetDate.dayOfMonth)
                     } ?: false
                 }
-                
+
                 // Für jeden Kontakt eine eigene Benachrichtigung erstellen
                 birthdays.forEach { contact ->
                     // In DB speichern für Persistenz
@@ -65,11 +65,12 @@ class NotificationWorker @AssistedInject constructor(
                         daysBefore = rule.daysBefore,
                         year = today.year
                     )
-                    val pendingId = notificationRepository.insertPendingNotification(pending).toInt()
-                    
+                    val pendingId =
+                        notificationRepository.insertPendingNotification(pending).toInt()
+
                     notificationHelper.showBirthdayNotification(
-                        contacts = listOf(contact), 
-                        daysBefore = rule.daysBefore, 
+                        contacts = listOf(contact),
+                        daysBefore = rule.daysBefore,
                         pendingId = pendingId
                     )
                 }
@@ -101,11 +102,11 @@ class NotificationWorker @AssistedInject constructor(
                 .distinct()
                 .sorted()
                 .toList()
-            
+
             // Finde die nächste Zeit heute oder die erste Zeit morgen
-            val nextTime = uniqueTimes.firstOrNull { it.isAfter(now.toLocalTime()) } 
+            val nextTime = uniqueTimes.firstOrNull { it.isAfter(now.toLocalTime()) }
                 ?: uniqueTimes.first()
-            
+
             var targetDateTime = LocalDateTime.of(now.toLocalDate(), nextTime)
             if (!targetDateTime.isAfter(now)) {
                 targetDateTime = targetDateTime.plusDays(1)
@@ -115,7 +116,10 @@ class NotificationWorker @AssistedInject constructor(
 
             val request = OneTimeWorkRequestBuilder<NotificationWorker>()
                 .setInitialDelay(delay, TimeUnit.MILLISECONDS)
-                .setConstraints(Constraints.Builder().setRequiresBatteryNotLow(requiresBatteryNotLow = true).build())
+                .setConstraints(
+                    Constraints.Builder().setRequiresBatteryNotLow(requiresBatteryNotLow = true)
+                        .build()
+                )
                 .addTag("birthday_notification")
                 .build()
 

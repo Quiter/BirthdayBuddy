@@ -32,7 +32,13 @@ class SettingsViewModel @Inject constructor(
         if (notificationsEnabled) {
             val rules = notificationRepository.getAllRulesImmediate()
             if (rules.isEmpty()) {
-                notificationRepository.insertRule(NotificationRule(daysBefore = 0, hour = 9, minute = 0))
+                notificationRepository.insertRule(
+                    NotificationRule(
+                        daysBefore = 0,
+                        hour = 9,
+                        minute = 0
+                    )
+                )
             }
         }
         notificationRepository.updateSettings(

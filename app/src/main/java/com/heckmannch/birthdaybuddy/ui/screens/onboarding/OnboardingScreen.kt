@@ -48,30 +48,42 @@ fun OnboardingScreen(
     var persistentEnabled by remember { mutableStateOf(value = true) }
 
     var hasContactPermission by remember {
-        mutableStateOf(ContextCompat.checkSelfPermission(context, Manifest.permission.READ_CONTACTS) == PackageManager.PERMISSION_GRANTED)
+        mutableStateOf(
+            ContextCompat.checkSelfPermission(
+                context,
+                Manifest.permission.READ_CONTACTS
+            ) == PackageManager.PERMISSION_GRANTED
+        )
     }
 
     var hasNotifPermission by remember {
         mutableStateOf(
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                ContextCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED
+                ContextCompat.checkSelfPermission(
+                    context,
+                    Manifest.permission.POST_NOTIFICATIONS
+                ) == PackageManager.PERMISSION_GRANTED
             } else {
                 true
             }
         )
     }
 
-    val contactLauncher = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted ->
-        hasContactPermission = isGranted
-        if (isGranted) {
-            scope.launch { pagerState.animateScrollToPage(2) }
+    val contactLauncher =
+        rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted ->
+            hasContactPermission = isGranted
+            if (isGranted) {
+                scope.launch { pagerState.animateScrollToPage(2) }
+            }
         }
-    }
 
     val onRequestContactPermission = {
         val activity = context as? Activity
         val shouldShowRationale = activity?.let {
-            ActivityCompat.shouldShowRequestPermissionRationale(it, Manifest.permission.READ_CONTACTS)
+            ActivityCompat.shouldShowRequestPermissionRationale(
+                it,
+                Manifest.permission.READ_CONTACTS
+            )
         } ?: false
 
         if (shouldShowRationale || !hasContactPermission) {
@@ -83,16 +95,18 @@ fun OnboardingScreen(
                     data = Uri.fromParts("package", context.packageName, null)
                 }
                 context.startActivity(intent)
-            } catch (_: Exception) {}
+            } catch (_: Exception) {
+            }
         }
     }
 
-    val notifLauncher = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted ->
-        hasNotifPermission = isGranted
-        if (isGranted) {
-            scope.launch { pagerState.animateScrollToPage(3) }
+    val notifLauncher =
+        rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted ->
+            hasNotifPermission = isGranted
+            if (isGranted) {
+                scope.launch { pagerState.animateScrollToPage(3) }
+            }
         }
-    }
 
     AppResponsiveScaffold(
         windowWidthSizeClass = windowWidthSizeClass,
@@ -127,6 +141,7 @@ fun OnboardingScreen(
                 ) {
                     scope.launch { pagerState.animateScrollToPage(2) }
                 }
+
                 2 -> NotificationsPage(
                     enabled = notificationsEnabled,
                     onEnabledChange = { notificationsEnabled = it },
@@ -141,6 +156,7 @@ fun OnboardingScreen(
                         scope.launch { pagerState.animateScrollToPage(3) }
                     }
                 }
+
                 3 -> ReadyPage(
                     hasContactPermission = hasContactPermission,
                     notificationsEnabled = notificationsEnabled && hasNotifPermission

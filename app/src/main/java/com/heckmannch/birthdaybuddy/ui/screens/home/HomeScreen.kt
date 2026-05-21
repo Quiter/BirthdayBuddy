@@ -60,23 +60,28 @@ fun HomeScreen(
     val context = LocalContext.current
     val focusManager = LocalFocusManager.current
     val keyboardController = LocalSoftwareKeyboardController.current
-    
+
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val homeState = rememberHomeState()
     val contactActions = remember(context) { ContactActions(context) }
-    
+
     val appPlaceholder = stringResource(R.string.home_placeholder_app)
     val searchPlaceholder = stringResource(R.string.home_placeholder_search)
 
     // --- Launchers ---
-    val permissionLauncher = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted ->
-        if (isGranted) viewModel.syncContacts()
-    }
+    val permissionLauncher =
+        rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted ->
+            if (isGranted) viewModel.syncContacts()
+        }
 
     // --- UI-Koordination (Initialisierung & Fokus) ---
     LaunchedEffect(Unit) {
         homeState.animatedPlaceholder = appPlaceholder
-        if (ContextCompat.checkSelfPermission(context, Manifest.permission.READ_CONTACTS) == PackageManager.PERMISSION_GRANTED) {
+        if (ContextCompat.checkSelfPermission(
+                context,
+                Manifest.permission.READ_CONTACTS
+            ) == PackageManager.PERMISSION_GRANTED
+        ) {
             viewModel.syncContacts()
         }
         delay(2000)
@@ -128,36 +133,37 @@ fun HomeScreen(
         }
     }
 
-    val actions = remember(viewModel, onNavigateToSettings, contactActions, permissionLauncher, homeState) {
-        HomeActions(
-            onSearchQueryChange = viewModel::onSearchQueryChange,
-            onLabelSelected = viewModel::onLabelSelected,
-            onClearSearch = {
-                viewModel.onSearchQueryChange("")
-                focusManager.clearFocus()
-                keyboardController?.hide()
-            },
-            onNavigateToSettings = onNavigateToSettings,
-            onAddContact = contactActions::addContact,
-            onRequestPermission = {
-                contactActions.requestContactPermission(
-                    launcher = permissionLauncher,
-                    hasAttemptedBefore = homeState.hasAttemptedContactPermission,
-                ) { homeState.hasAttemptedContactPermission = true }
-            },
-            onAddGiftIdea = viewModel::addGiftIdea,
-            onToggleGiftIdea = viewModel::toggleGiftIdea,
-            onUpdateGiftIdeaText = viewModel::updateGiftIdeaText,
-            onDeleteGiftIdea = viewModel::deleteGiftIdea,
-            onUpdateBirthday = viewModel::updateBirthday,
-            onOpenContact = contactActions::openContact,
-            onDial = contactActions::dialNumber,
-            onSendSms = contactActions::sendSms,
-            onWhatsApp = contactActions::openWhatsApp,
-            onSignal = contactActions::openSignal,
-            onRefresh = { viewModel.syncContacts(showLoading = true) },
-        )
-    }
+    val actions =
+        remember(viewModel, onNavigateToSettings, contactActions, permissionLauncher, homeState) {
+            HomeActions(
+                onSearchQueryChange = viewModel::onSearchQueryChange,
+                onLabelSelected = viewModel::onLabelSelected,
+                onClearSearch = {
+                    viewModel.onSearchQueryChange("")
+                    focusManager.clearFocus()
+                    keyboardController?.hide()
+                },
+                onNavigateToSettings = onNavigateToSettings,
+                onAddContact = contactActions::addContact,
+                onRequestPermission = {
+                    contactActions.requestContactPermission(
+                        launcher = permissionLauncher,
+                        hasAttemptedBefore = homeState.hasAttemptedContactPermission,
+                    ) { homeState.hasAttemptedContactPermission = true }
+                },
+                onAddGiftIdea = viewModel::addGiftIdea,
+                onToggleGiftIdea = viewModel::toggleGiftIdea,
+                onUpdateGiftIdeaText = viewModel::updateGiftIdeaText,
+                onDeleteGiftIdea = viewModel::deleteGiftIdea,
+                onUpdateBirthday = viewModel::updateBirthday,
+                onOpenContact = contactActions::openContact,
+                onDial = contactActions::dialNumber,
+                onSendSms = contactActions::sendSms,
+                onWhatsApp = contactActions::openWhatsApp,
+                onSignal = contactActions::openSignal,
+                onRefresh = { viewModel.syncContacts(showLoading = true) },
+            )
+        }
 
     HomeContent(
         uiState = uiState,
@@ -177,7 +183,7 @@ private fun HomeContent(
 ) {
     val focusManager = LocalFocusManager.current
     val keyboardController = LocalSoftwareKeyboardController.current
-    
+
     // Optimierung: Filter-Sichtbarkeit in derivedStateOf kapseln, damit HomeContent 
     // nicht bei jedem Scroll-Pixel re-composed.
     val isFilterBarVisible by remember(uiState.isResettingFilter, homeState) {
@@ -223,7 +229,7 @@ private fun HomeContent(
             modifier = Modifier.fillMaxSize(),
         ) {
             BirthdayList(
-                contacts = uiState.contacts, 
+                contacts = uiState.contacts,
                 newlyAddedIdeaId = uiState.newlyAddedIdeaId,
                 listState = homeState.listState,
                 selectedLabel = uiState.selectedLabel,

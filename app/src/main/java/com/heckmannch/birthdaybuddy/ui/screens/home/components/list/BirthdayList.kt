@@ -72,11 +72,11 @@ fun BirthdayList(
     onInteraction: () -> Unit = {},
 ) {
     val context = LocalContext.current
-    
+
     val hasPermission by remember {
         derivedStateOf {
             ContextCompat.checkSelfPermission(
-                context, 
+                context,
                 Manifest.permission.READ_CONTACTS,
             ) == PackageManager.PERMISSION_GRANTED
         }
@@ -129,7 +129,7 @@ fun BirthdayList(
                 contentType = { _, _ -> "birthdayItem" },
             ) { _, contact ->
                 val isExpanded = expandedContactId == contact.id
-                
+
                 BirthdayItem(
                     contact = contact,
                     isExpanded = isExpanded,
@@ -232,7 +232,7 @@ private fun EmptyListState(
             )
         }
         Spacer(modifier = Modifier.height(16.dp))
-        
+
         if (!hasPermission) {
             Text(
                 text = stringResource(R.string.empty_permission_desc),
