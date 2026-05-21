@@ -22,7 +22,10 @@ import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
@@ -86,6 +89,17 @@ private fun GiftIdeaItem(
 ) {
     val focusRequester = remember { FocusRequester() }
 
+    // Lokaler State für das Textfeld, um Cursor-Sprünge bei DB-Sync zu vermeiden.
+    // Wir synchronisieren den lokalen State nur, wenn sich die ID ändert oder 
+    // der externe Text signifikant abweicht (z.B. durch Cloud-Sync).
+    var localText by remember(idea.id) { mutableStateOf(idea.text) }
+
+    LaunchedEffect(idea.text) {
+        if (localText != idea.text) {
+            localText = idea.text
+        }
+    }
+
     LaunchedEffect(isNew) {
         if (isNew) {
             focusRequester.requestFocus()
@@ -104,8 +118,11 @@ private fun GiftIdeaItem(
         )
 
         TextField(
-            value = idea.text,
-            onValueChange = onTextChange,
+            value = localText,
+            onValueChange = {
+                localText = it
+                onTextChange(it)
+            },
             modifier = Modifier
                 .weight(1f)
                 .focusRequester(focusRequester)

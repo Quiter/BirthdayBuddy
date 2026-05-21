@@ -2,6 +2,8 @@ package com.heckmannch.birthdaybuddy.data.repository
 
 import android.util.Log
 import com.heckmannch.birthdaybuddy.data.local.ContactDao
+import com.heckmannch.birthdaybuddy.data.local.ContactUserData
+import com.heckmannch.birthdaybuddy.data.local.ContactUserDataDao
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.json.JSONArray
@@ -12,18 +14,23 @@ import javax.inject.Singleton
 @Singleton
 class GiftIdeaBackupManager @Inject constructor(
     private val contactDao: ContactDao,
+    private val contactUserDataDao: ContactUserDataDao,
 ) {
     /**
      * Exportiert alle Kontakte mit Geschenkideen als JSON-String.
+     * Nutzt nun die ContactUserData-Tabelle als Primärquelle.
      */
     suspend fun exportGiftIdeas(): String = withContext(Dispatchers.IO) {
-        val contacts = contactDao.getAllContactsImmediate().filter { !it.giftIdeas.isNullOrBlank() }
+        val userDataList = contactUserDataDao.getAllUserDataImmediate().filter { !it.giftIdeas.isNullOrBlank() }
+        val dbContacts = contactDao.getAllContactsImmediate().associateBy { it.lookupKey }
+        
         val root = JSONArray()
-        contacts.forEach { contact ->
+        userDataList.forEach { userData ->
+            val contact = dbContacts[userData.lookupKey]
             val obj = JSONObject().apply {
-                put("lookupKey", contact.lookupKey)
-                put("fullName", contact.fullName)
-                put("giftIdeas", contact.giftIdeas)
+                put("lookupKey", userData.lookupKey)
+                put("fullName", contact?.fullName ?: "")
+                put("giftIdeas", userData.giftIdeas)
             }
             root.put(obj)
         }
@@ -31,7 +38,8 @@ class GiftIdeaBackupManager @Inject constructor(
     }
 
     /**
-     * Importiert Geschenkideen aus einem JSON-String und ordnet sie via LookupKey oder Name zu.
+     * Importiert Geschenkideen aus einem JSON-String.
+     * Schreibt die Daten in die persistente UserData-Tabelle.
      */
     suspend fun importGiftIdeas(jsonString: String): Int = withContext(Dispatchers.IO) {
         try {
@@ -52,10 +60,13 @@ class GiftIdeaBackupManager @Inject constructor(
                 if (giftIdeas.isNullOrBlank()) continue
 
                 // Match via LookupKey (Best) oder Name (Fallback)
-                val target = contactsByLookup[lookupKey] ?: contactsByName[fullName]
+                val targetLookupKey = contactsByLookup[lookupKey]?.lookupKey 
+                    ?: contactsByName[fullName]?.lookupKey
 
-                if (target != null) {
-                    contactDao.upsertContact(target.copy(giftIdeas = giftIdeas))
+                if (targetLookupKey != null) {
+                    contactUserDataDao.upsertUserData(
+                        ContactUserData(lookupKey = targetLookupKey, giftIdeas = giftIdeas)
+                    )
                     count++
                 }
             }

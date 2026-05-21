@@ -9,6 +9,8 @@ import com.heckmannch.birthdaybuddy.data.local.AppSettings
 import com.heckmannch.birthdaybuddy.data.local.AppSettingsDao
 import com.heckmannch.birthdaybuddy.data.local.Contact
 import com.heckmannch.birthdaybuddy.data.local.ContactDao
+import com.heckmannch.birthdaybuddy.data.local.ContactUserData
+import com.heckmannch.birthdaybuddy.data.local.ContactUserDataDao
 import com.heckmannch.birthdaybuddy.data.local.LabelConfig
 import com.heckmannch.birthdaybuddy.data.local.LabelConfigDao
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -26,6 +28,7 @@ class ContactRepository @Inject constructor(
     private val contactDao: ContactDao,
     private val labelConfigDao: LabelConfigDao,
     private val appSettingsDao: AppSettingsDao,
+    private val contactUserDataDao: ContactUserDataDao,
     private val systemContactDataSource: SystemContactDataSource,
     private val giftIdeaBackupManager: GiftIdeaBackupManager,
 ) {
@@ -50,24 +53,29 @@ class ContactRepository @Inject constructor(
                     async { contactDao.getAllContactsImmediate().associateBy { it.lookupKey } }
                 val dbConfigsDeferred =
                     async { labelConfigDao.getAllConfigsImmediate().associateBy { it.name } }
+                val userDataDeferred =
+                    async { contactUserDataDao.getAllUserDataImmediate().associateBy { it.lookupKey } }
 
                 val groups = groupsDeferred.await()
                 val systemContacts = systemContactDataSource.fetchContactsFromSystem(groups)
                 val dbContacts = dbContactsDeferred.await()
                 val dbConfigs = dbConfigsDeferred.await()
+                val userDataMap = userDataDeferred.await()
 
                 // 2. Labels synchronisieren
                 syncLabelConfigs(systemContacts, dbConfigs, groups)
 
                 // 3. Diffing: Kontakte abgleichen
                 val finalContacts = systemContacts.map { systemContact ->
-                    dbContacts[systemContact.lookupKey]?.let { existing ->
-                        // Update: localId und Geschenkideen erhalten
-                        systemContact.copy(
-                            localId = existing.localId,
-                            giftIdeas = existing.giftIdeas,
-                        )
-                    } ?: systemContact
+                    val lookupKey = systemContact.lookupKey
+                    val existing = dbContacts[lookupKey]
+                    val userData = userDataMap[lookupKey]
+                    
+                    // Update: localId erhalten und Geschenkideen aus der UserData-Tabelle laden
+                    systemContact.copy(
+                        localId = existing?.localId ?: 0,
+                        giftIdeas = userData?.giftIdeas ?: existing?.giftIdeas,
+                    )
                 }
 
                 // 4. Batch Update via Transaction
@@ -119,6 +127,12 @@ class ContactRepository @Inject constructor(
 
     suspend fun updateGiftIdeas(lookupKey: String, ideas: String) {
         withContext(Dispatchers.IO) {
+            // 1. In der persistenten UserData-Tabelle speichern (für Backup)
+            contactUserDataDao.upsertUserData(
+                ContactUserData(lookupKey = lookupKey, giftIdeas = ideas)
+            )
+            
+            // 2. Im Cache aktualisieren (für sofortige UI-Anzeige)
             contactDao.getContactByLookupKey(lookupKey)?.let { contact ->
                 contactDao.upsertContact(contact.copy(giftIdeas = ideas))
             }
@@ -139,6 +153,11 @@ class ContactRepository @Inject constructor(
 
     suspend fun exportGiftIdeas(): String = giftIdeaBackupManager.exportGiftIdeas()
 
-    suspend fun importGiftIdeas(jsonString: String): Int =
-        giftIdeaBackupManager.importGiftIdeas(jsonString)
+    suspend fun importGiftIdeas(jsonString: String): Int {
+        val count = giftIdeaBackupManager.importGiftIdeas(jsonString)
+        if (count > 0) {
+            syncContacts() // Cache aktualisieren
+        }
+        return count
+    }
 }

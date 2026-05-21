@@ -62,21 +62,21 @@ fun ContactActionRow(
             // Anrufen
             ActionItem(
                 icon = Icons.Default.Call,
-                label = "Anruf",
+                label = stringResource(R.string.item_action_call),
                 onClick = { actions.onDial(phoneNumber) }
             )
 
             // SMS
             ActionItem(
                 icon = Icons.AutoMirrored.Filled.Message,
-                label = "SMS",
+                label = stringResource(R.string.item_action_sms),
                 onClick = { actions.onSendSms(phoneNumber) }
             )
 
             if (hasWhatsApp) {
                 ActionItem(
                     painter = painterResource(R.drawable.ic_whatsapp),
-                    label = "WhatsApp",
+                    label = stringResource(R.string.item_action_whatsapp),
                     onClick = { actions.onWhatsApp(phoneNumber) }
                 )
             }
@@ -84,7 +84,7 @@ fun ContactActionRow(
             if (hasSignal) {
                 ActionItem(
                     painter = painterResource(R.drawable.ic_signal),
-                    label = "Signal",
+                    label = stringResource(R.string.item_action_signal),
                     onClick = { actions.onSignal(phoneNumber) }
                 )
             }

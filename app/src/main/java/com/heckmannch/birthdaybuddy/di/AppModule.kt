@@ -4,9 +4,11 @@ import android.content.Context
 import com.heckmannch.birthdaybuddy.data.local.AppDatabase
 import com.heckmannch.birthdaybuddy.data.local.AppSettingsDao
 import com.heckmannch.birthdaybuddy.data.local.ContactDao
+import com.heckmannch.birthdaybuddy.data.local.ContactUserDataDao
 import com.heckmannch.birthdaybuddy.data.local.LabelConfigDao
 import com.heckmannch.birthdaybuddy.data.local.NotificationRuleDao
 import com.heckmannch.birthdaybuddy.data.local.PendingNotificationDao
+import com.heckmannch.birthdaybuddy.data.local.SettingsDatabase
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -20,8 +22,14 @@ object AppModule {
 
     @Provides
     @Singleton
-    fun provideDatabase(@ApplicationContext context: Context): AppDatabase {
+    fun provideAppDatabase(@ApplicationContext context: Context): AppDatabase {
         return AppDatabase.getDatabase(context)
+    }
+
+    @Provides
+    @Singleton
+    fun provideSettingsDatabase(@ApplicationContext context: Context): SettingsDatabase {
+        return SettingsDatabase.getDatabase(context)
     }
 
     @Provides
@@ -30,22 +38,27 @@ object AppModule {
     }
 
     @Provides
-    fun provideLabelConfigDao(database: AppDatabase): LabelConfigDao {
-        return database.labelConfigDao()
-    }
-
-    @Provides
-    fun provideNotificationRuleDao(database: AppDatabase): NotificationRuleDao {
-        return database.notificationRuleDao()
-    }
-
-    @Provides
     fun providePendingNotificationDao(database: AppDatabase): PendingNotificationDao {
         return database.pendingNotificationDao()
     }
 
     @Provides
-    fun provideAppSettingsDao(database: AppDatabase): AppSettingsDao {
+    fun provideLabelConfigDao(database: SettingsDatabase): LabelConfigDao {
+        return database.labelConfigDao()
+    }
+
+    @Provides
+    fun provideNotificationRuleDao(database: SettingsDatabase): NotificationRuleDao {
+        return database.notificationRuleDao()
+    }
+
+    @Provides
+    fun provideAppSettingsDao(database: SettingsDatabase): AppSettingsDao {
         return database.appSettingsDao()
+    }
+
+    @Provides
+    fun provideContactUserDataDao(database: SettingsDatabase): ContactUserDataDao {
+        return database.contactUserDataDao()
     }
 }

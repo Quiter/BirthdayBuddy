@@ -122,6 +122,7 @@ fun OnboardingScreen(
                     2 -> !notificationsEnabled || hasNotifPermission
                     else -> true
                 },
+                windowWidthSizeClass = windowWidthSizeClass,
                 onNext = {
                     scope.launch { pagerState.animateScrollToPage(pagerState.currentPage + 1) }
                 }

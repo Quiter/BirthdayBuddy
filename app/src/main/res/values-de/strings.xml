@@ -24,6 +24,10 @@
     <string name="item_action_contact">Kontakt</string>
     <string name="item_today">Heute!</string>
     <string name="item_action_edit_birthday">Geburtstag hinzufügen</string>
+    <string name="item_action_call">Anrufen</string>
+    <string name="item_action_sms">SMS</string>
+    <string name="item_action_whatsapp">WhatsApp</string>
+    <string name="item_action_signal">Signal</string>
     <plurals name="item_days_left">
         <item quantity="one">in %d T.</item>
         <item quantity="other">in %d T.</item>

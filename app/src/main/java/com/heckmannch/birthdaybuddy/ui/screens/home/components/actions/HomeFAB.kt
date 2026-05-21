@@ -1,8 +1,13 @@
 package com.heckmannch.birthdaybuddy.ui.screens.home.components.actions
 
 import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.spring
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
+import androidx.compose.animation.scaleIn
+import androidx.compose.animation.scaleOut
 import androidx.compose.animation.togetherWith
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
@@ -11,30 +16,49 @@ import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import com.heckmannch.birthdaybuddy.R
+import com.heckmannch.birthdaybuddy.ui.screens.home.HomeActions
 import com.heckmannch.birthdaybuddy.ui.theme.BirthdayBuddyTheme
 
+/**
+ * Multifunktionaler Floating Action Button für den Home-Screen.
+ * Morpht zwischen "Kontakt hinzufügen" und "Nach oben scrollen" basierend auf dem Scroll-Zustand.
+ */
 @Composable
 fun HomeFAB(
     showScrollUp: Boolean,
-    onAddContact: () -> Unit,
+    actions: HomeActions,
     onScrollToTop: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    FloatingActionButton(
-        onClick = if (showScrollUp) onScrollToTop else onAddContact,
-        modifier = modifier,
-        containerColor = if (showScrollUp) MaterialTheme.colorScheme.secondaryContainer
+    // Smoother Farbübergang zwischen den Zuständen
+    val containerColor by animateColorAsState(
+        targetValue = if (showScrollUp) MaterialTheme.colorScheme.secondaryContainer
         else MaterialTheme.colorScheme.primaryContainer,
-        contentColor = if (showScrollUp) MaterialTheme.colorScheme.onSecondaryContainer
+        label = "FAB Container Color"
+    )
+    val contentColor by animateColorAsState(
+        targetValue = if (showScrollUp) MaterialTheme.colorScheme.onSecondaryContainer
         else MaterialTheme.colorScheme.onPrimaryContainer,
+        label = "FAB Content Color"
+    )
+
+    FloatingActionButton(
+        onClick = if (showScrollUp) onScrollToTop else actions.onAddContact,
+        modifier = modifier,
+        containerColor = containerColor,
+        contentColor = contentColor,
     ) {
         AnimatedContent(
             targetState = showScrollUp,
-            transitionSpec = { fadeIn() togetherWith fadeOut() },
+            transitionSpec = {
+                val spec = spring<Float>(stiffness = Spring.StiffnessMediumLow)
+                (fadeIn(spec) + scaleIn(spec)).togetherWith(fadeOut(spec) + scaleOut(spec))
+            },
             label = "FAB Icon"
         ) { targetShowScrollUp ->
             if (targetShowScrollUp) {
@@ -55,10 +79,30 @@ fun HomeFAB(
 @Preview
 @Composable
 fun HomeFABPreview() {
+    val actions = HomeActions(
+        onSearchQueryChange = {},
+        onLabelSelected = {},
+        onClearSearch = {},
+        onNavigateToSettings = {},
+        onAddContact = {},
+        onRequestPermission = {},
+        onAddGiftIdea = {},
+        onToggleGiftIdea = { _, _, _ -> },
+        onUpdateGiftIdeaText = { _, _, _ -> },
+        onDeleteGiftIdea = { _, _ -> },
+        onUpdateBirthday = { _, _ -> },
+        onOpenContact = { _, _ -> },
+        onDial = {},
+        onSendSms = {},
+        onWhatsApp = {},
+        onSignal = {},
+        onRefresh = {}
+    )
+
     BirthdayBuddyTheme {
         HomeFAB(
             showScrollUp = false,
-            onAddContact = {},
+            actions = actions,
             onScrollToTop = {}
         )
     }

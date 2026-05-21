@@ -213,7 +213,7 @@ private fun HomeContent(
             ) {
                 HomeFAB(
                     showScrollUp = homeState.showScrollUp,
-                    onAddContact = actions.onAddContact,
+                    actions = actions,
                     onScrollToTop = {
                         focusManager.clearFocus()
                         homeState.scrollToTop()
