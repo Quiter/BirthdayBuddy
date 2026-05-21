@@ -3,7 +3,11 @@ package com.heckmannch.birthdaybuddy.widget
 import android.content.Context
 import androidx.glance.appwidget.updateAll
 import androidx.hilt.work.HiltWorker
-import androidx.work.*
+import androidx.work.CoroutineWorker
+import androidx.work.ExistingWorkPolicy
+import androidx.work.OneTimeWorkRequestBuilder
+import androidx.work.WorkManager
+import androidx.work.WorkerParameters
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
 import java.time.Duration

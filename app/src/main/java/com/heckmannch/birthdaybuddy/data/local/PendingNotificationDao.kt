@@ -1,6 +1,8 @@
 package com.heckmannch.birthdaybuddy.data.local
 
-import androidx.room.*
+import androidx.room.Dao
+import androidx.room.Query
+import androidx.room.Upsert
 
 @Dao
 interface PendingNotificationDao {

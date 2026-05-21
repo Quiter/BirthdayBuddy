@@ -1,8 +1,8 @@
 package com.heckmannch.birthdaybuddy.data.local
 
+import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
-import androidx.room.ColumnInfo
 
 @Entity(tableName = "pending_notifications")
 data class PendingNotification(
