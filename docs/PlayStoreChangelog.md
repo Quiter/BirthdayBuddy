@@ -12,6 +12,7 @@
 
 ## 📝 Aktuelle Vorlage (Beispiel)
 
+<!--suppress HtmlUnknownTag, HtmlUnknownTag -->
 <en-US>
 - New contact animations (Lottie)
 - Adaptive layout for tablets/Chromebooks
@@ -20,6 +21,7 @@
 - Refined card design and typography
 - Improved stability and refresh logic
 </en-US>
+<!--suppress HtmlUnknownTag, HtmlUnknownTag -->
 <de-DE>
 - Neue Kontakt-Animationen (Lottie)
 - Adaptives Layout für Tablets/Chromebooks
