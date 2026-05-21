@@ -49,7 +49,7 @@
                 - `FastScrollbar.kt`: Hochperformante Scrollbar mit Sub-Pixel-Präzision.
                 - `GiftIdeaList.kt`: Spezialisierte Komponente für die Inline-Verwaltung von Geschenkideen.
             - ###### 📁 TopBar (`home.components.topbar`)
-                - `HomeTopBar.kt`: Kombiniert SearchBar und LabelFilterBar.
+                - `HomeTopBar.kt`: Kombiniert SearchBar und LabelFilterBar; unterstützt adaptive Layouts durch Zentrierung auf breiten Bildschirmen.
                 - `LabelFilterBar.kt`: Chip-Leiste zur Filterung nach Labels.
                 - `SearchBar.kt`: M3 SearchBar-Integration.
             - ###### 📁 Actions (`home.components.actions`)
@@ -102,7 +102,9 @@
 - `res/values-de/strings.xml`: Lokalisierte Sprachressourcen (**Deutsch**).
 
 ## 🧪 Testing (`src/test` & `src/androidTest`)
+- `MainDispatcherRule.kt`: JUnit-Rule zur Steuerung von Coroutine-Dispatchern in Tests.
 - `data/local/ConvertersTest.kt`: Tests für TypeConverter.
+- `data/local/MigrationTest.kt`: Automatisierte Datenbank-Migrationstests (V1 bis aktuell).
 - `data/mapper/ContactMapperTest.kt`: Tests für die Transformation in UI-Modelle.
 - `data/repository/NotificationRepositoryTest.kt`: Integrationstests für das Repository.
 - `viewmodel/HomeViewModelSearchTest.kt`: Tests der Suchlogik im HomeViewModel.

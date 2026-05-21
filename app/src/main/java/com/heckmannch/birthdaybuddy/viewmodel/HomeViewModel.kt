@@ -98,39 +98,52 @@ class HomeViewModel @Inject constructor(
         _selectedLabel,
         ignoredLabels,
     ) { uiList, keywords, label, ignoredLabels ->
-        val isSearching = keywords.isNotEmpty()
         val startTime = System.currentTimeMillis()
 
         val result = uiList.asSequence()
-            .filter { contact ->
-                // Kontakte ohne Geburtstag werden in der Hauptliste ausgeblendet, 
-                // ES SEI DENN wir suchen gerade oder haben den "Ohne Datum" Filter aktiv.
-                val isMissingBirthday = contact.dateText == "-"
-                val isNoBirthdayFilter = label == LABEL_NO_BIRTHDAY
-                
-                if (isMissingBirthday && !isSearching && !isNoBirthdayFilter) return@filter false
-
-                val isIgnored = contact.labels.any { it in ignoredLabels }
-                if (isIgnored && !isSearching) return@filter false
-
-                val matchesQuery = !isSearching || keywords.all { keyword ->
-                    contact.fullName.contains(keyword, ignoreCase = true)
-                }
-                
-                val matchesLabel = when (label) {
-                    null -> true
-                    LABEL_NO_BIRTHDAY -> isMissingBirthday
-                    else -> contact.labels.contains(label)
-                }
-                
-                matchesQuery && matchesLabel
-            }
+            .filter { shouldShowContact(it, keywords, label, ignoredLabels) }
             .toList()
         
         if (uiList.size > 1000) {
             Log.d("HomeViewModel", "Filtering ${uiList.size} contacts took ${System.currentTimeMillis() - startTime}ms")
         }
         result
+    }
+
+    /**
+     * Zentrale Filter-Logik für Kontakte.
+     */
+    private fun shouldShowContact(
+        contact: ContactUiModel,
+        keywords: List<String>,
+        label: String?,
+        ignoredLabels: Set<String>
+    ): Boolean {
+        val isSearching = keywords.isNotEmpty()
+        
+        // 1. Sichtbarkeit prüfen (Geburtstag vorhanden & Ignoriert-Status)
+        val isMissingBirthday = contact.dateText == "-"
+        val isNoBirthdayFilter = label == LABEL_NO_BIRTHDAY
+        
+        // Kontakte ohne Geburtstag ausblenden (außer bei Suche oder speziellem Filter)
+        if (isMissingBirthday && !isSearching && !isNoBirthdayFilter) return false
+
+        // Ignorierte Labels ausblenden (außer bei aktiver Suche)
+        val isIgnored = contact.labels.any { it in ignoredLabels }
+        if (isIgnored && !isSearching) return false
+
+        // 2. Suche (Keywords)
+        val matchesQuery = !isSearching || keywords.all { keyword ->
+            contact.fullName.contains(keyword, ignoreCase = true)
+        }
+        if (!matchesQuery) return false
+
+        // 3. Label-Filter
+        return when (label) {
+            null -> true
+            LABEL_NO_BIRTHDAY -> isMissingBirthday
+            else -> contact.labels.contains(label)
+        }
     }
 
     val availableLabels: Flow<List<String>> = combine(
@@ -192,36 +205,38 @@ class HomeViewModel @Inject constructor(
 
     // --- Actions ---
     fun onSearchQueryChange(newQuery: String) {
-        val wasEmpty = _searchQuery.value.isEmpty()
-        if (newQuery.isNotEmpty() && wasEmpty) {
+        if (_searchQuery.value == newQuery) return
+
+        if (newQuery.isNotEmpty() && _searchQuery.value.isEmpty()) {
             _selectedLabel.value = null
         }
         
-        // Bei jeder Änderung der Suche scrollen wir hoch (Reset-Mode)
-        if (_searchQuery.value != newQuery) {
-            _isResettingFilter.value = true
-            triggerScrollToTop()
-        }
-        
         _searchQuery.value = newQuery
+        requestFilterReset()
     }
 
     fun onLabelSelected(label: String?) {
         val newLabel = if (_selectedLabel.value == label) null else label
         if (_selectedLabel.value != newLabel) {
-            _isResettingFilter.value = true
             _selectedLabel.value = newLabel
-            triggerScrollToTop()
+            requestFilterReset()
         }
     }
 
     fun resetFilters() {
-        if ((_searchQuery.value.isNotEmpty()) || (_selectedLabel.value != null)) {
-            _isResettingFilter.value = true
+        if (_searchQuery.value.isNotEmpty() || _selectedLabel.value != null) {
             _searchQuery.value = ""
             _selectedLabel.value = null
-            triggerScrollToTop()
+            requestFilterReset()
         }
+    }
+
+    /**
+     * Triggert einen Scroll-Reset und setzt den Filter-Status zurück.
+     */
+    private fun requestFilterReset() {
+        _isResettingFilter.value = true
+        triggerScrollToTop()
     }
 
     private suspend fun updateContactGiftIdeas(lookupKey: String, transform: (List<GiftIdea>) -> List<GiftIdea>) {
@@ -233,33 +248,11 @@ class HomeViewModel @Inject constructor(
     fun addGiftIdea(lookupKey: String) = viewModelScope.launch {
         val newIdea = GiftIdea(text = "")
         _newlyAddedIdeaId.value = newIdea.id
-        
-        updateContactGiftIdeas(lookupKey) { currentIdeas ->
-            val ideas = currentIdeas.toMutableList()
-            val firstCheckedIndex = ideas.indexOfFirst { it.isChecked }
-            if (firstCheckedIndex != -1) ideas.add(firstCheckedIndex, newIdea)
-            else ideas.add(newIdea)
-            ideas
-        }
+        updateContactGiftIdeas(lookupKey) { current -> GiftIdea.withNewIdea(current, newIdea) }
     }
 
     fun toggleGiftIdea(lookupKey: String, idea: GiftIdea, isChecked: Boolean) = viewModelScope.launch {
-        updateContactGiftIdeas(lookupKey) { currentIdeas ->
-            val ideas = currentIdeas.toMutableList()
-            val idx = ideas.indexOfFirst { it.id == idea.id }
-            if (idx != -1) {
-                ideas.removeAt(idx)
-                val newItem = idea.copy(isChecked = isChecked)
-                if (isChecked) {
-                    ideas.add(newItem)
-                } else {
-                    val firstCheckedIndex = ideas.indexOfFirst { it.isChecked }
-                    if (firstCheckedIndex != -1) ideas.add(firstCheckedIndex, newItem)
-                    else ideas.add(0, newItem)
-                }
-            }
-            ideas
-        }
+        updateContactGiftIdeas(lookupKey) { current -> GiftIdea.withToggledIdea(current, idea, isChecked) }
     }
 
     fun deleteGiftIdea(lookupKey: String, ideaId: String) = viewModelScope.launch {

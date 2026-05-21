@@ -187,6 +187,7 @@ private fun HomeContent(
                 isFilterBarVisible = isFilterBarVisible,
                 actions = actions,
                 searchFocusRequester = homeState.searchFocusRequester,
+                windowWidthSizeClass = windowWidthSizeClass,
             )
         },
         floatingActionButton = {
@@ -206,11 +207,11 @@ private fun HomeContent(
                 )
             }
         }
-    ) { padding ->
+    ) {
         PullToRefreshBox(
             isRefreshing = uiState.isSyncing,
             onRefresh = actions.onRefresh,
-            modifier = Modifier.fillMaxSize().padding(padding),
+            modifier = Modifier.fillMaxSize(),
         ) {
             BirthdayList(
                 contacts = uiState.contacts, 
@@ -235,7 +236,9 @@ private fun HomeContent(
                         contact.monthName
                     }
                 },
-                modifier = Modifier.align(Alignment.CenterEnd).fillMaxHeight(),
+                modifier = Modifier
+                    .align(Alignment.CenterEnd)
+                    .fillMaxHeight(),
                 isResettingFilter = uiState.isResettingFilter,
                 onSetFastScrolling = { homeState.onSetFastScrolling(it) },
             )

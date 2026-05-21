@@ -27,7 +27,7 @@ fun AdaptiveContentContainer(
     }
 
     Box(
-        modifier = modifier.fillMaxSize(),
+        modifier = modifier,
         contentAlignment = Alignment.TopCenter
     ) {
         Box(modifier = maxWidth) {
@@ -50,8 +50,6 @@ fun AppResponsiveScaffold(
     containerColor: Color = Color.Unspecified,
     content: @Composable (PaddingValues) -> Unit
 ) {
-    // Hier könnten wir später eine NavigationRail für Tablets hinzufügen.
-    // Für jetzt konzentrieren wir uns auf die Zentrierung und Insets.
     Scaffold(
         modifier = modifier,
         topBar = topBar,
@@ -60,11 +58,12 @@ fun AppResponsiveScaffold(
         snackbarHost = snackbarHost,
         containerColor = containerColor,
         content = { paddingValues ->
+            // Die Zentrierung und das Padding für Top/BottomBar werden hier gebündelt.
             AdaptiveContentContainer(
                 windowWidthSizeClass = windowWidthSizeClass,
-                modifier = Modifier.padding(paddingValues)
+                modifier = Modifier.fillMaxSize().padding(paddingValues)
             ) {
-                content(PaddingValues(0.dp)) // Padding wurde bereits im Container angewendet
+                content(PaddingValues(0.dp))
             }
         }
     )

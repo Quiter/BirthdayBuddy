@@ -155,4 +155,10 @@
     - **Deprecation Fix:** Umstellung der `sourceSets`-Konfiguration im `build.gradle.kts` auf die moderne `assets.directories.add()` API, um Warnungen bei der Schema-Bereitstellung für Tests zu vermeiden.
     - **Dependency Stability:** Korrektur eines Auflösungsfehlers bei der `kotlinx-serialization-json` Bibliothek durch Synchronisation des Version Catalogs.
     - **Code Quality:** Bereinigung redundanter String-Templates in der KSP-Konfiguration.
+107. **Adaptive UI & Header UX Fix:**
+    - **Trigger Logic:** Refactoring der `isFilterBarVisible` Logik im `HomeState`. Die Filterbar reagiert nun sofort auf den ersten Pixel eines Scroll-Vorgangs (`firstVisibleItemScrollOffset`), was die Navigation deutlich dynamischer macht.
+    - **Header Visuals:** Einführung eines soliden Hintergrunds für die gesamte `HomeTopBar`. Dies beseitigt "Geister-Flächen" beim Scrollen, da die Liste nun sauber unter den Header gleitet.
+    - **Adaptive Header:** Integration des `AdaptiveContentContainer` in die TopBar. Suche und Filter-Chips sind nun auch auf Tablets und breiten Bildschirmen perfekt mittig über der Liste ausgerichtet.
+    - **Animation Cleanup:** Entfernung redundanter `animateContentSize` Aufrufe in der TopBar zugunsten der nativen `AnimatedVisibility` Logik, um Layout-Zittern zu verhindern.
+    - **Framework Stability:** Korrektur des `AdaptiveContentContainer` Verhaltens; das erzwungene `fillMaxSize()` wurde entfernt, um eine korrekte Höhenberechnung für Header-Komponenten zu ermöglichen.
 

@@ -1,8 +1,11 @@
 package com.heckmannch.birthdaybuddy.ui.screens.home.components.topbar
 
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.KeyboardActions
@@ -16,6 +19,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.stringResource
@@ -37,22 +41,42 @@ fun SearchBar(
     modifier: Modifier = Modifier,
 ) {
     val focusManager = LocalFocusManager.current
+    val isFocused = remember { mutableStateOf(false) }
+    
+    val containerColor by animateColorAsState(
+        targetValue = if (isFocused.value) MaterialTheme.colorScheme.surface 
+                      else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
+        label = "SearchBarContainerColor"
+    )
+    
+    val borderColor by animateColorAsState(
+        targetValue = if (isFocused.value) MaterialTheme.colorScheme.primary.copy(alpha = 0.5f) 
+                      else Color.Transparent,
+        label = "SearchBarBorderColor"
+    )
+
+    val borderWidth by animateDpAsState(
+        targetValue = if (isFocused.value) 2.dp else 0.dp,
+        label = "SearchBarBorderWidth"
+    )
 
     Surface(
         modifier = modifier
             .fillMaxWidth()
             .padding(horizontal = 16.dp)
-            .height(56.dp),
+            .height(56.dp)
+            .border(width = borderWidth, color = borderColor, shape = CircleShape),
         shape = CircleShape,
-        color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
-        tonalElevation = 0.dp
+        color = containerColor,
+        tonalElevation = if (isFocused.value) 4.dp else 0.dp
     ) {
         TextField(
             value = query,
             onValueChange = onQueryChange,
             modifier = Modifier
                 .fillMaxSize()
-                .focusRequester(focusRequester),
+                .focusRequester(focusRequester)
+                .onFocusChanged { isFocused.value = it.isFocused },
             placeholder = { 
                 Text(
                     text = placeholder,

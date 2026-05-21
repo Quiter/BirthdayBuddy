@@ -4,12 +4,14 @@ import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
+import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.heckmannch.birthdaybuddy.ui.components.AdaptiveContentContainer
 import com.heckmannch.birthdaybuddy.ui.screens.home.HomeActions
 import com.heckmannch.birthdaybuddy.ui.theme.BirthdayBuddyTheme
 
@@ -26,18 +28,20 @@ fun HomeTopBar(
     isFilterBarVisible: Boolean,
     actions: HomeActions,
     searchFocusRequester: FocusRequester,
+    windowWidthSizeClass: WindowWidthSizeClass,
 ) {
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .animateContentSize(),
+    // Die gesamte TopBar bekommt einen soliden Hintergrund, damit die Liste 
+    // beim Scrollen sauber darunter verschwindet und keine "Geister-Flächen" entstehen.
+    Surface(
+        color = MaterialTheme.colorScheme.surface,
+        modifier = Modifier.fillMaxWidth().animateContentSize()
     ) {
-        // Oberer Teil (Suche) - jetzt ohne Elevation, damit es zur Liste passt
-        Surface(
-            color = MaterialTheme.colorScheme.surface,
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Column {
+        // Wir nutzen den AdaptiveContentContainer auch hier, damit die Suche 
+        // und die Filter auf Tablets zentriert über der Liste bleiben.
+        AdaptiveContentContainer(windowWidthSizeClass = windowWidthSizeClass) {
+            Column(
+                modifier = Modifier.fillMaxWidth()
+            ) {
                 Spacer(modifier = Modifier.statusBarsPadding())
                 SearchBar(
                     query = searchQuery,
@@ -48,16 +52,15 @@ fun HomeTopBar(
                     focusRequester = searchFocusRequester,
                     modifier = Modifier.padding(top = 8.dp, bottom = 8.dp),
                 )
+
+                LabelFilterBar(
+                    visible = isFilterBarVisible,
+                    labels = availableLabels,
+                    selectedLabel = selectedLabel,
+                    onLabelSelected = actions.onLabelSelected,
+                )
             }
         }
-
-        // Unterer Teil (Filter) - nutzt den Standard-Hintergrund des Scaffolds (wie die Liste)
-        LabelFilterBar(
-            visible = isFilterBarVisible,
-            labels = availableLabels,
-            selectedLabel = selectedLabel,
-            onLabelSelected = actions.onLabelSelected,
-        )
     }
 }
 
@@ -92,7 +95,8 @@ private fun HomeTopBarPreview() {
             selectedLabel = null,
             isFilterBarVisible = true,
             actions = actions,
-            searchFocusRequester = remember { FocusRequester() }
+            searchFocusRequester = remember { FocusRequester() },
+            windowWidthSizeClass = WindowWidthSizeClass.Compact
         )
     }
 }
