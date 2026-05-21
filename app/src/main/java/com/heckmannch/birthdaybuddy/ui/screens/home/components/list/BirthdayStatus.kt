@@ -47,7 +47,7 @@ fun BirthdayStatus(
                 Text(
                     text = stringResource(R.string.item_today),
                     color = MaterialTheme.colorScheme.primary,
-                    style = MaterialTheme.typography.labelLarge,
+                    style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold
                 )
             }
@@ -58,7 +58,7 @@ fun BirthdayStatus(
                     daysUntilNext.toInt(),
                     daysUntilNext.toInt()
                 ),
-                style = MaterialTheme.typography.labelLarge,
+                style = MaterialTheme.typography.titleMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
         }
@@ -66,7 +66,7 @@ fun BirthdayStatus(
         if (nextAge != null) {
             Text(
                 text = stringResource(R.string.widget_turns_age, nextAge),
-                style = MaterialTheme.typography.bodySmall,
+                style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
             )
         }

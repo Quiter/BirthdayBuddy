@@ -65,7 +65,7 @@ fun BirthdayItem(
                         actions.onUpdateBirthday(contact.contactId, date)
                     }
                     showDatePicker.value = false
-                }
+                },
                 ) {
                     Text(stringResource(R.string.gift_dialog_save))
                 }
@@ -92,7 +92,7 @@ fun BirthdayItem(
             val age = contact.nextAge
             when {
                 // Alle durch 10 teilbaren (10, 20, 30...) sind Gold
-                (age != null && (age % 10 == 0)) -> BorderStroke(2.dp, BirthdayGold)
+                (age != null && age % 10 == 0) -> BorderStroke(2.dp, BirthdayGold)
                 // Kinder von 0 bis 9 sind Bunt
                 (age != null && age in 0..9) -> BorderStroke(2.dp, Brush.linearGradient(KidColors))
                 // Alle anderen (inkl. ohne Jahr) sind Silber
@@ -267,12 +267,11 @@ fun BirthdayItem(
                             },
                             onDelete = { idea -> 
                                 actions.onDeleteGiftIdea(contact.lookupKey, idea.id)
-                            },
-                            onDone = {
-                                if (it.text.isNotBlank()) actions.onAddGiftIdea(contact.lookupKey)
-                                else focusManager.clearFocus()
                             }
-                        )
+                        ) {
+                            if (it.text.isNotBlank()) actions.onAddGiftIdea(contact.lookupKey)
+                            else focusManager.clearFocus()
+                        }
                     }
                 }
             }
