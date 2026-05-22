@@ -26,9 +26,17 @@ interface ContactDao {
     @Query("DELETE FROM contacts")
     suspend fun deleteAllContacts()
 
+    @Query("DELETE FROM contacts WHERE lookupKey NOT IN (:keys)")
+    suspend fun deleteContactsNotIn(keys: List<String>)
+
     @Transaction
     suspend fun refreshContacts(contacts: List<Contact>) {
-        deleteAllContacts()
-        upsertContacts(contacts)
+        if (contacts.isEmpty()) {
+            deleteAllContacts()
+        } else {
+            upsertContacts(contacts)
+            val currentKeys = contacts.map { it.lookupKey }
+            deleteContactsNotIn(currentKeys)
+        }
     }
 }
