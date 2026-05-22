@@ -11,6 +11,8 @@ import androidx.core.app.ActivityCompat
 import androidx.core.net.toUri
 import com.heckmannch.birthdaybuddy.util.findActivity
 
+import com.heckmannch.birthdaybuddy.ui.screens.home.components.actions.MessengerApp
+
 /**
  * Zentralisiert alle externen Aktionen (Intents) und Permission-Logik.
  * Sorgt für einheitliches Error-Handling und saubere Composables.
@@ -40,27 +42,61 @@ class ContactActions(private val context: Context) {
     }
 
     /**
-     * Öffnet WhatsApp mit einer Nachricht an die Nummer.
+     * Öffnet einen Messenger mit der gewählten Nummer.
      */
-    fun openWhatsApp(phoneNumber: String) {
+    fun openMessengerApp(app: MessengerApp, phoneNumber: String) {
         try {
-            val cleanNumber = phoneNumber.replace("\\s+".toRegex(), "").replace("+", "")
-            val intent = Intent(
-                Intent.ACTION_VIEW,
-                "https://api.whatsapp.com/send?phone=$cleanNumber".toUri()
-            )
-            context.startActivity(intent)
-        } catch (_: Exception) {
-        }
-    }
+            val digitsOnly = phoneNumber.replace("\\s+".toRegex(), "").replace("+", "")
+            val cleanNumberWithPlus = if (phoneNumber.startsWith("+")) {
+                phoneNumber.replace("\\s+".toRegex(), "")
+            } else {
+                "+" + phoneNumber.replace("\\s+".toRegex(), "")
+            }
 
-    /**
-     * Öffnet Signal.
-     */
-    fun openSignal(phoneNumber: String) {
-        try {
-            val intent = Intent(Intent.ACTION_VIEW, "https://signal.me/#p/$phoneNumber".toUri())
-            context.startActivity(intent)
+            val intent = when (app) {
+                MessengerApp.WHATSAPP -> {
+                    Intent(
+                        Intent.ACTION_VIEW,
+                        "https://api.whatsapp.com/send?phone=$digitsOnly".toUri()
+                    )
+                }
+                MessengerApp.SIGNAL -> {
+                    Intent(
+                        Intent.ACTION_VIEW,
+                        "signal://conversation?number=$cleanNumberWithPlus".toUri()
+                    ).apply {
+                        setPackage(MessengerApp.SIGNAL.packageName)
+                    }
+                }
+                MessengerApp.TELEGRAM -> {
+                    Intent(
+                        Intent.ACTION_VIEW,
+                        "tg://resolve?phone=$cleanNumberWithPlus".toUri()
+                    )
+                }
+                MessengerApp.SKYPE -> {
+                    Intent(
+                        Intent.ACTION_VIEW,
+                        "skype:$cleanNumberWithPlus?chat".toUri()
+                    )
+                }
+                MessengerApp.VIBER -> {
+                    Intent(
+                        Intent.ACTION_VIEW,
+                        "viber://keypad?number=$cleanNumberWithPlus".toUri()
+                    )
+                }
+                MessengerApp.THREEMA,
+                MessengerApp.GOOGLE_MEET,
+                MessengerApp.MESSENGER,
+                MessengerApp.DISCORD -> {
+                    context.packageManager.getLaunchIntentForPackage(app.packageName)
+                }
+            }
+
+            intent?.let {
+                context.startActivity(it)
+            }
         } catch (_: Exception) {
         }
     }

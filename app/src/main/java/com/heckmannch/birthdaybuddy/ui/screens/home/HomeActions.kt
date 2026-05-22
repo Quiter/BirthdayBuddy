@@ -2,6 +2,8 @@ package com.heckmannch.birthdaybuddy.ui.screens.home
 
 import com.heckmannch.birthdaybuddy.ui.model.GiftIdea
 
+import com.heckmannch.birthdaybuddy.ui.screens.home.components.actions.MessengerApp
+
 /**
  * Bündelt alle Benutzeraktionen des HomeScreens, um "Prop Drilling" zu reduzieren.
  */
@@ -20,7 +22,6 @@ data class HomeActions(
     val onOpenContact: (String, String) -> Unit,
     val onDial: (String) -> Unit,
     val onSendSms: (String) -> Unit,
-    val onWhatsApp: (String) -> Unit,
-    val onSignal: (String) -> Unit,
+    val onOpenMessengerApp: (MessengerApp, String) -> Unit,
     val onRefresh: () -> Unit,
 )

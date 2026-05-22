@@ -86,8 +86,7 @@ private fun HomeTopBarPreview() {
         onOpenContact = { _, _ -> },
         onDial = {},
         onSendSms = {},
-        onWhatsApp = {},
-        onSignal = {},
+        onOpenMessengerApp = { _, _ -> },
         onRefresh = {}
     )
 

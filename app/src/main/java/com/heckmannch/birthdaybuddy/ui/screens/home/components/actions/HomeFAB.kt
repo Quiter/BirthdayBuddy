@@ -94,8 +94,7 @@ fun HomeFABPreview() {
         onOpenContact = { _, _ -> },
         onDial = {},
         onSendSms = {},
-        onWhatsApp = {},
-        onSignal = {},
+        onOpenMessengerApp = { _, _ -> },
         onRefresh = {}
     )
 

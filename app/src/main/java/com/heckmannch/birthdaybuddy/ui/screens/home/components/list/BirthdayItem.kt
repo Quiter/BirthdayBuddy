@@ -236,8 +236,6 @@ fun BirthdayItem(
                         contactId = contact.contactId,
                         lookupKey = contact.lookupKey,
                         phoneNumber = contact.phoneNumber,
-                        hasWhatsApp = contact.hasWhatsApp,
-                        hasSignal = contact.hasSignal,
                         hasBirthday = contact.daysUntilNext != Long.MAX_VALUE,
                         onAddBirthday = { showDatePicker.value = true },
                         actions = actions
@@ -336,8 +334,7 @@ fun BirthdayItemPreview() {
         onOpenContact = { _, _ -> },
         onDial = {},
         onSendSms = {},
-        onWhatsApp = {},
-        onSignal = {},
+        onOpenMessengerApp = { _, _ -> },
         onRefresh = {}
     )
 

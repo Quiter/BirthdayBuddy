@@ -6,6 +6,18 @@
     <uses-permission android:name="android.permission.WRITE_CONTACTS" />
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
 
+    <queries>
+        <package android:name="com.whatsapp" />
+        <package android:name="org.thoughtcrime.securesms" />
+        <package android:name="org.telegram.messenger" />
+        <package android:name="ch.threema.app" />
+        <package android:name="com.viber.voip" />
+        <package android:name="com.facebook.orca" />
+        <package android:name="com.skype.raider" />
+        <package android:name="com.discord" />
+        <package android:name="com.google.android.apps.tachyon" />
+    </queries>
+
     <application
         android:name=".BirthdayBuddyApplication"
         android:allowBackup="true"

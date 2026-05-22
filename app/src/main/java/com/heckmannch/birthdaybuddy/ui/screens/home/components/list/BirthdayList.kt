@@ -273,8 +273,7 @@ fun BirthdayListPreview() {
         onOpenContact = { _, _ -> },
         onDial = {},
         onSendSms = {},
-        onWhatsApp = {},
-        onSignal = {},
+        onOpenMessengerApp = { _, _ -> },
         onRefresh = {}
     )
 

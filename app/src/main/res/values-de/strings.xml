@@ -28,6 +28,13 @@
     <string name="item_action_sms">SMS</string>
     <string name="item_action_whatsapp">WhatsApp</string>
     <string name="item_action_signal">Signal</string>
+    <string name="item_action_telegram">Telegram</string>
+    <string name="item_action_viber">Viber</string>
+    <string name="item_action_threema">Threema</string>
+    <string name="item_action_google_meet">Google Meet</string>
+    <string name="item_action_messenger">Messenger</string>
+    <string name="item_action_skype">Skype</string>
+    <string name="item_action_discord">Discord</string>
     <plurals name="item_days_left">
         <item quantity="one">in %d T.</item>
         <item quantity="other">in %d T.</item>

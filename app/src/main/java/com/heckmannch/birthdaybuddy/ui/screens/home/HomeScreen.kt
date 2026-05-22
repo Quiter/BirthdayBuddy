@@ -39,6 +39,7 @@ import com.heckmannch.birthdaybuddy.ui.components.AppResponsiveScaffold
 import com.heckmannch.birthdaybuddy.ui.model.HomeUiState
 import com.heckmannch.birthdaybuddy.ui.model.SampleData
 import com.heckmannch.birthdaybuddy.ui.screens.home.components.actions.HomeFAB
+import com.heckmannch.birthdaybuddy.ui.screens.home.components.actions.MessengerApp
 import com.heckmannch.birthdaybuddy.ui.screens.home.components.list.BirthdayList
 import com.heckmannch.birthdaybuddy.ui.screens.home.components.list.FastScrollbar
 import com.heckmannch.birthdaybuddy.ui.screens.home.components.topbar.HomeTopBar
@@ -161,8 +162,7 @@ fun HomeScreen(
                 onOpenContact = contactActions::openContact,
                 onDial = contactActions::dialNumber,
                 onSendSms = contactActions::sendSms,
-                onWhatsApp = contactActions::openWhatsApp,
-                onSignal = contactActions::openSignal,
+                onOpenMessengerApp = contactActions::openMessengerApp,
                 onRefresh = { viewModel.syncContacts(showLoading = true) },
             )
         }
@@ -282,8 +282,7 @@ fun HomePreview() {
         onOpenContact = { _, _ -> },
         onDial = {},
         onSendSms = {},
-        onWhatsApp = {},
-        onSignal = {},
+        onOpenMessengerApp = { _, _ -> },
         onRefresh = {},
     )
 

@@ -12,10 +12,14 @@ import androidx.compose.material.icons.filled.Call
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.FilledTonalIconButton
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
@@ -24,18 +28,24 @@ import com.heckmannch.birthdaybuddy.R
 import com.heckmannch.birthdaybuddy.ui.screens.home.HomeActions
 import com.heckmannch.birthdaybuddy.ui.theme.BirthdayBuddyTheme
 
+private val PixelBlue = Color(0xFF1A73E8)
+
 @Composable
 fun ContactActionRow(
     contactId: String,
     lookupKey: String,
     phoneNumber: String?,
-    hasWhatsApp: Boolean,
-    hasSignal: Boolean,
     hasBirthday: Boolean,
     onAddBirthday: () -> Unit,
     actions: HomeActions,
     modifier: Modifier = Modifier,
 ) {
+    val context = LocalContext.current
+    val installedMessengers = remember(context) {
+        MessengerApp.getInstalledMessengers(context)
+            .sortedBy { context.getString(it.labelResId) }
+    }
+
     Row(
         modifier = modifier
             .fillMaxWidth()
@@ -43,49 +53,50 @@ fun ContactActionRow(
         horizontalArrangement = Arrangement.spacedBy(8.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        // Kontakt-Details öffnen
+        // 1. Kontakt-Details öffnen (Immer an 1. Stelle)
         ActionItem(
             icon = Icons.Default.Person,
             label = stringResource(R.string.item_action_contact),
+            brandColor = PixelBlue,
             onClick = { actions.onOpenContact(contactId, lookupKey) }
         )
 
+        if (phoneNumber != null) {
+            // 2. Anrufen (An 2. Stelle)
+            ActionItem(
+                icon = Icons.Default.Call,
+                label = stringResource(R.string.item_action_call),
+                brandColor = PixelBlue,
+                onClick = { actions.onDial(phoneNumber) }
+            )
+
+            // 3. SMS (An 3. Stelle)
+            ActionItem(
+                icon = Icons.AutoMirrored.Filled.Message,
+                label = stringResource(R.string.item_action_sms),
+                brandColor = PixelBlue,
+                onClick = { actions.onSendSms(phoneNumber) }
+            )
+        }
+
+        // 4. Geburtstag hinzufügen/bearbeiten
         if (!hasBirthday) {
             ActionItem(
                 icon = Icons.Default.Add,
                 label = stringResource(R.string.item_action_edit_birthday),
+                brandColor = PixelBlue,
                 onClick = onAddBirthday
             )
         }
 
         if (phoneNumber != null) {
-            // Anrufen
-            ActionItem(
-                icon = Icons.Default.Call,
-                label = stringResource(R.string.item_action_call),
-                onClick = { actions.onDial(phoneNumber) }
-            )
-
-            // SMS
-            ActionItem(
-                icon = Icons.AutoMirrored.Filled.Message,
-                label = stringResource(R.string.item_action_sms),
-                onClick = { actions.onSendSms(phoneNumber) }
-            )
-
-            if (hasWhatsApp) {
+            // 5. Alle installierten Messenger-Aktionen alphabetisch geordnet
+            installedMessengers.forEach { app ->
                 ActionItem(
-                    painter = painterResource(R.drawable.ic_whatsapp),
-                    label = stringResource(R.string.item_action_whatsapp),
-                    onClick = { actions.onWhatsApp(phoneNumber) }
-                )
-            }
-
-            if (hasSignal) {
-                ActionItem(
-                    painter = painterResource(R.drawable.ic_signal),
-                    label = stringResource(R.string.item_action_signal),
-                    onClick = { actions.onSignal(phoneNumber) }
+                    painter = painterResource(app.iconResId),
+                    label = stringResource(app.labelResId),
+                    brandColor = app.brandColor,
+                    onClick = { actions.onOpenMessengerApp(app, phoneNumber) }
                 )
             }
         }
@@ -97,11 +108,16 @@ private fun ActionItem(
     icon: ImageVector? = null,
     painter: androidx.compose.ui.graphics.painter.Painter? = null,
     label: String,
+    brandColor: Color,
     onClick: () -> Unit,
 ) {
     FilledTonalIconButton(
         onClick = onClick,
-        modifier = Modifier.size(32.dp)
+        modifier = Modifier.size(32.dp),
+        colors = IconButtonDefaults.filledTonalIconButtonColors(
+            containerColor = brandColor.copy(alpha = 0.15f),
+            contentColor = brandColor
+        )
     ) {
         if (icon != null) {
             Icon(
@@ -137,8 +153,7 @@ fun ContactActionRowPreview() {
         onOpenContact = { _, _ -> },
         onDial = {},
         onSendSms = {},
-        onWhatsApp = {},
-        onSignal = {},
+        onOpenMessengerApp = { _, _ -> },
         onRefresh = {}
     )
     BirthdayBuddyTheme {
@@ -146,8 +161,6 @@ fun ContactActionRowPreview() {
             contactId = "1",
             lookupKey = "k1",
             phoneNumber = "123",
-            hasWhatsApp = true,
-            hasSignal = true,
             hasBirthday = false,
             onAddBirthday = {},
             actions = actions
