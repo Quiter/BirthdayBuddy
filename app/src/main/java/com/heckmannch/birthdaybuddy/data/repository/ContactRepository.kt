@@ -13,6 +13,7 @@ import com.heckmannch.birthdaybuddy.data.local.ContactUserData
 import com.heckmannch.birthdaybuddy.data.local.ContactUserDataDao
 import com.heckmannch.birthdaybuddy.data.local.LabelConfig
 import com.heckmannch.birthdaybuddy.data.local.LabelConfigDao
+import com.heckmannch.birthdaybuddy.ui.model.GiftIdea
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
@@ -125,7 +126,7 @@ class ContactRepository @Inject constructor(
         }
     }
 
-    suspend fun updateGiftIdeas(lookupKey: String, ideas: String) {
+    suspend fun updateGiftIdeas(lookupKey: String, ideas: List<GiftIdea>) {
         withContext(Dispatchers.IO) {
             // 1. In der persistenten UserData-Tabelle speichern (für Backup)
             contactUserDataDao.upsertUserData(

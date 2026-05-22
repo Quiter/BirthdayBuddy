@@ -13,7 +13,7 @@ import androidx.sqlite.db.SupportSQLiteDatabase
     version = 7,
     exportSchema = true
 )
-@TypeConverters(Converters::class)
+@TypeConverters(Converters::class, GiftIdeaConverters::class)
 abstract class AppDatabase : RoomDatabase() {
     abstract fun contactDao(): ContactDao
     abstract fun pendingNotificationDao(): PendingNotificationDao

@@ -191,26 +191,47 @@ class HomeViewModel @Inject constructor(
         labels
     }
 
-    @Suppress("UNCHECKED_CAST")
-    val uiState: StateFlow<HomeUiState> = combine(
-        filteredContacts,
+    private data class FilterState(
+        val searchQuery: String = "",
+        val selectedLabel: String? = null,
+        val isResettingFilter: Boolean = false,
+        val isSyncing: Boolean = false,
+        val searchFocusRequested: Boolean = false,
+        val newlyAddedIdeaId: String? = null
+    )
+
+    private val filterState: Flow<FilterState> = combine(
         _searchQuery,
         _selectedLabel,
         _isResettingFilter,
         _isSyncing,
-        availableLabels,
         _searchFocusRequested,
         _newlyAddedIdeaId,
-    ) { params ->
+    ) { query, label, resetting, syncing, focus, newlyAdded ->
+        FilterState(
+            searchQuery = query,
+            selectedLabel = label,
+            isResettingFilter = resetting,
+            isSyncing = syncing,
+            searchFocusRequested = focus,
+            newlyAddedIdeaId = newlyAdded
+        )
+    }
+
+    val uiState: StateFlow<HomeUiState> = combine(
+        filteredContacts,
+        availableLabels,
+        filterState
+    ) { contacts, labels, filters ->
         HomeUiState(
-            contacts = params[0] as List<ContactUiModel>?,
-            searchQuery = params[1] as String,
-            selectedLabel = params[2] as String?,
-            isResettingFilter = params[3] as Boolean,
-            isSyncing = params[4] as Boolean,
-            availableLabels = params[5] as List<String>,
-            searchFocusRequested = params[6] as Boolean,
-            newlyAddedIdeaId = params[7] as String?,
+            contacts = contacts,
+            availableLabels = labels,
+            searchQuery = filters.searchQuery,
+            selectedLabel = filters.selectedLabel,
+            isResettingFilter = filters.isResettingFilter,
+            isSyncing = filters.isSyncing,
+            searchFocusRequested = filters.searchFocusRequested,
+            newlyAddedIdeaId = filters.newlyAddedIdeaId,
         )
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), HomeUiState())
 
@@ -256,7 +277,7 @@ class HomeViewModel @Inject constructor(
     ) {
         val contact = allUiContacts.first().find { it.lookupKey == lookupKey } ?: return
         val newIdeas = transform(contact.giftIdeas)
-        contactRepository.updateGiftIdeas(lookupKey, GiftIdea.toString(newIdeas))
+        contactRepository.updateGiftIdeas(lookupKey, newIdeas)
     }
 
     fun addGiftIdea(lookupKey: String) = viewModelScope.launch {

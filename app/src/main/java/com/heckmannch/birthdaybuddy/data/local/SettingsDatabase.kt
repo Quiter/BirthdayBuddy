@@ -11,7 +11,7 @@ import androidx.room.TypeConverters
     version = 1,
     exportSchema = true
 )
-@TypeConverters(Converters::class)
+@TypeConverters(Converters::class, GiftIdeaConverters::class)
 abstract class SettingsDatabase : RoomDatabase() {
     abstract fun labelConfigDao(): LabelConfigDao
     abstract fun notificationRuleDao(): NotificationRuleDao

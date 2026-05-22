@@ -32,13 +32,11 @@ class HomeViewModelTest {
 
     private val contactRepository: ContactRepository = mock()
     private val timeRepository: TimeRepository = mock()
-    private lateinit var context: Context
     private val mapper = ContactMapper()
     private val today = LocalDate.of(2024, 5, 15)
 
     @Before
     fun setup() {
-        context = ApplicationProvider.getApplicationContext()
         whenever(timeRepository.currentDate).doReturn(MutableStateFlow(today))
         whenever(contactRepository.labelConfigs).doReturn(MutableStateFlow(emptyList()))
         whenever(contactRepository.allContacts).doReturn(MutableStateFlow(emptyList()))
@@ -46,7 +44,13 @@ class HomeViewModelTest {
 
     @Test
     fun initialState_isCorrect() = runTest {
-        val viewModel = HomeViewModel(context, contactRepository, mapper, timeRepository)
+        val viewModel = HomeViewModel(
+            contactRepository = contactRepository,
+            mapper = mapper,
+            timeRepository = timeRepository,
+            widgetUpdater = mock(),
+            imagePrefetcher = mock(),
+        )
         val state = viewModel.uiState.first()
 
         assertThat(state.searchQuery).isEmpty()
@@ -56,7 +60,13 @@ class HomeViewModelTest {
 
     @Test
     fun onLabelSelected_updatesState() = runTest {
-        val viewModel = HomeViewModel(context, contactRepository, mapper, timeRepository)
+        val viewModel = HomeViewModel(
+            contactRepository = contactRepository,
+            mapper = mapper,
+            timeRepository = timeRepository,
+            widgetUpdater = mock(),
+            imagePrefetcher = mock(),
+        )
         viewModel.onLabelSelected("Freunde")
 
         val state = viewModel.uiState.first { it.selectedLabel == "Freunde" }
@@ -83,7 +93,13 @@ class HomeViewModelTest {
         )
         whenever(contactRepository.allContacts).thenReturn(MutableStateFlow(contacts))
 
-        val viewModel = HomeViewModel(context, contactRepository, mapper, timeRepository)
+        val viewModel = HomeViewModel(
+            contactRepository = contactRepository,
+            mapper = mapper,
+            timeRepository = timeRepository,
+            widgetUpdater = mock(),
+            imagePrefetcher = mock(),
+        )
 
         viewModel.onLabelSelected("Freunde")
         val state = viewModel.uiState.first { it.selectedLabel == "Freunde" && it.contacts != null }
@@ -116,7 +132,13 @@ class HomeViewModelTest {
         whenever(contactRepository.allContacts).thenReturn(MutableStateFlow(contacts))
         whenever(contactRepository.labelConfigs).thenReturn(MutableStateFlow(labelConfigs))
 
-        val viewModel = HomeViewModel(context, contactRepository, mapper, timeRepository)
+        val viewModel = HomeViewModel(
+            contactRepository = contactRepository,
+            mapper = mapper,
+            timeRepository = timeRepository,
+            widgetUpdater = mock(),
+            imagePrefetcher = mock(),
+        )
         val state = viewModel.uiState.first { (it.contacts != null) }
 
         assertThat(state.contacts).hasSize(1)

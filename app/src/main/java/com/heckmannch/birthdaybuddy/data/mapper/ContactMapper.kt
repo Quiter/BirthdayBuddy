@@ -54,7 +54,7 @@ class ContactMapper @Inject constructor() {
             hasWhatsApp = contact.hasWhatsApp,
             hasSignal = contact.hasSignal,
             labels = contact.labels,
-            giftIdeas = GiftIdea.fromString(contact.giftIdeas),
+            giftIdeas = contact.giftIdeas,
         )
     }
 }

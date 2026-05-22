@@ -4,6 +4,7 @@ import android.util.Log
 import com.heckmannch.birthdaybuddy.data.local.ContactDao
 import com.heckmannch.birthdaybuddy.data.local.ContactUserData
 import com.heckmannch.birthdaybuddy.data.local.ContactUserDataDao
+import com.heckmannch.birthdaybuddy.data.local.GiftIdeaConverters
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.json.JSONArray
@@ -21,8 +22,9 @@ class GiftIdeaBackupManager @Inject constructor(
      * Nutzt nun die ContactUserData-Tabelle als Primärquelle.
      */
     suspend fun exportGiftIdeas(): String = withContext(Dispatchers.IO) {
-        val userDataList = contactUserDataDao.getAllUserDataImmediate().filter { !it.giftIdeas.isNullOrBlank() }
+        val userDataList = contactUserDataDao.getAllUserDataImmediate().filter { it.giftIdeas.isNotEmpty() }
         val dbContacts = contactDao.getAllContactsImmediate().associateBy { it.lookupKey }
+        val converters = GiftIdeaConverters()
         
         val root = JSONArray()
         userDataList.forEach { userData ->
@@ -30,7 +32,7 @@ class GiftIdeaBackupManager @Inject constructor(
             val obj = JSONObject().apply {
                 put("lookupKey", userData.lookupKey)
                 put("fullName", contact?.fullName ?: "")
-                put("giftIdeas", userData.giftIdeas)
+                put("giftIdeas", converters.fromGiftIdeaList(userData.giftIdeas))
             }
             root.put(obj)
         }
@@ -49,21 +51,23 @@ class GiftIdeaBackupManager @Inject constructor(
             val dbContacts = contactDao.getAllContactsImmediate()
             val contactsByLookup = dbContacts.associateBy { it.lookupKey }
             val contactsByName = dbContacts.associateBy { it.fullName }
+            val converters = GiftIdeaConverters()
             var count = 0
 
             for (i in 0 until root.length()) {
                 val obj = root.getJSONObject(i)
                 val lookupKey = obj.optString("lookupKey")
-                val giftIdeas = obj.optString("giftIdeas")
+                val giftIdeasStr = obj.optString("giftIdeas")
                 val fullName = obj.optString("fullName")
 
-                if (giftIdeas.isNullOrBlank()) continue
+                if (giftIdeasStr.isNullOrBlank()) continue
 
                 // Match via LookupKey (Best) oder Name (Fallback)
                 val targetLookupKey = contactsByLookup[lookupKey]?.lookupKey 
                     ?: contactsByName[fullName]?.lookupKey
 
                 if (targetLookupKey != null) {
+                    val giftIdeas = converters.toGiftIdeaList(giftIdeasStr)
                     contactUserDataDao.upsertUserData(
                         ContactUserData(lookupKey = targetLookupKey, giftIdeas = giftIdeas)
                     )

@@ -2,6 +2,7 @@ package com.heckmannch.birthdaybuddy.data.local
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey
+import com.heckmannch.birthdaybuddy.ui.model.GiftIdea
 
 /**
  * Speichert benutzerdefinierte Daten zu einem Kontakt, die unabhängig vom System-Cache sind.
@@ -11,5 +12,5 @@ import androidx.room.PrimaryKey
 data class ContactUserData(
     @PrimaryKey
     val lookupKey: String,
-    val giftIdeas: String? = null
+    val giftIdeas: List<GiftIdea> = emptyList()
 )

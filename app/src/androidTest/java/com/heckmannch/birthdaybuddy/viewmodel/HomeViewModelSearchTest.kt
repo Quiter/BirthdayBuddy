@@ -32,13 +32,10 @@ class HomeViewModelSearchTest {
 
     private val contactRepository: ContactRepository = mock()
     private val timeRepository: TimeRepository = mock()
-    private lateinit var context: Context
     private val mapper = ContactMapper()
 
     @Before
     fun setup() {
-        context = ApplicationProvider.getApplicationContext()
-
         // Basiskonfiguration für die Mocks
         whenever(contactRepository.allContacts).doReturn(MutableStateFlow(emptyList()))
         whenever(contactRepository.labelConfigs).doReturn(MutableStateFlow(emptyList()))
@@ -63,7 +60,13 @@ class HomeViewModelSearchTest {
         )
         whenever(contactRepository.allContacts).thenReturn(MutableStateFlow(contacts))
 
-        val viewModel = HomeViewModel(context, contactRepository, mapper, timeRepository)
+        val viewModel = HomeViewModel(
+            contactRepository = contactRepository,
+            mapper = mapper,
+            timeRepository = timeRepository,
+            widgetUpdater = mock(),
+            imagePrefetcher = mock(),
+        )
 
         // Suche nach "Mustermann Max"
         viewModel.onSearchQueryChange("Mustermann Max")
@@ -89,7 +92,13 @@ class HomeViewModelSearchTest {
         )
         whenever(contactRepository.allContacts).thenReturn(MutableStateFlow(contacts))
 
-        val viewModel = HomeViewModel(context, contactRepository, mapper, timeRepository)
+        val viewModel = HomeViewModel(
+            contactRepository = contactRepository,
+            mapper = mapper,
+            timeRepository = timeRepository,
+            widgetUpdater = mock(),
+            imagePrefetcher = mock(),
+        )
 
         viewModel.onSearchQueryChange("  Max  ")
 
