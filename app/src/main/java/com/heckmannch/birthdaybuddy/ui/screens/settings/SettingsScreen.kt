@@ -1,11 +1,8 @@
 package com.heckmannch.birthdaybuddy.ui.screens.settings
 
-import android.Manifest
 import android.content.pm.PackageInfo
 import android.content.pm.PackageManager
 import android.os.Build
-import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -40,42 +37,23 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.core.content.ContextCompat
 import com.heckmannch.birthdaybuddy.R
 import com.heckmannch.birthdaybuddy.ui.components.AppResponsiveScaffold
 import com.heckmannch.birthdaybuddy.ui.theme.BirthdayBuddyTheme
-import com.heckmannch.birthdaybuddy.viewmodel.HomeViewModel
 
 @Composable
 fun SettingsScreen(
-    viewModel: HomeViewModel,
     windowWidthSizeClass: WindowWidthSizeClass,
     onNavigateToLabels: () -> Unit,
     onNavigateToNotifications: () -> Unit,
     onNavigateToBackup: () -> Unit,
+    onNavigateToSync: () -> Unit,
     onNavigateToAbout: () -> Unit,
     onNavigateBack: () -> Unit,
 ) {
-    val context = LocalContext.current
-    val permissionLauncher = rememberLauncherForActivityResult(
-        ActivityResultContracts.RequestPermission(),
-    ) { isGranted ->
-        if (isGranted) {
-            viewModel.syncContacts()
-        }
-    }
-
     SettingsContent(
         windowWidthSizeClass = windowWidthSizeClass,
-        onSyncClick = {
-            when (PackageManager.PERMISSION_GRANTED) {
-                ContextCompat.checkSelfPermission(context, Manifest.permission.READ_CONTACTS) -> {
-                    viewModel.syncContacts(showLoading = true)
-                }
-
-                else -> permissionLauncher.launch(Manifest.permission.READ_CONTACTS)
-            }
-        },
+        onNavigateToSync = onNavigateToSync,
         onNavigateToLabels = onNavigateToLabels,
         onNavigateToNotifications = onNavigateToNotifications,
         onNavigateToBackup = onNavigateToBackup,
@@ -88,7 +66,7 @@ fun SettingsScreen(
 @Composable
 private fun SettingsContent(
     windowWidthSizeClass: WindowWidthSizeClass,
-    onSyncClick: () -> Unit,
+    onNavigateToSync: () -> Unit,
     onNavigateToLabels: () -> Unit,
     onNavigateToNotifications: () -> Unit,
     onNavigateToBackup: () -> Unit,
@@ -164,7 +142,7 @@ private fun SettingsContent(
                         headlineContent = { Text(stringResource(R.string.settings_sync_title)) },
                         supportingContent = { Text(stringResource(R.string.settings_sync_desc)) },
                         leadingContent = { Icon(Icons.Default.Refresh, contentDescription = null) },
-                        modifier = Modifier.clickable { onSyncClick() }
+                        modifier = Modifier.clickable { onNavigateToSync() }
                     )
                 }
 
@@ -235,7 +213,7 @@ private fun SettingsPreview() {
     BirthdayBuddyTheme {
         SettingsContent(
             windowWidthSizeClass = WindowWidthSizeClass.Compact,
-            onSyncClick = {},
+            onNavigateToSync = {},
             onNavigateToLabels = {},
             onNavigateToNotifications = {},
             onNavigateToBackup = {},

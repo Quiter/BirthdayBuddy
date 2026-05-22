@@ -15,7 +15,6 @@ import com.heckmannch.birthdaybuddy.ui.model.GiftIdea
 import com.heckmannch.birthdaybuddy.ui.model.SampleData
 import com.heckmannch.birthdaybuddy.ui.screens.home.HomeActions
 import com.heckmannch.birthdaybuddy.ui.screens.home.components.list.BirthdayItem
-import com.heckmannch.birthdaybuddy.ui.screens.home.components.actions.MessengerApp
 import com.heckmannch.birthdaybuddy.ui.theme.BirthdayBuddyTheme
 import org.junit.Rule
 import org.junit.Test

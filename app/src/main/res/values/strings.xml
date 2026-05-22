@@ -220,4 +220,11 @@
     </plurals>
     <string name="backup_import_invalid">Invalid file format</string>
     <string name="backup_import_failed">Import failed: %1$s</string>
+
+    <!-- Sync Settings Screen -->
+    <string name="sync_title">Sync contacts</string>
+    <string name="sync_explanation_title">Alternative synchronization</string>
+    <string name="sync_explanation_desc">You can also easily synchronize your contacts directly on the home screen by pulling the list down (Pull to Refresh).</string>
+    <string name="sync_button_title">Synchronize manually</string>
+    <string name="sync_button_desc">Load and update birthdays from system contacts</string>
 </resources>

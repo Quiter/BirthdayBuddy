@@ -220,4 +220,11 @@
     </plurals>
     <string name="backup_import_invalid">Ungültiges Dateiformat</string>
     <string name="backup_import_failed">Import fehlgeschlagen: %1$s</string>
+
+    <!-- Sync Settings Screen -->
+    <string name="sync_title">Kontakte synchronisieren</string>
+    <string name="sync_explanation_title">Alternative Synchronisierung</string>
+    <string name="sync_explanation_desc">Du kannst deine Kontakte auch ganz einfach direkt auf der Startseite aktualisieren, indem du die Liste nach unten ziehst (Pull to Refresh).</string>
+    <string name="sync_button_title">Manuell synchronisieren</string>
+    <string name="sync_button_desc">Geburtstage jetzt aus deinen System-Kontakten laden</string>
 </resources>

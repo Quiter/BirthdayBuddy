@@ -38,6 +38,7 @@ import com.heckmannch.birthdaybuddy.ui.screens.settings.about.PrivacyPolicyScree
 import com.heckmannch.birthdaybuddy.ui.screens.settings.backup.BackupScreen
 import com.heckmannch.birthdaybuddy.ui.screens.settings.labels.LabelSettingsScreen
 import com.heckmannch.birthdaybuddy.ui.screens.settings.notifications.NotificationSettingsScreen
+import com.heckmannch.birthdaybuddy.ui.screens.settings.sync.SyncSettingsScreen
 import com.heckmannch.birthdaybuddy.ui.theme.BirthdayBuddyTheme
 import com.heckmannch.birthdaybuddy.viewmodel.BackupViewModel
 import com.heckmannch.birthdaybuddy.viewmodel.HomeViewModel
@@ -57,6 +58,7 @@ private object Routes {
     const val LABEL_SETTINGS = "label_settings"
     const val NOTIFICATION_SETTINGS = "notification_settings"
     const val BACKUP_SETTINGS = "backup_settings"
+    const val SYNC_SETTINGS = "sync_settings"
     const val ABOUT = "about"
     const val PRIVACY_POLICY = "privacy_policy"
 }
@@ -192,7 +194,6 @@ class MainActivity : ComponentActivity() {
             }
             composable(Routes.SETTINGS) {
                 SettingsScreen(
-                    viewModel = homeViewModel,
                     windowWidthSizeClass = windowWidthSizeClass,
                     onNavigateToLabels = {
                         navController.navigate(Routes.LABEL_SETTINGS)
@@ -202,6 +203,9 @@ class MainActivity : ComponentActivity() {
                     },
                     onNavigateToBackup = {
                         navController.navigate(Routes.BACKUP_SETTINGS)
+                    },
+                    onNavigateToSync = {
+                        navController.navigate(Routes.SYNC_SETTINGS)
                     },
                     onNavigateToAbout = {
                         navController.navigate(Routes.ABOUT)
@@ -233,6 +237,14 @@ class MainActivity : ComponentActivity() {
                 BackupScreen(
                     windowWidthSizeClass = windowWidthSizeClass,
                     viewModel = backupViewModel
+                ) {
+                    navController.popBackStack()
+                }
+            }
+            composable(Routes.SYNC_SETTINGS) {
+                SyncSettingsScreen(
+                    windowWidthSizeClass = windowWidthSizeClass,
+                    viewModel = homeViewModel
                 ) {
                     navController.popBackStack()
                 }
