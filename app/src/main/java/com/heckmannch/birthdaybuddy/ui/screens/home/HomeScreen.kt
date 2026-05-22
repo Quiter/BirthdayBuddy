@@ -20,6 +20,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.foundation.interaction.collectIsDraggedAsState
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -111,8 +112,9 @@ fun HomeScreen(
         }
     }
 
-    LaunchedEffect(homeState.listState.isScrollInProgress) {
-        if (homeState.listState.isScrollInProgress) {
+    val isListDragged by homeState.listState.interactionSource.collectIsDraggedAsState()
+    LaunchedEffect(isListDragged) {
+        if (isListDragged) {
             focusManager.clearFocus()
             keyboardController?.hide()
         }

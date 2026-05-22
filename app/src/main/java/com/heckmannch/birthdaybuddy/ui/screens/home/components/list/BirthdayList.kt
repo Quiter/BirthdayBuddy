@@ -35,6 +35,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.foundation.interaction.collectIsDraggedAsState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -98,8 +99,9 @@ fun BirthdayList(
 
     var expandedContactId by rememberSaveable { mutableStateOf<String?>(null) }
 
-    LaunchedEffect(listState.isScrollInProgress) {
-        if (listState.isScrollInProgress) {
+    val isListDragged by listState.interactionSource.collectIsDraggedAsState()
+    LaunchedEffect(isListDragged) {
+        if (isListDragged) {
             expandedContactId = null
         }
     }

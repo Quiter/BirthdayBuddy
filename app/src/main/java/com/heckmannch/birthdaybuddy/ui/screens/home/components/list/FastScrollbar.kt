@@ -231,25 +231,30 @@ fun FastScrollbar(
 
             val scrollbarDesc = stringResource(R.string.home_scrollbar_desc, currentLabel)
 
-            // Thumb
+            // Interactive Scroll Track Column
             Box(
                 modifier = Modifier
-                    .align(Alignment.TopEnd)
-                    .width(ScrollbarDefaults.ThumbSize)
-                    .height(thumbHeight)
-                    .graphicsLayer {
-                        translationY = thumbOffset.toPx()
-                    }
-                    .semantics {
-                        contentDescription = scrollbarDesc
-                    }
+                    .align(Alignment.CenterEnd)
+                    .width(ScrollbarDefaults.ThumbSize) // 48.dp
+                    .fillMaxHeight()
                     .pointerInput(totalItems, trackHeightPx) {
                         try {
                             detectVerticalDragGestures(
-                                onDragStart = {
+                                onDragStart = { offset ->
                                     isDragging = true
                                     onSetFastScrolling(true)
-                                    dragOffsetPx = with(density) { thumbOffset.toPx() }
+                                    val thumbHeightPx = with(density) { thumbHeight.toPx() }
+                                    dragOffsetPx = (offset.y - thumbHeightPx / 2f).coerceIn(0f, trackHeightPx)
+                                    
+                                    val scrollPercent = if (trackHeightPx > 0) dragOffsetPx / trackHeightPx else 0f
+                                    val (targetIndex, targetOffset) = calculateScrollTarget(
+                                        scrollPercent = scrollPercent,
+                                        totalItems = totalItems,
+                                        layoutInfo = listState.layoutInfo,
+                                    )
+                                    scope.launch {
+                                        listState.scrollToItem(targetIndex, targetOffset)
+                                    }
                                 },
                                 onDragEnd = {
                                     isDragging = false
@@ -260,17 +265,14 @@ fun FastScrollbar(
                                     onSetFastScrolling(false)
                                 },
                             ) { change, dragAmount ->
-                                dragOffsetPx =
-                                    (dragOffsetPx + dragAmount).coerceIn(0f, trackHeightPx)
-                                val scrollPercent =
-                                    if (trackHeightPx > 0) dragOffsetPx / trackHeightPx else 0f
-
+                                dragOffsetPx = (dragOffsetPx + dragAmount).coerceIn(0f, trackHeightPx)
+                                val scrollPercent = if (trackHeightPx > 0) dragOffsetPx / trackHeightPx else 0f
+                                
                                 val (targetIndex, targetOffset) = calculateScrollTarget(
                                     scrollPercent = scrollPercent,
                                     totalItems = totalItems,
                                     layoutInfo = listState.layoutInfo,
                                 )
-
                                 scope.launch {
                                     listState.scrollToItem(targetIndex, targetOffset)
                                 }
@@ -279,17 +281,51 @@ fun FastScrollbar(
                         } finally {
                             isDragging = false
                         }
-                    },
-                contentAlignment = Alignment.CenterEnd,
+                    }
             ) {
+                // 1. Subtle, elegant track line (centered at 12.dp from the right edge)
+                val trackAlpha by remember {
+                    derivedStateOf {
+                        if (isDragging || listState.isScrollInProgress) 0.15f else 0.04f
+                    }
+                }
+                val animatedTrackAlpha by animateFloatAsState(
+                    targetValue = trackAlpha,
+                    label = "Track Alpha",
+                )
                 Box(
                     modifier = Modifier
-                        .padding(end = ScrollbarDefaults.ThumbPaddingEnd)
-                        .width(thumbWidth)
-                        .height(if (isDragging) ScrollbarDefaults.ThumbHeightDragging else ScrollbarDefaults.ThumbHeightIdle)
+                        .align(Alignment.CenterEnd)
+                        .padding(end = 10.dp) // Centered at 12.dp from the right (10.dp padding + 4.dp/2 = 12.dp)
+                        .width(4.dp)
+                        .fillMaxHeight()
                         .clip(CircleShape)
-                        .background(MaterialTheme.colorScheme.primary.copy(alpha = animatedThumbAlpha)),
+                        .background(MaterialTheme.colorScheme.onSurface.copy(alpha = animatedTrackAlpha))
                 )
+
+                // 2. Thumb Box (centered at 12.dp from the right edge)
+                Box(
+                    modifier = Modifier
+                        .align(Alignment.TopEnd)
+                        .width(ScrollbarDefaults.ThumbSize)
+                        .height(thumbHeight)
+                        .graphicsLayer {
+                            translationY = thumbOffset.toPx()
+                        }
+                        .semantics {
+                            contentDescription = scrollbarDesc
+                        },
+                    contentAlignment = Alignment.CenterEnd,
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .padding(end = 12.dp - thumbWidth / 2) // Dynamically centers the thumb on the 12.dp vertical line
+                            .width(thumbWidth)
+                            .height(if (isDragging) ScrollbarDefaults.ThumbHeightDragging else ScrollbarDefaults.ThumbHeightIdle)
+                            .clip(CircleShape)
+                            .background(MaterialTheme.colorScheme.primary.copy(alpha = animatedThumbAlpha)),
+                    )
+                }
             }
         }
     }
