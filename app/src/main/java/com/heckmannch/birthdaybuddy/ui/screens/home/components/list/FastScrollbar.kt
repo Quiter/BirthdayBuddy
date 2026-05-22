@@ -31,8 +31,8 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
 import androidx.compose.runtime.rememberUpdatedState
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -65,7 +65,6 @@ private object ScrollbarDefaults {
     val BubbleCornerLarge = 24.dp
     val BubbleCornerSmall = 4.dp
     val BubbleElevation = 6.dp
-    val ThumbPaddingEnd = 6.dp
 }
 
 @Composable

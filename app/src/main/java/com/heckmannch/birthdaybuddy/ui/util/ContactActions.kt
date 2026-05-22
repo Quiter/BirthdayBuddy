@@ -9,9 +9,8 @@ import android.provider.Settings
 import androidx.activity.result.ActivityResultLauncher
 import androidx.core.app.ActivityCompat
 import androidx.core.net.toUri
-import com.heckmannch.birthdaybuddy.util.findActivity
-
 import com.heckmannch.birthdaybuddy.ui.screens.home.components.actions.MessengerApp
+import com.heckmannch.birthdaybuddy.util.findActivity
 
 /**
  * Zentralisiert alle externen Aktionen (Intents) und Permission-Logik.

@@ -11,6 +11,7 @@ import com.heckmannch.birthdaybuddy.data.local.PendingNotificationDao
 import com.heckmannch.birthdaybuddy.data.local.SettingsDatabase
 import dagger.Module
 import dagger.Provides
+import dagger.Reusable
 import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
@@ -33,31 +34,37 @@ object AppModule {
     }
 
     @Provides
+    @Reusable
     fun provideContactDao(database: AppDatabase): ContactDao {
         return database.contactDao()
     }
 
     @Provides
+    @Reusable
     fun providePendingNotificationDao(database: AppDatabase): PendingNotificationDao {
         return database.pendingNotificationDao()
     }
 
     @Provides
+    @Reusable
     fun provideLabelConfigDao(database: SettingsDatabase): LabelConfigDao {
         return database.labelConfigDao()
     }
 
     @Provides
+    @Reusable
     fun provideNotificationRuleDao(database: SettingsDatabase): NotificationRuleDao {
         return database.notificationRuleDao()
     }
 
     @Provides
+    @Reusable
     fun provideAppSettingsDao(database: SettingsDatabase): AppSettingsDao {
         return database.appSettingsDao()
     }
 
     @Provides
+    @Reusable
     fun provideContactUserDataDao(database: SettingsDatabase): ContactUserDataDao {
         return database.contactUserDataDao()
     }

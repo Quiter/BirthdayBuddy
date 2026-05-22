@@ -20,12 +20,19 @@ import androidx.compose.material3.windowsizeclass.ExperimentalMaterial3WindowSiz
 import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
 import androidx.compose.material3.windowsizeclass.calculateWindowSizeClass
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.Modifier
+import androidx.lifecycle.compose.LocalLifecycleOwner
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.heckmannch.birthdaybuddy.ui.components.LocalWindowWidthSizeClass
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -38,6 +45,7 @@ import com.heckmannch.birthdaybuddy.ui.screens.settings.about.PrivacyPolicyScree
 import com.heckmannch.birthdaybuddy.ui.screens.settings.backup.BackupScreen
 import com.heckmannch.birthdaybuddy.ui.screens.settings.labels.LabelSettingsScreen
 import com.heckmannch.birthdaybuddy.ui.screens.settings.notifications.NotificationSettingsScreen
+import com.heckmannch.birthdaybuddy.ui.screens.settings.sync.SyncSettingsScreen
 import com.heckmannch.birthdaybuddy.ui.theme.BirthdayBuddyTheme
 import com.heckmannch.birthdaybuddy.viewmodel.BackupViewModel
 import com.heckmannch.birthdaybuddy.viewmodel.HomeViewModel
@@ -57,6 +65,7 @@ private object Routes {
     const val LABEL_SETTINGS = "label_settings"
     const val NOTIFICATION_SETTINGS = "notification_settings"
     const val BACKUP_SETTINGS = "backup_settings"
+    const val SYNC_SETTINGS = "sync_settings"
     const val ABOUT = "about"
     const val PRIVACY_POLICY = "privacy_policy"
 }
@@ -65,12 +74,15 @@ private object Routes {
 class MainActivity : ComponentActivity() {
 
     private var lastInteractionTime: Long = System.currentTimeMillis()
+    private val activityIntent = mutableStateOf<Intent?>(null)
 
     @OptIn(ExperimentalMaterial3WindowSizeClassApi::class)
     override fun onCreate(savedInstanceState: Bundle?) {
         val splashScreen = installSplashScreen()
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+
+        activityIntent.value = intent
 
         // Schedule next widget update
         BirthdayWidgetWorker.enqueueNextUpdate(this)
@@ -87,31 +99,40 @@ class MainActivity : ComponentActivity() {
             }
 
             BirthdayBuddyTheme {
-                val navController = rememberNavController()
+                CompositionLocalProvider(LocalWindowWidthSizeClass provides windowSizeClass.widthSizeClass) {
+                    val navController = rememberNavController()
+                    val currentIntent by activityIntent
 
-                // Inaktivitäts-Check: Filter nach 5 Minuten zurücksetzen
-                LaunchedEffect(Unit) {
-                    while (true) {
-                        kotlinx.coroutines.delay(10000) // Alle 10 Sekunden prüfen
-                        if ((System.currentTimeMillis() - lastInteractionTime) > (5 * 60 * 1000)) {
-                            homeViewModel.resetFilters()
+                    // Inaktivitäts-Check: Filter nach 5 Minuten bei Wiederaufnahme (ON_RESUME) zurücksetzen
+                    val lifecycleOwner = LocalLifecycleOwner.current
+                    DisposableEffect(lifecycleOwner) {
+                        val observer = LifecycleEventObserver { _, event ->
+                            if (event == Lifecycle.Event.ON_RESUME) {
+                                if ((System.currentTimeMillis() - lastInteractionTime) > (5 * 60 * 1000)) {
+                                    homeViewModel.resetFilters()
+                                }
+                            }
+                        }
+                        lifecycleOwner.lifecycle.addObserver(observer)
+                        onDispose {
+                            lifecycleOwner.lifecycle.removeObserver(observer)
                         }
                     }
-                }
 
-                // React to intent changes (Initial start and onNewIntent)
-                HandleIntents(intent, homeViewModel, navController)
+                    // React to intent changes (Initial start and onNewIntent)
+                    HandleIntents(currentIntent, homeViewModel, navController)
 
-                Surface(
-                    modifier = Modifier.fillMaxSize(),
-                    color = MaterialTheme.colorScheme.background,
-                ) {
-                    AppNavigation(
-                        navController,
-                        homeViewModel,
-                        onboardingViewModel,
-                        windowSizeClass.widthSizeClass
-                    )
+                    Surface(
+                        modifier = Modifier.fillMaxSize(),
+                        color = MaterialTheme.colorScheme.background,
+                    ) {
+                        AppNavigation(
+                            navController,
+                            homeViewModel,
+                            onboardingViewModel,
+                            windowSizeClass.widthSizeClass
+                        )
+                    }
                 }
             }
         }
@@ -192,7 +213,6 @@ class MainActivity : ComponentActivity() {
             }
             composable(Routes.SETTINGS) {
                 SettingsScreen(
-                    viewModel = homeViewModel,
                     windowWidthSizeClass = windowWidthSizeClass,
                     onNavigateToLabels = {
                         navController.navigate(Routes.LABEL_SETTINGS)
@@ -202,6 +222,9 @@ class MainActivity : ComponentActivity() {
                     },
                     onNavigateToBackup = {
                         navController.navigate(Routes.BACKUP_SETTINGS)
+                    },
+                    onNavigateToSync = {
+                        navController.navigate(Routes.SYNC_SETTINGS)
                     },
                     onNavigateToAbout = {
                         navController.navigate(Routes.ABOUT)
@@ -237,6 +260,14 @@ class MainActivity : ComponentActivity() {
                     navController.popBackStack()
                 }
             }
+            composable(Routes.SYNC_SETTINGS) {
+                SyncSettingsScreen(
+                    windowWidthSizeClass = windowWidthSizeClass,
+                    viewModel = homeViewModel
+                ) {
+                    navController.popBackStack()
+                }
+            }
             composable(Routes.ABOUT) {
                 AboutScreen(
                     windowWidthSizeClass = windowWidthSizeClass,
@@ -260,6 +291,7 @@ class MainActivity : ComponentActivity() {
         super.onNewIntent(intent)
         // Update activity intent so LaunchedEffect in setContent can react to it
         setIntent(intent)
+        activityIntent.value = intent
     }
 }
 

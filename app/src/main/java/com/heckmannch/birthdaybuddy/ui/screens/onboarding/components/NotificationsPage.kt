@@ -7,6 +7,8 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
@@ -16,6 +18,7 @@ import androidx.compose.material3.ListItem
 import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Switch
+import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
 import androidx.compose.runtime.Composable
@@ -63,7 +66,14 @@ fun NotificationsPage(
                         trailingContent = {
                             Switch(
                                 checked = enabled,
-                                onCheckedChange = onEnabledChange
+                                onCheckedChange = onEnabledChange,
+                                thumbContent = {
+                                    Icon(
+                                        imageVector = if (enabled) Icons.Default.Check else Icons.Default.Close,
+                                        contentDescription = null,
+                                        modifier = Modifier.size(SwitchDefaults.IconSize)
+                                    )
+                                }
                             )
                         },
                         colors = ListItemDefaults.colors(containerColor = Color.Transparent)
@@ -74,7 +84,14 @@ fun NotificationsPage(
                             trailingContent = {
                                 Switch(
                                     checked = persistent,
-                                    onCheckedChange = onPersistentChange
+                                    onCheckedChange = onPersistentChange,
+                                    thumbContent = {
+                                        Icon(
+                                            imageVector = if (persistent) Icons.Default.Check else Icons.Default.Close,
+                                            contentDescription = null,
+                                            modifier = Modifier.size(SwitchDefaults.IconSize)
+                                        )
+                                    }
                                 )
                             },
                             colors = ListItemDefaults.colors(containerColor = Color.Transparent)

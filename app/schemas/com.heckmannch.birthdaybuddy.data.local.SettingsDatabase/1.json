@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 1,
-    "identityHash": "0ace5f6acc9441b6f2c79eba3b2335a8",
+    "identityHash": "4efbabe18e079838efdc3674e6341578",
     "entities": [
       {
         "tableName": "label_configs",
@@ -120,7 +120,7 @@
       },
       {
         "tableName": "contact_user_data",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`lookupKey` TEXT NOT NULL, `giftIdeas` TEXT, PRIMARY KEY(`lookupKey`))",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`lookupKey` TEXT NOT NULL, `giftIdeas` TEXT NOT NULL, PRIMARY KEY(`lookupKey`))",
         "fields": [
           {
             "fieldPath": "lookupKey",
@@ -131,7 +131,8 @@
           {
             "fieldPath": "giftIdeas",
             "columnName": "giftIdeas",
-            "affinity": "TEXT"
+            "affinity": "TEXT",
+            "notNull": true
           }
         ],
         "primaryKey": {
@@ -144,7 +145,7 @@
     ],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '0ace5f6acc9441b6f2c79eba3b2335a8')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '4efbabe18e079838efdc3674e6341578')"
     ]
   }
 }
