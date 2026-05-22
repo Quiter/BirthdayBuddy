@@ -31,9 +31,15 @@ fun BirthdayStatus(
     daysUntilNext: Long,
     onEditBirthday: () -> Unit,
 ) {
+    val modifier = if (daysUntilNext == Long.MAX_VALUE) {
+        Modifier.clickable { onEditBirthday() }
+    } else {
+        Modifier
+    }
+
     Column(
         horizontalAlignment = Alignment.End,
-        modifier = Modifier.clickable { onEditBirthday() }
+        modifier = modifier
     ) {
         if (daysUntilNext == Long.MAX_VALUE) {
             Icon(
