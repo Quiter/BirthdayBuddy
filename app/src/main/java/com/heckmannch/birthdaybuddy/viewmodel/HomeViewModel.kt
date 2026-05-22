@@ -191,47 +191,49 @@ class HomeViewModel @Inject constructor(
         labels
     }
 
-    private data class FilterState(
+    private data class FilterCriteria(
         val searchQuery: String = "",
         val selectedLabel: String? = null,
-        val isResettingFilter: Boolean = false,
+        val isResettingFilter: Boolean = false
+    )
+
+    private val filterCriteria: Flow<FilterCriteria> = combine(
+        _searchQuery,
+        _selectedLabel,
+        _isResettingFilter,
+    ) { query, label, resetting ->
+        FilterCriteria(query, label, resetting)
+    }
+
+    private data class FilterUiFlags(
         val isSyncing: Boolean = false,
         val searchFocusRequested: Boolean = false,
         val newlyAddedIdeaId: String? = null
     )
 
-    private val filterState: Flow<FilterState> = combine(
-        _searchQuery,
-        _selectedLabel,
-        _isResettingFilter,
+    private val filterUiFlags: Flow<FilterUiFlags> = combine(
         _isSyncing,
         _searchFocusRequested,
         _newlyAddedIdeaId,
-    ) { query, label, resetting, syncing, focus, newlyAdded ->
-        FilterState(
-            searchQuery = query,
-            selectedLabel = label,
-            isResettingFilter = resetting,
-            isSyncing = syncing,
-            searchFocusRequested = focus,
-            newlyAddedIdeaId = newlyAdded
-        )
+    ) { syncing, focus, newlyAdded ->
+        FilterUiFlags(syncing, focus, newlyAdded)
     }
 
     val uiState: StateFlow<HomeUiState> = combine(
         filteredContacts,
         availableLabels,
-        filterState
-    ) { contacts, labels, filters ->
+        filterCriteria,
+        filterUiFlags
+    ) { contacts, labels, criteria, flags ->
         HomeUiState(
             contacts = contacts,
             availableLabels = labels,
-            searchQuery = filters.searchQuery,
-            selectedLabel = filters.selectedLabel,
-            isResettingFilter = filters.isResettingFilter,
-            isSyncing = filters.isSyncing,
-            searchFocusRequested = filters.searchFocusRequested,
-            newlyAddedIdeaId = filters.newlyAddedIdeaId,
+            searchQuery = criteria.searchQuery,
+            selectedLabel = criteria.selectedLabel,
+            isResettingFilter = criteria.isResettingFilter,
+            isSyncing = flags.isSyncing,
+            searchFocusRequested = flags.searchFocusRequested,
+            newlyAddedIdeaId = flags.newlyAddedIdeaId,
         )
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), HomeUiState())
 

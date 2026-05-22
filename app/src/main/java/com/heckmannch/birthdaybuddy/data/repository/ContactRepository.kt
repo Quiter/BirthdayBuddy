@@ -75,7 +75,7 @@ class ContactRepository @Inject constructor(
                     // Update: localId erhalten und Geschenkideen aus der UserData-Tabelle laden
                     systemContact.copy(
                         localId = existing?.localId ?: 0,
-                        giftIdeas = userData?.giftIdeas ?: existing?.giftIdeas,
+                        giftIdeas = userData?.giftIdeas ?: existing?.giftIdeas ?: emptyList(),
                     )
                 }
 
