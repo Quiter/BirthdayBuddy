@@ -27,7 +27,8 @@
 ## 📜 Aktuelle Struktur-Meilensteine
 *Historie siehe `CHANGELOG.md`*
 
-- **Refactoring (Current):** Strukturierung der Home-Komponenten in Sub-Packages und Eliminierung von Prop-Drilling durch konsequente Nutzung des `HomeActions` Wrappers.
+- **Adaptive UI & Battery Optimization (Current):** Einführung des `LocalWindowWidthSizeClass` CompositionLocal-Frameworks für schlankere und flexiblere responsive Layouts. Härtung der `MainActivity` mit batterieschonender, lifecycle-basierter Inaktivitätsprüfung und robuster Compose-seitiger Intent-State-Verarbeitung. Hilt-Optimierung durch `@Reusable`-Scoping aller Room-DAOs.
+- **Refactoring:** Strukturierung der Home-Komponenten in Sub-Packages und Eliminierung von Prop-Drilling durch konsequente Nutzung des `HomeActions` Wrappers.
 - **UX & Animation:** Integration von Lottie-Animationen im Onboarding und Home-Screen zur emotionalen Nutzerführung.
 - **Messenger Logic:** Dynamische Erkennung von WhatsApp/Signal Verfügbarkeit pro Kontakt.
 - **Architecture Swap:** Umstellung auf spezialisierte ViewModels (`Home`, `Notification`, `Settings`, `Label`, `Backup`).
