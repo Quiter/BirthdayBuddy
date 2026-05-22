@@ -13,17 +13,21 @@
 
 ## 📁 Data Layer (`data`)
 - ### 📁 Local (`data.local`)
-    - `AppDatabase.kt`: Zentrale Room-Datenbank Definition mit Singleton-Pattern und Thread-sicherer Instanziierung.
+    - `AppDatabase.kt`: Room-Datenbank für flüchtige/große Daten (Kontakte-Cache, Benachrichtigungs-Nachverfolgung).
+    - `SettingsDatabase.kt`: Room-Datenbank für persistente Benutzer-Einstellungen (Regeln, Labels, GiftIdeas-Backup).
     - `AppSettings.kt`: Entity für globale App-Konfigurationen (Benachrichtigungs-Status, letzter Sync-Zeitpunkt).
     - `AppSettingsDao.kt`: Datenzugriffsobjekt für die App-Einstellungen.
-    - `Contact.kt`: Haupt-Entity für Kontakte; speichert Basisdaten, Labels und enkodierte Geschenkideen.
+    - `Contact.kt`: Haupt-Entity für den System-Kontakt-Cache.
     - `ContactDao.kt`: DAO für Kontakte mit Unterstützung für Batch-Operationen und atomare Refreshes.
-    - `Converters.kt`: TypeConverter für die Konvertierung komplexer Typen (LocalDate, Listen) in DB-kompatible Formate.
+    - `ContactUserData.kt`: Entity für benutzerdefinierte Zusatzdaten (z.B. Geschenkideen), die unabhängig vom Cache persistiert werden.
+    - `ContactUserDataDao.kt`: DAO für benutzerdefinierte Kontaktdaten.
+    - `Converters.kt`: TypeConverter für Basis-Typen (LocalDate, Listen).
+    - `GiftIdeaConverters.kt`: Spezialisierte TypeConverter für Geschenkideen-Listen.
     - `LabelConfig.kt`: Entity zur Verwaltung der Sichtbarkeit und Filter-Regeln für Kontakt-Labels.
     - `LabelConfigDao.kt`: DAO für Label-Konfigurationen.
     - `NotificationRule.kt`: Entity für dynamische Benachrichtigungszeitpunkte (Tage vorher, Uhrzeit).
     - `NotificationRuleDao.kt`: DAO für die Verwaltung der Erinnerungsregeln.
-    - `PendingNotification.kt`: Entity zur Nachverfolgung aktiver System-Benachrichtigungen für das Persistenz-System.
+    - `PendingNotification.kt`: Entity zur Nachverfolgung aktiver System-Benachrichtigungen.
     - `PendingNotificationDao.kt`: DAO für die Verwaltung noch nicht quittierter Erinnerungen.
 - ### 📁 Repository (`data.repository`)
     - `ContactRepository.kt`: Orchestriert den Datenfluss zwischen Room-DB und der System-Kontaktquelle; implementiert die Sync-Logik.
@@ -56,6 +60,7 @@
             - ###### 📁 Actions (`home.components.actions`)
                 - `ContactActionRow.kt`: Reihe mit Messenger- und Kontakt-Aktionen.
                 - `HomeFAB.kt`: Multifunktionaler FAB mit Morphing-Animation.
+                - `MessengerApp.kt`: Enum zur Definition unterstützter Messenger und deren Branding.
     - #### 📁 Onboarding (`onboarding`)
         - `OnboardingScreen.kt`: Multi-Page Flow für die initiale Konfiguration.
         - ##### 📁 Components (`onboarding.components`)
@@ -84,6 +89,7 @@
     - `HomeUiState.kt`: Gebündelter State für den Home-Screen.
     - `LabelManagementModel.kt`: Modell für die Label-Verwaltung.
     - `GiftIdea.kt`: Modell für Geschenkideen mit JSON- und Manipulations-Logik.
+    - `SampleData.kt`: Zentraler Ort für Testdaten für Previews und Tests.
 - ### 📁 UI Components (`ui.components`)
     - `LottieIllustration.kt`: Wiederverwendbare Komponente für Lottie-Animationen.
     - `ResponsiveLayout.kt`: Beinhaltet `AdaptiveContentContainer` und `AppResponsiveScaffold` für adaptive Layouts (Handy, Tablet, Chromebook).
@@ -113,6 +119,11 @@
 ## 🌍 Internationalisierung (I18n)
 - `res/values/strings.xml`: Standard-Sprachressourcen (**Englisch**).
 - `res/values-de/strings.xml`: Lokalisierte Sprachressourcen (**Deutsch**).
+
+## 📁 Ressourcen (`res`)
+- `res/raw/privacy_policy.md`: Datenschutzerklärung (EN).
+- `res/raw-de/privacy_policy.md`: Datenschutzerklärung (DE).
+- `res/raw/anim_contacts.json`: Lottie-Animation für das Onboarding.
 
 ## 🧪 Testing (`src/test` & `src/androidTest`)
 - `MainDispatcherRule.kt`: JUnit-Rule zur Steuerung von Coroutine-Dispatchern in Tests.

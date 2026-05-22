@@ -13,7 +13,7 @@
 8. **Kommunikation:** GitHub-Summaries: Kurz, technisch, englisch. Play Store Notes: XML-Format (DE/EN).
 
 ## 🏗 Technischer Stack
-- **UI:** Compose (BOM 2026.05.00), Material 3, Glance (Widget).
+- **UI:** Compose (BOM 2026.05.01), Material 3, Glance (Widget).
 - **Data:** Room (2.8.4), WorkManager (2.11), Hilt (2.59).
 - **Logic:** `ContactUiModel` (@Immutable), JSON-Mapping für GiftIdeas/Labels.
 

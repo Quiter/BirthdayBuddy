@@ -6,6 +6,8 @@ import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.google.common.truth.Truth.assertThat
 import com.heckmannch.birthdaybuddy.data.local.AppDatabase
+import com.heckmannch.birthdaybuddy.data.local.SettingsDatabase
+import com.heckmannch.birthdaybuddy.util.NotificationScheduler
 import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.runTest
@@ -18,22 +20,30 @@ import org.junit.runner.RunWith
 class NotificationRepositoryTest {
 
     private lateinit var db: AppDatabase
+    private lateinit var settingsDb: SettingsDatabase
     private lateinit var repository: NotificationRepository
 
     @Before
     fun createDb() {
         val context = ApplicationProvider.getApplicationContext<Context>()
         db = Room.inMemoryDatabaseBuilder(context, AppDatabase::class.java).build()
+        settingsDb = Room.inMemoryDatabaseBuilder(context, SettingsDatabase::class.java).build()
+        val scheduler = object : NotificationScheduler {
+            override fun scheduleNext(rules: List<com.heckmannch.birthdaybuddy.data.local.NotificationRule>) {}
+            override fun cancelNotification() {}
+        }
         repository = NotificationRepository(
-            notificationRuleDao = db.notificationRuleDao(),
+            notificationRuleDao = settingsDb.notificationRuleDao(),
             pendingNotificationDao = db.pendingNotificationDao(),
-            appSettingsDao = db.appSettingsDao()
+            appSettingsDao = settingsDb.appSettingsDao(),
+            notificationScheduler = scheduler
         )
     }
 
     @After
     fun closeDb() {
         db.close()
+        settingsDb.close()
     }
 
     @Test

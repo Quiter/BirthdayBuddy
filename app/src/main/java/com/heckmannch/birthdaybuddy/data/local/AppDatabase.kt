@@ -125,36 +125,106 @@ abstract class AppDatabase : RoomDatabase() {
         }
 
         /**
-         * Migration von 5 auf 6.
-         * Ändert die Spalte 'birthday' in 'contacts' auf NULLABLE und fügt Indizes hinzu.
+         * Hilfsfunktion zum sauberen Neuaufbau der 'contacts'-Tabelle auf das korrekte V7-Schema.
          * Da SQLite ALTER TABLE COLUMN NULLABILITY nicht nativ unterstützt,
          * erstellen wir die Tabelle neu und übertragen die Daten.
+         * Siehe https://www.sqlite.org/lang_altertable.html#otheralter
+         */
+        private fun recreateContactsTable(db: SupportSQLiteDatabase) {
+            // 1. Bestehende Tabelle umbenennen
+            db.execSQL("ALTER TABLE contacts RENAME TO contacts_old")
+
+            // 2. Neue Tabelle mit korrektem V7-Schema (nullable birthday, not null giftIdeas) erstellen
+            db.execSQL("CREATE TABLE IF NOT EXISTS `contacts` (`localId` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `contactId` TEXT NOT NULL, `lookupKey` TEXT NOT NULL, `fullName` TEXT NOT NULL, `birthday` TEXT, `imageUri` TEXT, `phoneNumber` TEXT, `hasWhatsApp` INTEGER NOT NULL DEFAULT 0, `hasSignal` INTEGER NOT NULL DEFAULT 0, `labels` TEXT NOT NULL, `giftIdeas` TEXT NOT NULL)")
+
+            // 3. Vorhandene Spalten ermitteln, um fehlende Spalten (falls vorherige Migrationen fehlschlugen) robust abzufangen
+            val columnsInOld = mutableSetOf<String>()
+            val columnCursor = db.query("PRAGMA table_info(contacts_old)")
+            while (columnCursor.moveToNext()) {
+                val nameIndex = columnCursor.getColumnIndex("name")
+                if (nameIndex != -1) {
+                    columnsInOld.add(columnCursor.getString(nameIndex))
+                }
+            }
+            columnCursor.close()
+
+            val selectColumns = mutableListOf<String>()
+            selectColumns.add("localId")
+            selectColumns.add("contactId")
+            selectColumns.add("lookupKey")
+            selectColumns.add("fullName")
+            selectColumns.add("birthday")
+            selectColumns.add("imageUri")
+
+            if (columnsInOld.contains("phoneNumber")) {
+                selectColumns.add("phoneNumber")
+            } else {
+                selectColumns.add("NULL AS phoneNumber")
+            }
+
+            if (columnsInOld.contains("hasWhatsApp")) {
+                selectColumns.add("COALESCE(hasWhatsApp, 0) AS hasWhatsApp")
+            } else {
+                selectColumns.add("0 AS hasWhatsApp")
+            }
+
+            if (columnsInOld.contains("hasSignal")) {
+                selectColumns.add("COALESCE(hasSignal, 0) AS hasSignal")
+            } else {
+                selectColumns.add("0 AS hasSignal")
+            }
+
+            if (columnsInOld.contains("labels")) {
+                selectColumns.add("COALESCE(labels, '[]') AS labels")
+            } else {
+                selectColumns.add("'[]' AS labels")
+            }
+
+            if (columnsInOld.contains("giftIdeas")) {
+                selectColumns.add("COALESCE(giftIdeas, '[]') AS giftIdeas")
+            } else {
+                selectColumns.add("'[]' AS giftIdeas")
+            }
+
+            val selectQuery = selectColumns.joinToString(", ")
+
+            // 4. Daten kopieren mit dynamic fallback
+            db.execSQL("INSERT INTO contacts (localId, contactId, lookupKey, fullName, birthday, imageUri, phoneNumber, hasWhatsApp, hasSignal, labels, giftIdeas) SELECT $selectQuery FROM contacts_old")
+
+            // 5. Alte Tabelle löschen
+            db.execSQL("DROP TABLE IF EXISTS contacts_old")
+
+            // 6. Indizes neu anlegen
+            db.execSQL("CREATE UNIQUE INDEX IF NOT EXISTS `index_contacts_lookupKey` ON `contacts` (`lookupKey`)")
+            db.execSQL("CREATE INDEX IF NOT EXISTS `index_contacts_birthday` ON `contacts` (`birthday`)")
+        }
+
+        /**
+         * Rollback bei Fehlern während der Tabellenrekonstruktion.
+         */
+        private fun rollbackContactsTable(db: SupportSQLiteDatabase) {
+            try {
+                db.execSQL("ALTER TABLE contacts_old RENAME TO contacts")
+            } catch (ex: Exception) {
+                // Ignorieren
+            }
+            try {
+                db.execSQL("CREATE INDEX IF NOT EXISTS `index_contacts_birthday` ON `contacts` (`birthday`)")
+            } catch (ex: Exception) {
+                // Ignorieren
+            }
+        }
+
+        /**
+         * Migration von 5 auf 6.
+         * Ändert die Spalte 'birthday' in 'contacts' auf NULLABLE und fügt Indizes hinzu.
          */
         val MIGRATION_5_6 = object : Migration(5, 6) {
             override fun migrate(db: SupportSQLiteDatabase) {
                 try {
-                    // 1. Bestehende Tabelle umbenennen
-                    db.execSQL("ALTER TABLE contacts RENAME TO contacts_old")
-
-                    // 2. Neue Tabelle mit nullable birthday (V6/V7 Schema) erstellen
-                    db.execSQL("CREATE TABLE IF NOT EXISTS `contacts` (`localId` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `contactId` TEXT NOT NULL, `lookupKey` TEXT NOT NULL, `fullName` TEXT NOT NULL, `birthday` TEXT, `imageUri` TEXT, `phoneNumber` TEXT, `hasWhatsApp` INTEGER NOT NULL DEFAULT 0, `hasSignal` INTEGER NOT NULL DEFAULT 0, `labels` TEXT NOT NULL, `giftIdeas` TEXT)")
-
-                    // 3. Daten aus der alten Tabelle kopieren
-                    db.execSQL("INSERT INTO contacts (localId, contactId, lookupKey, fullName, birthday, imageUri, phoneNumber, hasWhatsApp, hasSignal, labels, giftIdeas) SELECT localId, contactId, lookupKey, fullName, birthday, imageUri, phoneNumber, hasWhatsApp, hasSignal, labels, giftIdeas FROM contacts_old")
-
-                    // 4. Alte Tabelle löschen
-                    db.execSQL("DROP TABLE IF EXISTS contacts_old")
-
-                    // 5. Indizes neu anlegen
-                    db.execSQL("CREATE UNIQUE INDEX IF NOT EXISTS `index_contacts_lookupKey` ON `contacts` (`lookupKey`)")
-                    db.execSQL("CREATE INDEX IF NOT EXISTS `index_contacts_birthday` ON `contacts` (`birthday`)")
+                    recreateContactsTable(db)
                 } catch (e: Exception) {
-                    // Falls die Tabellenneuerstellung fehlschlägt, versuchen wir zumindest den Index anzulegen
-                    try {
-                        db.execSQL("CREATE INDEX IF NOT EXISTS `index_contacts_birthday` ON `contacts` (`birthday`)")
-                    } catch (ex: Exception) {
-                        // Ignorieren
-                    }
+                    rollbackContactsTable(db)
                 }
             }
         }
@@ -162,6 +232,7 @@ abstract class AppDatabase : RoomDatabase() {
         /**
          * Migration von 6 auf 7.
          * Entfernt Tabellen, die nicht mehr zu AppDatabase gehören (jetzt in SettingsDatabase).
+         * Zudem wird sichergestellt, dass das Schema der 'contacts'-Tabelle dem korrekten V7-Schema (not null giftIdeas) entspricht.
          */
         val MIGRATION_6_7 = object : Migration(6, 7) {
             override fun migrate(db: SupportSQLiteDatabase) {
@@ -171,6 +242,28 @@ abstract class AppDatabase : RoomDatabase() {
                     db.execSQL("DROP TABLE IF EXISTS `app_settings`")
                 } catch (e: Exception) {
                     // Ignorieren
+                }
+
+                try {
+                    val columnCursor = db.query("PRAGMA table_info(contacts)")
+                    var isGiftIdeasNotNull = false
+                    while (columnCursor.moveToNext()) {
+                        val nameIndex = columnCursor.getColumnIndex("name")
+                        val notNullIndex = columnCursor.getColumnIndex("notnull")
+                        if (nameIndex != -1 && notNullIndex != -1) {
+                            if (columnCursor.getString(nameIndex) == "giftIdeas") {
+                                isGiftIdeasNotNull = columnCursor.getInt(notNullIndex) == 1
+                                break
+                            }
+                        }
+                    }
+                    columnCursor.close()
+
+                    if (!isGiftIdeasNotNull) {
+                        recreateContactsTable(db)
+                    }
+                } catch (e: Exception) {
+                    rollbackContactsTable(db)
                 }
             }
         }
