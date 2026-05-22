@@ -27,7 +27,8 @@
 ## 📜 Aktuelle Struktur-Meilensteine
 *Historie siehe `CHANGELOG.md`*
 
-- **Adaptive UI & Battery Optimization (Current):** Einführung des `LocalWindowWidthSizeClass` CompositionLocal-Frameworks für schlankere und flexiblere responsive Layouts. Härtung der `MainActivity` mit batterieschonender, lifecycle-basierter Inaktivitätsprüfung und robuster Compose-seitiger Intent-State-Verarbeitung. Hilt-Optimierung durch `@Reusable`-Scoping aller Room-DAOs.
+- **Notification Settings Redesign & UX Polish (Current):** Vollständiges Redesign des `EditRuleDialog` mit präziser textbasierter Eingabe und RadioButtons zur Auswahl der Einheit (Tage/Wochen). Beseitigung von UI-Zuckungen in der Hauptliste durch Einführung eines intelligenten `skipPlacementAnimation`-Status beim Filtern/Suchen. Entkopplung von Synchronisations- und Preloading-Triggern aus dem `HomeScreen` direkt in den `init`-Block des `HomeViewModel` zur Vermeidung von Race Conditions.
+- **Adaptive UI & Battery Optimization:** Einführung des `LocalWindowWidthSizeClass` CompositionLocal-Frameworks für schlankere und flexiblere responsive Layouts. Härtung der `MainActivity` mit batterieschonender, lifecycle-basierter Inaktivitätsprüfung und robuster Compose-seitiger Intent-State-Verarbeitung. Hilt-Optimierung durch `@Reusable`-Scoping aller Room-DAOs.
 - **Refactoring:** Strukturierung der Home-Komponenten in Sub-Packages und Eliminierung von Prop-Drilling durch konsequente Nutzung des `HomeActions` Wrappers.
 - **UX & Animation:** Integration von Lottie-Animationen im Onboarding und Home-Screen zur emotionalen Nutzerführung.
 - **Messenger Logic:** Dynamische Erkennung von WhatsApp/Signal Verfügbarkeit pro Kontakt.
@@ -36,6 +37,7 @@
 - **Persistence:** Alle App-Settings & Benachrichtigungs-Regeln sind in Room konsolidiert.
 - **Stability Fix:** Manuelle Migration 1->2 zur Behebung von Schema-Inkonsistenzen bei Bestandsnutzern (inkl. instrumentiertem Migrationstest).
 - **Architecture Simplification:** Radikale Verschlankung der UI-Komponenten und ViewModels. Delegierung von Sortier-Logik an Modelle und Zentralisierung des Layout-Managements im adaptiven Scaffold zur Reduzierung von Redundanzen.
+
 
 ## 🎯 Kommende Aufgaben (Backlog)
 - **Polish:** Code-Review auf Redundanzen nach großen Refactorings.
