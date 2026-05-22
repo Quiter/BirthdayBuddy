@@ -135,8 +135,9 @@ fun OnboardingScreen(
             userScrollEnabled = false
         ) { page ->
             when (page) {
-                0 -> WelcomePage()
+                0 -> WelcomePage(windowWidthSizeClass = windowWidthSizeClass)
                 1 -> ContactsPage(
+                    windowWidthSizeClass = windowWidthSizeClass,
                     isGranted = hasContactPermission,
                     onGrant = onRequestContactPermission
                 ) {
@@ -144,6 +145,7 @@ fun OnboardingScreen(
                 }
 
                 2 -> NotificationsPage(
+                    windowWidthSizeClass = windowWidthSizeClass,
                     enabled = notificationsEnabled,
                     onEnabledChange = { notificationsEnabled = it },
                     persistent = persistentEnabled,
@@ -159,6 +161,7 @@ fun OnboardingScreen(
                 }
 
                 3 -> ReadyPage(
+                    windowWidthSizeClass = windowWidthSizeClass,
                     hasContactPermission = hasContactPermission,
                     notificationsEnabled = notificationsEnabled && hasNotifPermission
                 ) {

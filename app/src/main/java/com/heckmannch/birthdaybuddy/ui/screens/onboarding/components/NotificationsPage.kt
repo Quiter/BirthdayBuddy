@@ -17,17 +17,17 @@ import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
+import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.heckmannch.birthdaybuddy.R
 
 @Composable
 fun NotificationsPage(
+    windowWidthSizeClass: WindowWidthSizeClass,
     enabled: Boolean,
     onEnabledChange: (Boolean) -> Unit,
     persistent: Boolean,
@@ -35,75 +35,65 @@ fun NotificationsPage(
     isGranted: Boolean,
     onGrant: () -> Unit,
 ) {
-    OnboardingPageWrapper {
-        Icon(
-            imageVector = Icons.Default.Notifications,
-            contentDescription = null,
-            modifier = Modifier.size(100.dp),
-            tint = MaterialTheme.colorScheme.secondary
-        )
-        Spacer(modifier = Modifier.height(32.dp))
-        Text(
-            text = stringResource(R.string.onboarding_notif_page_title),
-            style = MaterialTheme.typography.headlineMedium,
-            fontWeight = FontWeight.Bold,
-            textAlign = TextAlign.Center
-        )
-        Spacer(modifier = Modifier.height(16.dp))
-        Text(
-            text = stringResource(R.string.onboarding_notif_page_desc),
-            style = MaterialTheme.typography.bodyLarge,
-            textAlign = TextAlign.Center,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
-        )
-        Spacer(modifier = Modifier.height(32.dp))
-
-        // Einstellungen
-        Card(
-            modifier = Modifier.fillMaxWidth(),
-            colors = CardDefaults.cardColors(
-                containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(
-                    alpha = 0.5f
-                )
+    OnboardingAdaptivePage(
+        windowWidthSizeClass = windowWidthSizeClass,
+        illustration = { modifier ->
+            Icon(
+                imageVector = Icons.Default.Notifications,
+                contentDescription = null,
+                modifier = modifier.size(120.dp),
+                tint = MaterialTheme.colorScheme.secondary
             )
-        ) {
-            Column(modifier = Modifier.padding(8.dp)) {
-                ListItem(
-                    headlineContent = { Text(stringResource(R.string.onboarding_notif_enable)) },
-                    trailingContent = {
-                        Switch(
-                            checked = enabled,
-                            onCheckedChange = onEnabledChange
-                        )
-                    },
-                    colors = ListItemDefaults.colors(containerColor = Color.Transparent)
+        },
+        title = stringResource(R.string.onboarding_notif_page_title),
+        description = stringResource(R.string.onboarding_notif_page_desc),
+        extraContent = {
+            // Einstellungen Card
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                colors = CardDefaults.cardColors(
+                    containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(
+                        alpha = 0.5f
+                    )
                 )
-                if (enabled) {
+            ) {
+                Column(modifier = Modifier.padding(8.dp)) {
                     ListItem(
-                        headlineContent = { Text(stringResource(R.string.onboarding_notif_persistent)) },
+                        headlineContent = { Text(stringResource(R.string.onboarding_notif_enable)) },
                         trailingContent = {
                             Switch(
-                                checked = persistent,
-                                onCheckedChange = onPersistentChange
+                                checked = enabled,
+                                onCheckedChange = onEnabledChange
                             )
                         },
                         colors = ListItemDefaults.colors(containerColor = Color.Transparent)
                     )
+                    if (enabled) {
+                        ListItem(
+                            headlineContent = { Text(stringResource(R.string.onboarding_notif_persistent)) },
+                            trailingContent = {
+                                Switch(
+                                    checked = persistent,
+                                    onCheckedChange = onPersistentChange
+                                )
+                            },
+                            colors = ListItemDefaults.colors(containerColor = Color.Transparent)
+                        )
+                    }
+                }
+            }
+
+            if (enabled && !isGranted) {
+                Spacer(modifier = Modifier.height(24.dp))
+                Button(
+                    onClick = onGrant,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(56.dp)
+                ) {
+                    Text(stringResource(R.string.onboarding_notif_btn))
                 }
             }
         }
-
-        Spacer(modifier = Modifier.height(32.dp))
-
-        if (enabled && !isGranted) {
-            Button(
-                onClick = onGrant,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(56.dp)
-            ) {
-                Text(stringResource(R.string.onboarding_notif_btn))
-            }
-        }
-    }
+    )
 }
