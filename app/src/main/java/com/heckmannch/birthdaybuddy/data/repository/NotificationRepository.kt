@@ -6,6 +6,7 @@ import com.heckmannch.birthdaybuddy.data.local.NotificationRule
 import com.heckmannch.birthdaybuddy.data.local.NotificationRuleDao
 import com.heckmannch.birthdaybuddy.data.local.PendingNotification
 import com.heckmannch.birthdaybuddy.data.local.PendingNotificationDao
+import com.heckmannch.birthdaybuddy.util.NotificationScheduler
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.sync.Mutex
@@ -18,6 +19,7 @@ class NotificationRepository @Inject constructor(
     private val notificationRuleDao: NotificationRuleDao,
     private val pendingNotificationDao: PendingNotificationDao,
     private val appSettingsDao: AppSettingsDao,
+    private val notificationScheduler: NotificationScheduler,
 ) {
     private val settingsMutex = Mutex()
 
@@ -26,32 +28,54 @@ class NotificationRepository @Inject constructor(
     val settings: Flow<AppSettings> = appSettingsDao.getSettings()
         .map { it ?: AppSettings() }
 
+    private suspend fun syncScheduling() {
+        val enabled = appSettingsDao.getSettingsImmediate()?.notificationsEnabled ?: false
+        val rules = notificationRuleDao.getAllRulesImmediate()
+        if (enabled && rules.isNotEmpty()) {
+            notificationScheduler.scheduleNext(rules)
+        } else {
+            notificationScheduler.cancelNotification()
+        }
+    }
+
     suspend fun updateSettings(
         notificationsEnabled: Boolean? = null,
         persistentNotifications: Boolean? = null,
         onboardingCompleted: Boolean? = null,
         lastSyncTimestamp: Long? = null
-    ) = settingsMutex.withLock {
-        val current = appSettingsDao.getSettingsImmediate() ?: AppSettings()
-        appSettingsDao.upsertSettings(
-            current.copy(
-                notificationsEnabled = notificationsEnabled ?: current.notificationsEnabled,
-                persistentNotifications = persistentNotifications
-                    ?: current.persistentNotifications,
-                onboardingCompleted = onboardingCompleted ?: current.onboardingCompleted,
-                lastSyncTimestamp = lastSyncTimestamp ?: current.lastSyncTimestamp
+    ) {
+        settingsMutex.withLock {
+            val current = appSettingsDao.getSettingsImmediate() ?: AppSettings()
+            appSettingsDao.upsertSettings(
+                current.copy(
+                    notificationsEnabled = notificationsEnabled ?: current.notificationsEnabled,
+                    persistentNotifications = persistentNotifications
+                        ?: current.persistentNotifications,
+                    onboardingCompleted = onboardingCompleted ?: current.onboardingCompleted,
+                    lastSyncTimestamp = lastSyncTimestamp ?: current.lastSyncTimestamp
+                )
             )
-        )
+        }
+        syncScheduling()
     }
 
     suspend fun getAllRulesImmediate(): List<NotificationRule> =
         notificationRuleDao.getAllRulesImmediate()
 
-    suspend fun insertRule(rule: NotificationRule) = notificationRuleDao.upsertRule(rule)
+    suspend fun insertRule(rule: NotificationRule) {
+        notificationRuleDao.upsertRule(rule)
+        syncScheduling()
+    }
 
-    suspend fun updateRule(rule: NotificationRule) = notificationRuleDao.updateRule(rule)
+    suspend fun updateRule(rule: NotificationRule) {
+        notificationRuleDao.updateRule(rule)
+        syncScheduling()
+    }
 
-    suspend fun deleteRule(rule: NotificationRule) = notificationRuleDao.deleteRule(rule)
+    suspend fun deleteRule(rule: NotificationRule) {
+        notificationRuleDao.deleteRule(rule)
+        syncScheduling()
+    }
 
     // Pending Notifications
     suspend fun getActiveNotificationsImmediate(): List<PendingNotification> =

@@ -89,7 +89,7 @@ fun BirthdayItem(
                     onClick = {
                         datePickerState.selectedDateMillis?.let { millis ->
                             val date = java.time.Instant.ofEpochMilli(millis)
-                                .atZone(java.time.ZoneId.systemDefault())
+                                .atZone(java.time.ZoneOffset.UTC)
                                 .toLocalDate()
                             actions.onUpdateBirthday(contact.contactId, date)
                         }

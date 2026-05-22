@@ -4,11 +4,9 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.heckmannch.birthdaybuddy.data.local.NotificationRule
 import com.heckmannch.birthdaybuddy.data.repository.NotificationRepository
-import com.heckmannch.birthdaybuddy.util.NotificationScheduler
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
@@ -18,7 +16,6 @@ import javax.inject.Inject
 @HiltViewModel
 class NotificationViewModel @Inject constructor(
     private val notificationRepository: NotificationRepository,
-    private val notificationScheduler: NotificationScheduler,
 ) : ViewModel() {
 
     private val settings = notificationRepository.settings
@@ -37,22 +34,7 @@ class NotificationViewModel @Inject constructor(
     val notificationRules: StateFlow<List<NotificationRule>?> = notificationRepository.allRules
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), null)
 
-    init {
-        // Automatische Worker-Synchronisation
-        viewModelScope.launch {
-            combine(notificationsEnabled, notificationRules) { enabled, rules ->
-                enabled to rules
-            }.collect { (enabled, rules) ->
-                if (rules == null) return@collect
 
-                if (enabled && rules.isNotEmpty()) {
-                    notificationScheduler.scheduleNext(rules)
-                } else {
-                    notificationScheduler.cancelNotification()
-                }
-            }
-        }
-    }
 
     fun setNotificationsEnabled(enabled: Boolean) = viewModelScope.launch {
         if (enabled) {
