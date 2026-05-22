@@ -43,7 +43,7 @@ import com.heckmannch.birthdaybuddy.viewmodel.BackupViewModel
 import com.heckmannch.birthdaybuddy.viewmodel.HomeViewModel
 import com.heckmannch.birthdaybuddy.viewmodel.LabelViewModel
 import com.heckmannch.birthdaybuddy.viewmodel.NotificationViewModel
-import com.heckmannch.birthdaybuddy.viewmodel.SettingsViewModel
+import com.heckmannch.birthdaybuddy.viewmodel.OnboardingViewModel
 import com.heckmannch.birthdaybuddy.widget.BirthdayWidgetWorker
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -78,8 +78,8 @@ class MainActivity : ComponentActivity() {
         setContent {
             val windowSizeClass = calculateWindowSizeClass(this)
             val homeViewModel: HomeViewModel = hiltViewModel()
-            val settingsViewModel: SettingsViewModel = hiltViewModel()
-            val onboardingCompleted by settingsViewModel.onboardingCompleted.collectAsStateWithLifecycle()
+            val onboardingViewModel: OnboardingViewModel = hiltViewModel()
+            val onboardingCompleted by onboardingViewModel.onboardingCompleted.collectAsStateWithLifecycle()
 
             // Splash Screen so lange anzeigen, bis wir wissen, wo es hingeht
             splashScreen.setKeepOnScreenCondition {
@@ -109,7 +109,7 @@ class MainActivity : ComponentActivity() {
                     AppNavigation(
                         navController,
                         homeViewModel,
-                        settingsViewModel,
+                        onboardingViewModel,
                         windowSizeClass.widthSizeClass
                     )
                 }
@@ -156,10 +156,10 @@ class MainActivity : ComponentActivity() {
     private fun AppNavigation(
         navController: NavHostController,
         homeViewModel: HomeViewModel,
-        settingsViewModel: SettingsViewModel,
+        onboardingViewModel: OnboardingViewModel,
         windowWidthSizeClass: WindowWidthSizeClass,
     ) {
-        val onboardingCompleted by settingsViewModel.onboardingCompleted.collectAsStateWithLifecycle()
+        val onboardingCompleted by onboardingViewModel.onboardingCompleted.collectAsStateWithLifecycle()
 
         // Warten bis der Status geladen wurde, um Flackern zu vermeiden
         if (onboardingCompleted == null) return
@@ -174,7 +174,7 @@ class MainActivity : ComponentActivity() {
         ) {
             composable(Routes.ONBOARDING) {
                 OnboardingScreen(
-                    viewModel = settingsViewModel,
+                    viewModel = onboardingViewModel,
                     windowWidthSizeClass = windowWidthSizeClass
                 ) {
                     navController.navigate(Routes.HOME) {

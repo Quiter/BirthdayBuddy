@@ -1,21 +1,17 @@
 package com.heckmannch.birthdaybuddy.viewmodel
 
-import android.content.Context
 import android.util.Log
-import androidx.glance.appwidget.updateAll
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import coil.imageLoader
-import coil.request.ImageRequest
 import com.heckmannch.birthdaybuddy.data.mapper.ContactMapper
 import com.heckmannch.birthdaybuddy.data.repository.ContactRepository
 import com.heckmannch.birthdaybuddy.data.repository.TimeRepository
 import com.heckmannch.birthdaybuddy.ui.model.ContactUiModel
 import com.heckmannch.birthdaybuddy.ui.model.GiftIdea
 import com.heckmannch.birthdaybuddy.ui.model.HomeUiState
-import com.heckmannch.birthdaybuddy.widget.BirthdayWidget
+import com.heckmannch.birthdaybuddy.util.ImagePrefetcher
+import com.heckmannch.birthdaybuddy.util.WidgetUpdater
 import dagger.hilt.android.lifecycle.HiltViewModel
-import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
@@ -37,10 +33,11 @@ import javax.inject.Inject
 
 @HiltViewModel
 class HomeViewModel @Inject constructor(
-    @param:ApplicationContext private val context: Context,
     private val contactRepository: ContactRepository,
     private val mapper: ContactMapper,
     timeRepository: TimeRepository,
+    private val widgetUpdater: WidgetUpdater,
+    private val imagePrefetcher: ImagePrefetcher,
 ) : ViewModel() {
 
     // --- Search & Filter State ---
@@ -89,15 +86,11 @@ class HomeViewModel @Inject constructor(
     init {
         // Pre-fetch der ersten Kontaktbilder
         viewModelScope.launch {
-            allUiContacts.filter { it.isNotEmpty() }.first().take(20).forEach { contact ->
-                if (contact.imageUri != null) {
-                    val request = ImageRequest.Builder(context)
-                        .data(contact.imageUri)
-                        .size(150)
-                        .build()
-                    context.imageLoader.enqueue(request)
-                }
-            }
+            val contactUris = allUiContacts.filter { it.isNotEmpty() }
+                .first()
+                .take(20)
+                .mapNotNull { it.imageUri }
+            imagePrefetcher.prefetch(contactUris)
         }
     }
 
@@ -331,10 +324,6 @@ class HomeViewModel @Inject constructor(
     }
 
     private fun updateWidget() = viewModelScope.launch {
-        try {
-            BirthdayWidget().updateAll(context)
-        } catch (e: Exception) {
-            Log.e("HomeViewModel", "Widget update failed", e)
-        }
+        widgetUpdater.updateWidget()
     }
 }

@@ -9,6 +9,7 @@
 
 ## 📁 DI (`di`)
 - `AppModule.kt`: Hilt-Modul zur Bereitstellung von Singleton-Instanzen (Datenbank, DAOs, Repositories).
+- `HelperBindingsModule.kt`: Hilt-Modul zur Bereitstellung der Singleton-Bindings für Hilfsklassen (WidgetUpdater, NotificationScheduler, ImagePrefetcher).
 
 ## 📁 Data Layer (`data`)
 - ### 📁 Local (`data.local`)
@@ -92,13 +93,16 @@
 ## 📁 ViewModel (`viewmodel`)
 - `HomeViewModel.kt`: Zuständig für die Kontaktliste, Suche, Filterung und den Home-Screen State.
 - `NotificationViewModel.kt`: Verwaltung der Benachrichtigungsregeln und deren Synchronisation mit dem WorkManager.
-- `SettingsViewModel.kt`: Onboarding-Status und globale App-Einstellungen.
+- `OnboardingViewModel.kt`: Zuständig für den Onboarding-Status und Erststart-Prozess.
 - `LabelViewModel.kt`: Spezielle Logik für die Label-Verwaltung und Konfiguration.
 - `BackupViewModel.kt`: Logik für den Import und Export von Geschenkideen.
 
 ## 📁 Utilities (`util`)
 - `DateUtils.kt`: Robuste Erweiterungsfunktionen für LocalDate.
 - `ContextExtensions.kt`: Hilfsfunktionen für die sichere Navigation im Android-Context.
+- `WidgetUpdater.kt` & `BirthdayWidgetUpdater.kt`: Hilfsklassen zur Glance-unabhängigen Aktualisierung des App-Widgets.
+- `NotificationScheduler.kt` & `NotificationSchedulerImpl.kt`: Hilfsklassen zur WorkManager-unabhängigen Steuerung von Hintergrund-Workern.
+- `ImagePrefetcher.kt` & `ImagePrefetcherImpl.kt`: Hilfsklassen zur Coil-unabhängigen Vorladung von Bildern.
 
 ## 📁 UI Utilities (`ui.util`)
 - `ContactActions.kt`: Zentraler Handler für externe System-Aktionen (Intents, Permissions).

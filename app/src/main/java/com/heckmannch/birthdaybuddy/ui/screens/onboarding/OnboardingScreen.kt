@@ -30,12 +30,12 @@ import com.heckmannch.birthdaybuddy.ui.screens.onboarding.components.Notificatio
 import com.heckmannch.birthdaybuddy.ui.screens.onboarding.components.OnboardingFooter
 import com.heckmannch.birthdaybuddy.ui.screens.onboarding.components.ReadyPage
 import com.heckmannch.birthdaybuddy.ui.screens.onboarding.components.WelcomePage
-import com.heckmannch.birthdaybuddy.viewmodel.SettingsViewModel
+import com.heckmannch.birthdaybuddy.viewmodel.OnboardingViewModel
 import kotlinx.coroutines.launch
 
 @Composable
 fun OnboardingScreen(
-    viewModel: SettingsViewModel,
+    viewModel: OnboardingViewModel,
     windowWidthSizeClass: WindowWidthSizeClass,
     onFinish: () -> Unit,
 ) {

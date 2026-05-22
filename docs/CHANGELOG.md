@@ -172,4 +172,8 @@
     - **I18n Excellence:** Kleinschreibung des Präfix "in" für die Anzeige verbleibender Tage in Deutsch und Englisch zur Verbesserung des visuellen Rhythmus.
     - **Pull-To-Refresh Stability:** Endgültige Behebung von fälschlichen Refresh-Triggers bei Layout-Änderungen durch konsequente Isolierung der `PullToRefreshBox` vom dynamischen Scaffold-Padding.
     - **Legal UI Polish:** Einführung eines simplen Markdown-Renderers für die Datenschutzerklärung. Die `privacy_policy.md` wurde strukturell überarbeitet (H1/H2 Header, Aufzählungen), um eine ansprechende und lesbare Darstellung der rechtlichen Informationen zu gewährleisten.
-
+110. **ViewModel Refactoring & Clean Architecture Decoupling:**
+    - **Onboarding Separation:** Einführung des spezialisierten `OnboardingViewModel.kt`. Das Onboarding ist nun komplett vom `SettingsViewModel` entkoppelt, welches aufgrund von Redundanz vollständig gelöscht wurde.
+    - **Clean Architecture Decoupling:** Beseitigung aller direkten Abhängigkeiten von Android `Context`, Glance, WorkManager und Coil aus den ViewModels (`HomeViewModel`, `LabelViewModel`, `BackupViewModel`, `NotificationViewModel`).
+    - **Hilt-Injected Helper Interfaces:** Einführung von `WidgetUpdater`, `NotificationScheduler` und `ImagePrefetcher` zur Entkopplung der System-APIs. Dies verbessert die JVM-Unit-Testbarkeit der ViewModels drastisch.
+    - **Documentation:** Aktualisierung von `PROJECT_STRUCTURE.md` zur Abbildung der neuen Struktur.

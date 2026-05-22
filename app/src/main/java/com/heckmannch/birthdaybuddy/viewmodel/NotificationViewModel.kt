@@ -1,13 +1,11 @@
 package com.heckmannch.birthdaybuddy.viewmodel
 
-import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.heckmannch.birthdaybuddy.data.local.NotificationRule
 import com.heckmannch.birthdaybuddy.data.repository.NotificationRepository
-import com.heckmannch.birthdaybuddy.ui.screens.settings.notifications.components.NotificationWorker
+import com.heckmannch.birthdaybuddy.util.NotificationScheduler
 import dagger.hilt.android.lifecycle.HiltViewModel
-import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
@@ -19,8 +17,8 @@ import javax.inject.Inject
 
 @HiltViewModel
 class NotificationViewModel @Inject constructor(
-    @param:ApplicationContext private val context: Context,
     private val notificationRepository: NotificationRepository,
+    private val notificationScheduler: NotificationScheduler,
 ) : ViewModel() {
 
     private val settings = notificationRepository.settings
@@ -48,9 +46,9 @@ class NotificationViewModel @Inject constructor(
                 if (rules == null) return@collect
 
                 if (enabled && rules.isNotEmpty()) {
-                    NotificationWorker.scheduleNext(context, rules)
+                    notificationScheduler.scheduleNext(rules)
                 } else {
-                    NotificationWorker.cancelNotification(context)
+                    notificationScheduler.cancelNotification()
                 }
             }
         }

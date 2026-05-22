@@ -1,6 +1,5 @@
 package com.heckmannch.birthdaybuddy.ui.screens.home.components.topbar
 
-import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -40,7 +39,6 @@ fun HomeTopBar(
         color = MaterialTheme.colorScheme.surface,
         modifier = Modifier
             .fillMaxWidth()
-            .animateContentSize()
     ) {
         // Wir nutzen den AdaptiveContentContainer auch hier, damit die Suche 
         // und die Filter auf Tablets zentriert über der Liste bleiben.
