@@ -32,6 +32,7 @@ import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -92,12 +93,23 @@ fun FastScrollbar(
         }
     }
 
+    val currentThumbHeight by animateDpAsState(
+        targetValue = if (isDragging) ScrollbarDefaults.ThumbHeightDragging else ScrollbarDefaults.ThumbHeightIdle,
+        label = "Thumb Height",
+    )
+
     BoxWithConstraints(modifier = modifier.width(ScrollbarDefaults.BarWidth)) {
         val totalItems = contacts.size
         val viewHeight = maxHeight
-        val thumbHeight = ScrollbarDefaults.ThumbSize
-        val trackHeight = viewHeight - thumbHeight
+        val trackHeight = viewHeight - currentThumbHeight
         val trackHeightPx = with(density) { trackHeight.toPx() }
+
+        // Um Re-Kompositionen des pointerInput Blocks zu verhindern, nutzen wir rememberUpdatedState
+        val currentTotalItems by rememberUpdatedState(totalItems)
+        val currentTrackHeightPx by rememberUpdatedState(trackHeightPx)
+        val currentDensity by rememberUpdatedState(density)
+        val currentOnSetFastScrolling by rememberUpdatedState(onSetFastScrolling)
+        val currentThumbHeightState by rememberUpdatedState(currentThumbHeight)
 
         // Zurücksetzen des Offsets bei Filter-Wechsel
         LaunchedEffect(contacts, isResettingFilter) {
@@ -238,19 +250,19 @@ fun FastScrollbar(
                     .align(Alignment.CenterEnd)
                     .width(ScrollbarDefaults.ThumbSize) // 48.dp
                     .fillMaxHeight()
-                    .pointerInput(totalItems, trackHeightPx) {
+                    .pointerInput(listState) {
                         try {
                             detectVerticalDragGestures(
                                 onDragStart = { offset ->
                                     isDragging = true
-                                    onSetFastScrolling(true)
-                                    val thumbHeightPx = with(density) { thumbHeight.toPx() }
-                                    dragOffsetPx = (offset.y - thumbHeightPx / 2f).coerceIn(0f, trackHeightPx)
+                                    currentOnSetFastScrolling(true)
+                                    val thumbHeightPx = with(currentDensity) { currentThumbHeightState.toPx() }
+                                    dragOffsetPx = (offset.y - thumbHeightPx / 2f).coerceIn(0f, currentTrackHeightPx)
                                     
-                                    val scrollPercent = if (trackHeightPx > 0) dragOffsetPx / trackHeightPx else 0f
+                                    val scrollPercent = if (currentTrackHeightPx > 0) dragOffsetPx / currentTrackHeightPx else 0f
                                     val (targetIndex, targetOffset) = calculateScrollTarget(
                                         scrollPercent = scrollPercent,
-                                        totalItems = totalItems,
+                                        totalItems = currentTotalItems,
                                         layoutInfo = listState.layoutInfo,
                                     )
                                     scope.launch {
@@ -259,19 +271,19 @@ fun FastScrollbar(
                                 },
                                 onDragEnd = {
                                     isDragging = false
-                                    onSetFastScrolling(false)
+                                    currentOnSetFastScrolling(false)
                                 },
                                 onDragCancel = {
                                     isDragging = false
-                                    onSetFastScrolling(false)
+                                    currentOnSetFastScrolling(false)
                                 },
                             ) { change, dragAmount ->
-                                dragOffsetPx = (dragOffsetPx + dragAmount).coerceIn(0f, trackHeightPx)
-                                val scrollPercent = if (trackHeightPx > 0) dragOffsetPx / trackHeightPx else 0f
+                                dragOffsetPx = (dragOffsetPx + dragAmount).coerceIn(0f, currentTrackHeightPx)
+                                val scrollPercent = if (currentTrackHeightPx > 0) dragOffsetPx / currentTrackHeightPx else 0f
                                 
                                 val (targetIndex, targetOffset) = calculateScrollTarget(
                                     scrollPercent = scrollPercent,
-                                    totalItems = totalItems,
+                                    totalItems = currentTotalItems,
                                     layoutInfo = listState.layoutInfo,
                                 )
                                 scope.launch {
@@ -309,7 +321,7 @@ fun FastScrollbar(
                     modifier = Modifier
                         .align(Alignment.TopEnd)
                         .width(ScrollbarDefaults.ThumbSize)
-                        .height(thumbHeight)
+                        .height(currentThumbHeight)
                         .graphicsLayer {
                             translationY = thumbOffset.toPx()
                         }
@@ -322,7 +334,7 @@ fun FastScrollbar(
                         modifier = Modifier
                             .padding(end = 12.dp - thumbWidth / 2) // Dynamically centers the thumb on the 12.dp vertical line
                             .width(thumbWidth)
-                            .height(if (isDragging) ScrollbarDefaults.ThumbHeightDragging else ScrollbarDefaults.ThumbHeightIdle)
+                            .fillMaxHeight()
                             .clip(CircleShape)
                             .background(MaterialTheme.colorScheme.primary.copy(alpha = animatedThumbAlpha)),
                     )

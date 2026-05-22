@@ -13,6 +13,8 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.heckmannch.birthdaybuddy.ui.theme.BirthdayBuddyTheme
 
+import androidx.compose.ui.zIndex
+
 /**
  * Zentriert den Inhalt auf breiten Bildschirmen (Tablets, Chromebooks),
  * um zu verhindern, dass die UI unschön in die Breite gezogen wird.
@@ -72,6 +74,7 @@ fun AppResponsiveScaffold(
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(paddingValues)
+                    .zIndex(1f)
             ) {
                 content(PaddingValues(0.dp))
             }

@@ -19,6 +19,7 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -229,7 +230,7 @@ private fun LabelConfigCard(
                     leadingIcon = if (label.isHiddenFromFilter) {
                         {
                             Icon(
-                                Icons.Default.Check,
+                                Icons.Default.VisibilityOff,
                                 contentDescription = null,
                                 modifier = Modifier.size(18.dp)
                             )
