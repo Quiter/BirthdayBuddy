@@ -1,14 +1,14 @@
 # Project Structure: BirthdayBuddy
 
 ## 📁 Root
-- `MainActivity.kt`: Haupteinstiegspunkt der App. Regelt das Navigations-Hosting (NavHost), das globale Intent-Handling (z.B. Widget-Klicks) und automatische Filter-Resets bei Inaktivität.
+- `MainActivity.kt`: Haupteinstiegspunkt der App. Regelt das Navigations-Hosting (NavHost), das globale Intent-Handling (z.B. Widget-Klicks) über Compose-seitiges `activityIntent` State-Handling, und automatische Filter-Resets bei Inaktivität über einen batterieschonenden `LifecycleEventObserver`.
 - `BirthdayBuddyApplication.kt`: Hilt-Application Klasse zur Initialisierung der Dependency Injection und Konfiguration des WorkManagers.
 - `PROJECT_STATUS.md`: Dokumentation des aktuellen Entwicklungsstands, der Architektur-Constraints und Meilensteine.
 - `PROJECT_STRUCTURE.md`: Diese Datei (Struktur-Dokumentation des Projekts).
 - `CHANGELOG.md`: Vollständige Historie aller signifikanten Änderungen und Feature-Releases.
 
 ## 📁 DI (`di`)
-- `AppModule.kt`: Hilt-Modul zur Bereitstellung von Singleton-Instanzen (Datenbank, DAOs, Repositories).
+- `AppModule.kt`: Hilt-Modul zur Bereitstellung von Singleton-Instanzen und performanten, leichtgewichtigen `@Reusable` DAO-Bindings zur Steigerung der DI-Performanz.
 - `HelperBindingsModule.kt`: Hilt-Modul zur Bereitstellung der Singleton-Bindings für Hilfsklassen (WidgetUpdater, NotificationScheduler, ImagePrefetcher).
 
 ## 📁 Data Layer (`data`)
@@ -92,7 +92,7 @@
     - `SampleData.kt`: Zentraler Ort für Testdaten für Previews und Tests.
 - ### 📁 UI Components (`ui.components`)
     - `LottieIllustration.kt`: Wiederverwendbare Komponente für Lottie-Animationen.
-    - `ResponsiveLayout.kt`: Beinhaltet `AdaptiveContentContainer` und `AppResponsiveScaffold` für adaptive Layouts (Handy, Tablet, Chromebook).
+    - `ResponsiveLayout.kt`: Beinhaltet `AdaptiveContentContainer`, `AppResponsiveScaffold` und den globalen `LocalWindowWidthSizeClass` CompositionLocal-Provider zur flexiblen, abfragefreien Größenklassen-Weitergabe (Handy, Tablet, Chromebook).
 - ### 📁 Theme (`ui.theme`)
     - `Theme.kt`, `Color.kt`, `Type.kt`: Design-System Definitionen.
 
