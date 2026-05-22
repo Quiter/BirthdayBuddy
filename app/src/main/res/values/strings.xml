@@ -91,6 +91,14 @@
     <string name="dialog_time_title">Select time</string>
     <string name="dialog_slider_today">Today</string>
     <string name="dialog_slider_max">30 days</string>
+    <plurals name="dialog_rule_unit_days">
+        <item quantity="one">Day before</item>
+        <item quantity="other">Days before</item>
+    </plurals>
+    <plurals name="dialog_rule_unit_weeks">
+        <item quantity="one">Week</item>
+        <item quantity="other">Weeks</item>
+    </plurals>
 
     <!-- Notification Helper -->
     <string name="notif_channel_name">Birthday Reminders</string>

@@ -7,7 +7,10 @@ import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.rememberInfiniteTransition
+import androidx.compose.animation.core.spring
+import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.tween
+import androidx.compose.animation.core.VisibilityThreshold
 import androidx.compose.foundation.background
 import androidx.compose.foundation.interaction.collectIsDraggedAsState
 import androidx.compose.foundation.layout.Arrangement
@@ -36,7 +39,6 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -45,6 +47,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.unit.IntOffset
+import kotlinx.coroutines.delay
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
@@ -74,13 +78,11 @@ fun BirthdayList(
 ) {
     val context = LocalContext.current
 
-    val hasPermission by remember {
-        derivedStateOf {
-            ContextCompat.checkSelfPermission(
-                context,
-                Manifest.permission.READ_CONTACTS,
-            ) == PackageManager.PERMISSION_GRANTED
-        }
+    val hasPermission = remember(context) {
+        ContextCompat.checkSelfPermission(
+            context,
+            Manifest.permission.READ_CONTACTS,
+        ) == PackageManager.PERMISSION_GRANTED
     }
 
     // WICHTIG: Wenn contacts null ist, zeigen wir einen Shimmer-Loader
@@ -106,9 +108,20 @@ fun BirthdayList(
         }
     }
 
-    // Schließen, wenn sich Filter oder Suche ändern
+    var previousLabel by remember { mutableStateOf(selectedLabel) }
+    var previousQuery by remember { mutableStateOf(searchQuery) }
+    var skipPlacementAnimation by remember { mutableStateOf(false) }
+
+    // Schließen und Animationen anpassen, wenn sich Filter oder Suche ändern
     LaunchedEffect(selectedLabel, searchQuery) {
         expandedContactId = null
+        if (selectedLabel != previousLabel || searchQuery != previousQuery) {
+            skipPlacementAnimation = true
+            previousLabel = selectedLabel
+            previousQuery = searchQuery
+            delay(150)
+            skipPlacementAnimation = false
+        }
     }
 
     LazyColumn(
@@ -141,7 +154,15 @@ fun BirthdayList(
                         expandedContactId = if (isExpanded) null else contact.id
                     },
                     actions = actions,
-                    modifier = Modifier.animateItem()
+                    modifier = Modifier.animateItem(
+                        fadeInSpec = tween(durationMillis = 200),
+                        fadeOutSpec = tween(durationMillis = 150),
+                        placementSpec = if (skipPlacementAnimation) null else spring(
+                            dampingRatio = Spring.DampingRatioNoBouncy,
+                            stiffness = Spring.StiffnessMedium,
+                            visibilityThreshold = IntOffset.VisibilityThreshold
+                        )
+                    )
                 )
             }
         }

@@ -72,9 +72,6 @@ fun OnboardingScreen(
     val contactLauncher =
         rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted ->
             hasContactPermission = isGranted
-            if (isGranted) {
-                scope.launch { pagerState.animateScrollToPage(2) }
-            }
         }
 
     val onRequestContactPermission = {
@@ -103,9 +100,6 @@ fun OnboardingScreen(
     val notifLauncher =
         rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted ->
             hasNotifPermission = isGranted
-            if (isGranted) {
-                scope.launch { pagerState.animateScrollToPage(3) }
-            }
         }
 
     AppResponsiveScaffold(
@@ -156,7 +150,6 @@ fun OnboardingScreen(
                         notifLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
                     } else {
                         hasNotifPermission = true
-                        scope.launch { pagerState.animateScrollToPage(3) }
                     }
                 }
 

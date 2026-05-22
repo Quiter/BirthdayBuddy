@@ -34,6 +34,7 @@ fun OnboardingFooter(
     onNext: () -> Unit
 ) {
     Surface(
+        modifier = Modifier.fillMaxWidth(),
         color = MaterialTheme.colorScheme.surface,
         tonalElevation = 3.dp
     ) {

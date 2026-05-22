@@ -1,7 +1,5 @@
 package com.heckmannch.birthdaybuddy.ui.screens.home
 
-import android.Manifest
-import android.content.pm.PackageManager
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.AnimatedVisibility
@@ -22,6 +20,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -30,10 +29,7 @@ import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.core.content.ContextCompat
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import coil.imageLoader
-import coil.request.ImageRequest
 import com.heckmannch.birthdaybuddy.R
 import com.heckmannch.birthdaybuddy.ui.components.AppResponsiveScaffold
 import com.heckmannch.birthdaybuddy.ui.model.HomeUiState
@@ -65,6 +61,7 @@ fun HomeScreen(
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val homeState = rememberHomeState()
     val contactActions = remember(context) { ContactActions(context) }
+    val currentOnNavigateToSettings by rememberUpdatedState(onNavigateToSettings)
 
     val appPlaceholder = stringResource(R.string.home_placeholder_app)
     val searchPlaceholder = stringResource(R.string.home_placeholder_search)
@@ -78,13 +75,6 @@ fun HomeScreen(
     // --- UI-Koordination (Initialisierung & Fokus) ---
     LaunchedEffect(Unit) {
         homeState.animatedPlaceholder = appPlaceholder
-        if (ContextCompat.checkSelfPermission(
-                context,
-                Manifest.permission.READ_CONTACTS
-            ) == PackageManager.PERMISSION_GRANTED
-        ) {
-            viewModel.syncContacts()
-        }
         delay(2000)
         homeState.animatedPlaceholder = searchPlaceholder
     }
@@ -120,23 +110,8 @@ fun HomeScreen(
         }
     }
 
-    // --- Bild-Preloading für flüssigeres Scrollen ---
-    val imageLoader = context.imageLoader
-    LaunchedEffect(uiState.contacts) {
-        // Preloade die ersten 25 Bilder, sobald die Liste geladen ist.
-        // Das füllt den Memory- & Disk-Cache, bevor der User scrollt.
-        uiState.contacts?.take(25)?.forEach { contact ->
-            if (contact.imageUri != null) {
-                val request = ImageRequest.Builder(context)
-                    .data(contact.imageUri)
-                    .build()
-                imageLoader.enqueue(request)
-            }
-        }
-    }
-
     val actions =
-        remember(viewModel, onNavigateToSettings, contactActions, permissionLauncher, homeState) {
+        remember(viewModel, contactActions, permissionLauncher, homeState) {
             HomeActions(
                 onSearchQueryChange = viewModel::onSearchQueryChange,
                 onLabelSelected = viewModel::onLabelSelected,
@@ -145,7 +120,7 @@ fun HomeScreen(
                     focusManager.clearFocus()
                     keyboardController?.hide()
                 },
-                onNavigateToSettings = onNavigateToSettings,
+                onNavigateToSettings = { currentOnNavigateToSettings() },
                 onAddContact = contactActions::addContact,
                 onRequestPermission = {
                     contactActions.requestContactPermission(

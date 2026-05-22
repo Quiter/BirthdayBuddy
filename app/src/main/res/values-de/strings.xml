@@ -91,6 +91,14 @@
     <string name="dialog_time_title">Uhrzeit wählen</string>
     <string name="dialog_slider_today">Heute</string>
     <string name="dialog_slider_max">30 Tage</string>
+    <plurals name="dialog_rule_unit_days">
+        <item quantity="one">Tag vorher</item>
+        <item quantity="other">Tage vorher</item>
+    </plurals>
+    <plurals name="dialog_rule_unit_weeks">
+        <item quantity="one">Woche</item>
+        <item quantity="other">Wochen</item>
+    </plurals>
 
     <!-- Notification Helper -->
     <string name="notif_channel_name">Geburtstags-Erinnerungen</string>

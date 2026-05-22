@@ -84,6 +84,7 @@ class HomeViewModel @Inject constructor(
     }.flowOn(Dispatchers.Default)
 
     init {
+        syncContacts()
         // Pre-fetch der ersten Kontaktbilder
         viewModelScope.launch {
             val contactUris = allUiContacts.filter { it.isNotEmpty() }
