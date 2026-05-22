@@ -41,13 +41,13 @@
 ## 📁 UI Layer (`ui`)
 - ### 📁 Screens (`ui.screens`)
     - #### 📁 Home (`home`)
-        - `HomeScreen.kt`: Container-Composable des Hauptbildschirms; verwaltet den UI-State.
+        - `HomeScreen.kt`: Container-Composable des Hauptbildschirms; verwaltet den UI-State. Verwendet `rememberUpdatedState` für sichere Navigationstargets und delegiert Daten-Synchronisation sowie Bild-Preloading an das `HomeViewModel`.
         - `HomeState.kt`: Plain State Holder für die UI-Logik (Scroll-Zustand, Fokus).
         - `HomeActions.kt`: Wrapper für Benutzeraktionen zur Reduzierung von Prop-Drilling.
         - ##### 📁 Components (`home.components`)
             - ###### 📁 List (`home.components.list`)
                 - `BirthdayItem.kt`: Zentrales Koordinationselement der Kontaktkarte; verwaltet den Expand-State und delegiert an spezialisierte Sub-Komponenten.
-                - `BirthdayList.kt`: LazyColumn-Implementierung mit Optimierungen (Auto-Collapse beim Scrollen und Filterwechsel).
+                - `BirthdayList.kt`: LazyColumn-Implementierung mit Optimierungen (Auto-Collapse beim Scrollen und Filterwechsel) sowie intelligent unterdrückten Platzierungsanimationen (`skipPlacementAnimation`) bei Filter- und Suchwechseln.
                 - `BirthdayStatus.kt`: Anzeige des Alters und der verbleibenden Tage.
                 - `ConfettiEffect.kt`: Hochperformantes Partikelsystem für Geburtstags-Animationen.
                 - `ContactImage.kt`: Komponente für das Kontaktbild oder die Initialen.
@@ -69,14 +69,14 @@
             - `ContactsPage.kt`: Individuelle Onboarding-Seite für die Kontaktberechtigung.
             - `NotificationsPage.kt`: Individuelle Onboarding-Seite für die Benachrichtigungseinstellungen.
             - `ReadyPage.kt`: Individuelle Onboarding-Seite für den Abschluss.
-            - `OnboardingFooter.kt`: Navigations-Footer mit Dots.
+            - `OnboardingFooter.kt`: Navigations-Footer mit Dots, vollflächig gerendert (`fillMaxWidth`) für konsistente responsive Darstellung auf breiten Bildschirmen.
     - #### 📁 Settings (`settings`)
         - `SettingsScreen.kt`: Haupteinstellungsmenü.
         - `labels/LabelSettingsScreen.kt`: Verwaltung der Label-Sichtbarkeit.
         - `notifications/NotificationSettingsScreen.kt`: Konfiguration des Erinnerungssystems.
         - ##### 📁 Components (`notifications.components`)
             - `NotificationRuleItem.kt`: UI-Element für eine einzelne Benachrichtigungsregel.
-            - `EditRuleDialog.kt`: Dialog zum Bearbeiten/Erstellen von Regeln.
+            - `EditRuleDialog.kt`: Dialog zum Bearbeiten/Erstellen von Erinnerungsregeln. Ermöglicht eine präzise, textbasierte Vorwarnzeit-Eingabe in Tagen oder Wochen (Einheiten-Auswahl per RadioButtons) mit integriertem System-TimePicker.
             - `NotificationWorker.kt`: Hintergrund-Prozess für die Benachrichtigungs-Logik.
             - `SnoozeWorker.kt`: Hintergrund-Prozess für die "Später"-Funktion.
             - `NotificationActionReceiver.kt`: Verarbeitet Klicks auf Benachrichtigungs-Buttons.
