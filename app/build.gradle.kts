@@ -24,6 +24,10 @@ android {
     }
 
     sourceSets {
+        getByName("main") {
+            res.directories.clear()
+            res.directories.addAll(listOf("src/main/res", "src/main/res-messenger"))
+        }
         getByName("androidTest") {
             assets.directories.add("schemas")
         }

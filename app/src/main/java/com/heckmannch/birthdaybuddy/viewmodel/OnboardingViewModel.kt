@@ -3,6 +3,7 @@ package com.heckmannch.birthdaybuddy.viewmodel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.heckmannch.birthdaybuddy.data.local.NotificationRule
+import com.heckmannch.birthdaybuddy.data.repository.ContactRepository
 import com.heckmannch.birthdaybuddy.data.repository.NotificationRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.SharingStarted
@@ -15,6 +16,7 @@ import javax.inject.Inject
 @HiltViewModel
 class OnboardingViewModel @Inject constructor(
     private val notificationRepository: NotificationRepository,
+    private val contactRepository: ContactRepository,
 ) : ViewModel() {
 
     private val settings = notificationRepository.settings
@@ -41,9 +43,15 @@ class OnboardingViewModel @Inject constructor(
                 )
             }
         }
+        
         notificationRepository.updateSettings(
             notificationsEnabled = notificationsEnabled,
             onboardingCompleted = true,
         )
+
+        // Trigger initial background sync of contacts
+        launch {
+            contactRepository.syncContacts()
+        }
     }
 }

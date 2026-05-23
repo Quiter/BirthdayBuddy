@@ -49,7 +49,7 @@ abstract class AppDatabase : RoomDatabase() {
                     } else if (!hasDismissCount) {
                         db.execSQL("ALTER TABLE pending_notifications ADD COLUMN dismissCount INTEGER NOT NULL DEFAULT 0")
                     }
-                } catch (e: Exception) {
+                } catch (_: Exception) {
                     db.execSQL("DROP TABLE IF EXISTS `pending_notifications`")
                     db.execSQL("CREATE TABLE IF NOT EXISTS `pending_notifications` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `contactLookupKeys` TEXT NOT NULL, `daysBefore` INTEGER NOT NULL, `year` INTEGER NOT NULL, `isDone` INTEGER NOT NULL, `dismissCount` INTEGER NOT NULL DEFAULT 0)")
                 }
@@ -86,7 +86,7 @@ abstract class AppDatabase : RoomDatabase() {
                     if (!columnExists) {
                         db.execSQL("ALTER TABLE contacts ADD COLUMN phoneNumber TEXT")
                     }
-                } catch (e: Exception) {
+                } catch (_: Exception) {
                     // Safe Fallback
                 }
             }
@@ -118,7 +118,7 @@ abstract class AppDatabase : RoomDatabase() {
                     if (!hasSignal) {
                         db.execSQL("ALTER TABLE contacts ADD COLUMN hasSignal INTEGER NOT NULL DEFAULT 0")
                     }
-                } catch (e: Exception) {
+                } catch (_: Exception) {
                     // Safe Fallback
                 }
             }
@@ -205,12 +205,12 @@ abstract class AppDatabase : RoomDatabase() {
         private fun rollbackContactsTable(db: SupportSQLiteDatabase) {
             try {
                 db.execSQL("ALTER TABLE contacts_old RENAME TO contacts")
-            } catch (ex: Exception) {
+            } catch (_: Exception) {
                 // Ignorieren
             }
             try {
                 db.execSQL("CREATE INDEX IF NOT EXISTS `index_contacts_birthday` ON `contacts` (`birthday`)")
-            } catch (ex: Exception) {
+            } catch (_: Exception) {
                 // Ignorieren
             }
         }
@@ -223,7 +223,7 @@ abstract class AppDatabase : RoomDatabase() {
             override fun migrate(db: SupportSQLiteDatabase) {
                 try {
                     recreateContactsTable(db)
-                } catch (e: Exception) {
+                } catch (_: Exception) {
                     rollbackContactsTable(db)
                 }
             }
@@ -240,7 +240,7 @@ abstract class AppDatabase : RoomDatabase() {
                     db.execSQL("DROP TABLE IF EXISTS `label_configs`")
                     db.execSQL("DROP TABLE IF EXISTS `notification_rules`")
                     db.execSQL("DROP TABLE IF EXISTS `app_settings`")
-                } catch (e: Exception) {
+                } catch (_: Exception) {
                     // Ignorieren
                 }
 
@@ -262,30 +262,38 @@ abstract class AppDatabase : RoomDatabase() {
                     if (!isGiftIdeasNotNull) {
                         recreateContactsTable(db)
                     }
-                } catch (e: Exception) {
+                } catch (_: Exception) {
                     rollbackContactsTable(db)
                 }
             }
         }
 
+        private fun buildDatabase(context: Context): AppDatabase {
+            return Room.databaseBuilder(
+                context.applicationContext,
+                AppDatabase::class.java,
+                "birthday_database",
+            )
+                .addMigrations(
+                    MIGRATION_5_6,
+                    MIGRATION_6_7
+                )
+                .fallbackToDestructiveMigration(true) // Letzter Rettungsanker bei komplett korruptem Zustand
+                .build()
+        }
+
         fun getDatabase(context: Context): AppDatabase =
             INSTANCE ?: synchronized(this) {
-                INSTANCE ?: Room.databaseBuilder(
-                    context.applicationContext,
-                    AppDatabase::class.java,
-                    "birthday_database",
-                )
-                    .addMigrations(
-                        MIGRATION_1_2,
-                        MIGRATION_2_3,
-                        MIGRATION_3_4,
-                        MIGRATION_4_5,
-                        MIGRATION_5_6,
-                        MIGRATION_6_7
-                    )
-                    .fallbackToDestructiveMigration() // Letzter Rettungsanker bei komplett korruptem Zustand
-                    .build()
-                    .also { INSTANCE = it }
+                INSTANCE ?: try {
+                    buildDatabase(context)
+                } catch (_: Exception) {
+                    try {
+                        context.deleteDatabase("birthday_database")
+                    } catch (_: Exception) {
+                        // Ignorieren
+                    }
+                    buildDatabase(context)
+                }.also { INSTANCE = it }
             }
     }
 }

@@ -1,7 +1,7 @@
 package com.heckmannch.birthdaybuddy.ui.screens.onboarding.components
 
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -22,6 +22,7 @@ import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
@@ -100,15 +101,21 @@ fun NotificationsPage(
                 }
             }
 
-            if (enabled && !isGranted) {
-                Spacer(modifier = Modifier.height(24.dp))
-                Button(
-                    onClick = onGrant,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(56.dp)
-                ) {
-                    Text(stringResource(R.string.onboarding_notif_btn))
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(80.dp),
+                contentAlignment = Alignment.BottomCenter
+            ) {
+                if (enabled && !isGranted) {
+                    Button(
+                        onClick = onGrant,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(56.dp)
+                    ) {
+                        Text(stringResource(R.string.onboarding_notif_btn))
+                    }
                 }
             }
         }
