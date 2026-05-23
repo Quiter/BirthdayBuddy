@@ -1,5 +1,6 @@
 package com.heckmannch.birthdaybuddy.ui.screens.home.components.actions
 
+import android.annotation.SuppressLint
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -30,6 +31,7 @@ import com.heckmannch.birthdaybuddy.ui.theme.BirthdayBuddyTheme
 
 private val PixelBlue = Color(0xFF1A73E8)
 
+@SuppressLint("LocalContextGetResourceValueCall")
 @Composable
 fun ContactActionRow(
     contactId: String,
@@ -43,7 +45,7 @@ fun ContactActionRow(
     val context = LocalContext.current
     val installedMessengers = remember(context) {
         MessengerApp.getInstalledMessengers(context)
-            .sortedBy { context.getString(it.labelResId) }
+            .sortedBy { it.name }
     }
 
     Row(

@@ -16,9 +16,10 @@ android {
     defaultConfig {
         applicationId = "com.heckmannch.birthdaybuddy"
         minSdk = 28
+        //noinspection ExpiredTargetSdkVersion, OldTargetApi
         targetSdk = 36
-        versionCode = 27
-        versionName = "2.3.18"
+        versionCode = 28
+        versionName = "2.3.19"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }

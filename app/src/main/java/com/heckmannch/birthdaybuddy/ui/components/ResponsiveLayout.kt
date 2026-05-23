@@ -70,8 +70,8 @@ fun AdaptiveContentContainer(
  */
 @Composable
 fun AppResponsiveScaffold(
-    windowWidthSizeClass: WindowWidthSizeClass = LocalWindowWidthSizeClass.current,
     modifier: Modifier = Modifier,
+    windowWidthSizeClass: WindowWidthSizeClass = LocalWindowWidthSizeClass.current,
     topBar: @Composable () -> Unit = {},
     bottomBar: @Composable () -> Unit = {},
     floatingActionButton: @Composable () -> Unit = {},

@@ -83,9 +83,5 @@ enum class MessengerApp(
                 }
             }
         }
-
-        fun fromPackageName(packageName: String): MessengerApp? {
-            return entries.find { it.packageName == packageName }
-        }
     }
 }
