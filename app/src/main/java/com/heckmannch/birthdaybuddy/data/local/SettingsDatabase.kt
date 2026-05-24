@@ -8,7 +8,7 @@ import androidx.room.TypeConverters
 
 @Database(
     entities = [LabelConfig::class, NotificationRule::class, AppSettings::class, ContactUserData::class],
-    version = 1,
+    version = 2,
     exportSchema = true
 )
 @TypeConverters(Converters::class, GiftIdeaConverters::class)

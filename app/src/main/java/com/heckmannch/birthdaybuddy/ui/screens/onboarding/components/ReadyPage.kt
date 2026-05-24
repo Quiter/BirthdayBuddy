@@ -28,6 +28,7 @@ fun ReadyPage(
     windowWidthSizeClass: WindowWidthSizeClass,
     hasContactPermission: Boolean,
     notificationsEnabled: Boolean,
+    calendarSyncEnabled: Boolean,
     onStart: () -> Unit,
 ) {
     OnboardingAdaptivePage(
@@ -68,6 +69,11 @@ fun ReadyPage(
                     Text(
                         text = if (notificationsEnabled) stringResource(R.string.onboarding_summary_notif_enabled)
                         else stringResource(R.string.onboarding_summary_notif_disabled),
+                        style = MaterialTheme.typography.bodyMedium
+                    )
+                    Text(
+                        text = if (calendarSyncEnabled) stringResource(R.string.onboarding_summary_calendar_enabled)
+                        else stringResource(R.string.onboarding_summary_calendar_disabled),
                         style = MaterialTheme.typography.bodyMedium
                     )
                 }

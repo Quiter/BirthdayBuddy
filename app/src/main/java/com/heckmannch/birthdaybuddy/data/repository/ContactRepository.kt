@@ -32,10 +32,15 @@ class ContactRepository @Inject constructor(
     private val contactUserDataDao: ContactUserDataDao,
     private val systemContactDataSource: SystemContactDataSource,
     private val giftIdeaBackupManager: GiftIdeaBackupManager,
+    private val calendarSyncRepository: CalendarSyncRepository,
 ) {
 
     val allContacts: Flow<List<Contact>> = contactDao.getAllContacts()
     val labelConfigs: Flow<List<LabelConfig>> = labelConfigDao.getAllConfigs()
+
+    suspend fun getAllContactsImmediate(): List<Contact> = withContext(Dispatchers.IO) {
+        contactDao.getAllContactsImmediate()
+    }
 
     /**
      * Intelligenter Sync: Vergleicht System-Kontakte mit DB, erhält lokale Daten (Geschenkideen)
@@ -82,7 +87,13 @@ class ContactRepository @Inject constructor(
                 // 4. Batch Update via Transaction
                 contactDao.refreshContacts(finalContacts)
 
-                // 5. Zeitstempel aktualisieren
+                // 5. Kalender synchronisieren, falls aktiviert
+                val currentSettings = appSettingsDao.getSettingsImmediate() ?: AppSettings()
+                if (currentSettings.calendarSyncEnabled) {
+                    calendarSyncRepository.syncBirthdays(finalContacts)
+                }
+
+                // 6. Zeitstempel aktualisieren
                 val settings = appSettingsDao.getSettingsImmediate() ?: AppSettings()
                 appSettingsDao.upsertSettings(settings.copy(lastSyncTimestamp = System.currentTimeMillis()))
             }

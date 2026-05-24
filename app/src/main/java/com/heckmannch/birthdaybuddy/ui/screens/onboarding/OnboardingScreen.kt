@@ -25,6 +25,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import com.heckmannch.birthdaybuddy.ui.components.AppResponsiveScaffold
+import com.heckmannch.birthdaybuddy.ui.screens.onboarding.components.CalendarPage
 import com.heckmannch.birthdaybuddy.ui.screens.onboarding.components.ContactsPage
 import com.heckmannch.birthdaybuddy.ui.screens.onboarding.components.NotificationsPage
 import com.heckmannch.birthdaybuddy.ui.screens.onboarding.components.OnboardingFooter
@@ -41,11 +42,12 @@ fun OnboardingScreen(
 ) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
-    val pagerState = rememberPagerState { 4 }
+    val pagerState = rememberPagerState { 5 }
 
     // Lokale States für die Einstellungen während des Onboardings
     var notificationsEnabled by remember { mutableStateOf(value = true) }
     var persistentEnabled by remember { mutableStateOf(value = true) }
+    var calendarEnabled by remember { mutableStateOf(value = true) }
 
     var hasContactPermission by remember {
         mutableStateOf(
@@ -66,6 +68,19 @@ fun OnboardingScreen(
             } else {
                 true
             }
+        )
+    }
+
+    var hasCalendarPermission by remember {
+        mutableStateOf(
+            ContextCompat.checkSelfPermission(
+                context,
+                Manifest.permission.READ_CALENDAR
+            ) == PackageManager.PERMISSION_GRANTED &&
+                    ContextCompat.checkSelfPermission(
+                        context,
+                        Manifest.permission.WRITE_CALENDAR
+                    ) == PackageManager.PERMISSION_GRANTED
         )
     }
 
@@ -102,6 +117,21 @@ fun OnboardingScreen(
             hasNotifPermission = isGranted
         }
 
+    val calendarLauncher =
+        rememberLauncherForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { permissions ->
+            hasCalendarPermission = permissions[Manifest.permission.READ_CALENDAR] == true &&
+                    permissions[Manifest.permission.WRITE_CALENDAR] == true
+        }
+
+    val onRequestCalendarPermission = {
+        calendarLauncher.launch(
+            arrayOf(
+                Manifest.permission.READ_CALENDAR,
+                Manifest.permission.WRITE_CALENDAR
+            )
+        )
+    }
+
     AppResponsiveScaffold(
         windowWidthSizeClass = windowWidthSizeClass,
         modifier = Modifier.fillMaxSize(),
@@ -114,6 +144,7 @@ fun OnboardingScreen(
                     0 -> true
                     1 -> hasContactPermission
                     2 -> !notificationsEnabled || hasNotifPermission
+                    3 -> !calendarEnabled || hasCalendarPermission
                     else -> true
                 },
                 windowWidthSizeClass = windowWidthSizeClass,
@@ -153,13 +184,25 @@ fun OnboardingScreen(
                     }
                 }
 
-                3 -> ReadyPage(
+                3 -> CalendarPage(
+                    windowWidthSizeClass = windowWidthSizeClass,
+                    enabled = calendarEnabled,
+                    onEnabledChange = { calendarEnabled = it },
+                    isGranted = hasCalendarPermission,
+                    onGrant = onRequestCalendarPermission
+                )
+
+                4 -> ReadyPage(
                     windowWidthSizeClass = windowWidthSizeClass,
                     hasContactPermission = hasContactPermission,
-                    notificationsEnabled = notificationsEnabled && hasNotifPermission
+                    notificationsEnabled = notificationsEnabled && hasNotifPermission,
+                    calendarSyncEnabled = calendarEnabled && hasCalendarPermission
                 ) {
                     viewModel.setPersistentNotifications(persistentEnabled)
-                    viewModel.completeOnboarding(notificationsEnabled && hasNotifPermission)
+                    viewModel.completeOnboarding(
+                        notificationsEnabled = notificationsEnabled && hasNotifPermission,
+                        calendarSyncEnabled = calendarEnabled && hasCalendarPermission
+                    )
                     onFinish()
                 }
             }

@@ -14,6 +14,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.Label
+import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.Refresh
@@ -46,6 +47,7 @@ fun SettingsScreen(
     windowWidthSizeClass: WindowWidthSizeClass,
     onNavigateToLabels: () -> Unit,
     onNavigateToNotifications: () -> Unit,
+    onNavigateToCalendar: () -> Unit,
     onNavigateToBackup: () -> Unit,
     onNavigateToSync: () -> Unit,
     onNavigateToAbout: () -> Unit,
@@ -56,6 +58,7 @@ fun SettingsScreen(
         onNavigateToSync = onNavigateToSync,
         onNavigateToLabels = onNavigateToLabels,
         onNavigateToNotifications = onNavigateToNotifications,
+        onNavigateToCalendar = onNavigateToCalendar,
         onNavigateToBackup = onNavigateToBackup,
         onNavigateToAbout = onNavigateToAbout,
         onNavigateBack = onNavigateBack,
@@ -69,6 +72,7 @@ private fun SettingsContent(
     onNavigateToSync: () -> Unit,
     onNavigateToLabels: () -> Unit,
     onNavigateToNotifications: () -> Unit,
+    onNavigateToCalendar: () -> Unit,
     onNavigateToBackup: () -> Unit,
     onNavigateToAbout: () -> Unit,
     onNavigateBack: () -> Unit,
@@ -111,6 +115,20 @@ private fun SettingsContent(
                             )
                         },
                         modifier = Modifier.clickable { onNavigateToNotifications() }
+                    )
+                }
+
+                item {
+                    ListItem(
+                        headlineContent = { Text(stringResource(R.string.settings_calendar_title)) },
+                        supportingContent = { Text(stringResource(R.string.settings_calendar_desc)) },
+                        leadingContent = {
+                            Icon(
+                                Icons.Default.DateRange,
+                                contentDescription = null
+                            )
+                        },
+                        modifier = Modifier.clickable { onNavigateToCalendar() }
                     )
                 }
 
@@ -216,6 +234,7 @@ private fun SettingsPreview() {
             onNavigateToSync = {},
             onNavigateToLabels = {},
             onNavigateToNotifications = {},
+            onNavigateToCalendar = {},
             onNavigateToBackup = {},
             onNavigateToAbout = {},
             onNavigateBack = {}

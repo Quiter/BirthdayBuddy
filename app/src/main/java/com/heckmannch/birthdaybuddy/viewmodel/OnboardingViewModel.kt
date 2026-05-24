@@ -30,7 +30,10 @@ class OnboardingViewModel @Inject constructor(
         notificationRepository.updateSettings(persistentNotifications = persistent)
     }
 
-    fun completeOnboarding(notificationsEnabled: Boolean) = viewModelScope.launch {
+    fun completeOnboarding(
+        notificationsEnabled: Boolean,
+        calendarSyncEnabled: Boolean,
+    ) = viewModelScope.launch {
         if (notificationsEnabled) {
             val rules = notificationRepository.getAllRulesImmediate()
             if (rules.isEmpty()) {
@@ -46,6 +49,7 @@ class OnboardingViewModel @Inject constructor(
         
         notificationRepository.updateSettings(
             notificationsEnabled = notificationsEnabled,
+            calendarSyncEnabled = calendarSyncEnabled,
             onboardingCompleted = true,
         )
 

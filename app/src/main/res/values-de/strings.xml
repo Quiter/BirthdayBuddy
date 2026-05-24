@@ -235,4 +235,21 @@
     <string name="sync_explanation_desc">Du kannst deine Kontakte auch ganz einfach direkt auf der Startseite aktualisieren, indem du die Liste nach unten ziehst (Pull to Refresh).</string>
     <string name="sync_button_title">Manuell synchronisieren</string>
     <string name="sync_button_desc">Geburtstage jetzt aus deinen System-Kontakten laden</string>
+
+    <!-- Calendar Integration -->
+    <string name="onboarding_calendar_title">Kalender-Sync</string>
+    <string name="onboarding_calendar_desc">Möchtest du Geburtstage in deinen standard System-Kalender eintragen lassen? Es wird ein separater Kalender namens „BirthdayBuddy“ angelegt.</string>
+    <string name="onboarding_calendar_enable">In Kalender eintragen</string>
+    <string name="onboarding_calendar_btn">Berechtigung erteilen</string>
+    <string name="onboarding_summary_calendar_enabled">✓ Kalender-Synchronisierung aktiv</string>
+    <string name="onboarding_summary_calendar_disabled">✗ Keine Kalender-Synchronisierung</string>
+    <string name="settings_calendar_title">Kalender-Synchronisierung</string>
+    <string name="settings_calendar_desc">Geburtstage in den standard Kalender eintragen</string>
+    <string name="calendar_settings_title">Kalender-Sync</string>
+    <string name="calendar_settings_header">Kalender-Integration</string>
+    <string name="calendar_settings_desc">Trage Geburtstage vollautomatisch als ganztägige Serientermine in einen eigenen Kalender ein. Deine Benachrichtigungen bleiben wie gewohnt in der App.</string>
+    <string name="calendar_settings_enable">In Kalender-App eintragen</string>
+    <string name="calendar_settings_permission_needed">Um Termine eintragen zu können, benötigt BirthdayBuddy Zugriff auf deinen Kalender.</string>
+    <string name="calendar_settings_permission_btn">Kalender-Berechtigung erteilen</string>
+    <string name="calendar_settings_permission_granted">✓ Kalender-Berechtigung erteilt</string>
 </resources>

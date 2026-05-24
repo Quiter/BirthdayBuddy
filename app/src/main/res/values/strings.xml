@@ -235,4 +235,21 @@
     <string name="sync_explanation_desc">You can also easily synchronize your contacts directly on the home screen by pulling the list down (Pull to Refresh).</string>
     <string name="sync_button_title">Synchronize manually</string>
     <string name="sync_button_desc">Load and update birthdays from system contacts</string>
+
+    <!-- Calendar Integration -->
+    <string name="onboarding_calendar_title">Calendar Sync</string>
+    <string name="onboarding_calendar_desc">Would you like to synchronize birthdays to your device\'s standard Calendar app? A dedicated \"BirthdayBuddy\" calendar will be created.</string>
+    <string name="onboarding_calendar_enable">Add to standard Calendar</string>
+    <string name="onboarding_calendar_btn">Grant Permission</string>
+    <string name="onboarding_summary_calendar_enabled">✓ Calendar sync enabled</string>
+    <string name="onboarding_summary_calendar_disabled">✗ Calendar sync disabled</string>
+    <string name="settings_calendar_title">Calendar Sync</string>
+    <string name="settings_calendar_desc">Add birthdays to standard Calendar</string>
+    <string name="calendar_settings_title">Calendar Sync</string>
+    <string name="calendar_settings_header">Calendar Integration</string>
+    <string name="calendar_settings_desc">Automatically write birthdays as all-day events into a separate calendar. Reminders remain in the app as requested.</string>
+    <string name="calendar_settings_enable">Sync to Calendar app</string>
+    <string name="calendar_settings_permission_needed">To write to your calendar, BirthdayBuddy needs permission to access your calendar.</string>
+    <string name="calendar_settings_permission_btn">Grant calendar permission</string>
+    <string name="calendar_settings_permission_granted">✓ Calendar permission granted</string>
 </resources>

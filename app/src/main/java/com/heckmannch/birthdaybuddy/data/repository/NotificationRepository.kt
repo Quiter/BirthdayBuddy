@@ -42,7 +42,10 @@ class NotificationRepository @Inject constructor(
         notificationsEnabled: Boolean? = null,
         persistentNotifications: Boolean? = null,
         onboardingCompleted: Boolean? = null,
-        lastSyncTimestamp: Long? = null
+        lastSyncTimestamp: Long? = null,
+        calendarSyncEnabled: Boolean? = null,
+        calendarId: Long? = null,
+        clearCalendarId: Boolean = false
     ) {
         settingsMutex.withLock {
             val current = appSettingsDao.getSettingsImmediate() ?: AppSettings()
@@ -52,7 +55,9 @@ class NotificationRepository @Inject constructor(
                     persistentNotifications = persistentNotifications
                         ?: current.persistentNotifications,
                     onboardingCompleted = onboardingCompleted ?: current.onboardingCompleted,
-                    lastSyncTimestamp = lastSyncTimestamp ?: current.lastSyncTimestamp
+                    lastSyncTimestamp = lastSyncTimestamp ?: current.lastSyncTimestamp,
+                    calendarSyncEnabled = calendarSyncEnabled ?: current.calendarSyncEnabled,
+                    calendarId = if (clearCalendarId) null else (calendarId ?: current.calendarId)
                 )
             )
         }

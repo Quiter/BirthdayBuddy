@@ -45,9 +45,11 @@ import com.heckmannch.birthdaybuddy.ui.screens.settings.about.PrivacyPolicyScree
 import com.heckmannch.birthdaybuddy.ui.screens.settings.backup.BackupScreen
 import com.heckmannch.birthdaybuddy.ui.screens.settings.labels.LabelSettingsScreen
 import com.heckmannch.birthdaybuddy.ui.screens.settings.notifications.NotificationSettingsScreen
+import com.heckmannch.birthdaybuddy.ui.screens.settings.calendar.CalendarSettingsScreen
 import com.heckmannch.birthdaybuddy.ui.screens.settings.sync.SyncSettingsScreen
 import com.heckmannch.birthdaybuddy.ui.theme.BirthdayBuddyTheme
 import com.heckmannch.birthdaybuddy.viewmodel.BackupViewModel
+import com.heckmannch.birthdaybuddy.viewmodel.CalendarViewModel
 import com.heckmannch.birthdaybuddy.viewmodel.HomeViewModel
 import com.heckmannch.birthdaybuddy.viewmodel.LabelViewModel
 import com.heckmannch.birthdaybuddy.viewmodel.NotificationViewModel
@@ -64,6 +66,7 @@ private object Routes {
     const val SETTINGS = "settings"
     const val LABEL_SETTINGS = "label_settings"
     const val NOTIFICATION_SETTINGS = "notification_settings"
+    const val CALENDAR_SETTINGS = "calendar_settings"
     const val BACKUP_SETTINGS = "backup_settings"
     const val SYNC_SETTINGS = "sync_settings"
     const val ABOUT = "about"
@@ -220,6 +223,9 @@ class MainActivity : ComponentActivity() {
                     onNavigateToNotifications = {
                         navController.navigate(Routes.NOTIFICATION_SETTINGS)
                     },
+                    onNavigateToCalendar = {
+                        navController.navigate(Routes.CALENDAR_SETTINGS)
+                    },
                     onNavigateToBackup = {
                         navController.navigate(Routes.BACKUP_SETTINGS)
                     },
@@ -247,6 +253,15 @@ class MainActivity : ComponentActivity() {
                 NotificationSettingsScreen(
                     windowWidthSizeClass = windowWidthSizeClass,
                     viewModel = notificationViewModel
+                ) {
+                    navController.popBackStack()
+                }
+            }
+            composable(Routes.CALENDAR_SETTINGS) {
+                val calendarViewModel: CalendarViewModel = hiltViewModel()
+                CalendarSettingsScreen(
+                    windowWidthSizeClass = windowWidthSizeClass,
+                    viewModel = calendarViewModel
                 ) {
                     navController.popBackStack()
                 }
