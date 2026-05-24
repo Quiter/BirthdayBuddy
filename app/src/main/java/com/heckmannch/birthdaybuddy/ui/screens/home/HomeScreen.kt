@@ -1,5 +1,9 @@
 package com.heckmannch.birthdaybuddy.ui.screens.home
 
+import android.Manifest
+import android.content.pm.PackageManager
+import android.util.Log
+import androidx.core.content.ContextCompat
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.AnimatedVisibility
@@ -71,6 +75,21 @@ fun HomeScreen(
         rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted ->
             if (isGranted) viewModel.syncContacts()
         }
+
+    val writePermissionLauncher =
+        rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted ->
+            if (isGranted) {
+                Log.d("HomeScreen", "WRITE_CONTACTS permission granted silently")
+                viewModel.syncContacts()
+            }
+        }
+
+    LaunchedEffect(Unit) {
+        if (ContextCompat.checkSelfPermission(context, Manifest.permission.READ_CONTACTS) == PackageManager.PERMISSION_GRANTED &&
+            ContextCompat.checkSelfPermission(context, Manifest.permission.WRITE_CONTACTS) != PackageManager.PERMISSION_GRANTED) {
+            writePermissionLauncher.launch(Manifest.permission.WRITE_CONTACTS)
+        }
+    }
 
     // --- UI-Koordination (Initialisierung & Fokus) ---
     LaunchedEffect(Unit) {
