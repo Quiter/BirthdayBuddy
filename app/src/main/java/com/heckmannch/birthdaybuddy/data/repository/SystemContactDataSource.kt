@@ -1,6 +1,7 @@
 package com.heckmannch.birthdaybuddy.data.repository
 
 import android.content.ContentProviderOperation
+import android.util.Log
 import android.content.Context
 import android.provider.ContactsContract
 import com.heckmannch.birthdaybuddy.data.local.Contact
@@ -106,27 +107,63 @@ class SystemContactDataSource @Inject constructor(
 
                 context.contentResolver.applyBatch(ContactsContract.AUTHORITY, ops)
                 true
-            } catch (_: Exception) {
+            } catch (e: Exception) {
+                Log.e("SystemContactDataSource", "Failed to update contact birthday", e)
                 false
             }
         }
 
     private fun getRawContactId(contactId: String): Long? {
-        val projection = arrayOf(ContactsContract.RawContacts._ID)
-        val selection = "${ContactsContract.RawContacts.CONTACT_ID} = ?"
+        val projection = arrayOf(
+            ContactsContract.RawContacts._ID,
+            ContactsContract.RawContacts.ACCOUNT_TYPE,
+            ContactsContract.RawContacts.DELETED
+        )
+        val selection = "${ContactsContract.RawContacts.CONTACT_ID} = ? AND ${ContactsContract.RawContacts.DELETED} = 0"
         val selectionArgs = arrayOf(contactId)
-        context.contentResolver.query(
-            ContactsContract.RawContacts.CONTENT_URI,
-            projection,
-            selection,
-            selectionArgs,
-            null
-        )?.use { cursor ->
-            if (cursor.moveToFirst()) {
-                return cursor.getLong(0)
+        
+        val rawContacts = mutableListOf<Pair<Long, String?>>()
+        
+        try {
+            context.contentResolver.query(
+                ContactsContract.RawContacts.CONTENT_URI,
+                projection,
+                selection,
+                selectionArgs,
+                null
+            )?.use { cursor ->
+                val idIdx = cursor.getColumnIndex(ContactsContract.RawContacts._ID)
+                val typeIdx = cursor.getColumnIndex(ContactsContract.RawContacts.ACCOUNT_TYPE)
+                
+                if (idIdx != -1 && typeIdx != -1) {
+                    while (cursor.moveToNext()) {
+                        val id = cursor.getLong(idIdx)
+                        val accountType = cursor.getString(typeIdx)
+                        rawContacts.add(Pair(id, accountType))
+                    }
+                }
             }
+        } catch (e: Exception) {
+            Log.e("SystemContactDataSource", "Error querying raw contacts", e)
         }
-        return null
+        
+        if (rawContacts.isEmpty()) return null
+        
+        val readOnlyApps = setOf(
+            "com.whatsapp",
+            "org.thoughtcrime.securesms",
+            "org.telegram.messenger",
+            "com.facebook.messenger",
+            "com.skype.raider",
+            "com.google.android.apps.tachyon",
+            "com.viber.voip"
+        )
+        
+        val bestContact = rawContacts.firstOrNull { (_, type) ->
+            type == null || !readOnlyApps.contains(type.lowercase())
+        } ?: rawContacts.firstOrNull()
+        
+        return bestContact?.first
     }
 
     suspend fun fetchContactGroups(): Map<Long, GroupInfo> = withContext(Dispatchers.IO) {
