@@ -197,6 +197,28 @@
     - **Smooth List Animations:** Einführung eines intelligenten `skipPlacementAnimation`-Status in `BirthdayList` zur vorübergehenden Deaktivierung von Platzierungsanimationen beim Wechsel von Suchanfragen oder Filter-Labels. Optimierung der Ein- und Ausblendanimationen (`fadeInSpec`, `fadeOutSpec`, spring-basierte `placementSpec` in `Modifier.animateItem()`) für flüssige Übergänge.
     - **Onboarding UX Optimization:** Deaktivierung automatischer Seitenwechsel beim Erteilen von Berechtigungen im Onboarding-Screen zur Vermeidung unruhiger UX. Verbesserung des `OnboardingFooter` durch `fillMaxWidth` zur sauberen responsiven Darstellung auf breiten Bildschirmen.
     - **I18n Plurals:** Einführung von Quantity Strings (`dialog_rule_unit_days`, `dialog_rule_unit_weeks`) in Deutsch und Englisch zur korrekten Pluralisierung bei numerischen Angaben im Erinnerungsdialog.
-    - **Recomposition Optimization:** Nutzung von `rememberUpdatedState` für `onNavigateToSettings` im `HomeScreen` zur Reduzierung unnötiger Re-Instanziierungen des `HomeActions`-Wrappers.
+    - **Recomposition Optimization:** Nutzung von `rememberUpdatedState` for `onNavigateToSettings` im `HomeScreen` zur Reduzierung unnötiger Re-Instanziierungen des `HomeActions`-Wrappers.
     - **Version Bump:** Anhebung der App-Version auf Version Name `2.3.18` (Version Code `27`) in `build.gradle.kts`.
+
+115. **Onboarding UX & Database Resiliency:**
+    - **Onboarding Streamlining:** Vereinfachung der `ContactsPage` durch Ersetzung der komplexen `LottieIllustration` durch ein Standard-Material-`Icon` für Kontakte, um die UI-Ladezeiten und Rendergeschwindigkeit zu optimieren.
+    - **Database Hardening:** Absicherung der Hilt-Datenbank-Erstellung in `AppDatabase.kt` durch ein try-catch-Konstrukt. Bei schwerwiegender Schema-Korruption löscht die App nun die fehlerhafte Datenbankdatei automatisch via `deleteDatabase` und baut eine saubere neue Instanz auf, was App-Startabstürze auf Altgeräten verhindert.
+    - **Resource Reorganization:** Ausgliederung von Drittanbieter-Messenger-Drawables (`ic_discord.xml`, `ic_whatsapp.xml` etc.) in einen eigenen Source-Set-Ordner (`src/main/res-messenger/drawable`), um das Hauptressourcen-Verzeichnis sauber zu halten.
+
+116. **Version Upgrade & Warning Resolution:**
+    - **Release Version Code:** Anhebung der App-Version auf Version Name `2.4.0` (Version Code `28`) in `build.gradle.kts`.
+    - **Code Cleanup & Linting:** Behebung diverser Compiler- und Linter-Warnungen im gesamten Projekt:
+      - Beseitigung von `LocalContext.current` Ressourcen-Abfragewarnungen in `ContactActionRow` durch direkte Sortierung der Messenger nach Enum-Namen.
+      - Ausrichtung von `AppResponsiveScaffold` an Compose-Designrichtlinien durch Positionierung des `modifier` Parameters als ersten optionalen Parameter.
+      - Ergänzung von `@Suppress("unused")` Annotationen in Hilt-DI-Modulen und Bereinigung toten Codes in `MessengerApp`.
+      - Verschiebung von `widget_preview.webp` in `drawable-nodpi/` zur Vermeidung von Density-Warnungen.
+
+117. **Dynamic Glance Widget Styling (Widget Optics Redesign):**
+    - **Visual Row Design:** Redesign der `BirthdayRow` im Jetpack Glance Homescreen-Widget passend zum kartenbasierten Design der App. Einführung farbiger, abgerundeter Zeilen-Hintergründe (`12.dp` Ecken) basierend auf dem Geburtstags-Status (Gold für runde Geburtstage, Green für Kinder 0-9, Silber für sonstige).
+    - **Dynamic Spacing & Heights:** Implementierung einer dynamischen Höhenberechnung (`dynamicBlockHeight`), um die verfügbare Gesamthöhe des Widgets gleichmäßig auf alle gerenderten Geburtstage aufzuteilen. Hinzufügen von Margins zwischen den Zeilen für ein saubereres, luftigeres Layout.
+
+118. **Launcher Icon Restoration & Scale Optimization:**
+    - **Directory Restoration:** Rücknahme der fehlerhaften Verschiebung der XML-Dateien von `mipmap-anydpi` zurück nach `mipmap-anydpi-v26/` (`ic_launcher.xml` und `ic_launcher_round.xml`). Dies behebt das Problem, dass Launcher auf API 26+ fälschlicherweise die WebP-Templates mit grünem Hintergrund statt der XML-Definitionsdatei luden.
+    - **Scale Optimization:** Korrektur des Skalierungsfaktors der Logo-Gruppe in `ic_launcher_foreground.xml` zurück auf `0.5` und Zentrierungsversatz auf `6`. Das Geschenkbox-Logo sitzt nun wieder perfekt zentriert in kreisförmigen und abgerundeten Schablonen, ohne abgeschnitten oder übergroß zu wirken.
+
 

@@ -124,6 +124,11 @@
 - `res/raw/privacy_policy.md`: Datenschutzerklärung (EN).
 - `res/raw-de/privacy_policy.md`: Datenschutzerklärung (DE).
 - `res/raw/anim_contacts.json`: Lottie-Animation für das Onboarding.
+- `res/mipmap-anydpi-v26/ic_launcher.xml` & `ic_launcher_round.xml`: Adaptive Launcher-Icon-Definitionen für Geräte ab API 26 (mit weißem Hintergrund und perfekter Skalierung).
+
+## 📁 Custom Resource Source Set (`res-messenger`)
+- `res-messenger/drawable/`: Enthält die plattformspezifischen Icons für Messenger wie WhatsApp, Signal, Discord, etc. zur dynamischen Einblendung in der Kontaktkarte, getrennt vom Standard-Ressourcenpfad zur Wahrung der Übersichtlichkeit.
+
 
 ## 🧪 Testing (`src/test` & `src/androidTest`)
 - `MainDispatcherRule.kt`: JUnit-Rule zur Steuerung von Coroutine-Dispatchern in Tests.
