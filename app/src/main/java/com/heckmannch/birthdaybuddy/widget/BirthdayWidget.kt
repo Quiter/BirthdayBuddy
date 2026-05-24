@@ -5,6 +5,7 @@ import android.content.Intent
 import android.text.format.DateFormat
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.produceState
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.glance.GlanceId
@@ -21,11 +22,12 @@ import androidx.glance.background
 import androidx.glance.layout.Alignment
 import androidx.glance.layout.Box
 import androidx.glance.layout.Column
-import androidx.glance.layout.ColumnScope
+import androidx.glance.appwidget.cornerRadius
 import androidx.glance.layout.Row
 import androidx.glance.layout.fillMaxSize
 import androidx.glance.layout.fillMaxWidth
 import androidx.glance.layout.padding
+import androidx.glance.layout.height
 import androidx.glance.text.FontWeight
 import androidx.glance.text.Text
 import androidx.glance.text.TextStyle
@@ -33,6 +35,9 @@ import com.heckmannch.birthdaybuddy.MainActivity
 import com.heckmannch.birthdaybuddy.R
 import com.heckmannch.birthdaybuddy.data.local.Contact
 import com.heckmannch.birthdaybuddy.data.repository.ContactRepository
+import com.heckmannch.birthdaybuddy.ui.theme.BirthdayGold
+import com.heckmannch.birthdaybuddy.ui.theme.BirthdaySilver
+import com.heckmannch.birthdaybuddy.ui.theme.BirthdayKidGreen
 import com.heckmannch.birthdaybuddy.util.hasYear
 import com.heckmannch.birthdaybuddy.util.safeDaysUntilNext
 import com.heckmannch.birthdaybuddy.util.safeNextAge
@@ -89,11 +94,21 @@ class BirthdayWidget : GlanceAppWidget() {
         val size = LocalSize.current
         val context = LocalContext.current
 
-        // Minimale Item-Höhe von 56dp für Touch-Ziele und Lesbarkeit
-        val minItemHeight = 56.dp
-        // Glance Columns haben ein Limit von 10 Kindern
-        val maxItems = (size.height.value / minItemHeight.value).toInt().coerceIn(1, 10)
+        // Äußeres Column-Padding abziehen (top=8dp, bottom=8dp -> 16dp)
+        val availableHeight = (size.height.value - 16).coerceAtLeast(0f)
+        val minItemBlockHeight = 58.dp
+        
+        // 1. Berechne wie viele Elemente maximal auf die verfügbare Höhe passen
+        val maxItems = (availableHeight / minItemBlockHeight.value).toInt().coerceIn(1, 10)
         val displayContacts = contacts.take(maxItems)
+        val count = displayContacts.size
+
+        // 2. Verteile die verfügbare Gesamthöhe gleichmäßig auf alle anzuzeigenden Elemente
+        val dynamicBlockHeight = if (count > 0) {
+            (availableHeight / count).dp
+        } else {
+            minItemBlockHeight
+        }
 
         Column(
             modifier = GlanceModifier
@@ -113,7 +128,7 @@ class BirthdayWidget : GlanceAppWidget() {
                 EmptyState()
             } else {
                 displayContacts.forEach { contact ->
-                    BirthdayRow(contact)
+                    BirthdayRow(contact, dynamicBlockHeight)
                 }
             }
         }
@@ -131,7 +146,7 @@ class BirthdayWidget : GlanceAppWidget() {
     }
 
     @Composable
-    private fun ColumnScope.BirthdayRow(contact: Contact) {
+    private fun BirthdayRow(contact: Contact, blockHeight: Dp) {
         val birthday = contact.birthday ?: return
         val context = LocalContext.current
         val locale = context.resources.configuration.locales[0]
@@ -161,55 +176,79 @@ class BirthdayWidget : GlanceAppWidget() {
             )
         }
 
+        val itemBgColor = when {
+            nextAgeValue != null && nextAgeValue % 10 == 0 -> {
+                BirthdayGold.copy(alpha = 0.15f)
+            }
+            nextAgeValue != null && nextAgeValue in 0..9 -> {
+                BirthdayKidGreen.copy(alpha = 0.15f)
+            }
+            else -> {
+                BirthdaySilver.copy(alpha = 0.15f)
+            }
+        }
+
         Box(
-            modifier = GlanceModifier.defaultWeight().fillMaxWidth(),
+            modifier = GlanceModifier
+                .height(blockHeight)
+                .fillMaxWidth()
+                .padding(top = 3.dp, bottom = 3.dp),
             contentAlignment = Alignment.Center,
         ) {
-            Row(
-                modifier = GlanceModifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically,
+            Box(
+                modifier = GlanceModifier
+                    .fillMaxSize()
+                    .background(itemBgColor)
+                    .cornerRadius(12.dp)
+                    .padding(horizontal = 12.dp, vertical = 4.dp),
+                contentAlignment = Alignment.Center,
             ) {
-                Column(modifier = GlanceModifier.defaultWeight()) {
-                    Text(
-                        text = contact.fullName,
-                        maxLines = 1,
-                        style = TextStyle(
-                            color = GlanceTheme.colors.onSurface,
-                            fontWeight = FontWeight.Medium,
-                            fontSize = 14.sp,
-                        ),
-                    )
-                    Text(
-                        text = dateText,
-                        style = TextStyle(
-                            color = GlanceTheme.colors.onSurfaceVariant,
-                            fontSize = 12.sp,
-                        ),
-                    )
-                }
-
-                Column(horizontalAlignment = Alignment.End) {
-                    if (hasYear) {
+                Row(
+                    modifier = GlanceModifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Column(modifier = GlanceModifier.defaultWeight()) {
                         Text(
-                            text = context.getString(R.string.widget_turns_age, nextAgeValue),
+                            text = contact.fullName,
+                            maxLines = 1,
                             style = TextStyle(
-                                color = GlanceTheme.colors.primary,
-                                fontWeight = FontWeight.Bold,
+                                color = GlanceTheme.colors.onSurface,
+                                fontWeight = FontWeight.Medium,
+                                fontSize = 14.sp,
+                            ),
+                        )
+                        Text(
+                            text = dateText,
+                            style = TextStyle(
+                                color = GlanceTheme.colors.onSurfaceVariant,
                                 fontSize = 12.sp,
                             ),
                         )
                     }
-                    Text(
-                        text = daysLeftText,
-                        style = TextStyle(
-                            color = if (daysLeft == 0L) {
-                                GlanceTheme.colors.error
-                            } else {
-                                GlanceTheme.colors.onSurfaceVariant
-                            },
-                            fontSize = 11.sp,
-                        ),
-                    )
+
+                    Column(horizontalAlignment = Alignment.End) {
+                        if (hasYear) {
+                            Text(
+                                text = context.getString(R.string.widget_turns_age, nextAgeValue),
+                                style = TextStyle(
+                                    color = GlanceTheme.colors.primary,
+                                    fontWeight = FontWeight.Bold,
+                                    fontSize = 12.sp,
+                                ),
+                            )
+                        }
+                        Text(
+                            text = daysLeftText,
+                            style = TextStyle(
+                                color = if (daysLeft == 0L) {
+                                    GlanceTheme.colors.error
+                                } else {
+                                    GlanceTheme.colors.onSurfaceVariant
+                                },
+                                fontSize = 11.sp,
+                            ),
+                        )
+                    }
                 }
             }
         }
