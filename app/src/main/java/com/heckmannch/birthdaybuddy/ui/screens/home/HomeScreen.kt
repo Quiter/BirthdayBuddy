@@ -71,16 +71,22 @@ fun HomeScreen(
     val searchPlaceholder = stringResource(R.string.home_placeholder_search)
 
     // --- Launchers ---
-    val permissionLauncher =
-        rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted ->
-            if (isGranted) viewModel.syncContacts()
-        }
-
     val writePermissionLauncher =
         rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted ->
             if (isGranted) {
                 Log.d("HomeScreen", "WRITE_CONTACTS permission granted silently")
                 viewModel.syncContacts()
+            }
+        }
+
+    val permissionLauncher =
+        rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted ->
+            if (isGranted) {
+                if (ContextCompat.checkSelfPermission(context, Manifest.permission.WRITE_CONTACTS) != PackageManager.PERMISSION_GRANTED) {
+                    writePermissionLauncher.launch(Manifest.permission.WRITE_CONTACTS)
+                } else {
+                    viewModel.syncContacts()
+                }
             }
         }
 
