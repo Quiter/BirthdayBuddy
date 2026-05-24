@@ -31,7 +31,7 @@ fun ReadyPage(
     calendarSyncEnabled: Boolean,
     onStart: () -> Unit,
 ) {
-    OnboardingAdaptivePage(
+    OnboardingPageTemplate(
         windowWidthSizeClass = windowWidthSizeClass,
         illustration = { modifier ->
             Icon(
@@ -43,7 +43,7 @@ fun ReadyPage(
         },
         title = stringResource(R.string.onboarding_ready_title),
         description = stringResource(R.string.onboarding_ready_desc),
-        extraContent = {
+        settingsCard = {
             // Zusammenfassung
             Card(
                 modifier = Modifier.fillMaxWidth(),
@@ -88,8 +88,8 @@ fun ReadyPage(
                 textAlign = if (windowWidthSizeClass == WindowWidthSizeClass.Compact) TextAlign.Center else TextAlign.Start,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
-
-            Spacer(modifier = Modifier.height(32.dp))
+        },
+        actionButton = {
             Button(
                 onClick = onStart,
                 modifier = Modifier

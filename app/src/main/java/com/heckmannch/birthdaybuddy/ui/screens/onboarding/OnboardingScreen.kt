@@ -45,6 +45,7 @@ fun OnboardingScreen(
     val pagerState = rememberPagerState { 5 }
 
     // Lokale States für die Einstellungen während des Onboardings
+    var contactsEnabled by remember { mutableStateOf(value = true) }
     var notificationsEnabled by remember { mutableStateOf(value = true) }
     var persistentEnabled by remember { mutableStateOf(value = true) }
     var calendarEnabled by remember { mutableStateOf(value = true) }
@@ -142,7 +143,7 @@ fun OnboardingScreen(
                 pageCount = pagerState.pageCount,
                 isNextEnabled = when (pagerState.currentPage) {
                     0 -> true
-                    1 -> hasContactPermission
+                    1 -> !contactsEnabled || hasContactPermission
                     2 -> !notificationsEnabled || hasNotifPermission
                     3 -> !calendarEnabled || hasCalendarPermission
                     else -> true
@@ -163,11 +164,11 @@ fun OnboardingScreen(
                 0 -> WelcomePage(windowWidthSizeClass = windowWidthSizeClass)
                 1 -> ContactsPage(
                     windowWidthSizeClass = windowWidthSizeClass,
+                    enabled = contactsEnabled,
+                    onEnabledChange = { contactsEnabled = it },
                     isGranted = hasContactPermission,
                     onGrant = onRequestContactPermission
-                ) {
-                    scope.launch { pagerState.animateScrollToPage(2) }
-                }
+                )
 
                 2 -> NotificationsPage(
                     windowWidthSizeClass = windowWidthSizeClass,
@@ -194,7 +195,7 @@ fun OnboardingScreen(
 
                 4 -> ReadyPage(
                     windowWidthSizeClass = windowWidthSizeClass,
-                    hasContactPermission = hasContactPermission,
+                    hasContactPermission = contactsEnabled && hasContactPermission,
                     notificationsEnabled = notificationsEnabled && hasNotifPermission,
                     calendarSyncEnabled = calendarEnabled && hasCalendarPermission
                 ) {

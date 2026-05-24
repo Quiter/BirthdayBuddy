@@ -1,6 +1,5 @@
 package com.heckmannch.birthdaybuddy.ui.screens.onboarding.components
 
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -22,7 +21,6 @@ import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
@@ -37,7 +35,7 @@ fun CalendarPage(
     isGranted: Boolean,
     onGrant: () -> Unit,
 ) {
-    OnboardingAdaptivePage(
+    OnboardingPageTemplate(
         windowWidthSizeClass = windowWidthSizeClass,
         illustration = { modifier ->
             Icon(
@@ -49,7 +47,7 @@ fun CalendarPage(
         },
         title = stringResource(R.string.onboarding_calendar_title),
         description = stringResource(R.string.onboarding_calendar_desc),
-        extraContent = {
+        settingsCard = {
             Card(
                 modifier = Modifier.fillMaxWidth(),
                 colors = CardDefaults.cardColors(
@@ -78,24 +76,20 @@ fun CalendarPage(
                     )
                 }
             }
-
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(80.dp),
-                contentAlignment = Alignment.BottomCenter
-            ) {
-                if (enabled && !isGranted) {
-                    Button(
-                        onClick = onGrant,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(56.dp)
-                    ) {
-                        Text(stringResource(R.string.onboarding_calendar_btn))
-                    }
+        },
+        actionButton = if (enabled && !isGranted) {
+            {
+                Button(
+                    onClick = onGrant,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(56.dp)
+                ) {
+                    Text(stringResource(R.string.onboarding_calendar_btn))
                 }
             }
+        } else {
+            null
         }
     )
 }
