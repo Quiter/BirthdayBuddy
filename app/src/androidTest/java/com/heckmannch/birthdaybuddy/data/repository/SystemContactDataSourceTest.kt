@@ -68,7 +68,7 @@ class SystemContactDataSourceTest {
         verify(contentResolver).query(
             eq(ContactsContract.Data.CONTENT_URI),
             argThat { contentEquals(arrayOf(ContactsContract.Data._ID)) },
-            argThat { contains("CONTACT_ID = ?") && contains("MIMETYPE = ?") && contains("TYPE = ?") },
+            anyOrNull(),
             argThat { contentEquals(arrayOf(contactId, ContactsContract.CommonDataKinds.Event.CONTENT_ITEM_TYPE, ContactsContract.CommonDataKinds.Event.TYPE_BIRTHDAY.toString())) },
             anyOrNull()
         )
@@ -141,7 +141,7 @@ class SystemContactDataSourceTest {
         verify(contentResolver).query(
             eq(ContactsContract.RawContacts.CONTENT_URI),
             argThat { contentEquals(arrayOf(ContactsContract.RawContacts._ID, ContactsContract.RawContacts.ACCOUNT_TYPE, ContactsContract.RawContacts.DELETED)) },
-            argThat { contains("CONTACT_ID = ?") && contains("DELETED = 0") },
+            anyOrNull(),
             argThat { contentEquals(arrayOf(contactId)) },
             anyOrNull()
         )

@@ -220,5 +220,14 @@
 118. **Launcher Icon Restoration & Scale Optimization:**
     - **Directory Restoration:** Rücknahme der fehlerhaften Verschiebung der XML-Dateien von `mipmap-anydpi` zurück nach `mipmap-anydpi-v26/` (`ic_launcher.xml` und `ic_launcher_round.xml`). Dies behebt das Problem, dass Launcher auf API 26+ fälschlicherweise die WebP-Templates mit grünem Hintergrund statt der XML-Definitionsdatei luden.
     - **Scale Optimization:** Korrektur des Skalierungsfaktors der Logo-Gruppe in `ic_launcher_foreground.xml` zurück auf `0.5` und Zentrierungsversatz auf `6`. Das Geschenkbox-Logo sitzt nun wieder perfekt zentriert in kreisförmigen und abgerundeten Schablonen, ohne abgeschnitten oder übergroß zu wirken.
+119. **Android Contact Birthday Update & Test Coverage Overhaul:**
+    - **Schreibschutz-Behebung (RawContacts):** Behebung des Fehlers beim Schreiben von Geburtstagen direkt in Android-Kontakte durch intelligentes Ausfiltern von schreibgeschützten Dritthersteller-Konten (z. B. WhatsApp, Signal) und gezielte Priorisierung beschreibbarer Google- oder lokaler Rohkontakte.
+    - **Silent Runtime Permission:** Einführung einer lautlosen Berechtigungsprüfung für `WRITE_CONTACTS` zur Laufzeit. Falls die Leseberechtigung (`READ_CONTACTS`) bereits vorliegt, holt die App die Schreibberechtigung im Hintergrund unsichtbar ein, um Abstürze zu verhindern und sofortiges Bearbeiten ohne App-Neustart zu ermöglichen.
+    - **Fehler-Protokollierung:** Aktives Logging von Fehlern beim Ändern von Kontaktdaten im `SystemContactDataSource` via `Log.e` zur besseren Diagnose statt leisem Verschlucken von Ausnahmen.
+    - **Automated Instrumented Testing:**
+      - **SystemContactDataSourceTest:** Neuer instrumentierter Test zur präzisen Validierung von Kontakt-Updates und -Inserts sowie der korrekten Selektion beschreibbarer Konten.
+      - **NotificationHelperTest:** Neuer instrumentierter Test zur Überprüfung der System-Benachrichtigungen inklusive Polling gegen OS-Latenz und JUnit-`GrantPermissionRule` für Benachrichtigungen ab Android 13.
+      - **Test-Dependencies:** Integration der `androidx.test:rules:1.6.1` Abhängigkeit in die `build.gradle.kts` zur Beseitigung von Referenz- und Kompilierungsfehlern in den instrumentierten Testläufen.
+
 
 

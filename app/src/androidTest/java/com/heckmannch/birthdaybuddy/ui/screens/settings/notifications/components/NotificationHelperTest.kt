@@ -11,6 +11,8 @@ import com.heckmannch.birthdaybuddy.data.repository.NotificationRepository
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.test.runTest
+import org.junit.Rule
+import androidx.test.rule.GrantPermissionRule
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -23,6 +25,11 @@ import java.time.LocalDate
 @RunWith(AndroidJUnit4::class)
 @OptIn(ExperimentalCoroutinesApi::class)
 class NotificationHelperTest {
+
+    @get:Rule
+    val grantPermissionRule: GrantPermissionRule = GrantPermissionRule.grant(
+        "android.permission.POST_NOTIFICATIONS"
+    )
 
     private lateinit var context: Context
     private val notificationRepository: NotificationRepository = mock()
@@ -63,9 +70,15 @@ class NotificationHelperTest {
             pendingId = 456
         )
 
-        // Query active notifications
-        val activeNotifications = notificationManager.activeNotifications
-        val birthdayNotification = activeNotifications.find { it.id == 456 }
+        // Query active notifications with polling to avoid system latency race conditions
+        var birthdayNotification: android.service.notification.StatusBarNotification? = null
+        for (i in 1..10) {
+            val activeNotifications = notificationManager.activeNotifications
+            birthdayNotification = activeNotifications.find { it.id == 456 }
+            if (birthdayNotification != null) break
+            android.util.Log.d("NotificationHelperTest", "Polling active notifications, attempt $i")
+            kotlinx.coroutines.delay(100)
+        }
 
         assertThat(birthdayNotification).isNotNull()
         assertThat(birthdayNotification?.notification?.channelId).isEqualTo(NotificationHelper.CHANNEL_ID)
