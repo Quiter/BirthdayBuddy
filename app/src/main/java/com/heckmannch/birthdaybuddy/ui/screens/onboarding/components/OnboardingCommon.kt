@@ -16,8 +16,12 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Cake
+import androidx.compose.material3.Button
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
 import androidx.compose.runtime.Composable
@@ -25,8 +29,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.painter.Painter
+import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.heckmannch.birthdaybuddy.ui.components.LottieIllustration
 
@@ -48,7 +54,7 @@ fun OnboardingPageTemplate(
         Column(
             modifier = modifier
                 .fillMaxSize()
-                .padding(start = 32.dp, end = 32.dp, top = 24.dp, bottom = 24.dp),
+                .padding(start = 32.dp, end = 32.dp, top = 32.dp, bottom = 24.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             // Oberer Bereich (Ausrichtung von oben, um Sprünge bei Höhenänderung zu verhindern)
@@ -198,4 +204,67 @@ fun OnboardingPageContent(
         title = title,
         description = description
     )
+}
+
+@Preview(showBackground = true, widthDp = 360, heightDp = 640)
+@Composable
+fun OnboardingPageContentCompactPreview() {
+    MaterialTheme {
+        Surface {
+            OnboardingPageContent(
+                title = "Willkommen bei BirthdayBuddy",
+                description = "Verpasse nie wieder einen Geburtstag deiner Freunde und Familie.",
+                windowWidthSizeClass = WindowWidthSizeClass.Compact,
+                icon = rememberVectorPainter(Icons.Default.Cake)
+            )
+        }
+    }
+}
+
+@Preview(showBackground = true, widthDp = 840, heightDp = 480)
+@Composable
+fun OnboardingPageContentExpandedPreview() {
+    MaterialTheme {
+        Surface {
+            OnboardingPageContent(
+                title = "Willkommen bei BirthdayBuddy",
+                description = "Verpasse nie wieder einen Geburtstag deiner Freunde und Familie. Wir helfen dir dabei, den Überblick zu behalten.",
+                windowWidthSizeClass = WindowWidthSizeClass.Expanded,
+                icon = rememberVectorPainter(Icons.Default.Cake)
+            )
+        }
+    }
+}
+
+@Preview(showBackground = true, widthDp = 360, heightDp = 640)
+@Composable
+fun OnboardingPageTemplatePreview() {
+    MaterialTheme {
+        Surface {
+            OnboardingPageTemplate(
+                windowWidthSizeClass = WindowWidthSizeClass.Compact,
+                illustration = { modifier ->
+                    Icon(
+                        imageVector = Icons.Default.Cake,
+                        contentDescription = null,
+                        modifier = modifier.size(120.dp)
+                    )
+                },
+                title = "Einstellungen",
+                description = "Konfiguriere deine Benachrichtigungen für anstehende Geburtstage.",
+                settingsCard = {
+                    Text(
+                        "Hier könnten Einstellungen stehen",
+                        modifier = Modifier.padding(16.dp),
+                        style = MaterialTheme.typography.bodyMedium
+                    )
+                },
+                actionButton = {
+                    Button(onClick = {}) {
+                        Text("Weiter")
+                    }
+                }
+            )
+        }
+    }
 }

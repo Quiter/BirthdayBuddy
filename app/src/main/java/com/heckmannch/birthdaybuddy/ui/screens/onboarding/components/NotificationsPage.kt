@@ -16,6 +16,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
@@ -24,6 +25,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.heckmannch.birthdaybuddy.R
 
@@ -114,4 +116,40 @@ fun NotificationsPage(
             null
         }
     )
+}
+
+@Preview(showBackground = true, widthDp = 360, heightDp = 640)
+@Composable
+fun NotificationsPagePreview() {
+    MaterialTheme {
+        Surface {
+            NotificationsPage(
+                windowWidthSizeClass = WindowWidthSizeClass.Compact,
+                enabled = true,
+                onEnabledChange = {},
+                persistent = true,
+                onPersistentChange = {},
+                isGranted = false,
+                onGrant = {}
+            )
+        }
+    }
+}
+
+@Preview(showBackground = true, widthDp = 360, heightDp = 640)
+@Composable
+fun NotificationsPageDisabledPreview() {
+    MaterialTheme {
+        Surface {
+            NotificationsPage(
+                windowWidthSizeClass = WindowWidthSizeClass.Compact,
+                enabled = false,
+                onEnabledChange = {},
+                persistent = false,
+                onPersistentChange = {},
+                isGranted = false,
+                onGrant = {}
+            )
+        }
+    }
 }

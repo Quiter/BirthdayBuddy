@@ -15,7 +15,6 @@ import com.heckmannch.birthdaybuddy.util.hasYear
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import java.util.ArrayList
 import java.util.Calendar
 import java.util.TimeZone
 import javax.inject.Inject
@@ -309,7 +308,7 @@ class CalendarSyncRepository @Inject constructor(
                 }
                 val dtStart = startCal.timeInMillis
 
-                val title = "Geburtstag von ${contact.fullName}"
+                val title = "${contact.fullName} hat Geburtstag"
                 val description = if (birthday.hasYear) {
                     "Geburtsjahr: ${birthday.year}"
                 } else {

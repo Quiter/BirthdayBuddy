@@ -1,7 +1,6 @@
 package com.heckmannch.birthdaybuddy.ui.screens.settings.calendar
 
 import android.Manifest
-import android.content.Context
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Column

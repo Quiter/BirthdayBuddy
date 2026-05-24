@@ -1,9 +1,9 @@
 package com.heckmannch.birthdaybuddy.data.repository
 
 import android.content.ContentProviderOperation
-import android.util.Log
 import android.content.Context
 import android.provider.ContactsContract
+import android.util.Log
 import com.heckmannch.birthdaybuddy.data.local.Contact
 import com.heckmannch.birthdaybuddy.util.NO_YEAR_MARKER
 import com.heckmannch.birthdaybuddy.util.hasYear

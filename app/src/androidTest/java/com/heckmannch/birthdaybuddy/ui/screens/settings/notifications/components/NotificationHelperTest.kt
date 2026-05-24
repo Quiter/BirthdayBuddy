@@ -4,6 +4,7 @@ import android.app.NotificationManager
 import android.content.Context
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import androidx.test.rule.GrantPermissionRule
 import com.google.common.truth.Truth.assertThat
 import com.heckmannch.birthdaybuddy.data.local.AppSettings
 import com.heckmannch.birthdaybuddy.data.local.Contact
@@ -11,9 +12,8 @@ import com.heckmannch.birthdaybuddy.data.repository.NotificationRepository
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.test.runTest
-import org.junit.Rule
-import androidx.test.rule.GrantPermissionRule
 import org.junit.Before
+import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.kotlin.any
