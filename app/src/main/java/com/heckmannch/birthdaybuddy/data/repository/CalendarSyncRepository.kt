@@ -40,14 +40,13 @@ class CalendarSyncRepository @Inject constructor(
 
     suspend fun getOrCreateCalendar(): Long? = withContext(Dispatchers.IO) {
         val currentSettings = appSettingsDao.getSettingsImmediate() ?: AppSettings()
-        var calendarId = currentSettings.calendarId
+        val calendarId = currentSettings.calendarId
 
         if (calendarId != null) {
-            val isOld = isOldCalendarAccount(calendarId)
-            if (isOld) {
-                Log.d("CalendarSyncRepo", "Upgrading legacy calendar account to package name...")
-                deleteCalendarById(calendarId, "BirthdayBuddy")
-                calendarId = null
+            val accountName = getCalendarAccountName(calendarId)
+            if (accountName != null && accountName != "phone") {
+                Log.d("CalendarSyncRepo", "Upgrading legacy calendar account '$accountName' to 'phone'...")
+                deleteCalendarById(calendarId, accountName)
                 appSettingsDao.upsertSettings(currentSettings.copy(calendarId = null))
             } else {
                 val exists = checkCalendarExists(calendarId)
@@ -90,7 +89,7 @@ class CalendarSyncRepository @Inject constructor(
         return false
     }
 
-    private fun isOldCalendarAccount(calendarId: Long): Boolean {
+    private fun getCalendarAccountName(calendarId: Long): String? {
         val projection = arrayOf(CalendarContract.Calendars.ACCOUNT_NAME)
         val selection = "${CalendarContract.Calendars._ID} = ?"
         val selectionArgs = arrayOf(calendarId.toString())
@@ -103,14 +102,13 @@ class CalendarSyncRepository @Inject constructor(
                 null
             )?.use { cursor ->
                 if (cursor.moveToFirst()) {
-                    val accountName = cursor.getString(0)
-                    return accountName == "BirthdayBuddy"
+                    return cursor.getString(0)
                 }
             }
         } catch (e: Exception) {
-            Log.e("CalendarSyncRepo", "Error checking if old account", e)
+            Log.e("CalendarSyncRepo", "Error getting calendar account name", e)
         }
-        return false
+        return null
     }
 
     private fun deleteCalendarById(calendarId: Long, accountName: String) {
@@ -134,10 +132,11 @@ class CalendarSyncRepository @Inject constructor(
     private fun findExistingCalendarId(): Long? {
         val projection = arrayOf(
             CalendarContract.Calendars._ID,
-            CalendarContract.Calendars.ACCOUNT_NAME
+            CalendarContract.Calendars.ACCOUNT_NAME,
+            CalendarContract.Calendars.NAME
         )
-        val selection = "${CalendarContract.Calendars.ACCOUNT_NAME} IN (?, ?) AND ${CalendarContract.Calendars.ACCOUNT_TYPE} = ?"
-        val selectionArgs = arrayOf("com.heckmannch.birthdaybuddy", "BirthdayBuddy", CalendarContract.ACCOUNT_TYPE_LOCAL)
+        val selection = "${CalendarContract.Calendars.ACCOUNT_TYPE} = ?"
+        val selectionArgs = arrayOf(CalendarContract.ACCOUNT_TYPE_LOCAL)
 
         try {
             context.contentResolver.query(
@@ -147,14 +146,22 @@ class CalendarSyncRepository @Inject constructor(
                 selectionArgs,
                 null
             )?.use { cursor ->
+                val idCol = cursor.getColumnIndex(CalendarContract.Calendars._ID)
+                val accNameCol = cursor.getColumnIndex(CalendarContract.Calendars.ACCOUNT_NAME)
+                val nameCol = cursor.getColumnIndex(CalendarContract.Calendars.NAME)
+
                 while (cursor.moveToNext()) {
-                    val id = cursor.getLong(0)
-                    val accountName = cursor.getString(1)
-                    if (accountName == "com.heckmannch.birthdaybuddy") {
-                        return id
-                    } else {
-                        // Legacy calendar - delete it!
-                        deleteCalendarById(id, "BirthdayBuddy")
+                    val id = cursor.getLong(idCol)
+                    val accountName = cursor.getString(accNameCol)
+                    val name = cursor.getString(nameCol)
+
+                    if (name == "BirthdayBuddyCalendar") {
+                        if (accountName == "phone") {
+                            return id
+                        } else {
+                            // Legacy calendar - delete it!
+                            deleteCalendarById(id, accountName)
+                        }
                     }
                 }
             }
@@ -167,18 +174,18 @@ class CalendarSyncRepository @Inject constructor(
     private fun createLocalCalendar(): Long? {
         val builder = CalendarContract.Calendars.CONTENT_URI.buildUpon()
         builder.appendQueryParameter(CalendarContract.CALLER_IS_SYNCADAPTER, "true")
-        builder.appendQueryParameter(CalendarContract.Calendars.ACCOUNT_NAME, "com.heckmannch.birthdaybuddy")
+        builder.appendQueryParameter(CalendarContract.Calendars.ACCOUNT_NAME, "phone")
         builder.appendQueryParameter(CalendarContract.Calendars.ACCOUNT_TYPE, CalendarContract.ACCOUNT_TYPE_LOCAL)
         val uri = builder.build()
 
         val values = ContentValues().apply {
-            put(CalendarContract.Calendars.ACCOUNT_NAME, "com.heckmannch.birthdaybuddy")
+            put(CalendarContract.Calendars.ACCOUNT_NAME, "phone")
             put(CalendarContract.Calendars.ACCOUNT_TYPE, CalendarContract.ACCOUNT_TYPE_LOCAL)
             put(CalendarContract.Calendars.NAME, "BirthdayBuddyCalendar")
             put(CalendarContract.Calendars.CALENDAR_DISPLAY_NAME, "BirthdayBuddy")
             put(CalendarContract.Calendars.CALENDAR_COLOR, 0xFFE91E63.toInt()) // Premium pink color
             put(CalendarContract.Calendars.CALENDAR_ACCESS_LEVEL, CalendarContract.Calendars.CAL_ACCESS_OWNER)
-            put(CalendarContract.Calendars.OWNER_ACCOUNT, "birthdaybuddy@local")
+            put(CalendarContract.Calendars.OWNER_ACCOUNT, "phone@local")
             put(CalendarContract.Calendars.CALENDAR_TIME_ZONE, TimeZone.getDefault().id)
             put(CalendarContract.Calendars.CAN_ORGANIZER_RESPOND, 1)
             put(CalendarContract.Calendars.CAN_MODIFY_TIME_ZONE, 1)
@@ -203,9 +210,11 @@ class CalendarSyncRepository @Inject constructor(
 
         var deleted = false
         if (calendarId != null) {
+            val accountName = getCalendarAccountName(calendarId) ?: "phone"
+
             val builder = CalendarContract.Calendars.CONTENT_URI.buildUpon()
             builder.appendQueryParameter(CalendarContract.CALLER_IS_SYNCADAPTER, "true")
-            builder.appendQueryParameter(CalendarContract.Calendars.ACCOUNT_NAME, "com.heckmannch.birthdaybuddy")
+            builder.appendQueryParameter(CalendarContract.Calendars.ACCOUNT_NAME, accountName)
             builder.appendQueryParameter(CalendarContract.Calendars.ACCOUNT_TYPE, CalendarContract.ACCOUNT_TYPE_LOCAL)
             val uri = builder.build()
 
