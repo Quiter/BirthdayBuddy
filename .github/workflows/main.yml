@@ -115,6 +115,7 @@ jobs:
   sign-and-release:
     runs-on: ubuntu-latest
     needs: [check-version, unit-tests, build-apk]
+    if: needs.check-version.outputs.version_changed == 'true'
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -134,8 +135,15 @@ jobs:
           # 2. Die unsignierte APK finden
           unsigned_apk=$(find unsigned-apk-dir -name "*.apk" | head -n 1)
           
-          # 3. Mit apksigner signieren und mit dem passenden Namen ausgeben
-          $ANDROID_HOME/build-tools/34.0.0/apksigner sign --ks release.keystore \
+          # 3. Den neuesten apksigner im Android SDK dynamisch finden (behebt Probleme mit verschiedenen Versionen)
+          apksigner_path=$(find $ANDROID_HOME/build-tools -name "apksigner" | sort -r | head -n 1)
+          if [ -z "$apksigner_path" ]; then
+            echo "apksigner not found in $ANDROID_HOME/build-tools"
+            exit 1
+          fi
+          
+          # 4. Mit apksigner signieren und mit dem passenden Namen ausgeben
+          $apksigner_path sign --ks release.keystore \
             --ks-key-alias "${{ secrets.ALIAS }}" \
             --ks-pass pass:"${{ secrets.KEY_STORE_PASSWORD }}" \
             --key-pass pass:"${{ secrets.KEY_PASSWORD }}" \
