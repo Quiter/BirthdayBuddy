@@ -49,6 +49,7 @@ import com.heckmannch.birthdaybuddy.R
 import com.heckmannch.birthdaybuddy.ui.components.AppResponsiveScaffold
 import com.heckmannch.birthdaybuddy.ui.model.LabelManagementModel
 import com.heckmannch.birthdaybuddy.ui.theme.BirthdayBuddyTheme
+import com.heckmannch.birthdaybuddy.viewmodel.HomeViewModel
 import com.heckmannch.birthdaybuddy.viewmodel.LabelViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -194,8 +195,13 @@ private fun LabelConfigCard(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 modifier = Modifier.fillMaxWidth()
             ) {
+                val displayName = if (label.name == HomeViewModel.LABEL_NO_BIRTHDAY) {
+                    stringResource(R.string.home_filter_no_birthday)
+                } else {
+                    label.name
+                }
                 Text(
-                    text = label.name,
+                    text = displayName,
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.onSurface

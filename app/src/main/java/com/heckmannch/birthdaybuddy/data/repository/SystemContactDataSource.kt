@@ -35,11 +35,6 @@ class SystemContactDataSource @Inject constructor(
     private val pureSystemGroups =
         setOf("starred in android", "my contacts", "all contacts", "contacts")
 
-    /**
-     * Gruppen, die wir IMMER als User-Label behandeln wollen, auch wenn Android sie
-     * als System-Gruppen markiert (z.B. Google setzt oft System-IDs für Family).
-     */
-    private val userRelevantGroups = setOf("family", "friends", "coworkers")
 
     suspend fun updateContactBirthday(contactId: String, birthday: LocalDate): Boolean =
         withContext(Dispatchers.IO) {
@@ -171,7 +166,6 @@ class SystemContactDataSource @Inject constructor(
         val projection = arrayOf(
             ContactsContract.Groups._ID,
             ContactsContract.Groups.TITLE,
-            ContactsContract.Groups.SYSTEM_ID,
         )
 
         context.contentResolver.query(
@@ -183,18 +177,15 @@ class SystemContactDataSource @Inject constructor(
         )?.use { cursor ->
             val idIdx = cursor.getColumnIndex(ContactsContract.Groups._ID)
             val titleIdx = cursor.getColumnIndex(ContactsContract.Groups.TITLE)
-            val systemIdIdx = cursor.getColumnIndex(ContactsContract.Groups.SYSTEM_ID)
 
             while (cursor.moveToNext()) {
                 val id = cursor.getLong(idIdx)
                 val title = cursor.getString(titleIdx)
-                val systemId = cursor.getString(systemIdIdx)
 
                 if (!title.isNullOrBlank()) {
                     val isSystem = when (title.lowercase()) {
-                        in userRelevantGroups -> false
                         in pureSystemGroups -> true
-                        else -> systemId != null
+                        else -> false
                     }
                     groups[id] = GroupInfo(title, isSystem)
                 }

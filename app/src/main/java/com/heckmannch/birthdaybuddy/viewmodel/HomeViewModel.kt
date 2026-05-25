@@ -165,27 +165,36 @@ class HomeViewModel @Inject constructor(
         val inUseLabels = contacts.asSequence().flatMap { it.labels }.toSet()
         val configMap = configs.associateBy { it.name }
 
-        val hasUserLabels = inUseLabels.any { configMap[it]?.isSystem == false }
-        val hasMissingBirthdays = contacts.any { it.birthday == null }
+        // Pseudo-Label "Ohne Datum" Konfiguration laden und Sichtbarkeit prüfen
+        val pseudoConfig = configMap[LABEL_NO_BIRTHDAY]
+        val showPseudo = contacts.any { it.birthday == null } && 
+                pseudoConfig?.isHiddenFromFilter != true && 
+                pseudoConfig?.isIgnored != true
 
-        // Wenn weder User-Label noch fehlende Geburtstage da sind -> Bar verstecken
-        if (!hasUserLabels && !hasMissingBirthdays) return@combine emptyList()
+        // Prüfen, ob aktive, nicht-versteckte User-Labels vorhanden sind
+        val hasActiveUserLabels = inUseLabels.any { name ->
+            val config = configMap[name]
+            config?.isSystem == false && !(config.isHiddenFromFilter) && !(config.isIgnored) && name != LABEL_NO_BIRTHDAY
+        }
+
+        // Wenn weder aktive User-Labels noch das Pseudo-Label aktiv sind -> Bar verstecken
+        if (!hasActiveUserLabels && !showPseudo) return@combine emptyList()
 
         val labels = mutableListOf<String>()
 
         // Zuerst die User-Label
-        if (hasUserLabels) {
+        if (hasActiveUserLabels) {
             inUseLabels.asSequence()
                 .filter { name ->
                     val config = configMap[name]
-                    (config?.isSystem == false) && !(config.isHiddenFromFilter) && !(config.isIgnored)
+                    (config?.isSystem == false) && !(config.isHiddenFromFilter) && !(config.isIgnored) && name != LABEL_NO_BIRTHDAY
                 }
                 .sorted()
                 .forEach { labels.add(it) }
         }
 
-        // "Ohne Datum" immer als letztes, falls vorhanden
-        if (hasMissingBirthdays) {
+        // "Ohne Datum" immer als letztes, falls aktiv
+        if (showPseudo) {
             labels.add(LABEL_NO_BIRTHDAY)
         }
 
