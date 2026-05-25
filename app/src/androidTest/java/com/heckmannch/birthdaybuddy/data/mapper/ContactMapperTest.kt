@@ -36,7 +36,7 @@ class ContactMapperTest {
         assertThat(uiModel.hasWhatsApp).isTrue()
         assertThat(uiModel.hasSignal).isFalse()
         assertThat(uiModel.labels).containsExactly("Freunde")
-        assertThat(uiModel.initials).isEqualTo("M")
+        assertThat(uiModel.initials).isEqualTo("MM")
     }
 
     @Test
@@ -94,7 +94,7 @@ class ContactMapperTest {
             Contact(contactId = "1", lookupKey = "1", fullName = "max mustermann", birthday = today)
         val contact2 = Contact(contactId = "2", lookupKey = "2", fullName = "  ", birthday = today)
 
-        assertThat(mapper.toUiModel(contact1, today).initials).isEqualTo("M")
+        assertThat(mapper.toUiModel(contact1, today).initials).isEqualTo("MM")
         assertThat(mapper.toUiModel(contact2, today).initials).isEqualTo("?")
     }
 
