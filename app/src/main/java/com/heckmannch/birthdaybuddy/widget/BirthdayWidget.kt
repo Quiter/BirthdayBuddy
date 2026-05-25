@@ -227,7 +227,7 @@ class BirthdayWidget : GlanceAppWidget() {
                     }
 
                     Column(horizontalAlignment = Alignment.End) {
-                        if (hasYear) {
+                        if (hasYear && nextAgeValue != null) {
                             Text(
                                 text = context.getString(R.string.widget_turns_age, nextAgeValue),
                                 style = TextStyle(

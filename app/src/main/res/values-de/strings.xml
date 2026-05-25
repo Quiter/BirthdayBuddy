@@ -252,4 +252,9 @@
     <string name="calendar_settings_permission_needed">Um Termine eintragen zu können, benötigt BirthdayBuddy Zugriff auf deinen Kalender.</string>
     <string name="calendar_settings_permission_btn">Kalender-Berechtigung erteilen</string>
     <string name="calendar_settings_permission_granted">✓ Kalender-Berechtigung erteilt</string>
+
+    <!-- Calendar Event Strings -->
+    <string name="calendar_event_title">%1$s hat Geburtstag</string>
+    <string name="calendar_event_birth_year">Geburtsjahr: %1$d</string>
+    <string name="calendar_event_no_year">Geburtstag ohne Jahr</string>
 </resources>

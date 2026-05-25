@@ -19,7 +19,7 @@ data class GroupInfo(val title: String, val isSystem: Boolean)
 
 @Singleton
 class SystemContactDataSource @Inject constructor(
-    @param:ApplicationContext private val context: Context,
+    @ApplicationContext private val context: Context,
 ) {
     private val dateFormats = listOf(
         DateTimeFormatter.ISO_LOCAL_DATE,

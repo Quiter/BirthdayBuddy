@@ -25,7 +25,7 @@ import javax.inject.Singleton
 
 @Singleton
 class ContactRepository @Inject constructor(
-    @param:ApplicationContext private val context: Context,
+    @ApplicationContext private val context: Context,
     private val contactDao: ContactDao,
     private val labelConfigDao: LabelConfigDao,
     private val appSettingsDao: AppSettingsDao,
@@ -94,8 +94,7 @@ class ContactRepository @Inject constructor(
                 }
 
                 // 6. Zeitstempel aktualisieren
-                val settings = appSettingsDao.getSettingsImmediate() ?: AppSettings()
-                appSettingsDao.upsertSettings(settings.copy(lastSyncTimestamp = System.currentTimeMillis()))
+                appSettingsDao.upsertSettings(currentSettings.copy(lastSyncTimestamp = System.currentTimeMillis()))
             }
         } catch (e: Exception) {
             Log.e("ContactRepository", "Fehler beim Sync: ${e.message}", e)

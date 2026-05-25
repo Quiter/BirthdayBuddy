@@ -1,5 +1,6 @@
 package com.heckmannch.birthdaybuddy.viewmodel
 
+import com.heckmannch.birthdaybuddy.BuildConfig
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.heckmannch.birthdaybuddy.data.repository.CalendarSyncRepository
@@ -22,7 +23,9 @@ class CalendarViewModel @Inject constructor(
 ) : ViewModel() {
 
     init {
-        calendarSyncRepository.debugPrintAllCalendars()
+        if (BuildConfig.DEBUG) {
+            calendarSyncRepository.debugPrintAllCalendars()
+        }
     }
 
     private val settings = notificationRepository.settings

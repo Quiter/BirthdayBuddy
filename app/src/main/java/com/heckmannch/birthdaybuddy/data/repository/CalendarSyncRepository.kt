@@ -8,6 +8,7 @@ import android.content.pm.PackageManager
 import android.provider.CalendarContract
 import android.util.Log
 import androidx.core.content.ContextCompat
+import com.heckmannch.birthdaybuddy.R
 import com.heckmannch.birthdaybuddy.data.local.AppSettings
 import com.heckmannch.birthdaybuddy.data.local.AppSettingsDao
 import com.heckmannch.birthdaybuddy.data.local.Contact
@@ -22,7 +23,7 @@ import javax.inject.Singleton
 
 @Singleton
 class CalendarSyncRepository @Inject constructor(
-    @param:ApplicationContext private val context: Context,
+    @ApplicationContext private val context: Context,
     private val appSettingsDao: AppSettingsDao,
 ) {
 
@@ -308,11 +309,11 @@ class CalendarSyncRepository @Inject constructor(
                 }
                 val dtStart = startCal.timeInMillis
 
-                val title = "${contact.fullName} hat Geburtstag"
+                val title = context.getString(R.string.calendar_event_title, contact.fullName)
                 val description = if (birthday.hasYear) {
-                    "Geburtsjahr: ${birthday.year}"
+                    context.getString(R.string.calendar_event_birth_year, birthday.year)
                 } else {
-                    "Geburtstag ohne Jahr"
+                    context.getString(R.string.calendar_event_no_year)
                 }
 
                 val op = ContentProviderOperation.newInsert(CalendarContract.Events.CONTENT_URI)

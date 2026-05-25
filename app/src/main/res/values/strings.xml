@@ -252,4 +252,9 @@
     <string name="calendar_settings_permission_needed">To write to your calendar, BirthdayBuddy needs permission to access your calendar.</string>
     <string name="calendar_settings_permission_btn">Grant calendar permission</string>
     <string name="calendar_settings_permission_granted">✓ Calendar permission granted</string>
+
+    <!-- Calendar Event Strings -->
+    <string name="calendar_event_title">%1$s\'s Birthday</string>
+    <string name="calendar_event_birth_year">Birth year: %1$d</string>
+    <string name="calendar_event_no_year">Birthday without year</string>
 </resources>

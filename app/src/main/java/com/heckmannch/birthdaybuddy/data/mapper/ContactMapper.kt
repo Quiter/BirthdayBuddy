@@ -46,7 +46,16 @@ class ContactMapper @Inject constructor() {
             monthName = birthday?.format(monthFormatter) ?: "",
             imageUri = contact.imageUri,
             phoneNumber = contact.phoneNumber,
-            initials = contact.fullName.take(1).ifBlank { "?" }.uppercase(),
+            initials = contact.fullName.trim()
+                .split("\\s+".toRegex())
+                .filter { it.isNotBlank() }
+                .let { parts ->
+                    when {
+                        parts.isEmpty() -> "?"
+                        parts.size == 1 -> parts.first().take(1).uppercase()
+                        else -> "${parts.first().take(1)}${parts.last().take(1)}".uppercase()
+                    }
+                },
             nextAge = nextAgeValue,
             daysUntilNext = daysLeft,
             isToday = birthday?.isBirthdayToday(today) ?: false,
