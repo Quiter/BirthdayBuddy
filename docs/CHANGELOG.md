@@ -18,13 +18,6 @@
     - **Dependency:** Integration von `material3-window-size-class` zur präzisen Erkennung der Bildschirmkonfiguration.
 103. **UX Polish & Search Highlighting:**
     - **Visual Feedback:** Einführung eines dynamischen Highlighting-Effekts für die `SearchBar`. Bei Fokus wird nun eine animierte Umrandung gezeichnet und die Hintergrundfarbe sanft angepasst.
-104. **UX: Sync Feedback & String Localization:**
-    - **User Feedback:** Einführung einer Snackbar-Bestätigung im `SyncSettingsScreen`, sobald die manuelle Kontaktsynchronisierung erfolgreich abgeschlossen wurde.
-    - **Architecture:** Erweiterung des `HomeViewModel` um ein `syncCompletedEvent` (SharedFlow), um transiente UI-Ereignisse sauber zu entkoppeln.
-    - **I18n:** Hinzufügen des neuen `sync_success` Strings in Deutsch und Englisch.
-    - **Smart Focus Management:** Optimierung der Tastatur-Steuerung; der Fokus der Suche wird nun zuverlässig bei jeder Listen-Interaktion (Scrollen oder Aufklappen einer Karte) gelöscht, um eine freie Sicht auf die Inhalte zu gewährleisten.
-    - **Layout Harmony:** Korrektur des Hintergrund-Übergangs in der `HomeTopBar`. Die Filter-Bar nutzt nun denselben Hintergrund wie die Liste, während der Suchbereich durch Elevation optisch abgehoben bleibt.
-    - **Onboarding UX:** Verbesserung der Klickbarkeit und Sichtbarkeit der Onboarding-Buttons auf Geräten mit geringer Displayhöhe (z.B. Chromebooks im Landscape-Modus) durch optimiertes Spacing und Scrolling.
 104. **Home Architecture & UX Refinement:**
     - **Sub-Component Grouping:** Strukturierung des `home.components` Ordners in spezialisierte Unterverzeichnisse (`list`, `topbar`, `actions`). Dies verbessert die Übersichtlichkeit bei wachsender Komponentenanzahl.
     - **Prop Drilling Elimination:** Konsequente Nutzung des `HomeActions` Wrappers in der gesamten Home-Hierarchie. Dies reduziert die Komplexität der Funktionssignaturen und vereinfacht die Wartbarkeit.
@@ -111,7 +104,7 @@
     - **Fehler-Protokollierung:** Aktives Logging von Fehlern beim Ändern von Kontaktdaten im `SystemContactDataSource` via `Log.e` zur besseren Diagnose statt leisem Verschlucken von Ausnahmen.
     - **Automated Instrumented Testing:**
       - **SystemContactDataSourceTest:** Neuer instrumentierter Test zur präzisen Validierung von Kontakt-Updates und -Inserts sowie der korrekten Selektion beschreibbarer Konten.
-      - **NotificationHelperTest:** Neuer instrumentierter Test zur Überprüfung der System-Benachrichtigungen inklusive Polling gegen OS-Latenz und JUnit-`GrantPermissionRule` für Benachrichtigungen ab Android 13.
+      - **NotificationHelperTest:** Neuer instrumentierter Test zur Überprüfung der System-Benachrichtigungen inklusive Polling gegen OS-Latenz und JUnit-`GrantPermissionRule` for Benachrichtigungen ab Android 13.
       - **Test-Dependencies:** Integration der `androidx.test:rules:1.6.1` Abhängigkeit in die `build.gradle.kts` zur Beseitigung von Referenz- und Kompilierungsfehlern in den instrumentierten Testläufen.
 
 120. **Unified Onboarding Architecture & Layout Polish:**
@@ -121,6 +114,8 @@
     - **Konsistente Benutzerführung (Kontakte-Switch):** Ersatz der komplexen Dropdown-Lösung auf der Kontakte-Seite durch eine edle Einstellungs-Card mit einem Switch ("Kontakte synchronisieren"). Dadurch verhält sich die Kontakte-Berechtigung exakt genauso wie die Benachrichtigungen und der Kalender: Das Überspringen deaktiviert den Switch und erfordert wie gewünscht den manuellen Klick auf "Weiter" im Footer.
     - **Visueller Rhythmus:** Anhebung des unteren Abstands zum Footer im Compact-Layout von `8.dp` auf `24.dp` für ein luftigeres und moderneres Gesamtbild.
 
-
-
-
+121. **UX & UI Consistency Refinement:**
+    - **Sync Feedback:** Einführung einer Snackbar-Bestätigung im `SyncSettingsScreen`, sobald die manuelle Kontaktsynchronisierung erfolgreich abgeschlossen wurde.
+    - **Architecture:** Erweiterung des `HomeViewModel` um ein `syncCompletedEvent` (SharedFlow), um transiente UI-Ereignisse sauber zu entkoppeln.
+    - **I18n:** Hinzufügen des neuen `sync_success` Strings in Deutsch und Englisch.
+    - **BirthdayItem Layout:** Anpassung des `BirthdayStatus` in der App an die Informationshierarchie des Widgets. Das kommende Alter steht nun oben (fett/primär), während die verbleibenden Tage bzw. der Status "Heute!" darunter angezeigt werden.

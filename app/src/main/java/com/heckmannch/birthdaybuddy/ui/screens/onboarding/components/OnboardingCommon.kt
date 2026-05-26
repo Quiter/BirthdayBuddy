@@ -74,7 +74,7 @@ fun OnboardingPageTemplate(
                     illustration(Modifier)
                 }
 
-                Spacer(modifier = Modifier.height(16.dp))
+                Spacer(modifier = Modifier.height(32.dp))
 
                 // Titel
                 Text(
@@ -85,7 +85,7 @@ fun OnboardingPageTemplate(
                     modifier = Modifier.fillMaxWidth()
                 )
 
-                Spacer(modifier = Modifier.height(12.dp))
+                Spacer(modifier = Modifier.height(32.dp))
 
                 // Beschreibungstext
                 Text(

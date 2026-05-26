@@ -41,6 +41,15 @@ fun BirthdayStatus(
         horizontalAlignment = Alignment.End,
         modifier = modifier
     ) {
+        if (nextAge != null) {
+            Text(
+                text = stringResource(R.string.widget_turns_age, nextAge),
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.primary
+            )
+        }
+
         if (daysUntilNext == Long.MAX_VALUE) {
             Icon(
                 imageVector = Icons.Default.Add,
@@ -53,15 +62,14 @@ fun BirthdayStatus(
                 Icon(
                     imageVector = Icons.Default.Cake,
                     contentDescription = null,
-                    tint = MaterialTheme.colorScheme.primary,
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
                     modifier = Modifier.size(16.dp)
                 )
                 Spacer(modifier = Modifier.width(4.dp))
                 Text(
                     text = stringResource(R.string.item_today),
-                    color = MaterialTheme.colorScheme.primary,
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Bold
+                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
+                    style = MaterialTheme.typography.bodyMedium
                 )
             }
         } else {
@@ -71,14 +79,6 @@ fun BirthdayStatus(
                     daysUntilNext.toInt(),
                     daysUntilNext.toInt()
                 ),
-                style = MaterialTheme.typography.titleMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-        }
-
-        if (nextAge != null) {
-            Text(
-                text = stringResource(R.string.widget_turns_age, nextAge),
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
             )
