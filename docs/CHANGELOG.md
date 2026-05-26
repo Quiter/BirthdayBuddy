@@ -18,6 +18,10 @@
     - **Dependency:** Integration von `material3-window-size-class` zur präzisen Erkennung der Bildschirmkonfiguration.
 103. **UX Polish & Search Highlighting:**
     - **Visual Feedback:** Einführung eines dynamischen Highlighting-Effekts für die `SearchBar`. Bei Fokus wird nun eine animierte Umrandung gezeichnet und die Hintergrundfarbe sanft angepasst.
+104. **UX: Sync Feedback & String Localization:**
+    - **User Feedback:** Einführung einer Snackbar-Bestätigung im `SyncSettingsScreen`, sobald die manuelle Kontaktsynchronisierung erfolgreich abgeschlossen wurde.
+    - **Architecture:** Erweiterung des `HomeViewModel` um ein `syncCompletedEvent` (SharedFlow), um transiente UI-Ereignisse sauber zu entkoppeln.
+    - **I18n:** Hinzufügen des neuen `sync_success` Strings in Deutsch und Englisch.
     - **Smart Focus Management:** Optimierung der Tastatur-Steuerung; der Fokus der Suche wird nun zuverlässig bei jeder Listen-Interaktion (Scrollen oder Aufklappen einer Karte) gelöscht, um eine freie Sicht auf die Inhalte zu gewährleisten.
     - **Layout Harmony:** Korrektur des Hintergrund-Übergangs in der `HomeTopBar`. Die Filter-Bar nutzt nun denselben Hintergrund wie die Liste, während der Suchbereich durch Elevation optisch abgehoben bleibt.
     - **Onboarding UX:** Verbesserung der Klickbarkeit und Sichtbarkeit der Onboarding-Buttons auf Geräten mit geringer Displayhöhe (z.B. Chromebooks im Landscape-Modus) durch optimiertes Spacing und Scrolling.

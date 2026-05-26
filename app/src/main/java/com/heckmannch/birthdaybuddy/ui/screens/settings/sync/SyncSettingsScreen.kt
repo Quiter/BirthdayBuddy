@@ -27,11 +27,15 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.LargeTopAppBar
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
@@ -52,6 +56,15 @@ fun SyncSettingsScreen(
     onNavigateBack: () -> Unit,
 ) {
     val context = LocalContext.current
+    val snackbarHostState = remember { SnackbarHostState() }
+    val syncSuccessMessage = stringResource(R.string.sync_success)
+
+    LaunchedEffect(Unit) {
+        viewModel.syncCompletedEvent.collect {
+            snackbarHostState.showSnackbar(syncSuccessMessage)
+        }
+    }
+
     val permissionLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.RequestPermission(),
     ) { isGranted ->
@@ -71,6 +84,7 @@ fun SyncSettingsScreen(
 
     SyncSettingsContent(
         windowWidthSizeClass = windowWidthSizeClass,
+        snackbarHostState = snackbarHostState,
         onSyncClick = onSyncClick,
         onNavigateBack = onNavigateBack,
     )
@@ -80,6 +94,7 @@ fun SyncSettingsScreen(
 @Composable
 private fun SyncSettingsContent(
     windowWidthSizeClass: WindowWidthSizeClass,
+    snackbarHostState: SnackbarHostState,
     onSyncClick: () -> Unit,
     onNavigateBack: () -> Unit,
 ) {
@@ -87,6 +102,7 @@ private fun SyncSettingsContent(
     AppResponsiveScaffold(
         windowWidthSizeClass = windowWidthSizeClass,
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
+        snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
         topBar = {
             LargeTopAppBar(
                 title = { Text(stringResource(R.string.sync_title)) },

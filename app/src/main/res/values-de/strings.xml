@@ -235,6 +235,7 @@
     <string name="sync_explanation_desc">Du kannst deine Kontakte auch ganz einfach direkt auf der Startseite aktualisieren, indem du die Liste nach unten ziehst (Pull to Refresh).</string>
     <string name="sync_button_title">Manuell synchronisieren</string>
     <string name="sync_button_desc">Geburtstage jetzt aus deinen System-Kontakten laden</string>
+    <string name="sync_success">Kontakte synchronisiert!</string>
 
     <!-- Calendar Integration -->
     <string name="onboarding_calendar_title">Kalender-Sync</string>

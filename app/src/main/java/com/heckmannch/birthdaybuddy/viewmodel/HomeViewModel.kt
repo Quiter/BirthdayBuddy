@@ -55,6 +55,9 @@ class HomeViewModel @Inject constructor(
     private val _scrollToTopEvent = MutableSharedFlow<Unit>(replay = 0)
     val scrollToTopEvent: SharedFlow<Unit> = _scrollToTopEvent.asSharedFlow()
 
+    private val _syncCompletedEvent = MutableSharedFlow<Unit>(replay = 0)
+    val syncCompletedEvent: SharedFlow<Unit> = _syncCompletedEvent.asSharedFlow()
+
     fun setIsResettingFilter(isResetting: Boolean) {
         _isResettingFilter.value = isResetting
     }
@@ -341,6 +344,7 @@ class HomeViewModel @Inject constructor(
                 delay(800 - elapsedTime)
             }
             _isSyncing.value = false
+            _syncCompletedEvent.emit(Unit)
         }
     }
 
