@@ -1,6 +1,7 @@
 package com.heckmannch.birthdaybuddy.ui.screens.home.components.list
 
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.MutableTransitionState
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.fadeIn
@@ -12,6 +13,7 @@ import androidx.compose.foundation.gestures.detectVerticalDragGestures
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
@@ -45,7 +47,11 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.Popup
+import androidx.compose.ui.window.PopupProperties
 import com.heckmannch.birthdaybuddy.R
 import com.heckmannch.birthdaybuddy.ui.model.ContactUiModel
 import kotlinx.coroutines.delay
@@ -211,35 +217,11 @@ fun FastScrollbar(
             )
 
             // Bubble
-            AnimatedVisibility(
+            ScrollbarBubble(
                 visible = showBubble,
-                enter = fadeIn() + slideInHorizontally { it / 2 },
-                exit = fadeOut() + slideOutHorizontally { it / 2 },
-                modifier = Modifier
-                    .align(Alignment.TopStart)
-                    .graphicsLayer {
-                        translationY = thumbOffset.toPx() - ScrollbarDefaults.BubbleOffsetY.toPx()
-                    },
-            ) {
-                Surface(
-                    shape = RoundedCornerShape(
-                        topStart = ScrollbarDefaults.BubbleCornerLarge,
-                        bottomStart = ScrollbarDefaults.BubbleCornerLarge,
-                        topEnd = ScrollbarDefaults.BubbleCornerSmall,
-                        bottomEnd = ScrollbarDefaults.BubbleCornerLarge,
-                    ),
-                    color = MaterialTheme.colorScheme.primary,
-                    tonalElevation = ScrollbarDefaults.BubbleElevation,
-                    modifier = Modifier.padding(end = 16.dp),
-                ) {
-                    Text(
-                        text = currentLabel,
-                        modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
-                        color = MaterialTheme.colorScheme.onPrimary,
-                        style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
-                    )
-                }
-            }
+                label = currentLabel,
+                thumbOffset = thumbOffset
+            )
 
             val scrollbarDesc = stringResource(R.string.home_scrollbar_desc, currentLabel)
 
@@ -295,50 +277,143 @@ fun FastScrollbar(
                         }
                     }
             ) {
-                // 1. Subtle, elegant track line (centered at 12.dp from the right edge)
-                val trackAlpha by remember {
-                    derivedStateOf {
-                        if (isDragging || listState.isScrollInProgress) 0.15f else 0.04f
-                    }
-                }
-                val animatedTrackAlpha by animateFloatAsState(
-                    targetValue = trackAlpha,
-                    label = "Track Alpha",
+                // Visuals for track line and thumb
+                ScrollbarTrackAndThumb(
+                    isDragging = isDragging,
+                    isScrollInProgress = listState.isScrollInProgress,
+                    currentThumbHeight = currentThumbHeight,
+                    thumbOffset = thumbOffset,
+                    thumbWidth = thumbWidth,
+                    animatedThumbAlpha = animatedThumbAlpha,
+                    scrollbarDesc = scrollbarDesc,
+                    modifier = Modifier.fillMaxSize()
                 )
-                Box(
-                    modifier = Modifier
-                        .align(Alignment.CenterEnd)
-                        .padding(end = 10.dp) // Centered at 12.dp from the right (10.dp padding + 4.dp/2 = 12.dp)
-                        .width(4.dp)
-                        .fillMaxHeight()
-                        .clip(CircleShape)
-                        .background(MaterialTheme.colorScheme.onSurface.copy(alpha = animatedTrackAlpha))
-                )
+            }
+        }
+    }
+}
 
-                // 2. Thumb Box (centered at 12.dp from the right edge)
-                Box(
-                    modifier = Modifier
-                        .align(Alignment.TopEnd)
-                        .width(ScrollbarDefaults.ThumbSize)
-                        .height(currentThumbHeight)
-                        .graphicsLayer {
-                            translationY = thumbOffset.toPx()
-                        }
-                        .semantics {
-                            contentDescription = scrollbarDesc
-                        },
-                    contentAlignment = Alignment.CenterEnd,
+/**
+ * Zeigt das Month/Letter-Label in einer eleganten Bubble an.
+ * Nutzt ein Popup, um sicherzustellen, dass die Bubble vor allen anderen
+ * UI-Elementen (inklusive der HomeTopBar) gezeichnet wird und nicht abgeschnitten wird.
+ */
+@Composable
+private fun ScrollbarBubble(
+    visible: Boolean,
+    label: String,
+    thumbOffset: Dp,
+    modifier: Modifier = Modifier,
+) {
+    val density = LocalDensity.current
+    val transitionState = remember { MutableTransitionState(initialState = false) }
+    transitionState.targetState = visible
+
+    if (transitionState.currentState || transitionState.targetState) {
+        Popup(
+            alignment = Alignment.TopStart,
+            offset = remember(thumbOffset, density) {
+                with(density) {
+                    IntOffset(
+                        x = 0,
+                        y = (thumbOffset - ScrollbarDefaults.BubbleOffsetY).roundToPx()
+                    )
+                }
+            },
+            properties = PopupProperties(
+                focusable = false,
+                dismissOnBackPress = false,
+                dismissOnClickOutside = false,
+                clippingEnabled = false, // Verhindert automatische Nudge-/Positionskorrekturen des OS am Rand
+                usePlatformDefaultWidth = false,
+            )
+        ) {
+            AnimatedVisibility(
+                visibleState = transitionState,
+                enter = fadeIn() + slideInHorizontally { it / 2 },
+                exit = fadeOut() + slideOutHorizontally { it / 2 },
+                modifier = modifier,
+            ) {
+                Surface(
+                    shape = RoundedCornerShape(
+                        topStart = ScrollbarDefaults.BubbleCornerLarge,
+                        bottomStart = ScrollbarDefaults.BubbleCornerLarge,
+                        topEnd = ScrollbarDefaults.BubbleCornerSmall,
+                        bottomEnd = ScrollbarDefaults.BubbleCornerLarge,
+                    ),
+                    color = MaterialTheme.colorScheme.primary,
+                    tonalElevation = ScrollbarDefaults.BubbleElevation,
+                    modifier = Modifier.padding(end = 16.dp),
                 ) {
-                    Box(
-                        modifier = Modifier
-                            .padding(end = 12.dp - thumbWidth / 2) // Dynamically centers the thumb on the 12.dp vertical line
-                            .width(thumbWidth)
-                            .fillMaxHeight()
-                            .clip(CircleShape)
-                            .background(MaterialTheme.colorScheme.primary.copy(alpha = animatedThumbAlpha)),
+                    Text(
+                        text = label,
+                        modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
+                        color = MaterialTheme.colorScheme.onPrimary,
+                        style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
                     )
                 }
             }
+        }
+    }
+}
+
+/**
+ * Zeichnet den dezenten Scroll-Track und den interaktiven Thumb-Indikator.
+ */
+@Composable
+private fun ScrollbarTrackAndThumb(
+    isDragging: Boolean,
+    isScrollInProgress: Boolean,
+    currentThumbHeight: Dp,
+    thumbOffset: Dp,
+    thumbWidth: Dp,
+    animatedThumbAlpha: Float,
+    scrollbarDesc: String,
+    modifier: Modifier = Modifier,
+) {
+    Box(modifier = modifier) {
+        // 1. Subtle, elegant track line (centered at 12.dp from the right edge)
+        val trackAlpha by remember {
+            derivedStateOf {
+                if (isDragging || isScrollInProgress) 0.15f else 0.04f
+            }
+        }
+        val animatedTrackAlpha by animateFloatAsState(
+            targetValue = trackAlpha,
+            label = "Track Alpha",
+        )
+        Box(
+            modifier = Modifier
+                .align(Alignment.CenterEnd)
+                .padding(end = 10.dp) // Centered at 12.dp from the right (10.dp padding + 4.dp/2 = 12.dp)
+                .width(4.dp)
+                .fillMaxHeight()
+                .clip(CircleShape)
+                .background(MaterialTheme.colorScheme.onSurface.copy(alpha = animatedTrackAlpha))
+        )
+
+        // 2. Thumb Box (centered at 12.dp from the right edge)
+        Box(
+            modifier = Modifier
+                .align(Alignment.TopEnd)
+                .width(ScrollbarDefaults.ThumbSize)
+                .height(currentThumbHeight)
+                .graphicsLayer {
+                    translationY = thumbOffset.toPx()
+                }
+                .semantics {
+                    contentDescription = scrollbarDesc
+                },
+            contentAlignment = Alignment.CenterEnd,
+        ) {
+            Box(
+                modifier = Modifier
+                    .padding(end = 12.dp - thumbWidth / 2) // Dynamically centers the thumb on the 12.dp vertical line
+                    .width(thumbWidth)
+                    .fillMaxHeight()
+                    .clip(CircleShape)
+                    .background(MaterialTheme.colorScheme.primary.copy(alpha = animatedThumbAlpha)),
+            )
         }
     }
 }

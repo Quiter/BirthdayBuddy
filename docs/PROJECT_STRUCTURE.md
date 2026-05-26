@@ -51,7 +51,7 @@
                 - `BirthdayStatus.kt`: Anzeige des Alters und der verbleibenden Tage.
                 - `ConfettiEffect.kt`: Hochperformantes Partikelsystem für Geburtstags-Animationen.
                 - `ContactImage.kt`: Komponente für das Kontaktbild oder die Initialen.
-                - `FastScrollbar.kt`: Hochperformante Scrollbar mit Sub-Pixel-Präzision.
+                - `FastScrollbar.kt`: Hochperformante Scrollbar mit Sub-Pixel-Präzision. Intern sauber strukturiert durch private Sub-Composables (`ScrollbarBubble` und `ScrollbarTrackAndThumb`) zur Trennung von Layout, Gesten- und Zeichenlogik. Nutzt die `Popup`-API für die Bubble, um Clipping und Z-Order-Überlagerungen durch die `HomeTopBar` zu vermeiden.
                 - `GiftIdeaList.kt`: Spezialisierte Komponente für die Inline-Verwaltung von Geschenkideen.
             - ###### 📁 TopBar (`home.components.topbar`)
                 - `HomeTopBar.kt`: Kombiniert SearchBar und LabelFilterBar; unterstützt adaptive Layouts durch Zentrierung auf breiten Bildschirmen.

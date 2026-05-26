@@ -119,3 +119,10 @@
     - **Architecture:** Erweiterung des `HomeViewModel` um ein `syncCompletedEvent` (SharedFlow), um transiente UI-Ereignisse sauber zu entkoppeln.
     - **I18n:** Hinzufügen des neuen `sync_success` Strings in Deutsch und Englisch.
     - **BirthdayItem Layout:** Anpassung des `BirthdayStatus` in der App an die Informationshierarchie des Widgets. Das kommende Alter steht nun oben (fett/primär), während die verbleibenden Tage bzw. der Status "Heute!" darunter angezeigt werden.
+
+122. **UI & Code Polish (FastScrollbar Refactoring & Visual Fix):**
+    - **Saubere Komponenten-Strukturierung:** Internes Refactoring von `FastScrollbar.kt` zur Steigerung der Übersichtlichkeit, Lesbarkeit und langfristigen Wartbarkeit.
+    - **Sub-Composables:** Erfolgreiche Auslagerung der Month/Letter-Label-Anzeige in ein privates `ScrollbarBubble` Composable sowie des kompletten Zeichen- und Animationsbereichs von Track und Thumb in ein privates `ScrollbarTrackAndThumb` Composable.
+    - **Erhalt der Kapselung:** Beibehaltung aller Funktionalitäten und Zustände in einer einzigen Datei, um den globalen Namensraum schlank zu halten und das hochspezialisierte Gesten-Handling an einem Ort gebündelt zu wissen.
+    - **Overlay-Schnittstelle (Popup-Bubble):** Umstellung des `ScrollbarBubble` Renderings auf die Jetpack Compose `Popup`-API. Dies verhindert Clipping an den Containergrenzen und stellt sicher, dass die Bubble beim Scrollen ganz oben vor (statt hinter) der `HomeTopBar` gezeichnet wird. Die sanften Ein- und Ausblendungsanimationen bleiben über einen `MutableTransitionState` vollständig erhalten.
+    - **Gesten-Stabilität (Jump-Fix):** Deaktivierung der automatischen Fenster-Positionskorrektur (`clippingEnabled = false` in `PopupProperties`). Dies verhindert, dass der Android-Fenstermanager die Bubble bei Annäherung an den oberen Bildschirmrand (durch den negativen Offset zum Ausrichten am Daumen) verzögert korrigiert und nach oben verschiebt ("hüpfen" lässt). Die Position bleibt dadurch absolut stabil und folgt präzise dem Finger.
