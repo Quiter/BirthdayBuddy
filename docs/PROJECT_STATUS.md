@@ -5,7 +5,7 @@
 ## 🛠 Leitplanken (Regeln & Constraints)
 1. **Dokumentation:** Änderungen *zwingend* in `PROJECT_STRUCTURE.md` & `CHANGELOG.md` (nur Anhängen!) loggen.
 2. **I18n:** `strings.xml` immer in **DE & EN** gleichzeitig pflegen.
-3. **Database Safety:** Schema-Änderung = Version-Bump + Auto-Migration. `fallbackToDestructiveMigration` verboten. Schema-Exports in `app/schemas` einchecken.
+3. **Database Safety:** Schema-Änderung = Version-Bump + Auto-Migration. `fallbackToDestructiveMigration` verboten (außer für kontrollierte Altsystem-Resets). Schema-Exports in `app/schemas` einchecken. *Hinweis zur Migrations-Registrierung:* In `AppDatabase` sind bewusst nur neuere Migrationen registriert (ab V5), da Nutzer von extrem alten Legacy-Versionen nicht mehr direkt updaten können/sollen und deren Schema-Abweichungen über einen kontrollierten Destructive-Migration-Fallback bereinigt werden.
 4. **Architektur:** Feature-basierte Layer. Spezialisierte ViewModels pro Screen. DI via Hilt.
 5. **UI-Prinzipien:** Kontakte nach "Tagen bis Geburtstag" sortiert. Tap-to-Expand Cards (kein Swipe).
 6. **Padding-Regel:** Keine additiven vertikalen Paddings. Abstand zwischen Komponenten wird primär durch die obere Komponente (`bottom-padding`) gesteuert, um Layout-Sprünge bei `AnimatedVisibility` zu vermeiden.

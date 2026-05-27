@@ -1,5 +1,5 @@
-import sqlite3
 import os
+import sqlite3
 import sys
 
 # Force output encoding to utf-8 to avoid encoding crashes on Windows terminal

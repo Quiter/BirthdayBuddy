@@ -1,5 +1,5 @@
-import sqlite3
 import os
+import sqlite3
 import sys
 
 sys.stdout.reconfigure(encoding='utf-8')

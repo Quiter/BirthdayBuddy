@@ -123,7 +123,7 @@ class HomeViewModel @Inject constructor(
             )
         }
         result
-    }
+    }.flowOn(Dispatchers.Default)
 
     /**
      * Zentrale Filter-Logik für Kontakte.

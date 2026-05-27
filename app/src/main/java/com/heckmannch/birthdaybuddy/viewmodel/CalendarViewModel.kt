@@ -1,8 +1,8 @@
 package com.heckmannch.birthdaybuddy.viewmodel
 
-import com.heckmannch.birthdaybuddy.BuildConfig
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.heckmannch.birthdaybuddy.BuildConfig
 import com.heckmannch.birthdaybuddy.data.repository.CalendarSyncRepository
 import com.heckmannch.birthdaybuddy.data.repository.ContactRepository
 import com.heckmannch.birthdaybuddy.data.repository.NotificationRepository

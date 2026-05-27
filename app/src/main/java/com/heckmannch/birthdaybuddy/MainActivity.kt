@@ -32,10 +32,12 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.heckmannch.birthdaybuddy.data.repository.NotificationRepository
 import com.heckmannch.birthdaybuddy.ui.components.LocalWindowWidthSizeClass
 import com.heckmannch.birthdaybuddy.ui.screens.home.HomeScreen
 import com.heckmannch.birthdaybuddy.ui.screens.onboarding.OnboardingScreen
@@ -55,11 +57,9 @@ import com.heckmannch.birthdaybuddy.viewmodel.LabelViewModel
 import com.heckmannch.birthdaybuddy.viewmodel.NotificationViewModel
 import com.heckmannch.birthdaybuddy.viewmodel.OnboardingViewModel
 import com.heckmannch.birthdaybuddy.widget.BirthdayWidgetWorker
-import com.heckmannch.birthdaybuddy.data.repository.NotificationRepository
-import androidx.lifecycle.lifecycleScope
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import javax.inject.Inject
-import dagger.hilt.android.AndroidEntryPoint
 
 /**
  * Navigation Routes

@@ -22,8 +22,6 @@ import androidx.compose.material.icons.filled.ExpandLess
 import androidx.compose.material.icons.filled.ExpandMore
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.DatePicker
-import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -32,8 +30,6 @@ import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
-import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -81,32 +77,12 @@ fun BirthdayItem(
     val showDatePicker = remember { mutableStateOf(value = false) }
 
     if (showDatePicker.value) {
-        val datePickerState = rememberDatePickerState()
-        DatePickerDialog(
+        BirthdayDatePickerDialog(
             onDismissRequest = { showDatePicker.value = false },
-            confirmButton = {
-                TextButton(
-                    onClick = {
-                        datePickerState.selectedDateMillis?.let { millis ->
-                            val date = java.time.Instant.ofEpochMilli(millis)
-                                .atZone(java.time.ZoneOffset.UTC)
-                                .toLocalDate()
-                            actions.onUpdateBirthday(contact.contactId, date)
-                        }
-                        showDatePicker.value = false
-                    },
-                ) {
-                    Text(stringResource(R.string.gift_dialog_save))
-                }
-            },
-            dismissButton = {
-                TextButton(onClick = { showDatePicker.value = false }) {
-                    Text(stringResource(R.string.gift_dialog_cancel))
-                }
-            },
-        ) {
-            DatePicker(state = datePickerState)
-        }
+            onDateSelected = { date ->
+                actions.onUpdateBirthday(contact.contactId, date)
+            }
+        )
     }
 
     // Automatisches Aufklappen, wenn eine neue Idee hinzugefügt wurde
