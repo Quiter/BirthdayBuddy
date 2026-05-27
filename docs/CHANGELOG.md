@@ -132,3 +132,9 @@
     - **DatePicker Modularization:** Extracted the inline `DatePickerDialog` logic from the large `BirthdayItem.kt` file into a dedicated, reusable, and testable `@Composable` file `BirthdayDatePickerDialog.kt` in the home list components directory. This improves the separation of concerns and reduces the code footprint of the contact card component.
     - **Compiler Warnings Resolution:** Addressed Kotlin/Hilt compiler warnings in `SystemContactDataSource.kt`, `CalendarSyncRepository.kt`, and `ContactRepository.kt` by replacing `@ApplicationContext` with the targeted `@param:ApplicationContext` annotation on constructor context properties.
     - **Documentation:** Recorded the design constraint regarding legacy database migrations in `docs/PROJECT_STATUS.md` and registered the new file in `docs/PROJECT_STRUCTURE.md`.
+
+124. **Root Directory Cleanup & Workspace Organization:**
+    - **Script Organization:** Moved all test and inspection scripts (`scratch_*.py`) from the root directory to a newly created `scripts/` directory to keep the root directory neat and tidy.
+    - **Visual Assets:** Moved all visual validation assets (`screen.png` and `screen_notifications.png`) to the `docs/` directory to prevent cluttering the project root.
+    - **Git Ignore Security:** Added explicit rules to `.gitignore` (`/birthday_database*` and `/settings_database*`) to prevent local SQLite testing and cache databases from being accidentally tracked or committed to Git.
+    - **Documentation:** Updated `docs/PROJECT_STRUCTURE.md` to document the new `scripts/` directory structure.
