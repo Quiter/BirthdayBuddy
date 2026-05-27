@@ -28,7 +28,7 @@ class NotificationRepository @Inject constructor(
     val settings: Flow<AppSettings> = appSettingsDao.getSettings()
         .map { it ?: AppSettings() }
 
-    private suspend fun syncScheduling() {
+    suspend fun syncScheduling() {
         val enabled = appSettingsDao.getSettingsImmediate()?.notificationsEnabled ?: false
         val rules = notificationRuleDao.getAllRulesImmediate()
         if (enabled && rules.isNotEmpty()) {
@@ -90,6 +90,11 @@ class NotificationRepository @Inject constructor(
         pendingNotificationDao.upsert(notification)
 
     suspend fun getPendingNotificationById(id: Int) = pendingNotificationDao.getNotificationById(id)
+
+    suspend fun hasNotificationBeenScheduled(year: Int, daysBefore: Int, lookupKey: String): Boolean {
+        val pattern = "%\"$lookupKey\"%"
+        return pendingNotificationDao.hasNotificationBeenScheduled(year, daysBefore, pattern)
+    }
 
     suspend fun incrementDismissCount(id: Int) = pendingNotificationDao.incrementDismissCount(id)
 

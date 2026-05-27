@@ -27,7 +27,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.Modifier
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
-import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
@@ -55,6 +55,10 @@ import com.heckmannch.birthdaybuddy.viewmodel.LabelViewModel
 import com.heckmannch.birthdaybuddy.viewmodel.NotificationViewModel
 import com.heckmannch.birthdaybuddy.viewmodel.OnboardingViewModel
 import com.heckmannch.birthdaybuddy.widget.BirthdayWidgetWorker
+import com.heckmannch.birthdaybuddy.data.repository.NotificationRepository
+import androidx.lifecycle.lifecycleScope
+import kotlinx.coroutines.launch
+import javax.inject.Inject
 import dagger.hilt.android.AndroidEntryPoint
 
 /**
@@ -76,6 +80,9 @@ private object Routes {
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
 
+    @Inject
+    lateinit var notificationRepository: NotificationRepository
+
     private var lastInteractionTime: Long = System.currentTimeMillis()
     private val activityIntent = mutableStateOf<Intent?>(null)
 
@@ -89,6 +96,14 @@ class MainActivity : ComponentActivity() {
 
         // Schedule next widget update
         BirthdayWidgetWorker.enqueueNextUpdate(this)
+
+        lifecycleScope.launch {
+            try {
+                notificationRepository.syncScheduling()
+            } catch (_: Exception) {
+                // Safeguard
+            }
+        }
 
         setContent {
             val windowSizeClass = calculateWindowSizeClass(this)

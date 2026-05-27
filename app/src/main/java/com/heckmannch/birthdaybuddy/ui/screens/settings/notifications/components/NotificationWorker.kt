@@ -40,9 +40,11 @@ class NotificationWorker @AssistedInject constructor(
         val now = LocalDateTime.now()
         val currentLocalTime = now.toLocalTime().withSecond(0).withNano(0)
 
-        // Finde Regeln, die jetzt (oder in der letzten Minute) fällig sind
-        val currentRules = rules.filter {
-            (it.hour == currentLocalTime.hour) && (it.minute == currentLocalTime.minute)
+        // Finde Regeln, die in den letzten 15 Minuten fällig geworden sind (robust gegen WorkManager Verzögerungen)
+        val currentRules = rules.filter { rule ->
+            val ruleTime = LocalTime.of(rule.hour, rule.minute)
+            val diffMinutes = Duration.between(ruleTime, currentLocalTime).toMinutes()
+            diffMinutes in 0..14
         }
 
         if (currentRules.isNotEmpty()) {
@@ -59,6 +61,12 @@ class NotificationWorker @AssistedInject constructor(
 
                 // Für jeden Kontakt eine eigene Benachrichtigung erstellen
                 birthdays.forEach { contact ->
+                    // Verhindere doppelte Benachrichtigungen am selben Tag / für dasselbe Jahr
+                    val alreadyScheduled = notificationRepository.hasNotificationBeenScheduled(
+                        today.year, rule.daysBefore, contact.lookupKey
+                    )
+                    if (alreadyScheduled) return@forEach
+
                     // In DB speichern für Persistenz
                     val pending = PendingNotification(
                         contactLookupKeys = listOf(contact.lookupKey),
@@ -77,8 +85,11 @@ class NotificationWorker @AssistedInject constructor(
             }
         }
 
-        // Plane den nächsten Lauf
-        scheduleNext(context, rules)
+        // Plane den nächsten Lauf sauber mit einer kurzen Verzögerung nach Beendigung dieser Ausführung auf dem Main-Thread.
+        // Dies verhindert eine Race-Condition, bei der sich der aktuell laufende Worker durch REPLACE selbst abbricht.
+        android.os.Handler(android.os.Looper.getMainLooper()).postDelayed({
+            scheduleNext(context, rules)
+        }, 1000)
 
         return Result.success()
     }

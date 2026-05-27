@@ -24,8 +24,11 @@ class BirthdayWidgetWorker @AssistedInject constructor(
     override suspend fun doWork(): Result {
         try {
             BirthdayWidget().updateAll(context)
-            // Plane den nächsten Lauf für morgen Mitternacht
-            enqueueNextUpdate(context)
+            // Plane den nächsten Lauf für morgen Mitternacht sauber mit einer kurzen Verzögerung auf dem Main-Thread.
+            // Dies verhindert eine Race-Condition, bei der sich der aktuell laufende Worker durch REPLACE selbst abbricht.
+            android.os.Handler(android.os.Looper.getMainLooper()).postDelayed({
+                enqueueNextUpdate(context)
+            }, 1000)
             return Result.success()
         } catch (e: Exception) {
             e.printStackTrace()
