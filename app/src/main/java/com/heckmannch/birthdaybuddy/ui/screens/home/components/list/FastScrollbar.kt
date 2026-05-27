@@ -237,10 +237,15 @@ fun FastScrollbar(
                                 onDragStart = { offset ->
                                     isDragging = true
                                     currentOnSetFastScrolling(true)
-                                    val thumbHeightPx = with(currentDensity) { currentThumbHeightState.toPx() }
-                                    dragOffsetPx = (offset.y - thumbHeightPx / 2f).coerceIn(0f, currentTrackHeightPx)
-                                    
-                                    val scrollPercent = if (currentTrackHeightPx > 0) dragOffsetPx / currentTrackHeightPx else 0f
+                                    val thumbHeightPx =
+                                        with(currentDensity) { currentThumbHeightState.toPx() }
+                                    dragOffsetPx = (offset.y - thumbHeightPx / 2f).coerceIn(
+                                        0f,
+                                        currentTrackHeightPx
+                                    )
+
+                                    val scrollPercent =
+                                        if (currentTrackHeightPx > 0) dragOffsetPx / currentTrackHeightPx else 0f
                                     val (targetIndex, targetOffset) = calculateScrollTarget(
                                         scrollPercent = scrollPercent,
                                         totalItems = currentTotalItems,
@@ -259,9 +264,11 @@ fun FastScrollbar(
                                     currentOnSetFastScrolling(false)
                                 },
                             ) { change, dragAmount ->
-                                dragOffsetPx = (dragOffsetPx + dragAmount).coerceIn(0f, currentTrackHeightPx)
-                                val scrollPercent = if (currentTrackHeightPx > 0) dragOffsetPx / currentTrackHeightPx else 0f
-                                
+                                dragOffsetPx =
+                                    (dragOffsetPx + dragAmount).coerceIn(0f, currentTrackHeightPx)
+                                val scrollPercent =
+                                    if (currentTrackHeightPx > 0) dragOffsetPx / currentTrackHeightPx else 0f
+
                                 val (targetIndex, targetOffset) = calculateScrollTarget(
                                     scrollPercent = scrollPercent,
                                     totalItems = currentTotalItems,

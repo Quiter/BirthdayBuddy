@@ -72,7 +72,8 @@ fun EditRuleDialog(
 
     val showTimePickerState = remember { mutableStateOf(false) }
 
-    val isInputValid = numberStringState.value.isNotBlank() && numberStringState.value.toIntOrNull() != null
+    val isInputValid =
+        numberStringState.value.isNotBlank() && numberStringState.value.toIntOrNull() != null
 
     AlertDialog(
         onDismissRequest = onDismiss,

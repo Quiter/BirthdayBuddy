@@ -62,7 +62,7 @@ fun CalendarSettingsScreen(
     viewModel: CalendarViewModel,
     onNavigateBack: () -> Unit,
 ) {
-    val context = LocalContext.current
+    LocalContext.current
     val calendarSyncEnabled by viewModel.calendarSyncEnabled.collectAsState()
     var hasPermission by remember { mutableStateOf(viewModel.hasCalendarPermissions()) }
 
@@ -127,7 +127,8 @@ private fun CalendarSettingsContent(
     onRequestPermission: () -> Unit,
     onNavigateBack: () -> Unit,
 ) {
-    val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior(rememberTopAppBarState())
+    val scrollBehavior =
+        TopAppBarDefaults.exitUntilCollapsedScrollBehavior(rememberTopAppBarState())
     AppResponsiveScaffold(
         windowWidthSizeClass = windowWidthSizeClass,
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),

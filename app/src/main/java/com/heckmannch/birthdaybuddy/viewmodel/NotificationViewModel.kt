@@ -35,7 +35,6 @@ class NotificationViewModel @Inject constructor(
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), null)
 
 
-
     fun setNotificationsEnabled(enabled: Boolean) = viewModelScope.launch {
         if (enabled) {
             val rules = notificationRepository.getAllRulesImmediate()

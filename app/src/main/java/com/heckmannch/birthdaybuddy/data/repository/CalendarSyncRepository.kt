@@ -23,7 +23,7 @@ import javax.inject.Singleton
 
 @Singleton
 class CalendarSyncRepository @Inject constructor(
-    @ApplicationContext private val context: Context,
+    @param:ApplicationContext private val context: Context,
     private val appSettingsDao: AppSettingsDao,
 ) {
 
@@ -45,7 +45,10 @@ class CalendarSyncRepository @Inject constructor(
         if (calendarId != null) {
             val accountName = getCalendarAccountName(calendarId)
             if (accountName != null && accountName != "phone") {
-                Log.d("CalendarSyncRepo", "Upgrading legacy calendar account '$accountName' to 'phone'...")
+                Log.d(
+                    "CalendarSyncRepo",
+                    "Upgrading legacy calendar account '$accountName' to 'phone'..."
+                )
                 deleteCalendarById(calendarId, accountName)
                 appSettingsDao.upsertSettings(currentSettings.copy(calendarId = null))
             } else {
@@ -115,7 +118,10 @@ class CalendarSyncRepository @Inject constructor(
         val builder = CalendarContract.Calendars.CONTENT_URI.buildUpon()
         builder.appendQueryParameter(CalendarContract.CALLER_IS_SYNCADAPTER, "true")
         builder.appendQueryParameter(CalendarContract.Calendars.ACCOUNT_NAME, accountName)
-        builder.appendQueryParameter(CalendarContract.Calendars.ACCOUNT_TYPE, CalendarContract.ACCOUNT_TYPE_LOCAL)
+        builder.appendQueryParameter(
+            CalendarContract.Calendars.ACCOUNT_TYPE,
+            CalendarContract.ACCOUNT_TYPE_LOCAL
+        )
         val uri = builder.build()
         try {
             context.contentResolver.delete(
@@ -123,7 +129,10 @@ class CalendarSyncRepository @Inject constructor(
                 "${CalendarContract.Calendars._ID} = ?",
                 arrayOf(calendarId.toString())
             )
-            Log.d("CalendarSyncRepo", "Successfully deleted calendar ID: $calendarId ($accountName)")
+            Log.d(
+                "CalendarSyncRepo",
+                "Successfully deleted calendar ID: $calendarId ($accountName)"
+            )
         } catch (e: Exception) {
             Log.e("CalendarSyncRepo", "Failed to delete calendar ID: $calendarId ($accountName)", e)
         }
@@ -175,7 +184,10 @@ class CalendarSyncRepository @Inject constructor(
         val builder = CalendarContract.Calendars.CONTENT_URI.buildUpon()
         builder.appendQueryParameter(CalendarContract.CALLER_IS_SYNCADAPTER, "true")
         builder.appendQueryParameter(CalendarContract.Calendars.ACCOUNT_NAME, "phone")
-        builder.appendQueryParameter(CalendarContract.Calendars.ACCOUNT_TYPE, CalendarContract.ACCOUNT_TYPE_LOCAL)
+        builder.appendQueryParameter(
+            CalendarContract.Calendars.ACCOUNT_TYPE,
+            CalendarContract.ACCOUNT_TYPE_LOCAL
+        )
         val uri = builder.build()
 
         val values = ContentValues().apply {
@@ -184,7 +196,10 @@ class CalendarSyncRepository @Inject constructor(
             put(CalendarContract.Calendars.NAME, "BirthdayBuddyCalendar")
             put(CalendarContract.Calendars.CALENDAR_DISPLAY_NAME, "BirthdayBuddy")
             put(CalendarContract.Calendars.CALENDAR_COLOR, 0xFFE91E63.toInt()) // Premium pink color
-            put(CalendarContract.Calendars.CALENDAR_ACCESS_LEVEL, CalendarContract.Calendars.CAL_ACCESS_OWNER)
+            put(
+                CalendarContract.Calendars.CALENDAR_ACCESS_LEVEL,
+                CalendarContract.Calendars.CAL_ACCESS_OWNER
+            )
             put(CalendarContract.Calendars.OWNER_ACCOUNT, "phone@local")
             put(CalendarContract.Calendars.CALENDAR_TIME_ZONE, TimeZone.getDefault().id)
             put(CalendarContract.Calendars.CAN_ORGANIZER_RESPOND, 1)
@@ -215,7 +230,10 @@ class CalendarSyncRepository @Inject constructor(
             val builder = CalendarContract.Calendars.CONTENT_URI.buildUpon()
             builder.appendQueryParameter(CalendarContract.CALLER_IS_SYNCADAPTER, "true")
             builder.appendQueryParameter(CalendarContract.Calendars.ACCOUNT_NAME, accountName)
-            builder.appendQueryParameter(CalendarContract.Calendars.ACCOUNT_TYPE, CalendarContract.ACCOUNT_TYPE_LOCAL)
+            builder.appendQueryParameter(
+                CalendarContract.Calendars.ACCOUNT_TYPE,
+                CalendarContract.ACCOUNT_TYPE_LOCAL
+            )
             val uri = builder.build()
 
             try {
@@ -262,7 +280,8 @@ class CalendarSyncRepository @Inject constructor(
                 val accNameCol = cursor.getColumnIndex(CalendarContract.Calendars.ACCOUNT_NAME)
                 val accTypeCol = cursor.getColumnIndex(CalendarContract.Calendars.ACCOUNT_TYPE)
                 val nameCol = cursor.getColumnIndex(CalendarContract.Calendars.NAME)
-                val dispNameCol = cursor.getColumnIndex(CalendarContract.Calendars.CALENDAR_DISPLAY_NAME)
+                val dispNameCol =
+                    cursor.getColumnIndex(CalendarContract.Calendars.CALENDAR_DISPLAY_NAME)
                 val visibleCol = cursor.getColumnIndex(CalendarContract.Calendars.VISIBLE)
 
                 while (cursor.moveToNext()) {
@@ -272,7 +291,10 @@ class CalendarSyncRepository @Inject constructor(
                     val name = cursor.getString(nameCol)
                     val dispName = cursor.getString(dispNameCol)
                     val visible = cursor.getInt(visibleCol)
-                    Log.d("CalendarSyncRepo", "Calendar ID: $id | AccName: $accName | AccType: $accType | Name: $name | DispName: $dispName | Visible: $visible")
+                    Log.d(
+                        "CalendarSyncRepo",
+                        "Calendar ID: $id | AccName: $accName | AccType: $accType | Name: $name | DispName: $dispName | Visible: $visible"
+                    )
                 }
                 Log.d("CalendarSyncRepo", "=== END DEBUG PRINT ALL CALENDARS ===")
             }
@@ -325,7 +347,10 @@ class CalendarSyncRepository @Inject constructor(
                     .withValue(CalendarContract.Events.RRULE, "FREQ=YEARLY")
                     .withValue(CalendarContract.Events.EVENT_TIMEZONE, "UTC")
                     .withValue(CalendarContract.Events.ALL_DAY, 1)
-                    .withValue(CalendarContract.Events.STATUS, CalendarContract.Events.STATUS_CONFIRMED)
+                    .withValue(
+                        CalendarContract.Events.STATUS,
+                        CalendarContract.Events.STATUS_CONFIRMED
+                    )
                     .build()
 
                 operations.add(op)

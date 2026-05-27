@@ -77,7 +77,8 @@ private fun SettingsContent(
     onNavigateToAbout: () -> Unit,
     onNavigateBack: () -> Unit,
 ) {
-    val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior(rememberTopAppBarState())
+    val scrollBehavior =
+        TopAppBarDefaults.exitUntilCollapsedScrollBehavior(rememberTopAppBarState())
     AppResponsiveScaffold(
         windowWidthSizeClass = windowWidthSizeClass,
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),

@@ -19,7 +19,7 @@ data class GroupInfo(val title: String, val isSystem: Boolean)
 
 @Singleton
 class SystemContactDataSource @Inject constructor(
-    @ApplicationContext private val context: Context,
+    @param:ApplicationContext private val context: Context,
 ) {
     private val dateFormats = listOf(
         DateTimeFormatter.ISO_LOCAL_DATE,
@@ -114,11 +114,12 @@ class SystemContactDataSource @Inject constructor(
             ContactsContract.RawContacts.ACCOUNT_TYPE,
             ContactsContract.RawContacts.DELETED
         )
-        val selection = "${ContactsContract.RawContacts.CONTACT_ID} = ? AND ${ContactsContract.RawContacts.DELETED} = 0"
+        val selection =
+            "${ContactsContract.RawContacts.CONTACT_ID} = ? AND ${ContactsContract.RawContacts.DELETED} = 0"
         val selectionArgs = arrayOf(contactId)
-        
+
         val rawContacts = mutableListOf<Pair<Long, String?>>()
-        
+
         try {
             context.contentResolver.query(
                 ContactsContract.RawContacts.CONTENT_URI,
@@ -129,7 +130,7 @@ class SystemContactDataSource @Inject constructor(
             )?.use { cursor ->
                 val idIdx = cursor.getColumnIndex(ContactsContract.RawContacts._ID)
                 val typeIdx = cursor.getColumnIndex(ContactsContract.RawContacts.ACCOUNT_TYPE)
-                
+
                 if (idIdx != -1 && typeIdx != -1) {
                     while (cursor.moveToNext()) {
                         val id = cursor.getLong(idIdx)
@@ -141,9 +142,9 @@ class SystemContactDataSource @Inject constructor(
         } catch (e: Exception) {
             Log.e("SystemContactDataSource", "Error querying raw contacts", e)
         }
-        
+
         if (rawContacts.isEmpty()) return null
-        
+
         val readOnlyApps = setOf(
             "com.whatsapp",
             "org.thoughtcrime.securesms",
@@ -153,11 +154,11 @@ class SystemContactDataSource @Inject constructor(
             "com.google.android.apps.tachyon",
             "com.viber.voip"
         )
-        
+
         val bestContact = rawContacts.firstOrNull { (_, type) ->
             type == null || !readOnlyApps.contains(type.lowercase())
         } ?: rawContacts.firstOrNull()
-        
+
         return bestContact?.first
     }
 

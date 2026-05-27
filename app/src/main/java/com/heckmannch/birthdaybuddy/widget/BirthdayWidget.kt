@@ -97,7 +97,7 @@ class BirthdayWidget : GlanceAppWidget() {
         // Äußeres Column-Padding abziehen (top=8dp, bottom=8dp -> 16dp)
         val availableHeight = (size.height.value - 16).coerceAtLeast(0f)
         val minItemBlockHeight = 58.dp
-        
+
         // 1. Berechne wie viele Elemente maximal auf die verfügbare Höhe passen
         val maxItems = (availableHeight / minItemBlockHeight.value).toInt().coerceIn(1, 10)
         val displayContacts = contacts.take(maxItems)
@@ -180,9 +180,11 @@ class BirthdayWidget : GlanceAppWidget() {
             nextAgeValue != null && nextAgeValue % 10 == 0 -> {
                 BirthdayGold.copy(alpha = 0.15f)
             }
+
             nextAgeValue != null && nextAgeValue in 0..9 -> {
                 BirthdayKidGreen.copy(alpha = 0.15f)
             }
+
             else -> {
                 BirthdaySilver.copy(alpha = 0.15f)
             }

@@ -25,7 +25,7 @@ import javax.inject.Singleton
 
 @Singleton
 class ContactRepository @Inject constructor(
-    @ApplicationContext private val context: Context,
+    @param:ApplicationContext private val context: Context,
     private val contactDao: ContactDao,
     private val labelConfigDao: LabelConfigDao,
     private val appSettingsDao: AppSettingsDao,
@@ -60,7 +60,9 @@ class ContactRepository @Inject constructor(
                 val dbConfigsDeferred =
                     async { labelConfigDao.getAllConfigsImmediate().associateBy { it.name } }
                 val userDataDeferred =
-                    async { contactUserDataDao.getAllUserDataImmediate().associateBy { it.lookupKey } }
+                    async {
+                        contactUserDataDao.getAllUserDataImmediate().associateBy { it.lookupKey }
+                    }
 
                 val groups = groupsDeferred.await()
                 val systemContacts = systemContactDataSource.fetchContactsFromSystem(groups)
@@ -76,7 +78,7 @@ class ContactRepository @Inject constructor(
                     val lookupKey = systemContact.lookupKey
                     val existing = dbContacts[lookupKey]
                     val userData = userDataMap[lookupKey]
-                    
+
                     // Update: localId erhalten und Geschenkideen aus der UserData-Tabelle laden
                     systemContact.copy(
                         localId = existing?.localId ?: 0,
@@ -142,7 +144,7 @@ class ContactRepository @Inject constructor(
             contactUserDataDao.upsertUserData(
                 ContactUserData(lookupKey = lookupKey, giftIdeas = ideas)
             )
-            
+
             // 2. Im Cache aktualisieren (für sofortige UI-Anzeige)
             contactDao.getContactByLookupKey(lookupKey)?.let { contact ->
                 contactDao.upsertContact(contact.copy(giftIdeas = ideas))

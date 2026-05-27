@@ -46,7 +46,7 @@ class OnboardingViewModel @Inject constructor(
                 )
             }
         }
-        
+
         notificationRepository.updateSettings(
             notificationsEnabled = notificationsEnabled,
             calendarSyncEnabled = calendarSyncEnabled,

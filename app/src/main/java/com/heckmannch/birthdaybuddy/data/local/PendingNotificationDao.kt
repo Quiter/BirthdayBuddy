@@ -17,7 +17,11 @@ interface PendingNotificationDao {
     suspend fun getNotificationById(id: Int): PendingNotification?
 
     @Query("SELECT EXISTS(SELECT 1 FROM pending_notifications WHERE year = :year AND daysBefore = :daysBefore AND contactLookupKeys LIKE :lookupKeyPattern)")
-    suspend fun hasNotificationBeenScheduled(year: Int, daysBefore: Int, lookupKeyPattern: String): Boolean
+    suspend fun hasNotificationBeenScheduled(
+        year: Int,
+        daysBefore: Int,
+        lookupKeyPattern: String
+    ): Boolean
 
     @Upsert
     suspend fun upsert(notification: PendingNotification): Long

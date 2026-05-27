@@ -68,7 +68,8 @@ fun PrivacyPolicyScreen(
         }
     }
 
-    val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior(rememberTopAppBarState())
+    val scrollBehavior =
+        TopAppBarDefaults.exitUntilCollapsedScrollBehavior(rememberTopAppBarState())
     AppResponsiveScaffold(
         windowWidthSizeClass = windowWidthSizeClass,
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),

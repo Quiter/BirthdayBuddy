@@ -91,7 +91,11 @@ class NotificationRepository @Inject constructor(
 
     suspend fun getPendingNotificationById(id: Int) = pendingNotificationDao.getNotificationById(id)
 
-    suspend fun hasNotificationBeenScheduled(year: Int, daysBefore: Int, lookupKey: String): Boolean {
+    suspend fun hasNotificationBeenScheduled(
+        year: Int,
+        daysBefore: Int,
+        lookupKey: String
+    ): Boolean {
         val pattern = "%\"$lookupKey\"%"
         return pendingNotificationDao.hasNotificationBeenScheduled(year, daysBefore, pattern)
     }

@@ -78,6 +78,7 @@ fun SyncSettingsScreen(
             ContextCompat.checkSelfPermission(context, Manifest.permission.READ_CONTACTS) -> {
                 viewModel.syncContacts(showLoading = true)
             }
+
             else -> permissionLauncher.launch(Manifest.permission.READ_CONTACTS)
         }
     }
@@ -98,7 +99,8 @@ private fun SyncSettingsContent(
     onSyncClick: () -> Unit,
     onNavigateBack: () -> Unit,
 ) {
-    val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior(rememberTopAppBarState())
+    val scrollBehavior =
+        TopAppBarDefaults.exitUntilCollapsedScrollBehavior(rememberTopAppBarState())
     AppResponsiveScaffold(
         windowWidthSizeClass = windowWidthSizeClass,
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),

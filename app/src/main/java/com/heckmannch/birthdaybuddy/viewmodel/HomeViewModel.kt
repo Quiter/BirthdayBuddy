@@ -170,8 +170,8 @@ class HomeViewModel @Inject constructor(
 
         // Pseudo-Label "Ohne Datum" Konfiguration laden und Sichtbarkeit prüfen
         val pseudoConfig = configMap[LABEL_NO_BIRTHDAY]
-        val showPseudo = contacts.any { it.birthday == null } && 
-                pseudoConfig?.isHiddenFromFilter != true && 
+        val showPseudo = contacts.any { it.birthday == null } &&
+                pseudoConfig?.isHiddenFromFilter != true &&
                 pseudoConfig?.isIgnored != true
 
         // Prüfen, ob aktive, nicht-versteckte User-Labels vorhanden sind

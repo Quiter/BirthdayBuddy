@@ -59,6 +59,7 @@ class ContactActions(private val context: Context) {
                         "https://api.whatsapp.com/send?phone=$digitsOnly".toUri()
                     )
                 }
+
                 MessengerApp.SIGNAL -> {
                     Intent(
                         Intent.ACTION_VIEW,
@@ -67,24 +68,28 @@ class ContactActions(private val context: Context) {
                         setPackage(MessengerApp.SIGNAL.packageName)
                     }
                 }
+
                 MessengerApp.TELEGRAM -> {
                     Intent(
                         Intent.ACTION_VIEW,
                         "tg://resolve?phone=$cleanNumberWithPlus".toUri()
                     )
                 }
+
                 MessengerApp.SKYPE -> {
                     Intent(
                         Intent.ACTION_VIEW,
                         "skype:$cleanNumberWithPlus?chat".toUri()
                     )
                 }
+
                 MessengerApp.VIBER -> {
                     Intent(
                         Intent.ACTION_VIEW,
                         "viber://keypad?number=$cleanNumberWithPlus".toUri()
                     )
                 }
+
                 MessengerApp.THREEMA,
                 MessengerApp.GOOGLE_MEET,
                 MessengerApp.MESSENGER,

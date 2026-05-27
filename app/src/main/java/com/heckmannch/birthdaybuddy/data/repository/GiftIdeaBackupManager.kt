@@ -22,10 +22,11 @@ class GiftIdeaBackupManager @Inject constructor(
      * Nutzt nun die ContactUserData-Tabelle als Primärquelle.
      */
     suspend fun exportGiftIdeas(): String = withContext(Dispatchers.IO) {
-        val userDataList = contactUserDataDao.getAllUserDataImmediate().filter { it.giftIdeas.isNotEmpty() }
+        val userDataList =
+            contactUserDataDao.getAllUserDataImmediate().filter { it.giftIdeas.isNotEmpty() }
         val dbContacts = contactDao.getAllContactsImmediate().associateBy { it.lookupKey }
         val converters = GiftIdeaConverters()
-        
+
         val root = JSONArray()
         userDataList.forEach { userData ->
             val contact = dbContacts[userData.lookupKey]
@@ -63,7 +64,7 @@ class GiftIdeaBackupManager @Inject constructor(
                 if (giftIdeasStr.isNullOrBlank()) continue
 
                 // Match via LookupKey (Best) oder Name (Fallback)
-                val targetLookupKey = contactsByLookup[lookupKey]?.lookupKey 
+                val targetLookupKey = contactsByLookup[lookupKey]?.lookupKey
                     ?: contactsByName[fullName]?.lookupKey
 
                 if (targetLookupKey != null) {
