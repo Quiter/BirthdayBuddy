@@ -10,23 +10,23 @@
 
 ---
 
-## 📝 Aktuelle Vorlage (Beispiel)
+## 📝 Aktuelle Vorlage (v2.4.17)
 
 <!--suppress HtmlUnknownTag, HtmlUnknownTag -->
 <en-US>
-- New contact animations (Lottie)
-- Adaptive layout for tablets/Chromebooks
-- Visual feedback for search focus
-- Smart scrollbar for dateless contacts
-- Refined card design and typography
-- Improved stability and refresh logic
+- Added local system calendar synchronization
+- Smoother scrolling & instant search for large lists
+- Refactored and modular date picker dialog
+- Improved fast-scroll bubble rendering (Popup API)
+- Premium card-design indicator updates on home list
+- Under-the-hood stability & warning fixes
 </en-US>
 <!--suppress HtmlUnknownTag, HtmlUnknownTag -->
 <de-DE>
-- Neue Kontakt-Animationen (Lottie)
-- Adaptives Layout für Tablets/Chromebooks
-- Visuelles Feedback für Suchfokus
-- Smarte Scrollleiste für Kontakte ohne Datum
-- Optimiertes Karten-Design und Typografie
-- Verbesserte Stabilität und Listen-Logik
+- Automatische Synchronisation mit dem Systemkalender
+- Flüssigeres Scrollen & schnellere Suche bei vielen Kontakten
+- Neuer, modularer Geburtstagsauswahl-Dialog
+- Optimierte Schnell-Scrollleiste (Popup-API & stabilere Gesten)
+- Premium Design-Anpassungen in der Kontaktliste
+- Allgemeine Stabilitäts- und Warnungs-Korrekturen
 </de-DE>
