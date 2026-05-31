@@ -62,7 +62,6 @@ class HomeViewModelSearchTest {
             contactRepository = contactRepository,
             mapper = mapper,
             timeRepository = timeRepository,
-            widgetUpdater = mock(),
         )
 
         // Suche nach "Mustermann Max"
@@ -93,7 +92,6 @@ class HomeViewModelSearchTest {
             contactRepository = contactRepository,
             mapper = mapper,
             timeRepository = timeRepository,
-            widgetUpdater = mock(),
         )
 
         viewModel.onSearchQueryChange("  Max  ")

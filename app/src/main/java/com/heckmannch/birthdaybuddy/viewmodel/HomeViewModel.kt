@@ -10,7 +10,7 @@ import com.heckmannch.birthdaybuddy.ui.model.ContactUiModel
 import com.heckmannch.birthdaybuddy.ui.model.GiftIdea
 import com.heckmannch.birthdaybuddy.ui.model.HomeUiState
 
-import com.heckmannch.birthdaybuddy.util.WidgetUpdater
+
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
@@ -35,7 +35,6 @@ class HomeViewModel @Inject constructor(
     private val contactRepository: ContactRepository,
     private val mapper: ContactMapper,
     timeRepository: TimeRepository,
-    private val widgetUpdater: WidgetUpdater,
 ) : ViewModel() {
 
     // --- Search & Filter State ---
@@ -326,7 +325,6 @@ class HomeViewModel @Inject constructor(
         val startTime = System.currentTimeMillis()
 
         contactRepository.syncContacts()
-        updateWidget()
 
         if (showLoading) {
             val elapsedTime = System.currentTimeMillis() - startTime
@@ -348,9 +346,5 @@ class HomeViewModel @Inject constructor(
 
     fun consumeSearchFocus() {
         _searchFocusRequested.value = false
-    }
-
-    private fun updateWidget() = viewModelScope.launch {
-        widgetUpdater.updateWidget()
     }
 }

@@ -46,7 +46,6 @@ class HomeViewModelTest {
             contactRepository = contactRepository,
             mapper = mapper,
             timeRepository = timeRepository,
-            widgetUpdater = mock(),
         )
         val state = viewModel.uiState.first()
 
@@ -61,7 +60,6 @@ class HomeViewModelTest {
             contactRepository = contactRepository,
             mapper = mapper,
             timeRepository = timeRepository,
-            widgetUpdater = mock(),
         )
         viewModel.onLabelSelected("Freunde")
 
@@ -93,7 +91,6 @@ class HomeViewModelTest {
             contactRepository = contactRepository,
             mapper = mapper,
             timeRepository = timeRepository,
-            widgetUpdater = mock(),
         )
 
         viewModel.onLabelSelected("Freunde")
@@ -131,7 +128,6 @@ class HomeViewModelTest {
             contactRepository = contactRepository,
             mapper = mapper,
             timeRepository = timeRepository,
-            widgetUpdater = mock(),
         )
         val state = viewModel.uiState.first { (it.contacts != null) }
 

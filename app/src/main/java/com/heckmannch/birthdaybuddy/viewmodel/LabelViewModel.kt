@@ -5,7 +5,6 @@ import androidx.lifecycle.viewModelScope
 import com.heckmannch.birthdaybuddy.data.local.LabelConfig
 import com.heckmannch.birthdaybuddy.data.repository.ContactRepository
 import com.heckmannch.birthdaybuddy.ui.model.LabelManagementModel
-import com.heckmannch.birthdaybuddy.util.WidgetUpdater
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -17,7 +16,6 @@ import javax.inject.Inject
 @HiltViewModel
 class LabelViewModel @Inject constructor(
     private val contactRepository: ContactRepository,
-    private val widgetUpdater: WidgetUpdater,
 ) : ViewModel() {
 
     val labelManagementList: StateFlow<List<LabelManagementModel>> = combine(
@@ -58,10 +56,5 @@ class LabelViewModel @Inject constructor(
     fun updateLabelConfig(name: String, hidden: Boolean, ignored: Boolean, isSystem: Boolean) =
         viewModelScope.launch {
             contactRepository.updateLabelConfig(LabelConfig(name, hidden, ignored, isSystem))
-            updateWidget()
         }
-
-    private fun updateWidget() = viewModelScope.launch {
-        widgetUpdater.updateWidget()
-    }
 }

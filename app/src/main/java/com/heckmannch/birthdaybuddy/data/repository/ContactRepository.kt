@@ -14,6 +14,7 @@ import com.heckmannch.birthdaybuddy.data.local.ContactUserDataDao
 import com.heckmannch.birthdaybuddy.data.local.LabelConfig
 import com.heckmannch.birthdaybuddy.data.local.LabelConfigDao
 import com.heckmannch.birthdaybuddy.ui.model.GiftIdea
+import com.heckmannch.birthdaybuddy.util.WidgetUpdater
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
@@ -33,6 +34,7 @@ class ContactRepository @Inject constructor(
     private val systemContactDataSource: SystemContactDataSource,
     private val giftIdeaBackupManager: GiftIdeaBackupManager,
     private val calendarSyncRepository: CalendarSyncRepository,
+    private val widgetUpdater: WidgetUpdater,
 ) {
 
     val allContacts: Flow<List<Contact>> = contactDao.getAllContacts()
@@ -98,6 +100,7 @@ class ContactRepository @Inject constructor(
                 // 6. Zeitstempel aktualisieren
                 appSettingsDao.upsertSettings(currentSettings.copy(lastSyncTimestamp = System.currentTimeMillis()))
             }
+            widgetUpdater.updateWidget()
         } catch (e: Exception) {
             Log.e("ContactRepository", "Fehler beim Sync: ${e.message}", e)
         }
@@ -150,10 +153,12 @@ class ContactRepository @Inject constructor(
                 contactDao.upsertContact(contact.copy(giftIdeas = ideas))
             }
         }
+        widgetUpdater.updateWidget()
     }
 
     suspend fun updateLabelConfig(config: LabelConfig) {
         labelConfigDao.upsertConfig(config)
+        widgetUpdater.updateWidget()
     }
 
     suspend fun updateContactBirthday(contactId: String, birthday: java.time.LocalDate): Boolean {
