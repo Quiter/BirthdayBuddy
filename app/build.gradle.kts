@@ -19,7 +19,7 @@ android {
         //noinspection ExpiredTargetSdkVersion, OldTargetApi
         targetSdk = 36
         versionCode = 30
-        versionName = "2.4.18"
+        versionName = "2.4.19"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
