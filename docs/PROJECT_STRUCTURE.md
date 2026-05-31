@@ -10,7 +10,7 @@
 
 ## 📁 DI (`di`)
 - `AppModule.kt`: Hilt-Modul zur Bereitstellung von Singleton-Instanzen und performanten, leichtgewichtigen `@Reusable` DAO-Bindings zur Steigerung der DI-Performanz.
-- `HelperBindingsModule.kt`: Hilt-Modul zur Bereitstellung der Singleton-Bindings für Hilfsklassen (WidgetUpdater, NotificationScheduler, ImagePrefetcher).
+- `HelperBindingsModule.kt`: Hilt-Modul zur Bereitstellung der Singleton-Bindings für Hilfsklassen (WidgetUpdater, NotificationScheduler).
 
 ## 📁 Data Layer (`data`)
 - ### 📁 Local (`data.local`)
@@ -32,7 +32,7 @@
     - `PendingNotificationDao.kt`: DAO für die Verwaltung noch nicht quittierter Erinnerungen.
 - ### 📁 Repository (`data.repository`)
     - `CalendarSyncRepository.kt`: Kapselt den Low-Level-Zugriff auf den Android-Kalender-Provider, verwaltet die Kalender-Erstellung/Löschung unter `"phone"` (ACCOUNT_TYPE_LOCAL) und synchronisiert Geburtstage als jährliche ganztägige Serientermine.
-    - `ContactRepository.kt`: Orchestriert den Datenfluss zwischen Room-DB und der System-Kontaktquelle; implementiert die Sync-Logik.
+    - `ContactRepository.kt`: Orchestriert den Datenfluss zwischen Room-DB und der System-Kontaktquelle; implementiert die Sync-Logik, reaktive Widget-Updates und Geschäftslogik für Geschenkideen.
     - `GiftIdeaBackupManager.kt`: Spezialisierte Klasse für den JSON-basierten Im- und Export von Geschenkideen.
     - `NotificationRepository.kt`: Zentraler Zugriff auf Benachrichtigungsregeln und persistente App-Einstellungen.
     - `SystemContactDataSource.kt`: Kapselt den Low-Level Zugriff auf den Android ContentResolver (Kontakte, Gruppen, Events).
@@ -43,7 +43,7 @@
 ## 📁 UI Layer (`ui`)
 - ### 📁 Screens (`ui.screens`)
     - #### 📁 Home (`home`)
-        - `HomeScreen.kt`: Container-Composable des Hauptbildschirms; verwaltet den UI-State. Verwendet `rememberUpdatedState` für sichere Navigationstargets und delegiert Daten-Synchronisation sowie Bild-Preloading an das `HomeViewModel`.
+        - `HomeScreen.kt`: Container-Composable des Hauptbildschirms; verwaltet den UI-State. Verwendet `rememberUpdatedState` für sichere Navigationstargets und führt Bild-Preloading via Coil aus.
         - `HomeState.kt`: Plain State Holder für die UI-Logik (Scroll-Zustand, Fokus).
         - `HomeActions.kt`: Wrapper für Benutzeraktionen zur Reduzierung von Prop-Drilling.
         - ##### 📁 Components (`home.components`)
@@ -115,7 +115,6 @@
 - `ContextExtensions.kt`: Hilfsfunktionen für die sichere Navigation im Android-Context.
 - `WidgetUpdater.kt` & `BirthdayWidgetUpdater.kt`: Hilfsklassen zur Glance-unabhängigen Aktualisierung des App-Widgets.
 - `NotificationScheduler.kt` & `NotificationSchedulerImpl.kt`: Hilfsklassen zur WorkManager-unabhängigen Steuerung von Hintergrund-Workern.
-- `ImagePrefetcher.kt` & `ImagePrefetcherImpl.kt`: Hilfsklassen zur Coil-unabhängigen Vorladung von Bildern.
 
 ## 📁 UI Utilities (`ui.util`)
 - `ContactActions.kt`: Zentraler Handler für externe System-Aktionen (Intents, Permissions).

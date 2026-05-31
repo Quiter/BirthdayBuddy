@@ -146,3 +146,10 @@
     - **Dynamic Onboarding Pages scaling:** Updated `OnboardingScreen.kt` to dynamically scale the onboarding pager count from 5 to 6 pages ONLY when calendar sync is enabled and permission is granted, seamlessly bypassing the tutorial if sync is disabled.
     - **Calendar App Link Intent:** Integrated a robust deep-link button (`openDefaultCalendarApp`) in both the onboarding tutorial and settings pages to launch the user's preferred standard Calendar application using a two-stage Intent routing (direct Calendar URI fallback to `Intent.CATEGORY_APP_CALENDAR`), ensuring compatibility across 100% of Android devices.
     - **Clean Compile & I18n:** Added full English and German translations for all guide steps, rearranged state variable declarations to resolve reference ordering bugs, and resolved the `Assigned value is never read` warning, ensuring a 100% clean Gradle compilation.
+
+126. **Clean Architecture & MVVM Refactoring:**
+    - **Image Prefetching:** Relocated the image prefetching logic from `HomeViewModel` into a Compose `LaunchedEffect(uiState.contacts)` in `HomeScreen`, decoupling the ViewModel from Coil (image loading library). Fully deleted the redundant `ImagePrefetcher` interface and implementation.
+    - **Reactive Widget Updates:** Centralized all Glance AppWidget updates inside the `ContactRepository` data modification methods (`syncContacts`, `updateGiftIdeas`, `updateLabelConfig`), making widget updates fully reactive. Removed `WidgetUpdater` constructor dependency, imports, and manual update calls from `HomeViewModel`, `BackupViewModel`, and `LabelViewModel`.
+    - **Gift Ideas Logic Migration:** Shifted the core business logic of adding, toggling, deleting, and updating gift ideas out of `HomeViewModel` and into `ContactRepository` to establish a clean separation of concerns and a single source of truth.
+    - **Test Coverage & Quality:** Cleaned up Hilt instrumented and unit tests to align with the new ViewModel constructors. Verified a 100% successful Gradle build and test completion.
+
