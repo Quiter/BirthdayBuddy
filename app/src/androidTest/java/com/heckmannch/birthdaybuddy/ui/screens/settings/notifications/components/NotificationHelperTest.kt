@@ -36,15 +36,18 @@ class NotificationHelperTest {
     private lateinit var notificationHelper: NotificationHelper
     private lateinit var notificationManager: NotificationManager
 
-    private val settingsFlow = MutableStateFlow(AppSettings(
-        notificationsEnabled = true,
-        persistentNotifications = false
-    ))
+    private val settingsFlow = MutableStateFlow(
+        AppSettings(
+            notificationsEnabled = true,
+            persistentNotifications = false
+        )
+    )
 
     @Before
     fun setUp() = runTest {
         context = ApplicationProvider.getApplicationContext()
-        notificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+        notificationManager =
+            context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
 
         // Clear any active notifications first
         notificationManager.cancelAll()

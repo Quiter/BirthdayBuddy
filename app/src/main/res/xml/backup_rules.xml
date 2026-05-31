@@ -1,7 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <full-backup-content>
     <!-- Wir sichern gezielt nur die Datenbank mit den Benutzereinstellungen -->
-    <include domain="database" path="settings_database" />
-    <include domain="database" path="settings_database-shm" />
-    <include domain="database" path="settings_database-wal" />
+    <include
+        domain="database"
+        path="settings_database" />
+    <include
+        domain="database"
+        path="settings_database-shm" />
+    <include
+        domain="database"
+        path="settings_database-wal" />
 </full-backup-content>

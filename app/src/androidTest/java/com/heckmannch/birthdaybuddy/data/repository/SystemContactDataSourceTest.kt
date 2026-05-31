@@ -58,7 +58,9 @@ class SystemContactDataSourceTest {
         ).doReturn(cursor)
 
         // Mock applyBatch to succeed
-        whenever(contentResolver.applyBatch(eq(ContactsContract.AUTHORITY), any())).doReturn(emptyArray())
+        whenever(contentResolver.applyBatch(eq(ContactsContract.AUTHORITY), any())).doReturn(
+            emptyArray()
+        )
 
         val result = dataSource.updateContactBirthday(contactId, birthday)
 
@@ -69,7 +71,15 @@ class SystemContactDataSourceTest {
             eq(ContactsContract.Data.CONTENT_URI),
             argThat { contentEquals(arrayOf(ContactsContract.Data._ID)) },
             anyOrNull(),
-            argThat { contentEquals(arrayOf(contactId, ContactsContract.CommonDataKinds.Event.CONTENT_ITEM_TYPE, ContactsContract.CommonDataKinds.Event.TYPE_BIRTHDAY.toString())) },
+            argThat {
+                contentEquals(
+                    arrayOf(
+                        contactId,
+                        ContactsContract.CommonDataKinds.Event.CONTENT_ITEM_TYPE,
+                        ContactsContract.CommonDataKinds.Event.TYPE_BIRTHDAY.toString()
+                    )
+                )
+            },
             anyOrNull()
         )
 
@@ -83,75 +93,86 @@ class SystemContactDataSourceTest {
     }
 
     @Test
-    fun updateContactBirthday_whenNoBirthdayExists_performsInsertWithWriteableRawContact() = runTest {
-        val contactId = "123"
-        val birthday = LocalDate.of(1990, 5, 24)
+    fun updateContactBirthday_whenNoBirthdayExists_performsInsertWithWriteableRawContact() =
+        runTest {
+            val contactId = "123"
+            val birthday = LocalDate.of(1990, 5, 24)
 
-        // Mock query to find existing birthday returns empty
-        val cursorEmpty: Cursor = mock {
-            on { moveToFirst() } doReturn false
-        }
+            // Mock query to find existing birthday returns empty
+            val cursorEmpty: Cursor = mock {
+                on { moveToFirst() } doReturn false
+            }
 
-        // Mock query for raw contacts: returns WhatsApp (read-only) and Google (writeable)
-        val cursorRawContacts: Cursor = mock {
-            var counter = 0
-            on { moveToNext() } doAnswer {
-                counter++ < 2
+            // Mock query for raw contacts: returns WhatsApp (read-only) and Google (writeable)
+            val cursorRawContacts: Cursor = mock {
+                var counter = 0
+                on { moveToNext() } doAnswer {
+                    counter++ < 2
+                }
+                on { getColumnIndex(ContactsContract.RawContacts._ID) } doReturn 0
+                on { getColumnIndex(ContactsContract.RawContacts.ACCOUNT_TYPE) } doReturn 1
+                on { getLong(0) } doAnswer {
+                    if (counter == 1) 111L else 222L // rawContactId
+                }
+                on { getString(1) } doAnswer {
+                    if (counter == 1) "com.whatsapp" else "com.google" // accountType
+                }
             }
-            on { getColumnIndex(ContactsContract.RawContacts._ID) } doReturn 0
-            on { getColumnIndex(ContactsContract.RawContacts.ACCOUNT_TYPE) } doReturn 1
-            on { getLong(0) } doAnswer {
-                if (counter == 1) 111L else 222L // rawContactId
-            }
-            on { getString(1) } doAnswer {
-                if (counter == 1) "com.whatsapp" else "com.google" // accountType
-            }
-        }
 
-        // Return empty cursor when checking existing birthday (first query)
-        whenever(
-            contentResolver.query(
-                eq(ContactsContract.Data.CONTENT_URI),
-                anyOrNull(),
-                anyOrNull(),
-                anyOrNull(),
-                anyOrNull()
+            // Return empty cursor when checking existing birthday (first query)
+            whenever(
+                contentResolver.query(
+                    eq(ContactsContract.Data.CONTENT_URI),
+                    anyOrNull(),
+                    anyOrNull(),
+                    anyOrNull(),
+                    anyOrNull()
+                )
+            ).doReturn(cursorEmpty)
+
+            // Return raw contacts when querying raw contacts (second query)
+            whenever(
+                contentResolver.query(
+                    eq(ContactsContract.RawContacts.CONTENT_URI),
+                    anyOrNull(),
+                    anyOrNull(),
+                    anyOrNull(),
+                    anyOrNull()
+                )
+            ).doReturn(cursorRawContacts)
+
+            // Mock applyBatch to succeed
+            whenever(contentResolver.applyBatch(eq(ContactsContract.AUTHORITY), any())).doReturn(
+                emptyArray()
             )
-        ).doReturn(cursorEmpty)
 
-        // Return raw contacts when querying raw contacts (second query)
-        whenever(
-            contentResolver.query(
+            val result = dataSource.updateContactBirthday(contactId, birthday)
+
+            assertThat(result).isTrue()
+
+            // Verify we queried for raw contacts
+            verify(contentResolver).query(
                 eq(ContactsContract.RawContacts.CONTENT_URI),
+                argThat {
+                    contentEquals(
+                        arrayOf(
+                            ContactsContract.RawContacts._ID,
+                            ContactsContract.RawContacts.ACCOUNT_TYPE,
+                            ContactsContract.RawContacts.DELETED
+                        )
+                    )
+                },
                 anyOrNull(),
-                anyOrNull(),
-                anyOrNull(),
+                argThat { contentEquals(arrayOf(contactId)) },
                 anyOrNull()
             )
-        ).doReturn(cursorRawContacts)
 
-        // Mock applyBatch to succeed
-        whenever(contentResolver.applyBatch(eq(ContactsContract.AUTHORITY), any())).doReturn(emptyArray())
-
-        val result = dataSource.updateContactBirthday(contactId, birthday)
-
-        assertThat(result).isTrue()
-
-        // Verify we queried for raw contacts
-        verify(contentResolver).query(
-            eq(ContactsContract.RawContacts.CONTENT_URI),
-            argThat { contentEquals(arrayOf(ContactsContract.RawContacts._ID, ContactsContract.RawContacts.ACCOUNT_TYPE, ContactsContract.RawContacts.DELETED)) },
-            anyOrNull(),
-            argThat { contentEquals(arrayOf(contactId)) },
-            anyOrNull()
-        )
-
-        // Verify applyBatch was called with an insert operation
-        verify(contentResolver).applyBatch(
-            eq(ContactsContract.AUTHORITY),
-            argThat {
-                size == 1
-            }
-        )
-    }
+            // Verify applyBatch was called with an insert operation
+            verify(contentResolver).applyBatch(
+                eq(ContactsContract.AUTHORITY),
+                argThat {
+                    size == 1
+                }
+            )
+        }
 }

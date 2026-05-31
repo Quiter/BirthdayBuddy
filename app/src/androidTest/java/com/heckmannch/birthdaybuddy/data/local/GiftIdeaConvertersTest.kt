@@ -33,7 +33,8 @@ class GiftIdeaConvertersTest {
 
     @Test
     fun toGiftIdeaList_deserializesJsonStringToList() {
-        val json = "[{\"id\":\"1\",\"text\":\"Socken\",\"isChecked\":false},{\"id\":\"2\",\"text\":\"Wein\",\"isChecked\":true}]"
+        val json =
+            "[{\"id\":\"1\",\"text\":\"Socken\",\"isChecked\":false},{\"id\":\"2\",\"text\":\"Wein\",\"isChecked\":true}]"
         val list = converters.toGiftIdeaList(json)
         assertThat(list).hasSize(2)
         assertThat(list[0].id).isEqualTo("1")
