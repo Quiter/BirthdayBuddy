@@ -25,6 +25,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import com.heckmannch.birthdaybuddy.ui.components.AppResponsiveScaffold
+import com.heckmannch.birthdaybuddy.ui.screens.onboarding.components.CalendarGuidePage
 import com.heckmannch.birthdaybuddy.ui.screens.onboarding.components.CalendarPage
 import com.heckmannch.birthdaybuddy.ui.screens.onboarding.components.ContactsPage
 import com.heckmannch.birthdaybuddy.ui.screens.onboarding.components.NotificationsPage
@@ -33,8 +34,7 @@ import com.heckmannch.birthdaybuddy.ui.screens.onboarding.components.ReadyPage
 import com.heckmannch.birthdaybuddy.ui.screens.onboarding.components.WelcomePage
 import com.heckmannch.birthdaybuddy.viewmodel.OnboardingViewModel
 import kotlinx.coroutines.launch
-
-@Composable
+@Composable
 fun OnboardingScreen(
     viewModel: OnboardingViewModel,
     windowWidthSizeClass: WindowWidthSizeClass,
@@ -42,7 +42,6 @@ fun OnboardingScreen(
 ) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
-    val pagerState = rememberPagerState { 5 }
 
     // Lokale States für die Einstellungen während des Onboardings
     var contactsEnabled by remember { mutableStateOf(value = true) }
@@ -84,6 +83,9 @@ fun OnboardingScreen(
                     ) == PackageManager.PERMISSION_GRANTED
         )
     }
+
+    val showCalendarGuide = calendarEnabled && hasCalendarPermission
+    val pagerState = rememberPagerState { if (showCalendarGuide) 6 else 5 }
 
     val contactLauncher =
         rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted ->
@@ -160,7 +162,8 @@ fun OnboardingScreen(
             modifier = Modifier.fillMaxSize(),
             userScrollEnabled = false
         ) { page ->
-            when (page) {
+            val actualPage = if (!showCalendarGuide && page >= 4) page + 1 else page
+            when (actualPage) {
                 0 -> WelcomePage(windowWidthSizeClass = windowWidthSizeClass)
                 1 -> ContactsPage(
                     windowWidthSizeClass = windowWidthSizeClass,
@@ -193,7 +196,9 @@ fun OnboardingScreen(
                     onGrant = onRequestCalendarPermission
                 )
 
-                4 -> ReadyPage(
+                4 -> CalendarGuidePage(windowWidthSizeClass = windowWidthSizeClass)
+
+                5 -> ReadyPage(
                     windowWidthSizeClass = windowWidthSizeClass,
                     hasContactPermission = contactsEnabled && hasContactPermission,
                     notificationsEnabled = notificationsEnabled && hasNotifPermission,
