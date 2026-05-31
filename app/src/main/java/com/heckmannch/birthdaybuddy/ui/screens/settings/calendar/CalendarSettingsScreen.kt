@@ -1,6 +1,10 @@
 package com.heckmannch.birthdaybuddy.ui.screens.settings.calendar
 
 import android.Manifest
+import android.content.Context
+import android.content.Intent
+import android.provider.CalendarContract
+import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
@@ -242,6 +246,7 @@ private fun SetupStepsCard(
     calendarSyncEnabled: Boolean,
     onRequestPermission: () -> Unit
 ) {
+    val context = LocalContext.current
     Card(
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f)
@@ -302,6 +307,46 @@ private fun SetupStepsCard(
                 isLocked = !(calendarSyncEnabled && hasPermission),
                 icon = Icons.Default.DateRange
             )
+
+            if (calendarSyncEnabled && hasPermission) {
+                Spacer(modifier = Modifier.height(16.dp))
+                Button(
+                    onClick = { openDefaultCalendarApp(context) },
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Icon(
+                            imageVector = Icons.Default.DateRange,
+                            contentDescription = null,
+                            modifier = Modifier.size(20.dp)
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(stringResource(R.string.onboarding_calendar_guide_btn))
+                    }
+                }
+            }
+        }
+    }
+}
+
+private fun openDefaultCalendarApp(context: Context) {
+    try {
+        val builder = CalendarContract.CONTENT_URI.buildUpon().appendPath("time")
+        android.content.ContentUris.appendId(builder, System.currentTimeMillis())
+        val intent = Intent(Intent.ACTION_VIEW).apply {
+            data = builder.build()
+            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+        }
+        context.startActivity(intent)
+    } catch (e: Exception) {
+        try {
+            val intent = Intent(Intent.ACTION_MAIN).apply {
+                addCategory(Intent.CATEGORY_APP_CALENDAR)
+                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            }
+            context.startActivity(intent)
+        } catch (e2: Exception) {
+            Log.e("CalendarSettingsScreen", "Could not open calendar app", e2)
         }
     }
 }
