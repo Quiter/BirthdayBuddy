@@ -47,6 +47,8 @@ import com.heckmannch.birthdaybuddy.ui.util.ContactActions
 import com.heckmannch.birthdaybuddy.viewmodel.HomeViewModel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.collectLatest
+import coil.imageLoader
+import coil.request.ImageRequest
 
 /**
  * Der Hauptbildschirm der App.
@@ -121,6 +123,22 @@ fun HomeScreen(
             homeState.searchFocusRequester.requestFocus()
             keyboardController?.show()
             viewModel.consumeSearchFocus()
+        }
+    }
+
+    // --- Image Prefetching (UI Optimization) ---
+    LaunchedEffect(uiState.contacts) {
+        val contacts = uiState.contacts
+        if (!contacts.isNullOrEmpty()) {
+            contacts.take(20)
+                .mapNotNull { it.imageUri }
+                .forEach { uri ->
+                    val request = ImageRequest.Builder(context)
+                        .data(uri)
+                        .size(150)
+                        .build()
+                    context.imageLoader.enqueue(request)
+                }
         }
     }
 

@@ -63,7 +63,6 @@ class HomeViewModelSearchTest {
             mapper = mapper,
             timeRepository = timeRepository,
             widgetUpdater = mock(),
-            imagePrefetcher = mock(),
         )
 
         // Suche nach "Mustermann Max"
@@ -95,7 +94,6 @@ class HomeViewModelSearchTest {
             mapper = mapper,
             timeRepository = timeRepository,
             widgetUpdater = mock(),
-            imagePrefetcher = mock(),
         )
 
         viewModel.onSearchQueryChange("  Max  ")

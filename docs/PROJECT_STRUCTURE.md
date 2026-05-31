@@ -31,6 +31,7 @@
     - `PendingNotification.kt`: Entity zur Nachverfolgung aktiver System-Benachrichtigungen.
     - `PendingNotificationDao.kt`: DAO für die Verwaltung noch nicht quittierter Erinnerungen.
 - ### 📁 Repository (`data.repository`)
+    - `CalendarSyncRepository.kt`: Kapselt den Low-Level-Zugriff auf den Android-Kalender-Provider, verwaltet die Kalender-Erstellung/Löschung unter `"phone"` (ACCOUNT_TYPE_LOCAL) und synchronisiert Geburtstage als jährliche ganztägige Serientermine.
     - `ContactRepository.kt`: Orchestriert den Datenfluss zwischen Room-DB und der System-Kontaktquelle; implementiert die Sync-Logik.
     - `GiftIdeaBackupManager.kt`: Spezialisierte Klasse für den JSON-basierten Im- und Export von Geschenkideen.
     - `NotificationRepository.kt`: Zentraler Zugriff auf Benachrichtigungsregeln und persistente App-Einstellungen.
@@ -70,12 +71,15 @@
             - `WelcomePage.kt`: Individuelle Onboarding-Seite für die Begrüßung.
             - `ContactsPage.kt`: Individuelle Onboarding-Seite für die Kontaktberechtigung.
             - `NotificationsPage.kt`: Individuelle Onboarding-Seite für die Benachrichtigungseinstellungen.
+            - `CalendarPage.kt`: Individuelle Onboarding-Seite zur Aktivierung des Kalender-Syncs und Einleitung der Berechtigungsanfrage.
+            - `CalendarGuidePage.kt`: Individuelle Onboarding-Seite mit einer bebilderten Schritt-für-Schritt Anleitung zur Aktivierung des Kalenders in der externen Kalender-App und einem Direktlink per Intent.
             - `ReadyPage.kt`: Individuelle Onboarding-Seite für den Abschluss.
             - `OnboardingFooter.kt`: Navigations-Footer mit Dots, vollflächig gerendert (`fillMaxWidth`) für konsistente responsive Darstellung auf breiten Bildschirmen.
     - #### 📁 Settings (`settings`)
         - `SettingsScreen.kt`: Haupteinstellungsmenü.
         - `labels/LabelSettingsScreen.kt`: Verwaltung der Label-Sichtbarkeit.
         - `notifications/NotificationSettingsScreen.kt`: Konfiguration des Erinnerungssystems.
+        - `calendar/CalendarSettingsScreen.kt`: Screen zur detaillierten Kalender-Sync-Konfiguration mit einer interaktiven Schritt-für-Schritt Anleitung (`SetupStepsCard`) und einem Direktlink zur Standard-Kalender-App.
         - ##### 📁 Components (`notifications.components`)
             - `NotificationRuleItem.kt`: UI-Element für eine einzelne Benachrichtigungsregel.
             - `EditRuleDialog.kt`: Dialog zum Bearbeiten/Erstellen von Erinnerungsregeln. Ermöglicht eine präzise, textbasierte Vorwarnzeit-Eingabe in Tagen oder Wochen (Einheiten-Auswahl per RadioButtons) mit integriertem System-TimePicker.
@@ -102,7 +106,8 @@
 - `HomeViewModel.kt`: Zuständig für die Kontaktliste, Suche, Filterung und den Home-Screen State.
 - `NotificationViewModel.kt`: Verwaltung der Benachrichtigungsregeln und deren Synchronisation mit dem WorkManager.
 - `OnboardingViewModel.kt`: Zuständig für den Onboarding-Status und Erststart-Prozess.
-- `LabelViewModel.kt`: Spezielle Logik für die Label-Verwaltung und Konfiguration.
+- `CalendarViewModel.kt`: ViewModel für die Kalender-Einstellungen; steuert die Synchronisation und die Entfernung des Kalenders aus der App.
+- `LabelViewModel.kt`: Spezialer Logik für die Label-Verwaltung und Konfiguration.
 - `BackupViewModel.kt`: Logik für den Import und Export von Geschenkideen.
 
 ## 📁 Utilities (`util`)

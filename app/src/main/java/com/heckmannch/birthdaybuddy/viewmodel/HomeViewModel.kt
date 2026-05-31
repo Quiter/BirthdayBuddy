@@ -9,7 +9,7 @@ import com.heckmannch.birthdaybuddy.data.repository.TimeRepository
 import com.heckmannch.birthdaybuddy.ui.model.ContactUiModel
 import com.heckmannch.birthdaybuddy.ui.model.GiftIdea
 import com.heckmannch.birthdaybuddy.ui.model.HomeUiState
-import com.heckmannch.birthdaybuddy.util.ImagePrefetcher
+
 import com.heckmannch.birthdaybuddy.util.WidgetUpdater
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
@@ -23,7 +23,6 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
-import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
@@ -37,7 +36,6 @@ class HomeViewModel @Inject constructor(
     private val mapper: ContactMapper,
     timeRepository: TimeRepository,
     private val widgetUpdater: WidgetUpdater,
-    private val imagePrefetcher: ImagePrefetcher,
 ) : ViewModel() {
 
     // --- Search & Filter State ---
@@ -88,14 +86,6 @@ class HomeViewModel @Inject constructor(
 
     init {
         syncContacts()
-        // Pre-fetch der ersten Kontaktbilder
-        viewModelScope.launch {
-            val contactUris = allUiContacts.filter { it.isNotEmpty() }
-                .first()
-                .take(20)
-                .mapNotNull { it.imageUri }
-            imagePrefetcher.prefetch(contactUris)
-        }
     }
 
     private val searchKeywords = _searchQuery
