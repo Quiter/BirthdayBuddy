@@ -9,8 +9,6 @@ import com.heckmannch.birthdaybuddy.data.repository.TimeRepository
 import com.heckmannch.birthdaybuddy.ui.model.ContactUiModel
 import com.heckmannch.birthdaybuddy.ui.model.GiftIdea
 import com.heckmannch.birthdaybuddy.ui.model.HomeUiState
-
-
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
@@ -23,7 +21,6 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
@@ -275,45 +272,24 @@ class HomeViewModel @Inject constructor(
         triggerScrollToTop()
     }
 
-    private suspend fun updateContactGiftIdeas(
-        lookupKey: String,
-        transform: (List<GiftIdea>) -> List<GiftIdea>
-    ) {
-        val contact = allUiContacts.first().find { it.lookupKey == lookupKey } ?: return
-        val newIdeas = transform(contact.giftIdeas)
-        contactRepository.updateGiftIdeas(lookupKey, newIdeas)
-    }
-
     fun addGiftIdea(lookupKey: String) = viewModelScope.launch {
         val newIdea = GiftIdea(text = "")
         _newlyAddedIdeaId.value = newIdea.id
-        updateContactGiftIdeas(lookupKey) { current -> GiftIdea.withNewIdea(current, newIdea) }
+        contactRepository.addGiftIdea(lookupKey, newIdea)
     }
 
     fun toggleGiftIdea(lookupKey: String, idea: GiftIdea, isChecked: Boolean) =
         viewModelScope.launch {
-            updateContactGiftIdeas(lookupKey) { current ->
-                GiftIdea.withToggledIdea(
-                    current,
-                    idea,
-                    isChecked
-                )
-            }
+            contactRepository.toggleGiftIdea(lookupKey, idea, isChecked)
         }
 
     fun deleteGiftIdea(lookupKey: String, ideaId: String) = viewModelScope.launch {
-        updateContactGiftIdeas(lookupKey) { currentIdeas ->
-            currentIdeas.filter { it.id != ideaId }
-        }
+        contactRepository.deleteGiftIdea(lookupKey, ideaId)
     }
 
     fun updateGiftIdeaText(lookupKey: String, ideaId: String, newText: String) =
         viewModelScope.launch {
-            updateContactGiftIdeas(lookupKey) { currentIdeas ->
-                currentIdeas.map {
-                    if (it.id == ideaId) it.copy(text = newText) else it
-                }
-            }
+            contactRepository.updateGiftIdeaText(lookupKey, ideaId, newText)
         }
 
     fun updateBirthday(contactId: String, birthday: java.time.LocalDate) = viewModelScope.launch {

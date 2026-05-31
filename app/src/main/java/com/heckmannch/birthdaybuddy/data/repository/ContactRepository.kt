@@ -156,6 +156,32 @@ class ContactRepository @Inject constructor(
         widgetUpdater.updateWidget()
     }
 
+    suspend fun addGiftIdea(lookupKey: String, newIdea: GiftIdea) = withContext(Dispatchers.IO) {
+        val contact = contactDao.getContactByLookupKey(lookupKey) ?: return@withContext
+        val updatedIdeas = GiftIdea.withNewIdea(contact.giftIdeas, newIdea)
+        updateGiftIdeas(lookupKey, updatedIdeas)
+    }
+
+    suspend fun toggleGiftIdea(lookupKey: String, idea: GiftIdea, isChecked: Boolean) = withContext(Dispatchers.IO) {
+        val contact = contactDao.getContactByLookupKey(lookupKey) ?: return@withContext
+        val updatedIdeas = GiftIdea.withToggledIdea(contact.giftIdeas, idea, isChecked)
+        updateGiftIdeas(lookupKey, updatedIdeas)
+    }
+
+    suspend fun deleteGiftIdea(lookupKey: String, ideaId: String) = withContext(Dispatchers.IO) {
+        val contact = contactDao.getContactByLookupKey(lookupKey) ?: return@withContext
+        val updatedIdeas = contact.giftIdeas.filter { it.id != ideaId }
+        updateGiftIdeas(lookupKey, updatedIdeas)
+    }
+
+    suspend fun updateGiftIdeaText(lookupKey: String, ideaId: String, newText: String) = withContext(Dispatchers.IO) {
+        val contact = contactDao.getContactByLookupKey(lookupKey) ?: return@withContext
+        val updatedIdeas = contact.giftIdeas.map {
+            if (it.id == ideaId) it.copy(text = newText) else it
+        }
+        updateGiftIdeas(lookupKey, updatedIdeas)
+    }
+
     suspend fun updateLabelConfig(config: LabelConfig) {
         labelConfigDao.upsertConfig(config)
         widgetUpdater.updateWidget()
