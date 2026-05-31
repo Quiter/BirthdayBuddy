@@ -3,6 +3,8 @@ package com.heckmannch.birthdaybuddy.ui.screens.settings.calendar
 import android.Manifest
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -13,6 +15,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Check
@@ -182,11 +185,12 @@ private fun CalendarSettingsContent(
                 )
             }
 
-            if (!hasPermission) {
-                item {
-                    Spacer(modifier = Modifier.height(16.dp))
-                    PermissionWarningCard(onRequestPermission = onRequestPermission)
-                }
+            item {
+                SetupStepsCard(
+                    hasPermission = hasPermission,
+                    calendarSyncEnabled = calendarSyncEnabled,
+                    onRequestPermission = onRequestPermission
+                )
             }
         }
     }
@@ -233,42 +237,153 @@ private fun InfoCard() {
 }
 
 @Composable
-private fun PermissionWarningCard(onRequestPermission: () -> Unit) {
+private fun SetupStepsCard(
+    hasPermission: Boolean,
+    calendarSyncEnabled: Boolean,
+    onRequestPermission: () -> Unit
+) {
     Card(
         colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.2f)
+            containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f)
         ),
-        shape = MaterialTheme.shapes.medium,
-        modifier = Modifier.fillMaxWidth()
+        shape = MaterialTheme.shapes.large,
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 16.dp)
     ) {
-        Column(modifier = Modifier.padding(16.dp)) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Icon(
-                    imageVector = Icons.Default.Warning,
-                    contentDescription = null,
-                    tint = MaterialTheme.colorScheme.error,
-                    modifier = Modifier.size(24.dp)
-                )
-                Spacer(modifier = Modifier.width(12.dp))
-                Text(
-                    text = stringResource(R.string.empty_permission_btn),
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.onErrorContainer
-                )
-            }
-            Spacer(modifier = Modifier.height(8.dp))
+        Column(
+            modifier = Modifier.padding(16.dp)
+        ) {
             Text(
-                text = stringResource(R.string.calendar_settings_permission_needed),
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onErrorContainer
+                text = stringResource(R.string.calendar_guide_title),
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.primary
             )
             Spacer(modifier = Modifier.height(16.dp))
-            Button(
-                onClick = onRequestPermission,
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Text(stringResource(R.string.calendar_settings_permission_btn))
+
+            // Step 1
+            StepItem(
+                stepNumber = 1,
+                title = stringResource(R.string.calendar_guide_step1_title),
+                description = stringResource(R.string.calendar_guide_step1_desc),
+                isCompleted = hasPermission,
+                actionButton = if (!hasPermission) {
+                    {
+                        Button(
+                            onClick = onRequestPermission,
+                            modifier = Modifier.padding(top = 8.dp)
+                        ) {
+                            Text(stringResource(R.string.calendar_settings_permission_btn))
+                        }
+                    }
+                } else null
+            )
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // Step 2
+            StepItem(
+                stepNumber = 2,
+                title = stringResource(R.string.calendar_guide_step2_title),
+                description = stringResource(R.string.calendar_guide_step2_desc),
+                isCompleted = calendarSyncEnabled && hasPermission,
+                isLocked = !hasPermission
+            )
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // Step 3
+            StepItem(
+                stepNumber = 3,
+                title = stringResource(R.string.calendar_guide_step3_title),
+                description = stringResource(R.string.calendar_guide_step3_desc),
+                isCompleted = false,
+                isLocked = !(calendarSyncEnabled && hasPermission),
+                icon = Icons.Default.DateRange
+            )
+        }
+    }
+}
+
+@Composable
+private fun StepItem(
+    stepNumber: Int,
+    title: String,
+    description: String,
+    isCompleted: Boolean,
+    isLocked: Boolean = false,
+    icon: androidx.compose.ui.graphics.vector.ImageVector? = null,
+    actionButton: (@Composable () -> Unit)? = null
+) {
+    val contentAlpha = if (isLocked) 0.38f else 1f
+    val primaryColor = MaterialTheme.colorScheme.primary
+    val successColor = Color(0xFF4CAF50)
+    val onSurfaceColor = MaterialTheme.colorScheme.onSurface
+
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        verticalAlignment = Alignment.Top
+    ) {
+        // Circle indicator
+        Box(
+            modifier = Modifier
+                .size(32.dp)
+                .background(
+                    color = when {
+                        isCompleted -> successColor.copy(alpha = 0.15f)
+                        isLocked -> MaterialTheme.colorScheme.onSurface.copy(alpha = 0.08f)
+                        else -> primaryColor.copy(alpha = 0.15f)
+                    },
+                    shape = CircleShape
+                ),
+            contentAlignment = Alignment.Center
+        ) {
+            if (isCompleted) {
+                Icon(
+                    imageVector = Icons.Default.Check,
+                    contentDescription = null,
+                    tint = successColor,
+                    modifier = Modifier.size(18.dp)
+                )
+            } else if (icon != null) {
+                Icon(
+                    imageVector = icon,
+                    contentDescription = null,
+                    tint = if (isLocked) onSurfaceColor.copy(alpha = 0.38f) else primaryColor,
+                    modifier = Modifier.size(16.dp)
+                )
+            } else {
+                Text(
+                    text = stepNumber.toString(),
+                    style = MaterialTheme.typography.bodyMedium,
+                    fontWeight = FontWeight.Bold,
+                    color = if (isLocked) onSurfaceColor.copy(alpha = 0.38f) else primaryColor
+                )
+            }
+        }
+
+        Spacer(modifier = Modifier.width(12.dp))
+
+        Column(
+            modifier = Modifier
+                .weight(1f)
+                .padding(top = 4.dp)
+        ) {
+            Text(
+                text = title,
+                style = MaterialTheme.typography.bodyMedium,
+                fontWeight = FontWeight.Bold,
+                color = onSurfaceColor.copy(alpha = contentAlpha)
+            )
+            Spacer(modifier = Modifier.height(2.dp))
+            Text(
+                text = description,
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = contentAlpha)
+            )
+            if (actionButton != null && !isLocked) {
+                actionButton()
             }
         }
     }

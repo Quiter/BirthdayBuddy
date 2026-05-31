@@ -253,9 +253,25 @@
     <string name="calendar_settings_permission_needed">Um Termine eintragen zu können, benötigt BirthdayBuddy Zugriff auf deinen Kalender.</string>
     <string name="calendar_settings_permission_btn">Kalender-Berechtigung erteilen</string>
     <string name="calendar_settings_permission_granted">✓ Kalender-Berechtigung erteilt</string>
+    <string name="calendar_guide_title">Schritt-für-Schritt Anleitung</string>
+    <string name="calendar_guide_step1_title">1. Kalender-Berechtigung erteilen</string>
+    <string name="calendar_guide_step1_desc">Erlaubt BirthdayBuddy, ganztägige Geburtstage in deinen Kalender einzutragen.</string>
+    <string name="calendar_guide_step2_title">2. Synchronisierung aktivieren</string>
+    <string name="calendar_guide_step2_desc">Aktiviere den obigen Schalter, um den Kalender „BirthdayBuddy“ zu erstellen und deine Kontakte zu synchronisieren.</string>
+    <string name="calendar_guide_step3_title">3. In Kalender-App einblenden</string>
+    <string name="calendar_guide_step3_desc">Öffne deine bevorzugte Kalender-App (z. B. Google Kalender), öffne das Seitenmenü (die drei Striche) und stelle sicher, dass der Haken bei „BirthdayBuddy“ unter deinem lokalen Telefon-Konto gesetzt ist.</string>
 
     <!-- Calendar Event Strings -->
     <string name="calendar_event_title">%1$s hat Geburtstag</string>
     <string name="calendar_event_birth_year">Geburtsjahr: %1$d</string>
     <string name="calendar_event_no_year">Geburtstag ohne Jahr</string>
+    <string name="onboarding_calendar_guide_title">Geburtstage im Kalender anzeigen</string>
+    <string name="onboarding_calendar_guide_desc">Da BirthdayBuddy einen eigenen Kalender anlegt, musst du diesen eventuell einmalig in deiner Kalender-App einblenden.</string>
+    <string name="onboarding_calendar_guide_step1_title">1. Kalender-App öffnen</string>
+    <string name="onboarding_calendar_guide_step1_desc">Tippe auf den Button unten, um deine Standard-Kalender-App zu öffnen.</string>
+    <string name="onboarding_calendar_guide_step2_title">2. Seitenmenü öffnen</string>
+    <string name="onboarding_calendar_guide_step2_desc">Öffne in deiner Kalender-App das Seitenmenü (die drei Striche oben links).</string>
+    <string name="onboarding_calendar_guide_step3_title">3. „BirthdayBuddy“ aktivieren</string>
+    <string name="onboarding_calendar_guide_step3_desc">Stelle sicher, dass der Haken bei „BirthdayBuddy“ unter deinem lokalen Telefon-Konto gesetzt ist.</string>
+    <string name="onboarding_calendar_guide_btn">Kalender-App öffnen</string>
 </resources>

@@ -253,9 +253,25 @@
     <string name="calendar_settings_permission_needed">To write to your calendar, BirthdayBuddy needs permission to access your calendar.</string>
     <string name="calendar_settings_permission_btn">Grant calendar permission</string>
     <string name="calendar_settings_permission_granted">✓ Calendar permission granted</string>
+    <string name="calendar_guide_title">Setup Guide</string>
+    <string name="calendar_guide_step1_title">1. Grant Calendar Permission</string>
+    <string name="calendar_guide_step1_desc">Allows BirthdayBuddy to write all-day birthday events into your calendar.</string>
+    <string name="calendar_guide_step2_title">2. Enable Synchronization</string>
+    <string name="calendar_guide_step2_desc">Flip the switch above to automatically generate the „BirthdayBuddy“ calendar and sync contacts.</string>
+    <string name="calendar_guide_step3_title">3. Show in your Calendar App</string>
+    <string name="calendar_guide_step3_desc">Open your preferred Calendar app (e.g., Google Calendar), tap the side menu, and make sure the „BirthdayBuddy“ calendar is checked under your Local/Phone account.</string>
 
     <!-- Calendar Event Strings -->
     <string name="calendar_event_title">%1$s\'s Birthday</string>
     <string name="calendar_event_birth_year">Birth year: %1$d</string>
     <string name="calendar_event_no_year">Birthday without year</string>
+    <string name="onboarding_calendar_guide_title">Show Birthdays in Calendar</string>
+    <string name="onboarding_calendar_guide_desc">Since BirthdayBuddy creates a separate calendar, you might need to enable its visibility in your Calendar app once.</string>
+    <string name="onboarding_calendar_guide_step1_title">1. Open Calendar App</string>
+    <string name="onboarding_calendar_guide_step1_desc">Tap the button below to launch your default Calendar application.</string>
+    <string name="onboarding_calendar_guide_step2_title">2. Open Side Menu</string>
+    <string name="onboarding_calendar_guide_step2_desc">Open the side menu (three lines in top-left) in your Calendar app.</string>
+    <string name="onboarding_calendar_guide_step3_title">3. Check „BirthdayBuddy“</string>
+    <string name="onboarding_calendar_guide_step3_desc">Make sure the checkbox next to „BirthdayBuddy“ under your Phone/Local account is checked.</string>
+    <string name="onboarding_calendar_guide_btn">Open Calendar App</string>
 </resources>
