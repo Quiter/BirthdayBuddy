@@ -242,7 +242,7 @@ private fun WheelPicker(
     LaunchedEffect(currentSelection) {
         if (currentSelection in items.indices && currentSelection != selectedIndex) {
             onIndexSelected(currentSelection)
-            haptic.performHapticFeedback(HapticFeedbackType.TextHandleDrag)
+            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
         }
     }
 
