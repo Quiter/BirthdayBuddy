@@ -48,6 +48,7 @@ import com.heckmannch.birthdaybuddy.util.NO_YEAR_MARKER
 import com.heckmannch.birthdaybuddy.util.hasYear
 import java.time.LocalDate
 import java.time.Month
+import java.time.Year
 import java.time.format.DateTimeFormatter
 import java.time.format.TextStyle
 import java.util.Locale
@@ -74,7 +75,7 @@ fun BirthdayDatePickerDialog(
     val maxDays = remember(selectedMonth, selectedYear, includeYear) {
         val yearVal = if (includeYear) selectedYear else NO_YEAR_MARKER
         val monthEnum = Month.of(selectedMonth)
-        monthEnum.length(LocalDate.of(yearVal, 1, 1).isLeapYear)
+        monthEnum.length(Year.isLeap(yearVal.toLong()))
     }
 
     // Falls der ausgewählte Tag die maximalen Tage übersteigt (z.B. Wechsel von Jan -> Feb), korrigieren
@@ -86,7 +87,12 @@ fun BirthdayDatePickerDialog(
 
     // Dynamischer, lokalisierter Titel der aktuellen Selektion (z.B. "2. Juni" / "2. Juni 1989")
     val formattedDateText = remember(selectedDay, selectedMonth, selectedYear, includeYear) {
-        val date = LocalDate.of(if (includeYear) selectedYear else NO_YEAR_MARKER, selectedMonth, selectedDay)
+        val yearVal = if (includeYear) selectedYear else NO_YEAR_MARKER
+        val monthEnum = Month.of(selectedMonth)
+        val maxDaysForMonth = monthEnum.length(Year.isLeap(yearVal.toLong()))
+        val safeDay = selectedDay.coerceIn(1, maxDaysForMonth)
+
+        val date = LocalDate.of(yearVal, selectedMonth, safeDay)
         val locale = Locale.getDefault()
         if (includeYear) {
             val formatter = if (locale.language == "de") {
@@ -198,7 +204,11 @@ fun BirthdayDatePickerDialog(
                     TextButton(
                         onClick = {
                             val finalYear = if (includeYear) selectedYear else NO_YEAR_MARKER
-                            val finalDate = LocalDate.of(finalYear, selectedMonth, selectedDay)
+                            val monthEnum = Month.of(selectedMonth)
+                            val maxDaysForMonth = monthEnum.length(Year.isLeap(finalYear.toLong()))
+                            val safeDay = selectedDay.coerceIn(1, maxDaysForMonth)
+
+                            val finalDate = LocalDate.of(finalYear, selectedMonth, safeDay)
                             onDateSelected(finalDate)
                             onDismissRequest()
                         }
