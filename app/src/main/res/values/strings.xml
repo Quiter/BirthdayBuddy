@@ -52,6 +52,7 @@
     <string name="gift_idea_placeholder">Gift idea</string>
     <string name="gift_dialog_save">Save</string>
     <string name="gift_dialog_cancel">Cancel</string>
+    <string name="birthday_picker_include_year">Include year</string>
 
     <!-- Notification Settings -->
     <string name="notifications_title">Notifications</string>

@@ -78,6 +78,7 @@ fun BirthdayItem(
 
     if (showDatePicker.value) {
         BirthdayDatePickerDialog(
+            initialDate = contact.birthday,
             onDismissRequest = { showDatePicker.value = false },
             onDateSelected = { date ->
                 actions.onUpdateBirthday(contact.contactId, date)

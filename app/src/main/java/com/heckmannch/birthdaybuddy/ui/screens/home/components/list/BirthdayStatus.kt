@@ -1,6 +1,5 @@
 package com.heckmannch.birthdaybuddy.ui.screens.home.components.list
 
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -11,6 +10,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Cake
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -31,57 +31,58 @@ fun BirthdayStatus(
     daysUntilNext: Long,
     onEditBirthday: () -> Unit,
 ) {
-    val modifier = if (daysUntilNext == Long.MAX_VALUE) {
-        Modifier.clickable { onEditBirthday() }
-    } else {
-        Modifier
-    }
-
-    Column(
-        horizontalAlignment = Alignment.End,
-        modifier = modifier
-    ) {
-        if (nextAge != null) {
-            Text(
-                text = stringResource(R.string.widget_turns_age, nextAge),
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.primary
-            )
-        }
-
-        if (daysUntilNext == Long.MAX_VALUE) {
+    if (daysUntilNext == Long.MAX_VALUE) {
+        IconButton(
+            onClick = onEditBirthday,
+            modifier = Modifier.padding(end = 12.dp)
+        ) {
             Icon(
                 imageVector = Icons.Default.Add,
                 contentDescription = stringResource(R.string.item_action_edit_birthday),
                 tint = MaterialTheme.colorScheme.primary,
                 modifier = Modifier.size(24.dp)
             )
-        } else if (isToday) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Icon(
-                    imageVector = Icons.Default.Cake,
-                    contentDescription = null,
-                    tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
-                    modifier = Modifier.size(16.dp)
-                )
-                Spacer(modifier = Modifier.width(4.dp))
+        }
+    } else {
+        Column(
+            horizontalAlignment = Alignment.End,
+            modifier = Modifier.padding(end = 8.dp)
+        ) {
+            if (nextAge != null) {
                 Text(
-                    text = stringResource(R.string.item_today),
-                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
-                    style = MaterialTheme.typography.bodyMedium
+                    text = stringResource(R.string.widget_turns_age, nextAge),
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.primary
                 )
             }
-        } else {
-            Text(
-                text = pluralStringResource(
-                    R.plurals.item_days_left,
-                    daysUntilNext.toInt(),
-                    daysUntilNext.toInt()
-                ),
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
-            )
+
+            if (isToday) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(
+                        imageVector = Icons.Default.Cake,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
+                        modifier = Modifier.size(16.dp)
+                    )
+                    Spacer(modifier = Modifier.width(4.dp))
+                    Text(
+                        text = stringResource(R.string.item_today),
+                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
+                        style = MaterialTheme.typography.bodyMedium
+                    )
+                }
+            } else {
+                Text(
+                    text = pluralStringResource(
+                        R.plurals.item_days_left,
+                        daysUntilNext.toInt(),
+                        daysUntilNext.toInt()
+                    ),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
+                )
+            }
         }
     }
 }

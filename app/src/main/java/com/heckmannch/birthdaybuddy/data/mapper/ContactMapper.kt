@@ -63,6 +63,7 @@ class ContactMapper @Inject constructor() {
             hasSignal = contact.hasSignal,
             labels = contact.labels,
             giftIdeas = contact.giftIdeas,
+            birthday = birthday,
         )
     }
 }

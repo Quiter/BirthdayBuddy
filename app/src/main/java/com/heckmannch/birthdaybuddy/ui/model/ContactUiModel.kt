@@ -1,6 +1,7 @@
 package com.heckmannch.birthdaybuddy.ui.model
 
 import androidx.compose.runtime.Immutable
+import java.time.LocalDate
 
 /**
  * UI-Modell für einen Kontakt. 
@@ -24,6 +25,7 @@ data class ContactUiModel(
     val hasSignal: Boolean,
     val labels: List<String>,
     val giftIdeas: List<GiftIdea>,
+    val birthday: LocalDate? = null,
 ) {
     val hasGiftIdeas: Boolean get() = giftIdeas.any { it.text.isNotBlank() }
 }

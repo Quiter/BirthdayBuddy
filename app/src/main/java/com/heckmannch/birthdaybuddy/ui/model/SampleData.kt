@@ -1,5 +1,7 @@
 package com.heckmannch.birthdaybuddy.ui.model
 
+import java.time.LocalDate
+
 /**
  * Zentraler Ort für Testdaten, die in Previews und Tests verwendet werden.
  */
@@ -23,7 +25,8 @@ object SampleData {
         hasWhatsApp = true,
         hasSignal = false,
         labels = listOf("Freunde"),
-        giftIdeas = listOf(giftIdea1)
+        giftIdeas = listOf(giftIdea1),
+        birthday = LocalDate.of(1900, 5, 12)
     )
 
     val contact2 = ContactUiModel(
@@ -42,7 +45,8 @@ object SampleData {
         hasWhatsApp = false,
         hasSignal = false,
         labels = listOf("Familie"),
-        giftIdeas = emptyList()
+        giftIdeas = emptyList(),
+        birthday = LocalDate.now()
     )
 
     val contact3 = ContactUiModel(
@@ -61,7 +65,8 @@ object SampleData {
         hasWhatsApp = false,
         hasSignal = false,
         labels = listOf("Familie"),
-        giftIdeas = listOf(giftIdea1, giftIdea2)
+        giftIdeas = listOf(giftIdea1, giftIdea2),
+        birthday = LocalDate.now().plusDays(2)
     )
 
     val sampleContacts = listOf(contact1, contact2, contact3)
