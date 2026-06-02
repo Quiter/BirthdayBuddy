@@ -312,21 +312,13 @@ private fun ScrollbarBubble(
     thumbOffset: Dp,
     modifier: Modifier = Modifier,
 ) {
-    val density = LocalDensity.current
     val transitionState = remember { MutableTransitionState(initialState = false) }
     transitionState.targetState = visible
 
     if (transitionState.currentState || transitionState.targetState) {
         Popup(
             alignment = Alignment.TopStart,
-            offset = remember(thumbOffset, density) {
-                with(density) {
-                    IntOffset(
-                        x = 0,
-                        y = (thumbOffset - ScrollbarDefaults.BubbleOffsetY).roundToPx()
-                    )
-                }
-            },
+            offset = remember { IntOffset.Zero },
             properties = PopupProperties(
                 focusable = false,
                 dismissOnBackPress = false,
@@ -335,29 +327,42 @@ private fun ScrollbarBubble(
                 usePlatformDefaultWidth = false,
             )
         ) {
-            AnimatedVisibility(
-                visibleState = transitionState,
-                enter = fadeIn() + slideInHorizontally { it / 2 },
-                exit = fadeOut() + slideOutHorizontally { it / 2 },
-                modifier = modifier,
+            Box(
+                modifier = modifier
+                    .width(ScrollbarDefaults.BarWidth)
+                    .fillMaxHeight()
             ) {
-                Surface(
-                    shape = RoundedCornerShape(
-                        topStart = ScrollbarDefaults.BubbleCornerLarge,
-                        bottomStart = ScrollbarDefaults.BubbleCornerLarge,
-                        topEnd = ScrollbarDefaults.BubbleCornerSmall,
-                        bottomEnd = ScrollbarDefaults.BubbleCornerLarge,
-                    ),
-                    color = MaterialTheme.colorScheme.primary,
-                    tonalElevation = ScrollbarDefaults.BubbleElevation,
-                    modifier = Modifier.padding(end = 16.dp),
+                Box(
+                    modifier = Modifier
+                        .graphicsLayer {
+                            val offsetY = (thumbOffset - ScrollbarDefaults.BubbleOffsetY).toPx()
+                            translationY = offsetY.coerceAtLeast(0f)
+                        }
                 ) {
-                    Text(
-                        text = label,
-                        modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
-                        color = MaterialTheme.colorScheme.onPrimary,
-                        style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
-                    )
+                    AnimatedVisibility(
+                        visibleState = transitionState,
+                        enter = fadeIn() + slideInHorizontally { it / 2 },
+                        exit = fadeOut() + slideOutHorizontally { it / 2 },
+                    ) {
+                        Surface(
+                            shape = RoundedCornerShape(
+                                topStart = ScrollbarDefaults.BubbleCornerLarge,
+                                bottomStart = ScrollbarDefaults.BubbleCornerLarge,
+                                topEnd = ScrollbarDefaults.BubbleCornerSmall,
+                                bottomEnd = ScrollbarDefaults.BubbleCornerLarge,
+                            ),
+                            color = MaterialTheme.colorScheme.primary,
+                            tonalElevation = ScrollbarDefaults.BubbleElevation,
+                            modifier = Modifier.padding(end = 16.dp),
+                        ) {
+                            Text(
+                                text = label,
+                                modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
+                                color = MaterialTheme.colorScheme.onPrimary,
+                                style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
+                            )
+                        }
+                    }
                 }
             }
         }

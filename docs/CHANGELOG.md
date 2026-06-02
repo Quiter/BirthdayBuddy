@@ -62,7 +62,6 @@
     - **Shared Table Reconstruction:** Zusammenführung und Modularisierung der Tabellen-Rekonstruktionslogik in die private Hilfsfunktion `recreateContactsTable(db)`. Diese befüllt leere/fehlende JSON-Spalten (`labels` & `giftIdeas`) nun mittels `COALESCE` mit sicheren leeren Arrays (`'[]'`) und erzeugt das exakte V7 `NOT NULL` Schema.
     - **Migration 6->7 Hardening:** Integration der Härtung in `MIGRATION_6_7`. Falls User die fehlerhafte Zwischenversion V6 installiert hatten (wo `giftIdeas` noch nullable war), migriert `MIGRATION_6_7` die Tabelle nun ebenfalls automatisch auf das korrekte V7 `NOT NULL` Constraint.
     - **Test Coverage & Validation:** Behebung von Kompilierungsfehlern in den instrumentierten Repositories-Tests. Erfolgreicher Durchlauf aller 29 automatisierten Migrations- und Systemtests auf dem Android-Emulator.
-
 113. **Responsive Architecture & Lifecycle Hardening:**
     - **Adaptive UI-Architektur:** Einführung von `LocalWindowWidthSizeClass` als `CompositionLocal` zur vereinfachten, abfragefreien Weitergabe der Bildschirmbreitenklasse. Bereinigung des `AppResponsiveScaffold` durch Beseitigung redundanter Überlagerungsebenen (`zIndex(1f)`), Bereitstellung nativer Scaffold-Parameter (FAB-Position, Content-Farbe, Window-Insets) sowie Einführung einer flexiblen `consumePadding` Steuerung.
     - **Akkuschonende Inaktivitätsprüfung:** Ersatz der CPU-intensiven LaunchedEffect-Dauerschleife (`while(true) delay(10000)`) in der `MainActivity` durch einen modernen, lifecycle-basierten `LifecycleEventObserver`. Die Inaktivitätsprüfung (5-Minuten-Limit) erfolgt nun batterieschonend ausschließlich bei der Wiederaufnahme der App in den Vordergrund (`ON_RESUME`).
@@ -77,12 +76,10 @@
     - **I18n Plurals:** Einführung von Quantity Strings (`dialog_rule_unit_days`, `dialog_rule_unit_weeks`) in Deutsch und Englisch zur korrekten Pluralisierung bei numerischen Angaben im Erinnerungsdialog.
     - **Recomposition Optimization:** Nutzung von `rememberUpdatedState` for `onNavigateToSettings` im `HomeScreen` zur Reduzierung unnötiger Re-Instanziierungen des `HomeActions`-Wrappers.
     - **Version Bump:** Anhebung der App-Version auf Version Name `2.3.18` (Version Code `27`) in `build.gradle.kts`.
-
 115. **Onboarding UX & Database Resiliency:**
     - **Onboarding Streamlining:** Vereinfachung der `ContactsPage` durch Ersetzung der komplexen `LottieIllustration` durch ein Standard-Material-`Icon` für Kontakte, um die UI-Ladezeiten und Rendergeschwindigkeit zu optimieren.
     - **Database Hardening:** Absicherung der Hilt-Datenbank-Erstellung in `AppDatabase.kt` durch ein try-catch-Konstrukt. Bei schwerwiegender Schema-Korruption löscht die App nun die fehlerhafte Datenbankdatei automatisch via `deleteDatabase` und baut eine saubere neue Instanz auf, was App-Startabstürze auf Altgeräten verhindert.
     - **Resource Reorganization:** Ausgliederung von Drittanbieter-Messenger-Drawables (`ic_discord.xml`, `ic_whatsapp.xml` etc.) in einen eigenen Source-Set-Ordner (`src/main/res-messenger/drawable`), um das Hauptressourcen-Verzeichnis sauber zu halten.
-
 116. **Version Upgrade & Warning Resolution:**
     - **Release Version Code:** Anhebung der App-Version auf Version Name `2.4.0` (Version Code `28`) in `build.gradle.kts`.
     - **Code Cleanup & Linting:** Behebung diverser Compiler- und Linter-Warnungen im gesamten Projekt:
@@ -98,6 +95,7 @@
 118. **Launcher Icon Restoration & Scale Optimization:**
     - **Directory Restoration:** Rücknahme der fehlerhaften Verschiebung der XML-Dateien von `mipmap-anydpi` zurück nach `mipmap-anydpi-v26/` (`ic_launcher.xml` und `ic_launcher_round.xml`). Dies behebt das Problem, dass Launcher auf API 26+ fälschlicherweise die WebP-Templates mit grünem Hintergrund statt der XML-Definitionsdatei luden.
     - **Scale Optimization:** Korrektur des Skalierungsfaktors der Logo-Gruppe in `ic_launcher_foreground.xml` zurück auf `0.5` und Zentrierungsversatz auf `6`. Das Geschenkbox-Logo sitzt nun wieder perfekt zentriert in kreisförmigen und abgerundeten Schablonen, ohne abgeschnitten oder übergroß zu wirken.
+
 119. **Android Contact Birthday Update & Test Coverage Overhaul:**
     - **Schreibschutz-Behebung (RawContacts):** Behebung des Fehlers beim Schreiben von Geburtstagen direkt in Android-Kontakte durch intelligentes Ausfiltern von schreibgeschützten Dritthersteller-Konten (z. B. WhatsApp, Signal) und gezielte Priorisierung beschreibbarer Google- oder lokaler Rohkontakte.
     - **Silent Runtime Permission:** Einführung einer lautlosen Berechtigungsprüfung für `WRITE_CONTACTS` zur Laufzeit. Falls die Leseberechtigung (`READ_CONTACTS`) bereits vorliegt, holt die App die Schreibberechtigung im Hintergrund unsichtbar ein, um Abstürze zu verhindern und sofortiges Bearbeiten ohne App-Neustart zu ermöglichen.
@@ -152,4 +150,16 @@
     - **Reactive Widget Updates:** Centralized all Glance AppWidget updates inside the `ContactRepository` data modification methods (`syncContacts`, `updateGiftIdeas`, `updateLabelConfig`), making widget updates fully reactive. Removed `WidgetUpdater` constructor dependency, imports, and manual update calls from `HomeViewModel`, `BackupViewModel`, and `LabelViewModel`.
     - **Gift Ideas Logic Migration:** Shifted the core business logic of adding, toggling, deleting, and updating gift ideas out of `HomeViewModel` and into `ContactRepository` to establish a clean separation of concerns and a single source of truth.
     - **Test Coverage & Quality:** Cleaned up Hilt instrumented and unit tests to align with the new ViewModel constructors. Verified a 100% successful Gradle build and test completion.
+127. **Premium Wheel Date Picker & Scrollbar Overlap UX Overhaul:**
+    - **Premium Wheel Date Picker:** Ersetzung des standardmäßigen Material 3 DatePickers durch einen extrem hochwertigen, haptisch optimierten Wheel-DatePicker in Walzenoptik in `BirthdayDatePickerDialog.kt`. Er nutzt Compose Snapping (`rememberSnapFlingBehavior`) und mechanische haptische Ticks (`HapticFeedbackType.LongPress`) beim Einrasten für ein absolut physisches Bediengefühl.
+    - **Dynamic Year Toggle:** Integration eines „Inklusive Jahr“ Switches (voll lokalisiert in DE & EN). Beim Deaktivieren blendet sich die Jahres-Walzenspalte aus und Tag sowie Monat zentrieren sich harmonisch.
+    - **Leap-Year-Safe Clamping:** Automatische live-Berechnung der Tagesanzahl pro Monat. Der Februar erlaubt den 29. Tag nur dann, wenn ein Schaltjahr aktiv und das Jahr eingeschaltet ist. Ansonsten wird die Auswahl zur Vermeidung ungültiger `LocalDate`-Ausnahmen auf 28 Tage begrenzt.
+    - **Smart Date Pre-Selection:** Ergänzung von `birthday: LocalDate?` im `ContactUiModel` zur intelligenten Vorauswahl des bereits hinterlegten Geburtstages beim Öffnen.
+    - **Scrollbar Overlap Spacing Fix:** Lösung des Touch-Konflikts an der rechten Bildschirmkante in `BirthdayStatus.kt`. Das Plus-Symbol wird nun durch einen standardmäßigen M3 `IconButton` gerahmt (48.dp Touchtarget) und um `12.dp` nach links verschoben, um es aus der aktiven Scrollbar-Gesten-Zone zu holen. Normale Datumsanzeigen erhalten ein konsistentes `8.dp` Padding zur eleganten optischen Trennung.
+
+128. **FastScrollbar Smooth Bubble & Static Popup Overhaul:**
+    - **Lag-free Scrolling:** Migration of the `ScrollbarBubble` from dynamic `Popup` window repositioning to a hybrid static `Popup` approach. The `Popup` window itself now remains 100% static (`IntOffset.Zero`), while the bubble content is translated smoothly using GPU-accelerated `.graphicsLayer { translationY = ... }`.
+    - **Z-Index & Overlay Safety:** Preserved the use of the `Popup`-API, ensuring the bubble is drawn in a separate window layer on top of all other elements (including `HomeTopBar`) without clipping.
+    - **Boundary Safety:** Implemented a translation clamp (`.coerceAtLeast(0f)`) to gracefully stop the bubble at the very top of the visible screen without going behind the top bar or off-screen.
+
 
