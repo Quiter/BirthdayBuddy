@@ -19,7 +19,7 @@ android {
         //noinspection ExpiredTargetSdkVersion, OldTargetApi
         targetSdk = 36
         versionCode = 31
-        versionName = "2.5.3"
+        versionName = "2.5.4"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
