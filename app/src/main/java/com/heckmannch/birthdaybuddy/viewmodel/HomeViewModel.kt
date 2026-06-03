@@ -12,6 +12,7 @@ import com.heckmannch.birthdaybuddy.ui.model.HomeUiState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
+import kotlin.time.Duration.Companion.milliseconds
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -328,7 +329,7 @@ class HomeViewModel @Inject constructor(
         if (showLoading) {
             val elapsedTime = System.currentTimeMillis() - startTime
             if (elapsedTime < 800) {
-                delay(800 - elapsedTime)
+                delay((800 - elapsedTime).milliseconds)
             }
             _isSyncing.value = false
             _syncCompletedEvent.emit(Unit)

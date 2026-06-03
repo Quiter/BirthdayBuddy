@@ -38,7 +38,7 @@ abstract class SettingsDatabase : RoomDatabase() {
                     "settings_database",
                 )
                     .addMigrations(MIGRATION_2_3)
-                    .fallbackToDestructiveMigration() // Hier erlaubt, da wir V1 starten
+                    .fallbackToDestructiveMigration(true) // Hier erlaubt, da wir V1 starten
                     .build()
                     .also { INSTANCE = it }
             }
