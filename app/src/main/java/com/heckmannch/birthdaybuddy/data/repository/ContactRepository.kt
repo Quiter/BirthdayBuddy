@@ -276,4 +276,11 @@ class ContactRepository @Inject constructor(
             }
         }
     }
+
+    suspend fun clearIgnoredCouplePairs() {
+        withContext(Dispatchers.IO) {
+            val currentSettings = appSettingsDao.getSettingsImmediate() ?: AppSettings()
+            appSettingsDao.upsertSettings(currentSettings.copy(ignoredCouplePairs = emptyList()))
+        }
+    }
 }

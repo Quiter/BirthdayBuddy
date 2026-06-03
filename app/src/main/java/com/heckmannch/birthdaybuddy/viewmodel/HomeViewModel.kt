@@ -406,7 +406,10 @@ class HomeViewModel @Inject constructor(
     }
 
     fun syncContacts(showLoading: Boolean = false) = viewModelScope.launch {
-        if (showLoading) _isSyncing.value = true
+        if (showLoading) {
+            _isSyncing.value = true
+            contactRepository.clearIgnoredCouplePairs()
+        }
         val startTime = System.currentTimeMillis()
 
         contactRepository.syncContacts()
