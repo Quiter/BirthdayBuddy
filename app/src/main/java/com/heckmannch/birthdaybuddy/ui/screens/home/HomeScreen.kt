@@ -192,6 +192,9 @@ fun HomeScreen(
                 onSendSms = contactActions::sendSms,
                 onOpenMessengerApp = contactActions::openMessengerApp,
                 onRefresh = { viewModel.syncContacts(showLoading = true) },
+                onUnlinkCouple = viewModel::unlinkCouple,
+                onLinkAsCouple = viewModel::linkAsCouple,
+                onIgnoreCoupleSuggestion = viewModel::ignoreCoupleSuggestion,
             )
         }
 
@@ -265,6 +268,7 @@ private fun HomeContent(
                 selectedLabel = uiState.selectedLabel,
                 searchQuery = uiState.searchQuery,
                 actions = actions,
+                coupleSuggestion = uiState.coupleSuggestion,
                 onInteraction = {
                     focusManager.clearFocus()
                     keyboardController?.hide()

@@ -26,6 +26,10 @@ data class ContactUiModel(
     val labels: List<String>,
     val giftIdeas: List<GiftIdea>,
     val birthday: LocalDate? = null,
+    val secondImageUri: String? = null,
+    val secondInitials: String? = null,
+    val secondFullName: String? = null,
+    val isCouple: Boolean = false,
 ) {
     val hasGiftIdeas: Boolean get() = giftIdeas.any { it.text.isNotBlank() }
 }

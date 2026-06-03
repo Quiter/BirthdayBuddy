@@ -39,6 +39,7 @@ class HomeViewModelTest {
         whenever(contactRepository.labelConfigs).doReturn(MutableStateFlow(emptyList()))
         whenever(contactRepository.allContacts).doReturn(MutableStateFlow(emptyList()))
         whenever(contactRepository.otherEventsEnabled).doReturn(MutableStateFlow(false))
+        whenever(contactRepository.ignoredCouplePairs).doReturn(MutableStateFlow(emptyList()))
     }
 
     @Test
@@ -95,9 +96,10 @@ class HomeViewModelTest {
         )
 
         viewModel.onLabelSelected("Freunde")
-        val state = viewModel.uiState.first { it.selectedLabel == "Freunde" && it.contacts != null }
+        val state = viewModel.uiState.first { state ->
+            state.selectedLabel == "Freunde" && state.contacts?.size == 1
+        }
 
-        assertThat(state.contacts).hasSize(1)
         assertThat(state.contacts?.first()?.fullName).isEqualTo("Friend")
     }
 
@@ -173,10 +175,11 @@ class HomeViewModelTest {
         // Select Anniversary label
         viewModel.onLabelSelected(HomeViewModel.LABEL_ANNIVERSARY)
 
-        val anniversaryState = viewModel.uiState.first { it.selectedLabel == HomeViewModel.LABEL_ANNIVERSARY && it.contacts != null }
-        // Should only show Anniversary Person
-        assertThat(anniversaryState.contacts).hasSize(1)
-        assertThat(anniversaryState.contacts?.first()?.fullName).isEqualTo("Anniversary Person")
+        val anniversaryState = viewModel.uiState.first { state ->
+            state.selectedLabel == HomeViewModel.LABEL_ANNIVERSARY &&
+                    state.contacts?.size == 1 &&
+                    state.contacts.first().fullName == "Anniversary Person"
+        }
         assertThat(anniversaryState.contacts?.first()?.daysUntilNext).isEqualTo(5)
     }
 }

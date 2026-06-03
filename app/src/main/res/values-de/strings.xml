@@ -320,4 +320,11 @@
 
     <string name="notif_desc_anniversary">Alles Gute zum Hochzeitstag!</string>
     <string name="notif_desc_nameday">Alles Gute zum Namenstag!</string>
+
+    <!-- Couple / Joint Anniversary -->
+    <string name="action_unlink_couple">Entkoppeln</string>
+    <string name="couple_suggestion_title">Gemeinsamer Hochzeitstag?</string>
+    <string name="couple_suggestion_msg">Haben %1$s und %2$s einen gemeinsamen Hochzeitstag? Als Paar verknüpfen?</string>
+    <string name="couple_suggestion_yes">Ja, verknüpfen</string>
+    <string name="couple_suggestion_no">Nein</string>
 </resources>

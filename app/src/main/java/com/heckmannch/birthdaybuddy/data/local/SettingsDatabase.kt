@@ -10,7 +10,7 @@ import androidx.sqlite.db.SupportSQLiteDatabase
 
 @Database(
     entities = [LabelConfig::class, NotificationRule::class, AppSettings::class, ContactUserData::class],
-    version = 3,
+    version = 4,
     exportSchema = true
 )
 @TypeConverters(Converters::class, GiftIdeaConverters::class)
@@ -30,6 +30,13 @@ abstract class SettingsDatabase : RoomDatabase() {
             }
         }
 
+        val MIGRATION_3_4 = object : Migration(3, 4) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("ALTER TABLE contact_user_data ADD COLUMN spouseLookupKey TEXT")
+                db.execSQL("ALTER TABLE app_settings ADD COLUMN ignoredCouplePairs TEXT NOT NULL DEFAULT '[]'")
+            }
+        }
+
         fun getDatabase(context: Context): SettingsDatabase =
             INSTANCE ?: synchronized(this) {
                 INSTANCE ?: Room.databaseBuilder(
@@ -37,7 +44,7 @@ abstract class SettingsDatabase : RoomDatabase() {
                     SettingsDatabase::class.java,
                     "settings_database",
                 )
-                    .addMigrations(MIGRATION_2_3)
+                    .addMigrations(MIGRATION_2_3, MIGRATION_3_4)
                     .fallbackToDestructiveMigration(true) // Hier erlaubt, da wir V1 starten
                     .build()
                     .also { INSTANCE = it }

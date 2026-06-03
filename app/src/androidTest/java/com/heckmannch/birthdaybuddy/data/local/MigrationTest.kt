@@ -46,7 +46,7 @@ class MigrationTest {
 
     @Test
     @Throws(IOException::class)
-    fun migrate1To8() {
+    fun migrate1To9() {
         // 1. Datenbank in Version 1 erstellen mit Testdaten
         helper.createDatabase(testDb, 1).apply {
             execSQL(
@@ -56,10 +56,10 @@ class MigrationTest {
             close()
         }
 
-        // 2. Migration über die gesamte Kette (1 bis 8) ausführen und validieren
+        // 2. Migration über die gesamte Kette (1 bis 9) ausführen und validieren
         val migratedDb = helper.runMigrationsAndValidate(
             testDb,
-            8,
+            9,
             true,
             AppDatabase.MIGRATION_1_2,
             AppDatabase.MIGRATION_2_3,
@@ -67,7 +67,8 @@ class MigrationTest {
             AppDatabase.MIGRATION_4_5,
             AppDatabase.MIGRATION_5_6,
             AppDatabase.MIGRATION_6_7,
-            AppDatabase.MIGRATION_7_8
+            AppDatabase.MIGRATION_7_8,
+            AppDatabase.MIGRATION_8_9
         )
 
         // 3. Prüfen, ob die Daten intakt sind und neue Spalten default-Werte haben
@@ -81,6 +82,7 @@ class MigrationTest {
         val signalIndex = cursor.getColumnIndex("hasSignal")
         val anniversaryIndex = cursor.getColumnIndex("anniversary")
         val nameDayIndex = cursor.getColumnIndex("nameDay")
+        val spouseLookupKeyIndex = cursor.getColumnIndex("spouseLookupKey")
 
         assert(cursor.getString(nameIndex) == "Max Mustermann")
         assert(cursor.getString(birthdayIndex) == "1990-01-01")
@@ -89,13 +91,14 @@ class MigrationTest {
         assert(cursor.getInt(signalIndex) == 0)
         assert(cursor.isNull(anniversaryIndex))
         assert(cursor.isNull(nameDayIndex))
+        assert(cursor.isNull(spouseLookupKeyIndex))
 
         cursor.close()
     }
 
     @Test
     @Throws(IOException::class)
-    fun migrate2To8() {
+    fun migrate2To9() {
         // 1. Datenbank in Version 2 erstellen mit Testdaten
         helper.createDatabase(testDb, 2).apply {
             execSQL(
@@ -105,17 +108,18 @@ class MigrationTest {
             close()
         }
 
-        // 2. Migration über die Kette (2 bis 8) ausführen und validieren
+        // 2. Migration über die Kette (2 bis 9) ausführen und validieren
         val migratedDb = helper.runMigrationsAndValidate(
             testDb,
-            8,
+            9,
             true,
             AppDatabase.MIGRATION_2_3,
             AppDatabase.MIGRATION_3_4,
             AppDatabase.MIGRATION_4_5,
             AppDatabase.MIGRATION_5_6,
             AppDatabase.MIGRATION_6_7,
-            AppDatabase.MIGRATION_7_8
+            AppDatabase.MIGRATION_7_8,
+            AppDatabase.MIGRATION_8_9
         )
 
         // 3. Prüfen, ob die Daten intakt sind
@@ -125,6 +129,37 @@ class MigrationTest {
         assert(cursor.getString(cursor.getColumnIndex("birthday")) == "1992-02-02")
         assert(cursor.isNull(cursor.getColumnIndex("anniversary")))
         assert(cursor.isNull(cursor.getColumnIndex("nameDay")))
+        assert(cursor.isNull(cursor.getColumnIndex("spouseLookupKey")))
+        cursor.close()
+    }
+
+    @Test
+    @Throws(IOException::class)
+    fun migrate8To9() {
+        // 1. Create database in version 8 with test data
+        helper.createDatabase(testDb, 8).apply {
+            execSQL(
+                "INSERT INTO contacts (contactId, lookupKey, fullName, birthday, labels, giftIdeas, hasWhatsApp, hasSignal) " +
+                        "VALUES ('3', 'key3', 'Erika Mustermann', '1992-02-02', '[]', '[]', 0, 0)"
+            )
+            close()
+        }
+
+        // 2. Run migration to version 9 and validate
+        val migratedDb = helper.runMigrationsAndValidate(
+            testDb,
+            9,
+            true,
+            AppDatabase.MIGRATION_8_9
+        )
+
+        // 3. Verify that the data is intact and spouseLookupKey is null by default
+        val cursor = migratedDb.query("SELECT * FROM contacts WHERE lookupKey = 'key3'")
+        assert(cursor.moveToFirst())
+        assert(cursor.getString(cursor.getColumnIndex("fullName")) == "Erika Mustermann")
+        assert(cursor.getString(cursor.getColumnIndex("birthday")) == "1992-02-02")
+        val spouseLookupKeyIndex = cursor.getColumnIndex("spouseLookupKey")
+        assert(cursor.isNull(spouseLookupKeyIndex))
         cursor.close()
     }
 
@@ -145,7 +180,8 @@ class MigrationTest {
             AppDatabase.MIGRATION_4_5,
             AppDatabase.MIGRATION_5_6,
             AppDatabase.MIGRATION_6_7,
-            AppDatabase.MIGRATION_7_8
+            AppDatabase.MIGRATION_7_8,
+            AppDatabase.MIGRATION_8_9
         )
             .build().apply {
                 openHelper.writableDatabase.close()

@@ -53,4 +53,42 @@ class SettingsMigrationTest {
 
         cursor.close()
     }
+
+    @Test
+    @Throws(IOException::class)
+    fun migrate3To4() {
+        // 1. Create database in version 3
+        helper.createDatabase(testDb, 3).apply {
+            execSQL(
+                "INSERT INTO app_settings (id, notificationsEnabled, persistentNotifications, onboardingCompleted, lastSyncTimestamp, calendarSyncEnabled, calendarId, otherEventsEnabled) " +
+                        "VALUES (0, 1, 1, 1, 123456789, 0, NULL, 0)"
+            )
+            execSQL(
+                "INSERT INTO contact_user_data (lookupKey, giftIdeas) " +
+                        "VALUES ('k1', '[]')"
+            )
+            close()
+        }
+
+        // 2. Run migration to version 4 and validate
+        val migratedDb = helper.runMigrationsAndValidate(
+            testDb,
+            4,
+            true,
+            SettingsDatabase.MIGRATION_3_4
+        )
+
+        // 3. Verify columns and default values
+        val settingsCursor = migratedDb.query("SELECT * FROM app_settings WHERE id = 0")
+        assert(settingsCursor.moveToFirst())
+        val ignoredCouplePairsIndex = settingsCursor.getColumnIndex("ignoredCouplePairs")
+        assert(settingsCursor.getString(ignoredCouplePairsIndex) == "[]")
+        settingsCursor.close()
+
+        val userDataCursor = migratedDb.query("SELECT * FROM contact_user_data WHERE lookupKey = 'k1'")
+        assert(userDataCursor.moveToFirst())
+        val spouseLookupKeyIndex = userDataCursor.getColumnIndex("spouseLookupKey")
+        assert(userDataCursor.isNull(spouseLookupKeyIndex))
+        userDataCursor.close()
+    }
 }

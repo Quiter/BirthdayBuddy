@@ -121,9 +121,17 @@ class NotificationHelper @Inject constructor(
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
 
-        val title = if (contacts.size == 1) {
+        val isCoupleAnniversary = eventType == "anniversary" && contacts.size == 2 &&
+                contacts[0].spouseLookupKey == contacts[1].lookupKey &&
+                contacts[1].spouseLookupKey == contacts[0].lookupKey
+
+        val title = if (contacts.size == 1 || isCoupleAnniversary) {
+            val name = if (isCoupleAnniversary) {
+                com.heckmannch.birthdaybuddy.util.mergeNames(contacts[0].fullName, contacts[1].fullName)
+            } else {
+                contacts.first().fullName
+            }
             val contact = contacts.first()
-            val name = contact.fullName
 
             when (eventType) {
                 "anniversary" -> {
@@ -240,7 +248,7 @@ class NotificationHelper @Inject constructor(
             }
         }
 
-        val contentText = if (contacts.size == 1) {
+        val contentText = if (contacts.size == 1 || isCoupleAnniversary) {
             val defaultDesc = when (eventType) {
                 "anniversary" -> context.getString(R.string.notif_desc_anniversary)
                 "nameday" -> context.getString(R.string.notif_desc_nameday)

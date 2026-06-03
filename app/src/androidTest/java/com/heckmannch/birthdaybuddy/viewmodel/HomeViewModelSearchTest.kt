@@ -38,6 +38,7 @@ class HomeViewModelSearchTest {
         whenever(contactRepository.allContacts).doReturn(MutableStateFlow(emptyList()))
         whenever(contactRepository.labelConfigs).doReturn(MutableStateFlow(emptyList()))
         whenever(contactRepository.otherEventsEnabled).doReturn(MutableStateFlow(false))
+        whenever(contactRepository.ignoredCouplePairs).doReturn(MutableStateFlow(emptyList()))
         whenever(timeRepository.currentDate).doReturn(MutableStateFlow(LocalDate.of(2024, 5, 15)))
     }
 

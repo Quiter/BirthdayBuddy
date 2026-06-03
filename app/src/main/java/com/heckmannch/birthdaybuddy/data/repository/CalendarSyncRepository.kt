@@ -357,6 +357,8 @@ class CalendarSyncRepository @Inject constructor(
                 }
             }
 
+            val processedAnniversaries = HashSet<String>()
+
             for (contact in contacts) {
                 // Birthdays
                 contact.birthday?.let { birthday ->
@@ -372,13 +374,41 @@ class CalendarSyncRepository @Inject constructor(
                 // Anniversaries (if enabled)
                 if (otherEventsEnabled) {
                     contact.anniversary?.let { anniversary ->
-                        val title = context.getString(R.string.calendar_event_anniversary_title, contact.fullName)
-                        val description = if (anniversary.hasYear) {
-                            context.getString(R.string.calendar_event_anniversary_year, anniversary.year)
+                        val spouseKey = contact.spouseLookupKey
+                        if (spouseKey != null) {
+                            if (!processedAnniversaries.contains(contact.lookupKey)) {
+                                val spouse = contacts.find { it.lookupKey == spouseKey && it.anniversary != null }
+                                if (spouse != null) {
+                                    val mergedName = com.heckmannch.birthdaybuddy.util.mergeNames(contact.fullName, spouse.fullName)
+                                    val title = context.getString(R.string.calendar_event_anniversary_title, mergedName)
+                                    val description = if (anniversary.hasYear) {
+                                        context.getString(R.string.calendar_event_anniversary_year, anniversary.year)
+                                    } else {
+                                        context.getString(R.string.calendar_event_anniversary_no_year)
+                                    }
+                                    addEvent(anniversary, title, description)
+                                    processedAnniversaries.add(contact.lookupKey)
+                                    processedAnniversaries.add(spouse.lookupKey)
+                                } else {
+                                    val title = context.getString(R.string.calendar_event_anniversary_title, contact.fullName)
+                                    val description = if (anniversary.hasYear) {
+                                        context.getString(R.string.calendar_event_anniversary_year, anniversary.year)
+                                    } else {
+                                        context.getString(R.string.calendar_event_anniversary_no_year)
+                                    }
+                                    addEvent(anniversary, title, description)
+                                    processedAnniversaries.add(contact.lookupKey)
+                                }
+                            }
                         } else {
-                            context.getString(R.string.calendar_event_anniversary_no_year)
+                            val title = context.getString(R.string.calendar_event_anniversary_title, contact.fullName)
+                            val description = if (anniversary.hasYear) {
+                                context.getString(R.string.calendar_event_anniversary_year, anniversary.year)
+                            } else {
+                                context.getString(R.string.calendar_event_anniversary_no_year)
+                            }
+                            addEvent(anniversary, title, description)
                         }
-                        addEvent(anniversary, title, description)
                     }
                 }
 

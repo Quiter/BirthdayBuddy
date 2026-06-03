@@ -182,7 +182,10 @@ fun BirthdayItem(
                         ContactImage(
                             imageUri = contact.imageUri,
                             fullName = contact.fullName,
-                            initials = contact.initials
+                            initials = contact.initials,
+                            secondImageUri = contact.secondImageUri,
+                            secondInitials = contact.secondInitials,
+                            secondFullName = contact.secondFullName
                         )
                     },
                     trailingContent = {
@@ -215,7 +218,8 @@ fun BirthdayItem(
                         phoneNumber = contact.phoneNumber,
                         hasBirthday = contact.daysUntilNext != Long.MAX_VALUE,
                         onAddBirthday = { showDatePicker.value = true },
-                        actions = actions
+                        actions = actions,
+                        isCouple = contact.isCouple
                     )
 
                     HorizontalDivider(

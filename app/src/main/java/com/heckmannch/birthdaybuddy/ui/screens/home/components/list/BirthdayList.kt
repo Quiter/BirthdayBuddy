@@ -30,13 +30,20 @@ import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Face
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import com.heckmannch.birthdaybuddy.data.local.Contact
+import com.heckmannch.birthdaybuddy.viewmodel.HomeViewModel
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -74,6 +81,7 @@ fun BirthdayList(
     selectedLabel: String? = null,
     searchQuery: String = "",
     actions: HomeActions,
+    coupleSuggestion: Pair<Contact, Contact>? = null,
     onInteraction: () -> Unit = {},
 ) {
     val context = LocalContext.current
@@ -129,6 +137,15 @@ fun BirthdayList(
         modifier = modifier.fillMaxSize(),
         contentPadding = PaddingValues(bottom = 80.dp),
     ) {
+        if (selectedLabel == HomeViewModel.LABEL_ANNIVERSARY && coupleSuggestion != null) {
+            item(key = "couple_suggestion") {
+                CoupleSuggestionBanner(
+                    suggestion = coupleSuggestion,
+                    onLink = actions.onLinkAsCouple,
+                    onIgnore = actions.onIgnoreCoupleSuggestion
+                )
+            }
+        }
         if (contacts.isEmpty()) {
             item(key = "empty_state") {
                 EmptyListState(
@@ -305,5 +322,85 @@ fun BirthdayListPreview() {
             listState = rememberLazyListState(),
             actions = actions,
         )
+    }
+}
+
+@Composable
+fun CoupleSuggestionBanner(
+    suggestion: Pair<Contact, Contact>,
+    onLink: (String, String) -> Unit,
+    onIgnore: (String, String) -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    Card(
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp)
+            .padding(bottom = 12.dp, top = 8.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.4f)
+        ),
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.2f)),
+        shape = RoundedCornerShape(16.dp)
+    ) {
+        Row(
+            modifier = Modifier.padding(16.dp),
+            horizontalArrangement = Arrangement.spacedBy(16.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            ContactImage(
+                imageUri = suggestion.first.imageUri,
+                fullName = suggestion.first.fullName,
+                initials = suggestion.first.fullName.split(" ")
+                    .mapNotNull { it.firstOrNull()?.toString() }
+                    .joinToString("").take(2),
+                secondImageUri = suggestion.second.imageUri,
+                secondInitials = suggestion.second.fullName.split(" ")
+                    .mapNotNull { it.firstOrNull()?.toString() }
+                    .joinToString("").take(2),
+                secondFullName = suggestion.second.fullName
+            )
+
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = stringResource(R.string.couple_suggestion_title),
+                    style = MaterialTheme.typography.titleMedium,
+                    color = MaterialTheme.colorScheme.onPrimaryContainer
+                )
+                Spacer(modifier = Modifier.height(4.dp))
+                Text(
+                    text = stringResource(
+                        R.string.couple_suggestion_msg,
+                        suggestion.first.fullName,
+                        suggestion.second.fullName
+                    ),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.8f)
+                )
+                Spacer(modifier = Modifier.height(12.dp))
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    Button(
+                        onClick = { onLink(suggestion.first.lookupKey, suggestion.second.lookupKey) },
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = MaterialTheme.colorScheme.primary,
+                            contentColor = MaterialTheme.colorScheme.onPrimary
+                        )
+                    ) {
+                        Text(stringResource(R.string.couple_suggestion_yes))
+                    }
+                    OutlinedButton(
+                        onClick = { onIgnore(suggestion.first.lookupKey, suggestion.second.lookupKey) },
+                        border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.5f))
+                    ) {
+                        Text(
+                            text = stringResource(R.string.couple_suggestion_no),
+                            color = MaterialTheme.colorScheme.primary
+                        )
+                    }
+                }
+            }
+        }
     }
 }

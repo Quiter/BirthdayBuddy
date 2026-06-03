@@ -10,7 +10,7 @@ import androidx.sqlite.db.SupportSQLiteDatabase
 
 @Database(
     entities = [Contact::class, PendingNotification::class],
-    version = 8,
+    version = 9,
     exportSchema = true
 )
 @TypeConverters(Converters::class, GiftIdeaConverters::class)
@@ -134,8 +134,8 @@ abstract class AppDatabase : RoomDatabase() {
             // 1. Bestehende Tabelle umbenennen
             db.execSQL("ALTER TABLE contacts RENAME TO contacts_old")
 
-            // 2. Neue Tabelle mit korrektem V7-Schema (nullable birthday, not null giftIdeas) erstellen
-            db.execSQL("CREATE TABLE IF NOT EXISTS `contacts` (`localId` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `contactId` TEXT NOT NULL, `lookupKey` TEXT NOT NULL, `fullName` TEXT NOT NULL, `birthday` TEXT, `imageUri` TEXT, `phoneNumber` TEXT, `hasWhatsApp` INTEGER NOT NULL DEFAULT 0, `hasSignal` INTEGER NOT NULL DEFAULT 0, `labels` TEXT NOT NULL, `giftIdeas` TEXT NOT NULL)")
+            // 2. Neue Tabelle mit korrektem V9-Schema erstellen
+            db.execSQL("CREATE TABLE IF NOT EXISTS `contacts` (`localId` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `contactId` TEXT NOT NULL, `lookupKey` TEXT NOT NULL, `fullName` TEXT NOT NULL, `birthday` TEXT, `imageUri` TEXT, `phoneNumber` TEXT, `hasWhatsApp` INTEGER NOT NULL DEFAULT 0, `hasSignal` INTEGER NOT NULL DEFAULT 0, `labels` TEXT NOT NULL, `giftIdeas` TEXT NOT NULL, `anniversary` TEXT, `nameDay` TEXT, `spouseLookupKey` TEXT)")
 
             // 3. Vorhandene Spalten ermitteln, um fehlende Spalten (falls vorherige Migrationen fehlschlugen) robust abzufangen
             val columnsInOld = mutableSetOf<String>()
@@ -186,10 +186,28 @@ abstract class AppDatabase : RoomDatabase() {
                 selectColumns.add("'[]' AS giftIdeas")
             }
 
+            if (columnsInOld.contains("anniversary")) {
+                selectColumns.add("anniversary")
+            } else {
+                selectColumns.add("NULL AS anniversary")
+            }
+
+            if (columnsInOld.contains("nameDay")) {
+                selectColumns.add("nameDay")
+            } else {
+                selectColumns.add("NULL AS nameDay")
+            }
+
+            if (columnsInOld.contains("spouseLookupKey")) {
+                selectColumns.add("spouseLookupKey")
+            } else {
+                selectColumns.add("NULL AS spouseLookupKey")
+            }
+
             val selectQuery = selectColumns.joinToString(", ")
 
             // 4. Daten kopieren mit dynamic fallback
-            db.execSQL("INSERT INTO contacts (localId, contactId, lookupKey, fullName, birthday, imageUri, phoneNumber, hasWhatsApp, hasSignal, labels, giftIdeas) SELECT $selectQuery FROM contacts_old")
+            db.execSQL("INSERT INTO contacts (localId, contactId, lookupKey, fullName, birthday, imageUri, phoneNumber, hasWhatsApp, hasSignal, labels, giftIdeas, anniversary, nameDay, spouseLookupKey) SELECT $selectQuery FROM contacts_old")
 
             // 5. Alte Tabelle löschen
             db.execSQL("DROP TABLE IF EXISTS contacts_old")
@@ -274,8 +292,40 @@ abstract class AppDatabase : RoomDatabase() {
          */
         val MIGRATION_7_8 = object : Migration(7, 8) {
             override fun migrate(db: SupportSQLiteDatabase) {
-                db.execSQL("ALTER TABLE contacts ADD COLUMN anniversary TEXT")
-                db.execSQL("ALTER TABLE contacts ADD COLUMN nameDay TEXT")
+                val columnCursor = db.query("PRAGMA table_info(contacts)")
+                val columns = mutableSetOf<String>()
+                while (columnCursor.moveToNext()) {
+                    val nameIndex = columnCursor.getColumnIndex("name")
+                    if (nameIndex != -1) {
+                        columns.add(columnCursor.getString(nameIndex))
+                    }
+                }
+                columnCursor.close()
+
+                if (!columns.contains("anniversary")) {
+                    db.execSQL("ALTER TABLE contacts ADD COLUMN anniversary TEXT")
+                }
+                if (!columns.contains("nameDay")) {
+                    db.execSQL("ALTER TABLE contacts ADD COLUMN nameDay TEXT")
+                }
+            }
+        }
+
+        val MIGRATION_8_9 = object : Migration(8, 9) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                val columnCursor = db.query("PRAGMA table_info(contacts)")
+                val columns = mutableSetOf<String>()
+                while (columnCursor.moveToNext()) {
+                    val nameIndex = columnCursor.getColumnIndex("name")
+                    if (nameIndex != -1) {
+                        columns.add(columnCursor.getString(nameIndex))
+                    }
+                }
+                columnCursor.close()
+
+                if (!columns.contains("spouseLookupKey")) {
+                    db.execSQL("ALTER TABLE contacts ADD COLUMN spouseLookupKey TEXT")
+                }
             }
         }
 
@@ -288,7 +338,8 @@ abstract class AppDatabase : RoomDatabase() {
                 .addMigrations(
                     MIGRATION_5_6,
                     MIGRATION_6_7,
-                    MIGRATION_7_8
+                    MIGRATION_7_8,
+                    MIGRATION_8_9
                 )
                 .fallbackToDestructiveMigration(true) // Letzter Rettungsanker bei komplett korruptem Zustand
                 .build()

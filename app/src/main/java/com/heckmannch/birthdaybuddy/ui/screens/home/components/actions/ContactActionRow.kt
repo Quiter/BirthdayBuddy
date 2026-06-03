@@ -10,10 +10,12 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Message
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Call
+import androidx.compose.material.icons.filled.LinkOff
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.FilledTonalIconButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButtonDefaults
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -41,6 +43,7 @@ fun ContactActionRow(
     onAddBirthday: () -> Unit,
     actions: HomeActions,
     modifier: Modifier = Modifier,
+    isCouple: Boolean = false,
 ) {
     val context = LocalContext.current
     val installedMessengers = remember(context) {
@@ -88,6 +91,15 @@ fun ContactActionRow(
                 label = stringResource(R.string.item_action_edit_birthday),
                 brandColor = PixelBlue,
                 onClick = onAddBirthday
+            )
+        }
+
+        if (isCouple) {
+            ActionItem(
+                icon = Icons.Default.LinkOff,
+                label = stringResource(R.string.action_unlink_couple),
+                brandColor = MaterialTheme.colorScheme.error,
+                onClick = { actions.onUnlinkCouple(lookupKey) }
             )
         }
 

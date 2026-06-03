@@ -9,6 +9,8 @@ import com.heckmannch.birthdaybuddy.data.repository.TimeRepository
 import com.heckmannch.birthdaybuddy.ui.model.ContactUiModel
 import com.heckmannch.birthdaybuddy.ui.model.GiftIdea
 import com.heckmannch.birthdaybuddy.ui.model.HomeUiState
+import com.heckmannch.birthdaybuddy.data.local.Contact
+import com.heckmannch.birthdaybuddy.util.mergeNames
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
@@ -95,9 +97,57 @@ class HomeViewModel @Inject constructor(
             else -> "birthday"
         }
 
-        val uiList = rawContacts.asSequence()
-            .map { mapper.toUiModelForEvent(it, today, displayEventType) }
-            .toList()
+        val uiList = if (displayEventType == "anniversary") {
+            val processedKeys = mutableSetOf<String>()
+            val mergedList = mutableListOf<ContactUiModel>()
+            val contactMap = rawContacts.associateBy { it.lookupKey }
+
+            for (contact in rawContacts) {
+                if (processedKeys.contains(contact.lookupKey)) continue
+
+                val spouseKey = contact.spouseLookupKey
+                val spouse = if (spouseKey != null) contactMap[spouseKey] else null
+
+                if (spouse != null && contact.anniversary != null && spouse.anniversary != null) {
+                    processedKeys.add(contact.lookupKey)
+                    processedKeys.add(spouse.lookupKey)
+
+                    val uiModelA = mapper.toUiModelForEvent(contact, today, "anniversary")
+                    val uiModelB = mapper.toUiModelForEvent(spouse, today, "anniversary")
+
+                    val mergedUiModel = ContactUiModel(
+                        id = "${contact.lookupKey}_${spouse.lookupKey}",
+                        contactId = contact.contactId,
+                        lookupKey = contact.lookupKey,
+                        fullName = mergeNames(contact.fullName, spouse.fullName),
+                        dateText = uiModelA.dateText,
+                        monthName = uiModelA.monthName,
+                        imageUri = contact.imageUri,
+                        phoneNumber = contact.phoneNumber,
+                        initials = uiModelA.initials,
+                        nextAge = uiModelA.nextAge,
+                        daysUntilNext = uiModelA.daysUntilNext,
+                        isToday = uiModelA.isToday,
+                        hasWhatsApp = contact.hasWhatsApp || spouse.hasWhatsApp,
+                        hasSignal = contact.hasSignal || spouse.hasSignal,
+                        labels = (contact.labels + spouse.labels).distinct(),
+                        giftIdeas = uiModelA.giftIdeas + uiModelB.giftIdeas,
+                        birthday = contact.birthday,
+                        secondImageUri = spouse.imageUri,
+                        secondInitials = uiModelB.initials,
+                        secondFullName = spouse.fullName,
+                        isCouple = true
+                    )
+                    mergedList.add(mergedUiModel)
+                } else {
+                    processedKeys.add(contact.lookupKey)
+                    mergedList.add(mapper.toUiModelForEvent(contact, today, "anniversary"))
+                }
+            }
+            mergedList
+        } else {
+            rawContacts.map { mapper.toUiModelForEvent(it, today, displayEventType) }
+        }
 
         val result = uiList.asSequence()
             .filter { shouldShowContact(it, keywords, label, ignoredLabels, displayEventType) }
@@ -242,12 +292,46 @@ class HomeViewModel @Inject constructor(
         FilterUiFlags(syncing, focus, newlyAdded)
     }
 
+    val coupleSuggestion: Flow<Pair<Contact, Contact>?> = combine(
+        contactRepository.allContacts,
+        contactRepository.ignoredCouplePairs,
+        _selectedLabel,
+    ) { contacts, ignoredPairs, label ->
+        if (label != LABEL_ANNIVERSARY) return@combine null
+
+        val uncoupledAnniversaryContacts = contacts.filter { 
+            it.anniversary != null && it.spouseLookupKey == null 
+        }
+
+        val groupedByDate = uncoupledAnniversaryContacts.groupBy { contact ->
+            val date = contact.anniversary!!
+            Pair(date.monthValue, date.dayOfMonth)
+        }
+
+        for ((_, list) in groupedByDate) {
+            if (list.size >= 2) {
+                for (i in list.indices) {
+                    for (j in i + 1 until list.size) {
+                        val c1 = list[i]
+                        val c2 = list[j]
+                        val pairKey = if (c1.lookupKey < c2.lookupKey) "${c1.lookupKey}:${c2.lookupKey}" else "${c2.lookupKey}:${c1.lookupKey}"
+                        if (!ignoredPairs.contains(pairKey)) {
+                            return@combine Pair(c1, c2)
+                        }
+                    }
+                }
+            }
+        }
+        null
+    }.flowOn(Dispatchers.Default)
+
     val uiState: StateFlow<HomeUiState> = combine(
         filteredContacts,
         availableLabels,
         filterCriteria,
-        filterUiFlags
-    ) { contacts, labels, criteria, flags ->
+        filterUiFlags,
+        coupleSuggestion
+    ) { contacts, labels, criteria, flags, suggestion ->
         HomeUiState(
             contacts = contacts,
             availableLabels = labels,
@@ -257,6 +341,7 @@ class HomeViewModel @Inject constructor(
             isSyncing = flags.isSyncing,
             searchFocusRequested = flags.searchFocusRequested,
             newlyAddedIdeaId = flags.newlyAddedIdeaId,
+            coupleSuggestion = suggestion
         )
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), HomeUiState())
 
@@ -346,5 +431,17 @@ class HomeViewModel @Inject constructor(
 
     fun consumeSearchFocus() {
         _searchFocusRequested.value = false
+    }
+
+    fun linkAsCouple(lookupKey1: String, lookupKey2: String) = viewModelScope.launch {
+        contactRepository.linkAsCouple(lookupKey1, lookupKey2)
+    }
+
+    fun unlinkCouple(lookupKey: String) = viewModelScope.launch {
+        contactRepository.unlinkCouple(lookupKey)
+    }
+
+    fun ignoreCoupleSuggestion(lookupKey1: String, lookupKey2: String) = viewModelScope.launch {
+        contactRepository.ignoreCoupleSuggestion(lookupKey1, lookupKey2)
     }
 }

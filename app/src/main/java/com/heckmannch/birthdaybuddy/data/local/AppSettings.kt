@@ -12,5 +12,6 @@ data class AppSettings(
     val lastSyncTimestamp: Long = 0L, // Zeitstempel des letzten erfolgreichen Syncs
     val calendarSyncEnabled: Boolean = false,
     val calendarId: Long? = null,
-    val otherEventsEnabled: Boolean = false
+    val otherEventsEnabled: Boolean = false,
+    val ignoredCouplePairs: List<String> = emptyList()
 )

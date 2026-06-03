@@ -12,5 +12,6 @@ import com.heckmannch.birthdaybuddy.ui.model.GiftIdea
 data class ContactUserData(
     @PrimaryKey
     val lookupKey: String,
-    val giftIdeas: List<GiftIdea> = emptyList()
+    val giftIdeas: List<GiftIdea> = emptyList(),
+    val spouseLookupKey: String? = null
 )

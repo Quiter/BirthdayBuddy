@@ -66,4 +66,22 @@ class DateUtilsTest {
         val birthday = LocalDate.of(NO_YEAR_MARKER, 5, 15)
         assertThat(birthday.safeNextAge()).isNull()
     }
+
+    @Test
+    fun `mergeNames combines names with matching last names correctly`() {
+        val merged = mergeNames("Max Mustermann", "Erika Mustermann")
+        assertThat(merged).isEqualTo("Max & Erika Mustermann")
+    }
+
+    @Test
+    fun `mergeNames combines names with different last names correctly`() {
+        val merged = mergeNames("Max Schmidt", "Erika Mustermann")
+        assertThat(merged).isEqualTo("Max Schmidt & Erika Mustermann")
+    }
+
+    @Test
+    fun `mergeNames combines single names correctly`() {
+        val merged = mergeNames("Max", "Erika")
+        assertThat(merged).isEqualTo("Max & Erika")
+    }
 }

@@ -45,6 +45,10 @@ class ContactRepository @Inject constructor(
         .map { it?.otherEventsEnabled ?: false }
         .distinctUntilChanged()
 
+    val ignoredCouplePairs: Flow<List<String>> = appSettingsDao.getSettings()
+        .map { it?.ignoredCouplePairs ?: emptyList() }
+        .distinctUntilChanged()
+
     suspend fun getAllContactsImmediate(): List<Contact> = withContext(Dispatchers.IO) {
         contactDao.getAllContactsImmediate()
     }
@@ -86,10 +90,10 @@ class ContactRepository @Inject constructor(
                     val existing = dbContacts[lookupKey]
                     val userData = userDataMap[lookupKey]
 
-                    // Update: localId erhalten und Geschenkideen aus der UserData-Tabelle laden
                     systemContact.copy(
                         localId = existing?.localId ?: 0,
                         giftIdeas = userData?.giftIdeas ?: existing?.giftIdeas ?: emptyList(),
+                        spouseLookupKey = userData?.spouseLookupKey
                     )
                 }
 
@@ -210,5 +214,66 @@ class ContactRepository @Inject constructor(
             syncContacts() // Cache aktualisieren
         }
         return count
+    }
+
+    suspend fun linkAsCouple(lookupKey1: String, lookupKey2: String) {
+        withContext(Dispatchers.IO) {
+            val userData1 = contactUserDataDao.getUserDataForContact(lookupKey1) ?: ContactUserData(lookupKey = lookupKey1)
+            val userData2 = contactUserDataDao.getUserDataForContact(lookupKey2) ?: ContactUserData(lookupKey = lookupKey2)
+
+            contactUserDataDao.upsertUserData(userData1.copy(spouseLookupKey = lookupKey2))
+            contactUserDataDao.upsertUserData(userData2.copy(spouseLookupKey = lookupKey1))
+
+            contactDao.getContactByLookupKey(lookupKey1)?.let { contact ->
+                contactDao.upsertContact(contact.copy(spouseLookupKey = lookupKey2))
+            }
+            contactDao.getContactByLookupKey(lookupKey2)?.let { contact ->
+                contactDao.upsertContact(contact.copy(spouseLookupKey = lookupKey1))
+            }
+        }
+        widgetUpdater.updateWidget()
+        val allContactsImmediate = getAllContactsImmediate()
+        val currentSettings = appSettingsDao.getSettingsImmediate() ?: AppSettings()
+        if (currentSettings.calendarSyncEnabled) {
+            calendarSyncRepository.syncBirthdays(allContactsImmediate)
+        }
+    }
+
+    suspend fun unlinkCouple(lookupKey: String) {
+        withContext(Dispatchers.IO) {
+            val contact = contactDao.getContactByLookupKey(lookupKey) ?: return@withContext
+            val spouseKey = contact.spouseLookupKey ?: return@withContext
+
+            contactUserDataDao.getUserDataForContact(lookupKey)?.let {
+                contactUserDataDao.upsertUserData(it.copy(spouseLookupKey = null))
+            }
+            contactUserDataDao.getUserDataForContact(spouseKey)?.let {
+                contactUserDataDao.upsertUserData(it.copy(spouseLookupKey = null))
+            }
+
+            contactDao.getContactByLookupKey(lookupKey)?.let {
+                contactDao.upsertContact(it.copy(spouseLookupKey = null))
+            }
+            contactDao.getContactByLookupKey(spouseKey)?.let {
+                contactDao.upsertContact(it.copy(spouseLookupKey = null))
+            }
+        }
+        widgetUpdater.updateWidget()
+        val allContactsImmediate = getAllContactsImmediate()
+        val currentSettings = appSettingsDao.getSettingsImmediate() ?: AppSettings()
+        if (currentSettings.calendarSyncEnabled) {
+            calendarSyncRepository.syncBirthdays(allContactsImmediate)
+        }
+    }
+
+    suspend fun ignoreCoupleSuggestion(lookupKey1: String, lookupKey2: String) {
+        withContext(Dispatchers.IO) {
+            val currentSettings = appSettingsDao.getSettingsImmediate() ?: AppSettings()
+            val pairKey = if (lookupKey1 < lookupKey2) "$lookupKey1:$lookupKey2" else "$lookupKey2:$lookupKey1"
+            if (!currentSettings.ignoredCouplePairs.contains(pairKey)) {
+                val updatedList = currentSettings.ignoredCouplePairs + pairKey
+                appSettingsDao.upsertSettings(currentSettings.copy(ignoredCouplePairs = updatedList))
+            }
+        }
     }
 }

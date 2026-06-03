@@ -2,6 +2,8 @@ package com.heckmannch.birthdaybuddy.ui.model
 
 import androidx.compose.runtime.Immutable
 
+import com.heckmannch.birthdaybuddy.data.local.Contact
+
 /**
  * Gebündelter UI-State für den Home-Bildschirm.
  */
@@ -15,4 +17,5 @@ data class HomeUiState(
     val isSyncing: Boolean = false,
     val searchFocusRequested: Boolean = false,
     val newlyAddedIdeaId: String? = null,
+    val coupleSuggestion: Pair<Contact, Contact>? = null,
 )

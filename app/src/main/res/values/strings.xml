@@ -320,4 +320,11 @@
 
     <string name="notif_desc_anniversary">Happy wedding anniversary!</string>
     <string name="notif_desc_nameday">Happy name day!</string>
+
+    <!-- Couple / Joint Anniversary -->
+    <string name="action_unlink_couple">Unlink Couple</string>
+    <string name="couple_suggestion_title">Joint Anniversary Suggestion</string>
+    <string name="couple_suggestion_msg">Do %1$s &amp; %2$s share this wedding anniversary? Link them as a couple.</string>
+    <string name="couple_suggestion_yes">Yes, link them</string>
+    <string name="couple_suggestion_no">No</string>
 </resources>

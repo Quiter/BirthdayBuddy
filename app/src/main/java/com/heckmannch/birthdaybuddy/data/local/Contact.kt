@@ -33,5 +33,6 @@ data class Contact(
     @ColumnInfo(defaultValue = "0")
     val hasSignal: Boolean = false,
     val labels: List<String> = emptyList(),
-    val giftIdeas: List<GiftIdea> = emptyList()
+    val giftIdeas: List<GiftIdea> = emptyList(),
+    val spouseLookupKey: String? = null
 )

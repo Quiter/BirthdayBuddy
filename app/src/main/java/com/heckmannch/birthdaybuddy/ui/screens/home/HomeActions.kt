@@ -24,4 +24,7 @@ data class HomeActions(
     val onSendSms: (String) -> Unit,
     val onOpenMessengerApp: (MessengerApp, String) -> Unit,
     val onRefresh: () -> Unit,
+    val onUnlinkCouple: (String) -> Unit = {},
+    val onLinkAsCouple: (String, String) -> Unit = { _, _ -> },
+    val onIgnoreCoupleSuggestion: (String, String) -> Unit = { _, _ -> },
 )

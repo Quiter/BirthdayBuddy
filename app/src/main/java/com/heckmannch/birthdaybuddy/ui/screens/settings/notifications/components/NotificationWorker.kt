@@ -72,8 +72,27 @@ class NotificationWorker @AssistedInject constructor(
                             (anniv.month == targetDate.month) && (anniv.dayOfMonth == targetDate.dayOfMonth)
                         } ?: false
                     }
+                    val processedAnniversaries = HashSet<String>()
                     anniversaries.forEach { contact ->
-                        scheduleEvent(contact, "anniversary", "anniversary:${contact.lookupKey}", rule, today)
+                        if (processedAnniversaries.contains(contact.lookupKey)) return@forEach
+
+                        val spouseKey = contact.spouseLookupKey
+                        val spouse = if (spouseKey != null) anniversaries.find { it.lookupKey == spouseKey } else null
+
+                        if (spouse != null) {
+                            scheduleJointEvent(
+                                contacts = listOf(contact, spouse),
+                                eventType = "anniversary",
+                                dbKeys = listOf("anniversary:${contact.lookupKey}", "anniversary:${spouse.lookupKey}"),
+                                rule = rule,
+                                today = today
+                            )
+                            processedAnniversaries.add(contact.lookupKey)
+                            processedAnniversaries.add(spouse.lookupKey)
+                        } else {
+                            scheduleEvent(contact, "anniversary", "anniversary:${contact.lookupKey}", rule, today)
+                            processedAnniversaries.add(contact.lookupKey)
+                        }
                     }
 
                     val nameDays = allContacts.filter { contact ->
@@ -118,6 +137,35 @@ class NotificationWorker @AssistedInject constructor(
 
         notificationHelper.showBirthdayNotification(
             contacts = listOf(contact),
+            daysBefore = rule.daysBefore,
+            pendingId = pendingId,
+            eventType = eventType
+        )
+    }
+
+    private suspend fun scheduleJointEvent(
+        contacts: List<Contact>,
+        eventType: String,
+        dbKeys: List<String>,
+        rule: NotificationRule,
+        today: LocalDate
+    ) {
+        val anyScheduled = dbKeys.any { dbKey ->
+            notificationRepository.hasNotificationBeenScheduled(
+                today.year, rule.daysBefore, dbKey
+            )
+        }
+        if (anyScheduled) return
+
+        val pending = PendingNotification(
+            contactLookupKeys = dbKeys,
+            daysBefore = rule.daysBefore,
+            year = today.year
+        )
+        val pendingId = notificationRepository.insertPendingNotification(pending).toInt()
+
+        notificationHelper.showBirthdayNotification(
+            contacts = contacts,
             daysBefore = rule.daysBefore,
             pendingId = pendingId,
             eventType = eventType
