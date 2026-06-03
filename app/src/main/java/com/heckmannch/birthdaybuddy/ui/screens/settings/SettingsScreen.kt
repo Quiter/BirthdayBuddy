@@ -153,15 +153,6 @@ private fun SettingsContent(
 
                 item {
                     ListItem(
-                        headlineContent = { Text(stringResource(R.string.settings_other_events_title)) },
-                        supportingContent = { Text(stringResource(R.string.settings_other_events_desc)) },
-                        leadingContent = { Icon(Icons.Default.Star, contentDescription = null) },
-                        modifier = Modifier.clickable { onNavigateToOtherEvents() }
-                    )
-                }
-
-                item {
-                    ListItem(
                         headlineContent = { Text(stringResource(R.string.settings_backup_title)) },
                         supportingContent = { Text(stringResource(R.string.settings_backup_desc)) },
                         leadingContent = { Icon(Icons.Default.Share, contentDescription = null) },
@@ -175,6 +166,15 @@ private fun SettingsContent(
                         supportingContent = { Text(stringResource(R.string.settings_sync_desc)) },
                         leadingContent = { Icon(Icons.Default.Refresh, contentDescription = null) },
                         modifier = Modifier.clickable { onNavigateToSync() }
+                    )
+                }
+
+                item {
+                    ListItem(
+                        headlineContent = { Text(stringResource(R.string.settings_other_events_title)) },
+                        supportingContent = { Text(stringResource(R.string.settings_other_events_desc)) },
+                        leadingContent = { Icon(Icons.Default.Star, contentDescription = null) },
+                        modifier = Modifier.clickable { onNavigateToOtherEvents() }
                     )
                 }
 

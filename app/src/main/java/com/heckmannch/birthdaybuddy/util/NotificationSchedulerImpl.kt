@@ -9,7 +9,7 @@ import javax.inject.Singleton
 
 @Singleton
 class NotificationSchedulerImpl @Inject constructor(
-    @ApplicationContext private val context: Context,
+    @param:ApplicationContext private val context: Context,
 ) : NotificationScheduler {
     override fun scheduleNext(rules: List<NotificationRule>) {
         NotificationWorker.scheduleNext(context, rules)

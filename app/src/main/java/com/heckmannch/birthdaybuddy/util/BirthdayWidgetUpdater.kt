@@ -10,7 +10,7 @@ import javax.inject.Singleton
 
 @Singleton
 class BirthdayWidgetUpdater @Inject constructor(
-    @ApplicationContext private val context: Context,
+    @param:ApplicationContext private val context: Context,
 ) : WidgetUpdater {
     override suspend fun updateWidget() {
         try {

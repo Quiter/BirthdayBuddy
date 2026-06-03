@@ -7,19 +7,14 @@ plugins {
 
 android {
     namespace = "com.heckmannch.birthdaybuddy"
-    compileSdk {
-        version = release(36) {
-            minorApiLevel = 1
-        }
-    }
+    compileSdk = 37
 
     defaultConfig {
         applicationId = "com.heckmannch.birthdaybuddy"
         minSdk = 28
-        //noinspection ExpiredTargetSdkVersion, OldTargetApi
-        targetSdk = 36
+        targetSdk = 37
         versionCode = 33
-        versionName = "2.6.0"
+        versionName = "2.6.1"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
