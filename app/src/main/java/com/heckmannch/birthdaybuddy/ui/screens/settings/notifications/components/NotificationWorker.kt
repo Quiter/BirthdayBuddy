@@ -8,6 +8,7 @@ import androidx.work.ExistingWorkPolicy
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
 import androidx.work.WorkerParameters
+import com.heckmannch.birthdaybuddy.data.local.Contact
 import com.heckmannch.birthdaybuddy.data.local.NotificationRule
 import com.heckmannch.birthdaybuddy.data.local.PendingNotification
 import com.heckmannch.birthdaybuddy.data.repository.ContactRepository
@@ -59,28 +60,30 @@ class NotificationWorker @AssistedInject constructor(
                     } ?: false
                 }
 
-                // Für jeden Kontakt eine eigene Benachrichtigung erstellen
+                // 1. Geburtstage verarbeiten
                 birthdays.forEach { contact ->
-                    // Verhindere doppelte Benachrichtigungen am selben Tag / für dasselbe Jahr
-                    val alreadyScheduled = notificationRepository.hasNotificationBeenScheduled(
-                        today.year, rule.daysBefore, contact.lookupKey
-                    )
-                    if (alreadyScheduled) return@forEach
+                    scheduleEvent(contact, "birthday", contact.lookupKey, rule, today)
+                }
 
-                    // In DB speichern für Persistenz
-                    val pending = PendingNotification(
-                        contactLookupKeys = listOf(contact.lookupKey),
-                        daysBefore = rule.daysBefore,
-                        year = today.year
-                    )
-                    val pendingId =
-                        notificationRepository.insertPendingNotification(pending).toInt()
+                // 2. Weitere Ereignisse verarbeiten (sofern aktiviert)
+                if (settings.otherEventsEnabled) {
+                    val anniversaries = allContacts.filter { contact ->
+                        contact.anniversary?.let { anniv ->
+                            (anniv.month == targetDate.month) && (anniv.dayOfMonth == targetDate.dayOfMonth)
+                        } ?: false
+                    }
+                    anniversaries.forEach { contact ->
+                        scheduleEvent(contact, "anniversary", "anniversary:${contact.lookupKey}", rule, today)
+                    }
 
-                    notificationHelper.showBirthdayNotification(
-                        contacts = listOf(contact),
-                        daysBefore = rule.daysBefore,
-                        pendingId = pendingId
-                    )
+                    val nameDays = allContacts.filter { contact ->
+                        contact.nameDay?.let { nd ->
+                            (nd.month == targetDate.month) && (nd.dayOfMonth == targetDate.dayOfMonth)
+                        } ?: false
+                    }
+                    nameDays.forEach { contact ->
+                        scheduleEvent(contact, "nameday", "nameday:${contact.lookupKey}", rule, today)
+                    }
                 }
             }
         }
@@ -92,6 +95,33 @@ class NotificationWorker @AssistedInject constructor(
         }, 1000)
 
         return Result.success()
+    }
+
+    private suspend fun scheduleEvent(
+        contact: Contact,
+        eventType: String,
+        dbKey: String,
+        rule: NotificationRule,
+        today: LocalDate
+    ) {
+        val alreadyScheduled = notificationRepository.hasNotificationBeenScheduled(
+            today.year, rule.daysBefore, dbKey
+        )
+        if (alreadyScheduled) return
+
+        val pending = PendingNotification(
+            contactLookupKeys = listOf(dbKey),
+            daysBefore = rule.daysBefore,
+            year = today.year
+        )
+        val pendingId = notificationRepository.insertPendingNotification(pending).toInt()
+
+        notificationHelper.showBirthdayNotification(
+            contacts = listOf(contact),
+            daysBefore = rule.daysBefore,
+            pendingId = pendingId,
+            eventType = eventType
+        )
     }
 
     companion object {

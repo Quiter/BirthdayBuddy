@@ -28,10 +28,18 @@ class ContactMapper @Inject constructor() {
     private val monthFormatter = DateTimeFormatter.ofPattern("MMMM", Locale.getDefault())
 
     fun toUiModel(contact: Contact, today: LocalDate): ContactUiModel {
-        val birthday = contact.birthday
-        val hasYear = birthday?.hasYear ?: false
-        val daysLeft = birthday?.safeDaysUntilNext(today) ?: Long.MAX_VALUE
-        val nextAgeValue = birthday?.safeNextAge(today)
+        return toUiModelForEvent(contact, today, "birthday")
+    }
+
+    fun toUiModelForEvent(contact: Contact, today: LocalDate, eventType: String): ContactUiModel {
+        val eventDate = when (eventType) {
+            "anniversary" -> contact.anniversary
+            "name_day" -> contact.nameDay
+            else -> contact.birthday
+        }
+        val hasYear = eventDate?.hasYear ?: false
+        val daysLeft = eventDate?.safeDaysUntilNext(today) ?: Long.MAX_VALUE
+        val nextAgeValue = eventDate?.safeNextAge(today)
 
         return ContactUiModel(
             id = contact.lookupKey,
@@ -39,11 +47,11 @@ class ContactMapper @Inject constructor() {
             lookupKey = contact.lookupKey,
             fullName = contact.fullName,
             dateText = when {
-                birthday == null -> "-"
-                !hasYear -> birthday.format(dayMonthFormatter)
-                else -> birthday.format(dateFormatter)
+                eventDate == null -> "-"
+                !hasYear -> eventDate.format(dayMonthFormatter)
+                else -> eventDate.format(dateFormatter)
             },
-            monthName = birthday?.format(monthFormatter) ?: "",
+            monthName = eventDate?.format(monthFormatter) ?: "",
             imageUri = contact.imageUri,
             phoneNumber = contact.phoneNumber,
             initials = contact.fullName.trim()
@@ -58,12 +66,12 @@ class ContactMapper @Inject constructor() {
                 },
             nextAge = nextAgeValue,
             daysUntilNext = daysLeft,
-            isToday = birthday?.isBirthdayToday(today) ?: false,
+            isToday = eventDate?.isBirthdayToday(today) ?: false,
             hasWhatsApp = contact.hasWhatsApp,
             hasSignal = contact.hasSignal,
             labels = contact.labels,
             giftIdeas = contact.giftIdeas,
-            birthday = birthday,
+            birthday = contact.birthday,
         )
     }
 }

@@ -3,6 +3,7 @@ package com.heckmannch.birthdaybuddy.viewmodel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.heckmannch.birthdaybuddy.data.local.NotificationRule
+import com.heckmannch.birthdaybuddy.data.repository.ContactRepository
 import com.heckmannch.birthdaybuddy.data.repository.NotificationRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.SharingStarted
@@ -16,6 +17,7 @@ import javax.inject.Inject
 @HiltViewModel
 class NotificationViewModel @Inject constructor(
     private val notificationRepository: NotificationRepository,
+    private val contactRepository: ContactRepository,
 ) : ViewModel() {
 
     private val settings = notificationRepository.settings
@@ -30,6 +32,11 @@ class NotificationViewModel @Inject constructor(
         .filterNotNull()
         .map { it.persistentNotifications }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), true)
+
+    val otherEventsEnabled: StateFlow<Boolean> = settings
+        .filterNotNull()
+        .map { it.otherEventsEnabled }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), false)
 
     val notificationRules: StateFlow<List<NotificationRule>?> = notificationRepository.allRules
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), null)
@@ -47,6 +54,13 @@ class NotificationViewModel @Inject constructor(
 
     fun setPersistentNotifications(persistent: Boolean) = viewModelScope.launch {
         notificationRepository.updateSettings(persistentNotifications = persistent)
+    }
+
+    fun setOtherEventsEnabled(enabled: Boolean) = viewModelScope.launch {
+        notificationRepository.updateSettings(otherEventsEnabled = enabled)
+        if (enabled) {
+            contactRepository.syncContacts()
+        }
     }
 
     fun addNotificationRule(daysBefore: Int, hour: Int, minute: Int) = viewModelScope.launch {

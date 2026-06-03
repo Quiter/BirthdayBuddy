@@ -11,5 +11,6 @@ data class AppSettings(
     val onboardingCompleted: Boolean = false, // NEU: Flag für den Erststart
     val lastSyncTimestamp: Long = 0L, // Zeitstempel des letzten erfolgreichen Syncs
     val calendarSyncEnabled: Boolean = false,
-    val calendarId: Long? = null
+    val calendarId: Long? = null,
+    val otherEventsEnabled: Boolean = false
 )

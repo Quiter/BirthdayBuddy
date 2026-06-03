@@ -24,6 +24,8 @@ data class Contact(
     val lookupKey: String,       // Stabiler Key vom Android-System (für Re-Sync)
     val fullName: String,
     val birthday: LocalDate? = null,
+    val anniversary: LocalDate? = null,
+    val nameDay: LocalDate? = null,
     val imageUri: String? = null,
     val phoneNumber: String? = null,
     @ColumnInfo(defaultValue = "0")

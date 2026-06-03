@@ -65,9 +65,12 @@ fun LabelFilterBar(
                     items = labels,
                     key = { it }
                 ) { label ->
-                    val displayLabel = if (label == HomeViewModel.LABEL_NO_BIRTHDAY) {
-                        stringResource(R.string.home_filter_no_birthday)
-                    } else label
+                    val displayLabel = when (label) {
+                        HomeViewModel.LABEL_NO_BIRTHDAY -> stringResource(R.string.home_filter_no_birthday)
+                        HomeViewModel.LABEL_ANNIVERSARY -> stringResource(R.string.home_filter_anniversary)
+                        HomeViewModel.LABEL_NAME_DAY -> stringResource(R.string.home_filter_name_day)
+                        else -> label
+                    }
 
                     FilterChip(
                         selected = selectedLabel == label,

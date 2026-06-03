@@ -20,6 +20,8 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -39,6 +41,9 @@ class ContactRepository @Inject constructor(
 
     val allContacts: Flow<List<Contact>> = contactDao.getAllContacts()
     val labelConfigs: Flow<List<LabelConfig>> = labelConfigDao.getAllConfigs()
+    val otherEventsEnabled: Flow<Boolean> = appSettingsDao.getSettings()
+        .map { it?.otherEventsEnabled ?: false }
+        .distinctUntilChanged()
 
     suspend fun getAllContactsImmediate(): List<Contact> = withContext(Dispatchers.IO) {
         contactDao.getAllContactsImmediate()

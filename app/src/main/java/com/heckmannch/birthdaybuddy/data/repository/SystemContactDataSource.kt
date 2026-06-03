@@ -231,35 +231,50 @@ class SystemContactDataSource @Inject constructor(
                 }
             }
 
-            // 2. Geburtstage laden und zuordnen
-            val birthdayProjection = arrayOf(
+            // 2. Ereignisse (Geburtstag, Hochzeitstag, Namenstag) laden und zuordnen
+            val eventProjection = arrayOf(
                 ContactsContract.Data.CONTACT_ID,
                 ContactsContract.CommonDataKinds.Event.START_DATE,
+                ContactsContract.CommonDataKinds.Event.TYPE,
+                ContactsContract.CommonDataKinds.Event.LABEL,
             )
-            val birthdaySelection =
-                "${ContactsContract.Data.MIMETYPE} = ? AND ${ContactsContract.CommonDataKinds.Event.TYPE} = ?"
-            val birthdayArgs = arrayOf(
-                ContactsContract.CommonDataKinds.Event.CONTENT_ITEM_TYPE,
-                ContactsContract.CommonDataKinds.Event.TYPE_BIRTHDAY.toString()
-            )
+            val eventSelection = "${ContactsContract.Data.MIMETYPE} = ?"
+            val eventArgs = arrayOf(ContactsContract.CommonDataKinds.Event.CONTENT_ITEM_TYPE)
+
+            val anniversaryLabels = setOf("hochzeitstag", "anniversary")
+            val nameDayLabels = setOf("namenstag", "name day", "name-day")
 
             context.contentResolver.query(
                 ContactsContract.Data.CONTENT_URI,
-                birthdayProjection,
-                birthdaySelection,
-                birthdayArgs,
+                eventProjection,
+                eventSelection,
+                eventArgs,
                 null
             )?.use { cursor ->
                 val idIdx = cursor.getColumnIndex(ContactsContract.Data.CONTACT_ID)
-                val dateIdx =
-                    cursor.getColumnIndex(ContactsContract.CommonDataKinds.Event.START_DATE)
+                val dateIdx = cursor.getColumnIndex(ContactsContract.CommonDataKinds.Event.START_DATE)
+                val typeIdx = cursor.getColumnIndex(ContactsContract.CommonDataKinds.Event.TYPE)
+                val labelIdx = cursor.getColumnIndex(ContactsContract.CommonDataKinds.Event.LABEL)
 
                 while (cursor.moveToNext()) {
                     val contactId = cursor.getString(idIdx) ?: continue
-                    val birthday = parseDate(cursor.getString(dateIdx))
-                    if (birthday != null) {
-                        contactsMap[contactId]?.let {
-                            contactsMap[contactId] = it.copy(birthday = birthday)
+                    val dateStr = cursor.getString(dateIdx)
+                    val date = parseDate(dateStr) ?: continue
+                    val type = cursor.getInt(typeIdx)
+                    val label = cursor.getString(labelIdx)?.lowercase()?.trim()
+
+                    contactsMap[contactId]?.let { contact ->
+                        when {
+                            type == ContactsContract.CommonDataKinds.Event.TYPE_BIRTHDAY -> {
+                                contactsMap[contactId] = contact.copy(birthday = date)
+                            }
+                            type == ContactsContract.CommonDataKinds.Event.TYPE_ANNIVERSARY ||
+                            (type == ContactsContract.CommonDataKinds.Event.TYPE_CUSTOM && label in anniversaryLabels) -> {
+                                contactsMap[contactId] = contact.copy(anniversary = date)
+                            }
+                            type == ContactsContract.CommonDataKinds.Event.TYPE_CUSTOM && label in nameDayLabels -> {
+                                contactsMap[contactId] = contact.copy(nameDay = date)
+                            }
                         }
                     }
                 }

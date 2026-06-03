@@ -38,6 +38,7 @@ class HomeViewModelTest {
         whenever(timeRepository.currentDate).doReturn(MutableStateFlow(today))
         whenever(contactRepository.labelConfigs).doReturn(MutableStateFlow(emptyList()))
         whenever(contactRepository.allContacts).doReturn(MutableStateFlow(emptyList()))
+        whenever(contactRepository.otherEventsEnabled).doReturn(MutableStateFlow(false))
     }
 
     @Test
@@ -133,5 +134,49 @@ class HomeViewModelTest {
 
         assertThat(state.contacts).hasSize(1)
         assertThat(state.contacts?.first()?.fullName).isEqualTo("Visible")
+    }
+
+    @Test
+    fun otherEventsFiltering_worksCorrectly() = runTest {
+        val contacts = listOf(
+            Contact(
+                contactId = "1",
+                lookupKey = "k1",
+                fullName = "Anniversary Person",
+                birthday = today,
+                anniversary = today.plusDays(5),
+                nameDay = null
+            ),
+            Contact(
+                contactId = "2",
+                lookupKey = "k2",
+                fullName = "Name Day Person",
+                birthday = today,
+                anniversary = null,
+                nameDay = today.plusDays(10)
+            )
+        )
+        whenever(contactRepository.allContacts).thenReturn(MutableStateFlow(contacts))
+        whenever(contactRepository.otherEventsEnabled).thenReturn(MutableStateFlow(true))
+
+        val viewModel = HomeViewModel(
+            contactRepository = contactRepository,
+            mapper = mapper,
+            timeRepository = timeRepository,
+        )
+
+        // Verify availableLabels contains anniversary and name_day labels
+        val initialLabelsState = viewModel.uiState.first { it.availableLabels.isNotEmpty() }
+        assertThat(initialLabelsState.availableLabels).contains(HomeViewModel.LABEL_ANNIVERSARY)
+        assertThat(initialLabelsState.availableLabels).contains(HomeViewModel.LABEL_NAME_DAY)
+
+        // Select Anniversary label
+        viewModel.onLabelSelected(HomeViewModel.LABEL_ANNIVERSARY)
+
+        val anniversaryState = viewModel.uiState.first { it.selectedLabel == HomeViewModel.LABEL_ANNIVERSARY && it.contacts != null }
+        // Should only show Anniversary Person
+        assertThat(anniversaryState.contacts).hasSize(1)
+        assertThat(anniversaryState.contacts?.first()?.fullName).isEqualTo("Anniversary Person")
+        assertThat(anniversaryState.contacts?.first()?.daysUntilNext).isEqualTo(5)
     }
 }

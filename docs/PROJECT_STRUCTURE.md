@@ -88,6 +88,7 @@
             - `NotificationActionReceiver.kt`: Verarbeitet Klicks auf Benachrichtigungs-Buttons.
             - `NotificationHelper.kt`: Hilfsklasse für den System-Notification-Manager.
         - `backup/BackupScreen.kt`: Screen für den Import/Export von Geschenkideen.
+        - `settings/otherevents/OtherEventsSettingsScreen.kt`: Screen zur Aktivierung und Konfiguration des Features für weitere Ereignisse (Hochzeitstage und Namenstage).
         - `about/AboutScreen.kt`: Anzeige von App-Informationen und Entwickler-Details.
         - `about/PrivacyPolicyScreen.kt`: Anzeige der Datenschutzerklärung.
 - ### 📁 Models (`ui.model`)
@@ -140,6 +141,7 @@
 - `MainDispatcherRule.kt`: JUnit-Rule zur Steuerung von Coroutine-Dispatchern in Tests.
 - `data/local/ConvertersTest.kt`: Tests für TypeConverter.
 - `data/local/MigrationTest.kt`: Automatisierte Datenbank-Migrationstests (V1 bis aktuell).
+- `data/local/SettingsMigrationTest.kt`: Automatisierte Datenbank-Migrationstests für die Einstellungen (V2 bis V3).
 - `data/mapper/ContactMapperTest.kt`: Tests für die Transformation in UI-Modelle.
 - `data/repository/NotificationRepositoryTest.kt`: Integrationstests für das Repository.
 - `viewmodel/HomeViewModelSearchTest.kt`: Tests der Suchlogik im HomeViewModel.

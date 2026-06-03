@@ -19,6 +19,7 @@ import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Share
+import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -51,6 +52,7 @@ fun SettingsScreen(
     onNavigateToBackup: () -> Unit,
     onNavigateToSync: () -> Unit,
     onNavigateToAbout: () -> Unit,
+    onNavigateToOtherEvents: () -> Unit,
     onNavigateBack: () -> Unit,
 ) {
     SettingsContent(
@@ -61,6 +63,7 @@ fun SettingsScreen(
         onNavigateToCalendar = onNavigateToCalendar,
         onNavigateToBackup = onNavigateToBackup,
         onNavigateToAbout = onNavigateToAbout,
+        onNavigateToOtherEvents = onNavigateToOtherEvents,
         onNavigateBack = onNavigateBack,
     )
 }
@@ -75,6 +78,7 @@ private fun SettingsContent(
     onNavigateToCalendar: () -> Unit,
     onNavigateToBackup: () -> Unit,
     onNavigateToAbout: () -> Unit,
+    onNavigateToOtherEvents: () -> Unit,
     onNavigateBack: () -> Unit,
 ) {
     val scrollBehavior =
@@ -144,6 +148,15 @@ private fun SettingsContent(
                             )
                         },
                         modifier = Modifier.clickable { onNavigateToLabels() }
+                    )
+                }
+
+                item {
+                    ListItem(
+                        headlineContent = { Text(stringResource(R.string.settings_other_events_title)) },
+                        supportingContent = { Text(stringResource(R.string.settings_other_events_desc)) },
+                        leadingContent = { Icon(Icons.Default.Star, contentDescription = null) },
+                        modifier = Modifier.clickable { onNavigateToOtherEvents() }
                     )
                 }
 
@@ -238,6 +251,7 @@ private fun SettingsPreview() {
             onNavigateToCalendar = {},
             onNavigateToBackup = {},
             onNavigateToAbout = {},
+            onNavigateToOtherEvents = {},
             onNavigateBack = {}
         )
     }

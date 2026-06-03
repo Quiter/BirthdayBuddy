@@ -275,4 +275,44 @@
     <string name="onboarding_calendar_guide_step3_title">3. Check „BirthdayBuddy“</string>
     <string name="onboarding_calendar_guide_step3_desc">Make sure the checkbox next to „BirthdayBuddy“ under your Phone/Local account is checked.</string>
     <string name="onboarding_calendar_guide_btn">Open Calendar App</string>
+
+    <!-- Weitere Ereignisse -->
+    <string name="other_events_title">Additional Events</string>
+    <string name="other_events_enable">Enable additional events</string>
+    <string name="other_events_desc">Show name days and wedding anniversaries from your system contacts.</string>
+    <string name="other_events_info_title">Experimental Feature</string>
+    <string name="other_events_info_desc">This feature loads wedding anniversaries and name days of your contacts and integrates them as filterable tabs on the home screen as well as into the notification system.</string>
+    <string name="settings_other_events_title">Additional Events</string>
+    <string name="settings_other_events_desc">Manage wedding anniversaries and name days</string>
+    <string name="home_filter_anniversary">Anniversary</string>
+    <string name="home_filter_name_day">Name Day</string>
+
+    <!-- Anniversary Notifications -->
+    <string name="notif_title_today_anniversary_age">Today is %1$s\'s %2$d. wedding anniversary!</string>
+    <string name="notif_title_today_anniversary">Today is %1$s\'s wedding anniversary!</string>
+    <string name="notif_title_tomorrow_anniversary_age">Tomorrow is %1$s\'s %2$d. wedding anniversary!</string>
+    <string name="notif_title_tomorrow_anniversary">Tomorrow is %1$s\'s wedding anniversary!</string>
+    <string name="notif_title_week_anniversary_age">In one week is %1$s\'s %2$d. wedding anniversary!</string>
+    <string name="notif_title_week_anniversary">In one week is %1$s\'s wedding anniversary!</string>
+    <string name="notif_title_days_anniversary_age">In %1$d days is %2$s\'s %3$d. wedding anniversary!</string>
+    <string name="notif_title_days_anniversary">In %1$d days is %2$s\'s wedding anniversary!</string>
+
+    <string name="notif_title_today_anniversary_plural">Today are %d wedding anniversaries!</string>
+    <string name="notif_title_tomorrow_anniversary_plural">Tomorrow are %d wedding anniversaries!</string>
+    <string name="notif_title_week_anniversary_plural">In one week are %d wedding anniversaries!</string>
+    <string name="notif_title_days_anniversary_plural">In %1$d days are %2$d wedding anniversaries!</string>
+
+    <!-- Name Day Notifications -->
+    <string name="notif_title_today_nameday">%1$s\'s name day is today!</string>
+    <string name="notif_title_tomorrow_nameday">%1$s\'s name day is tomorrow!</string>
+    <string name="notif_title_week_nameday">%1$s\'s name day is in one week!</string>
+    <string name="notif_title_days_nameday">In %1$d days is %2$s\'s name day!</string>
+
+    <string name="notif_title_today_nameday_plural">Today are %d name days!</string>
+    <string name="notif_title_tomorrow_nameday_plural">Tomorrow are %d name days!</string>
+    <string name="notif_title_week_nameday_plural">In one week are %d name days!</string>
+    <string name="notif_title_days_nameday_plural">In %1$d days are %2$d name days!</string>
+
+    <string name="notif_desc_anniversary">Happy wedding anniversary!</string>
+    <string name="notif_desc_nameday">Happy name day!</string>
 </resources>

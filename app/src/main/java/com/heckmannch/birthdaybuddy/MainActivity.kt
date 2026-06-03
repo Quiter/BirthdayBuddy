@@ -48,6 +48,7 @@ import com.heckmannch.birthdaybuddy.ui.screens.settings.backup.BackupScreen
 import com.heckmannch.birthdaybuddy.ui.screens.settings.calendar.CalendarSettingsScreen
 import com.heckmannch.birthdaybuddy.ui.screens.settings.labels.LabelSettingsScreen
 import com.heckmannch.birthdaybuddy.ui.screens.settings.notifications.NotificationSettingsScreen
+import com.heckmannch.birthdaybuddy.ui.screens.settings.otherevents.OtherEventsSettingsScreen
 import com.heckmannch.birthdaybuddy.ui.screens.settings.sync.SyncSettingsScreen
 import com.heckmannch.birthdaybuddy.ui.theme.BirthdayBuddyTheme
 import com.heckmannch.birthdaybuddy.viewmodel.BackupViewModel
@@ -70,6 +71,7 @@ private object Routes {
     const val SETTINGS = "settings"
     const val LABEL_SETTINGS = "label_settings"
     const val NOTIFICATION_SETTINGS = "notification_settings"
+    const val OTHER_EVENTS_SETTINGS = "other_events_settings"
     const val CALENDAR_SETTINGS = "calendar_settings"
     const val BACKUP_SETTINGS = "backup_settings"
     const val SYNC_SETTINGS = "sync_settings"
@@ -250,6 +252,9 @@ class MainActivity : ComponentActivity() {
                     onNavigateToAbout = {
                         navController.navigate(Routes.ABOUT)
                     },
+                    onNavigateToOtherEvents = {
+                        navController.navigate(Routes.OTHER_EVENTS_SETTINGS)
+                    },
                 ) {
                     navController.popBackStack()
                 }
@@ -266,6 +271,15 @@ class MainActivity : ComponentActivity() {
             composable(Routes.NOTIFICATION_SETTINGS) {
                 val notificationViewModel: NotificationViewModel = hiltViewModel()
                 NotificationSettingsScreen(
+                    windowWidthSizeClass = windowWidthSizeClass,
+                    viewModel = notificationViewModel
+                ) {
+                    navController.popBackStack()
+                }
+            }
+            composable(Routes.OTHER_EVENTS_SETTINGS) {
+                val notificationViewModel: NotificationViewModel = hiltViewModel()
+                OtherEventsSettingsScreen(
                     windowWidthSizeClass = windowWidthSizeClass,
                     viewModel = notificationViewModel
                 ) {

@@ -37,6 +37,7 @@ class HomeViewModelSearchTest {
         // Basiskonfiguration für die Mocks
         whenever(contactRepository.allContacts).doReturn(MutableStateFlow(emptyList()))
         whenever(contactRepository.labelConfigs).doReturn(MutableStateFlow(emptyList()))
+        whenever(contactRepository.otherEventsEnabled).doReturn(MutableStateFlow(false))
         whenever(timeRepository.currentDate).doReturn(MutableStateFlow(LocalDate.of(2024, 5, 15)))
     }
 

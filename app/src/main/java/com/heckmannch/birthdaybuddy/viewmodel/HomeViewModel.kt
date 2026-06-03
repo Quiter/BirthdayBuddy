@@ -44,6 +44,8 @@ class HomeViewModel @Inject constructor(
 
     companion object {
         const val LABEL_NO_BIRTHDAY = "special:no_birthday"
+        const val LABEL_ANNIVERSARY = "special:anniversary"
+        const val LABEL_NAME_DAY = "special:name_day"
     }
 
     private val _scrollToTopEvent = MutableSharedFlow<Unit>(replay = 0)
@@ -67,19 +69,6 @@ class HomeViewModel @Inject constructor(
         .distinctUntilChanged()
         .flowOn(Dispatchers.Default)
 
-    private val allUiContacts: Flow<List<ContactUiModel>> = combine(
-        contactRepository.allContacts,
-        timeRepository.currentDate,
-    ) { list, today ->
-        list.asSequence()
-            .map { mapper.toUiModel(it, today) }
-            .sortedWith(
-                compareBy<ContactUiModel> { it.daysUntilNext }
-                    .thenBy { it.fullName },
-            )
-            .toList()
-    }.flowOn(Dispatchers.Default)
-
     init {
         syncContacts()
     }
@@ -91,15 +80,30 @@ class HomeViewModel @Inject constructor(
         .flowOn(Dispatchers.Default)
 
     private val filteredContacts: Flow<List<ContactUiModel>?> = combine(
-        allUiContacts,
+        contactRepository.allContacts,
+        timeRepository.currentDate,
         searchKeywords,
         _selectedLabel,
         ignoredLabels,
-    ) { uiList, keywords, label, ignoredLabels ->
+    ) { rawContacts, today, keywords, label, ignoredLabels ->
         val startTime = System.currentTimeMillis()
 
+        val displayEventType = when (label) {
+            LABEL_ANNIVERSARY -> "anniversary"
+            LABEL_NAME_DAY -> "name_day"
+            else -> "birthday"
+        }
+
+        val uiList = rawContacts.asSequence()
+            .map { mapper.toUiModelForEvent(it, today, displayEventType) }
+            .toList()
+
         val result = uiList.asSequence()
-            .filter { shouldShowContact(it, keywords, label, ignoredLabels) }
+            .filter { shouldShowContact(it, keywords, label, ignoredLabels, displayEventType) }
+            .sortedWith(
+                compareBy<ContactUiModel> { it.daysUntilNext }
+                    .thenBy { it.fullName },
+            )
             .toList()
 
         if (uiList.size > 1000) {
@@ -118,16 +122,21 @@ class HomeViewModel @Inject constructor(
         contact: ContactUiModel,
         keywords: List<String>,
         label: String?,
-        ignoredLabels: Set<String>
+        ignoredLabels: Set<String>,
+        displayEventType: String
     ): Boolean {
         val isSearching = keywords.isNotEmpty()
 
-        // 1. Sichtbarkeit prüfen (Geburtstag vorhanden & Ignoriert-Status)
-        val isMissingBirthday = contact.dateText == "-"
+        // 1. Sichtbarkeit prüfen (Ereignis vorhanden & Ignoriert-Status)
+        val isMissingEvent = contact.dateText == "-"
         val isNoBirthdayFilter = label == LABEL_NO_BIRTHDAY
 
-        // Kontakte ohne Geburtstag ausblenden (außer bei Suche oder speziellem Filter)
-        if (isMissingBirthday && !isSearching && !isNoBirthdayFilter) return false
+        // Ereignislose Kontakte ausblenden (außer bei Suche, sofern es sich um Geburtstage handelt.
+        // Für Hochzeitstag und Namenstag blenden wir Kontakte ohne dieses Ereignis IMMER aus!)
+        if (isMissingEvent) {
+            if (displayEventType != "birthday") return false
+            if (!isSearching && !isNoBirthdayFilter) return false
+        }
 
         // Ignorierte Labels ausblenden (außer bei aktiver Suche)
         val isIgnored = contact.labels.any { it in ignoredLabels }
@@ -142,7 +151,9 @@ class HomeViewModel @Inject constructor(
         // 3. Label-Filter
         return when (label) {
             null -> true
-            LABEL_NO_BIRTHDAY -> isMissingBirthday
+            LABEL_NO_BIRTHDAY -> isMissingEvent
+            LABEL_ANNIVERSARY -> true // bereits oben über isMissingEvent und displayEventType gefiltert
+            LABEL_NAME_DAY -> true    // bereits oben über isMissingEvent und displayEventType gefiltert
             else -> contact.labels.contains(label)
         }
     }
@@ -150,7 +161,8 @@ class HomeViewModel @Inject constructor(
     val availableLabels: Flow<List<String>> = combine(
         contactRepository.allContacts,
         contactRepository.labelConfigs,
-    ) { contacts, configs ->
+        contactRepository.otherEventsEnabled,
+    ) { contacts, configs, otherEventsEnabled ->
         val inUseLabels = contacts.asSequence().flatMap { it.labels }.toSet()
         val configMap = configs.associateBy { it.name }
 
@@ -166,8 +178,11 @@ class HomeViewModel @Inject constructor(
             config?.isSystem == false && !(config.isHiddenFromFilter) && !(config.isIgnored) && name != LABEL_NO_BIRTHDAY
         }
 
-        // Wenn weder aktive User-Labels noch das Pseudo-Label aktiv sind -> Bar verstecken
-        if (!hasActiveUserLabels && !showPseudo) return@combine emptyList()
+        val showAnniversary = otherEventsEnabled && contacts.any { it.anniversary != null }
+        val showNameDay = otherEventsEnabled && contacts.any { it.nameDay != null }
+
+        // Wenn weder aktive User-Labels noch das Pseudo-Label noch andere Events aktiv sind -> Bar verstecken
+        if (!hasActiveUserLabels && !showPseudo && !showAnniversary && !showNameDay) return@combine emptyList()
 
         val labels = mutableListOf<String>()
 
@@ -182,9 +197,17 @@ class HomeViewModel @Inject constructor(
                 .forEach { labels.add(it) }
         }
 
-        // "Ohne Datum" immer als letztes, falls aktiv
+        // "Ohne Datum" immer als letztes von Geburtstagen, falls aktiv
         if (showPseudo) {
             labels.add(LABEL_NO_BIRTHDAY)
+        }
+
+        // Weitere Ereignisse ganz rechts
+        if (showAnniversary) {
+            labels.add(LABEL_ANNIVERSARY)
+        }
+        if (showNameDay) {
+            labels.add(LABEL_NAME_DAY)
         }
 
         labels

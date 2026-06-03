@@ -10,7 +10,7 @@ import androidx.sqlite.db.SupportSQLiteDatabase
 
 @Database(
     entities = [Contact::class, PendingNotification::class],
-    version = 7,
+    version = 8,
     exportSchema = true
 )
 @TypeConverters(Converters::class, GiftIdeaConverters::class)
@@ -268,6 +268,17 @@ abstract class AppDatabase : RoomDatabase() {
             }
         }
 
+        /**
+         * Migration von 7 auf 8.
+         * Fügt die Spalten 'anniversary' und 'nameDay' zur Tabelle 'contacts' hinzu.
+         */
+        val MIGRATION_7_8 = object : Migration(7, 8) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("ALTER TABLE contacts ADD COLUMN anniversary TEXT")
+                db.execSQL("ALTER TABLE contacts ADD COLUMN nameDay TEXT")
+            }
+        }
+
         private fun buildDatabase(context: Context): AppDatabase {
             return Room.databaseBuilder(
                 context.applicationContext,
@@ -276,7 +287,8 @@ abstract class AppDatabase : RoomDatabase() {
             )
                 .addMigrations(
                     MIGRATION_5_6,
-                    MIGRATION_6_7
+                    MIGRATION_6_7,
+                    MIGRATION_7_8
                 )
                 .fallbackToDestructiveMigration(true) // Letzter Rettungsanker bei komplett korruptem Zustand
                 .build()

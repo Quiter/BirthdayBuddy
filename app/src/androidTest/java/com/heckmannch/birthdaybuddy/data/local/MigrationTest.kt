@@ -46,7 +46,7 @@ class MigrationTest {
 
     @Test
     @Throws(IOException::class)
-    fun migrate1To7() {
+    fun migrate1To8() {
         // 1. Datenbank in Version 1 erstellen mit Testdaten
         helper.createDatabase(testDb, 1).apply {
             execSQL(
@@ -56,17 +56,18 @@ class MigrationTest {
             close()
         }
 
-        // 2. Migration über die gesamte Kette (1 bis 7) ausführen und validieren
+        // 2. Migration über die gesamte Kette (1 bis 8) ausführen und validieren
         val migratedDb = helper.runMigrationsAndValidate(
             testDb,
-            7,
+            8,
             true,
             AppDatabase.MIGRATION_1_2,
             AppDatabase.MIGRATION_2_3,
             AppDatabase.MIGRATION_3_4,
             AppDatabase.MIGRATION_4_5,
             AppDatabase.MIGRATION_5_6,
-            AppDatabase.MIGRATION_6_7
+            AppDatabase.MIGRATION_6_7,
+            AppDatabase.MIGRATION_7_8
         )
 
         // 3. Prüfen, ob die Daten intakt sind und neue Spalten default-Werte haben
@@ -78,19 +79,23 @@ class MigrationTest {
         val phoneIndex = cursor.getColumnIndex("phoneNumber")
         val whatsappIndex = cursor.getColumnIndex("hasWhatsApp")
         val signalIndex = cursor.getColumnIndex("hasSignal")
+        val anniversaryIndex = cursor.getColumnIndex("anniversary")
+        val nameDayIndex = cursor.getColumnIndex("nameDay")
 
         assert(cursor.getString(nameIndex) == "Max Mustermann")
         assert(cursor.getString(birthdayIndex) == "1990-01-01")
         assert(cursor.isNull(phoneIndex))
         assert(cursor.getInt(whatsappIndex) == 0)
         assert(cursor.getInt(signalIndex) == 0)
+        assert(cursor.isNull(anniversaryIndex))
+        assert(cursor.isNull(nameDayIndex))
 
         cursor.close()
     }
 
     @Test
     @Throws(IOException::class)
-    fun migrate2To7() {
+    fun migrate2To8() {
         // 1. Datenbank in Version 2 erstellen mit Testdaten
         helper.createDatabase(testDb, 2).apply {
             execSQL(
@@ -100,16 +105,17 @@ class MigrationTest {
             close()
         }
 
-        // 2. Migration über die Kette (2 bis 7) ausführen und validieren
+        // 2. Migration über die Kette (2 bis 8) ausführen und validieren
         val migratedDb = helper.runMigrationsAndValidate(
             testDb,
-            7,
+            8,
             true,
             AppDatabase.MIGRATION_2_3,
             AppDatabase.MIGRATION_3_4,
             AppDatabase.MIGRATION_4_5,
             AppDatabase.MIGRATION_5_6,
-            AppDatabase.MIGRATION_6_7
+            AppDatabase.MIGRATION_6_7,
+            AppDatabase.MIGRATION_7_8
         )
 
         // 3. Prüfen, ob die Daten intakt sind
@@ -117,6 +123,8 @@ class MigrationTest {
         assert(cursor.moveToFirst())
         assert(cursor.getString(cursor.getColumnIndex("fullName")) == "Erika Mustermann")
         assert(cursor.getString(cursor.getColumnIndex("birthday")) == "1992-02-02")
+        assert(cursor.isNull(cursor.getColumnIndex("anniversary")))
+        assert(cursor.isNull(cursor.getColumnIndex("nameDay")))
         cursor.close()
     }
 
@@ -136,7 +144,8 @@ class MigrationTest {
             AppDatabase.MIGRATION_3_4,
             AppDatabase.MIGRATION_4_5,
             AppDatabase.MIGRATION_5_6,
-            AppDatabase.MIGRATION_6_7
+            AppDatabase.MIGRATION_6_7,
+            AppDatabase.MIGRATION_7_8
         )
             .build().apply {
                 openHelper.writableDatabase.close()

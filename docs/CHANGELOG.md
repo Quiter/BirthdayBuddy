@@ -162,4 +162,12 @@
     - **Z-Index & Overlay Safety:** Preserved the use of the `Popup`-API, ensuring the bubble is drawn in a separate window layer on top of all other elements (including `HomeTopBar`) without clipping.
     - **Boundary Safety:** Implemented a translation clamp (`.coerceAtLeast(0f)`) to gracefully stop the bubble at the very top of the visible screen without going behind the top bar or off-screen.
 
+129. **Integration of "Weitere Ereignisse" (Anniversaries & Name Days):**
+    - **Database Schema Upgrades:** Bumped `SettingsDatabase` to version 3 (with `MIGRATION_2_3` to add `otherEventsEnabled`) and `AppDatabase` to version 8 (with `MIGRATION_7_8` to add `anniversary` and `nameDay` columns).
+    - **System Contacts Integration:** Expanded `SystemContactDataSource.kt` to extract anniversaries and name days from the system Contacts provider using MIME-type custom label matches (e.g., anniversary/hochzeitstag, name day/namenstag).
+    - **Logic Mapping & UI Filters:** Refactored `ContactMapper.kt` to calculate days remaining and count (anniversary year) dynamically. Added `LABEL_ANNIVERSARY` and `LABEL_NAME_DAY` pseudo-labels on the Home screen to filter contacts by event, sorted by the remaining days to that event.
+    - **Settings Screen Integration:** Implemented `OtherEventsSettingsScreen.kt` with toggle switches, routing, and immediate cache synchronization upon activation.
+    - **Notification Scheduling:** Updated background scheduling in `NotificationWorker.kt` and `SnoozeWorker.kt` using key prefixes to isolate anniversaries/name days and prevent collision with standard birthday keys in database logs.
+    - **Test Coverage:** Added `SettingsMigrationTest.kt` validating v2 to v3 schema changes, updated `ContactMapperTest.kt` with custom event cases, added ViewModel filtering verification, and resolved flow deadlock issues in mock tests, achieving 100% test completion on Android emulators.
+
 

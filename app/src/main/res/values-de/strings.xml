@@ -275,4 +275,44 @@
     <string name="onboarding_calendar_guide_step3_title">3. „BirthdayBuddy“ aktivieren</string>
     <string name="onboarding_calendar_guide_step3_desc">Stelle sicher, dass der Haken bei „BirthdayBuddy“ unter deinem lokalen Telefon-Konto gesetzt ist.</string>
     <string name="onboarding_calendar_guide_btn">Kalender-App öffnen</string>
+
+    <!-- Weitere Ereignisse -->
+    <string name="other_events_title">Weitere Ereignisse</string>
+    <string name="other_events_enable">Weitere Ereignisse aktivieren</string>
+    <string name="other_events_desc">Zeige Namenstage und Hochzeitstage aus deinen System-Kontakten an.</string>
+    <string name="other_events_info_title">Verstecktes Feature</string>
+    <string name="other_events_info_desc">Dieses Feature lädt Hochzeitstage und Namenstage deiner Kontakte und integriert sie als filterbare Tabs auf der Startseite sowie in das Benachrichtigungssystem.</string>
+    <string name="settings_other_events_title">Weitere Ereignisse</string>
+    <string name="settings_other_events_desc">Hochzeitstage und Namenstage verwalten</string>
+    <string name="home_filter_anniversary">Hochzeitstag</string>
+    <string name="home_filter_name_day">Namenstag</string>
+
+    <!-- Benachrichtigungen Hochzeitstage -->
+    <string name="notif_title_today_anniversary_age">Heute ist der %2$d. Hochzeitstag von %1$s!</string>
+    <string name="notif_title_today_anniversary">%1$s hat heute Hochzeitstag!</string>
+    <string name="notif_title_tomorrow_anniversary_age">Morgen ist der %2$d. Hochzeitstag von %1$s!</string>
+    <string name="notif_title_tomorrow_anniversary">%1$s hat morgen Hochzeitstag!</string>
+    <string name="notif_title_week_anniversary_age">In einer Woche ist der %2$d. Hochzeitstag von %1$s!</string>
+    <string name="notif_title_week_anniversary">In einer Woche hat %1$s Hochzeitstag!</string>
+    <string name="notif_title_days_anniversary_age">In %1$d Tagen ist der %3$d. Hochzeitstag von %2$s!</string>
+    <string name="notif_title_days_anniversary">In %1$d Tagen hat %2$s Hochzeitstag!</string>
+
+    <string name="notif_title_today_anniversary_plural">Heute haben %d Personen Hochzeitstag!</string>
+    <string name="notif_title_tomorrow_anniversary_plural">Morgen haben %d Personen Hochzeitstag!</string>
+    <string name="notif_title_week_anniversary_plural">In einer Woche haben %d Personen Hochzeitstag!</string>
+    <string name="notif_title_days_anniversary_plural">In %1$d Tagen haben %2$d Personen Hochzeitstag!</string>
+
+    <!-- Benachrichtigungen Namenstage -->
+    <string name="notif_title_today_nameday">%1$s hat heute Namenstag!</string>
+    <string name="notif_title_tomorrow_nameday">%1$s hat morgen Namenstag!</string>
+    <string name="notif_title_week_nameday">%1$s hat in einer Woche Namenstag!</string>
+    <string name="notif_title_days_nameday">In %1$d Tagen hat %2$s Namenstag!</string>
+
+    <string name="notif_title_today_nameday_plural">Heute haben %d Personen Namenstag!</string>
+    <string name="notif_title_tomorrow_nameday_plural">Morgen haben %d Personen Namenstag!</string>
+    <string name="notif_title_week_nameday_plural">In einer Woche haben %d Personen Namenstag!</string>
+    <string name="notif_title_days_nameday_plural">In %1$d Tagen haben %2$d Personen Namenstag!</string>
+
+    <string name="notif_desc_anniversary">Alles Gute zum Hochzeitstag!</string>
+    <string name="notif_desc_nameday">Alles Gute zum Namenstag!</string>
 </resources>

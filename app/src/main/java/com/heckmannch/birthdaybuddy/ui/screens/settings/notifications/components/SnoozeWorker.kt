@@ -22,11 +22,18 @@ class SnoozeWorker @AssistedInject constructor(
         val pendingId = inputData.getInt("PENDING_ID", -1)
         val lookupKeys = inputData.getStringArray("LOOKUP_KEYS") ?: return Result.failure()
 
+        val rawKeys = lookupKeys.map { it.substringAfter(":") }.toSet()
         val allContacts = contactRepository.allContacts.first()
-        val targetContacts = allContacts.filter { it.lookupKey in lookupKeys }
+        val targetContacts = allContacts.filter { it.lookupKey in rawKeys }
 
         if (targetContacts.isNotEmpty()) {
-            notificationHelper.showBirthdayNotification(targetContacts, daysBefore, pendingId)
+            val firstKey = lookupKeys.firstOrNull() ?: ""
+            val eventType = when {
+                firstKey.startsWith("anniversary:") -> "anniversary"
+                firstKey.startsWith("nameday:") -> "nameday"
+                else -> "birthday"
+            }
+            notificationHelper.showBirthdayNotification(targetContacts, daysBefore, pendingId, eventType)
         }
 
         return Result.success()
