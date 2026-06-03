@@ -168,6 +168,7 @@
     - **Logic Mapping & UI Filters:** Refactored `ContactMapper.kt` to calculate days remaining and count (anniversary year) dynamically. Added `LABEL_ANNIVERSARY` and `LABEL_NAME_DAY` pseudo-labels on the Home screen to filter contacts by event, sorted by the remaining days to that event.
     - **Settings Screen Integration:** Implemented `OtherEventsSettingsScreen.kt` with toggle switches, routing, and immediate cache synchronization upon activation.
     - **Notification Scheduling:** Updated background scheduling in `NotificationWorker.kt` and `SnoozeWorker.kt` using key prefixes to isolate anniversaries/name days and prevent collision with standard birthday keys in database logs.
+    - **Calendar Synchronization:** Updated `CalendarSyncRepository.kt` to support syncing wedding anniversaries and name days into the local Android system calendar ("BirthdayBuddy") alongside birthdays when "Weitere Ereignisse" is enabled, complete with English and German translations for event titles and descriptions.
     - **Test Coverage:** Added `SettingsMigrationTest.kt` validating v2 to v3 schema changes, updated `ContactMapperTest.kt` with custom event cases, added ViewModel filtering verification, and resolved flow deadlock issues in mock tests, achieving 100% test completion on Android emulators.
 
 

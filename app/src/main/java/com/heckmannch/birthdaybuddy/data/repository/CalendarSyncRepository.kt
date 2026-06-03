@@ -316,34 +316,30 @@ class CalendarSyncRepository @Inject constructor(
                 arrayOf(calendarId.toString())
             )
 
-            val contactsWithBirthday = contacts.filter { it.birthday != null }
-            if (contactsWithBirthday.isEmpty()) return@withContext true
+            val currentSettings = appSettingsDao.getSettingsImmediate() ?: AppSettings()
+            val otherEventsEnabled = currentSettings.otherEventsEnabled
+
+            val hasEvents = contacts.any {
+                it.birthday != null || (otherEventsEnabled && (it.anniversary != null || it.nameDay != null))
+            }
+            if (!hasEvents) return@withContext true
 
             val operations = ArrayList<ContentProviderOperation>()
-            for (contact in contactsWithBirthday) {
-                val birthday = contact.birthday ?: continue
-                val year = if (birthday.hasYear) birthday.year else 2000
 
-                // Get UTC midnight start
+            fun addEvent(date: java.time.LocalDate, title: String, description: String) {
+                val year = if (date.hasYear) date.year else 2000
                 val startCal = Calendar.getInstance(TimeZone.getTimeZone("UTC")).apply {
                     clear()
-                    set(year, birthday.monthValue - 1, birthday.dayOfMonth, 0, 0, 0)
+                    set(year, date.monthValue - 1, date.dayOfMonth, 0, 0, 0)
                 }
                 val dtStart = startCal.timeInMillis
-
-                val title = context.getString(R.string.calendar_event_title, contact.fullName)
-                val description = if (birthday.hasYear) {
-                    context.getString(R.string.calendar_event_birth_year, birthday.year)
-                } else {
-                    context.getString(R.string.calendar_event_no_year)
-                }
 
                 val op = ContentProviderOperation.newInsert(CalendarContract.Events.CONTENT_URI)
                     .withValue(CalendarContract.Events.CALENDAR_ID, calendarId)
                     .withValue(CalendarContract.Events.TITLE, title)
                     .withValue(CalendarContract.Events.DESCRIPTION, description)
                     .withValue(CalendarContract.Events.DTSTART, dtStart)
-                    .withValue(CalendarContract.Events.DURATION, "P1D") // 1-day duration
+                    .withValue(CalendarContract.Events.DURATION, "P1D")
                     .withValue(CalendarContract.Events.RRULE, "FREQ=YEARLY")
                     .withValue(CalendarContract.Events.EVENT_TIMEZONE, "UTC")
                     .withValue(CalendarContract.Events.ALL_DAY, 1)
@@ -358,6 +354,41 @@ class CalendarSyncRepository @Inject constructor(
                 if (operations.size >= 400) {
                     context.contentResolver.applyBatch(CalendarContract.AUTHORITY, operations)
                     operations.clear()
+                }
+            }
+
+            for (contact in contacts) {
+                // Birthdays
+                contact.birthday?.let { birthday ->
+                    val title = context.getString(R.string.calendar_event_title, contact.fullName)
+                    val description = if (birthday.hasYear) {
+                        context.getString(R.string.calendar_event_birth_year, birthday.year)
+                    } else {
+                        context.getString(R.string.calendar_event_no_year)
+                    }
+                    addEvent(birthday, title, description)
+                }
+
+                // Anniversaries (if enabled)
+                if (otherEventsEnabled) {
+                    contact.anniversary?.let { anniversary ->
+                        val title = context.getString(R.string.calendar_event_anniversary_title, contact.fullName)
+                        val description = if (anniversary.hasYear) {
+                            context.getString(R.string.calendar_event_anniversary_year, anniversary.year)
+                        } else {
+                            context.getString(R.string.calendar_event_anniversary_no_year)
+                        }
+                        addEvent(anniversary, title, description)
+                    }
+                }
+
+                // Name Days (if enabled)
+                if (otherEventsEnabled) {
+                    contact.nameDay?.let { nameDay ->
+                        val title = context.getString(R.string.calendar_event_nameday_title, contact.fullName)
+                        val description = context.getString(R.string.calendar_event_nameday_description, contact.fullName)
+                        addEvent(nameDay, title, description)
+                    }
                 }
             }
 

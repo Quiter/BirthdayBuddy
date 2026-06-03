@@ -266,6 +266,11 @@
     <string name="calendar_event_title">%1$s hat Geburtstag</string>
     <string name="calendar_event_birth_year">Geburtsjahr: %1$d</string>
     <string name="calendar_event_no_year">Geburtstag ohne Jahr</string>
+    <string name="calendar_event_anniversary_title">%1$s hat Hochzeitstag</string>
+    <string name="calendar_event_anniversary_year">Hochzeitsjahr: %1$d</string>
+    <string name="calendar_event_anniversary_no_year">Hochzeitstag ohne Jahr</string>
+    <string name="calendar_event_nameday_title">%1$s hat Namenstag</string>
+    <string name="calendar_event_nameday_description">%1$s hat Namenstag</string>
     <string name="onboarding_calendar_guide_title">Geburtstage im Kalender anzeigen</string>
     <string name="onboarding_calendar_guide_desc">Da BirthdayBuddy einen eigenen Kalender anlegt, musst du diesen eventuell einmalig in deiner Kalender-App einblenden.</string>
     <string name="onboarding_calendar_guide_step1_title">1. Kalender-App öffnen</string>

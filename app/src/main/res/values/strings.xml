@@ -266,6 +266,11 @@
     <string name="calendar_event_title">%1$s\'s Birthday</string>
     <string name="calendar_event_birth_year">Birth year: %1$d</string>
     <string name="calendar_event_no_year">Birthday without year</string>
+    <string name="calendar_event_anniversary_title">%1$s\'s Wedding Anniversary</string>
+    <string name="calendar_event_anniversary_year">Wedding year: %1$d</string>
+    <string name="calendar_event_anniversary_no_year">Wedding anniversary without year</string>
+    <string name="calendar_event_nameday_title">%1$s\'s Name Day</string>
+    <string name="calendar_event_nameday_description">%1$s\'s Name Day</string>
     <string name="onboarding_calendar_guide_title">Show Birthdays in Calendar</string>
     <string name="onboarding_calendar_guide_desc">Since BirthdayBuddy creates a separate calendar, you might need to enable its visibility in your Calendar app once.</string>
     <string name="onboarding_calendar_guide_step1_title">1. Open Calendar App</string>
