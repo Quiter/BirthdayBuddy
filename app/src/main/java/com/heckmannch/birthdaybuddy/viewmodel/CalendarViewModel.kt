@@ -36,6 +36,30 @@ class CalendarViewModel @Inject constructor(
         .map { it.calendarSyncEnabled }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), false)
 
+    val otherEventsEnabled: StateFlow<Boolean> = settings
+        .filterNotNull()
+        .map { it.otherEventsEnabled }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), false)
+
+    val birthdayCalendarColor: StateFlow<Int> = settings
+        .filterNotNull()
+        .map { it.birthdayCalendarColor }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 0xFFE91E63.toInt())
+
+    val anniversaryCalendarColor: StateFlow<Int> = settings
+        .filterNotNull()
+        .map { it.anniversaryCalendarColor }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 0xFF9C27B0.toInt())
+
+    val nameDayCalendarColor: StateFlow<Int> = settings
+        .filterNotNull()
+        .map { it.nameDayCalendarColor }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 0xFFFF9800.toInt())
+
+    fun updateCalendarColor(type: CalendarSyncRepository.CalendarType, color: Int) = viewModelScope.launch {
+        calendarSyncRepository.updateCalendarColor(type, color)
+    }
+
     fun hasCalendarPermissions(): Boolean {
         return calendarSyncRepository.hasCalendarPermissions()
     }

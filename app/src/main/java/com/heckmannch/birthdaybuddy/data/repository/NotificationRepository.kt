@@ -46,7 +46,10 @@ class NotificationRepository @Inject constructor(
         calendarSyncEnabled: Boolean? = null,
         calendarId: Long? = null,
         clearCalendarId: Boolean = false,
-        otherEventsEnabled: Boolean? = null
+        otherEventsEnabled: Boolean? = null,
+        birthdayCalendarColor: Int? = null,
+        anniversaryCalendarColor: Int? = null,
+        nameDayCalendarColor: Int? = null
     ) {
         settingsMutex.withLock {
             val current = appSettingsDao.getSettingsImmediate() ?: AppSettings()
@@ -59,7 +62,10 @@ class NotificationRepository @Inject constructor(
                     lastSyncTimestamp = lastSyncTimestamp ?: current.lastSyncTimestamp,
                     calendarSyncEnabled = calendarSyncEnabled ?: current.calendarSyncEnabled,
                     calendarId = if (clearCalendarId) null else (calendarId ?: current.calendarId),
-                    otherEventsEnabled = otherEventsEnabled ?: current.otherEventsEnabled
+                    otherEventsEnabled = otherEventsEnabled ?: current.otherEventsEnabled,
+                    birthdayCalendarColor = birthdayCalendarColor ?: current.birthdayCalendarColor,
+                    anniversaryCalendarColor = anniversaryCalendarColor ?: current.anniversaryCalendarColor,
+                    nameDayCalendarColor = nameDayCalendarColor ?: current.nameDayCalendarColor
                 )
             )
         }

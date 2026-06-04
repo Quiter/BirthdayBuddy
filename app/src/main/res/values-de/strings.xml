@@ -264,6 +264,11 @@
     <string name="calendar_guide_step2_desc">Aktiviere den obigen Schalter, um den Kalender „BirthdayBuddy“ zu erstellen und deine Kontakte zu synchronisieren.</string>
     <string name="calendar_guide_step3_title">3. In Kalender-App einblenden</string>
     <string name="calendar_guide_step3_desc">Öffne deine bevorzugte Kalender-App (z. B. Google Kalender), öffne das Seitenmenü (die drei Striche) und stelle sicher, dass der Haken bei „BirthdayBuddy“ unter deinem lokalen Telefon-Konto gesetzt ist.</string>
+    <string name="calendar_colors_section_title">Kalenderfarben</string>
+    <string name="calendar_color_picker_title">Kalenderfarbe wählen</string>
+    <string name="calendar_color_birthdays">Farbe für Geburtstagskalender</string>
+    <string name="calendar_color_anniversaries">Farbe für Hochzeitstagskalender</string>
+    <string name="calendar_color_namedays">Farbe für Namenstagskalender</string>
 
     <!-- Calendar Event Strings -->
     <string name="calendar_event_title">%1$s hat Geburtstag</string>

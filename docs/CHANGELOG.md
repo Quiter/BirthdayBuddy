@@ -201,6 +201,12 @@
     - **Garbage & Orphan Cleanups:** Integrated automatic cleanup inside `cleanCalendars()` to delete old legacy calendars (`\"BirthdayBuddyCalendar\"` on the `\"phone\"` account) and any duplicate calendars, leaving exactly one clean calendar per category.
     - **I18n:** Added localized display names for the three calendar titles in both German and English (`strings.xml`).
 
+135. **In-App Calendar Color Picker Settings:**
+    - **In-App Color Selector:** Integrated dynamic calendar color configuration rows directly into the `CalendarSettingsScreen.kt` UI when calendar synchronization is active.
+    - **Harmonized Color Palette:** Implemented a premium Material 3 `ColorPickerDialog` containing a grid of 8 harmonized colors (Pink, Violet, Blue, Cyan, Green, Amber, Orange, Brown) with visual selection feedback, allowing custom color selections to bypass Google Calendar's missing native option for custom sync adapters.
+    - **Settings Database V5 Migration:** Upgraded `SettingsDatabase` to version 5, adding `birthdayCalendarColor`, `anniversaryCalendarColor`, and `nameDayCalendarColor` columns with native default colors. Wrote `SettingsMigrationTest.kt` unit test cases to verify database structure and default value integrity.
+    - **I18n Localization:** Fully localized dialog headers, cancel actions, and setting section descriptions in both English and German.
+
 
 
 

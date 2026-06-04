@@ -225,7 +225,7 @@ class CalendarSyncRepository @Inject constructor(
         }
     }
 
-    private fun createLocalCalendar(type: CalendarType): Long? {
+    private suspend fun createLocalCalendar(type: CalendarType): Long? {
         val builder = CalendarContract.Calendars.CONTENT_URI.buildUpon()
         builder.appendQueryParameter(CalendarContract.CALLER_IS_SYNCADAPTER, "true")
         builder.appendQueryParameter(CalendarContract.Calendars.ACCOUNT_NAME, "BirthdayBuddy")
@@ -235,12 +235,19 @@ class CalendarSyncRepository @Inject constructor(
         )
         val uri = builder.build()
 
+        val currentSettings = appSettingsDao.getSettingsImmediate() ?: AppSettings()
+        val preferredColor = when (type) {
+            CalendarType.BIRTHDAY -> currentSettings.birthdayCalendarColor
+            CalendarType.ANNIVERSARY -> currentSettings.anniversaryCalendarColor
+            CalendarType.NAMEDAY -> currentSettings.nameDayCalendarColor
+        }
+
         val values = ContentValues().apply {
             put(CalendarContract.Calendars.ACCOUNT_NAME, "BirthdayBuddy")
             put(CalendarContract.Calendars.ACCOUNT_TYPE, CalendarContract.ACCOUNT_TYPE_LOCAL)
             put(CalendarContract.Calendars.NAME, type.calendarName)
             put(CalendarContract.Calendars.CALENDAR_DISPLAY_NAME, context.getString(type.displayNameRes))
-            put(CalendarContract.Calendars.CALENDAR_COLOR, type.color)
+            put(CalendarContract.Calendars.CALENDAR_COLOR, preferredColor)
             put(
                 CalendarContract.Calendars.CALENDAR_ACCESS_LEVEL,
                 CalendarContract.Calendars.CAL_ACCESS_OWNER
@@ -262,6 +269,42 @@ class CalendarSyncRepository @Inject constructor(
             Log.e("CalendarSyncRepo", "Failed to create local calendar ${type.calendarName}", e)
         }
         return null
+    }
+
+    suspend fun updateCalendarColor(type: CalendarType, newColor: Int): Boolean = withContext(Dispatchers.IO) {
+        val currentSettings = appSettingsDao.getSettingsImmediate() ?: AppSettings()
+        val updatedSettings = when (type) {
+            CalendarType.BIRTHDAY -> currentSettings.copy(birthdayCalendarColor = newColor)
+            CalendarType.ANNIVERSARY -> currentSettings.copy(anniversaryCalendarColor = newColor)
+            CalendarType.NAMEDAY -> currentSettings.copy(nameDayCalendarColor = newColor)
+        }
+        appSettingsDao.upsertSettings(updatedSettings)
+
+        val calendarId = findCalendarIdByName(type.calendarName)
+        if (calendarId != null) {
+            val uri = CalendarContract.Calendars.CONTENT_URI.buildUpon()
+                .appendQueryParameter(CalendarContract.CALLER_IS_SYNCADAPTER, "true")
+                .appendQueryParameter(CalendarContract.Calendars.ACCOUNT_NAME, "BirthdayBuddy")
+                .appendQueryParameter(CalendarContract.Calendars.ACCOUNT_TYPE, CalendarContract.ACCOUNT_TYPE_LOCAL)
+                .build()
+
+            val values = ContentValues().apply {
+                put(CalendarContract.Calendars.CALENDAR_COLOR, newColor)
+            }
+
+            try {
+                val updatedRows = context.contentResolver.update(
+                    uri,
+                    values,
+                    "${CalendarContract.Calendars._ID} = ?",
+                    arrayOf(calendarId.toString())
+                )
+                return@withContext updatedRows > 0
+            } catch (e: Exception) {
+                Log.e("CalendarSyncRepo", "Error updating color for ${type.calendarName}", e)
+            }
+        }
+        false
     }
 
     suspend fun deleteCalendar(): Boolean = withContext(Dispatchers.IO) {

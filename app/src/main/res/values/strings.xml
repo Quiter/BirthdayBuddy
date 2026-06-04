@@ -264,6 +264,11 @@
     <string name="calendar_guide_step2_desc">Flip the switch above to automatically generate the „BirthdayBuddy“ calendar and sync contacts.</string>
     <string name="calendar_guide_step3_title">3. Show in your Calendar App</string>
     <string name="calendar_guide_step3_desc">Open your preferred Calendar app (e.g., Google Calendar), tap the side menu, and make sure the „BirthdayBuddy“ calendar is checked under your Local/Phone account.</string>
+    <string name="calendar_colors_section_title">Calendar Colors</string>
+    <string name="calendar_color_picker_title">Choose Calendar Color</string>
+    <string name="calendar_color_birthdays">Birthdays Calendar Color</string>
+    <string name="calendar_color_anniversaries">Wedding Anniversaries Color</string>
+    <string name="calendar_color_namedays">Name Days Color</string>
 
     <!-- Calendar Event Strings -->
     <string name="calendar_event_title">%1$s\'s Birthday</string>

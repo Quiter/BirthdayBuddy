@@ -57,6 +57,12 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.foundation.clickable
+import androidx.compose.ui.graphics.toArgb
+import com.heckmannch.birthdaybuddy.data.repository.CalendarSyncRepository
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.TextButton
+import androidx.compose.foundation.layout.Arrangement
 import com.heckmannch.birthdaybuddy.R
 import com.heckmannch.birthdaybuddy.ui.components.AppResponsiveScaffold
 import com.heckmannch.birthdaybuddy.viewmodel.CalendarViewModel
@@ -70,7 +76,14 @@ fun CalendarSettingsScreen(
 ) {
     LocalContext.current
     val calendarSyncEnabled by viewModel.calendarSyncEnabled.collectAsState()
+    val otherEventsEnabled by viewModel.otherEventsEnabled.collectAsState()
+    val birthdayColor by viewModel.birthdayCalendarColor.collectAsState()
+    val anniversaryColor by viewModel.anniversaryCalendarColor.collectAsState()
+    val nameDayColor by viewModel.nameDayCalendarColor.collectAsState()
     var hasPermission by remember { mutableStateOf(viewModel.hasCalendarPermissions()) }
+
+    var activeColorPickerType by remember { mutableStateOf<CalendarSyncRepository.CalendarType?>(null) }
+    var activeColorPickerInitialColor by remember { mutableStateOf(Color.Unspecified) }
 
     val permissionLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.RequestMultiplePermissions()
@@ -110,7 +123,15 @@ fun CalendarSettingsScreen(
         windowWidthSizeClass = windowWidthSizeClass,
         calendarSyncEnabled = calendarSyncEnabled && hasPermission,
         hasPermission = hasPermission,
+        otherEventsEnabled = otherEventsEnabled,
+        birthdayColor = birthdayColor,
+        anniversaryColor = anniversaryColor,
+        nameDayColor = nameDayColor,
         onToggleChange = onToggleChange,
+        onColorRowClick = { type, color ->
+            activeColorPickerType = type
+            activeColorPickerInitialColor = color
+        },
         onRequestPermission = {
             permissionLauncher.launch(
                 arrayOf(
@@ -121,6 +142,17 @@ fun CalendarSettingsScreen(
         },
         onNavigateBack = onNavigateBack
     )
+
+    activeColorPickerType?.let { type ->
+        ColorPickerDialog(
+            initialColor = activeColorPickerInitialColor,
+            onDismissRequest = { activeColorPickerType = null },
+            onColorSelected = { selectedColor ->
+                viewModel.updateCalendarColor(type, selectedColor.toArgb())
+                activeColorPickerType = null
+            }
+        )
+    }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -129,7 +161,12 @@ private fun CalendarSettingsContent(
     windowWidthSizeClass: WindowWidthSizeClass,
     calendarSyncEnabled: Boolean,
     hasPermission: Boolean,
+    otherEventsEnabled: Boolean,
+    birthdayColor: Int,
+    anniversaryColor: Int,
+    nameDayColor: Int,
     onToggleChange: (Boolean) -> Unit,
+    onColorRowClick: (CalendarSyncRepository.CalendarType, Color) -> Unit,
     onRequestPermission: () -> Unit,
     onNavigateBack: () -> Unit,
 ) {
@@ -186,6 +223,72 @@ private fun CalendarSettingsContent(
                     },
                     colors = ListItemDefaults.colors(containerColor = Color.Transparent)
                 )
+            }
+
+            if (calendarSyncEnabled) {
+                item {
+                    Spacer(modifier = Modifier.height(16.dp))
+                    Text(
+                        text = stringResource(R.string.calendar_colors_section_title),
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
+                    )
+                }
+
+                item {
+                    ListItem(
+                        headlineContent = { Text(stringResource(R.string.calendar_color_birthdays)) },
+                        leadingContent = {
+                            Box(
+                                modifier = Modifier
+                                    .size(32.dp)
+                                    .background(Color(birthdayColor), shape = CircleShape)
+                            )
+                        },
+                        modifier = Modifier.clickable {
+                            onColorRowClick(CalendarSyncRepository.CalendarType.BIRTHDAY, Color(birthdayColor))
+                        },
+                        colors = ListItemDefaults.colors(containerColor = Color.Transparent)
+                    )
+                }
+
+                if (otherEventsEnabled) {
+                    item {
+                        ListItem(
+                            headlineContent = { Text(stringResource(R.string.calendar_color_anniversaries)) },
+                            leadingContent = {
+                                Box(
+                                    modifier = Modifier
+                                        .size(32.dp)
+                                        .background(Color(anniversaryColor), shape = CircleShape)
+                                )
+                            },
+                            modifier = Modifier.clickable {
+                                onColorRowClick(CalendarSyncRepository.CalendarType.ANNIVERSARY, Color(anniversaryColor))
+                            },
+                            colors = ListItemDefaults.colors(containerColor = Color.Transparent)
+                        )
+                    }
+
+                    item {
+                        ListItem(
+                            headlineContent = { Text(stringResource(R.string.calendar_color_namedays)) },
+                            leadingContent = {
+                                Box(
+                                    modifier = Modifier
+                                        .size(32.dp)
+                                        .background(Color(nameDayColor), shape = CircleShape)
+                                )
+                            },
+                            modifier = Modifier.clickable {
+                                onColorRowClick(CalendarSyncRepository.CalendarType.NAMEDAY, Color(nameDayColor))
+                            },
+                            colors = ListItemDefaults.colors(containerColor = Color.Transparent)
+                        )
+                    }
+                }
             }
 
             item {
@@ -431,4 +534,78 @@ private fun StepItem(
             }
         }
     }
+}
+
+@Composable
+private fun ColorPickerDialog(
+    initialColor: Color,
+    onDismissRequest: () -> Unit,
+    onColorSelected: (Color) -> Unit,
+) {
+    val colors = listOf(
+        Color(0xFFE91E63), // Pink
+        Color(0xFF9C27B0), // Violet
+        Color(0xFF2196F3), // Blue
+        Color(0xFF00BCD4), // Cyan
+        Color(0xFF4CAF50), // Green
+        Color(0xFFFFC107), // Amber
+        Color(0xFFFF9800), // Orange
+        Color(0xFF795548)  // Brown
+    )
+
+    AlertDialog(
+        onDismissRequest = onDismissRequest,
+        title = {
+            Text(
+                text = stringResource(R.string.calendar_color_picker_title),
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.Bold
+            )
+        },
+        text = {
+            Column(
+                verticalArrangement = Arrangement.spacedBy(16.dp),
+                modifier = Modifier.padding(vertical = 8.dp)
+            ) {
+                for (row in 0..1) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceEvenly
+                    ) {
+                        for (col in 0..3) {
+                            val index = row * 4 + col
+                            if (index < colors.size) {
+                                val color = colors[index]
+                                val isSelected = color == initialColor
+                                Box(
+                                    modifier = Modifier
+                                        .size(48.dp)
+                                        .background(color, shape = CircleShape)
+                                        .clickable {
+                                            onColorSelected(color)
+                                        },
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    if (isSelected) {
+                                        Icon(
+                                            imageVector = Icons.Default.Check,
+                                            contentDescription = null,
+                                            tint = Color.White,
+                                            modifier = Modifier.size(24.dp)
+                                        )
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        confirmButton = {},
+        dismissButton = {
+            TextButton(onClick = onDismissRequest) {
+                Text(stringResource(R.string.dialog_cancel))
+            }
+        }
+    )
 }

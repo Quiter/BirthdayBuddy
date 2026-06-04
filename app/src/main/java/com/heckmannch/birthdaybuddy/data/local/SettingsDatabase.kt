@@ -10,7 +10,7 @@ import androidx.sqlite.db.SupportSQLiteDatabase
 
 @Database(
     entities = [LabelConfig::class, NotificationRule::class, AppSettings::class, ContactUserData::class],
-    version = 4,
+    version = 5,
     exportSchema = true
 )
 @TypeConverters(Converters::class, GiftIdeaConverters::class)
@@ -37,6 +37,14 @@ abstract class SettingsDatabase : RoomDatabase() {
             }
         }
 
+        val MIGRATION_4_5 = object : Migration(4, 5) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("ALTER TABLE app_settings ADD COLUMN birthdayCalendarColor INTEGER NOT NULL DEFAULT ${0xFFE91E63.toInt()}")
+                db.execSQL("ALTER TABLE app_settings ADD COLUMN anniversaryCalendarColor INTEGER NOT NULL DEFAULT ${0xFF9C27B0.toInt()}")
+                db.execSQL("ALTER TABLE app_settings ADD COLUMN nameDayCalendarColor INTEGER NOT NULL DEFAULT ${0xFFFF9800.toInt()}")
+            }
+        }
+
         fun getDatabase(context: Context): SettingsDatabase =
             INSTANCE ?: synchronized(this) {
                 INSTANCE ?: Room.databaseBuilder(
@@ -44,7 +52,7 @@ abstract class SettingsDatabase : RoomDatabase() {
                     SettingsDatabase::class.java,
                     "settings_database",
                 )
-                    .addMigrations(MIGRATION_2_3, MIGRATION_3_4)
+                    .addMigrations(MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5)
                     .fallbackToDestructiveMigration(true) // Hier erlaubt, da wir V1 starten
                     .build()
                     .also { INSTANCE = it }

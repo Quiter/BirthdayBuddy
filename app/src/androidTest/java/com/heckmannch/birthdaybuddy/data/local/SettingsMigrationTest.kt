@@ -91,4 +91,40 @@ class SettingsMigrationTest {
         assert(userDataCursor.isNull(spouseLookupKeyIndex))
         userDataCursor.close()
     }
+
+    @Test
+    @Throws(IOException::class)
+    fun migrate4To5() {
+        // 1. Create database in version 4
+        helper.createDatabase(testDb, 4).apply {
+            execSQL(
+                "INSERT INTO app_settings (id, notificationsEnabled, persistentNotifications, onboardingCompleted, lastSyncTimestamp, calendarSyncEnabled, calendarId, otherEventsEnabled, ignoredCouplePairs) " +
+                        "VALUES (0, 1, 1, 1, 123456789, 0, NULL, 0, '[]')"
+            )
+            close()
+        }
+
+        // 2. Run migration to version 5 and validate
+        val migratedDb = helper.runMigrationsAndValidate(
+            testDb,
+            5,
+            true,
+            SettingsDatabase.MIGRATION_4_5
+        )
+
+        // 3. Verify columns and default values
+        val settingsCursor = migratedDb.query("SELECT * FROM app_settings WHERE id = 0")
+        assert(settingsCursor.moveToFirst())
+
+        val birthdayColorIdx = settingsCursor.getColumnIndex("birthdayCalendarColor")
+        val anniversaryColorIdx = settingsCursor.getColumnIndex("anniversaryCalendarColor")
+        val nameDayColorIdx = settingsCursor.getColumnIndex("nameDayCalendarColor")
+
+        assert(settingsCursor.getInt(birthdayColorIdx) == 0xFFE91E63.toInt())
+        assert(settingsCursor.getInt(anniversaryColorIdx) == 0xFF9C27B0.toInt())
+        assert(settingsCursor.getInt(nameDayColorIdx) == 0xFFFF9800.toInt())
+
+        settingsCursor.close()
+    }
 }
+
