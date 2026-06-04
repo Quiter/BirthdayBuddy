@@ -181,5 +181,11 @@
     - **Re-Scan Trigger:** This allows users to re-scan and get pairing suggestions again for couples they previously chose to ignore (clicked "Nein" on).
     - **Robust Testing:** Updated database migration tests, unit tests, and instrumented Android tests to cover the new pairing and suggestion reset behaviors, resolving coroutine race conditions.
 
+132. **Visual & Resource Polish (Google Meet Icon Overhaul):**
+    - **Optimized SVG/Vector Asset:** Updated `ic_google_meet.xml` to use the optimized vector pathing and a clean yellow-orange gradient matching the updated Google Meet video camera branding.
+    - **Color Adjustment:** Shifted Google Meet's branding color definition in `MessengerApp.kt` from teal (`0xFF00897B`) to yellow (`0xFFFFEB3B`) to align with the new vector resource.
+    - **Linter & Warning Cleanups:** Addressed minor compiler and linter warnings in `HomeScreen.kt`, `HomeState.kt`, `HomeFAB.kt`, `BirthdayDatePickerDialog.kt`, `BirthdayList.kt`, and `HomeViewModel.kt` (including using explicit `.milliseconds` durations in `delay`).
+
+
 
 

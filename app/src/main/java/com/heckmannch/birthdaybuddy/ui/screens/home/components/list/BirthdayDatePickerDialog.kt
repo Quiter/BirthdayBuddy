@@ -1,7 +1,6 @@
 package com.heckmannch.birthdaybuddy.ui.screens.home.components.list
 
 import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.snapping.rememberSnapFlingBehavior
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -36,6 +35,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.stringResource
@@ -51,7 +51,6 @@ import java.time.Month
 import java.time.Year
 import java.time.format.DateTimeFormatter
 import java.time.format.TextStyle
-import java.util.Locale
 
 /**
  * Ein modularer, maßgeschneiderter Premium-DatePickerDialog in Walzen-Optik (Wheel-Picker),
@@ -85,15 +84,18 @@ fun BirthdayDatePickerDialog(
         }
     }
 
+    // Hole Locale beobachtbar über LocalConfiguration
+    val configuration = LocalConfiguration.current
+    val locale = remember(configuration) { configuration.locales[0] }
+
     // Dynamischer, lokalisierter Titel der aktuellen Selektion (z.B. "2. Juni" / "2. Juni 1989")
-    val formattedDateText = remember(selectedDay, selectedMonth, selectedYear, includeYear) {
+    val formattedDateText = remember(selectedDay, selectedMonth, selectedYear, includeYear, locale) {
         val yearVal = if (includeYear) selectedYear else NO_YEAR_MARKER
         val monthEnum = Month.of(selectedMonth)
         val maxDaysForMonth = monthEnum.length(Year.isLeap(yearVal.toLong()))
         val safeDay = selectedDay.coerceIn(1, maxDaysForMonth)
 
         val date = LocalDate.of(yearVal, selectedMonth, safeDay)
-        val locale = Locale.getDefault()
         if (includeYear) {
             val formatter = if (locale.language == "de") {
                 DateTimeFormatter.ofPattern("d. MMMM yyyy", locale)
@@ -109,6 +111,11 @@ fun BirthdayDatePickerDialog(
             }
             date.format(formatter)
         }
+    }
+
+    // Lokalisierte Monatsnamen cachen
+    val monthItems = remember(locale) {
+        (1..12).map { Month.of(it).getDisplayName(TextStyle.SHORT, locale) }
     }
 
     Dialog(onDismissRequest = onDismissRequest) {
@@ -153,7 +160,7 @@ fun BirthdayDatePickerDialog(
 
                     // Monat-Walze
                     WheelPicker(
-                        items = (1..12).map { Month.of(it).getDisplayName(TextStyle.SHORT, Locale.getDefault()) },
+                        items = monthItems,
                         selectedIndex = selectedMonth - 1,
                         onIndexSelected = { selectedMonth = it + 1 },
                         modifier = Modifier.weight(1.2f)

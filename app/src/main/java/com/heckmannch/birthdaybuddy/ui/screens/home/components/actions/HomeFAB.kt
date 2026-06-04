@@ -19,13 +19,11 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.tooling.preview.Preview
 import com.heckmannch.birthdaybuddy.R
 import com.heckmannch.birthdaybuddy.ui.screens.home.HomeActions
-import com.heckmannch.birthdaybuddy.ui.theme.BirthdayBuddyTheme
 
 /**
- * Multifunktionaler Floating Action Button für den Home-Screen.
+ * Multifunktionaler Floating Action Button für den Homescreen.
  * Morpht zwischen "Kontakt hinzufügen" und "Nach oben scrollen" basierend auf dem Scroll-Zustand.
  */
 @Composable
@@ -73,36 +71,5 @@ fun HomeFAB(
                 )
             }
         }
-    }
-}
-
-@Preview
-@Composable
-fun HomeFABPreview() {
-    val actions = HomeActions(
-        onSearchQueryChange = {},
-        onLabelSelected = {},
-        onClearSearch = {},
-        onNavigateToSettings = {},
-        onAddContact = {},
-        onRequestPermission = {},
-        onAddGiftIdea = {},
-        onToggleGiftIdea = { _, _, _ -> },
-        onUpdateGiftIdeaText = { _, _, _ -> },
-        onDeleteGiftIdea = { _, _ -> },
-        onUpdateBirthday = { _, _ -> },
-        onOpenContact = { _, _ -> },
-        onDial = {},
-        onSendSms = {},
-        onOpenMessengerApp = { _, _ -> },
-        onRefresh = {}
-    )
-
-    BirthdayBuddyTheme {
-        HomeFAB(
-            showScrollUp = false,
-            actions = actions,
-            onScrollToTop = {}
-        )
     }
 }

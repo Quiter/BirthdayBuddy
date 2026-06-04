@@ -42,7 +42,7 @@ enum class MessengerApp(
     ),
     GOOGLE_MEET(
         packageName = "com.google.android.apps.tachyon",
-        brandColor = Color(0xFF00897B),
+        brandColor = Color(0xFFFFEB3B),
         labelResId = R.string.item_action_google_meet,
         iconResId = R.drawable.ic_google_meet
     ),

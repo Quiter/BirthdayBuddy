@@ -49,6 +49,7 @@ import com.heckmannch.birthdaybuddy.ui.util.ContactActions
 import com.heckmannch.birthdaybuddy.viewmodel.HomeViewModel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.collectLatest
+import kotlin.time.Duration.Companion.milliseconds
 
 /**
  * Der Hauptbildschirm der App.
@@ -113,13 +114,13 @@ fun HomeScreen(
     // --- UI-Koordination (Initialisierung & Fokus) ---
     LaunchedEffect(Unit) {
         homeState.animatedPlaceholder = appPlaceholder
-        delay(2000)
+        delay(2000.milliseconds)
         homeState.animatedPlaceholder = searchPlaceholder
     }
 
     LaunchedEffect(uiState.searchFocusRequested) {
         if (uiState.searchFocusRequested) {
-            delay(500) // Zeit für Animationen lassen
+            delay(500.milliseconds) // Zeit für Animationen lassen
             homeState.searchFocusRequester.requestFocus()
             keyboardController?.show()
             viewModel.consumeSearchFocus()

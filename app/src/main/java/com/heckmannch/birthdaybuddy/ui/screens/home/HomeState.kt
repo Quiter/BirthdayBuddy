@@ -15,6 +15,7 @@ import androidx.compose.ui.focus.FocusRequester
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlin.time.Duration.Companion.milliseconds
 
 /**
  * Plain State Holder für die UI-Logik des HomeScreens.
@@ -68,7 +69,7 @@ class HomeState(
      */
     suspend fun performScrollReset(onComplete: () -> Unit) {
         scrollToTop(animate = false)
-        delay(100)
+        delay(100.milliseconds)
         scrollToTop(animate = false)
         onComplete()
         resetScrollRequested = false
