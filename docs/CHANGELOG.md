@@ -186,6 +186,12 @@
     - **Color Adjustment:** Shifted Google Meet's branding color definition in `MessengerApp.kt` from teal (`0xFF00897B`) to yellow (`0xFFFFEB3B`) to align with the new vector resource.
     - **Linter & Warning Cleanups:** Addressed minor compiler and linter warnings in `HomeScreen.kt`, `HomeState.kt`, `HomeFAB.kt`, `BirthdayDatePickerDialog.kt`, `BirthdayList.kt`, and `HomeViewModel.kt` (including using explicit `.milliseconds` durations in `delay`).
 
+133. **Bugfix: Calendar Sync Event Duplication Overhaul:**
+    - **Physical Event Deletion:** Changed the delete query in `CalendarSyncRepository.kt` to append `CALLER_IS_SYNCADAPTER = true` with `"phone"` as account details when purging old calendar events. This ensures that old events are permanently deleted instead of leaving tombstone entries (`deleted = 1`), preventing events from piling up and duplicating.
+    - **Duplicate Calendar Clean-Up:** Refactored `findExistingCalendarId()` to `cleanDuplicateCalendarsAndGetId()`. The repository now scans all local calendars on start and sync, keeping only the first valid `BirthdayBuddyCalendar` (under the `"phone"` account/LOCAL type) and permanently deleting any other duplicate or legacy calendars.
+    - **Hardened Delete Calendar:** Updated the `deleteCalendar()` method to sweep through the entire system and delete *all* matching `BirthdayBuddyCalendar` databases if the sync is disabled, preventing orphaned calendars when reinstalling or clearing app storage.
+
+
 
 
 
