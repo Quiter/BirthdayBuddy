@@ -171,4 +171,15 @@
     - **Calendar Synchronization:** Updated `CalendarSyncRepository.kt` to support syncing wedding anniversaries and name days into the local Android system calendar ("BirthdayBuddy") alongside birthdays when "Weitere Ereignisse" is enabled, complete with English and German translations for event titles and descriptions.
     - **Test Coverage:** Added `SettingsMigrationTest.kt` validating v2 to v3 schema changes, updated `ContactMapperTest.kt` with custom event cases, added ViewModel filtering verification, and resolved flow deadlock issues in mock tests, achieving 100% test completion on Android emulators.
 
+130. **Joint Wedding Anniversary Contact Coupling (Ehepaar-Verknüpfung):**
+    - **Logic & Merging:** Implementation of a pairing mechanism for spouses sharing the same wedding anniversary date. Unlinked contacts with the same anniversary date are merged into a single `ContactUiModel` inside the "Hochzeitstag" filter, showing joint names (using smart merging in `DateUtils.kt`, e.g. "Max & Erika Mustermann") and double/overlapping contact avatars in `ContactImage.kt`.
+    - **Database Schemas:** Added `spouseLookupKey` to `contacts` (AppDatabase v9, `MIGRATION_8_9`) and to `contact_user_data` (SettingsDatabase v4, `MIGRATION_3_4`) to track pairings bidirectionally. Added `ignoredCouplePairs: List<String>` serialized field in `AppSettings` to keep track of declined suggestions.
+    - **Notification & Calendar Integration:** Grouped coupled reminders into a single push notification with custom title ("Morgen ist der 5. Hochzeitstag von Max & Erika Mustermann!") and single description, and wrote a single joint event in the Android system calendar.
+    - **UI & Interaction:** Added a `CoupleSuggestionBanner` at the top of the anniversary page proposing to link detected spouses. Added an "Entkoppeln" (Unlink) button inside the action row of merged cards.
+131. **Reset Ignored Couple Suggestions via Pull-to-Refresh:**
+    - **Manual Suggestion Reset:** Updated manual pull-to-refresh on the Home Screen (`syncContacts(showLoading = true)`) to trigger `contactRepository.clearIgnoredCouplePairs()`, which clears the list of ignored couple suggestion pairs.
+    - **Re-Scan Trigger:** This allows users to re-scan and get pairing suggestions again for couples they previously chose to ignore (clicked "Nein" on).
+    - **Robust Testing:** Updated database migration tests, unit tests, and instrumented Android tests to cover the new pairing and suggestion reset behaviors, resolving coroutine race conditions.
+
+
 

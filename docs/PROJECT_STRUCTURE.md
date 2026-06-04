@@ -16,11 +16,11 @@
 - ### 📁 Local (`data.local`)
     - `AppDatabase.kt`: Room-Datenbank für flüchtige/große Daten (Kontakte-Cache, Benachrichtigungs-Nachverfolgung).
     - `SettingsDatabase.kt`: Room-Datenbank für persistente Benutzer-Einstellungen (Regeln, Labels, GiftIdeas-Backup).
-    - `AppSettings.kt`: Entity für globale App-Konfigurationen (Benachrichtigungs-Status, letzter Sync-Zeitpunkt).
+    - `AppSettings.kt`: Entity für globale App-Konfigurationen (Benachrichtigungs-Status, letzter Sync-Zeitpunkt, ignorierte Ehepaar-Kopplungsvorschläge).
     - `AppSettingsDao.kt`: Datenzugriffsobjekt für die App-Einstellungen.
-    - `Contact.kt`: Haupt-Entity für den System-Kontakt-Cache.
+    - `Contact.kt`: Haupt-Entity für den System-Kontakt-Cache (inkl. `spouseLookupKey` zur Verknüpfung verheirateter Ehepartner).
     - `ContactDao.kt`: DAO für Kontakte mit Unterstützung für Batch-Operationen und atomare Refreshes.
-    - `ContactUserData.kt`: Entity für benutzerdefinierte Zusatzdaten (z.B. Geschenkideen), die unabhängig vom Cache persistiert werden.
+    - `ContactUserData.kt`: Entity für benutzerdefinierte Zusatzdaten (z. B. Geschenkideen und Ehepaar-Verknüpfungs-Schlüssel), die unabhängig vom Cache persistiert werden.
     - `ContactUserDataDao.kt`: DAO für benutzerdefinierte Kontaktdaten.
     - `Converters.kt`: TypeConverter für Basis-Typen (LocalDate, Listen).
     - `GiftIdeaConverters.kt`: Spezialisierte TypeConverter für Geschenkideen-Listen.
