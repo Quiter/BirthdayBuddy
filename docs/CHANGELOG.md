@@ -191,6 +191,17 @@
     - **Duplicate Calendar Clean-Up:** Refactored `findExistingCalendarId()` to `cleanDuplicateCalendarsAndGetId()`. The repository now scans all local calendars on start and sync, keeping only the first valid `BirthdayBuddyCalendar` (under the `"phone"` account/LOCAL type) and permanently deleting any other duplicate or legacy calendars.
     - **Hardened Delete Calendar:** Updated the `deleteCalendar()` method to sweep through the entire system and delete *all* matching `BirthdayBuddyCalendar` databases if the sync is disabled, preventing orphaned calendars when reinstalling or clearing app storage.
 
+134. **Multi-Calendar Isolation under Custom Account ("BirthdayBuddy"):**
+    - **Separate Calendars by Event Type:** Split the single calendar sync into three distinct calendars:
+        - **Birthdays (Geburtstage):** Pink color (`#E91E63`)
+        - **Anniversaries (Hochzeitstage):** Purple color (`#9C27B0`)
+        - **Name Days (Namenstage):** Orange color (`#FF9800`)
+    - **Custom Account Labeling:** Changed the local account name from `"phone"` to `"BirthdayBuddy"` (under account type `"LOCAL"`). This re-labels the calendar group in external calendar apps (e.g. Google Calendar side navigation) from "LOCAL" or "phone" to **"BirthdayBuddy"** and allows users to check/uncheck and color-code the three categories independently.
+    - **Dynamic ID Lookup:** Deprecated the local database persistence of `calendarId` in `AppSettings` in favor of dynamic name-based lookup of the active calendars. This eliminates potential database-out-of-sync bugs when clearing app storage or updating the app.
+    - **Garbage & Orphan Cleanups:** Integrated automatic cleanup inside `cleanCalendars()` to delete old legacy calendars (`\"BirthdayBuddyCalendar\"` on the `\"phone\"` account) and any duplicate calendars, leaving exactly one clean calendar per category.
+    - **I18n:** Added localized display names for the three calendar titles in both German and English (`strings.xml`).
+
+
 
 
 

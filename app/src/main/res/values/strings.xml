@@ -239,6 +239,9 @@
     <string name="sync_success">Contacts synchronized!</string>
 
     <!-- Calendar Integration -->
+    <string name="calendar_name_birthdays">Birthdays</string>
+    <string name="calendar_name_anniversaries">Wedding Anniversaries</string>
+    <string name="calendar_name_namedays">Name Days</string>
     <string name="onboarding_calendar_title">Calendar Sync</string>
     <string name="onboarding_calendar_desc">Would you like to synchronize birthdays to your device\'s standard Calendar app? A dedicated \"BirthdayBuddy\" calendar will be created.</string>
     <string name="onboarding_calendar_enable">Add to standard Calendar</string>

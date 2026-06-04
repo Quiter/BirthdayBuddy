@@ -239,6 +239,9 @@
     <string name="sync_success">Kontakte synchronisiert!</string>
 
     <!-- Calendar Integration -->
+    <string name="calendar_name_birthdays">Geburtstage</string>
+    <string name="calendar_name_anniversaries">Hochzeitstage</string>
+    <string name="calendar_name_namedays">Namenstage</string>
     <string name="onboarding_calendar_title">Kalender-Sync</string>
     <string name="onboarding_calendar_desc">Möchtest du Geburtstage in deinen standard System-Kalender eintragen lassen? Es wird ein separater Kalender namens „BirthdayBuddy“ angelegt.</string>
     <string name="onboarding_calendar_enable">In Kalender eintragen</string>
