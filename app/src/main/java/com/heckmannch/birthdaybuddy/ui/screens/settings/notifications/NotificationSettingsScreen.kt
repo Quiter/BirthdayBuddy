@@ -71,6 +71,7 @@ import com.heckmannch.birthdaybuddy.viewmodel.NotificationViewModel
 fun NotificationSettingsScreen(
     windowWidthSizeClass: WindowWidthSizeClass,
     viewModel: NotificationViewModel,
+    showBackButton: Boolean = true,
     onNavigateBack: () -> Unit,
 ) {
     val context = LocalContext.current
@@ -100,12 +101,14 @@ fun NotificationSettingsScreen(
         }
     }
 
-    val notificationPermissionLauncher = rememberLauncherForActivityResult(
-        ActivityResultContracts.RequestPermission(),
+    val state = rememberNotificationSettingsState()
+    val permissionLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.RequestPermission()
     ) { isGranted ->
+        hasAttemptedPermission = true
         hasSystemPermission = isGranted
         if (isGranted) {
-            viewModel.setNotificationsEnabled(enabled = true)
+            viewModel.setNotificationsEnabled(true)
         }
     }
 
@@ -115,36 +118,27 @@ fun NotificationSettingsScreen(
         persistentNotifications = persistentNotifications,
         rules = rules ?: emptyList(),
         hasSystemPermission = hasSystemPermission,
-        state = rememberNotificationSettingsState(),
+        state = state,
+        showBackButton = showBackButton,
         onToggleNotifications = { enabled ->
             if (enabled) {
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                    if (ContextCompat.checkSelfPermission(
-                            context,
-                            Manifest.permission.POST_NOTIFICATIONS,
-                        ) == PackageManager.PERMISSION_GRANTED
-                    ) {
-                        viewModel.setNotificationsEnabled(enabled = true)
-                    } else {
-                        notificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
-                    }
+                if (hasSystemPermission) {
+                    viewModel.setNotificationsEnabled(true)
                 } else {
-                    viewModel.setNotificationsEnabled(enabled = true)
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                        permissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+                    } else {
+                        viewModel.setNotificationsEnabled(true)
+                    }
                 }
             } else {
-                viewModel.setNotificationsEnabled(enabled = false)
+                viewModel.setNotificationsEnabled(false)
             }
         },
-        onTogglePersistent = { viewModel.setPersistentNotifications(it) },
-        onAddRule = { days, hour, minute ->
-            viewModel.addNotificationRule(days, hour, minute)
-        },
-        onUpdateRule = { rule ->
-            viewModel.updateNotificationRule(rule)
-        },
-        onDeleteRule = { rule ->
-            viewModel.deleteNotificationRule(rule)
-        },
+        onTogglePersistent = viewModel::setPersistentNotifications,
+        onAddRule = viewModel::addNotificationRule,
+        onUpdateRule = viewModel::updateNotificationRule,
+        onDeleteRule = viewModel::deleteNotificationRule,
         onRequestPermission = {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
                 val activity = context as? Activity
@@ -156,7 +150,7 @@ fun NotificationSettingsScreen(
                 } ?: false
 
                 if (shouldShowRationale || !hasAttemptedPermission) {
-                    notificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+                    permissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
                     hasAttemptedPermission = true
                 } else {
                     // Fallback: Systemeinstellungen öffnen, wenn der Dialog nicht mehr erscheint
@@ -214,6 +208,7 @@ private fun NotificationSettingsContent(
     rules: List<NotificationRule>,
     hasSystemPermission: Boolean,
     state: NotificationSettingsState,
+    showBackButton: Boolean = true,
     onToggleNotifications: (Boolean) -> Unit,
     onTogglePersistent: (Boolean) -> Unit,
     onAddRule: (Int, Int, Int) -> Unit,
@@ -231,11 +226,13 @@ private fun NotificationSettingsContent(
             LargeTopAppBar(
                 title = { Text(stringResource(R.string.notifications_title)) },
                 navigationIcon = {
-                    IconButton(onClick = onNavigateBack) {
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = stringResource(R.string.notifications_back),
-                        )
+                    if (showBackButton) {
+                        IconButton(onClick = onNavigateBack) {
+                            Icon(
+                                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                                contentDescription = stringResource(R.string.notifications_back),
+                            )
+                        }
                     }
                 },
                 scrollBehavior = scrollBehavior,

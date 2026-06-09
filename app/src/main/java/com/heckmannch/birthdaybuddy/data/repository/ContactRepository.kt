@@ -218,8 +218,12 @@ class ContactRepository @Inject constructor(
 
     suspend fun linkAsCouple(lookupKey1: String, lookupKey2: String) {
         withContext(Dispatchers.IO) {
-            val userData1 = contactUserDataDao.getUserDataForContact(lookupKey1) ?: ContactUserData(lookupKey = lookupKey1)
-            val userData2 = contactUserDataDao.getUserDataForContact(lookupKey2) ?: ContactUserData(lookupKey = lookupKey2)
+            val userData1 = contactUserDataDao.getUserDataForContact(lookupKey1) ?: ContactUserData(
+                lookupKey = lookupKey1
+            )
+            val userData2 = contactUserDataDao.getUserDataForContact(lookupKey2) ?: ContactUserData(
+                lookupKey = lookupKey2
+            )
 
             contactUserDataDao.upsertUserData(userData1.copy(spouseLookupKey = lookupKey2))
             contactUserDataDao.upsertUserData(userData2.copy(spouseLookupKey = lookupKey1))
@@ -269,7 +273,8 @@ class ContactRepository @Inject constructor(
     suspend fun ignoreCoupleSuggestion(lookupKey1: String, lookupKey2: String) {
         withContext(Dispatchers.IO) {
             val currentSettings = appSettingsDao.getSettingsImmediate() ?: AppSettings()
-            val pairKey = if (lookupKey1 < lookupKey2) "$lookupKey1:$lookupKey2" else "$lookupKey2:$lookupKey1"
+            val pairKey =
+                if (lookupKey1 < lookupKey2) "$lookupKey1:$lookupKey2" else "$lookupKey2:$lookupKey1"
             if (!currentSettings.ignoredCouplePairs.contains(pairKey)) {
                 val updatedList = currentSettings.ignoredCouplePairs + pairKey
                 appSettingsDao.upsertSettings(currentSettings.copy(ignoredCouplePairs = updatedList))

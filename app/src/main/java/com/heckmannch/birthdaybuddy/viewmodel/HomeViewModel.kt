@@ -299,8 +299,8 @@ class HomeViewModel @Inject constructor(
     ) { contacts, ignoredPairs, label ->
         if (label != LABEL_ANNIVERSARY) return@combine null
 
-        val uncoupledAnniversaryContacts = contacts.filter { 
-            it.anniversary != null && it.spouseLookupKey == null 
+        val uncoupledAnniversaryContacts = contacts.filter {
+            it.anniversary != null && it.spouseLookupKey == null
         }
 
         val groupedByDate = uncoupledAnniversaryContacts.groupBy { contact ->
@@ -314,7 +314,8 @@ class HomeViewModel @Inject constructor(
                     for (j in i + 1 until list.size) {
                         val c1 = list[i]
                         val c2 = list[j]
-                        val pairKey = if (c1.lookupKey < c2.lookupKey) "${c1.lookupKey}:${c2.lookupKey}" else "${c2.lookupKey}:${c1.lookupKey}"
+                        val pairKey =
+                            if (c1.lookupKey < c2.lookupKey) "${c1.lookupKey}:${c2.lookupKey}" else "${c2.lookupKey}:${c1.lookupKey}"
                         if (!ignoredPairs.contains(pairKey)) {
                             return@combine Pair(c1, c2)
                         }

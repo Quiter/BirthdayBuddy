@@ -8,6 +8,8 @@ import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -26,6 +28,7 @@ import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.Info
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -39,6 +42,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
@@ -52,18 +56,14 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.foundation.clickable
-import androidx.compose.ui.graphics.toArgb
-import com.heckmannch.birthdaybuddy.data.repository.CalendarSyncRepository
-import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.TextButton
-import androidx.compose.foundation.layout.Arrangement
 import com.heckmannch.birthdaybuddy.R
+import com.heckmannch.birthdaybuddy.data.repository.CalendarSyncRepository
 import com.heckmannch.birthdaybuddy.ui.components.AppResponsiveScaffold
 import com.heckmannch.birthdaybuddy.viewmodel.CalendarViewModel
 
@@ -72,6 +72,7 @@ import com.heckmannch.birthdaybuddy.viewmodel.CalendarViewModel
 fun CalendarSettingsScreen(
     windowWidthSizeClass: WindowWidthSizeClass,
     viewModel: CalendarViewModel,
+    showBackButton: Boolean = true,
     onNavigateBack: () -> Unit,
 ) {
     LocalContext.current
@@ -82,7 +83,11 @@ fun CalendarSettingsScreen(
     val nameDayColor by viewModel.nameDayCalendarColor.collectAsState()
     var hasPermission by remember { mutableStateOf(viewModel.hasCalendarPermissions()) }
 
-    var activeColorPickerType by remember { mutableStateOf<CalendarSyncRepository.CalendarType?>(null) }
+    var activeColorPickerType by remember {
+        mutableStateOf<CalendarSyncRepository.CalendarType?>(
+            null
+        )
+    }
     var activeColorPickerInitialColor by remember { mutableStateOf(Color.Unspecified) }
 
     val permissionLauncher = rememberLauncherForActivityResult(
@@ -127,6 +132,7 @@ fun CalendarSettingsScreen(
         birthdayColor = birthdayColor,
         anniversaryColor = anniversaryColor,
         nameDayColor = nameDayColor,
+        showBackButton = showBackButton,
         onToggleChange = onToggleChange,
         onColorRowClick = { type, color ->
             activeColorPickerType = type
@@ -165,6 +171,7 @@ private fun CalendarSettingsContent(
     birthdayColor: Int,
     anniversaryColor: Int,
     nameDayColor: Int,
+    showBackButton: Boolean,
     onToggleChange: (Boolean) -> Unit,
     onColorRowClick: (CalendarSyncRepository.CalendarType, Color) -> Unit,
     onRequestPermission: () -> Unit,
@@ -179,11 +186,13 @@ private fun CalendarSettingsContent(
             LargeTopAppBar(
                 title = { Text(stringResource(R.string.calendar_settings_title)) },
                 navigationIcon = {
-                    IconButton(onClick = onNavigateBack) {
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = stringResource(R.string.notifications_back),
-                        )
+                    if (showBackButton) {
+                        IconButton(onClick = onNavigateBack) {
+                            Icon(
+                                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                                contentDescription = stringResource(R.string.notifications_back),
+                            )
+                        }
                     }
                 },
                 scrollBehavior = scrollBehavior,
@@ -248,7 +257,10 @@ private fun CalendarSettingsContent(
                             )
                         },
                         modifier = Modifier.clickable {
-                            onColorRowClick(CalendarSyncRepository.CalendarType.BIRTHDAY, Color(birthdayColor))
+                            onColorRowClick(
+                                CalendarSyncRepository.CalendarType.BIRTHDAY,
+                                Color(birthdayColor)
+                            )
                         },
                         colors = ListItemDefaults.colors(containerColor = Color.Transparent)
                     )
@@ -266,7 +278,10 @@ private fun CalendarSettingsContent(
                                 )
                             },
                             modifier = Modifier.clickable {
-                                onColorRowClick(CalendarSyncRepository.CalendarType.ANNIVERSARY, Color(anniversaryColor))
+                                onColorRowClick(
+                                    CalendarSyncRepository.CalendarType.ANNIVERSARY,
+                                    Color(anniversaryColor)
+                                )
                             },
                             colors = ListItemDefaults.colors(containerColor = Color.Transparent)
                         )
@@ -283,7 +298,10 @@ private fun CalendarSettingsContent(
                                 )
                             },
                             modifier = Modifier.clickable {
-                                onColorRowClick(CalendarSyncRepository.CalendarType.NAMEDAY, Color(nameDayColor))
+                                onColorRowClick(
+                                    CalendarSyncRepository.CalendarType.NAMEDAY,
+                                    Color(nameDayColor)
+                                )
                             },
                             colors = ListItemDefaults.colors(containerColor = Color.Transparent)
                         )
@@ -440,7 +458,7 @@ private fun openDefaultCalendarApp(context: Context) {
             addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
         }
         context.startActivity(intent)
-    } catch (e: Exception) {
+    } catch (_: Exception) {
         try {
             val intent = Intent(Intent.ACTION_MAIN).apply {
                 addCategory(Intent.CATEGORY_APP_CALENDAR)
@@ -574,26 +592,24 @@ private fun ColorPickerDialog(
                     ) {
                         for (col in 0..3) {
                             val index = row * 4 + col
-                            if (index < colors.size) {
-                                val color = colors[index]
-                                val isSelected = color == initialColor
-                                Box(
-                                    modifier = Modifier
-                                        .size(48.dp)
-                                        .background(color, shape = CircleShape)
-                                        .clickable {
-                                            onColorSelected(color)
-                                        },
-                                    contentAlignment = Alignment.Center
-                                ) {
-                                    if (isSelected) {
-                                        Icon(
-                                            imageVector = Icons.Default.Check,
-                                            contentDescription = null,
-                                            tint = Color.White,
-                                            modifier = Modifier.size(24.dp)
-                                        )
-                                    }
+                            val color = colors.getOrNull(index) ?: continue
+                            val isSelected = color == initialColor
+                            Box(
+                                modifier = Modifier
+                                    .size(48.dp)
+                                    .background(color, shape = CircleShape)
+                                    .clickable {
+                                        onColorSelected(color)
+                                    },
+                                contentAlignment = Alignment.Center
+                            ) {
+                                if (isSelected) {
+                                    Icon(
+                                        imageVector = Icons.Default.Check,
+                                        contentDescription = null,
+                                        tint = Color.White,
+                                        modifier = Modifier.size(24.dp)
+                                    )
                                 }
                             }
                         }

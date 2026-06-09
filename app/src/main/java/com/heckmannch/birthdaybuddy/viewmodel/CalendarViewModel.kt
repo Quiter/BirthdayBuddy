@@ -56,9 +56,10 @@ class CalendarViewModel @Inject constructor(
         .map { it.nameDayCalendarColor }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 0xFFFF9800.toInt())
 
-    fun updateCalendarColor(type: CalendarSyncRepository.CalendarType, color: Int) = viewModelScope.launch {
-        calendarSyncRepository.updateCalendarColor(type, color)
-    }
+    fun updateCalendarColor(type: CalendarSyncRepository.CalendarType, color: Int) =
+        viewModelScope.launch {
+            calendarSyncRepository.updateCalendarColor(type, color)
+        }
 
     fun hasCalendarPermissions(): Boolean {
         return calendarSyncRepository.hasCalendarPermissions()

@@ -127,7 +127,10 @@ class NotificationHelper @Inject constructor(
 
         val title = if (contacts.size == 1 || isCoupleAnniversary) {
             val name = if (isCoupleAnniversary) {
-                com.heckmannch.birthdaybuddy.util.mergeNames(contacts[0].fullName, contacts[1].fullName)
+                com.heckmannch.birthdaybuddy.util.mergeNames(
+                    contacts[0].fullName,
+                    contacts[1].fullName
+                )
             } else {
                 contacts.first().fullName
             }
@@ -140,24 +143,54 @@ class NotificationHelper @Inject constructor(
                     val nextYears = anniversary?.safeNextAge(LocalDate.now()) ?: -1
 
                     when (daysBefore) {
-                        0 -> if (hasYear) context.getString(R.string.notif_title_today_anniversary_age, name, nextYears)
-                             else context.getString(R.string.notif_title_today_anniversary, name)
-                        1 -> if (hasYear) context.getString(R.string.notif_title_tomorrow_anniversary_age, name, nextYears)
-                             else context.getString(R.string.notif_title_tomorrow_anniversary, name)
-                        7 -> if (hasYear) context.getString(R.string.notif_title_week_anniversary_age, name, nextYears)
-                             else context.getString(R.string.notif_title_week_anniversary, name)
-                        else -> if (hasYear) context.getString(R.string.notif_title_days_anniversary_age, daysBefore, name, nextYears)
-                                else context.getString(R.string.notif_title_days_anniversary, daysBefore, name)
+                        0 -> if (hasYear) context.getString(
+                            R.string.notif_title_today_anniversary_age,
+                            name,
+                            nextYears
+                        )
+                        else context.getString(R.string.notif_title_today_anniversary, name)
+
+                        1 -> if (hasYear) context.getString(
+                            R.string.notif_title_tomorrow_anniversary_age,
+                            name,
+                            nextYears
+                        )
+                        else context.getString(R.string.notif_title_tomorrow_anniversary, name)
+
+                        7 -> if (hasYear) context.getString(
+                            R.string.notif_title_week_anniversary_age,
+                            name,
+                            nextYears
+                        )
+                        else context.getString(R.string.notif_title_week_anniversary, name)
+
+                        else -> if (hasYear) context.getString(
+                            R.string.notif_title_days_anniversary_age,
+                            daysBefore,
+                            name,
+                            nextYears
+                        )
+                        else context.getString(
+                            R.string.notif_title_days_anniversary,
+                            daysBefore,
+                            name
+                        )
                     }
                 }
+
                 "nameday" -> {
                     when (daysBefore) {
                         0 -> context.getString(R.string.notif_title_today_nameday, name)
                         1 -> context.getString(R.string.notif_title_tomorrow_nameday, name)
                         7 -> context.getString(R.string.notif_title_week_nameday, name)
-                        else -> context.getString(R.string.notif_title_days_nameday, daysBefore, name)
+                        else -> context.getString(
+                            R.string.notif_title_days_nameday,
+                            daysBefore,
+                            name
+                        )
                     }
                 }
+
                 else -> {
                     val birthday = contact.birthday
                     val hasYear = birthday?.hasYear ?: false
@@ -180,7 +213,11 @@ class NotificationHelper @Inject constructor(
                         )
                         else context.getString(R.string.notif_title_tomorrow_named, name)
 
-                        7 -> if (hasYear) context.getString(R.string.notif_title_week_age, name, nextAge)
+                        7 -> if (hasYear) context.getString(
+                            R.string.notif_title_week_age,
+                            name,
+                            nextAge
+                        )
                         else context.getString(R.string.notif_title_week_named, name)
 
                         else -> if (hasYear) context.resources.getQuantityString(
@@ -203,20 +240,54 @@ class NotificationHelper @Inject constructor(
             when (eventType) {
                 "anniversary" -> {
                     when (daysBefore) {
-                        0 -> context.getString(R.string.notif_title_today_anniversary_plural, contacts.size)
-                        1 -> context.getString(R.string.notif_title_tomorrow_anniversary_plural, contacts.size)
-                        7 -> context.getString(R.string.notif_title_week_anniversary_plural, contacts.size)
-                        else -> context.getString(R.string.notif_title_days_anniversary_plural, daysBefore, contacts.size)
+                        0 -> context.getString(
+                            R.string.notif_title_today_anniversary_plural,
+                            contacts.size
+                        )
+
+                        1 -> context.getString(
+                            R.string.notif_title_tomorrow_anniversary_plural,
+                            contacts.size
+                        )
+
+                        7 -> context.getString(
+                            R.string.notif_title_week_anniversary_plural,
+                            contacts.size
+                        )
+
+                        else -> context.getString(
+                            R.string.notif_title_days_anniversary_plural,
+                            daysBefore,
+                            contacts.size
+                        )
                     }
                 }
+
                 "nameday" -> {
                     when (daysBefore) {
-                        0 -> context.getString(R.string.notif_title_today_nameday_plural, contacts.size)
-                        1 -> context.getString(R.string.notif_title_tomorrow_nameday_plural, contacts.size)
-                        7 -> context.getString(R.string.notif_title_week_nameday_plural, contacts.size)
-                        else -> context.getString(R.string.notif_title_days_nameday_plural, daysBefore, contacts.size)
+                        0 -> context.getString(
+                            R.string.notif_title_today_nameday_plural,
+                            contacts.size
+                        )
+
+                        1 -> context.getString(
+                            R.string.notif_title_tomorrow_nameday_plural,
+                            contacts.size
+                        )
+
+                        7 -> context.getString(
+                            R.string.notif_title_week_nameday_plural,
+                            contacts.size
+                        )
+
+                        else -> context.getString(
+                            R.string.notif_title_days_nameday_plural,
+                            daysBefore,
+                            contacts.size
+                        )
                     }
                 }
+
                 else -> {
                     when (daysBefore) {
                         0 -> context.resources.getQuantityString(

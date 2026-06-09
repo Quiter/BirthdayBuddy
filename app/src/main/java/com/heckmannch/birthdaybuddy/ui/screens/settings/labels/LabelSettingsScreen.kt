@@ -57,6 +57,7 @@ import com.heckmannch.birthdaybuddy.viewmodel.LabelViewModel
 fun LabelSettingsScreen(
     windowWidthSizeClass: WindowWidthSizeClass,
     viewModel: LabelViewModel,
+    showBackButton: Boolean = true,
     onNavigateBack: () -> Unit,
 ) {
     val labels by viewModel.labelManagementList.collectAsStateWithLifecycle()
@@ -64,6 +65,7 @@ fun LabelSettingsScreen(
     LabelSettingsContent(
         windowWidthSizeClass = windowWidthSizeClass,
         labels = labels,
+        showBackButton = showBackButton,
         onNavigateBack = onNavigateBack,
     ) { name, hidden, ignored, isSystem ->
         viewModel.updateLabelConfig(name, hidden, ignored, isSystem)
@@ -75,6 +77,7 @@ fun LabelSettingsScreen(
 private fun LabelSettingsContent(
     windowWidthSizeClass: WindowWidthSizeClass,
     labels: List<LabelManagementModel>,
+    showBackButton: Boolean = true,
     onNavigateBack: () -> Unit,
     onConfigChanged: (String, Boolean, Boolean, Boolean) -> Unit
 ) {
@@ -87,11 +90,13 @@ private fun LabelSettingsContent(
             LargeTopAppBar(
                 title = { Text(stringResource(R.string.labels_title)) },
                 navigationIcon = {
-                    IconButton(onClick = onNavigateBack) {
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = stringResource(R.string.notifications_back),
-                        )
+                    if (showBackButton) {
+                        IconButton(onClick = onNavigateBack) {
+                            Icon(
+                                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                                contentDescription = stringResource(R.string.notifications_back),
+                            )
+                        }
                     }
                 },
                 scrollBehavior = scrollBehavior

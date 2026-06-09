@@ -33,7 +33,12 @@ class SnoozeWorker @AssistedInject constructor(
                 firstKey.startsWith("nameday:") -> "nameday"
                 else -> "birthday"
             }
-            notificationHelper.showBirthdayNotification(targetContacts, daysBefore, pendingId, eventType)
+            notificationHelper.showBirthdayNotification(
+                targetContacts,
+                daysBefore,
+                pendingId,
+                eventType
+            )
         }
 
         return Result.success()

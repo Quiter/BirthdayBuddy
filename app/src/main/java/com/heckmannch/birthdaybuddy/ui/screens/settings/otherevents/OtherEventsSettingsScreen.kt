@@ -51,6 +51,7 @@ import com.heckmannch.birthdaybuddy.viewmodel.NotificationViewModel
 fun OtherEventsSettingsScreen(
     windowWidthSizeClass: WindowWidthSizeClass,
     viewModel: NotificationViewModel,
+    showBackButton: Boolean = true,
     onNavigateBack: () -> Unit,
 ) {
     val otherEventsEnabled by viewModel.otherEventsEnabled.collectAsState()
@@ -59,6 +60,7 @@ fun OtherEventsSettingsScreen(
         windowWidthSizeClass = windowWidthSizeClass,
         otherEventsEnabled = otherEventsEnabled,
         onToggleChange = { viewModel.setOtherEventsEnabled(it) },
+        showBackButton = showBackButton,
         onNavigateBack = onNavigateBack
     )
 }
@@ -69,6 +71,7 @@ private fun OtherEventsSettingsContent(
     windowWidthSizeClass: WindowWidthSizeClass,
     otherEventsEnabled: Boolean,
     onToggleChange: (Boolean) -> Unit,
+    showBackButton: Boolean,
     onNavigateBack: () -> Unit,
 ) {
     val scrollBehavior =
@@ -81,11 +84,13 @@ private fun OtherEventsSettingsContent(
             LargeTopAppBar(
                 title = { Text(stringResource(R.string.other_events_title)) },
                 navigationIcon = {
-                    IconButton(onClick = onNavigateBack) {
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = stringResource(R.string.notifications_back),
-                        )
+                    if (showBackButton) {
+                        IconButton(onClick = onNavigateBack) {
+                            Icon(
+                                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                                contentDescription = stringResource(R.string.notifications_back),
+                            )
+                        }
                     }
                 },
                 scrollBehavior = scrollBehavior,

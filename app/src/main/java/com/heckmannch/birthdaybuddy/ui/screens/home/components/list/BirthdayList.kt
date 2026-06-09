@@ -391,7 +391,12 @@ fun CoupleSuggestionBanner(
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     Button(
-                        onClick = { onLink(suggestion.first.lookupKey, suggestion.second.lookupKey) },
+                        onClick = {
+                            onLink(
+                                suggestion.first.lookupKey,
+                                suggestion.second.lookupKey
+                            )
+                        },
                         colors = ButtonDefaults.buttonColors(
                             containerColor = MaterialTheme.colorScheme.primary,
                             contentColor = MaterialTheme.colorScheme.onPrimary
@@ -400,8 +405,16 @@ fun CoupleSuggestionBanner(
                         Text(stringResource(R.string.couple_suggestion_yes))
                     }
                     OutlinedButton(
-                        onClick = { onIgnore(suggestion.first.lookupKey, suggestion.second.lookupKey) },
-                        border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.5f))
+                        onClick = {
+                            onIgnore(
+                                suggestion.first.lookupKey,
+                                suggestion.second.lookupKey
+                            )
+                        },
+                        border = BorderStroke(
+                            1.dp,
+                            MaterialTheme.colorScheme.primary.copy(alpha = 0.5f)
+                        )
                     ) {
                         Text(
                             text = stringResource(R.string.couple_suggestion_no),

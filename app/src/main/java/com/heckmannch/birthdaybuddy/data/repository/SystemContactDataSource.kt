@@ -252,7 +252,8 @@ class SystemContactDataSource @Inject constructor(
                 null
             )?.use { cursor ->
                 val idIdx = cursor.getColumnIndex(ContactsContract.Data.CONTACT_ID)
-                val dateIdx = cursor.getColumnIndex(ContactsContract.CommonDataKinds.Event.START_DATE)
+                val dateIdx =
+                    cursor.getColumnIndex(ContactsContract.CommonDataKinds.Event.START_DATE)
                 val typeIdx = cursor.getColumnIndex(ContactsContract.CommonDataKinds.Event.TYPE)
                 val labelIdx = cursor.getColumnIndex(ContactsContract.CommonDataKinds.Event.LABEL)
 
@@ -268,10 +269,12 @@ class SystemContactDataSource @Inject constructor(
                             type == ContactsContract.CommonDataKinds.Event.TYPE_BIRTHDAY -> {
                                 contactsMap[contactId] = contact.copy(birthday = date)
                             }
+
                             type == ContactsContract.CommonDataKinds.Event.TYPE_ANNIVERSARY ||
-                            (type == ContactsContract.CommonDataKinds.Event.TYPE_CUSTOM && label in anniversaryLabels) -> {
+                                    (type == ContactsContract.CommonDataKinds.Event.TYPE_CUSTOM && label in anniversaryLabels) -> {
                                 contactsMap[contactId] = contact.copy(anniversary = date)
                             }
+
                             type == ContactsContract.CommonDataKinds.Event.TYPE_CUSTOM && label in nameDayLabels -> {
                                 contactsMap[contactId] = contact.copy(nameDay = date)
                             }

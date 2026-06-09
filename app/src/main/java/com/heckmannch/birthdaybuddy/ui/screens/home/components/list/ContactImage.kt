@@ -119,7 +119,10 @@ fun ContactImage(
                             .data(secondImageUri)
                             .crossfade(true)
                             .build(),
-                        contentDescription = stringResource(R.string.item_image_desc, secondFullName ?: ""),
+                        contentDescription = stringResource(
+                            R.string.item_image_desc,
+                            secondFullName ?: ""
+                        ),
                         modifier = Modifier.fillMaxSize(),
                         contentScale = ContentScale.Crop
                     )

@@ -214,6 +214,14 @@
     - **Automatic Selection:** Implemented automatic selection of the first contact in the list on tablets to ensure the details pane is initialized with data on startup, while retaining full inline expandable behavior on phone form factors.
     - **Verification:** Verified compilation and executed gradle unit tests successfully.
 
+137. **Full-Width TopBar & Settings Master-Detail Layout:**
+    - **Full-Width Home TopBar:** Removed the zentrierende `AdaptiveContentContainer` from `HomeTopBar.kt`, allowing the search bar and label filter chips to span the entire screen width on tablets for a cleaner, modern look.
+    - **Settings Master-Detail Layout:** Implemented a native Android Settings-like split-pane layout for tablets on the `SettingsScreen`. The left pane displays the categories menu (with selected tab highlighting), and the right pane displays the active settings sub-page.
+    - **Nested Detail Pane Navigation:** Handled sub-screen transitions (like opening the Privacy Policy inside the About screen) directly within the right detail pane.
+    - **Dynamic Back Navigation:** Added a `showBackButton` parameter to all settings sub-screens (Notifications, Calendar, Labels, Backup, Sync, Other Events, About, Privacy Policy) to conditionally hide the top bar back button when they are embedded in the split layout.
+    - **Scaffold Width Flex:** Added a `useAdaptiveWidth` flag to `AppResponsiveScaffold` to allow disabling the zentrierende max-width constraint for full-bleed screens.
+
+
 
 
 

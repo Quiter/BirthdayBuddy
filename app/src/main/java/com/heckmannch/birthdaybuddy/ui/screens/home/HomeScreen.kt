@@ -233,6 +233,7 @@ private fun HomeContent(
 
     AppResponsiveScaffold(
         windowWidthSizeClass = windowWidthSizeClass,
+        useAdaptiveWidth = false,
         snackbarHost = { SnackbarHost(hostState = homeState.snackbarHostState) },
         topBar = {
             HomeTopBar(
@@ -243,7 +244,6 @@ private fun HomeContent(
                 isFilterBarVisible = isFilterBarVisible,
                 actions = actions,
                 searchFocusRequester = homeState.searchFocusRequester,
-                windowWidthSizeClass = windowWidthSizeClass,
             )
         },
         floatingActionButton = {
@@ -263,7 +263,7 @@ private fun HomeContent(
                 )
             }
         }
-    ) { paddingValues ->
+    ) { _ ->
         PullToRefreshBox(
             isRefreshing = uiState.isSyncing,
             onRefresh = actions.onRefresh,
@@ -348,7 +348,8 @@ private fun HomeContent(
                             contacts = contacts,
                             getLabel = { contact ->
                                 if (uiState.selectedLabel == HomeViewModel.LABEL_NO_BIRTHDAY) {
-                                    contact.fullName.firstOrNull()?.uppercaseChar()?.toString() ?: ""
+                                    contact.fullName.firstOrNull()?.uppercaseChar()?.toString()
+                                        ?: ""
                                 } else {
                                     contact.monthName
                                 }

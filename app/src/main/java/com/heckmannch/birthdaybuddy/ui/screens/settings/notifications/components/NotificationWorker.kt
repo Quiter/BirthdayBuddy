@@ -77,20 +77,30 @@ class NotificationWorker @AssistedInject constructor(
                         if (processedAnniversaries.contains(contact.lookupKey)) return@forEach
 
                         val spouseKey = contact.spouseLookupKey
-                        val spouse = if (spouseKey != null) anniversaries.find { it.lookupKey == spouseKey } else null
+                        val spouse =
+                            if (spouseKey != null) anniversaries.find { it.lookupKey == spouseKey } else null
 
                         if (spouse != null) {
                             scheduleJointEvent(
                                 contacts = listOf(contact, spouse),
                                 eventType = "anniversary",
-                                dbKeys = listOf("anniversary:${contact.lookupKey}", "anniversary:${spouse.lookupKey}"),
+                                dbKeys = listOf(
+                                    "anniversary:${contact.lookupKey}",
+                                    "anniversary:${spouse.lookupKey}"
+                                ),
                                 rule = rule,
                                 today = today
                             )
                             processedAnniversaries.add(contact.lookupKey)
                             processedAnniversaries.add(spouse.lookupKey)
                         } else {
-                            scheduleEvent(contact, "anniversary", "anniversary:${contact.lookupKey}", rule, today)
+                            scheduleEvent(
+                                contact,
+                                "anniversary",
+                                "anniversary:${contact.lookupKey}",
+                                rule,
+                                today
+                            )
                             processedAnniversaries.add(contact.lookupKey)
                         }
                     }
@@ -101,7 +111,13 @@ class NotificationWorker @AssistedInject constructor(
                         } ?: false
                     }
                     nameDays.forEach { contact ->
-                        scheduleEvent(contact, "nameday", "nameday:${contact.lookupKey}", rule, today)
+                        scheduleEvent(
+                            contact,
+                            "nameday",
+                            "nameday:${contact.lookupKey}",
+                            rule,
+                            today
+                        )
                     }
                 }
             }

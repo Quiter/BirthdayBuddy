@@ -47,6 +47,7 @@ import com.heckmannch.birthdaybuddy.ui.theme.BirthdayBuddyTheme
 @Composable
 fun AboutScreen(
     windowWidthSizeClass: WindowWidthSizeClass,
+    showBackButton: Boolean = true,
     onNavigateBack: () -> Unit,
     onNavigateToPrivacyPolicy: () -> Unit
 ) {
@@ -78,11 +79,13 @@ fun AboutScreen(
             LargeTopAppBar(
                 title = { Text(stringResource(R.string.about_title)) },
                 navigationIcon = {
-                    IconButton(onClick = onNavigateBack) {
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = stringResource(R.string.notifications_back)
-                        )
+                    if (showBackButton) {
+                        IconButton(onClick = onNavigateBack) {
+                            Icon(
+                                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                                contentDescription = stringResource(R.string.notifications_back)
+                            )
+                        }
                     }
                 },
                 scrollBehavior = scrollBehavior

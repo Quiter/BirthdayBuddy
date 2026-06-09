@@ -81,6 +81,7 @@ fun AppResponsiveScaffold(
     contentColor: Color = contentColorFor(if (containerColor == Color.Unspecified) MaterialTheme.colorScheme.background else containerColor),
     contentWindowInsets: WindowInsets = ScaffoldDefaults.contentWindowInsets,
     consumePadding: Boolean = true,
+    useAdaptiveWidth: Boolean = true,
     content: @Composable (PaddingValues) -> Unit
 ) {
     Scaffold(
@@ -95,15 +96,22 @@ fun AppResponsiveScaffold(
         contentWindowInsets = contentWindowInsets,
         content = { paddingValues ->
             // Die Zentrierung und das Padding für Top/BottomBar werden hier gebündelt.
-            AdaptiveContentContainer(
-                windowWidthSizeClass = windowWidthSizeClass,
-                modifier = Modifier
-                    .fillMaxSize()
-                    .then(
-                        if (consumePadding) Modifier.padding(paddingValues) else Modifier
-                    )
-            ) {
-                content(if (consumePadding) PaddingValues(0.dp) else paddingValues)
+            val contentModifier = Modifier
+                .fillMaxSize()
+                .then(
+                    if (consumePadding) Modifier.padding(paddingValues) else Modifier
+                )
+            if (useAdaptiveWidth) {
+                AdaptiveContentContainer(
+                    windowWidthSizeClass = windowWidthSizeClass,
+                    modifier = contentModifier
+                ) {
+                    content(if (consumePadding) PaddingValues(0.dp) else paddingValues)
+                }
+            } else {
+                Box(modifier = contentModifier) {
+                    content(if (consumePadding) PaddingValues(0.dp) else paddingValues)
+                }
             }
         }
     )

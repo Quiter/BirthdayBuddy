@@ -64,7 +64,8 @@ class NotificationRepository @Inject constructor(
                     calendarId = if (clearCalendarId) null else (calendarId ?: current.calendarId),
                     otherEventsEnabled = otherEventsEnabled ?: current.otherEventsEnabled,
                     birthdayCalendarColor = birthdayCalendarColor ?: current.birthdayCalendarColor,
-                    anniversaryCalendarColor = anniversaryCalendarColor ?: current.anniversaryCalendarColor,
+                    anniversaryCalendarColor = anniversaryCalendarColor
+                        ?: current.anniversaryCalendarColor,
                     nameDayCalendarColor = nameDayCalendarColor ?: current.nameDayCalendarColor
                 )
             )

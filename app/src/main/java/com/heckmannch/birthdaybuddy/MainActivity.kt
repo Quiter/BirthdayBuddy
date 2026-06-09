@@ -234,6 +234,7 @@ class MainActivity : ComponentActivity() {
             composable(Routes.SETTINGS) {
                 SettingsScreen(
                     windowWidthSizeClass = windowWidthSizeClass,
+                    homeViewModel = homeViewModel,
                     onNavigateToLabels = {
                         navController.navigate(Routes.LABEL_SETTINGS)
                     },

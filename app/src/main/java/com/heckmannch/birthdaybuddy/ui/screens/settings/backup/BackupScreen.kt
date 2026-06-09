@@ -28,6 +28,7 @@ import java.time.format.DateTimeFormatter
 fun BackupScreen(
     windowWidthSizeClass: WindowWidthSizeClass,
     viewModel: BackupViewModel,
+    showBackButton: Boolean = true,
     onNavigateBack: () -> Unit
 ) {
     val context = LocalContext.current
@@ -74,7 +75,7 @@ fun BackupScreen(
                     if (json != null) {
                         val count = viewModel.importGiftIdeas(json)
                         if (count >= 0) {
-                            val message = context.resources.getQuantityString(
+                            val message = context.applicationContext.resources.getQuantityString(
                                 R.plurals.backup_import_success,
                                 count,
                                 count
@@ -97,6 +98,7 @@ fun BackupScreen(
     BackupContent(
         windowWidthSizeClass = windowWidthSizeClass,
         isLoading = isLoading,
+        showBackButton = showBackButton,
         onExportClick = {
             val date = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd"))
             exportLauncher.launch("birthday_buddy_backup_$date.json")

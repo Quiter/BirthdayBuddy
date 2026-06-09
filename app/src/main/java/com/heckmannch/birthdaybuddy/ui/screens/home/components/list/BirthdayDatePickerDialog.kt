@@ -89,29 +89,30 @@ fun BirthdayDatePickerDialog(
     val locale = remember(configuration) { configuration.locales[0] }
 
     // Dynamischer, lokalisierter Titel der aktuellen Selektion (z.B. "2. Juni" / "2. Juni 1989")
-    val formattedDateText = remember(selectedDay, selectedMonth, selectedYear, includeYear, locale) {
-        val yearVal = if (includeYear) selectedYear else NO_YEAR_MARKER
-        val monthEnum = Month.of(selectedMonth)
-        val maxDaysForMonth = monthEnum.length(Year.isLeap(yearVal.toLong()))
-        val safeDay = selectedDay.coerceIn(1, maxDaysForMonth)
+    val formattedDateText =
+        remember(selectedDay, selectedMonth, selectedYear, includeYear, locale) {
+            val yearVal = if (includeYear) selectedYear else NO_YEAR_MARKER
+            val monthEnum = Month.of(selectedMonth)
+            val maxDaysForMonth = monthEnum.length(Year.isLeap(yearVal.toLong()))
+            val safeDay = selectedDay.coerceIn(1, maxDaysForMonth)
 
-        val date = LocalDate.of(yearVal, selectedMonth, safeDay)
-        if (includeYear) {
-            val formatter = if (locale.language == "de") {
-                DateTimeFormatter.ofPattern("d. MMMM yyyy", locale)
+            val date = LocalDate.of(yearVal, selectedMonth, safeDay)
+            if (includeYear) {
+                val formatter = if (locale.language == "de") {
+                    DateTimeFormatter.ofPattern("d. MMMM yyyy", locale)
+                } else {
+                    DateTimeFormatter.ofPattern("MMMM d, yyyy", locale)
+                }
+                date.format(formatter)
             } else {
-                DateTimeFormatter.ofPattern("MMMM d, yyyy", locale)
+                val formatter = if (locale.language == "de") {
+                    DateTimeFormatter.ofPattern("d. MMMM", locale)
+                } else {
+                    DateTimeFormatter.ofPattern("MMMM d", locale)
+                }
+                date.format(formatter)
             }
-            date.format(formatter)
-        } else {
-            val formatter = if (locale.language == "de") {
-                DateTimeFormatter.ofPattern("d. MMMM", locale)
-            } else {
-                DateTimeFormatter.ofPattern("MMMM d", locale)
-            }
-            date.format(formatter)
         }
-    }
 
     // Lokalisierte Monatsnamen cachen
     val monthItems = remember(locale) {

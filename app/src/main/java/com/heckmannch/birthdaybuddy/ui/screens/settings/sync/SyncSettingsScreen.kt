@@ -53,6 +53,7 @@ import com.heckmannch.birthdaybuddy.viewmodel.HomeViewModel
 fun SyncSettingsScreen(
     windowWidthSizeClass: WindowWidthSizeClass,
     viewModel: HomeViewModel,
+    showBackButton: Boolean = true,
     onNavigateBack: () -> Unit,
 ) {
     val context = LocalContext.current
@@ -87,6 +88,7 @@ fun SyncSettingsScreen(
         windowWidthSizeClass = windowWidthSizeClass,
         snackbarHostState = snackbarHostState,
         onSyncClick = onSyncClick,
+        showBackButton = showBackButton,
         onNavigateBack = onNavigateBack,
     )
 }
@@ -97,6 +99,7 @@ private fun SyncSettingsContent(
     windowWidthSizeClass: WindowWidthSizeClass,
     snackbarHostState: SnackbarHostState,
     onSyncClick: () -> Unit,
+    showBackButton: Boolean,
     onNavigateBack: () -> Unit,
 ) {
     val scrollBehavior =
@@ -109,11 +112,13 @@ private fun SyncSettingsContent(
             LargeTopAppBar(
                 title = { Text(stringResource(R.string.sync_title)) },
                 navigationIcon = {
-                    IconButton(onClick = onNavigateBack) {
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = stringResource(R.string.notifications_back),
-                        )
+                    if (showBackButton) {
+                        IconButton(onClick = onNavigateBack) {
+                            Icon(
+                                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                                contentDescription = stringResource(R.string.notifications_back),
+                            )
+                        }
                     }
                 },
                 scrollBehavior = scrollBehavior,

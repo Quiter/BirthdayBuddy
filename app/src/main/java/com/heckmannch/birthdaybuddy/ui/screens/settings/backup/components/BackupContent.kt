@@ -46,6 +46,7 @@ import com.heckmannch.birthdaybuddy.ui.theme.BirthdayBuddyTheme
 fun BackupContent(
     windowWidthSizeClass: WindowWidthSizeClass,
     isLoading: Boolean,
+    showBackButton: Boolean = true,
     onExportClick: () -> Unit,
     onImportClick: () -> Unit,
     onNavigateBack: () -> Unit
@@ -59,11 +60,13 @@ fun BackupContent(
             LargeTopAppBar(
                 title = { Text(stringResource(R.string.backup_title)) },
                 navigationIcon = {
-                    IconButton(onClick = onNavigateBack) {
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = stringResource(R.string.notifications_back)
-                        )
+                    if (showBackButton) {
+                        IconButton(onClick = onNavigateBack) {
+                            Icon(
+                                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                                contentDescription = stringResource(R.string.notifications_back)
+                            )
+                        }
                     }
                 },
                 scrollBehavior = scrollBehavior

@@ -50,6 +50,7 @@ import kotlinx.coroutines.withContext
 @Composable
 fun PrivacyPolicyScreen(
     windowWidthSizeClass: WindowWidthSizeClass,
+    showBackButton: Boolean = true,
     onNavigateBack: () -> Unit
 ) {
     val context = LocalContext.current
@@ -77,11 +78,13 @@ fun PrivacyPolicyScreen(
             LargeTopAppBar(
                 title = { Text(stringResource(R.string.privacy_policy_title)) },
                 navigationIcon = {
-                    IconButton(onClick = onNavigateBack) {
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = stringResource(R.string.notifications_back)
-                        )
+                    if (showBackButton) {
+                        IconButton(onClick = onNavigateBack) {
+                            Icon(
+                                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                                contentDescription = stringResource(R.string.notifications_back)
+                            )
+                        }
                     }
                 },
                 scrollBehavior = scrollBehavior

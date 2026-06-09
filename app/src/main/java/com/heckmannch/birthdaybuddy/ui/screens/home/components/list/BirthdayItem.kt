@@ -49,6 +49,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import kotlin.time.Duration.Companion.milliseconds
 import com.heckmannch.birthdaybuddy.R
 import com.heckmannch.birthdaybuddy.ui.model.ContactUiModel
 import com.heckmannch.birthdaybuddy.ui.model.SampleData
@@ -122,7 +123,7 @@ fun BirthdayItem(
     LaunchedEffect(isExpanded) {
         if (isExpanded && contact.isToday) {
             showConfetti = true
-            delay(3000)
+            delay(3000.milliseconds)
             showConfetti = false
         }
     }
@@ -142,7 +143,10 @@ fun BirthdayItem(
         colors = CardDefaults.cardColors(
             containerColor = containerColor,
         ),
-        border = borderStroke ?: if (isSelected) BorderStroke(1.5.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.5f)) else null,
+        border = borderStroke ?: if (isSelected) BorderStroke(
+            1.5.dp,
+            MaterialTheme.colorScheme.primary.copy(alpha = 0.5f)
+        ) else null,
     ) {
         Box {
             Column(
