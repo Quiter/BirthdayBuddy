@@ -5,6 +5,7 @@ import android.content.pm.PackageManager
 import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -20,6 +21,7 @@ import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.adaptive.ExperimentalMaterial3AdaptiveApi
 import androidx.compose.material3.adaptive.layout.AnimatedPane
 import androidx.compose.material3.adaptive.layout.ListDetailPaneScaffold
+import androidx.compose.material3.adaptive.layout.ListDetailPaneScaffoldRole
 import androidx.compose.material3.adaptive.navigation.rememberListDetailPaneScaffoldNavigator
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
@@ -29,6 +31,7 @@ import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
@@ -58,6 +61,7 @@ import com.heckmannch.birthdaybuddy.ui.util.ContactActions
 import com.heckmannch.birthdaybuddy.viewmodel.HomeViewModel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.launch
 import kotlin.time.Duration.Companion.milliseconds
 
 /**
@@ -320,7 +324,14 @@ private fun HomeContent(
                     }
                 }
 
+                val coroutineScope = rememberCoroutineScope()
                 val navigator = rememberListDetailPaneScaffoldNavigator<Nothing>()
+
+                BackHandler(navigator.canNavigateBack()) {
+                    coroutineScope.launch {
+                        navigator.navigateBack()
+                    }
+                }
 
                 ListDetailPaneScaffold(
                     directive = navigator.scaffoldDirective,
@@ -339,6 +350,9 @@ private fun HomeContent(
                                     selectedContactId = selectedContactId,
                                     onContactSelected = { contact ->
                                         selectedContactId = contact.id
+                                        coroutineScope.launch {
+                                            navigator.navigateTo(ListDetailPaneScaffoldRole.Detail)
+                                        }
                                     },
                                     onInteraction = {
                                         focusManager.clearFocus()

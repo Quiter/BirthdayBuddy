@@ -89,8 +89,17 @@ fun BirthdayList(
 ) {
     val context = LocalContext.current
 
-    val hasPermission = remember(context) {
-        ContextCompat.checkSelfPermission(
+    var hasPermission by remember(context) {
+        mutableStateOf(
+            ContextCompat.checkSelfPermission(
+                context,
+                Manifest.permission.READ_CONTACTS,
+            ) == PackageManager.PERMISSION_GRANTED
+        )
+    }
+
+    LaunchedEffect(contacts) {
+        hasPermission = ContextCompat.checkSelfPermission(
             context,
             Manifest.permission.READ_CONTACTS,
         ) == PackageManager.PERMISSION_GRANTED

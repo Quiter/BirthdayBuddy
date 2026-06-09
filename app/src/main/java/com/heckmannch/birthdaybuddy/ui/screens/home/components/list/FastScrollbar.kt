@@ -56,6 +56,7 @@ import com.heckmannch.birthdaybuddy.R
 import com.heckmannch.birthdaybuddy.ui.model.ContactUiModel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlin.time.Duration.Companion.milliseconds
 
 private object ScrollbarDefaults {
     val BarWidth = 150.dp
@@ -93,7 +94,7 @@ fun FastScrollbar(
         value = if (isDragging) {
             true
         } else {
-            delay(ScrollbarDefaults.BUBBLE_DELAY)
+            delay(ScrollbarDefaults.BUBBLE_DELAY.milliseconds)
             false
         }
     }
@@ -220,7 +221,7 @@ fun FastScrollbar(
             ScrollbarBubble(
                 visible = showBubble,
                 label = currentLabel,
-                thumbOffset = thumbOffset
+                thumbOffset = { thumbOffset }
             )
 
             val scrollbarDesc = stringResource(R.string.home_scrollbar_desc, currentLabel)
@@ -289,7 +290,7 @@ fun FastScrollbar(
                     isDragging = isDragging,
                     isScrollInProgress = listState.isScrollInProgress,
                     currentThumbHeight = currentThumbHeight,
-                    thumbOffset = thumbOffset,
+                    thumbOffset = { thumbOffset },
                     thumbWidth = thumbWidth,
                     animatedThumbAlpha = animatedThumbAlpha,
                     scrollbarDesc = scrollbarDesc,
@@ -309,7 +310,7 @@ fun FastScrollbar(
 private fun ScrollbarBubble(
     visible: Boolean,
     label: String,
-    thumbOffset: Dp,
+    thumbOffset: () -> Dp,
     modifier: Modifier = Modifier,
 ) {
     val transitionState = remember { MutableTransitionState(initialState = false) }
@@ -335,7 +336,7 @@ private fun ScrollbarBubble(
                 Box(
                     modifier = Modifier
                         .graphicsLayer {
-                            val offsetY = (thumbOffset - ScrollbarDefaults.BubbleOffsetY).toPx()
+                            val offsetY = (thumbOffset() - ScrollbarDefaults.BubbleOffsetY).toPx()
                             translationY = offsetY.coerceAtLeast(0f)
                         }
                 ) {
@@ -377,7 +378,7 @@ private fun ScrollbarTrackAndThumb(
     isDragging: Boolean,
     isScrollInProgress: Boolean,
     currentThumbHeight: Dp,
-    thumbOffset: Dp,
+    thumbOffset: () -> Dp,
     thumbWidth: Dp,
     animatedThumbAlpha: Float,
     scrollbarDesc: String,
@@ -411,7 +412,7 @@ private fun ScrollbarTrackAndThumb(
                 .width(ScrollbarDefaults.ThumbSize)
                 .height(currentThumbHeight)
                 .graphicsLayer {
-                    translationY = thumbOffset.toPx()
+                    translationY = thumbOffset().toPx()
                 }
                 .semantics {
                     contentDescription = scrollbarDesc

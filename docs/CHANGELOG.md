@@ -228,6 +228,15 @@
     - **Dependencies:** Added `androidx-compose-material3-adaptive`, `androidx-compose-material3-adaptive-layout`, and `androidx-compose-material3-adaptive-navigation` to `libs.versions.toml` and `app/build.gradle.kts`.
     - **Compiler Warnings Cleanups:** Upgraded Compose plugin compiler version to `2.4.0` in `libs.versions.toml`. Cleaned up unused `AboutSection` composable in `AboutScreen.kt` and removed unused context/versionName variables from `SettingsFooter` inside `SettingsScreen.kt` to ensure warning-free compilation.
 
+139. **Codebase, Performance, Lifecycle & Resources Optimization:**
+    - **FastScrollbar Performance:** Migrated `thumbOffset` to lambda-based state reading (`() -> Dp`) inside [FastScrollbar.kt](file:///c:/Users/chris/AndroidStudioProjects/BirthdayBuddy/app/src/main/java/com/heckmannch/birthdaybuddy/ui/screens/home/components/list/FastScrollbar.kt), avoiding parent recompositions during list scrolling and dragging.
+    - **Lifecycle Safety:** Replaced `collectAsState()` with `collectAsStateWithLifecycle()` in [CalendarSettingsScreen.kt](file:///c:/Users/chris/AndroidStudioProjects/BirthdayBuddy/app/src/main/java/com/heckmannch/birthdaybuddy/ui/screens/settings/calendar/CalendarSettingsScreen.kt) and [OtherEventsSettingsScreen.kt](file:///c:/Users/chris/AndroidStudioProjects/BirthdayBuddy/app/src/main/java/com/heckmannch/birthdaybuddy/ui/screens/settings/otherevents/OtherEventsSettingsScreen.kt) to pause flow collection when the app runs in the background.
+    - **Adaptive Scaffold UX:** Integrated `BackHandler` and explicit `navigator.navigateTo` calls for the `ListDetailPaneScaffold` in [HomeScreen.kt](file:///c:/Users/chris/AndroidStudioProjects/BirthdayBuddy/app/src/main/java/com/heckmannch/birthdaybuddy/ui/screens/home/HomeScreen.kt) to ensure correct pane transitions and system back button behavior.
+    - **Permission State UX:** Added a `LaunchedEffect(contacts)` block in [BirthdayList.kt](file:///c:/Users/chris/AndroidStudioProjects/BirthdayBuddy/app/src/main/java/com/heckmannch/birthdaybuddy/ui/screens/home/components/list/BirthdayList.kt) to re-evaluate contacts permissions dynamically when data changes, fixing stuck permission prompts in EmptyListState.
+    - **Resource Clean Up:** Removed unused colors from [colors.xml](file:///c:/Users/chris/AndroidStudioProjects/BirthdayBuddy/app/src/main/res/values/colors.xml) and obsolete string resources from both English [strings.xml](file:///c:/Users/chris/AndroidStudioProjects/BirthdayBuddy/app/src/main/res/values/strings.xml) and German [strings.xml](file:///c:/Users/chris/AndroidStudioProjects/BirthdayBuddy/app/src/main/res/values-de/strings.xml) to clean up compiler warnings and decrease package footprint.
+    - **Legacy delay Warning:** Converted the legacy `delay(Long)` call to the modern `Duration` overload using `.milliseconds` in [FastScrollbar.kt](file:///c:/Users/chris/AndroidStudioProjects/BirthdayBuddy/app/src/main/java/com/heckmannch/birthdaybuddy/ui/screens/home/components/list/FastScrollbar.kt) to resolve compiler warnings.
+
+
 
 
 

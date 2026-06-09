@@ -18,7 +18,7 @@
     <string name="empty_no_birthdays">No birthdays found. Sync your contacts in settings or add new ones.</string>
 
     <!-- Birthday Item -->
-    <string name="item_gift_ideas_hint">Gift ideas available</string>
+
     <string name="item_image_desc">Contact picture of %1$s</string>
     <string name="item_action_gifts">Gift ideas</string>
     <string name="item_action_contact">Contact</string>
@@ -46,7 +46,7 @@
     <string name="widget_description">Shows upcoming birthdays of your contacts.</string>
 
     <!-- Gift Idea Dialog -->
-    <string name="gift_dialog_title">Gift Ideas</string>
+
     <string name="gift_dialog_delete">Delete</string>
     <string name="gift_dialog_add">List item</string>
     <string name="gift_idea_placeholder">Gift idea</string>
@@ -78,20 +78,15 @@
         <item quantity="other">%d days before</item>
     </plurals>
     <string name="rule_time_format">At %1$02d:%2$02d</string>
-    <string name="rule_time_display">%1$02d:%2$02d</string>
+
 
     <!-- Edit Rule Dialog -->
-    <string name="dialog_rule_question">When do you want to be reminded?</string>
-    <string name="dialog_preset_today">Today</string>
-    <string name="dialog_preset_tomorrow">Tomorrow</string>
-    <string name="dialog_preset_week">1 week</string>
+
     <string name="dialog_cancel">Cancel</string>
-    <string name="dialog_next">Next</string>
-    <string name="dialog_back">Back</string>
+
     <string name="dialog_save">Save</string>
     <string name="dialog_time_title">Select time</string>
-    <string name="dialog_slider_today">Today</string>
-    <string name="dialog_slider_max">30 days</string>
+
     <plurals name="dialog_rule_unit_days">
         <item quantity="one">Day before</item>
         <item quantity="other">Days before</item>
@@ -149,8 +144,7 @@
     <!-- About Screen -->
     <string name="about_title">About the app</string>
     <string name="about_description">BirthdayBuddy helps you never forget a birthday again. Receive reminders in time and manage gift ideas directly in the app.</string>
-    <string name="about_developer_title">Developer</string>
-    <string name="about_location_title">Location</string>
+
     <string name="about_privacy_policy">Privacy Policy</string>
     <string name="about_copyright">© 2024–2026 Christof Heckmann</string>
 
@@ -163,8 +157,7 @@
     <string name="onboarding_contacts_title">Your Contacts</string>
     <string name="onboarding_contacts_desc">To show you birthdays, BirthdayBuddy needs access to your system contacts. Your data stays locally on your device.</string>
     <string name="onboarding_contacts_btn">Grant Permission</string>
-    <string name="onboarding_contacts_settings">Open Settings</string>
-    <string name="onboarding_contacts_skip">Continue without contacts</string>
+
     <string name="onboarding_contacts_granted">Access granted!</string>
     <string name="onboarding_notif_page_title">Reminders</string>
     <string name="onboarding_notif_page_desc">When should we remind you? You can also decide if reminders should stay active until you mark them as done.</string>
@@ -182,7 +175,7 @@
     <string name="onboarding_summary_notif_disabled">✗ Notifications disabled</string>
     <string name="onboarding_ready_btn">Get Started</string>
     <string name="onboarding_next">Next</string>
-    <string name="onboarding_skip">Skip</string>
+
 
     <!-- App Shortcuts -->
     <string name="shortcut_add_contact">Add contact</string>
@@ -254,9 +247,9 @@
     <string name="calendar_settings_header">Calendar Integration</string>
     <string name="calendar_settings_desc">Automatically write birthdays as all-day events into a separate calendar. Reminders remain in the app as requested.</string>
     <string name="calendar_settings_enable">Sync to Calendar app</string>
-    <string name="calendar_settings_permission_needed">To write to your calendar, BirthdayBuddy needs permission to access your calendar.</string>
+
     <string name="calendar_settings_permission_btn">Grant calendar permission</string>
-    <string name="calendar_settings_permission_granted">✓ Calendar permission granted</string>
+
     <string name="calendar_guide_title">Setup Guide</string>
     <string name="calendar_guide_step1_title">1. Grant Calendar Permission</string>
     <string name="calendar_guide_step1_desc">Allows BirthdayBuddy to write all-day birthday events into your calendar.</string>

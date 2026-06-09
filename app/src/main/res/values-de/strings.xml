@@ -18,7 +18,7 @@
     <string name="empty_no_birthdays">Keine Geburtstage gefunden. Synchronisiere deine Kontakte in den Einstellungen oder füge neue hinzu.</string>
 
     <!-- Birthday Item -->
-    <string name="item_gift_ideas_hint">Geschenkideen vorhanden</string>
+
     <string name="item_image_desc">Kontaktbild von %1$s</string>
     <string name="item_action_gifts">Geschenkideen</string>
     <string name="item_action_contact">Kontakt</string>
@@ -46,7 +46,7 @@
     <string name="widget_description">Zeigt anstehende Geburtstage deiner Kontakte an.</string>
 
     <!-- Gift Idea Dialog -->
-    <string name="gift_dialog_title">Geschenkideen</string>
+
     <string name="gift_dialog_delete">Löschen</string>
     <string name="gift_dialog_add">Listeneintrag</string>
     <string name="gift_idea_placeholder">Geschenkidee</string>
@@ -78,20 +78,15 @@
         <item quantity="other">%d Tage vorher</item>
     </plurals>
     <string name="rule_time_format">Um %1$02d:%2$02d Uhr</string>
-    <string name="rule_time_display">%1$02d:%2$02d Uhr</string>
+
 
     <!-- Edit Rule Dialog -->
-    <string name="dialog_rule_question">Wann möchtest du erinnert werden?</string>
-    <string name="dialog_preset_today">Heute</string>
-    <string name="dialog_preset_tomorrow">Morgen</string>
-    <string name="dialog_preset_week">1 Woche</string>
+
     <string name="dialog_cancel">Abbrechen</string>
-    <string name="dialog_next">Weiter</string>
-    <string name="dialog_back">Zurück</string>
+
     <string name="dialog_save">Speichern</string>
     <string name="dialog_time_title">Uhrzeit wählen</string>
-    <string name="dialog_slider_today">Heute</string>
-    <string name="dialog_slider_max">30 Tage</string>
+
     <plurals name="dialog_rule_unit_days">
         <item quantity="one">Tag vorher</item>
         <item quantity="other">Tage vorher</item>
@@ -149,8 +144,7 @@
     <!-- About Screen -->
     <string name="about_title">Über die App</string>
     <string name="about_description">BirthdayBuddy hilft dir dabei, nie wieder einen Geburtstag zu vergessen. Erhalte rechtzeitig Erinnerungen und verwalte Geschenkideen direkt in der App.</string>
-    <string name="about_developer_title">Entwickler</string>
-    <string name="about_location_title">Standort</string>
+
     <string name="about_privacy_policy">Datenschutzerklärung</string>
     <string name="about_copyright">© 2024–2026 Christof Heckmann</string>
 
@@ -163,8 +157,7 @@
     <string name="onboarding_contacts_title">Deine Kontakte</string>
     <string name="onboarding_contacts_desc">Um dir Geburtstage anzuzeigen, benötigt BirthdayBuddy Zugriff auf deine System-Kontakte. Deine Daten bleiben lokal auf deinem Gerät.</string>
     <string name="onboarding_contacts_btn">Berechtigung erteilen</string>
-    <string name="onboarding_contacts_settings">Einstellungen öffnen</string>
-    <string name="onboarding_contacts_skip">Ohne Kontakte fortfahren</string>
+
     <string name="onboarding_contacts_granted">Zugriff gewährt!</string>
     <string name="onboarding_notif_page_title">Erinnerungen</string>
     <string name="onboarding_notif_page_desc">Wann sollen wir dich erinnern? Du kannst auch entscheiden, ob Erinnerungen aktiv bleiben sollen, bis du sie erledigst.</string>
@@ -182,7 +175,7 @@
     <string name="onboarding_summary_notif_disabled">✗ Benachrichtigungen aus</string>
     <string name="onboarding_ready_btn">Los geht\'s</string>
     <string name="onboarding_next">Weiter</string>
-    <string name="onboarding_skip">Überspringen</string>
+
 
     <!-- App Shortcuts -->
     <string name="shortcut_add_contact">Kontakt hinzufügen</string>
@@ -254,9 +247,9 @@
     <string name="calendar_settings_header">Kalender-Integration</string>
     <string name="calendar_settings_desc">Trage Geburtstage vollautomatisch als ganztägige Serientermine in einen eigenen Kalender ein. Deine Benachrichtigungen bleiben wie gewohnt in der App.</string>
     <string name="calendar_settings_enable">In Kalender-App eintragen</string>
-    <string name="calendar_settings_permission_needed">Um Termine eintragen zu können, benötigt BirthdayBuddy Zugriff auf deinen Kalender.</string>
+
     <string name="calendar_settings_permission_btn">Kalender-Berechtigung erteilen</string>
-    <string name="calendar_settings_permission_granted">✓ Kalender-Berechtigung erteilt</string>
+
     <string name="calendar_guide_title">Schritt-für-Schritt Anleitung</string>
     <string name="calendar_guide_step1_title">1. Kalender-Berechtigung erteilen</string>
     <string name="calendar_guide_step1_desc">Erlaubt BirthdayBuddy, ganztägige Geburtstage in deinen Kalender einzutragen.</string>
