@@ -49,6 +49,7 @@
         - ##### 📁 Components (`home.components`)
             - ###### 📁 List (`home.components.list`)
                 - `BirthdayDatePickerDialog.kt`: Wiederverwendbarer, modularer Date-Picker Dialog für die bequeme Eingabe von Geburtstagen.
+                - `BirthdayDetailPane.kt`: Detail-Paneel zur Anzeige aller Informationen (Details, Aktionen, Geschenkideen) eines Kontakts auf Tablets.
                 - `BirthdayItem.kt`: Zentrales Koordinationselement der Kontaktkarte; verwaltet den Expand-State und delegiert an spezialisierte Sub-Komponenten (wie z.B. den BirthdayDatePickerDialog).
                 - `BirthdayList.kt`: LazyColumn-Implementierung mit Optimierungen (Auto-Collapse beim Scrollen und Filterwechsel) sowie intelligent unterdrückten Platzierungsanimationen (`skipPlacementAnimation`) bei Filter- und Suchwechseln.
                 - `BirthdayStatus.kt`: Anzeige des Alters und der verbleibenden Tage.

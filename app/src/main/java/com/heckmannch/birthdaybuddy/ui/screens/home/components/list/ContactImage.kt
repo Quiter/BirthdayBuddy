@@ -9,12 +9,14 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
@@ -29,7 +31,12 @@ fun ContactImage(
     secondImageUri: String? = null,
     secondInitials: String? = null,
     secondFullName: String? = null,
+    size: Dp = 40.dp,
 ) {
+    val outerCorner = remember(size) { size * 0.3f }
+    val nestedSize = remember(size) { size * 0.7f }
+    val nestedCorner = remember(nestedSize) { nestedSize * 0.28f }
+
     if (secondInitials == null) {
         if (imageUri != null) {
             AsyncImage(
@@ -39,21 +46,21 @@ fun ContactImage(
                     .build(),
                 contentDescription = stringResource(R.string.item_image_desc, fullName),
                 modifier = modifier
-                    .size(40.dp)
-                    .clip(RoundedCornerShape(12.dp)),
+                    .size(size)
+                    .clip(RoundedCornerShape(outerCorner)),
                 contentScale = ContentScale.Crop
             )
         } else {
             Box(
                 modifier = modifier
-                    .size(40.dp)
-                    .clip(RoundedCornerShape(12.dp))
+                    .size(size)
+                    .clip(RoundedCornerShape(outerCorner))
                     .background(MaterialTheme.colorScheme.primaryContainer),
                 contentAlignment = Alignment.Center
             ) {
                 Text(
                     text = initials,
-                    style = MaterialTheme.typography.titleSmall,
+                    style = if (size > 40.dp) MaterialTheme.typography.titleLarge else MaterialTheme.typography.titleSmall,
                     color = MaterialTheme.colorScheme.onPrimaryContainer
                 )
             }
@@ -61,14 +68,14 @@ fun ContactImage(
     } else {
         // Overlapping dual avatar layout for couples
         Box(
-            modifier = modifier.size(40.dp)
+            modifier = modifier.size(size)
         ) {
             // First contact (top-left)
             Box(
                 modifier = Modifier
-                    .size(28.dp)
+                    .size(nestedSize)
                     .align(Alignment.TopStart)
-                    .clip(RoundedCornerShape(8.dp))
+                    .clip(RoundedCornerShape(nestedCorner))
             ) {
                 if (imageUri != null) {
                     AsyncImage(
@@ -89,7 +96,7 @@ fun ContactImage(
                     ) {
                         Text(
                             text = initials,
-                            style = MaterialTheme.typography.labelSmall,
+                            style = if (size > 40.dp) MaterialTheme.typography.titleSmall else MaterialTheme.typography.labelSmall,
                             color = MaterialTheme.colorScheme.onPrimaryContainer
                         )
                     }
@@ -99,12 +106,12 @@ fun ContactImage(
             // Second contact (bottom-right) with a surface border overlay
             Box(
                 modifier = Modifier
-                    .size(28.dp)
+                    .size(nestedSize)
                     .align(Alignment.BottomEnd)
-                    .clip(RoundedCornerShape(8.dp))
+                    .clip(RoundedCornerShape(nestedCorner))
                     .background(MaterialTheme.colorScheme.surface)
-                    .padding(1.5.dp)
-                    .clip(RoundedCornerShape(7.dp))
+                    .padding(remember(size) { (size * 0.0375f).coerceAtLeast(1.5.dp) })
+                    .clip(RoundedCornerShape(remember(nestedCorner) { nestedCorner * 0.875f }))
             ) {
                 if (secondImageUri != null) {
                     AsyncImage(
@@ -125,7 +132,7 @@ fun ContactImage(
                     ) {
                         Text(
                             text = secondInitials,
-                            style = MaterialTheme.typography.labelSmall,
+                            style = if (size > 40.dp) MaterialTheme.typography.titleSmall else MaterialTheme.typography.labelSmall,
                             color = MaterialTheme.colorScheme.onSecondaryContainer
                         )
                     }

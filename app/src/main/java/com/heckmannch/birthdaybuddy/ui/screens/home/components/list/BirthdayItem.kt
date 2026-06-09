@@ -69,6 +69,7 @@ fun BirthdayItem(
     onExpand: () -> Unit,
     actions: HomeActions,
     modifier: Modifier = Modifier,
+    isSelected: Boolean = false,
 ) {
     val focusManager = LocalFocusManager.current
     val haptic = LocalHapticFeedback.current
@@ -126,6 +127,12 @@ fun BirthdayItem(
         }
     }
 
+    val containerColor = when {
+        isSelected -> MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.6f)
+        isExpanded -> MaterialTheme.colorScheme.surfaceContainerHigh
+        else -> MaterialTheme.colorScheme.surfaceContainerLow
+    }
+
     Card(
         modifier = modifier
             .fillMaxWidth()
@@ -133,10 +140,9 @@ fun BirthdayItem(
             .padding(bottom = 8.dp)
             .graphicsLayer(),
         colors = CardDefaults.cardColors(
-            containerColor = if (isExpanded) MaterialTheme.colorScheme.surfaceContainerHigh
-            else MaterialTheme.colorScheme.surfaceContainerLow,
+            containerColor = containerColor,
         ),
-        border = borderStroke,
+        border = borderStroke ?: if (isSelected) BorderStroke(1.5.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.5f)) else null,
     ) {
         Box {
             Column(

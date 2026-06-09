@@ -206,6 +206,14 @@
     - **Harmonized Color Palette:** Implemented a premium Material 3 `ColorPickerDialog` containing a grid of 8 harmonized colors (Pink, Violet, Blue, Cyan, Green, Amber, Orange, Brown) with visual selection feedback, allowing custom color selections to bypass Google Calendar's missing native option for custom sync adapters.
     - **Settings Database V5 Migration:** Upgraded `SettingsDatabase` to version 5, adding `birthdayCalendarColor`, `anniversaryCalendarColor`, and `nameDayCalendarColor` columns with native default colors. Wrote `SettingsMigrationTest.kt` unit test cases to verify database structure and default value integrity.
     - **I18n Localization:** Fully localized dialog headers, cancel actions, and setting section descriptions in both English and German.
+136. **Master-Detail Tablet Layout & Code Cleanups:**
+    - **Responsive Master-Detail Split Screen:** Refactored `HomeScreen.kt` and `BirthdayList.kt` to support a premium Master-Detail layout on tablets and desktops (`windowWidthSizeClass != WindowWidthSizeClass.Compact`).
+    - **Selection Highlighting:** Added selection tracking and primary container highlighting to contact item cards (`BirthdayItem.kt`) when rendered inside the Master list.
+    - **Detail Panel (BirthdayDetailPane.kt):** Created a dedicated, scrollable details panel on the right pane displaying large contact avatars, name, status, contact actions (Call, SMS, WhatsApp), and the interactive Gift Ideas list.
+    - **Proportional Avatar Sizing:** Enhanced `ContactImage.kt` to accept a custom `size: Dp` parameter, allowing avatars to scale proportionally (including nested avatar overlays for couples) in the details panel.
+    - **Automatic Selection:** Implemented automatic selection of the first contact in the list on tablets to ensure the details pane is initialized with data on startup, while retaining full inline expandable behavior on phone form factors.
+    - **Verification:** Verified compilation and executed gradle unit tests successfully.
+
 
 
 

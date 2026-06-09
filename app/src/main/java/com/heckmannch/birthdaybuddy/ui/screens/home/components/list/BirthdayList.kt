@@ -83,6 +83,8 @@ fun BirthdayList(
     searchQuery: String = "",
     actions: HomeActions,
     coupleSuggestion: Pair<Contact, Contact>? = null,
+    selectedContactId: String? = null,
+    onContactSelected: ((ContactUiModel) -> Unit)? = null,
     onInteraction: () -> Unit = {},
 ) {
     val context = LocalContext.current
@@ -161,15 +163,21 @@ fun BirthdayList(
                 key = { _, it -> it.id },
                 contentType = { _, _ -> "birthdayItem" },
             ) { _, contact ->
-                val isExpanded = expandedContactId == contact.id
+                val isExpanded = onContactSelected == null && expandedContactId == contact.id
+                val isSelected = onContactSelected != null && selectedContactId == contact.id
 
                 BirthdayItem(
                     contact = contact,
                     isExpanded = isExpanded,
+                    isSelected = isSelected,
                     newlyAddedIdeaId = newlyAddedIdeaId,
                     onExpand = {
                         onInteraction()
-                        expandedContactId = if (isExpanded) null else contact.id
+                        if (onContactSelected != null) {
+                            onContactSelected(contact)
+                        } else {
+                            expandedContactId = if (isExpanded) null else contact.id
+                        }
                     },
                     actions = actions,
                     modifier = Modifier.animateItem(

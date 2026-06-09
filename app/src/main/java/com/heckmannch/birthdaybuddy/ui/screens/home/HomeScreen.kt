@@ -11,9 +11,12 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.animation.scaleIn
 import androidx.compose.animation.scaleOut
 import androidx.compose.foundation.interaction.collectIsDraggedAsState
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
@@ -22,8 +25,11 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -41,6 +47,7 @@ import com.heckmannch.birthdaybuddy.ui.components.AppResponsiveScaffold
 import com.heckmannch.birthdaybuddy.ui.model.HomeUiState
 import com.heckmannch.birthdaybuddy.ui.model.SampleData
 import com.heckmannch.birthdaybuddy.ui.screens.home.components.actions.HomeFAB
+import com.heckmannch.birthdaybuddy.ui.screens.home.components.list.BirthdayDetailPane
 import com.heckmannch.birthdaybuddy.ui.screens.home.components.list.BirthdayList
 import com.heckmannch.birthdaybuddy.ui.screens.home.components.list.FastScrollbar
 import com.heckmannch.birthdaybuddy.ui.screens.home.components.topbar.HomeTopBar
@@ -256,42 +263,117 @@ private fun HomeContent(
                 )
             }
         }
-    ) {
+    ) { paddingValues ->
         PullToRefreshBox(
             isRefreshing = uiState.isSyncing,
             onRefresh = actions.onRefresh,
             modifier = Modifier.fillMaxSize(),
         ) {
-            BirthdayList(
-                contacts = uiState.contacts,
-                newlyAddedIdeaId = uiState.newlyAddedIdeaId,
-                listState = homeState.listState,
-                selectedLabel = uiState.selectedLabel,
-                searchQuery = uiState.searchQuery,
-                actions = actions,
-                coupleSuggestion = uiState.coupleSuggestion,
-                onInteraction = {
-                    focusManager.clearFocus()
-                    keyboardController?.hide()
-                }
-            )
+            val contacts = uiState.contacts
+            if (contacts.isNullOrEmpty() || windowWidthSizeClass == WindowWidthSizeClass.Compact) {
+                Box(modifier = Modifier.fillMaxSize()) {
+                    BirthdayList(
+                        contacts = contacts,
+                        newlyAddedIdeaId = uiState.newlyAddedIdeaId,
+                        listState = homeState.listState,
+                        selectedLabel = uiState.selectedLabel,
+                        searchQuery = uiState.searchQuery,
+                        actions = actions,
+                        coupleSuggestion = uiState.coupleSuggestion,
+                        onInteraction = {
+                            focusManager.clearFocus()
+                            keyboardController?.hide()
+                        }
+                    )
 
-            FastScrollbar(
-                listState = homeState.listState,
-                contacts = uiState.contacts ?: emptyList(),
-                getLabel = { contact ->
-                    if (uiState.selectedLabel == HomeViewModel.LABEL_NO_BIRTHDAY) {
-                        contact.fullName.firstOrNull()?.uppercaseChar()?.toString() ?: ""
-                    } else {
-                        contact.monthName
+                    FastScrollbar(
+                        listState = homeState.listState,
+                        contacts = contacts ?: emptyList(),
+                        getLabel = { contact ->
+                            if (uiState.selectedLabel == HomeViewModel.LABEL_NO_BIRTHDAY) {
+                                contact.fullName.firstOrNull()?.uppercaseChar()?.toString() ?: ""
+                            } else {
+                                contact.monthName
+                            }
+                        },
+                        modifier = Modifier
+                            .align(Alignment.CenterEnd)
+                            .fillMaxHeight(),
+                        isResettingFilter = uiState.isResettingFilter,
+                        onSetFastScrolling = { homeState.onSetFastScrolling(it) },
+                    )
+                }
+            } else {
+                // Tablet/Desktop Layout: Master-Detail
+                var selectedContactId by rememberSaveable { mutableStateOf<String?>(null) }
+
+                val selectedContact = remember(contacts, selectedContactId) {
+                    contacts.find { it.id == selectedContactId } ?: contacts.firstOrNull()
+                }
+
+                // Synchonisierung der ID halten
+                LaunchedEffect(selectedContact) {
+                    if (selectedContact != null && selectedContactId != selectedContact.id) {
+                        selectedContactId = selectedContact.id
                     }
-                },
-                modifier = Modifier
-                    .align(Alignment.CenterEnd)
-                    .fillMaxHeight(),
-                isResettingFilter = uiState.isResettingFilter,
-                onSetFastScrolling = { homeState.onSetFastScrolling(it) },
-            )
+                }
+
+                Row(modifier = Modifier.fillMaxSize()) {
+                    // Linke Spalte: Master-Liste (380.dp breit)
+                    Box(
+                        modifier = Modifier
+                            .width(380.dp)
+                            .fillMaxHeight()
+                    ) {
+                        BirthdayList(
+                            contacts = contacts,
+                            newlyAddedIdeaId = null, // Idee wird im rechten Paneel hinzugefügt
+                            listState = homeState.listState,
+                            selectedLabel = uiState.selectedLabel,
+                            searchQuery = uiState.searchQuery,
+                            actions = actions,
+                            coupleSuggestion = uiState.coupleSuggestion,
+                            selectedContactId = selectedContactId,
+                            onContactSelected = { contact ->
+                                selectedContactId = contact.id
+                            },
+                            onInteraction = {
+                                focusManager.clearFocus()
+                                keyboardController?.hide()
+                            }
+                        )
+
+                        FastScrollbar(
+                            listState = homeState.listState,
+                            contacts = contacts,
+                            getLabel = { contact ->
+                                if (uiState.selectedLabel == HomeViewModel.LABEL_NO_BIRTHDAY) {
+                                    contact.fullName.firstOrNull()?.uppercaseChar()?.toString() ?: ""
+                                } else {
+                                    contact.monthName
+                                }
+                            },
+                            modifier = Modifier
+                                .align(Alignment.CenterEnd)
+                                .fillMaxHeight(),
+                            isResettingFilter = uiState.isResettingFilter,
+                            onSetFastScrolling = { homeState.onSetFastScrolling(it) },
+                        )
+                    }
+
+                    // Rechte Spalte: Detail-Paneel
+                    if (selectedContact != null) {
+                        BirthdayDetailPane(
+                            contact = selectedContact,
+                            newlyAddedIdeaId = uiState.newlyAddedIdeaId,
+                            actions = actions,
+                            modifier = Modifier
+                                .weight(1f)
+                                .fillMaxHeight()
+                        )
+                    }
+                }
+            }
         }
     }
 }

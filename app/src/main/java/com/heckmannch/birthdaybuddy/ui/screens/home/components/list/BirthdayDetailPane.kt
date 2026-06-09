@@ -1,0 +1,194 @@
+package com.heckmannch.birthdaybuddy.ui.screens.home.components.list
+
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.CardGiftcard
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.dp
+import com.heckmannch.birthdaybuddy.R
+import com.heckmannch.birthdaybuddy.ui.model.ContactUiModel
+import com.heckmannch.birthdaybuddy.ui.screens.home.HomeActions
+import com.heckmannch.birthdaybuddy.ui.screens.home.components.actions.ContactActionRow
+
+/**
+ * Ein Detail-Paneel zur Anzeige aller Informationen eines Kontakts auf Tablets.
+ */
+@Composable
+fun BirthdayDetailPane(
+    contact: ContactUiModel,
+    newlyAddedIdeaId: String?,
+    actions: HomeActions,
+    modifier: Modifier = Modifier,
+) {
+    val focusManager = LocalFocusManager.current
+    val showDatePicker = remember { mutableStateOf(false) }
+
+    if (showDatePicker.value) {
+        BirthdayDatePickerDialog(
+            initialDate = contact.birthday,
+            onDismissRequest = { showDatePicker.value = false },
+            onDateSelected = { date ->
+                actions.onUpdateBirthday(contact.contactId, date)
+            }
+        )
+    }
+
+    Card(
+        modifier = modifier
+            .fillMaxSize()
+            .padding(16.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceContainerHigh
+        ),
+        shape = RoundedCornerShape(24.dp)
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .verticalScroll(rememberScrollState())
+                .padding(24.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+            // Großes Avatar-Bild (96.dp statt 40.dp)
+            ContactImage(
+                imageUri = contact.imageUri,
+                fullName = contact.fullName,
+                initials = contact.initials,
+                secondImageUri = contact.secondImageUri,
+                secondInitials = contact.secondInitials,
+                secondFullName = contact.secondFullName,
+                size = 96.dp
+            )
+
+            // Name des Kontakts
+            Text(
+                text = contact.fullName,
+                style = MaterialTheme.typography.headlineMedium,
+                textAlign = TextAlign.Center,
+                color = MaterialTheme.colorScheme.onSurface
+            )
+
+            // Geburtstag Datumstext
+            Text(
+                text = contact.dateText,
+                style = MaterialTheme.typography.bodyLarge,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+
+            // Status (Alter und Resttage)
+            BirthdayStatus(
+                isToday = contact.isToday,
+                nextAge = contact.nextAge,
+                daysUntilNext = contact.daysUntilNext
+            ) {
+                showDatePicker.value = true
+            }
+
+            // Labels / Gruppen
+            if (contact.labels.isNotEmpty()) {
+                Text(
+                    text = contact.labels.joinToString(", "),
+                    style = MaterialTheme.typography.labelMedium,
+                    color = MaterialTheme.colorScheme.primary.copy(alpha = 0.8f),
+                    textAlign = TextAlign.Center
+                )
+            }
+
+            HorizontalDivider(
+                modifier = Modifier.padding(vertical = 8.dp),
+                color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)
+            )
+
+            // Aktionen (Anrufen, SMS, WhatsApp)
+            ContactActionRow(
+                contactId = contact.contactId,
+                lookupKey = contact.lookupKey,
+                phoneNumber = contact.phoneNumber,
+                hasBirthday = contact.daysUntilNext != Long.MAX_VALUE,
+                onAddBirthday = { showDatePicker.value = true },
+                actions = actions,
+                isCouple = contact.isCouple
+            )
+
+            HorizontalDivider(
+                modifier = Modifier.padding(vertical = 8.dp),
+                color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)
+            )
+
+            // Titel für Geschenkideen
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                Surface(
+                    modifier = Modifier.size(32.dp),
+                    shape = RoundedCornerShape(8.dp),
+                    color = MaterialTheme.colorScheme.primary.copy(alpha = 0.15f),
+                    contentColor = MaterialTheme.colorScheme.primary
+                ) {
+                    Box(contentAlignment = Alignment.Center) {
+                        Icon(
+                            imageVector = Icons.Default.CardGiftcard,
+                            contentDescription = null,
+                            modifier = Modifier.size(18.dp)
+                        )
+                    }
+                }
+
+                Text(
+                    text = stringResource(R.string.item_action_gifts),
+                    style = MaterialTheme.typography.titleMedium,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+            }
+
+            // Geschenkideen Liste
+            GiftIdeaList(
+                giftIdeas = contact.giftIdeas,
+                newlyAddedId = newlyAddedIdeaId,
+                onAddNewIdea = { actions.onAddGiftIdea(contact.lookupKey) },
+                onCheckedChange = { idea, checked ->
+                    actions.onToggleGiftIdea(contact.lookupKey, idea, checked)
+                },
+                onTextChange = { idea, newText ->
+                    actions.onUpdateGiftIdeaText(contact.lookupKey, idea.id, newText)
+                },
+                onDelete = { idea ->
+                    actions.onDeleteGiftIdea(contact.lookupKey, idea.id)
+                }
+            ) {
+                if (it.text.isNotBlank()) {
+                    actions.onAddGiftIdea(contact.lookupKey)
+                } else {
+                    focusManager.clearFocus()
+                }
+            }
+        }
+    }
+}
