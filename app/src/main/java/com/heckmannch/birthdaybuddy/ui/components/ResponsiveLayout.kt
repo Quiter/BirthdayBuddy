@@ -150,17 +150,34 @@ private fun ResponsiveScaffoldTabletPreview() {
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
-@Preview(showBackground = true, device = Devices.DESKTOP, name = "Desktop (Expanded)")
+@Preview(showBackground = true, device = Devices.DESKTOP, name = "Desktop (Expanded Centered)")
 @Composable
 private fun ResponsiveScaffoldDesktopPreview() {
     BirthdayBuddyTheme {
         AppResponsiveScaffold(
             windowWidthSizeClass = WindowWidthSizeClass.Expanded,
             topBar = {
-                TopAppBar(title = { Text("Desktop Layout") })
+                TopAppBar(title = { Text("Desktop Layout (Centered)") })
             }
         ) {
             PreviewContent("Expanded Content (Max 840dp)")
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Preview(showBackground = true, device = Devices.DESKTOP, name = "Desktop (Expanded Full Width)")
+@Composable
+private fun ResponsiveScaffoldDesktopFullWidthPreview() {
+    BirthdayBuddyTheme {
+        AppResponsiveScaffold(
+            windowWidthSizeClass = WindowWidthSizeClass.Expanded,
+            useAdaptiveWidth = false,
+            topBar = {
+                TopAppBar(title = { Text("Desktop Layout (Full Width)") })
+            }
+        ) {
+            PreviewContent("Expanded Content (Full Width - Bleed)")
         }
     }
 }
