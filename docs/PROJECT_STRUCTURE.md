@@ -43,7 +43,7 @@
 ## 📁 UI Layer (`ui`)
 - ### 📁 Screens (`ui.screens`)
     - #### 📁 Home (`home`)
-        - `HomeScreen.kt`: Container-Composable des Hauptbildschirms; verwaltet den UI-State. Verwendet `rememberUpdatedState` für sichere Navigationstargets und führt Bild-Preloading via Coil aus.
+        - `HomeScreen.kt`: Container-Composable des Hauptbildschirms; verwaltet den UI-State. Verwendet `rememberUpdatedState` für sichere Navigationstargets, führt Bild-Preloading via Coil aus, und nutzt `ListDetailPaneScaffold` für ein adaptives Master-Detail-Layout.
         - `HomeState.kt`: Plain State Holder für die UI-Logik (Scroll-Zustand, Fokus).
         - `HomeActions.kt`: Wrapper für Benutzeraktionen zur Reduzierung von Prop-Drilling.
         - ##### 📁 Components (`home.components`)

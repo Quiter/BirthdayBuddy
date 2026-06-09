@@ -12,13 +12,15 @@ import androidx.compose.animation.scaleIn
 import androidx.compose.animation.scaleOut
 import androidx.compose.foundation.interaction.collectIsDraggedAsState
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.adaptive.ExperimentalMaterial3AdaptiveApi
+import androidx.compose.material3.adaptive.layout.AnimatedPane
+import androidx.compose.material3.adaptive.layout.ListDetailPaneScaffold
+import androidx.compose.material3.adaptive.navigation.rememberListDetailPaneScaffoldNavigator
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
 import androidx.compose.runtime.Composable
@@ -214,7 +216,7 @@ fun HomeScreen(
     )
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3AdaptiveApi::class)
 @Composable
 private fun HomeContent(
     uiState: HomeUiState,
@@ -304,76 +306,80 @@ private fun HomeContent(
                     )
                 }
             } else {
-                // Tablet/Desktop Layout: Master-Detail
+                // Tablet/Desktop Layout: ListDetailPaneScaffold aus Material 3 Adaptive
                 var selectedContactId by rememberSaveable { mutableStateOf<String?>(null) }
 
                 val selectedContact = remember(contacts, selectedContactId) {
                     contacts.find { it.id == selectedContactId } ?: contacts.firstOrNull()
                 }
 
-                // Synchonisierung der ID halten
+                // Synchronisierung der ID halten
                 LaunchedEffect(selectedContact) {
                     if (selectedContact != null && selectedContactId != selectedContact.id) {
                         selectedContactId = selectedContact.id
                     }
                 }
 
-                Row(modifier = Modifier.fillMaxSize()) {
-                    // Linke Spalte: Master-Liste (380.dp breit)
-                    Box(
-                        modifier = Modifier
-                            .width(380.dp)
-                            .fillMaxHeight()
-                    ) {
-                        BirthdayList(
-                            contacts = contacts,
-                            newlyAddedIdeaId = null, // Idee wird im rechten Paneel hinzugefügt
-                            listState = homeState.listState,
-                            selectedLabel = uiState.selectedLabel,
-                            searchQuery = uiState.searchQuery,
-                            actions = actions,
-                            coupleSuggestion = uiState.coupleSuggestion,
-                            selectedContactId = selectedContactId,
-                            onContactSelected = { contact ->
-                                selectedContactId = contact.id
-                            },
-                            onInteraction = {
-                                focusManager.clearFocus()
-                                keyboardController?.hide()
+                val navigator = rememberListDetailPaneScaffoldNavigator<Nothing>()
+
+                ListDetailPaneScaffold(
+                    directive = navigator.scaffoldDirective,
+                    value = navigator.scaffoldValue,
+                    listPane = {
+                        AnimatedPane {
+                            Box(modifier = Modifier.fillMaxSize()) {
+                                BirthdayList(
+                                    contacts = contacts,
+                                    newlyAddedIdeaId = null, // Idee wird im rechten Paneel hinzugefügt
+                                    listState = homeState.listState,
+                                    selectedLabel = uiState.selectedLabel,
+                                    searchQuery = uiState.searchQuery,
+                                    actions = actions,
+                                    coupleSuggestion = uiState.coupleSuggestion,
+                                    selectedContactId = selectedContactId,
+                                    onContactSelected = { contact ->
+                                        selectedContactId = contact.id
+                                    },
+                                    onInteraction = {
+                                        focusManager.clearFocus()
+                                        keyboardController?.hide()
+                                    }
+                                )
+
+                                FastScrollbar(
+                                    listState = homeState.listState,
+                                    contacts = contacts,
+                                    getLabel = { contact ->
+                                        if (uiState.selectedLabel == HomeViewModel.LABEL_NO_BIRTHDAY) {
+                                            contact.fullName.firstOrNull()?.uppercaseChar()
+                                                ?.toString()
+                                                ?: ""
+                                        } else {
+                                            contact.monthName
+                                        }
+                                    },
+                                    modifier = Modifier
+                                        .align(Alignment.CenterEnd)
+                                        .fillMaxHeight(),
+                                    isResettingFilter = uiState.isResettingFilter,
+                                    onSetFastScrolling = { homeState.onSetFastScrolling(it) },
+                                )
                             }
-                        )
-
-                        FastScrollbar(
-                            listState = homeState.listState,
-                            contacts = contacts,
-                            getLabel = { contact ->
-                                if (uiState.selectedLabel == HomeViewModel.LABEL_NO_BIRTHDAY) {
-                                    contact.fullName.firstOrNull()?.uppercaseChar()?.toString()
-                                        ?: ""
-                                } else {
-                                    contact.monthName
-                                }
-                            },
-                            modifier = Modifier
-                                .align(Alignment.CenterEnd)
-                                .fillMaxHeight(),
-                            isResettingFilter = uiState.isResettingFilter,
-                            onSetFastScrolling = { homeState.onSetFastScrolling(it) },
-                        )
+                        }
+                    },
+                    detailPane = {
+                        AnimatedPane {
+                            if (selectedContact != null) {
+                                BirthdayDetailPane(
+                                    contact = selectedContact,
+                                    newlyAddedIdeaId = uiState.newlyAddedIdeaId,
+                                    actions = actions,
+                                    modifier = Modifier.fillMaxSize()
+                                )
+                            }
+                        }
                     }
-
-                    // Rechte Spalte: Detail-Paneel
-                    if (selectedContact != null) {
-                        BirthdayDetailPane(
-                            contact = selectedContact,
-                            newlyAddedIdeaId = uiState.newlyAddedIdeaId,
-                            actions = actions,
-                            modifier = Modifier
-                                .weight(1f)
-                                .fillMaxHeight()
-                        )
-                    }
-                }
+                )
             }
         }
     }

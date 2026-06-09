@@ -221,6 +221,14 @@
     - **Dynamic Back Navigation:** Added a `showBackButton` parameter to all settings sub-screens (Notifications, Calendar, Labels, Backup, Sync, Other Events, About, Privacy Policy) to conditionally hide the top bar back button when they are embedded in the split layout.
     - **Scaffold Width Flex:** Added a `useAdaptiveWidth` flag to `AppResponsiveScaffold` to allow disabling the zentrierende max-width constraint for full-bleed screens.
 
+138. **Google Standard M3 Adaptive ListDetailPaneScaffold Integration:**
+    - **Adaptive Layout Upgrade:** Migrated the manual tablet/desktop `Row`-based Master-Detail split layout in `HomeScreen.kt` to the official Google standard `ListDetailPaneScaffold` from the `androidx.compose.material3.adaptive` library.
+    - **Smooth Transitions:** Wrapped pane contents in `AnimatedPane` to enable standard layout transitions and posture-aware scaling.
+    - **Hybrid Smartphone/Tablet UX:** Retained the inline tap-to-expand list layout on smartphones (`Compact` size class) to preserve existing UX design rules, while dynamically loading the dual-pane scaffold on larger screens (Tablet/Desktop).
+    - **Dependencies:** Added `androidx-compose-material3-adaptive`, `androidx-compose-material3-adaptive-layout`, and `androidx-compose-material3-adaptive-navigation` to `libs.versions.toml` and `app/build.gradle.kts`.
+    - **Compiler Warnings Cleanups:** Upgraded Compose plugin compiler version to `2.4.0` in `libs.versions.toml`. Cleaned up unused `AboutSection` composable in `AboutScreen.kt` and removed unused context/versionName variables from `SettingsFooter` inside `SettingsScreen.kt` to ensure warning-free compilation.
+
+
 
 
 
