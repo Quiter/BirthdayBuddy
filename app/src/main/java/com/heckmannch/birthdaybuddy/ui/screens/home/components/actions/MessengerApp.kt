@@ -22,6 +22,18 @@ enum class MessengerApp(
         labelResId = R.string.item_action_signal,
         iconResId = R.drawable.ic_signal
     ),
+    THREEMA(
+        packageName = "ch.threema.app",
+        brandColor = Color(0xFF05A65D),
+        labelResId = R.string.item_action_threema,
+        iconResId = R.drawable.ic_threema
+    ),
+    MESSENGER(
+        packageName = "com.facebook.orca",
+        brandColor = Color(0xFF0084FF),
+        labelResId = R.string.item_action_messenger,
+        iconResId = R.drawable.ic_messenger
+    ),
     TELEGRAM(
         packageName = "org.telegram.messenger",
         brandColor = Color(0xFF26A5E4),
@@ -34,23 +46,11 @@ enum class MessengerApp(
         labelResId = R.string.item_action_viber,
         iconResId = R.drawable.ic_viber
     ),
-    THREEMA(
-        packageName = "ch.threema.app",
-        brandColor = Color(0xFF05A65D),
-        labelResId = R.string.item_action_threema,
-        iconResId = R.drawable.ic_threema
-    ),
     GOOGLE_MEET(
         packageName = "com.google.android.apps.tachyon",
         brandColor = Color(0xFFFFEB3B),
         labelResId = R.string.item_action_google_meet,
         iconResId = R.drawable.ic_google_meet
-    ),
-    MESSENGER(
-        packageName = "com.facebook.orca",
-        brandColor = Color(0xFF0084FF),
-        labelResId = R.string.item_action_messenger,
-        iconResId = R.drawable.ic_messenger
     ),
     SKYPE(
         packageName = "com.skype.raider",
