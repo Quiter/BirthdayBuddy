@@ -300,24 +300,57 @@
     <string name="notif_title_tomorrow_anniversary">%1$s hat morgen Hochzeitstag!</string>
     <string name="notif_title_week_anniversary_age">In einer Woche ist der %2$d. Hochzeitstag von %1$s!</string>
     <string name="notif_title_week_anniversary">In einer Woche hat %1$s Hochzeitstag!</string>
-    <string name="notif_title_days_anniversary_age">In %1$d Tagen ist der %3$d. Hochzeitstag von %2$s!</string>
-    <string name="notif_title_days_anniversary">In %1$d Tagen hat %2$s Hochzeitstag!</string>
+    <plurals name="notif_title_days_anniversary_age">
+        <item quantity="one">In einem Tag ist der %3$d. Hochzeitstag von %2$s!</item>
+        <item quantity="other">In %1$d Tagen ist der %3$d. Hochzeitstag von %2$s!</item>
+    </plurals>
+    <plurals name="notif_title_days_anniversary">
+        <item quantity="one">In einem Tag hat %2$s Hochzeitstag!</item>
+        <item quantity="other">In %1$d Tagen hat %2$s Hochzeitstag!</item>
+    </plurals>
 
-    <string name="notif_title_today_anniversary_plural">Heute haben %d Personen Hochzeitstag!</string>
-    <string name="notif_title_tomorrow_anniversary_plural">Morgen haben %d Personen Hochzeitstag!</string>
-    <string name="notif_title_week_anniversary_plural">In einer Woche haben %d Personen Hochzeitstag!</string>
-    <string name="notif_title_days_anniversary_plural">In %1$d Tagen haben %2$d Personen Hochzeitstag!</string>
+    <plurals name="notif_title_today_anniversary_plural">
+        <item quantity="one">Heute hat eine Person Hochzeitstag!</item>
+        <item quantity="other">Heute haben %d Personen Hochzeitstag!</item>
+    </plurals>
+    <plurals name="notif_title_tomorrow_anniversary_plural">
+        <item quantity="one">Morgen hat eine Person Hochzeitstag!</item>
+        <item quantity="other">Morgen haben %d Personen Hochzeitstag!</item>
+    </plurals>
+    <plurals name="notif_title_week_anniversary_plural">
+        <item quantity="one">In einer Woche hat eine Person Hochzeitstag!</item>
+        <item quantity="other">In einer Woche haben %d Personen Hochzeitstag!</item>
+    </plurals>
+    <plurals name="notif_title_days_anniversary_plural">
+        <item quantity="one">In einem Tag haben %2$d Personen Hochzeitstag!</item>
+        <item quantity="other">In %1$d Tagen haben %2$d Personen Hochzeitstag!</item>
+    </plurals>
 
     <!-- Benachrichtigungen Namenstage -->
     <string name="notif_title_today_nameday">%1$s hat heute Namenstag!</string>
     <string name="notif_title_tomorrow_nameday">%1$s hat morgen Namenstag!</string>
     <string name="notif_title_week_nameday">%1$s hat in einer Woche Namenstag!</string>
-    <string name="notif_title_days_nameday">In %1$d Tagen hat %2$s Namenstag!</string>
+    <plurals name="notif_title_days_nameday">
+        <item quantity="one">In einem Tag hat %2$s Namenstag!</item>
+        <item quantity="other">In %1$d Tagen hat %2$s Namenstag!</item>
+    </plurals>
 
-    <string name="notif_title_today_nameday_plural">Heute haben %d Personen Namenstag!</string>
-    <string name="notif_title_tomorrow_nameday_plural">Morgen haben %d Personen Namenstag!</string>
-    <string name="notif_title_week_nameday_plural">In einer Woche haben %d Personen Namenstag!</string>
-    <string name="notif_title_days_nameday_plural">In %1$d Tagen haben %2$d Personen Namenstag!</string>
+    <plurals name="notif_title_today_nameday_plural">
+        <item quantity="one">Heute hat eine Person Namenstag!</item>
+        <item quantity="other">Heute haben %d Personen Namenstag!</item>
+    </plurals>
+    <plurals name="notif_title_tomorrow_nameday_plural">
+        <item quantity="one">Morgen hat eine Person Namenstag!</item>
+        <item quantity="other">Morgen haben %d Personen Namenstag!</item>
+    </plurals>
+    <plurals name="notif_title_week_nameday_plural">
+        <item quantity="one">In einer Woche hat eine Person Namenstag!</item>
+        <item quantity="other">In einer Woche haben %d Personen Namenstag!</item>
+    </plurals>
+    <plurals name="notif_title_days_nameday_plural">
+        <item quantity="one">In einem Tag haben %2$d Personen Namenstag!</item>
+        <item quantity="other">In %1$d Tagen haben %2$d Personen Namenstag!</item>
+    </plurals>
 
     <string name="notif_desc_anniversary">Alles Gute zum Hochzeitstag!</string>
     <string name="notif_desc_nameday">Alles Gute zum Namenstag!</string>

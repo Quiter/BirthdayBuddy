@@ -437,6 +437,10 @@ class HomeViewModel @Inject constructor(
         _searchFocusRequested.value = false
     }
 
+    fun consumeNewlyAddedIdeaId() {
+        _newlyAddedIdeaId.value = null
+    }
+
     fun linkAsCouple(lookupKey1: String, lookupKey2: String) = viewModelScope.launch {
         contactRepository.linkAsCouple(lookupKey1, lookupKey2)
     }

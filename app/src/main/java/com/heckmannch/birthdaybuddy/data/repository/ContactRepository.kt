@@ -150,7 +150,7 @@ class ContactRepository @Inject constructor(
         }
     }
 
-    suspend fun updateGiftIdeas(lookupKey: String, ideas: List<GiftIdea>) {
+    private suspend fun updateGiftIdeas(lookupKey: String, ideas: List<GiftIdea>) {
         withContext(Dispatchers.IO) {
             // 1. In der persistenten UserData-Tabelle speichern (für Backup)
             contactUserDataDao.upsertUserData(
@@ -235,12 +235,7 @@ class ContactRepository @Inject constructor(
                 contactDao.upsertContact(contact.copy(spouseLookupKey = lookupKey1))
             }
         }
-        widgetUpdater.updateWidget()
-        val allContactsImmediate = getAllContactsImmediate()
-        val currentSettings = appSettingsDao.getSettingsImmediate() ?: AppSettings()
-        if (currentSettings.calendarSyncEnabled) {
-            calendarSyncRepository.syncBirthdays(allContactsImmediate)
-        }
+        updateWidgetAndSyncCalendar()
     }
 
     suspend fun unlinkCouple(lookupKey: String) {
@@ -262,6 +257,10 @@ class ContactRepository @Inject constructor(
                 contactDao.upsertContact(it.copy(spouseLookupKey = null))
             }
         }
+        updateWidgetAndSyncCalendar()
+    }
+
+    private suspend fun updateWidgetAndSyncCalendar() {
         widgetUpdater.updateWidget()
         val allContactsImmediate = getAllContactsImmediate()
         val currentSettings = appSettingsDao.getSettingsImmediate() ?: AppSettings()

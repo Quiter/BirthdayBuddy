@@ -48,7 +48,7 @@ class CalendarSyncRepository @Inject constructor(
                 ) == PackageManager.PERMISSION_GRANTED
     }
 
-    suspend fun getOrCreateCalendar(type: CalendarType): Long? = withContext(Dispatchers.IO) {
+    private suspend fun getOrCreateCalendar(type: CalendarType): Long? = withContext(Dispatchers.IO) {
         val existingId = findCalendarIdByName(type.calendarName)
         if (existingId != null) {
             return@withContext existingId
@@ -108,7 +108,7 @@ class CalendarSyncRepository @Inject constructor(
         return null
     }
 
-    suspend fun cleanCalendars(): Unit = withContext(Dispatchers.IO) {
+    private suspend fun cleanCalendars(): Unit = withContext(Dispatchers.IO) {
         val activeNames = setOf(
             CalendarType.BIRTHDAY.calendarName,
             CalendarType.ANNIVERSARY.calendarName,

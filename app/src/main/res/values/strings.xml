@@ -300,24 +300,57 @@
     <string name="notif_title_tomorrow_anniversary">Tomorrow is %1$s\'s wedding anniversary!</string>
     <string name="notif_title_week_anniversary_age">In one week is %1$s\'s %2$d. wedding anniversary!</string>
     <string name="notif_title_week_anniversary">In one week is %1$s\'s wedding anniversary!</string>
-    <string name="notif_title_days_anniversary_age">In %1$d days is %2$s\'s %3$d. wedding anniversary!</string>
-    <string name="notif_title_days_anniversary">In %1$d days is %2$s\'s wedding anniversary!</string>
+    <plurals name="notif_title_days_anniversary_age">
+        <item quantity="one">In one day is %2$s\'s %3$d. wedding anniversary!</item>
+        <item quantity="other">In %1$d days is %2$s\'s %3$d. wedding anniversary!</item>
+    </plurals>
+    <plurals name="notif_title_days_anniversary">
+        <item quantity="one">In one day is %2$s\'s wedding anniversary!</item>
+        <item quantity="other">In %1$d days is %2$s\'s wedding anniversary!</item>
+    </plurals>
 
-    <string name="notif_title_today_anniversary_plural">Today are %d wedding anniversaries!</string>
-    <string name="notif_title_tomorrow_anniversary_plural">Tomorrow are %d wedding anniversaries!</string>
-    <string name="notif_title_week_anniversary_plural">In one week are %d wedding anniversaries!</string>
-    <string name="notif_title_days_anniversary_plural">In %1$d days are %2$d wedding anniversaries!</string>
+    <plurals name="notif_title_today_anniversary_plural">
+        <item quantity="one">Today is one wedding anniversary!</item>
+        <item quantity="other">Today are %d wedding anniversaries!</item>
+    </plurals>
+    <plurals name="notif_title_tomorrow_anniversary_plural">
+        <item quantity="one">Tomorrow is one wedding anniversary!</item>
+        <item quantity="other">Tomorrow are %d wedding anniversaries!</item>
+    </plurals>
+    <plurals name="notif_title_week_anniversary_plural">
+        <item quantity="one">In one week is one wedding anniversary!</item>
+        <item quantity="other">In one week are %d wedding anniversaries!</item>
+    </plurals>
+    <plurals name="notif_title_days_anniversary_plural">
+        <item quantity="one">In one day are %2$d wedding anniversaries!</item>
+        <item quantity="other">In %1$d days are %2$d wedding anniversaries!</item>
+    </plurals>
 
     <!-- Name Day Notifications -->
     <string name="notif_title_today_nameday">%1$s\'s name day is today!</string>
     <string name="notif_title_tomorrow_nameday">%1$s\'s name day is tomorrow!</string>
     <string name="notif_title_week_nameday">%1$s\'s name day is in one week!</string>
-    <string name="notif_title_days_nameday">In %1$d days is %2$s\'s name day!</string>
+    <plurals name="notif_title_days_nameday">
+        <item quantity="one">In one day is %2$s\'s name day!</item>
+        <item quantity="other">In %1$d days is %2$s\'s name day!</item>
+    </plurals>
 
-    <string name="notif_title_today_nameday_plural">Today are %d name days!</string>
-    <string name="notif_title_tomorrow_nameday_plural">Tomorrow are %d name days!</string>
-    <string name="notif_title_week_nameday_plural">In one week are %d name days!</string>
-    <string name="notif_title_days_nameday_plural">In %1$d days are %2$d name days!</string>
+    <plurals name="notif_title_today_nameday_plural">
+        <item quantity="one">Today is one name day!</item>
+        <item quantity="other">Today are %d name days!</item>
+    </plurals>
+    <plurals name="notif_title_tomorrow_nameday_plural">
+        <item quantity="one">Tomorrow is one name day!</item>
+        <item quantity="other">Tomorrow are %d name days!</item>
+    </plurals>
+    <plurals name="notif_title_week_nameday_plural">
+        <item quantity="one">In one week is one name day!</item>
+        <item quantity="other">In one week are %d name days!</item>
+    </plurals>
+    <plurals name="notif_title_days_nameday_plural">
+        <item quantity="one">In one day are %2$d name days!</item>
+        <item quantity="other">In %1$d days are %2$d name days!</item>
+    </plurals>
 
     <string name="notif_desc_anniversary">Happy wedding anniversary!</string>
     <string name="notif_desc_nameday">Happy name day!</string>

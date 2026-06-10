@@ -140,6 +140,13 @@ fun HomeScreen(
         }
     }
 
+    LaunchedEffect(uiState.newlyAddedIdeaId) {
+        if (uiState.newlyAddedIdeaId != null) {
+            delay(100.milliseconds) // Zeit für UI-Fokus-Anforderung lassen
+            viewModel.consumeNewlyAddedIdeaId()
+        }
+    }
+
     // --- Image Prefetching (UI Optimization) ---
     LaunchedEffect(uiState.contacts) {
         val contacts = uiState.contacts

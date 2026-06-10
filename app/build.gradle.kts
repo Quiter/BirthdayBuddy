@@ -52,6 +52,10 @@ android {
         compose = true
         buildConfig = true
     }
+    lint {
+        disable += "NewerVersionAvailable"
+        disable += "GradleDependency"
+    }
 }
 
 dependencies {

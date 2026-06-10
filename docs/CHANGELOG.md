@@ -236,12 +236,10 @@
     - **Resource Clean Up:** Removed unused colors from [colors.xml](file:///c:/Users/chris/AndroidStudioProjects/BirthdayBuddy/app/src/main/res/values/colors.xml) and obsolete string resources from both English [strings.xml](file:///c:/Users/chris/AndroidStudioProjects/BirthdayBuddy/app/src/main/res/values/strings.xml) and German [strings.xml](file:///c:/Users/chris/AndroidStudioProjects/BirthdayBuddy/app/src/main/res/values-de/strings.xml) to clean up compiler warnings and decrease package footprint.
     - **Legacy delay Warning:** Converted the legacy `delay(Long)` call to the modern `Duration` overload using `.milliseconds` in [FastScrollbar.kt](file:///c:/Users/chris/AndroidStudioProjects/BirthdayBuddy/app/src/main/java/com/heckmannch/birthdaybuddy/ui/screens/home/components/list/FastScrollbar.kt) to resolve compiler warnings.
 
-
-
-
-
-
-
-
-
-
+140. **Notification Localization (Plurals) & Code Cleanup:**
+    - **Notification Plurals:** Converted 11 static anniversary and nameday notification string resources to `<plurals>` in both [strings.xml](file:///c:/Users/chris/AndroidStudioProjects/BirthdayBuddy/app/src/main/res/values/strings.xml) and German [strings.xml](file:///c:/Users/chris/AndroidStudioProjects/BirthdayBuddy/app/src/main/res/values-de/strings.xml) (e.g., `notif_title_days_anniversary_age`, `notif_title_days_anniversary`, `notif_title_days_nameday`, and their plural counter-parts).
+    - **NotificationHelper Integration:** Refactored [NotificationHelper.kt](file:///c:/Users/chris/AndroidStudioProjects/BirthdayBuddy/app/src/main/java/com/heckmannch/birthdaybuddy/ui/screens/settings/notifications/components/NotificationHelper.kt) to load the new plural resources using `context.resources.getQuantityString(...)` with correct quantity bindings, completely resolving the 11 `PluralsCandidate` compiler warnings.
+    - **Gradle/Kotlin Lint Warnings Clean Up:** Suppressed the `NewerVersionAvailable` and `GradleDependency` lint warnings in [build.gradle.kts](file:///c:/Users/chris/AndroidStudioProjects/BirthdayBuddy/app/build.gradle.kts) to allow keeping Kotlin at the stable `2.3.21` version, as raising it to `2.4.0` would cause compatibility issues with the latest Dagger Hilt compiler version.
+    - **Encapsulation & Code Auditing:** Made internal-only repository methods private (`getOrCreateCalendar` and `cleanCalendars` in [CalendarSyncRepository.kt](file:///c:/Users/chris/AndroidStudioProjects/BirthdayBuddy/app/src/main/java/com/heckmannch/birthdaybuddy/data/repository/CalendarSyncRepository.kt), and `updateGiftIdeas` in [ContactRepository.kt](file:///c:/Users/chris/AndroidStudioProjects/BirthdayBuddy/app/src/main/java/com/heckmannch/birthdaybuddy/data/repository/ContactRepository.kt)).
+    - **DRY Refactoring:** Extracted duplicated widget updating and calendar syncing logic in `linkAsCouple` and `unlinkCouple` in [ContactRepository.kt](file:///c:/Users/chris/AndroidStudioProjects/BirthdayBuddy/app/src/main/java/com/heckmannch/birthdaybuddy/data/repository/ContactRepository.kt) into a single private helper function `updateWidgetAndSyncCalendar()`.
+    - **State Management:** Added `consumeNewlyAddedIdeaId()` to [HomeViewModel.kt](file:///c:/Users/chris/AndroidStudioProjects/BirthdayBuddy/app/src/main/java/com/heckmannch/birthdaybuddy/viewmodel/HomeViewModel.kt) to handle resetting newly added gift ideas.
