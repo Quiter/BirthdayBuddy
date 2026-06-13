@@ -381,4 +381,10 @@
     <string name="theme_accent_red">Red</string>
     <string name="theme_accent_orange">Orange</string>
     <string name="theme_accent_pink">Pink</string>
+    <string name="theme_accent_custom">Custom</string>
+    <string name="theme_accent_custom_dialog_title">Custom Accent Color</string>
+    <string name="theme_accent_custom_dialog_desc">Choose a preset or enter a hex color code:</string>
+    <string name="theme_accent_custom_dialog_save">Save</string>
+    <string name="theme_accent_custom_dialog_cancel">Cancel</string>
+    <string name="theme_accent_custom_invalid_hex">Invalid hex code (e.g. #FF5722)</string>
 </resources>

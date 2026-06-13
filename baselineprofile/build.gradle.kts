@@ -3,17 +3,13 @@ plugins {
     alias(libs.plugins.androidx.baselineprofile)
 }
 
-android {
+configure<com.android.build.api.dsl.TestExtension> {
     namespace = "com.heckmannch.birthdaybuddy.baselineprofile"
     compileSdk = 37
 
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
-    }
-
-    kotlin {
-        jvmToolchain(17)
     }
 
     defaultConfig {
@@ -24,6 +20,10 @@ android {
     }
 
     targetProjectPath = ":app"
+}
+
+kotlin {
+    jvmToolchain(17)
 }
 
 dependencies {

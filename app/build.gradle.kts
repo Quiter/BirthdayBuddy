@@ -7,7 +7,7 @@ plugins {
 
 apply(plugin = "androidx.baselineprofile")
 
-android {
+configure<com.android.build.api.dsl.ApplicationExtension> {
     namespace = "com.heckmannch.birthdaybuddy"
     compileSdk = 37
 
@@ -16,7 +16,7 @@ android {
         minSdk = 28
         targetSdk = 37
         versionCode = 34
-        versionName = "2.7.0"
+        versionName = "2.7.1"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
