@@ -264,3 +264,10 @@
     - **Automatisierte Erfassung:** Implementierung des `BaselineProfileGenerator` Tests mit 5 Sekunden Ruhezeit nach Launch zur sicheren Akkumulation und Extraktion von Profildaten auf dem Emulator.
     - **Ergebnis:** Erfolgreicher Generierungslauf (`BUILD SUCCESSFUL in 5m 3s`) und Erstellung der Baseline Profile (`baseline-prof.txt`) und Startup Profile (`startup-prof.txt`) im release/generated-Ordner der App.
 
+144. **Erweiterte Theme-Akzentfarben & Gradle-Bereinigung (Custom Accent Color & Gradle Cleanup):**
+    - **Custom-Hex-Code-Picker:** Einführung einer Option für eine benutzerdefinierte Akzentfarbe („Eigene“). Ein moderner Material 3 Dialog bietet 8 neue Farbvorlagen (Teal, Cyan, Indigo, Amber, Brown, Deep Orange, Blue Grey, Mint) sowie ein HEX-Eingabefeld mit Live-Vorschau und Regex-Validierung.
+    - **Laufzeit-Generierung (HSV-Palette):** Entwicklung eines Algorithmus zur dynamischen HSV-basierten Berechnung aller Material 3 Farb-Tokens (primary, primaryContainer, secondary, backgrounds, surfaces etc.) aus einer einzigen Quellfarbe für Light-, Dark- und AMOLED-Themes.
+    - **Warning Cleanups:** Behebung von 3 `parseColor` Warnungen durch Nutzung der KTX-Erweiterungsfunktion `String.toColorInt()`.
+    - **KTS DSL Migration:** Bereinigung von AGP 9.0+ Deprecation-Warnungen durch Ersetzung des veralteten impliziten `android { ... }` Blocks in `app/build.gradle.kts` und `baselineprofile/build.gradle.kts` mit modernen expliziten Schnittstellen: `configure<ApplicationExtension>` und `configure<TestExtension>`. Verschiebung des `kotlin` Toolchain-Konfigurationsblocks im Testmodul auf die Projekt-Ebene zur Auflösung von Typ-Receiver-Konflikten.
+
+
