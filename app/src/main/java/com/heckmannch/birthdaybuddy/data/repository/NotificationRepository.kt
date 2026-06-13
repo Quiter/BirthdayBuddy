@@ -49,7 +49,10 @@ class NotificationRepository @Inject constructor(
         otherEventsEnabled: Boolean? = null,
         birthdayCalendarColor: Int? = null,
         anniversaryCalendarColor: Int? = null,
-        nameDayCalendarColor: Int? = null
+        nameDayCalendarColor: Int? = null,
+        themeMode: String? = null,
+        themeAmoled: Boolean? = null,
+        themeAccent: String? = null
     ) {
         settingsMutex.withLock {
             val current = appSettingsDao.getSettingsImmediate() ?: AppSettings()
@@ -66,7 +69,10 @@ class NotificationRepository @Inject constructor(
                     birthdayCalendarColor = birthdayCalendarColor ?: current.birthdayCalendarColor,
                     anniversaryCalendarColor = anniversaryCalendarColor
                         ?: current.anniversaryCalendarColor,
-                    nameDayCalendarColor = nameDayCalendarColor ?: current.nameDayCalendarColor
+                    nameDayCalendarColor = nameDayCalendarColor ?: current.nameDayCalendarColor,
+                    themeMode = themeMode ?: current.themeMode,
+                    themeAmoled = themeAmoled ?: current.themeAmoled,
+                    themeAccent = themeAccent ?: current.themeAccent
                 )
             )
         }

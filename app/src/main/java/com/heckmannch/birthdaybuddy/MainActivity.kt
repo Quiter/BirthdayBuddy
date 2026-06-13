@@ -26,6 +26,11 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.Modifier
+import android.database.ContentObserver
+import android.os.Handler
+import android.os.Looper
+import android.provider.ContactsContract
+import androidx.compose.ui.platform.LocalContext
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.Lifecycle
@@ -50,6 +55,8 @@ import com.heckmannch.birthdaybuddy.ui.screens.settings.labels.LabelSettingsScre
 import com.heckmannch.birthdaybuddy.ui.screens.settings.notifications.NotificationSettingsScreen
 import com.heckmannch.birthdaybuddy.ui.screens.settings.otherevents.OtherEventsSettingsScreen
 import com.heckmannch.birthdaybuddy.ui.screens.settings.sync.SyncSettingsScreen
+import com.heckmannch.birthdaybuddy.ui.screens.settings.theme.ThemeSettingsScreen
+import com.heckmannch.birthdaybuddy.viewmodel.ThemeViewModel
 import com.heckmannch.birthdaybuddy.ui.theme.BirthdayBuddyTheme
 import com.heckmannch.birthdaybuddy.viewmodel.BackupViewModel
 import com.heckmannch.birthdaybuddy.viewmodel.CalendarViewModel
@@ -74,6 +81,7 @@ private object Routes {
     const val OTHER_EVENTS_SETTINGS = "other_events_settings"
     const val CALENDAR_SETTINGS = "calendar_settings"
     const val BACKUP_SETTINGS = "backup_settings"
+    const val THEME_SETTINGS = "theme_settings"
     const val SYNC_SETTINGS = "sync_settings"
     const val ABOUT = "about"
     const val PRIVACY_POLICY = "privacy_policy"
@@ -112,13 +120,18 @@ class MainActivity : ComponentActivity() {
             val homeViewModel: HomeViewModel = hiltViewModel()
             val onboardingViewModel: OnboardingViewModel = hiltViewModel()
             val onboardingCompleted by onboardingViewModel.onboardingCompleted.collectAsStateWithLifecycle()
+            val appSettings by notificationRepository.settings.collectAsStateWithLifecycle(initialValue = com.heckmannch.birthdaybuddy.data.local.AppSettings())
 
             // Splash Screen so lange anzeigen, bis wir wissen, wo es hingeht
             splashScreen.setKeepOnScreenCondition {
                 onboardingCompleted == null
             }
 
-            BirthdayBuddyTheme {
+            BirthdayBuddyTheme(
+                themeMode = appSettings.themeMode,
+                themeAmoled = appSettings.themeAmoled,
+                themeAccent = appSettings.themeAccent
+            ) {
                 CompositionLocalProvider(LocalWindowWidthSizeClass provides windowSizeClass.widthSizeClass) {
                     val navController = rememberNavController()
                     val currentIntent by activityIntent
@@ -136,6 +149,34 @@ class MainActivity : ComponentActivity() {
                         lifecycleOwner.lifecycle.addObserver(observer)
                         onDispose {
                             lifecycleOwner.lifecycle.removeObserver(observer)
+                        }
+                    }
+
+                    // Live-Sync bei Änderungen im System-Adressbuch (ContentObserver mit 1s Debounce)
+                    val context = LocalContext.current
+                    DisposableEffect(context) {
+                        val contentResolver = context.contentResolver
+                        val observer = object : ContentObserver(Handler(Looper.getMainLooper())) {
+                            private val handler = Handler(Looper.getMainLooper())
+                            private val syncRunnable = Runnable { homeViewModel.syncContacts() }
+
+                            override fun onChange(selfChange: Boolean) {
+                                super.onChange(selfChange)
+                                handler.removeCallbacks(syncRunnable)
+                                handler.postDelayed(syncRunnable, 1000) // 1 Sekunde Debounce
+                            }
+                        }
+                        try {
+                            contentResolver.registerContentObserver(
+                                ContactsContract.Contacts.CONTENT_URI,
+                                true,
+                                observer
+                            )
+                        } catch (_: SecurityException) {
+                            // Keine Berechtigung vorhanden
+                        }
+                        onDispose {
+                            contentResolver.unregisterContentObserver(observer)
                         }
                     }
 
@@ -247,6 +288,9 @@ class MainActivity : ComponentActivity() {
                     onNavigateToBackup = {
                         navController.navigate(Routes.BACKUP_SETTINGS)
                     },
+                    onNavigateToTheme = {
+                        navController.navigate(Routes.THEME_SETTINGS)
+                    },
                     onNavigateToSync = {
                         navController.navigate(Routes.SYNC_SETTINGS)
                     },
@@ -301,6 +345,15 @@ class MainActivity : ComponentActivity() {
                 BackupScreen(
                     windowWidthSizeClass = windowWidthSizeClass,
                     viewModel = backupViewModel
+                ) {
+                    navController.popBackStack()
+                }
+            }
+            composable(Routes.THEME_SETTINGS) {
+                val themeViewModel: ThemeViewModel = hiltViewModel()
+                ThemeSettingsScreen(
+                    windowWidthSizeClass = windowWidthSizeClass,
+                    viewModel = themeViewModel
                 ) {
                     navController.popBackStack()
                 }

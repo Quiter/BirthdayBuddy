@@ -2,7 +2,6 @@ package com.heckmannch.birthdaybuddy.ui.screens.settings.notifications.component
 
 import android.content.Context
 import androidx.hilt.work.HiltWorker
-import androidx.work.Constraints
 import androidx.work.CoroutineWorker
 import androidx.work.ExistingWorkPolicy
 import androidx.work.OneTimeWorkRequestBuilder
@@ -37,6 +36,9 @@ class NotificationWorker @AssistedInject constructor(
 
         val rules = notificationRepository.getAllRulesImmediate()
         if (rules.isEmpty()) return Result.success()
+
+        // Sync contacts before evaluating rules to make sure we work with the latest data
+        contactRepository.syncContacts()
 
         val now = LocalDateTime.now()
         val currentLocalTime = now.toLocalTime().withSecond(0).withNano(0)
@@ -221,10 +223,6 @@ class NotificationWorker @AssistedInject constructor(
 
             val request = OneTimeWorkRequestBuilder<NotificationWorker>()
                 .setInitialDelay(delay, TimeUnit.MILLISECONDS)
-                .setConstraints(
-                    Constraints.Builder().setRequiresBatteryNotLow(requiresBatteryNotLow = true)
-                        .build()
-                )
                 .addTag("birthday_notification")
                 .build()
 

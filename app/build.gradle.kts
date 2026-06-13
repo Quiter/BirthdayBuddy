@@ -5,6 +5,8 @@ plugins {
     alias(libs.plugins.hilt)
 }
 
+apply(plugin = "androidx.baselineprofile")
+
 android {
     namespace = "com.heckmannch.birthdaybuddy"
     compileSdk = 37
@@ -14,7 +16,7 @@ android {
         minSdk = 28
         targetSdk = 37
         versionCode = 34
-        versionName = "2.6.12"
+        versionName = "2.7.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -59,6 +61,10 @@ android {
 }
 
 dependencies {
+    // Baseline Profile
+    add("baselineProfile", project(":baselineprofile"))
+    implementation(libs.androidx.profileinstaller)
+
     implementation(platform(libs.androidx.compose.bom))
     implementation(libs.androidx.activity.compose)
     implementation(libs.androidx.compose.material3)

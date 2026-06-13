@@ -1,7 +1,7 @@
 # Project Structure: BirthdayBuddy
 
 ## 📁 Root
-- `MainActivity.kt`: Haupteinstiegspunkt der App. Regelt das Navigations-Hosting (NavHost), das globale Intent-Handling (z.B. Widget-Klicks) über Compose-seitiges `activityIntent` State-Handling, und automatische Filter-Resets bei Inaktivität über einen batterieschonenden `LifecycleEventObserver`.
+- `MainActivity.kt`: Haupteinstiegspunkt der App. Regelt das Navigations-Hosting (NavHost), das globale Intent-Handling (z.B. Widget-Klicks) über Compose-seitiges `activityIntent` State-Handling, automatische Filter-Resets bei Inaktivität über einen batterieschonenden `LifecycleEventObserver`, und die Echtzeit-Synchronisation bei Änderungen im System-Adressbuch via `ContentObserver`.
 - `BirthdayBuddyApplication.kt`: Hilt-Application Klasse zur Initialisierung der Dependency Injection und Konfiguration des WorkManagers.
 - `PROJECT_STATUS.md`: Dokumentation des aktuellen Entwicklungsstands, der Architektur-Constraints und Meilensteine.
 - `PROJECT_STRUCTURE.md`: Diese Datei (Struktur-Dokumentation des Projekts).
@@ -16,7 +16,7 @@
 - ### 📁 Local (`data.local`)
     - `AppDatabase.kt`: Room-Datenbank für flüchtige/große Daten (Kontakte-Cache, Benachrichtigungs-Nachverfolgung).
     - `SettingsDatabase.kt`: Room-Datenbank für persistente Benutzer-Einstellungen (Regeln, Labels, GiftIdeas-Backup).
-    - `AppSettings.kt`: Entity für globale App-Konfigurationen (Benachrichtigungs-Status, letzter Sync-Zeitpunkt, ignorierte Ehepaar-Kopplungsvorschläge).
+    - `AppSettings.kt`: Entity für globale App-Konfigurationen (Benachrichtigungs-Status, letzter Sync-Zeitpunkt, ignorierte Ehepaar-Kopplungsvorschläge, Theme-Modus, AMOLED-Option, Akzentfarbe).
     - `AppSettingsDao.kt`: Datenzugriffsobjekt für die App-Einstellungen.
     - `Contact.kt`: Haupt-Entity für den System-Kontakt-Cache (inkl. `spouseLookupKey` zur Verknüpfung verheirateter Ehepartner).
     - `ContactDao.kt`: DAO für Kontakte mit Unterstützung für Batch-Operationen und atomare Refreshes.
@@ -89,6 +89,7 @@
             - `NotificationActionReceiver.kt`: Verarbeitet Klicks auf Benachrichtigungs-Buttons.
             - `NotificationHelper.kt`: Hilfsklasse für den System-Notification-Manager.
         - `backup/BackupScreen.kt`: Screen für den Import/Export von Geschenkideen.
+        - `theme/ThemeSettingsScreen.kt`: Einstellungsbildschirm zur manuellen Auswahl des Designs (Hell/Dunkel/System), AMOLED Black-Option und Grid-Auswahl für Akzentfarben.
         - `settings/otherevents/OtherEventsSettingsScreen.kt`: Screen zur Aktivierung und Konfiguration des Features für weitere Ereignisse (Hochzeitstage und Namenstage).
         - `about/AboutScreen.kt`: Anzeige von App-Informationen und Entwickler-Details.
         - `about/PrivacyPolicyScreen.kt`: Anzeige der Datenschutzerklärung.
@@ -102,7 +103,7 @@
     - `LottieIllustration.kt`: Wiederverwendbare Komponente für Lottie-Animationen.
     - `ResponsiveLayout.kt`: Beinhaltet `AdaptiveContentContainer`, `AppResponsiveScaffold` und den globalen `LocalWindowWidthSizeClass` CompositionLocal-Provider zur flexiblen, abfragefreien Größenklassen-Weitergabe (Handy, Tablet, Chromebook).
 - ### 📁 Theme (`ui.theme`)
-    - `Theme.kt`, `Color.kt`, `Type.kt`: Design-System Definitionen.
+    - `Theme.kt`, `Color.kt`, `Type.kt`: Design-System Definitionen, custom Farbschemata für Akzentfarben und AMOLED-Erweiterung.
 
 ## 📁 ViewModel (`viewmodel`)
 - `HomeViewModel.kt`: Zuständig für die Kontaktliste, Suche, Filterung und den Home-Screen State.
@@ -111,6 +112,7 @@
 - `CalendarViewModel.kt`: ViewModel für die Kalender-Einstellungen; steuert die Synchronisation und die Entfernung des Kalenders aus der App.
 - `LabelViewModel.kt`: Spezialer Logik für die Label-Verwaltung und Konfiguration.
 - `BackupViewModel.kt`: Logik für den Import und Export von Geschenkideen.
+- `ThemeViewModel.kt`: Hält und aktualisiert den UI-Zustand für das App-Design.
 
 ## 📁 Utilities (`util`)
 - `DateUtils.kt`: Robuste Erweiterungsfunktionen für LocalDate.
@@ -142,7 +144,7 @@
 - `MainDispatcherRule.kt`: JUnit-Rule zur Steuerung von Coroutine-Dispatchern in Tests.
 - `data/local/ConvertersTest.kt`: Tests für TypeConverter.
 - `data/local/MigrationTest.kt`: Automatisierte Datenbank-Migrationstests (V1 bis aktuell).
-- `data/local/SettingsMigrationTest.kt`: Automatisierte Datenbank-Migrationstests für die Einstellungen (V2 bis V3).
+- `data/local/SettingsMigrationTest.kt`: Automatisierte Datenbank-Migrationstests für die Einstellungen (V2 bis V6).
 - `data/mapper/ContactMapperTest.kt`: Tests für die Transformation in UI-Modelle.
 - `data/repository/NotificationRepositoryTest.kt`: Integrationstests für das Repository.
 - `viewmodel/HomeViewModelSearchTest.kt`: Tests der Suchlogik im HomeViewModel.

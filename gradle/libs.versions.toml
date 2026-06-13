@@ -25,6 +25,7 @@ json = "20260522"
 lottie = "6.7.1"
 kotlinxSerialization = "1.11.0"
 androidxTestRules = "1.7.0"
+baselineprofile = "1.4.1"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -76,10 +77,15 @@ mockito-android = { group = "org.mockito", name = "mockito-android", version.ref
 mockito-kotlin = { group = "org.mockito.kotlin", name = "mockito-kotlin", version.ref = "mockitoKotlin" }
 json = { group = "org.json", name = "json", version.ref = "json" }
 lottie-compose = { group = "com.airbnb.android", name = "lottie-compose", version.ref = "lottie" }
+androidx-profileinstaller = { group = "androidx.profileinstaller", name = "profileinstaller", version = "1.4.1" }
+benchmark-macro-junit4 = { group = "androidx.benchmark", name = "benchmark-macro-junit4", version.ref = "baselineprofile" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
+kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
 kotlin-compose = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
 ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
 hilt = { id = "com.google.dagger.hilt.android", version.ref = "hilt" }
+androidx-baselineprofile = { id = "androidx.baselineprofile", version.ref = "baselineprofile" }
+android-test = { id = "com.android.test", version.ref = "agp" }
 

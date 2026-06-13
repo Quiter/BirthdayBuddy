@@ -54,18 +54,22 @@ import com.heckmannch.birthdaybuddy.ui.screens.settings.labels.LabelSettingsScre
 import com.heckmannch.birthdaybuddy.ui.screens.settings.notifications.NotificationSettingsScreen
 import com.heckmannch.birthdaybuddy.ui.screens.settings.otherevents.OtherEventsSettingsScreen
 import com.heckmannch.birthdaybuddy.ui.screens.settings.sync.SyncSettingsScreen
+import com.heckmannch.birthdaybuddy.ui.screens.settings.theme.ThemeSettingsScreen
 import com.heckmannch.birthdaybuddy.ui.theme.BirthdayBuddyTheme
 import com.heckmannch.birthdaybuddy.viewmodel.BackupViewModel
 import com.heckmannch.birthdaybuddy.viewmodel.CalendarViewModel
 import com.heckmannch.birthdaybuddy.viewmodel.HomeViewModel
 import com.heckmannch.birthdaybuddy.viewmodel.LabelViewModel
 import com.heckmannch.birthdaybuddy.viewmodel.NotificationViewModel
+import com.heckmannch.birthdaybuddy.viewmodel.ThemeViewModel
+import androidx.compose.material.icons.filled.Palette
 
 enum class SettingsTab {
     NOTIFICATIONS,
     CALENDAR,
     LABELS,
     BACKUP,
+    THEME,
     SYNC,
     OTHER_EVENTS,
     ABOUT,
@@ -80,6 +84,7 @@ fun SettingsScreen(
     onNavigateToNotifications: () -> Unit,
     onNavigateToCalendar: () -> Unit,
     onNavigateToBackup: () -> Unit,
+    onNavigateToTheme: () -> Unit,
     onNavigateToSync: () -> Unit,
     onNavigateToAbout: () -> Unit,
     onNavigateToOtherEvents: () -> Unit,
@@ -93,6 +98,7 @@ fun SettingsScreen(
         onNavigateToNotifications = onNavigateToNotifications,
         onNavigateToCalendar = onNavigateToCalendar,
         onNavigateToBackup = onNavigateToBackup,
+        onNavigateToTheme = onNavigateToTheme,
         onNavigateToAbout = onNavigateToAbout,
         onNavigateToOtherEvents = onNavigateToOtherEvents,
         onNavigateBack = onNavigateBack,
@@ -109,6 +115,7 @@ private fun SettingsContent(
     onNavigateToNotifications: () -> Unit,
     onNavigateToCalendar: () -> Unit,
     onNavigateToBackup: () -> Unit,
+    onNavigateToTheme: () -> Unit,
     onNavigateToAbout: () -> Unit,
     onNavigateToOtherEvents: () -> Unit,
     onNavigateBack: () -> Unit,
@@ -200,6 +207,20 @@ private fun SettingsContent(
 
                     item {
                         ListItem(
+                            headlineContent = { Text(stringResource(R.string.settings_theme_title)) },
+                            supportingContent = { Text(stringResource(R.string.settings_theme_desc)) },
+                            leadingContent = {
+                                Icon(
+                                    Icons.Default.Palette,
+                                    contentDescription = null
+                                )
+                            },
+                            modifier = Modifier.clickable { onNavigateToTheme() }
+                        )
+                    }
+
+                    item {
+                        ListItem(
                             headlineContent = { Text(stringResource(R.string.settings_sync_title)) },
                             supportingContent = { Text(stringResource(R.string.settings_sync_desc)) },
                             leadingContent = {
@@ -251,6 +272,7 @@ private fun SettingsContent(
         val calendarViewModel: CalendarViewModel = hiltViewModel()
         val labelViewModel: LabelViewModel = hiltViewModel()
         val backupViewModel: BackupViewModel = hiltViewModel()
+        val themeViewModel: ThemeViewModel = hiltViewModel()
 
         AppResponsiveScaffold(
             windowWidthSizeClass = windowWidthSizeClass,
@@ -342,6 +364,21 @@ private fun SettingsContent(
                                     .fillMaxWidth()
                                     .background(if (isSelected) MaterialTheme.colorScheme.primaryContainer else Color.Unspecified)
                                     .clickable { activeTab = SettingsTab.BACKUP }
+                            )
+                        }
+
+                        item {
+                            val isSelected = activeTab == SettingsTab.THEME
+                            ListItem(
+                                headlineContent = { Text(stringResource(R.string.settings_theme_title)) },
+                                supportingContent = { Text(stringResource(R.string.settings_theme_desc)) },
+                                leadingContent = {
+                                    Icon(Icons.Default.Palette, contentDescription = null)
+                                },
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .background(if (isSelected) MaterialTheme.colorScheme.primaryContainer else Color.Unspecified)
+                                    .clickable { activeTab = SettingsTab.THEME }
                             )
                         }
 
@@ -446,6 +483,15 @@ private fun SettingsContent(
                             )
                         }
 
+                        SettingsTab.THEME -> {
+                            ThemeSettingsScreen(
+                                windowWidthSizeClass = windowWidthSizeClass,
+                                viewModel = themeViewModel,
+                                showBackButton = false,
+                                onNavigateBack = {}
+                            )
+                        }
+
                         SettingsTab.SYNC -> {
                             if (homeViewModel != null) {
                                 SyncSettingsScreen(
@@ -516,6 +562,7 @@ private fun SettingsPreview() {
             onNavigateToNotifications = {},
             onNavigateToCalendar = {},
             onNavigateToBackup = {},
+            onNavigateToTheme = {},
             onNavigateToAbout = {},
             onNavigateToOtherEvents = {},
             onNavigateBack = {}

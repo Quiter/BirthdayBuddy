@@ -24,3 +24,4 @@ dependencyResolutionManagement {
 
 rootProject.name = "BirthdayBuddy"
 include(":app")
+include(":baselineprofile")

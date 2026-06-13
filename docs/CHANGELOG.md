@@ -243,3 +243,24 @@
     - **Encapsulation & Code Auditing:** Made internal-only repository methods private (`getOrCreateCalendar` and `cleanCalendars` in [CalendarSyncRepository.kt](file:///c:/Users/chris/AndroidStudioProjects/BirthdayBuddy/app/src/main/java/com/heckmannch/birthdaybuddy/data/repository/CalendarSyncRepository.kt), and `updateGiftIdeas` in [ContactRepository.kt](file:///c:/Users/chris/AndroidStudioProjects/BirthdayBuddy/app/src/main/java/com/heckmannch/birthdaybuddy/data/repository/ContactRepository.kt)).
     - **DRY Refactoring:** Extracted duplicated widget updating and calendar syncing logic in `linkAsCouple` and `unlinkCouple` in [ContactRepository.kt](file:///c:/Users/chris/AndroidStudioProjects/BirthdayBuddy/app/src/main/java/com/heckmannch/birthdaybuddy/data/repository/ContactRepository.kt) into a single private helper function `updateWidgetAndSyncCalendar()`.
     - **State Management:** Added `consumeNewlyAddedIdeaId()` to [HomeViewModel.kt](file:///c:/Users/chris/AndroidStudioProjects/BirthdayBuddy/app/src/main/java/com/heckmannch/birthdaybuddy/viewmodel/HomeViewModel.kt) to handle resetting newly added gift ideas.
+
+141. **Zuverlässigkeit & Synchronisation (Reliability & Sync):**
+    - **Hintergrund-Synchronisation:** Integration von `contactRepository.syncContacts()` in `NotificationWorker.doWork()`, damit der Room-Cache vor jeder Benachrichtigungsprüfung im Hintergrund aktualisiert wird.
+    - **Akku-Unabhängigkeit:** Entfernung der `setRequiresBatteryNotLow(true)` Einschränkung für den `NotificationWorker`, um pünktliche Benachrichtigungen auch im Energiesparmodus oder bei geringem Ladestand sicherzustellen.
+    - **Live-Vordergrund-Synchronisation:** Registrierung eines debouncten `ContentObserver`s auf Systemkontakte in `MainActivity.kt` via Compose `DisposableEffect`. Die App aktualisiert den lokalen Cache nun in Echtzeit, sobald der Nutzer aus der Kontakte-App zurückkehrt oder dort Änderungen vorgenommen werden.
+
+142. **Manuelle Theme-Auswahl & Akzentfarben (Manual Theme Settings):**
+    - **Theme-Modus:** Integration von Optionen für Hell, Dunkel und Systemstandard.
+    - **AMOLED Black:** Option für reines Schwarz (`Color.Black`) auf OLED-Displays mit angepassten, abgedunkelten Container-Tokens, um Konturen sichtbar zu halten.
+    - **Akzentfarben-Grid:** Grid-Auswahl mit 6 Akzentfarben (Lila, Blau, Grün, Rot, Orange, Pink) sowie Dynamic Color (Material You) Unterstützung ab Android 12+.
+    - **Navigation & Layout:** Platzierung des neuen „Design“-Menüpunkts exakt zwischen *Daten sichern* und *Kontakte synchronisieren* in der mobilen Liste und im Master-Detail-Tabellen-Layout.
+    - **Lokalisierung:** Bereitstellung vollständiger Übersetzungen in Englisch und Deutsch.
+    - **Datenbank & Migration V5->V6:** Schemaerweiterung von `AppSettings` und KSP-Schema-Export, abgesichert durch automatisierten Migrationstest (`migrate5To6` in `SettingsMigrationTest.kt`).
+
+143. **Baseline Profiles Integration & Performance-Optimierung (Baseline Profiles):**
+    - **Setup Modul:** Hinzufügen des dedizierten Testmoduls `:baselineprofile` zur Erfassung und Bereitstellung von Vorkompilierungsinformationen.
+    - **Abhängigkeiten & Plugins:** Einbindung der `androidx.baselineprofile` Plugins (Version 1.4.1) und `androidx.profileinstaller` zur Laufzeitintegration.
+    - **AGP 9.2.1 Kompatibilität:** Härtung des Builds mit `android.newDsl=false` in `gradle.properties` zur Re-Aktivierung der Legacy-Variant-API, um den Fehler `Module :app is not a supported android module` zu umgehen. Entfernung veralteter expliziter Kotlin-Plugins im Testmodul gemäß AGP 9.0 Standard.
+    - **Automatisierte Erfassung:** Implementierung des `BaselineProfileGenerator` Tests mit 5 Sekunden Ruhezeit nach Launch zur sicheren Akkumulation und Extraktion von Profildaten auf dem Emulator.
+    - **Ergebnis:** Erfolgreicher Generierungslauf (`BUILD SUCCESSFUL in 5m 3s`) und Erstellung der Baseline Profile (`baseline-prof.txt`) und Startup Profile (`startup-prof.txt`) im release/generated-Ordner der App.
+
