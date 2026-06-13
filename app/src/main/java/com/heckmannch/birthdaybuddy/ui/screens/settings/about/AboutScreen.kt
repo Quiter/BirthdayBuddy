@@ -177,7 +177,6 @@ fun AboutScreen(
 }
 
 
-
 @Preview(showBackground = true)
 @Composable
 private fun AboutPreview() {

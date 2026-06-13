@@ -10,8 +10,8 @@ import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.graphics.luminance
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
 import androidx.core.graphics.toColorInt
 
@@ -38,45 +38,55 @@ val ColorScheme.amoled: ColorScheme
         surfaceContainerHighest = Color(0xFF222222),
     )
 
-private fun getDynamicCustomColorScheme(seedColor: Color, darkTheme: Boolean, amoled: Boolean): ColorScheme {
+private fun getDynamicCustomColorScheme(
+    seedColor: Color,
+    darkTheme: Boolean,
+    amoled: Boolean
+): ColorScheme {
     val hsv = FloatArray(3)
     android.graphics.Color.colorToHSV(seedColor.toArgb(), hsv)
-    
+
     val h = hsv[0]
     val s = hsv[1]
     val v = hsv[2]
-    
+
     fun fromHsv(hue: Float, sat: Float, value: Float): Color {
-        val calculatedArgb = android.graphics.Color.HSVToColor(floatArrayOf(hue, sat.coerceIn(0f, 1f), value.coerceIn(0f, 1f)))
+        val calculatedArgb = android.graphics.Color.HSVToColor(
+            floatArrayOf(
+                hue,
+                sat.coerceIn(0f, 1f),
+                value.coerceIn(0f, 1f)
+            )
+        )
         return Color(calculatedArgb)
     }
-    
+
     val baseScheme = if (darkTheme) {
         val primary = fromHsv(h, s * 0.45f, 0.90f)
         val onPrimary = if (primary.luminance() > 0.5f) Color.Black else Color.White
         val primaryContainer = fromHsv(h, s.coerceAtLeast(0.7f), 0.35f)
         val onPrimaryContainer = fromHsv(h, s * 0.3f, 0.95f)
-        
+
         val secondary = fromHsv(h, s * 0.25f, 0.75f)
         val onSecondary = if (secondary.luminance() > 0.5f) Color.Black else Color.White
         val secondaryContainer = fromHsv(h, s * 0.35f, 0.25f)
         val onSecondaryContainer = fromHsv(h, s * 0.25f, 0.90f)
-        
+
         val tertiary = fromHsv((h + 60f) % 360f, s * 0.35f, 0.75f)
         val onTertiary = if (tertiary.luminance() > 0.5f) Color.Black else Color.White
         val tertiaryContainer = fromHsv((h + 60f) % 360f, s * 0.4f, 0.25f)
         val onTertiaryContainer = fromHsv((h + 60f) % 360f, s * 0.25f, 0.90f)
-        
+
         val background = fromHsv(h, s * 0.12f, 0.08f)
         val onBackground = Color(0xFFE6E1E5)
-        
+
         val surface = background
         val onSurface = onBackground
         val surfaceVariant = fromHsv(h, s * 0.18f, 0.16f)
         val onSurfaceVariant = fromHsv(h, s * 0.25f, 0.85f)
-        
+
         val outline = fromHsv(h, s * 0.2f, 0.55f)
-        
+
         darkColorScheme(
             primary = primary,
             onPrimary = onPrimary,
@@ -103,27 +113,27 @@ private fun getDynamicCustomColorScheme(seedColor: Color, darkTheme: Boolean, am
         val onPrimary = if (primary.luminance() > 0.5f) Color.Black else Color.White
         val primaryContainer = fromHsv(h, s * 0.25f, 0.94f)
         val onPrimaryContainer = fromHsv(h, s.coerceAtLeast(0.75f), 0.25f)
-        
+
         val secondary = fromHsv(h, s * 0.35f, v * 0.75f)
         val onSecondary = if (secondary.luminance() > 0.5f) Color.Black else Color.White
         val secondaryContainer = fromHsv(h, s * 0.12f, 0.95f)
         val onSecondaryContainer = fromHsv(h, s * 0.7f, 0.25f)
-        
+
         val tertiary = fromHsv((h + 60f) % 360f, s * 0.4f, v * 0.75f)
         val onTertiary = if (tertiary.luminance() > 0.5f) Color.Black else Color.White
         val tertiaryContainer = fromHsv((h + 60f) % 360f, s * 0.15f, 0.95f)
         val onTertiaryContainer = fromHsv((h + 60f) % 360f, s * 0.7f, 0.25f)
-        
+
         val background = fromHsv(h, s * 0.04f, 0.99f)
         val onBackground = Color(0xFF1C1B1F)
-        
+
         val surface = background
         val onSurface = onBackground
         val surfaceVariant = fromHsv(h, s * 0.08f, 0.90f)
         val onSurfaceVariant = fromHsv(h, s * 0.35f, 0.25f)
-        
+
         val outline = fromHsv(h, s * 0.25f, 0.45f)
-        
+
         lightColorScheme(
             primary = primary,
             onPrimary = onPrimary,
@@ -146,7 +156,7 @@ private fun getDynamicCustomColorScheme(seedColor: Color, darkTheme: Boolean, am
             outline = outline
         )
     }
-    
+
     return if (darkTheme && amoled) baseScheme.amoled else baseScheme
 }
 
@@ -168,6 +178,7 @@ private fun getCustomColorScheme(accent: String, darkTheme: Boolean, amoled: Boo
                 background = Color(0xFF111318),
                 surface = Color(0xFF111318)
             )
+
             "GREEN" -> darkColorScheme(
                 primary = Color(0xFF81C784),
                 secondary = Color(0xFFBCCBB0),
@@ -175,6 +186,7 @@ private fun getCustomColorScheme(accent: String, darkTheme: Boolean, amoled: Boo
                 background = Color(0xFF101410),
                 surface = Color(0xFF101410)
             )
+
             "RED" -> darkColorScheme(
                 primary = Color(0xFFFFB4AB),
                 secondary = Color(0xFFE7BDB8),
@@ -182,6 +194,7 @@ private fun getCustomColorScheme(accent: String, darkTheme: Boolean, amoled: Boo
                 background = Color(0xFF201A19),
                 surface = Color(0xFF201A19)
             )
+
             "ORANGE" -> darkColorScheme(
                 primary = Color(0xFFFFB74D),
                 secondary = Color(0xFFE4C5A1),
@@ -189,6 +202,7 @@ private fun getCustomColorScheme(accent: String, darkTheme: Boolean, amoled: Boo
                 background = Color(0xFF1D1B16),
                 surface = Color(0xFF1D1B16)
             )
+
             "PINK" -> darkColorScheme(
                 primary = Color(0xFFF48FB1),
                 secondary = Color(0xFFECC1CE),
@@ -196,6 +210,7 @@ private fun getCustomColorScheme(accent: String, darkTheme: Boolean, amoled: Boo
                 background = Color(0xFF1E1A1B),
                 surface = Color(0xFF1E1A1B)
             )
+
             else -> DarkColorScheme // Purple/Default
         }
     } else {
@@ -207,6 +222,7 @@ private fun getCustomColorScheme(accent: String, darkTheme: Boolean, amoled: Boo
                 background = Color(0xFFF9F9FF),
                 surface = Color(0xFFF9F9FF)
             )
+
             "GREEN" -> lightColorScheme(
                 primary = Color(0xFF388E3C),
                 secondary = Color(0xFF52634F),
@@ -214,6 +230,7 @@ private fun getCustomColorScheme(accent: String, darkTheme: Boolean, amoled: Boo
                 background = Color(0xFFF6FAF3),
                 surface = Color(0xFFF6FAF3)
             )
+
             "RED" -> lightColorScheme(
                 primary = Color(0xFFBA1A1A),
                 secondary = Color(0xFF775652),
@@ -221,6 +238,7 @@ private fun getCustomColorScheme(accent: String, darkTheme: Boolean, amoled: Boo
                 background = Color(0xFFFFF8F7),
                 surface = Color(0xFFFFF8F7)
             )
+
             "ORANGE" -> lightColorScheme(
                 primary = Color(0xFFF57C00),
                 secondary = Color(0xFF6E5D4B),
@@ -228,6 +246,7 @@ private fun getCustomColorScheme(accent: String, darkTheme: Boolean, amoled: Boo
                 background = Color(0xFFFFFBFF),
                 surface = Color(0xFFFFFBFF)
             )
+
             "PINK" -> lightColorScheme(
                 primary = Color(0xFFC2185B),
                 secondary = Color(0xFF74565F),
@@ -235,10 +254,11 @@ private fun getCustomColorScheme(accent: String, darkTheme: Boolean, amoled: Boo
                 background = Color(0xFFFFF8F8),
                 surface = Color(0xFFFFF8F8)
             )
+
             else -> LightColorScheme // Purple/Default
         }
     }
-    
+
     return if (darkTheme && amoled) baseScheme.amoled else baseScheme
 }
 
@@ -260,9 +280,11 @@ fun BirthdayBuddyTheme(
     val colorScheme = when {
         dynamicColor -> {
             val context = LocalContext.current
-            val baseScheme = if (darkTheme) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
+            val baseScheme =
+                if (darkTheme) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
             if (darkTheme && themeAmoled) baseScheme.amoled else baseScheme
         }
+
         else -> {
             getCustomColorScheme(accent = themeAccent, darkTheme = darkTheme, amoled = themeAmoled)
         }

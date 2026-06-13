@@ -1,7 +1,11 @@
 package com.heckmannch.birthdaybuddy
 
 import android.content.Intent
+import android.database.ContentObserver
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
+import android.provider.ContactsContract
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -26,10 +30,6 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.Modifier
-import android.database.ContentObserver
-import android.os.Handler
-import android.os.Looper
-import android.provider.ContactsContract
 import androidx.compose.ui.platform.LocalContext
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
@@ -56,7 +56,6 @@ import com.heckmannch.birthdaybuddy.ui.screens.settings.notifications.Notificati
 import com.heckmannch.birthdaybuddy.ui.screens.settings.otherevents.OtherEventsSettingsScreen
 import com.heckmannch.birthdaybuddy.ui.screens.settings.sync.SyncSettingsScreen
 import com.heckmannch.birthdaybuddy.ui.screens.settings.theme.ThemeSettingsScreen
-import com.heckmannch.birthdaybuddy.viewmodel.ThemeViewModel
 import com.heckmannch.birthdaybuddy.ui.theme.BirthdayBuddyTheme
 import com.heckmannch.birthdaybuddy.viewmodel.BackupViewModel
 import com.heckmannch.birthdaybuddy.viewmodel.CalendarViewModel
@@ -64,6 +63,7 @@ import com.heckmannch.birthdaybuddy.viewmodel.HomeViewModel
 import com.heckmannch.birthdaybuddy.viewmodel.LabelViewModel
 import com.heckmannch.birthdaybuddy.viewmodel.NotificationViewModel
 import com.heckmannch.birthdaybuddy.viewmodel.OnboardingViewModel
+import com.heckmannch.birthdaybuddy.viewmodel.ThemeViewModel
 import com.heckmannch.birthdaybuddy.widget.BirthdayWidgetWorker
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
@@ -120,7 +120,9 @@ class MainActivity : ComponentActivity() {
             val homeViewModel: HomeViewModel = hiltViewModel()
             val onboardingViewModel: OnboardingViewModel = hiltViewModel()
             val onboardingCompleted by onboardingViewModel.onboardingCompleted.collectAsStateWithLifecycle()
-            val appSettings by notificationRepository.settings.collectAsStateWithLifecycle(initialValue = com.heckmannch.birthdaybuddy.data.local.AppSettings())
+            val appSettings by notificationRepository.settings.collectAsStateWithLifecycle(
+                initialValue = com.heckmannch.birthdaybuddy.data.local.AppSettings()
+            )
 
             // Splash Screen so lange anzeigen, bis wir wissen, wo es hingeht
             splashScreen.setKeepOnScreenCondition {

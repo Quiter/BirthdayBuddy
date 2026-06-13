@@ -48,15 +48,16 @@ class CalendarSyncRepository @Inject constructor(
                 ) == PackageManager.PERMISSION_GRANTED
     }
 
-    private suspend fun getOrCreateCalendar(type: CalendarType): Long? = withContext(Dispatchers.IO) {
-        val existingId = findCalendarIdByName(type.calendarName)
-        if (existingId != null) {
-            return@withContext existingId
-        }
+    private suspend fun getOrCreateCalendar(type: CalendarType): Long? =
+        withContext(Dispatchers.IO) {
+            val existingId = findCalendarIdByName(type.calendarName)
+            if (existingId != null) {
+                return@withContext existingId
+            }
 
-        val newId = createLocalCalendar(type)
-        newId
-    }
+            val newId = createLocalCalendar(type)
+            newId
+        }
 
 
     private fun deleteCalendarById(calendarId: Long, accountName: String, accountType: String) {

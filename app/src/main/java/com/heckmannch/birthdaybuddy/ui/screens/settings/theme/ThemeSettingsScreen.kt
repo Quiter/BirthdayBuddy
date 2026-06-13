@@ -44,17 +44,17 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
-import androidx.compose.ui.graphics.toArgb
-import androidx.compose.ui.graphics.luminance
-import androidx.core.graphics.toColorInt
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.luminance
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.core.graphics.toColorInt
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.heckmannch.birthdaybuddy.R
 import com.heckmannch.birthdaybuddy.ui.components.AppResponsiveScaffold
@@ -74,7 +74,8 @@ fun ThemeSettingsScreen(
 
     var showColorPickerDialog by remember { mutableStateOf(false) }
 
-    val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior(rememberTopAppBarState())
+    val scrollBehavior =
+        TopAppBarDefaults.exitUntilCollapsedScrollBehavior(rememberTopAppBarState())
 
     AppResponsiveScaffold(
         windowWidthSizeClass = windowWidthSizeClass,
@@ -151,7 +152,8 @@ fun ThemeSettingsScreen(
 
             // --- AMOLED option ---
             item {
-                val isDarkThemeActive = themeMode == "DARK" || (themeMode == "SYSTEM" && androidx.compose.foundation.isSystemInDarkTheme())
+                val isDarkThemeActive =
+                    themeMode == "DARK" || (themeMode == "SYSTEM" && androidx.compose.foundation.isSystemInDarkTheme())
                 ListItem(
                     headlineContent = { Text(stringResource(R.string.settings_theme_amoled)) },
                     supportingContent = {
@@ -200,11 +202,11 @@ fun ThemeSettingsScreen(
                         .padding(horizontal = 16.dp, vertical = 8.dp)
                 ) {
                     val colors = mutableListOf<AccentColorOption>()
-                    
+
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
                         colors.add(AccentColorOption("SYSTEM", Color.Transparent, isSystem = true))
                     }
-                    
+
                     colors.addAll(
                         listOf(
                             AccentColorOption("PURPLE", Color(0xFF6750A4)),
@@ -237,11 +239,12 @@ fun ThemeSettingsScreen(
                             horizontalArrangement = Arrangement.spacedBy(16.dp)
                         ) {
                             rowColors.forEach { option ->
-                                val isSelected = if (option.isCustom) isCustomAccent else themeAccent == option.id
+                                val isSelected =
+                                    if (option.isCustom) isCustomAccent else themeAccent == option.id
                                 ColorItem(
                                     option = option,
                                     isSelected = isSelected,
-                                    onClick = { 
+                                    onClick = {
                                         if (option.isCustom) {
                                             showColorPickerDialog = true
                                         } else {
@@ -335,7 +338,15 @@ private fun ColorItem(
                     contentDescription = null,
                     tint = if (option.isSystem) Color.White else if (option.isCustom) {
                         if (option.color.luminance() > 0.5f) Color.Black else Color.White
-                    } else if (option.id in listOf("SYSTEM", "BLUE", "GREEN", "PURPLE", "RED", "PINK")) {
+                    } else if (option.id in listOf(
+                            "SYSTEM",
+                            "BLUE",
+                            "GREEN",
+                            "PURPLE",
+                            "RED",
+                            "PINK"
+                        )
+                    ) {
                         Color.White
                     } else {
                         Color.Black
@@ -358,9 +369,9 @@ private fun ColorItem(
                 )
             }
         }
-        
+
         Spacer(modifier = Modifier.height(4.dp))
-        
+
         val label = when (option.id) {
             "SYSTEM" -> stringResource(R.string.theme_accent_system)
             "PURPLE" -> stringResource(R.string.theme_accent_purple)
@@ -372,7 +383,7 @@ private fun ColorItem(
             "CUSTOM" -> stringResource(R.string.theme_accent_custom)
             else -> option.id
         }
-        
+
         Text(
             text = label,
             style = MaterialTheme.typography.bodySmall,
@@ -387,12 +398,12 @@ private fun CustomColorPickerDialog(
     onDismiss: () -> Unit,
     onSave: (String) -> Unit
 ) {
-    var hexInput by remember { 
+    var hexInput by remember {
         mutableStateOf(
             if (initialColor.startsWith("#")) initialColor.substring(1) else ""
         )
     }
-    
+
     val presets = listOf(
         Color(0xFF008080), // Teal
         Color(0xFF00BCD4), // Cyan
@@ -403,7 +414,7 @@ private fun CustomColorPickerDialog(
         Color(0xFF607D8B), // Blue Grey
         Color(0xFF4CAF50)  // Green
     )
-    
+
     val hexRegex = Regex("^[0-9a-fA-F]{6}$")
     val isValid = hexInput.length == 6 && hexRegex.matches(hexInput)
     val previewColor = if (isValid) {
@@ -415,7 +426,7 @@ private fun CustomColorPickerDialog(
     } else {
         Color.Transparent
     }
-    
+
     AlertDialog(
         onDismissRequest = onDismiss,
         title = {
@@ -440,7 +451,7 @@ private fun CustomColorPickerDialog(
                     text = stringResource(R.string.theme_accent_custom_dialog_desc),
                     style = MaterialTheme.typography.bodyMedium
                 )
-                
+
                 Column(
                     modifier = Modifier.fillMaxWidth(),
                     verticalArrangement = Arrangement.spacedBy(8.dp)
@@ -453,7 +464,7 @@ private fun CustomColorPickerDialog(
                             rowPresets.forEach { color ->
                                 val hexString = String.format("%06X", 0xFFFFFF and color.toArgb())
                                 val isPresetSelected = hexInput.uppercase() == hexString.uppercase()
-                                
+
                                 Box(
                                     contentAlignment = Alignment.Center,
                                     modifier = Modifier
@@ -482,13 +493,14 @@ private fun CustomColorPickerDialog(
                         }
                     }
                 }
-                
+
                 Spacer(modifier = Modifier.height(4.dp))
-                
+
                 OutlinedTextField(
                     value = hexInput,
                     onValueChange = { input ->
-                        val cleanInput = input.filter { it.isDigit() || it.uppercaseChar() in 'A'..'F' }
+                        val cleanInput =
+                            input.filter { it.isDigit() || it.uppercaseChar() in 'A'..'F' }
                         if (cleanInput.length <= 6) {
                             hexInput = cleanInput
                         }
@@ -508,7 +520,7 @@ private fun CustomColorPickerDialog(
                     modifier = Modifier.fillMaxWidth(),
                     singleLine = true
                 )
-                
+
                 if (isValid) {
                     Row(
                         modifier = Modifier
