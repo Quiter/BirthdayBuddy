@@ -117,6 +117,11 @@
 165. **Widget DateTimeFormatter-Hoisting (Performance & Optimization):**
     - **Hoisting:** Verschiebung der Instanziierung von `dateFormatter` and `dayMonthFormatter` aus der Zeilen-Schleife (`BirthdayRow`) in das übergeordnete Composable `WidgetContent` in [BirthdayWidget.kt](file:///c:/Users/chris/AndroidStudioProjects/BirthdayBuddy/app/src/main/java/com/heckmannch/birthdaybuddy/widget/BirthdayWidget.kt).
     - **Verwendung von remember:** Kapselung der Erzeugung in `remember`-Blöcken unter Einbeziehung des aktuellen `locale` als Key, sodass die Formatierer nur einmal pro Widget-Update erzeugt und für alle Tabellenzeilen wiederverwendet werden, anstatt sie für jedes einzelne Geburtstagselement neu zu allozieren.
+166. **Tote Datenbank-Migrationen & Schemas entfernt (Clean Code & Database Hardening):**
+    - **Entfernung alter Migrationspfade:** Vollständiges Löschen der nicht mehr registrierten Legacy-Migrationspfade von Version 1 bis 5 (`MIGRATION_1_2` bis `MIGRATION_4_5`) aus [AppDatabase.kt](file:///c:/Users/chris/AndroidStudioProjects/BirthdayBuddy/app/src/main/java/com/heckmannch/birthdaybuddy/data/local/AppDatabase.kt). Ältere Datenbankversionen werden wie dokumentiert über den destruktiven Fallback-Pfad von Room bereinigt.
+    - **Test-Refactoring:** Entfernung veralteter Testmethoden (`migrate1To2`, `migrate1To9`, `migrate2To9`) und Implementierung einer stabilen Validierung der Migrationskette ab Version 5 (`migrate5To9` sowie Aktualisierung von `migrateAll`) in [MigrationTest.kt](file:///c:/Users/chris/AndroidStudioProjects/BirthdayBuddy/app/src/androidTest/java/com/heckmannch/birthdaybuddy/data/local/MigrationTest.kt).
+    - **Schema-Bereinigung:** physisches Löschen veralteter Schema-Dateien (JSON 1 bis 4 von `AppDatabase`, JSON 1 von `SettingsDatabase` sowie das ungenutzte Verzeichnis der Legacy-Datenbank vor dem Package-Rename), um Altlasten aus dem Repository zu entfernen.
+
 
 
 

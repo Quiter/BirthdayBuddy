@@ -28,105 +28,32 @@ class MigrationTest {
 
     @Test
     @Throws(IOException::class)
-    fun migrate1To2() {
-        // 1. Datenbank in Version 1 erstellen
-        helper.createDatabase(testDb, 1).apply {
-            // Testdaten einfügen (V1-Schema)
+    fun migrate5To9() {
+        // 1. Create database in version 5 with test data
+        helper.createDatabase(testDb, 5).apply {
             execSQL(
-                "INSERT INTO contacts (contactId, lookupKey, fullName, birthday, labels) " +
-                        "VALUES ('1', 'key1', 'Max Mustermann', '1990-01-01', '[]')"
+                "INSERT INTO contacts (contactId, lookupKey, fullName, birthday, labels, giftIdeas, hasWhatsApp, hasSignal) " +
+                        "VALUES ('5', 'key5', 'Max Mustermann', '1990-01-01', '[]', '[]', 0, 0)"
             )
             close()
         }
 
-        // 2. Migration auf Version 2 ausführen und validieren
-        // Wir übergeben die manuelle Migration, die wir testen wollen
-        helper.runMigrationsAndValidate(testDb, 2, true, AppDatabase.MIGRATION_1_2)
-    }
-
-    @Test
-    @Throws(IOException::class)
-    fun migrate1To9() {
-        // 1. Datenbank in Version 1 erstellen mit Testdaten
-        helper.createDatabase(testDb, 1).apply {
-            execSQL(
-                "INSERT INTO contacts (contactId, lookupKey, fullName, birthday, labels) " +
-                        "VALUES ('1', 'key1', 'Max Mustermann', '1990-01-01', '[]')"
-            )
-            close()
-        }
-
-        // 2. Migration über die gesamte Kette (1 bis 9) ausführen und validieren
+        // 2. Run migration through the chain (5 to 9) and validate
         val migratedDb = helper.runMigrationsAndValidate(
             testDb,
             9,
             true,
-            AppDatabase.MIGRATION_1_2,
-            AppDatabase.MIGRATION_2_3,
-            AppDatabase.MIGRATION_3_4,
-            AppDatabase.MIGRATION_4_5,
             AppDatabase.MIGRATION_5_6,
             AppDatabase.MIGRATION_6_7,
             AppDatabase.MIGRATION_7_8,
             AppDatabase.MIGRATION_8_9
         )
 
-        // 3. Prüfen, ob die Daten intakt sind und neue Spalten default-Werte haben
-        val cursor = migratedDb.query("SELECT * FROM contacts WHERE lookupKey = 'key1'")
+        // 3. Verify that the data is intact and new columns default to correct values
+        val cursor = migratedDb.query("SELECT * FROM contacts WHERE lookupKey = 'key5'")
         assert(cursor.moveToFirst())
-
-        val nameIndex = cursor.getColumnIndex("fullName")
-        val birthdayIndex = cursor.getColumnIndex("birthday")
-        val phoneIndex = cursor.getColumnIndex("phoneNumber")
-        val whatsappIndex = cursor.getColumnIndex("hasWhatsApp")
-        val signalIndex = cursor.getColumnIndex("hasSignal")
-        val anniversaryIndex = cursor.getColumnIndex("anniversary")
-        val nameDayIndex = cursor.getColumnIndex("nameDay")
-        val spouseLookupKeyIndex = cursor.getColumnIndex("spouseLookupKey")
-
-        assert(cursor.getString(nameIndex) == "Max Mustermann")
-        assert(cursor.getString(birthdayIndex) == "1990-01-01")
-        assert(cursor.isNull(phoneIndex))
-        assert(cursor.getInt(whatsappIndex) == 0)
-        assert(cursor.getInt(signalIndex) == 0)
-        assert(cursor.isNull(anniversaryIndex))
-        assert(cursor.isNull(nameDayIndex))
-        assert(cursor.isNull(spouseLookupKeyIndex))
-
-        cursor.close()
-    }
-
-    @Test
-    @Throws(IOException::class)
-    fun migrate2To9() {
-        // 1. Datenbank in Version 2 erstellen mit Testdaten
-        helper.createDatabase(testDb, 2).apply {
-            execSQL(
-                "INSERT INTO contacts (contactId, lookupKey, fullName, birthday, labels) " +
-                        "VALUES ('2', 'key2', 'Erika Mustermann', '1992-02-02', '[]')"
-            )
-            close()
-        }
-
-        // 2. Migration über die Kette (2 bis 9) ausführen und validieren
-        val migratedDb = helper.runMigrationsAndValidate(
-            testDb,
-            9,
-            true,
-            AppDatabase.MIGRATION_2_3,
-            AppDatabase.MIGRATION_3_4,
-            AppDatabase.MIGRATION_4_5,
-            AppDatabase.MIGRATION_5_6,
-            AppDatabase.MIGRATION_6_7,
-            AppDatabase.MIGRATION_7_8,
-            AppDatabase.MIGRATION_8_9
-        )
-
-        // 3. Prüfen, ob die Daten intakt sind
-        val cursor = migratedDb.query("SELECT * FROM contacts WHERE lookupKey = 'key2'")
-        assert(cursor.moveToFirst())
-        assert(cursor.getString(cursor.getColumnIndex("fullName")) == "Erika Mustermann")
-        assert(cursor.getString(cursor.getColumnIndex("birthday")) == "1992-02-02")
+        assert(cursor.getString(cursor.getColumnIndex("fullName")) == "Max Mustermann")
+        assert(cursor.getString(cursor.getColumnIndex("birthday")) == "1990-01-01")
         assert(cursor.isNull(cursor.getColumnIndex("anniversary")))
         assert(cursor.isNull(cursor.getColumnIndex("nameDay")))
         assert(cursor.isNull(cursor.getColumnIndex("spouseLookupKey")))
@@ -166,18 +93,14 @@ class MigrationTest {
     @Test
     @Throws(IOException::class)
     fun migrateAll() {
-        // Erstellt die DB in V1 und migriert schrittweise auf die aktuelle Version
-        helper.createDatabase(testDb, 1).close()
+        // Erstellt die DB in V5 und migriert schrittweise auf die aktuelle Version
+        helper.createDatabase(testDb, 5).close()
 
         Room.databaseBuilder(
             InstrumentationRegistry.getInstrumentation().targetContext,
             AppDatabase::class.java,
             testDb
         ).addMigrations(
-            AppDatabase.MIGRATION_1_2,
-            AppDatabase.MIGRATION_2_3,
-            AppDatabase.MIGRATION_3_4,
-            AppDatabase.MIGRATION_4_5,
             AppDatabase.MIGRATION_5_6,
             AppDatabase.MIGRATION_6_7,
             AppDatabase.MIGRATION_7_8,

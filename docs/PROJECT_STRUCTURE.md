@@ -147,7 +147,7 @@
 ## 🧪 Testing (`src/test` & `src/androidTest`)
 - `MainDispatcherRule.kt`: JUnit-Rule zur Steuerung von Coroutine-Dispatchern in Tests.
 - `data/local/ConvertersTest.kt`: Tests für TypeConverter.
-- `data/local/MigrationTest.kt`: Automatisierte Datenbank-Migrationstests (V1 bis aktuell).
+- `data/local/MigrationTest.kt`: Automatisierte Datenbank-Migrationstests (V5 bis aktuell).
 - `data/local/SettingsMigrationTest.kt`: Automatisierte Datenbank-Migrationstests für die Einstellungen (V2 bis V6).
 - `data/mapper/ContactMapperTest.kt`: Tests für die Transformation in UI-Modelle.
 - `data/repository/NotificationRepositoryTest.kt`: Integrationstests für das Repository.
