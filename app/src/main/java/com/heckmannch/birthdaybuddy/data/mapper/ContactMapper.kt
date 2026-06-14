@@ -57,7 +57,7 @@ class ContactMapper @Inject constructor() {
             imageUri = contact.imageUri,
             phoneNumber = contact.phoneNumber,
             initials = contact.fullName.trim()
-                .split("\\s+".toRegex())
+                .split(WHITESPACE_REGEX)
                 .filter { it.isNotBlank() }
                 .let { parts ->
                     when {
@@ -75,5 +75,9 @@ class ContactMapper @Inject constructor() {
             giftIdeas = contact.giftIdeas,
             birthday = contact.birthday,
         )
+    }
+
+    companion object {
+        private val WHITESPACE_REGEX = "\\s+".toRegex()
     }
 }

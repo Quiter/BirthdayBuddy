@@ -306,5 +306,8 @@
     - **Compose-Anpassung:** Refactoring von `CalendarSettingsScreen`, `NotificationSettingsScreen`, `OtherEventsSettingsScreen` und `ThemeSettingsScreen`, um den Zustand direkt aus dem jeweiligen `uiState` zu abonnieren.
 153. **ContactMapper Scoping (Performance):**
     - **@Reusable Scoping:** Annotation der `ContactMapper`-Klasse mit `@Reusable` zur Wiederverwendung der Mapper-Instanz in der Hilt-Dependency Injection. Dies reduziert redundante Objekterzeugungen und Garbage-Collector-Overhead.
+154. **Regex-Caching (Performance):**
+    - **Caching von String-Splits & -Replacements:** Ersetzung von dynamisch kompilierten `.toRegex()`-Aufrufen in `ContactMapper.kt`, `ContactActions.kt` und `DateUtils.kt` durch statisch deklarierte und wiederverwendbare `WHITESPACE_REGEX`-Objekte. Dies vermeidet wiederholtes Kompilieren desselben Musters bei häufig ausgeführten Operationen (z. B. beim Mapping von Kontakten und Formatieren von Telefonnummern).
+
 
 

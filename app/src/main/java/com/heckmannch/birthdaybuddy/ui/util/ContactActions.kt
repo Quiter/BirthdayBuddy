@@ -45,11 +45,11 @@ class ContactActions(private val context: Context) {
      */
     fun openMessengerApp(app: MessengerApp, phoneNumber: String) {
         try {
-            val digitsOnly = phoneNumber.replace("\\s+".toRegex(), "").replace("+", "")
+            val digitsOnly = phoneNumber.replace(WHITESPACE_REGEX, "").replace("+", "")
             val cleanNumberWithPlus = if (phoneNumber.startsWith("+")) {
-                phoneNumber.replace("\\s+".toRegex(), "")
+                phoneNumber.replace(WHITESPACE_REGEX, "")
             } else {
-                "+" + phoneNumber.replace("\\s+".toRegex(), "")
+                "+" + phoneNumber.replace(WHITESPACE_REGEX, "")
             }
 
             val intent = when (app) {
@@ -166,5 +166,9 @@ class ContactActions(private val context: Context) {
         } else {
             openAppSettings()
         }
+    }
+
+    companion object {
+        private val WHITESPACE_REGEX = "\\s+".toRegex()
     }
 }
