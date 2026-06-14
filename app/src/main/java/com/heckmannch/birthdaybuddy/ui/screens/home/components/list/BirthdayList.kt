@@ -59,7 +59,7 @@ import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import com.heckmannch.birthdaybuddy.R
-import com.heckmannch.birthdaybuddy.data.local.Contact
+import com.heckmannch.birthdaybuddy.ui.model.CoupleSuggestionUiModel
 import com.heckmannch.birthdaybuddy.ui.components.LottieIllustration
 import com.heckmannch.birthdaybuddy.ui.model.ContactUiModel
 import com.heckmannch.birthdaybuddy.ui.model.SampleData
@@ -82,7 +82,7 @@ fun BirthdayList(
     selectedLabel: String? = null,
     searchQuery: String = "",
     actions: HomeActions,
-    coupleSuggestion: Pair<Contact, Contact>? = null,
+    coupleSuggestion: CoupleSuggestionUiModel? = null,
     selectedContactId: String? = null,
     onContactSelected: ((ContactUiModel) -> Unit)? = null,
     onInteraction: () -> Unit = {},
@@ -345,7 +345,7 @@ fun BirthdayListPreview() {
 
 @Composable
 fun CoupleSuggestionBanner(
-    suggestion: Pair<Contact, Contact>,
+    suggestion: CoupleSuggestionUiModel,
     onLink: (String, String) -> Unit,
     onIgnore: (String, String) -> Unit,
     modifier: Modifier = Modifier,
@@ -367,16 +367,12 @@ fun CoupleSuggestionBanner(
             verticalAlignment = Alignment.CenterVertically
         ) {
             ContactImage(
-                imageUri = suggestion.first.imageUri,
-                fullName = suggestion.first.fullName,
-                initials = suggestion.first.fullName.split(" ")
-                    .mapNotNull { it.firstOrNull()?.toString() }
-                    .joinToString("").take(2),
-                secondImageUri = suggestion.second.imageUri,
-                secondInitials = suggestion.second.fullName.split(" ")
-                    .mapNotNull { it.firstOrNull()?.toString() }
-                    .joinToString("").take(2),
-                secondFullName = suggestion.second.fullName
+                imageUri = suggestion.firstImageUri,
+                fullName = suggestion.firstName,
+                initials = suggestion.firstInitials,
+                secondImageUri = suggestion.secondImageUri,
+                secondInitials = suggestion.secondInitials,
+                secondFullName = suggestion.secondName
             )
 
             Column(modifier = Modifier.weight(1f)) {
@@ -389,8 +385,8 @@ fun CoupleSuggestionBanner(
                 Text(
                     text = stringResource(
                         R.string.couple_suggestion_msg,
-                        suggestion.first.fullName,
-                        suggestion.second.fullName
+                        suggestion.firstName,
+                        suggestion.secondName
                     ),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.8f)
@@ -402,8 +398,8 @@ fun CoupleSuggestionBanner(
                     Button(
                         onClick = {
                             onLink(
-                                suggestion.first.lookupKey,
-                                suggestion.second.lookupKey
+                                suggestion.firstLookupKey,
+                                suggestion.secondLookupKey
                             )
                         },
                         colors = ButtonDefaults.buttonColors(
@@ -416,8 +412,8 @@ fun CoupleSuggestionBanner(
                     OutlinedButton(
                         onClick = {
                             onIgnore(
-                                suggestion.first.lookupKey,
-                                suggestion.second.lookupKey
+                                suggestion.firstLookupKey,
+                                suggestion.secondLookupKey
                             )
                         },
                         border = BorderStroke(

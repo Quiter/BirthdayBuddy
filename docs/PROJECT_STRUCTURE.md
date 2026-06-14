@@ -98,6 +98,7 @@
     - `HomeUiState.kt`: Gebündelter State für den Home-Screen.
     - `LabelManagementModel.kt`: Modell für die Label-Verwaltung.
     - `GiftIdea.kt`: Modell für Geschenkideen mit JSON- und Manipulations-Logik.
+    - `CoupleSuggestionUiModel.kt`: Immutable UI-Modell für Paar-Vorschläge, entkoppelt die UI-Schicht von der Room-Entity.
     - `SampleData.kt`: Zentraler Ort für Testdaten für Previews und Tests.
 - ### 📁 UI Components (`ui.components`)
     - `LottieIllustration.kt`: Wiederverwendbare Komponente für Lottie-Animationen.

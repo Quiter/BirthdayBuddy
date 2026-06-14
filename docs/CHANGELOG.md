@@ -276,5 +276,10 @@
 146. **Compose-Stabilität: `@Stable` auf `HomeActions` (Performance):**
     - **Recomposition-Optimierung:** Annotation der `HomeActions` Data-Class mit `@Stable` in [HomeActions.kt](file:///C:/Users/chris/AndroidStudioProjects/BirthdayBuddy/app/src/main/java/com/heckmannch/birthdaybuddy/ui/screens/home/HomeActions.kt). Dies signalisiert dem Compose-Compiler, dass die Klasse als stabil behandelt werden kann, wodurch unnötige Recompositions in allen Kindkomponenten (`BirthdayList`, `BirthdayItem`, `HomeTopBar`, `ContactActionRow`, `HomeFAB`, `BirthdayDetailPane`) übersprungen werden können.
 
+147. **Compose-Stabilität: `CoupleSuggestionUiModel` eingeführt (Architecture & Performance):**
+    - **Neues UI-Modell:** Einführung von [CoupleSuggestionUiModel.kt](file:///C:/Users/chris/AndroidStudioProjects/BirthdayBuddy/app/src/main/java/com/heckmannch/birthdaybuddy/ui/model/CoupleSuggestionUiModel.kt) als `@Immutable` Data-Class mit nur den für die Anzeige nötigen Feldern (`lookupKey`, `fullName`, `imageUri`, `initials`).
+    - **Layer-Trennung:** Entfernung der Room-Entity `Contact` aus der UI-Schicht. `HomeUiState.coupleSuggestion` ist nun `CoupleSuggestionUiModel?` statt `Pair<Contact, Contact>?`. Dies behebt den Widerspruch, dass `HomeUiState` als `@Immutable` annotiert war, aber eine instabile Room-Entity enthielt.
+    - **Initialen-Vorberechnung:** Die Initialen werden nun im ViewModel vorberechnet statt bei jeder Recomposition inline im `CoupleSuggestionBanner`.
+    - **Betroffene Dateien:** [HomeUiState.kt](file:///C:/Users/chris/AndroidStudioProjects/BirthdayBuddy/app/src/main/java/com/heckmannch/birthdaybuddy/ui/model/HomeUiState.kt), [HomeViewModel.kt](file:///C:/Users/chris/AndroidStudioProjects/BirthdayBuddy/app/src/main/java/com/heckmannch/birthdaybuddy/viewmodel/HomeViewModel.kt), [BirthdayList.kt](file:///C:/Users/chris/AndroidStudioProjects/BirthdayBuddy/app/src/main/java/com/heckmannch/birthdaybuddy/ui/screens/home/components/list/BirthdayList.kt).
 
 

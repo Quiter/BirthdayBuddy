@@ -3,11 +3,11 @@ package com.heckmannch.birthdaybuddy.viewmodel
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.heckmannch.birthdaybuddy.data.local.Contact
 import com.heckmannch.birthdaybuddy.data.mapper.ContactMapper
 import com.heckmannch.birthdaybuddy.data.repository.ContactRepository
 import com.heckmannch.birthdaybuddy.data.repository.TimeRepository
 import com.heckmannch.birthdaybuddy.ui.model.ContactUiModel
+import com.heckmannch.birthdaybuddy.ui.model.CoupleSuggestionUiModel
 import com.heckmannch.birthdaybuddy.ui.model.GiftIdea
 import com.heckmannch.birthdaybuddy.ui.model.HomeUiState
 import com.heckmannch.birthdaybuddy.util.mergeNames
@@ -53,6 +53,16 @@ class HomeViewModel @Inject constructor(
         const val LABEL_ANNIVERSARY = "special:anniversary"
         const val LABEL_NAME_DAY = "special:name_day"
         private val WHITESPACE_REGEX = "\\s+".toRegex()
+
+        /** Berechnet Initialen aus einem vollen Namen (z.B. "Max Mustermann" → "MM"). */
+        private fun String.initials(): String {
+            val parts = trim().split(WHITESPACE_REGEX).filter { it.isNotBlank() }
+            return when {
+                parts.isEmpty() -> "?"
+                parts.size == 1 -> parts.first().take(1).uppercase()
+                else -> "${parts.first().take(1)}${parts.last().take(1)}".uppercase()
+            }
+        }
     }
 
     private val _scrollToTopEvent = MutableSharedFlow<Unit>(replay = 0)
@@ -297,7 +307,7 @@ class HomeViewModel @Inject constructor(
         FilterUiFlags(syncing, focus, newlyAdded)
     }
 
-    val coupleSuggestion: Flow<Pair<Contact, Contact>?> = combine(
+    val coupleSuggestion: Flow<CoupleSuggestionUiModel?> = combine(
         contactRepository.allContacts,
         contactRepository.ignoredCouplePairs,
         _selectedLabel,
@@ -322,7 +332,16 @@ class HomeViewModel @Inject constructor(
                         val pairKey =
                             if (c1.lookupKey < c2.lookupKey) "${c1.lookupKey}:${c2.lookupKey}" else "${c2.lookupKey}:${c1.lookupKey}"
                         if (!ignoredPairs.contains(pairKey)) {
-                            return@combine Pair(c1, c2)
+                            return@combine CoupleSuggestionUiModel(
+                                firstLookupKey = c1.lookupKey,
+                                firstName = c1.fullName,
+                                firstImageUri = c1.imageUri,
+                                firstInitials = c1.fullName.initials(),
+                                secondLookupKey = c2.lookupKey,
+                                secondName = c2.fullName,
+                                secondImageUri = c2.imageUri,
+                                secondInitials = c2.fullName.initials(),
+                            )
                         }
                     }
                 }
