@@ -7,11 +7,13 @@ import com.heckmannch.birthdaybuddy.data.local.NotificationRuleDao
 import com.heckmannch.birthdaybuddy.data.local.PendingNotification
 import com.heckmannch.birthdaybuddy.data.local.PendingNotificationDao
 import com.heckmannch.birthdaybuddy.util.NotificationScheduler
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
+import kotlinx.coroutines.withContext
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -31,7 +33,7 @@ class NotificationRepository @Inject constructor(
         .map { it ?: AppSettings() }
         .distinctUntilChanged()
 
-    suspend fun syncScheduling() {
+    suspend fun syncScheduling() = withContext(Dispatchers.IO) {
         val enabled = appSettingsDao.getSettingsImmediate()?.notificationsEnabled ?: false
         val rules = notificationRuleDao.getAllRulesImmediate()
         if (enabled && rules.isNotEmpty()) {

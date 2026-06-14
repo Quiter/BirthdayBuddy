@@ -308,6 +308,9 @@
     - **@Reusable Scoping:** Annotation der `ContactMapper`-Klasse mit `@Reusable` zur Wiederverwendung der Mapper-Instanz in der Hilt-Dependency Injection. Dies reduziert redundante Objekterzeugungen und Garbage-Collector-Overhead.
 154. **Regex-Caching (Performance):**
     - **Caching von String-Splits & -Replacements:** Ersetzung von dynamisch kompilierten `.toRegex()`-Aufrufen in `ContactMapper.kt`, `ContactActions.kt` und `DateUtils.kt` durch statisch deklarierte und wiederverwendbare `WHITESPACE_REGEX`-Objekte. Dies vermeidet wiederholtes Kompilieren desselben Musters bei häufig ausgeführten Operationen (z. B. beim Mapping von Kontakten und Formatieren von Telefonnummern).
+155. **Thread-Sicherheit & Dispatcher-Zuweisung (Performance):**
+    - **syncScheduling Dispatcher:** Ausführung von `syncScheduling()` in `NotificationRepository.kt` auf `Dispatchers.IO` über `withContext(Dispatchers.IO)`. Dies stellt sicher, dass das Abfragen der Benachrichtigungsregeln aus der Datenbank und das Scheduling des WorkManagers im Hintergrund ausgeführt werden und nicht den aufrufenden Thread (oft den Main-Thread der ViewModels) blockieren.
+
 
 
 
