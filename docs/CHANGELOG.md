@@ -286,5 +286,12 @@
     - **ContactRepository:** `allContacts` und `labelConfigs` in [ContactRepository.kt](file:///C:/Users/chris/AndroidStudioProjects/BirthdayBuddy/app/src/main/java/com/heckmannch/birthdaybuddy/data/repository/ContactRepository.kt).
     - **NotificationRepository:** `allRules` und `settings` in [NotificationRepository.kt](file:///C:/Users/chris/AndroidStudioProjects/BirthdayBuddy/app/src/main/java/com/heckmannch/birthdaybuddy/data/repository/NotificationRepository.kt).
     - **Hinweis:** `otherEventsEnabled`, `ignoredCouplePairs` (ContactRepository) und `currentDate` (TimeRepository) hatten bereits `distinctUntilChanged()`.
+149. **Gradle Build-Performance-Optimierung (Build Speed):**
+    - **JVM-Heap:** Erhöhung von 2 GB auf 4 GB in [gradle.properties](file:///C:/Users/chris/AndroidStudioProjects/BirthdayBuddy/gradle.properties) — Compose + KSP + Hilt benötigen deutlich mehr Speicher.
+    - **Parallele Builds:** `org.gradle.parallel=true` aktiviert (war auskommentiert).
+    - **Build-Cache:** `org.gradle.caching=true` — vermeidet redundante Task-Ausführungen bei inkrementellen Builds.
+    - **Configuration-Cache:** `org.gradle.configuration-cache=true` — parsed Build-Scripts nur einmal (kompatibel mit Hilt 2.59+ und KSP 2.3+).
+    - **Kotlin Incremental:** `kotlin.incremental=true` explizit aktiviert.
+    - **Bereinigung:** Entfernung des veralteten Legacy-Flags `android.disallowKotlinSourceSets=false`. `android.newDsl=false` bleibt erhalten (erforderlich für die Kompatibilität des BaselineProfile-Plugins mit `configure<ApplicationExtension>`).
 
 
