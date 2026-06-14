@@ -316,6 +316,10 @@
 157. **SettingsScreen Code-Duplikation behoben (Refactoring & Clean Code):**
     - **Deklaration konsolidiert:** Einführung der Datenklasse `SettingsMenuItemData` in [SettingsScreen.kt](file:///c:/Users/chris/AndroidStudioProjects/BirthdayBuddy/app/src/main/java/com/heckmannch/birthdaybuddy/ui/screens/settings/SettingsScreen.kt), um alle Menüpunkte an einer einzigen Stelle zu deklarieren (`menuItems` via `remember`).
     - **LazyColumn-Schlankheit:** Verwendung von `items(menuItems)` in den beiden Layouts (Compact für Smartphones und split-pane Master-Detail für Tablets). Dies eliminiert die doppelte, zeilenweise Definition aller Menüeinträge und deren Callbacks.
+158. **FastScrollbar Compose Key & derivedStateOf-Fixes (Stability & Correctness):**
+    - **isResettingFilter Key:** Zuweisung von `isResettingFilter` als Key im `remember(contacts, isResettingFilter)` von `canScroll` in [FastScrollbar.kt](file:///c:/Users/chris/AndroidStudioProjects/BirthdayBuddy/app/src/main/java/com/heckmannch/birthdaybuddy/ui/screens/home/components/list/FastScrollbar.kt). Da es sich um ein primitives Boolean-Argument handelt, muss es explizit als Key registriert werden, damit Änderungen am Filter-Reset-Status korrekt durch den `derivedStateOf`-Block erfasst und ausgewertet werden.
+    - **trackAlpha Bereinigung:** Entfernung der redundanten und fehleranfälligen `remember { derivedStateOf { ... } }`-Kapselung für `trackAlpha` in `ScrollbarTrackAndThumb`, da die Inputs primitive Parameter der Composable-Funktion sind. Der Alpha-Wert wird nun direkt zugewiesen.
+
 
 
 
