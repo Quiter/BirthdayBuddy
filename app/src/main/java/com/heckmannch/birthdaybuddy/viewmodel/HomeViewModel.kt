@@ -13,6 +13,7 @@ import com.heckmannch.birthdaybuddy.ui.model.HomeUiState
 import com.heckmannch.birthdaybuddy.util.mergeNames
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -22,6 +23,7 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
@@ -30,6 +32,7 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 import kotlin.time.Duration.Companion.milliseconds
 
+@OptIn(FlowPreview::class)
 @HiltViewModel
 class HomeViewModel @Inject constructor(
     private val contactRepository: ContactRepository,
@@ -49,6 +52,7 @@ class HomeViewModel @Inject constructor(
         const val LABEL_NO_BIRTHDAY = "special:no_birthday"
         const val LABEL_ANNIVERSARY = "special:anniversary"
         const val LABEL_NAME_DAY = "special:name_day"
+        private val WHITESPACE_REGEX = "\\s+".toRegex()
     }
 
     private val _scrollToTopEvent = MutableSharedFlow<Unit>(replay = 0)
@@ -77,9 +81,10 @@ class HomeViewModel @Inject constructor(
     }
 
     private val searchKeywords = _searchQuery
+        .debounce(300.milliseconds)
         .map { it.trim() }
         .distinctUntilChanged()
-        .map { if (it.isEmpty()) emptyList() else it.split("\\s+".toRegex()) }
+        .map { if (it.isEmpty()) emptyList() else it.split(WHITESPACE_REGEX) }
         .flowOn(Dispatchers.Default)
 
     private val filteredContacts: Flow<List<ContactUiModel>?> = combine(
