@@ -296,5 +296,8 @@
 150. **ProGuard: Lesbare Crash-Stacktraces aktiviert (Stability):**
     - **Aktivierung:** `-keepattributes SourceFile,LineNumberTable` und `-renamesourcefileattribute SourceFile` in [proguard-rules.pro](file:///C:/Users/chris/AndroidStudioProjects/BirthdayBuddy/app/proguard-rules.pro) einkommentiert.
     - **Effekt:** Release-Crash-Reports (Play Console, Firebase Crashlytics) enthalten nun Zeilennummern und können über die Mapping-Datei deobfuskiert werden. `-renamesourcefileattribute SourceFile` ersetzt Originaldateinamen durch einen Platzhalter, um die APK-Größe minimal zu halten.
+151. **Baseline Profile: Fehlende User Journeys dokumentiert (Performance / TODO):**
+    - **Dokumentation:** TODO-Kommentare mit Code-Skizzen für 4 kritische User Journeys in [BaselineProfileGenerator.kt](file:///C:/Users/chris/AndroidStudioProjects/BirthdayBuddy/baselineprofile/src/main/java/com/heckmannch/birthdaybuddy/baselineprofile/BaselineProfileGenerator.kt) hinzugefügt: Home-Screen-Scrollen, Suche/Filter, Kontakt-Details expandieren, Settings-Navigation.
+    - **Hintergrund:** Der Generator deckte bisher nur den App-Start ab. Die dokumentierten Journeys stellen sicher, dass bei einer späteren Implementierung die meistgenutzten Code-Pfade AOT-kompiliert werden.
 
 
