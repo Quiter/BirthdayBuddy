@@ -270,4 +270,11 @@
     - **Warning Cleanups:** Behebung von 3 `parseColor` Warnungen durch Nutzung der KTX-Erweiterungsfunktion `String.toColorInt()`.
     - **KTS DSL Migration:** Bereinigung von AGP 9.0+ Deprecation-Warnungen durch Ersetzung des veralteten impliziten `android { ... }` Blocks in `app/build.gradle.kts` und `baselineprofile/build.gradle.kts` mit modernen expliziten Schnittstellen: `configure<ApplicationExtension>` und `configure<TestExtension>`. Verschiebung des `kotlin` Toolchain-Konfigurationsblocks im Testmodul auf die Projekt-Ebene zur Auflösung von Typ-Receiver-Konflikten.
 
+145. **Behebung von Compiler-Warnungen bei Flow-Debounce (Warning Resolution):**
+    - **Moderne API-Migration:** Umstellung des veralteten `Long`-Parameters bei `.debounce(300)` auf das moderne `Duration`-Overload (`.debounce(300.milliseconds)`) in [HomeViewModel.kt](file:///C:/Users/chris/AndroidStudioProjects/BirthdayBuddy/app/src/main/java/com/heckmannch/birthdaybuddy/viewmodel/HomeViewModel.kt).
+    - **Vorschau-API Annotation:** Hinzufügen der `@OptIn(FlowPreview::class)` Annotation sowie des entsprechenden Imports zu `HomeViewModel` zur Behebung der Preview-API Warnung.
+146. **Compose-Stabilität: `@Stable` auf `HomeActions` (Performance):**
+    - **Recomposition-Optimierung:** Annotation der `HomeActions` Data-Class mit `@Stable` in [HomeActions.kt](file:///C:/Users/chris/AndroidStudioProjects/BirthdayBuddy/app/src/main/java/com/heckmannch/birthdaybuddy/ui/screens/home/HomeActions.kt). Dies signalisiert dem Compose-Compiler, dass die Klasse als stabil behandelt werden kann, wodurch unnötige Recompositions in allen Kindkomponenten (`BirthdayList`, `BirthdayItem`, `HomeTopBar`, `ContactActionRow`, `HomeFAB`, `BirthdayDetailPane`) übersprungen werden können.
+
+
 
