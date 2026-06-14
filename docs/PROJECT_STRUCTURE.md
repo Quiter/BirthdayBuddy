@@ -38,7 +38,7 @@
     - `SystemContactDataSource.kt`: Kapselt den Low-Level Zugriff auf den Android ContentResolver (Kontakte, Gruppen, Events).
     - `TimeRepository.kt`: Reaktive Zeitquelle, die bei Datumswechseln (Mitternacht) automatische UI-Updates triggert.
 - ### 📁 Mapper (`data.mapper`)
-    - `ContactMapper.kt`: Reine Logik-Komponente zur Transformation von Datenbank-Entitäten in Anzeige-Modelle.
+    - `ContactMapper.kt`: Reine Logik-Komponente zur Transformation von Datenbank-Entitäten in Anzeige-Modelle (mittels `@Reusable` für effiziente DI-Instanziierung optimiert).
 
 ## 📁 UI Layer (`ui`)
 - ### 📁 Screens (`ui.screens`)

@@ -7,6 +7,7 @@ import com.heckmannch.birthdaybuddy.util.hasYear
 import com.heckmannch.birthdaybuddy.util.isBirthdayToday
 import com.heckmannch.birthdaybuddy.util.safeDaysUntilNext
 import com.heckmannch.birthdaybuddy.util.safeNextAge
+import dagger.Reusable
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import java.time.format.FormatStyle
@@ -16,6 +17,7 @@ import javax.inject.Inject
 /**
  * Hilfsklasse zur Umwandlung von Datenbank-Modellen in UI-Modelle.
  */
+@Reusable
 class ContactMapper @Inject constructor() {
     private val dateFormatter = DateTimeFormatter.ofLocalizedDate(FormatStyle.LONG)
 

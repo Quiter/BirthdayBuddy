@@ -304,5 +304,7 @@
     - **NotificationViewModel Integration:** Kombination der Settings- und Erinnerungsregel-Flows über den `combine`-Operator zu einem einzigen `NotificationUiState`-Flow.
     - **OnboardingViewModel Optimierung:** Bereinigung des `onboardingCompleted`-Flows durch direkte Abbildung aus den Repository-Einstellungen, wodurch der redundante Zwischen-Flow und doppelte `stateIn`-Aufrufe entfallen.
     - **Compose-Anpassung:** Refactoring von `CalendarSettingsScreen`, `NotificationSettingsScreen`, `OtherEventsSettingsScreen` und `ThemeSettingsScreen`, um den Zustand direkt aus dem jeweiligen `uiState` zu abonnieren.
+153. **ContactMapper Scoping (Performance):**
+    - **@Reusable Scoping:** Annotation der `ContactMapper`-Klasse mit `@Reusable` zur Wiederverwendung der Mapper-Instanz in der Hilt-Dependency Injection. Dies reduziert redundante Objekterzeugungen und Garbage-Collector-Overhead.
 
 
