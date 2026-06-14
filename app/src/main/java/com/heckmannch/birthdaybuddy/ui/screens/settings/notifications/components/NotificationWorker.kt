@@ -14,7 +14,13 @@ import com.heckmannch.birthdaybuddy.data.repository.ContactRepository
 import com.heckmannch.birthdaybuddy.data.repository.NotificationRepository
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlin.time.Duration.Companion.milliseconds
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.launch
 import java.time.Duration
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -125,11 +131,12 @@ class NotificationWorker @AssistedInject constructor(
             }
         }
 
-        // Plane den nächsten Lauf sauber mit einer kurzen Verzögerung nach Beendigung dieser Ausführung auf dem Main-Thread.
+        // Plane den nächsten Lauf sauber mit einer kurzen Verzögerung nach Beendigung dieser Ausführung.
         // Dies verhindert eine Race-Condition, bei der sich der aktuell laufende Worker durch REPLACE selbst abbricht.
-        android.os.Handler(android.os.Looper.getMainLooper()).postDelayed({
+        applicationScope.launch {
+            delay(1000.milliseconds)
             scheduleNext(context, rules)
-        }, 1000)
+        }
 
         return Result.success()
     }
@@ -192,6 +199,7 @@ class NotificationWorker @AssistedInject constructor(
 
     companion object {
         private const val WORK_NAME = "FlexibleNotificationUpdate"
+        private val applicationScope = CoroutineScope(Dispatchers.Default + SupervisorJob())
 
         /**
          * Plant den nächsten fälligen Zeitpunkt basierend auf allen Regeln.

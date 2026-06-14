@@ -310,6 +310,11 @@
     - **Caching von String-Splits & -Replacements:** Ersetzung von dynamisch kompilierten `.toRegex()`-Aufrufen in `ContactMapper.kt`, `ContactActions.kt` und `DateUtils.kt` durch statisch deklarierte und wiederverwendbare `WHITESPACE_REGEX`-Objekte. Dies vermeidet wiederholtes Kompilieren desselben Musters bei häufig ausgeführten Operationen (z. B. beim Mapping von Kontakten und Formatieren von Telefonnummern).
 155. **Thread-Sicherheit & Dispatcher-Zuweisung (Performance):**
     - **syncScheduling Dispatcher:** Ausführung von `syncScheduling()` in `NotificationRepository.kt` auf `Dispatchers.IO` über `withContext(Dispatchers.IO)`. Dies stellt sicher, dass das Abfragen der Benachrichtigungsregeln aus der Datenbank und das Scheduling des WorkManagers im Hintergrund ausgeführt werden und nicht den aufrufenden Thread (oft den Main-Thread der ViewModels) blockieren.
+156. **Robuste Worker-Selbstplanung (Stability):**
+    - **Coroutine-basierte Rescheduling-Verzögerung:** Umstellung der zeitverzögerten Selbstplanung in `NotificationWorker.kt` und `BirthdayWidgetWorker.kt` von der unzuverlässigen, main-thread-gebundenen `Handler.postDelayed(...)`-API auf ein prozessweites `CoroutineScope`-Verfahren (`applicationScope.launch { delay(1000.milliseconds); ... }`). Dies verbessert die Robustheit des zeitverzögerten Neu-Einreihens nach Ausführungserfolg der Hintergrund-Worker.
+    - **Lösung von Compiler-Warnungen:** Verwendung des modernen `Duration`-Parameters bei `delay(1000.milliseconds)` anstelle des veralteten `Long`-Overloads, um Kotlin-Compiler-Warnungen vollständig aufzulösen.
+
+
 
 
 
