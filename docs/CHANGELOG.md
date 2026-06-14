@@ -104,6 +104,11 @@
     - **Entfernung:** Löschung der nicht verwendeten `kotlinx-serialization-json` Bibliothek aus [build.gradle.kts](file:///c:/Users/chris/AndroidStudioProjects/BirthdayBuddy/app/build.gradle.kts) und dem Version Catalog [libs.versions.toml](file:///c:/Users/chris/AndroidStudioProjects/BirthdayBuddy/gradle/libs.versions.toml). Dies reduziert die Anzahl der Bibliotheken im Klassenpfad und bereinigt die Build-Konfiguration.
 161. **Hardcodierte Farbe durch BirthdayKidAmber ersetzt (Clean Code & UI Consistency):**
     - **Ersetzung:** Ersetzung der fest in [BirthdayItem.kt](file:///c:/Users/chris/AndroidStudioProjects/BirthdayBuddy/app/src/main/java/com/heckmannch/birthdaybuddy/ui/screens/home/components/list/BirthdayItem.kt) kodierten Hex-Farbe `Color(0xFFFFB300)` durch die vordefinierte, semantische Farbkonstante `BirthdayKidAmber` aus dem Theme-Paket. Dies vereinheitlicht die Farbpalette der App und beseitigt redundante Farbwahrnehmungen im UI.
+162. **BackupViewModel Coroutine-Kapselung & Thread-Sicherheit (Architecture & Concurrency):**
+    - **Vermeidung von Suspend-Exposition:** Umstellung der Methoden in [BackupViewModel.kt](file:///c:/Users/chris/AndroidStudioProjects/BirthdayBuddy/app/src/main/java/com/heckmannch/birthdaybuddy/viewmodel/BackupViewModel.kt) auf reguläre (nicht-suspend) Funktionen. Das Starten der Coroutines erfolgt nun intern über den viewModel-eigenen `viewModelScope.launch`, anstatt diese Verantwortung dem UI-Layer aufzubürden.
+    - **Echte Thread-Sicherheit (I/O):** Die blockierenden Datei-Lese- und Schreibvorgänge (ContentResolver-Operationen über Uri-Streams) wurden aus der Compose-UI in das ViewModel verlagert und werden dort explizit auf dem für Dateizugriffe optimierten `Dispatchers.IO`-Thread ausgeführt.
+    - **UI-Bereinigung:** Vollständiges Entfernen von `rememberCoroutineScope()`, `scope.launch` und nicht genutzten Coroutine-Imports in [BackupScreen.kt](file:///c:/Users/chris/AndroidStudioProjects/BirthdayBuddy/app/src/main/java/com/heckmannch/birthdaybuddy/ui/screens/settings/backup/BackupScreen.kt).
+
 
 
 
