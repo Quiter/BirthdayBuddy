@@ -91,7 +91,7 @@ dependencies {
     implementation(libs.androidx.work.runtime.ktx)
     implementation(libs.material)
     implementation(libs.lottie.compose)
-    implementation(libs.kotlinx.serialization.json)
+
 
     // Coroutines
     implementation(libs.kotlinx.coroutines.core)

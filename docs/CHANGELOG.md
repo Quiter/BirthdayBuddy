@@ -100,6 +100,9 @@
 159. **Couple-Operationen in Datenbank-Transaktionen gekapselt (Stability & Data Integrity):**
     - **Transaktionale Kapselung:** Verwendung von Room-Transaktionen (`withTransaction`) für alle verknüpfenden und trennenden Operationen in [ContactRepository.kt](file:///c:/Users/chris/AndroidStudioProjects/BirthdayBuddy/app/src/main/java/com/heckmannch/birthdaybuddy/data/repository/ContactRepository.kt). Da Kontakte und Benutzerdaten in zwei separaten Datenbank-Dateien liegen (`AppDatabase` und `SettingsDatabase`), werden die Änderungen in jeder der beiden Datenbanken nun jeweils atomar in einer Transaktion durchgeführt.
     - **Vermeidung inkonsistenter Zustände:** Dies stellt sicher, dass partnerbezogene Verknüpfungen (z. B. das gegenseitige Speichern des `spouseLookupKey`) entweder auf beiden Seiten vollständig oder gar nicht in der Datenbank gespeichert werden. Auch die Anpassungen in der Ignorierliste von Paaren (`ignoreCoupleSuggestion`, `clearIgnoredCouplePairs`) werden nun transaktionsgesichert ausgeführt.
+160. **Ungenutzte kotlinx-serialization Dependency entfernt (Clean Code & Dependency Management):**
+    - **Entfernung:** Löschung der nicht verwendeten `kotlinx-serialization-json` Bibliothek aus [build.gradle.kts](file:///c:/Users/chris/AndroidStudioProjects/BirthdayBuddy/app/build.gradle.kts) und dem Version Catalog [libs.versions.toml](file:///c:/Users/chris/AndroidStudioProjects/BirthdayBuddy/gradle/libs.versions.toml). Dies reduziert die Anzahl der Bibliotheken im Klassenpfad und bereinigt die Build-Konfiguration.
+
 
 
 
