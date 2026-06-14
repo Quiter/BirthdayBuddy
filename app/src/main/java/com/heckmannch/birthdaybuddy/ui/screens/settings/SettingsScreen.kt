@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.Label
@@ -35,6 +36,7 @@ import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -75,6 +77,14 @@ enum class SettingsTab {
     ABOUT,
     PRIVACY_POLICY
 }
+
+private data class SettingsMenuItemData(
+    val titleRes: Int,
+    val descRes: Int,
+    val icon: androidx.compose.ui.graphics.vector.ImageVector,
+    val tab: SettingsTab,
+    val onClick: () -> Unit
+)
 
 @Composable
 fun SettingsScreen(
@@ -120,6 +130,76 @@ private fun SettingsContent(
     onNavigateToOtherEvents: () -> Unit,
     onNavigateBack: () -> Unit,
 ) {
+    val menuItems = remember(
+        onNavigateToNotifications,
+        onNavigateToCalendar,
+        onNavigateToLabels,
+        onNavigateToBackup,
+        onNavigateToTheme,
+        onNavigateToSync,
+        onNavigateToOtherEvents,
+        onNavigateToAbout
+    ) {
+        listOf(
+            SettingsMenuItemData(
+                titleRes = R.string.settings_notifications_title,
+                descRes = R.string.settings_notifications_desc,
+                icon = Icons.Default.Notifications,
+                tab = SettingsTab.NOTIFICATIONS,
+                onClick = onNavigateToNotifications
+            ),
+            SettingsMenuItemData(
+                titleRes = R.string.settings_calendar_title,
+                descRes = R.string.settings_calendar_desc,
+                icon = Icons.Default.DateRange,
+                tab = SettingsTab.CALENDAR,
+                onClick = onNavigateToCalendar
+            ),
+            SettingsMenuItemData(
+                titleRes = R.string.settings_labels_title,
+                descRes = R.string.settings_labels_desc,
+                icon = Icons.AutoMirrored.Filled.Label,
+                tab = SettingsTab.LABELS,
+                onClick = onNavigateToLabels
+            ),
+            SettingsMenuItemData(
+                titleRes = R.string.settings_backup_title,
+                descRes = R.string.settings_backup_desc,
+                icon = Icons.Default.Share,
+                tab = SettingsTab.BACKUP,
+                onClick = onNavigateToBackup
+            ),
+            SettingsMenuItemData(
+                titleRes = R.string.settings_theme_title,
+                descRes = R.string.settings_theme_desc,
+                icon = Icons.Default.Palette,
+                tab = SettingsTab.THEME,
+                onClick = onNavigateToTheme
+            ),
+            SettingsMenuItemData(
+                titleRes = R.string.settings_sync_title,
+                descRes = R.string.settings_sync_desc,
+                icon = Icons.Default.Refresh,
+                tab = SettingsTab.SYNC,
+                onClick = onNavigateToSync
+            ),
+            SettingsMenuItemData(
+                titleRes = R.string.settings_other_events_title,
+                descRes = R.string.settings_other_events_desc,
+                icon = Icons.Default.Star,
+                tab = SettingsTab.OTHER_EVENTS,
+                onClick = onNavigateToOtherEvents
+            ),
+            SettingsMenuItemData(
+                titleRes = R.string.settings_about_title,
+                descRes = R.string.settings_about_desc,
+                icon = Icons.Default.Info,
+                tab = SettingsTab.ABOUT,
+                onClick = onNavigateToAbout
+            )
+        )
+    }
+
     if (windowWidthSizeClass == WindowWidthSizeClass.Compact) {
         val scrollBehavior =
             TopAppBarDefaults.exitUntilCollapsedScrollBehavior(rememberTopAppBarState())
@@ -149,115 +229,12 @@ private fun SettingsContent(
                         .weight(1f)
                         .fillMaxWidth(),
                 ) {
-                    item {
-                        ListItem(
-                            headlineContent = { Text(stringResource(R.string.settings_notifications_title)) },
-                            supportingContent = { Text(stringResource(R.string.settings_notifications_desc)) },
-                            leadingContent = {
-                                Icon(
-                                    Icons.Default.Notifications,
-                                    contentDescription = null
-                                )
-                            },
-                            modifier = Modifier.clickable { onNavigateToNotifications() }
-                        )
-                    }
-
-                    item {
-                        ListItem(
-                            headlineContent = { Text(stringResource(R.string.settings_calendar_title)) },
-                            supportingContent = { Text(stringResource(R.string.settings_calendar_desc)) },
-                            leadingContent = {
-                                Icon(
-                                    Icons.Default.DateRange,
-                                    contentDescription = null
-                                )
-                            },
-                            modifier = Modifier.clickable { onNavigateToCalendar() }
-                        )
-                    }
-
-                    item {
-                        ListItem(
-                            headlineContent = { Text(stringResource(R.string.settings_labels_title)) },
-                            supportingContent = { Text(stringResource(R.string.settings_labels_desc)) },
-                            leadingContent = {
-                                Icon(
-                                    Icons.AutoMirrored.Filled.Label,
-                                    contentDescription = null
-                                )
-                            },
-                            modifier = Modifier.clickable { onNavigateToLabels() }
-                        )
-                    }
-
-                    item {
-                        ListItem(
-                            headlineContent = { Text(stringResource(R.string.settings_backup_title)) },
-                            supportingContent = { Text(stringResource(R.string.settings_backup_desc)) },
-                            leadingContent = {
-                                Icon(
-                                    Icons.Default.Share,
-                                    contentDescription = null
-                                )
-                            },
-                            modifier = Modifier.clickable { onNavigateToBackup() }
-                        )
-                    }
-
-                    item {
-                        ListItem(
-                            headlineContent = { Text(stringResource(R.string.settings_theme_title)) },
-                            supportingContent = { Text(stringResource(R.string.settings_theme_desc)) },
-                            leadingContent = {
-                                Icon(
-                                    Icons.Default.Palette,
-                                    contentDescription = null
-                                )
-                            },
-                            modifier = Modifier.clickable { onNavigateToTheme() }
-                        )
-                    }
-
-                    item {
-                        ListItem(
-                            headlineContent = { Text(stringResource(R.string.settings_sync_title)) },
-                            supportingContent = { Text(stringResource(R.string.settings_sync_desc)) },
-                            leadingContent = {
-                                Icon(
-                                    Icons.Default.Refresh,
-                                    contentDescription = null
-                                )
-                            },
-                            modifier = Modifier.clickable { onNavigateToSync() }
-                        )
-                    }
-
-                    item {
-                        ListItem(
-                            headlineContent = { Text(stringResource(R.string.settings_other_events_title)) },
-                            supportingContent = { Text(stringResource(R.string.settings_other_events_desc)) },
-                            leadingContent = {
-                                Icon(
-                                    Icons.Default.Star,
-                                    contentDescription = null
-                                )
-                            },
-                            modifier = Modifier.clickable { onNavigateToOtherEvents() }
-                        )
-                    }
-
-                    item {
-                        ListItem(
-                            headlineContent = { Text(stringResource(R.string.settings_about_title)) },
-                            supportingContent = { Text(stringResource(R.string.settings_about_desc)) },
-                            leadingContent = {
-                                Icon(
-                                    Icons.Default.Info,
-                                    contentDescription = null
-                                )
-                            },
-                            modifier = Modifier.clickable { onNavigateToAbout() }
+                    items(menuItems) { item ->
+                        SettingsMenuItem(
+                            titleRes = item.titleRes,
+                            descRes = item.descRes,
+                            icon = item.icon,
+                            onClick = item.onClick
                         )
                     }
                 }
@@ -307,124 +284,17 @@ private fun SettingsContent(
                             .weight(1f)
                             .fillMaxWidth()
                     ) {
-                        item {
-                            val isSelected = activeTab == SettingsTab.NOTIFICATIONS
-                            ListItem(
-                                headlineContent = { Text(stringResource(R.string.settings_notifications_title)) },
-                                supportingContent = { Text(stringResource(R.string.settings_notifications_desc)) },
-                                leadingContent = {
-                                    Icon(Icons.Default.Notifications, contentDescription = null)
-                                },
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .background(if (isSelected) MaterialTheme.colorScheme.primaryContainer else Color.Unspecified)
-                                    .clickable { activeTab = SettingsTab.NOTIFICATIONS }
-                            )
-                        }
-
-                        item {
-                            val isSelected = activeTab == SettingsTab.CALENDAR
-                            ListItem(
-                                headlineContent = { Text(stringResource(R.string.settings_calendar_title)) },
-                                supportingContent = { Text(stringResource(R.string.settings_calendar_desc)) },
-                                leadingContent = {
-                                    Icon(Icons.Default.DateRange, contentDescription = null)
-                                },
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .background(if (isSelected) MaterialTheme.colorScheme.primaryContainer else Color.Unspecified)
-                                    .clickable { activeTab = SettingsTab.CALENDAR }
-                            )
-                        }
-
-                        item {
-                            val isSelected = activeTab == SettingsTab.LABELS
-                            ListItem(
-                                headlineContent = { Text(stringResource(R.string.settings_labels_title)) },
-                                supportingContent = { Text(stringResource(R.string.settings_labels_desc)) },
-                                leadingContent = {
-                                    Icon(Icons.AutoMirrored.Filled.Label, contentDescription = null)
-                                },
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .background(if (isSelected) MaterialTheme.colorScheme.primaryContainer else Color.Unspecified)
-                                    .clickable { activeTab = SettingsTab.LABELS }
-                            )
-                        }
-
-                        item {
-                            val isSelected = activeTab == SettingsTab.BACKUP
-                            ListItem(
-                                headlineContent = { Text(stringResource(R.string.settings_backup_title)) },
-                                supportingContent = { Text(stringResource(R.string.settings_backup_desc)) },
-                                leadingContent = {
-                                    Icon(Icons.Default.Share, contentDescription = null)
-                                },
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .background(if (isSelected) MaterialTheme.colorScheme.primaryContainer else Color.Unspecified)
-                                    .clickable { activeTab = SettingsTab.BACKUP }
-                            )
-                        }
-
-                        item {
-                            val isSelected = activeTab == SettingsTab.THEME
-                            ListItem(
-                                headlineContent = { Text(stringResource(R.string.settings_theme_title)) },
-                                supportingContent = { Text(stringResource(R.string.settings_theme_desc)) },
-                                leadingContent = {
-                                    Icon(Icons.Default.Palette, contentDescription = null)
-                                },
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .background(if (isSelected) MaterialTheme.colorScheme.primaryContainer else Color.Unspecified)
-                                    .clickable { activeTab = SettingsTab.THEME }
-                            )
-                        }
-
-                        item {
-                            val isSelected = activeTab == SettingsTab.SYNC
-                            ListItem(
-                                headlineContent = { Text(stringResource(R.string.settings_sync_title)) },
-                                supportingContent = { Text(stringResource(R.string.settings_sync_desc)) },
-                                leadingContent = {
-                                    Icon(Icons.Default.Refresh, contentDescription = null)
-                                },
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .background(if (isSelected) MaterialTheme.colorScheme.primaryContainer else Color.Unspecified)
-                                    .clickable { activeTab = SettingsTab.SYNC }
-                            )
-                        }
-
-                        item {
-                            val isSelected = activeTab == SettingsTab.OTHER_EVENTS
-                            ListItem(
-                                headlineContent = { Text(stringResource(R.string.settings_other_events_title)) },
-                                supportingContent = { Text(stringResource(R.string.settings_other_events_desc)) },
-                                leadingContent = {
-                                    Icon(Icons.Default.Star, contentDescription = null)
-                                },
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .background(if (isSelected) MaterialTheme.colorScheme.primaryContainer else Color.Unspecified)
-                                    .clickable { activeTab = SettingsTab.OTHER_EVENTS }
-                            )
-                        }
-
-                        item {
-                            val isSelected =
-                                activeTab == SettingsTab.ABOUT || activeTab == SettingsTab.PRIVACY_POLICY
-                            ListItem(
-                                headlineContent = { Text(stringResource(R.string.settings_about_title)) },
-                                supportingContent = { Text(stringResource(R.string.settings_about_desc)) },
-                                leadingContent = {
-                                    Icon(Icons.Default.Info, contentDescription = null)
-                                },
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .background(if (isSelected) MaterialTheme.colorScheme.primaryContainer else Color.Unspecified)
-                                    .clickable { activeTab = SettingsTab.ABOUT }
+                        items(menuItems) { item ->
+                            val isSelected = when (item.tab) {
+                                SettingsTab.ABOUT -> activeTab == SettingsTab.ABOUT || activeTab == SettingsTab.PRIVACY_POLICY
+                                else -> activeTab == item.tab
+                            }
+                            SettingsMenuItem(
+                                titleRes = item.titleRes,
+                                descRes = item.descRes,
+                                icon = item.icon,
+                                isSelected = isSelected,
+                                onClick = { activeTab = item.tab }
                             )
                         }
                     }
@@ -548,6 +418,25 @@ private fun SettingsContent(
 
 @Composable
 private fun SettingsFooter() {
+}
+
+@Composable
+private fun SettingsMenuItem(
+    titleRes: Int,
+    descRes: Int,
+    icon: androidx.compose.ui.graphics.vector.ImageVector,
+    isSelected: Boolean = false,
+    onClick: () -> Unit
+) {
+    ListItem(
+        headlineContent = { Text(stringResource(titleRes)) },
+        supportingContent = { Text(stringResource(descRes)) },
+        leadingContent = { Icon(icon, contentDescription = null) },
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(if (isSelected) MaterialTheme.colorScheme.primaryContainer else Color.Unspecified)
+            .clickable { onClick() }
+    )
 }
 
 @Preview(showBackground = true)

@@ -313,6 +313,10 @@
 156. **Robuste Worker-Selbstplanung (Stability):**
     - **Coroutine-basierte Rescheduling-Verzögerung:** Umstellung der zeitverzögerten Selbstplanung in `NotificationWorker.kt` und `BirthdayWidgetWorker.kt` von der unzuverlässigen, main-thread-gebundenen `Handler.postDelayed(...)`-API auf ein prozessweites `CoroutineScope`-Verfahren (`applicationScope.launch { delay(1000.milliseconds); ... }`). Dies verbessert die Robustheit des zeitverzögerten Neu-Einreihens nach Ausführungserfolg der Hintergrund-Worker.
     - **Lösung von Compiler-Warnungen:** Verwendung des modernen `Duration`-Parameters bei `delay(1000.milliseconds)` anstelle des veralteten `Long`-Overloads, um Kotlin-Compiler-Warnungen vollständig aufzulösen.
+157. **SettingsScreen Code-Duplikation behoben (Refactoring & Clean Code):**
+    - **Deklaration konsolidiert:** Einführung der Datenklasse `SettingsMenuItemData` in [SettingsScreen.kt](file:///c:/Users/chris/AndroidStudioProjects/BirthdayBuddy/app/src/main/java/com/heckmannch/birthdaybuddy/ui/screens/settings/SettingsScreen.kt), um alle Menüpunkte an einer einzigen Stelle zu deklarieren (`menuItems` via `remember`).
+    - **LazyColumn-Schlankheit:** Verwendung von `items(menuItems)` in den beiden Layouts (Compact für Smartphones und split-pane Master-Detail für Tablets). Dies eliminiert die doppelte, zeilenweise Definition aller Menüeinträge und deren Callbacks.
+
 
 
 
