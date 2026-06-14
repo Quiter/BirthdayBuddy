@@ -41,6 +41,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
+import com.heckmannch.birthdaybuddy.ui.theme.BirthdayKidAmber
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalHapticFeedback
@@ -176,7 +177,7 @@ fun BirthdayItem(
                                     Icons.Default.Edit,
                                     contentDescription = null,
                                     modifier = Modifier.size(14.dp),
-                                    tint = Color(0xFFFFB300)
+                                    tint = BirthdayKidAmber
                                 )
                             }
                         }
