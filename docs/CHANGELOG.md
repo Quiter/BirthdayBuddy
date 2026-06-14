@@ -111,6 +111,14 @@
 163. **Duplizierter Handler in ContentObserver behoben (Clean Code & Optimization):**
     - **Handler-Kapselung:** Definition einer einzigen Instanz von `Handler(Looper.getMainLooper())` im `DisposableEffect`-Block von [MainActivity.kt](file:///c:/Users/chris/AndroidStudioProjects/BirthdayBuddy/app/src/main/java/com/heckmannch/birthdaybuddy/MainActivity.kt).
     - **Vermeidung von Redundanz:** Diese Instanz wird nun sowohl an den Konstruktor der Superklasse `ContentObserver` übergeben als auch im Runnable-Debounce (`removeCallbacks`/`postDelayed`) wiederverwendet, anstatt zwei separate Instanzen des Haupt-Thread-Handlers zu erzeugen.
+164. **Bereinigung veralteter Gradle-Properties (Clean Code & Configuration):**
+    - **Jetifier-Entfernung:** Löschung der veralteten Eigenschaft `android.enableJetifier=false` aus [gradle.properties](file:///c:/Users/chris/AndroidStudioProjects/BirthdayBuddy/gradle.properties), da Jetifier ab Android Gradle Plugin (AGP) 8.0+ standardmäßig deaktiviert ist und keine Auswirkung mehr hat.
+    - **newDsl-Verifizierung:** Verifizierung und Beibehaltung von `android.newDsl=false`. Ein temporärer Entfernungsversuch bestätigte, dass das verwendete `androidx.baselineprofile` Plugin (Version 1.4.1) unter AGP 9.2.1 die veralteten Variant-APIs nutzt und ohne dieses Flag mit dem Fehler `Module :app is not a supported android module` fehlschlägt.
+165. **Widget DateTimeFormatter-Hoisting (Performance & Optimization):**
+    - **Hoisting:** Verschiebung der Instanziierung von `dateFormatter` and `dayMonthFormatter` aus der Zeilen-Schleife (`BirthdayRow`) in das übergeordnete Composable `WidgetContent` in [BirthdayWidget.kt](file:///c:/Users/chris/AndroidStudioProjects/BirthdayBuddy/app/src/main/java/com/heckmannch/birthdaybuddy/widget/BirthdayWidget.kt).
+    - **Verwendung von remember:** Kapselung der Erzeugung in `remember`-Blöcken unter Einbeziehung des aktuellen `locale` als Key, sodass die Formatierer nur einmal pro Widget-Update erzeugt und für alle Tabellenzeilen wiederverwendet werden, anstatt sie für jedes einzelne Geburtstagselement neu zu allozieren.
+
+
 
 
 
