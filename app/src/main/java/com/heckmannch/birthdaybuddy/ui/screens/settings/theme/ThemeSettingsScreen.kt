@@ -68,9 +68,10 @@ fun ThemeSettingsScreen(
     showBackButton: Boolean = true,
     onNavigateBack: () -> Unit
 ) {
-    val themeMode by viewModel.themeMode.collectAsStateWithLifecycle()
-    val themeAmoled by viewModel.themeAmoled.collectAsStateWithLifecycle()
-    val themeAccent by viewModel.themeAccent.collectAsStateWithLifecycle()
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val themeMode = uiState.themeMode
+    val themeAmoled = uiState.themeAmoled
+    val themeAccent = uiState.themeAccent
 
     var showColorPickerDialog by remember { mutableStateOf(false) }
 

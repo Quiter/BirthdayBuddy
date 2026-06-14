@@ -96,6 +96,9 @@
 - ### 📁 Models (`ui.model`)
     - `ContactUiModel.kt`: Immutable UI-Modell für Kontakte.
     - `HomeUiState.kt`: Gebündelter State für den Home-Screen.
+    - `CalendarUiState.kt`: Gebündelter State für den Kalender-Einstellungs-Screen.
+    - `NotificationUiState.kt`: Gebündelter State für den Benachrichtigungs-Einstellungs-Screen.
+    - `ThemeUiState.kt`: Gebündelter State für den Design-Einstellungs-Screen.
     - `LabelManagementModel.kt`: Modell für die Label-Verwaltung.
     - `GiftIdea.kt`: Modell für Geschenkideen mit JSON- und Manipulations-Logik.
     - `CoupleSuggestionUiModel.kt`: Immutable UI-Modell für Paar-Vorschläge, entkoppelt die UI-Schicht von der Room-Entity.

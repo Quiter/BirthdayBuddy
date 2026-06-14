@@ -299,5 +299,10 @@
 151. **Baseline Profile: Fehlende User Journeys dokumentiert (Performance / TODO):**
     - **Dokumentation:** TODO-Kommentare mit Code-Skizzen für 4 kritische User Journeys in [BaselineProfileGenerator.kt](file:///C:/Users/chris/AndroidStudioProjects/BirthdayBuddy/baselineprofile/src/main/java/com/heckmannch/birthdaybuddy/baselineprofile/BaselineProfileGenerator.kt) hinzugefügt: Home-Screen-Scrollen, Suche/Filter, Kontakt-Details expandieren, Settings-Navigation.
     - **Hintergrund:** Der Generator deckte bisher nur den App-Start ab. Die dokumentierten Journeys stellen sicher, dass bei einer späteren Implementierung die meistgenutzten Code-Pfade AOT-kompiliert werden.
+152. **Optimierte ViewModel-State Flows (Redundante stateIn-Ketten behoben):**
+    - **UiState-Konsolidierung:** Zusammenfassung mehrerer einzelner `stateIn`-Properties zu einem einzigen, gebündelten `UiState`-Flow in `CalendarViewModel` (`CalendarUiState`), `NotificationViewModel` (`NotificationUiState`) und `ThemeViewModel` (`ThemeUiState`). Dies eliminiert redundante Sammlungs- und Konvertierungsketten.
+    - **NotificationViewModel Integration:** Kombination der Settings- und Erinnerungsregel-Flows über den `combine`-Operator zu einem einzigen `NotificationUiState`-Flow.
+    - **OnboardingViewModel Optimierung:** Bereinigung des `onboardingCompleted`-Flows durch direkte Abbildung aus den Repository-Einstellungen, wodurch der redundante Zwischen-Flow und doppelte `stateIn`-Aufrufe entfallen.
+    - **Compose-Anpassung:** Refactoring von `CalendarSettingsScreen`, `NotificationSettingsScreen`, `OtherEventsSettingsScreen` und `ThemeSettingsScreen`, um den Zustand direkt aus dem jeweiligen `uiState` zu abonnieren.
 
 

@@ -76,11 +76,12 @@ fun CalendarSettingsScreen(
     onNavigateBack: () -> Unit,
 ) {
     LocalContext.current
-    val calendarSyncEnabled by viewModel.calendarSyncEnabled.collectAsStateWithLifecycle()
-    val otherEventsEnabled by viewModel.otherEventsEnabled.collectAsStateWithLifecycle()
-    val birthdayColor by viewModel.birthdayCalendarColor.collectAsStateWithLifecycle()
-    val anniversaryColor by viewModel.anniversaryCalendarColor.collectAsStateWithLifecycle()
-    val nameDayColor by viewModel.nameDayCalendarColor.collectAsStateWithLifecycle()
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val calendarSyncEnabled = uiState.calendarSyncEnabled
+    val otherEventsEnabled = uiState.otherEventsEnabled
+    val birthdayColor = uiState.birthdayCalendarColor
+    val anniversaryColor = uiState.anniversaryCalendarColor
+    val nameDayColor = uiState.nameDayCalendarColor
     var hasPermission by remember { mutableStateOf(viewModel.hasCalendarPermissions()) }
 
     var activeColorPickerType by remember {
