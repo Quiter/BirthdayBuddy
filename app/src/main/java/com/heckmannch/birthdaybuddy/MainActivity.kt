@@ -179,6 +179,7 @@ class MainActivity : ComponentActivity() {
                         }
                         onDispose {
                             contentResolver.unregisterContentObserver(observer)
+                            mainHandler.removeCallbacksAndMessages(null)
                         }
                     }
 
