@@ -40,7 +40,9 @@ class ContactRepository @Inject constructor(
 ) {
 
     val allContacts: Flow<List<Contact>> = contactDao.getAllContacts()
+        .distinctUntilChanged()
     val labelConfigs: Flow<List<LabelConfig>> = labelConfigDao.getAllConfigs()
+        .distinctUntilChanged()
     val otherEventsEnabled: Flow<Boolean> = appSettingsDao.getSettings()
         .map { it?.otherEventsEnabled ?: false }
         .distinctUntilChanged()

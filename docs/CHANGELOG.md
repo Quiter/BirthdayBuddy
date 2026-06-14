@@ -281,5 +281,10 @@
     - **Layer-Trennung:** Entfernung der Room-Entity `Contact` aus der UI-Schicht. `HomeUiState.coupleSuggestion` ist nun `CoupleSuggestionUiModel?` statt `Pair<Contact, Contact>?`. Dies behebt den Widerspruch, dass `HomeUiState` als `@Immutable` annotiert war, aber eine instabile Room-Entity enthielt.
     - **Initialen-Vorberechnung:** Die Initialen werden nun im ViewModel vorberechnet statt bei jeder Recomposition inline im `CoupleSuggestionBanner`.
     - **Betroffene Dateien:** [HomeUiState.kt](file:///C:/Users/chris/AndroidStudioProjects/BirthdayBuddy/app/src/main/java/com/heckmannch/birthdaybuddy/ui/model/HomeUiState.kt), [HomeViewModel.kt](file:///C:/Users/chris/AndroidStudioProjects/BirthdayBuddy/app/src/main/java/com/heckmannch/birthdaybuddy/viewmodel/HomeViewModel.kt), [BirthdayList.kt](file:///C:/Users/chris/AndroidStudioProjects/BirthdayBuddy/app/src/main/java/com/heckmannch/birthdaybuddy/ui/screens/home/components/list/BirthdayList.kt).
+148. **Flow-Optimierung: `distinctUntilChanged()` auf Repository-Flows (Performance):**
+    - **Redundante Emissionen eliminiert:** Room-DAOs emittieren bei jeder Tabellen-Schreiboperation die gesamte Liste neu — auch wenn sich die Daten nicht geändert haben. Durch `.distinctUntilChanged()` werden identische aufeinanderfolgende Emissionen herausgefiltert.
+    - **ContactRepository:** `allContacts` und `labelConfigs` in [ContactRepository.kt](file:///C:/Users/chris/AndroidStudioProjects/BirthdayBuddy/app/src/main/java/com/heckmannch/birthdaybuddy/data/repository/ContactRepository.kt).
+    - **NotificationRepository:** `allRules` und `settings` in [NotificationRepository.kt](file:///C:/Users/chris/AndroidStudioProjects/BirthdayBuddy/app/src/main/java/com/heckmannch/birthdaybuddy/data/repository/NotificationRepository.kt).
+    - **Hinweis:** `otherEventsEnabled`, `ignoredCouplePairs` (ContactRepository) und `currentDate` (TimeRepository) hatten bereits `distinctUntilChanged()`.
 
 
