@@ -158,14 +158,14 @@ class MainActivity : ComponentActivity() {
                     val context = LocalContext.current
                     DisposableEffect(context) {
                         val contentResolver = context.contentResolver
-                        val observer = object : ContentObserver(Handler(Looper.getMainLooper())) {
-                            private val handler = Handler(Looper.getMainLooper())
+                        val mainHandler = Handler(Looper.getMainLooper())
+                        val observer = object : ContentObserver(mainHandler) {
                             private val syncRunnable = Runnable { homeViewModel.syncContacts() }
 
                             override fun onChange(selfChange: Boolean) {
                                 super.onChange(selfChange)
-                                handler.removeCallbacks(syncRunnable)
-                                handler.postDelayed(syncRunnable, 1000) // 1 Sekunde Debounce
+                                mainHandler.removeCallbacks(syncRunnable)
+                                mainHandler.postDelayed(syncRunnable, 1000) // 1 Sekunde Debounce
                             }
                         }
                         try {

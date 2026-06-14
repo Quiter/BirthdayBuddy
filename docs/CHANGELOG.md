@@ -108,6 +108,9 @@
     - **Vermeidung von Suspend-Exposition:** Umstellung der Methoden in [BackupViewModel.kt](file:///c:/Users/chris/AndroidStudioProjects/BirthdayBuddy/app/src/main/java/com/heckmannch/birthdaybuddy/viewmodel/BackupViewModel.kt) auf reguläre (nicht-suspend) Funktionen. Das Starten der Coroutines erfolgt nun intern über den viewModel-eigenen `viewModelScope.launch`, anstatt diese Verantwortung dem UI-Layer aufzubürden.
     - **Echte Thread-Sicherheit (I/O):** Die blockierenden Datei-Lese- und Schreibvorgänge (ContentResolver-Operationen über Uri-Streams) wurden aus der Compose-UI in das ViewModel verlagert und werden dort explizit auf dem für Dateizugriffe optimierten `Dispatchers.IO`-Thread ausgeführt.
     - **UI-Bereinigung:** Vollständiges Entfernen von `rememberCoroutineScope()`, `scope.launch` und nicht genutzten Coroutine-Imports in [BackupScreen.kt](file:///c:/Users/chris/AndroidStudioProjects/BirthdayBuddy/app/src/main/java/com/heckmannch/birthdaybuddy/ui/screens/settings/backup/BackupScreen.kt).
+163. **Duplizierter Handler in ContentObserver behoben (Clean Code & Optimization):**
+    - **Handler-Kapselung:** Definition einer einzigen Instanz von `Handler(Looper.getMainLooper())` im `DisposableEffect`-Block von [MainActivity.kt](file:///c:/Users/chris/AndroidStudioProjects/BirthdayBuddy/app/src/main/java/com/heckmannch/birthdaybuddy/MainActivity.kt).
+    - **Vermeidung von Redundanz:** Diese Instanz wird nun sowohl an den Konstruktor der Superklasse `ContentObserver` übergeben als auch im Runnable-Debounce (`removeCallbacks`/`postDelayed`) wiederverwendet, anstatt zwei separate Instanzen des Haupt-Thread-Handlers zu erzeugen.
 
 
 
