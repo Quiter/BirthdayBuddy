@@ -293,5 +293,8 @@
     - **Configuration-Cache:** `org.gradle.configuration-cache=true` — parsed Build-Scripts nur einmal (kompatibel mit Hilt 2.59+ und KSP 2.3+).
     - **Kotlin Incremental:** `kotlin.incremental=true` explizit aktiviert.
     - **Bereinigung:** Entfernung des veralteten Legacy-Flags `android.disallowKotlinSourceSets=false`. `android.newDsl=false` bleibt erhalten (erforderlich für die Kompatibilität des BaselineProfile-Plugins mit `configure<ApplicationExtension>`).
+150. **ProGuard: Lesbare Crash-Stacktraces aktiviert (Stability):**
+    - **Aktivierung:** `-keepattributes SourceFile,LineNumberTable` und `-renamesourcefileattribute SourceFile` in [proguard-rules.pro](file:///C:/Users/chris/AndroidStudioProjects/BirthdayBuddy/app/proguard-rules.pro) einkommentiert.
+    - **Effekt:** Release-Crash-Reports (Play Console, Firebase Crashlytics) enthalten nun Zeilennummern und können über die Mapping-Datei deobfuskiert werden. `-renamesourcefileattribute SourceFile` ersetzt Originaldateinamen durch einen Platzhalter, um die APK-Größe minimal zu halten.
 
 
