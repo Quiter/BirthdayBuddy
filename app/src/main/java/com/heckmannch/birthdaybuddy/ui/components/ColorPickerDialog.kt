@@ -135,8 +135,10 @@ fun ColorPickerDialog(
                                 horizontalArrangement = Arrangement.spacedBy(12.dp)
                             ) {
                                 rowPresets.forEach { color ->
-                                    val hexString = String.format("%06X", 0xFFFFFF and color.toArgb())
-                                    val isPresetSelected = hexInput.uppercase() == hexString.uppercase()
+                                    val hexString =
+                                        String.format("%06X", 0xFFFFFF and color.toArgb())
+                                    val isPresetSelected =
+                                        hexInput.uppercase() == hexString.uppercase()
 
                                     Box(
                                         contentAlignment = Alignment.Center,
@@ -151,7 +153,10 @@ fun ColorPickerDialog(
                                             )
                                             .clickable {
                                                 val hsv = FloatArray(3)
-                                                android.graphics.Color.colorToHSV(color.toArgb(), hsv)
+                                                android.graphics.Color.colorToHSV(
+                                                    color.toArgb(),
+                                                    hsv
+                                                )
                                                 hue = hsv[0]
                                                 saturation = hsv[1]
                                                 value = hsv[2]
@@ -205,7 +210,8 @@ fun ColorPickerDialog(
                 OutlinedTextField(
                     value = hexInput,
                     onValueChange = { input ->
-                        val cleanInput = input.filter { it.isDigit() || it.uppercaseChar() in 'A'..'F' }
+                        val cleanInput =
+                            input.filter { it.isDigit() || it.uppercaseChar() in 'A'..'F' }
                         if (cleanInput.length <= 6) {
                             hexInput = cleanInput
                             if (cleanInput.length == 6) {
@@ -216,7 +222,8 @@ fun ColorPickerDialog(
                                     hue = hsv[0]
                                     saturation = hsv[1]
                                     value = hsv[2]
-                                } catch (_: Exception) {}
+                                } catch (_: Exception) {
+                                }
                             }
                         }
                     },
@@ -277,8 +284,8 @@ fun ColorPickerDialog(
     )
 }
 
-private fun fromHsv(hue: Float, sat: Float, value: Float): Color {
-    val calculatedArgb = android.graphics.Color.HSVToColor(floatArrayOf(hue, sat, value))
+private fun fromHsv(hue: Float): Color {
+    val calculatedArgb = android.graphics.Color.HSVToColor(floatArrayOf(hue, 1f, 1f))
     return Color(calculatedArgb)
 }
 
@@ -296,7 +303,7 @@ private fun SaturationValueBox(
             .clip(RoundedCornerShape(8.dp))
             .background(
                 brush = Brush.horizontalGradient(
-                    colors = listOf(Color.White, fromHsv(hue, 1f, 1f))
+                    colors = listOf(Color.White, fromHsv(hue))
                 )
             )
     ) {

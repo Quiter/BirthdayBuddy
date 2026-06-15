@@ -60,9 +60,9 @@ import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import com.heckmannch.birthdaybuddy.R
-import com.heckmannch.birthdaybuddy.ui.model.CoupleSuggestionUiModel
 import com.heckmannch.birthdaybuddy.ui.components.LottieIllustration
 import com.heckmannch.birthdaybuddy.ui.model.ContactUiModel
+import com.heckmannch.birthdaybuddy.ui.model.CoupleSuggestionUiModel
 import com.heckmannch.birthdaybuddy.ui.model.SampleData
 import com.heckmannch.birthdaybuddy.ui.screens.home.HomeActions
 import com.heckmannch.birthdaybuddy.ui.theme.BirthdayBuddyTheme
@@ -147,7 +147,9 @@ fun BirthdayList(
 
     LazyColumn(
         state = listState,
-        modifier = modifier.fillMaxSize().testTag("birthday_list"),
+        modifier = modifier
+            .fillMaxSize()
+            .testTag("birthday_list"),
         contentPadding = PaddingValues(bottom = 80.dp),
     ) {
         if (selectedLabel == HomeViewModel.LABEL_ANNIVERSARY && coupleSuggestion != null) {
@@ -175,7 +177,7 @@ fun BirthdayList(
             ) { index, contact ->
                 val isExpanded = onContactSelected == null && expandedContactId == contact.id
                 val isSelected = onContactSelected != null && selectedContactId == contact.id
- 
+
                 BirthdayItem(
                     contact = contact,
                     isExpanded = isExpanded,

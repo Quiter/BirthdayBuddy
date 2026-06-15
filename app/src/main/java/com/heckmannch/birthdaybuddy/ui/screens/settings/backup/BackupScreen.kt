@@ -51,7 +51,8 @@ fun BackupScreen(
                 },
                 onError = { e ->
                     isLoading = false
-                    Toast.makeText(context, exportFailedMsg.format(e.message), Toast.LENGTH_LONG).show()
+                    Toast.makeText(context, exportFailedMsg.format(e.message), Toast.LENGTH_LONG)
+                        .show()
                 }
             )
         }
@@ -80,7 +81,8 @@ fun BackupScreen(
                 },
                 onError = { e ->
                     isLoading = false
-                    Toast.makeText(context, importFailedMsg.format(e.message), Toast.LENGTH_LONG).show()
+                    Toast.makeText(context, importFailedMsg.format(e.message), Toast.LENGTH_LONG)
+                        .show()
                 }
             )
         }

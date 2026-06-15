@@ -13,9 +13,9 @@ import com.heckmannch.birthdaybuddy.data.local.Contact
 import com.heckmannch.birthdaybuddy.data.local.ContactDao
 import com.heckmannch.birthdaybuddy.data.local.ContactUserData
 import com.heckmannch.birthdaybuddy.data.local.ContactUserDataDao
-import com.heckmannch.birthdaybuddy.data.local.SettingsDatabase
 import com.heckmannch.birthdaybuddy.data.local.LabelConfig
 import com.heckmannch.birthdaybuddy.data.local.LabelConfigDao
+import com.heckmannch.birthdaybuddy.data.local.SettingsDatabase
 import com.heckmannch.birthdaybuddy.ui.model.GiftIdea
 import com.heckmannch.birthdaybuddy.util.WidgetUpdater
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -226,12 +226,14 @@ class ContactRepository @Inject constructor(
     suspend fun linkAsCouple(lookupKey1: String, lookupKey2: String) {
         withContext(Dispatchers.IO) {
             settingsDatabase.withTransaction {
-                val userData1 = contactUserDataDao.getUserDataForContact(lookupKey1) ?: ContactUserData(
-                    lookupKey = lookupKey1
-                )
-                val userData2 = contactUserDataDao.getUserDataForContact(lookupKey2) ?: ContactUserData(
-                    lookupKey = lookupKey2
-                )
+                val userData1 =
+                    contactUserDataDao.getUserDataForContact(lookupKey1) ?: ContactUserData(
+                        lookupKey = lookupKey1
+                    )
+                val userData2 =
+                    contactUserDataDao.getUserDataForContact(lookupKey2) ?: ContactUserData(
+                        lookupKey = lookupKey2
+                    )
 
                 contactUserDataDao.upsertUserData(userData1.copy(spouseLookupKey = lookupKey2))
                 contactUserDataDao.upsertUserData(userData2.copy(spouseLookupKey = lookupKey1))

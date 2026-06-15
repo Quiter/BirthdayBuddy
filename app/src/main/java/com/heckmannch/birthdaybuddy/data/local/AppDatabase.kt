@@ -23,7 +23,6 @@ abstract class AppDatabase : RoomDatabase() {
         private var INSTANCE: AppDatabase? = null
 
 
-
         /**
          * Hilfsfunktion zum sauberen Neuaufbau der 'contacts'-Tabelle auf das korrekte V7-Schema.
          * Da SQLite ALTER TABLE COLUMN NULLABILITY nicht nativ unterstützt,
