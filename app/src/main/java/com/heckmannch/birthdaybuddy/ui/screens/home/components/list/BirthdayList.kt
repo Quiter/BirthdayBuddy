@@ -158,8 +158,7 @@ fun BirthdayList(
                     onIgnore = actions.onIgnoreCoupleSuggestion
                 )
             }
-        }
-        if (contacts.isEmpty()) {
+                if (contacts.isEmpty()) {
             item(key = "empty_state") {
                 EmptyListState(
                     hasPermission = hasPermission,
@@ -167,7 +166,8 @@ fun BirthdayList(
                     modifier = Modifier.fillParentMaxSize()
                 )
             }
-        } else             itemsIndexed(
+        } else {
+            itemsIndexed(
                 items = contacts,
                 key = { _, it -> it.id },
                 contentType = { _, _ -> "birthdayItem" },
@@ -201,7 +201,7 @@ fun BirthdayList(
                             )
                         )
                 )
-            }  }
+            }
         }
     }
 }
