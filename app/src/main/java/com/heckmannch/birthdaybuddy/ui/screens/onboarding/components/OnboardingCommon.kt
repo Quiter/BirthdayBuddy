@@ -1,6 +1,5 @@
 package com.heckmannch.birthdaybuddy.ui.screens.onboarding.components
 
-import androidx.annotation.RawRes
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
@@ -27,14 +26,10 @@ import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.painter.Painter
-import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.heckmannch.birthdaybuddy.ui.components.LottieIllustration
 
 /**
  * Ein einheitliches, adaptives Onboarding-Gerüst, das perfekt zentrierte,
@@ -171,67 +166,6 @@ fun OnboardingPageTemplate(
                     }
                 }
             }
-        }
-    }
-}
-
-@Composable
-fun OnboardingPageContent(
-    title: String,
-    description: String,
-    windowWidthSizeClass: WindowWidthSizeClass,
-    icon: Painter? = null,
-    @RawRes lottieRes: Int? = null,
-    tint: Color = Color.Unspecified
-) {
-    OnboardingPageTemplate(
-        windowWidthSizeClass = windowWidthSizeClass,
-        illustration = { modifier ->
-            if (lottieRes != null) {
-                LottieIllustration(
-                    resId = lottieRes,
-                    modifier = modifier.size(200.dp)
-                )
-            } else if (icon != null) {
-                Icon(
-                    painter = icon,
-                    contentDescription = null,
-                    modifier = modifier.size(120.dp),
-                    tint = tint
-                )
-            }
-        },
-        title = title,
-        description = description
-    )
-}
-
-@Preview(showBackground = true, widthDp = 360, heightDp = 640)
-@Composable
-fun OnboardingPageContentCompactPreview() {
-    MaterialTheme {
-        Surface {
-            OnboardingPageContent(
-                title = "Willkommen bei BirthdayBuddy",
-                description = "Verpasse nie wieder einen Geburtstag deiner Freunde und Familie.",
-                windowWidthSizeClass = WindowWidthSizeClass.Compact,
-                icon = rememberVectorPainter(Icons.Default.Cake)
-            )
-        }
-    }
-}
-
-@Preview(showBackground = true, widthDp = 840, heightDp = 480)
-@Composable
-fun OnboardingPageContentExpandedPreview() {
-    MaterialTheme {
-        Surface {
-            OnboardingPageContent(
-                title = "Willkommen bei BirthdayBuddy",
-                description = "Verpasse nie wieder einen Geburtstag deiner Freunde und Familie. Wir helfen dir dabei, den Überblick zu behalten.",
-                windowWidthSizeClass = WindowWidthSizeClass.Expanded,
-                icon = rememberVectorPainter(Icons.Default.Cake)
-            )
         }
     }
 }
