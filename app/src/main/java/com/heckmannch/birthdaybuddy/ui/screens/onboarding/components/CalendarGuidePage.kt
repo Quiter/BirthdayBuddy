@@ -4,6 +4,12 @@ import android.content.Context
 import android.content.Intent
 import android.provider.CalendarContract
 import android.util.Log
+import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -15,6 +21,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.DateRange
@@ -29,8 +36,11 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -44,12 +54,7 @@ fun CalendarGuidePage(windowWidthSizeClass: WindowWidthSizeClass) {
     OnboardingPageTemplate(
         windowWidthSizeClass = windowWidthSizeClass,
         illustration = { modifier ->
-            Icon(
-                imageVector = Icons.Default.DateRange,
-                contentDescription = null,
-                modifier = modifier.size(120.dp),
-                tint = MaterialTheme.colorScheme.primary
-            )
+            CalendarGuideIllustration(modifier)
         },
         title = stringResource(R.string.onboarding_calendar_guide_title),
         description = stringResource(R.string.onboarding_calendar_guide_desc),
@@ -63,7 +68,6 @@ fun CalendarGuidePage(windowWidthSizeClass: WindowWidthSizeClass) {
                 Column(modifier = Modifier.padding(16.dp)) {
                     // Step 1
                     GuideStepItem(
-                        stepNumber = 1,
                         title = stringResource(R.string.onboarding_calendar_guide_step1_title),
                         description = stringResource(R.string.onboarding_calendar_guide_step1_desc),
                         icon = Icons.Default.PlayArrow
@@ -73,7 +77,6 @@ fun CalendarGuidePage(windowWidthSizeClass: WindowWidthSizeClass) {
 
                     // Step 2
                     GuideStepItem(
-                        stepNumber = 2,
                         title = stringResource(R.string.onboarding_calendar_guide_step2_title),
                         description = stringResource(R.string.onboarding_calendar_guide_step2_desc),
                         icon = Icons.Default.Menu
@@ -83,7 +86,6 @@ fun CalendarGuidePage(windowWidthSizeClass: WindowWidthSizeClass) {
 
                     // Step 3
                     GuideStepItem(
-                        stepNumber = 3,
                         title = stringResource(R.string.onboarding_calendar_guide_step3_title),
                         description = stringResource(R.string.onboarding_calendar_guide_step3_desc),
                         icon = Icons.Default.Check
@@ -116,8 +118,151 @@ fun CalendarGuidePage(windowWidthSizeClass: WindowWidthSizeClass) {
 }
 
 @Composable
+private fun CalendarGuideIllustration(modifier: Modifier = Modifier) {
+    val infiniteTransition = rememberInfiniteTransition(label = "guide_float")
+    val offsetY by infiniteTransition.animateFloat(
+        initialValue = -4f,
+        targetValue = 4f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(durationMillis = 2600, easing = FastOutSlowInEasing),
+            repeatMode = RepeatMode.Reverse
+        ),
+        label = "offsetY"
+    )
+
+    Box(
+        modifier = modifier.padding(top = 16.dp),
+        contentAlignment = Alignment.Center
+    ) {
+        // Glowing background circle
+        Box(
+            modifier = Modifier
+                .size(100.dp)
+                .background(
+                    color = MaterialTheme.colorScheme.primary.copy(alpha = 0.1f),
+                    shape = CircleShape
+                )
+        )
+
+        // Floating Drawer Card
+        Card(
+            modifier = Modifier
+                .width(180.dp)
+                .height(130.dp)
+                .graphicsLayer {
+                    translationY = offsetY * density
+                },
+            shape = RoundedCornerShape(16.dp),
+            colors = CardDefaults.cardColors(
+                containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.9f)
+            ),
+            elevation = CardDefaults.cardElevation(defaultElevation = 6.dp)
+        ) {
+            Column(modifier = Modifier.padding(12.dp)) {
+                Text(
+                    text = "Meine Kalender",
+                    style = MaterialTheme.typography.labelMedium,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+
+                Spacer(modifier = Modifier.height(10.dp))
+
+                // Calendar item 1
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .size(14.dp)
+                            .background(Color(0xFF4285F4), shape = RoundedCornerShape(3.dp)),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Check,
+                            contentDescription = null,
+                            tint = Color.White,
+                            modifier = Modifier.size(10.dp)
+                        )
+                    }
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(
+                        text = "Termine",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.8f)
+                    )
+                }
+
+                Spacer(modifier = Modifier.height(8.dp))
+
+                // Calendar item 2 (BirthdayBuddy)
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .background(
+                            color = MaterialTheme.colorScheme.primary.copy(alpha = 0.15f),
+                            shape = RoundedCornerShape(4.dp)
+                        )
+                        .padding(4.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .size(14.dp)
+                            .background(MaterialTheme.colorScheme.primary, shape = RoundedCornerShape(3.dp)),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Check,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.onPrimary,
+                            modifier = Modifier.size(10.dp)
+                        )
+                    }
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(
+                        text = "BirthdayBuddy",
+                        style = MaterialTheme.typography.bodySmall,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                }
+
+                Spacer(modifier = Modifier.height(8.dp))
+
+                // Calendar item 3
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .size(14.dp)
+                            .background(Color(0xFF0F9D58), shape = RoundedCornerShape(3.dp)),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Check,
+                            contentDescription = null,
+                            tint = Color.White,
+                            modifier = Modifier.size(10.dp)
+                        )
+                    }
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(
+                        text = "Feiertage",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.8f)
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
 private fun GuideStepItem(
-    stepNumber: Int,
     title: String,
     description: String,
     icon: androidx.compose.ui.graphics.vector.ImageVector
@@ -171,7 +316,7 @@ private fun openDefaultCalendarApp(context: Context) {
             addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
         }
         context.startActivity(intent)
-    } catch (e: Exception) {
+    } catch (_: Exception) {
         try {
             val intent = Intent(Intent.ACTION_MAIN).apply {
                 addCategory(Intent.CATEGORY_APP_CALENDAR)
@@ -183,3 +328,4 @@ private fun openDefaultCalendarApp(context: Context) {
         }
     }
 }
+

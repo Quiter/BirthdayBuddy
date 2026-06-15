@@ -175,6 +175,7 @@
     <string name="onboarding_summary_notif_disabled">✗ Benachrichtigungen aus</string>
     <string name="onboarding_ready_btn">Los geht\'s</string>
     <string name="onboarding_next">Weiter</string>
+    <string name="onboarding_back">Zurück</string>
 
 
     <!-- App Shortcuts -->

@@ -175,6 +175,7 @@
     <string name="onboarding_summary_notif_disabled">✗ Notifications disabled</string>
     <string name="onboarding_ready_btn">Get Started</string>
     <string name="onboarding_next">Next</string>
+    <string name="onboarding_back">Back</string>
 
 
     <!-- App Shortcuts -->

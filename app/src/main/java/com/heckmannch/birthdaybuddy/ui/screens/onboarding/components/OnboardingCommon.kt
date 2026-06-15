@@ -68,7 +68,7 @@ fun OnboardingPageTemplate(
             ) {
                 // Fester Container für das Icon/Illustration
                 Box(
-                    modifier = Modifier.size(120.dp),
+                    modifier = Modifier.height(160.dp).fillMaxWidth(),
                     contentAlignment = Alignment.Center
                 ) {
                     illustration(Modifier)

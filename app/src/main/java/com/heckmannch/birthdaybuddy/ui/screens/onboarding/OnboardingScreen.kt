@@ -9,6 +9,10 @@ import android.os.Build
 import android.provider.Settings
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.tween
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
@@ -21,6 +25,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
@@ -33,8 +39,10 @@ import com.heckmannch.birthdaybuddy.ui.screens.onboarding.components.OnboardingF
 import com.heckmannch.birthdaybuddy.ui.screens.onboarding.components.ReadyPage
 import com.heckmannch.birthdaybuddy.ui.screens.onboarding.components.WelcomePage
 import com.heckmannch.birthdaybuddy.viewmodel.OnboardingViewModel
+import kotlin.time.Duration.Companion.milliseconds
 import kotlinx.coroutines.launch
-@Composable
+
+@Composable
 fun OnboardingScreen(
     viewModel: OnboardingViewModel,
     windowWidthSizeClass: WindowWidthSizeClass,
@@ -43,7 +51,6 @@ fun OnboardingScreen(
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
 
-    // Lokale States für die Einstellungen während des Onboardings
     var contactsEnabled by remember { mutableStateOf(value = true) }
     var notificationsEnabled by remember { mutableStateOf(value = true) }
     var persistentEnabled by remember { mutableStateOf(value = true) }
@@ -90,6 +97,12 @@ fun OnboardingScreen(
     val contactLauncher =
         rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted ->
             hasContactPermission = isGranted
+            if (isGranted) {
+                scope.launch {
+                    kotlinx.coroutines.delay(300.milliseconds)
+                    pagerState.animateScrollToPage(pagerState.currentPage + 1)
+                }
+            }
         }
 
     val onRequestContactPermission = {
@@ -104,7 +117,6 @@ fun OnboardingScreen(
         if (shouldShowRationale || !hasContactPermission) {
             contactLauncher.launch(Manifest.permission.READ_CONTACTS)
         } else {
-            // Fallback: Einstellungen öffnen
             try {
                 val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
                     data = Uri.fromParts("package", context.packageName, null)
@@ -118,12 +130,25 @@ fun OnboardingScreen(
     val notifLauncher =
         rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted ->
             hasNotifPermission = isGranted
+            if (isGranted) {
+                scope.launch {
+                    kotlinx.coroutines.delay(300.milliseconds)
+                    pagerState.animateScrollToPage(pagerState.currentPage + 1)
+                }
+            }
         }
 
     val calendarLauncher =
         rememberLauncherForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { permissions ->
-            hasCalendarPermission = permissions[Manifest.permission.READ_CALENDAR] == true &&
+            val granted = permissions[Manifest.permission.READ_CALENDAR] == true &&
                     permissions[Manifest.permission.WRITE_CALENDAR] == true
+            hasCalendarPermission = granted
+            if (granted) {
+                scope.launch {
+                    kotlinx.coroutines.delay(300.milliseconds)
+                    pagerState.animateScrollToPage(pagerState.currentPage + 1)
+                }
+            }
         }
 
     val onRequestCalendarPermission = {
@@ -135,81 +160,114 @@ fun OnboardingScreen(
         )
     }
 
-    AppResponsiveScaffold(
-        windowWidthSizeClass = windowWidthSizeClass,
-        modifier = Modifier.fillMaxSize(),
-        containerColor = MaterialTheme.colorScheme.surface,
-        bottomBar = {
-            OnboardingFooter(
-                currentPage = pagerState.currentPage,
-                pageCount = pagerState.pageCount,
-                isNextEnabled = when (pagerState.currentPage) {
-                    0 -> true
-                    1 -> !contactsEnabled || hasContactPermission
-                    2 -> !notificationsEnabled || hasNotifPermission
-                    3 -> !calendarEnabled || hasCalendarPermission
-                    else -> true
-                },
-                windowWidthSizeClass = windowWidthSizeClass,
-                onNext = {
-                    scope.launch { pagerState.animateScrollToPage(pagerState.currentPage + 1) }
-                }
+    val ambientColor by animateColorAsState(
+        targetValue = when (pagerState.currentPage) {
+            0 -> MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.15f)
+            1 -> MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.15f)
+            2 -> MaterialTheme.colorScheme.tertiaryContainer.copy(alpha = 0.15f)
+            3 -> MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.15f)
+            4 -> MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.15f)
+            else -> MaterialTheme.colorScheme.tertiaryContainer.copy(alpha = 0.2f)
+        },
+        animationSpec = tween(durationMillis = 500),
+        label = "ambient_color"
+    )
+
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(
+                brush = Brush.verticalGradient(
+                    colors = listOf(
+                        ambientColor,
+                        MaterialTheme.colorScheme.surface
+                    )
+                )
             )
-        }
     ) {
-        HorizontalPager(
-            state = pagerState,
+        AppResponsiveScaffold(
+            windowWidthSizeClass = windowWidthSizeClass,
             modifier = Modifier.fillMaxSize(),
-            userScrollEnabled = false
-        ) { page ->
-            val actualPage = if (!showCalendarGuide && page >= 4) page + 1 else page
-            when (actualPage) {
-                0 -> WelcomePage(windowWidthSizeClass = windowWidthSizeClass)
-                1 -> ContactsPage(
+            containerColor = Color.Transparent,
+            bottomBar = {
+                OnboardingFooter(
+                    currentPage = pagerState.currentPage,
+                    pageCount = pagerState.pageCount,
+                    isNextEnabled = when (pagerState.currentPage) {
+                        0 -> true
+                        1 -> !contactsEnabled || hasContactPermission
+                        2 -> !notificationsEnabled || hasNotifPermission
+                        3 -> !calendarEnabled || hasCalendarPermission
+                        else -> true
+                    },
                     windowWidthSizeClass = windowWidthSizeClass,
-                    enabled = contactsEnabled,
-                    onEnabledChange = { contactsEnabled = it },
-                    isGranted = hasContactPermission,
-                    onGrant = onRequestContactPermission
-                )
-
-                2 -> NotificationsPage(
-                    windowWidthSizeClass = windowWidthSizeClass,
-                    enabled = notificationsEnabled,
-                    onEnabledChange = { notificationsEnabled = it },
-                    persistent = persistentEnabled,
-                    onPersistentChange = { persistentEnabled = it },
-                    isGranted = hasNotifPermission
-                ) {
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                        notifLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
-                    } else {
-                        hasNotifPermission = true
+                    onBack = {
+                        scope.launch { pagerState.animateScrollToPage(pagerState.currentPage - 1) }
+                    },
+                    onNext = {
+                        scope.launch { pagerState.animateScrollToPage(pagerState.currentPage + 1) }
                     }
-                }
-
-                3 -> CalendarPage(
-                    windowWidthSizeClass = windowWidthSizeClass,
-                    enabled = calendarEnabled,
-                    onEnabledChange = { calendarEnabled = it },
-                    isGranted = hasCalendarPermission,
-                    onGrant = onRequestCalendarPermission
                 )
+            }
+        ) {
+            HorizontalPager(
+                state = pagerState,
+                modifier = Modifier.fillMaxSize(),
+                userScrollEnabled = false
+            ) { page ->
+                val actualPage = if (!showCalendarGuide && page >= 4) page + 1 else page
+                when (actualPage) {
+                    0 -> WelcomePage(windowWidthSizeClass = windowWidthSizeClass)
+                    1 -> ContactsPage(
+                        windowWidthSizeClass = windowWidthSizeClass,
+                        enabled = contactsEnabled,
+                        onEnabledChange = { contactsEnabled = it },
+                        isGranted = hasContactPermission,
+                        onGrant = onRequestContactPermission
+                    )
 
-                4 -> CalendarGuidePage(windowWidthSizeClass = windowWidthSizeClass)
+                    2 -> NotificationsPage(
+                        windowWidthSizeClass = windowWidthSizeClass,
+                        enabled = notificationsEnabled,
+                        onEnabledChange = { notificationsEnabled = it },
+                        persistent = persistentEnabled,
+                        onPersistentChange = { persistentEnabled = it },
+                        isGranted = hasNotifPermission
+                    ) {
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                            notifLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+                        } else {
+                            hasNotifPermission = true
+                            scope.launch {
+                                kotlinx.coroutines.delay(300.milliseconds)
+                                pagerState.animateScrollToPage(pagerState.currentPage + 1)
+                            }
+                        }
+                    }
 
-                5 -> ReadyPage(
-                    windowWidthSizeClass = windowWidthSizeClass,
-                    hasContactPermission = contactsEnabled && hasContactPermission,
-                    notificationsEnabled = notificationsEnabled && hasNotifPermission,
-                    calendarSyncEnabled = calendarEnabled && hasCalendarPermission
-                ) {
-                    viewModel.setPersistentNotifications(persistentEnabled)
-                    viewModel.completeOnboarding(
+                    3 -> CalendarPage(
+                        windowWidthSizeClass = windowWidthSizeClass,
+                        enabled = calendarEnabled,
+                        onEnabledChange = { calendarEnabled = it },
+                        isGranted = hasCalendarPermission,
+                        onGrant = onRequestCalendarPermission
+                    )
+
+                    4 -> CalendarGuidePage(windowWidthSizeClass = windowWidthSizeClass)
+
+                    5 -> ReadyPage(
+                        windowWidthSizeClass = windowWidthSizeClass,
+                        hasContactPermission = contactsEnabled && hasContactPermission,
                         notificationsEnabled = notificationsEnabled && hasNotifPermission,
                         calendarSyncEnabled = calendarEnabled && hasCalendarPermission
-                    )
-                    onFinish()
+                    ) {
+                        viewModel.setPersistentNotifications(persistentEnabled)
+                        viewModel.completeOnboarding(
+                            notificationsEnabled = notificationsEnabled && hasNotifPermission,
+                            calendarSyncEnabled = calendarEnabled && hasCalendarPermission
+                        )
+                        onFinish()
+                    }
                 }
             }
         }

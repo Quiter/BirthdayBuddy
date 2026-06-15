@@ -1,5 +1,11 @@
 package com.heckmannch.birthdaybuddy.ui.screens.onboarding.components
 
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.scaleIn
+import androidx.compose.animation.scaleOut
+import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -10,7 +16,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Close
-import androidx.compose.material.icons.filled.Contacts
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -31,6 +36,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.heckmannch.birthdaybuddy.R
+import com.heckmannch.birthdaybuddy.ui.components.LottieIllustration
 
 @Composable
 fun ContactsPage(
@@ -43,20 +49,32 @@ fun ContactsPage(
     OnboardingPageTemplate(
         windowWidthSizeClass = windowWidthSizeClass,
         illustration = { modifier ->
-            if (isGranted) {
-                Icon(
-                    imageVector = Icons.Default.CheckCircle,
-                    contentDescription = null,
-                    modifier = modifier.size(120.dp),
-                    tint = MaterialTheme.colorScheme.primary,
-                )
-            } else {
-                Icon(
-                    imageVector = Icons.Default.Contacts,
-                    contentDescription = null,
-                    modifier = modifier.size(120.dp),
-                    tint = MaterialTheme.colorScheme.primary,
-                )
+            AnimatedContent(
+                targetState = isGranted,
+                modifier = modifier,
+                transitionSpec = {
+                    (fadeIn() + scaleIn()).togetherWith(fadeOut() + scaleOut())
+                },
+                label = "contacts_illustration"
+            ) { granted ->
+                if (granted) {
+                    Box(
+                        modifier = Modifier.size(160.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.CheckCircle,
+                            contentDescription = null,
+                            modifier = Modifier.size(100.dp),
+                            tint = MaterialTheme.colorScheme.primary,
+                        )
+                    }
+                } else {
+                    LottieIllustration(
+                        resId = R.raw.anim_contacts,
+                        modifier = Modifier.size(140.dp)
+                    )
+                }
             }
         },
         title = stringResource(R.string.onboarding_contacts_title),
@@ -122,3 +140,4 @@ fun ContactsPage(
         }
     )
 }
+
