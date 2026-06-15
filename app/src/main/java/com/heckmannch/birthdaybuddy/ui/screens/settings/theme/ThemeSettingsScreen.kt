@@ -58,6 +58,7 @@ import androidx.core.graphics.toColorInt
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.heckmannch.birthdaybuddy.R
 import com.heckmannch.birthdaybuddy.ui.components.AppResponsiveScaffold
+import com.heckmannch.birthdaybuddy.ui.components.ColorPickerDialog
 import com.heckmannch.birthdaybuddy.viewmodel.ThemeViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -266,13 +267,39 @@ fun ThemeSettingsScreen(
 
             item {
                 if (showColorPickerDialog) {
-                    CustomColorPickerDialog(
-                        initialColor = if (themeAccent.startsWith("#")) themeAccent else "#E91E63",
-                        onDismiss = { showColorPickerDialog = false },
-                        onSave = { selectedColor ->
-                            viewModel.setThemeAccent(selectedColor)
-                            showColorPickerDialog = false
+                    val parsedInitialColor = remember(themeAccent) {
+                        if (themeAccent.startsWith("#")) {
+                            try {
+                                Color(themeAccent.toColorInt())
+                            } catch (_: Exception) {
+                                Color(0xFFE91E63)
+                            }
+                        } else {
+                            Color(0xFFE91E63)
                         }
+                    }
+                    val presets = remember {
+                        listOf(
+                            Color(0xFF008080), // Teal
+                            Color(0xFF00BCD4), // Cyan
+                            Color(0xFF3F51B5), // Indigo
+                            Color(0xFFFFC107), // Amber
+                            Color(0xFF795548), // Brown
+                            Color(0xFFFF5722), // Deep Orange
+                            Color(0xFF607D8B), // Blue Grey
+                            Color(0xFF4CAF50)  // Green
+                        )
+                    }
+                    ColorPickerDialog(
+                        initialColor = parsedInitialColor,
+                        title = stringResource(R.string.theme_accent_custom_dialog_title),
+                        onDismissRequest = { showColorPickerDialog = false },
+                        onColorSelected = { color ->
+                            val hexString = String.format("#%06X", 0xFFFFFF and color.toArgb())
+                            viewModel.setThemeAccent(hexString)
+                            showColorPickerDialog = false
+                        },
+                        presets = presets
                     )
                 }
             }
@@ -393,171 +420,4 @@ private fun ColorItem(
     }
 }
 
-@Composable
-private fun CustomColorPickerDialog(
-    initialColor: String,
-    onDismiss: () -> Unit,
-    onSave: (String) -> Unit
-) {
-    var hexInput by remember {
-        mutableStateOf(
-            if (initialColor.startsWith("#")) initialColor.substring(1) else ""
-        )
-    }
 
-    val presets = listOf(
-        Color(0xFF008080), // Teal
-        Color(0xFF00BCD4), // Cyan
-        Color(0xFF3F51B5), // Indigo
-        Color(0xFFFFC107), // Amber
-        Color(0xFF795548), // Brown
-        Color(0xFFFF5722), // Deep Orange
-        Color(0xFF607D8B), // Blue Grey
-        Color(0xFF4CAF50)  // Green
-    )
-
-    val hexRegex = Regex("^[0-9a-fA-F]{6}$")
-    val isValid = hexInput.length == 6 && hexRegex.matches(hexInput)
-    val previewColor = if (isValid) {
-        try {
-            Color("#$hexInput".toColorInt())
-        } catch (_: Exception) {
-            Color.Transparent
-        }
-    } else {
-        Color.Transparent
-    }
-
-    AlertDialog(
-        onDismissRequest = onDismiss,
-        title = {
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                Icon(
-                    imageVector = Icons.Default.Palette,
-                    contentDescription = null,
-                    tint = MaterialTheme.colorScheme.primary
-                )
-                Text(stringResource(R.string.theme_accent_custom_dialog_title))
-            }
-        },
-        text = {
-            Column(
-                modifier = Modifier.fillMaxWidth(),
-                verticalArrangement = Arrangement.spacedBy(16.dp)
-            ) {
-                Text(
-                    text = stringResource(R.string.theme_accent_custom_dialog_desc),
-                    style = MaterialTheme.typography.bodyMedium
-                )
-
-                Column(
-                    modifier = Modifier.fillMaxWidth(),
-                    verticalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    presets.chunked(4).forEach { rowPresets ->
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.spacedBy(12.dp)
-                        ) {
-                            rowPresets.forEach { color ->
-                                val hexString = String.format("%06X", 0xFFFFFF and color.toArgb())
-                                val isPresetSelected = hexInput.uppercase() == hexString.uppercase()
-
-                                Box(
-                                    contentAlignment = Alignment.Center,
-                                    modifier = Modifier
-                                        .size(36.dp)
-                                        .clip(CircleShape)
-                                        .background(color)
-                                        .border(
-                                            width = if (isPresetSelected) 3.dp else 1.dp,
-                                            color = if (isPresetSelected) MaterialTheme.colorScheme.outline else Color.Transparent,
-                                            shape = CircleShape
-                                        )
-                                        .clickable {
-                                            hexInput = hexString
-                                        }
-                                ) {
-                                    if (isPresetSelected) {
-                                        Icon(
-                                            imageVector = Icons.Default.Check,
-                                            contentDescription = null,
-                                            tint = Color.White,
-                                            modifier = Modifier.size(16.dp)
-                                        )
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-
-                Spacer(modifier = Modifier.height(4.dp))
-
-                OutlinedTextField(
-                    value = hexInput,
-                    onValueChange = { input ->
-                        val cleanInput =
-                            input.filter { it.isDigit() || it.uppercaseChar() in 'A'..'F' }
-                        if (cleanInput.length <= 6) {
-                            hexInput = cleanInput
-                        }
-                    },
-                    label = { Text("HEX Code") },
-                    prefix = { Text("#") },
-                    placeholder = { Text("e.g. FF5722") },
-                    isError = hexInput.isNotEmpty() && !isValid,
-                    supportingText = {
-                        if (hexInput.isNotEmpty() && !isValid) {
-                            Text(
-                                text = stringResource(R.string.theme_accent_custom_invalid_hex),
-                                color = MaterialTheme.colorScheme.error
-                            )
-                        }
-                    },
-                    modifier = Modifier.fillMaxWidth(),
-                    singleLine = true
-                )
-
-                if (isValid) {
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(top = 8.dp),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(12.dp)
-                    ) {
-                        Box(
-                            modifier = Modifier
-                                .size(40.dp)
-                                .clip(CircleShape)
-                                .background(previewColor)
-                                .border(1.dp, MaterialTheme.colorScheme.outlineVariant, CircleShape)
-                        )
-                        Text(
-                            text = "Preview / Vorschau",
-                            style = MaterialTheme.typography.titleSmall,
-                            color = MaterialTheme.colorScheme.onSurface
-                        )
-                    }
-                }
-            }
-        },
-        confirmButton = {
-            TextButton(
-                onClick = { onSave("#${hexInput.uppercase()}") },
-                enabled = isValid
-            ) {
-                Text(stringResource(R.string.theme_accent_custom_dialog_save))
-            }
-        },
-        dismissButton = {
-            TextButton(onClick = onDismiss) {
-                Text(stringResource(R.string.theme_accent_custom_dialog_cancel))
-            }
-        }
-    )
-}

@@ -104,6 +104,7 @@
     - `CoupleSuggestionUiModel.kt`: Immutable UI-Modell für Paar-Vorschläge, entkoppelt die UI-Schicht von der Room-Entity.
     - `SampleData.kt`: Zentraler Ort für Testdaten für Previews und Tests.
 - ### 📁 UI Components (`ui.components`)
+    - `ColorPickerDialog.kt`: Wiederverwendbare, premium Farbauswahl-Komponente mit HSV-Farbraum-Koordinaten (Sättigung/Helligkeit), Hue-Slider, HEX-Texteingabe und Live-Vorschau.
     - `LottieIllustration.kt`: Wiederverwendbare Komponente für Lottie-Animationen.
     - `ResponsiveLayout.kt`: Beinhaltet `AdaptiveContentContainer`, `AppResponsiveScaffold` und den globalen `LocalWindowWidthSizeClass` CompositionLocal-Provider zur flexiblen, abfragefreien Größenklassen-Weitergabe (Handy, Tablet, Chromebook).
 - ### 📁 Theme (`ui.theme`)
