@@ -36,6 +36,7 @@ import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.tooling.preview.Preview
@@ -89,6 +90,7 @@ fun SearchBar(
             onValueChange = onQueryChange,
             modifier = Modifier
                 .fillMaxSize()
+                .testTag("search_field")
                 .focusRequester(focusRequester)
                 .onFocusChanged { isFocused.value = it.isFocused },
             placeholder = {
@@ -119,7 +121,10 @@ fun SearchBar(
                             )
                         }
                     }
-                    IconButton(onClick = onSettingsClick) {
+                    IconButton(
+                        onClick = onSettingsClick,
+                        modifier = Modifier.testTag("settings_button")
+                    ) {
                         Icon(
                             imageVector = Icons.Default.Settings,
                             contentDescription = stringResource(R.string.home_settings)

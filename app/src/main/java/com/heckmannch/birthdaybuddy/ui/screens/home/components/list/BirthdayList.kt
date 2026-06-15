@@ -52,6 +52,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
@@ -146,7 +147,7 @@ fun BirthdayList(
 
     LazyColumn(
         state = listState,
-        modifier = modifier.fillMaxSize(),
+        modifier = modifier.fillMaxSize().testTag("birthday_list"),
         contentPadding = PaddingValues(bottom = 80.dp),
     ) {
         if (selectedLabel == HomeViewModel.LABEL_ANNIVERSARY && coupleSuggestion != null) {
@@ -166,15 +167,14 @@ fun BirthdayList(
                     modifier = Modifier.fillParentMaxSize()
                 )
             }
-        } else {
-            itemsIndexed(
+        } else             itemsIndexed(
                 items = contacts,
                 key = { _, it -> it.id },
                 contentType = { _, _ -> "birthdayItem" },
-            ) { _, contact ->
+            ) { index, contact ->
                 val isExpanded = onContactSelected == null && expandedContactId == contact.id
                 val isSelected = onContactSelected != null && selectedContactId == contact.id
-
+ 
                 BirthdayItem(
                     contact = contact,
                     isExpanded = isExpanded,
@@ -189,17 +189,19 @@ fun BirthdayList(
                         }
                     },
                     actions = actions,
-                    modifier = Modifier.animateItem(
-                        fadeInSpec = tween(durationMillis = 200),
-                        fadeOutSpec = tween(durationMillis = 150),
-                        placementSpec = if (skipPlacementAnimation) null else spring(
-                            dampingRatio = Spring.DampingRatioNoBouncy,
-                            stiffness = Spring.StiffnessMedium,
-                            visibilityThreshold = IntOffset.VisibilityThreshold
+                    modifier = Modifier
+                        .testTag("birthday_item_$index")
+                        .animateItem(
+                            fadeInSpec = tween(durationMillis = 200),
+                            fadeOutSpec = tween(durationMillis = 150),
+                            placementSpec = if (skipPlacementAnimation) null else spring(
+                                dampingRatio = Spring.DampingRatioNoBouncy,
+                                stiffness = Spring.StiffnessMedium,
+                                visibilityThreshold = IntOffset.VisibilityThreshold
+                            )
                         )
-                    )
                 )
-            }
+            }  }
         }
     }
 }

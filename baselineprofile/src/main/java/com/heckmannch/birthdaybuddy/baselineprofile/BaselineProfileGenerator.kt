@@ -2,6 +2,8 @@ package com.heckmannch.birthdaybuddy.baselineprofile
 
 import androidx.benchmark.macro.junit4.BaselineProfileRule
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import androidx.test.uiautomator.By
+import androidx.test.uiautomator.Direction
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -30,32 +32,48 @@ class BaselineProfileGenerator {
         // to successfully flush target profiles to disk.
         Thread.sleep(5000)
 
-        // TODO: Kritische User Journeys hinzufügen, um die Baseline-Profile-Abdeckung
-        //  über den reinen Startup hinaus zu erweitern. Jeder Pfad, der hier durchlaufen
-        //  wird, wird bei der Installation AOT-kompiliert und läuft damit schneller.
-        //
         // --- Home-Screen Scrollen ---
-        // TODO: Durch die Geburtstagsliste scrollen (LazyColumn + BirthdayItem rendering)
-        //  device.findObject(By.res("birthday_list")).also { list ->
-        //      list.setGestureMargin(device.displayWidth / 5)
-        //      list.fling(Direction.DOWN)
-        //      list.fling(Direction.UP)
-        //  }
-        //
+        // Durch die Geburtstagsliste scrollen (LazyColumn + BirthdayItem rendering)
+        val list = device.findObject(By.res("birthday_list"))
+        if (list != null) {
+            list.setGestureMargin(device.displayWidth / 5)
+            list.fling(Direction.DOWN)
+            device.waitForIdle()
+            list.fling(Direction.UP)
+            device.waitForIdle()
+        }
+
         // --- Suche / Filter ---
-        // TODO: Suchfeld öffnen und Suchanfrage eingeben (Search-Debounce + Filter-Pipeline)
-        //  device.findObject(By.res("search_field")).click()
-        //  device.findObject(By.res("search_field")).text = "Max"
-        //  device.waitForIdle()
-        //
+        // Suchfeld öffnen und Suchanfrage eingeben (Search-Debounce + Filter-Pipeline)
+        val searchField = device.findObject(By.res("search_field"))
+        if (searchField != null) {
+            searchField.click()
+            searchField.text = "Max"
+            device.waitForIdle()
+            // Suche leeren, um den Normalzustand wiederherzustellen
+            searchField.text = ""
+            device.waitForIdle()
+        }
+
         // --- Kontakt-Details ---
-        // TODO: Ersten Kontakt antippen → BirthdayItem expandieren (GiftIdea-Liste, Actions)
-        //  device.findObject(By.res("birthday_item_0")).click()
-        //  device.waitForIdle()
-        //
+        // Ersten Kontakt antippen → BirthdayItem expandieren (GiftIdea-Liste, Actions)
+        val firstItem = device.findObject(By.res("birthday_item_0"))
+        if (firstItem != null) {
+            firstItem.click()
+            device.waitForIdle()
+            // Erneut anklicken, um wieder einzuklappen
+            firstItem.click()
+            device.waitForIdle()
+        }
+
         // --- Navigation zu Settings ---
-        // TODO: Settings öffnen und Sub-Settings navigieren
-        //  device.findObject(By.res("settings_button")).click()
-        //  device.waitForIdle()
+        // Settings öffnen und zur Home-Ansicht zurückkehren
+        val settingsButton = device.findObject(By.res("settings_button"))
+        if (settingsButton != null) {
+            settingsButton.click()
+            device.waitForIdle()
+            device.pressBack()
+            device.waitForIdle()
+        }
     }
 }
