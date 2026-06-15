@@ -158,7 +158,8 @@ fun BirthdayList(
                     onIgnore = actions.onIgnoreCoupleSuggestion
                 )
             }
-                if (contacts.isEmpty()) {
+        }
+        if (contacts.isEmpty()) {
             item(key = "empty_state") {
                 EmptyListState(
                     hasPermission = hasPermission,
