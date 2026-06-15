@@ -1,5 +1,6 @@
 package com.heckmannch.birthdaybuddy.ui.screens.home
 
+import androidx.compose.runtime.Stable
 import com.heckmannch.birthdaybuddy.ui.model.GiftIdea
 
 import com.heckmannch.birthdaybuddy.ui.screens.home.components.actions.MessengerApp
@@ -7,6 +8,7 @@ import com.heckmannch.birthdaybuddy.ui.screens.home.components.actions.Messenger
 /**
  * Bündelt alle Benutzeraktionen des HomeScreens, um "Prop Drilling" zu reduzieren.
  */
+@Stable
 data class HomeActions(
     val onSearchQueryChange: (String) -> Unit,
     val onLabelSelected: (String?) -> Unit,

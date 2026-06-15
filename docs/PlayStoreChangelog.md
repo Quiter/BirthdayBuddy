@@ -10,23 +10,26 @@
 
 ---
 
-## 📝 Aktuelle Vorlage (v2.4.17)
+## 📝 Aktuelle Vorlage (v2.5.0)
 
 <!--suppress HtmlUnknownTag, HtmlUnknownTag -->
 <en-US>
-- Added local system calendar synchronization
-- Smoother scrolling & instant search for large lists
-- Refactored and modular date picker dialog
-- Improved fast-scroll bubble rendering (Popup API)
-- Premium card-design indicator updates on home list
-- Under-the-hood stability & warning fixes
+- New split-pane Master-Detail layout for tablets & large screens
+- Custom styling: manual light/dark/AMOLED themes & color picker
+- Wedding anniversary & name day support with notifications
+- Multiple sync calendars for birthdays, anniversaries & name days
+- Real-time contact synchronization on return to app
+- Fixed calendar sync event duplication bugs
+- Performance improvements & database cleanup
 </en-US>
 <!--suppress HtmlUnknownTag, HtmlUnknownTag -->
 <de-DE>
-- Automatische Synchronisation mit dem Systemkalender
-- Flüssigeres Scrollen & schnellere Suche bei vielen Kontakten
-- Neuer, modularer Geburtstagsauswahl-Dialog
-- Optimierte Schnell-Scrollleiste (Popup-API & stabilere Gesten)
-- Premium Design-Anpassungen in der Kontaktliste
-- Allgemeine Stabilitäts- und Warnungs-Korrekturen
+- Neues Master-Detail-Layout für Tablets und große Bildschirme
+- Eigene Designs: Hell/Dunkel/AMOLED-Modus & Akzentfarben-Auswahl
+- Hochzeitstage & Namenstage inkl. Partner-Verknüpfung & Mitteilungen
+- Separate Systemkalender für Geburtstage, Hochzeitstage & Namenstage
+- Echtzeit-Synchronisation bei Rückkehr in die App
+- Fehlerbehebung bei doppelten Kalendereinträgen
+- Performance-Optimierungen & bereinigte Datenbank
 </de-DE>
+

@@ -5,6 +5,7 @@ import android.content.Intent
 import android.text.format.DateFormat
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.produceState
+import androidx.compose.runtime.remember
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -93,6 +94,16 @@ class BirthdayWidget : GlanceAppWidget() {
     private fun WidgetContent(contacts: List<Contact>) {
         val size = LocalSize.current
         val context = LocalContext.current
+        val locale = context.resources.configuration.locales[0]
+        val dateFormatter = remember {
+            DateTimeFormatter.ofLocalizedDate(FormatStyle.MEDIUM)
+        }
+        val dayMonthFormatter = remember(locale) {
+            DateTimeFormatter.ofPattern(
+                DateFormat.getBestDateTimePattern(locale, "dMMM"),
+                locale,
+            )
+        }
 
         // Äußeres Column-Padding abziehen (top=8dp, bottom=8dp -> 16dp)
         val availableHeight = (size.height.value - 16).coerceAtLeast(0f)
@@ -128,7 +139,7 @@ class BirthdayWidget : GlanceAppWidget() {
                 EmptyState()
             } else {
                 displayContacts.forEach { contact ->
-                    BirthdayRow(contact, dynamicBlockHeight)
+                    BirthdayRow(contact, dynamicBlockHeight, dateFormatter, dayMonthFormatter)
                 }
             }
         }
@@ -146,15 +157,14 @@ class BirthdayWidget : GlanceAppWidget() {
     }
 
     @Composable
-    private fun BirthdayRow(contact: Contact, blockHeight: Dp) {
+    private fun BirthdayRow(
+        contact: Contact,
+        blockHeight: Dp,
+        dateFormatter: DateTimeFormatter,
+        dayMonthFormatter: DateTimeFormatter,
+    ) {
         val birthday = contact.birthday ?: return
         val context = LocalContext.current
-        val locale = context.resources.configuration.locales[0]
-        val dateFormatter = DateTimeFormatter.ofLocalizedDate(FormatStyle.MEDIUM)
-        val dayMonthFormatter = DateTimeFormatter.ofPattern(
-            DateFormat.getBestDateTimePattern(locale, "dMMM"),
-            locale,
-        )
 
         val daysLeft = birthday.safeDaysUntilNext()
         val nextAgeValue = birthday.safeNextAge()

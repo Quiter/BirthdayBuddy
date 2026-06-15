@@ -56,6 +56,7 @@ import com.heckmannch.birthdaybuddy.ui.screens.home.HomeActions
 import com.heckmannch.birthdaybuddy.ui.screens.home.components.actions.ContactActionRow
 import com.heckmannch.birthdaybuddy.ui.theme.BirthdayBuddyTheme
 import com.heckmannch.birthdaybuddy.ui.theme.BirthdayGold
+import com.heckmannch.birthdaybuddy.ui.theme.BirthdayKidAmber
 import com.heckmannch.birthdaybuddy.ui.theme.BirthdaySilver
 import com.heckmannch.birthdaybuddy.ui.theme.KidColors
 import kotlinx.coroutines.delay
@@ -176,7 +177,7 @@ fun BirthdayItem(
                                     Icons.Default.Edit,
                                     contentDescription = null,
                                     modifier = Modifier.size(14.dp),
-                                    tint = Color(0xFFFFB300)
+                                    tint = BirthdayKidAmber
                                 )
                             }
                         }

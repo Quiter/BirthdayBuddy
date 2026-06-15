@@ -1,8 +1,8 @@
 {
   "formatVersion": 1,
   "database": {
-    "version": 1,
-    "identityHash": "4efbabe18e079838efdc3674e6341578",
+    "version": 6,
+    "identityHash": "2753d7933ca50bcb34a0ab156f2041c5",
     "entities": [
       {
         "tableName": "label_configs",
@@ -78,7 +78,7 @@
       },
       {
         "tableName": "app_settings",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER NOT NULL, `notificationsEnabled` INTEGER NOT NULL, `persistentNotifications` INTEGER NOT NULL, `onboardingCompleted` INTEGER NOT NULL, `lastSyncTimestamp` INTEGER NOT NULL, PRIMARY KEY(`id`))",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER NOT NULL, `notificationsEnabled` INTEGER NOT NULL, `persistentNotifications` INTEGER NOT NULL, `onboardingCompleted` INTEGER NOT NULL, `lastSyncTimestamp` INTEGER NOT NULL, `calendarSyncEnabled` INTEGER NOT NULL, `calendarId` INTEGER, `otherEventsEnabled` INTEGER NOT NULL, `ignoredCouplePairs` TEXT NOT NULL, `birthdayCalendarColor` INTEGER NOT NULL, `anniversaryCalendarColor` INTEGER NOT NULL, `nameDayCalendarColor` INTEGER NOT NULL, `themeMode` TEXT NOT NULL, `themeAmoled` INTEGER NOT NULL, `themeAccent` TEXT NOT NULL, PRIMARY KEY(`id`))",
         "fields": [
           {
             "fieldPath": "id",
@@ -109,6 +109,65 @@
             "columnName": "lastSyncTimestamp",
             "affinity": "INTEGER",
             "notNull": true
+          },
+          {
+            "fieldPath": "calendarSyncEnabled",
+            "columnName": "calendarSyncEnabled",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "calendarId",
+            "columnName": "calendarId",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "otherEventsEnabled",
+            "columnName": "otherEventsEnabled",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "ignoredCouplePairs",
+            "columnName": "ignoredCouplePairs",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "birthdayCalendarColor",
+            "columnName": "birthdayCalendarColor",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "anniversaryCalendarColor",
+            "columnName": "anniversaryCalendarColor",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "nameDayCalendarColor",
+            "columnName": "nameDayCalendarColor",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "themeMode",
+            "columnName": "themeMode",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "themeAmoled",
+            "columnName": "themeAmoled",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "themeAccent",
+            "columnName": "themeAccent",
+            "affinity": "TEXT",
+            "notNull": true
           }
         ],
         "primaryKey": {
@@ -120,7 +179,7 @@
       },
       {
         "tableName": "contact_user_data",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`lookupKey` TEXT NOT NULL, `giftIdeas` TEXT NOT NULL, PRIMARY KEY(`lookupKey`))",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`lookupKey` TEXT NOT NULL, `giftIdeas` TEXT NOT NULL, `spouseLookupKey` TEXT, PRIMARY KEY(`lookupKey`))",
         "fields": [
           {
             "fieldPath": "lookupKey",
@@ -133,6 +192,11 @@
             "columnName": "giftIdeas",
             "affinity": "TEXT",
             "notNull": true
+          },
+          {
+            "fieldPath": "spouseLookupKey",
+            "columnName": "spouseLookupKey",
+            "affinity": "TEXT"
           }
         ],
         "primaryKey": {
@@ -145,7 +209,7 @@
     ],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '4efbabe18e079838efdc3674e6341578')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '2753d7933ca50bcb34a0ab156f2041c5')"
     ]
   }
 }

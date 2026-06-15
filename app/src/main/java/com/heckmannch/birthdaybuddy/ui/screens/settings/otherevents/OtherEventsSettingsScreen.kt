@@ -54,7 +54,8 @@ fun OtherEventsSettingsScreen(
     showBackButton: Boolean = true,
     onNavigateBack: () -> Unit,
 ) {
-    val otherEventsEnabled by viewModel.otherEventsEnabled.collectAsStateWithLifecycle()
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val otherEventsEnabled = uiState.otherEventsEnabled
 
     OtherEventsSettingsContent(
         windowWidthSizeClass = windowWidthSizeClass,

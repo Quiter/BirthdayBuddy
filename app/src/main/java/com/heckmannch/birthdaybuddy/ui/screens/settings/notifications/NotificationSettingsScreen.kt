@@ -75,9 +75,10 @@ fun NotificationSettingsScreen(
     onNavigateBack: () -> Unit,
 ) {
     val context = LocalContext.current
-    val notificationsEnabled by viewModel.notificationsEnabled.collectAsStateWithLifecycle()
-    val persistentNotifications by viewModel.persistentNotifications.collectAsStateWithLifecycle()
-    val rules by viewModel.notificationRules.collectAsStateWithLifecycle()
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val notificationsEnabled = uiState.notificationsEnabled
+    val persistentNotifications = uiState.persistentNotifications
+    val rules = uiState.notificationRules
 
     var hasAttemptedPermission by remember { mutableStateOf(false) }
 
@@ -116,7 +117,7 @@ fun NotificationSettingsScreen(
         windowWidthSizeClass = windowWidthSizeClass,
         notificationsEnabled = notificationsEnabled,
         persistentNotifications = persistentNotifications,
-        rules = rules ?: emptyList(),
+        rules = rules,
         hasSystemPermission = hasSystemPermission,
         state = state,
         showBackButton = showBackButton,

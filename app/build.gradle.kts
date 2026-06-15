@@ -5,7 +5,9 @@ plugins {
     alias(libs.plugins.hilt)
 }
 
-android {
+apply(plugin = "androidx.baselineprofile")
+
+configure<com.android.build.api.dsl.ApplicationExtension> {
     namespace = "com.heckmannch.birthdaybuddy"
     compileSdk = 37
 
@@ -13,8 +15,8 @@ android {
         applicationId = "com.heckmannch.birthdaybuddy"
         minSdk = 28
         targetSdk = 37
-        versionCode = 34
-        versionName = "2.6.12"
+        versionCode = 35
+        versionName = "2.7.11"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -59,6 +61,10 @@ android {
 }
 
 dependencies {
+    // Baseline Profile
+    add("baselineProfile", project(":baselineprofile"))
+    implementation(libs.androidx.profileinstaller)
+
     implementation(platform(libs.androidx.compose.bom))
     implementation(libs.androidx.activity.compose)
     implementation(libs.androidx.compose.material3)
@@ -85,7 +91,7 @@ dependencies {
     implementation(libs.androidx.work.runtime.ktx)
     implementation(libs.material)
     implementation(libs.lottie.compose)
-    implementation(libs.kotlinx.serialization.json)
+
 
     // Coroutines
     implementation(libs.kotlinx.coroutines.core)

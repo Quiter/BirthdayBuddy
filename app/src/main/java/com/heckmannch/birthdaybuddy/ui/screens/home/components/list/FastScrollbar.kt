@@ -124,7 +124,7 @@ fun FastScrollbar(
             }
         }
 
-        val canScroll by remember(contacts) {
+        val canScroll by remember(contacts, isResettingFilter) {
             derivedStateOf {
                 // Wenn wir gerade den Filter zurücksetzen, zeigen wir die Scrollbar vorsorglich an,
                 // falls die Liste potenziell lang genug ist.
@@ -386,11 +386,7 @@ private fun ScrollbarTrackAndThumb(
 ) {
     Box(modifier = modifier) {
         // 1. Subtle, elegant track line (centered at 12.dp from the right edge)
-        val trackAlpha by remember {
-            derivedStateOf {
-                if (isDragging || isScrollInProgress) 0.15f else 0.04f
-            }
-        }
+        val trackAlpha = if (isDragging || isScrollInProgress) 0.15f else 0.04f
         val animatedTrackAlpha by animateFloatAsState(
             targetValue = trackAlpha,
             label = "Track Alpha",

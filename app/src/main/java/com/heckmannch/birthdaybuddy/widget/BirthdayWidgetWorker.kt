@@ -10,10 +10,16 @@ import androidx.work.WorkManager
 import androidx.work.WorkerParameters
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import java.time.Duration
 import java.time.LocalDateTime
 import java.time.LocalTime
 import java.util.concurrent.TimeUnit
+import kotlin.time.Duration.Companion.milliseconds
 
 @HiltWorker
 class BirthdayWidgetWorker @AssistedInject constructor(
@@ -24,11 +30,12 @@ class BirthdayWidgetWorker @AssistedInject constructor(
     override suspend fun doWork(): Result {
         try {
             BirthdayWidget().updateAll(context)
-            // Plane den nächsten Lauf für morgen Mitternacht sauber mit einer kurzen Verzögerung auf dem Main-Thread.
+            // Plane den nächsten Lauf für morgen Mitternacht sauber mit einer kurzen Verzögerung.
             // Dies verhindert eine Race-Condition, bei der sich der aktuell laufende Worker durch REPLACE selbst abbricht.
-            android.os.Handler(android.os.Looper.getMainLooper()).postDelayed({
+            applicationScope.launch {
+                delay(1000.milliseconds)
                 enqueueNextUpdate(context)
-            }, 1000)
+            }
             return Result.success()
         } catch (e: Exception) {
             e.printStackTrace()
@@ -38,6 +45,7 @@ class BirthdayWidgetWorker @AssistedInject constructor(
 
     companion object {
         private const val WORK_NAME = "DailyWidgetUpdateSingle"
+        private val applicationScope = CoroutineScope(Dispatchers.Default + SupervisorJob())
 
         fun enqueueNextUpdate(context: Context) {
             val request = OneTimeWorkRequestBuilder<BirthdayWidgetWorker>()

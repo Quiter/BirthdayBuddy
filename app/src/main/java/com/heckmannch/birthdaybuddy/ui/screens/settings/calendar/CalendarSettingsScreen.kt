@@ -9,7 +9,6 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -28,7 +27,6 @@ import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.Info
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -42,7 +40,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
@@ -65,6 +62,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.heckmannch.birthdaybuddy.R
 import com.heckmannch.birthdaybuddy.data.repository.CalendarSyncRepository
 import com.heckmannch.birthdaybuddy.ui.components.AppResponsiveScaffold
+import com.heckmannch.birthdaybuddy.ui.components.ColorPickerDialog
 import com.heckmannch.birthdaybuddy.viewmodel.CalendarViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -76,11 +74,12 @@ fun CalendarSettingsScreen(
     onNavigateBack: () -> Unit,
 ) {
     LocalContext.current
-    val calendarSyncEnabled by viewModel.calendarSyncEnabled.collectAsStateWithLifecycle()
-    val otherEventsEnabled by viewModel.otherEventsEnabled.collectAsStateWithLifecycle()
-    val birthdayColor by viewModel.birthdayCalendarColor.collectAsStateWithLifecycle()
-    val anniversaryColor by viewModel.anniversaryCalendarColor.collectAsStateWithLifecycle()
-    val nameDayColor by viewModel.nameDayCalendarColor.collectAsStateWithLifecycle()
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val calendarSyncEnabled = uiState.calendarSyncEnabled
+    val otherEventsEnabled = uiState.otherEventsEnabled
+    val birthdayColor = uiState.birthdayCalendarColor
+    val anniversaryColor = uiState.anniversaryCalendarColor
+    val nameDayColor = uiState.nameDayCalendarColor
     var hasPermission by remember { mutableStateOf(viewModel.hasCalendarPermissions()) }
 
     var activeColorPickerType by remember {
@@ -150,13 +149,27 @@ fun CalendarSettingsScreen(
     )
 
     activeColorPickerType?.let { type ->
+        val presets = remember {
+            listOf(
+                Color(0xFFE91E63), // Pink
+                Color(0xFF9C27B0), // Violet
+                Color(0xFF2196F3), // Blue
+                Color(0xFF00BCD4), // Cyan
+                Color(0xFF4CAF50), // Green
+                Color(0xFFFFC107), // Amber
+                Color(0xFFFF9800), // Orange
+                Color(0xFF795548)  // Brown
+            )
+        }
         ColorPickerDialog(
             initialColor = activeColorPickerInitialColor,
+            title = stringResource(R.string.calendar_color_picker_title),
             onDismissRequest = { activeColorPickerType = null },
             onColorSelected = { selectedColor ->
                 viewModel.updateCalendarColor(type, selectedColor.toArgb())
                 activeColorPickerType = null
-            }
+            },
+            presets = presets
         )
     }
 }
@@ -554,74 +567,4 @@ private fun StepItem(
     }
 }
 
-@Composable
-private fun ColorPickerDialog(
-    initialColor: Color,
-    onDismissRequest: () -> Unit,
-    onColorSelected: (Color) -> Unit,
-) {
-    val colors = listOf(
-        Color(0xFFE91E63), // Pink
-        Color(0xFF9C27B0), // Violet
-        Color(0xFF2196F3), // Blue
-        Color(0xFF00BCD4), // Cyan
-        Color(0xFF4CAF50), // Green
-        Color(0xFFFFC107), // Amber
-        Color(0xFFFF9800), // Orange
-        Color(0xFF795548)  // Brown
-    )
 
-    AlertDialog(
-        onDismissRequest = onDismissRequest,
-        title = {
-            Text(
-                text = stringResource(R.string.calendar_color_picker_title),
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.Bold
-            )
-        },
-        text = {
-            Column(
-                verticalArrangement = Arrangement.spacedBy(16.dp),
-                modifier = Modifier.padding(vertical = 8.dp)
-            ) {
-                for (row in 0..1) {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceEvenly
-                    ) {
-                        for (col in 0..3) {
-                            val index = row * 4 + col
-                            val color = colors.getOrNull(index) ?: continue
-                            val isSelected = color == initialColor
-                            Box(
-                                modifier = Modifier
-                                    .size(48.dp)
-                                    .background(color, shape = CircleShape)
-                                    .clickable {
-                                        onColorSelected(color)
-                                    },
-                                contentAlignment = Alignment.Center
-                            ) {
-                                if (isSelected) {
-                                    Icon(
-                                        imageVector = Icons.Default.Check,
-                                        contentDescription = null,
-                                        tint = Color.White,
-                                        modifier = Modifier.size(24.dp)
-                                    )
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        },
-        confirmButton = {},
-        dismissButton = {
-            TextButton(onClick = onDismissRequest) {
-                Text(stringResource(R.string.dialog_cancel))
-            }
-        }
-    )
-}

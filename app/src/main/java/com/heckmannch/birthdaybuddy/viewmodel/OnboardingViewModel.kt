@@ -2,6 +2,7 @@ package com.heckmannch.birthdaybuddy.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.heckmannch.birthdaybuddy.data.local.AppSettings
 import com.heckmannch.birthdaybuddy.data.local.NotificationRule
 import com.heckmannch.birthdaybuddy.data.repository.ContactRepository
 import com.heckmannch.birthdaybuddy.data.repository.NotificationRepository
@@ -19,11 +20,8 @@ class OnboardingViewModel @Inject constructor(
     private val contactRepository: ContactRepository,
 ) : ViewModel() {
 
-    private val settings = notificationRepository.settings
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), null)
-
-    val onboardingCompleted: StateFlow<Boolean?> = settings
-        .map { it?.onboardingCompleted }
+    val onboardingCompleted: StateFlow<Boolean?> = notificationRepository.settings
+        .map<AppSettings, Boolean?> { it.onboardingCompleted }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), null)
 
     fun setPersistentNotifications(persistent: Boolean) = viewModelScope.launch {

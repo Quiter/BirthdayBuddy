@@ -52,6 +52,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
@@ -59,9 +60,9 @@ import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import com.heckmannch.birthdaybuddy.R
-import com.heckmannch.birthdaybuddy.data.local.Contact
 import com.heckmannch.birthdaybuddy.ui.components.LottieIllustration
 import com.heckmannch.birthdaybuddy.ui.model.ContactUiModel
+import com.heckmannch.birthdaybuddy.ui.model.CoupleSuggestionUiModel
 import com.heckmannch.birthdaybuddy.ui.model.SampleData
 import com.heckmannch.birthdaybuddy.ui.screens.home.HomeActions
 import com.heckmannch.birthdaybuddy.ui.theme.BirthdayBuddyTheme
@@ -82,7 +83,7 @@ fun BirthdayList(
     selectedLabel: String? = null,
     searchQuery: String = "",
     actions: HomeActions,
-    coupleSuggestion: Pair<Contact, Contact>? = null,
+    coupleSuggestion: CoupleSuggestionUiModel? = null,
     selectedContactId: String? = null,
     onContactSelected: ((ContactUiModel) -> Unit)? = null,
     onInteraction: () -> Unit = {},
@@ -146,7 +147,9 @@ fun BirthdayList(
 
     LazyColumn(
         state = listState,
-        modifier = modifier.fillMaxSize(),
+        modifier = modifier
+            .fillMaxSize()
+            .testTag("birthday_list"),
         contentPadding = PaddingValues(bottom = 80.dp),
     ) {
         if (selectedLabel == HomeViewModel.LABEL_ANNIVERSARY && coupleSuggestion != null) {
@@ -171,7 +174,7 @@ fun BirthdayList(
                 items = contacts,
                 key = { _, it -> it.id },
                 contentType = { _, _ -> "birthdayItem" },
-            ) { _, contact ->
+            ) { index, contact ->
                 val isExpanded = onContactSelected == null && expandedContactId == contact.id
                 val isSelected = onContactSelected != null && selectedContactId == contact.id
 
@@ -189,15 +192,17 @@ fun BirthdayList(
                         }
                     },
                     actions = actions,
-                    modifier = Modifier.animateItem(
-                        fadeInSpec = tween(durationMillis = 200),
-                        fadeOutSpec = tween(durationMillis = 150),
-                        placementSpec = if (skipPlacementAnimation) null else spring(
-                            dampingRatio = Spring.DampingRatioNoBouncy,
-                            stiffness = Spring.StiffnessMedium,
-                            visibilityThreshold = IntOffset.VisibilityThreshold
+                    modifier = Modifier
+                        .testTag("birthday_item_$index")
+                        .animateItem(
+                            fadeInSpec = tween(durationMillis = 200),
+                            fadeOutSpec = tween(durationMillis = 150),
+                            placementSpec = if (skipPlacementAnimation) null else spring(
+                                dampingRatio = Spring.DampingRatioNoBouncy,
+                                stiffness = Spring.StiffnessMedium,
+                                visibilityThreshold = IntOffset.VisibilityThreshold
+                            )
                         )
-                    )
                 )
             }
         }
@@ -345,7 +350,7 @@ fun BirthdayListPreview() {
 
 @Composable
 fun CoupleSuggestionBanner(
-    suggestion: Pair<Contact, Contact>,
+    suggestion: CoupleSuggestionUiModel,
     onLink: (String, String) -> Unit,
     onIgnore: (String, String) -> Unit,
     modifier: Modifier = Modifier,
@@ -367,16 +372,12 @@ fun CoupleSuggestionBanner(
             verticalAlignment = Alignment.CenterVertically
         ) {
             ContactImage(
-                imageUri = suggestion.first.imageUri,
-                fullName = suggestion.first.fullName,
-                initials = suggestion.first.fullName.split(" ")
-                    .mapNotNull { it.firstOrNull()?.toString() }
-                    .joinToString("").take(2),
-                secondImageUri = suggestion.second.imageUri,
-                secondInitials = suggestion.second.fullName.split(" ")
-                    .mapNotNull { it.firstOrNull()?.toString() }
-                    .joinToString("").take(2),
-                secondFullName = suggestion.second.fullName
+                imageUri = suggestion.firstImageUri,
+                fullName = suggestion.firstName,
+                initials = suggestion.firstInitials,
+                secondImageUri = suggestion.secondImageUri,
+                secondInitials = suggestion.secondInitials,
+                secondFullName = suggestion.secondName
             )
 
             Column(modifier = Modifier.weight(1f)) {
@@ -389,8 +390,8 @@ fun CoupleSuggestionBanner(
                 Text(
                     text = stringResource(
                         R.string.couple_suggestion_msg,
-                        suggestion.first.fullName,
-                        suggestion.second.fullName
+                        suggestion.firstName,
+                        suggestion.secondName
                     ),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.8f)
@@ -402,8 +403,8 @@ fun CoupleSuggestionBanner(
                     Button(
                         onClick = {
                             onLink(
-                                suggestion.first.lookupKey,
-                                suggestion.second.lookupKey
+                                suggestion.firstLookupKey,
+                                suggestion.secondLookupKey
                             )
                         },
                         colors = ButtonDefaults.buttonColors(
@@ -416,8 +417,8 @@ fun CoupleSuggestionBanner(
                     OutlinedButton(
                         onClick = {
                             onIgnore(
-                                suggestion.first.lookupKey,
-                                suggestion.second.lookupKey
+                                suggestion.firstLookupKey,
+                                suggestion.secondLookupKey
                             )
                         },
                         border = BorderStroke(

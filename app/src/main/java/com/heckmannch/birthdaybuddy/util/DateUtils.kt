@@ -7,6 +7,8 @@ import java.time.temporal.ChronoUnit
 
 // --- Robuste Extensions für Datumsberechnungen ---
 
+private val WHITESPACE_REGEX = "\\s+".toRegex()
+
 /**
  * Standard-Jahr für Kontakte ohne hinterlegtes Geburtsjahr in Android.
  */
@@ -69,8 +71,8 @@ fun LocalDate.toYear(targetYear: Int): LocalDate {
  * Kombiniert zwei Namen zu einem Paar-Namen (z.B. "Max & Erika Mustermann").
  */
 fun mergeNames(name1: String, name2: String): String {
-    val parts1 = name1.trim().split("\\s+".toRegex())
-    val parts2 = name2.trim().split("\\s+".toRegex())
+    val parts1 = name1.trim().split(WHITESPACE_REGEX)
+    val parts2 = name2.trim().split(WHITESPACE_REGEX)
     if (parts1.size > 1 && parts2.size > 1 && parts1.last()
             .equals(parts2.last(), ignoreCase = true)
     ) {

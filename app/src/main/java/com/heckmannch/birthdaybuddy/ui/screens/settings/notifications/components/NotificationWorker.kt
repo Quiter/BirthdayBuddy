@@ -2,7 +2,6 @@ package com.heckmannch.birthdaybuddy.ui.screens.settings.notifications.component
 
 import android.content.Context
 import androidx.hilt.work.HiltWorker
-import androidx.work.Constraints
 import androidx.work.CoroutineWorker
 import androidx.work.ExistingWorkPolicy
 import androidx.work.OneTimeWorkRequestBuilder
@@ -15,12 +14,18 @@ import com.heckmannch.birthdaybuddy.data.repository.ContactRepository
 import com.heckmannch.birthdaybuddy.data.repository.NotificationRepository
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.launch
 import java.time.Duration
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
 import java.util.concurrent.TimeUnit
+import kotlin.time.Duration.Companion.milliseconds
 
 @HiltWorker
 class NotificationWorker @AssistedInject constructor(
@@ -37,6 +42,9 @@ class NotificationWorker @AssistedInject constructor(
 
         val rules = notificationRepository.getAllRulesImmediate()
         if (rules.isEmpty()) return Result.success()
+
+        // Sync contacts before evaluating rules to make sure we work with the latest data
+        contactRepository.syncContacts()
 
         val now = LocalDateTime.now()
         val currentLocalTime = now.toLocalTime().withSecond(0).withNano(0)
@@ -123,11 +131,12 @@ class NotificationWorker @AssistedInject constructor(
             }
         }
 
-        // Plane den nächsten Lauf sauber mit einer kurzen Verzögerung nach Beendigung dieser Ausführung auf dem Main-Thread.
+        // Plane den nächsten Lauf sauber mit einer kurzen Verzögerung nach Beendigung dieser Ausführung.
         // Dies verhindert eine Race-Condition, bei der sich der aktuell laufende Worker durch REPLACE selbst abbricht.
-        android.os.Handler(android.os.Looper.getMainLooper()).postDelayed({
+        applicationScope.launch {
+            delay(1000.milliseconds)
             scheduleNext(context, rules)
-        }, 1000)
+        }
 
         return Result.success()
     }
@@ -190,6 +199,7 @@ class NotificationWorker @AssistedInject constructor(
 
     companion object {
         private const val WORK_NAME = "FlexibleNotificationUpdate"
+        private val applicationScope = CoroutineScope(Dispatchers.Default + SupervisorJob())
 
         /**
          * Plant den nächsten fälligen Zeitpunkt basierend auf allen Regeln.
@@ -221,10 +231,6 @@ class NotificationWorker @AssistedInject constructor(
 
             val request = OneTimeWorkRequestBuilder<NotificationWorker>()
                 .setInitialDelay(delay, TimeUnit.MILLISECONDS)
-                .setConstraints(
-                    Constraints.Builder().setRequiresBatteryNotLow(requiresBatteryNotLow = true)
-                        .build()
-                )
                 .addTag("birthday_notification")
                 .build()
 

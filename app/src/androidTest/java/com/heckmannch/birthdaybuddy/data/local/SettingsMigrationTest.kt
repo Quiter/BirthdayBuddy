@@ -126,5 +126,40 @@ class SettingsMigrationTest {
 
         settingsCursor.close()
     }
+
+    @Test
+    @Throws(IOException::class)
+    fun migrate5To6() {
+        // 1. Create database in version 5
+        helper.createDatabase(testDb, 5).apply {
+            execSQL(
+                "INSERT INTO app_settings (id, notificationsEnabled, persistentNotifications, onboardingCompleted, lastSyncTimestamp, calendarSyncEnabled, calendarId, otherEventsEnabled, ignoredCouplePairs, birthdayCalendarColor, anniversaryCalendarColor, nameDayCalendarColor) " +
+                        "VALUES (0, 1, 1, 1, 123456789, 0, NULL, 0, '[]', -1564957, -6543440, -26624)"
+            )
+            close()
+        }
+
+        // 2. Run migration to version 6 and validate
+        val migratedDb = helper.runMigrationsAndValidate(
+            testDb,
+            6,
+            true,
+            SettingsDatabase.MIGRATION_5_6
+        )
+
+        // 3. Verify columns and default values
+        val settingsCursor = migratedDb.query("SELECT * FROM app_settings WHERE id = 0")
+        assert(settingsCursor.moveToFirst())
+
+        val themeModeIdx = settingsCursor.getColumnIndex("themeMode")
+        val themeAmoledIdx = settingsCursor.getColumnIndex("themeAmoled")
+        val themeAccentIdx = settingsCursor.getColumnIndex("themeAccent")
+
+        assert(settingsCursor.getString(themeModeIdx) == "SYSTEM")
+        assert(settingsCursor.getInt(themeAmoledIdx) == 0) // Boolean represented as 0/1 in SQLite
+        assert(settingsCursor.getString(themeAccentIdx) == "SYSTEM")
+
+        settingsCursor.close()
+    }
 }
 

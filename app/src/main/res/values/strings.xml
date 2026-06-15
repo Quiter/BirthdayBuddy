@@ -361,4 +361,31 @@
     <string name="couple_suggestion_msg">Do %1$s &amp; %2$s share this wedding anniversary? Link them as a couple.</string>
     <string name="couple_suggestion_yes">Yes, link them</string>
     <string name="couple_suggestion_no">No</string>
+
+    <!-- Theme Settings -->
+    <string name="settings_theme_title">Design</string>
+    <string name="settings_theme_desc">Customize look &amp; feel</string>
+    <string name="settings_theme_mode_header">Theme Mode</string>
+    <string name="settings_theme_mode_system">System Default</string>
+    <string name="settings_theme_mode_system_desc">Follows the brightness of the Android operating system</string>
+    <string name="settings_theme_mode_light">Light</string>
+    <string name="settings_theme_mode_dark">Dark</string>
+    <string name="settings_theme_amoled">AMOLED Black</string>
+    <string name="settings_theme_amoled_desc">Uses pure black for the dark background on OLED displays</string>
+    <string name="settings_theme_amoled_disabled_desc">AMOLED Black is only available in dark mode</string>
+    <string name="settings_theme_accent_header">Accent Color</string>
+    <string name="theme_accent_system">System</string>
+    <string name="theme_accent_purple">Purple</string>
+    <string name="theme_accent_blue">Blue</string>
+    <string name="theme_accent_green">Green</string>
+    <string name="theme_accent_red">Red</string>
+    <string name="theme_accent_orange">Orange</string>
+    <string name="theme_accent_pink">Pink</string>
+    <string name="theme_accent_custom">Custom</string>
+    <string name="theme_accent_custom_dialog_title">Custom Accent Color</string>
+    <string name="theme_accent_custom_dialog_desc">Choose a preset or enter a hex color code:</string>
+    <string name="theme_accent_custom_dialog_save">Save</string>
+    <string name="theme_accent_custom_dialog_cancel">Cancel</string>
+    <string name="theme_accent_custom_invalid_hex">Invalid hex code (e.g. #FF5722)</string>
+    <string name="color_picker_preview">Preview</string>
 </resources>

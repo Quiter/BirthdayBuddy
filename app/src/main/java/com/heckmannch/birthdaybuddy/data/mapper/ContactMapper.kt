@@ -7,6 +7,7 @@ import com.heckmannch.birthdaybuddy.util.hasYear
 import com.heckmannch.birthdaybuddy.util.isBirthdayToday
 import com.heckmannch.birthdaybuddy.util.safeDaysUntilNext
 import com.heckmannch.birthdaybuddy.util.safeNextAge
+import dagger.Reusable
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import java.time.format.FormatStyle
@@ -16,6 +17,7 @@ import javax.inject.Inject
 /**
  * Hilfsklasse zur Umwandlung von Datenbank-Modellen in UI-Modelle.
  */
+@Reusable
 class ContactMapper @Inject constructor() {
     private val dateFormatter = DateTimeFormatter.ofLocalizedDate(FormatStyle.LONG)
 
@@ -55,7 +57,7 @@ class ContactMapper @Inject constructor() {
             imageUri = contact.imageUri,
             phoneNumber = contact.phoneNumber,
             initials = contact.fullName.trim()
-                .split("\\s+".toRegex())
+                .split(WHITESPACE_REGEX)
                 .filter { it.isNotBlank() }
                 .let { parts ->
                     when {
@@ -73,5 +75,9 @@ class ContactMapper @Inject constructor() {
             giftIdeas = contact.giftIdeas,
             birthday = contact.birthday,
         )
+    }
+
+    companion object {
+        private val WHITESPACE_REGEX = "\\s+".toRegex()
     }
 }

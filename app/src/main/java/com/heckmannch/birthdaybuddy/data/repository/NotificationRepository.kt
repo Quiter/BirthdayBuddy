@@ -7,10 +7,13 @@ import com.heckmannch.birthdaybuddy.data.local.NotificationRuleDao
 import com.heckmannch.birthdaybuddy.data.local.PendingNotification
 import com.heckmannch.birthdaybuddy.data.local.PendingNotificationDao
 import com.heckmannch.birthdaybuddy.util.NotificationScheduler
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
+import kotlinx.coroutines.withContext
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -24,11 +27,13 @@ class NotificationRepository @Inject constructor(
     private val settingsMutex = Mutex()
 
     val allRules: Flow<List<NotificationRule>> = notificationRuleDao.getAllRules()
+        .distinctUntilChanged()
 
     val settings: Flow<AppSettings> = appSettingsDao.getSettings()
         .map { it ?: AppSettings() }
+        .distinctUntilChanged()
 
-    suspend fun syncScheduling() {
+    suspend fun syncScheduling() = withContext(Dispatchers.IO) {
         val enabled = appSettingsDao.getSettingsImmediate()?.notificationsEnabled ?: false
         val rules = notificationRuleDao.getAllRulesImmediate()
         if (enabled && rules.isNotEmpty()) {
@@ -49,7 +54,10 @@ class NotificationRepository @Inject constructor(
         otherEventsEnabled: Boolean? = null,
         birthdayCalendarColor: Int? = null,
         anniversaryCalendarColor: Int? = null,
-        nameDayCalendarColor: Int? = null
+        nameDayCalendarColor: Int? = null,
+        themeMode: String? = null,
+        themeAmoled: Boolean? = null,
+        themeAccent: String? = null
     ) {
         settingsMutex.withLock {
             val current = appSettingsDao.getSettingsImmediate() ?: AppSettings()
@@ -66,7 +74,10 @@ class NotificationRepository @Inject constructor(
                     birthdayCalendarColor = birthdayCalendarColor ?: current.birthdayCalendarColor,
                     anniversaryCalendarColor = anniversaryCalendarColor
                         ?: current.anniversaryCalendarColor,
-                    nameDayCalendarColor = nameDayCalendarColor ?: current.nameDayCalendarColor
+                    nameDayCalendarColor = nameDayCalendarColor ?: current.nameDayCalendarColor,
+                    themeMode = themeMode ?: current.themeMode,
+                    themeAmoled = themeAmoled ?: current.themeAmoled,
+                    themeAccent = themeAccent ?: current.themeAccent
                 )
             )
         }

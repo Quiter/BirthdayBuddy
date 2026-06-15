@@ -9,14 +9,12 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import com.heckmannch.birthdaybuddy.R
 import com.heckmannch.birthdaybuddy.ui.screens.settings.backup.components.BackupContent
 import com.heckmannch.birthdaybuddy.viewmodel.BackupViewModel
-import kotlinx.coroutines.launch
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
@@ -32,7 +30,6 @@ fun BackupScreen(
     onNavigateBack: () -> Unit
 ) {
     val context = LocalContext.current
-    val scope = rememberCoroutineScope()
     var isLoading by remember { mutableStateOf(false) }
 
     val exportSuccessMsg = stringResource(R.string.backup_export_success)
@@ -44,21 +41,20 @@ fun BackupScreen(
         ActivityResultContracts.CreateDocument("application/json")
     ) { uri: Uri? ->
         if (uri != null) {
-            scope.launch {
-                isLoading = true
-                try {
-                    val json = viewModel.exportGiftIdeas()
-                    context.contentResolver.openOutputStream(uri)?.use { outputStream ->
-                        outputStream.write(json.toByteArray())
-                    }
+            isLoading = true
+            viewModel.exportGiftIdeas(
+                contentResolver = context.contentResolver,
+                uri = uri,
+                onSuccess = {
+                    isLoading = false
                     Toast.makeText(context, exportSuccessMsg, Toast.LENGTH_SHORT).show()
-                } catch (e: Exception) {
+                },
+                onError = { e ->
+                    isLoading = false
                     Toast.makeText(context, exportFailedMsg.format(e.message), Toast.LENGTH_LONG)
                         .show()
-                } finally {
-                    isLoading = false
                 }
-            }
+            )
         }
     }
 
@@ -66,32 +62,29 @@ fun BackupScreen(
         ActivityResultContracts.OpenDocument()
     ) { uri: Uri? ->
         if (uri != null) {
-            scope.launch {
-                isLoading = true
-                try {
-                    val json = context.contentResolver.openInputStream(uri)?.use { inputStream ->
-                        inputStream.bufferedReader().readText()
-                    }
-                    if (json != null) {
-                        val count = viewModel.importGiftIdeas(json)
-                        if (count >= 0) {
-                            val message = context.applicationContext.resources.getQuantityString(
-                                R.plurals.backup_import_success,
-                                count,
-                                count
-                            )
-                            Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
-                        } else {
-                            Toast.makeText(context, importInvalidMsg, Toast.LENGTH_SHORT).show()
-                        }
-                    }
-                } catch (e: Exception) {
+            isLoading = true
+            viewModel.importGiftIdeas(
+                contentResolver = context.contentResolver,
+                uri = uri,
+                onSuccess = { count ->
+                    isLoading = false
+                    val message = context.applicationContext.resources.getQuantityString(
+                        R.plurals.backup_import_success,
+                        count,
+                        count
+                    )
+                    Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
+                },
+                onInvalid = {
+                    isLoading = false
+                    Toast.makeText(context, importInvalidMsg, Toast.LENGTH_SHORT).show()
+                },
+                onError = { e ->
+                    isLoading = false
                     Toast.makeText(context, importFailedMsg.format(e.message), Toast.LENGTH_LONG)
                         .show()
-                } finally {
-                    isLoading = false
                 }
-            }
+            )
         }
     }
 

@@ -5,6 +5,8 @@ import android.content.Context
 import android.content.pm.PackageManager
 import android.util.Log
 import androidx.core.content.ContextCompat
+import androidx.room.withTransaction
+import com.heckmannch.birthdaybuddy.data.local.AppDatabase
 import com.heckmannch.birthdaybuddy.data.local.AppSettings
 import com.heckmannch.birthdaybuddy.data.local.AppSettingsDao
 import com.heckmannch.birthdaybuddy.data.local.Contact
@@ -13,6 +15,7 @@ import com.heckmannch.birthdaybuddy.data.local.ContactUserData
 import com.heckmannch.birthdaybuddy.data.local.ContactUserDataDao
 import com.heckmannch.birthdaybuddy.data.local.LabelConfig
 import com.heckmannch.birthdaybuddy.data.local.LabelConfigDao
+import com.heckmannch.birthdaybuddy.data.local.SettingsDatabase
 import com.heckmannch.birthdaybuddy.ui.model.GiftIdea
 import com.heckmannch.birthdaybuddy.util.WidgetUpdater
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -37,10 +40,14 @@ class ContactRepository @Inject constructor(
     private val giftIdeaBackupManager: GiftIdeaBackupManager,
     private val calendarSyncRepository: CalendarSyncRepository,
     private val widgetUpdater: WidgetUpdater,
+    private val appDatabase: AppDatabase,
+    private val settingsDatabase: SettingsDatabase,
 ) {
 
     val allContacts: Flow<List<Contact>> = contactDao.getAllContacts()
+        .distinctUntilChanged()
     val labelConfigs: Flow<List<LabelConfig>> = labelConfigDao.getAllConfigs()
+        .distinctUntilChanged()
     val otherEventsEnabled: Flow<Boolean> = appSettingsDao.getSettings()
         .map { it?.otherEventsEnabled ?: false }
         .distinctUntilChanged()
@@ -218,21 +225,27 @@ class ContactRepository @Inject constructor(
 
     suspend fun linkAsCouple(lookupKey1: String, lookupKey2: String) {
         withContext(Dispatchers.IO) {
-            val userData1 = contactUserDataDao.getUserDataForContact(lookupKey1) ?: ContactUserData(
-                lookupKey = lookupKey1
-            )
-            val userData2 = contactUserDataDao.getUserDataForContact(lookupKey2) ?: ContactUserData(
-                lookupKey = lookupKey2
-            )
+            settingsDatabase.withTransaction {
+                val userData1 =
+                    contactUserDataDao.getUserDataForContact(lookupKey1) ?: ContactUserData(
+                        lookupKey = lookupKey1
+                    )
+                val userData2 =
+                    contactUserDataDao.getUserDataForContact(lookupKey2) ?: ContactUserData(
+                        lookupKey = lookupKey2
+                    )
 
-            contactUserDataDao.upsertUserData(userData1.copy(spouseLookupKey = lookupKey2))
-            contactUserDataDao.upsertUserData(userData2.copy(spouseLookupKey = lookupKey1))
-
-            contactDao.getContactByLookupKey(lookupKey1)?.let { contact ->
-                contactDao.upsertContact(contact.copy(spouseLookupKey = lookupKey2))
+                contactUserDataDao.upsertUserData(userData1.copy(spouseLookupKey = lookupKey2))
+                contactUserDataDao.upsertUserData(userData2.copy(spouseLookupKey = lookupKey1))
             }
-            contactDao.getContactByLookupKey(lookupKey2)?.let { contact ->
-                contactDao.upsertContact(contact.copy(spouseLookupKey = lookupKey1))
+
+            appDatabase.withTransaction {
+                contactDao.getContactByLookupKey(lookupKey1)?.let { contact ->
+                    contactDao.upsertContact(contact.copy(spouseLookupKey = lookupKey2))
+                }
+                contactDao.getContactByLookupKey(lookupKey2)?.let { contact ->
+                    contactDao.upsertContact(contact.copy(spouseLookupKey = lookupKey1))
+                }
             }
         }
         updateWidgetAndSyncCalendar()
@@ -243,18 +256,22 @@ class ContactRepository @Inject constructor(
             val contact = contactDao.getContactByLookupKey(lookupKey) ?: return@withContext
             val spouseKey = contact.spouseLookupKey ?: return@withContext
 
-            contactUserDataDao.getUserDataForContact(lookupKey)?.let {
-                contactUserDataDao.upsertUserData(it.copy(spouseLookupKey = null))
-            }
-            contactUserDataDao.getUserDataForContact(spouseKey)?.let {
-                contactUserDataDao.upsertUserData(it.copy(spouseLookupKey = null))
+            settingsDatabase.withTransaction {
+                contactUserDataDao.getUserDataForContact(lookupKey)?.let {
+                    contactUserDataDao.upsertUserData(it.copy(spouseLookupKey = null))
+                }
+                contactUserDataDao.getUserDataForContact(spouseKey)?.let {
+                    contactUserDataDao.upsertUserData(it.copy(spouseLookupKey = null))
+                }
             }
 
-            contactDao.getContactByLookupKey(lookupKey)?.let {
-                contactDao.upsertContact(it.copy(spouseLookupKey = null))
-            }
-            contactDao.getContactByLookupKey(spouseKey)?.let {
-                contactDao.upsertContact(it.copy(spouseLookupKey = null))
+            appDatabase.withTransaction {
+                contactDao.getContactByLookupKey(lookupKey)?.let {
+                    contactDao.upsertContact(it.copy(spouseLookupKey = null))
+                }
+                contactDao.getContactByLookupKey(spouseKey)?.let {
+                    contactDao.upsertContact(it.copy(spouseLookupKey = null))
+                }
             }
         }
         updateWidgetAndSyncCalendar()
@@ -271,20 +288,24 @@ class ContactRepository @Inject constructor(
 
     suspend fun ignoreCoupleSuggestion(lookupKey1: String, lookupKey2: String) {
         withContext(Dispatchers.IO) {
-            val currentSettings = appSettingsDao.getSettingsImmediate() ?: AppSettings()
-            val pairKey =
-                if (lookupKey1 < lookupKey2) "$lookupKey1:$lookupKey2" else "$lookupKey2:$lookupKey1"
-            if (!currentSettings.ignoredCouplePairs.contains(pairKey)) {
-                val updatedList = currentSettings.ignoredCouplePairs + pairKey
-                appSettingsDao.upsertSettings(currentSettings.copy(ignoredCouplePairs = updatedList))
+            settingsDatabase.withTransaction {
+                val currentSettings = appSettingsDao.getSettingsImmediate() ?: AppSettings()
+                val pairKey =
+                    if (lookupKey1 < lookupKey2) "$lookupKey1:$lookupKey2" else "$lookupKey2:$lookupKey1"
+                if (!currentSettings.ignoredCouplePairs.contains(pairKey)) {
+                    val updatedList = currentSettings.ignoredCouplePairs + pairKey
+                    appSettingsDao.upsertSettings(currentSettings.copy(ignoredCouplePairs = updatedList))
+                }
             }
         }
     }
 
     suspend fun clearIgnoredCouplePairs() {
         withContext(Dispatchers.IO) {
-            val currentSettings = appSettingsDao.getSettingsImmediate() ?: AppSettings()
-            appSettingsDao.upsertSettings(currentSettings.copy(ignoredCouplePairs = emptyList()))
+            settingsDatabase.withTransaction {
+                val currentSettings = appSettingsDao.getSettingsImmediate() ?: AppSettings()
+                appSettingsDao.upsertSettings(currentSettings.copy(ignoredCouplePairs = emptyList()))
+            }
         }
     }
 }
