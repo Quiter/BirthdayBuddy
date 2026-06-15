@@ -387,4 +387,5 @@
     <string name="theme_accent_custom_dialog_save">Save</string>
     <string name="theme_accent_custom_dialog_cancel">Cancel</string>
     <string name="theme_accent_custom_invalid_hex">Invalid hex code (e.g. #FF5722)</string>
+    <string name="color_picker_preview">Preview</string>
 </resources>

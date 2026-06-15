@@ -253,7 +253,7 @@ fun ColorPickerDialog(
                                 .border(1.dp, MaterialTheme.colorScheme.outlineVariant, CircleShape)
                         )
                         Text(
-                            text = "Preview / Vorschau",
+                            text = stringResource(R.string.color_picker_preview),
                             style = MaterialTheme.typography.titleSmall,
                             color = MaterialTheme.colorScheme.onSurface
                         )
