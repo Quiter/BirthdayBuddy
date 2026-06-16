@@ -36,9 +36,8 @@ import com.heckmannch.birthdaybuddy.MainActivity
 import com.heckmannch.birthdaybuddy.R
 import com.heckmannch.birthdaybuddy.data.local.Contact
 import com.heckmannch.birthdaybuddy.data.repository.ContactRepository
-import com.heckmannch.birthdaybuddy.ui.theme.BirthdayGold
-import com.heckmannch.birthdaybuddy.ui.theme.BirthdayKidGreen
-import com.heckmannch.birthdaybuddy.ui.theme.BirthdaySilver
+import androidx.compose.ui.graphics.Color
+import androidx.glance.color.ColorProvider
 import com.heckmannch.birthdaybuddy.util.hasYear
 import com.heckmannch.birthdaybuddy.util.safeDaysUntilNext
 import com.heckmannch.birthdaybuddy.util.safeNextAge
@@ -124,7 +123,6 @@ class BirthdayWidget : GlanceAppWidget() {
         Column(
             modifier = GlanceModifier
                 .fillMaxSize()
-                .background(GlanceTheme.colors.surface)
                 .padding(8.dp)
                 .clickable(
                     actionStartActivity(
@@ -186,25 +184,16 @@ class BirthdayWidget : GlanceAppWidget() {
             )
         }
 
-        val itemBgColor = when {
-            nextAgeValue != null && nextAgeValue % 10 == 0 -> {
-                BirthdayGold.copy(alpha = 0.15f)
-            }
-
-            nextAgeValue != null && nextAgeValue in 0..9 -> {
-                BirthdayKidGreen.copy(alpha = 0.15f)
-            }
-
-            else -> {
-                BirthdaySilver.copy(alpha = 0.15f)
-            }
-        }
+        val itemBgColor = ColorProvider(
+            day = Color(0xCCFFFFFF), // ~80% opaque white (Light Theme)
+            night = Color(0xCC1E1E1E) // ~80% opaque dark grey (Dark Theme)
+        )
 
         Box(
             modifier = GlanceModifier
                 .height(blockHeight)
                 .fillMaxWidth()
-                .padding(top = 3.dp, bottom = 3.dp),
+                .padding(top = 4.dp, bottom = 4.dp),
             contentAlignment = Alignment.Center,
         ) {
             Box(

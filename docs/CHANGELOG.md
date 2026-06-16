@@ -184,3 +184,10 @@
     - **Kontraststarke HSV-Generierung:** Aktualisierung der Methode `getDynamicCustomColorScheme` zur vollständigen Belegung aller Farbrollen (inkl. Outline-Varianten, Error-Rollen und passenden Kontrasten).
     - **M3 Typografie vervollständigt:** Vollständige Deklaration aller 15 Material 3 Typografiestile (Display, Headline, Title, Body und Label in Large, Medium und Small) mit standardmäßigen Font-Spezifikationen in [Type.kt](file:///c:/Users/chris/AndroidStudioProjects/BirthdayBuddy/app/src/main/java/com/heckmannch/birthdaybuddy/ui/theme/Type.kt).
     - **Struktur & Dokumentation:** Dokumentation der neuen Theme-Komponente in [PROJECT_STRUCTURE.md](file:///c:/Users/chris/AndroidStudioProjects/BirthdayBuddy/docs/PROJECT_STRUCTURE.md).
+
+177. **Modernisiertes Widget-Design (UI/UX Redesign):**
+    - **Volltransparenter Container:** Entfernung der festen Hintergrundfarbe (`GlanceTheme.colors.surface`) des gesamten Widgets in [BirthdayWidget.kt](file:///c:/Users/chris/AndroidStudioProjects/BirthdayBuddy/app/src/main/java/com/heckmannch/birthdaybuddy/widget/BirthdayWidget.kt), damit das Widget transparent auf dem Homescreen-Hintergrund aufliegt und moderner wirkt.
+    - **Transluzente Kartenelemente:** Einführung eines einheitlichen, semitransparenten (durchsichtigen) Hintergrunds für alle Geburtstagskarten mittels des `ColorProvider(day, night)`-Frameworks. Zur Gewährleistung optimaler Lesbarkeit und hohem Kontrast auf allen Wallpapers wurde die Opazität auf 80% erhöht (`0xCCFFFFFF` / weiß im Light-Theme; `0xCC1E1E1E` / dunkelgrau im Dark-Theme).
+    - **Vergrößerter Element-Abstand:** Erhöhung des vertikalen Paddings der Zeilen-Boxen von `3.dp` auf `4.dp` (insgesamt `8.dp` Abstand zwischen den Karten), um ein luftigeres Layout zu erzielen.
+    - **Farbbereinigung:** Verzicht auf die altersabhängigen Gold-/Silber-/Grün-Hintergründe im Widget zur Verbesserung der ästhetischen Ruhe und Konsistenz.
+
