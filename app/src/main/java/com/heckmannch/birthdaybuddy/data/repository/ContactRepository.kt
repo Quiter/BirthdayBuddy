@@ -16,6 +16,7 @@ import com.heckmannch.birthdaybuddy.data.local.ContactUserDataDao
 import com.heckmannch.birthdaybuddy.data.local.LabelConfig
 import com.heckmannch.birthdaybuddy.data.local.LabelConfigDao
 import com.heckmannch.birthdaybuddy.data.local.SettingsDatabase
+import com.heckmannch.birthdaybuddy.data.local.PotentialCouple
 import com.heckmannch.birthdaybuddy.ui.model.GiftIdea
 import com.heckmannch.birthdaybuddy.util.WidgetUpdater
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -46,6 +47,8 @@ class ContactRepository @Inject constructor(
 
     val allContacts: Flow<List<Contact>> = contactDao.getAllContacts()
         .distinctUntilChanged()
+    val potentialCouples: Flow<List<PotentialCouple>> = contactDao.getPotentialCouples()
+        .distinctUntilChanged()
     val labelConfigs: Flow<List<LabelConfig>> = labelConfigDao.getAllConfigs()
         .distinctUntilChanged()
     val otherEventsEnabled: Flow<Boolean> = appSettingsDao.getSettings()
@@ -55,6 +58,7 @@ class ContactRepository @Inject constructor(
     val ignoredCouplePairs: Flow<List<String>> = appSettingsDao.getSettings()
         .map { it?.ignoredCouplePairs ?: emptyList() }
         .distinctUntilChanged()
+
 
     suspend fun getAllContactsImmediate(): List<Contact> = withContext(Dispatchers.IO) {
         contactDao.getAllContactsImmediate()

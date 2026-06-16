@@ -39,4 +39,20 @@ interface ContactDao {
             deleteContactsNotIn(currentKeys)
         }
     }
+
+    @Query("""
+        SELECT 
+            c1.lookupKey AS firstLookupKey, 
+            c1.fullName AS firstName, 
+            c1.imageUri AS firstImageUri,
+            c2.lookupKey AS secondLookupKey, 
+            c2.fullName AS secondName, 
+            c2.imageUri AS secondImageUri
+        FROM contacts c1
+        JOIN contacts c2 ON SUBSTR(c1.anniversary, 6) = SUBSTR(c2.anniversary, 6) AND c1.lookupKey < c2.lookupKey
+        WHERE c1.anniversary IS NOT NULL AND c1.spouseLookupKey IS NULL
+          AND c2.anniversary IS NOT NULL AND c2.spouseLookupKey IS NULL
+    """)
+    fun getPotentialCouples(): Flow<List<PotentialCouple>>
 }
+

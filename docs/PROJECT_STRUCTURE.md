@@ -30,6 +30,7 @@
     - `NotificationRuleDao.kt`: DAO für die Verwaltung der Erinnerungsregeln.
     - `PendingNotification.kt`: Entity zur Nachverfolgung aktiver System-Benachrichtigungen.
     - `PendingNotificationDao.kt`: DAO für die Verwaltung noch nicht quittierter Erinnerungen.
+    - `PotentialCouple.kt`: Datenklasse zur Repräsentation eines potenziellen Ehepaars, das denselben Hochzeitstag teilt.
 - ### 📁 Repository (`data.repository`)
     - `CalendarSyncRepository.kt`: Kapselt den Low-Level-Zugriff auf den Android-Kalender-Provider, verwaltet die Kalender-Erstellung/Löschung unter `"phone"` (ACCOUNT_TYPE_LOCAL) und synchronisiert Geburtstage als jährliche ganztägige Serientermine.
     - `ContactRepository.kt`: Orchestriert den Datenfluss zwischen Room-DB und der System-Kontaktquelle; implementiert die Sync-Logik, reaktive Widget-Updates und Geschäftslogik für Geschenkideen.
@@ -90,7 +91,8 @@
             - `NotificationHelper.kt`: Hilfsklasse für den System-Notification-Manager.
         - `backup/BackupScreen.kt`: Screen für den Import/Export von Geschenkideen.
         - `theme/ThemeSettingsScreen.kt`: Einstellungsbildschirm zur manuellen Auswahl des Designs (Hell/Dunkel/System), AMOLED Black-Option und Grid-Auswahl für Akzentfarben.
-        - `settings/otherevents/OtherEventsSettingsScreen.kt`: Screen zur Aktivierung und Konfiguration des Features für weitere Ereignisse (Hochzeitstage und Namenstage).
+        - `otherevents/OtherEventsSettingsScreen.kt`: Screen zur Aktivierung und Konfiguration des Features für weitere Ereignisse (Hochzeitstage und Namenstage).
+        - `sync/SyncSettingsScreen.kt`: Screen zur manuellen Synchronisierung der Kontakte mit Snackbar-Bestätigung.
         - `about/AboutScreen.kt`: Anzeige von App-Informationen und Entwickler-Details.
         - `about/PrivacyPolicyScreen.kt`: Anzeige der Datenschutzerklärung.
 - ### 📁 Models (`ui.model`)

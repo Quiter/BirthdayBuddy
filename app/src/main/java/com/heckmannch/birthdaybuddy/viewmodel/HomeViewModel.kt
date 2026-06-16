@@ -308,47 +308,33 @@ class HomeViewModel @Inject constructor(
     }
 
     val coupleSuggestion: Flow<CoupleSuggestionUiModel?> = combine(
-        contactRepository.allContacts,
+        contactRepository.potentialCouples,
         contactRepository.ignoredCouplePairs,
         _selectedLabel,
-    ) { contacts, ignoredPairs, label ->
-        if (label != LABEL_ANNIVERSARY) return@combine null
+    ) { potentials, ignoredPairs, label ->
+        if (label != LABEL_ANNIVERSARY || potentials.isEmpty()) return@combine null
 
-        val uncoupledAnniversaryContacts = contacts.filter {
-            it.anniversary != null && it.spouseLookupKey == null
-        }
-
-        val groupedByDate = uncoupledAnniversaryContacts.groupBy { contact ->
-            val date = contact.anniversary!!
-            Pair(date.monthValue, date.dayOfMonth)
-        }
-
-        for ((_, list) in groupedByDate) {
-            if (list.size >= 2) {
-                for (i in list.indices) {
-                    for (j in i + 1 until list.size) {
-                        val c1 = list[i]
-                        val c2 = list[j]
-                        val pairKey =
-                            if (c1.lookupKey < c2.lookupKey) "${c1.lookupKey}:${c2.lookupKey}" else "${c2.lookupKey}:${c1.lookupKey}"
-                        if (!ignoredPairs.contains(pairKey)) {
-                            return@combine CoupleSuggestionUiModel(
-                                firstLookupKey = c1.lookupKey,
-                                firstName = c1.fullName,
-                                firstImageUri = c1.imageUri,
-                                firstInitials = c1.fullName.initials(),
-                                secondLookupKey = c2.lookupKey,
-                                secondName = c2.fullName,
-                                secondImageUri = c2.imageUri,
-                                secondInitials = c2.fullName.initials(),
-                            )
-                        }
-                    }
-                }
+        potentials.firstOrNull { couple ->
+            val pairKey = if (couple.firstLookupKey < couple.secondLookupKey) {
+                "${couple.firstLookupKey}:${couple.secondLookupKey}"
+            } else {
+                "${couple.secondLookupKey}:${couple.firstLookupKey}"
             }
+            !ignoredPairs.contains(pairKey)
+        }?.let { couple ->
+            CoupleSuggestionUiModel(
+                firstLookupKey = couple.firstLookupKey,
+                firstName = couple.firstName,
+                firstImageUri = couple.firstImageUri,
+                firstInitials = couple.firstName.initials(),
+                secondLookupKey = couple.secondLookupKey,
+                secondName = couple.secondName,
+                secondImageUri = couple.secondImageUri,
+                secondInitials = couple.secondName.initials()
+            )
         }
-        null
     }.flowOn(Dispatchers.Default)
+
 
     val uiState: StateFlow<HomeUiState> = combine(
         filteredContacts,
