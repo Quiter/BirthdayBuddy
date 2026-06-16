@@ -113,7 +113,7 @@
     - `LottieIllustration.kt`: Wiederverwendbare Komponente für Lottie-Animationen.
     - `ResponsiveLayout.kt`: Beinhaltet `AdaptiveContentContainer`, `AppResponsiveScaffold` und den globalen `LocalWindowWidthSizeClass` CompositionLocal-Provider zur flexiblen, abfragefreien Größenklassen-Weitergabe (Handy, Tablet, Chromebook).
 - ### 📁 Theme (`ui.theme`)
-    - `Theme.kt`, `Color.kt`, `Type.kt`: Design-System Definitionen, custom Farbschemata für Akzentfarben und AMOLED-Erweiterung.
+    - `Theme.kt`, `Color.kt`, `Type.kt`, `Shapes.kt`: Design-System Definitionen (Farbschemata, Typografie, Eckenradien), custom Farbschemata für Akzentfarben und AMOLED-Erweiterung.
 
 ## 📁 ViewModel (`viewmodel`)
 - `HomeViewModel.kt`: Zuständig für die Kontaktliste, Suche, Filterung und den Home-Screen State. Nutzt ein leichtgewichtiges MVI/UDF-Muster mit dem `HomeIntent` Interface und einem konsolidierten `UserUiState` Flow zur Vermeidung asynchroner Konflikte.
