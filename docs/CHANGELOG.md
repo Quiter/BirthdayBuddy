@@ -186,8 +186,8 @@
     - **Struktur & Dokumentation:** Dokumentation der neuen Theme-Komponente in [PROJECT_STRUCTURE.md](file:///c:/Users/chris/AndroidStudioProjects/BirthdayBuddy/docs/PROJECT_STRUCTURE.md).
 
 177. **Modernisiertes Widget-Design (UI/UX Redesign):**
-    - **Volltransparenter Container:** Entfernung der festen Hintergrundfarbe (`GlanceTheme.colors.surface`) des gesamten Widgets in [BirthdayWidget.kt](file:///c:/Users/chris/AndroidStudioProjects/BirthdayBuddy/app/src/main/java/com/heckmannch/birthdaybuddy/widget/BirthdayWidget.kt), damit das Widget transparent auf dem Homescreen-Hintergrund aufliegt und moderner wirkt.
-    - **Transluzente Kartenelemente:** Einführung eines einheitlichen, semitransparenten (durchsichtigen) Hintergrunds für alle Geburtstagskarten mittels des `ColorProvider(day, night)`-Frameworks. Zur Gewährleistung optimaler Lesbarkeit und hohem Kontrast auf allen Wallpapers wurde die Opazität auf 80% erhöht (`0xCCFFFFFF` / weiß im Light-Theme; `0xCC1E1E1E` / dunkelgrau im Dark-Theme).
-    - **Vergrößerter Element-Abstand:** Erhöhung des vertikalen Paddings der Zeilen-Boxen von `3.dp` auf `4.dp` (insgesamt `8.dp` Abstand zwischen den Karten), um ein luftigeres Layout zu erzielen.
-    - **Farbbereinigung:** Verzicht auf die altersabhängigen Gold-/Silber-/Grün-Hintergründe im Widget zur Verbesserung der ästhetischen Ruhe und Konsistenz.
+    - **Volle Element-Breite & Transparenter Container:** Entfernung der festen Hintergrundfarbe (`GlanceTheme.colors.surface`) sowie des horizontalen Insets (`horizontal = 0.dp`) des äußeren Containers in [BirthdayWidget.kt](file:///c:/Users/chris/AndroidStudioProjects/BirthdayBuddy/app/src/main/java/com/heckmannch/birthdaybuddy/widget/BirthdayWidget.kt). Die Karten-Elemente nutzen nun die vollen 100 % Breite des Widgets und schweben transparent auf dem Homescreen.
+    - **Transluzente Kartenelemente:** Einführung eines einheitlichen, semitransparenten Hintergrunds für alle Geburtstagskarten mittels `ColorProvider(day, night)` mit 80% Opazität (`0xCCFFFFFF` / weiß im Light-Theme; `0xCC1E1E1E` / dunkelgrau im Dark-Theme) für optimale Lesbarkeit.
+    - **Kompaktes Spacing & Höhenberechnung:** Reduzierung des vertikalen Paddings auf `2.dp` pro Karte (insgesamt `4.dp` Abstand zwischen den Karten) für ein kompakteres Design. Anpassung der Höhenberechnung (Abzug von `8.dp` statt `16.dp` für das äußere Padding), um den Platz optimal auszunutzen.
+    - **Farbbereinigung:** Verzicht auf die altersabhängigen Gold-/Silber-/Grün-Hintergründe zur ästhetischen Beruhigung des Widgets.
 

@@ -104,8 +104,8 @@ class BirthdayWidget : GlanceAppWidget() {
             )
         }
 
-        // Äußeres Column-Padding abziehen (top=8dp, bottom=8dp -> 16dp)
-        val availableHeight = (size.height.value - 16).coerceAtLeast(0f)
+        // Äußeres Column-Padding abziehen (top=4dp, bottom=4dp -> 8dp)
+        val availableHeight = (size.height.value - 8).coerceAtLeast(0f)
         val minItemBlockHeight = 58.dp
 
         // 1. Berechne wie viele Elemente maximal auf die verfügbare Höhe passen
@@ -123,7 +123,7 @@ class BirthdayWidget : GlanceAppWidget() {
         Column(
             modifier = GlanceModifier
                 .fillMaxSize()
-                .padding(8.dp)
+                .padding(horizontal = 0.dp, vertical = 4.dp)
                 .clickable(
                     actionStartActivity(
                         Intent(context, MainActivity::class.java).apply {
@@ -193,7 +193,7 @@ class BirthdayWidget : GlanceAppWidget() {
             modifier = GlanceModifier
                 .height(blockHeight)
                 .fillMaxWidth()
-                .padding(top = 4.dp, bottom = 4.dp),
+                .padding(top = 2.dp, bottom = 2.dp),
             contentAlignment = Alignment.Center,
         ) {
             Box(
