@@ -1,6 +1,5 @@
 package com.heckmannch.birthdaybuddy.viewmodel
 
-import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.google.common.truth.Truth.assertThat
 import com.heckmannch.birthdaybuddy.MainDispatcherRule
 import com.heckmannch.birthdaybuddy.data.local.Contact
@@ -15,15 +14,27 @@ import kotlinx.coroutines.test.runTest
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
-import org.junit.runner.RunWith
 import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.whenever
 import java.time.LocalDate
 
-@RunWith(AndroidJUnit4::class)
+import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.cancel
+import org.junit.After
+
 @OptIn(ExperimentalCoroutinesApi::class)
 class HomeViewModelTest {
+
+    private lateinit var viewModel: HomeViewModel
+
+    @After
+    fun tearDown() {
+        if (::viewModel.isInitialized) {
+            viewModel.viewModelScope.cancel()
+        }
+    }
+
 
     @get:Rule
     val mainDispatcherRule = MainDispatcherRule()
@@ -38,13 +49,14 @@ class HomeViewModelTest {
         whenever(timeRepository.currentDate).doReturn(MutableStateFlow(today))
         whenever(contactRepository.labelConfigs).doReturn(MutableStateFlow(emptyList()))
         whenever(contactRepository.allContacts).doReturn(MutableStateFlow(emptyList()))
+        whenever(contactRepository.potentialCouples).doReturn(MutableStateFlow(emptyList()))
         whenever(contactRepository.otherEventsEnabled).doReturn(MutableStateFlow(false))
         whenever(contactRepository.ignoredCouplePairs).doReturn(MutableStateFlow(emptyList()))
     }
 
     @Test
     fun initialState_isCorrect() = runTest {
-        val viewModel = HomeViewModel(
+        viewModel = HomeViewModel(
             contactRepository = contactRepository,
             mapper = mapper,
             timeRepository = timeRepository,
@@ -58,7 +70,7 @@ class HomeViewModelTest {
 
     @Test
     fun onLabelSelected_updatesState() = runTest {
-        val viewModel = HomeViewModel(
+        viewModel = HomeViewModel(
             contactRepository = contactRepository,
             mapper = mapper,
             timeRepository = timeRepository,
@@ -89,7 +101,7 @@ class HomeViewModelTest {
         )
         whenever(contactRepository.allContacts).thenReturn(MutableStateFlow(contacts))
 
-        val viewModel = HomeViewModel(
+        viewModel = HomeViewModel(
             contactRepository = contactRepository,
             mapper = mapper,
             timeRepository = timeRepository,
@@ -127,7 +139,7 @@ class HomeViewModelTest {
         whenever(contactRepository.allContacts).thenReturn(MutableStateFlow(contacts))
         whenever(contactRepository.labelConfigs).thenReturn(MutableStateFlow(labelConfigs))
 
-        val viewModel = HomeViewModel(
+        viewModel = HomeViewModel(
             contactRepository = contactRepository,
             mapper = mapper,
             timeRepository = timeRepository,
@@ -161,7 +173,7 @@ class HomeViewModelTest {
         whenever(contactRepository.allContacts).thenReturn(MutableStateFlow(contacts))
         whenever(contactRepository.otherEventsEnabled).thenReturn(MutableStateFlow(true))
 
-        val viewModel = HomeViewModel(
+        viewModel = HomeViewModel(
             contactRepository = contactRepository,
             mapper = mapper,
             timeRepository = timeRepository,

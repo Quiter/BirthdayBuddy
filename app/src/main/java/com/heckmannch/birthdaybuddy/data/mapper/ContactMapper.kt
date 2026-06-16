@@ -22,10 +22,19 @@ class ContactMapper @Inject constructor() {
     private val dateFormatter = DateTimeFormatter.ofLocalizedDate(FormatStyle.LONG)
 
     // Erzeugt das beste Format NUR für Tag/Monat basierend auf der Sprache des Nutzers (z.B. "12. Mai" vs "May 12")
-    private val dayMonthFormatter = DateTimeFormatter.ofPattern(
-        DateFormat.getBestDateTimePattern(Locale.getDefault(), "dMMMM"),
-        Locale.getDefault(),
-    )
+    private val dayMonthFormatter = try {
+        DateTimeFormatter.ofPattern(
+            DateFormat.getBestDateTimePattern(Locale.getDefault(), "dMMMM"),
+            Locale.getDefault(),
+        )
+    } catch (_: Throwable) {
+        // Fallback für lokale JVM-Tests (wo DateFormat nicht gemockt ist)
+        if (Locale.getDefault().language == Locale.GERMAN.language) {
+            DateTimeFormatter.ofPattern("d. MMMM", Locale.getDefault())
+        } else {
+            DateTimeFormatter.ofPattern("d MMMM", Locale.getDefault())
+        }
+    }
 
     private val monthFormatter = DateTimeFormatter.ofPattern("MMMM", Locale.getDefault())
 

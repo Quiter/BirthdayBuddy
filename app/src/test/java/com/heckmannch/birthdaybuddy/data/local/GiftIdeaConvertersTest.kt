@@ -1,12 +1,9 @@
 package com.heckmannch.birthdaybuddy.data.local
 
-import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.google.common.truth.Truth.assertThat
 import com.heckmannch.birthdaybuddy.ui.model.GiftIdea
 import org.junit.Test
-import org.junit.runner.RunWith
 
-@RunWith(AndroidJUnit4::class)
 class GiftIdeaConvertersTest {
     private val converters = GiftIdeaConverters()
 

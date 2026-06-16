@@ -32,10 +32,13 @@
     - `PendingNotificationDao.kt`: DAO für die Verwaltung noch nicht quittierter Erinnerungen.
     - `PotentialCouple.kt`: Datenklasse zur Repräsentation eines potenziellen Ehepaars, das denselben Hochzeitstag teilt.
 - ### 📁 Repository (`data.repository`)
-    - `CalendarSyncRepository.kt`: Kapselt den Low-Level-Zugriff auf den Android-Kalender-Provider, verwaltet die Kalender-Erstellung/Löschung unter `"phone"` (ACCOUNT_TYPE_LOCAL) und synchronisiert Geburtstage als jährliche ganztägige Serientermine.
+    - `CalendarSyncRepository.kt`: Orchestriert die Synchronisation von Geburtstagen, Namenstagen und Hochzeitstagen mit dem System-Kalender unter Verwendung von `SystemCalendarDataSource`.
     - `ContactRepository.kt`: Orchestriert den Datenfluss zwischen Room-DB und der System-Kontaktquelle; implementiert die Sync-Logik, reaktive Widget-Updates und Geschäftslogik für Geschenkideen.
     - `GiftIdeaBackupManager.kt`: Spezialisierte Klasse für den JSON-basierten Im- und Export von Geschenkideen.
     - `NotificationRepository.kt`: Zentraler Zugriff auf Benachrichtigungsregeln und persistente App-Einstellungen.
+    - `SystemCalendarInfo.kt`: Datenklasse zur Kapselung von Kalender-Metadaten (z. B. ID, Name, Account-Typ, Farbe) zur Entkopplung der Datenquellen von Android-Datenbankcursorn.
+    - `SystemCalendarDataSource.kt`: Interface für den Zugriff auf den Kalender-Provider (CRUD-Operationen auf Kalender- und Event-Tabellen).
+    - `SystemCalendarDataSourceImpl.kt`: Konkrete Android-Implementierung von `SystemCalendarDataSource`, die den `ContentResolver` nutzt, um Kalender und Events im System zu verwalten.
     - `SystemContactDataSource.kt`: Kapselt den Low-Level Zugriff auf den Android ContentResolver (Kontakte, Gruppen, Events).
     - `TimeRepository.kt`: Reaktive Zeitquelle, die bei Datumswechseln (Mitternacht) automatische UI-Updates triggert.
 - ### 📁 Mapper (`data.mapper`)
@@ -148,12 +151,22 @@
 
 
 ## 🧪 Testing (`src/test` & `src/androidTest`)
-- `MainDispatcherRule.kt`: JUnit-Rule zur Steuerung von Coroutine-Dispatchern in Tests.
-- `data/local/ConvertersTest.kt`: Tests für TypeConverter.
-- `data/local/MigrationTest.kt`: Automatisierte Datenbank-Migrationstests (V5 bis aktuell).
-- `data/local/SettingsMigrationTest.kt`: Automatisierte Datenbank-Migrationstests für die Einstellungen (V2 bis V6).
-- `data/mapper/ContactMapperTest.kt`: Tests für die Transformation in UI-Modelle.
-- `data/repository/NotificationRepositoryTest.kt`: Integrationstests für das Repository.
-- `viewmodel/HomeViewModelSearchTest.kt`: Tests der Suchlogik im HomeViewModel.
-- `viewmodel/HomeViewModelTest.kt`: Tests für Label-Filterung und State-Management.
-- `ui/components/BirthdayItemInteractionTest.kt`: UI-Tests für die Interaktion mit Kontakt-Karten.
+
+### 📁 Lokale JVM Unit-Tests (`app/src/test`)
+Diese Tests laufen ohne Emulator/Gerät direkt auf dem Entwicklungsrechner und sind sehr schnell (Kompilierung/Ausführung in Sekunden).
+- `MainDispatcherRule.kt`: Coroutine-Rule zur Steuerung des Haupt-Dispatchers in Tests.
+- `data/local/ConvertersTest.kt`: Tests für die TypeConverter (LocalDate, Listen).
+- `data/local/GiftIdeaConvertersTest.kt`: Tests für Geschenkideen-TypeConverter.
+- `data/mapper/ContactMapperTest.kt`: Tests für die Transformation von Datenbank-Entitäten in UI-Modelle (mit JVM-Safe Fallback für die Formatierung).
+- `util/DateUtilsTest.kt`: Logiktests für Datumsberechnungen (Alter, Tage bis Geburtstag, etc.).
+- `viewmodel/HomeViewModelSearchTest.kt`: Tests der Such- und Filterlogik im `HomeViewModel`.
+- `viewmodel/HomeViewModelTest.kt`: Tests für das reaktive State-Management und die UI-Filterung im `HomeViewModel`.
+
+### 📁 Instrumentierte Integrationstests (`app/src/androidTest`)
+Diese Tests erfordern ein Android-Gerät oder einen Emulator (z. B. für Room-Datenbanken, Systemdienste oder Compose-UI-Interaktionen).
+- `data/local/MigrationTest.kt`: Automatisierte Datenbank-Migrationstests für die Hauptdatenbank (V5 bis aktuell).
+- `data/local/SettingsMigrationTest.kt`: Automatisierte Datenbank-Migrationstests für die Einstellungsdatenbank (V2 bis V6).
+- `data/repository/NotificationRepositoryTest.kt`: Integrationstests für das Room-basierte Erinnerungs-Repository.
+- `data/repository/SystemContactDataSourceTest.kt`: Tests für den realen Android-Content-Provider des Adressbuchs.
+- `ui/components/BirthdayItemInteractionTest.kt`: Compose UI-Tests für die Interaktionen mit Kontakt-Karten.
+- `ui/screens/settings/notifications/components/NotificationHelperTest.kt`: Tests zum Erzeugen und Validieren von System-Notifications.

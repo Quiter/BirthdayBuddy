@@ -22,4 +22,8 @@ interface HelperBindingsModule {
     @Binds
     @Singleton
     fun bindNotificationScheduler(scheduler: NotificationSchedulerImpl): NotificationScheduler
+
+    @Binds
+    @Singleton
+    fun bindCalendarDataSource(dataSource: com.heckmannch.birthdaybuddy.data.repository.SystemCalendarDataSourceImpl): com.heckmannch.birthdaybuddy.data.repository.SystemCalendarDataSource
 }

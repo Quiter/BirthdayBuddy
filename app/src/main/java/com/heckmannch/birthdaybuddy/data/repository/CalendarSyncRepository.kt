@@ -1,13 +1,9 @@
 package com.heckmannch.birthdaybuddy.data.repository
 
-import android.Manifest
 import android.content.ContentProviderOperation
-import android.content.ContentValues
 import android.content.Context
-import android.content.pm.PackageManager
 import android.provider.CalendarContract
 import android.util.Log
-import androidx.core.content.ContextCompat
 import com.heckmannch.birthdaybuddy.R
 import com.heckmannch.birthdaybuddy.data.local.AppSettings
 import com.heckmannch.birthdaybuddy.data.local.AppSettingsDao
@@ -25,6 +21,7 @@ import javax.inject.Singleton
 class CalendarSyncRepository @Inject constructor(
     @param:ApplicationContext private val context: Context,
     private val appSettingsDao: AppSettingsDao,
+    private val systemCalendarDataSource: SystemCalendarDataSource,
 ) {
 
     enum class CalendarType(val calendarName: String, val displayNameRes: Int, val color: Int) {
@@ -38,76 +35,23 @@ class CalendarSyncRepository @Inject constructor(
     }
 
     fun hasCalendarPermissions(): Boolean {
-        return ContextCompat.checkSelfPermission(
-            context,
-            Manifest.permission.READ_CALENDAR
-        ) == PackageManager.PERMISSION_GRANTED &&
-                ContextCompat.checkSelfPermission(
-                    context,
-                    Manifest.permission.WRITE_CALENDAR
-                ) == PackageManager.PERMISSION_GRANTED
+        return systemCalendarDataSource.hasCalendarPermissions()
     }
 
     private suspend fun getOrCreateCalendar(type: CalendarType): Long? =
         withContext(Dispatchers.IO) {
-            val existingId = findCalendarIdByName(type.calendarName)
-            if (existingId != null) {
-                return@withContext existingId
+            val currentSettings = appSettingsDao.getSettingsImmediate() ?: AppSettings()
+            val preferredColor = when (type) {
+                CalendarType.BIRTHDAY -> currentSettings.birthdayCalendarColor
+                CalendarType.ANNIVERSARY -> currentSettings.anniversaryCalendarColor
+                CalendarType.NAMEDAY -> currentSettings.nameDayCalendarColor
             }
-
-            val newId = createLocalCalendar(type)
-            newId
-        }
-
-
-    private fun deleteCalendarById(calendarId: Long, accountName: String, accountType: String) {
-        val builder = CalendarContract.Calendars.CONTENT_URI.buildUpon()
-        builder.appendQueryParameter(CalendarContract.CALLER_IS_SYNCADAPTER, "true")
-        builder.appendQueryParameter(CalendarContract.Calendars.ACCOUNT_NAME, accountName)
-        builder.appendQueryParameter(CalendarContract.Calendars.ACCOUNT_TYPE, accountType)
-        val uri = builder.build()
-        try {
-            context.contentResolver.delete(
-                uri,
-                "${CalendarContract.Calendars._ID} = ?",
-                arrayOf(calendarId.toString())
-            )
-            Log.d(
-                "CalendarSyncRepo",
-                "Successfully deleted calendar ID: $calendarId ($accountName, $accountType)"
-            )
-        } catch (e: Exception) {
-            Log.e(
-                "CalendarSyncRepo",
-                "Failed to delete calendar ID: $calendarId ($accountName, $accountType)",
-                e
+            systemCalendarDataSource.getOrCreateCalendar(
+                type.calendarName,
+                context.getString(type.displayNameRes),
+                preferredColor
             )
         }
-    }
-
-    private fun findCalendarIdByName(calendarName: String): Long? {
-        val projection = arrayOf(CalendarContract.Calendars._ID)
-        val selection =
-            "${CalendarContract.Calendars.NAME} = ? AND ${CalendarContract.Calendars.ACCOUNT_NAME} = ? AND ${CalendarContract.Calendars.ACCOUNT_TYPE} = ?"
-        val selectionArgs =
-            arrayOf(calendarName, "BirthdayBuddy", CalendarContract.ACCOUNT_TYPE_LOCAL)
-        try {
-            context.contentResolver.query(
-                CalendarContract.Calendars.CONTENT_URI,
-                projection,
-                selection,
-                selectionArgs,
-                null
-            )?.use { cursor ->
-                if (cursor.moveToFirst()) {
-                    return cursor.getLong(0)
-                }
-            }
-        } catch (e: Exception) {
-            Log.e("CalendarSyncRepo", "Error finding calendar by name: $calendarName", e)
-        }
-        return null
-    }
 
     private suspend fun cleanCalendars(): Unit = withContext(Dispatchers.IO) {
         val activeNames = setOf(
@@ -115,109 +59,37 @@ class CalendarSyncRepository @Inject constructor(
             CalendarType.ANNIVERSARY.calendarName,
             CalendarType.NAMEDAY.calendarName
         )
-        val projection = arrayOf(
-            CalendarContract.Calendars._ID,
-            CalendarContract.Calendars.ACCOUNT_NAME,
-            CalendarContract.Calendars.ACCOUNT_TYPE,
-            CalendarContract.Calendars.NAME
-        )
-        try {
-            context.contentResolver.query(
-                CalendarContract.Calendars.CONTENT_URI,
-                projection,
-                null,
-                null,
-                null
-            )?.use { cursor ->
-                val idCol = cursor.getColumnIndex(CalendarContract.Calendars._ID)
-                val accNameCol = cursor.getColumnIndex(CalendarContract.Calendars.ACCOUNT_NAME)
-                val accTypeCol = cursor.getColumnIndex(CalendarContract.Calendars.ACCOUNT_TYPE)
-                val nameCol = cursor.getColumnIndex(CalendarContract.Calendars.NAME)
+        val calendars = systemCalendarDataSource.queryAllCalendars()
+        val seenActiveIds = mutableMapOf<String, Long>()
 
-                val seenActiveIds = mutableMapOf<String, Long>()
+        for (calendar in calendars) {
+            val id = calendar.id
+            val accountName = calendar.accountName
+            val accountType = calendar.accountType
+            val name = calendar.name
 
-                while (cursor.moveToNext()) {
-                    val id = cursor.getLong(idCol)
-                    val accountName = cursor.getString(accNameCol)
-                    val accountType = cursor.getString(accTypeCol)
-                    when (val name = cursor.getString(nameCol)) {
-                        // Lösche veraltete BirthdayBuddyCalendar (unter phone account)
-                        "BirthdayBuddyCalendar" -> {
-                            deleteCalendarById(id, accountName, accountType)
+            when (name) {
+                // Lösche veraltete BirthdayBuddyCalendar (unter phone account)
+                "BirthdayBuddyCalendar" -> {
+                    systemCalendarDataSource.deleteCalendarById(id, accountName, accountType)
+                }
+
+                in activeNames -> {
+                    if (accountName == "BirthdayBuddy" && accountType == CalendarContract.ACCOUNT_TYPE_LOCAL) {
+                        val existingId = seenActiveIds[name]
+                        if (existingId == null) {
+                            seenActiveIds[name] = id
+                        } else {
+                            // Duplikat löschen
+                            systemCalendarDataSource.deleteCalendarById(id, accountName, accountType)
                         }
-
-                        in activeNames -> {
-                            if (accountName == "BirthdayBuddy" && accountType == CalendarContract.ACCOUNT_TYPE_LOCAL) {
-                                val existingId = seenActiveIds[name]
-                                if (existingId == null) {
-                                    seenActiveIds[name] = id
-                                } else {
-                                    // Duplikat löschen
-                                    deleteCalendarById(id, accountName, accountType)
-                                }
-                            } else {
-                                // Falscher Account-Name/Typ - löschen
-                                deleteCalendarById(id, accountName, accountType)
-                            }
-                        }
+                    } else {
+                        // Falscher Account-Name/Typ - löschen
+                        systemCalendarDataSource.deleteCalendarById(id, accountName, accountType)
                     }
                 }
             }
-        } catch (e: Exception) {
-            Log.e("CalendarSyncRepo", "Error cleaning calendars", e)
         }
-    }
-
-    private suspend fun createLocalCalendar(type: CalendarType): Long? {
-        val builder = CalendarContract.Calendars.CONTENT_URI.buildUpon()
-        builder.appendQueryParameter(CalendarContract.CALLER_IS_SYNCADAPTER, "true")
-        builder.appendQueryParameter(CalendarContract.Calendars.ACCOUNT_NAME, "BirthdayBuddy")
-        builder.appendQueryParameter(
-            CalendarContract.Calendars.ACCOUNT_TYPE,
-            CalendarContract.ACCOUNT_TYPE_LOCAL
-        )
-        val uri = builder.build()
-
-        val currentSettings = appSettingsDao.getSettingsImmediate() ?: AppSettings()
-        val preferredColor = when (type) {
-            CalendarType.BIRTHDAY -> currentSettings.birthdayCalendarColor
-            CalendarType.ANNIVERSARY -> currentSettings.anniversaryCalendarColor
-            CalendarType.NAMEDAY -> currentSettings.nameDayCalendarColor
-        }
-
-        val values = ContentValues().apply {
-            put(CalendarContract.Calendars.ACCOUNT_NAME, "BirthdayBuddy")
-            put(CalendarContract.Calendars.ACCOUNT_TYPE, CalendarContract.ACCOUNT_TYPE_LOCAL)
-            put(CalendarContract.Calendars.NAME, type.calendarName)
-            put(
-                CalendarContract.Calendars.CALENDAR_DISPLAY_NAME,
-                context.getString(type.displayNameRes)
-            )
-            put(CalendarContract.Calendars.CALENDAR_COLOR, preferredColor)
-            put(
-                CalendarContract.Calendars.CALENDAR_ACCESS_LEVEL,
-                CalendarContract.Calendars.CAL_ACCESS_OWNER
-            )
-            put(CalendarContract.Calendars.OWNER_ACCOUNT, "birthdaybuddy@local")
-            put(CalendarContract.Calendars.CALENDAR_TIME_ZONE, TimeZone.getDefault().id)
-            put(CalendarContract.Calendars.CAN_ORGANIZER_RESPOND, 1)
-            put(CalendarContract.Calendars.CAN_MODIFY_TIME_ZONE, 1)
-            put(CalendarContract.Calendars.SYNC_EVENTS, 1)
-            put(CalendarContract.Calendars.VISIBLE, 1)
-        }
-
-        try {
-            val resultUri = context.contentResolver.insert(uri, values)
-            val insertedId = resultUri?.lastPathSegment?.toLongOrNull()
-            Log.d(
-                "CalendarSyncRepo",
-                "Successfully created local calendar ${type.calendarName} with ID: $insertedId"
-            )
-            return insertedId
-        } catch (e: Exception) {
-            Log.e("CalendarSyncRepo", "Failed to create local calendar ${type.calendarName}", e)
-        }
-        return null
     }
 
     suspend fun updateCalendarColor(type: CalendarType, newColor: Int): Boolean =
@@ -230,79 +102,35 @@ class CalendarSyncRepository @Inject constructor(
             }
             appSettingsDao.upsertSettings(updatedSettings)
 
-            val calendarId = findCalendarIdByName(type.calendarName)
+            val calendarId = systemCalendarDataSource.findCalendarIdByName(type.calendarName)
             if (calendarId != null) {
-                val uri = CalendarContract.Calendars.CONTENT_URI.buildUpon()
-                    .appendQueryParameter(CalendarContract.CALLER_IS_SYNCADAPTER, "true")
-                    .appendQueryParameter(CalendarContract.Calendars.ACCOUNT_NAME, "BirthdayBuddy")
-                    .appendQueryParameter(
-                        CalendarContract.Calendars.ACCOUNT_TYPE,
-                        CalendarContract.ACCOUNT_TYPE_LOCAL
-                    )
-                    .build()
-
-                val values = ContentValues().apply {
-                    put(CalendarContract.Calendars.CALENDAR_COLOR, newColor)
-                }
-
-                try {
-                    val updatedRows = context.contentResolver.update(
-                        uri,
-                        values,
-                        "${CalendarContract.Calendars._ID} = ?",
-                        arrayOf(calendarId.toString())
-                    )
-                    return@withContext updatedRows > 0
-                } catch (e: Exception) {
-                    Log.e("CalendarSyncRepo", "Error updating color for ${type.calendarName}", e)
-                }
+                systemCalendarDataSource.updateCalendarColor(calendarId, newColor)
+            } else {
+                false
             }
-            false
         }
 
     suspend fun deleteCalendar(): Boolean = withContext(Dispatchers.IO) {
         val currentSettings = appSettingsDao.getSettingsImmediate() ?: AppSettings()
 
         var deletedAny = false
-        val projection = arrayOf(
-            CalendarContract.Calendars._ID,
-            CalendarContract.Calendars.ACCOUNT_NAME,
-            CalendarContract.Calendars.ACCOUNT_TYPE,
-            CalendarContract.Calendars.NAME
-        )
         val allTargetNames = setOf(
             "BirthdayBuddyCalendar",
             CalendarType.BIRTHDAY.calendarName,
             CalendarType.ANNIVERSARY.calendarName,
             CalendarType.NAMEDAY.calendarName
         )
-        try {
-            context.contentResolver.query(
-                CalendarContract.Calendars.CONTENT_URI,
-                projection,
-                null,
-                null,
-                null
-            )?.use { cursor ->
-                val idCol = cursor.getColumnIndex(CalendarContract.Calendars._ID)
-                val accNameCol = cursor.getColumnIndex(CalendarContract.Calendars.ACCOUNT_NAME)
-                val accTypeCol = cursor.getColumnIndex(CalendarContract.Calendars.ACCOUNT_TYPE)
-                val nameCol = cursor.getColumnIndex(CalendarContract.Calendars.NAME)
+        val calendars = systemCalendarDataSource.queryAllCalendars()
+        for (calendar in calendars) {
+            val id = calendar.id
+            val accountName = calendar.accountName
+            val accountType = calendar.accountType
+            val name = calendar.name
 
-                while (cursor.moveToNext()) {
-                    val id = cursor.getLong(idCol)
-                    val accountName = cursor.getString(accNameCol)
-                    val accountType = cursor.getString(accTypeCol)
-                    val name = cursor.getString(nameCol)
-
-                    if (name in allTargetNames) {
-                        deleteCalendarById(id, accountName, accountType)
-                        deletedAny = true
-                    }
-                }
+            if (name in allTargetNames) {
+                systemCalendarDataSource.deleteCalendarById(id, accountName, accountType)
+                deletedAny = true
             }
-        } catch (e: Exception) {
-            Log.e("CalendarSyncRepo", "Error deleting calendars", e)
         }
 
         // Update local settings in database
@@ -316,48 +144,15 @@ class CalendarSyncRepository @Inject constructor(
     }
 
     fun debugPrintAllCalendars() {
-        val projection = arrayOf(
-            CalendarContract.Calendars._ID,
-            CalendarContract.Calendars.ACCOUNT_NAME,
-            CalendarContract.Calendars.ACCOUNT_TYPE,
-            CalendarContract.Calendars.NAME,
-            CalendarContract.Calendars.CALENDAR_DISPLAY_NAME,
-            CalendarContract.Calendars.VISIBLE
-        )
-        try {
-            context.contentResolver.query(
-                CalendarContract.Calendars.CONTENT_URI,
-                projection,
-                null,
-                null,
-                null
-            )?.use { cursor ->
-                Log.d("CalendarSyncRepo", "=== START DEBUG PRINT ALL CALENDARS ===")
-                val idCol = cursor.getColumnIndex(CalendarContract.Calendars._ID)
-                val accNameCol = cursor.getColumnIndex(CalendarContract.Calendars.ACCOUNT_NAME)
-                val accTypeCol = cursor.getColumnIndex(CalendarContract.Calendars.ACCOUNT_TYPE)
-                val nameCol = cursor.getColumnIndex(CalendarContract.Calendars.NAME)
-                val dispNameCol =
-                    cursor.getColumnIndex(CalendarContract.Calendars.CALENDAR_DISPLAY_NAME)
-                val visibleCol = cursor.getColumnIndex(CalendarContract.Calendars.VISIBLE)
-
-                while (cursor.moveToNext()) {
-                    val id = cursor.getLong(idCol)
-                    val accName = cursor.getString(accNameCol)
-                    val accType = cursor.getString(accTypeCol)
-                    val name = cursor.getString(nameCol)
-                    val dispName = cursor.getString(dispNameCol)
-                    val visible = cursor.getInt(visibleCol)
-                    Log.d(
-                        "CalendarSyncRepo",
-                        "Calendar ID: $id | AccName: $accName | AccType: $accType | Name: $name | DispName: $dispName | Visible: $visible"
-                    )
-                }
-                Log.d("CalendarSyncRepo", "=== END DEBUG PRINT ALL CALENDARS ===")
-            }
-        } catch (e: Exception) {
-            Log.e("CalendarSyncRepo", "Failed to query calendars", e)
+        Log.d("CalendarSyncRepo", "=== START DEBUG PRINT ALL CALENDARS ===")
+        val calendars = kotlinx.coroutines.runBlocking { systemCalendarDataSource.queryAllCalendars() }
+        for (calendar in calendars) {
+            Log.d(
+                "CalendarSyncRepo",
+                "Calendar ID: ${calendar.id} | AccName: ${calendar.accountName} | AccType: ${calendar.accountType} | Name: ${calendar.name} | DispName: ${calendar.displayName} | Visible: ${calendar.visible}"
+            )
         }
+        Log.d("CalendarSyncRepo", "=== END DEBUG PRINT ALL CALENDARS ===")
     }
 
     suspend fun syncBirthdays(contacts: List<Contact>): Boolean = withContext(Dispatchers.IO) {
@@ -377,48 +172,30 @@ class CalendarSyncRepository @Inject constructor(
             if (otherEventsEnabled) getOrCreateCalendar(CalendarType.NAMEDAY) else null
 
         try {
-            // Hilfsfunktion zum permanenten Löschen der Termine eines Kalenders via Sync-Adapter
-            fun clearCalendarEvents(calId: Long) {
-                val deleteUri = CalendarContract.Events.CONTENT_URI.buildUpon()
-                    .appendQueryParameter(CalendarContract.CALLER_IS_SYNCADAPTER, "true")
-                    .appendQueryParameter(CalendarContract.Calendars.ACCOUNT_NAME, "BirthdayBuddy")
-                    .appendQueryParameter(
-                        CalendarContract.Calendars.ACCOUNT_TYPE,
-                        CalendarContract.ACCOUNT_TYPE_LOCAL
-                    )
-                    .build()
-
-                context.contentResolver.delete(
-                    deleteUri,
-                    "${CalendarContract.Events.CALENDAR_ID} = ?",
-                    arrayOf(calId.toString())
-                )
-            }
-
             // Geburtstage leeren
-            clearCalendarEvents(birthdayCalId)
+            systemCalendarDataSource.clearCalendarEvents(birthdayCalId)
 
             // Hochzeitstage leeren oder Kalender löschen falls deaktiviert
             if (anniversaryCalId != null) {
-                clearCalendarEvents(anniversaryCalId)
+                systemCalendarDataSource.clearCalendarEvents(anniversaryCalId)
             } else {
-                findCalendarIdByName(CalendarType.ANNIVERSARY.calendarName)?.let { id ->
-                    deleteCalendarById(id, "BirthdayBuddy", CalendarContract.ACCOUNT_TYPE_LOCAL)
+                systemCalendarDataSource.findCalendarIdByName(CalendarType.ANNIVERSARY.calendarName)?.let { id ->
+                    systemCalendarDataSource.deleteCalendarById(id, "BirthdayBuddy", CalendarContract.ACCOUNT_TYPE_LOCAL)
                 }
             }
 
             // Namenstage leeren oder Kalender löschen falls deaktiviert
             if (nameDayCalId != null) {
-                clearCalendarEvents(nameDayCalId)
+                systemCalendarDataSource.clearCalendarEvents(nameDayCalId)
             } else {
-                findCalendarIdByName(CalendarType.NAMEDAY.calendarName)?.let { id ->
-                    deleteCalendarById(id, "BirthdayBuddy", CalendarContract.ACCOUNT_TYPE_LOCAL)
+                systemCalendarDataSource.findCalendarIdByName(CalendarType.NAMEDAY.calendarName)?.let { id ->
+                    systemCalendarDataSource.deleteCalendarById(id, "BirthdayBuddy", CalendarContract.ACCOUNT_TYPE_LOCAL)
                 }
             }
 
             val operations = ArrayList<ContentProviderOperation>()
 
-            fun addEvent(
+            suspend fun addEvent(
                 calId: Long,
                 date: java.time.LocalDate,
                 title: String,
@@ -449,7 +226,7 @@ class CalendarSyncRepository @Inject constructor(
                 operations.add(op)
 
                 if (operations.size >= 400) {
-                    context.contentResolver.applyBatch(CalendarContract.AUTHORITY, operations)
+                    systemCalendarDataSource.applyBatch(operations)
                     operations.clear()
                 }
             }
@@ -548,7 +325,7 @@ class CalendarSyncRepository @Inject constructor(
             }
 
             if (operations.isNotEmpty()) {
-                context.contentResolver.applyBatch(CalendarContract.AUTHORITY, operations)
+                systemCalendarDataSource.applyBatch(operations)
             }
             true
         } catch (e: Exception) {
