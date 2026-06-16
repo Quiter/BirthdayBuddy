@@ -123,7 +123,7 @@ class BirthdayWidget : GlanceAppWidget() {
         Column(
             modifier = GlanceModifier
                 .fillMaxSize()
-                .padding(horizontal = 0.dp, vertical = 4.dp)
+                .padding(horizontal = 8.dp, vertical = 4.dp)
                 .clickable(
                     actionStartActivity(
                         Intent(context, MainActivity::class.java).apply {
