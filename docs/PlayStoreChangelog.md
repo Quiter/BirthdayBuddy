@@ -10,26 +10,22 @@
 
 ---
 
-## 📝 Aktuelle Vorlage (v2.5.0)
+## 📝 Aktuelle Vorlage (v2.8.3)
 
 <!--suppress HtmlUnknownTag, HtmlUnknownTag -->
 <en-US>
-- New split-pane Master-Detail layout for tablets & large screens
-- Custom styling: manual light/dark/AMOLED themes & color picker
-- Wedding anniversary & name day support with notifications
-- Multiple sync calendars for birthdays, anniversaries & name days
-- Real-time contact synchronization on return to app
-- Fixed calendar sync event duplication bugs
-- Performance improvements & database cleanup
+- Modernized Material 3 styling with custom accent colors & shapes
+- Responsive Master-Detail layout for tablets on home & settings
+- Performance boost: Baseline Profiles for up to 30% faster startup
+- Real-time system contact sync and background updater
+- Robust calendar sync and database stability improvements
 </en-US>
 <!--suppress HtmlUnknownTag, HtmlUnknownTag -->
 <de-DE>
-- Neues Master-Detail-Layout für Tablets und große Bildschirme
-- Eigene Designs: Hell/Dunkel/AMOLED-Modus & Akzentfarben-Auswahl
-- Hochzeitstage & Namenstage inkl. Partner-Verknüpfung & Mitteilungen
-- Separate Systemkalender für Geburtstage, Hochzeitstage & Namenstage
-- Echtzeit-Synchronisation bei Rückkehr in die App
-- Fehlerbehebung bei doppelten Kalendereinträgen
-- Performance-Optimierungen & bereinigte Datenbank
+- Modernisiertes Material 3 Design mit eigenen Akzentfarben & Formen
+- Responsives Master-Detail-Layout für Tablets auf Home & Einstellungen
+- Performance-Schub: Baseline Profiles für bis zu 30% schnelleren Start
+- Echtzeit-Synchronisation mit Systemkontakten im Hintergrund
+- Stabilitätsverbesserungen bei Kalender-Sync & Datenbank
 </de-DE>
 
