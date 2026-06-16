@@ -116,7 +116,7 @@
     - `Theme.kt`, `Color.kt`, `Type.kt`: Design-System Definitionen, custom Farbschemata für Akzentfarben und AMOLED-Erweiterung.
 
 ## 📁 ViewModel (`viewmodel`)
-- `HomeViewModel.kt`: Zuständig für die Kontaktliste, Suche, Filterung und den Home-Screen State.
+- `HomeViewModel.kt`: Zuständig für die Kontaktliste, Suche, Filterung und den Home-Screen State. Nutzt ein leichtgewichtiges MVI/UDF-Muster mit dem `HomeIntent` Interface und einem konsolidierten `UserUiState` Flow zur Vermeidung asynchroner Konflikte.
 - `NotificationViewModel.kt`: Verwaltung der Benachrichtigungsregeln und deren Synchronisation mit dem WorkManager.
 - `OnboardingViewModel.kt`: Zuständig für den Onboarding-Status und Erststart-Prozess.
 - `CalendarViewModel.kt`: ViewModel für die Kalender-Einstellungen; steuert die Synchronisation und die Entfernung des Kalenders aus der App.

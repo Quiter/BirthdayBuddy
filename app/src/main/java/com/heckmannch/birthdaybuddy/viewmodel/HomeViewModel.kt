@@ -28,6 +28,7 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 import kotlin.time.Duration.Companion.milliseconds
@@ -40,13 +41,17 @@ class HomeViewModel @Inject constructor(
     timeRepository: TimeRepository,
 ) : ViewModel() {
 
-    // --- Search & Filter State ---
-    private val _searchQuery = MutableStateFlow("")
-    private val _selectedLabel = MutableStateFlow<String?>(null)
-    private val _isResettingFilter = MutableStateFlow(value = false)
-    private val _isSyncing = MutableStateFlow(value = false)
-    private val _searchFocusRequested = MutableStateFlow(value = false)
-    private val _newlyAddedIdeaId = MutableStateFlow<String?>(null)
+    // --- Search & Filter State (MVI Consolidated UI State) ---
+    private data class UserUiState(
+        val searchQuery: String = "",
+        val selectedLabel: String? = null,
+        val isResettingFilter: Boolean = false,
+        val isSyncing: Boolean = false,
+        val searchFocusRequested: Boolean = false,
+        val newlyAddedIdeaId: String? = null
+    )
+
+    private val _userUiState = MutableStateFlow(UserUiState())
 
     companion object {
         const val LABEL_NO_BIRTHDAY = "special:no_birthday"
@@ -72,7 +77,7 @@ class HomeViewModel @Inject constructor(
     val syncCompletedEvent: SharedFlow<Unit> = _syncCompletedEvent.asSharedFlow()
 
     fun setIsResettingFilter(isResetting: Boolean) {
-        _isResettingFilter.value = isResetting
+        onIntent(HomeIntent.SetIsResettingFilter(isResetting))
     }
 
     // --- Data Processing ---
@@ -90,7 +95,9 @@ class HomeViewModel @Inject constructor(
         syncContacts()
     }
 
-    private val searchKeywords = _searchQuery
+    private val searchKeywords = _userUiState
+        .map { it.searchQuery }
+        .distinctUntilChanged()
         .debounce(300.milliseconds)
         .map { it.trim() }
         .distinctUntilChanged()
@@ -101,7 +108,7 @@ class HomeViewModel @Inject constructor(
         contactRepository.allContacts,
         timeRepository.currentDate,
         searchKeywords,
-        _selectedLabel,
+        _userUiState.map { it.selectedLabel }.distinctUntilChanged(),
         ignoredLabels,
     ) { rawContacts, today, keywords, label, ignoredLabels ->
         val startTime = System.currentTimeMillis()
@@ -279,38 +286,10 @@ class HomeViewModel @Inject constructor(
         labels
     }
 
-    private data class FilterCriteria(
-        val searchQuery: String = "",
-        val selectedLabel: String? = null,
-        val isResettingFilter: Boolean = false
-    )
-
-    private val filterCriteria: Flow<FilterCriteria> = combine(
-        _searchQuery,
-        _selectedLabel,
-        _isResettingFilter,
-    ) { query, label, resetting ->
-        FilterCriteria(query, label, resetting)
-    }
-
-    private data class FilterUiFlags(
-        val isSyncing: Boolean = false,
-        val searchFocusRequested: Boolean = false,
-        val newlyAddedIdeaId: String? = null
-    )
-
-    private val filterUiFlags: Flow<FilterUiFlags> = combine(
-        _isSyncing,
-        _searchFocusRequested,
-        _newlyAddedIdeaId,
-    ) { syncing, focus, newlyAdded ->
-        FilterUiFlags(syncing, focus, newlyAdded)
-    }
-
     val coupleSuggestion: Flow<CoupleSuggestionUiModel?> = combine(
         contactRepository.potentialCouples,
         contactRepository.ignoredCouplePairs,
-        _selectedLabel,
+        _userUiState.map { it.selectedLabel }.distinctUntilChanged(),
     ) { potentials, ignoredPairs, label ->
         if (label != LABEL_ANNIVERSARY || potentials.isEmpty()) return@combine null
 
@@ -335,131 +314,228 @@ class HomeViewModel @Inject constructor(
         }
     }.flowOn(Dispatchers.Default)
 
-
     val uiState: StateFlow<HomeUiState> = combine(
         filteredContacts,
         availableLabels,
-        filterCriteria,
-        filterUiFlags,
+        _userUiState,
         coupleSuggestion
-    ) { contacts, labels, criteria, flags, suggestion ->
+    ) { contacts, labels, userState, suggestion ->
         HomeUiState(
             contacts = contacts,
             availableLabels = labels,
-            searchQuery = criteria.searchQuery,
-            selectedLabel = criteria.selectedLabel,
-            isResettingFilter = criteria.isResettingFilter,
-            isSyncing = flags.isSyncing,
-            searchFocusRequested = flags.searchFocusRequested,
-            newlyAddedIdeaId = flags.newlyAddedIdeaId,
+            searchQuery = userState.searchQuery,
+            selectedLabel = userState.selectedLabel,
+            isResettingFilter = userState.isResettingFilter,
+            isSyncing = userState.isSyncing,
+            searchFocusRequested = userState.searchFocusRequested,
+            newlyAddedIdeaId = userState.newlyAddedIdeaId,
             coupleSuggestion = suggestion
         )
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), HomeUiState())
 
-    // --- Actions ---
-    fun onSearchQueryChange(newQuery: String) {
-        if (_searchQuery.value == newQuery) return
-
-        if (newQuery.isNotEmpty() && _searchQuery.value.isEmpty()) {
-            _selectedLabel.value = null
+    // --- MVI Intent Processing ---
+    fun onIntent(intent: HomeIntent) {
+        when (intent) {
+            is HomeIntent.SearchQueryChanged -> {
+                val newQuery = intent.query
+                _userUiState.update { state ->
+                    if (state.searchQuery == newQuery) state
+                    else {
+                        val updatedLabel = if (newQuery.isNotEmpty() && state.searchQuery.isEmpty()) {
+                            null
+                        } else {
+                            state.selectedLabel
+                        }
+                        state.copy(
+                            searchQuery = newQuery,
+                            selectedLabel = updatedLabel,
+                            isResettingFilter = true
+                        )
+                    }
+                }
+                triggerScrollToTop()
+            }
+            is HomeIntent.LabelSelected -> {
+                _userUiState.update { state ->
+                    val newLabel = if (state.selectedLabel == intent.label) null else intent.label
+                    if (state.selectedLabel == newLabel) state
+                    else state.copy(selectedLabel = newLabel, isResettingFilter = true)
+                }
+                triggerScrollToTop()
+            }
+            is HomeIntent.ResetFilters -> {
+                _userUiState.update { state ->
+                    if (state.searchQuery.isNotEmpty() || state.selectedLabel != null) {
+                        state.copy(searchQuery = "", selectedLabel = null, isResettingFilter = true)
+                    } else {
+                        state
+                    }
+                }
+                triggerScrollToTop()
+            }
+            is HomeIntent.AddGiftIdea -> {
+                val newIdea = GiftIdea(text = "")
+                _userUiState.update { it.copy(newlyAddedIdeaId = newIdea.id) }
+                viewModelScope.launch {
+                    contactRepository.addGiftIdea(intent.lookupKey, newIdea)
+                }
+            }
+            is HomeIntent.ToggleGiftIdea -> {
+                viewModelScope.launch {
+                    contactRepository.toggleGiftIdea(intent.lookupKey, intent.idea, intent.isChecked)
+                }
+            }
+            is HomeIntent.DeleteGiftIdea -> {
+                viewModelScope.launch {
+                    contactRepository.deleteGiftIdea(intent.lookupKey, intent.ideaId)
+                }
+            }
+            is HomeIntent.UpdateGiftIdeaText -> {
+                viewModelScope.launch {
+                    contactRepository.updateGiftIdeaText(intent.lookupKey, intent.ideaId, intent.newText)
+                }
+            }
+            is HomeIntent.UpdateBirthday -> {
+                viewModelScope.launch {
+                    contactRepository.updateContactBirthday(intent.contactId, intent.birthday)
+                }
+            }
+            is HomeIntent.SyncContacts -> {
+                viewModelScope.launch {
+                    if (intent.showLoading) {
+                        _userUiState.update { it.copy(isSyncing = true) }
+                        contactRepository.clearIgnoredCouplePairs()
+                    }
+                    val startTime = System.currentTimeMillis()
+                    contactRepository.syncContacts()
+                    if (intent.showLoading) {
+                        val elapsedTime = System.currentTimeMillis() - startTime
+                        if (elapsedTime < 800) {
+                            delay((800 - elapsedTime).milliseconds)
+                        }
+                        _userUiState.update { it.copy(isSyncing = false) }
+                        _syncCompletedEvent.emit(Unit)
+                    }
+                }
+            }
+            is HomeIntent.TriggerScrollToTop -> {
+                viewModelScope.launch {
+                    _scrollToTopEvent.emit(Unit)
+                }
+            }
+            is HomeIntent.TriggerSearchFocus -> {
+                _userUiState.update { it.copy(searchFocusRequested = true) }
+            }
+            is HomeIntent.ConsumeSearchFocus -> {
+                _userUiState.update { it.copy(searchFocusRequested = false) }
+            }
+            is HomeIntent.ConsumeNewlyAddedIdeaId -> {
+                _userUiState.update { it.copy(newlyAddedIdeaId = null) }
+            }
+            is HomeIntent.LinkAsCouple -> {
+                viewModelScope.launch {
+                    contactRepository.linkAsCouple(intent.lookupKey1, intent.lookupKey2)
+                }
+            }
+            is HomeIntent.UnlinkCouple -> {
+                viewModelScope.launch {
+                    contactRepository.unlinkCouple(intent.lookupKey)
+                }
+            }
+            is HomeIntent.IgnoreCoupleSuggestion -> {
+                viewModelScope.launch {
+                    contactRepository.ignoreCoupleSuggestion(intent.lookupKey1, intent.lookupKey2)
+                }
+            }
+            is HomeIntent.SetIsResettingFilter -> {
+                _userUiState.update { it.copy(isResettingFilter = intent.isResetting) }
+            }
         }
+    }
 
-        _searchQuery.value = newQuery
-        requestFilterReset()
+    // --- Legacy / Compatibility Actions ---
+    fun onSearchQueryChange(newQuery: String) {
+        onIntent(HomeIntent.SearchQueryChanged(newQuery))
     }
 
     fun onLabelSelected(label: String?) {
-        val newLabel = if (_selectedLabel.value == label) null else label
-        if (_selectedLabel.value != newLabel) {
-            _selectedLabel.value = newLabel
-            requestFilterReset()
-        }
+        onIntent(HomeIntent.LabelSelected(label))
     }
 
     fun resetFilters() {
-        if (_searchQuery.value.isNotEmpty() || _selectedLabel.value != null) {
-            _searchQuery.value = ""
-            _selectedLabel.value = null
-            requestFilterReset()
-        }
+        onIntent(HomeIntent.ResetFilters)
     }
 
-    /**
-     * Triggert einen Scroll-Reset und setzt den Filter-Status zurück.
-     */
-    private fun requestFilterReset() {
-        _isResettingFilter.value = true
-        triggerScrollToTop()
+    fun addGiftIdea(lookupKey: String) {
+        onIntent(HomeIntent.AddGiftIdea(lookupKey))
     }
 
-    fun addGiftIdea(lookupKey: String) = viewModelScope.launch {
-        val newIdea = GiftIdea(text = "")
-        _newlyAddedIdeaId.value = newIdea.id
-        contactRepository.addGiftIdea(lookupKey, newIdea)
+    fun toggleGiftIdea(lookupKey: String, idea: GiftIdea, isChecked: Boolean) {
+        onIntent(HomeIntent.ToggleGiftIdea(lookupKey, idea, isChecked))
     }
 
-    fun toggleGiftIdea(lookupKey: String, idea: GiftIdea, isChecked: Boolean) =
-        viewModelScope.launch {
-            contactRepository.toggleGiftIdea(lookupKey, idea, isChecked)
-        }
-
-    fun deleteGiftIdea(lookupKey: String, ideaId: String) = viewModelScope.launch {
-        contactRepository.deleteGiftIdea(lookupKey, ideaId)
+    fun deleteGiftIdea(lookupKey: String, ideaId: String) {
+        onIntent(HomeIntent.DeleteGiftIdea(lookupKey, ideaId))
     }
 
-    fun updateGiftIdeaText(lookupKey: String, ideaId: String, newText: String) =
-        viewModelScope.launch {
-            contactRepository.updateGiftIdeaText(lookupKey, ideaId, newText)
-        }
-
-    fun updateBirthday(contactId: String, birthday: java.time.LocalDate) = viewModelScope.launch {
-        contactRepository.updateContactBirthday(contactId, birthday)
+    fun updateGiftIdeaText(lookupKey: String, ideaId: String, newText: String) {
+        onIntent(HomeIntent.UpdateGiftIdeaText(lookupKey, ideaId, newText))
     }
 
-    fun syncContacts(showLoading: Boolean = false) = viewModelScope.launch {
-        if (showLoading) {
-            _isSyncing.value = true
-            contactRepository.clearIgnoredCouplePairs()
-        }
-        val startTime = System.currentTimeMillis()
-
-        contactRepository.syncContacts()
-
-        if (showLoading) {
-            val elapsedTime = System.currentTimeMillis() - startTime
-            if (elapsedTime < 800) {
-                delay((800 - elapsedTime).milliseconds)
-            }
-            _isSyncing.value = false
-            _syncCompletedEvent.emit(Unit)
-        }
+    fun updateBirthday(contactId: String, birthday: java.time.LocalDate) {
+        onIntent(HomeIntent.UpdateBirthday(contactId, birthday))
     }
 
-    fun triggerScrollToTop() = viewModelScope.launch {
-        _scrollToTopEvent.emit(Unit)
+    fun syncContacts(showLoading: Boolean = false) {
+        onIntent(HomeIntent.SyncContacts(showLoading))
+    }
+
+    fun triggerScrollToTop() {
+        onIntent(HomeIntent.TriggerScrollToTop)
     }
 
     fun triggerSearchFocus() {
-        _searchFocusRequested.value = true
+        onIntent(HomeIntent.TriggerSearchFocus)
     }
 
     fun consumeSearchFocus() {
-        _searchFocusRequested.value = false
+        onIntent(HomeIntent.ConsumeSearchFocus)
     }
 
     fun consumeNewlyAddedIdeaId() {
-        _newlyAddedIdeaId.value = null
+        onIntent(HomeIntent.ConsumeNewlyAddedIdeaId)
     }
 
-    fun linkAsCouple(lookupKey1: String, lookupKey2: String) = viewModelScope.launch {
-        contactRepository.linkAsCouple(lookupKey1, lookupKey2)
+    fun linkAsCouple(lookupKey1: String, lookupKey2: String) {
+        onIntent(HomeIntent.LinkAsCouple(lookupKey1, lookupKey2))
     }
 
-    fun unlinkCouple(lookupKey: String) = viewModelScope.launch {
-        contactRepository.unlinkCouple(lookupKey)
+    fun unlinkCouple(lookupKey: String) {
+        onIntent(HomeIntent.UnlinkCouple(lookupKey))
     }
 
-    fun ignoreCoupleSuggestion(lookupKey1: String, lookupKey2: String) = viewModelScope.launch {
-        contactRepository.ignoreCoupleSuggestion(lookupKey1, lookupKey2)
+    fun ignoreCoupleSuggestion(lookupKey1: String, lookupKey2: String) {
+        onIntent(HomeIntent.IgnoreCoupleSuggestion(lookupKey1, lookupKey2))
     }
+}
+
+// --- Home MVI Intent Definition ---
+sealed interface HomeIntent {
+    data class SearchQueryChanged(val query: String) : HomeIntent
+    data class LabelSelected(val label: String?) : HomeIntent
+    object ResetFilters : HomeIntent
+    data class AddGiftIdea(val lookupKey: String) : HomeIntent
+    data class ToggleGiftIdea(val lookupKey: String, val idea: GiftIdea, val isChecked: Boolean) : HomeIntent
+    data class DeleteGiftIdea(val lookupKey: String, val ideaId: String) : HomeIntent
+    data class UpdateGiftIdeaText(val lookupKey: String, val ideaId: String, val newText: String) : HomeIntent
+    data class UpdateBirthday(val contactId: String, val birthday: java.time.LocalDate) : HomeIntent
+    data class SyncContacts(val showLoading: Boolean = false) : HomeIntent
+    object TriggerScrollToTop : HomeIntent
+    object TriggerSearchFocus : HomeIntent
+    object ConsumeSearchFocus : HomeIntent
+    object ConsumeNewlyAddedIdeaId : HomeIntent
+    data class LinkAsCouple(val lookupKey1: String, val lookupKey2: String) : HomeIntent
+    data class UnlinkCouple(val lookupKey: String) : HomeIntent
+    data class IgnoreCoupleSuggestion(val lookupKey1: String, val lookupKey2: String) : HomeIntent
+    data class SetIsResettingFilter(val isResetting: Boolean) : HomeIntent
 }
