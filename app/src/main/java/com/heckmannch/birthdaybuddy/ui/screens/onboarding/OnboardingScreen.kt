@@ -39,8 +39,8 @@ import com.heckmannch.birthdaybuddy.ui.screens.onboarding.components.OnboardingF
 import com.heckmannch.birthdaybuddy.ui.screens.onboarding.components.ReadyPage
 import com.heckmannch.birthdaybuddy.ui.screens.onboarding.components.WelcomePage
 import com.heckmannch.birthdaybuddy.viewmodel.OnboardingViewModel
-import kotlin.time.Duration.Companion.milliseconds
 import kotlinx.coroutines.launch
+import kotlin.time.Duration.Companion.milliseconds
 
 @Composable
 fun OnboardingScreen(

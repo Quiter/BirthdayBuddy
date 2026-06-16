@@ -1,5 +1,6 @@
 package com.heckmannch.birthdaybuddy.viewmodel
 
+import androidx.lifecycle.viewModelScope
 import com.google.common.truth.Truth.assertThat
 import com.heckmannch.birthdaybuddy.MainDispatcherRule
 import com.heckmannch.birthdaybuddy.data.local.Contact
@@ -7,10 +8,12 @@ import com.heckmannch.birthdaybuddy.data.mapper.ContactMapper
 import com.heckmannch.birthdaybuddy.data.repository.ContactRepository
 import com.heckmannch.birthdaybuddy.data.repository.TimeRepository
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.runTest
+import org.junit.After
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -19,19 +22,17 @@ import org.mockito.kotlin.mock
 import org.mockito.kotlin.whenever
 import java.time.LocalDate
 
-import androidx.lifecycle.viewModelScope
-import kotlinx.coroutines.cancel
-import org.junit.After
-
 @OptIn(ExperimentalCoroutinesApi::class)
 class HomeViewModelSearchTest {
 
     private lateinit var viewModel: HomeViewModel
 
     @After
-    fun tearDown() {
+    fun tearDown() = runTest {
         if (::viewModel.isInitialized) {
-            viewModel.viewModelScope.cancel()
+            val job = viewModel.viewModelScope.coroutineContext[Job]
+            job?.cancel()
+            job?.join()
         }
     }
 
