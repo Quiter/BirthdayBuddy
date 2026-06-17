@@ -10,22 +10,22 @@
 
 ---
 
-## 📝 Aktuelle Vorlage (v2.8.3)
+## 📝 Aktuelle Vorlage (v2.9.0)
 
 <!--suppress HtmlUnknownTag, HtmlUnknownTag -->
 <en-US>
-- Modernized Material 3 styling with custom accent colors & shapes
-- Responsive Master-Detail layout for tablets on home & settings
-- Performance boost: Baseline Profiles for up to 30% faster startup
-- Real-time system contact sync and background updater
-- Robust calendar sync and database stability improvements
+- Redesigned fast-scrollbar with fade-out & arrow capsule
+- Native illustrations in onboarding (Lottie library purged)
+- App size reduced by 400KB for faster installation
+- Master-Detail improvements: quote placeholder & deselect
+- M3 Settings styling: rounded selection pills on tablets
 </en-US>
 <!--suppress HtmlUnknownTag, HtmlUnknownTag -->
 <de-DE>
-- Modernisiertes Material 3 Design mit eigenen Akzentfarben & Formen
-- Responsives Master-Detail-Layout für Tablets auf Home & Einstellungen
-- Performance-Schub: Baseline Profiles für bis zu 30% schnelleren Start
-- Echtzeit-Synchronisation mit Systemkontakten im Hintergrund
-- Stabilitätsverbesserungen bei Kalender-Sync & Datenbank
+- Google Photos-artiger Fast-Scrollbalken mit Fade-out
+- 100% native Onboarding-Illustrationen (ohne Lottie-Bibliothek)
+- Reduzierte App-Größe um 400KB für schnellere Installation
+- Master-Detail-Verbesserungen auf Tablets (Zitat-Platzhalter & X)
+- M3 Einstellungen-Design: schwebende Kapsel-Auswahl auf Tablets
 </de-DE>
 
