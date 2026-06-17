@@ -60,7 +60,7 @@ import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import com.heckmannch.birthdaybuddy.R
-import com.heckmannch.birthdaybuddy.ui.components.LottieIllustration
+import com.heckmannch.birthdaybuddy.ui.components.ContactsIllustration
 import com.heckmannch.birthdaybuddy.ui.model.ContactUiModel
 import com.heckmannch.birthdaybuddy.ui.model.CoupleSuggestionUiModel
 import com.heckmannch.birthdaybuddy.ui.model.SampleData
@@ -282,8 +282,7 @@ private fun EmptyListState(
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         if (!hasPermission) {
-            LottieIllustration(
-                resId = R.raw.anim_contacts,
+            ContactsIllustration(
                 modifier = Modifier.size(160.dp)
             )
         } else {

@@ -111,7 +111,7 @@
     - `SampleData.kt`: Zentraler Ort für Testdaten für Previews und Tests.
 - ### 📁 UI Components (`ui.components`)
     - `ColorPickerDialog.kt`: Wiederverwendbare, premium Farbauswahl-Komponente mit HSV-Farbraum-Koordinaten (Sättigung/Helligkeit), Hue-Slider, HEX-Texteingabe und Live-Vorschau.
-    - `LottieIllustration.kt`: Wiederverwendbare Komponente für Lottie-Animationen.
+    - `ContactsIllustration.kt`: Wiederverwendbare, rein native Custom-Animations-Komponente für Kontakte-Berechtigungen.
     - `ResponsiveLayout.kt`: Beinhaltet `AdaptiveContentContainer`, `AppResponsiveScaffold` und den globalen `LocalWindowWidthSizeClass` CompositionLocal-Provider zur flexiblen, abfragefreien Größenklassen-Weitergabe (Handy, Tablet, Chromebook).
 - ### 📁 Theme (`ui.theme`)
     - `Theme.kt`, `Color.kt`, `Type.kt`, `Shapes.kt`: Design-System Definitionen (Farbschemata, Typografie, Eckenradien), custom Farbschemata für Akzentfarben und AMOLED-Erweiterung.
@@ -144,7 +144,6 @@
 ## 📁 Ressourcen (`res`)
 - `res/raw/privacy_policy.md`: Datenschutzerklärung (EN).
 - `res/raw-de/privacy_policy.md`: Datenschutzerklärung (DE).
-- `res/raw/anim_contacts.json`: Lottie-Animation für das Onboarding.
 - `res/mipmap-anydpi-v26/ic_launcher.xml` & `ic_launcher_round.xml`: Adaptive Launcher-Icon-Definitionen für Geräte ab API 26 (mit weißem Hintergrund und perfekter Skalierung).
 
 ## 📁 Custom Resource Source Set (`res-messenger`)

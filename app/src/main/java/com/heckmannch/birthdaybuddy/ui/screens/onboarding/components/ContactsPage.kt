@@ -36,7 +36,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.heckmannch.birthdaybuddy.R
-import com.heckmannch.birthdaybuddy.ui.components.LottieIllustration
+import com.heckmannch.birthdaybuddy.ui.components.ContactsIllustration
 
 @Composable
 fun ContactsPage(
@@ -70,8 +70,7 @@ fun ContactsPage(
                         )
                     }
                 } else {
-                    LottieIllustration(
-                        resId = R.raw.anim_contacts,
+                    ContactsIllustration(
                         modifier = Modifier.size(140.dp)
                     )
                 }

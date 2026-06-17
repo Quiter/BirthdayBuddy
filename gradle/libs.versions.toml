@@ -22,7 +22,6 @@ truth = "1.4.5"
 mockito = "5.23.0"
 mockitoKotlin = "6.3.0"
 json = "20260522"
-lottie = "6.7.1"
 androidxTestRules = "1.7.0"
 baselineprofile = "1.4.1"
 kotlinxSerialization = "1.8.1"
@@ -77,7 +76,6 @@ mockito-core = { group = "org.mockito", name = "mockito-core", version.ref = "mo
 mockito-android = { group = "org.mockito", name = "mockito-android", version.ref = "mockito" }
 mockito-kotlin = { group = "org.mockito.kotlin", name = "mockito-kotlin", version.ref = "mockitoKotlin" }
 json = { group = "org.json", name = "json", version.ref = "json" }
-lottie-compose = { group = "com.airbnb.android", name = "lottie-compose", version.ref = "lottie" }
 androidx-profileinstaller = { group = "androidx.profileinstaller", name = "profileinstaller", version = "1.4.1" }
 benchmark-macro-junit4 = { group = "androidx.benchmark", name = "benchmark-macro-junit4", version.ref = "baselineprofile" }
 

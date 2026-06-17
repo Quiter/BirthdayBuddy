@@ -47,8 +47,10 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.heckmannch.birthdaybuddy.R
+import com.heckmannch.birthdaybuddy.ui.theme.BirthdayBuddyTheme
 
 @Composable
 fun CalendarPage(
@@ -270,6 +272,34 @@ private fun CalendarPageIllustration(
                 }
             }
         }
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun CalendarPagePreview_Enabled() {
+    BirthdayBuddyTheme {
+        CalendarPage(
+            windowWidthSizeClass = WindowWidthSizeClass.Compact,
+            enabled = true,
+            onEnabledChange = {},
+            isGranted = false,
+            onGrant = {}
+        )
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun CalendarPagePreview_Disabled() {
+    BirthdayBuddyTheme {
+        CalendarPage(
+            windowWidthSizeClass = WindowWidthSizeClass.Compact,
+            enabled = false,
+            onEnabledChange = {},
+            isGranted = false,
+            onGrant = {}
+        )
     }
 }
 

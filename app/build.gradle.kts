@@ -16,7 +16,7 @@ configure<com.android.build.api.dsl.ApplicationExtension> {
         minSdk = 28
         targetSdk = 37
         versionCode = 36
-        versionName = "2.8.10"
+        versionName = "2.8.11"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -90,7 +90,6 @@ dependencies {
     implementation(libs.androidx.glance.material3)
     implementation(libs.androidx.work.runtime.ktx)
     implementation(libs.material)
-    implementation(libs.lottie.compose)
     implementation(libs.kotlinx.serialization.core)
     implementation(libs.kotlinx.serialization.json)
 
