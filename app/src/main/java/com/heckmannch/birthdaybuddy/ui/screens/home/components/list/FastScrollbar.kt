@@ -2,25 +2,31 @@ package com.heckmannch.birthdaybuddy.ui.screens.home.components.list
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.MutableTransitionState
-import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
-import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectVerticalDragGestures
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyListLayoutInfo
 import androidx.compose.foundation.lazy.LazyListState
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.KeyboardArrowDown
+import androidx.compose.material.icons.filled.KeyboardArrowUp
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -37,7 +43,6 @@ import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.input.pointer.pointerInput
@@ -63,11 +68,8 @@ private object ScrollbarDefaults {
     val ThumbSize = 48.dp
     const val BUBBLE_DELAY = 500L
     const val MIN_ITEMS_THRESHOLD = 10
-    val ThumbWidthDragging = 12.dp
-    val ThumbWidthIdle = 6.dp
-    val ThumbHeightDragging = 32.dp
-    val ThumbHeightIdle = 24.dp
-    const val THUMB_ALPHA_IDLE = 0.4f
+    val ThumbWidth = 26.dp
+    val ThumbHeight = 44.dp
     val BubbleOffsetY = 4.dp
     val BubbleCornerLarge = 24.dp
     val BubbleCornerSmall = 4.dp
@@ -89,6 +91,26 @@ fun FastScrollbar(
     var isDragging by remember { mutableStateOf(value = false) }
     var dragOffsetPx by remember { mutableFloatStateOf(0f) }
 
+    // Visibility state machine: show on scroll/drag/data updates, fade out after 1.5 seconds of idle
+    var isVisible by remember { mutableStateOf(value = false) }
+
+    LaunchedEffect(listState.isScrollInProgress, isDragging, contacts) {
+        if (listState.isScrollInProgress || isDragging) {
+            isVisible = true
+        } else {
+            // Show briefly when data changes, or keep visible while active. Otherwise, fade out after delay.
+            isVisible = true
+            delay(1500.milliseconds)
+            isVisible = false
+        }
+    }
+
+    val animatedVisibilityAlpha by animateFloatAsState(
+        targetValue = if (isVisible) 1f else 0f,
+        animationSpec = tween(durationMillis = 300),
+        label = "Scrollbar Visibility Alpha"
+    )
+
     // Bubble visibility: Zeigt die Bubble NUR beim Ziehen der Scrollbar
     val showBubble by produceState(initialValue = false, key1 = isDragging) {
         value = if (isDragging) {
@@ -99,23 +121,19 @@ fun FastScrollbar(
         }
     }
 
-    val currentThumbHeight by animateDpAsState(
-        targetValue = if (isDragging) ScrollbarDefaults.ThumbHeightDragging else ScrollbarDefaults.ThumbHeightIdle,
-        label = "Thumb Height",
-    )
-
-    BoxWithConstraints(modifier = modifier.width(ScrollbarDefaults.BarWidth)) {
+    BoxWithConstraints(
+        modifier = modifier
+            .width(ScrollbarDefaults.BarWidth)
+    ) {
         val totalItems = contacts.size
         val viewHeight = maxHeight
-        val trackHeight = viewHeight - currentThumbHeight
+        val trackHeight = viewHeight - ScrollbarDefaults.ThumbHeight
         val trackHeightPx = with(density) { trackHeight.toPx() }
 
-        // Um Re-Kompositionen des pointerInput Blocks zu verhindern, nutzen wir rememberUpdatedState
         val currentTotalItems by rememberUpdatedState(totalItems)
         val currentTrackHeightPx by rememberUpdatedState(trackHeightPx)
         val currentDensity by rememberUpdatedState(density)
         val currentOnSetFastScrolling by rememberUpdatedState(onSetFastScrolling)
-        val currentThumbHeightState by rememberUpdatedState(currentThumbHeight)
 
         // Zurücksetzen des Offsets bei Filter-Wechsel
         LaunchedEffect(contacts, isResettingFilter) {
@@ -126,8 +144,6 @@ fun FastScrollbar(
 
         val canScroll by remember(contacts, isResettingFilter) {
             derivedStateOf {
-                // Wenn wir gerade den Filter zurücksetzen, zeigen wir die Scrollbar vorsorglich an,
-                // falls die Liste potenziell lang genug ist.
                 if (isResettingFilter && (totalItems > ScrollbarDefaults.MIN_ITEMS_THRESHOLD)) return@derivedStateOf true
 
                 val layoutInfo = listState.layoutInfo
@@ -137,10 +153,8 @@ fun FastScrollbar(
                 val lastItem = visibleItemsInfo.last()
                 val isLastItemVisible = (lastItem.index == (totalItems - 1))
 
-                // Falls das letzte Item noch nicht mal in der Liste der sichtbaren ist -> Scrollbar anzeigen
                 if (!isLastItemVisible) return@derivedStateOf true
 
-                // Falls das letzte Item in der Liste ist, prüfen ob es nach unten übersteht
                 val viewportEnd = layoutInfo.viewportEndOffset - layoutInfo.afterContentPadding
                 (lastItem.offset + lastItem.size) > viewportEnd
             }
@@ -186,7 +200,6 @@ fun FastScrollbar(
                         val scrollOffset = listState.firstVisibleItemScrollOffset.toFloat()
                         val itemSize = firstItem.size.toFloat()
 
-                        // Präziser fraktionaler Index
                         val fractionalIndex = listState.firstVisibleItemIndex.toFloat() +
                                 (scrollOffset / itemSize).coerceIn(0f, 1f)
 
@@ -201,21 +214,6 @@ fun FastScrollbar(
                     }
                 }
             }
-
-            val thumbWidth by animateDpAsState(
-                targetValue = if (isDragging) ScrollbarDefaults.ThumbWidthDragging else ScrollbarDefaults.ThumbWidthIdle,
-                label = "Thumb Width",
-            )
-
-            val thumbAlpha by remember {
-                derivedStateOf {
-                    if (isDragging || listState.isScrollInProgress) 1f else ScrollbarDefaults.THUMB_ALPHA_IDLE
-                }
-            }
-            val animatedThumbAlpha by animateFloatAsState(
-                targetValue = thumbAlpha,
-                label = "Thumb Alpha",
-            )
 
             // Bubble
             ScrollbarBubble(
@@ -232,67 +230,72 @@ fun FastScrollbar(
                     .align(Alignment.CenterEnd)
                     .width(ScrollbarDefaults.ThumbSize) // 48.dp
                     .fillMaxHeight()
-                    .pointerInput(listState) {
-                        try {
-                            detectVerticalDragGestures(
-                                onDragStart = { offset ->
-                                    isDragging = true
-                                    currentOnSetFastScrolling(true)
-                                    val thumbHeightPx =
-                                        with(currentDensity) { currentThumbHeightState.toPx() }
-                                    dragOffsetPx = (offset.y - thumbHeightPx / 2f).coerceIn(
-                                        0f,
-                                        currentTrackHeightPx
-                                    )
-
-                                    val scrollPercent =
-                                        if (currentTrackHeightPx > 0) dragOffsetPx / currentTrackHeightPx else 0f
-                                    val (targetIndex, targetOffset) = calculateScrollTarget(
-                                        scrollPercent = scrollPercent,
-                                        totalItems = currentTotalItems,
-                                        layoutInfo = listState.layoutInfo,
-                                    )
-                                    scope.launch {
-                                        listState.scrollToItem(targetIndex, targetOffset)
-                                    }
-                                },
-                                onDragEnd = {
-                                    isDragging = false
-                                    currentOnSetFastScrolling(false)
-                                },
-                                onDragCancel = {
-                                    isDragging = false
-                                    currentOnSetFastScrolling(false)
-                                },
-                            ) { change, dragAmount ->
-                                dragOffsetPx =
-                                    (dragOffsetPx + dragAmount).coerceIn(0f, currentTrackHeightPx)
-                                val scrollPercent =
-                                    if (currentTrackHeightPx > 0) dragOffsetPx / currentTrackHeightPx else 0f
-
-                                val (targetIndex, targetOffset) = calculateScrollTarget(
-                                    scrollPercent = scrollPercent,
-                                    totalItems = currentTotalItems,
-                                    layoutInfo = listState.layoutInfo,
-                                )
-                                scope.launch {
-                                    listState.scrollToItem(targetIndex, targetOffset)
-                                }
-                                change.consume()
-                            }
-                        } finally {
-                            isDragging = false
-                        }
+                    .graphicsLayer {
+                        alpha = animatedVisibilityAlpha
                     }
+                    .then(
+                        if (isVisible) {
+                            Modifier.pointerInput(listState) {
+                                try {
+                                    detectVerticalDragGestures(
+                                        onDragStart = { offset ->
+                                            isDragging = true
+                                            currentOnSetFastScrolling(true)
+                                            val thumbHeightPx =
+                                                with(currentDensity) { ScrollbarDefaults.ThumbHeight.toPx() }
+                                            dragOffsetPx = (offset.y - thumbHeightPx / 2f).coerceIn(
+                                                0f,
+                                                currentTrackHeightPx
+                                            )
+
+                                            val scrollPercent =
+                                                if (currentTrackHeightPx > 0) dragOffsetPx / currentTrackHeightPx else 0f
+                                            val (targetIndex, targetOffset) = calculateScrollTarget(
+                                                scrollPercent = scrollPercent,
+                                                totalItems = currentTotalItems,
+                                                layoutInfo = listState.layoutInfo,
+                                            )
+                                            scope.launch {
+                                                listState.scrollToItem(targetIndex, targetOffset)
+                                            }
+                                        },
+                                        onDragEnd = {
+                                            isDragging = false
+                                            currentOnSetFastScrolling(false)
+                                        },
+                                        onDragCancel = {
+                                            isDragging = false
+                                            currentOnSetFastScrolling(false)
+                                        },
+                                    ) { change, dragAmount ->
+                                        dragOffsetPx =
+                                            (dragOffsetPx + dragAmount).coerceIn(0f, currentTrackHeightPx)
+                                        val scrollPercent =
+                                            if (currentTrackHeightPx > 0) dragOffsetPx / currentTrackHeightPx else 0f
+
+                                        val (targetIndex, targetOffset) = calculateScrollTarget(
+                                            scrollPercent = scrollPercent,
+                                            totalItems = currentTotalItems,
+                                            layoutInfo = listState.layoutInfo,
+                                        )
+                                        scope.launch {
+                                            listState.scrollToItem(targetIndex, targetOffset)
+                                        }
+                                        change.consume()
+                                    }
+                                } finally {
+                                    isDragging = false
+                                }
+                            }
+                        } else {
+                            Modifier
+                        }
+                    )
             ) {
                 // Visuals for track line and thumb
                 ScrollbarTrackAndThumb(
-                    isDragging = isDragging,
-                    isScrollInProgress = listState.isScrollInProgress,
-                    currentThumbHeight = currentThumbHeight,
+                    thumbHeight = ScrollbarDefaults.ThumbHeight,
                     thumbOffset = { thumbOffset },
-                    thumbWidth = thumbWidth,
-                    animatedThumbAlpha = animatedThumbAlpha,
                     scrollbarDesc = scrollbarDesc,
                     modifier = Modifier.fillMaxSize()
                 )
@@ -324,7 +327,7 @@ private fun ScrollbarBubble(
                 focusable = false,
                 dismissOnBackPress = false,
                 dismissOnClickOutside = false,
-                clippingEnabled = false, // Verhindert automatische Nudge-/Positionskorrekturen des OS am Rand
+                clippingEnabled = false,
                 usePlatformDefaultWidth = false,
             )
         ) {
@@ -375,38 +378,18 @@ private fun ScrollbarBubble(
  */
 @Composable
 private fun ScrollbarTrackAndThumb(
-    isDragging: Boolean,
-    isScrollInProgress: Boolean,
-    currentThumbHeight: Dp,
+    thumbHeight: Dp,
     thumbOffset: () -> Dp,
-    thumbWidth: Dp,
-    animatedThumbAlpha: Float,
     scrollbarDesc: String,
     modifier: Modifier = Modifier,
 ) {
     Box(modifier = modifier) {
-        // 1. Subtle, elegant track line (centered at 12.dp from the right edge)
-        val trackAlpha = if (isDragging || isScrollInProgress) 0.15f else 0.04f
-        val animatedTrackAlpha by animateFloatAsState(
-            targetValue = trackAlpha,
-            label = "Track Alpha",
-        )
-        Box(
-            modifier = Modifier
-                .align(Alignment.CenterEnd)
-                .padding(end = 10.dp) // Centered at 12.dp from the right (10.dp padding + 4.dp/2 = 12.dp)
-                .width(4.dp)
-                .fillMaxHeight()
-                .clip(CircleShape)
-                .background(MaterialTheme.colorScheme.onSurface.copy(alpha = animatedTrackAlpha))
-        )
-
-        // 2. Thumb Box (centered at 12.dp from the right edge)
+        // 2. Thumb Box (containing the capsule with arrows)
         Box(
             modifier = Modifier
                 .align(Alignment.TopEnd)
-                .width(ScrollbarDefaults.ThumbSize)
-                .height(currentThumbHeight)
+                .width(ScrollbarDefaults.ThumbSize) // 48.dp
+                .height(thumbHeight)
                 .graphicsLayer {
                     translationY = thumbOffset().toPx()
                 }
@@ -415,14 +398,35 @@ private fun ScrollbarTrackAndThumb(
                 },
             contentAlignment = Alignment.CenterEnd,
         ) {
-            Box(
+            Surface(
                 modifier = Modifier
-                    .padding(end = 12.dp - thumbWidth / 2) // Dynamically centers the thumb on the 12.dp vertical line
-                    .width(thumbWidth)
-                    .fillMaxHeight()
-                    .clip(CircleShape)
-                    .background(MaterialTheme.colorScheme.primary.copy(alpha = animatedThumbAlpha)),
-            )
+                    .padding(end = 8.dp) // Aligns thumb perfectly over the vertical track line
+                    .width(ScrollbarDefaults.ThumbWidth) // 26.dp
+                    .fillMaxHeight(),
+                shape = RoundedCornerShape(12.dp),
+                color = MaterialTheme.colorScheme.primary,
+                tonalElevation = 4.dp
+            ) {
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.Center,
+                    modifier = Modifier.fillMaxSize()
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.KeyboardArrowUp,
+                        contentDescription = null,
+                        modifier = Modifier.size(14.dp),
+                        tint = MaterialTheme.colorScheme.onPrimary
+                    )
+                    Spacer(modifier = Modifier.height(2.dp))
+                    Icon(
+                        imageVector = Icons.Default.KeyboardArrowDown,
+                        contentDescription = null,
+                        modifier = Modifier.size(14.dp),
+                        tint = MaterialTheme.colorScheme.onPrimary
+                    )
+                }
+            }
         }
     }
 }
