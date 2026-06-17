@@ -36,7 +36,6 @@ import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.rememberUpdatedState
@@ -112,12 +111,13 @@ fun FastScrollbar(
     )
 
     // Bubble visibility: Zeigt die Bubble NUR beim Ziehen der Scrollbar
-    val showBubble by produceState(initialValue = false, key1 = isDragging) {
-        value = if (isDragging) {
-            true
+    var showBubble by remember { mutableStateOf(false) }
+    LaunchedEffect(isDragging) {
+        if (isDragging) {
+            showBubble = true
         } else {
             delay(ScrollbarDefaults.BUBBLE_DELAY.milliseconds)
-            false
+            showBubble = false
         }
     }
 
@@ -129,10 +129,10 @@ fun FastScrollbar(
         val viewHeight = maxHeight
         val trackHeight = viewHeight - ScrollbarDefaults.ThumbHeight
         val trackHeightPx = with(density) { trackHeight.toPx() }
+        val thumbHeightPx = with(density) { ScrollbarDefaults.ThumbHeight.toPx() }
 
         val currentTotalItems by rememberUpdatedState(totalItems)
         val currentTrackHeightPx by rememberUpdatedState(trackHeightPx)
-        val currentDensity by rememberUpdatedState(density)
         val currentOnSetFastScrolling by rememberUpdatedState(onSetFastScrolling)
 
         // Zurücksetzen des Offsets bei Filter-Wechsel
@@ -241,8 +241,6 @@ fun FastScrollbar(
                                         onDragStart = { offset ->
                                             isDragging = true
                                             currentOnSetFastScrolling(true)
-                                            val thumbHeightPx =
-                                                with(currentDensity) { ScrollbarDefaults.ThumbHeight.toPx() }
                                             dragOffsetPx = (offset.y - thumbHeightPx / 2f).coerceIn(
                                                 0f,
                                                 currentTrackHeightPx
@@ -292,13 +290,43 @@ fun FastScrollbar(
                         }
                     )
             ) {
-                // Visuals for track line and thumb
-                ScrollbarTrackAndThumb(
-                    thumbHeight = ScrollbarDefaults.ThumbHeight,
-                    thumbOffset = { thumbOffset },
-                    scrollbarDesc = scrollbarDesc,
-                    modifier = Modifier.fillMaxSize()
-                )
+                // Thumb Capsule overlaying the list
+                Surface(
+                    modifier = Modifier
+                        .align(Alignment.TopEnd)
+                        .padding(end = 8.dp)
+                        .width(ScrollbarDefaults.ThumbWidth) // 26.dp
+                        .height(ScrollbarDefaults.ThumbHeight) // 44.dp
+                        .graphicsLayer {
+                            translationY = thumbOffset.toPx()
+                        }
+                        .semantics {
+                            contentDescription = scrollbarDesc
+                        },
+                    shape = RoundedCornerShape(12.dp),
+                    color = MaterialTheme.colorScheme.primary,
+                    tonalElevation = 4.dp
+                ) {
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.Center,
+                        modifier = Modifier.fillMaxSize()
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.KeyboardArrowUp,
+                            contentDescription = null,
+                            modifier = Modifier.size(14.dp),
+                            tint = MaterialTheme.colorScheme.onPrimary
+                        )
+                        Spacer(modifier = Modifier.height(2.dp))
+                        Icon(
+                            imageVector = Icons.Default.KeyboardArrowDown,
+                            contentDescription = null,
+                            modifier = Modifier.size(14.dp),
+                            tint = MaterialTheme.colorScheme.onPrimary
+                        )
+                    }
+                }
             }
         }
     }
@@ -373,63 +401,7 @@ private fun ScrollbarBubble(
     }
 }
 
-/**
- * Zeichnet den dezenten Scroll-Track und den interaktiven Thumb-Indikator.
- */
-@Composable
-private fun ScrollbarTrackAndThumb(
-    thumbHeight: Dp,
-    thumbOffset: () -> Dp,
-    scrollbarDesc: String,
-    modifier: Modifier = Modifier,
-) {
-    Box(modifier = modifier) {
-        // 2. Thumb Box (containing the capsule with arrows)
-        Box(
-            modifier = Modifier
-                .align(Alignment.TopEnd)
-                .width(ScrollbarDefaults.ThumbSize) // 48.dp
-                .height(thumbHeight)
-                .graphicsLayer {
-                    translationY = thumbOffset().toPx()
-                }
-                .semantics {
-                    contentDescription = scrollbarDesc
-                },
-            contentAlignment = Alignment.CenterEnd,
-        ) {
-            Surface(
-                modifier = Modifier
-                    .padding(end = 8.dp) // Aligns thumb perfectly over the vertical track line
-                    .width(ScrollbarDefaults.ThumbWidth) // 26.dp
-                    .fillMaxHeight(),
-                shape = RoundedCornerShape(12.dp),
-                color = MaterialTheme.colorScheme.primary,
-                tonalElevation = 4.dp
-            ) {
-                Column(
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.Center,
-                    modifier = Modifier.fillMaxSize()
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.KeyboardArrowUp,
-                        contentDescription = null,
-                        modifier = Modifier.size(14.dp),
-                        tint = MaterialTheme.colorScheme.onPrimary
-                    )
-                    Spacer(modifier = Modifier.height(2.dp))
-                    Icon(
-                        imageVector = Icons.Default.KeyboardArrowDown,
-                        contentDescription = null,
-                        modifier = Modifier.size(14.dp),
-                        tint = MaterialTheme.colorScheme.onPrimary
-                    )
-                }
-            }
-        }
-    }
-}
+
 
 /**
  * Berechnet den Ziel-Index und Offset basierend auf der Scroll-Position in Prozent.
