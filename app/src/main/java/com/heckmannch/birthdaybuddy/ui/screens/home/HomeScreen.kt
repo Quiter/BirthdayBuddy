@@ -54,6 +54,7 @@ import com.heckmannch.birthdaybuddy.ui.model.SampleData
 import com.heckmannch.birthdaybuddy.ui.screens.home.components.actions.HomeFAB
 import com.heckmannch.birthdaybuddy.ui.screens.home.components.list.BirthdayDetailPane
 import com.heckmannch.birthdaybuddy.ui.screens.home.components.list.BirthdayList
+import com.heckmannch.birthdaybuddy.ui.screens.home.components.list.BirthdayQuotePlaceholder
 import com.heckmannch.birthdaybuddy.ui.screens.home.components.list.FastScrollbar
 import com.heckmannch.birthdaybuddy.ui.screens.home.components.topbar.HomeTopBar
 import com.heckmannch.birthdaybuddy.ui.theme.BirthdayBuddyTheme
@@ -321,13 +322,13 @@ private fun HomeContent(
                 var selectedContactId by rememberSaveable { mutableStateOf<String?>(null) }
 
                 val selectedContact = remember(contacts, selectedContactId) {
-                    contacts.find { it.id == selectedContactId } ?: contacts.firstOrNull()
+                    contacts.find { it.id == selectedContactId }
                 }
 
-                // Synchronisierung der ID halten
-                LaunchedEffect(selectedContact) {
-                    if (selectedContact != null && selectedContactId != selectedContact.id) {
-                        selectedContactId = selectedContact.id
+                // Deselektieren, wenn der ausgewählte Kontakt nicht mehr in der Liste ist
+                LaunchedEffect(contacts, selectedContactId) {
+                    if (selectedContactId != null && contacts.any { it.id == selectedContactId } != true) {
+                        selectedContactId = null
                     }
                 }
 
@@ -395,6 +396,18 @@ private fun HomeContent(
                                     contact = selectedContact,
                                     newlyAddedIdeaId = uiState.newlyAddedIdeaId,
                                     actions = actions,
+                                    onClose = {
+                                        selectedContactId = null
+                                        if (navigator.canNavigateBack()) {
+                                            coroutineScope.launch {
+                                                navigator.navigateBack()
+                                            }
+                                        }
+                                    },
+                                    modifier = Modifier.fillMaxSize()
+                                )
+                            } else {
+                                BirthdayQuotePlaceholder(
                                     modifier = Modifier.fillMaxSize()
                                 )
                             }

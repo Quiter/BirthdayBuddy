@@ -13,10 +13,12 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CardGiftcard
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -42,6 +44,7 @@ fun BirthdayDetailPane(
     contact: ContactUiModel,
     newlyAddedIdeaId: String?,
     actions: HomeActions,
+    onClose: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val focusManager = LocalFocusManager.current
@@ -66,128 +69,142 @@ fun BirthdayDetailPane(
         ),
         shape = RoundedCornerShape(24.dp)
     ) {
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .verticalScroll(rememberScrollState())
-                .padding(24.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(16.dp)
-        ) {
-            // Großes Avatar-Bild (96.dp statt 40.dp)
-            ContactImage(
-                imageUri = contact.imageUri,
-                fullName = contact.fullName,
-                initials = contact.initials,
-                secondImageUri = contact.secondImageUri,
-                secondInitials = contact.secondInitials,
-                secondFullName = contact.secondFullName,
-                size = 96.dp
-            )
-
-            // Name des Kontakts
-            Text(
-                text = contact.fullName,
-                style = MaterialTheme.typography.headlineMedium,
-                textAlign = TextAlign.Center,
-                color = MaterialTheme.colorScheme.onSurface
-            )
-
-            // Geburtstag Datumstext
-            Text(
-                text = contact.dateText,
-                style = MaterialTheme.typography.bodyLarge,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-
-            // Status (Alter und Resttage)
-            BirthdayStatus(
-                isToday = contact.isToday,
-                nextAge = contact.nextAge,
-                daysUntilNext = contact.daysUntilNext
+        Box(modifier = Modifier.fillMaxSize()) {
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .verticalScroll(rememberScrollState())
+                    .padding(24.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
-                showDatePicker.value = true
-            }
-
-            // Labels / Gruppen
-            if (contact.labels.isNotEmpty()) {
-                Text(
-                    text = contact.labels.joinToString(", "),
-                    style = MaterialTheme.typography.labelMedium,
-                    color = MaterialTheme.colorScheme.primary.copy(alpha = 0.8f),
-                    textAlign = TextAlign.Center
+                // Großes Avatar-Bild (96.dp statt 40.dp)
+                ContactImage(
+                    imageUri = contact.imageUri,
+                    fullName = contact.fullName,
+                    initials = contact.initials,
+                    secondImageUri = contact.secondImageUri,
+                    secondInitials = contact.secondInitials,
+                    secondFullName = contact.secondFullName,
+                    size = 96.dp
                 )
-            }
 
-            HorizontalDivider(
-                modifier = Modifier.padding(vertical = 8.dp),
-                color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)
-            )
-
-            // Aktionen (Anrufen, SMS, WhatsApp)
-            ContactActionRow(
-                contactId = contact.contactId,
-                lookupKey = contact.lookupKey,
-                phoneNumber = contact.phoneNumber,
-                hasBirthday = contact.daysUntilNext != Long.MAX_VALUE,
-                onAddBirthday = { showDatePicker.value = true },
-                actions = actions,
-                isCouple = contact.isCouple
-            )
-
-            HorizontalDivider(
-                modifier = Modifier.padding(vertical = 8.dp),
-                color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)
-            )
-
-            // Titel für Geschenkideen
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(12.dp)
-            ) {
-                Surface(
-                    modifier = Modifier.size(32.dp),
-                    shape = RoundedCornerShape(8.dp),
-                    color = MaterialTheme.colorScheme.primary.copy(alpha = 0.15f),
-                    contentColor = MaterialTheme.colorScheme.primary
-                ) {
-                    Box(contentAlignment = Alignment.Center) {
-                        Icon(
-                            imageVector = Icons.Default.CardGiftcard,
-                            contentDescription = null,
-                            modifier = Modifier.size(18.dp)
-                        )
-                    }
-                }
-
+                // Name des Kontakts
                 Text(
-                    text = stringResource(R.string.item_action_gifts),
-                    style = MaterialTheme.typography.titleMedium,
+                    text = contact.fullName,
+                    style = MaterialTheme.typography.headlineMedium,
+                    textAlign = TextAlign.Center,
                     color = MaterialTheme.colorScheme.onSurface
                 )
+
+                // Geburtstag Datumstext
+                Text(
+                    text = contact.dateText,
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+
+                // Status (Alter und Resttage)
+                BirthdayStatus(
+                    isToday = contact.isToday,
+                    nextAge = contact.nextAge,
+                    daysUntilNext = contact.daysUntilNext
+                ) {
+                    showDatePicker.value = true
+                }
+
+                // Labels / Gruppen
+                if (contact.labels.isNotEmpty()) {
+                    Text(
+                        text = contact.labels.joinToString(", "),
+                        style = MaterialTheme.typography.labelMedium,
+                        color = MaterialTheme.colorScheme.primary.copy(alpha = 0.8f),
+                        textAlign = TextAlign.Center
+                    )
+                }
+
+                HorizontalDivider(
+                    modifier = Modifier.padding(vertical = 8.dp),
+                    color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)
+                )
+
+                // Aktionen (Anrufen, SMS, WhatsApp)
+                ContactActionRow(
+                    contactId = contact.contactId,
+                    lookupKey = contact.lookupKey,
+                    phoneNumber = contact.phoneNumber,
+                    hasBirthday = contact.daysUntilNext != Long.MAX_VALUE,
+                    onAddBirthday = { showDatePicker.value = true },
+                    actions = actions,
+                    isCouple = contact.isCouple
+                )
+
+                HorizontalDivider(
+                    modifier = Modifier.padding(vertical = 8.dp),
+                    color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)
+                )
+
+                // Titel für Geschenkideen
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    Surface(
+                        modifier = Modifier.size(32.dp),
+                        shape = RoundedCornerShape(8.dp),
+                        color = MaterialTheme.colorScheme.primary.copy(alpha = 0.15f),
+                        contentColor = MaterialTheme.colorScheme.primary
+                    ) {
+                        Box(contentAlignment = Alignment.Center) {
+                            Icon(
+                                imageVector = Icons.Default.CardGiftcard,
+                                contentDescription = null,
+                                modifier = Modifier.size(18.dp)
+                            )
+                        }
+                    }
+
+                    Text(
+                        text = stringResource(R.string.item_action_gifts),
+                        style = MaterialTheme.typography.titleMedium,
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+                }
+
+                // Geschenkideen Liste
+                GiftIdeaList(
+                    giftIdeas = contact.giftIdeas,
+                    newlyAddedId = newlyAddedIdeaId,
+                    onAddNewIdea = { actions.onAddGiftIdea(contact.lookupKey) },
+                    onCheckedChange = { idea, checked ->
+                        actions.onToggleGiftIdea(contact.lookupKey, idea, checked)
+                    },
+                    onTextChange = { idea, newText ->
+                        actions.onUpdateGiftIdeaText(contact.lookupKey, idea.id, newText)
+                    },
+                    onDelete = { idea ->
+                        actions.onDeleteGiftIdea(contact.lookupKey, idea.id)
+                    }
+                ) {
+                    if (it.text.isNotBlank()) {
+                        actions.onAddGiftIdea(contact.lookupKey)
+                    } else {
+                        focusManager.clearFocus()
+                    }
+                }
             }
 
-            // Geschenkideen Liste
-            GiftIdeaList(
-                giftIdeas = contact.giftIdeas,
-                newlyAddedId = newlyAddedIdeaId,
-                onAddNewIdea = { actions.onAddGiftIdea(contact.lookupKey) },
-                onCheckedChange = { idea, checked ->
-                    actions.onToggleGiftIdea(contact.lookupKey, idea, checked)
-                },
-                onTextChange = { idea, newText ->
-                    actions.onUpdateGiftIdeaText(contact.lookupKey, idea.id, newText)
-                },
-                onDelete = { idea ->
-                    actions.onDeleteGiftIdea(contact.lookupKey, idea.id)
-                }
+            IconButton(
+                onClick = onClose,
+                modifier = Modifier
+                    .align(Alignment.TopEnd)
+                    .padding(8.dp)
             ) {
-                if (it.text.isNotBlank()) {
-                    actions.onAddGiftIdea(contact.lookupKey)
-                } else {
-                    focusManager.clearFocus()
-                }
+                Icon(
+                    imageVector = Icons.Default.Close,
+                    contentDescription = stringResource(R.string.detail_close_desc)
+                )
             }
         }
     }

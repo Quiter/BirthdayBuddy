@@ -9,9 +9,13 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.ui.draw.clip
+import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.Label
@@ -294,6 +298,7 @@ private fun SettingsContent(
                                 descRes = item.descRes,
                                 icon = item.icon,
                                 isSelected = isSelected,
+                                useTabletStyle = true,
                                 onClick = { activeTab = item.tab }
                             )
                         }
@@ -426,17 +431,72 @@ private fun SettingsMenuItem(
     descRes: Int,
     icon: androidx.compose.ui.graphics.vector.ImageVector,
     isSelected: Boolean = false,
+    useTabletStyle: Boolean = false,
     onClick: () -> Unit
 ) {
-    ListItem(
-        headlineContent = { Text(stringResource(titleRes)) },
-        supportingContent = { Text(stringResource(descRes)) },
-        leadingContent = { Icon(icon, contentDescription = null) },
-        modifier = Modifier
+    val containerColor = if (isSelected && useTabletStyle) {
+        MaterialTheme.colorScheme.secondaryContainer
+    } else {
+        Color.Transparent
+    }
+
+    val contentColor = if (isSelected && useTabletStyle) {
+        MaterialTheme.colorScheme.onSecondaryContainer
+    } else {
+        MaterialTheme.colorScheme.onSurface
+    }
+
+    val supportingColor = if (isSelected && useTabletStyle) {
+        MaterialTheme.colorScheme.onSecondaryContainer.copy(alpha = 0.8f)
+    } else {
+        MaterialTheme.colorScheme.onSurfaceVariant
+    }
+
+    val iconColor = if (isSelected && useTabletStyle) {
+        MaterialTheme.colorScheme.onSecondaryContainer
+    } else {
+        MaterialTheme.colorScheme.onSurfaceVariant
+    }
+
+    val itemModifier = if (useTabletStyle) {
+        Modifier
             .fillMaxWidth()
-            .background(if (isSelected) MaterialTheme.colorScheme.primaryContainer else Color.Unspecified)
+            .padding(horizontal = 12.dp, vertical = 2.dp)
+            .clip(RoundedCornerShape(16.dp))
+            .background(containerColor)
             .clickable { onClick() }
-    )
+    } else {
+        Modifier
+            .fillMaxWidth()
+            .clickable { onClick() }
+    }
+
+    Box(modifier = itemModifier) {
+        ListItem(
+            headlineContent = {
+                Text(
+                    text = stringResource(titleRes),
+                    color = contentColor
+                )
+            },
+            supportingContent = {
+                Text(
+                    text = stringResource(descRes),
+                    color = supportingColor
+                )
+            },
+            leadingContent = {
+                Icon(
+                    imageVector = icon,
+                    contentDescription = null,
+                    tint = iconColor
+                )
+            },
+            colors = ListItemDefaults.colors(
+                containerColor = Color.Transparent
+            )
+        )
+    }
 }
 
 @Preview(showBackground = true)

@@ -389,4 +389,10 @@
     <string name="theme_accent_custom_dialog_cancel">Cancel</string>
     <string name="theme_accent_custom_invalid_hex">Invalid hex code (e.g. #FF5722)</string>
     <string name="color_picker_preview">Preview</string>
+
+    <!-- Adaptive Details Screen -->
+    <string name="detail_close_desc">Close details</string>
+    <string name="detail_placeholder_title">Select a Contact</string>
+    <string name="detail_placeholder_subtitle">Pick a contact from the list on the left to see details or manage gift ideas.</string>
+    <string name="detail_placeholder_quote">\"Every birthday is the start of a new 365-day journey around the sun. Enjoy the ride!\"</string>
 </resources>

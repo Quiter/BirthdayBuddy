@@ -56,6 +56,7 @@
                 - `BirthdayDetailPane.kt`: Detail-Paneel zur Anzeige aller Informationen (Details, Aktionen, Geschenkideen) eines Kontakts auf Tablets.
                 - `BirthdayItem.kt`: Zentrales Koordinationselement der Kontaktkarte; verwaltet den Expand-State und delegiert an spezialisierte Sub-Komponenten (wie z.B. den BirthdayDatePickerDialog).
                 - `BirthdayList.kt`: LazyColumn-Implementierung mit Optimierungen (Auto-Collapse beim Scrollen und Filterwechsel) sowie intelligent unterdrückten Platzierungsanimationen (`skipPlacementAnimation`) bei Filter- und Suchwechseln.
+                - `BirthdayQuotePlaceholder.kt`: Platzhalter-Paneel mit Zitat für den unselektierten Zustand auf Tablets.
                 - `BirthdayStatus.kt`: Anzeige des Alters und der verbleibenden Tage.
                 - `ConfettiEffect.kt`: Hochperformantes Partikelsystem für Geburtstags-Animationen.
                 - `ContactImage.kt`: Komponente für das Kontaktbild oder die Initialen.
