@@ -29,4 +29,16 @@ Bei der Weiterentwicklung des Projekts wurden spezialisierte Skills eingesetzt, 
    - **Routen:** Definiere Routen als `@Serializable` Objekte oder Datenklassen in der `MainActivity.kt`.
    - **Aufrufe:** Verwende `navController.navigate(RouteObject)` und `composable<RouteClass>`. Vermeide String-basierte Routen.
 
+4. **Edge-to-Edge Skill (Android 15 Ready):**
+   - **Prinzip:** Alle Screens müssen das Edge-to-Edge-Konzept unterstützen.
+   - **Insets:** Nutze `AppResponsiveScaffold`, das Insets via `PaddingValues` an den Inhalt weiterreicht. Vermeide hartcodierte Paddings; nutze stattdessen Inset-aware Paddings für Listen und TopBars.
+
+5. **R8-Analyzer Skill (Release Safety):**
+   - **Regeln:** Sichert die Stabilität des Release-Builds.
+   - **Schutz:** Schütze Room-Entities, DAOs, Hilt-Worker und `@Serializable` Navigations-Routen in der `proguard-rules.pro` vor Over-Stripping durch R8.
+
+6. **Testing-Setup Skill (Stability):**
+   - **Standard:** Jedes ViewModel und kritische Repositories müssen durch Unit-Tests in `src/test` abgedeckt sein.
+   - **Tooling:** Nutze `MainDispatcherRule` für Coroutines und `unitTests.isReturnDefaultValues = true` für JVM-Tests mit Android-Abhängigkeiten.
+
 **Vorgehen bei Änderungen:** Vor größeren Refactorings oder Updates sollten die entsprechenden Skills konsultiert oder erneut zur Analyse eingebunden werden, um die Einhaltung der aktuellen Best Practices sicherzustellen.

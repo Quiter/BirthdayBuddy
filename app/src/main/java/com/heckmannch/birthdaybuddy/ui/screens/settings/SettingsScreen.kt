@@ -227,7 +227,7 @@ private fun SettingsContent(
                     scrollBehavior = scrollBehavior,
                 )
             },
-        ) {
+        ) { paddingValues ->
             Column(
                 modifier = Modifier.fillMaxSize()
             ) {
@@ -235,6 +235,7 @@ private fun SettingsContent(
                     modifier = Modifier
                         .weight(1f)
                         .fillMaxWidth(),
+                    contentPadding = paddingValues
                 ) {
                     items(menuItems) { item ->
                         SettingsMenuItem(

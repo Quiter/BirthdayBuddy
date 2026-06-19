@@ -17,7 +17,7 @@ configure<com.android.build.api.dsl.ApplicationExtension> {
         minSdk = 28
         targetSdk = 37
         versionCode = 37
-        versionName = "2.9.3"
+        versionName = "2.9.4"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -58,6 +58,9 @@ configure<com.android.build.api.dsl.ApplicationExtension> {
     lint {
         disable += "NewerVersionAvailable"
         disable += "GradleDependency"
+    }
+    testOptions {
+        unitTests.isReturnDefaultValues = true
     }
 }
 
