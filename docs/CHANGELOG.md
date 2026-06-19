@@ -450,4 +450,10 @@
     - **OnboardingFooter:** Anpassung der vertikalen Padding-Werte im Footer-Container (`top = 16.dp, bottom = 8.dp`). Dies kompensiert den systemseitigen Freiraum der Gestensteuerung (`navigationBarsPadding()`), sodass der Abstand oberhalb und unterhalb der Beschriftung/Buttons visuell ausgeglichen und symmetrisch erscheint, während gleichzeitig die Android 15 Edge-to-Edge Gesten-Sicherheit gewährleistet bleibt.
     - **Preview-Verhalten:** Umstellung der `@Preview`-Annotationen im Footer auf `showSystemUi = true`. Dadurch rendert Android Studio auch in der Vorschau das System-Interface (inkl. Navigationsleiste), wodurch die Vorschau exakt dem realen Aussehen auf Geräten und Emulatoren entspricht.
 
+191. **Onboarding-Design-System & Token-Bereinigung (Design System & Token Alignment):**
+    - **Token-Erweiterung:** Hinzufügen von layout- und illustrationsspezifischen Design-Tokens in `Dimensions.kt` (wie z. B. `OnboardingIllustrationCircleSize`, `OnboardingFooterButtonWidth`, spezifische Breiten/Höhen der Illustrations-Karten und detaillierte Maße der Kalender- und Guide-Elemente sowie diverse Alpha-Werte), um magische Zahlen und hartcodierte DP-Werte vollständig zu eliminieren.
+    - **Onboarding-Footer & Template:** Migration aller Layoutabstände, Paddings und Breiten in `OnboardingFooter.kt` und `OnboardingCommon.kt` auf die standardisierten Spacing- und Komponenten-Tokens.
+    - **Illustrations- & Onboarding-Pages:** Refactoring der 6 Onboarding-Seiten (`WelcomePage.kt`, `ContactsPage.kt`, `NotificationsPage.kt`, `CalendarPage.kt`, `CalendarGuidePage.kt`, `ReadyPage.kt`) und des Hauptbildschirms (`OnboardingScreen.kt`) zur konsequenten Nutzung der neuen Tokens für Größen, Abstände, Eckenradien, Karten-Elevationen und Transparenzen.
+
+
 

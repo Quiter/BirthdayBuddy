@@ -32,6 +32,14 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.heckmannch.birthdaybuddy.ui.components.LocalWindowHeightSizeClass
+import com.heckmannch.birthdaybuddy.ui.theme.SpacingSmall
+import com.heckmannch.birthdaybuddy.ui.theme.SpacingNormal
+import com.heckmannch.birthdaybuddy.ui.theme.SpacingLarge
+import com.heckmannch.birthdaybuddy.ui.theme.SpacingExtraLarge
+import com.heckmannch.birthdaybuddy.ui.theme.IconSizeExtraLarge
+import com.heckmannch.birthdaybuddy.ui.theme.SearchBarHeight
+import com.heckmannch.birthdaybuddy.ui.theme.OnboardingIllustrationHeight
+import com.heckmannch.birthdaybuddy.ui.theme.OnboardingIllustrationHeightSmall
 
 /**
  * Ein einheitliches, adaptives Onboarding-Gerüst, das perfekt zentrierte,
@@ -55,10 +63,10 @@ fun OnboardingPageTemplate(
             modifier = modifier
                 .fillMaxSize()
                 .padding(
-                    start = 32.dp,
-                    end = 32.dp,
-                    top = if (isShortScreen) 16.dp else 32.dp,
-                    bottom = if (isShortScreen) 16.dp else 24.dp
+                    start = SpacingExtraLarge,
+                    end = SpacingExtraLarge,
+                    top = if (isShortScreen) SpacingNormal else SpacingExtraLarge,
+                    bottom = if (isShortScreen) SpacingNormal else SpacingLarge
                 ),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
@@ -74,14 +82,14 @@ fun OnboardingPageTemplate(
                 // Fester Container für das Icon/Illustration
                 Box(
                     modifier = Modifier
-                        .height(if (isShortScreen) 120.dp else 160.dp)
+                        .height(if (isShortScreen) OnboardingIllustrationHeightSmall else OnboardingIllustrationHeight)
                         .fillMaxWidth(),
                     contentAlignment = Alignment.Center
                 ) {
                     illustration(Modifier)
                 }
 
-                Spacer(modifier = Modifier.height(if (isShortScreen) 16.dp else 32.dp))
+                Spacer(modifier = Modifier.height(if (isShortScreen) SpacingNormal else SpacingExtraLarge))
 
                 // Titel
                 Text(
@@ -92,7 +100,7 @@ fun OnboardingPageTemplate(
                     modifier = Modifier.fillMaxWidth()
                 )
 
-                Spacer(modifier = Modifier.height(if (isShortScreen) 16.dp else 32.dp))
+                Spacer(modifier = Modifier.height(if (isShortScreen) SpacingNormal else SpacingExtraLarge))
 
                 // Beschreibungstext
                 Text(
@@ -104,18 +112,18 @@ fun OnboardingPageTemplate(
                 )
 
                 if (settingsCard != null) {
-                    Spacer(modifier = Modifier.height(if (isShortScreen) 16.dp else 24.dp))
+                    Spacer(modifier = Modifier.height(if (isShortScreen) SpacingNormal else SpacingLarge))
                     // Einstellungen (Switches/Zusammenfassungen)
                     settingsCard()
                 }
             }
 
             // Feste untere Sektion für den Button
-            Spacer(modifier = Modifier.height(if (isShortScreen) 8.dp else 16.dp))
+            Spacer(modifier = Modifier.height(if (isShortScreen) SpacingSmall else SpacingNormal))
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(if (isShortScreen) 48.dp else 56.dp),
+                    .height(if (isShortScreen) IconSizeExtraLarge else SearchBarHeight),
                 contentAlignment = Alignment.Center
             ) {
                 if (actionButton != null) {
@@ -129,10 +137,10 @@ fun OnboardingPageTemplate(
             modifier = modifier
                 .fillMaxSize()
                 .padding(
-                    horizontal = 48.dp,
-                    vertical = if (isShortScreen) 16.dp else 32.dp
+                    horizontal = IconSizeExtraLarge,
+                    vertical = if (isShortScreen) SpacingNormal else SpacingExtraLarge
                 ),
-            horizontalArrangement = Arrangement.spacedBy(48.dp),
+            horizontalArrangement = Arrangement.spacedBy(IconSizeExtraLarge),
             verticalAlignment = Alignment.CenterVertically
         ) {
             // Linke Spalte: Illustration/Animation
@@ -160,7 +168,7 @@ fun OnboardingPageTemplate(
                     fontWeight = FontWeight.Bold,
                     textAlign = TextAlign.Start
                 )
-                Spacer(modifier = Modifier.height(if (isShortScreen) 8.dp else 16.dp))
+                Spacer(modifier = Modifier.height(if (isShortScreen) SpacingSmall else SpacingNormal))
                 Text(
                     text = description,
                     style = MaterialTheme.typography.bodyLarge,
@@ -168,11 +176,11 @@ fun OnboardingPageTemplate(
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
                 if (settingsCard != null) {
-                    Spacer(modifier = Modifier.height(if (isShortScreen) 16.dp else 24.dp))
+                    Spacer(modifier = Modifier.height(if (isShortScreen) SpacingNormal else SpacingLarge))
                     settingsCard()
                 }
                 if (actionButton != null) {
-                    Spacer(modifier = Modifier.height(if (isShortScreen) 16.dp else 24.dp))
+                    Spacer(modifier = Modifier.height(if (isShortScreen) SpacingNormal else SpacingLarge))
                     Box(
                         modifier = Modifier.fillMaxWidth(),
                         contentAlignment = Alignment.CenterStart

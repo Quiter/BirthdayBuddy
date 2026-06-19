@@ -44,8 +44,29 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.dp
 import com.heckmannch.birthdaybuddy.R
+import com.heckmannch.birthdaybuddy.ui.theme.SpacingExtraSmall
+import com.heckmannch.birthdaybuddy.ui.theme.SpacingSmall
+import com.heckmannch.birthdaybuddy.ui.theme.SpacingMedium
+import com.heckmannch.birthdaybuddy.ui.theme.SpacingNormal
+import com.heckmannch.birthdaybuddy.ui.theme.SearchBarHeight
+import com.heckmannch.birthdaybuddy.ui.theme.IconSizeExtraSmall
+import com.heckmannch.birthdaybuddy.ui.theme.OnboardingIllustrationCircleSize
+import com.heckmannch.birthdaybuddy.ui.theme.OnboardingCardGuideWidth
+import com.heckmannch.birthdaybuddy.ui.theme.OnboardingCardGuideHeight
+import com.heckmannch.birthdaybuddy.ui.theme.ElevationOnboardingCard
+import com.heckmannch.birthdaybuddy.ui.theme.AlphaOnboardingCard
+import com.heckmannch.birthdaybuddy.ui.theme.AlphaContainerSubtle
+import com.heckmannch.birthdaybuddy.ui.theme.AlphaContainerMuted
+import com.heckmannch.birthdaybuddy.ui.theme.AlphaEmphasisLow
+import com.heckmannch.birthdaybuddy.ui.theme.OnboardingCalendarCellSize
+import com.heckmannch.birthdaybuddy.ui.theme.OnboardingCalendarEventAlpha
+import com.heckmannch.birthdaybuddy.ui.theme.OnboardingGuideCircleSize
+import com.heckmannch.birthdaybuddy.ui.theme.OnboardingGuideIconSize
+import com.heckmannch.birthdaybuddy.ui.theme.OnboardingGuideCheckIconSize
+import com.heckmannch.birthdaybuddy.ui.theme.OnboardingGuideTextSpacer
+import com.heckmannch.birthdaybuddy.ui.theme.OnboardingGuideSmallCornerRadius
+import com.heckmannch.birthdaybuddy.ui.theme.OnboardingGuideTinySpacer
 
 @Composable
 fun CalendarGuidePage(windowWidthSizeClass: WindowWidthSizeClass) {
@@ -62,10 +83,10 @@ fun CalendarGuidePage(windowWidthSizeClass: WindowWidthSizeClass) {
             Card(
                 modifier = Modifier.fillMaxWidth(),
                 colors = CardDefaults.cardColors(
-                    containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
+                    containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = AlphaEmphasisLow)
                 )
             ) {
-                Column(modifier = Modifier.padding(16.dp)) {
+                Column(modifier = Modifier.padding(SpacingNormal)) {
                     // Step 1
                     GuideStepItem(
                         title = stringResource(R.string.onboarding_calendar_guide_step1_title),
@@ -73,7 +94,7 @@ fun CalendarGuidePage(windowWidthSizeClass: WindowWidthSizeClass) {
                         icon = Icons.Default.PlayArrow
                     )
 
-                    Spacer(modifier = Modifier.height(16.dp))
+                    Spacer(modifier = Modifier.height(SpacingNormal))
 
                     // Step 2
                     GuideStepItem(
@@ -82,7 +103,7 @@ fun CalendarGuidePage(windowWidthSizeClass: WindowWidthSizeClass) {
                         icon = Icons.Default.Menu
                     )
 
-                    Spacer(modifier = Modifier.height(16.dp))
+                    Spacer(modifier = Modifier.height(SpacingNormal))
 
                     // Step 3
                     GuideStepItem(
@@ -98,7 +119,7 @@ fun CalendarGuidePage(windowWidthSizeClass: WindowWidthSizeClass) {
                 onClick = { openDefaultCalendarApp(context) },
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(56.dp),
+                    .height(SearchBarHeight),
                 colors = ButtonDefaults.buttonColors(
                     containerColor = MaterialTheme.colorScheme.primary
                 )
@@ -107,9 +128,9 @@ fun CalendarGuidePage(windowWidthSizeClass: WindowWidthSizeClass) {
                     Icon(
                         imageVector = Icons.Default.DateRange,
                         contentDescription = null,
-                        modifier = Modifier.size(20.dp)
+                        modifier = Modifier.size(OnboardingCalendarCellSize)
                     )
-                    Spacer(modifier = Modifier.width(8.dp))
+                    Spacer(modifier = Modifier.width(SpacingSmall))
                     Text(stringResource(R.string.onboarding_calendar_guide_btn))
                 }
             }
@@ -131,15 +152,15 @@ private fun CalendarGuideIllustration(modifier: Modifier = Modifier) {
     )
 
     Box(
-        modifier = modifier.padding(top = 16.dp),
+        modifier = modifier.padding(top = SpacingNormal),
         contentAlignment = Alignment.Center
     ) {
         // Glowing background circle
         Box(
             modifier = Modifier
-                .size(100.dp)
+                .size(OnboardingIllustrationCircleSize)
                 .background(
-                    color = MaterialTheme.colorScheme.primary.copy(alpha = 0.1f),
+                    color = MaterialTheme.colorScheme.primary.copy(alpha = AlphaContainerMuted),
                     shape = CircleShape
                 )
         )
@@ -147,18 +168,18 @@ private fun CalendarGuideIllustration(modifier: Modifier = Modifier) {
         // Floating Drawer Card
         Card(
             modifier = Modifier
-                .width(180.dp)
-                .height(130.dp)
+                .width(OnboardingCardGuideWidth)
+                .height(OnboardingCardGuideHeight)
                 .graphicsLayer {
                     translationY = offsetY * density
                 },
-            shape = RoundedCornerShape(16.dp),
+            shape = RoundedCornerShape(SpacingNormal),
             colors = CardDefaults.cardColors(
-                containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.9f)
+                containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = AlphaOnboardingCard)
             ),
-            elevation = CardDefaults.cardElevation(defaultElevation = 6.dp)
+            elevation = CardDefaults.cardElevation(defaultElevation = ElevationOnboardingCard)
         ) {
-            Column(modifier = Modifier.padding(12.dp)) {
+            Column(modifier = Modifier.padding(SpacingMedium)) {
                 Text(
                     text = "Meine Kalender",
                     style = MaterialTheme.typography.labelMedium,
@@ -166,7 +187,7 @@ private fun CalendarGuideIllustration(modifier: Modifier = Modifier) {
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
 
-                Spacer(modifier = Modifier.height(10.dp))
+                Spacer(modifier = Modifier.height(OnboardingGuideTextSpacer))
 
                 // Calendar item 1
                 Row(
@@ -175,44 +196,44 @@ private fun CalendarGuideIllustration(modifier: Modifier = Modifier) {
                 ) {
                     Box(
                         modifier = Modifier
-                            .size(14.dp)
-                            .background(Color(0xFF4285F4), shape = RoundedCornerShape(3.dp)),
+                            .size(IconSizeExtraSmall)
+                            .background(Color(0xFF4285F4), shape = RoundedCornerShape(OnboardingGuideSmallCornerRadius)),
                         contentAlignment = Alignment.Center
                     ) {
                         Icon(
                             imageVector = Icons.Default.Check,
                             contentDescription = null,
                             tint = Color.White,
-                            modifier = Modifier.size(10.dp)
+                            modifier = Modifier.size(OnboardingGuideCheckIconSize)
                         )
                     }
-                    Spacer(modifier = Modifier.width(8.dp))
+                    Spacer(modifier = Modifier.width(SpacingSmall))
                     Text(
                         text = "Termine",
                         style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.8f)
+                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = OnboardingCalendarEventAlpha)
                     )
                 }
 
-                Spacer(modifier = Modifier.height(8.dp))
+                Spacer(modifier = Modifier.height(SpacingSmall))
 
                 // Calendar item 2 (BirthdayBuddy)
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
                         .background(
-                            color = MaterialTheme.colorScheme.primary.copy(alpha = 0.15f),
-                            shape = RoundedCornerShape(4.dp)
+                            color = MaterialTheme.colorScheme.primary.copy(alpha = AlphaContainerSubtle),
+                            shape = RoundedCornerShape(SpacingExtraSmall)
                         )
-                        .padding(4.dp),
+                        .padding(SpacingExtraSmall),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Box(
                         modifier = Modifier
-                            .size(14.dp)
+                            .size(IconSizeExtraSmall)
                             .background(
                                 MaterialTheme.colorScheme.primary,
-                                shape = RoundedCornerShape(3.dp)
+                                shape = RoundedCornerShape(OnboardingGuideSmallCornerRadius)
                             ),
                         contentAlignment = Alignment.Center
                     ) {
@@ -220,10 +241,10 @@ private fun CalendarGuideIllustration(modifier: Modifier = Modifier) {
                             imageVector = Icons.Default.Check,
                             contentDescription = null,
                             tint = MaterialTheme.colorScheme.onPrimary,
-                            modifier = Modifier.size(10.dp)
+                            modifier = Modifier.size(OnboardingGuideCheckIconSize)
                         )
                     }
-                    Spacer(modifier = Modifier.width(8.dp))
+                    Spacer(modifier = Modifier.width(SpacingSmall))
                     Text(
                         text = "BirthdayBuddy",
                         style = MaterialTheme.typography.bodySmall,
@@ -232,7 +253,7 @@ private fun CalendarGuideIllustration(modifier: Modifier = Modifier) {
                     )
                 }
 
-                Spacer(modifier = Modifier.height(8.dp))
+                Spacer(modifier = Modifier.height(SpacingSmall))
 
                 // Calendar item 3
                 Row(
@@ -241,22 +262,22 @@ private fun CalendarGuideIllustration(modifier: Modifier = Modifier) {
                 ) {
                     Box(
                         modifier = Modifier
-                            .size(14.dp)
-                            .background(Color(0xFF0F9D58), shape = RoundedCornerShape(3.dp)),
+                            .size(IconSizeExtraSmall)
+                            .background(Color(0xFF0F9D58), shape = RoundedCornerShape(OnboardingGuideSmallCornerRadius)),
                         contentAlignment = Alignment.Center
                     ) {
                         Icon(
                             imageVector = Icons.Default.Check,
                             contentDescription = null,
                             tint = Color.White,
-                            modifier = Modifier.size(10.dp)
+                            modifier = Modifier.size(OnboardingGuideCheckIconSize)
                         )
                     }
-                    Spacer(modifier = Modifier.width(8.dp))
+                    Spacer(modifier = Modifier.width(SpacingSmall))
                     Text(
                         text = "Feiertage",
                         style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.8f)
+                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = OnboardingCalendarEventAlpha)
                     )
                 }
             }
@@ -276,9 +297,9 @@ private fun GuideStepItem(
     ) {
         Box(
             modifier = Modifier
-                .size(32.dp)
+                .size(OnboardingGuideCircleSize)
                 .background(
-                    color = MaterialTheme.colorScheme.primary.copy(alpha = 0.1f),
+                    color = MaterialTheme.colorScheme.primary.copy(alpha = AlphaContainerSubtle),
                     shape = CircleShape
                 ),
             contentAlignment = Alignment.Center
@@ -287,11 +308,11 @@ private fun GuideStepItem(
                 imageVector = icon,
                 contentDescription = null,
                 tint = MaterialTheme.colorScheme.primary,
-                modifier = Modifier.size(16.dp)
+                modifier = Modifier.size(OnboardingGuideIconSize)
             )
         }
 
-        Spacer(modifier = Modifier.width(12.dp))
+        Spacer(modifier = Modifier.width(SpacingMedium))
 
         Column(modifier = Modifier.weight(1f)) {
             Text(
@@ -300,7 +321,7 @@ private fun GuideStepItem(
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.onSurface
             )
-            Spacer(modifier = Modifier.height(2.dp))
+            Spacer(modifier = Modifier.height(OnboardingGuideTinySpacer))
             Text(
                 text = description,
                 style = MaterialTheme.typography.bodySmall,

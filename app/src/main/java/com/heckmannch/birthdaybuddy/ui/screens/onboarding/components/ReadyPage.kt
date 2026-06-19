@@ -32,7 +32,6 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.unit.dp
 import com.heckmannch.birthdaybuddy.R
 import com.heckmannch.birthdaybuddy.ui.screens.home.components.list.ConfettiEffect
 import com.heckmannch.birthdaybuddy.ui.theme.AlphaEmphasisSubtle
@@ -40,6 +39,7 @@ import com.heckmannch.birthdaybuddy.ui.theme.SearchBarHeight
 import com.heckmannch.birthdaybuddy.ui.theme.SpacingLarge
 import com.heckmannch.birthdaybuddy.ui.theme.SpacingNormal
 import com.heckmannch.birthdaybuddy.ui.theme.SpacingSmall
+import com.heckmannch.birthdaybuddy.ui.theme.OnboardingIllustrationCircleSize
 
 @Composable
 fun ReadyPage(
@@ -153,7 +153,7 @@ private fun ReadyPageIllustration(modifier: Modifier = Modifier) {
             imageVector = Icons.Default.CheckCircle,
             contentDescription = null,
             modifier = Modifier
-                .size(100.dp)
+                .size(OnboardingIllustrationCircleSize)
                 .graphicsLayer {
                     scaleX = checkScale
                     scaleY = checkScale

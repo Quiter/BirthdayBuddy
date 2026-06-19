@@ -31,13 +31,17 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.unit.dp
 import com.heckmannch.birthdaybuddy.R
 import com.heckmannch.birthdaybuddy.ui.theme.AlphaContainerMuted
 import com.heckmannch.birthdaybuddy.ui.theme.ContactImageSizeSmall
 import com.heckmannch.birthdaybuddy.ui.theme.SpacingExtraSmall
 import com.heckmannch.birthdaybuddy.ui.theme.SpacingMedium
 import com.heckmannch.birthdaybuddy.ui.theme.SpacingNormal
+import com.heckmannch.birthdaybuddy.ui.theme.OnboardingIllustrationCircleSize
+import com.heckmannch.birthdaybuddy.ui.theme.OnboardingCardWelcomeWidth
+import com.heckmannch.birthdaybuddy.ui.theme.OnboardingCardWelcomeHeight
+import com.heckmannch.birthdaybuddy.ui.theme.AlphaOnboardingCard
+import com.heckmannch.birthdaybuddy.ui.theme.ElevationOnboardingCard
 
 @Composable
 fun WelcomePage(windowWidthSizeClass: WindowWidthSizeClass) {
@@ -71,7 +75,7 @@ private fun WelcomePageIllustration(modifier: Modifier = Modifier) {
         // Soft glowing background circle
         Box(
             modifier = Modifier
-                .size(100.dp)
+                .size(OnboardingIllustrationCircleSize)
                 .background(
                     color = MaterialTheme.colorScheme.primary.copy(alpha = AlphaContainerMuted),
                     shape = CircleShape
@@ -81,14 +85,14 @@ private fun WelcomePageIllustration(modifier: Modifier = Modifier) {
         // Floating Card
         Card(
             modifier = Modifier
-                .width(200.dp)
-                .height(88.dp)
+                .width(OnboardingCardWelcomeWidth)
+                .height(OnboardingCardWelcomeHeight)
                 .graphicsLayer { translationY = offsetY * density },
             shape = RoundedCornerShape(SpacingNormal),
             colors = CardDefaults.cardColors(
-                containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.9f)
+                containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = AlphaOnboardingCard)
             ),
-            elevation = CardDefaults.cardElevation(defaultElevation = 6.dp)
+            elevation = CardDefaults.cardElevation(defaultElevation = ElevationOnboardingCard)
         ) {
             Row(
                 modifier = Modifier

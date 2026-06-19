@@ -34,7 +34,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.unit.dp
 import com.heckmannch.birthdaybuddy.R
 import com.heckmannch.birthdaybuddy.ui.components.ContactsIllustration
 import com.heckmannch.birthdaybuddy.ui.theme.AlphaEmphasisLow
@@ -42,6 +41,7 @@ import com.heckmannch.birthdaybuddy.ui.theme.OnboardingIllustrationHeight
 import com.heckmannch.birthdaybuddy.ui.theme.OnboardingIllustrationHeightSmall
 import com.heckmannch.birthdaybuddy.ui.theme.SearchBarHeight
 import com.heckmannch.birthdaybuddy.ui.theme.SpacingSmall
+import com.heckmannch.birthdaybuddy.ui.theme.OnboardingIllustrationCircleSize
 
 @Composable
 fun ContactsPage(
@@ -70,7 +70,7 @@ fun ContactsPage(
                         Icon(
                             imageVector = Icons.Default.CheckCircle,
                             contentDescription = null,
-                            modifier = Modifier.size(100.dp),
+                            modifier = Modifier.size(OnboardingIllustrationCircleSize),
                             tint = MaterialTheme.colorScheme.primary,
                         )
                     }

@@ -29,6 +29,13 @@ import androidx.compose.ui.unit.dp
 import com.heckmannch.birthdaybuddy.R
 import com.heckmannch.birthdaybuddy.ui.components.AdaptiveContentContainer
 import com.heckmannch.birthdaybuddy.ui.theme.BirthdayBuddyTheme
+import com.heckmannch.birthdaybuddy.ui.theme.AlphaContainerSubtle
+import com.heckmannch.birthdaybuddy.ui.theme.AlphaEmphasisDisabled
+import com.heckmannch.birthdaybuddy.ui.theme.SpacingExtraSmall
+import com.heckmannch.birthdaybuddy.ui.theme.SpacingSmall
+import com.heckmannch.birthdaybuddy.ui.theme.SpacingNormal
+import com.heckmannch.birthdaybuddy.ui.theme.SpacingLarge
+import com.heckmannch.birthdaybuddy.ui.theme.OnboardingFooterButtonWidth
 
 @Composable
 fun OnboardingFooter(
@@ -49,7 +56,7 @@ fun OnboardingFooter(
                 modifier = Modifier
                     .fillMaxWidth()
                     .navigationBarsPadding()
-                    .padding(horizontal = 24.dp, vertical = 16.dp),
+                    .padding(horizontal = SpacingLarge, vertical = SpacingNormal),
                 horizontalArrangement = Arrangement.Center,
                 verticalAlignment = Alignment.CenterVertically
             ) {
@@ -57,7 +64,7 @@ fun OnboardingFooter(
                 if (currentPage > 0) {
                     TextButton(
                         onClick = onBack,
-                        modifier = Modifier.width(80.dp)
+                        modifier = Modifier.width(OnboardingFooterButtonWidth)
                     ) {
                         Text(
                             text = stringResource(R.string.onboarding_back),
@@ -65,7 +72,7 @@ fun OnboardingFooter(
                         )
                     }
                 } else {
-                    Spacer(modifier = Modifier.width(80.dp))
+                    Spacer(modifier = Modifier.width(OnboardingFooterButtonWidth))
                 }
 
                 // Dynamic Pill Dots
@@ -77,21 +84,21 @@ fun OnboardingFooter(
                     repeat(pageCount) { index ->
                         val isSelected = index == currentPage
                         val width by animateDpAsState(
-                            targetValue = if (isSelected) 24.dp else 8.dp,
+                            targetValue = if (isSelected) SpacingLarge else SpacingSmall,
                             label = "dot_width"
                         )
                         val color by animateColorAsState(
                             targetValue = if (isSelected) {
                                 MaterialTheme.colorScheme.primary
                             } else {
-                                MaterialTheme.colorScheme.primary.copy(alpha = 0.2f)
+                                MaterialTheme.colorScheme.primary.copy(alpha = AlphaContainerSubtle)
                             },
                             label = "dot_color"
                         )
                         Box(
                             modifier = Modifier
-                                .padding(horizontal = 4.dp)
-                                .size(width = width, height = 8.dp)
+                                .padding(horizontal = SpacingExtraSmall)
+                                .size(width = width, height = SpacingSmall)
                                 .clip(CircleShape)
                                 .background(color)
                         )
@@ -103,19 +110,19 @@ fun OnboardingFooter(
                     TextButton(
                         onClick = onNext,
                         enabled = isNextEnabled,
-                        modifier = Modifier.width(80.dp)
+                        modifier = Modifier.width(OnboardingFooterButtonWidth)
                     ) {
                         Text(
                             text = stringResource(R.string.onboarding_next),
                             color = if (isNextEnabled) {
                                 MaterialTheme.colorScheme.primary
                             } else {
-                                MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f)
+                                MaterialTheme.colorScheme.onSurface.copy(alpha = AlphaEmphasisDisabled)
                             }
                         )
                     }
                 } else {
-                    Spacer(modifier = Modifier.width(80.dp))
+                    Spacer(modifier = Modifier.width(OnboardingFooterButtonWidth))
                 }
             }
         }

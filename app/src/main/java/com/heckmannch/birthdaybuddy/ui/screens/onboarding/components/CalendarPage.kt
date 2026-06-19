@@ -48,7 +48,6 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
 import com.heckmannch.birthdaybuddy.R
 import com.heckmannch.birthdaybuddy.ui.theme.AlphaContainerMuted
 import com.heckmannch.birthdaybuddy.ui.theme.AlphaEmphasisLow
@@ -58,6 +57,21 @@ import com.heckmannch.birthdaybuddy.ui.theme.SearchBarHeight
 import com.heckmannch.birthdaybuddy.ui.theme.SpacingExtraSmall
 import com.heckmannch.birthdaybuddy.ui.theme.SpacingNormal
 import com.heckmannch.birthdaybuddy.ui.theme.SpacingSmall
+import com.heckmannch.birthdaybuddy.ui.theme.OnboardingIllustrationCircleSize
+import com.heckmannch.birthdaybuddy.ui.theme.OnboardingCardCalendarWidth
+import com.heckmannch.birthdaybuddy.ui.theme.OnboardingCardCalendarHeight
+import com.heckmannch.birthdaybuddy.ui.theme.ElevationOnboardingCard
+import com.heckmannch.birthdaybuddy.ui.theme.OnboardingCalendarHeaderHeight
+import com.heckmannch.birthdaybuddy.ui.theme.OnboardingCalendarCellSize
+import com.heckmannch.birthdaybuddy.ui.theme.OnboardingCalendarIndicatorSize
+import com.heckmannch.birthdaybuddy.ui.theme.OnboardingCalendarEventHeight
+import com.heckmannch.birthdaybuddy.ui.theme.OnboardingCalendarEventCornerRadius
+import com.heckmannch.birthdaybuddy.ui.theme.OnboardingCalendarEventPadding
+import com.heckmannch.birthdaybuddy.ui.theme.OnboardingCalendarEventIconSize
+import com.heckmannch.birthdaybuddy.ui.theme.AlphaOnboardingCard
+import com.heckmannch.birthdaybuddy.ui.theme.AlphaOnboardingCalendarDisabled
+import com.heckmannch.birthdaybuddy.ui.theme.AlphaOnboardingCalendarInactive
+import com.heckmannch.birthdaybuddy.ui.theme.OnboardingCalendarEventAlpha
 
 @Composable
 fun CalendarPage(
@@ -147,10 +161,10 @@ private fun CalendarPageIllustration(
         // Soft glowing background circle
         Box(
             modifier = Modifier
-                .size(100.dp)
+                .size(OnboardingIllustrationCircleSize)
                 .background(
                     color = if (enabled) MaterialTheme.colorScheme.tertiary.copy(alpha = AlphaContainerMuted)
-                    else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.05f),
+                    else MaterialTheme.colorScheme.onSurface.copy(alpha = AlphaOnboardingCalendarInactive),
                     shape = CircleShape
                 )
         )
@@ -158,26 +172,26 @@ private fun CalendarPageIllustration(
         // Floating Calendar Sheet
         Card(
             modifier = Modifier
-                .width(160.dp)
-                .height(132.dp)
+                .width(OnboardingCardCalendarWidth)
+                .height(OnboardingCardCalendarHeight)
                 .graphicsLayer {
                     translationY = offsetY * density
                 },
             shape = RoundedCornerShape(SpacingNormal),
             colors = CardDefaults.cardColors(
-                containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.9f)
+                containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = AlphaOnboardingCard)
             ),
-            elevation = CardDefaults.cardElevation(defaultElevation = 6.dp)
+            elevation = CardDefaults.cardElevation(defaultElevation = ElevationOnboardingCard)
         ) {
             Column(modifier = Modifier.fillMaxSize()) {
                 // Header bar
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(28.dp)
+                        .height(OnboardingCalendarHeaderHeight)
                         .background(
                             if (enabled) MaterialTheme.colorScheme.tertiary
-                            else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.4f)
+                            else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = AlphaOnboardingCalendarDisabled)
                         ),
                     contentAlignment = Alignment.Center
                 ) {
@@ -205,7 +219,7 @@ private fun CalendarPageIllustration(
                                 val isEventDay = row == 1 && col == 2
                                 Box(
                                     modifier = Modifier
-                                        .size(20.dp)
+                                        .size(OnboardingCalendarCellSize)
                                         .background(
                                             color = if (isEventDay && enabled) {
                                                 MaterialTheme.colorScheme.tertiaryContainer
@@ -224,7 +238,7 @@ private fun CalendarPageIllustration(
                                     } else {
                                         Box(
                                             modifier = Modifier
-                                                .size(6.dp)
+                                                .size(OnboardingCalendarIndicatorSize)
                                                 .background(
                                                     color = MaterialTheme.colorScheme.onSurfaceVariant.copy(
                                                         alpha = AlphaEmphasisSubtle
@@ -247,25 +261,25 @@ private fun CalendarPageIllustration(
                         Card(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .height(26.dp)
+                                .height(OnboardingCalendarEventHeight)
                                 .padding(horizontal = SpacingExtraSmall),
-                            shape = RoundedCornerShape(6.dp),
+                            shape = RoundedCornerShape(OnboardingCalendarEventCornerRadius),
                             colors = CardDefaults.cardColors(
                                 containerColor = MaterialTheme.colorScheme.tertiaryContainer.copy(
-                                    alpha = 0.8f
+                                    alpha = OnboardingCalendarEventAlpha
                                 )
                             )
                         ) {
                             Row(
                                 modifier = Modifier
                                     .fillMaxSize()
-                                    .padding(horizontal = 6.dp),
+                                    .padding(horizontal = OnboardingCalendarEventPadding),
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
                                 Icon(
                                     imageVector = Icons.Default.Check,
                                     contentDescription = null,
-                                    modifier = Modifier.size(12.dp),
+                                    modifier = Modifier.size(OnboardingCalendarEventIconSize),
                                     tint = MaterialTheme.colorScheme.onTertiaryContainer
                                 )
                                 Spacer(modifier = Modifier.width(SpacingExtraSmall))

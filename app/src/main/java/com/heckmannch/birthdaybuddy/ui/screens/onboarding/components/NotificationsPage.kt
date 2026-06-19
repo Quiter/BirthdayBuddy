@@ -58,6 +58,17 @@ import com.heckmannch.birthdaybuddy.ui.theme.SpacingExtraSmall
 import com.heckmannch.birthdaybuddy.ui.theme.SpacingMedium
 import com.heckmannch.birthdaybuddy.ui.theme.SpacingNormal
 import com.heckmannch.birthdaybuddy.ui.theme.SpacingSmall
+import com.heckmannch.birthdaybuddy.ui.theme.IconSizeExtraSmall
+import com.heckmannch.birthdaybuddy.ui.theme.OnboardingIllustrationCircleSize
+import com.heckmannch.birthdaybuddy.ui.theme.OnboardingCardNotifWidth
+import com.heckmannch.birthdaybuddy.ui.theme.OnboardingCardBorderWidth
+import com.heckmannch.birthdaybuddy.ui.theme.ElevationOnboardingCard
+import com.heckmannch.birthdaybuddy.ui.theme.OnboardingCalendarCellSize
+import com.heckmannch.birthdaybuddy.ui.theme.OnboardingCalendarEventIconSize
+import com.heckmannch.birthdaybuddy.ui.theme.OnboardingCalendarEventPadding
+import com.heckmannch.birthdaybuddy.ui.theme.AlphaOnboardingCard
+import com.heckmannch.birthdaybuddy.ui.theme.AlphaOnboardingCalendarInactive
+import com.heckmannch.birthdaybuddy.ui.theme.AlphaOnboardingCalendarDisabled
 
 @Composable
 fun NotificationsPage(
@@ -164,7 +175,7 @@ private fun NotificationsPageIllustration(
     )
 
     val borderWidth by animateDpAsState(
-        targetValue = if (enabled && persistent) 1.5.dp else 0.dp,
+        targetValue = if (enabled && persistent) OnboardingCardBorderWidth else 0.dp,
         label = "border_width"
     )
     val borderColor by animateColorAsState(
@@ -172,7 +183,7 @@ private fun NotificationsPageIllustration(
         label = "border_color"
     )
     val cardAlpha by animateFloatAsState(
-        targetValue = if (enabled) 1f else 0.4f,
+        targetValue = if (enabled) 1f else AlphaOnboardingCalendarDisabled,
         label = "card_alpha"
     )
 
@@ -183,10 +194,10 @@ private fun NotificationsPageIllustration(
         // Soft glowing background circle
         Box(
             modifier = Modifier
-                .size(100.dp)
+                .size(OnboardingIllustrationCircleSize)
                 .background(
                     color = if (enabled) MaterialTheme.colorScheme.secondary.copy(alpha = AlphaContainerMuted)
-                    else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.05f),
+                    else MaterialTheme.colorScheme.onSurface.copy(alpha = AlphaOnboardingCalendarInactive),
                     shape = CircleShape
                 )
         )
@@ -194,7 +205,7 @@ private fun NotificationsPageIllustration(
         // Floating push notification Card
         Card(
             modifier = Modifier
-                .width(220.dp)
+                .width(OnboardingCardNotifWidth)
                 .graphicsLayer {
                     translationY = offsetY * density
                     alpha = cardAlpha
@@ -206,9 +217,9 @@ private fun NotificationsPageIllustration(
                 ),
             shape = RoundedCornerShape(SpacingNormal),
             colors = CardDefaults.cardColors(
-                containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.9f)
+                containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = AlphaOnboardingCard)
             ),
-            elevation = CardDefaults.cardElevation(defaultElevation = 6.dp)
+            elevation = CardDefaults.cardElevation(defaultElevation = ElevationOnboardingCard)
         ) {
             Column(modifier = Modifier.padding(SpacingMedium)) {
                 // Header
@@ -220,7 +231,7 @@ private fun NotificationsPageIllustration(
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Box(
                             modifier = Modifier
-                                .size(20.dp)
+                                .size(OnboardingCalendarCellSize)
                                 .background(
                                     color = MaterialTheme.colorScheme.secondary,
                                     shape = CircleShape
@@ -230,11 +241,11 @@ private fun NotificationsPageIllustration(
                             Icon(
                                 imageVector = Icons.Default.Cake,
                                 contentDescription = null,
-                                modifier = Modifier.size(12.dp),
+                                modifier = Modifier.size(OnboardingCalendarEventIconSize),
                                 tint = MaterialTheme.colorScheme.onSecondary
                             )
                         }
-                        Spacer(modifier = Modifier.width(6.dp))
+                        Spacer(modifier = Modifier.width(OnboardingCalendarEventPadding))
                         Text(
                             text = "BirthdayBuddy",
                             style = MaterialTheme.typography.labelSmall,
@@ -252,7 +263,7 @@ private fun NotificationsPageIllustration(
                         Icon(
                             imageVector = Icons.Default.Lock,
                             contentDescription = null,
-                            modifier = Modifier.size(14.dp),
+                            modifier = Modifier.size(IconSizeExtraSmall),
                             tint = MaterialTheme.colorScheme.primary
                         )
                     }

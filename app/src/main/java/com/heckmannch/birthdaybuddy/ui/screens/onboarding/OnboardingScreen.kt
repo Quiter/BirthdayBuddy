@@ -34,6 +34,7 @@ import androidx.core.content.ContextCompat
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
+import com.heckmannch.birthdaybuddy.ui.theme.AlphaContainerSubtle
 import com.heckmannch.birthdaybuddy.ui.components.AppResponsiveScaffold
 import com.heckmannch.birthdaybuddy.ui.screens.onboarding.components.CalendarGuidePage
 import com.heckmannch.birthdaybuddy.ui.screens.onboarding.components.CalendarPage
@@ -182,12 +183,12 @@ fun OnboardingScreen(
 
     val ambientColor by animateColorAsState(
         targetValue = when (pagerState.currentPage) {
-            0 -> MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.15f)
-            1 -> MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.15f)
-            2 -> MaterialTheme.colorScheme.tertiaryContainer.copy(alpha = 0.15f)
-            3 -> MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.15f)
-            4 -> MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.15f)
-            else -> MaterialTheme.colorScheme.tertiaryContainer.copy(alpha = 0.2f)
+            0 -> MaterialTheme.colorScheme.primaryContainer.copy(alpha = AlphaContainerSubtle)
+            1 -> MaterialTheme.colorScheme.secondaryContainer.copy(alpha = AlphaContainerSubtle)
+            2 -> MaterialTheme.colorScheme.tertiaryContainer.copy(alpha = AlphaContainerSubtle)
+            3 -> MaterialTheme.colorScheme.primaryContainer.copy(alpha = AlphaContainerSubtle)
+            4 -> MaterialTheme.colorScheme.secondaryContainer.copy(alpha = AlphaContainerSubtle)
+            else -> MaterialTheme.colorScheme.tertiaryContainer.copy(alpha = AlphaContainerSubtle)
         },
         animationSpec = tween(durationMillis = 500),
         label = "ambient_color"
