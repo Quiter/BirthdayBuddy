@@ -18,3 +18,4 @@ local.properties
 # Local SQLite database files
 /birthday_database*
 /settings_database*
+.aider*

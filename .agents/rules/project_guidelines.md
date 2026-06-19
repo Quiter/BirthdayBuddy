@@ -11,3 +11,22 @@ Always refer to and follow the specifications, rules, and architecture laid out 
 1. **Rules & Constraints:** Always adhere to the "Leitplanken" defined in `docs/PROJECT_STATUS.md` (e.g. database safety, i18n in both German and English, Clean Architecture, Hilt DI, no additive vertical paddings).
 2. **Project Structure:** Follow the directory layout and file placements documented in `docs/PROJECT_STRUCTURE.md`.
 3. **Documentation:** Log changes strictly in `docs/PROJECT_STRUCTURE.md` and `CHANGELOG.md` (append only).
+
+## Spezialisierte Skills & Tooling
+Bei der Weiterentwicklung des Projekts wurden spezialisierte Skills eingesetzt, deren Prinzipien bei zukünftigen Änderungen zwingend beachtet werden müssen:
+
+1. **Adaptive Skill (Material 3 Adaptive):**
+   - **Prinzip:** Nutze für Master-Detail-Ansichten das offizielle `ListDetailPaneScaffold` (siehe `HomeScreen` & `SettingsScreen`).
+   - **Responsivität:** Layouts müssen sowohl `WindowWidthSizeClass` als auch `WindowHeightSizeClass` berücksichtigen (bereitgestellt via `LocalWindowWidthSizeClass` und `LocalWindowHeightSizeClass`).
+   - **Grids:** Listen in Einstellungen oder Übersichten sollten auf breiten Bildschirmen via `LazyVerticalGrid` adaptiv mehrspaltig gerendert werden.
+
+2. **AGP 9 Upgrade Skill:**
+   - **DSL-Standard:** Verwende die explizite KTS-Konfiguration (`configure<ApplicationExtension>`) anstelle der impliziten `android { ... }` Blöcke.
+   - **Kompatibilität:** Beachte das Flag `android.newDsl=false` in `gradle.properties`, solange Plugins (wie das BaselineProfile-Plugin) dies for die Variant-API benötigen.
+
+3. **Navigation-3 Skill (Type-Safe Navigation):**
+   - **Standard:** Nutze ausschließlich das typsichere Jetpack Navigation System (Navigation 2.8+).
+   - **Routen:** Definiere Routen als `@Serializable` Objekte oder Datenklassen in der `MainActivity.kt`.
+   - **Aufrufe:** Verwende `navController.navigate(RouteObject)` und `composable<RouteClass>`. Vermeide String-basierte Routen.
+
+**Vorgehen bei Änderungen:** Vor größeren Refactorings oder Updates sollten die entsprechenden Skills konsultiert oder erneut zur Analyse eingebunden werden, um die Einhaltung der aktuellen Best Practices sicherzustellen.

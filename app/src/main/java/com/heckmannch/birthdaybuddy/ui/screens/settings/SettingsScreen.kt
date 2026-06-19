@@ -4,13 +4,9 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -34,12 +30,18 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.adaptive.ExperimentalMaterial3AdaptiveApi
+import androidx.compose.material3.adaptive.layout.AnimatedPane
+import androidx.compose.material3.adaptive.layout.ListDetailPaneScaffold
+import androidx.compose.material3.adaptive.layout.ListDetailPaneScaffoldRole
+import androidx.compose.material3.adaptive.navigation.rememberListDetailPaneScaffoldNavigator
 import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -69,6 +71,7 @@ import com.heckmannch.birthdaybuddy.viewmodel.HomeViewModel
 import com.heckmannch.birthdaybuddy.viewmodel.LabelViewModel
 import com.heckmannch.birthdaybuddy.viewmodel.NotificationViewModel
 import com.heckmannch.birthdaybuddy.viewmodel.ThemeViewModel
+import kotlinx.coroutines.launch
 
 enum class SettingsTab {
     NOTIFICATIONS,
@@ -119,7 +122,7 @@ fun SettingsScreen(
     )
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3AdaptiveApi::class)
 @Composable
 private fun SettingsContent(
     windowWidthSizeClass: WindowWidthSizeClass,
@@ -255,168 +258,174 @@ private fun SettingsContent(
         val backupViewModel: BackupViewModel = hiltViewModel()
         val themeViewModel: ThemeViewModel = hiltViewModel()
 
+        val navigator = rememberListDetailPaneScaffoldNavigator<Nothing>()
+        val coroutineScope = rememberCoroutineScope()
+
         AppResponsiveScaffold(
             windowWidthSizeClass = windowWidthSizeClass,
             useAdaptiveWidth = false,
             topBar = {}
         ) {
-            Row(modifier = Modifier.fillMaxSize()) {
-                // Linke Spalte: Menü (340.dp breit)
-                Column(
-                    modifier = Modifier
-                        .width(340.dp)
-                        .fillMaxHeight()
-                        .background(MaterialTheme.colorScheme.surfaceContainerLow)
-                ) {
-                    TopAppBar(
-                        title = { Text(stringResource(R.string.settings_title)) },
-                        navigationIcon = {
-                            IconButton(onClick = onNavigateBack) {
-                                Icon(
-                                    imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                                    contentDescription = stringResource(R.string.notifications_back),
+            ListDetailPaneScaffold(
+                directive = navigator.scaffoldDirective,
+                value = navigator.scaffoldValue,
+                listPane = {
+                    AnimatedPane {
+                        // Linke Spalte: Menü
+                        Column(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .background(MaterialTheme.colorScheme.surfaceContainerLow)
+                        ) {
+                            TopAppBar(
+                                title = { Text(stringResource(R.string.settings_title)) },
+                                navigationIcon = {
+                                    IconButton(onClick = onNavigateBack) {
+                                        Icon(
+                                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                                            contentDescription = stringResource(R.string.notifications_back),
+                                        )
+                                    }
+                                },
+                                colors = TopAppBarDefaults.topAppBarColors(
+                                    containerColor = MaterialTheme.colorScheme.surfaceContainerLow
                                 )
-                            }
-                        },
-                        colors = TopAppBarDefaults.topAppBarColors(
-                            containerColor = MaterialTheme.colorScheme.surfaceContainerLow
-                        )
-                    )
-
-                    LazyColumn(
-                        modifier = Modifier
-                            .weight(1f)
-                            .fillMaxWidth()
-                    ) {
-                        items(menuItems) { item ->
-                            val isSelected = when (item.tab) {
-                                SettingsTab.ABOUT -> activeTab == SettingsTab.ABOUT || activeTab == SettingsTab.PRIVACY_POLICY
-                                else -> activeTab == item.tab
-                            }
-                            SettingsMenuItem(
-                                titleRes = item.titleRes,
-                                descRes = item.descRes,
-                                icon = item.icon,
-                                isSelected = isSelected,
-                                useTabletStyle = true,
-                                onClick = { activeTab = item.tab }
                             )
+
+                            LazyColumn(
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .fillMaxWidth()
+                            ) {
+                                items(menuItems) { item ->
+                                    val isSelected = when (item.tab) {
+                                        SettingsTab.ABOUT -> activeTab == SettingsTab.ABOUT || activeTab == SettingsTab.PRIVACY_POLICY
+                                        else -> activeTab == item.tab
+                                    }
+                                    SettingsMenuItem(
+                                        titleRes = item.titleRes,
+                                        descRes = item.descRes,
+                                        icon = item.icon,
+                                        isSelected = isSelected,
+                                        useTabletStyle = true,
+                                        onClick = {
+                                            activeTab = item.tab
+                                            coroutineScope.launch {
+                                                navigator.navigateTo(ListDetailPaneScaffoldRole.Detail)
+                                            }
+                                        }
+                                    )
+                                }
+                            }
+
+                            SettingsFooter()
                         }
                     }
+                },
+                detailPane = {
+                    AnimatedPane {
+                        // Rechte Spalte: Detail-Ansicht
+                        Box(
+                            modifier = Modifier.fillMaxSize()
+                        ) {
+                            when (activeTab) {
+                                SettingsTab.NOTIFICATIONS -> {
+                                    NotificationSettingsScreen(
+                                        windowWidthSizeClass = windowWidthSizeClass,
+                                        viewModel = notificationViewModel,
+                                        showBackButton = false,
+                                        onNavigateBack = {}
+                                    )
+                                }
 
-                    SettingsFooter()
-                }
+                                SettingsTab.CALENDAR -> {
+                                    CalendarSettingsScreen(
+                                        windowWidthSizeClass = windowWidthSizeClass,
+                                        viewModel = calendarViewModel,
+                                        showBackButton = false,
+                                        onNavigateBack = {}
+                                    )
+                                }
 
-                // Trennlinie
-                Spacer(
-                    modifier = Modifier
-                        .width(1.dp)
-                        .fillMaxHeight()
-                        .background(MaterialTheme.colorScheme.outlineVariant)
-                )
+                                SettingsTab.LABELS -> {
+                                    LabelSettingsScreen(
+                                        windowWidthSizeClass = windowWidthSizeClass,
+                                        viewModel = labelViewModel,
+                                        showBackButton = false,
+                                        onNavigateBack = {}
+                                    )
+                                }
 
-                // Rechte Spalte: Detail-Ansicht
-                Box(
-                    modifier = Modifier
-                        .weight(1f)
-                        .fillMaxHeight()
-                ) {
-                    when (activeTab) {
-                        SettingsTab.NOTIFICATIONS -> {
-                            NotificationSettingsScreen(
-                                windowWidthSizeClass = windowWidthSizeClass,
-                                viewModel = notificationViewModel,
-                                showBackButton = false,
-                                onNavigateBack = {}
-                            )
-                        }
+                                SettingsTab.BACKUP -> {
+                                    BackupScreen(
+                                        windowWidthSizeClass = windowWidthSizeClass,
+                                        viewModel = backupViewModel,
+                                        showBackButton = false,
+                                        onNavigateBack = {}
+                                    )
+                                }
 
-                        SettingsTab.CALENDAR -> {
-                            CalendarSettingsScreen(
-                                windowWidthSizeClass = windowWidthSizeClass,
-                                viewModel = calendarViewModel,
-                                showBackButton = false,
-                                onNavigateBack = {}
-                            )
-                        }
+                                SettingsTab.THEME -> {
+                                    ThemeSettingsScreen(
+                                        windowWidthSizeClass = windowWidthSizeClass,
+                                        viewModel = themeViewModel,
+                                        showBackButton = false,
+                                        onNavigateBack = {}
+                                    )
+                                }
 
-                        SettingsTab.LABELS -> {
-                            LabelSettingsScreen(
-                                windowWidthSizeClass = windowWidthSizeClass,
-                                viewModel = labelViewModel,
-                                showBackButton = false,
-                                onNavigateBack = {}
-                            )
-                        }
+                                SettingsTab.SYNC -> {
+                                    if (homeViewModel != null) {
+                                        SyncSettingsScreen(
+                                            windowWidthSizeClass = windowWidthSizeClass,
+                                            viewModel = homeViewModel,
+                                            showBackButton = false,
+                                            onNavigateBack = {}
+                                        )
+                                    } else {
+                                        Box(
+                                            modifier = Modifier.fillMaxSize(),
+                                            contentAlignment = Alignment.Center
+                                        ) {
+                                            Text("Sync is not available in preview")
+                                        }
+                                    }
+                                }
 
-                        SettingsTab.BACKUP -> {
-                            BackupScreen(
-                                windowWidthSizeClass = windowWidthSizeClass,
-                                viewModel = backupViewModel,
-                                showBackButton = false,
-                                onNavigateBack = {}
-                            )
-                        }
+                                SettingsTab.OTHER_EVENTS -> {
+                                    OtherEventsSettingsScreen(
+                                        windowWidthSizeClass = windowWidthSizeClass,
+                                        viewModel = notificationViewModel,
+                                        showBackButton = false,
+                                        onNavigateBack = {}
+                                    )
+                                }
 
-                        SettingsTab.THEME -> {
-                            ThemeSettingsScreen(
-                                windowWidthSizeClass = windowWidthSizeClass,
-                                viewModel = themeViewModel,
-                                showBackButton = false,
-                                onNavigateBack = {}
-                            )
-                        }
+                                SettingsTab.ABOUT -> {
+                                    AboutScreen(
+                                        windowWidthSizeClass = windowWidthSizeClass,
+                                        showBackButton = false,
+                                        onNavigateBack = {},
+                                        onNavigateToPrivacyPolicy = {
+                                            activeTab = SettingsTab.PRIVACY_POLICY
+                                        }
+                                    )
+                                }
 
-                        SettingsTab.SYNC -> {
-                            if (homeViewModel != null) {
-                                SyncSettingsScreen(
-                                    windowWidthSizeClass = windowWidthSizeClass,
-                                    viewModel = homeViewModel,
-                                    showBackButton = false,
-                                    onNavigateBack = {}
-                                )
-                            } else {
-                                Box(
-                                    modifier = Modifier.fillMaxSize(),
-                                    contentAlignment = Alignment.Center
-                                ) {
-                                    Text("Sync is not available in preview")
+                                SettingsTab.PRIVACY_POLICY -> {
+                                    PrivacyPolicyScreen(
+                                        windowWidthSizeClass = windowWidthSizeClass,
+                                        showBackButton = false,
+                                        onNavigateBack = {
+                                            activeTab = SettingsTab.ABOUT
+                                        }
+                                    )
                                 }
                             }
                         }
-
-                        SettingsTab.OTHER_EVENTS -> {
-                            OtherEventsSettingsScreen(
-                                windowWidthSizeClass = windowWidthSizeClass,
-                                viewModel = notificationViewModel,
-                                showBackButton = false,
-                                onNavigateBack = {}
-                            )
-                        }
-
-                        SettingsTab.ABOUT -> {
-                            AboutScreen(
-                                windowWidthSizeClass = windowWidthSizeClass,
-                                showBackButton = false,
-                                onNavigateBack = {},
-                                onNavigateToPrivacyPolicy = {
-                                    activeTab = SettingsTab.PRIVACY_POLICY
-                                }
-                            )
-                        }
-
-                        SettingsTab.PRIVACY_POLICY -> {
-                            PrivacyPolicyScreen(
-                                windowWidthSizeClass = windowWidthSizeClass,
-                                showBackButton = false,
-                                onNavigateBack = {
-                                    activeTab = SettingsTab.ABOUT
-                                }
-                            )
-                        }
                     }
                 }
-            }
+            )
         }
     }
 }

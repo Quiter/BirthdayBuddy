@@ -16,6 +16,7 @@ import androidx.compose.material3.ScaffoldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.contentColorFor
+import androidx.compose.material3.windowsizeclass.WindowHeightSizeClass
 import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.compositionLocalOf
@@ -32,7 +33,14 @@ import com.heckmannch.birthdaybuddy.ui.theme.BirthdayBuddyTheme
  * Verhindert Parameter-Drilling in tieferen UI-Hierarchien.
  */
 val LocalWindowWidthSizeClass = compositionLocalOf<WindowWidthSizeClass> {
-    error("Keine WindowWidthSizeClass bereitgestellt. Bitte umschließe deine App mit einer CompositionLocalProvider.")
+    error("Keine WindowWidthSizeClass bereitgestellt.")
+}
+
+/**
+ * CompositionLocal zur Bereitstellung der aktuellen Fensterhöhenklasse.
+ */
+val LocalWindowHeightSizeClass = compositionLocalOf<WindowHeightSizeClass> {
+    error("Keine WindowHeightSizeClass bereitgestellt.")
 }
 
 /**

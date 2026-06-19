@@ -43,6 +43,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.heckmannch.birthdaybuddy.data.repository.NotificationRepository
+import com.heckmannch.birthdaybuddy.ui.components.LocalWindowHeightSizeClass
 import com.heckmannch.birthdaybuddy.ui.components.LocalWindowWidthSizeClass
 import com.heckmannch.birthdaybuddy.ui.screens.home.HomeScreen
 import com.heckmannch.birthdaybuddy.ui.screens.onboarding.OnboardingScreen
@@ -67,25 +68,24 @@ import com.heckmannch.birthdaybuddy.viewmodel.ThemeViewModel
 import com.heckmannch.birthdaybuddy.widget.BirthdayWidgetWorker
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
+import kotlinx.serialization.Serializable
 import javax.inject.Inject
 
 /**
  * Navigation Routes
  */
-private object Routes {
-    const val HOME = "home"
-    const val ONBOARDING = "onboarding"
-    const val SETTINGS = "settings"
-    const val LABEL_SETTINGS = "label_settings"
-    const val NOTIFICATION_SETTINGS = "notification_settings"
-    const val OTHER_EVENTS_SETTINGS = "other_events_settings"
-    const val CALENDAR_SETTINGS = "calendar_settings"
-    const val BACKUP_SETTINGS = "backup_settings"
-    const val THEME_SETTINGS = "theme_settings"
-    const val SYNC_SETTINGS = "sync_settings"
-    const val ABOUT = "about"
-    const val PRIVACY_POLICY = "privacy_policy"
-}
+@Serializable object Home
+@Serializable object Onboarding
+@Serializable object Settings
+@Serializable object LabelSettings
+@Serializable object NotificationSettings
+@Serializable object OtherEventsSettings
+@Serializable object CalendarSettings
+@Serializable object BackupSettings
+@Serializable object ThemeSettings
+@Serializable object SyncSettings
+@Serializable object About
+@Serializable object PrivacyPolicy
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
@@ -134,7 +134,10 @@ class MainActivity : ComponentActivity() {
                 themeAmoled = appSettings.themeAmoled,
                 themeAccent = appSettings.themeAccent
             ) {
-                CompositionLocalProvider(LocalWindowWidthSizeClass provides windowSizeClass.widthSizeClass) {
+                CompositionLocalProvider(
+                    LocalWindowWidthSizeClass provides windowSizeClass.widthSizeClass,
+                    LocalWindowHeightSizeClass provides windowSizeClass.heightSizeClass
+                ) {
                     val navController = rememberNavController()
                     val currentIntent by activityIntent
 
@@ -219,12 +222,12 @@ class MainActivity : ComponentActivity() {
                 intent.removeExtra("SCROLL_TO_TOP")
             }
             if (intent?.getBooleanExtra("NAVIGATE_TO_NOTIFICATIONS", false) == true) {
-                navController.navigate(Routes.NOTIFICATION_SETTINGS)
+                navController.navigate(NotificationSettings)
                 intent.removeExtra("NAVIGATE_TO_NOTIFICATIONS")
             }
             if (intent?.getBooleanExtra("OPEN_SEARCH", false) == true) {
-                navController.navigate(Routes.HOME) {
-                    popUpTo(Routes.HOME) { inclusive = true }
+                navController.navigate(Home) {
+                    popUpTo(Home) { inclusive = true }
                 }
                 homeViewModel.triggerSearchFocus()
                 intent.removeExtra("OPEN_SEARCH")
@@ -251,63 +254,63 @@ class MainActivity : ComponentActivity() {
 
         NavHost(
             navController = navController,
-            startDestination = if (onboardingCompleted == true) Routes.HOME else Routes.ONBOARDING,
+            startDestination = if (onboardingCompleted == true) Home else Onboarding,
             enterTransition = { sharedAxisZIn() },
             exitTransition = { sharedAxisZOut() },
             popEnterTransition = { sharedAxisZIn() },
             popExitTransition = { sharedAxisZOut() },
         ) {
-            composable(Routes.ONBOARDING) {
+            composable<Onboarding> {
                 OnboardingScreen(
                     viewModel = onboardingViewModel,
                     windowWidthSizeClass = windowWidthSizeClass
                 ) {
-                    navController.navigate(Routes.HOME) {
-                        popUpTo(Routes.ONBOARDING) { inclusive = true }
+                    navController.navigate(Home) {
+                        popUpTo(Onboarding) { inclusive = true }
                     }
                 }
             }
-            composable(Routes.HOME) {
+            composable<Home> {
                 HomeScreen(
                     viewModel = homeViewModel,
                     windowWidthSizeClass = windowWidthSizeClass
                 ) {
-                    navController.navigate(Routes.SETTINGS)
+                    navController.navigate(Settings)
                 }
             }
-            composable(Routes.SETTINGS) {
+            composable<Settings> {
                 SettingsScreen(
                     windowWidthSizeClass = windowWidthSizeClass,
                     homeViewModel = homeViewModel,
                     onNavigateToLabels = {
-                        navController.navigate(Routes.LABEL_SETTINGS)
+                        navController.navigate(LabelSettings)
                     },
                     onNavigateToNotifications = {
-                        navController.navigate(Routes.NOTIFICATION_SETTINGS)
+                        navController.navigate(NotificationSettings)
                     },
                     onNavigateToCalendar = {
-                        navController.navigate(Routes.CALENDAR_SETTINGS)
+                        navController.navigate(CalendarSettings)
                     },
                     onNavigateToBackup = {
-                        navController.navigate(Routes.BACKUP_SETTINGS)
+                        navController.navigate(BackupSettings)
                     },
                     onNavigateToTheme = {
-                        navController.navigate(Routes.THEME_SETTINGS)
+                        navController.navigate(ThemeSettings)
                     },
                     onNavigateToSync = {
-                        navController.navigate(Routes.SYNC_SETTINGS)
+                        navController.navigate(SyncSettings)
                     },
                     onNavigateToAbout = {
-                        navController.navigate(Routes.ABOUT)
+                        navController.navigate(About)
                     },
                     onNavigateToOtherEvents = {
-                        navController.navigate(Routes.OTHER_EVENTS_SETTINGS)
+                        navController.navigate(OtherEventsSettings)
                     },
                 ) {
                     navController.popBackStack()
                 }
             }
-            composable(Routes.LABEL_SETTINGS) {
+            composable<LabelSettings> {
                 val labelViewModel: LabelViewModel = hiltViewModel()
                 LabelSettingsScreen(
                     windowWidthSizeClass = windowWidthSizeClass,
@@ -316,7 +319,7 @@ class MainActivity : ComponentActivity() {
                     navController.popBackStack()
                 }
             }
-            composable(Routes.NOTIFICATION_SETTINGS) {
+            composable<NotificationSettings> {
                 val notificationViewModel: NotificationViewModel = hiltViewModel()
                 NotificationSettingsScreen(
                     windowWidthSizeClass = windowWidthSizeClass,
@@ -325,7 +328,7 @@ class MainActivity : ComponentActivity() {
                     navController.popBackStack()
                 }
             }
-            composable(Routes.OTHER_EVENTS_SETTINGS) {
+            composable<OtherEventsSettings> {
                 val notificationViewModel: NotificationViewModel = hiltViewModel()
                 OtherEventsSettingsScreen(
                     windowWidthSizeClass = windowWidthSizeClass,
@@ -334,7 +337,7 @@ class MainActivity : ComponentActivity() {
                     navController.popBackStack()
                 }
             }
-            composable(Routes.CALENDAR_SETTINGS) {
+            composable<CalendarSettings> {
                 val calendarViewModel: CalendarViewModel = hiltViewModel()
                 CalendarSettingsScreen(
                     windowWidthSizeClass = windowWidthSizeClass,
@@ -343,7 +346,7 @@ class MainActivity : ComponentActivity() {
                     navController.popBackStack()
                 }
             }
-            composable(Routes.BACKUP_SETTINGS) {
+            composable<BackupSettings> {
                 val backupViewModel: BackupViewModel = hiltViewModel()
                 BackupScreen(
                     windowWidthSizeClass = windowWidthSizeClass,
@@ -352,7 +355,7 @@ class MainActivity : ComponentActivity() {
                     navController.popBackStack()
                 }
             }
-            composable(Routes.THEME_SETTINGS) {
+            composable<ThemeSettings> {
                 val themeViewModel: ThemeViewModel = hiltViewModel()
                 ThemeSettingsScreen(
                     windowWidthSizeClass = windowWidthSizeClass,
@@ -361,7 +364,7 @@ class MainActivity : ComponentActivity() {
                     navController.popBackStack()
                 }
             }
-            composable(Routes.SYNC_SETTINGS) {
+            composable<SyncSettings> {
                 SyncSettingsScreen(
                     windowWidthSizeClass = windowWidthSizeClass,
                     viewModel = homeViewModel
@@ -369,18 +372,18 @@ class MainActivity : ComponentActivity() {
                     navController.popBackStack()
                 }
             }
-            composable(Routes.ABOUT) {
+            composable<About> {
                 AboutScreen(
                     windowWidthSizeClass = windowWidthSizeClass,
                     onNavigateBack = {
                         navController.popBackStack()
                     },
                     onNavigateToPrivacyPolicy = {
-                        navController.navigate(Routes.PRIVACY_POLICY)
+                        navController.navigate(PrivacyPolicy)
                     },
                 )
             }
-            composable(Routes.PRIVACY_POLICY) {
+            composable<PrivacyPolicy> {
                 PrivacyPolicyScreen(windowWidthSizeClass = windowWidthSizeClass) {
                     navController.popBackStack()
                 }

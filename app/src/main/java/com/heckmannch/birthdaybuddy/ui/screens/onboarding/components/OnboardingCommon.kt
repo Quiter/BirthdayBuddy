@@ -22,6 +22,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.windowsizeclass.WindowHeightSizeClass
 import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -30,6 +31,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.heckmannch.birthdaybuddy.ui.components.LocalWindowHeightSizeClass
 
 /**
  * Ein einheitliches, adaptives Onboarding-Gerüst, das perfekt zentrierte,
@@ -45,14 +47,22 @@ fun OnboardingPageTemplate(
     settingsCard: @Composable (ColumnScope.() -> Unit)? = null,
     actionButton: @Composable (BoxScope.() -> Unit)? = null
 ) {
+    val windowHeightSizeClass = LocalWindowHeightSizeClass.current
+    val isShortScreen = windowHeightSizeClass == WindowHeightSizeClass.Compact
+
     if (windowWidthSizeClass == WindowWidthSizeClass.Compact) {
         Column(
             modifier = modifier
                 .fillMaxSize()
-                .padding(start = 32.dp, end = 32.dp, top = 32.dp, bottom = 24.dp),
+                .padding(
+                    start = 32.dp,
+                    end = 32.dp,
+                    top = if (isShortScreen) 16.dp else 32.dp,
+                    bottom = if (isShortScreen) 16.dp else 24.dp
+                ),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            // Oberer Bereich (Ausrichtung von oben, um Sprünge bei Höhenänderung zu verhindern)
+            // Oberer Bereich
             Column(
                 modifier = Modifier
                     .weight(1f)
@@ -63,24 +73,26 @@ fun OnboardingPageTemplate(
             ) {
                 // Fester Container für das Icon/Illustration
                 Box(
-                    modifier = Modifier.height(160.dp).fillMaxWidth(),
+                    modifier = Modifier
+                        .height(if (isShortScreen) 120.dp else 160.dp)
+                        .fillMaxWidth(),
                     contentAlignment = Alignment.Center
                 ) {
                     illustration(Modifier)
                 }
 
-                Spacer(modifier = Modifier.height(32.dp))
+                Spacer(modifier = Modifier.height(if (isShortScreen) 16.dp else 32.dp))
 
                 // Titel
                 Text(
                     text = title,
-                    style = MaterialTheme.typography.headlineMedium,
+                    style = if (isShortScreen) MaterialTheme.typography.titleLarge else MaterialTheme.typography.headlineMedium,
                     fontWeight = FontWeight.Bold,
                     textAlign = TextAlign.Center,
                     modifier = Modifier.fillMaxWidth()
                 )
 
-                Spacer(modifier = Modifier.height(32.dp))
+                Spacer(modifier = Modifier.height(if (isShortScreen) 16.dp else 32.dp))
 
                 // Beschreibungstext
                 Text(
@@ -92,18 +104,18 @@ fun OnboardingPageTemplate(
                 )
 
                 if (settingsCard != null) {
-                    Spacer(modifier = Modifier.height(24.dp))
+                    Spacer(modifier = Modifier.height(if (isShortScreen) 16.dp else 24.dp))
                     // Einstellungen (Switches/Zusammenfassungen)
                     settingsCard()
                 }
             }
 
-            // Feste untere Sektion für den Button (verhindert vertikales Springen des Inhalts)
-            Spacer(modifier = Modifier.height(16.dp))
+            // Feste untere Sektion für den Button
+            Spacer(modifier = Modifier.height(if (isShortScreen) 8.dp else 16.dp))
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(56.dp),
+                    .height(if (isShortScreen) 48.dp else 56.dp),
                 contentAlignment = Alignment.Center
             ) {
                 if (actionButton != null) {
@@ -116,7 +128,10 @@ fun OnboardingPageTemplate(
         Row(
             modifier = modifier
                 .fillMaxSize()
-                .padding(horizontal = 48.dp, vertical = 32.dp),
+                .padding(
+                    horizontal = 48.dp,
+                    vertical = if (isShortScreen) 16.dp else 32.dp
+                ),
             horizontalArrangement = Arrangement.spacedBy(48.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
@@ -141,11 +156,11 @@ fun OnboardingPageTemplate(
             ) {
                 Text(
                     text = title,
-                    style = MaterialTheme.typography.headlineLarge,
+                    style = if (isShortScreen) MaterialTheme.typography.headlineMedium else MaterialTheme.typography.headlineLarge,
                     fontWeight = FontWeight.Bold,
                     textAlign = TextAlign.Start
                 )
-                Spacer(modifier = Modifier.height(16.dp))
+                Spacer(modifier = Modifier.height(if (isShortScreen) 8.dp else 16.dp))
                 Text(
                     text = description,
                     style = MaterialTheme.typography.bodyLarge,
@@ -153,11 +168,11 @@ fun OnboardingPageTemplate(
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
                 if (settingsCard != null) {
-                    Spacer(modifier = Modifier.height(24.dp))
+                    Spacer(modifier = Modifier.height(if (isShortScreen) 16.dp else 24.dp))
                     settingsCard()
                 }
                 if (actionButton != null) {
-                    Spacer(modifier = Modifier.height(24.dp))
+                    Spacer(modifier = Modifier.height(if (isShortScreen) 16.dp else 24.dp))
                     Box(
                         modifier = Modifier.fillMaxWidth(),
                         contentAlignment = Alignment.CenterStart
