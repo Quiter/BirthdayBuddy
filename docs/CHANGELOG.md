@@ -463,6 +463,10 @@
     - **derivedStateOf-Optimierung:** Da es sich um Compose-States handelt, trackt der `derivedStateOf`-Block diese bei Leseoperationen automatisch. Die Entfernung der Keys verhindert, dass das gesamte State-Objekt bei jeder Pixel-Änderung während des Drag-Gesten-Verlaufs neu instanziiert wird, was GC-Overhead und Recompositions minimiert.
     - **derivedStateOf-Verpackung entfernt:** Vereinfachung von `isNeeded` zu einem Standard-`remember` ohne das ungenutzte `derivedStateOf` Overhead.
 
+194. **Behebung des Scroll-Einfrier-Bugs (Bug Fix):**
+    - **Gestik-Sicherheit in der Liste:** Entfernung der automatischen Einklapp-Logik beim Scrollen (`isListDragged`) in [BirthdayList.kt](file:///c:/Users/chris/AndroidStudioProjects/BirthdayBuddy/app/src/main/java/com/heckmannch/birthdaybuddy/ui/screens/home/components/list/BirthdayList.kt). Wenn eine Kontaktkarte (z.B. mit Geschenkideen) während eines Drag-Vorgangs einklappte und die Liste dadurch kleiner als die Bildschirmhöhe wurde, geriet `LazyListState` in einen inkonsistenten Zustand (`isScrollInProgress` blieb dauerhaft auf `true` hängen). Dies fror jegliche Scroll-Gesten dauerhaft ein, selbst über Tab-Wechsel hinweg. Die Karten bleiben nun beim Scrollen geöffnet und können manuell eingeklappt werden.
+
+
 
 
 
