@@ -6,6 +6,8 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.calculateEndPadding
+import androidx.compose.foundation.layout.calculateStartPadding
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -42,6 +44,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
@@ -104,10 +107,12 @@ private fun LabelSettingsContent(
                 scrollBehavior = scrollBehavior
             )
         }
-    ) {
+    ) { paddingValues ->
         if (labels.isEmpty()) {
             Box(
-                modifier = Modifier.fillMaxSize(),
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(paddingValues),
                 contentAlignment = Alignment.Center
             ) {
                 Text(
@@ -116,10 +121,16 @@ private fun LabelSettingsContent(
                 )
             }
         } else {
+            val layoutDirection = LocalLayoutDirection.current
             LazyVerticalGrid(
                 columns = GridCells.Adaptive(minSize = 340.dp),
                 modifier = Modifier.fillMaxSize(),
-                contentPadding = PaddingValues(16.dp),
+                contentPadding = PaddingValues(
+                    start = paddingValues.calculateStartPadding(layoutDirection) + 16.dp,
+                    top = paddingValues.calculateTopPadding() + 16.dp,
+                    end = paddingValues.calculateEndPadding(layoutDirection) + 16.dp,
+                    bottom = paddingValues.calculateBottomPadding() + 16.dp
+                ),
                 horizontalArrangement = Arrangement.spacedBy(16.dp),
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {

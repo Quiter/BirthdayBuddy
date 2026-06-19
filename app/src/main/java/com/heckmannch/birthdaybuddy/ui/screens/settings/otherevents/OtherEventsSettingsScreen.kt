@@ -2,6 +2,7 @@ package com.heckmannch.birthdaybuddy.ui.screens.settings.otherevents
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -97,11 +98,15 @@ private fun OtherEventsSettingsContent(
                 scrollBehavior = scrollBehavior,
             )
         },
-    ) {
+    ) { paddingValues ->
         LazyColumn(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(horizontal = 16.dp, vertical = 8.dp)
+            modifier = Modifier.fillMaxSize(),
+            contentPadding = PaddingValues(
+                start = 16.dp,
+                top = paddingValues.calculateTopPadding() + 8.dp,
+                end = 16.dp,
+                bottom = paddingValues.calculateBottomPadding() + 8.dp
+            )
         ) {
             item {
                 InfoCard()

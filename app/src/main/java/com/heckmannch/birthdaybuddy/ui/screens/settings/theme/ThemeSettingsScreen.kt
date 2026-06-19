@@ -95,9 +95,10 @@ fun ThemeSettingsScreen(
                 scrollBehavior = scrollBehavior
             )
         }
-    ) {
+    ) { paddingValues ->
         LazyColumn(
-            modifier = Modifier.fillMaxSize()
+            modifier = Modifier.fillMaxSize(),
+            contentPadding = paddingValues
         ) {
             // --- Theme Mode ---
             item {

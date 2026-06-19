@@ -72,12 +72,17 @@ fun BackupContent(
                 scrollBehavior = scrollBehavior
             )
         }
-    ) {
+    ) { paddingValues ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .verticalScroll(rememberScrollState())
-                .padding(16.dp),
+                .padding(
+                    start = 16.dp,
+                    top = paddingValues.calculateTopPadding() + 16.dp,
+                    end = 16.dp,
+                    bottom = paddingValues.calculateBottomPadding() + 16.dp
+                ),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             Text(

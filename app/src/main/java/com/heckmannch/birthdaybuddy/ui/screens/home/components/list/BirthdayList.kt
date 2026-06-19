@@ -20,9 +20,12 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -87,6 +90,7 @@ fun BirthdayList(
     selectedContactId: String? = null,
     onContactSelected: ((ContactUiModel) -> Unit)? = null,
     onInteraction: () -> Unit = {},
+    contentPadding: PaddingValues = PaddingValues(0.dp),
 ) {
     val context = LocalContext.current
 
@@ -106,11 +110,16 @@ fun BirthdayList(
         ) == PackageManager.PERMISSION_GRANTED
     }
 
+    val navBarPadding = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
+
     // WICHTIG: Wenn contacts null ist, zeigen wir einen Shimmer-Loader
     if (contacts == null) {
         LazyColumn(
             modifier = modifier.fillMaxSize(),
-            contentPadding = PaddingValues(bottom = 80.dp),
+            contentPadding = PaddingValues(
+                top = contentPadding.calculateTopPadding(),
+                bottom = 80.dp + navBarPadding
+            ),
             userScrollEnabled = false,
         ) {
             items(10) {
@@ -150,7 +159,10 @@ fun BirthdayList(
         modifier = modifier
             .fillMaxSize()
             .testTag("birthday_list"),
-        contentPadding = PaddingValues(bottom = 80.dp),
+        contentPadding = PaddingValues(
+            top = contentPadding.calculateTopPadding(),
+            bottom = 80.dp + navBarPadding
+        ),
     ) {
         if (selectedLabel == HomeViewModel.LABEL_ANNIVERSARY && coupleSuggestion != null) {
             item(key = "couple_suggestion") {

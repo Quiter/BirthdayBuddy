@@ -249,14 +249,16 @@ private fun NotificationSettingsContent(
                 }
             }
         }
-    ) {
+    ) { paddingValues ->
         if (!hasSystemPermission) {
             PermissionRequestState(
-                onRequestPermission = onRequestPermission
+                onRequestPermission = onRequestPermission,
+                modifier = Modifier.padding(paddingValues)
             )
         } else {
             LazyColumn(
-                modifier = Modifier.fillMaxSize()
+                modifier = Modifier.fillMaxSize(),
+                contentPadding = paddingValues
             ) {
                 item {
                     ListItem(

@@ -277,7 +277,7 @@ private fun HomeContent(
                 )
             }
         }
-    ) { _ ->
+    ) { paddingValues ->
         PullToRefreshBox(
             isRefreshing = uiState.isSyncing,
             onRefresh = actions.onRefresh,
@@ -297,7 +297,8 @@ private fun HomeContent(
                         onInteraction = {
                             focusManager.clearFocus()
                             keyboardController?.hide()
-                        }
+                        },
+                        contentPadding = paddingValues
                     )
 
                     FastScrollbar(

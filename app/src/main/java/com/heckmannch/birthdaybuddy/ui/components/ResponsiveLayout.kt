@@ -4,21 +4,26 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.asPaddingValues
+import androidx.compose.foundation.layout.displayCutout
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.statusBars
+import androidx.compose.foundation.layout.union
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FabPosition
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.ScaffoldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.contentColorFor
 import androidx.compose.material3.windowsizeclass.WindowHeightSizeClass
 import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -46,6 +51,7 @@ val LocalWindowHeightSizeClass = compositionLocalOf<WindowHeightSizeClass> {
 /**
  * Zentriert den Inhalt auf breiten Bildschirmen (Tablets, Chromebooks),
  * um zu verhindern, dass die UI unschön in die Breite gezogen wird.
+ * Berücksichtigt Display-Aussparungen (Notches).
  */
 @Composable
 fun AdaptiveContentContainer(
@@ -62,6 +68,7 @@ fun AdaptiveContentContainer(
             }
         )
         .fillMaxWidth()
+        .padding(WindowInsets.displayCutout.asPaddingValues()) // Notch-Schutz
 
     Box(
         modifier = modifier,
@@ -75,6 +82,7 @@ fun AdaptiveContentContainer(
 
 /**
  * Ein Basis-Gerüst für alle Screens, das Adaptive Design unterstützt.
+ * Optimiert für Edge-to-Edge (Android 15+).
  */
 @Composable
 fun AppResponsiveScaffold(
@@ -87,7 +95,7 @@ fun AppResponsiveScaffold(
     containerColor: Color = Color.Unspecified,
     floatingActionButtonPosition: FabPosition = FabPosition.End,
     contentColor: Color = contentColorFor(if (containerColor == Color.Unspecified) MaterialTheme.colorScheme.background else containerColor),
-    contentWindowInsets: WindowInsets = ScaffoldDefaults.contentWindowInsets,
+    contentWindowInsets: WindowInsets = WindowInsets.statusBars.union(WindowInsets.navigationBars).union(WindowInsets.displayCutout),
     consumePadding: Boolean = true,
     useAdaptiveWidth: Boolean = true,
     content: @Composable (PaddingValues) -> Unit
@@ -104,21 +112,18 @@ fun AppResponsiveScaffold(
         contentWindowInsets = contentWindowInsets,
         content = { paddingValues ->
             // Die Zentrierung und das Padding für Top/BottomBar werden hier gebündelt.
-            val contentModifier = Modifier
-                .fillMaxSize()
-                .then(
-                    if (consumePadding) Modifier.padding(paddingValues) else Modifier
-                )
+            val contentModifier = Modifier.fillMaxSize()
+            
             if (useAdaptiveWidth) {
                 AdaptiveContentContainer(
                     windowWidthSizeClass = windowWidthSizeClass,
                     modifier = contentModifier
                 ) {
-                    content(if (consumePadding) PaddingValues(0.dp) else paddingValues)
+                    content(if (consumePadding) paddingValues else PaddingValues(0.dp))
                 }
             } else {
                 Box(modifier = contentModifier) {
-                    content(if (consumePadding) PaddingValues(0.dp) else paddingValues)
+                    content(if (consumePadding) paddingValues else PaddingValues(0.dp))
                 }
             }
         }
@@ -130,13 +135,18 @@ fun AppResponsiveScaffold(
 @Composable
 private fun ResponsiveScaffoldPhonePreview() {
     BirthdayBuddyTheme {
-        AppResponsiveScaffold(
-            windowWidthSizeClass = WindowWidthSizeClass.Compact,
-            topBar = {
-                TopAppBar(title = { Text("Phone Layout") })
-            }
+        CompositionLocalProvider(
+            LocalWindowWidthSizeClass provides WindowWidthSizeClass.Compact,
+            LocalWindowHeightSizeClass provides WindowHeightSizeClass.Medium
         ) {
-            PreviewContent("Compact Content")
+            AppResponsiveScaffold(
+                windowWidthSizeClass = WindowWidthSizeClass.Compact,
+                topBar = {
+                    TopAppBar(title = { Text("Phone Layout") })
+                }
+            ) {
+                PreviewContent("Compact Content")
+            }
         }
     }
 }
@@ -146,13 +156,18 @@ private fun ResponsiveScaffoldPhonePreview() {
 @Composable
 private fun ResponsiveScaffoldTabletPreview() {
     BirthdayBuddyTheme {
-        AppResponsiveScaffold(
-            windowWidthSizeClass = WindowWidthSizeClass.Medium,
-            topBar = {
-                TopAppBar(title = { Text("Tablet Layout") })
-            }
+        CompositionLocalProvider(
+            LocalWindowWidthSizeClass provides WindowWidthSizeClass.Medium,
+            LocalWindowHeightSizeClass provides WindowHeightSizeClass.Medium
         ) {
-            PreviewContent("Medium Content (Centered)")
+            AppResponsiveScaffold(
+                windowWidthSizeClass = WindowWidthSizeClass.Medium,
+                topBar = {
+                    TopAppBar(title = { Text("Tablet Layout") })
+                }
+            ) {
+                PreviewContent("Medium Content (Centered)")
+            }
         }
     }
 }
@@ -162,13 +177,18 @@ private fun ResponsiveScaffoldTabletPreview() {
 @Composable
 private fun ResponsiveScaffoldDesktopPreview() {
     BirthdayBuddyTheme {
-        AppResponsiveScaffold(
-            windowWidthSizeClass = WindowWidthSizeClass.Expanded,
-            topBar = {
-                TopAppBar(title = { Text("Desktop Layout (Centered)") })
-            }
+        CompositionLocalProvider(
+            LocalWindowWidthSizeClass provides WindowWidthSizeClass.Expanded,
+            LocalWindowHeightSizeClass provides WindowHeightSizeClass.Medium
         ) {
-            PreviewContent("Expanded Content (Max 840dp)")
+            AppResponsiveScaffold(
+                windowWidthSizeClass = WindowWidthSizeClass.Expanded,
+                topBar = {
+                    TopAppBar(title = { Text("Desktop Layout (Centered)") })
+                }
+            ) {
+                PreviewContent("Expanded Content (Max 840dp)")
+            }
         }
     }
 }
@@ -178,14 +198,19 @@ private fun ResponsiveScaffoldDesktopPreview() {
 @Composable
 private fun ResponsiveScaffoldDesktopFullWidthPreview() {
     BirthdayBuddyTheme {
-        AppResponsiveScaffold(
-            windowWidthSizeClass = WindowWidthSizeClass.Expanded,
-            useAdaptiveWidth = false,
-            topBar = {
-                TopAppBar(title = { Text("Desktop Layout (Full Width)") })
-            }
+        CompositionLocalProvider(
+            LocalWindowWidthSizeClass provides WindowWidthSizeClass.Expanded,
+            LocalWindowHeightSizeClass provides WindowHeightSizeClass.Medium
         ) {
-            PreviewContent("Expanded Content (Full Width - Bleed)")
+            AppResponsiveScaffold(
+                windowWidthSizeClass = WindowWidthSizeClass.Expanded,
+                useAdaptiveWidth = false,
+                topBar = {
+                    TopAppBar(title = { Text("Desktop Layout (Full Width)") })
+                }
+            ) {
+                PreviewContent("Expanded Content (Full Width - Bleed)")
+            }
         }
     }
 }
@@ -206,4 +231,3 @@ private fun PreviewContent(text: String) {
         )
     }
 }
-
