@@ -42,7 +42,6 @@ import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.imageLoader
@@ -58,6 +57,7 @@ import com.heckmannch.birthdaybuddy.ui.screens.home.components.list.BirthdayQuot
 import com.heckmannch.birthdaybuddy.ui.screens.home.components.list.FastScrollbar
 import com.heckmannch.birthdaybuddy.ui.screens.home.components.topbar.HomeTopBar
 import com.heckmannch.birthdaybuddy.ui.theme.BirthdayBuddyTheme
+import com.heckmannch.birthdaybuddy.ui.theme.SpacingSmall
 import com.heckmannch.birthdaybuddy.ui.util.ContactActions
 import com.heckmannch.birthdaybuddy.viewmodel.HomeViewModel
 import kotlinx.coroutines.delay
@@ -149,7 +149,12 @@ fun HomeScreen(
     }
 
     // --- Image Prefetching (UI Optimization) ---
-    LaunchedEffect(uiState.contacts) {
+    // Optimierung: Nur triggern, wenn sich die ersten IDs tatsächlich ändern, um redundantem
+    // Prefetching während des Tippens in der Suche vorzubeugen.
+    val firstContactIds = remember(uiState.contacts) {
+        uiState.contacts?.take(20)?.map { it.id } ?: emptyList()
+    }
+    LaunchedEffect(firstContactIds) {
         val contacts = uiState.contacts
         if (!contacts.isNullOrEmpty()) {
             contacts.take(20)
@@ -158,6 +163,7 @@ fun HomeScreen(
                     val request = ImageRequest.Builder(context)
                         .data(uri)
                         .size(150)
+                        .memoryCacheKey(uri) // Konsistente Keys nutzen
                         .build()
                     context.imageLoader.enqueue(request)
                 }
@@ -273,7 +279,7 @@ private fun HomeContent(
                         focusManager.clearFocus()
                         homeState.scrollToTop()
                     },
-                    modifier = Modifier.padding(8.dp)
+                    modifier = Modifier.padding(SpacingSmall)
                 )
             }
         }

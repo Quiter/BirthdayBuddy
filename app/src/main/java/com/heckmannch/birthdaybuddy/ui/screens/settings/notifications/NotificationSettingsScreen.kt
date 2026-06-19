@@ -64,7 +64,12 @@ import com.heckmannch.birthdaybuddy.data.local.NotificationRule
 import com.heckmannch.birthdaybuddy.ui.components.AppResponsiveScaffold
 import com.heckmannch.birthdaybuddy.ui.screens.settings.notifications.components.EditRuleDialog
 import com.heckmannch.birthdaybuddy.ui.screens.settings.notifications.components.NotificationRuleItem
+import com.heckmannch.birthdaybuddy.ui.theme.AlphaSurfaceContainerHigh
 import com.heckmannch.birthdaybuddy.ui.theme.BirthdayBuddyTheme
+import com.heckmannch.birthdaybuddy.ui.theme.SpacingExtraLarge
+import com.heckmannch.birthdaybuddy.ui.theme.SpacingLarge
+import com.heckmannch.birthdaybuddy.ui.theme.SpacingNormal
+import com.heckmannch.birthdaybuddy.ui.theme.SpacingSmall
 import com.heckmannch.birthdaybuddy.viewmodel.NotificationViewModel
 
 @Composable
@@ -306,7 +311,7 @@ private fun NotificationSettingsContent(
                             Box(
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .padding(32.dp),
+                                    .padding(SpacingExtraLarge),
                                 contentAlignment = Alignment.Center
                             ) {
                                 Text(
@@ -322,7 +327,7 @@ private fun NotificationSettingsContent(
                                 stringResource(R.string.notifications_planned_header),
                                 style = MaterialTheme.typography.labelLarge,
                                 color = MaterialTheme.colorScheme.primary,
-                                modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
+                                modifier = Modifier.padding(horizontal = SpacingNormal, vertical = SpacingSmall)
                             )
                         }
                         items(rules, key = { it.id }) { rule ->
@@ -368,7 +373,7 @@ private fun PermissionRequestState(
     Column(
         modifier = modifier
             .fillMaxSize()
-            .padding(32.dp),
+            .padding(SpacingExtraLarge),
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
@@ -376,15 +381,15 @@ private fun PermissionRequestState(
             imageVector = Icons.Default.NotificationsOff,
             contentDescription = null,
             modifier = Modifier.size(64.dp),
-            tint = MaterialTheme.colorScheme.primary.copy(alpha = 0.6f),
+            tint = MaterialTheme.colorScheme.primary.copy(alpha = AlphaSurfaceContainerHigh),
         )
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(SpacingNormal))
         Text(
             text = stringResource(R.string.notifications_permission_missing_desc),
             textAlign = TextAlign.Center,
             style = MaterialTheme.typography.bodyLarge,
         )
-        Spacer(modifier = Modifier.height(24.dp))
+        Spacer(modifier = Modifier.height(SpacingLarge))
         Button(onClick = onRequestPermission) {
             Text(stringResource(R.string.notifications_permission_btn))
         }

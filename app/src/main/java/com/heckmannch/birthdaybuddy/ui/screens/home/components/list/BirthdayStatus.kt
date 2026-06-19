@@ -22,7 +22,12 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.heckmannch.birthdaybuddy.R
+import com.heckmannch.birthdaybuddy.ui.theme.AlphaEmphasisMedium
 import com.heckmannch.birthdaybuddy.ui.theme.BirthdayBuddyTheme
+import com.heckmannch.birthdaybuddy.ui.theme.SpacingExtraSmall
+import com.heckmannch.birthdaybuddy.ui.theme.SpacingMedium
+import com.heckmannch.birthdaybuddy.ui.theme.SpacingNormal
+import com.heckmannch.birthdaybuddy.ui.theme.SpacingSmall
 
 @Composable
 fun BirthdayStatus(
@@ -34,7 +39,7 @@ fun BirthdayStatus(
     if (daysUntilNext == Long.MAX_VALUE) {
         IconButton(
             onClick = onEditBirthday,
-            modifier = Modifier.padding(end = 12.dp)
+            modifier = Modifier.padding(end = SpacingMedium)
         ) {
             Icon(
                 imageVector = Icons.Default.Add,
@@ -46,7 +51,7 @@ fun BirthdayStatus(
     } else {
         Column(
             horizontalAlignment = Alignment.End,
-            modifier = Modifier.padding(end = 8.dp)
+            modifier = Modifier.padding(end = SpacingSmall)
         ) {
             if (nextAge != null) {
                 Text(
@@ -62,13 +67,13 @@ fun BirthdayStatus(
                     Icon(
                         imageVector = Icons.Default.Cake,
                         contentDescription = null,
-                        tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = AlphaEmphasisMedium),
                         modifier = Modifier.size(16.dp)
                     )
-                    Spacer(modifier = Modifier.width(4.dp))
+                    Spacer(modifier = Modifier.width(SpacingExtraSmall))
                     Text(
                         text = stringResource(R.string.item_today),
-                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
+                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = AlphaEmphasisMedium),
                         style = MaterialTheme.typography.bodyMedium
                     )
                 }
@@ -80,7 +85,7 @@ fun BirthdayStatus(
                         daysUntilNext.toInt()
                     ),
                     style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
+                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = AlphaEmphasisMedium)
                 )
             }
         }
@@ -91,9 +96,9 @@ fun BirthdayStatus(
 @Composable
 fun BirthdayStatusPreview() {
     BirthdayBuddyTheme {
-        Row(modifier = Modifier.padding(16.dp)) {
+        Row(modifier = Modifier.padding(SpacingNormal)) {
             BirthdayStatus(isToday = true, nextAge = 25, daysUntilNext = 0, onEditBirthday = {})
-            Spacer(modifier = Modifier.width(16.dp))
+            Spacer(modifier = Modifier.width(SpacingNormal))
             BirthdayStatus(isToday = false, nextAge = 30, daysUntilNext = 5, onEditBirthday = {})
         }
     }

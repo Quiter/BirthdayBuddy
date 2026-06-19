@@ -26,10 +26,14 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
 import com.heckmannch.birthdaybuddy.R
 import com.heckmannch.birthdaybuddy.ui.screens.home.HomeActions
+import com.heckmannch.birthdaybuddy.ui.theme.AlphaContainerSubtle
 import com.heckmannch.birthdaybuddy.ui.theme.BirthdayBuddyTheme
+import com.heckmannch.birthdaybuddy.ui.theme.IconSizeLarge
+import com.heckmannch.birthdaybuddy.ui.theme.IconSizeSmall
+import com.heckmannch.birthdaybuddy.ui.theme.SpacingNormal
+import com.heckmannch.birthdaybuddy.ui.theme.SpacingSmall
 
 private val PixelBlue = Color(0xFF1A73E8)
 
@@ -54,8 +58,8 @@ fun ContactActionRow(
     Row(
         modifier = modifier
             .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 8.dp),
-        horizontalArrangement = Arrangement.spacedBy(8.dp),
+            .padding(horizontal = SpacingNormal, vertical = SpacingSmall),
+        horizontalArrangement = Arrangement.spacedBy(SpacingSmall),
         verticalAlignment = Alignment.CenterVertically
     ) {
         // 1. Kontakt-Details öffnen (Immer an 1. Stelle)
@@ -127,9 +131,9 @@ private fun ActionItem(
 ) {
     FilledTonalIconButton(
         onClick = onClick,
-        modifier = Modifier.size(32.dp),
+        modifier = Modifier.size(IconSizeLarge),
         colors = IconButtonDefaults.filledTonalIconButtonColors(
-            containerColor = brandColor.copy(alpha = 0.15f),
+            containerColor = brandColor.copy(alpha = AlphaContainerSubtle),
             contentColor = brandColor
         )
     ) {
@@ -137,13 +141,13 @@ private fun ActionItem(
             Icon(
                 imageVector = icon,
                 contentDescription = label,
-                modifier = Modifier.size(18.dp)
+                modifier = Modifier.size(IconSizeSmall)
             )
         } else if (painter != null) {
             Icon(
                 painter = painter,
                 contentDescription = label,
-                modifier = Modifier.size(18.dp)
+                modifier = Modifier.size(IconSizeSmall)
             )
         }
     }

@@ -68,7 +68,15 @@ import com.heckmannch.birthdaybuddy.ui.model.ContactUiModel
 import com.heckmannch.birthdaybuddy.ui.model.CoupleSuggestionUiModel
 import com.heckmannch.birthdaybuddy.ui.model.SampleData
 import com.heckmannch.birthdaybuddy.ui.screens.home.HomeActions
+import com.heckmannch.birthdaybuddy.ui.theme.AlphaEmphasisLow
+import com.heckmannch.birthdaybuddy.ui.theme.AlphaEmphasisMedium
+import com.heckmannch.birthdaybuddy.ui.theme.AlphaSurfaceContainerHigh
 import com.heckmannch.birthdaybuddy.ui.theme.BirthdayBuddyTheme
+import com.heckmannch.birthdaybuddy.ui.theme.SpacingExtraLarge
+import com.heckmannch.birthdaybuddy.ui.theme.SpacingExtraSmall
+import com.heckmannch.birthdaybuddy.ui.theme.SpacingMedium
+import com.heckmannch.birthdaybuddy.ui.theme.SpacingNormal
+import com.heckmannch.birthdaybuddy.ui.theme.SpacingSmall
 import com.heckmannch.birthdaybuddy.viewmodel.HomeViewModel
 import kotlinx.coroutines.delay
 import kotlin.time.Duration.Companion.milliseconds
@@ -237,14 +245,14 @@ private fun BirthdayItemSkeleton() {
     Surface(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 16.dp)
-            .padding(bottom = 8.dp)
+            .padding(horizontal = SpacingNormal)
+            .padding(bottom = SpacingSmall)
             .height(72.dp),
         shape = MaterialTheme.shapes.medium,
         color = MaterialTheme.colorScheme.surfaceContainerLow.copy(alpha = alpha)
     ) {
         Row(
-            modifier = Modifier.padding(16.dp),
+            modifier = Modifier.padding(SpacingNormal),
             verticalAlignment = Alignment.CenterVertically
         ) {
             Box(
@@ -266,7 +274,7 @@ private fun BirthdayItemSkeleton() {
                             RoundedCornerShape(4.dp)
                         )
                 )
-                Spacer(modifier = Modifier.height(8.dp))
+                Spacer(modifier = Modifier.height(SpacingSmall))
                 Box(
                     modifier = Modifier
                         .width(80.dp)
@@ -289,7 +297,7 @@ private fun EmptyListState(
 ) {
     Column(
         modifier = modifier
-            .padding(32.dp),
+            .padding(SpacingExtraLarge),
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
@@ -302,7 +310,7 @@ private fun EmptyListState(
                 imageVector = Icons.Default.Face,
                 contentDescription = null,
                 modifier = Modifier.size(64.dp),
-                tint = MaterialTheme.colorScheme.primary.copy(alpha = 0.6f),
+                tint = MaterialTheme.colorScheme.primary.copy(alpha = AlphaSurfaceContainerHigh),
             )
         }
         Spacer(modifier = Modifier.height(16.dp))
@@ -369,17 +377,17 @@ fun CoupleSuggestionBanner(
     Card(
         modifier = modifier
             .fillMaxWidth()
-            .padding(horizontal = 16.dp)
-            .padding(bottom = 12.dp, top = 8.dp),
+            .padding(horizontal = SpacingNormal)
+            .padding(bottom = SpacingMedium, top = SpacingSmall),
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.4f)
         ),
         border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.2f)),
-        shape = RoundedCornerShape(16.dp)
+        shape = RoundedCornerShape(SpacingNormal)
     ) {
         Row(
-            modifier = Modifier.padding(16.dp),
-            horizontalArrangement = Arrangement.spacedBy(16.dp),
+            modifier = Modifier.padding(SpacingNormal),
+            horizontalArrangement = Arrangement.spacedBy(SpacingNormal),
             verticalAlignment = Alignment.CenterVertically
         ) {
             ContactImage(
@@ -397,7 +405,7 @@ fun CoupleSuggestionBanner(
                     style = MaterialTheme.typography.titleMedium,
                     color = MaterialTheme.colorScheme.onPrimaryContainer
                 )
-                Spacer(modifier = Modifier.height(4.dp))
+                Spacer(modifier = Modifier.height(SpacingExtraSmall))
                 Text(
                     text = stringResource(
                         R.string.couple_suggestion_msg,
@@ -405,11 +413,11 @@ fun CoupleSuggestionBanner(
                         suggestion.secondName
                     ),
                     style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.8f)
+                    color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = AlphaEmphasisMedium)
                 )
-                Spacer(modifier = Modifier.height(12.dp))
+                Spacer(modifier = Modifier.height(SpacingMedium))
                 Row(
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    horizontalArrangement = Arrangement.spacedBy(SpacingSmall)
                 ) {
                     Button(
                         onClick = {
@@ -434,7 +442,7 @@ fun CoupleSuggestionBanner(
                         },
                         border = BorderStroke(
                             1.dp,
-                            MaterialTheme.colorScheme.primary.copy(alpha = 0.5f)
+                            MaterialTheme.colorScheme.primary.copy(alpha = AlphaEmphasisLow)
                         )
                     ) {
                         Text(

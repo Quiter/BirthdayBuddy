@@ -50,7 +50,14 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.heckmannch.birthdaybuddy.R
+import com.heckmannch.birthdaybuddy.ui.theme.AlphaContainerMuted
+import com.heckmannch.birthdaybuddy.ui.theme.AlphaEmphasisLow
+import com.heckmannch.birthdaybuddy.ui.theme.AlphaEmphasisSubtle
 import com.heckmannch.birthdaybuddy.ui.theme.BirthdayBuddyTheme
+import com.heckmannch.birthdaybuddy.ui.theme.SearchBarHeight
+import com.heckmannch.birthdaybuddy.ui.theme.SpacingExtraSmall
+import com.heckmannch.birthdaybuddy.ui.theme.SpacingNormal
+import com.heckmannch.birthdaybuddy.ui.theme.SpacingSmall
 
 @Composable
 fun CalendarPage(
@@ -75,11 +82,11 @@ fun CalendarPage(
                 modifier = Modifier.fillMaxWidth(),
                 colors = CardDefaults.cardColors(
                     containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(
-                        alpha = 0.5f
+                        alpha = AlphaEmphasisLow
                     )
                 )
             ) {
-                Column(modifier = Modifier.padding(8.dp)) {
+                Column(modifier = Modifier.padding(SpacingSmall)) {
                     ListItem(
                         headlineContent = { Text(stringResource(R.string.onboarding_calendar_enable)) },
                         trailingContent = {
@@ -106,7 +113,7 @@ fun CalendarPage(
                     onClick = onGrant,
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(56.dp)
+                        .height(SearchBarHeight)
                 ) {
                     Text(stringResource(R.string.onboarding_calendar_btn))
                 }
@@ -142,7 +149,7 @@ private fun CalendarPageIllustration(
             modifier = Modifier
                 .size(100.dp)
                 .background(
-                    color = if (enabled) MaterialTheme.colorScheme.tertiary.copy(alpha = 0.1f)
+                    color = if (enabled) MaterialTheme.colorScheme.tertiary.copy(alpha = AlphaContainerMuted)
                     else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.05f),
                     shape = CircleShape
                 )
@@ -156,7 +163,7 @@ private fun CalendarPageIllustration(
                 .graphicsLayer {
                     translationY = offsetY * density
                 },
-            shape = RoundedCornerShape(16.dp),
+            shape = RoundedCornerShape(SpacingNormal),
             colors = CardDefaults.cardColors(
                 containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.9f)
             ),
@@ -186,7 +193,7 @@ private fun CalendarPageIllustration(
                 Column(
                     modifier = Modifier
                         .fillMaxSize()
-                        .padding(8.dp),
+                        .padding(SpacingSmall),
                     verticalArrangement = Arrangement.SpaceEvenly
                 ) {
                     repeat(3) { row ->
@@ -220,7 +227,7 @@ private fun CalendarPageIllustration(
                                                 .size(6.dp)
                                                 .background(
                                                     color = MaterialTheme.colorScheme.onSurfaceVariant.copy(
-                                                        alpha = 0.3f
+                                                        alpha = AlphaEmphasisSubtle
                                                     ),
                                                     shape = CircleShape
                                                 )
@@ -241,7 +248,7 @@ private fun CalendarPageIllustration(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .height(26.dp)
-                                .padding(horizontal = 4.dp),
+                                .padding(horizontal = SpacingExtraSmall),
                             shape = RoundedCornerShape(6.dp),
                             colors = CardDefaults.cardColors(
                                 containerColor = MaterialTheme.colorScheme.tertiaryContainer.copy(alpha = 0.8f)
@@ -259,7 +266,7 @@ private fun CalendarPageIllustration(
                                     modifier = Modifier.size(12.dp),
                                     tint = MaterialTheme.colorScheme.onTertiaryContainer
                                 )
-                                Spacer(modifier = Modifier.width(4.dp))
+                                Spacer(modifier = Modifier.width(SpacingExtraSmall))
                                 Text(
                                     text = "Erika's 30. Geb.",
                                     style = MaterialTheme.typography.labelSmall,

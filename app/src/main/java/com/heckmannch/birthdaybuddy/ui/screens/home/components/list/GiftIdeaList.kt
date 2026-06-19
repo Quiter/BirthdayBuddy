@@ -38,6 +38,10 @@ import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.unit.dp
 import com.heckmannch.birthdaybuddy.R
 import com.heckmannch.birthdaybuddy.ui.model.GiftIdea
+import com.heckmannch.birthdaybuddy.ui.theme.AlphaEmphasisMedium
+import com.heckmannch.birthdaybuddy.ui.theme.IconSizeSmall
+import com.heckmannch.birthdaybuddy.ui.theme.SpacingExtraSmall
+import com.heckmannch.birthdaybuddy.ui.theme.SpacingSmall
 
 @Composable
 fun GiftIdeaList(
@@ -52,7 +56,7 @@ fun GiftIdeaList(
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(bottom = 8.dp)
+            .padding(bottom = SpacingSmall)
     ) {
         giftIdeas.forEach { idea ->
             GiftIdeaItem(
@@ -68,11 +72,11 @@ fun GiftIdeaList(
         TextButton(
             onClick = onAddNewIdea,
             modifier = Modifier
-                .padding(start = 8.dp)
+                .padding(start = SpacingSmall)
                 .testTag("add_gift_idea_button")
         ) {
-            Icon(Icons.Default.Add, contentDescription = null, modifier = Modifier.size(18.dp))
-            Spacer(modifier = Modifier.width(8.dp))
+            Icon(Icons.Default.Add, contentDescription = null, modifier = Modifier.size(IconSizeSmall))
+            Spacer(modifier = Modifier.width(SpacingSmall))
             Text(stringResource(R.string.gift_dialog_add))
         }
     }
@@ -109,7 +113,7 @@ private fun GiftIdeaItem(
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 4.dp),
+            .padding(horizontal = SpacingExtraSmall),
         verticalAlignment = Alignment.CenterVertically
     ) {
         Checkbox(
@@ -145,7 +149,7 @@ private fun GiftIdeaItem(
             singleLine = true,
             textStyle = MaterialTheme.typography.bodyMedium.copy(
                 textDecoration = if (idea.isChecked) androidx.compose.ui.text.style.TextDecoration.LineThrough else null,
-                color = if (idea.isChecked) MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f) else MaterialTheme.colorScheme.onSurface
+                color = if (idea.isChecked) MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = AlphaEmphasisMedium) else MaterialTheme.colorScheme.onSurface
             )
         )
 
@@ -153,7 +157,7 @@ private fun GiftIdeaItem(
             Icon(
                 Icons.Default.DeleteOutline,
                 contentDescription = stringResource(R.string.gift_dialog_delete),
-                tint = MaterialTheme.colorScheme.error.copy(alpha = 0.6f),
+                tint = MaterialTheme.colorScheme.error.copy(alpha = AlphaEmphasisMedium),
                 modifier = Modifier.size(20.dp)
             )
         }

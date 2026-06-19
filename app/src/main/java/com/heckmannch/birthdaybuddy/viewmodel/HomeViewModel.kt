@@ -10,6 +10,7 @@ import com.heckmannch.birthdaybuddy.ui.model.ContactUiModel
 import com.heckmannch.birthdaybuddy.ui.model.CoupleSuggestionUiModel
 import com.heckmannch.birthdaybuddy.ui.model.GiftIdea
 import com.heckmannch.birthdaybuddy.ui.model.HomeUiState
+import com.heckmannch.birthdaybuddy.util.getInitials
 import com.heckmannch.birthdaybuddy.util.mergeNames
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
@@ -58,16 +59,6 @@ class HomeViewModel @Inject constructor(
         const val LABEL_ANNIVERSARY = "special:anniversary"
         const val LABEL_NAME_DAY = "special:name_day"
         private val WHITESPACE_REGEX = "\\s+".toRegex()
-
-        /** Berechnet Initialen aus einem vollen Namen (z.B. "Max Mustermann" → "MM"). */
-        private fun String.initials(): String {
-            val parts = trim().split(WHITESPACE_REGEX).filter { it.isNotBlank() }
-            return when {
-                parts.isEmpty() -> "?"
-                parts.size == 1 -> parts.first().take(1).uppercase()
-                else -> "${parts.first().take(1)}${parts.last().take(1)}".uppercase()
-            }
-        }
     }
 
     private val _scrollToTopEvent = MutableSharedFlow<Unit>(replay = 0)
@@ -112,11 +103,46 @@ class HomeViewModel @Inject constructor(
         ignoredLabels,
     ) { rawContacts, today, keywords, label, ignoredLabels ->
         val startTime = System.currentTimeMillis()
+        val isSearching = keywords.isNotEmpty()
 
         val displayEventType = when (label) {
             LABEL_ANNIVERSARY -> "anniversary"
             LABEL_NAME_DAY -> "name_day"
             else -> "birthday"
+        }
+
+        // --- OPTIMIERUNG: Vor-Filterung der Rohdaten ---
+        // Dies reduziert die Anzahl der teuren Mapping-Vorgänge erheblich.
+        val preFilteredRaw = if (displayEventType != "anniversary") {
+            rawContacts.asSequence().filter { contact ->
+                // 1. Suche (Rohname)
+                if (isSearching && !keywords.all { keyword -> contact.fullName.contains(keyword, ignoreCase = true) }) {
+                    return@filter false
+                }
+                // 2. Label-Filter (außer Spezial-Labels)
+                if (label != null && label != LABEL_NO_BIRTHDAY && label != LABEL_NAME_DAY && !contact.labels.contains(label)) {
+                    return@filter false
+                }
+                // 3. Ignorierte Labels (nur wenn nicht gesucht wird)
+                if (!isSearching && contact.labels.any { it in ignoredLabels }) {
+                    return@filter false
+                }
+                // 4. Event-Verfügbarkeit
+                val hasEvent = if (displayEventType == "name_day") contact.nameDay != null else contact.birthday != null
+                if (!hasEvent) {
+                    // Wenn kein Event vorhanden ist:
+                    // - Bei Namenstagen/Hochzeitstagen immer ausblenden
+                    if (displayEventType != "birthday") return@filter false
+                    // - Bei Geburtstagen nur einblenden, wenn gesucht wird oder der "Ohne Datum"-Filter aktiv ist
+                    if (!isSearching && label != LABEL_NO_BIRTHDAY) return@filter false
+                } else if (label == LABEL_NO_BIRTHDAY) {
+                    // Wenn ein Geburtsdatum vorhanden ist, aber der "Ohne Datum"-Filter aktiv ist -> ausblenden
+                    return@filter false
+                }
+                true
+            }.toList()
+        } else {
+            rawContacts // Bei Hochzeitstagen brauchen wir alle Kontakte für das Pairing
         }
 
         val uiList = if (displayEventType == "anniversary") {
@@ -168,7 +194,7 @@ class HomeViewModel @Inject constructor(
             }
             mergedList
         } else {
-            rawContacts.map { mapper.toUiModelForEvent(it, today, displayEventType) }
+            preFilteredRaw.map { mapper.toUiModelForEvent(it, today, displayEventType) }
         }
 
         val result = uiList.asSequence()
@@ -179,10 +205,10 @@ class HomeViewModel @Inject constructor(
             )
             .toList()
 
-        if (uiList.size > 1000) {
+        if (rawContacts.size > 1000) {
             Log.d(
                 "HomeViewModel",
-                "Filtering ${uiList.size} contacts took ${System.currentTimeMillis() - startTime}ms"
+                "Filtering ${rawContacts.size} -> ${result.size} contacts took ${System.currentTimeMillis() - startTime}ms"
             )
         }
         result
@@ -305,11 +331,11 @@ class HomeViewModel @Inject constructor(
                 firstLookupKey = couple.firstLookupKey,
                 firstName = couple.firstName,
                 firstImageUri = couple.firstImageUri,
-                firstInitials = couple.firstName.initials(),
+                firstInitials = couple.firstName.getInitials(),
                 secondLookupKey = couple.secondLookupKey,
                 secondName = couple.secondName,
                 secondImageUri = couple.secondImageUri,
-                secondInitials = couple.secondName.initials()
+                secondInitials = couple.secondName.getInitials()
             )
         }
     }.flowOn(Dispatchers.Default)

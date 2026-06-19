@@ -37,6 +37,11 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.heckmannch.birthdaybuddy.R
 import com.heckmannch.birthdaybuddy.ui.components.ContactsIllustration
+import com.heckmannch.birthdaybuddy.ui.theme.AlphaEmphasisLow
+import com.heckmannch.birthdaybuddy.ui.theme.OnboardingIllustrationHeight
+import com.heckmannch.birthdaybuddy.ui.theme.OnboardingIllustrationHeightSmall
+import com.heckmannch.birthdaybuddy.ui.theme.SearchBarHeight
+import com.heckmannch.birthdaybuddy.ui.theme.SpacingSmall
 
 @Composable
 fun ContactsPage(
@@ -59,7 +64,7 @@ fun ContactsPage(
             ) { granted ->
                 if (granted) {
                     Box(
-                        modifier = Modifier.size(160.dp),
+                        modifier = Modifier.size(OnboardingIllustrationHeight),
                         contentAlignment = Alignment.Center
                     ) {
                         Icon(
@@ -71,7 +76,7 @@ fun ContactsPage(
                     }
                 } else {
                     ContactsIllustration(
-                        modifier = Modifier.size(140.dp)
+                        modifier = Modifier.size(OnboardingIllustrationHeightSmall)
                     )
                 }
             }
@@ -97,11 +102,11 @@ fun ContactsPage(
                     modifier = Modifier.fillMaxWidth(),
                     colors = CardDefaults.cardColors(
                         containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(
-                            alpha = 0.5f
+                            alpha = AlphaEmphasisLow
                         )
                     )
                 ) {
-                    Column(modifier = Modifier.padding(8.dp)) {
+                    Column(modifier = Modifier.padding(SpacingSmall)) {
                         ListItem(
                             headlineContent = { Text(stringResource(R.string.settings_sync_title)) },
                             trailingContent = {
@@ -129,7 +134,7 @@ fun ContactsPage(
                     onClick = onGrant,
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(56.dp)
+                        .height(SearchBarHeight)
                 ) {
                     Text(stringResource(R.string.onboarding_contacts_btn))
                 }

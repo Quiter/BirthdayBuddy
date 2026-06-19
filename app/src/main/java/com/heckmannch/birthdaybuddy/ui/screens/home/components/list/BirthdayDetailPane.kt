@@ -35,6 +35,16 @@ import com.heckmannch.birthdaybuddy.R
 import com.heckmannch.birthdaybuddy.ui.model.ContactUiModel
 import com.heckmannch.birthdaybuddy.ui.screens.home.HomeActions
 import com.heckmannch.birthdaybuddy.ui.screens.home.components.actions.ContactActionRow
+import com.heckmannch.birthdaybuddy.ui.theme.AlphaContainerSubtle
+import com.heckmannch.birthdaybuddy.ui.theme.AlphaEmphasisLow
+import com.heckmannch.birthdaybuddy.ui.theme.AlphaEmphasisMedium
+import com.heckmannch.birthdaybuddy.ui.theme.ContactImageSizeLarge
+import com.heckmannch.birthdaybuddy.ui.theme.IconSizeSmall
+import com.heckmannch.birthdaybuddy.ui.theme.SpacingExtraLarge
+import com.heckmannch.birthdaybuddy.ui.theme.SpacingLarge
+import com.heckmannch.birthdaybuddy.ui.theme.SpacingMedium
+import com.heckmannch.birthdaybuddy.ui.theme.SpacingNormal
+import com.heckmannch.birthdaybuddy.ui.theme.SpacingSmall
 
 /**
  * Ein Detail-Paneel zur Anzeige aller Informationen eines Kontakts auf Tablets.
@@ -63,7 +73,7 @@ fun BirthdayDetailPane(
     Card(
         modifier = modifier
             .fillMaxSize()
-            .padding(16.dp),
+            .padding(SpacingNormal),
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.surfaceContainerHigh
         ),
@@ -74,9 +84,9 @@ fun BirthdayDetailPane(
                 modifier = Modifier
                     .fillMaxSize()
                     .verticalScroll(rememberScrollState())
-                    .padding(24.dp),
+                    .padding(SpacingLarge),
                 horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.spacedBy(16.dp)
+                verticalArrangement = Arrangement.spacedBy(SpacingNormal)
             ) {
                 // Großes Avatar-Bild (96.dp statt 40.dp)
                 ContactImage(
@@ -86,7 +96,7 @@ fun BirthdayDetailPane(
                     secondImageUri = contact.secondImageUri,
                     secondInitials = contact.secondInitials,
                     secondFullName = contact.secondFullName,
-                    size = 96.dp
+                    size = ContactImageSizeLarge
                 )
 
                 // Name des Kontakts
@@ -118,14 +128,14 @@ fun BirthdayDetailPane(
                     Text(
                         text = contact.labels.joinToString(", "),
                         style = MaterialTheme.typography.labelMedium,
-                        color = MaterialTheme.colorScheme.primary.copy(alpha = 0.8f),
+                        color = MaterialTheme.colorScheme.primary.copy(alpha = AlphaEmphasisMedium),
                         textAlign = TextAlign.Center
                     )
                 }
 
                 HorizontalDivider(
-                    modifier = Modifier.padding(vertical = 8.dp),
-                    color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)
+                    modifier = Modifier.padding(vertical = SpacingSmall),
+                    color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = AlphaEmphasisLow)
                 )
 
                 // Aktionen (Anrufen, SMS, WhatsApp)
@@ -140,27 +150,27 @@ fun BirthdayDetailPane(
                 )
 
                 HorizontalDivider(
-                    modifier = Modifier.padding(vertical = 8.dp),
-                    color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)
+                    modifier = Modifier.padding(vertical = SpacingSmall),
+                    color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = AlphaEmphasisLow)
                 )
 
                 // Titel für Geschenkideen
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                    horizontalArrangement = Arrangement.spacedBy(SpacingMedium)
                 ) {
                     Surface(
-                        modifier = Modifier.size(32.dp),
-                        shape = RoundedCornerShape(8.dp),
-                        color = MaterialTheme.colorScheme.primary.copy(alpha = 0.15f),
+                        modifier = Modifier.size(SpacingExtraLarge),
+                        shape = RoundedCornerShape(SpacingSmall),
+                        color = MaterialTheme.colorScheme.primary.copy(alpha = AlphaContainerSubtle),
                         contentColor = MaterialTheme.colorScheme.primary
                     ) {
                         Box(contentAlignment = Alignment.Center) {
                             Icon(
                                 imageVector = Icons.Default.CardGiftcard,
                                 contentDescription = null,
-                                modifier = Modifier.size(18.dp)
+                                modifier = Modifier.size(IconSizeSmall)
                             )
                         }
                     }
@@ -199,7 +209,7 @@ fun BirthdayDetailPane(
                 onClick = onClose,
                 modifier = Modifier
                     .align(Alignment.TopEnd)
-                    .padding(8.dp)
+                    .padding(SpacingSmall)
             ) {
                 Icon(
                     imageVector = Icons.Default.Close,

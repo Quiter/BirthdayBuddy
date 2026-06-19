@@ -53,7 +53,13 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.heckmannch.birthdaybuddy.R
 import com.heckmannch.birthdaybuddy.ui.components.AppResponsiveScaffold
 import com.heckmannch.birthdaybuddy.ui.model.LabelManagementModel
+import com.heckmannch.birthdaybuddy.ui.theme.AlphaEmphasisSubtle
 import com.heckmannch.birthdaybuddy.ui.theme.BirthdayBuddyTheme
+import com.heckmannch.birthdaybuddy.ui.theme.IconSizeSmall
+import com.heckmannch.birthdaybuddy.ui.theme.SpacingExtraSmall
+import com.heckmannch.birthdaybuddy.ui.theme.SpacingMedium
+import com.heckmannch.birthdaybuddy.ui.theme.SpacingNormal
+import com.heckmannch.birthdaybuddy.ui.theme.SpacingSmall
 import com.heckmannch.birthdaybuddy.viewmodel.HomeViewModel
 import com.heckmannch.birthdaybuddy.viewmodel.LabelViewModel
 
@@ -126,13 +132,13 @@ private fun LabelSettingsContent(
                 columns = GridCells.Adaptive(minSize = 340.dp),
                 modifier = Modifier.fillMaxSize(),
                 contentPadding = PaddingValues(
-                    start = paddingValues.calculateStartPadding(layoutDirection) + 16.dp,
-                    top = paddingValues.calculateTopPadding() + 16.dp,
-                    end = paddingValues.calculateEndPadding(layoutDirection) + 16.dp,
-                    bottom = paddingValues.calculateBottomPadding() + 16.dp
+                    start = paddingValues.calculateStartPadding(layoutDirection) + SpacingNormal,
+                    top = paddingValues.calculateTopPadding() + SpacingNormal,
+                    end = paddingValues.calculateEndPadding(layoutDirection) + SpacingNormal,
+                    bottom = paddingValues.calculateBottomPadding() + SpacingNormal
                 ),
-                horizontalArrangement = Arrangement.spacedBy(16.dp),
-                verticalArrangement = Arrangement.spacedBy(16.dp)
+                horizontalArrangement = Arrangement.spacedBy(SpacingNormal),
+                verticalArrangement = Arrangement.spacedBy(SpacingNormal)
             ) {
                 item(span = { GridItemSpan(maxLineSpan) }) {
                     InfoCard()
@@ -156,13 +162,13 @@ private fun LabelSettingsContent(
 private fun InfoCard() {
     Card(
         colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.3f)
+            containerColor = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = AlphaEmphasisSubtle)
         ),
         shape = MaterialTheme.shapes.medium,
-        modifier = Modifier.padding(bottom = 4.dp)
+        modifier = Modifier.padding(bottom = SpacingExtraSmall)
     ) {
         Row(
-            modifier = Modifier.padding(12.dp),
+            modifier = Modifier.padding(SpacingMedium),
             verticalAlignment = Alignment.CenterVertically
         ) {
             Icon(
@@ -171,7 +177,7 @@ private fun InfoCard() {
                 tint = MaterialTheme.colorScheme.secondary,
                 modifier = Modifier.size(20.dp)
             )
-            Spacer(modifier = Modifier.width(12.dp))
+            Spacer(modifier = Modifier.width(SpacingMedium))
             Column {
                 Text(
                     text = stringResource(R.string.labels_info_hide),
@@ -208,7 +214,7 @@ private fun LabelConfigCard(
     ) {
         Column(
             modifier = Modifier
-                .padding(16.dp)
+                .padding(SpacingNormal)
                 .fillMaxWidth()
         ) {
             Row(
@@ -243,11 +249,11 @@ private fun LabelConfigCard(
                 }
             }
 
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(SpacingNormal))
 
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                horizontalArrangement = Arrangement.spacedBy(SpacingSmall)
             ) {
                 FilterChip(
                     selected = label.isHiddenFromFilter,
@@ -258,7 +264,7 @@ private fun LabelConfigCard(
                             Icon(
                                 Icons.Default.VisibilityOff,
                                 contentDescription = null,
-                                modifier = Modifier.size(18.dp)
+                                modifier = Modifier.size(IconSizeSmall)
                             )
                         }
                     } else null,
@@ -278,7 +284,7 @@ private fun LabelConfigCard(
                             Icon(
                                 Icons.Default.Close,
                                 contentDescription = null,
-                                modifier = Modifier.size(18.dp)
+                                modifier = Modifier.size(IconSizeSmall)
                             )
                         }
                     } else null,

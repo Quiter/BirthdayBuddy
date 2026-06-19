@@ -45,6 +45,11 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.heckmannch.birthdaybuddy.R
 import com.heckmannch.birthdaybuddy.ui.components.AppResponsiveScaffold
+import com.heckmannch.birthdaybuddy.ui.theme.AlphaEmphasisSubtle
+import com.heckmannch.birthdaybuddy.ui.theme.SpacingExtraSmall
+import com.heckmannch.birthdaybuddy.ui.theme.SpacingMedium
+import com.heckmannch.birthdaybuddy.ui.theme.SpacingNormal
+import com.heckmannch.birthdaybuddy.ui.theme.SpacingSmall
 import com.heckmannch.birthdaybuddy.viewmodel.NotificationViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -102,10 +107,10 @@ private fun OtherEventsSettingsContent(
         LazyColumn(
             modifier = Modifier.fillMaxSize(),
             contentPadding = PaddingValues(
-                start = 16.dp,
-                top = paddingValues.calculateTopPadding() + 8.dp,
-                end = 16.dp,
-                bottom = paddingValues.calculateBottomPadding() + 8.dp
+                start = SpacingNormal,
+                top = paddingValues.calculateTopPadding() + SpacingSmall,
+                end = SpacingNormal,
+                bottom = paddingValues.calculateBottomPadding() + SpacingSmall
             )
         ) {
             item {
@@ -147,15 +152,15 @@ private fun OtherEventsSettingsContent(
 private fun InfoCard() {
     Card(
         colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.3f)
+            containerColor = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = AlphaEmphasisSubtle)
         ),
         shape = MaterialTheme.shapes.medium,
         modifier = Modifier
             .fillMaxWidth()
-            .padding(bottom = 16.dp)
+            .padding(bottom = SpacingNormal)
     ) {
         Row(
-            modifier = Modifier.padding(16.dp),
+            modifier = Modifier.padding(SpacingNormal),
             verticalAlignment = Alignment.Top
         ) {
             Icon(
@@ -164,7 +169,7 @@ private fun InfoCard() {
                 tint = MaterialTheme.colorScheme.secondary,
                 modifier = Modifier.size(24.dp)
             )
-            Spacer(modifier = Modifier.width(12.dp))
+            Spacer(modifier = Modifier.width(SpacingMedium))
             Column {
                 Text(
                     text = stringResource(R.string.other_events_info_title),
@@ -172,7 +177,7 @@ private fun InfoCard() {
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.onSecondaryContainer
                 )
-                Spacer(modifier = Modifier.height(4.dp))
+                Spacer(modifier = Modifier.height(SpacingExtraSmall))
                 Text(
                     text = stringResource(R.string.other_events_info_desc),
                     style = MaterialTheme.typography.bodyMedium,

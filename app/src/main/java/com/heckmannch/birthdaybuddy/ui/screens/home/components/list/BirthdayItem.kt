@@ -54,11 +54,21 @@ import com.heckmannch.birthdaybuddy.ui.model.ContactUiModel
 import com.heckmannch.birthdaybuddy.ui.model.SampleData
 import com.heckmannch.birthdaybuddy.ui.screens.home.HomeActions
 import com.heckmannch.birthdaybuddy.ui.screens.home.components.actions.ContactActionRow
+import com.heckmannch.birthdaybuddy.ui.theme.AlphaContainerSubtle
+import com.heckmannch.birthdaybuddy.ui.theme.AlphaEmphasisLow
+import com.heckmannch.birthdaybuddy.ui.theme.AlphaEmphasisMedium
+import com.heckmannch.birthdaybuddy.ui.theme.AlphaSurfaceContainerHigh
 import com.heckmannch.birthdaybuddy.ui.theme.BirthdayBuddyTheme
 import com.heckmannch.birthdaybuddy.ui.theme.BirthdayGold
 import com.heckmannch.birthdaybuddy.ui.theme.BirthdayKidAmber
 import com.heckmannch.birthdaybuddy.ui.theme.BirthdaySilver
+import com.heckmannch.birthdaybuddy.ui.theme.IconSizeExtraSmall
+import com.heckmannch.birthdaybuddy.ui.theme.IconSizeLarge
+import com.heckmannch.birthdaybuddy.ui.theme.IconSizeSmall
 import com.heckmannch.birthdaybuddy.ui.theme.KidColors
+import com.heckmannch.birthdaybuddy.ui.theme.SpacingMedium
+import com.heckmannch.birthdaybuddy.ui.theme.SpacingNormal
+import com.heckmannch.birthdaybuddy.ui.theme.SpacingSmall
 import kotlinx.coroutines.delay
 import kotlin.time.Duration.Companion.milliseconds
 
@@ -130,7 +140,7 @@ fun BirthdayItem(
     }
 
     val containerColor = when {
-        isSelected -> MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.6f)
+        isSelected -> MaterialTheme.colorScheme.primaryContainer.copy(alpha = AlphaSurfaceContainerHigh)
         isExpanded -> MaterialTheme.colorScheme.surfaceContainerHigh
         else -> MaterialTheme.colorScheme.surfaceContainerLow
     }
@@ -138,15 +148,15 @@ fun BirthdayItem(
     Card(
         modifier = modifier
             .fillMaxWidth()
-            .padding(horizontal = 16.dp)
-            .padding(bottom = 8.dp)
+            .padding(horizontal = SpacingNormal)
+            .padding(bottom = SpacingSmall)
             .graphicsLayer(),
         colors = CardDefaults.cardColors(
             containerColor = containerColor,
         ),
         border = borderStroke ?: if (isSelected) BorderStroke(
             1.5.dp,
-            MaterialTheme.colorScheme.primary.copy(alpha = 0.5f)
+            MaterialTheme.colorScheme.primary.copy(alpha = AlphaEmphasisLow)
         ) else null,
     ) {
         Box {
@@ -172,11 +182,11 @@ fun BirthdayItem(
                                 style = MaterialTheme.typography.titleMedium
                             )
                             if (contact.hasGiftIdeas) {
-                                Spacer(modifier = Modifier.width(8.dp))
+                                Spacer(modifier = Modifier.width(SpacingSmall))
                                 Icon(
                                     Icons.Default.Edit,
                                     contentDescription = null,
-                                    modifier = Modifier.size(14.dp),
+                                    modifier = Modifier.size(IconSizeExtraSmall),
                                     tint = BirthdayKidAmber
                                 )
                             }
@@ -216,8 +226,8 @@ fun BirthdayItem(
                         Text(
                             text = contact.labels.joinToString(", "),
                             style = MaterialTheme.typography.labelSmall,
-                            color = MaterialTheme.colorScheme.primary.copy(alpha = 0.7f),
-                            modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
+                            color = MaterialTheme.colorScheme.primary.copy(alpha = AlphaEmphasisMedium),
+                            modifier = Modifier.padding(horizontal = SpacingNormal, vertical = SpacingSmall),
                             maxLines = 1,
                             overflow = TextOverflow.Ellipsis
                         )
@@ -234,8 +244,8 @@ fun BirthdayItem(
                     )
 
                     HorizontalDivider(
-                        modifier = Modifier.padding(horizontal = 16.dp),
-                        color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)
+                        modifier = Modifier.padding(horizontal = SpacingNormal),
+                        color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = AlphaEmphasisLow)
                     )
 
                     // Toggle-Bereich für Geschenkideen
@@ -243,22 +253,22 @@ fun BirthdayItem(
                         modifier = Modifier
                             .fillMaxWidth()
                             .clickable { giftIdeasExpanded = !giftIdeasExpanded }
-                            .padding(horizontal = 16.dp, vertical = 12.dp)
+                            .padding(horizontal = SpacingNormal, vertical = SpacingMedium)
                             .testTag("gift_ideas_toggle"),
                         verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(12.dp)
+                        horizontalArrangement = Arrangement.spacedBy(SpacingMedium)
                     ) {
                         Surface(
-                            modifier = Modifier.size(32.dp),
-                            shape = RoundedCornerShape(8.dp),
-                            color = MaterialTheme.colorScheme.primary.copy(alpha = 0.15f),
+                            modifier = Modifier.size(IconSizeLarge),
+                            shape = RoundedCornerShape(SpacingSmall),
+                            color = MaterialTheme.colorScheme.primary.copy(alpha = AlphaContainerSubtle),
                             contentColor = MaterialTheme.colorScheme.primary
                         ) {
                             Box(contentAlignment = Alignment.Center) {
                                 Icon(
                                     imageVector = Icons.Default.CardGiftcard,
                                     contentDescription = null,
-                                    modifier = Modifier.size(18.dp)
+                                    modifier = Modifier.size(IconSizeSmall)
                                 )
                             }
                         }

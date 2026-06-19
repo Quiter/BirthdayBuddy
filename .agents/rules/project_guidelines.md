@@ -41,4 +41,8 @@ Bei der Weiterentwicklung des Projekts wurden spezialisierte Skills eingesetzt, 
    - **Standard:** Jedes ViewModel und kritische Repositories müssen durch Unit-Tests in `src/test` abgedeckt sein.
    - **Tooling:** Nutze `MainDispatcherRule` für Coroutines und `unitTests.isReturnDefaultValues = true` für JVM-Tests mit Android-Abhängigkeiten.
 
+7. **Design-System & Token Skill (Consistency):**
+   - **Tokens:** Verwende ausschließlich die in `ui/theme/Dimensions.kt` definierten Tokens für Abstände (`Spacing...`), Icon-Größen (`IconSize...`) und Transparenz (`AlphaEmphasis...`).
+   - **Hardcoding-Verbot:** Vermeide hartcodierte DP-Werte und Magic-Number-Alpha-Werte im UI-Code. Nutze das Material 3 Theme (`colorScheme`, `typography`) konsequent für volle Dark-Mode-Kompatibilität.
+
 **Vorgehen bei Änderungen:** Vor größeren Refactorings oder Updates sollten die entsprechenden Skills konsultiert oder erneut zur Analyse eingebunden werden, um die Einhaltung der aktuellen Best Practices sicherzustellen.

@@ -3,6 +3,7 @@ package com.heckmannch.birthdaybuddy.data.mapper
 import android.text.format.DateFormat
 import com.heckmannch.birthdaybuddy.data.local.Contact
 import com.heckmannch.birthdaybuddy.ui.model.ContactUiModel
+import com.heckmannch.birthdaybuddy.util.getInitials
 import com.heckmannch.birthdaybuddy.util.hasYear
 import com.heckmannch.birthdaybuddy.util.isBirthdayToday
 import com.heckmannch.birthdaybuddy.util.safeDaysUntilNext
@@ -65,16 +66,7 @@ class ContactMapper @Inject constructor() {
             monthName = eventDate?.format(monthFormatter) ?: "",
             imageUri = contact.imageUri,
             phoneNumber = contact.phoneNumber,
-            initials = contact.fullName.trim()
-                .split(WHITESPACE_REGEX)
-                .filter { it.isNotBlank() }
-                .let { parts ->
-                    when {
-                        parts.isEmpty() -> "?"
-                        parts.size == 1 -> parts.first().take(1).uppercase()
-                        else -> "${parts.first().take(1)}${parts.last().take(1)}".uppercase()
-                    }
-                },
+            initials = contact.fullName.getInitials(),
             nextAge = nextAgeValue,
             daysUntilNext = daysLeft,
             isToday = eventDate?.isBirthdayToday(today) ?: false,
@@ -84,9 +76,5 @@ class ContactMapper @Inject constructor() {
             giftIdeas = contact.giftIdeas,
             birthday = contact.birthday,
         )
-    }
-
-    companion object {
-        private val WHITESPACE_REGEX = "\\s+".toRegex()
     }
 }

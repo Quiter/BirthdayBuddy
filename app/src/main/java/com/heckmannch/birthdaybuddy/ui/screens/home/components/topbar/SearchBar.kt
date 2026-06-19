@@ -42,7 +42,12 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.heckmannch.birthdaybuddy.R
+import com.heckmannch.birthdaybuddy.ui.theme.AlphaEmphasisLow
+import com.heckmannch.birthdaybuddy.ui.theme.AlphaEmphasisMedium
 import com.heckmannch.birthdaybuddy.ui.theme.BirthdayBuddyTheme
+import com.heckmannch.birthdaybuddy.ui.theme.SearchBarHeight
+import com.heckmannch.birthdaybuddy.ui.theme.SpacingExtraSmall
+import com.heckmannch.birthdaybuddy.ui.theme.SpacingNormal
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -60,12 +65,12 @@ fun SearchBar(
 
     val containerColor by animateColorAsState(
         targetValue = if (isFocused.value) MaterialTheme.colorScheme.surface
-        else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
+        else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = AlphaEmphasisLow),
         label = "SearchBarContainerColor"
     )
 
     val borderColor by animateColorAsState(
-        targetValue = if (isFocused.value) MaterialTheme.colorScheme.primary.copy(alpha = 0.5f)
+        targetValue = if (isFocused.value) MaterialTheme.colorScheme.primary.copy(alpha = AlphaEmphasisLow)
         else Color.Transparent,
         label = "SearchBarBorderColor"
     )
@@ -78,8 +83,8 @@ fun SearchBar(
     Surface(
         modifier = modifier
             .fillMaxWidth()
-            .padding(horizontal = 16.dp)
-            .height(56.dp)
+            .padding(horizontal = SpacingNormal)
+            .height(SearchBarHeight)
             .border(width = borderWidth, color = borderColor, shape = CircleShape),
         shape = CircleShape,
         color = containerColor,
@@ -97,7 +102,7 @@ fun SearchBar(
                 Text(
                     text = placeholder,
                     style = MaterialTheme.typography.bodyLarge,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
+                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = AlphaEmphasisMedium)
                 )
             },
             leadingIcon = {
@@ -108,7 +113,7 @@ fun SearchBar(
                 )
             },
             trailingIcon = {
-                Row(modifier = Modifier.padding(end = 4.dp)) {
+                Row(modifier = Modifier.padding(end = SpacingExtraSmall)) {
                     AnimatedVisibility(
                         visible = query.isNotEmpty(),
                         enter = fadeIn(),

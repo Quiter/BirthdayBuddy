@@ -50,6 +50,14 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.heckmannch.birthdaybuddy.R
+import com.heckmannch.birthdaybuddy.ui.theme.AlphaContainerMuted
+import com.heckmannch.birthdaybuddy.ui.theme.AlphaEmphasisLow
+import com.heckmannch.birthdaybuddy.ui.theme.AlphaEmphasisMedium
+import com.heckmannch.birthdaybuddy.ui.theme.SearchBarHeight
+import com.heckmannch.birthdaybuddy.ui.theme.SpacingExtraSmall
+import com.heckmannch.birthdaybuddy.ui.theme.SpacingMedium
+import com.heckmannch.birthdaybuddy.ui.theme.SpacingNormal
+import com.heckmannch.birthdaybuddy.ui.theme.SpacingSmall
 
 @Composable
 fun NotificationsPage(
@@ -77,11 +85,11 @@ fun NotificationsPage(
                 modifier = Modifier.fillMaxWidth(),
                 colors = CardDefaults.cardColors(
                     containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(
-                        alpha = 0.5f
+                        alpha = AlphaEmphasisLow
                     )
                 )
             ) {
-                Column(modifier = Modifier.padding(8.dp)) {
+                Column(modifier = Modifier.padding(SpacingSmall)) {
                     ListItem(
                         headlineContent = { Text(stringResource(R.string.onboarding_notif_enable)) },
                         trailingContent = {
@@ -127,7 +135,7 @@ fun NotificationsPage(
                     onClick = onGrant,
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(56.dp)
+                        .height(SearchBarHeight)
                 ) {
                     Text(stringResource(R.string.onboarding_notif_btn))
                 }
@@ -177,7 +185,7 @@ private fun NotificationsPageIllustration(
             modifier = Modifier
                 .size(100.dp)
                 .background(
-                    color = if (enabled) MaterialTheme.colorScheme.secondary.copy(alpha = 0.1f)
+                    color = if (enabled) MaterialTheme.colorScheme.secondary.copy(alpha = AlphaContainerMuted)
                     else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.05f),
                     shape = CircleShape
                 )
@@ -194,15 +202,15 @@ private fun NotificationsPageIllustration(
                 .border(
                     width = borderWidth,
                     color = borderColor,
-                    shape = RoundedCornerShape(16.dp)
+                    shape = RoundedCornerShape(SpacingNormal)
                 ),
-            shape = RoundedCornerShape(16.dp),
+            shape = RoundedCornerShape(SpacingNormal),
             colors = CardDefaults.cardColors(
                 containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.9f)
             ),
             elevation = CardDefaults.cardElevation(defaultElevation = 6.dp)
         ) {
-            Column(modifier = Modifier.padding(12.dp)) {
+            Column(modifier = Modifier.padding(SpacingMedium)) {
                 // Header
                 Row(
                     modifier = Modifier.fillMaxWidth(),
@@ -232,11 +240,11 @@ private fun NotificationsPageIllustration(
                             style = MaterialTheme.typography.labelSmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
-                        Spacer(modifier = Modifier.width(4.dp))
+                        Spacer(modifier = Modifier.width(SpacingExtraSmall))
                         Text(
                             text = "• jetzt",
                             style = MaterialTheme.typography.labelSmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
+                            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = AlphaEmphasisMedium)
                         )
                     }
 
@@ -250,7 +258,7 @@ private fun NotificationsPageIllustration(
                     }
                 }
 
-                Spacer(modifier = Modifier.height(8.dp))
+                Spacer(modifier = Modifier.height(SpacingSmall))
 
                 // Content
                 Text(
@@ -258,7 +266,7 @@ private fun NotificationsPageIllustration(
                     style = MaterialTheme.typography.labelLarge,
                     fontWeight = FontWeight.Bold
                 )
-                Spacer(modifier = Modifier.height(2.dp))
+                Spacer(modifier = Modifier.height(SpacingExtraSmall))
                 Text(
                     text = "Sie wird heute 30 Jahre alt.",
                     style = MaterialTheme.typography.bodySmall,

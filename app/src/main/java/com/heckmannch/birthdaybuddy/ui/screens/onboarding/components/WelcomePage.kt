@@ -33,6 +33,11 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.heckmannch.birthdaybuddy.R
+import com.heckmannch.birthdaybuddy.ui.theme.AlphaContainerMuted
+import com.heckmannch.birthdaybuddy.ui.theme.ContactImageSizeSmall
+import com.heckmannch.birthdaybuddy.ui.theme.SpacingExtraSmall
+import com.heckmannch.birthdaybuddy.ui.theme.SpacingMedium
+import com.heckmannch.birthdaybuddy.ui.theme.SpacingNormal
 
 @Composable
 fun WelcomePage(windowWidthSizeClass: WindowWidthSizeClass) {
@@ -68,7 +73,7 @@ private fun WelcomePageIllustration(modifier: Modifier = Modifier) {
             modifier = Modifier
                 .size(100.dp)
                 .background(
-                    color = MaterialTheme.colorScheme.primary.copy(alpha = 0.1f),
+                    color = MaterialTheme.colorScheme.primary.copy(alpha = AlphaContainerMuted),
                     shape = CircleShape
                 )
         )
@@ -79,7 +84,7 @@ private fun WelcomePageIllustration(modifier: Modifier = Modifier) {
                 .width(200.dp)
                 .height(88.dp)
                 .graphicsLayer { translationY = offsetY * density },
-            shape = RoundedCornerShape(16.dp),
+            shape = RoundedCornerShape(SpacingNormal),
             colors = CardDefaults.cardColors(
                 containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.9f)
             ),
@@ -88,13 +93,13 @@ private fun WelcomePageIllustration(modifier: Modifier = Modifier) {
             Row(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(12.dp),
+                    .padding(SpacingMedium),
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 // Avatar Representation
                 Box(
                     modifier = Modifier
-                        .size(40.dp)
+                        .size(ContactImageSizeSmall)
                         .background(
                             color = MaterialTheme.colorScheme.primaryContainer,
                             shape = CircleShape
@@ -107,7 +112,7 @@ private fun WelcomePageIllustration(modifier: Modifier = Modifier) {
                     )
                 }
 
-                Spacer(modifier = Modifier.width(12.dp))
+                Spacer(modifier = Modifier.width(SpacingMedium))
 
                 Column {
                     Text(
@@ -117,7 +122,7 @@ private fun WelcomePageIllustration(modifier: Modifier = Modifier) {
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis
                     )
-                    Spacer(modifier = Modifier.height(2.dp))
+                    Spacer(modifier = Modifier.height(SpacingExtraSmall))
                     Text(
                         text = "30. Geb. • in 2 Tagen",
                         style = MaterialTheme.typography.bodySmall,

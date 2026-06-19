@@ -64,7 +64,10 @@ import com.heckmannch.birthdaybuddy.ui.screens.settings.notifications.Notificati
 import com.heckmannch.birthdaybuddy.ui.screens.settings.otherevents.OtherEventsSettingsScreen
 import com.heckmannch.birthdaybuddy.ui.screens.settings.sync.SyncSettingsScreen
 import com.heckmannch.birthdaybuddy.ui.screens.settings.theme.ThemeSettingsScreen
+import com.heckmannch.birthdaybuddy.ui.theme.AlphaEmphasisMedium
 import com.heckmannch.birthdaybuddy.ui.theme.BirthdayBuddyTheme
+import com.heckmannch.birthdaybuddy.ui.theme.SpacingMedium
+import com.heckmannch.birthdaybuddy.ui.theme.SpacingNormal
 import com.heckmannch.birthdaybuddy.viewmodel.BackupViewModel
 import com.heckmannch.birthdaybuddy.viewmodel.CalendarViewModel
 import com.heckmannch.birthdaybuddy.viewmodel.HomeViewModel
@@ -457,7 +460,7 @@ private fun SettingsMenuItem(
     }
 
     val supportingColor = if (isSelected && useTabletStyle) {
-        MaterialTheme.colorScheme.onSecondaryContainer.copy(alpha = 0.8f)
+        MaterialTheme.colorScheme.onSecondaryContainer.copy(alpha = AlphaEmphasisMedium)
     } else {
         MaterialTheme.colorScheme.onSurfaceVariant
     }
@@ -471,8 +474,8 @@ private fun SettingsMenuItem(
     val itemModifier = if (useTabletStyle) {
         Modifier
             .fillMaxWidth()
-            .padding(horizontal = 12.dp, vertical = 2.dp)
-            .clip(RoundedCornerShape(16.dp))
+            .padding(horizontal = SpacingMedium, vertical = 2.dp)
+            .clip(RoundedCornerShape(SpacingNormal))
             .background(containerColor)
             .clickable { onClick() }
     } else {

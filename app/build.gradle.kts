@@ -4,9 +4,8 @@ plugins {
     alias(libs.plugins.ksp)
     alias(libs.plugins.hilt)
     alias(libs.plugins.kotlin.serialization)
+    alias(libs.plugins.androidx.baselineprofile)
 }
-
-apply(plugin = "androidx.baselineprofile")
 
 configure<com.android.build.api.dsl.ApplicationExtension> {
     namespace = "com.heckmannch.birthdaybuddy"
@@ -17,7 +16,7 @@ configure<com.android.build.api.dsl.ApplicationExtension> {
         minSdk = 28
         targetSdk = 37
         versionCode = 37
-        versionName = "2.9.4"
+        versionName = "2.9.6"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }

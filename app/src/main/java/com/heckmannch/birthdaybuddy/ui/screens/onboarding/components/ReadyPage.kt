@@ -35,6 +35,11 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.heckmannch.birthdaybuddy.R
 import com.heckmannch.birthdaybuddy.ui.screens.home.components.list.ConfettiEffect
+import com.heckmannch.birthdaybuddy.ui.theme.AlphaEmphasisSubtle
+import com.heckmannch.birthdaybuddy.ui.theme.SearchBarHeight
+import com.heckmannch.birthdaybuddy.ui.theme.SpacingLarge
+import com.heckmannch.birthdaybuddy.ui.theme.SpacingNormal
+import com.heckmannch.birthdaybuddy.ui.theme.SpacingSmall
 
 @Composable
 fun ReadyPage(
@@ -57,18 +62,18 @@ fun ReadyPage(
                 modifier = Modifier.fillMaxWidth(),
                 colors = CardDefaults.cardColors(
                     containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(
-                        alpha = 0.3f
+                        alpha = AlphaEmphasisSubtle
                     )
                 )
             ) {
-                Column(modifier = Modifier.padding(16.dp)) {
+                Column(modifier = Modifier.padding(SpacingNormal)) {
                     Text(
                         text = stringResource(R.string.onboarding_summary_header),
                         style = MaterialTheme.typography.titleSmall,
                         fontWeight = FontWeight.Bold,
                         color = MaterialTheme.colorScheme.primary
                     )
-                    Spacer(modifier = Modifier.height(8.dp))
+                    Spacer(modifier = Modifier.height(SpacingSmall))
                     Text(
                         text = if (hasContactPermission) stringResource(R.string.onboarding_summary_contacts_enabled)
                         else stringResource(R.string.onboarding_summary_contacts_disabled),
@@ -87,7 +92,7 @@ fun ReadyPage(
                 }
             }
 
-            Spacer(modifier = Modifier.height(24.dp))
+            Spacer(modifier = Modifier.height(SpacingLarge))
 
             Text(
                 text = if (hasContactPermission) stringResource(R.string.onboarding_ready_sync_info)
@@ -102,7 +107,7 @@ fun ReadyPage(
                 onClick = onStart,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(56.dp)
+                    .height(SearchBarHeight)
             ) {
                 Text(stringResource(R.string.onboarding_ready_btn))
             }
