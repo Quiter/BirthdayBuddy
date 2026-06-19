@@ -240,22 +240,12 @@ abstract class AppDatabase : RoomDatabase() {
                     MIGRATION_7_8,
                     MIGRATION_8_9
                 )
-                .fallbackToDestructiveMigration(true) // Letzter Rettungsanker bei komplett korruptem Zustand
                 .build()
         }
 
         fun getDatabase(context: Context): AppDatabase =
             INSTANCE ?: synchronized(this) {
-                INSTANCE ?: try {
-                    buildDatabase(context)
-                } catch (_: Exception) {
-                    try {
-                        context.deleteDatabase("birthday_database")
-                    } catch (_: Exception) {
-                        // Ignorieren
-                    }
-                    buildDatabase(context)
-                }.also { INSTANCE = it }
+                INSTANCE ?: buildDatabase(context).also { INSTANCE = it }
             }
     }
 }

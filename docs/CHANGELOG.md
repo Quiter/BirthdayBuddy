@@ -238,5 +238,11 @@
 186. **Generische ProGuard-Keep-Regel für serialisierbare Routen (ProGuard Rule Optimization):**
     - **ProGuard-Rules:** Ersetzung der 12 expliziten Keep-Regeln für Navigationsrouten in `proguard-rules.pro` durch eine einzige, wartungsfreie generische Keep-Regel (`-keep @kotlinx.serialization.Serializable class * { *; }`). Dies verhindert Build-Konflikte und Abstürze bei zukünftigen Erweiterungen des Navigations-Graphen.
 
+187. **Adaptive Grid in den Benachrichtigungs-Einstellungen (Adaptive Layout Upgrade):**
+    - **NotificationSettingsScreen:** Migration der Erinnerungsregeln-Liste von einer einspaltigen `LazyColumn` zu einem adaptiven, mehrspaltigen `LazyVerticalGrid` mit `GridCells.Adaptive(minSize = 340.dp)`.
+    - **Grid-Spans:** Die Kopfzeilen (Schalter für Benachrichtigungen, persistente Benachrichtigungen und die Sektions-Überschrift) sowie das leere Hinweisfenster verwenden nun `GridItemSpan(maxLineSpan)`, um sich über die volle Breite des Grids zu erstrecken.
+    - **Edge-to-Edge Padding:** Die Inset-Zuweisung (`contentPadding`) wurde unter Verwendung der Layoutrichtung (`LocalLayoutDirection`) und `SpacingNormal` angepasst, um konsistenten Freiraum an allen Bildschirmkanten zu gewährleisten.
 
-
+188. **Sicherheits-Härtung der Room-Datenbanken (Database Safety & Integrity):**
+    - **AppDatabase & SettingsDatabase:** Vollständige Deaktivierung der destruktiven Migration (Entfernung von `fallbackToDestructiveMigration(true)`) in beiden Datenbank-Buildern. Schema-Änderungen erzwingen nun zwingend explizite Migrationspfade, um jegliches Risiko von unbeabsichtigtem Datenverlust zu eliminieren.
+    - **getDatabase-Optimierung:** Beseitigung der try-catch-Logik in `AppDatabase.kt`, die bei Datenbank-Initialisierungsfehlern die Datei `birthday_database` manuell gelöscht hat. Dies garantiert absolute Datenintegrität und fängt Schema-Konflikte bereits zur Entwicklungszeit zuverlässig ab.
