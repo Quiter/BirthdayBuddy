@@ -18,8 +18,14 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.calculateEndPadding
+import androidx.compose.foundation.layout.calculateStartPadding
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.GridItemSpan
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
@@ -261,11 +267,20 @@ private fun NotificationSettingsContent(
                 modifier = Modifier.padding(paddingValues)
             )
         } else {
-            LazyColumn(
+            val layoutDirection = LocalLayoutDirection.current
+            LazyVerticalGrid(
+                columns = GridCells.Adaptive(minSize = 340.dp),
                 modifier = Modifier.fillMaxSize(),
-                contentPadding = paddingValues
+                contentPadding = PaddingValues(
+                    start = paddingValues.calculateStartPadding(layoutDirection) + SpacingNormal,
+                    top = paddingValues.calculateTopPadding() + SpacingNormal,
+                    end = paddingValues.calculateEndPadding(layoutDirection) + SpacingNormal,
+                    bottom = paddingValues.calculateBottomPadding() + SpacingNormal
+                ),
+                horizontalArrangement = Arrangement.spacedBy(SpacingNormal),
+                verticalArrangement = Arrangement.spacedBy(SpacingNormal)
             ) {
-                item {
+                item(span = { GridItemSpan(maxLineSpan) }) {
                     ListItem(
                         headlineContent = { Text(stringResource(R.string.notifications_header)) },
                         supportingContent = { Text(stringResource(R.string.notifications_desc)) },
@@ -286,7 +301,7 @@ private fun NotificationSettingsContent(
                 }
 
                 if (notificationsEnabled) {
-                    item {
+                    item(span = { GridItemSpan(maxLineSpan) }) {
                         ListItem(
                             headlineContent = { Text(stringResource(R.string.notifications_persistent_header)) },
                             supportingContent = { Text(stringResource(R.string.notifications_persistent_desc)) },
@@ -307,7 +322,7 @@ private fun NotificationSettingsContent(
                     }
 
                     if (rules.isEmpty()) {
-                        item {
+                        item(span = { GridItemSpan(maxLineSpan) }) {
                             Box(
                                 modifier = Modifier
                                     .fillMaxWidth()
@@ -322,7 +337,7 @@ private fun NotificationSettingsContent(
                             }
                         }
                     } else {
-                        item {
+                        item(span = { GridItemSpan(maxLineSpan) }) {
                             Text(
                                 stringResource(R.string.notifications_planned_header),
                                 style = MaterialTheme.typography.labelLarge,

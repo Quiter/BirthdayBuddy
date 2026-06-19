@@ -226,3 +226,17 @@
     - **Permission-Wiederherstellung (v2.9.0):** Rückkehr zur bewährten Permission-Logik aus Version 2.9.0. Die App nutzt nun wieder `shouldShowRequestPermissionRationale`, um flexibel zwischen dem System-Dialog und den App-Einstellungen zu wechseln, falls Berechtigungen permanent abgelehnt wurden.
     - **Code-Bereinigung:** Entfernung redundanter State-Variablen und Vereinfachung der `onRequestContactPermission`-Logik für maximale Zuverlässigkeit im Onboarding-Prozess.
     - **Guidelines:** Hinterlegung der offiziellen Repository-URL in den `@project_guidelines.md`.
+
+184. **Design-System & Token-Bereinigung (Design System & Token Cleanup):**
+    - **SyncSettingsScreen:** Ersetzung aller hartcodierten DP-Werte für Paddings, Spacings und Icon-Größen durch die entsprechenden Theme-Dimension-Tokens (`SpacingNormal`, `SpacingSmall`, `SpacingMedium`, `SpacingExtraSmall` und `IconSizeNormal`) aus `Dimensions.kt`.
+    - **ThemeSettingsScreen:** Bereinigung aller Layout-DP-Werte und Migration zu den vordefinierten Tokens (`SpacingNormal`, `SpacingSmall`, `SpacingMedium`, `SpacingExtraSmall`, `IconSizeExtraLarge`, `IconSizeNormal` und `IconSizeSmall`).
+    - **ColorPickerDialog:** Beseitigung aller hartcodierten Spacings und Paddings. Preset-Farbflächen nutzen nun `ContactImageSizeSmall` anstelle von festen `40.dp`. Die Preset-Häkchen und Palette-Symbole wurden auf standardisierte Icon-Größen (`IconSizeSmall`) umgestellt. Zudem wurden für die Eckenradien der Canvas-Boxen die Material-Theme Shapes (`MaterialTheme.shapes.small`) anstelle von festen Werten verwendet, und im Canvas-Radius wird `SpacingSmall.toPx()` genutzt.
+
+185. **Coil Cache-Key-Synchronisierung (Coil Cache Key Sync):**
+    - **ContactImage:** Explizite Angabe von `.memoryCacheKey(imageUri)` (bzw. `secondImageUri`) in den `ImageRequest`-Objekten. Dies synchronisiert die Cache-Schlüssel mit dem prefetch-Mechanismus aus `HomeScreen.kt` und verhindert redundantes Laden und Decodieren bereits geladener Kontaktbilder.
+
+186. **Generische ProGuard-Keep-Regel für serialisierbare Routen (ProGuard Rule Optimization):**
+    - **ProGuard-Rules:** Ersetzung der 12 expliziten Keep-Regeln für Navigationsrouten in `proguard-rules.pro` durch eine einzige, wartungsfreie generische Keep-Regel (`-keep @kotlinx.serialization.Serializable class * { *; }`). Dies verhindert Build-Konflikte und Abstürze bei zukünftigen Erweiterungen des Navigations-Graphen.
+
+
+

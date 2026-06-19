@@ -56,6 +56,13 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.heckmannch.birthdaybuddy.R
 import com.heckmannch.birthdaybuddy.ui.components.AppResponsiveScaffold
 import com.heckmannch.birthdaybuddy.ui.components.ColorPickerDialog
+import com.heckmannch.birthdaybuddy.ui.theme.IconSizeExtraLarge
+import com.heckmannch.birthdaybuddy.ui.theme.IconSizeNormal
+import com.heckmannch.birthdaybuddy.ui.theme.IconSizeSmall
+import com.heckmannch.birthdaybuddy.ui.theme.SpacingExtraSmall
+import com.heckmannch.birthdaybuddy.ui.theme.SpacingMedium
+import com.heckmannch.birthdaybuddy.ui.theme.SpacingNormal
+import com.heckmannch.birthdaybuddy.ui.theme.SpacingSmall
 import com.heckmannch.birthdaybuddy.viewmodel.ThemeViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -106,7 +113,7 @@ fun ThemeSettingsScreen(
                     text = stringResource(R.string.settings_theme_mode_header),
                     style = MaterialTheme.typography.labelLarge,
                     color = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
+                    modifier = Modifier.padding(horizontal = SpacingNormal, vertical = SpacingSmall)
                 )
             }
 
@@ -191,7 +198,7 @@ fun ThemeSettingsScreen(
                     text = stringResource(R.string.settings_theme_accent_header),
                     style = MaterialTheme.typography.labelLarge,
                     color = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp)
+                    modifier = Modifier.padding(horizontal = SpacingNormal, vertical = SpacingMedium)
                 )
             }
 
@@ -199,7 +206,7 @@ fun ThemeSettingsScreen(
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(horizontal = 16.dp, vertical = 8.dp)
+                        .padding(horizontal = SpacingNormal, vertical = SpacingSmall)
                 ) {
                     val colors = mutableListOf<AccentColorOption>()
 
@@ -235,8 +242,8 @@ fun ThemeSettingsScreen(
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .padding(vertical = 8.dp),
-                            horizontalArrangement = Arrangement.spacedBy(16.dp)
+                                .padding(vertical = SpacingSmall),
+                            horizontalArrangement = Arrangement.spacedBy(SpacingNormal)
                         ) {
                             rowColors.forEach { option ->
                                 val isSelected =
@@ -330,24 +337,24 @@ private fun ColorItem(
         Box(
             contentAlignment = Alignment.Center,
             modifier = Modifier
-                .size(48.dp)
+                .size(IconSizeExtraLarge)
                 .clip(CircleShape)
                 .then(
                     if (option.isSystem) {
                         // Rainbow-Gradient für Systemfarben (Material You)
                         Modifier.background(
-                            Brush.sweepGradient(
-                                listOf(
-                                    Color(0xFFE91E63),
-                                    Color(0xFF9C27B0),
-                                    Color(0xFF2196F3),
-                                    Color(0xFF4CAF50),
-                                    Color(0xFFFFEB3B),
-                                    Color(0xFFFF9800),
-                                    Color(0xFFE91E63)
-                                )
-                            )
-                        )
+                             Brush.sweepGradient(
+                                 listOf(
+                                     Color(0xFFE91E63),
+                                     Color(0xFF9C27B0),
+                                     Color(0xFF2196F3),
+                                     Color(0xFF4CAF50),
+                                     Color(0xFFFFEB3B),
+                                     Color(0xFFFF9800),
+                                     Color(0xFFE91E63)
+                                 )
+                             )
+                         )
                     } else {
                         Modifier.background(option.color)
                     }
@@ -377,26 +384,26 @@ private fun ColorItem(
                     } else {
                         Color.Black
                     },
-                    modifier = Modifier.size(24.dp)
+                    modifier = Modifier.size(IconSizeNormal)
                 )
             } else if (option.isSystem) {
                 Icon(
                     imageVector = Icons.Default.Palette,
                     contentDescription = null,
                     tint = Color.White,
-                    modifier = Modifier.size(20.dp)
+                    modifier = Modifier.size(IconSizeSmall)
                 )
             } else if (option.isCustom) {
                 Icon(
                     imageVector = Icons.Default.Palette,
                     contentDescription = null,
                     tint = if (option.color.luminance() > 0.5f) Color.Black else Color.White,
-                    modifier = Modifier.size(20.dp)
+                    modifier = Modifier.size(IconSizeSmall)
                 )
             }
         }
 
-        Spacer(modifier = Modifier.height(4.dp))
+        Spacer(modifier = Modifier.height(SpacingExtraSmall))
 
         val label = when (option.id) {
             "SYSTEM" -> stringResource(R.string.theme_accent_system)

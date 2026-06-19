@@ -47,6 +47,11 @@ import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import com.heckmannch.birthdaybuddy.R
 import com.heckmannch.birthdaybuddy.ui.components.AppResponsiveScaffold
+import com.heckmannch.birthdaybuddy.ui.theme.IconSizeNormal
+import com.heckmannch.birthdaybuddy.ui.theme.SpacingExtraSmall
+import com.heckmannch.birthdaybuddy.ui.theme.SpacingMedium
+import com.heckmannch.birthdaybuddy.ui.theme.SpacingNormal
+import com.heckmannch.birthdaybuddy.ui.theme.SpacingSmall
 import com.heckmannch.birthdaybuddy.viewmodel.HomeViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -129,10 +134,10 @@ private fun SyncSettingsContent(
         LazyColumn(
             modifier = Modifier.fillMaxSize(),
             contentPadding = PaddingValues(
-                start = 16.dp,
-                top = paddingValues.calculateTopPadding() + 8.dp,
-                end = 16.dp,
-                bottom = paddingValues.calculateBottomPadding() + 8.dp
+                start = SpacingNormal,
+                top = paddingValues.calculateTopPadding() + SpacingSmall,
+                end = SpacingNormal,
+                bottom = paddingValues.calculateBottomPadding() + SpacingSmall
             )
         ) {
             item {
@@ -165,19 +170,19 @@ private fun InfoCard() {
         shape = MaterialTheme.shapes.medium,
         modifier = Modifier
             .fillMaxWidth()
-            .padding(bottom = 16.dp)
+            .padding(bottom = SpacingNormal)
     ) {
         Row(
-            modifier = Modifier.padding(16.dp),
+            modifier = Modifier.padding(SpacingNormal),
             verticalAlignment = Alignment.Top
         ) {
             Icon(
                 imageVector = Icons.Default.Info,
                 contentDescription = null,
                 tint = MaterialTheme.colorScheme.secondary,
-                modifier = Modifier.size(24.dp)
+                modifier = Modifier.size(IconSizeNormal)
             )
-            Spacer(modifier = Modifier.width(12.dp))
+            Spacer(modifier = Modifier.width(SpacingMedium))
             Column {
                 Text(
                     text = stringResource(R.string.sync_explanation_title),
@@ -185,7 +190,7 @@ private fun InfoCard() {
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.onSecondaryContainer
                 )
-                Spacer(modifier = Modifier.height(4.dp))
+                Spacer(modifier = Modifier.height(SpacingExtraSmall))
                 Text(
                     text = stringResource(R.string.sync_explanation_desc),
                     style = MaterialTheme.typography.bodyMedium,

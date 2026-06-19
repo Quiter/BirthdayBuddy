@@ -34,19 +34,8 @@
 }
 -keep class **$$serializer { *; }
 
-# Expliziter Schutz für die Navigations-Routen (Objects in MainActivity.kt)
--keep class com.heckmannch.birthdaybuddy.Home { *; }
--keep class com.heckmannch.birthdaybuddy.Onboarding { *; }
--keep class com.heckmannch.birthdaybuddy.Settings { *; }
--keep class com.heckmannch.birthdaybuddy.LabelSettings { *; }
--keep class com.heckmannch.birthdaybuddy.NotificationSettings { *; }
--keep class com.heckmannch.birthdaybuddy.OtherEventsSettings { *; }
--keep class com.heckmannch.birthdaybuddy.CalendarSettings { *; }
--keep class com.heckmannch.birthdaybuddy.BackupSettings { *; }
--keep class com.heckmannch.birthdaybuddy.ThemeSettings { *; }
--keep class com.heckmannch.birthdaybuddy.SyncSettings { *; }
--keep class com.heckmannch.birthdaybuddy.About { *; }
--keep class com.heckmannch.birthdaybuddy.PrivacyPolicy { *; }
+# Automatischer Schutz für alle serialisierbaren Klassen und Navigations-Routen
+-keep @kotlinx.serialization.Serializable class * { *; }
 
 # --- Kotlin Coroutines ---
 # Verhindert Probleme bei der Initialisierung des Main-Dispatchers im Release-Build.

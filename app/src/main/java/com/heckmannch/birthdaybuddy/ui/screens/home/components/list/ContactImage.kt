@@ -43,6 +43,7 @@ fun ContactImage(
                 model = ImageRequest.Builder(LocalContext.current)
                     .data(imageUri)
                     .crossfade(true)
+                    .memoryCacheKey(imageUri)
                     .build(),
                 contentDescription = stringResource(R.string.item_image_desc, fullName),
                 modifier = modifier
@@ -82,6 +83,7 @@ fun ContactImage(
                         model = ImageRequest.Builder(LocalContext.current)
                             .data(imageUri)
                             .crossfade(true)
+                            .memoryCacheKey(imageUri)
                             .build(),
                         contentDescription = stringResource(R.string.item_image_desc, fullName),
                         modifier = Modifier.fillMaxSize(),
@@ -118,6 +120,7 @@ fun ContactImage(
                         model = ImageRequest.Builder(LocalContext.current)
                             .data(secondImageUri)
                             .crossfade(true)
+                            .memoryCacheKey(secondImageUri)
                             .build(),
                         contentDescription = stringResource(
                             R.string.item_image_desc,

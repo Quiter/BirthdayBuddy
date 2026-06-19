@@ -50,6 +50,13 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.core.graphics.toColorInt
 import com.heckmannch.birthdaybuddy.R
+import com.heckmannch.birthdaybuddy.ui.theme.ContactImageSizeSmall
+import com.heckmannch.birthdaybuddy.ui.theme.IconSizeNormal
+import com.heckmannch.birthdaybuddy.ui.theme.IconSizeSmall
+import com.heckmannch.birthdaybuddy.ui.theme.SpacingExtraSmall
+import com.heckmannch.birthdaybuddy.ui.theme.SpacingMedium
+import com.heckmannch.birthdaybuddy.ui.theme.SpacingNormal
+import com.heckmannch.birthdaybuddy.ui.theme.SpacingSmall
 
 @Composable
 fun ColorPickerDialog(
@@ -97,7 +104,7 @@ fun ColorPickerDialog(
         title = {
             Row(
                 verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                horizontalArrangement = Arrangement.spacedBy(SpacingSmall)
             ) {
                 Icon(
                     imageVector = Icons.Default.Palette,
@@ -116,7 +123,7 @@ fun ColorPickerDialog(
                 modifier = Modifier
                     .fillMaxWidth()
                     .verticalScroll(rememberScrollState()),
-                verticalArrangement = Arrangement.spacedBy(16.dp)
+                verticalArrangement = Arrangement.spacedBy(SpacingNormal)
             ) {
                 // Presets Section
                 if (presets.isNotEmpty()) {
@@ -127,12 +134,12 @@ fun ColorPickerDialog(
 
                     Column(
                         modifier = Modifier.fillMaxWidth(),
-                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                        verticalArrangement = Arrangement.spacedBy(SpacingSmall)
                     ) {
                         presets.chunked(4).forEach { rowPresets ->
                             Row(
                                 modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.spacedBy(12.dp)
+                                horizontalArrangement = Arrangement.spacedBy(SpacingMedium)
                             ) {
                                 rowPresets.forEach { color ->
                                     val hexString =
@@ -143,7 +150,7 @@ fun ColorPickerDialog(
                                     Box(
                                         contentAlignment = Alignment.Center,
                                         modifier = Modifier
-                                            .size(40.dp)
+                                            .size(ContactImageSizeSmall)
                                             .clip(CircleShape)
                                             .background(color)
                                             .border(
@@ -168,7 +175,7 @@ fun ColorPickerDialog(
                                                 imageVector = Icons.Default.Check,
                                                 contentDescription = null,
                                                 tint = Color.White,
-                                                modifier = Modifier.size(20.dp)
+                                                modifier = Modifier.size(IconSizeSmall)
                                             )
                                         }
                                     }
@@ -180,7 +187,7 @@ fun ColorPickerDialog(
                             }
                         }
                     }
-                    Spacer(modifier = Modifier.height(4.dp))
+                    Spacer(modifier = Modifier.height(SpacingExtraSmall))
                 }
 
                 // Saturation-Value Canvas
@@ -248,13 +255,13 @@ fun ColorPickerDialog(
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(top = 8.dp),
+                            .padding(top = SpacingSmall),
                         verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(12.dp)
+                        horizontalArrangement = Arrangement.spacedBy(SpacingMedium)
                     ) {
                         Box(
                             modifier = Modifier
-                                .size(40.dp)
+                                .size(ContactImageSizeSmall)
                                 .clip(CircleShape)
                                 .background(selectedColor)
                                 .border(1.dp, MaterialTheme.colorScheme.outlineVariant, CircleShape)
@@ -300,7 +307,7 @@ private fun SaturationValueBox(
     Box(
         modifier = modifier
             .aspectRatio(1f) // Maintain a perfect square
-            .clip(RoundedCornerShape(8.dp))
+            .clip(MaterialTheme.shapes.small)
             .background(
                 brush = Brush.horizontalGradient(
                     colors = listOf(Color.White, fromHsv(hue))
@@ -350,13 +357,13 @@ private fun SaturationValueBox(
             val cy = (1f - value) * size.height
             drawCircle(
                 color = Color.Black,
-                radius = 8.dp.toPx(),
+                radius = SpacingSmall.toPx(),
                 center = Offset(cx, cy),
                 style = Stroke(width = 2.dp.toPx())
             )
             drawCircle(
                 color = Color.White,
-                radius = 6.dp.toPx(),
+                radius = 6.dp.toPx(), // Maintain precise drawing size
                 center = Offset(cx, cy)
             )
         }
@@ -383,9 +390,9 @@ private fun HueSlider(
 
     Box(
         modifier = modifier
-            .height(16.dp)
+            .height(SpacingNormal)
             .fillMaxWidth()
-            .clip(RoundedCornerShape(8.dp))
+            .clip(MaterialTheme.shapes.small)
             .background(brush = Brush.horizontalGradient(hueColors))
             .pointerInput(Unit) {
                 detectDragGestures(
@@ -412,13 +419,13 @@ private fun HueSlider(
             val cy = size.height / 2f
             drawCircle(
                 color = Color.Black,
-                radius = 8.dp.toPx(),
+                radius = SpacingSmall.toPx(),
                 center = Offset(cx, cy),
                 style = Stroke(width = 2.dp.toPx())
             )
             drawCircle(
                 color = Color.White,
-                radius = 6.dp.toPx(),
+                radius = 6.dp.toPx(), // Maintain precise drawing size
                 center = Offset(cx, cy)
             )
         }
