@@ -21,8 +21,10 @@ Bei der Weiterentwicklung des Projekts wurden spezialisierte Skills eingesetzt, 
    - **Grids:** Listen in Einstellungen oder Übersichten sollten auf breiten Bildschirmen via `LazyVerticalGrid` adaptiv mehrspaltig gerendert werden.
 
 2. **AGP 9 Upgrade Skill:**
-   - **DSL-Standard:** Verwende die explizite KTS-Konfiguration (`configure<ApplicationExtension>`) anstelle der impliziten `android { ... }` Blöcke.
-   - **Kompatibilität:** Beachte das Flag `android.newDsl=false` in `gradle.properties`, solange Plugins (wie das BaselineProfile-Plugin) dies for die Variant-API benötigen.
+   - **DSL-Standard:** Verwende die explizite KTS-Konfiguration (`configure<ApplicationExtension>`) anstelle der impliziten `android { ... }` Blöcke. Plugins müssen im `plugins { ... }` Block deklariert werden (kein `apply plugin`).
+   - **Performance & Safety:** Aktiviere strikte Flags in `gradle.properties` (`android.nonTransitiveRClass=true`, `android.nonFinalResIds=true`).
+   - **Java-Version:** Standard ist Java 17 (`jvmToolchain(17)`, `sourceCompatibility` & `targetCompatibility`).
+   - **Kompatibilität:** Beachte das Flag `android.newDsl=false` in `gradle.properties`, solange Plugins (wie das BaselineProfile-Plugin) dies für die Variant-API benötigen.
 
 3. **Navigation-3 Skill (Type-Safe Navigation):**
    - **Standard:** Nutze ausschließlich das typsichere Jetpack Navigation System (Navigation 2.8+).
@@ -44,5 +46,11 @@ Bei der Weiterentwicklung des Projekts wurden spezialisierte Skills eingesetzt, 
 7. **Design-System & Token Skill (Consistency):**
    - **Tokens:** Verwende ausschließlich die in `ui/theme/Dimensions.kt` definierten Tokens für Abstände (`Spacing...`), Icon-Größen (`IconSize...`) und Transparenz (`AlphaEmphasis...`).
    - **Hardcoding-Verbot:** Vermeide hartcodierte DP-Werte und Magic-Number-Alpha-Werte im UI-Code. Nutze das Material 3 Theme (`colorScheme`, `typography`) konsequent für volle Dark-Mode-Kompatibilität.
+
+8. **Performance & Rendering Skill (Perfetto & Compose Optimization):**
+   - **Analyse:** Nutze `perfetto-trace-analysis` zur Identifikation von Jank, UI-Thread-Blocking und unnötigen Re-Compositions.
+   - **Daten-Effizienz:** Filtere Rohdaten (z. B. via `asSequence().filter`) in ViewModels oder Repositories *vor* dem Mapping in UI-Modelle, um CPU-Overhead bei großen Listen zu minimieren.
+   - **UI-Stabilität:** Nutze stabiles Image-Prefetching (z. B. via Coil `enqueue`) mit dedizierten Cache-Keys, um redundante Ladeprozesse während schneller UI-Interaktionen (wie Suche oder Scrolling) zu verhindern.
+   - **Threading:** Verlagere rechenintensive Operationen (Mapping, Sortierung, Filterung) konsequent via `flowOn(Dispatchers.Default)` aus dem UI-Thread.
 
 **Vorgehen bei Änderungen:** Vor größeren Refactorings oder Updates sollten die entsprechenden Skills konsultiert oder erneut zur Analyse eingebunden werden, um die Einhaltung der aktuellen Best Practices sicherzustellen.

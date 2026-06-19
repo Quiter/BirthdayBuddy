@@ -17,39 +17,39 @@ BirthdayBuddy was born out of pure frustration. It treats your **Android System 
 2. **Couch-Avoidance Technology ("Other Events"):** We sync and display wedding anniversaries and name days, because forgetting your spouse's anniversary is a one-way ticket to sleeping on the living room sofa.
 3. **No Proprietary Databases:** Your contacts stay in the Android Contacts Provider. If you uninstall this app in a fit of rage, your data is still there. (But why would you? Look at those animations!)
 4. **Privacy-Obsessed:** No cloud, no trackers, no AI that analyzes your friendships. Just you, your device, and a list of people you probably should text.
+5. **Over-Engineered Build Logic:** We are already **AGP 9.0 ready** and running on **Java 17**. Why? Because we can. We even stripped out the Lottie library and replaced it with native Compose drawings just to save 400KB of APK space. Efficiency is our middle name (well, actually "Buddy" is, but you get the point).
 
 ---
 
 ## ✨ Features (Now Extremely Polished)
 
-* **Ehepaar-Verknüpfung (Couple Coupling):** If Max and Erika share the same wedding anniversary, BirthdayBuddy merges them into a joint contact card displaying double overlapping avatars. They get a single unified push notification and one combined calendar event. No duplicate notification spam, no double gift stress.
-* **Triple Calendar Sync under `"BirthdayBuddy"` Account:** Splitting calendar sync into three distinct system calendars: Birthdays (Pink 🌸), Anniversaries (Purple 🍇), and Name Days (Orange 🍊). It registers under a custom `"BirthdayBuddy"` local account, making it instantly visible, hideable, and color-codeable in external calendar apps (yes, even Google Calendar).
-* **In-App Calendar Color Picker:** A Material 3 `ColorPickerDialog` with 8 harmonized colors so you can style your calendar categories directly from the app settings.
-* **Premium Wheel Date Picker:** Custom haptically satisfying date scroll wheels (`rememberSnapFlingBehavior` + mechanical ticks). Includes a live-calculated "Include Year" switch that is leap-year safe (no February 29th crashes on non-leap years!).
-* **Adaptive Master-Detail Split Screen:** Officially tablet and desktop-proof. On large screens (`WindowWidthSizeClass != Compact`), it loads Google's official `ListDetailPaneScaffold` with smooth posture-aware transitions. It also features a two-pane split Settings layout.
-* **GPU-Accelerated FastScrollbar:** Smooth scrolling for when you have too many acquaintances. It uses a static Popup window combined with GPU-accelerated translation layers (`graphicsLayer`) to prevent any UI lag.
+* **Ehepaar-Verknüpfung (Couple Coupling):** If Max and Erika share the same wedding anniversary, BirthdayBuddy merges them into a joint contact card. They get a single unified push notification and one combined calendar event. No duplicate notification spam, no double gift stress.
+* **Triple Calendar Sync:** Splitting calendar sync into three distinct system calendars: Birthdays (Pink 🌸), Anniversaries (Purple 🍇), and Name Days (Orange 🍊). It registers under a custom `"BirthdayBuddy"` local account, so it doesn't get sucked into the Google Sync abyss.
+* **Native Custom Illustrations:** We fired the Lottie animations and replaced them with premium, 100% native Compose illustrations. They are smoother, smaller, and don't require an external library that Google might deprecate tomorrow.
+* **Google Photos-Style FastScrollbar:** A premium, fade-out scrollbar that stays out of your way until you actually need to find that one person you haven't talked to since 2012.
+* **Custom Accent Color Choice:** Don't like our purple? Choose your own! We have a HSV-based color engine that generates a full Material 3 theme from a single HEX code. Take that, Material You!
+* **Adaptive Master-Detail Split Screen:** Officially tablet and desktop-proof. On large screens, it loads Google's official `ListDetailPaneScaffold`. It's like having a real computer, but with more birthday cakes.
 * **Gmail-Style Smart Search:** Type "Doe John" or "John Doe"—we don't care about the order, we'll find your contact.
-* **Google Keep Style Gift Ideas:** A quick, collapsible checklist for each contact to manage gift ideas locally, complete with auto-focus and auto-sorting of completed items.
 
 ---
 
 ## 🛠 Tech Stack & Architecture
 
 * **UI:** 100% Jetpack Compose (BOM 2026.05.01) with Material 3 Adaptive layout libraries.
-* **Architecture:** Clean, modularized architecture with **6 specialized ViewModels** (`Home`, `Onboarding`, `Notification`, `Settings`, `Label`, `Backup`) keeping presentation logic strictly decoupled from system APIs.
-* **Persistence:** Room v6 serving as a high-performance local cache and database for settings, notification rules, and gift ideas.
-* **DI:** Hilt for clean dependency injection, with `@Reusable` scoped Room DAOs to minimize DI overhead.
-* **Localization (i18n):** Deep translation in both German (DE) and English (EN), including dynamic notification `<plurals>` formatting for correct grammatical day counts ("In 1 day" vs. "In 5 days").
+* **Build:** AGP 9.0 ready, Java 17 toolchain, and strict R-class hardening.
+* **Architecture:** Clean, MVI-refactored architecture with **6 specialized ViewModels** keeping presentation logic strictly decoupled from system APIs.
+* **Persistence:** Room v6 serving as a high-performance local cache.
+* **DI:** Hilt for clean dependency injection.
 
 ---
 
 ## 📦 Project Guidelines
 
 We play by the rules (so you don't have to guess how the code works):
-1. **Single Source of Truth:** The Android Contacts Provider is the absolute authority for contact details.
-2. **Database Migrations:** Schema changes require a version bump and auto/manual migrations. `fallbackToDestructiveMigration` is forbidden unless it's a controlled fallback for extremely legacy versions.
-3. **No Layout Jumps:** Zero additive vertical padding. Space between components is managed by the top component's bottom-margin, preventing layout jitters during animations.
-4. **Clean Decoupling:** ViewModels are context-free. System helpers like `NotificationScheduler`, `WidgetUpdater`, and `ImagePrefetcher` are injected via Hilt interfaces to ensure JVM Unit Testability.
+1. **Single Source of Truth:** The Android Contacts Provider is the absolute authority.
+2. **Zero Layout Jumps:** No additive vertical padding. We hate jittery UIs as much as we hate missed notifications.
+3. **Clean Decoupling:** ViewModels are context-free. 
+4. **Build Hardening:** We use strict flags (`nonTransitiveRClass`, `nonFinalResIds`) because we take our build speed seriously.
 
 ---
 
