@@ -350,6 +350,9 @@ private fun HomeContent(
                 }
 
                 ListDetailPaneScaffold(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(paddingValues),
                     directive = navigator.scaffoldDirective,
                     value = navigator.scaffoldValue,
                     listPane = {
