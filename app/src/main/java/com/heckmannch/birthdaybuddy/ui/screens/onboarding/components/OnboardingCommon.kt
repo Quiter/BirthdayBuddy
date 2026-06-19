@@ -118,15 +118,15 @@ fun OnboardingPageTemplate(
                 }
             }
 
-            // Feste untere Sektion für den Button
-            Spacer(modifier = Modifier.height(if (isShortScreen) SpacingSmall else SpacingNormal))
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(if (isShortScreen) IconSizeExtraLarge else SearchBarHeight),
-                contentAlignment = Alignment.Center
-            ) {
-                if (actionButton != null) {
+            // Feste untere Sektion für den Button (nur anzeigen, wenn definiert)
+            if (actionButton != null) {
+                Spacer(modifier = Modifier.height(if (isShortScreen) SpacingSmall else SpacingNormal))
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(if (isShortScreen) IconSizeExtraLarge else SearchBarHeight),
+                    contentAlignment = Alignment.Center
+                ) {
                     actionButton()
                 }
             }

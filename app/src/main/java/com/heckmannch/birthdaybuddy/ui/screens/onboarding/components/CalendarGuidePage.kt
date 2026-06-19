@@ -38,6 +38,8 @@ import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.tooling.preview.Preview
+import com.heckmannch.birthdaybuddy.ui.theme.BirthdayBuddyTheme
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
@@ -352,4 +354,13 @@ private fun openDefaultCalendarApp(context: Context) {
         }
     }
 }
+
+@Preview(showSystemUi = true)
+@Composable
+private fun CalendarGuidePagePreview() {
+    BirthdayBuddyTheme {
+        CalendarGuidePage(windowWidthSizeClass = WindowWidthSizeClass.Compact)
+    }
+}
+
 

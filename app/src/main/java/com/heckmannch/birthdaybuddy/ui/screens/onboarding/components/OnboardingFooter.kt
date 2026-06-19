@@ -33,7 +33,6 @@ import com.heckmannch.birthdaybuddy.ui.theme.AlphaContainerSubtle
 import com.heckmannch.birthdaybuddy.ui.theme.AlphaEmphasisDisabled
 import com.heckmannch.birthdaybuddy.ui.theme.SpacingExtraSmall
 import com.heckmannch.birthdaybuddy.ui.theme.SpacingSmall
-import com.heckmannch.birthdaybuddy.ui.theme.SpacingNormal
 import com.heckmannch.birthdaybuddy.ui.theme.SpacingLarge
 import com.heckmannch.birthdaybuddy.ui.theme.OnboardingFooterButtonWidth
 
@@ -51,12 +50,20 @@ fun OnboardingFooter(
         color = MaterialTheme.colorScheme.surface,
         tonalElevation = 3.dp
     ) {
-        AdaptiveContentContainer(windowWidthSizeClass = windowWidthSizeClass) {
+        AdaptiveContentContainer(
+            windowWidthSizeClass = windowWidthSizeClass,
+            includeDisplayCutout = false
+        ) {
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
                     .navigationBarsPadding()
-                    .padding(horizontal = SpacingLarge, vertical = SpacingNormal),
+                    .padding(
+                        start = SpacingLarge,
+                        end = SpacingLarge,
+                        top = SpacingSmall,
+                        bottom = SpacingSmall
+                    ),
                 horizontalArrangement = Arrangement.Center,
                 verticalAlignment = Alignment.CenterVertically
             ) {

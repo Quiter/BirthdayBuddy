@@ -43,6 +43,9 @@ import com.heckmannch.birthdaybuddy.ui.theme.SearchBarHeight
 import com.heckmannch.birthdaybuddy.ui.theme.SpacingSmall
 import com.heckmannch.birthdaybuddy.ui.theme.OnboardingIllustrationCircleSize
 
+import androidx.compose.ui.tooling.preview.Preview
+import com.heckmannch.birthdaybuddy.ui.theme.BirthdayBuddyTheme
+
 @Composable
 fun ContactsPage(
     windowWidthSizeClass: WindowWidthSizeClass,
@@ -143,5 +146,33 @@ fun ContactsPage(
             null
         }
     )
+}
+
+@Preview(showSystemUi = true)
+@Composable
+private fun ContactsPagePreview() {
+    BirthdayBuddyTheme {
+        ContactsPage(
+            windowWidthSizeClass = WindowWidthSizeClass.Compact,
+            enabled = true,
+            onEnabledChange = {},
+            isGranted = false,
+            onGrant = {}
+        )
+    }
+}
+
+@Preview(showSystemUi = true)
+@Composable
+private fun ContactsPageGrantedPreview() {
+    BirthdayBuddyTheme {
+        ContactsPage(
+            windowWidthSizeClass = WindowWidthSizeClass.Compact,
+            enabled = true,
+            onEnabledChange = {},
+            isGranted = true,
+            onGrant = {}
+        )
+    }
 }
 

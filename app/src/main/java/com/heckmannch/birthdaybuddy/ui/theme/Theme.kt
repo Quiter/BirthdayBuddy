@@ -13,6 +13,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalInspectionMode
 import androidx.core.graphics.toColorInt
 
 private val DarkColorScheme = darkColorScheme(
@@ -519,7 +520,8 @@ fun BirthdayBuddyTheme(
         else -> isSystemInDarkTheme()
     }
 
-    val dynamicColor = themeAccent == "SYSTEM" && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S
+    val isPreview = LocalInspectionMode.current
+    val dynamicColor = !isPreview && themeAccent == "SYSTEM" && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S
 
     val colorScheme = when {
         dynamicColor -> {

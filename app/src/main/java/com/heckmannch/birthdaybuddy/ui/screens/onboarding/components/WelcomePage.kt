@@ -43,6 +43,9 @@ import com.heckmannch.birthdaybuddy.ui.theme.OnboardingCardWelcomeHeight
 import com.heckmannch.birthdaybuddy.ui.theme.AlphaOnboardingCard
 import com.heckmannch.birthdaybuddy.ui.theme.ElevationOnboardingCard
 
+import androidx.compose.ui.tooling.preview.Preview
+import com.heckmannch.birthdaybuddy.ui.theme.BirthdayBuddyTheme
+
 @Composable
 fun WelcomePage(windowWidthSizeClass: WindowWidthSizeClass) {
     OnboardingPageTemplate(
@@ -53,6 +56,14 @@ fun WelcomePage(windowWidthSizeClass: WindowWidthSizeClass) {
         title = stringResource(R.string.onboarding_welcome_title),
         description = stringResource(R.string.onboarding_welcome_desc)
     )
+}
+
+@Preview(showSystemUi = true)
+@Composable
+private fun WelcomePagePreview() {
+    BirthdayBuddyTheme {
+        WelcomePage(windowWidthSizeClass = WindowWidthSizeClass.Compact)
+    }
 }
 
 @Composable

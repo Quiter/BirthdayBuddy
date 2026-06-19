@@ -48,11 +48,32 @@ import com.heckmannch.birthdaybuddy.viewmodel.OnboardingViewModel
 import kotlinx.coroutines.launch
 import kotlin.time.Duration.Companion.milliseconds
 
+import androidx.compose.ui.tooling.preview.Preview
+import com.heckmannch.birthdaybuddy.ui.theme.BirthdayBuddyTheme
+
 @Composable
 fun OnboardingScreen(
     viewModel: OnboardingViewModel,
     windowWidthSizeClass: WindowWidthSizeClass,
     onFinish: () -> Unit,
+) {
+    OnboardingContent(
+        windowWidthSizeClass = windowWidthSizeClass,
+        onFinish = { persistentEnabled, notificationsEnabled, calendarEnabled ->
+            viewModel.setPersistentNotifications(persistentEnabled)
+            viewModel.completeOnboarding(
+                notificationsEnabled = notificationsEnabled,
+                calendarSyncEnabled = calendarEnabled
+            )
+            onFinish()
+        }
+    )
+}
+
+@Composable
+fun OnboardingContent(
+    windowWidthSizeClass: WindowWidthSizeClass,
+    onFinish: (persistentEnabled: Boolean, notificationsEnabled: Boolean, calendarEnabled: Boolean) -> Unit,
 ) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
@@ -284,15 +305,26 @@ fun OnboardingScreen(
                         notificationsEnabled = notificationsEnabled && hasNotifPermission,
                         calendarSyncEnabled = calendarEnabled && hasCalendarPermission
                     ) {
-                        viewModel.setPersistentNotifications(persistentEnabled)
-                        viewModel.completeOnboarding(
-                            notificationsEnabled = notificationsEnabled && hasNotifPermission,
-                            calendarSyncEnabled = calendarEnabled && hasCalendarPermission
+                        onFinish(
+                            persistentEnabled,
+                            notificationsEnabled && hasNotifPermission,
+                            calendarEnabled && hasCalendarPermission
                         )
-                        onFinish()
                     }
                 }
             }
         }
     }
 }
+
+@Preview(showSystemUi = true)
+@Composable
+private fun OnboardingScreenPreview() {
+    BirthdayBuddyTheme {
+        OnboardingContent(
+            windowWidthSizeClass = WindowWidthSizeClass.Compact,
+            onFinish = { _, _, _ -> }
+        )
+    }
+}
+

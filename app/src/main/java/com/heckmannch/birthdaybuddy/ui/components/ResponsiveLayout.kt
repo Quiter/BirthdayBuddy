@@ -38,14 +38,14 @@ import com.heckmannch.birthdaybuddy.ui.theme.BirthdayBuddyTheme
  * Verhindert Parameter-Drilling in tieferen UI-Hierarchien.
  */
 val LocalWindowWidthSizeClass = compositionLocalOf<WindowWidthSizeClass> {
-    error("Keine WindowWidthSizeClass bereitgestellt.")
+    WindowWidthSizeClass.Compact
 }
 
 /**
  * CompositionLocal zur Bereitstellung der aktuellen Fensterhöhenklasse.
  */
 val LocalWindowHeightSizeClass = compositionLocalOf<WindowHeightSizeClass> {
-    error("Keine WindowHeightSizeClass bereitgestellt.")
+    WindowHeightSizeClass.Medium
 }
 
 /**
@@ -57,6 +57,7 @@ val LocalWindowHeightSizeClass = compositionLocalOf<WindowHeightSizeClass> {
 fun AdaptiveContentContainer(
     modifier: Modifier = Modifier,
     windowWidthSizeClass: WindowWidthSizeClass = LocalWindowWidthSizeClass.current,
+    includeDisplayCutout: Boolean = true,
     content: @Composable () -> Unit
 ) {
     val maxWidth = Modifier
@@ -68,7 +69,13 @@ fun AdaptiveContentContainer(
             }
         )
         .fillMaxWidth()
-        .padding(WindowInsets.displayCutout.asPaddingValues()) // Notch-Schutz
+        .then(
+            if (includeDisplayCutout) {
+                Modifier.padding(WindowInsets.displayCutout.asPaddingValues())
+            } else {
+                Modifier
+            }
+        ) // Notch-Schutz
 
     Box(
         modifier = modifier,

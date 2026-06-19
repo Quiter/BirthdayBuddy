@@ -26,6 +26,8 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.tooling.preview.Preview
+import com.heckmannch.birthdaybuddy.ui.theme.BirthdayBuddyTheme
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.graphicsLayer
@@ -162,4 +164,19 @@ private fun ReadyPageIllustration(modifier: Modifier = Modifier) {
         )
     }
 }
+
+@Preview(showSystemUi = true)
+@Composable
+private fun ReadyPagePreview() {
+    BirthdayBuddyTheme {
+        ReadyPage(
+            windowWidthSizeClass = WindowWidthSizeClass.Compact,
+            hasContactPermission = true,
+            notificationsEnabled = true,
+            calendarSyncEnabled = true,
+            onStart = {}
+        )
+    }
+}
+
 
