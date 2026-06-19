@@ -521,7 +521,8 @@ fun BirthdayBuddyTheme(
     }
 
     val isPreview = LocalInspectionMode.current
-    val dynamicColor = !isPreview && themeAccent == "SYSTEM" && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S
+    val dynamicColor =
+        !isPreview && themeAccent == "SYSTEM" && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S
 
     val colorScheme = when {
         dynamicColor -> {

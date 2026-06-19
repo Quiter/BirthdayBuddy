@@ -198,7 +198,10 @@ fun ThemeSettingsScreen(
                     text = stringResource(R.string.settings_theme_accent_header),
                     style = MaterialTheme.typography.labelLarge,
                     color = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.padding(horizontal = SpacingNormal, vertical = SpacingMedium)
+                    modifier = Modifier.padding(
+                        horizontal = SpacingNormal,
+                        vertical = SpacingMedium
+                    )
                 )
             }
 
@@ -343,18 +346,18 @@ private fun ColorItem(
                     if (option.isSystem) {
                         // Rainbow-Gradient für Systemfarben (Material You)
                         Modifier.background(
-                             Brush.sweepGradient(
-                                 listOf(
-                                     Color(0xFFE91E63),
-                                     Color(0xFF9C27B0),
-                                     Color(0xFF2196F3),
-                                     Color(0xFF4CAF50),
-                                     Color(0xFFFFEB3B),
-                                     Color(0xFFFF9800),
-                                     Color(0xFFE91E63)
-                                 )
-                             )
-                         )
+                            Brush.sweepGradient(
+                                listOf(
+                                    Color(0xFFE91E63),
+                                    Color(0xFF9C27B0),
+                                    Color(0xFF2196F3),
+                                    Color(0xFF4CAF50),
+                                    Color(0xFFFFEB3B),
+                                    Color(0xFFFF9800),
+                                    Color(0xFFE91E63)
+                                )
+                            )
+                        )
                     } else {
                         Modifier.background(option.color)
                     }

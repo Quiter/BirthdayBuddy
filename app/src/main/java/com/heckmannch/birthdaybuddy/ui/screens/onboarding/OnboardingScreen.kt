@@ -29,12 +29,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
-import com.heckmannch.birthdaybuddy.ui.theme.AlphaContainerSubtle
 import com.heckmannch.birthdaybuddy.ui.components.AppResponsiveScaffold
 import com.heckmannch.birthdaybuddy.ui.screens.onboarding.components.CalendarGuidePage
 import com.heckmannch.birthdaybuddy.ui.screens.onboarding.components.CalendarPage
@@ -43,13 +43,12 @@ import com.heckmannch.birthdaybuddy.ui.screens.onboarding.components.Notificatio
 import com.heckmannch.birthdaybuddy.ui.screens.onboarding.components.OnboardingFooter
 import com.heckmannch.birthdaybuddy.ui.screens.onboarding.components.ReadyPage
 import com.heckmannch.birthdaybuddy.ui.screens.onboarding.components.WelcomePage
+import com.heckmannch.birthdaybuddy.ui.theme.AlphaContainerSubtle
+import com.heckmannch.birthdaybuddy.ui.theme.BirthdayBuddyTheme
 import com.heckmannch.birthdaybuddy.util.findActivity
 import com.heckmannch.birthdaybuddy.viewmodel.OnboardingViewModel
 import kotlinx.coroutines.launch
 import kotlin.time.Duration.Companion.milliseconds
-
-import androidx.compose.ui.tooling.preview.Preview
-import com.heckmannch.birthdaybuddy.ui.theme.BirthdayBuddyTheme
 
 @Composable
 fun OnboardingScreen(

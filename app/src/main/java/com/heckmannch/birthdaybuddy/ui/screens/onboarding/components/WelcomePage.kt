@@ -31,20 +31,19 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.tooling.preview.Preview
 import com.heckmannch.birthdaybuddy.R
 import com.heckmannch.birthdaybuddy.ui.theme.AlphaContainerMuted
+import com.heckmannch.birthdaybuddy.ui.theme.AlphaOnboardingCard
+import com.heckmannch.birthdaybuddy.ui.theme.BirthdayBuddyTheme
 import com.heckmannch.birthdaybuddy.ui.theme.ContactImageSizeSmall
+import com.heckmannch.birthdaybuddy.ui.theme.ElevationOnboardingCard
+import com.heckmannch.birthdaybuddy.ui.theme.OnboardingCardWelcomeHeight
+import com.heckmannch.birthdaybuddy.ui.theme.OnboardingCardWelcomeWidth
+import com.heckmannch.birthdaybuddy.ui.theme.OnboardingIllustrationCircleSize
 import com.heckmannch.birthdaybuddy.ui.theme.SpacingExtraSmall
 import com.heckmannch.birthdaybuddy.ui.theme.SpacingMedium
 import com.heckmannch.birthdaybuddy.ui.theme.SpacingNormal
-import com.heckmannch.birthdaybuddy.ui.theme.OnboardingIllustrationCircleSize
-import com.heckmannch.birthdaybuddy.ui.theme.OnboardingCardWelcomeWidth
-import com.heckmannch.birthdaybuddy.ui.theme.OnboardingCardWelcomeHeight
-import com.heckmannch.birthdaybuddy.ui.theme.AlphaOnboardingCard
-import com.heckmannch.birthdaybuddy.ui.theme.ElevationOnboardingCard
-
-import androidx.compose.ui.tooling.preview.Preview
-import com.heckmannch.birthdaybuddy.ui.theme.BirthdayBuddyTheme
 
 @Composable
 fun WelcomePage(windowWidthSizeClass: WindowWidthSizeClass) {

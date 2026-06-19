@@ -281,9 +281,11 @@ private fun ScrollbarBubble(
                 usePlatformDefaultWidth = false
             )
         ) {
-            Box(modifier = Modifier
-                .width(ScrollbarDefaults.BarWidth)
-                .fillMaxHeight()) {
+            Box(
+                modifier = Modifier
+                    .width(ScrollbarDefaults.BarWidth)
+                    .fillMaxHeight()
+            ) {
                 Box(modifier = Modifier.graphicsLayer {
                     translationY =
                         (thumbOffset() - ScrollbarDefaults.BubbleOffsetY).toPx().coerceAtLeast(0f)

@@ -38,37 +38,37 @@ import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
-import androidx.compose.ui.tooling.preview.Preview
-import com.heckmannch.birthdaybuddy.ui.theme.BirthdayBuddyTheme
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
 import com.heckmannch.birthdaybuddy.R
-import com.heckmannch.birthdaybuddy.ui.theme.SpacingExtraSmall
-import com.heckmannch.birthdaybuddy.ui.theme.SpacingSmall
-import com.heckmannch.birthdaybuddy.ui.theme.SpacingMedium
-import com.heckmannch.birthdaybuddy.ui.theme.SpacingNormal
-import com.heckmannch.birthdaybuddy.ui.theme.SearchBarHeight
-import com.heckmannch.birthdaybuddy.ui.theme.IconSizeExtraSmall
-import com.heckmannch.birthdaybuddy.ui.theme.OnboardingIllustrationCircleSize
-import com.heckmannch.birthdaybuddy.ui.theme.OnboardingCardGuideWidth
-import com.heckmannch.birthdaybuddy.ui.theme.OnboardingCardGuideHeight
-import com.heckmannch.birthdaybuddy.ui.theme.ElevationOnboardingCard
-import com.heckmannch.birthdaybuddy.ui.theme.AlphaOnboardingCard
-import com.heckmannch.birthdaybuddy.ui.theme.AlphaContainerSubtle
 import com.heckmannch.birthdaybuddy.ui.theme.AlphaContainerMuted
+import com.heckmannch.birthdaybuddy.ui.theme.AlphaContainerSubtle
 import com.heckmannch.birthdaybuddy.ui.theme.AlphaEmphasisLow
+import com.heckmannch.birthdaybuddy.ui.theme.AlphaOnboardingCard
+import com.heckmannch.birthdaybuddy.ui.theme.BirthdayBuddyTheme
+import com.heckmannch.birthdaybuddy.ui.theme.ElevationOnboardingCard
+import com.heckmannch.birthdaybuddy.ui.theme.IconSizeExtraSmall
 import com.heckmannch.birthdaybuddy.ui.theme.OnboardingCalendarCellSize
 import com.heckmannch.birthdaybuddy.ui.theme.OnboardingCalendarEventAlpha
+import com.heckmannch.birthdaybuddy.ui.theme.OnboardingCardGuideHeight
+import com.heckmannch.birthdaybuddy.ui.theme.OnboardingCardGuideWidth
+import com.heckmannch.birthdaybuddy.ui.theme.OnboardingGuideCheckIconSize
 import com.heckmannch.birthdaybuddy.ui.theme.OnboardingGuideCircleSize
 import com.heckmannch.birthdaybuddy.ui.theme.OnboardingGuideIconSize
-import com.heckmannch.birthdaybuddy.ui.theme.OnboardingGuideCheckIconSize
-import com.heckmannch.birthdaybuddy.ui.theme.OnboardingGuideTextSpacer
 import com.heckmannch.birthdaybuddy.ui.theme.OnboardingGuideSmallCornerRadius
+import com.heckmannch.birthdaybuddy.ui.theme.OnboardingGuideTextSpacer
 import com.heckmannch.birthdaybuddy.ui.theme.OnboardingGuideTinySpacer
+import com.heckmannch.birthdaybuddy.ui.theme.OnboardingIllustrationCircleSize
+import com.heckmannch.birthdaybuddy.ui.theme.SearchBarHeight
+import com.heckmannch.birthdaybuddy.ui.theme.SpacingExtraSmall
+import com.heckmannch.birthdaybuddy.ui.theme.SpacingMedium
+import com.heckmannch.birthdaybuddy.ui.theme.SpacingNormal
+import com.heckmannch.birthdaybuddy.ui.theme.SpacingSmall
 
 @Composable
 fun CalendarGuidePage(windowWidthSizeClass: WindowWidthSizeClass) {
@@ -199,7 +199,10 @@ private fun CalendarGuideIllustration(modifier: Modifier = Modifier) {
                     Box(
                         modifier = Modifier
                             .size(IconSizeExtraSmall)
-                            .background(Color(0xFF4285F4), shape = RoundedCornerShape(OnboardingGuideSmallCornerRadius)),
+                            .background(
+                                Color(0xFF4285F4),
+                                shape = RoundedCornerShape(OnboardingGuideSmallCornerRadius)
+                            ),
                         contentAlignment = Alignment.Center
                     ) {
                         Icon(
@@ -265,7 +268,10 @@ private fun CalendarGuideIllustration(modifier: Modifier = Modifier) {
                     Box(
                         modifier = Modifier
                             .size(IconSizeExtraSmall)
-                            .background(Color(0xFF0F9D58), shape = RoundedCornerShape(OnboardingGuideSmallCornerRadius)),
+                            .background(
+                                Color(0xFF0F9D58),
+                                shape = RoundedCornerShape(OnboardingGuideSmallCornerRadius)
+                            ),
                         contentAlignment = Alignment.Center
                     ) {
                         Icon(

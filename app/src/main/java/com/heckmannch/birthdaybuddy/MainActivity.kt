@@ -76,26 +76,37 @@ import javax.inject.Inject
  */
 @Serializable
 object Home
+
 @Serializable
 object Onboarding
+
 @Serializable
 object Settings
+
 @Serializable
 object LabelSettings
+
 @Serializable
 object NotificationSettings
+
 @Serializable
 object OtherEventsSettings
+
 @Serializable
 object CalendarSettings
+
 @Serializable
 object BackupSettings
+
 @Serializable
 object ThemeSettings
+
 @Serializable
 object SyncSettings
+
 @Serializable
 object About
+
 @Serializable
 object PrivacyPolicy
 
