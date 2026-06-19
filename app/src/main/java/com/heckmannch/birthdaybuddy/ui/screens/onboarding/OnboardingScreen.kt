@@ -1,7 +1,6 @@
 package com.heckmannch.birthdaybuddy.ui.screens.onboarding
 
 import android.Manifest
-import android.app.Activity
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.net.Uri
@@ -14,11 +13,13 @@ import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -30,6 +31,9 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import com.heckmannch.birthdaybuddy.ui.components.AppResponsiveScaffold
 import com.heckmannch.birthdaybuddy.ui.screens.onboarding.components.CalendarGuidePage
 import com.heckmannch.birthdaybuddy.ui.screens.onboarding.components.CalendarPage
@@ -38,6 +42,7 @@ import com.heckmannch.birthdaybuddy.ui.screens.onboarding.components.Notificatio
 import com.heckmannch.birthdaybuddy.ui.screens.onboarding.components.OnboardingFooter
 import com.heckmannch.birthdaybuddy.ui.screens.onboarding.components.ReadyPage
 import com.heckmannch.birthdaybuddy.ui.screens.onboarding.components.WelcomePage
+import com.heckmannch.birthdaybuddy.util.findActivity
 import com.heckmannch.birthdaybuddy.viewmodel.OnboardingViewModel
 import kotlinx.coroutines.launch
 import kotlin.time.Duration.Companion.milliseconds
@@ -50,6 +55,7 @@ fun OnboardingScreen(
 ) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
+    val lifecycleOwner = LocalLifecycleOwner.current
 
     var contactsEnabled by remember { mutableStateOf(value = true) }
     var notificationsEnabled by remember { mutableStateOf(value = true) }
@@ -63,6 +69,20 @@ fun OnboardingScreen(
                 Manifest.permission.READ_CONTACTS
             ) == PackageManager.PERMISSION_GRANTED
         )
+    }
+
+    // Re-check permissions when coming back to the app (e.g. from settings)
+    DisposableEffect(lifecycleOwner) {
+        val observer = LifecycleEventObserver { _, event ->
+            if (event == Lifecycle.Event.ON_RESUME) {
+                hasContactPermission = ContextCompat.checkSelfPermission(
+                    context,
+                    Manifest.permission.READ_CONTACTS
+                ) == PackageManager.PERMISSION_GRANTED
+            }
+        }
+        lifecycleOwner.lifecycle.addObserver(observer)
+        onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
     }
 
     var hasNotifPermission by remember {
@@ -106,7 +126,7 @@ fun OnboardingScreen(
         }
 
     val onRequestContactPermission = {
-        val activity = context as? Activity
+        val activity = context.findActivity()
         val shouldShowRationale = activity?.let {
             ActivityCompat.shouldShowRequestPermissionRationale(
                 it,
@@ -209,10 +229,12 @@ fun OnboardingScreen(
                     }
                 )
             }
-        ) {
+        ) { paddingValues ->
             HorizontalPager(
                 state = pagerState,
-                modifier = Modifier.fillMaxSize(),
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(paddingValues),
                 userScrollEnabled = false
             ) { page ->
                 val actualPage = if (!showCalendarGuide && page >= 4) page + 1 else page

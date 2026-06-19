@@ -251,7 +251,9 @@ private fun CalendarPageIllustration(
                                 .padding(horizontal = SpacingExtraSmall),
                             shape = RoundedCornerShape(6.dp),
                             colors = CardDefaults.cardColors(
-                                containerColor = MaterialTheme.colorScheme.tertiaryContainer.copy(alpha = 0.8f)
+                                containerColor = MaterialTheme.colorScheme.tertiaryContainer.copy(
+                                    alpha = 0.8f
+                                )
                             )
                         ) {
                             Row(

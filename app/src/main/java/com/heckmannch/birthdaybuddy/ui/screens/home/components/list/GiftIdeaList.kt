@@ -75,7 +75,11 @@ fun GiftIdeaList(
                 .padding(start = SpacingSmall)
                 .testTag("add_gift_idea_button")
         ) {
-            Icon(Icons.Default.Add, contentDescription = null, modifier = Modifier.size(IconSizeSmall))
+            Icon(
+                Icons.Default.Add,
+                contentDescription = null,
+                modifier = Modifier.size(IconSizeSmall)
+            )
             Spacer(modifier = Modifier.width(SpacingSmall))
             Text(stringResource(R.string.gift_dialog_add))
         }

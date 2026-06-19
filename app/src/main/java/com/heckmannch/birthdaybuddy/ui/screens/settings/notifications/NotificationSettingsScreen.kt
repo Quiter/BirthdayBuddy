@@ -327,7 +327,10 @@ private fun NotificationSettingsContent(
                                 stringResource(R.string.notifications_planned_header),
                                 style = MaterialTheme.typography.labelLarge,
                                 color = MaterialTheme.colorScheme.primary,
-                                modifier = Modifier.padding(horizontal = SpacingNormal, vertical = SpacingSmall)
+                                modifier = Modifier.padding(
+                                    horizontal = SpacingNormal,
+                                    vertical = SpacingSmall
+                                )
                             )
                         }
                         items(rules, key = { it.id }) { rule ->

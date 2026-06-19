@@ -1,6 +1,7 @@
 # Project Guidelines & Context
 
 This rule ensures that the agent always respects the current status, structure, and guidelines of the BirthdayBuddy project.
+The project is hosted at: https://github.com/Quiter/BirthdayBuddy
 
 ## Project Documents to Consult
 Always refer to and follow the specifications, rules, and architecture laid out in:

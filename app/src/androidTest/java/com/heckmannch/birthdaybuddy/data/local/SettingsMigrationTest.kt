@@ -85,7 +85,8 @@ class SettingsMigrationTest {
         assert(settingsCursor.getString(ignoredCouplePairsIndex) == "[]")
         settingsCursor.close()
 
-        val userDataCursor = migratedDb.query("SELECT * FROM contact_user_data WHERE lookupKey = 'k1'")
+        val userDataCursor =
+            migratedDb.query("SELECT * FROM contact_user_data WHERE lookupKey = 'k1'")
         assert(userDataCursor.moveToFirst())
         val spouseLookupKeyIndex = userDataCursor.getColumnIndex("spouseLookupKey")
         assert(userDataCursor.isNull(spouseLookupKeyIndex))

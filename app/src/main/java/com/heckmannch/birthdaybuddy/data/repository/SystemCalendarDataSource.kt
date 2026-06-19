@@ -30,7 +30,11 @@ interface SystemCalendarDataSource {
     /**
      * Löscht einen Kalender anhand seiner ID.
      */
-    suspend fun deleteCalendarById(calendarId: Long, accountName: String, accountType: String): Boolean
+    suspend fun deleteCalendarById(
+        calendarId: Long,
+        accountName: String,
+        accountType: String
+    ): Boolean
 
     /**
      * Aktualisiert die Farbe eines Kalenders.

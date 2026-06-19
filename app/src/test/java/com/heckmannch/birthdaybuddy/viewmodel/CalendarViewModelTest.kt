@@ -34,7 +34,8 @@ class CalendarViewModelTest {
     @Before
     fun setup() {
         whenever(notificationRepository.settings).thenReturn(flowOf(AppSettings()))
-        viewModel = CalendarViewModel(notificationRepository, calendarSyncRepository, contactRepository)
+        viewModel =
+            CalendarViewModel(notificationRepository, calendarSyncRepository, contactRepository)
     }
 
     @Test
@@ -47,8 +48,9 @@ class CalendarViewModelTest {
             nameDayCalendarColor = 789
         )
         whenever(notificationRepository.settings).thenReturn(flowOf(testSettings))
-        
-        val viewModel = CalendarViewModel(notificationRepository, calendarSyncRepository, contactRepository)
+
+        val viewModel =
+            CalendarViewModel(notificationRepository, calendarSyncRepository, contactRepository)
         val uiState = viewModel.uiState.first { it.calendarSyncEnabled }
 
         assertThat(uiState.calendarSyncEnabled).isTrue()
@@ -62,7 +64,7 @@ class CalendarViewModelTest {
     fun `updateCalendarColor should delegate to repository`() = runTest {
         val type = CalendarSyncRepository.CalendarType.BIRTHDAY
         viewModel.updateCalendarColor(type, 111)
-        
+
         verify(calendarSyncRepository).updateCalendarColor(type, 111)
     }
 
@@ -70,9 +72,9 @@ class CalendarViewModelTest {
     fun `setCalendarSyncEnabled(true) should update settings and trigger sync`() = runTest {
         whenever(contactRepository.getAllContactsImmediate()).thenReturn(emptyList())
         whenever(calendarSyncRepository.syncBirthdays(any())).thenReturn(true)
-        
+
         viewModel.setCalendarSyncEnabled(true)
-        
+
         verify(notificationRepository).updateSettings(
             notificationsEnabled = eq(null),
             persistentNotifications = eq(null),
@@ -97,7 +99,7 @@ class CalendarViewModelTest {
         whenever(calendarSyncRepository.deleteCalendar()).thenReturn(true)
 
         viewModel.setCalendarSyncEnabled(false)
-        
+
         verify(notificationRepository).updateSettings(
             notificationsEnabled = eq(null),
             persistentNotifications = eq(null),

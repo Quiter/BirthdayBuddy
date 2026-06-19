@@ -81,7 +81,11 @@ class CalendarSyncRepository @Inject constructor(
                             seenActiveIds[name] = id
                         } else {
                             // Duplikat löschen
-                            systemCalendarDataSource.deleteCalendarById(id, accountName, accountType)
+                            systemCalendarDataSource.deleteCalendarById(
+                                id,
+                                accountName,
+                                accountType
+                            )
                         }
                     } else {
                         // Falscher Account-Name/Typ - löschen
@@ -145,7 +149,8 @@ class CalendarSyncRepository @Inject constructor(
 
     fun debugPrintAllCalendars() {
         Log.d("CalendarSyncRepo", "=== START DEBUG PRINT ALL CALENDARS ===")
-        val calendars = kotlinx.coroutines.runBlocking { systemCalendarDataSource.queryAllCalendars() }
+        val calendars =
+            kotlinx.coroutines.runBlocking { systemCalendarDataSource.queryAllCalendars() }
         for (calendar in calendars) {
             Log.d(
                 "CalendarSyncRepo",
@@ -179,18 +184,28 @@ class CalendarSyncRepository @Inject constructor(
             if (anniversaryCalId != null) {
                 systemCalendarDataSource.clearCalendarEvents(anniversaryCalId)
             } else {
-                systemCalendarDataSource.findCalendarIdByName(CalendarType.ANNIVERSARY.calendarName)?.let { id ->
-                    systemCalendarDataSource.deleteCalendarById(id, "BirthdayBuddy", CalendarContract.ACCOUNT_TYPE_LOCAL)
-                }
+                systemCalendarDataSource.findCalendarIdByName(CalendarType.ANNIVERSARY.calendarName)
+                    ?.let { id ->
+                        systemCalendarDataSource.deleteCalendarById(
+                            id,
+                            "BirthdayBuddy",
+                            CalendarContract.ACCOUNT_TYPE_LOCAL
+                        )
+                    }
             }
 
             // Namenstage leeren oder Kalender löschen falls deaktiviert
             if (nameDayCalId != null) {
                 systemCalendarDataSource.clearCalendarEvents(nameDayCalId)
             } else {
-                systemCalendarDataSource.findCalendarIdByName(CalendarType.NAMEDAY.calendarName)?.let { id ->
-                    systemCalendarDataSource.deleteCalendarById(id, "BirthdayBuddy", CalendarContract.ACCOUNT_TYPE_LOCAL)
-                }
+                systemCalendarDataSource.findCalendarIdByName(CalendarType.NAMEDAY.calendarName)
+                    ?.let { id ->
+                        systemCalendarDataSource.deleteCalendarById(
+                            id,
+                            "BirthdayBuddy",
+                            CalendarContract.ACCOUNT_TYPE_LOCAL
+                        )
+                    }
             }
 
             val operations = ArrayList<ContentProviderOperation>()

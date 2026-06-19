@@ -227,7 +227,10 @@ fun BirthdayItem(
                             text = contact.labels.joinToString(", "),
                             style = MaterialTheme.typography.labelSmall,
                             color = MaterialTheme.colorScheme.primary.copy(alpha = AlphaEmphasisMedium),
-                            modifier = Modifier.padding(horizontal = SpacingNormal, vertical = SpacingSmall),
+                            modifier = Modifier.padding(
+                                horizontal = SpacingNormal,
+                                vertical = SpacingSmall
+                            ),
                             maxLines = 1,
                             overflow = TextOverflow.Ellipsis
                         )

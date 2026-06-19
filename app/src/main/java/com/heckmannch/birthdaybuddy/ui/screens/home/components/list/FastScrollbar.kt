@@ -134,7 +134,7 @@ fun FastScrollbar(
 
         // Best Practice: canScroll entscheidet nur, ob die Scrollbar ÜBERHAUPT existiert.
         // Einmal angezeigt, bleibt sie da, bis die Sichtbarkeit (alpha) sie ausblendet.
-        val isNeeded by remember(totalItems) {
+        val isNeeded by remember(totalItems, isResettingFilter) {
             derivedStateOf { totalItems > ScrollbarDefaults.MIN_ITEMS_THRESHOLD }
         }
 
@@ -152,9 +152,13 @@ fun FastScrollbar(
                         val scrollOffset = listState.firstVisibleItemScrollOffset.toFloat()
                         val itemSize = firstItem.size.toFloat().coerceAtLeast(1f)
 
-                        val fractionalIndex = listState.firstVisibleItemIndex.toFloat() + (scrollOffset / itemSize)
-                        val maxScrollIndex = (totalItems.toFloat() - (layoutInfo.viewportEndOffset / itemSize)).coerceAtLeast(1f)
-                        
+                        val fractionalIndex =
+                            listState.firstVisibleItemIndex.toFloat() + (scrollOffset / itemSize)
+                        val maxScrollIndex =
+                            (totalItems.toFloat() - (layoutInfo.viewportEndOffset / itemSize)).coerceAtLeast(
+                                1f
+                            )
+
                         val scrollPercent = (fractionalIndex / maxScrollIndex).coerceIn(0f, 1f)
                         trackHeight * scrollPercent
                     }
@@ -163,7 +167,8 @@ fun FastScrollbar(
 
             val currentLabel by remember(contacts, thumbOffset, trackHeight) {
                 derivedStateOf {
-                    val percent = if (trackHeight > 0.dp) (thumbOffset / trackHeight).coerceIn(0f, 1f) else 0f
+                    val percent =
+                        if (trackHeight > 0.dp) (thumbOffset / trackHeight).coerceIn(0f, 1f) else 0f
                     val index = (percent * (totalItems - 1)).toInt().coerceIn(0, totalItems - 1)
                     contacts.getOrNull(index)?.let(getLabel) ?: ""
                 }
@@ -174,7 +179,10 @@ fun FastScrollbar(
             }
 
             // Bubble in einem Popup, damit sie IMMER über dem FAB liegt (Z-Index fix)
-            ScrollbarBubble(visible = showBubble, label = currentLabel, thumbOffset = { thumbOffset })
+            ScrollbarBubble(
+                visible = showBubble,
+                label = currentLabel,
+                thumbOffset = { thumbOffset })
 
             // Interaktive Spur
             Box(
@@ -189,17 +197,27 @@ fun FastScrollbar(
                             onDragStart = { offset ->
                                 isDragging = true
                                 currentOnSetFastScrolling(true)
-                                dragOffsetPx = (offset.y - thumbHeightPx / 2f).coerceIn(0f, currentTrackHeightPx)
+                                dragOffsetPx = (offset.y - thumbHeightPx / 2f).coerceIn(
+                                    0f,
+                                    currentTrackHeightPx
+                                )
                                 val scrollPercent = dragOffsetPx / currentTrackHeightPx
-                                val (targetIndex, targetOffset) = calculateScrollTarget(scrollPercent, currentTotalItems)
+                                val (targetIndex, targetOffset) = calculateScrollTarget(
+                                    scrollPercent,
+                                    currentTotalItems
+                                )
                                 scope.launch { listState.scrollToItem(targetIndex, targetOffset) }
                             },
                             onDragEnd = { isDragging = false; currentOnSetFastScrolling(false) },
                             onDragCancel = { isDragging = false; currentOnSetFastScrolling(false) },
                         ) { change, dragAmount ->
-                            dragOffsetPx = (dragOffsetPx + dragAmount).coerceIn(0f, currentTrackHeightPx)
+                            dragOffsetPx =
+                                (dragOffsetPx + dragAmount).coerceIn(0f, currentTrackHeightPx)
                             val scrollPercent = dragOffsetPx / currentTrackHeightPx
-                            val (targetIndex, targetOffset) = calculateScrollTarget(scrollPercent, currentTotalItems)
+                            val (targetIndex, targetOffset) = calculateScrollTarget(
+                                scrollPercent,
+                                currentTotalItems
+                            )
                             scope.launch { listState.scrollToItem(targetIndex, targetOffset) }
                             change.consume()
                         }
@@ -223,9 +241,19 @@ fun FastScrollbar(
                         verticalArrangement = Arrangement.Center,
                         modifier = Modifier.fillMaxSize()
                     ) {
-                        Icon(Icons.Default.KeyboardArrowUp, null, Modifier.size(14.dp), tint = MaterialTheme.colorScheme.onPrimary)
+                        Icon(
+                            Icons.Default.KeyboardArrowUp,
+                            null,
+                            Modifier.size(14.dp),
+                            tint = MaterialTheme.colorScheme.onPrimary
+                        )
                         Spacer(Modifier.height(2.dp))
-                        Icon(Icons.Default.KeyboardArrowDown, null, Modifier.size(14.dp), tint = MaterialTheme.colorScheme.onPrimary)
+                        Icon(
+                            Icons.Default.KeyboardArrowDown,
+                            null,
+                            Modifier.size(14.dp),
+                            tint = MaterialTheme.colorScheme.onPrimary
+                        )
                     }
                 }
             }
@@ -247,16 +275,19 @@ private fun ScrollbarBubble(
             alignment = Alignment.TopStart,
             offset = remember { IntOffset.Zero },
             properties = PopupProperties(
-                focusable = false, 
-                dismissOnBackPress = false, 
-                dismissOnClickOutside = false, 
-                clippingEnabled = false, 
+                focusable = false,
+                dismissOnBackPress = false,
+                dismissOnClickOutside = false,
+                clippingEnabled = false,
                 usePlatformDefaultWidth = false
             )
         ) {
-            Box(modifier = Modifier.width(ScrollbarDefaults.BarWidth).fillMaxHeight()) {
-                Box(modifier = Modifier.graphicsLayer { 
-                    translationY = (thumbOffset() - ScrollbarDefaults.BubbleOffsetY).toPx().coerceAtLeast(0f) 
+            Box(modifier = Modifier
+                .width(ScrollbarDefaults.BarWidth)
+                .fillMaxHeight()) {
+                Box(modifier = Modifier.graphicsLayer {
+                    translationY =
+                        (thumbOffset() - ScrollbarDefaults.BubbleOffsetY).toPx().coerceAtLeast(0f)
                 }) {
                     AnimatedVisibility(
                         visibleState = transitionState,
@@ -264,7 +295,12 @@ private fun ScrollbarBubble(
                         exit = fadeOut() + slideOutHorizontally { it / 2 },
                     ) {
                         Surface(
-                            shape = RoundedCornerShape(topStart = 24.dp, bottomStart = 24.dp, topEnd = 4.dp, bottomEnd = 24.dp),
+                            shape = RoundedCornerShape(
+                                topStart = ScrollbarDefaults.BubbleCornerLarge,
+                                bottomStart = ScrollbarDefaults.BubbleCornerLarge,
+                                topEnd = ScrollbarDefaults.BubbleCornerSmall,
+                                bottomEnd = ScrollbarDefaults.BubbleCornerLarge
+                            ),
                             color = MaterialTheme.colorScheme.primary,
                             tonalElevation = ScrollbarDefaults.BubbleElevation,
                             modifier = Modifier.padding(end = 16.dp)

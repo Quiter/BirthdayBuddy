@@ -155,7 +155,7 @@
     <string name="onboarding_welcome_title">Willkommen bei BirthdayBuddy</string>
     <string name="onboarding_welcome_desc">Dein zuverlässiger Begleiter, um nie wieder einen Geburtstag zu vergessen. Alle Kontakte an einem Ort, sortiert nach ihrem großen Tag.</string>
     <string name="onboarding_contacts_title">Deine Kontakte</string>
-    <string name="onboarding_contacts_desc">Um dir Geburtstage anzuzeigen, benötigt BirthdayBuddy Zugriff auf deine System-Kontakte. Deine Daten bleiben lokal auf deinem Gerät.</string>
+    <string name="onboarding_contacts_desc">Um dir Geburtstage anzuzeigen, benötigt BirthdayBuddy Zugriff auf deine System-Kontakte. Deine Daten bleiben lokal auf deinem Gerät. Stelle sicher, dass oben „Kontakte synchronisieren“ aktiv ist.</string>
     <string name="onboarding_contacts_btn">Berechtigung erteilen</string>
 
     <string name="onboarding_contacts_granted">Zugriff gewährt!</string>

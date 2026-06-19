@@ -32,7 +32,7 @@ class GiftIdeaBackupManagerTest {
         val giftIdeas = listOf(GiftIdea(text = "Book"))
         val userData = listOf(ContactUserData(lookupKey = "key1", giftIdeas = giftIdeas))
         val contacts = listOf(Contact(contactId = "1", lookupKey = "key1", fullName = "John Doe"))
-        
+
         whenever(contactUserDataDao.getAllUserDataImmediate()).thenReturn(userData)
         whenever(contactDao.getAllContactsImmediate()).thenReturn(contacts)
 
@@ -66,8 +66,10 @@ class GiftIdeaBackupManagerTest {
     @Test
     fun `importGiftIdeas should match by name as fallback`() = runTest {
         // Given
-        val json = "[{\"lookupKey\": \"wrong_key\", \"fullName\": \"John Doe\", \"giftIdeas\": \"[]\"}]"
-        val contacts = listOf(Contact(contactId = "1", lookupKey = "correct_key", fullName = "John Doe"))
+        val json =
+            "[{\"lookupKey\": \"wrong_key\", \"fullName\": \"John Doe\", \"giftIdeas\": \"[]\"}]"
+        val contacts =
+            listOf(Contact(contactId = "1", lookupKey = "correct_key", fullName = "John Doe"))
         whenever(contactDao.getAllContactsImmediate()).thenReturn(contacts)
 
         // When

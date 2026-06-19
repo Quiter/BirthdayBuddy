@@ -9,7 +9,7 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.Text
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.test.assertIsDisplayed
-import androidx.compose.ui.test.junit4.createComposeRule
+import androidx.compose.ui.test.junit4.v2.createComposeRule
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performTouchInput
@@ -46,7 +46,8 @@ class FastScrollbarTest {
 
         // Der Scrollbar sollte am Anfang nicht existieren oder alpha 0 haben
         // Wir prüfen hier auf das Fehlen der Content Description
-        composeTestRule.onNodeWithContentDescription("Scrollbar", substring = true).assertDoesNotExist()
+        composeTestRule.onNodeWithContentDescription("Scrollbar", substring = true)
+            .assertDoesNotExist()
     }
 
     @Test
@@ -56,12 +57,18 @@ class FastScrollbarTest {
                 val listState = rememberLazyListState()
                 Box(modifier = Modifier.fillMaxSize()) {
                     LazyColumn(state = listState, modifier = Modifier.fillMaxSize()) {
-                        items(List(50) { "Item $it" }) { Text(it, modifier = Modifier.size(100.dp)) }
+                        // Wir brauchen genug Items, um über den Threshold (10) zu kommen
+                        items(List(50) { "Item $it" }) {
+                            Text(
+                                it,
+                                modifier = Modifier.size(100.dp)
+                            )
+                        }
                     }
                     FastScrollbar(
                         listState = listState,
-                        contacts = SampleData.sampleContacts,
-                        getLabel = { it.monthName }
+                        contacts = List(15) { SampleData.sampleContacts.first() }, // Explizit 15 Items
+                        getLabel = { "Label" }
                     )
                 }
             }
@@ -70,7 +77,11 @@ class FastScrollbarTest {
         // Scrollen triggern
         composeTestRule.onNodeWithText("Item 0").performTouchInput { swipeUp() }
 
-        // Jetzt sollte der Scrollbar sichtbar sein
-        composeTestRule.onNodeWithContentDescription("Scrollbar", substring = true).assertIsDisplayed()
+        // Warten bis die Sichtbarkeit durch Scrollen triggert
+        composeTestRule.mainClock.autoAdvance = true
+        composeTestRule.waitForIdle()
+
+        composeTestRule.onNodeWithContentDescription("Scrollbar", substring = true)
+            .assertIsDisplayed()
     }
 }

@@ -31,31 +31,36 @@ class SystemCalendarDataSourceImpl @Inject constructor(
                 ) == PackageManager.PERMISSION_GRANTED
     }
 
-    override suspend fun findCalendarIdByName(calendarName: String): Long? = withContext(Dispatchers.IO) {
-        val projection = arrayOf(CalendarContract.Calendars._ID)
-        val selection =
-            "${CalendarContract.Calendars.NAME} = ? AND ${CalendarContract.Calendars.ACCOUNT_NAME} = ? AND ${CalendarContract.Calendars.ACCOUNT_TYPE} = ?"
-        val selectionArgs =
-            arrayOf(calendarName, "BirthdayBuddy", CalendarContract.ACCOUNT_TYPE_LOCAL)
-        try {
-            context.contentResolver.query(
-                CalendarContract.Calendars.CONTENT_URI,
-                projection,
-                selection,
-                selectionArgs,
-                null
-            )?.use { cursor ->
-                if (cursor.moveToFirst()) {
-                    return@withContext cursor.getLong(0)
+    override suspend fun findCalendarIdByName(calendarName: String): Long? =
+        withContext(Dispatchers.IO) {
+            val projection = arrayOf(CalendarContract.Calendars._ID)
+            val selection =
+                "${CalendarContract.Calendars.NAME} = ? AND ${CalendarContract.Calendars.ACCOUNT_NAME} = ? AND ${CalendarContract.Calendars.ACCOUNT_TYPE} = ?"
+            val selectionArgs =
+                arrayOf(calendarName, "BirthdayBuddy", CalendarContract.ACCOUNT_TYPE_LOCAL)
+            try {
+                context.contentResolver.query(
+                    CalendarContract.Calendars.CONTENT_URI,
+                    projection,
+                    selection,
+                    selectionArgs,
+                    null
+                )?.use { cursor ->
+                    if (cursor.moveToFirst()) {
+                        return@withContext cursor.getLong(0)
+                    }
                 }
+            } catch (e: Exception) {
+                Log.e("SystemCalendarDS", "Error finding calendar by name: $calendarName", e)
             }
-        } catch (e: Exception) {
-            Log.e("SystemCalendarDS", "Error finding calendar by name: $calendarName", e)
+            null
         }
-        null
-    }
 
-    override suspend fun createLocalCalendar(calendarName: String, displayName: String, color: Int): Long? = withContext(Dispatchers.IO) {
+    override suspend fun createLocalCalendar(
+        calendarName: String,
+        displayName: String,
+        color: Int
+    ): Long? = withContext(Dispatchers.IO) {
         val builder = CalendarContract.Calendars.CONTENT_URI.buildUpon()
         builder.appendQueryParameter(CalendarContract.CALLER_IS_SYNCADAPTER, "true")
         builder.appendQueryParameter(CalendarContract.Calendars.ACCOUNT_NAME, "BirthdayBuddy")
@@ -97,7 +102,11 @@ class SystemCalendarDataSourceImpl @Inject constructor(
         null
     }
 
-    override suspend fun getOrCreateCalendar(calendarName: String, displayName: String, color: Int): Long? {
+    override suspend fun getOrCreateCalendar(
+        calendarName: String,
+        displayName: String,
+        color: Int
+    ): Long? {
         val existingId = findCalendarIdByName(calendarName)
         if (existingId != null) {
             return existingId
@@ -105,7 +114,11 @@ class SystemCalendarDataSourceImpl @Inject constructor(
         return createLocalCalendar(calendarName, displayName, color)
     }
 
-    override suspend fun deleteCalendarById(calendarId: Long, accountName: String, accountType: String): Boolean = withContext(Dispatchers.IO) {
+    override suspend fun deleteCalendarById(
+        calendarId: Long,
+        accountName: String,
+        accountType: String
+    ): Boolean = withContext(Dispatchers.IO) {
         val builder = CalendarContract.Calendars.CONTENT_URI.buildUpon()
         builder.appendQueryParameter(CalendarContract.CALLER_IS_SYNCADAPTER, "true")
         builder.appendQueryParameter(CalendarContract.Calendars.ACCOUNT_NAME, accountName)
@@ -132,115 +145,120 @@ class SystemCalendarDataSourceImpl @Inject constructor(
         }
     }
 
-    override suspend fun updateCalendarColor(calendarId: Long, newColor: Int): Boolean = withContext(Dispatchers.IO) {
-        val uri = CalendarContract.Calendars.CONTENT_URI.buildUpon()
-            .appendQueryParameter(CalendarContract.CALLER_IS_SYNCADAPTER, "true")
-            .appendQueryParameter(CalendarContract.Calendars.ACCOUNT_NAME, "BirthdayBuddy")
-            .appendQueryParameter(
-                CalendarContract.Calendars.ACCOUNT_TYPE,
-                CalendarContract.ACCOUNT_TYPE_LOCAL
-            )
-            .build()
+    override suspend fun updateCalendarColor(calendarId: Long, newColor: Int): Boolean =
+        withContext(Dispatchers.IO) {
+            val uri = CalendarContract.Calendars.CONTENT_URI.buildUpon()
+                .appendQueryParameter(CalendarContract.CALLER_IS_SYNCADAPTER, "true")
+                .appendQueryParameter(CalendarContract.Calendars.ACCOUNT_NAME, "BirthdayBuddy")
+                .appendQueryParameter(
+                    CalendarContract.Calendars.ACCOUNT_TYPE,
+                    CalendarContract.ACCOUNT_TYPE_LOCAL
+                )
+                .build()
 
-        val values = ContentValues().apply {
-            put(CalendarContract.Calendars.CALENDAR_COLOR, newColor)
-        }
-
-        try {
-            val updatedRows = context.contentResolver.update(
-                uri,
-                values,
-                "${CalendarContract.Calendars._ID} = ?",
-                arrayOf(calendarId.toString())
-            )
-            return@withContext updatedRows > 0
-        } catch (e: Exception) {
-            Log.e("SystemCalendarDS", "Error updating color for calendar: $calendarId", e)
-            false
-        }
-    }
-
-    override suspend fun queryAllCalendars(): List<SystemCalendarInfo> = withContext(Dispatchers.IO) {
-        val projection = arrayOf(
-            CalendarContract.Calendars._ID,
-            CalendarContract.Calendars.ACCOUNT_NAME,
-            CalendarContract.Calendars.ACCOUNT_TYPE,
-            CalendarContract.Calendars.NAME,
-            CalendarContract.Calendars.CALENDAR_DISPLAY_NAME,
-            CalendarContract.Calendars.VISIBLE
-        )
-        val list = mutableListOf<SystemCalendarInfo>()
-        try {
-            context.contentResolver.query(
-                CalendarContract.Calendars.CONTENT_URI,
-                projection,
-                null,
-                null,
-                null
-            )?.use { cursor ->
-                val idCol = cursor.getColumnIndex(CalendarContract.Calendars._ID)
-                val accNameCol = cursor.getColumnIndex(CalendarContract.Calendars.ACCOUNT_NAME)
-                val accTypeCol = cursor.getColumnIndex(CalendarContract.Calendars.ACCOUNT_TYPE)
-                val nameCol = cursor.getColumnIndex(CalendarContract.Calendars.NAME)
-                val dispNameCol = cursor.getColumnIndex(CalendarContract.Calendars.CALENDAR_DISPLAY_NAME)
-                val visibleCol = cursor.getColumnIndex(CalendarContract.Calendars.VISIBLE)
-
-                while (cursor.moveToNext()) {
-                    val id = cursor.getLong(idCol)
-                    val accName = cursor.getString(accNameCol)
-                    val accType = cursor.getString(accTypeCol)
-                    val name = cursor.getString(nameCol) ?: ""
-                    val dispName = cursor.getString(dispNameCol)
-                    val visible = cursor.getInt(visibleCol)
-                    list.add(
-                        SystemCalendarInfo(
-                            id = id,
-                            name = name,
-                            accountName = accName,
-                            accountType = accType,
-                            displayName = dispName,
-                            visible = visible
-                        )
-                    )
-                }
+            val values = ContentValues().apply {
+                put(CalendarContract.Calendars.CALENDAR_COLOR, newColor)
             }
-        } catch (e: Exception) {
-            Log.e("SystemCalendarDS", "Failed to query calendars", e)
-        }
-        list
-    }
 
-    override suspend fun clearCalendarEvents(calendarId: Long): Boolean = withContext(Dispatchers.IO) {
-        val deleteUri = CalendarContract.Events.CONTENT_URI.buildUpon()
-            .appendQueryParameter(CalendarContract.CALLER_IS_SYNCADAPTER, "true")
-            .appendQueryParameter(CalendarContract.Calendars.ACCOUNT_NAME, "BirthdayBuddy")
-            .appendQueryParameter(
+            try {
+                val updatedRows = context.contentResolver.update(
+                    uri,
+                    values,
+                    "${CalendarContract.Calendars._ID} = ?",
+                    arrayOf(calendarId.toString())
+                )
+                return@withContext updatedRows > 0
+            } catch (e: Exception) {
+                Log.e("SystemCalendarDS", "Error updating color for calendar: $calendarId", e)
+                false
+            }
+        }
+
+    override suspend fun queryAllCalendars(): List<SystemCalendarInfo> =
+        withContext(Dispatchers.IO) {
+            val projection = arrayOf(
+                CalendarContract.Calendars._ID,
+                CalendarContract.Calendars.ACCOUNT_NAME,
                 CalendarContract.Calendars.ACCOUNT_TYPE,
-                CalendarContract.ACCOUNT_TYPE_LOCAL
+                CalendarContract.Calendars.NAME,
+                CalendarContract.Calendars.CALENDAR_DISPLAY_NAME,
+                CalendarContract.Calendars.VISIBLE
             )
-            .build()
-        try {
-            val deletedRows = context.contentResolver.delete(
-                deleteUri,
-                "${CalendarContract.Events.CALENDAR_ID} = ?",
-                arrayOf(calendarId.toString())
-            )
-            return@withContext deletedRows >= 0
-        } catch (e: Exception) {
-            Log.e("SystemCalendarDS", "Error clearing events for calendar: $calendarId", e)
-            false
-        }
-    }
+            val list = mutableListOf<SystemCalendarInfo>()
+            try {
+                context.contentResolver.query(
+                    CalendarContract.Calendars.CONTENT_URI,
+                    projection,
+                    null,
+                    null,
+                    null
+                )?.use { cursor ->
+                    val idCol = cursor.getColumnIndex(CalendarContract.Calendars._ID)
+                    val accNameCol = cursor.getColumnIndex(CalendarContract.Calendars.ACCOUNT_NAME)
+                    val accTypeCol = cursor.getColumnIndex(CalendarContract.Calendars.ACCOUNT_TYPE)
+                    val nameCol = cursor.getColumnIndex(CalendarContract.Calendars.NAME)
+                    val dispNameCol =
+                        cursor.getColumnIndex(CalendarContract.Calendars.CALENDAR_DISPLAY_NAME)
+                    val visibleCol = cursor.getColumnIndex(CalendarContract.Calendars.VISIBLE)
 
-    override suspend fun applyBatch(operations: List<ContentProviderOperation>): Boolean = withContext(Dispatchers.IO) {
-        if (operations.isEmpty()) return@withContext true
-        try {
-            val arrayList = ArrayList<ContentProviderOperation>(operations)
-            context.contentResolver.applyBatch(CalendarContract.AUTHORITY, arrayList)
-            true
-        } catch (e: Exception) {
-            Log.e("SystemCalendarDS", "Error applying batch operations", e)
-            false
+                    while (cursor.moveToNext()) {
+                        val id = cursor.getLong(idCol)
+                        val accName = cursor.getString(accNameCol)
+                        val accType = cursor.getString(accTypeCol)
+                        val name = cursor.getString(nameCol) ?: ""
+                        val dispName = cursor.getString(dispNameCol)
+                        val visible = cursor.getInt(visibleCol)
+                        list.add(
+                            SystemCalendarInfo(
+                                id = id,
+                                name = name,
+                                accountName = accName,
+                                accountType = accType,
+                                displayName = dispName,
+                                visible = visible
+                            )
+                        )
+                    }
+                }
+            } catch (e: Exception) {
+                Log.e("SystemCalendarDS", "Failed to query calendars", e)
+            }
+            list
         }
-    }
+
+    override suspend fun clearCalendarEvents(calendarId: Long): Boolean =
+        withContext(Dispatchers.IO) {
+            val deleteUri = CalendarContract.Events.CONTENT_URI.buildUpon()
+                .appendQueryParameter(CalendarContract.CALLER_IS_SYNCADAPTER, "true")
+                .appendQueryParameter(CalendarContract.Calendars.ACCOUNT_NAME, "BirthdayBuddy")
+                .appendQueryParameter(
+                    CalendarContract.Calendars.ACCOUNT_TYPE,
+                    CalendarContract.ACCOUNT_TYPE_LOCAL
+                )
+                .build()
+            try {
+                val deletedRows = context.contentResolver.delete(
+                    deleteUri,
+                    "${CalendarContract.Events.CALENDAR_ID} = ?",
+                    arrayOf(calendarId.toString())
+                )
+                return@withContext deletedRows >= 0
+            } catch (e: Exception) {
+                Log.e("SystemCalendarDS", "Error clearing events for calendar: $calendarId", e)
+                false
+            }
+        }
+
+    override suspend fun applyBatch(operations: List<ContentProviderOperation>): Boolean =
+        withContext(Dispatchers.IO) {
+            if (operations.isEmpty()) return@withContext true
+            try {
+                val arrayList = ArrayList<ContentProviderOperation>(operations)
+                context.contentResolver.applyBatch(CalendarContract.AUTHORITY, arrayList)
+                true
+            } catch (e: Exception) {
+                Log.e("SystemCalendarDS", "Error applying batch operations", e)
+                false
+            }
+        }
 }

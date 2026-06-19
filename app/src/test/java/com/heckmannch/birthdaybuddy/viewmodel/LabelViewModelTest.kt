@@ -31,19 +31,23 @@ class LabelViewModelTest {
         val configs = listOf(
             LabelConfig("Family", isHiddenFromFilter = false, isIgnored = false),
             LabelConfig("Friends", isHiddenFromFilter = true, isIgnored = false),
-            LabelConfig(HomeViewModel.LABEL_NO_BIRTHDAY, isHiddenFromFilter = false, isIgnored = true)
+            LabelConfig(
+                HomeViewModel.LABEL_NO_BIRTHDAY,
+                isHiddenFromFilter = false,
+                isIgnored = true
+            )
         )
         val contacts = listOf(
             Contact(
-                contactId = "1", lookupKey = "k1", fullName = "A", 
+                contactId = "1", lookupKey = "k1", fullName = "A",
                 labels = listOf("Family"), birthday = LocalDate.now()
             ),
             Contact(
-                contactId = "2", lookupKey = "k2", fullName = "B", 
+                contactId = "2", lookupKey = "k2", fullName = "B",
                 labels = listOf("Friends"), birthday = null
             )
         )
-        
+
         whenever(contactRepository.labelConfigs).thenReturn(flowOf(configs))
         whenever(contactRepository.allContacts).thenReturn(flowOf(contacts))
 

@@ -210,7 +210,10 @@ private fun CalendarGuideIllustration(modifier: Modifier = Modifier) {
                     Box(
                         modifier = Modifier
                             .size(14.dp)
-                            .background(MaterialTheme.colorScheme.primary, shape = RoundedCornerShape(3.dp)),
+                            .background(
+                                MaterialTheme.colorScheme.primary,
+                                shape = RoundedCornerShape(3.dp)
+                            ),
                         contentAlignment = Alignment.Center
                     ) {
                         Icon(

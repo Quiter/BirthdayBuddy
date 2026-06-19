@@ -155,7 +155,7 @@
     <string name="onboarding_welcome_title">Welcome to BirthdayBuddy</string>
     <string name="onboarding_welcome_desc">Your reliable companion to never forget a birthday again. All your contacts in one place, sorted by their big day.</string>
     <string name="onboarding_contacts_title">Your Contacts</string>
-    <string name="onboarding_contacts_desc">To show you birthdays, BirthdayBuddy needs access to your system contacts. Your data stays locally on your device.</string>
+    <string name="onboarding_contacts_desc">To show you birthdays, BirthdayBuddy needs access to your system contacts. Your data stays locally on your device. Ensure that "Contacts Sync" is enabled above.</string>
     <string name="onboarding_contacts_btn">Grant Permission</string>
 
     <string name="onboarding_contacts_granted">Access granted!</string>

@@ -40,7 +40,7 @@ class ThemeViewModelTest {
             themeAccent = "#FF0000"
         )
         whenever(notificationRepository.settings).thenReturn(flowOf(testSettings))
-        
+
         // Re-initialize to collect from new flow
         val viewModel = ThemeViewModel(notificationRepository)
         val uiState = viewModel.uiState.first { it.themeMode == "DARK" }
@@ -53,7 +53,7 @@ class ThemeViewModelTest {
     @Test
     fun `setThemeMode should delegate to repository`() = runTest {
         viewModel.setThemeMode("LIGHT")
-        
+
         verify(notificationRepository).updateSettings(
             notificationsEnabled = eq(null),
             persistentNotifications = eq(null),
@@ -75,7 +75,7 @@ class ThemeViewModelTest {
     @Test
     fun `setThemeAmoled should delegate to repository`() = runTest {
         viewModel.setThemeAmoled(true)
-        
+
         verify(notificationRepository).updateSettings(
             notificationsEnabled = eq(null),
             persistentNotifications = eq(null),
@@ -97,7 +97,7 @@ class ThemeViewModelTest {
     @Test
     fun `setThemeAccent should delegate to repository`() = runTest {
         viewModel.setThemeAccent("#00FF00")
-        
+
         verify(notificationRepository).updateSettings(
             notificationsEnabled = eq(null),
             persistentNotifications = eq(null),

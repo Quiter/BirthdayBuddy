@@ -45,7 +45,7 @@ class OnboardingViewModelTest {
     @Test
     fun `setPersistentNotifications should delegate to repository`() = runTest {
         viewModel.setPersistentNotifications(true)
-        
+
         verify(notificationRepository).updateSettings(
             notificationsEnabled = eq(null),
             persistentNotifications = eq(true),
@@ -93,16 +93,17 @@ class OnboardingViewModelTest {
     }
 
     @Test
-    fun `completeOnboarding should insert default rule if notifications enabled and no rules exist`() = runTest {
-        whenever(notificationRepository.getAllRulesImmediate()).thenReturn(emptyList())
+    fun `completeOnboarding should insert default rule if notifications enabled and no rules exist`() =
+        runTest {
+            whenever(notificationRepository.getAllRulesImmediate()).thenReturn(emptyList())
 
-        viewModel.completeOnboarding(
-            notificationsEnabled = true,
-            calendarSyncEnabled = false
-        )
+            viewModel.completeOnboarding(
+                notificationsEnabled = true,
+                calendarSyncEnabled = false
+            )
 
-        verify(notificationRepository).insertRule(any())
-    }
+            verify(notificationRepository).insertRule(any())
+        }
 
     @Test
     fun `completeOnboarding should NOT insert rule if notifications disabled`() = runTest {

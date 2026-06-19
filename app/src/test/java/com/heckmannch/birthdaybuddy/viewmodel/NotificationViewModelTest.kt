@@ -62,9 +62,9 @@ class NotificationViewModelTest {
     @Test
     fun `setNotificationsEnabled should delegate to repository`() = runTest {
         whenever(notificationRepository.getAllRulesImmediate()).thenReturn(testRules)
-        
+
         viewModel.setNotificationsEnabled(false)
-        
+
         verify(notificationRepository).updateSettings(
             notificationsEnabled = eq(false),
             persistentNotifications = eq(null),
@@ -86,7 +86,7 @@ class NotificationViewModelTest {
     @Test
     fun `setPersistentNotifications should delegate to repository`() = runTest {
         viewModel.setPersistentNotifications(true)
-        
+
         verify(notificationRepository).updateSettings(
             notificationsEnabled = eq(null),
             persistentNotifications = eq(true),
@@ -108,7 +108,7 @@ class NotificationViewModelTest {
     @Test
     fun `setOtherEventsEnabled should delegate to repository and sync contacts`() = runTest {
         viewModel.setOtherEventsEnabled(true)
-        
+
         verify(notificationRepository).updateSettings(
             notificationsEnabled = eq(null),
             persistentNotifications = eq(null),
@@ -131,7 +131,7 @@ class NotificationViewModelTest {
     @Test
     fun `addNotificationRule should delegate to repository`() = runTest {
         viewModel.addNotificationRule(daysBefore = 2, hour = 10, minute = 30)
-        
+
         verify(notificationRepository).insertRule(any())
     }
 
