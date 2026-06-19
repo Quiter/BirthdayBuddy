@@ -455,5 +455,9 @@
     - **Onboarding-Footer & Template:** Migration aller Layoutabstände, Paddings und Breiten in `OnboardingFooter.kt` und `OnboardingCommon.kt` auf die standardisierten Spacing- und Komponenten-Tokens.
     - **Illustrations- & Onboarding-Pages:** Refactoring der 6 Onboarding-Seiten (`WelcomePage.kt`, `ContactsPage.kt`, `NotificationsPage.kt`, `CalendarPage.kt`, `CalendarGuidePage.kt`, `ReadyPage.kt`) und des Hauptbildschirms (`OnboardingScreen.kt`) zur konsequenten Nutzung der neuen Tokens für Größen, Abstände, Eckenradien, Karten-Elevationen und Transparenzen.
 
+192. **Korrektur des Signal-Links (Bug Fix):**
+    - **Signal Intent-URI:** Umstellung des veralteten/nicht-funktionalen Signal-URI-Schemas (`signal://conversation?number=...`) in [ContactActions.kt](file:///c:/Users/chris/AndroidStudioProjects/BirthdayBuddy/app/src/main/java/com/heckmannch/birthdaybuddy/ui/util/ContactActions.kt) auf den offiziellen HTTPS-Universal-Link-Standard (`https://signal.me/#p/...`). Dies ermöglicht das korrekte Öffnen eines Direktchats in der Signal-App für den ausgewählten Kontakt.
+
+
 
 

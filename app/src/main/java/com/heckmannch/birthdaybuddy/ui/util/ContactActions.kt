@@ -63,7 +63,7 @@ class ContactActions(private val context: Context) {
                 MessengerApp.SIGNAL -> {
                     Intent(
                         Intent.ACTION_VIEW,
-                        "signal://conversation?number=$cleanNumberWithPlus".toUri()
+                        "https://signal.me/#p/$cleanNumberWithPlus".toUri()
                     ).apply {
                         setPackage(MessengerApp.SIGNAL.packageName)
                     }
