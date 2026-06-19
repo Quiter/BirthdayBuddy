@@ -313,7 +313,8 @@ private fun HomeContent(
                         },
                         modifier = Modifier
                             .align(Alignment.CenterEnd)
-                            .fillMaxHeight(),
+                            .fillMaxHeight()
+                            .padding(top = paddingValues.calculateTopPadding()),
                         isResettingFilter = uiState.isResettingFilter,
                         onSetFastScrolling = { homeState.onSetFastScrolling(it) },
                     )

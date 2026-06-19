@@ -6,6 +6,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.heckmannch.birthdaybuddy.data.repository.ContactRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -16,6 +17,8 @@ class BackupViewModel @Inject constructor(
     private val contactRepository: ContactRepository,
 ) : ViewModel() {
 
+    var ioDispatcher: CoroutineDispatcher = Dispatchers.IO
+
     fun exportGiftIdeas(
         contentResolver: ContentResolver,
         uri: Uri,
@@ -25,7 +28,7 @@ class BackupViewModel @Inject constructor(
         viewModelScope.launch {
             try {
                 val json = contactRepository.exportGiftIdeas()
-                withContext(Dispatchers.IO) {
+                withContext(ioDispatcher) {
                     contentResolver.openOutputStream(uri)?.use { outputStream ->
                         outputStream.write(json.toByteArray())
                     }
@@ -46,7 +49,7 @@ class BackupViewModel @Inject constructor(
     ) {
         viewModelScope.launch {
             try {
-                val json = withContext(Dispatchers.IO) {
+                val json = withContext(ioDispatcher) {
                     contentResolver.openInputStream(uri)?.use { inputStream ->
                         inputStream.bufferedReader().readText()
                     }

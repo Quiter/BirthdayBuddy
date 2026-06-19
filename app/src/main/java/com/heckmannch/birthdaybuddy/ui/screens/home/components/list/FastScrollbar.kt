@@ -17,10 +17,10 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.lazy.LazyListLayoutInfo
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -47,7 +47,6 @@ import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalHapticFeedback
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
@@ -56,7 +55,6 @@ import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Popup
 import androidx.compose.ui.window.PopupProperties
-import com.heckmannch.birthdaybuddy.R
 import com.heckmannch.birthdaybuddy.ui.model.ContactUiModel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -72,7 +70,7 @@ private object ScrollbarDefaults {
     val BubbleOffsetY = 4.dp
     val BubbleCornerLarge = 24.dp
     val BubbleCornerSmall = 4.dp
-    val BubbleElevation = 6.dp
+    val BubbleElevation = 8.dp
 }
 
 @Composable
@@ -90,27 +88,27 @@ fun FastScrollbar(
     var isDragging by remember { mutableStateOf(value = false) }
     var dragOffsetPx by remember { mutableFloatStateOf(0f) }
 
-    // Visibility state machine: show on scroll/drag/data updates, fade out after 1.5 seconds of idle
+    // Sichtbarkeit: Nur bei echtem Scrollen oder Ziehen zeigen
     var isVisible by remember { mutableStateOf(value = false) }
 
-    LaunchedEffect(listState.isScrollInProgress, isDragging, contacts) {
+    LaunchedEffect(listState.isScrollInProgress, isDragging) {
         if (listState.isScrollInProgress || isDragging) {
             isVisible = true
         } else {
-            // Show briefly when data changes, or keep visible while active. Otherwise, fade out after delay.
-            isVisible = true
-            delay(1500.milliseconds)
-            isVisible = false
+            if (isVisible) {
+                delay(1500.milliseconds)
+                isVisible = false
+            }
         }
     }
 
     val animatedVisibilityAlpha by animateFloatAsState(
         targetValue = if (isVisible) 1f else 0f,
         animationSpec = tween(durationMillis = 300),
-        label = "Scrollbar Visibility Alpha"
+        label = "Scrollbar Alpha"
     )
 
-    // Bubble visibility: Zeigt die Bubble NUR beim Ziehen der Scrollbar
+    // Bubble Sichtbarkeit: NUR beim Ziehen, bleibt kurz nach dem Loslassen sichtbar
     var showBubble by remember { mutableStateOf(false) }
     LaunchedEffect(isDragging) {
         if (isDragging) {
@@ -122,8 +120,7 @@ fun FastScrollbar(
     }
 
     BoxWithConstraints(
-        modifier = modifier
-            .width(ScrollbarDefaults.BarWidth)
+        modifier = modifier.width(ScrollbarDefaults.BarWidth)
     ) {
         val totalItems = contacts.size
         val viewHeight = maxHeight
@@ -135,60 +132,15 @@ fun FastScrollbar(
         val currentTrackHeightPx by rememberUpdatedState(trackHeightPx)
         val currentOnSetFastScrolling by rememberUpdatedState(onSetFastScrolling)
 
-        // Zurücksetzen des Offsets bei Filter-Wechsel
-        LaunchedEffect(contacts, isResettingFilter) {
-            if (isResettingFilter) {
-                dragOffsetPx = 0f
-            }
+        // Best Practice: canScroll entscheidet nur, ob die Scrollbar ÜBERHAUPT existiert.
+        // Einmal angezeigt, bleibt sie da, bis die Sichtbarkeit (alpha) sie ausblendet.
+        val isNeeded by remember(totalItems) {
+            derivedStateOf { totalItems > ScrollbarDefaults.MIN_ITEMS_THRESHOLD }
         }
 
-        val canScroll by remember(contacts, isResettingFilter) {
-            derivedStateOf {
-                if (isResettingFilter && (totalItems > ScrollbarDefaults.MIN_ITEMS_THRESHOLD)) return@derivedStateOf true
-
-                val layoutInfo = listState.layoutInfo
-                val visibleItemsInfo = layoutInfo.visibleItemsInfo
-                if (visibleItemsInfo.isEmpty()) return@derivedStateOf false
-
-                val lastItem = visibleItemsInfo.last()
-                val isLastItemVisible = (lastItem.index == (totalItems - 1))
-
-                if (!isLastItemVisible) return@derivedStateOf true
-
-                val viewportEnd = layoutInfo.viewportEndOffset - layoutInfo.afterContentPadding
-                (lastItem.offset + lastItem.size) > viewportEnd
-            }
-        }
-
-        if (canScroll && totalItems > 0) {
-            val currentLabel by remember(contacts, trackHeightPx, getLabel) {
+        if (isNeeded && totalItems > 0) {
+            val thumbOffset by remember(trackHeight, isDragging, dragOffsetPx) {
                 derivedStateOf {
-                    val index = if (isDragging) {
-                        val percent =
-                            if (trackHeightPx > 0) (dragOffsetPx / trackHeightPx).coerceIn(
-                                0f,
-                                1f
-                            ) else 0f
-                        (percent * (totalItems - 1)).toInt()
-                    } else {
-                        listState.firstVisibleItemIndex
-                    }
-                    val contact = contacts.getOrNull(index.coerceIn(0, totalItems - 1))
-                    if (contact != null) getLabel(contact) else ""
-                }
-            }
-
-            // Haptisches Feedback bei Label-Wechsel während des Drags
-            LaunchedEffect(currentLabel) {
-                if (isDragging) {
-                    haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                }
-            }
-
-            val thumbOffset by remember(trackHeight, isResettingFilter, contacts) {
-                derivedStateOf {
-                    if (isResettingFilter) return@derivedStateOf 0.dp
-
                     if (isDragging) {
                         with(density) { dragOffsetPx.toDp() }.coerceIn(0.dp, trackHeight)
                     } else {
@@ -198,113 +150,72 @@ fun FastScrollbar(
 
                         val firstItem = visibleItems.first()
                         val scrollOffset = listState.firstVisibleItemScrollOffset.toFloat()
-                        val itemSize = firstItem.size.toFloat()
+                        val itemSize = firstItem.size.toFloat().coerceAtLeast(1f)
 
-                        val fractionalIndex = listState.firstVisibleItemIndex.toFloat() +
-                                (scrollOffset / itemSize).coerceIn(0f, 1f)
-
-                        val viewportHeight =
-                            layoutInfo.viewportEndOffset - layoutInfo.viewportStartOffset
-                        val itemsInViewport =
-                            if (itemSize > 0) viewportHeight.toFloat() / itemSize else 1f
-                        val maxIndex = (totalItems.toFloat() - itemsInViewport).coerceAtLeast(1f)
-
-                        val scrollPercent = (fractionalIndex / maxIndex).coerceIn(0f, 1f)
+                        val fractionalIndex = listState.firstVisibleItemIndex.toFloat() + (scrollOffset / itemSize)
+                        val maxScrollIndex = (totalItems.toFloat() - (layoutInfo.viewportEndOffset / itemSize)).coerceAtLeast(1f)
+                        
+                        val scrollPercent = (fractionalIndex / maxScrollIndex).coerceIn(0f, 1f)
                         trackHeight * scrollPercent
                     }
                 }
             }
 
-            // Bubble
-            ScrollbarBubble(
-                visible = showBubble,
-                label = currentLabel,
-                thumbOffset = { thumbOffset }
-            )
+            val currentLabel by remember(contacts, thumbOffset, trackHeight) {
+                derivedStateOf {
+                    val percent = if (trackHeight > 0.dp) (thumbOffset / trackHeight).coerceIn(0f, 1f) else 0f
+                    val index = (percent * (totalItems - 1)).toInt().coerceIn(0, totalItems - 1)
+                    contacts.getOrNull(index)?.let(getLabel) ?: ""
+                }
+            }
 
-            val scrollbarDesc = stringResource(R.string.home_scrollbar_desc, currentLabel)
+            LaunchedEffect(currentLabel) {
+                if (isDragging) haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+            }
 
-            // Interactive Scroll Track Column
+            // Bubble in einem Popup, damit sie IMMER über dem FAB liegt (Z-Index fix)
+            ScrollbarBubble(visible = showBubble, label = currentLabel, thumbOffset = { thumbOffset })
+
+            // Interaktive Spur
             Box(
                 modifier = Modifier
                     .align(Alignment.CenterEnd)
-                    .width(ScrollbarDefaults.ThumbSize) // 48.dp
+                    .width(ScrollbarDefaults.ThumbSize)
                     .fillMaxHeight()
-                    .graphicsLayer {
-                        alpha = animatedVisibilityAlpha
-                    }
-                    .then(
-                        if (isVisible) {
-                            Modifier.pointerInput(listState) {
-                                try {
-                                    detectVerticalDragGestures(
-                                        onDragStart = { offset ->
-                                            isDragging = true
-                                            currentOnSetFastScrolling(true)
-                                            dragOffsetPx = (offset.y - thumbHeightPx / 2f).coerceIn(
-                                                0f,
-                                                currentTrackHeightPx
-                                            )
-
-                                            val scrollPercent =
-                                                if (currentTrackHeightPx > 0) dragOffsetPx / currentTrackHeightPx else 0f
-                                            val (targetIndex, targetOffset) = calculateScrollTarget(
-                                                scrollPercent = scrollPercent,
-                                                totalItems = currentTotalItems,
-                                                layoutInfo = listState.layoutInfo,
-                                            )
-                                            scope.launch {
-                                                listState.scrollToItem(targetIndex, targetOffset)
-                                            }
-                                        },
-                                        onDragEnd = {
-                                            isDragging = false
-                                            currentOnSetFastScrolling(false)
-                                        },
-                                        onDragCancel = {
-                                            isDragging = false
-                                            currentOnSetFastScrolling(false)
-                                        },
-                                    ) { change, dragAmount ->
-                                        dragOffsetPx =
-                                            (dragOffsetPx + dragAmount).coerceIn(0f, currentTrackHeightPx)
-                                        val scrollPercent =
-                                            if (currentTrackHeightPx > 0) dragOffsetPx / currentTrackHeightPx else 0f
-
-                                        val (targetIndex, targetOffset) = calculateScrollTarget(
-                                            scrollPercent = scrollPercent,
-                                            totalItems = currentTotalItems,
-                                            layoutInfo = listState.layoutInfo,
-                                        )
-                                        scope.launch {
-                                            listState.scrollToItem(targetIndex, targetOffset)
-                                        }
-                                        change.consume()
-                                    }
-                                } finally {
-                                    isDragging = false
-                                }
-                            }
-                        } else {
-                            Modifier
+                    .navigationBarsPadding() // Sicherstellen, dass wir nicht in die Systemgesten unten kommen
+                    .graphicsLayer { alpha = animatedVisibilityAlpha }
+                    .pointerInput(listState) {
+                        detectVerticalDragGestures(
+                            onDragStart = { offset ->
+                                isDragging = true
+                                currentOnSetFastScrolling(true)
+                                dragOffsetPx = (offset.y - thumbHeightPx / 2f).coerceIn(0f, currentTrackHeightPx)
+                                val scrollPercent = dragOffsetPx / currentTrackHeightPx
+                                val (targetIndex, targetOffset) = calculateScrollTarget(scrollPercent, currentTotalItems)
+                                scope.launch { listState.scrollToItem(targetIndex, targetOffset) }
+                            },
+                            onDragEnd = { isDragging = false; currentOnSetFastScrolling(false) },
+                            onDragCancel = { isDragging = false; currentOnSetFastScrolling(false) },
+                        ) { change, dragAmount ->
+                            dragOffsetPx = (dragOffsetPx + dragAmount).coerceIn(0f, currentTrackHeightPx)
+                            val scrollPercent = dragOffsetPx / currentTrackHeightPx
+                            val (targetIndex, targetOffset) = calculateScrollTarget(scrollPercent, currentTotalItems)
+                            scope.launch { listState.scrollToItem(targetIndex, targetOffset) }
+                            change.consume()
                         }
-                    )
+                    }
             ) {
-                // Thumb Capsule overlaying the list
+                // Der visuelle Thumb (Kapsel)
                 Surface(
                     modifier = Modifier
                         .align(Alignment.TopEnd)
-                        .padding(end = 8.dp)
-                        .width(ScrollbarDefaults.ThumbWidth) // 26.dp
-                        .height(ScrollbarDefaults.ThumbHeight) // 44.dp
-                        .graphicsLayer {
-                            translationY = thumbOffset.toPx()
-                        }
-                        .semantics {
-                            contentDescription = scrollbarDesc
-                        },
+                        .padding(end = 4.dp)
+                        .width(ScrollbarDefaults.ThumbWidth)
+                        .height(ScrollbarDefaults.ThumbHeight)
+                        .graphicsLayer { translationY = thumbOffset.toPx() }
+                        .semantics { contentDescription = "Scrollbar" },
                     shape = RoundedCornerShape(12.dp),
-                    color = MaterialTheme.colorScheme.primary,
+                    color = MaterialTheme.colorScheme.primary.copy(alpha = 0.9f),
                     tonalElevation = 4.dp
                 ) {
                     Column(
@@ -312,19 +223,9 @@ fun FastScrollbar(
                         verticalArrangement = Arrangement.Center,
                         modifier = Modifier.fillMaxSize()
                     ) {
-                        Icon(
-                            imageVector = Icons.Default.KeyboardArrowUp,
-                            contentDescription = null,
-                            modifier = Modifier.size(14.dp),
-                            tint = MaterialTheme.colorScheme.onPrimary
-                        )
-                        Spacer(modifier = Modifier.height(2.dp))
-                        Icon(
-                            imageVector = Icons.Default.KeyboardArrowDown,
-                            contentDescription = null,
-                            modifier = Modifier.size(14.dp),
-                            tint = MaterialTheme.colorScheme.onPrimary
-                        )
+                        Icon(Icons.Default.KeyboardArrowUp, null, Modifier.size(14.dp), tint = MaterialTheme.colorScheme.onPrimary)
+                        Spacer(Modifier.height(2.dp))
+                        Icon(Icons.Default.KeyboardArrowDown, null, Modifier.size(14.dp), tint = MaterialTheme.colorScheme.onPrimary)
                     }
                 }
             }
@@ -332,17 +233,11 @@ fun FastScrollbar(
     }
 }
 
-/**
- * Zeigt das Month/Letter-Label in einer eleganten Bubble an.
- * Nutzt ein Popup, um sicherzustellen, dass die Bubble vor allen anderen
- * UI-Elementen (inklusive der HomeTopBar) gezeichnet wird und nicht abgeschnitten wird.
- */
 @Composable
 private fun ScrollbarBubble(
     visible: Boolean,
     label: String,
     thumbOffset: () -> Dp,
-    modifier: Modifier = Modifier,
 ) {
     val transitionState = remember { MutableTransitionState(initialState = false) }
     transitionState.targetState = visible
@@ -352,40 +247,27 @@ private fun ScrollbarBubble(
             alignment = Alignment.TopStart,
             offset = remember { IntOffset.Zero },
             properties = PopupProperties(
-                focusable = false,
-                dismissOnBackPress = false,
-                dismissOnClickOutside = false,
-                clippingEnabled = false,
-                usePlatformDefaultWidth = false,
+                focusable = false, 
+                dismissOnBackPress = false, 
+                dismissOnClickOutside = false, 
+                clippingEnabled = false, 
+                usePlatformDefaultWidth = false
             )
         ) {
-            Box(
-                modifier = modifier
-                    .width(ScrollbarDefaults.BarWidth)
-                    .fillMaxHeight()
-            ) {
-                Box(
-                    modifier = Modifier
-                        .graphicsLayer {
-                            val offsetY = (thumbOffset() - ScrollbarDefaults.BubbleOffsetY).toPx()
-                            translationY = offsetY.coerceAtLeast(0f)
-                        }
-                ) {
+            Box(modifier = Modifier.width(ScrollbarDefaults.BarWidth).fillMaxHeight()) {
+                Box(modifier = Modifier.graphicsLayer { 
+                    translationY = (thumbOffset() - ScrollbarDefaults.BubbleOffsetY).toPx().coerceAtLeast(0f) 
+                }) {
                     AnimatedVisibility(
                         visibleState = transitionState,
                         enter = fadeIn() + slideInHorizontally { it / 2 },
                         exit = fadeOut() + slideOutHorizontally { it / 2 },
                     ) {
                         Surface(
-                            shape = RoundedCornerShape(
-                                topStart = ScrollbarDefaults.BubbleCornerLarge,
-                                bottomStart = ScrollbarDefaults.BubbleCornerLarge,
-                                topEnd = ScrollbarDefaults.BubbleCornerSmall,
-                                bottomEnd = ScrollbarDefaults.BubbleCornerLarge,
-                            ),
+                            shape = RoundedCornerShape(topStart = 24.dp, bottomStart = 24.dp, topEnd = 4.dp, bottomEnd = 24.dp),
                             color = MaterialTheme.colorScheme.primary,
                             tonalElevation = ScrollbarDefaults.BubbleElevation,
-                            modifier = Modifier.padding(end = 16.dp),
+                            modifier = Modifier.padding(end = 16.dp)
                         ) {
                             Text(
                                 text = label,
@@ -401,24 +283,11 @@ private fun ScrollbarBubble(
     }
 }
 
-
-
-/**
- * Berechnet den Ziel-Index und Offset basierend auf der Scroll-Position in Prozent.
- */
 private fun calculateScrollTarget(
     scrollPercent: Float,
     totalItems: Int,
-    layoutInfo: LazyListLayoutInfo,
 ): Pair<Int, Int> {
-    val itemSize = layoutInfo.visibleItemsInfo.firstOrNull()?.size ?: 1
-    val viewportHeight = layoutInfo.viewportEndOffset - layoutInfo.viewportStartOffset
-    val itemsInViewport = viewportHeight.toFloat() / itemSize
-    val maxIndex = (totalItems.toFloat() - itemsInViewport).coerceAtLeast(1f)
-
-    val targetFractionalIndex = scrollPercent * maxIndex
+    val targetFractionalIndex = scrollPercent * (totalItems - 1)
     val targetIndex = targetFractionalIndex.toInt().coerceIn(0, totalItems - 1)
-    val targetOffset = ((targetFractionalIndex - targetIndex) * itemSize).toInt()
-
-    return targetIndex to targetOffset
+    return targetIndex to 0
 }
