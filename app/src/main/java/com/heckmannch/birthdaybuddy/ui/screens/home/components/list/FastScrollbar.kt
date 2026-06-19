@@ -79,7 +79,6 @@ fun FastScrollbar(
     contacts: List<ContactUiModel>,
     getLabel: (ContactUiModel) -> String,
     modifier: Modifier = Modifier,
-    isResettingFilter: Boolean = false,
     onSetFastScrolling: (Boolean) -> Unit = {},
 ) {
     val scope = rememberCoroutineScope()
@@ -134,12 +133,12 @@ fun FastScrollbar(
 
         // Best Practice: canScroll entscheidet nur, ob die Scrollbar ÜBERHAUPT existiert.
         // Einmal angezeigt, bleibt sie da, bis die Sichtbarkeit (alpha) sie ausblendet.
-        val isNeeded by remember(totalItems, isResettingFilter) {
-            derivedStateOf { totalItems > ScrollbarDefaults.MIN_ITEMS_THRESHOLD }
+        val isNeeded = remember(totalItems) {
+            totalItems > ScrollbarDefaults.MIN_ITEMS_THRESHOLD
         }
 
         if (isNeeded && totalItems > 0) {
-            val thumbOffset by remember(trackHeight, isDragging, dragOffsetPx) {
+            val thumbOffset by remember(trackHeight) {
                 derivedStateOf {
                     if (isDragging) {
                         with(density) { dragOffsetPx.toDp() }.coerceIn(0.dp, trackHeight)
@@ -165,7 +164,7 @@ fun FastScrollbar(
                 }
             }
 
-            val currentLabel by remember(contacts, thumbOffset, trackHeight) {
+            val currentLabel by remember(contacts, trackHeight) {
                 derivedStateOf {
                     val percent =
                         if (trackHeight > 0.dp) (thumbOffset / trackHeight).coerceIn(0f, 1f) else 0f

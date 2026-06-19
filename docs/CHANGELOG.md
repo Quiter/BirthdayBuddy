@@ -458,6 +458,12 @@
 192. **Korrektur des Signal-Links (Bug Fix):**
     - **Signal Intent-URI:** Umstellung des veralteten/nicht-funktionalen Signal-URI-Schemas (`signal://conversation?number=...`) in [ContactActions.kt](file:///c:/Users/chris/AndroidStudioProjects/BirthdayBuddy/app/src/main/java/com/heckmannch/birthdaybuddy/ui/util/ContactActions.kt) auf den offiziellen HTTPS-Universal-Link-Standard (`https://signal.me/#p/...`). Dies ermöglicht das korrekte Öffnen eines Direktchats in der Signal-App für den ausgewählten Kontakt.
 
+193. **Compose-Performance: FastScrollbar State-Kapselung (Performance):**
+    - **Vermeidung von State-Recreation:** Entfernung von kontinuierlichen Drag-States (`isDragging`, `dragOffsetPx`) aus den `remember`-Keys für `thumbOffset` in [FastScrollbar.kt](file:///c:/Users/chris/AndroidStudioProjects/BirthdayBuddy/app/src/main/java/com/heckmannch/birthdaybuddy/ui/screens/home/components/list/FastScrollbar.kt).
+    - **derivedStateOf-Optimierung:** Da es sich um Compose-States handelt, trackt der `derivedStateOf`-Block diese bei Leseoperationen automatisch. Die Entfernung der Keys verhindert, dass das gesamte State-Objekt bei jeder Pixel-Änderung während des Drag-Gesten-Verlaufs neu instanziiert wird, was GC-Overhead und Recompositions minimiert.
+    - **derivedStateOf-Verpackung entfernt:** Vereinfachung von `isNeeded` zu einem Standard-`remember` ohne das ungenutzte `derivedStateOf` Overhead.
+
+
 
 
 

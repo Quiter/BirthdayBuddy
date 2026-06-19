@@ -321,7 +321,6 @@ private fun HomeContent(
                             .align(Alignment.CenterEnd)
                             .fillMaxHeight()
                             .padding(top = paddingValues.calculateTopPadding()),
-                        isResettingFilter = uiState.isResettingFilter,
                         onSetFastScrolling = { homeState.onSetFastScrolling(it) },
                     )
                 }
@@ -394,7 +393,6 @@ private fun HomeContent(
                                     modifier = Modifier
                                         .align(Alignment.CenterEnd)
                                         .fillMaxHeight(),
-                                    isResettingFilter = uiState.isResettingFilter,
                                     onSetFastScrolling = { homeState.onSetFastScrolling(it) },
                                 )
                             }
