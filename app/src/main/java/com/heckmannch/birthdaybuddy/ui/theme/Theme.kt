@@ -81,6 +81,49 @@ val ColorScheme.amoled: ColorScheme
         surfaceContainerHighest = Color(0xFF222222),
     )
 
+fun ColorScheme.withSurfaceContainers(isDark: Boolean): ColorScheme {
+    val hsv = FloatArray(3)
+    android.graphics.Color.colorToHSV(this.surface.toArgb(), hsv)
+    val h = hsv[0]
+    val s = hsv[1]
+    val v = hsv[2]
+
+    fun fromHsv(hue: Float, sat: Float, value: Float): Color {
+        val calculatedArgb = android.graphics.Color.HSVToColor(
+            floatArrayOf(
+                hue,
+                sat.coerceIn(0f, 1f),
+                value.coerceIn(0f, 1f)
+            )
+        )
+        return Color(calculatedArgb)
+    }
+
+    return if (isDark) {
+        val sat = s.coerceAtMost(0.12f)
+        this.copy(
+            surfaceContainerLowest = fromHsv(h, sat, 0.04f),
+            surfaceContainerLow = fromHsv(h, sat, 0.10f),
+            surfaceContainer = fromHsv(h, sat, 0.12f),
+            surfaceContainerHigh = fromHsv(h, sat, 0.17f),
+            surfaceContainerHighest = fromHsv(h, sat, 0.22f),
+            surfaceDim = fromHsv(h, sat, 0.06f),
+            surfaceBright = fromHsv(h, sat, 0.24f)
+        )
+    } else {
+        val sat = s.coerceAtMost(0.04f)
+        this.copy(
+            surfaceContainerLowest = fromHsv(h, sat, 1.00f),
+            surfaceContainerLow = fromHsv(h, sat, 0.96f),
+            surfaceContainer = fromHsv(h, sat, 0.94f),
+            surfaceContainerHigh = fromHsv(h, sat, 0.92f),
+            surfaceContainerHighest = fromHsv(h, sat, 0.90f),
+            surfaceDim = fromHsv(h, sat, 0.87f),
+            surfaceBright = fromHsv(h, sat, 0.98f)
+        )
+    }
+}
+
 private fun getDynamicCustomColorScheme(
     seedColor: Color,
     darkTheme: Boolean,
@@ -212,7 +255,8 @@ private fun getDynamicCustomColorScheme(
         )
     }
 
-    return if (darkTheme && amoled) baseScheme.amoled else baseScheme
+    val withContainers = baseScheme.withSurfaceContainers(darkTheme)
+    return if (darkTheme && amoled) withContainers.amoled else withContainers
 }
 
 private fun getCustomColorScheme(accent: String, darkTheme: Boolean, amoled: Boolean): ColorScheme {
@@ -504,7 +548,8 @@ private fun getCustomColorScheme(accent: String, darkTheme: Boolean, amoled: Boo
         }
     }
 
-    return if (darkTheme && amoled) baseScheme.amoled else baseScheme
+    val withContainers = baseScheme.withSurfaceContainers(darkTheme)
+    return if (darkTheme && amoled) withContainers.amoled else withContainers
 }
 
 @Composable
