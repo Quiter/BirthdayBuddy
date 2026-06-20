@@ -24,6 +24,8 @@ import androidx.compose.material3.adaptive.layout.ListDetailPaneScaffold
 import androidx.compose.material3.adaptive.layout.ListDetailPaneScaffoldRole
 import androidx.compose.material3.adaptive.navigation.rememberListDetailPaneScaffoldNavigator
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
+import androidx.compose.material3.pulltorefresh.PullToRefreshDefaults
+import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -284,10 +286,21 @@ private fun HomeContent(
             }
         }
     ) { paddingValues ->
+        val pullToRefreshState = rememberPullToRefreshState()
         PullToRefreshBox(
             isRefreshing = uiState.isSyncing,
             onRefresh = actions.onRefresh,
+            state = pullToRefreshState,
             modifier = Modifier.fillMaxSize(),
+            indicator = {
+                PullToRefreshDefaults.Indicator(
+                    state = pullToRefreshState,
+                    isRefreshing = uiState.isSyncing,
+                    modifier = Modifier
+                        .align(Alignment.TopCenter)
+                        .padding(top = paddingValues.calculateTopPadding())
+                )
+            }
         ) {
             val contacts = uiState.contacts
             if (contacts.isNullOrEmpty() || windowWidthSizeClass == WindowWidthSizeClass.Compact) {
