@@ -14,7 +14,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CardGiftcard
 import androidx.compose.material.icons.filled.Edit
@@ -48,13 +47,11 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
 import com.heckmannch.birthdaybuddy.R
 import com.heckmannch.birthdaybuddy.ui.model.ContactUiModel
 import com.heckmannch.birthdaybuddy.ui.model.SampleData
 import com.heckmannch.birthdaybuddy.ui.screens.home.HomeActions
 import com.heckmannch.birthdaybuddy.ui.screens.home.components.actions.ContactActionRow
-import com.heckmannch.birthdaybuddy.ui.theme.AlphaContainerSubtle
 import com.heckmannch.birthdaybuddy.ui.theme.AlphaEmphasisLow
 import com.heckmannch.birthdaybuddy.ui.theme.AlphaEmphasisMedium
 import com.heckmannch.birthdaybuddy.ui.theme.AlphaSurfaceContainerHigh
@@ -62,6 +59,8 @@ import com.heckmannch.birthdaybuddy.ui.theme.BirthdayBuddyTheme
 import com.heckmannch.birthdaybuddy.ui.theme.BirthdayGold
 import com.heckmannch.birthdaybuddy.ui.theme.BirthdayKidAmber
 import com.heckmannch.birthdaybuddy.ui.theme.BirthdaySilver
+import com.heckmannch.birthdaybuddy.ui.theme.BirthdayBorderWidth
+import com.heckmannch.birthdaybuddy.ui.theme.SelectedBorderWidth
 import com.heckmannch.birthdaybuddy.ui.theme.IconSizeExtraSmall
 import com.heckmannch.birthdaybuddy.ui.theme.IconSizeLarge
 import com.heckmannch.birthdaybuddy.ui.theme.IconSizeSmall
@@ -111,11 +110,11 @@ fun BirthdayItem(
             val age = contact.nextAge
             when {
                 // Alle durch 10 teilbaren (10, 20, 30...) sind Gold
-                (age != null && age % 10 == 0) -> BorderStroke(2.dp, BirthdayGold)
+                (age != null && age % 10 == 0) -> BorderStroke(BirthdayBorderWidth, BirthdayGold)
                 // Kinder von 0 bis 9 sind Bunt
-                (age != null && age in 0..9) -> BorderStroke(2.dp, Brush.linearGradient(KidColors))
+                (age != null && age in 0..9) -> BorderStroke(BirthdayBorderWidth, Brush.linearGradient(KidColors))
                 // Alle anderen (inkl. ohne Jahr) sind Silber
-                else -> BorderStroke(2.dp, BirthdaySilver)
+                else -> BorderStroke(BirthdayBorderWidth, BirthdaySilver)
             }
         } else null
     }
@@ -155,7 +154,7 @@ fun BirthdayItem(
             containerColor = containerColor,
         ),
         border = borderStroke ?: if (isSelected) BorderStroke(
-            1.5.dp,
+            SelectedBorderWidth,
             MaterialTheme.colorScheme.primary.copy(alpha = AlphaEmphasisLow)
         ) else null,
     ) {
@@ -263,9 +262,9 @@ fun BirthdayItem(
                     ) {
                         Surface(
                             modifier = Modifier.size(IconSizeLarge),
-                            shape = RoundedCornerShape(SpacingSmall),
-                            color = MaterialTheme.colorScheme.primary.copy(alpha = AlphaContainerSubtle),
-                            contentColor = MaterialTheme.colorScheme.primary
+                            shape = MaterialTheme.shapes.small,
+                            color = MaterialTheme.colorScheme.primaryContainer,
+                            contentColor = MaterialTheme.colorScheme.onPrimaryContainer
                         ) {
                             Box(contentAlignment = Alignment.Center) {
                                 Icon(
@@ -344,7 +343,7 @@ fun BirthdayItemPreview() {
     )
 
     BirthdayBuddyTheme {
-        Column(modifier = Modifier.padding(16.dp)) {
+        Column(modifier = Modifier.padding(SpacingNormal)) {
             BirthdayItem(
                 contact = SampleData.contact1,
                 isExpanded = false,

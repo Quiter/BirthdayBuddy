@@ -63,4 +63,9 @@
     - **HCT Farb-Engine in [Theme.kt](file:///c:/Users/chris/AndroidStudioProjects/BirthdayBuddy/app/src/main/java/com/heckmannch/birthdaybuddy/ui/theme/Theme.kt):** Ersetzung der alten fehleranfälligen manuellen HSV-Verschiebungen durch den offiziellen Google HCT-Farbraum (`Hct.fromInt`) und `SchemeContent` in Verbindung mit `MaterialDynamicColors`.
     - **Farbkonsistenz und Kontrastsicherheit:** Dadurch werden alle Farbschemata (Voreinstellungen und nutzerdefinierte Hex-Farben aus dem Color Picker) mathematisch exakt nach Material Design 3 Spezifikationen generiert, wodurch alle Container-Farben automatisch passen und Barrierefreiheit/Kontraste für alle Farben garantiert sind.
 
+196. **Material 3 Design- und Token-Optimierung in BirthdayItem (Design System Compliance):**
+    - **Vermeidung magischer Zahlen:** Auslagerung der Rahmenbreiten für ausgewählte Kontakte (`SelectedBorderWidth = 1.5.dp`) und Geburtstage (`BirthdayBorderWidth = 2.dp`) in [Dimensions.kt](file:///c:/Users/chris/AndroidStudioProjects/BirthdayBuddy/app/src/main/java/com/heckmannch/birthdaybuddy/ui/theme/Dimensions.kt).
+    - **M3 Konformität in [BirthdayItem.kt](file:///c:/Users/chris/AndroidStudioProjects/BirthdayBuddy/app/src/main/java/com/heckmannch/birthdaybuddy/ui/screens/home/components/list/BirthdayItem.kt):** Ersetzung von `RoundedCornerShape(SpacingSmall)` durch das korrekte M3-Shape-Token `MaterialTheme.shapes.small` sowie Ablösung der manuellen Deckkraft-Farbe `primary.copy(alpha = AlphaContainerSubtle)` durch die semantischen Farbrollen `primaryContainer` / `onPrimaryContainer` im Toggle-Bereich für Geschenkideen zur Gewährleistung barrierefreier Kontraste.
+
+
 

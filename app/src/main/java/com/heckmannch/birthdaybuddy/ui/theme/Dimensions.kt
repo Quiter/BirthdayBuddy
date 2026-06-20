@@ -73,6 +73,8 @@ val OnboardingGuideTextSpacer = 10.dp
 val OnboardingGuideSmallCornerRadius = 3.dp
 val OnboardingGuideTinySpacer = 2.dp
 val ElevationOnboardingCard = 6.dp
+val SelectedBorderWidth = 1.5.dp
+val BirthdayBorderWidth = 2.dp
 
 const val AlphaOnboardingCard = 0.9f
 const val AlphaOnboardingCalendarDisabled = 0.4f
