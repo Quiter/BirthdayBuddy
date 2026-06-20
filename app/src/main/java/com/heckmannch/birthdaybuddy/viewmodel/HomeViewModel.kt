@@ -112,7 +112,7 @@ class HomeViewModel @Inject constructor(
         }
 
         // --- OPTIMIERUNG: Vor-Filterung der Rohdaten ---
-        // Dies reduziert die Anzahl der teuren Mapping-Vorgänge erheblich.
+        // dies reduziert die Anzahl der teuren Mapping-Vorgänge erheblich.
         val preFilteredRaw = if (displayEventType != "anniversary") {
             rawContacts.asSequence().filter { contact ->
                 // 1. Suche (Rohname)
@@ -305,7 +305,7 @@ class HomeViewModel @Inject constructor(
                 .forEach { labels.add(it) }
         }
 
-        // "Ohne Datum" immer als letztes von Geburtstagen, falls aktiv
+        // "Ohne Datum" immer als Letztes von Geburtstagen, falls aktiv
         if (showPseudo) {
             labels.add(LABEL_NO_BIRTHDAY)
         }

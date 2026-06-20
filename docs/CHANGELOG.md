@@ -47,3 +47,9 @@
 
 192. **Behebung der Pull-to-Refresh Sichtbarkeit (Bug Fix):**
     - **Positionierung des Lade-Indikators:** Durch das Hinzufügen einer Top-Padding-Verschiebung basierend auf den Scaffold-`paddingValues` beim `PullToRefreshDefaults.Indicator` wird der Refresh-Spinner nun korrekt unterhalb der soliden `HomeTopBar` positioniert. Dies behebt die vollständige Überlagerung des Indikators im Edge-to-Edge Layout, während die Listen-Inhalte weiterhin unter der TopBar hindurchscrollen können.
+    - **Code-Bereinigung (Code Quality):** Vereinfachung des Boolean-Ausdrucks in `HomeScreen.kt` auf `.none { ... }`, Verschiebung der Variablen-Deklaration `name` in den `when`-Ausdruck in `CalendarSyncRepository.kt` zur Eingrenzung des Scopes sowie Konvertierung des Legacy-`delay(Long)` zu `delay(Duration)` in `TimeRepository.kt`.
+
+193. **Zentralisierung der Info-Karten & Benachrichtigungs-Erklärung (UI Refactoring):**
+    - **Wiederverwendbares InfoCard-Widget:** Einführung einer globalen `InfoCard`-Komponente unter `ui/components/InfoCard.kt` zur Vermeidung von Code-Duplizierung und Gewährleistung eines einheitlichen M3-Designs (sekundärer Container, Info-Icon, fettgedruckter Titel und Erklärtext) in allen Einstellungsbereichen.
+    - **Erklärung wichtiger Benachrichtigungen:** Hinzufügen einer erklärenden Infobox unter der Option "Wichtige Benachrichtigungen" in den Benachrichtigungseinstellungen zur besseren Erläuterung persistenter Hinweise.
+    - **Konsistente Einstellungsseiten:** Migration aller Einstellungsseiten (Labels, Kalender, Benachrichtigungen, andere Ereignisse, Sync, Backup) auf das zentrale `InfoCard`-Design.
