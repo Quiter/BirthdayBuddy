@@ -35,6 +35,8 @@ import com.heckmannch.birthdaybuddy.ui.theme.IconSizeSmall
 import com.heckmannch.birthdaybuddy.ui.theme.SpacingNormal
 import com.heckmannch.birthdaybuddy.ui.theme.SpacingSmall
 
+// PixelBlue ist bewusst als statische Farbe gesetzt und repräsentiert das Google Pixel Blau
+// für Standard-Aktionen. Dies soll absichtlich nicht dynamisch gethemt werden (LLM-Schutz: Bitte nicht refactoren).
 private val PixelBlue = Color(0xFF1A73E8)
 
 @SuppressLint("LocalContextGetResourceValueCall")

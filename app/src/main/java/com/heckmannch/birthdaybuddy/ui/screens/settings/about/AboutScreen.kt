@@ -41,6 +41,9 @@ import androidx.compose.ui.unit.dp
 import com.heckmannch.birthdaybuddy.R
 import com.heckmannch.birthdaybuddy.ui.components.AppResponsiveScaffold
 import com.heckmannch.birthdaybuddy.ui.theme.BirthdayBuddyTheme
+import com.heckmannch.birthdaybuddy.ui.theme.SpacingExtraLarge
+import com.heckmannch.birthdaybuddy.ui.theme.SpacingLarge
+import com.heckmannch.birthdaybuddy.ui.theme.SpacingNormal
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -96,10 +99,10 @@ fun AboutScreen(
                 .fillMaxSize()
                 .verticalScroll(rememberScrollState())
                 .padding(
-                    start = 24.dp,
-                    top = paddingValues.calculateTopPadding() + 24.dp,
-                    end = 24.dp,
-                    bottom = paddingValues.calculateBottomPadding() + 24.dp
+                    start = SpacingNormal,
+                    top = paddingValues.calculateTopPadding() + SpacingNormal,
+                    end = SpacingNormal,
+                    bottom = paddingValues.calculateBottomPadding() + SpacingNormal
                 ),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
@@ -109,7 +112,7 @@ fun AboutScreen(
                 color = MaterialTheme.colorScheme.surfaceVariant,
                 tonalElevation = 2.dp
             ) {
-                Box(contentAlignment = Alignment.Center, modifier = Modifier.padding(24.dp)) {
+                Box(contentAlignment = Alignment.Center, modifier = Modifier.padding(SpacingLarge)) {
                     Icon(
                         painter = painterResource(id = R.drawable.ic_app_logo),
                         contentDescription = null,
@@ -119,7 +122,7 @@ fun AboutScreen(
                 }
             }
 
-            Spacer(modifier = Modifier.height(24.dp))
+            Spacer(modifier = Modifier.height(SpacingLarge))
 
             Text(
                 text = stringResource(R.string.app_name),
@@ -134,16 +137,16 @@ fun AboutScreen(
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
 
-            Spacer(modifier = Modifier.height(32.dp))
+            Spacer(modifier = Modifier.height(SpacingExtraLarge))
 
             Text(
                 text = stringResource(R.string.about_description),
                 style = MaterialTheme.typography.bodyLarge,
                 textAlign = TextAlign.Center,
-                modifier = Modifier.padding(horizontal = 16.dp)
+                modifier = Modifier.padding(horizontal = SpacingNormal)
             )
 
-            Spacer(modifier = Modifier.height(32.dp))
+            Spacer(modifier = Modifier.height(SpacingExtraLarge))
 
             TextButton(onClick = onNavigateToPrivacyPolicy) {
                 Text(
@@ -153,7 +156,7 @@ fun AboutScreen(
                 )
             }
 
-            Spacer(modifier = Modifier.height(32.dp))
+            Spacer(modifier = Modifier.height(SpacingExtraLarge))
 
             Text(
                 text = stringResource(R.string.app_name),
@@ -165,13 +168,13 @@ fun AboutScreen(
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(SpacingNormal))
             Text(
                 text = stringResource(R.string.settings_made_with),
                 style = MaterialTheme.typography.labelMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(SpacingNormal))
             Text(
                 text = stringResource(R.string.about_copyright),
                 style = MaterialTheme.typography.labelMedium,

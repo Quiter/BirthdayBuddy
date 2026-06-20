@@ -27,7 +27,8 @@
 ## 📜 Aktuelle Struktur-Meilensteine
 *Details siehe `CHANGELOG.md`*
 
-- **AGP 9.0 Readiness & Gradle Hardening (Current):** Migration auf deklarative `plugins { ... }` Blöcke, Aktivierung strikter AGP 9 Flags (`nonTransitiveRClass`, `nonFinalResIds`) und Festschreibung von Java 17 als Standard.
+- **Automatisierte Agenten-Skills (Current):** Ablösung manueller Skill-Kopien durch Git-Submodule-freie, gradle-gestützte Repository-Klone (`checkAgentSkills`/`updateAgentSkills`) unter Ausschluss von Git (`.gitignore`). Dynamische Skill-Registrierung über `skills.json`.
+- **AGP 9.0 Readiness & Gradle Hardening:** Migration auf deklarative `plugins { ... }` Blöcke, Aktivierung strikter AGP 9 Flags (`nonTransitiveRClass`, `nonFinalResIds`) und Festschreibung von Java 17 als Standard.
 - **Native Compose Illustrationen & Lottie Purge:** Vollständige Entfernung der Lottie-Bibliothek (~400 KB APK-Ersparnis). Ersetzung durch performante, rein native Compose-Illustrationen (`ContactsIllustration.kt`) mit animierten Shadern und Kreisen.
 - **Google Photos-Style FastScrollbar:** Reaktives Ein-/Ausblenden nach 1.5s Inaktivität. Touch-Pass-Through im Leerlauf. M3-Pill-Thumb mit Richtungsindikatoren.
 - **Tablet UX Overhaul:** Einführung eines Zitat-Platzhalters bei leeren Detail-Panes, manueller Deselektions-Button (X) und M3-konforme Kapsel-Navigation in den Einstellungen.

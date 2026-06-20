@@ -29,7 +29,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Check
-import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.NotificationsOff
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -68,10 +67,12 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.heckmannch.birthdaybuddy.R
 import com.heckmannch.birthdaybuddy.data.local.NotificationRule
 import com.heckmannch.birthdaybuddy.ui.components.AppResponsiveScaffold
+import com.heckmannch.birthdaybuddy.ui.components.InfoCard
 import com.heckmannch.birthdaybuddy.ui.screens.settings.notifications.components.EditRuleDialog
 import com.heckmannch.birthdaybuddy.ui.screens.settings.notifications.components.NotificationRuleItem
 import com.heckmannch.birthdaybuddy.ui.theme.AlphaSurfaceContainerHigh
 import com.heckmannch.birthdaybuddy.ui.theme.BirthdayBuddyTheme
+import com.heckmannch.birthdaybuddy.ui.theme.ContactImageSizeNormal
 import com.heckmannch.birthdaybuddy.ui.theme.SpacingExtraLarge
 import com.heckmannch.birthdaybuddy.ui.theme.SpacingLarge
 import com.heckmannch.birthdaybuddy.ui.theme.SpacingNormal
@@ -288,13 +289,15 @@ private fun NotificationSettingsContent(
                             Switch(
                                 checked = notificationsEnabled,
                                 onCheckedChange = onToggleNotifications,
-                                thumbContent = {
-                                    Icon(
-                                        imageVector = if (notificationsEnabled) Icons.Default.Check else Icons.Default.Close,
-                                        contentDescription = null,
-                                        modifier = Modifier.size(SwitchDefaults.IconSize)
-                                    )
-                                }
+                                thumbContent = if (notificationsEnabled) {
+                                    {
+                                        Icon(
+                                            imageVector = Icons.Default.Check,
+                                            contentDescription = null,
+                                            modifier = Modifier.size(SwitchDefaults.IconSize)
+                                        )
+                                    }
+                                } else null
                             )
                         }
                     )
@@ -309,15 +312,25 @@ private fun NotificationSettingsContent(
                                 Switch(
                                     checked = persistentNotifications,
                                     onCheckedChange = onTogglePersistent,
-                                    thumbContent = {
-                                        Icon(
-                                            imageVector = if (persistentNotifications) Icons.Default.Check else Icons.Default.Close,
-                                            contentDescription = null,
-                                            modifier = Modifier.size(SwitchDefaults.IconSize)
-                                        )
-                                    }
+                                    thumbContent = if (persistentNotifications) {
+                                        {
+                                            Icon(
+                                                imageVector = Icons.Default.Check,
+                                                contentDescription = null,
+                                                modifier = Modifier.size(SwitchDefaults.IconSize)
+                                            )
+                                        }
+                                    } else null
                                 )
                             }
+                        )
+                    }
+
+                    item(span = { GridItemSpan(maxLineSpan) }) {
+                        InfoCard(
+                            title = stringResource(R.string.notifications_persistent_info_title),
+                            description = stringResource(R.string.notifications_persistent_info_desc),
+                            modifier = Modifier.padding(bottom = SpacingNormal)
                         )
                     }
 
@@ -398,7 +411,7 @@ private fun PermissionRequestState(
         Icon(
             imageVector = Icons.Default.NotificationsOff,
             contentDescription = null,
-            modifier = Modifier.size(64.dp),
+            modifier = Modifier.size(ContactImageSizeNormal),
             tint = MaterialTheme.colorScheme.primary.copy(alpha = AlphaSurfaceContainerHigh),
         )
         Spacer(modifier = Modifier.height(SpacingNormal))

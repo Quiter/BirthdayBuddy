@@ -20,7 +20,6 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Check
-import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Palette
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -177,13 +176,15 @@ fun ThemeSettingsScreen(
                             checked = themeAmoled,
                             onCheckedChange = { viewModel.setThemeAmoled(it) },
                             enabled = isDarkThemeActive,
-                            thumbContent = {
-                                Icon(
-                                    imageVector = if (themeAmoled) Icons.Default.Check else Icons.Default.Close,
-                                    contentDescription = null,
-                                    modifier = Modifier.size(SwitchDefaults.IconSize)
-                                )
-                            }
+                            thumbContent = if (themeAmoled) {
+                                {
+                                    Icon(
+                                        imageVector = Icons.Default.Check,
+                                        contentDescription = null,
+                                        modifier = Modifier.size(SwitchDefaults.IconSize)
+                                    )
+                                }
+                            } else null
                         )
                     },
                     modifier = Modifier.clickable(enabled = isDarkThemeActive) {

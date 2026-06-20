@@ -47,7 +47,7 @@ class HomeState(
     }
 
     /**
-     * Steuert den Sperr-Status der Filterleiste während des schnellen Scrollens.
+     * Steuert den Sperr-Status der Filterleiste während des schnellen Scrollen.
      */
     fun onSetFastScrolling(isScrolling: Boolean) {
         isFastScrolling = isScrolling

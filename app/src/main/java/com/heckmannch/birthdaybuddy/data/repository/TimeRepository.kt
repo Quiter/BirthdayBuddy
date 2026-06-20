@@ -9,6 +9,7 @@ import java.time.LocalDateTime
 import java.time.temporal.ChronoUnit
 import javax.inject.Inject
 import javax.inject.Singleton
+import kotlin.time.Duration.Companion.milliseconds
 
 @Singleton
 class TimeRepository @Inject constructor() {
@@ -24,7 +25,7 @@ class TimeRepository @Inject constructor() {
             val millisUntilMidnight = ChronoUnit.MILLIS.between(now, nextMidnight)
 
             // Warte bis Mitternacht + 1 Sekunde Puffer
-            delay(millisUntilMidnight + 1000)
+            delay((millisUntilMidnight + 1000).milliseconds)
         }
     }.distinctUntilChanged()
 }

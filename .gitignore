@@ -19,3 +19,6 @@ local.properties
 /birthday_database*
 /settings_database*
 .aider*
+
+# Antigravity/Gemini agent external skills
+.agents/external/

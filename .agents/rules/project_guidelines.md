@@ -1,57 +1,89 @@
-# Project Guidelines & Context
+# LLM Project Guidelines: BirthdayBuddy
 
-This rule ensures that the agent always respects the current status, structure, and guidelines of the BirthdayBuddy project.
-The project is hosted at: https://github.com/Quiter/BirthdayBuddy
+> [!IMPORTANT]
+> **LLM Optimization**: This file is compiled specifically for LLM Agents. Any modification or addition to this file MUST maintain its high-density, structured English system-instruction format. DO NOT write conversational, narrative-style paragraphs.
 
-## Project Documents to Consult
-Always refer to and follow the specifications, rules, and architecture laid out in:
-- [docs/PROJECT_STATUS.md](file:///c:/Users/chris/AndroidStudioProjects/BirthdayBuddy/docs/PROJECT_STATUS.md)
-- [docs/PROJECT_STRUCTURE.md](file:///c:/Users/chris/AndroidStudioProjects/BirthdayBuddy/docs/PROJECT_STRUCTURE.md)
+This file provides high-priority, machine-readable instructions, constraints, and architecture guidelines. You MUST adhere to these rules at all times.
 
-## Core Guidelines
-1. **Rules & Constraints:** Always adhere to the "Leitplanken" defined in `docs/PROJECT_STATUS.md` (e.g. database safety, i18n in both German and English, Clean Architecture, Hilt DI, no additive vertical paddings).
-2. **Project Structure:** Follow the directory layout and file placements documented in `docs/PROJECT_STRUCTURE.md`.
-3. **Documentation:** Log changes strictly in `docs/PROJECT_STRUCTURE.md` and `CHANGELOG.md` (append only).
+---
 
-## Spezialisierte Skills & Tooling
-Bei der Weiterentwicklung des Projekts wurden spezialisierte Skills eingesetzt, deren Prinzipien bei zukünftigen Änderungen zwingend beachtet werden müssen:
+## 1. Core Principles & Constraints
 
-1. **Adaptive Skill (Material 3 Adaptive):**
-   - **Prinzip:** Nutze für Master-Detail-Ansichten das offizielle `ListDetailPaneScaffold` (siehe `HomeScreen` & `SettingsScreen`).
-   - **Responsivität:** Layouts müssen sowohl `WindowWidthSizeClass` als auch `WindowHeightSizeClass` berücksichtigen (bereitgestellt via `LocalWindowWidthSizeClass` und `LocalWindowHeightSizeClass`).
-   - **Grids:** Listen in Einstellungen oder Übersichten sollten auf breiten Bildschirmen via `LazyVerticalGrid` adaptiv mehrspaltig gerendert werden.
+- **Documentation Safety**:
+  - Every significant code modification MUST be appended to [CHANGELOG.md](file:///c:/Users/chris/AndroidStudioProjects/BirthdayBuddy/docs/CHANGELOG.md).
+  - Any new file, module, or database entity MUST be documented in [PROJECT_STRUCTURE.md](file:///c:/Users/chris/AndroidStudioProjects/BirthdayBuddy/docs/PROJECT_STRUCTURE.md).
+- **Database Safety (Room)**:
+  - DO NOT use `fallbackToDestructiveMigration` under any circumstances.
+  - Schema changes MUST increment the version, define an auto-migration, and export schemas to `app/schemas` for verification.
+- **Internationalization (i18n)**:
+  - Strings MUST be updated simultaneously in German (`res/values-de/strings.xml`) and English (`res/values/strings.xml`).
+- **Clean Architecture & Dependency Injection**:
+  - Follow Feature-based Layering and Clean Architecture principles.
+  - ViewModels MUST be decoupled from Android APIs. Use Hilt DI to supply dependencies.
+  - Implement specialized ViewModels per screen using Uni-Directional Data Flow (UDF) / MVI patterns (e.g., central `onIntent` handler).
+- **Layout & Spacing Restrictions**:
+  - DO NOT use additive vertical paddings. Spacings between elements MUST use bottom padding to avoid layout jumps inside `AnimatedVisibility` components.
+  - All spacing, icon sizes, and transparency values MUST use standard tokens from `ui/theme/Dimensions.kt` (e.g., `SpacingNormal`, `IconSizeSmall`, `AlphaEmphasisNormal`). No magic/hardcoded values.
 
-2. **AGP 9 Upgrade Skill:**
-   - **DSL-Standard:** Verwende die explizite KTS-Konfiguration (`configure<ApplicationExtension>`) anstelle der impliziten `android { ... }` Blöcke. Plugins müssen im `plugins { ... }` Block deklariert werden (kein `apply plugin`).
-   - **Performance & Safety:** Aktiviere strikte Flags in `gradle.properties` (`android.nonTransitiveRClass=true`, `android.nonFinalResIds=true`).
-   - **Java-Version:** Standard ist Java 17 (`jvmToolchain(17)`, `sourceCompatibility` & `targetCompatibility`).
-   - **Kompatibilität:** Beachte das Flag `android.newDsl=false` in `gradle.properties`, solange Plugins (wie das BaselineProfile-Plugin) dies für die Variant-API benötigen.
+### 1.1 Directory Map (LLM Navigation Aid)
+For detailed human-readable descriptions, consult [PROJECT_STRUCTURE.md](file:///c:/Users/chris/AndroidStudioProjects/BirthdayBuddy/docs/PROJECT_STRUCTURE.md). Use this quick map for navigation:
+- **Dependency Injection**: `di/` (`AppModule.kt`, `HelperBindingsModule.kt`)
+- **Data Layer (Cache/DB)**: `data/local/` (Entities: `Contact`, `AppSettings`, `ContactUserData`, `LabelConfig`, `NotificationRule`, `PendingNotification`)
+- **Repositories**: `data/repository/` (Sync, Contacts, Backup, Notifications)
+- **UI Screens**: `ui/screens/`
+  - `home/`: Main list, top chips, top bar, detail pane, fast-scroll, confetti
+  - `onboarding/`: Onboarding pages
+  - `settings/`: App configuration (Backup, Labels, Notifications, Calendar)
+- **UI Commons**: `ui/model/` (UI State objects), `ui/components/` (shared dialogs, custom illustrations), `ui/theme/` (colors, typography, dimensions)
+- **ViewModels**: `viewmodel/` (HomeViewModel, ThemeViewModel, NotificationViewModel, etc.)
+- **Widgets**: `widget/` (Glance-based homescreen widgets)
 
-3. **Navigation-3 Skill (Type-Safe Navigation):**
-   - **Standard:** Nutze ausschließlich das typsichere Jetpack Navigation System (Navigation 2.8+).
-   - **Routen:** Definiere Routen als `@Serializable` Objekte oder Datenklassen in der `MainActivity.kt`.
-   - **Aufrufe:** Verwende `navController.navigate(RouteObject)` und `composable<RouteClass>`. Vermeide String-basierte Routen.
+---
 
-4. **Edge-to-Edge Skill (Android 15 Ready):**
-   - **Prinzip:** Alle Screens müssen das Edge-to-Edge-Konzept unterstützen.
-   - **Insets:** Nutze `AppResponsiveScaffold`, das Insets via `PaddingValues` an den Inhalt weiterreicht. Vermeide hartcodierte Paddings; nutze stattdessen Inset-aware Paddings für Listen und TopBars.
+## 2. Specialized Skills & Technical Standards
 
-5. **R8-Analyzer Skill (Release Safety):**
-   - **Regeln:** Sichert die Stabilität des Release-Builds.
-   - **Schutz:** Schütze Room-Entities, DAOs, Hilt-Worker und `@Serializable` Navigations-Routen in der `proguard-rules.pro` vor Over-Stripping durch R8.
+### 2.1 Material 3 Adaptive Layouts
+- Use the official Jetpack Compose `ListDetailPaneScaffold` for Master-Detail views (e.g., `HomeScreen`, `SettingsScreen`).
+- Query and adapt to both `WindowWidthSizeClass` and `WindowHeightSizeClass` via `LocalWindowWidthSizeClass.current` and `LocalWindowHeightSizeClass.current`.
+- On wider screens, render lists or options as multi-column grids via `LazyVerticalGrid`.
 
-6. **Testing-Setup Skill (Stability):**
-   - **Standard:** Jedes ViewModel und kritische Repositories müssen durch Unit-Tests in `src/test` abgedeckt sein.
-   - **Tooling:** Nutze `MainDispatcherRule` für Coroutines und `unitTests.isReturnDefaultValues = true` für JVM-Tests mit Android-Abhängigkeiten.
+### 2.2 AGP 9 & Kotlin Gradle DSL
+- Use explicit KTS Gradle DSL configuration (`configure<ApplicationExtension>`) instead of implicit `android { ... }` blocks.
+- Declare plugins inside the `plugins { ... }` block; do not use legacy `apply plugin`.
+- Enforce Java 17 as standard (`jvmToolchain(17)`, `sourceCompatibility` / `targetCompatibility`).
+- Enforce strict compiler flags in `gradle.properties`: `android.nonTransitiveRClass=true` and `android.nonFinalResIds=true`.
 
-7. **Design-System & Token Skill (Consistency):**
-   - **Tokens:** Verwende ausschließlich die in `ui/theme/Dimensions.kt` definierten Tokens für Abstände (`Spacing...`), Icon-Größen (`IconSize...`) und Transparenz (`AlphaEmphasis...`).
-   - **Hardcoding-Verbot:** Vermeide hartcodierte DP-Werte und Magic-Number-Alpha-Werte im UI-Code. Nutze das Material 3 Theme (`colorScheme`, `typography`) konsequent für volle Dark-Mode-Kompatibilität.
+### 2.3 Type-Safe Navigation
+- Navigation routes MUST be `@Serializable` Kotlin objects or data classes defined in `MainActivity.kt`.
+- Use the type-safe Jetpack Navigation APIs: `navController.navigate(RouteObject)` and `composable<RouteClass>`. String-based route paths are strictly forbidden.
 
-8. **Performance & Rendering Skill (Perfetto & Compose Optimization):**
-   - **Analyse:** Nutze `perfetto-trace-analysis` zur Identifikation von Jank, UI-Thread-Blocking und unnötigen Re-Compositions.
-   - **Daten-Effizienz:** Filtere Rohdaten (z. B. via `asSequence().filter`) in ViewModels oder Repositories *vor* dem Mapping in UI-Modelle, um CPU-Overhead bei großen Listen zu minimieren.
-   - **UI-Stabilität:** Nutze stabiles Image-Prefetching (z. B. via Coil `enqueue`) mit dedizierten Cache-Keys, um redundante Ladeprozesse während schneller UI-Interaktionen (wie Suche oder Scrolling) zu verhindern.
-   - **Threading:** Verlagere rechenintensive Operationen (Mapping, Sortierung, Filterung) konsequent via `flowOn(Dispatchers.Default)` aus dem UI-Thread.
+### 2.4 Edge-to-Edge Support
+- Support full Edge-to-Edge rendering on Android 15+.
+- Utilize `AppResponsiveScaffold` to automatically pass `PaddingValues` with system window insets to screen contents. Use inset-aware padding on scrollable lists and top/bottom bars.
 
-**Vorgehen bei Änderungen:** Vor größeren Refactorings oder Updates sollten die entsprechenden Skills konsultiert oder erneut zur Analyse eingebunden werden, um die Einhaltung der aktuellen Best Practices sicherzustellen.
+### 2.5 Proguard & R8 Release Safety
+- Protect Room entities, DAOs, Hilt workers, and `@Serializable` navigation routes from code shrinking or stripping by adding explicit keep rules to `proguard-rules.pro`.
+
+### 2.6 Unit Testing Setup
+- ViewModels and Repositories MUST be unit tested in `src/test`.
+- Use `MainDispatcherRule` to mock the Main dispatcher in coroutines.
+- Enable `unitTests.isReturnDefaultValues = true` for JVM tests needing mockable Android properties.
+
+### 2.7 Performance & Compose Optimization
+- Inspect recompositions, frame drops, and UI thread blocking using `perfetto-trace-analysis`.
+- Offload computationally heavy tasks (e.g., raw database filtering/mapping) to `Dispatchers.Default` using `flowOn`.
+- Prefetch images via Coil `enqueue` using explicit memory cache keys to avoid decoding lag during fast scroll.
+
+---
+
+## 3. Agent Skills & Tooling Management
+
+- **Location & Exclusions**:
+  - External skill repositories are automatically cloned/downloaded into `.agents/external/` which is ignored by Git via `.gitignore`. Do not commit external code.
+- **Dynamic Registry**:
+  - Skills are registered dynamically in [.agents/skills.json](file:///c:/Users/chris/AndroidStudioProjects/BirthdayBuddy/.agents/skills.json).
+- **Gradle Tasks**:
+  - **Download / Check**: The Gradle task `checkAgentSkills` runs automatically during Android Studio sync (prep stage) and clones the official Google skills ([android/skills](https://github.com/android/skills)) and community Material 3 skill ([hamen/material-3-skill](https://github.com/hamen/material-3-skill)) repositories if missing.
+  - **Manual Update**: Run `.\gradlew updateAgentSkills` to execute `git pull` in both external repositories to download the latest skills.
+- **Precedence**:
+  - The community `material-3` skill is subordinate to all official Google skills. In case of rules contradiction, official Google skills take precedence.

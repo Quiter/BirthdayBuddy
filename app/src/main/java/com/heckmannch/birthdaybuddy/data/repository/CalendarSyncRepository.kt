@@ -66,9 +66,8 @@ class CalendarSyncRepository @Inject constructor(
             val id = calendar.id
             val accountName = calendar.accountName
             val accountType = calendar.accountType
-            val name = calendar.name
 
-            when (name) {
+            when (val name = calendar.name) {
                 // Lösche veraltete BirthdayBuddyCalendar (unter phone account)
                 "BirthdayBuddyCalendar" -> {
                     systemCalendarDataSource.deleteCalendarById(id, accountName, accountType)
@@ -180,7 +179,7 @@ class CalendarSyncRepository @Inject constructor(
             // Geburtstage leeren
             systemCalendarDataSource.clearCalendarEvents(birthdayCalId)
 
-            // Hochzeitstage leeren oder Kalender löschen falls deaktiviert
+            // Hochzeitstage leeren oder Kalender löschen, falls deaktiviert
             if (anniversaryCalId != null) {
                 systemCalendarDataSource.clearCalendarEvents(anniversaryCalId)
             } else {
@@ -194,7 +193,7 @@ class CalendarSyncRepository @Inject constructor(
                     }
             }
 
-            // Namenstage leeren oder Kalender löschen falls deaktiviert
+            // Namenstage leeren oder Kalender löschen, falls deaktiviert
             if (nameDayCalId != null) {
                 systemCalendarDataSource.clearCalendarEvents(nameDayCalId)
             } else {

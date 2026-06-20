@@ -30,9 +30,11 @@ import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.unit.dp
 import com.heckmannch.birthdaybuddy.R
 import com.heckmannch.birthdaybuddy.data.local.NotificationRule
+import com.heckmannch.birthdaybuddy.ui.theme.SpacingExtraSmall
+import com.heckmannch.birthdaybuddy.ui.theme.SpacingMedium
+import com.heckmannch.birthdaybuddy.ui.theme.SpacingSmall
 
 private enum class RuleUnit {
     DAYS, WEEKS
@@ -87,7 +89,7 @@ fun EditRuleDialog(
         text = {
             Column(
                 modifier = Modifier.fillMaxWidth(),
-                verticalArrangement = Arrangement.spacedBy(8.dp)
+                verticalArrangement = Arrangement.spacedBy(SpacingSmall)
             ) {
                 OutlinedTextField(
                     value = numberStringState.value,
@@ -104,7 +106,7 @@ fun EditRuleDialog(
                     modifier = Modifier.fillMaxWidth()
                 )
 
-                Spacer(modifier = Modifier.height(8.dp))
+                Spacer(modifier = Modifier.height(SpacingSmall))
 
                 val displayNum = numberStringState.value.toIntOrNull() ?: 1
 
@@ -114,13 +116,13 @@ fun EditRuleDialog(
                         modifier = Modifier
                             .fillMaxWidth()
                             .clickable { selectedUnitState.value = RuleUnit.DAYS }
-                            .padding(vertical = 6.dp)
+                            .padding(vertical = SpacingExtraSmall)
                     ) {
                         RadioButton(
                             selected = selectedUnitState.value == RuleUnit.DAYS,
                             onClick = { selectedUnitState.value = RuleUnit.DAYS }
                         )
-                        Spacer(modifier = Modifier.width(8.dp))
+                        Spacer(modifier = Modifier.width(SpacingSmall))
                         Text(
                             text = pluralStringResource(
                                 id = R.plurals.dialog_rule_unit_days,
@@ -136,13 +138,13 @@ fun EditRuleDialog(
                         modifier = Modifier
                             .fillMaxWidth()
                             .clickable { selectedUnitState.value = RuleUnit.WEEKS }
-                            .padding(vertical = 6.dp)
+                            .padding(vertical = SpacingExtraSmall)
                     ) {
                         RadioButton(
                             selected = selectedUnitState.value == RuleUnit.WEEKS,
                             onClick = { selectedUnitState.value = RuleUnit.WEEKS }
                         )
-                        Spacer(modifier = Modifier.width(8.dp))
+                        Spacer(modifier = Modifier.width(SpacingSmall))
                         Text(
                             text = pluralStringResource(
                                 id = R.plurals.dialog_rule_unit_weeks,
@@ -155,7 +157,7 @@ fun EditRuleDialog(
                 }
 
                 HorizontalDivider(
-                    modifier = Modifier.padding(vertical = 8.dp),
+                    modifier = Modifier.padding(vertical = SpacingSmall),
                     color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.2f)
                 )
 
@@ -164,7 +166,7 @@ fun EditRuleDialog(
                     modifier = Modifier
                         .fillMaxWidth()
                         .clickable { showTimePickerState.value = true }
-                        .padding(vertical = 12.dp)
+                        .padding(vertical = SpacingMedium)
                 ) {
                     Text(
                         text = stringResource(
@@ -173,12 +175,12 @@ fun EditRuleDialog(
                             minuteState.intValue
                         ),
                         style = MaterialTheme.typography.bodyLarge,
-                        modifier = Modifier.padding(start = 12.dp)
+                        modifier = Modifier.padding(start = SpacingMedium)
                     )
                 }
 
                 HorizontalDivider(
-                    modifier = Modifier.padding(vertical = 8.dp),
+                    modifier = Modifier.padding(vertical = SpacingSmall),
                     color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.2f)
                 )
             }

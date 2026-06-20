@@ -84,7 +84,7 @@ fun mergeNames(name1: String, name2: String): String {
 }
 
 /**
- * Berechnet Initialen aus einem Namen (z.B. "Max Mustermann" -> "MM").
+ * Berechnet Initialen aus einem Namen (z.B. "Max Mustermann" → "MM").
  */
 fun String.getInitials(): String {
     val parts = this.trim().split(WHITESPACE_REGEX).filter { it.isNotBlank() }

@@ -186,7 +186,7 @@ class BirthdayWidget : GlanceAppWidget() {
 
         val itemBgColor = ColorProvider(
             day = Color(0xCCFFFFFF), // ~80% opaque white (Light Theme)
-            night = Color(0xCC1E1E1E) // ~80% opaque dark grey (Dark Theme)
+            night = Color(0xCC1E1E1E) // ~80% opaque dark gray (Dark Theme)
         )
 
         Box(

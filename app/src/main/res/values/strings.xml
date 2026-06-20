@@ -63,6 +63,8 @@
     <string name="notifications_desc">Receive personalized notifications</string>
     <string name="notifications_persistent_header">Important Notifications</string>
     <string name="notifications_persistent_desc">Must be actively marked as done</string>
+    <string name="notifications_persistent_info_title">Important Notifications</string>
+    <string name="notifications_persistent_info_desc">Important notifications remain visible in your status bar until you explicitly open them or mark them as done. This ensures you never miss a birthday!</string>
     <string name="notifications_empty">No reminders scheduled</string>
     <string name="notifications_permission_missing_desc">To receive notifications, BirthdayBuddy needs permission to send you notices.</string>
     <string name="notifications_permission_btn">Grant permission</string>
@@ -199,6 +201,7 @@
 
     <!-- Label Settings Screen -->
     <string name="labels_title">Manage labels</string>
+    <string name="labels_info_title">Label Configuration</string>
     <string name="labels_empty">No labels found</string>
     <string name="labels_info_hide">Hide filter: Label does not appear in the bar to filter contacts.</string>
     <string name="labels_info_ignore">Ignore: Contacts are completely hidden, but can be found in the search.</string>

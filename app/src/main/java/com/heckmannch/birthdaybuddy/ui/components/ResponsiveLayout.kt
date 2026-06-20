@@ -6,13 +6,15 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.displayCutout
+import androidx.compose.foundation.layout.calculateEndPadding
+import androidx.compose.foundation.layout.calculateStartPadding
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.union
 import androidx.compose.foundation.layout.widthIn
+import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FabPosition
 import androidx.compose.material3.MaterialTheme
@@ -71,7 +73,12 @@ fun AdaptiveContentContainer(
         .fillMaxWidth()
         .then(
             if (includeDisplayCutout) {
-                Modifier.padding(WindowInsets.displayCutout.asPaddingValues())
+                val layoutDirection = LocalLayoutDirection.current
+                val cutoutPadding = WindowInsets.displayCutout.asPaddingValues()
+                Modifier.padding(
+                    start = cutoutPadding.calculateStartPadding(layoutDirection),
+                    end = cutoutPadding.calculateEndPadding(layoutDirection)
+                )
             } else {
                 Modifier
             }
@@ -102,8 +109,7 @@ fun AppResponsiveScaffold(
     containerColor: Color = Color.Unspecified,
     floatingActionButtonPosition: FabPosition = FabPosition.End,
     contentColor: Color = contentColorFor(if (containerColor == Color.Unspecified) MaterialTheme.colorScheme.background else containerColor),
-    contentWindowInsets: WindowInsets = WindowInsets.statusBars.union(WindowInsets.navigationBars)
-        .union(WindowInsets.displayCutout),
+    contentWindowInsets: WindowInsets = WindowInsets.navigationBars.union(WindowInsets.displayCutout),
     consumePadding: Boolean = true,
     useAdaptiveWidth: Boolean = true,
     content: @Composable (PaddingValues) -> Unit

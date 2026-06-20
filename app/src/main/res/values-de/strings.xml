@@ -63,6 +63,8 @@
     <string name="notifications_desc">Erhalte personalisierte Benachrichtigungen</string>
     <string name="notifications_persistent_header">Wichtige Benachrichtigungen</string>
     <string name="notifications_persistent_desc">Müssen aktiv als erledigt markiert werden</string>
+    <string name="notifications_persistent_info_title">Wichtige Benachrichtigungen</string>
+    <string name="notifications_persistent_info_desc">Wichtige Benachrichtigungen bleiben so lange in deiner Statusleiste sichtbar, bis du sie explizit öffnest oder als erledigt markierst. So übersiehst du garantiert keinen Geburtstag!</string>
     <string name="notifications_empty">Keine Erinnerungen geplant</string>
     <string name="notifications_permission_missing_desc">Um Benachrichtigungen zu erhalten, benötigt BirthdayBuddy die Berechtigung, dir Mitteilungen senden zu dürfen.</string>
     <string name="notifications_permission_btn">Berechtigung erteilen</string>
@@ -199,6 +201,7 @@
 
     <!-- Label Settings Screen -->
     <string name="labels_title">Labels verwalten</string>
+    <string name="labels_info_title">Label-Konfiguration</string>
     <string name="labels_empty">Keine Labels gefunden</string>
     <string name="labels_info_hide">Filter verbergen: Label erscheint nicht in der Leiste zum Filtern der Kontakte.</string>
     <string name="labels_info_ignore">Ignorieren: Kontakte werden komplett ausgeblendet, sind aber in der Suche auffindbar.</string>
