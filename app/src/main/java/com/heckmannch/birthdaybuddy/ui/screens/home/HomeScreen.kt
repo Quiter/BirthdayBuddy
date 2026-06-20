@@ -347,7 +347,7 @@ private fun HomeContent(
 
                 // Deselektieren, wenn der ausgewählte Kontakt nicht mehr in der Liste ist
                 LaunchedEffect(contacts, selectedContactId) {
-                    if (selectedContactId != null && contacts.any { it.id == selectedContactId } != true) {
+                    if (selectedContactId != null && contacts.none { it.id == selectedContactId }) {
                         selectedContactId = null
                     }
                 }
