@@ -1,0 +1,21 @@
+{
+  "entries": [
+    { "path": "external/material-3-skill/skills" },
+    { "path": "external/android-skills/build/agp" },
+    { "path": "external/android-skills/camera" },
+    { "path": "external/android-skills/device-ai" },
+    { "path": "external/android-skills/devtools" },
+    { "path": "external/android-skills/identity" },
+    { "path": "external/android-skills/jetpack-compose" },
+    { "path": "external/android-skills/jetpack-compose/migration" },
+    { "path": "external/android-skills/jetpack-compose/theming" },
+    { "path": "external/android-skills/navigation" },
+    { "path": "external/android-skills/performance" },
+    { "path": "external/android-skills/play" },
+    { "path": "external/android-skills/profilers" },
+    { "path": "external/android-skills/system" },
+    { "path": "external/android-skills/testing" },
+    { "path": "external/android-skills/wear" },
+    { "path": "external/android-skills/xr" }
+  ]
+}
