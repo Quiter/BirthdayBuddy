@@ -10,7 +10,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.union
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -102,8 +101,7 @@ fun AppResponsiveScaffold(
     containerColor: Color = Color.Unspecified,
     floatingActionButtonPosition: FabPosition = FabPosition.End,
     contentColor: Color = contentColorFor(if (containerColor == Color.Unspecified) MaterialTheme.colorScheme.background else containerColor),
-    contentWindowInsets: WindowInsets = WindowInsets.statusBars.union(WindowInsets.navigationBars)
-        .union(WindowInsets.displayCutout),
+    contentWindowInsets: WindowInsets = WindowInsets.navigationBars.union(WindowInsets.displayCutout),
     consumePadding: Boolean = true,
     useAdaptiveWidth: Boolean = true,
     content: @Composable (PaddingValues) -> Unit
