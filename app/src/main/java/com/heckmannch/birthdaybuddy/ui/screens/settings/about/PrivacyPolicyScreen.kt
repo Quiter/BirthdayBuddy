@@ -39,10 +39,13 @@ import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.withStyle
-import androidx.compose.ui.unit.dp
 import androidx.core.net.toUri
 import com.heckmannch.birthdaybuddy.R
 import com.heckmannch.birthdaybuddy.ui.components.AppResponsiveScaffold
+import com.heckmannch.birthdaybuddy.ui.theme.SpacingExtraLarge
+import com.heckmannch.birthdaybuddy.ui.theme.SpacingMedium
+import com.heckmannch.birthdaybuddy.ui.theme.SpacingNormal
+import com.heckmannch.birthdaybuddy.ui.theme.SpacingSmall
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
@@ -90,16 +93,21 @@ fun PrivacyPolicyScreen(
                 scrollBehavior = scrollBehavior
             )
         }
-    ) {
+    ) { paddingValues ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .verticalScroll(rememberScrollState())
-                .padding(24.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
+                .padding(
+                    start = SpacingNormal,
+                    top = paddingValues.calculateTopPadding() + SpacingNormal,
+                    end = SpacingNormal,
+                    bottom = paddingValues.calculateBottomPadding() + SpacingNormal
+                ),
+            verticalArrangement = Arrangement.spacedBy(SpacingNormal)
         ) {
             MarkdownContent(policyText)
-            Spacer(modifier = Modifier.height(32.dp))
+            Spacer(modifier = Modifier.height(SpacingExtraLarge))
         }
     }
 }
@@ -121,7 +129,7 @@ private fun MarkdownContent(text: String) {
                     style = MaterialTheme.typography.headlineMedium,
                     color = MaterialTheme.colorScheme.primary,
                     fontWeight = FontWeight.Bold,
-                    modifier = Modifier.padding(top = 8.dp)
+                    modifier = Modifier.padding(top = SpacingSmall)
                 )
             }
 
@@ -131,12 +139,12 @@ private fun MarkdownContent(text: String) {
                     style = MaterialTheme.typography.titleLarge,
                     color = MaterialTheme.colorScheme.secondary,
                     fontWeight = FontWeight.Bold,
-                    modifier = Modifier.padding(top = 12.dp)
+                    modifier = Modifier.padding(top = SpacingMedium)
                 )
             }
 
             trimmed.startsWith("* ") -> {
-                Row(modifier = Modifier.padding(start = 8.dp)) {
+                Row(modifier = Modifier.padding(start = SpacingSmall)) {
                     Text("• ", style = MaterialTheme.typography.bodyLarge)
                     Text(
                         text = parseMarkdownInline(trimmed.removePrefix("* "), linkColor),
@@ -146,7 +154,7 @@ private fun MarkdownContent(text: String) {
             }
 
             trimmed == "***" || trimmed == "---" -> {
-                HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
+                HorizontalDivider(modifier = Modifier.padding(vertical = SpacingSmall))
             }
 
             trimmed.isNotBlank() -> {

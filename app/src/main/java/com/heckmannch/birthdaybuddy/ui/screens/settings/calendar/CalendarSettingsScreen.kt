@@ -60,6 +60,16 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.heckmannch.birthdaybuddy.ui.theme.AlphaContainerMuted
+import com.heckmannch.birthdaybuddy.ui.theme.AlphaContainerSubtle
+import com.heckmannch.birthdaybuddy.ui.theme.AlphaEmphasisDisabled
+import com.heckmannch.birthdaybuddy.ui.theme.IconSizeLarge
+import com.heckmannch.birthdaybuddy.ui.theme.IconSizeNormal
+import com.heckmannch.birthdaybuddy.ui.theme.IconSizeSmall
+import com.heckmannch.birthdaybuddy.ui.theme.SpacingExtraSmall
+import com.heckmannch.birthdaybuddy.ui.theme.SpacingMedium
+import com.heckmannch.birthdaybuddy.ui.theme.SpacingNormal
+import com.heckmannch.birthdaybuddy.ui.theme.SpacingSmall
 import com.heckmannch.birthdaybuddy.R
 import com.heckmannch.birthdaybuddy.data.repository.CalendarSyncRepository
 import com.heckmannch.birthdaybuddy.ui.components.AppResponsiveScaffold
@@ -216,10 +226,10 @@ private fun CalendarSettingsContent(
         LazyColumn(
             modifier = Modifier.fillMaxSize(),
             contentPadding = PaddingValues(
-                start = 16.dp,
-                top = paddingValues.calculateTopPadding() + 8.dp,
-                end = 16.dp,
-                bottom = paddingValues.calculateBottomPadding() + 8.dp
+                start = SpacingNormal,
+                top = paddingValues.calculateTopPadding() + SpacingSmall,
+                end = SpacingNormal,
+                bottom = paddingValues.calculateBottomPadding() + SpacingSmall
             )
         ) {
             item {
@@ -254,13 +264,13 @@ private fun CalendarSettingsContent(
 
             if (calendarSyncEnabled) {
                 item {
-                    Spacer(modifier = Modifier.height(16.dp))
+                    Spacer(modifier = Modifier.height(SpacingNormal))
                     Text(
                         text = stringResource(R.string.calendar_colors_section_title),
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold,
                         color = MaterialTheme.colorScheme.primary,
-                        modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
+                        modifier = Modifier.padding(horizontal = SpacingNormal, vertical = SpacingSmall)
                     )
                 }
 
@@ -270,7 +280,7 @@ private fun CalendarSettingsContent(
                         leadingContent = {
                             Box(
                                 modifier = Modifier
-                                    .size(32.dp)
+                                    .size(IconSizeLarge)
                                     .background(Color(birthdayColor), shape = CircleShape)
                             )
                         },
@@ -291,7 +301,7 @@ private fun CalendarSettingsContent(
                             leadingContent = {
                                 Box(
                                     modifier = Modifier
-                                        .size(32.dp)
+                                        .size(IconSizeLarge)
                                         .background(Color(anniversaryColor), shape = CircleShape)
                                 )
                             },
@@ -311,7 +321,7 @@ private fun CalendarSettingsContent(
                             leadingContent = {
                                 Box(
                                     modifier = Modifier
-                                        .size(32.dp)
+                                        .size(IconSizeLarge)
                                         .background(Color(nameDayColor), shape = CircleShape)
                                 )
                             },
@@ -347,19 +357,19 @@ private fun InfoCard() {
         shape = MaterialTheme.shapes.medium,
         modifier = Modifier
             .fillMaxWidth()
-            .padding(bottom = 16.dp)
+            .padding(bottom = SpacingNormal)
     ) {
         Row(
-            modifier = Modifier.padding(16.dp),
+            modifier = Modifier.padding(SpacingNormal),
             verticalAlignment = Alignment.Top
         ) {
             Icon(
                 imageVector = Icons.Default.Info,
                 contentDescription = null,
                 tint = MaterialTheme.colorScheme.secondary,
-                modifier = Modifier.size(24.dp)
+                modifier = Modifier.size(IconSizeNormal)
             )
-            Spacer(modifier = Modifier.width(12.dp))
+            Spacer(modifier = Modifier.width(SpacingMedium))
             Column {
                 Text(
                     text = stringResource(R.string.calendar_settings_header),
@@ -367,7 +377,7 @@ private fun InfoCard() {
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.onSecondaryContainer
                 )
-                Spacer(modifier = Modifier.height(4.dp))
+                Spacer(modifier = Modifier.height(SpacingExtraSmall))
                 Text(
                     text = stringResource(R.string.calendar_settings_desc),
                     style = MaterialTheme.typography.bodyMedium,
@@ -392,10 +402,10 @@ private fun SetupStepsCard(
         shape = MaterialTheme.shapes.large,
         modifier = Modifier
             .fillMaxWidth()
-            .padding(vertical = 16.dp)
+            .padding(vertical = SpacingNormal)
     ) {
         Column(
-            modifier = Modifier.padding(16.dp)
+            modifier = Modifier.padding(SpacingNormal)
         ) {
             Text(
                 text = stringResource(R.string.calendar_guide_title),
@@ -403,7 +413,7 @@ private fun SetupStepsCard(
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.primary
             )
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(SpacingNormal))
 
             // Step 1
             StepItem(
@@ -415,7 +425,7 @@ private fun SetupStepsCard(
                     {
                         Button(
                             onClick = onRequestPermission,
-                            modifier = Modifier.padding(top = 8.dp)
+                            modifier = Modifier.padding(top = SpacingSmall)
                         ) {
                             Text(stringResource(R.string.calendar_settings_permission_btn))
                         }
@@ -423,7 +433,7 @@ private fun SetupStepsCard(
                 } else null
             )
 
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(SpacingNormal))
 
             // Step 2
             StepItem(
@@ -434,7 +444,7 @@ private fun SetupStepsCard(
                 isLocked = !hasPermission
             )
 
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(SpacingNormal))
 
             // Step 3
             StepItem(
@@ -447,7 +457,7 @@ private fun SetupStepsCard(
             )
 
             if (calendarSyncEnabled && hasPermission) {
-                Spacer(modifier = Modifier.height(16.dp))
+                Spacer(modifier = Modifier.height(SpacingNormal))
                 Button(
                     onClick = { openDefaultCalendarApp(context) },
                     modifier = Modifier.fillMaxWidth()
@@ -458,7 +468,7 @@ private fun SetupStepsCard(
                             contentDescription = null,
                             modifier = Modifier.size(20.dp)
                         )
-                        Spacer(modifier = Modifier.width(8.dp))
+                        Spacer(modifier = Modifier.width(SpacingSmall))
                         Text(stringResource(R.string.onboarding_calendar_guide_btn))
                     }
                 }
@@ -499,7 +509,7 @@ private fun StepItem(
     icon: androidx.compose.ui.graphics.vector.ImageVector? = null,
     actionButton: (@Composable () -> Unit)? = null
 ) {
-    val contentAlpha = if (isLocked) 0.38f else 1f
+    val contentAlpha = if (isLocked) AlphaEmphasisDisabled else 1f
     val primaryColor = MaterialTheme.colorScheme.primary
     val successColor = Color(0xFF4CAF50)
     val onSurfaceColor = MaterialTheme.colorScheme.onSurface
@@ -511,12 +521,12 @@ private fun StepItem(
         // Circle indicator
         Box(
             modifier = Modifier
-                .size(32.dp)
+                .size(IconSizeLarge)
                 .background(
                     color = when {
-                        isCompleted -> successColor.copy(alpha = 0.15f)
-                        isLocked -> MaterialTheme.colorScheme.onSurface.copy(alpha = 0.08f)
-                        else -> primaryColor.copy(alpha = 0.15f)
+                        isCompleted -> successColor.copy(alpha = AlphaContainerSubtle)
+                        isLocked -> MaterialTheme.colorScheme.onSurface.copy(alpha = AlphaContainerMuted)
+                        else -> primaryColor.copy(alpha = AlphaContainerSubtle)
                     },
                     shape = CircleShape
                 ),
@@ -527,13 +537,13 @@ private fun StepItem(
                     imageVector = Icons.Default.Check,
                     contentDescription = null,
                     tint = successColor,
-                    modifier = Modifier.size(18.dp)
+                    modifier = Modifier.size(IconSizeSmall)
                 )
             } else if (icon != null) {
                 Icon(
                     imageVector = icon,
                     contentDescription = null,
-                    tint = if (isLocked) onSurfaceColor.copy(alpha = 0.38f) else primaryColor,
+                    tint = if (isLocked) onSurfaceColor.copy(alpha = AlphaEmphasisDisabled) else primaryColor,
                     modifier = Modifier.size(16.dp)
                 )
             } else {
@@ -541,17 +551,17 @@ private fun StepItem(
                     text = stepNumber.toString(),
                     style = MaterialTheme.typography.bodyMedium,
                     fontWeight = FontWeight.Bold,
-                    color = if (isLocked) onSurfaceColor.copy(alpha = 0.38f) else primaryColor
+                    color = if (isLocked) onSurfaceColor.copy(alpha = AlphaEmphasisDisabled) else primaryColor
                 )
             }
         }
 
-        Spacer(modifier = Modifier.width(12.dp))
+        Spacer(modifier = Modifier.width(SpacingMedium))
 
         Column(
             modifier = Modifier
                 .weight(1f)
-                .padding(top = 4.dp)
+                .padding(top = SpacingExtraSmall)
         ) {
             Text(
                 text = title,

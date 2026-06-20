@@ -175,7 +175,7 @@ private fun InfoCard() {
                 imageVector = Icons.Default.Info,
                 contentDescription = null,
                 tint = MaterialTheme.colorScheme.secondary,
-                modifier = Modifier.size(20.dp)
+                modifier = Modifier.size(IconSizeSmall)
             )
             Spacer(modifier = Modifier.width(SpacingMedium))
             Column {
