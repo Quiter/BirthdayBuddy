@@ -72,3 +72,14 @@
     - **Lösung – Rollback-Muster:** Da SQLite keine atomaren Cross-DB-Transaktionen unterstützt, wurde ein explizites Best-Effort-Rollback-Muster eingeführt: Die `settingsDatabase` (Quelle der Wahrheit) wird immer zuerst geschrieben. Das anschließende `appDatabase`-Cache-Update ist in einem `try/catch` gesichert – schlägt es fehl, wird die `settingsDatabase` in einem Rollback-Block auf den zuvor gesicherten Zustand zurückgesetzt und der Fehler wird nach oben propagiert.
     - **Atomare Einzel-DB-Operationen:** Alle Lesen-Modifizieren-Schreiben-Vorgänge innerhalb einer einzelnen Datenbank werden nun jeweils in `withTransaction { }` gewrapped, um partielle Schreibvorgänge zu verhindern.
     - **Log-Hygiene:** Deutschen Log-Text in `syncContacts()` auf Englisch umgestellt.
+
+198. **Instrumentierte Tests für Gift-Idea-Operationen (Test Coverage & Data Integrity):**
+    - **Analyse:** Bestätigt, dass `addGiftIdea()`, `toggleGiftIdea()`, `deleteGiftIdea()` und `updateGiftIdeaText()` in [ContactRepository.kt](file:///c:/Users/chris/AndroidStudioProjects/BirthdayBuddy/app/src/main/java/com/heckmannch/birthdaybuddy/data/repository/ContactRepository.kt) bereits vollständig das Best-Effort-Rollback-Muster via privater Hilfsmethode `updateGiftIdeas()` implementieren – identisch zu `linkAsCouple()` / `unlinkCouple()`.
+    - **Neue Testsuite:** Erstellung von [ContactRepositoryGiftIdeaTest.kt](file:///c:/Users/chris/AndroidStudioProjects/BirthdayBuddy/app/src/androidTest/java/com/heckmannch/birthdaybuddy/data/repository/ContactRepositoryGiftIdeaTest.kt) mit **17 instrumentierten Tests** (In-Memory-Datenbanken, analog zu `ContactRepositoryCoupleLinkTest`):
+        - `addGiftIdea`: Hinzufügen in beiden DBs, Bestand erhalten, Sortierung vor erledigte Ideen, Kontakt nicht vorhanden.
+        - `toggleGiftIdea`: `isChecked` setzen/löschen in beiden DBs, Sortierung ans Ende.
+        - `deleteGiftIdea`: Löschen aus beiden DBs, andere Ideen erhalten, unbekannte ID.
+        - `updateGiftIdeaText`: Text in beiden DBs aktualisieren, ID/Status erhalten, unbekannte ID.
+        - **Konsistenz-Tests:** Verifiziert nach jeder Operation, dass `SettingsDatabase` und `AppDatabase` denselben Zustand zeigen.
+        - **Lifecycle-Test:** Vollständiger Add → Toggle → Delete-Zyklus.
+    - **Kompilierung:** `BUILD SUCCESSFUL` – alle 17 Tests kompilieren fehlerfrei.
