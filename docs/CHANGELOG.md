@@ -9,6 +9,14 @@
     - **Sortierung:** [HomeViewModel.kt](file:///c:/Users/chris/AndroidStudioProjects/BirthdayBuddy/app/src/main/java/com/heckmannch/birthdaybuddy/viewmodel/HomeViewModel.kt) – `compareBy<ContactUiModel> { it.daysUntilNext }` durch `compareBy(nullsLast(naturalOrder())) { it.daysUntilNext }` ersetzt. Sortierverhalten unverändert: Kontakte ohne Datum landen weiterhin am Listenende.
     - **Tests:** [ContactMapperTest.kt](file:///c:/Users/chris/AndroidStudioProjects/BirthdayBuddy/app/src/test/java/com/heckmannch/birthdaybuddy/data/mapper/ContactMapperTest.kt) – drei `isEqualTo(Long.MAX_VALUE)`-Assertions durch `isNull()` ersetzt. Alle Unit-Tests grün.
 
+201. **Zentralisierung duplizierter Intent-Extra-Schlüssel in `IntentExtras` (Code Quality / Typsicherheit):**
+    - **Problem:** Die String-Literale `"SCROLL_TO_TOP"`, `"NAVIGATE_TO_NOTIFICATIONS"`, `"OPEN_SEARCH"` und `"OPEN_ADD_CONTACT"` waren als Intent-Extra-Schlüssel an mehreren Stellen dupliziert (Producer: Widget, NotificationHelper; Consumer: MainActivity). Ein Tippfehler führte zu stummem Fehlverhalten zur Laufzeit ohne Compiler-Warnung.
+    - **Lösung:** Neues [IntentExtras.kt](file:///c:/Users/chris/AndroidStudioProjects/BirthdayBuddy/app/src/main/java/com/heckmannch/birthdaybuddy/util/IntentExtras.kt) mit `object IntentExtras` und 4 `const val`-Konstanten. Tippfehler werden nun vom Kotlin-Compiler abgefangen.
+    - **Consumer:** [MainActivity.kt](file:///c:/Users/chris/AndroidStudioProjects/BirthdayBuddy/app/src/main/java/com/heckmannch/birthdaybuddy/MainActivity.kt) – alle 8 String-Literale in `HandleIntents()` ersetzt (`getBooleanExtra` + `removeExtra` je Schlüssel).
+    - **Producer Widget:** [BirthdayWidget.kt](file:///c:/Users/chris/AndroidStudioProjects/BirthdayBuddy/app/src/main/java/com/heckmannch/birthdaybuddy/widget/BirthdayWidget.kt) – `putExtra("SCROLL_TO_TOP", true)` ersetzt.
+    - **Producer Notification:** [NotificationHelper.kt](file:///c:/Users/chris/AndroidStudioProjects/BirthdayBuddy/app/src/main/java/com/heckmannch/birthdaybuddy/ui/screens/settings/notifications/components/NotificationHelper.kt) – `putExtra("NAVIGATE_TO_NOTIFICATIONS", true)` ersetzt.
+
+
 182. **AGP 9.0 Readiness & Gradle Hardening (Build Performance):**
 
     - **Modern Plugin DSL:** Migrated legacy `apply(plugin = ...)` calls in [app/build.gradle.kts](file:///c:/Users/chris/AndroidStudioProjects/BirthdayBuddy/app/build.gradle.kts) and [baselineprofile/build.gradle.kts](file:///c:/Users/chris/AndroidStudioProjects/BirthdayBuddy/baselineprofile/build.gradle.kts) to the declarative `plugins { ... }` block for better configuration performance and AGP 9.0 compatibility.

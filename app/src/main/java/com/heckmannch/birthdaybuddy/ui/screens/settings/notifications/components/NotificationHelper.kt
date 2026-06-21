@@ -11,6 +11,7 @@ import com.heckmannch.birthdaybuddy.R
 import com.heckmannch.birthdaybuddy.data.local.Contact
 import com.heckmannch.birthdaybuddy.data.repository.NotificationRepository
 import com.heckmannch.birthdaybuddy.util.hasYear
+import com.heckmannch.birthdaybuddy.util.IntentExtras
 import com.heckmannch.birthdaybuddy.util.safeNextAge
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.first
@@ -100,7 +101,7 @@ class NotificationHelper @Inject constructor(
 
         // Action-Intent: Einstellungen öffnen
         val settingsIntent = Intent(context, MainActivity::class.java).apply {
-            putExtra("NAVIGATE_TO_NOTIFICATIONS", true)
+            putExtra(IntentExtras.NAVIGATE_TO_NOTIFICATIONS, true)
             flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
         }
         val settingsPendingIntent = PendingIntent.getActivity(

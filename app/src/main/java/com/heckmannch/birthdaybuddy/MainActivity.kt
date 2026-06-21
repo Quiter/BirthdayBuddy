@@ -65,6 +65,7 @@ import com.heckmannch.birthdaybuddy.viewmodel.LabelViewModel
 import com.heckmannch.birthdaybuddy.viewmodel.NotificationViewModel
 import com.heckmannch.birthdaybuddy.viewmodel.OnboardingViewModel
 import com.heckmannch.birthdaybuddy.viewmodel.ThemeViewModel
+import com.heckmannch.birthdaybuddy.util.IntentExtras
 import com.heckmannch.birthdaybuddy.widget.BirthdayWidgetWorker
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
@@ -240,25 +241,25 @@ class MainActivity : ComponentActivity() {
         navController: NavHostController
     ) {
         LaunchedEffect(intent) {
-            if (intent?.getBooleanExtra("SCROLL_TO_TOP", false) == true) {
+            if (intent?.getBooleanExtra(IntentExtras.SCROLL_TO_TOP, false) == true) {
                 homeViewModel.triggerScrollToTop()
-                intent.removeExtra("SCROLL_TO_TOP")
+                intent.removeExtra(IntentExtras.SCROLL_TO_TOP)
             }
-            if (intent?.getBooleanExtra("NAVIGATE_TO_NOTIFICATIONS", false) == true) {
+            if (intent?.getBooleanExtra(IntentExtras.NAVIGATE_TO_NOTIFICATIONS, false) == true) {
                 navController.navigate(NotificationSettings)
-                intent.removeExtra("NAVIGATE_TO_NOTIFICATIONS")
+                intent.removeExtra(IntentExtras.NAVIGATE_TO_NOTIFICATIONS)
             }
-            if (intent?.getBooleanExtra("OPEN_SEARCH", false) == true) {
+            if (intent?.getBooleanExtra(IntentExtras.OPEN_SEARCH, false) == true) {
                 navController.navigate(Home) {
                     popUpTo(Home) { inclusive = true }
                 }
                 homeViewModel.triggerSearchFocus()
-                intent.removeExtra("OPEN_SEARCH")
+                intent.removeExtra(IntentExtras.OPEN_SEARCH)
             }
-            if (intent?.getBooleanExtra("OPEN_ADD_CONTACT", false) == true) {
+            if (intent?.getBooleanExtra(IntentExtras.OPEN_ADD_CONTACT, false) == true) {
                 // Sync triggern, falls ein neuer Kontakt hinzugefügt wurde
                 homeViewModel.syncContacts()
-                intent.removeExtra("OPEN_ADD_CONTACT")
+                intent.removeExtra(IntentExtras.OPEN_ADD_CONTACT)
             }
         }
     }
