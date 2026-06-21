@@ -122,7 +122,7 @@ class ContactRepository @Inject constructor(
             }
             widgetUpdater.updateWidget()
         } catch (e: Exception) {
-            Log.e("ContactRepository", "Fehler beim Sync: ${e.message}", e)
+            Log.e("ContactRepository", "Error during contact sync: ${e.message}", e)
         }
     }
 
@@ -163,14 +163,31 @@ class ContactRepository @Inject constructor(
 
     private suspend fun updateGiftIdeas(lookupKey: String, ideas: List<GiftIdea>) {
         withContext(Dispatchers.IO) {
-            // 1. In der persistenten UserData-Tabelle speichern (für Backup)
-            contactUserDataDao.upsertUserData(
-                ContactUserData(lookupKey = lookupKey, giftIdeas = ideas)
-            )
+            // Vorherigen Zustand für möglichen Rollback sichern
+            val prevUserData = contactUserDataDao.getUserDataForContact(lookupKey)
 
-            // 2. Im Cache aktualisieren (für sofortige UI-Anzeige)
-            contactDao.getContactByLookupKey(lookupKey)?.let { contact ->
-                contactDao.upsertContact(contact.copy(giftIdeas = ideas))
+            // 1. Quelle der Wahrheit zuerst atomar schreiben (SettingsDB)
+            settingsDatabase.withTransaction {
+                contactUserDataDao.upsertUserData(
+                    ContactUserData(lookupKey = lookupKey, giftIdeas = ideas)
+                )
+            }
+
+            // 2. Cache atomar aktualisieren (AppDB); bei Fehler Rollback der SettingsDB
+            try {
+                appDatabase.withTransaction {
+                    contactDao.getContactByLookupKey(lookupKey)?.let { contact ->
+                        contactDao.upsertContact(contact.copy(giftIdeas = ideas))
+                    }
+                }
+            } catch (e: Exception) {
+                Log.e("ContactRepository", "Failed to update gift idea cache, rolling back: ${e.message}", e)
+                settingsDatabase.withTransaction {
+                    val rollbackData = prevUserData
+                        ?: ContactUserData(lookupKey = lookupKey, giftIdeas = emptyList())
+                    contactUserDataDao.upsertUserData(rollbackData)
+                }
+                throw e
             }
         }
         widgetUpdater.updateWidget()
@@ -229,27 +246,47 @@ class ContactRepository @Inject constructor(
 
     suspend fun linkAsCouple(lookupKey1: String, lookupKey2: String) {
         withContext(Dispatchers.IO) {
-            settingsDatabase.withTransaction {
-                val userData1 =
-                    contactUserDataDao.getUserDataForContact(lookupKey1) ?: ContactUserData(
-                        lookupKey = lookupKey1
-                    )
-                val userData2 =
-                    contactUserDataDao.getUserDataForContact(lookupKey2) ?: ContactUserData(
-                        lookupKey = lookupKey2
-                    )
+            // Vorherigen Zustand für möglichen Rollback lesen
+            val prevUserData1 = contactUserDataDao.getUserDataForContact(lookupKey1)
+            val prevUserData2 = contactUserDataDao.getUserDataForContact(lookupKey2)
 
+            // 1. Quelle der Wahrheit zuerst atomar schreiben (SettingsDB)
+            settingsDatabase.withTransaction {
+                val userData1 = prevUserData1 ?: ContactUserData(lookupKey = lookupKey1)
+                val userData2 = prevUserData2 ?: ContactUserData(lookupKey = lookupKey2)
                 contactUserDataDao.upsertUserData(userData1.copy(spouseLookupKey = lookupKey2))
                 contactUserDataDao.upsertUserData(userData2.copy(spouseLookupKey = lookupKey1))
             }
 
-            appDatabase.withTransaction {
-                contactDao.getContactByLookupKey(lookupKey1)?.let { contact ->
-                    contactDao.upsertContact(contact.copy(spouseLookupKey = lookupKey2))
+            // 2. Cache atomar aktualisieren (AppDB); bei Fehler Rollback der SettingsDB
+            try {
+                appDatabase.withTransaction {
+                    contactDao.getContactByLookupKey(lookupKey1)?.let { contact ->
+                        contactDao.upsertContact(contact.copy(spouseLookupKey = lookupKey2))
+                    }
+                    contactDao.getContactByLookupKey(lookupKey2)?.let { contact ->
+                        contactDao.upsertContact(contact.copy(spouseLookupKey = lookupKey1))
+                    }
                 }
-                contactDao.getContactByLookupKey(lookupKey2)?.let { contact ->
-                    contactDao.upsertContact(contact.copy(spouseLookupKey = lookupKey1))
+            } catch (e: Exception) {
+                Log.e("ContactRepository", "Cache update failed for linkAsCouple, rolling back settings: ${e.message}", e)
+                settingsDatabase.withTransaction {
+                    if (prevUserData1 != null) {
+                        contactUserDataDao.upsertUserData(prevUserData1)
+                    } else {
+                        contactUserDataDao.getUserDataForContact(lookupKey1)?.let {
+                            contactUserDataDao.upsertUserData(it.copy(spouseLookupKey = null))
+                        }
+                    }
+                    if (prevUserData2 != null) {
+                        contactUserDataDao.upsertUserData(prevUserData2)
+                    } else {
+                        contactUserDataDao.getUserDataForContact(lookupKey2)?.let {
+                            contactUserDataDao.upsertUserData(it.copy(spouseLookupKey = null))
+                        }
+                    }
                 }
+                throw e
             }
         }
         updateWidgetAndSyncCalendar()
@@ -260,22 +297,33 @@ class ContactRepository @Inject constructor(
             val contact = contactDao.getContactByLookupKey(lookupKey) ?: return@withContext
             val spouseKey = contact.spouseLookupKey ?: return@withContext
 
+            // Vorherigen Zustand für möglichen Rollback lesen
+            val prevUserData1 = contactUserDataDao.getUserDataForContact(lookupKey)
+            val prevUserData2 = contactUserDataDao.getUserDataForContact(spouseKey)
+
+            // 1. Quelle der Wahrheit zuerst atomar aktualisieren (SettingsDB)
             settingsDatabase.withTransaction {
-                contactUserDataDao.getUserDataForContact(lookupKey)?.let {
-                    contactUserDataDao.upsertUserData(it.copy(spouseLookupKey = null))
-                }
-                contactUserDataDao.getUserDataForContact(spouseKey)?.let {
-                    contactUserDataDao.upsertUserData(it.copy(spouseLookupKey = null))
-                }
+                prevUserData1?.let { contactUserDataDao.upsertUserData(it.copy(spouseLookupKey = null)) }
+                prevUserData2?.let { contactUserDataDao.upsertUserData(it.copy(spouseLookupKey = null)) }
             }
 
-            appDatabase.withTransaction {
-                contactDao.getContactByLookupKey(lookupKey)?.let {
-                    contactDao.upsertContact(it.copy(spouseLookupKey = null))
+            // 2. Cache atomar aktualisieren (AppDB); bei Fehler Rollback der SettingsDB
+            try {
+                appDatabase.withTransaction {
+                    contactDao.getContactByLookupKey(lookupKey)?.let {
+                        contactDao.upsertContact(it.copy(spouseLookupKey = null))
+                    }
+                    contactDao.getContactByLookupKey(spouseKey)?.let {
+                        contactDao.upsertContact(it.copy(spouseLookupKey = null))
+                    }
                 }
-                contactDao.getContactByLookupKey(spouseKey)?.let {
-                    contactDao.upsertContact(it.copy(spouseLookupKey = null))
+            } catch (e: Exception) {
+                Log.e("ContactRepository", "Cache update failed for unlinkCouple, rolling back settings: ${e.message}", e)
+                settingsDatabase.withTransaction {
+                    prevUserData1?.let { contactUserDataDao.upsertUserData(it) }
+                    prevUserData2?.let { contactUserDataDao.upsertUserData(it) }
                 }
+                throw e
             }
         }
         updateWidgetAndSyncCalendar()
