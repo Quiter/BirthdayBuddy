@@ -102,6 +102,7 @@
         - `about/PrivacyPolicyScreen.kt`: Anzeige der Datenschutzerklärung.
 - ### 📁 Models (`ui.model`)
     - `ContactUiModel.kt`: Immutable UI-Modell für Kontakte.
+    - `EventType.kt`: Typsicheres Enum zur Diskriminierung des aktiven Ereignistyps (`BIRTHDAY`, `ANNIVERSARY`, `NAME_DAY`). Ersetzt den zuvor verwendeten stringly-typed Ansatz in `HomeViewModel` und `ContactMapper`.
     - `HomeUiState.kt`: Gebündelter State für den Home-Screen.
     - `CalendarUiState.kt`: Gebündelter State für den Kalender-Einstellungs-Screen.
     - `NotificationUiState.kt`: Gebündelter State für den Benachrichtigungs-Einstellungs-Screen.

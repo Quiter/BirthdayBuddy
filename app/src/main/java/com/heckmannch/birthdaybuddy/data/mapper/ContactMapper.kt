@@ -3,6 +3,7 @@ package com.heckmannch.birthdaybuddy.data.mapper
 import android.text.format.DateFormat
 import com.heckmannch.birthdaybuddy.data.local.Contact
 import com.heckmannch.birthdaybuddy.ui.model.ContactUiModel
+import com.heckmannch.birthdaybuddy.ui.model.EventType
 import com.heckmannch.birthdaybuddy.util.getInitials
 import com.heckmannch.birthdaybuddy.util.hasYear
 import com.heckmannch.birthdaybuddy.util.isBirthdayToday
@@ -40,14 +41,14 @@ class ContactMapper @Inject constructor() {
     private val monthFormatter = DateTimeFormatter.ofPattern("MMMM", Locale.getDefault())
 
     fun toUiModel(contact: Contact, today: LocalDate): ContactUiModel {
-        return toUiModelForEvent(contact, today, "birthday")
+        return toUiModelForEvent(contact, today, EventType.BIRTHDAY)
     }
 
-    fun toUiModelForEvent(contact: Contact, today: LocalDate, eventType: String): ContactUiModel {
+    fun toUiModelForEvent(contact: Contact, today: LocalDate, eventType: EventType): ContactUiModel {
         val eventDate = when (eventType) {
-            "anniversary" -> contact.anniversary
-            "name_day" -> contact.nameDay
-            else -> contact.birthday
+            EventType.ANNIVERSARY -> contact.anniversary
+            EventType.NAME_DAY    -> contact.nameDay
+            EventType.BIRTHDAY    -> contact.birthday
         }
         val hasYear = eventDate?.hasYear ?: false
         val daysLeft = eventDate?.safeDaysUntilNext(today) ?: Long.MAX_VALUE

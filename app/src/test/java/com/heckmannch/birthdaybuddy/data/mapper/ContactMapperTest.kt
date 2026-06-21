@@ -2,6 +2,7 @@ package com.heckmannch.birthdaybuddy.data.mapper
 
 import com.google.common.truth.Truth.assertThat
 import com.heckmannch.birthdaybuddy.data.local.Contact
+import com.heckmannch.birthdaybuddy.ui.model.EventType
 import com.heckmannch.birthdaybuddy.util.NO_YEAR_MARKER
 import org.junit.Test
 import java.time.LocalDate
@@ -122,7 +123,7 @@ class ContactMapperTest {
             anniversary = LocalDate.of(2020, 5, 25) // 10 days after today (May 15)
         )
 
-        val uiModel = mapper.toUiModelForEvent(contact, today, "anniversary")
+        val uiModel = mapper.toUiModelForEvent(contact, today, EventType.ANNIVERSARY)
 
         assertThat(uiModel.daysUntilNext).isEqualTo(10)
         assertThat(uiModel.nextAge).isEqualTo(4) // 2024 - 2020
@@ -140,7 +141,7 @@ class ContactMapperTest {
             nameDay = LocalDate.of(NO_YEAR_MARKER, 5, 18) // 3 days after today (May 15)
         )
 
-        val uiModel = mapper.toUiModelForEvent(contact, today, "name_day")
+        val uiModel = mapper.toUiModelForEvent(contact, today, EventType.NAME_DAY)
 
         assertThat(uiModel.daysUntilNext).isEqualTo(3)
         assertThat(uiModel.nextAge).isNull() // Name day with NO_YEAR_MARKER has no age
@@ -159,11 +160,11 @@ class ContactMapperTest {
             nameDay = null
         )
 
-        val uiModelAnniv = mapper.toUiModelForEvent(contact, today, "anniversary")
+        val uiModelAnniv = mapper.toUiModelForEvent(contact, today, EventType.ANNIVERSARY)
         assertThat(uiModelAnniv.daysUntilNext).isEqualTo(Long.MAX_VALUE)
         assertThat(uiModelAnniv.dateText).isEqualTo("-")
 
-        val uiModelNameDay = mapper.toUiModelForEvent(contact, today, "name_day")
+        val uiModelNameDay = mapper.toUiModelForEvent(contact, today, EventType.NAME_DAY)
         assertThat(uiModelNameDay.daysUntilNext).isEqualTo(Long.MAX_VALUE)
         assertThat(uiModelNameDay.dateText).isEqualTo("-")
     }

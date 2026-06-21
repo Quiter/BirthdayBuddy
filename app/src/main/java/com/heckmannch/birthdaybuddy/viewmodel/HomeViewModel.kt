@@ -7,6 +7,7 @@ import com.heckmannch.birthdaybuddy.data.mapper.ContactMapper
 import com.heckmannch.birthdaybuddy.data.repository.ContactRepository
 import com.heckmannch.birthdaybuddy.data.repository.TimeRepository
 import com.heckmannch.birthdaybuddy.ui.model.ContactUiModel
+import com.heckmannch.birthdaybuddy.ui.model.EventType
 import com.heckmannch.birthdaybuddy.ui.model.CoupleSuggestionUiModel
 import com.heckmannch.birthdaybuddy.ui.model.GiftIdea
 import com.heckmannch.birthdaybuddy.ui.model.HomeUiState
@@ -105,15 +106,15 @@ class HomeViewModel @Inject constructor(
         val startTime = System.currentTimeMillis()
         val isSearching = keywords.isNotEmpty()
 
-        val displayEventType = when (label) {
-            LABEL_ANNIVERSARY -> "anniversary"
-            LABEL_NAME_DAY -> "name_day"
-            else -> "birthday"
+        val displayEventType: EventType = when (label) {
+            LABEL_ANNIVERSARY -> EventType.ANNIVERSARY
+            LABEL_NAME_DAY    -> EventType.NAME_DAY
+            else              -> EventType.BIRTHDAY
         }
 
         // --- OPTIMIERUNG: Vor-Filterung der Rohdaten ---
         // dies reduziert die Anzahl der teuren Mapping-Vorgänge erheblich.
-        val preFilteredRaw = if (displayEventType != "anniversary") {
+        val preFilteredRaw = if (displayEventType != EventType.ANNIVERSARY) {
             rawContacts.asSequence().filter { contact ->
                 // 1. Suche (Rohname)
                 if (isSearching && !keywords.all { keyword ->
@@ -137,11 +138,11 @@ class HomeViewModel @Inject constructor(
                 }
                 // 4. Event-Verfügbarkeit
                 val hasEvent =
-                    if (displayEventType == "name_day") contact.nameDay != null else contact.birthday != null
+                    if (displayEventType == EventType.NAME_DAY) contact.nameDay != null else contact.birthday != null
                 if (!hasEvent) {
                     // Wenn kein Event vorhanden ist:
                     // - Bei Namenstagen/Hochzeitstagen immer ausblenden
-                    if (displayEventType != "birthday") return@filter false
+                    if (displayEventType != EventType.BIRTHDAY) return@filter false
                     // - Bei Geburtstagen nur einblenden, wenn gesucht wird oder der "Ohne Datum"-Filter aktiv ist
                     if (!isSearching && label != LABEL_NO_BIRTHDAY) return@filter false
                 } else if (label == LABEL_NO_BIRTHDAY) {
@@ -154,7 +155,7 @@ class HomeViewModel @Inject constructor(
             rawContacts // Bei Hochzeitstagen brauchen wir alle Kontakte für das Pairing
         }
 
-        val uiList = if (displayEventType == "anniversary") {
+        val uiList = if (displayEventType == EventType.ANNIVERSARY) {
             val processedKeys = mutableSetOf<String>()
             val mergedList = mutableListOf<ContactUiModel>()
             val contactMap = rawContacts.associateBy { it.lookupKey }
@@ -169,8 +170,8 @@ class HomeViewModel @Inject constructor(
                     processedKeys.add(contact.lookupKey)
                     processedKeys.add(spouse.lookupKey)
 
-                    val uiModelA = mapper.toUiModelForEvent(contact, today, "anniversary")
-                    val uiModelB = mapper.toUiModelForEvent(spouse, today, "anniversary")
+                    val uiModelA = mapper.toUiModelForEvent(contact, today, EventType.ANNIVERSARY)
+                    val uiModelB = mapper.toUiModelForEvent(spouse, today, EventType.ANNIVERSARY)
 
                     val mergedUiModel = ContactUiModel(
                         id = "${contact.lookupKey}_${spouse.lookupKey}",
@@ -198,7 +199,7 @@ class HomeViewModel @Inject constructor(
                     mergedList.add(mergedUiModel)
                 } else {
                     processedKeys.add(contact.lookupKey)
-                    mergedList.add(mapper.toUiModelForEvent(contact, today, "anniversary"))
+                    mergedList.add(mapper.toUiModelForEvent(contact, today, EventType.ANNIVERSARY))
                 }
             }
             mergedList
@@ -231,7 +232,7 @@ class HomeViewModel @Inject constructor(
         keywords: List<String>,
         label: String?,
         ignoredLabels: Set<String>,
-        displayEventType: String
+        displayEventType: EventType
     ): Boolean {
         val isSearching = keywords.isNotEmpty()
 
@@ -242,7 +243,7 @@ class HomeViewModel @Inject constructor(
         // Ereignislose Kontakte ausblenden (außer bei Suche, sofern es sich um Geburtstage handelt.
         // Für Hochzeitstag und Namenstag blenden wir Kontakte ohne dieses Ereignis IMMER aus!)
         if (isMissingEvent) {
-            if (displayEventType != "birthday") return false
+            if (displayEventType != EventType.BIRTHDAY) return false
             if (!isSearching && !isNoBirthdayFilter) return false
         }
 
