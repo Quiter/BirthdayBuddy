@@ -110,7 +110,7 @@ class ContactMapperTest {
 
         val uiModel = mapper.toUiModel(contact, today)
 
-        assertThat(uiModel.daysUntilNext).isEqualTo(Long.MAX_VALUE)
+        assertThat(uiModel.daysUntilNext).isNull()
         assertThat(uiModel.nextAge).isNull()
         assertThat(uiModel.isToday).isFalse()
         assertThat(uiModel.dateText).isEqualTo("-")
@@ -164,11 +164,11 @@ class ContactMapperTest {
         )
 
         val uiModelAnniv = mapper.toUiModelForEvent(contact, today, EventType.ANNIVERSARY)
-        assertThat(uiModelAnniv.daysUntilNext).isEqualTo(Long.MAX_VALUE)
+        assertThat(uiModelAnniv.daysUntilNext).isNull()
         assertThat(uiModelAnniv.dateText).isEqualTo("-")
 
         val uiModelNameDay = mapper.toUiModelForEvent(contact, today, EventType.NAME_DAY)
-        assertThat(uiModelNameDay.daysUntilNext).isEqualTo(Long.MAX_VALUE)
+        assertThat(uiModelNameDay.daysUntilNext).isNull()
         assertThat(uiModelNameDay.dateText).isEqualTo("-")
     }
 }

@@ -237,7 +237,7 @@ fun BirthdayItem(
                         contactId = contact.contactId,
                         lookupKey = contact.lookupKey,
                         phoneNumber = contact.phoneNumber,
-                        hasBirthday = contact.daysUntilNext != Long.MAX_VALUE,
+                        hasBirthday = contact.daysUntilNext != null,
                         onAddBirthday = { showDatePicker.value = true },
                         actions = actions,
                         isCouple = contact.isCouple

@@ -210,7 +210,7 @@ class HomeViewModel @Inject constructor(
         val result = uiList.asSequence()
             .filter { shouldShowContact(it, keywords, label, ignoredLabels, displayEventType) }
             .sortedWith(
-                compareBy<ContactUiModel> { it.daysUntilNext }
+                compareBy<ContactUiModel, Long?>(nullsLast(naturalOrder())) { it.daysUntilNext }
                     .thenBy { it.fullName },
             )
             .toList()

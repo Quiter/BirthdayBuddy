@@ -52,7 +52,7 @@ class ContactMapper @Inject constructor() {
             EventType.BIRTHDAY    -> contact.birthday
         }
         val hasYear = eventDate?.hasYear ?: false
-        val daysLeft = eventDate?.safeDaysUntilNext(today) ?: Long.MAX_VALUE
+        val daysLeft = eventDate?.safeDaysUntilNext(today)
         val nextAgeValue = eventDate?.safeNextAge(today)
 
         return ContactUiModel(

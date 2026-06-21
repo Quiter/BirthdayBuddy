@@ -33,10 +33,10 @@ import com.heckmannch.birthdaybuddy.ui.theme.SpacingSmall
 fun BirthdayStatus(
     isToday: Boolean,
     nextAge: Int?,
-    daysUntilNext: Long,
+    daysUntilNext: Long?,
     onEditBirthday: () -> Unit,
 ) {
-    if (daysUntilNext == Long.MAX_VALUE) {
+    if (daysUntilNext == null) {
         IconButton(
             onClick = onEditBirthday,
             modifier = Modifier.padding(end = SpacingMedium)

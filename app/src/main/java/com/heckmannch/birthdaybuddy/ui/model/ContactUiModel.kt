@@ -19,7 +19,7 @@ data class ContactUiModel(
     val phoneNumber: String?,
     val initials: String,
     val nextAge: Int?,
-    val daysUntilNext: Long,
+    val daysUntilNext: Long?,
     val isToday: Boolean,
     val hasWhatsApp: Boolean,
     val hasSignal: Boolean,
