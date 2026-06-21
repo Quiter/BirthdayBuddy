@@ -26,7 +26,8 @@ object SampleData {
         hasSignal = false,
         labels = listOf("Freunde"),
         giftIdeas = listOf(giftIdea1),
-        birthday = LocalDate.of(1900, 5, 12)
+        birthday = LocalDate.of(1900, 5, 12),
+        birthdayTier = BirthdayTier.MILESTONE_GOLD, // nextAge = 30 → % 10 == 0
     )
 
     val contact2 = ContactUiModel(
@@ -46,7 +47,8 @@ object SampleData {
         hasSignal = false,
         labels = listOf("Familie"),
         giftIdeas = emptyList(),
-        birthday = LocalDate.now()
+        birthday = LocalDate.now(),
+        birthdayTier = BirthdayTier.REGULAR, // nextAge = 40 → kein Milestone, kein Kind
     )
 
     val contact3 = ContactUiModel(
@@ -66,7 +68,8 @@ object SampleData {
         hasSignal = false,
         labels = listOf("Familie"),
         giftIdeas = listOf(giftIdea1, giftIdea2),
-        birthday = LocalDate.now().plusDays(2)
+        birthday = LocalDate.now().plusDays(2),
+        birthdayTier = BirthdayTier.CHILD, // nextAge = 5 → in 0..9
     )
 
     val sampleContacts = listOf(contact1, contact2, contact3)

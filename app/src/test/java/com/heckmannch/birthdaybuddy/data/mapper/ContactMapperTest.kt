@@ -2,6 +2,7 @@ package com.heckmannch.birthdaybuddy.data.mapper
 
 import com.google.common.truth.Truth.assertThat
 import com.heckmannch.birthdaybuddy.data.local.Contact
+import com.heckmannch.birthdaybuddy.ui.model.BirthdayTier
 import com.heckmannch.birthdaybuddy.ui.model.EventType
 import com.heckmannch.birthdaybuddy.util.NO_YEAR_MARKER
 import org.junit.Test
@@ -67,6 +68,8 @@ class ContactMapperTest {
         assertThat(uiModel.daysUntilNext).isEqualTo(0)
         assertThat(uiModel.isToday).isTrue()
         assertThat(uiModel.nextAge).isEqualTo(34)
+        // 34 ist kein Vielfaches von 5, kein Kind → REGULAR
+        assertThat(uiModel.birthdayTier).isEqualTo(BirthdayTier.REGULAR)
     }
 
     @Test

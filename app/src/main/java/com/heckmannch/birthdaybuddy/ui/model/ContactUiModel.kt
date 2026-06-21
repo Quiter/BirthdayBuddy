@@ -30,6 +30,7 @@ data class ContactUiModel(
     val secondInitials: String? = null,
     val secondFullName: String? = null,
     val isCouple: Boolean = false,
+    val birthdayTier: BirthdayTier = BirthdayTier.REGULAR,
 ) {
     val hasGiftIdeas: Boolean get() = giftIdeas.any { it.text.isNotBlank() }
 }

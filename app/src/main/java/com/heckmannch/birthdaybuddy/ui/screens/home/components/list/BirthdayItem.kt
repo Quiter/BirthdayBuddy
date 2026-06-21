@@ -48,6 +48,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import com.heckmannch.birthdaybuddy.R
+import com.heckmannch.birthdaybuddy.ui.model.BirthdayTier
 import com.heckmannch.birthdaybuddy.ui.model.ContactUiModel
 import com.heckmannch.birthdaybuddy.ui.model.SampleData
 import com.heckmannch.birthdaybuddy.ui.screens.home.HomeActions
@@ -105,27 +106,24 @@ fun BirthdayItem(
         }
     }
 
-    val borderStroke = remember(contact.isToday, contact.nextAge) {
+    val borderStroke = remember(contact.isToday, contact.birthdayTier) {
         if (contact.isToday) {
-            val age = contact.nextAge
-            when {
-                // Alle durch 10 teilbaren (10, 20, 30...) sind Gold
-                (age != null && age % 10 == 0) -> BorderStroke(BirthdayBorderWidth, BirthdayGold)
-                // Kinder von 0 bis 9 sind Bunt
-                (age != null && age in 0..9) -> BorderStroke(BirthdayBorderWidth, Brush.linearGradient(KidColors))
-                // Alle anderen (inkl. ohne Jahr) sind Silber
-                else -> BorderStroke(BirthdayBorderWidth, BirthdaySilver)
+            when (contact.birthdayTier) {
+                BirthdayTier.MILESTONE_GOLD   -> BorderStroke(BirthdayBorderWidth, BirthdayGold)
+                BirthdayTier.MILESTONE_SILVER -> BorderStroke(BirthdayBorderWidth, BirthdaySilver)
+                BirthdayTier.CHILD            -> BorderStroke(BirthdayBorderWidth, Brush.linearGradient(KidColors))
+                BirthdayTier.REGULAR          -> BorderStroke(BirthdayBorderWidth, BirthdaySilver)
             }
         } else null
     }
 
-    val confettiColors = remember(contact.isToday, contact.nextAge) {
+    val confettiColors = remember(contact.isToday, contact.birthdayTier) {
         if (!contact.isToday) return@remember emptyList()
-        val age = contact.nextAge
-        when {
-            (age != null && age % 10 == 0) -> listOf(BirthdayGold)
-            (age != null && age in 0..9) -> KidColors
-            else -> listOf(BirthdaySilver, Color.White)
+        when (contact.birthdayTier) {
+            BirthdayTier.MILESTONE_GOLD   -> listOf(BirthdayGold)
+            BirthdayTier.MILESTONE_SILVER -> listOf(BirthdaySilver, Color.White)
+            BirthdayTier.CHILD            -> KidColors
+            BirthdayTier.REGULAR          -> listOf(BirthdaySilver, Color.White)
         }
     }
 
