@@ -377,6 +377,10 @@
     <string name="settings_theme_amoled">AMOLED Black</string>
     <string name="settings_theme_amoled_desc">Uses pure black for the dark background on OLED displays</string>
     <string name="settings_theme_amoled_disabled_desc">AMOLED Black is only available in dark mode</string>
+    <string name="settings_theme_contrast_header">Contrast</string>
+    <string name="settings_theme_contrast_standard">Standard</string>
+    <string name="settings_theme_contrast_medium">Medium</string>
+    <string name="settings_theme_contrast_high">High</string>
     <string name="settings_theme_accent_header">Accent Color</string>
     <string name="theme_accent_system">System</string>
     <string name="theme_accent_purple">Purple</string>

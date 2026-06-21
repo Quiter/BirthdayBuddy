@@ -89,7 +89,8 @@ class CalendarViewModelTest {
             nameDayCalendarColor = eq(null),
             themeMode = eq(null),
             themeAmoled = eq(null),
-            themeAccent = eq(null)
+            themeAccent = eq(null),
+            themeContrast = eq(null)
         )
         verify(calendarSyncRepository).syncBirthdays(any())
     }
@@ -114,7 +115,8 @@ class CalendarViewModelTest {
             nameDayCalendarColor = eq(null),
             themeMode = eq(null),
             themeAmoled = eq(null),
-            themeAccent = eq(null)
+            themeAccent = eq(null),
+            themeContrast = eq(null)
         )
         verify(calendarSyncRepository).deleteCalendar()
     }

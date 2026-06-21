@@ -76,6 +76,7 @@ fun ThemeSettingsScreen(
     val themeMode = uiState.themeMode
     val themeAmoled = uiState.themeAmoled
     val themeAccent = uiState.themeAccent
+    val themeContrast = uiState.themeContrast
 
     var showColorPickerDialog by remember { mutableStateOf(false) }
 
@@ -190,6 +191,55 @@ fun ThemeSettingsScreen(
                     modifier = Modifier.clickable(enabled = isDarkThemeActive) {
                         viewModel.setThemeAmoled(!themeAmoled)
                     }
+                )
+            }
+
+            // --- Contrast ---
+            item {
+                Text(
+                    text = stringResource(R.string.settings_theme_contrast_header),
+                    style = MaterialTheme.typography.labelLarge,
+                    color = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.padding(horizontal = SpacingNormal, vertical = SpacingSmall)
+                )
+            }
+
+            item {
+                ListItem(
+                    headlineContent = { Text(stringResource(R.string.settings_theme_contrast_standard)) },
+                    trailingContent = {
+                        RadioButton(
+                            selected = themeContrast == 0.0,
+                            onClick = { viewModel.setThemeContrast(0.0) }
+                        )
+                    },
+                    modifier = Modifier.clickable { viewModel.setThemeContrast(0.0) }
+                )
+            }
+
+            item {
+                ListItem(
+                    headlineContent = { Text(stringResource(R.string.settings_theme_contrast_medium)) },
+                    trailingContent = {
+                        RadioButton(
+                            selected = themeContrast == 0.3,
+                            onClick = { viewModel.setThemeContrast(0.3) }
+                        )
+                    },
+                    modifier = Modifier.clickable { viewModel.setThemeContrast(0.3) }
+                )
+            }
+
+            item {
+                ListItem(
+                    headlineContent = { Text(stringResource(R.string.settings_theme_contrast_high)) },
+                    trailingContent = {
+                        RadioButton(
+                            selected = themeContrast == 1.0,
+                            onClick = { viewModel.setThemeContrast(1.0) }
+                        )
+                    },
+                    modifier = Modifier.clickable { viewModel.setThemeContrast(1.0) }
                 )
             }
 

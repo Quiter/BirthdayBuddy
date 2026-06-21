@@ -156,7 +156,8 @@ class MainActivity : ComponentActivity() {
             BirthdayBuddyTheme(
                 themeMode = appSettings.themeMode,
                 themeAmoled = appSettings.themeAmoled,
-                themeAccent = appSettings.themeAccent
+                themeAccent = appSettings.themeAccent,
+                themeContrast = appSettings.themeContrast
             ) {
                 CompositionLocalProvider(
                     LocalWindowWidthSizeClass provides windowSizeClass.widthSizeClass,

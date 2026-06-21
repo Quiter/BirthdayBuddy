@@ -19,5 +19,6 @@ data class AppSettings(
     val nameDayCalendarColor: Int = 0xFFFF9800.toInt(),
     val themeMode: String = "SYSTEM",
     val themeAmoled: Boolean = false,
-    val themeAccent: String = "SYSTEM"
+    val themeAccent: String = "SYSTEM",
+    val themeContrast: Double = 0.0
 )

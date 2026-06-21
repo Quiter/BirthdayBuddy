@@ -27,9 +27,9 @@ val ColorScheme.amoled: ColorScheme
         surfaceContainerHighest = Color(0xFF222222),
     )
 
-private fun createHctColorScheme(seedColor: Color, isDark: Boolean): ColorScheme {
+private fun createHctColorScheme(seedColor: Color, isDark: Boolean, contrast: Double): ColorScheme {
     val hct = Hct.fromInt(seedColor.toArgb())
-    val scheme = SchemeContent(hct, isDark, 0.0)
+    val scheme = SchemeContent(hct, isDark, contrast)
     val colors = MaterialDynamicColors()
 
     return ColorScheme(
@@ -84,7 +84,7 @@ private fun createHctColorScheme(seedColor: Color, isDark: Boolean): ColorScheme
     )
 }
 
-private fun getCustomColorScheme(accent: String, darkTheme: Boolean, amoled: Boolean): ColorScheme {
+private fun getCustomColorScheme(accent: String, darkTheme: Boolean, amoled: Boolean, contrast: Double): ColorScheme {
     val seedColor = if (accent.startsWith("#")) {
         try {
             Color(accent.toColorInt())
@@ -101,7 +101,7 @@ private fun getCustomColorScheme(accent: String, darkTheme: Boolean, amoled: Boo
             else -> Color(0xFF6750A4) // Purple/Default
         }
     }
-    val baseScheme = createHctColorScheme(seedColor, darkTheme)
+    val baseScheme = createHctColorScheme(seedColor, darkTheme, contrast)
     return if (darkTheme && amoled) baseScheme.amoled else baseScheme
 }
 
@@ -110,6 +110,7 @@ fun BirthdayBuddyTheme(
     themeMode: String = "SYSTEM",
     themeAmoled: Boolean = false,
     themeAccent: String = "SYSTEM",
+    themeContrast: Double = 0.0,
     content: @Composable () -> Unit
 ) {
     val darkTheme = when (themeMode) {
@@ -131,7 +132,7 @@ fun BirthdayBuddyTheme(
         }
 
         else -> {
-            getCustomColorScheme(accent = themeAccent, darkTheme = darkTheme, amoled = themeAmoled)
+            getCustomColorScheme(accent = themeAccent, darkTheme = darkTheme, amoled = themeAmoled, contrast = themeContrast)
         }
     }
 

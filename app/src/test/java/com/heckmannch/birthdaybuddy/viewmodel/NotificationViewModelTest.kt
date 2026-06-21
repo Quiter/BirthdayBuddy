@@ -79,7 +79,8 @@ class NotificationViewModelTest {
             nameDayCalendarColor = eq(null),
             themeMode = eq(null),
             themeAmoled = eq(null),
-            themeAccent = eq(null)
+            themeAccent = eq(null),
+            themeContrast = eq(null)
         )
     }
 
@@ -101,7 +102,8 @@ class NotificationViewModelTest {
             nameDayCalendarColor = eq(null),
             themeMode = eq(null),
             themeAmoled = eq(null),
-            themeAccent = eq(null)
+            themeAccent = eq(null),
+            themeContrast = eq(null)
         )
     }
 
@@ -123,7 +125,8 @@ class NotificationViewModelTest {
             nameDayCalendarColor = eq(null),
             themeMode = eq(null),
             themeAmoled = eq(null),
-            themeAccent = eq(null)
+            themeAccent = eq(null),
+            themeContrast = eq(null)
         )
         verify(contactRepository).syncContacts()
     }

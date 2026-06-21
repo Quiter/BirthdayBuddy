@@ -162,5 +162,35 @@ class SettingsMigrationTest {
 
         settingsCursor.close()
     }
+
+    @Test
+    @Throws(IOException::class)
+    fun migrate6To7() {
+        // 1. Create database in version 6
+        helper.createDatabase(testDb, 6).apply {
+            execSQL(
+                "INSERT INTO app_settings (id, notificationsEnabled, persistentNotifications, onboardingCompleted, lastSyncTimestamp, calendarSyncEnabled, calendarId, otherEventsEnabled, ignoredCouplePairs, birthdayCalendarColor, anniversaryCalendarColor, nameDayCalendarColor, themeMode, themeAmoled, themeAccent) " +
+                        "VALUES (0, 1, 1, 1, 123456789, 0, NULL, 0, '[]', -1564957, -6543440, -26624, 'SYSTEM', 0, 'SYSTEM')"
+            )
+            close()
+        }
+
+        // 2. Run migration to version 7 and validate
+        val migratedDb = helper.runMigrationsAndValidate(
+            testDb,
+            7,
+            true,
+            SettingsDatabase.MIGRATION_6_7
+        )
+
+        // 3. Verify columns and default values
+        val settingsCursor = migratedDb.query("SELECT * FROM app_settings WHERE id = 0")
+        assert(settingsCursor.moveToFirst())
+
+        val themeContrastIdx = settingsCursor.getColumnIndex("themeContrast")
+        assert(settingsCursor.getDouble(themeContrastIdx) == 0.0)
+
+        settingsCursor.close()
+    }
 }
 

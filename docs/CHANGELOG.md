@@ -1,6 +1,14 @@
 # Changelog: BirthdayBuddy
 > **Note:** Historische Einträge (Meilensteine 1-181) wurden nach [CHANGELOG_ARCHIVE.md](CHANGELOG_ARCHIVE.md) verschoben, um das Kontext-Fenster für LLM-Sessions zu optimieren.
 
+202. **Einführung einer Kontrasteinstellung für benutzerdefinierte Themes (Accessibility & Theming):**
+    - **Problem:** Nach der Umstellung der Farbgenerierung auf den Google HCT-Algorithmus fehlte eine Möglichkeit, die Kontrastwerte (z. B. für verbesserte Barrierefreiheit) im Theming-System flexibel anzupassen.
+    - **Lösung:** Hinzufügen einer `themeContrast`-Option (Standard: `0.0`, Mittel: `0.3`, Hoch: `1.0`) im Theming-System und den Einstellungen.
+    - **Datenbank & Migration:** `AppSettings` in [AppSettings.kt](file:///c:/Users/chris/AndroidStudioProjects/BirthdayBuddy/app/src/main/java/com/heckmannch/birthdaybuddy/data/local/AppSettings.kt) um `themeContrast: Double` erweitert. Die `SettingsDatabase` in [SettingsDatabase.kt](file:///c:/Users/chris/AndroidStudioProjects/BirthdayBuddy/app/src/main/java/com/heckmannch/birthdaybuddy/data/local/SettingsDatabase.kt) auf Version 7 angehoben und eine Room-Migration (`MIGRATION_6_7`) implementiert.
+    - **Theme-Verarbeitung:** In [Theme.kt](file:///c:/Users/chris/AndroidStudioProjects/BirthdayBuddy/app/src/main/java/com/heckmannch/birthdaybuddy/ui/theme/Theme.kt) wird die Kontrasteinstellung an `createHctColorScheme` und `SchemeContent(hct, isDark, contrast)` übergeben.
+    - **UI & Lokalisierung:** `ThemeSettingsScreen` in [ThemeSettingsScreen.kt](file:///c:/Users/chris/AndroidStudioProjects/BirthdayBuddy/app/src/main/java/com/heckmannch/birthdaybuddy/ui/screens/settings/theme/ThemeSettingsScreen.kt) um eine Radio-Button-Auswahl für Kontraststufen ergänzt. Lokalisierungsschlüssel in Deutsch und Englisch hinzugefügt.
+    - **Tests:** Erweiterung von [SettingsMigrationTest.kt](file:///c:/Users/chris/AndroidStudioProjects/BirthdayBuddy/app/src/androidTest/java/com/heckmannch/birthdaybuddy/data/local/SettingsMigrationTest.kt) um den Migrations-Test `migrate6To7`. Aktualisierung von `ThemeViewModelTest`, `CalendarViewModelTest`, `NotificationViewModelTest` und `OnboardingViewModelTest` für die neue `updateSettings`-Signatur. All 91 JVM-Tests erfolgreich bestanden.
+
 200. **Entfernung des Sentinel-Value-Anti-Patterns in `daysUntilNext` (Code Quality / Type Safety):**
     - **Problem:** `ContactUiModel.daysUntilNext` war vom Typ `Long` (nicht nullable). Fehlte ein Datum, wurde `Long.MAX_VALUE` als Sentinel verwendet – ein klassisches Anti-Pattern, das fragile Vergleiche wie `contact.daysUntilNext != Long.MAX_VALUE` erzwang.
     - **Lösung:** `daysUntilNext` in [ContactUiModel.kt](file:///c:/Users/chris/AndroidStudioProjects/BirthdayBuddy/app/src/main/java/com/heckmannch/birthdaybuddy/ui/model/ContactUiModel.kt) auf `Long?` umgestellt. `null` drückt semantisch korrekt aus, dass kein Datum hinterlegt ist.

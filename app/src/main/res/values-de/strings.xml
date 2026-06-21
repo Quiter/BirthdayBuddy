@@ -377,6 +377,10 @@
     <string name="settings_theme_amoled">AMOLED-Schwarz</string>
     <string name="settings_theme_amoled_desc">Nutzt reines Schwarz für den dunklen Hintergrund auf OLED-Displays</string>
     <string name="settings_theme_amoled_disabled_desc">AMOLED-Schwarz ist nur im dunklen Design verfügbar</string>
+    <string name="settings_theme_contrast_header">Kontrast</string>
+    <string name="settings_theme_contrast_standard">Standard</string>
+    <string name="settings_theme_contrast_medium">Mittel</string>
+    <string name="settings_theme_contrast_high">Hoch</string>
     <string name="settings_theme_accent_header">Akzentfarbe</string>
     <string name="theme_accent_system">System</string>
     <string name="theme_accent_purple">Lila</string>
