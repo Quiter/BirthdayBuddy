@@ -50,6 +50,7 @@ import coil.imageLoader
 import coil.request.ImageRequest
 import com.heckmannch.birthdaybuddy.R
 import com.heckmannch.birthdaybuddy.ui.components.AppResponsiveScaffold
+import com.heckmannch.birthdaybuddy.ui.model.ContactUiModel
 import com.heckmannch.birthdaybuddy.ui.model.HomeUiState
 import com.heckmannch.birthdaybuddy.ui.model.SampleData
 import com.heckmannch.birthdaybuddy.ui.screens.home.components.actions.HomeFAB
@@ -303,6 +304,17 @@ private fun HomeContent(
             }
         ) {
             val contacts = uiState.contacts
+
+            val getScrollLabel: (ContactUiModel) -> String = remember(uiState.selectedLabel) {
+                { contact ->
+                    if (uiState.selectedLabel == HomeViewModel.LABEL_NO_BIRTHDAY) {
+                        contact.fullName.firstOrNull()?.uppercaseChar()?.toString() ?: ""
+                    } else {
+                        contact.monthName
+                    }
+                }
+            }
+
             if (contacts.isNullOrEmpty() || windowWidthSizeClass == WindowWidthSizeClass.Compact) {
                 Box(modifier = Modifier.fillMaxSize()) {
                     BirthdayList(
@@ -323,13 +335,7 @@ private fun HomeContent(
                     FastScrollbar(
                         listState = homeState.listState,
                         contacts = contacts ?: emptyList(),
-                        getLabel = { contact ->
-                            if (uiState.selectedLabel == HomeViewModel.LABEL_NO_BIRTHDAY) {
-                                contact.fullName.firstOrNull()?.uppercaseChar()?.toString() ?: ""
-                            } else {
-                                contact.monthName
-                            }
-                        },
+                        getLabel = getScrollLabel,
                         modifier = Modifier
                             .align(Alignment.CenterEnd)
                             .fillMaxHeight()
@@ -394,15 +400,7 @@ private fun HomeContent(
                                 FastScrollbar(
                                     listState = homeState.listState,
                                     contacts = contacts,
-                                    getLabel = { contact ->
-                                        if (uiState.selectedLabel == HomeViewModel.LABEL_NO_BIRTHDAY) {
-                                            contact.fullName.firstOrNull()?.uppercaseChar()
-                                                ?.toString()
-                                                ?: ""
-                                        } else {
-                                            contact.monthName
-                                        }
-                                    },
+                                    getLabel = getScrollLabel,
                                     modifier = Modifier
                                         .align(Alignment.CenterEnd)
                                         .fillMaxHeight(),
