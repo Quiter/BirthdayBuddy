@@ -10,8 +10,8 @@ import com.heckmannch.birthdaybuddy.MainActivity
 import com.heckmannch.birthdaybuddy.R
 import com.heckmannch.birthdaybuddy.data.local.Contact
 import com.heckmannch.birthdaybuddy.data.repository.NotificationRepository
-import com.heckmannch.birthdaybuddy.util.hasYear
 import com.heckmannch.birthdaybuddy.util.IntentExtras
+import com.heckmannch.birthdaybuddy.util.hasYear
 import com.heckmannch.birthdaybuddy.util.safeNextAge
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.first

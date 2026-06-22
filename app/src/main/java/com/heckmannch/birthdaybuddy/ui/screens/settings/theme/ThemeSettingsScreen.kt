@@ -21,11 +21,15 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Palette
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LargeTopAppBar
 import androidx.compose.material3.ListItem
+import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Switch
@@ -59,7 +63,6 @@ import com.heckmannch.birthdaybuddy.ui.theme.IconSizeExtraLarge
 import com.heckmannch.birthdaybuddy.ui.theme.IconSizeNormal
 import com.heckmannch.birthdaybuddy.ui.theme.IconSizeSmall
 import com.heckmannch.birthdaybuddy.ui.theme.SpacingExtraSmall
-import com.heckmannch.birthdaybuddy.ui.theme.SpacingMedium
 import com.heckmannch.birthdaybuddy.ui.theme.SpacingNormal
 import com.heckmannch.birthdaybuddy.ui.theme.SpacingSmall
 import com.heckmannch.birthdaybuddy.viewmodel.ThemeViewModel
@@ -109,215 +112,292 @@ fun ThemeSettingsScreen(
         ) {
             // --- Theme Mode ---
             item {
-                Text(
-                    text = stringResource(R.string.settings_theme_mode_header),
-                    style = MaterialTheme.typography.labelLarge,
-                    color = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.padding(horizontal = SpacingNormal, vertical = SpacingSmall)
-                )
-            }
-
-            item {
-                ListItem(
-                    headlineContent = { Text(stringResource(R.string.settings_theme_mode_system)) },
-                    supportingContent = { Text(stringResource(R.string.settings_theme_mode_system_desc)) },
-                    trailingContent = {
-                        RadioButton(
-                            selected = themeMode == "SYSTEM",
-                            onClick = { viewModel.setThemeMode("SYSTEM") }
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(bottom = SpacingNormal)
+                ) {
+                    Text(
+                        text = stringResource(R.string.settings_theme_mode_header),
+                        style = MaterialTheme.typography.labelLarge,
+                        color = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.padding(
+                            start = SpacingNormal,
+                            end = SpacingNormal,
+                            bottom = SpacingSmall
                         )
-                    },
-                    modifier = Modifier.clickable { viewModel.setThemeMode("SYSTEM") }
-                )
-            }
-
-            item {
-                ListItem(
-                    headlineContent = { Text(stringResource(R.string.settings_theme_mode_light)) },
-                    trailingContent = {
-                        RadioButton(
-                            selected = themeMode == "LIGHT",
-                            onClick = { viewModel.setThemeMode("LIGHT") }
-                        )
-                    },
-                    modifier = Modifier.clickable { viewModel.setThemeMode("LIGHT") }
-                )
-            }
-
-            item {
-                ListItem(
-                    headlineContent = { Text(stringResource(R.string.settings_theme_mode_dark)) },
-                    trailingContent = {
-                        RadioButton(
-                            selected = themeMode == "DARK",
-                            onClick = { viewModel.setThemeMode("DARK") }
-                        )
-                    },
-                    modifier = Modifier.clickable { viewModel.setThemeMode("DARK") }
-                )
-            }
-
-            // --- AMOLED option ---
-            item {
-                val isDarkThemeActive =
-                    themeMode == "DARK" || (themeMode == "SYSTEM" && androidx.compose.foundation.isSystemInDarkTheme())
-                ListItem(
-                    headlineContent = { Text(stringResource(R.string.settings_theme_amoled)) },
-                    supportingContent = {
-                        Text(
-                            text = if (isDarkThemeActive) {
-                                stringResource(R.string.settings_theme_amoled_desc)
-                            } else {
-                                stringResource(R.string.settings_theme_amoled_disabled_desc)
-                            }
-                        )
-                    },
-                    trailingContent = {
-                        Switch(
-                            checked = themeAmoled,
-                            onCheckedChange = { viewModel.setThemeAmoled(it) },
-                            enabled = isDarkThemeActive,
-                            thumbContent = if (themeAmoled) {
-                                {
-                                    Icon(
-                                        imageVector = Icons.Default.Check,
-                                        contentDescription = null,
-                                        modifier = Modifier.size(SwitchDefaults.IconSize)
+                    )
+                    Card(
+                        shape = MaterialTheme.shapes.extraLarge,
+                        colors = CardDefaults.cardColors(
+                            containerColor = MaterialTheme.colorScheme.surfaceContainer
+                        ),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = SpacingNormal)
+                    ) {
+                        Column(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clip(MaterialTheme.shapes.extraLarge)
+                        ) {
+                            ListItem(
+                                headlineContent = { Text(stringResource(R.string.settings_theme_mode_system)) },
+                                supportingContent = { Text(stringResource(R.string.settings_theme_mode_system_desc)) },
+                                trailingContent = {
+                                    RadioButton(
+                                        selected = themeMode == "SYSTEM",
+                                        onClick = { viewModel.setThemeMode("SYSTEM") }
                                     )
+                                },
+                                colors = ListItemDefaults.colors(containerColor = Color.Transparent),
+                                modifier = Modifier.clickable { viewModel.setThemeMode("SYSTEM") }
+                            )
+                            HorizontalDivider(
+                                color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f),
+                                modifier = Modifier.padding(horizontal = SpacingNormal)
+                            )
+                            ListItem(
+                                headlineContent = { Text(stringResource(R.string.settings_theme_mode_light)) },
+                                trailingContent = {
+                                    RadioButton(
+                                        selected = themeMode == "LIGHT",
+                                        onClick = { viewModel.setThemeMode("LIGHT") }
+                                    )
+                                },
+                                colors = ListItemDefaults.colors(containerColor = Color.Transparent),
+                                modifier = Modifier.clickable { viewModel.setThemeMode("LIGHT") }
+                            )
+                            HorizontalDivider(
+                                color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f),
+                                modifier = Modifier.padding(horizontal = SpacingNormal)
+                            )
+                            ListItem(
+                                headlineContent = { Text(stringResource(R.string.settings_theme_mode_dark)) },
+                                trailingContent = {
+                                    RadioButton(
+                                        selected = themeMode == "DARK",
+                                        onClick = { viewModel.setThemeMode("DARK") }
+                                    )
+                                },
+                                colors = ListItemDefaults.colors(containerColor = Color.Transparent),
+                                modifier = Modifier.clickable { viewModel.setThemeMode("DARK") }
+                            )
+                            HorizontalDivider(
+                                color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f),
+                                modifier = Modifier.padding(horizontal = SpacingNormal)
+                            )
+                            val isDarkThemeActive =
+                                themeMode == "DARK" || (themeMode == "SYSTEM" && androidx.compose.foundation.isSystemInDarkTheme())
+                            ListItem(
+                                headlineContent = { Text(stringResource(R.string.settings_theme_amoled)) },
+                                supportingContent = {
+                                    Text(
+                                        text = if (isDarkThemeActive) {
+                                            stringResource(R.string.settings_theme_amoled_desc)
+                                        } else {
+                                            stringResource(R.string.settings_theme_amoled_disabled_desc)
+                                        }
+                                    )
+                                },
+                                trailingContent = {
+                                    Switch(
+                                        checked = themeAmoled,
+                                        onCheckedChange = { viewModel.setThemeAmoled(it) },
+                                        enabled = isDarkThemeActive,
+                                        thumbContent = if (themeAmoled) {
+                                            {
+                                                Icon(
+                                                    imageVector = Icons.Default.Check,
+                                                    contentDescription = null,
+                                                    modifier = Modifier.size(SwitchDefaults.IconSize)
+                                                )
+                                            }
+                                        } else null
+                                    )
+                                },
+                                colors = ListItemDefaults.colors(containerColor = Color.Transparent),
+                                modifier = Modifier.clickable(enabled = isDarkThemeActive) {
+                                    viewModel.setThemeAmoled(!themeAmoled)
                                 }
-                            } else null
-                        )
-                    },
-                    modifier = Modifier.clickable(enabled = isDarkThemeActive) {
-                        viewModel.setThemeAmoled(!themeAmoled)
+                            )
+                        }
                     }
-                )
+                }
             }
 
             // --- Contrast ---
             item {
-                Text(
-                    text = stringResource(R.string.settings_theme_contrast_header),
-                    style = MaterialTheme.typography.labelLarge,
-                    color = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.padding(horizontal = SpacingNormal, vertical = SpacingSmall)
-                )
-            }
-
-            item {
-                ListItem(
-                    headlineContent = { Text(stringResource(R.string.settings_theme_contrast_standard)) },
-                    trailingContent = {
-                        RadioButton(
-                            selected = themeContrast == 0.0,
-                            onClick = { viewModel.setThemeContrast(0.0) }
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(bottom = SpacingNormal)
+                ) {
+                    Text(
+                        text = stringResource(R.string.settings_theme_contrast_header),
+                        style = MaterialTheme.typography.labelLarge,
+                        color = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.padding(
+                            start = SpacingNormal,
+                            end = SpacingNormal,
+                            bottom = SpacingSmall
                         )
-                    },
-                    modifier = Modifier.clickable { viewModel.setThemeContrast(0.0) }
-                )
-            }
-
-            item {
-                ListItem(
-                    headlineContent = { Text(stringResource(R.string.settings_theme_contrast_medium)) },
-                    trailingContent = {
-                        RadioButton(
-                            selected = themeContrast == 0.3,
-                            onClick = { viewModel.setThemeContrast(0.3) }
-                        )
-                    },
-                    modifier = Modifier.clickable { viewModel.setThemeContrast(0.3) }
-                )
-            }
-
-            item {
-                ListItem(
-                    headlineContent = { Text(stringResource(R.string.settings_theme_contrast_high)) },
-                    trailingContent = {
-                        RadioButton(
-                            selected = themeContrast == 1.0,
-                            onClick = { viewModel.setThemeContrast(1.0) }
-                        )
-                    },
-                    modifier = Modifier.clickable { viewModel.setThemeContrast(1.0) }
-                )
+                    )
+                    Card(
+                        shape = MaterialTheme.shapes.extraLarge,
+                        colors = CardDefaults.cardColors(
+                            containerColor = MaterialTheme.colorScheme.surfaceContainer
+                        ),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = SpacingNormal)
+                    ) {
+                        Column(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clip(MaterialTheme.shapes.extraLarge)
+                        ) {
+                            ListItem(
+                                headlineContent = { Text(stringResource(R.string.settings_theme_contrast_standard)) },
+                                trailingContent = {
+                                    RadioButton(
+                                        selected = themeContrast == 0.0,
+                                        onClick = { viewModel.setThemeContrast(0.0) }
+                                    )
+                                },
+                                colors = ListItemDefaults.colors(containerColor = Color.Transparent),
+                                modifier = Modifier.clickable { viewModel.setThemeContrast(0.0) }
+                            )
+                            HorizontalDivider(
+                                color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f),
+                                modifier = Modifier.padding(horizontal = SpacingNormal)
+                            )
+                            ListItem(
+                                headlineContent = { Text(stringResource(R.string.settings_theme_contrast_medium)) },
+                                trailingContent = {
+                                    RadioButton(
+                                        selected = themeContrast == 0.3,
+                                        onClick = { viewModel.setThemeContrast(0.3) }
+                                    )
+                                },
+                                colors = ListItemDefaults.colors(containerColor = Color.Transparent),
+                                modifier = Modifier.clickable { viewModel.setThemeContrast(0.3) }
+                            )
+                            HorizontalDivider(
+                                color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f),
+                                modifier = Modifier.padding(horizontal = SpacingNormal)
+                            )
+                            ListItem(
+                                headlineContent = { Text(stringResource(R.string.settings_theme_contrast_high)) },
+                                trailingContent = {
+                                    RadioButton(
+                                        selected = themeContrast == 1.0,
+                                        onClick = { viewModel.setThemeContrast(1.0) }
+                                    )
+                                },
+                                colors = ListItemDefaults.colors(containerColor = Color.Transparent),
+                                modifier = Modifier.clickable { viewModel.setThemeContrast(1.0) }
+                            )
+                        }
+                    }
+                }
             }
 
             // --- Accent Colors ---
             item {
-                Text(
-                    text = stringResource(R.string.settings_theme_accent_header),
-                    style = MaterialTheme.typography.labelLarge,
-                    color = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.padding(
-                        horizontal = SpacingNormal,
-                        vertical = SpacingMedium
-                    )
-                )
-            }
-
-            item {
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(horizontal = SpacingNormal, vertical = SpacingSmall)
+                        .padding(bottom = SpacingNormal)
                 ) {
-                    val colors = mutableListOf<AccentColorOption>()
-
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-                        colors.add(AccentColorOption("SYSTEM", Color.Transparent, isSystem = true))
-                    }
-
-                    colors.addAll(
-                        listOf(
-                            AccentColorOption("PURPLE", Color(0xFF6750A4)),
-                            AccentColorOption("BLUE", Color(0xFF005FAF)),
-                            AccentColorOption("GREEN", Color(0xFF388E3C)),
-                            AccentColorOption("RED", Color(0xFFBA1A1A)),
-                            AccentColorOption("ORANGE", Color(0xFFF57C00)),
-                            AccentColorOption("PINK", Color(0xFFC2185B))
+                    Text(
+                        text = stringResource(R.string.settings_theme_accent_header),
+                        style = MaterialTheme.typography.labelLarge,
+                        color = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.padding(
+                            start = SpacingNormal,
+                            end = SpacingNormal,
+                            bottom = SpacingSmall
                         )
                     )
-
-                    val isCustomAccent = themeAccent.startsWith("#")
-                    val customColor = if (isCustomAccent) {
-                        try {
-                            Color(themeAccent.toColorInt())
-                        } catch (_: Exception) {
-                            Color(0xFFE91E63)
-                        }
-                    } else {
-                        Color(0xFFE91E63)
-                    }
-                    colors.add(AccentColorOption("CUSTOM", customColor, isCustom = true))
-
-                    // Akzentfarben in Zeilen von je 4 Elementen rendern
-                    colors.chunked(4).forEach { rowColors ->
-                        Row(
+                    Card(
+                        shape = MaterialTheme.shapes.extraLarge,
+                        colors = CardDefaults.cardColors(
+                            containerColor = MaterialTheme.colorScheme.surfaceContainer
+                        ),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = SpacingNormal)
+                    ) {
+                        Column(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .padding(vertical = SpacingSmall),
-                            horizontalArrangement = Arrangement.spacedBy(SpacingNormal)
+                                .padding(horizontal = SpacingNormal, vertical = SpacingNormal)
                         ) {
-                            rowColors.forEach { option ->
-                                val isSelected =
-                                    if (option.isCustom) isCustomAccent else themeAccent == option.id
-                                ColorItem(
-                                    option = option,
-                                    isSelected = isSelected,
-                                    onClick = {
-                                        if (option.isCustom) {
-                                            showColorPickerDialog = true
-                                        } else {
-                                            viewModel.setThemeAccent(option.id)
-                                        }
-                                    },
-                                    modifier = Modifier.weight(1f)
+                            val colors = mutableListOf<AccentColorOption>()
+
+                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                                colors.add(
+                                    AccentColorOption(
+                                        "SYSTEM",
+                                        Color.Transparent,
+                                        isSystem = true
+                                    )
                                 )
                             }
-                            // Filler, falls die Zeile nicht voll ist (z.B. am Ende des Grids)
-                            repeat(4 - rowColors.size) {
-                                Spacer(modifier = Modifier.weight(1f))
+
+                            colors.addAll(
+                                listOf(
+                                    AccentColorOption("PURPLE", Color(0xFF6750A4)),
+                                    AccentColorOption("BLUE", Color(0xFF005FAF)),
+                                    AccentColorOption("GREEN", Color(0xFF388E3C)),
+                                    AccentColorOption("RED", Color(0xFFBA1A1A)),
+                                    AccentColorOption("ORANGE", Color(0xFFF57C00)),
+                                    AccentColorOption("PINK", Color(0xFFC2185B))
+                                )
+                            )
+
+                            val isCustomAccent = themeAccent.startsWith("#")
+                            val customColor = if (isCustomAccent) {
+                                try {
+                                    Color(themeAccent.toColorInt())
+                                } catch (_: Exception) {
+                                    Color(0xFFE91E63)
+                                }
+                            } else {
+                                Color(0xFFE91E63)
+                            }
+                            colors.add(AccentColorOption("CUSTOM", customColor, isCustom = true))
+
+                            // Akzentfarben in Zeilen von je 4 Elementen rendern
+                            colors.chunked(4).forEach { rowColors ->
+                                Row(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(vertical = SpacingSmall),
+                                    horizontalArrangement = Arrangement.spacedBy(SpacingNormal)
+                                ) {
+                                    rowColors.forEach { option ->
+                                        val isSelected =
+                                            if (option.isCustom) isCustomAccent else themeAccent == option.id
+                                        ColorItem(
+                                            option = option,
+                                            isSelected = isSelected,
+                                            onClick = {
+                                                if (option.isCustom) {
+                                                    showColorPickerDialog = true
+                                                } else {
+                                                    viewModel.setThemeAccent(option.id)
+                                                }
+                                            },
+                                            modifier = Modifier.weight(1f)
+                                        )
+                                    }
+                                    // Filler, falls die Zeile nicht voll ist (z.B. am Ende des Grids)
+                                    repeat(4 - rowColors.size) {
+                                        Spacer(modifier = Modifier.weight(1f))
+                                    }
+                                }
                             }
                         }
                     }

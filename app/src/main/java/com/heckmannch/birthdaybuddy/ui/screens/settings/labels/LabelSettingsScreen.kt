@@ -137,7 +137,9 @@ private fun LabelSettingsContent(
                 item(span = { GridItemSpan(maxLineSpan) }) {
                     InfoCard(
                         title = stringResource(R.string.labels_info_title),
-                        description = stringResource(R.string.labels_info_hide) + "\n\n" + stringResource(R.string.labels_info_ignore)
+                        description = stringResource(R.string.labels_info_hide) + "\n\n" + stringResource(
+                            R.string.labels_info_ignore
+                        )
                     )
                 }
 

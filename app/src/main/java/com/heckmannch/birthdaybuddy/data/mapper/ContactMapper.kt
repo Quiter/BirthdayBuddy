@@ -45,11 +45,15 @@ class ContactMapper @Inject constructor() {
         return toUiModelForEvent(contact, today, EventType.BIRTHDAY)
     }
 
-    fun toUiModelForEvent(contact: Contact, today: LocalDate, eventType: EventType): ContactUiModel {
+    fun toUiModelForEvent(
+        contact: Contact,
+        today: LocalDate,
+        eventType: EventType
+    ): ContactUiModel {
         val eventDate = when (eventType) {
             EventType.ANNIVERSARY -> contact.anniversary
-            EventType.NAME_DAY    -> contact.nameDay
-            EventType.BIRTHDAY    -> contact.birthday
+            EventType.NAME_DAY -> contact.nameDay
+            EventType.BIRTHDAY -> contact.birthday
         }
         val hasYear = eventDate?.hasYear ?: false
         val daysLeft = eventDate?.safeDaysUntilNext(today)

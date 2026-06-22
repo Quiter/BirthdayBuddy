@@ -56,16 +56,16 @@ import com.heckmannch.birthdaybuddy.ui.screens.home.components.actions.ContactAc
 import com.heckmannch.birthdaybuddy.ui.theme.AlphaEmphasisLow
 import com.heckmannch.birthdaybuddy.ui.theme.AlphaEmphasisMedium
 import com.heckmannch.birthdaybuddy.ui.theme.AlphaSurfaceContainerHigh
+import com.heckmannch.birthdaybuddy.ui.theme.BirthdayBorderWidth
 import com.heckmannch.birthdaybuddy.ui.theme.BirthdayBuddyTheme
 import com.heckmannch.birthdaybuddy.ui.theme.BirthdayGold
 import com.heckmannch.birthdaybuddy.ui.theme.BirthdayKidAmber
 import com.heckmannch.birthdaybuddy.ui.theme.BirthdaySilver
-import com.heckmannch.birthdaybuddy.ui.theme.BirthdayBorderWidth
-import com.heckmannch.birthdaybuddy.ui.theme.SelectedBorderWidth
 import com.heckmannch.birthdaybuddy.ui.theme.IconSizeExtraSmall
 import com.heckmannch.birthdaybuddy.ui.theme.IconSizeLarge
 import com.heckmannch.birthdaybuddy.ui.theme.IconSizeSmall
 import com.heckmannch.birthdaybuddy.ui.theme.KidColors
+import com.heckmannch.birthdaybuddy.ui.theme.SelectedBorderWidth
 import com.heckmannch.birthdaybuddy.ui.theme.SpacingMedium
 import com.heckmannch.birthdaybuddy.ui.theme.SpacingNormal
 import com.heckmannch.birthdaybuddy.ui.theme.SpacingSmall
@@ -109,10 +109,14 @@ fun BirthdayItem(
     val borderStroke = remember(contact.isToday, contact.birthdayTier) {
         if (contact.isToday) {
             when (contact.birthdayTier) {
-                BirthdayTier.MILESTONE_GOLD   -> BorderStroke(BirthdayBorderWidth, BirthdayGold)
+                BirthdayTier.MILESTONE_GOLD -> BorderStroke(BirthdayBorderWidth, BirthdayGold)
                 BirthdayTier.MILESTONE_SILVER -> BorderStroke(BirthdayBorderWidth, BirthdaySilver)
-                BirthdayTier.CHILD            -> BorderStroke(BirthdayBorderWidth, Brush.linearGradient(KidColors))
-                BirthdayTier.REGULAR          -> BorderStroke(BirthdayBorderWidth, BirthdaySilver)
+                BirthdayTier.CHILD -> BorderStroke(
+                    BirthdayBorderWidth,
+                    Brush.linearGradient(KidColors)
+                )
+
+                BirthdayTier.REGULAR -> BorderStroke(BirthdayBorderWidth, BirthdaySilver)
             }
         } else null
     }
@@ -120,10 +124,10 @@ fun BirthdayItem(
     val confettiColors = remember(contact.isToday, contact.birthdayTier) {
         if (!contact.isToday) return@remember emptyList()
         when (contact.birthdayTier) {
-            BirthdayTier.MILESTONE_GOLD   -> listOf(BirthdayGold)
+            BirthdayTier.MILESTONE_GOLD -> listOf(BirthdayGold)
             BirthdayTier.MILESTONE_SILVER -> listOf(BirthdaySilver, Color.White)
-            BirthdayTier.CHILD            -> KidColors
-            BirthdayTier.REGULAR          -> listOf(BirthdaySilver, Color.White)
+            BirthdayTier.CHILD -> KidColors
+            BirthdayTier.REGULAR -> listOf(BirthdaySilver, Color.White)
         }
     }
 

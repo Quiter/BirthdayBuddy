@@ -24,19 +24,22 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.NotificationsOff
 import androidx.compose.material3.Button
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LargeTopAppBar
 import androidx.compose.material3.ListItem
+import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchDefaults
@@ -52,6 +55,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLayoutDirection
@@ -282,55 +287,76 @@ private fun NotificationSettingsContent(
                 verticalArrangement = Arrangement.spacedBy(SpacingNormal)
             ) {
                 item(span = { GridItemSpan(maxLineSpan) }) {
-                    ListItem(
-                        headlineContent = { Text(stringResource(R.string.notifications_header)) },
-                        supportingContent = { Text(stringResource(R.string.notifications_desc)) },
-                        trailingContent = {
-                            Switch(
-                                checked = notificationsEnabled,
-                                onCheckedChange = onToggleNotifications,
-                                thumbContent = if (notificationsEnabled) {
-                                    {
-                                        Icon(
-                                            imageVector = Icons.Default.Check,
-                                            contentDescription = null,
-                                            modifier = Modifier.size(SwitchDefaults.IconSize)
-                                        )
-                                    }
-                                } else null
+                    Card(
+                        shape = MaterialTheme.shapes.extraLarge,
+                        colors = CardDefaults.cardColors(
+                            containerColor = MaterialTheme.colorScheme.surfaceContainer
+                        ),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                    ) {
+                        Column(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clip(MaterialTheme.shapes.extraLarge)
+                        ) {
+                            ListItem(
+                                headlineContent = { Text(stringResource(R.string.notifications_header)) },
+                                supportingContent = { Text(stringResource(R.string.notifications_desc)) },
+                                trailingContent = {
+                                    Switch(
+                                        checked = notificationsEnabled,
+                                        onCheckedChange = onToggleNotifications,
+                                        thumbContent = if (notificationsEnabled) {
+                                            {
+                                                Icon(
+                                                    imageVector = Icons.Default.Check,
+                                                    contentDescription = null,
+                                                    modifier = Modifier.size(SwitchDefaults.IconSize)
+                                                )
+                                            }
+                                        } else null
+                                    )
+                                },
+                                colors = ListItemDefaults.colors(containerColor = Color.Transparent)
                             )
+
+                            if (notificationsEnabled) {
+                                HorizontalDivider(
+                                    color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f),
+                                    modifier = Modifier.padding(horizontal = SpacingNormal)
+                                )
+                                ListItem(
+                                    headlineContent = { Text(stringResource(R.string.notifications_persistent_header)) },
+                                    supportingContent = { Text(stringResource(R.string.notifications_persistent_desc)) },
+                                    trailingContent = {
+                                        Switch(
+                                            checked = persistentNotifications,
+                                            onCheckedChange = onTogglePersistent,
+                                            thumbContent = if (persistentNotifications) {
+                                                {
+                                                    Icon(
+                                                        imageVector = Icons.Default.Check,
+                                                        contentDescription = null,
+                                                        modifier = Modifier.size(SwitchDefaults.IconSize)
+                                                    )
+                                                }
+                                            } else null
+                                        )
+                                    },
+                                    colors = ListItemDefaults.colors(containerColor = Color.Transparent)
+                                )
+                            }
                         }
-                    )
+                    }
                 }
 
                 if (notificationsEnabled) {
                     item(span = { GridItemSpan(maxLineSpan) }) {
-                        ListItem(
-                            headlineContent = { Text(stringResource(R.string.notifications_persistent_header)) },
-                            supportingContent = { Text(stringResource(R.string.notifications_persistent_desc)) },
-                            trailingContent = {
-                                Switch(
-                                    checked = persistentNotifications,
-                                    onCheckedChange = onTogglePersistent,
-                                    thumbContent = if (persistentNotifications) {
-                                        {
-                                            Icon(
-                                                imageVector = Icons.Default.Check,
-                                                contentDescription = null,
-                                                modifier = Modifier.size(SwitchDefaults.IconSize)
-                                            )
-                                        }
-                                    } else null
-                                )
-                            }
-                        )
-                    }
-
-                    item(span = { GridItemSpan(maxLineSpan) }) {
                         InfoCard(
                             title = stringResource(R.string.notifications_persistent_info_title),
                             description = stringResource(R.string.notifications_persistent_info_desc),
-                            modifier = Modifier.padding(bottom = SpacingNormal)
+                            modifier = Modifier.padding(top = SpacingSmall, bottom = SpacingNormal)
                         )
                     }
 
@@ -351,22 +377,52 @@ private fun NotificationSettingsContent(
                         }
                     } else {
                         item(span = { GridItemSpan(maxLineSpan) }) {
-                            Text(
-                                stringResource(R.string.notifications_planned_header),
-                                style = MaterialTheme.typography.labelLarge,
-                                color = MaterialTheme.colorScheme.primary,
-                                modifier = Modifier.padding(
-                                    horizontal = SpacingNormal,
-                                    vertical = SpacingSmall
+                            Column(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(bottom = SpacingNormal)
+                            ) {
+                                Text(
+                                    stringResource(R.string.notifications_planned_header),
+                                    style = MaterialTheme.typography.labelLarge,
+                                    color = MaterialTheme.colorScheme.primary,
+                                    modifier = Modifier.padding(
+                                        start = SpacingNormal,
+                                        end = SpacingNormal,
+                                        bottom = SpacingSmall
+                                    )
                                 )
-                            )
-                        }
-                        items(rules, key = { it.id }) { rule ->
-                            NotificationRuleItem(
-                                rule = rule,
-                                onEditRule = { state.openEditDialog(it) },
-                                onDeleteRule = onDeleteRule,
-                            )
+                                Card(
+                                    shape = MaterialTheme.shapes.extraLarge,
+                                    colors = CardDefaults.cardColors(
+                                        containerColor = MaterialTheme.colorScheme.surfaceContainer
+                                    ),
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                ) {
+                                    Column(
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .clip(MaterialTheme.shapes.extraLarge)
+                                    ) {
+                                        rules.forEachIndexed { index, rule ->
+                                            NotificationRuleItem(
+                                                rule = rule,
+                                                onEditRule = { state.openEditDialog(it) },
+                                                onDeleteRule = onDeleteRule,
+                                            )
+                                            if (index < rules.size - 1) {
+                                                HorizontalDivider(
+                                                    color = MaterialTheme.colorScheme.outlineVariant.copy(
+                                                        alpha = 0.5f
+                                                    ),
+                                                    modifier = Modifier.padding(horizontal = SpacingNormal)
+                                                )
+                                            }
+                                        }
+                                    }
+                                }
+                            }
                         }
                     }
                 }

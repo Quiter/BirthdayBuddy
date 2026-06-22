@@ -7,8 +7,8 @@ import com.heckmannch.birthdaybuddy.data.mapper.ContactMapper
 import com.heckmannch.birthdaybuddy.data.repository.ContactRepository
 import com.heckmannch.birthdaybuddy.data.repository.TimeRepository
 import com.heckmannch.birthdaybuddy.ui.model.ContactUiModel
-import com.heckmannch.birthdaybuddy.ui.model.EventType
 import com.heckmannch.birthdaybuddy.ui.model.CoupleSuggestionUiModel
+import com.heckmannch.birthdaybuddy.ui.model.EventType
 import com.heckmannch.birthdaybuddy.ui.model.GiftIdea
 import com.heckmannch.birthdaybuddy.ui.model.HomeUiState
 import com.heckmannch.birthdaybuddy.util.getInitials
@@ -68,9 +68,6 @@ class HomeViewModel @Inject constructor(
     private val _syncCompletedEvent = MutableSharedFlow<Unit>(replay = 0)
     val syncCompletedEvent: SharedFlow<Unit> = _syncCompletedEvent.asSharedFlow()
 
-    fun setIsResettingFilter(isResetting: Boolean) {
-        onIntent(HomeIntent.SetIsResettingFilter(isResetting))
-    }
 
     // --- Data Processing ---
     private val ignoredLabels: Flow<Set<String>> = contactRepository.labelConfigs
@@ -108,8 +105,8 @@ class HomeViewModel @Inject constructor(
 
         val displayEventType: EventType = when (label) {
             LABEL_ANNIVERSARY -> EventType.ANNIVERSARY
-            LABEL_NAME_DAY    -> EventType.NAME_DAY
-            else              -> EventType.BIRTHDAY
+            LABEL_NAME_DAY -> EventType.NAME_DAY
+            else -> EventType.BIRTHDAY
         }
 
         // --- OPTIMIERUNG: Vor-Filterung der Rohdaten ---
@@ -527,26 +524,6 @@ class HomeViewModel @Inject constructor(
         onIntent(HomeIntent.ResetFilters)
     }
 
-    fun addGiftIdea(lookupKey: String) {
-        onIntent(HomeIntent.AddGiftIdea(lookupKey))
-    }
-
-    fun toggleGiftIdea(lookupKey: String, idea: GiftIdea, isChecked: Boolean) {
-        onIntent(HomeIntent.ToggleGiftIdea(lookupKey, idea, isChecked))
-    }
-
-    fun deleteGiftIdea(lookupKey: String, ideaId: String) {
-        onIntent(HomeIntent.DeleteGiftIdea(lookupKey, ideaId))
-    }
-
-    fun updateGiftIdeaText(lookupKey: String, ideaId: String, newText: String) {
-        onIntent(HomeIntent.UpdateGiftIdeaText(lookupKey, ideaId, newText))
-    }
-
-    fun updateBirthday(contactId: String, birthday: java.time.LocalDate) {
-        onIntent(HomeIntent.UpdateBirthday(contactId, birthday))
-    }
-
     fun syncContacts(showLoading: Boolean = false) {
         onIntent(HomeIntent.SyncContacts(showLoading))
     }
@@ -557,26 +534,6 @@ class HomeViewModel @Inject constructor(
 
     fun triggerSearchFocus() {
         onIntent(HomeIntent.TriggerSearchFocus)
-    }
-
-    fun consumeSearchFocus() {
-        onIntent(HomeIntent.ConsumeSearchFocus)
-    }
-
-    fun consumeNewlyAddedIdeaId() {
-        onIntent(HomeIntent.ConsumeNewlyAddedIdeaId)
-    }
-
-    fun linkAsCouple(lookupKey1: String, lookupKey2: String) {
-        onIntent(HomeIntent.LinkAsCouple(lookupKey1, lookupKey2))
-    }
-
-    fun unlinkCouple(lookupKey: String) {
-        onIntent(HomeIntent.UnlinkCouple(lookupKey))
-    }
-
-    fun ignoreCoupleSuggestion(lookupKey1: String, lookupKey2: String) {
-        onIntent(HomeIntent.IgnoreCoupleSuggestion(lookupKey1, lookupKey2))
     }
 }
 

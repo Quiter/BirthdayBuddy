@@ -3,7 +3,6 @@ package com.heckmannch.birthdaybuddy.widget
 import android.content.Context
 import android.content.Intent
 import android.text.format.DateFormat
-import com.heckmannch.birthdaybuddy.util.IntentExtras
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
@@ -39,6 +38,7 @@ import com.heckmannch.birthdaybuddy.MainActivity
 import com.heckmannch.birthdaybuddy.R
 import com.heckmannch.birthdaybuddy.data.local.Contact
 import com.heckmannch.birthdaybuddy.data.repository.ContactRepository
+import com.heckmannch.birthdaybuddy.util.IntentExtras
 import com.heckmannch.birthdaybuddy.util.hasYear
 import com.heckmannch.birthdaybuddy.util.safeDaysUntilNext
 import com.heckmannch.birthdaybuddy.util.safeNextAge

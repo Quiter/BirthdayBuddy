@@ -56,6 +56,7 @@ import com.heckmannch.birthdaybuddy.ui.screens.settings.otherevents.OtherEventsS
 import com.heckmannch.birthdaybuddy.ui.screens.settings.sync.SyncSettingsScreen
 import com.heckmannch.birthdaybuddy.ui.screens.settings.theme.ThemeSettingsScreen
 import com.heckmannch.birthdaybuddy.ui.theme.BirthdayBuddyTheme
+import com.heckmannch.birthdaybuddy.util.IntentExtras
 import com.heckmannch.birthdaybuddy.viewmodel.AppViewModel
 import com.heckmannch.birthdaybuddy.viewmodel.BackupViewModel
 import com.heckmannch.birthdaybuddy.viewmodel.CalendarViewModel
@@ -64,7 +65,6 @@ import com.heckmannch.birthdaybuddy.viewmodel.LabelViewModel
 import com.heckmannch.birthdaybuddy.viewmodel.NotificationViewModel
 import com.heckmannch.birthdaybuddy.viewmodel.OnboardingViewModel
 import com.heckmannch.birthdaybuddy.viewmodel.ThemeViewModel
-import com.heckmannch.birthdaybuddy.util.IntentExtras
 import com.heckmannch.birthdaybuddy.widget.BirthdayWidgetWorker
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.serialization.Serializable

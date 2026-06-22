@@ -181,7 +181,11 @@ class ContactRepository @Inject constructor(
                     }
                 }
             } catch (e: Exception) {
-                Log.e("ContactRepository", "Failed to update gift idea cache, rolling back: ${e.message}", e)
+                Log.e(
+                    "ContactRepository",
+                    "Failed to update gift idea cache, rolling back: ${e.message}",
+                    e
+                )
                 settingsDatabase.withTransaction {
                     val rollbackData = prevUserData
                         ?: ContactUserData(lookupKey = lookupKey, giftIdeas = emptyList())
@@ -269,7 +273,11 @@ class ContactRepository @Inject constructor(
                     }
                 }
             } catch (e: Exception) {
-                Log.e("ContactRepository", "Cache update failed for linkAsCouple, rolling back settings: ${e.message}", e)
+                Log.e(
+                    "ContactRepository",
+                    "Cache update failed for linkAsCouple, rolling back settings: ${e.message}",
+                    e
+                )
                 settingsDatabase.withTransaction {
                     if (prevUserData1 != null) {
                         contactUserDataDao.upsertUserData(prevUserData1)
@@ -318,7 +326,11 @@ class ContactRepository @Inject constructor(
                     }
                 }
             } catch (e: Exception) {
-                Log.e("ContactRepository", "Cache update failed for unlinkCouple, rolling back settings: ${e.message}", e)
+                Log.e(
+                    "ContactRepository",
+                    "Cache update failed for unlinkCouple, rolling back settings: ${e.message}",
+                    e
+                )
                 settingsDatabase.withTransaction {
                     prevUserData1?.let { contactUserDataDao.upsertUserData(it) }
                     prevUserData2?.let { contactUserDataDao.upsertUserData(it) }

@@ -3,18 +3,22 @@ package com.heckmannch.birthdaybuddy.ui.screens.settings.otherevents
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Star
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LargeTopAppBar
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.ListItemDefaults
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
@@ -104,33 +108,42 @@ private fun OtherEventsSettingsContent(
             }
 
             item {
-                ListItem(
-                    headlineContent = { Text(stringResource(R.string.other_events_enable)) },
-                    supportingContent = { Text(stringResource(R.string.other_events_desc)) },
-                    trailingContent = {
-                        Switch(
-                            checked = otherEventsEnabled,
-                            onCheckedChange = onToggleChange,
-                            thumbContent = if (otherEventsEnabled) {
-                                {
-                                    Icon(
-                                        imageVector = Icons.Default.Check,
-                                        contentDescription = null,
-                                        modifier = Modifier.size(SwitchDefaults.IconSize)
-                                    )
-                                }
-                            } else null
-                        )
-                    },
-                    leadingContent = {
-                        Icon(
-                            imageVector = Icons.Default.Star,
-                            contentDescription = null
-                        )
-                    },
-                    modifier = Modifier.clickable { onToggleChange(!otherEventsEnabled) },
-                    colors = ListItemDefaults.colors(containerColor = Color.Transparent)
-                )
+                Card(
+                    shape = MaterialTheme.shapes.extraLarge,
+                    colors = CardDefaults.cardColors(
+                        containerColor = MaterialTheme.colorScheme.surfaceContainer
+                    ),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                ) {
+                    ListItem(
+                        headlineContent = { Text(stringResource(R.string.other_events_enable)) },
+                        supportingContent = { Text(stringResource(R.string.other_events_desc)) },
+                        trailingContent = {
+                            Switch(
+                                checked = otherEventsEnabled,
+                                onCheckedChange = onToggleChange,
+                                thumbContent = if (otherEventsEnabled) {
+                                    {
+                                        Icon(
+                                            imageVector = Icons.Default.Check,
+                                            contentDescription = null,
+                                            modifier = Modifier.size(SwitchDefaults.IconSize)
+                                        )
+                                    }
+                                } else null
+                            )
+                        },
+                        leadingContent = {
+                            Icon(
+                                imageVector = Icons.Default.Star,
+                                contentDescription = null
+                            )
+                        },
+                        modifier = Modifier.clickable { onToggleChange(!otherEventsEnabled) },
+                        colors = ListItemDefaults.colors(containerColor = Color.Transparent)
+                    )
+                }
             }
         }
     }

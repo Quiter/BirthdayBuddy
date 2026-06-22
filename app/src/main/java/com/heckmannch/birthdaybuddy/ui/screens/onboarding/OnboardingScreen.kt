@@ -235,7 +235,8 @@ fun OnboardingContent(
             windowWidthSizeClass = windowWidthSizeClass,
             modifier = Modifier.fillMaxSize(),
             containerColor = Color.Transparent,
-            contentWindowInsets = WindowInsets.statusBars.union(WindowInsets.navigationBars).union(WindowInsets.displayCutout),
+            contentWindowInsets = WindowInsets.statusBars.union(WindowInsets.navigationBars)
+                .union(WindowInsets.displayCutout),
             bottomBar = {
                 OnboardingFooter(
                     currentPage = pagerState.currentPage,

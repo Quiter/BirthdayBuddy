@@ -34,9 +34,9 @@ enum class BirthdayTier {
          */
         fun from(nextAge: Int?): BirthdayTier = when {
             nextAge != null && nextAge % 10 == 0 -> MILESTONE_GOLD
-            nextAge != null && nextAge % 5  == 0 -> MILESTONE_SILVER
-            nextAge != null && nextAge in 0..9   -> CHILD
-            else                                 -> REGULAR
+            nextAge != null && nextAge % 5 == 0 -> MILESTONE_SILVER
+            nextAge != null && nextAge in 0..9 -> CHILD
+            else -> REGULAR
         }
     }
 }

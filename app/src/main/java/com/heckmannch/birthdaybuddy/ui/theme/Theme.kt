@@ -12,9 +12,9 @@ import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalInspectionMode
 import androidx.core.graphics.toColorInt
+import com.materialkolor.dynamiccolor.MaterialDynamicColors
 import com.materialkolor.hct.Hct
 import com.materialkolor.scheme.SchemeContent
-import com.materialkolor.dynamiccolor.MaterialDynamicColors
 
 val ColorScheme.amoled: ColorScheme
     get() = this.copy(
@@ -84,7 +84,12 @@ private fun createHctColorScheme(seedColor: Color, isDark: Boolean, contrast: Do
     )
 }
 
-private fun getCustomColorScheme(accent: String, darkTheme: Boolean, amoled: Boolean, contrast: Double): ColorScheme {
+private fun getCustomColorScheme(
+    accent: String,
+    darkTheme: Boolean,
+    amoled: Boolean,
+    contrast: Double
+): ColorScheme {
     val seedColor = if (accent.startsWith("#")) {
         try {
             Color(accent.toColorInt())
@@ -132,7 +137,12 @@ fun BirthdayBuddyTheme(
         }
 
         else -> {
-            getCustomColorScheme(accent = themeAccent, darkTheme = darkTheme, amoled = themeAmoled, contrast = themeContrast)
+            getCustomColorScheme(
+                accent = themeAccent,
+                darkTheme = darkTheme,
+                amoled = themeAmoled,
+                contrast = themeContrast
+            )
         }
     }
 

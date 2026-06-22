@@ -1,6 +1,25 @@
 # Changelog: BirthdayBuddy
 > **Note:** Historische Einträge (Meilensteine 1-181) wurden nach [CHANGELOG_ARCHIVE.md](CHANGELOG_ARCHIVE.md) verschoben, um das Kontext-Fenster für LLM-Sessions zu optimieren.
 
+207. **Entfernung ungenutzter ViewModel-Hilfsfunktionen in `HomeViewModel` (Code-Bereinigung / Compiler-Warnungen):**
+    - **Problem:** Nach der Entkopplung des `HomeScreen`s vom `HomeViewModel` (Meilenstein 205), bei der alle Interaktionen auf das einheitliche MVI/UDF-Muster (`onIntent`) umgestellt wurden, blieben elf veraltete Hilfsfunktionen im ViewModel zurück. Diese führten zu Compiler-Warnungen über ungenutzten Code.
+    - **Lösung:** Entfernung aller ungenutzten Hilfsfunktionen, um den ViewModel sauber zu halten und die Build-Warnungen zu beseitigen.
+    - **Details der Änderungen:**
+      - **`HomeViewModel.kt`**: Die ungenutzten Funktionen `setIsResettingFilter`, `addGiftIdea`, `toggleGiftIdea`, `deleteGiftIdea`, `updateGiftIdeaText`, `updateBirthday`, `consumeSearchFocus`, `consumeNewlyAddedIdeaId`, `linkAsCouple`, `unlinkCouple` und `ignoreCoupleSuggestion` wurden entfernt.
+      - Die tatsächlich verwendeten Hilfsfunktionen (wie `onSearchQueryChange` in Tests, `resetFilters` und `syncContacts` in `MainActivity`) wurden beibehalten.
+
+206. **Bündelung der Einstellungen in abgerundeten Karten-Containern (UI/UX Polish / Material 3 Compliance):**
+    - **Problem:** Die Einstellungen auf den verschiedenen Einstellungsseiten (Design, Benachrichtigungen, Kalender, Backup, Sync, Andere Ereignisse) waren flach auf dem Hintergrund gerendert, was insbesondere im AMOLED-Schwarz-Modus unstrukturiert wirkte.
+    - **Lösung:** Gruppierung aller Einstellungsoptionen in visuell getrennte Material 3 `Card`-Container mit `MaterialTheme.shapes.extraLarge` Eckenradius und einer `surfaceContainer`-Hintergrundfarbe auf allen Einstellungsseiten zur Erzielung eines Designs "wie aus einem Guss".
+    - **Details der Änderungen:**
+      - **`ThemeSettingsScreen.kt`**: Optionen für Theme-Modus, Kontrast und Akzentfarbe in Karten gruppiert mit abgerundeten Rändern (`clip`) und dezenten `HorizontalDivider`n.
+      - **`NotificationSettingsScreen.kt` / `NotificationRuleItem.kt`**: Aktivierungs- und persistente Schalter in eine gemeinsame Karte verschoben. Geplante Erinnerungsregeln aus dem flachen Grid in eine vertikal gestapelte Liste innerhalb einer Karte mit Trennstrichen überführt.
+      - **`CalendarSettingsScreen.kt`**: Synchronisierungs-Aktivierung und die Sektion der Kalenderfarben in getrennte Karten gegliedert; Trennelemente zwischen den Kalendertypen eingefügt.
+      - **`BackupContent.kt`**: Export- und Importaktionen in eine gemeinsame Karte zusammengefasst.
+      - **`SyncSettingsScreen.kt` & `OtherEventsSettingsScreen.kt`**: Die jeweiligen einzelnen Aktionselemente bzw. Schalter in Karten-Container eingepackt.
+      - Verwendung von `ListItemDefaults.colors(containerColor = Color.Transparent)` auf allen betroffenen `ListItem`s zur nahtlosen Hintergrund-Integration.
+
+
 205. **Entkopplung von `HomeScreen` vom `HomeViewModel` (Testbarkeit / Clean Architecture):**
     - **Problem:** `HomeScreen` nahm `viewModel: HomeViewModel` direkt als Parameter entgegen. Composable-UI-Tests waren dadurch nur mit vollständiger Hilt-DI-Infrastruktur möglich – ein unnötiger Test-Overhead.
     - **Lösung:** Signaturen auf State + Intent-Handler umgestellt. `HomeScreen` akzeptiert jetzt ausschließlich `uiState: HomeUiState`, `onIntent: (HomeIntent) -> Unit` und `scrollToTopEvent: SharedFlow<Unit>`. Der ViewModel wird ausschließlich an der Aufrufstelle in `MainActivity.kt` (im `composable<Home>`-Block) instantiiert und sein State/Intent-Handling per Lambda weitergegeben. Damit ist `HomeScreen` vollständig ohne Hilt testbar.

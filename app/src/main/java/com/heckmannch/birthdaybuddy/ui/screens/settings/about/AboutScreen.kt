@@ -112,7 +112,10 @@ fun AboutScreen(
                 color = MaterialTheme.colorScheme.surfaceVariant,
                 tonalElevation = 2.dp
             ) {
-                Box(contentAlignment = Alignment.Center, modifier = Modifier.padding(SpacingLarge)) {
+                Box(
+                    contentAlignment = Alignment.Center,
+                    modifier = Modifier.padding(SpacingLarge)
+                ) {
                     Icon(
                         painter = painterResource(id = R.drawable.ic_app_logo),
                         contentDescription = null,
