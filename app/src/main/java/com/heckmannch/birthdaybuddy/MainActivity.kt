@@ -37,12 +37,10 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.lifecycle.lifecycleScope
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import com.heckmannch.birthdaybuddy.data.repository.NotificationRepository
 import com.heckmannch.birthdaybuddy.ui.components.LocalWindowHeightSizeClass
 import com.heckmannch.birthdaybuddy.ui.components.LocalWindowWidthSizeClass
 import com.heckmannch.birthdaybuddy.ui.screens.home.HomeScreen
@@ -58,6 +56,7 @@ import com.heckmannch.birthdaybuddy.ui.screens.settings.otherevents.OtherEventsS
 import com.heckmannch.birthdaybuddy.ui.screens.settings.sync.SyncSettingsScreen
 import com.heckmannch.birthdaybuddy.ui.screens.settings.theme.ThemeSettingsScreen
 import com.heckmannch.birthdaybuddy.ui.theme.BirthdayBuddyTheme
+import com.heckmannch.birthdaybuddy.viewmodel.AppViewModel
 import com.heckmannch.birthdaybuddy.viewmodel.BackupViewModel
 import com.heckmannch.birthdaybuddy.viewmodel.CalendarViewModel
 import com.heckmannch.birthdaybuddy.viewmodel.HomeViewModel
@@ -68,9 +67,7 @@ import com.heckmannch.birthdaybuddy.viewmodel.ThemeViewModel
 import com.heckmannch.birthdaybuddy.util.IntentExtras
 import com.heckmannch.birthdaybuddy.widget.BirthdayWidgetWorker
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.launch
 import kotlinx.serialization.Serializable
-import javax.inject.Inject
 
 /**
  * Navigation Routes
@@ -114,9 +111,6 @@ object PrivacyPolicy
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
 
-    @Inject
-    lateinit var notificationRepository: NotificationRepository
-
     private var lastInteractionTime: Long = System.currentTimeMillis()
     private val activityIntent = mutableStateOf<Intent?>(null)
 
@@ -131,22 +125,13 @@ class MainActivity : ComponentActivity() {
         // Schedule next widget update
         BirthdayWidgetWorker.enqueueNextUpdate(this)
 
-        lifecycleScope.launch {
-            try {
-                notificationRepository.syncScheduling()
-            } catch (_: Exception) {
-                // Safeguard
-            }
-        }
-
         setContent {
             val windowSizeClass = calculateWindowSizeClass(this)
+            val appViewModel: AppViewModel = hiltViewModel()
             val homeViewModel: HomeViewModel = hiltViewModel()
             val onboardingViewModel: OnboardingViewModel = hiltViewModel()
             val onboardingCompleted by onboardingViewModel.onboardingCompleted.collectAsStateWithLifecycle()
-            val appSettings by notificationRepository.settings.collectAsStateWithLifecycle(
-                initialValue = com.heckmannch.birthdaybuddy.data.local.AppSettings()
-            )
+            val appSettings by appViewModel.appSettings.collectAsStateWithLifecycle()
 
             // Splash Screen so lange anzeigen, bis wir wissen, wo es hingeht
             splashScreen.setKeepOnScreenCondition {

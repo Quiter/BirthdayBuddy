@@ -120,6 +120,7 @@
     - `Theme.kt`, `Color.kt`, `Type.kt`, `Shapes.kt`: Design-System Definitionen (Farbschemata, Typografie, Eckenradien), custom Farbschemata für Akzentfarben und AMOLED-Erweiterung.
 
 ## 📁 ViewModel (`viewmodel`)
+- `AppViewModel.kt`: App-weites `@HiltViewModel`, das auf Activity-Ebene gehalten wird. Hält `appSettings: StateFlow<AppSettings>` (mit `SharingStarted.Eagerly` für sofortige Theme-Verfügbarkeit) und triggert `NotificationRepository.syncScheduling()` einmalig im `init {}`-Block. Entkoppelt `MainActivity` vollständig vom Data Layer.
 - `HomeViewModel.kt`: Zuständig für die Kontaktliste, Suche, Filterung und den Home-Screen State. Nutzt ein leichtgewichtiges MVI/UDF-Muster mit dem `HomeIntent` Interface und einem konsolidierten `UserUiState` Flow zur Vermeidung asynchroner Konflikte.
 - `NotificationViewModel.kt`: Verwaltung der Benachrichtigungsregeln und deren Synchronisation mit dem WorkManager.
 - `OnboardingViewModel.kt`: Zuständig für den Onboarding-Status und Erststart-Prozess.
@@ -163,6 +164,7 @@ Diese Tests laufen ohne Emulator/Gerät direkt auf dem Entwicklungsrechner und s
 - `data/local/GiftIdeaConvertersTest.kt`: Tests für Geschenkideen-TypeConverter.
 - `data/mapper/ContactMapperTest.kt`: Tests für die Transformation von Datenbank-Entitäten in UI-Modelle (mit JVM-Safe Fallback für die Formatierung).
 - `util/DateUtilsTest.kt`: Logiktests für Datumsberechnungen (Alter, Tage bis Geburtstag, etc.).
+- `viewmodel/AppViewModelTest.kt`: Tests für `AppViewModel`: Verifikation der initialen `AppSettings`-Emission, reaktiver Settings-Propagation und einmaligem `syncScheduling()`-Aufruf im `init`.
 - `viewmodel/HomeViewModelSearchTest.kt`: Tests der Such- und Filterlogik im `HomeViewModel`.
 - `viewmodel/HomeViewModelTest.kt`: Tests für das reaktive State-Management und die UI-Filterung im `HomeViewModel`.
 
