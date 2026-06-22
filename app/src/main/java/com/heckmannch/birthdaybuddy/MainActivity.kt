@@ -281,8 +281,11 @@ class MainActivity : ComponentActivity() {
                 }
             }
             composable<Home> {
+                val uiState by homeViewModel.uiState.collectAsStateWithLifecycle()
                 HomeScreen(
-                    viewModel = homeViewModel,
+                    uiState = uiState,
+                    onIntent = homeViewModel::onIntent,
+                    scrollToTopEvent = homeViewModel.scrollToTopEvent,
                     windowWidthSizeClass = windowWidthSizeClass
                 ) {
                     navController.navigate(Settings)

@@ -1,6 +1,14 @@
 # Changelog: BirthdayBuddy
 > **Note:** Historische Einträge (Meilensteine 1-181) wurden nach [CHANGELOG_ARCHIVE.md](CHANGELOG_ARCHIVE.md) verschoben, um das Kontext-Fenster für LLM-Sessions zu optimieren.
 
+205. **Entkopplung von `HomeScreen` vom `HomeViewModel` (Testbarkeit / Clean Architecture):**
+    - **Problem:** `HomeScreen` nahm `viewModel: HomeViewModel` direkt als Parameter entgegen. Composable-UI-Tests waren dadurch nur mit vollständiger Hilt-DI-Infrastruktur möglich – ein unnötiger Test-Overhead.
+    - **Lösung:** Signaturen auf State + Intent-Handler umgestellt. `HomeScreen` akzeptiert jetzt ausschließlich `uiState: HomeUiState`, `onIntent: (HomeIntent) -> Unit` und `scrollToTopEvent: SharedFlow<Unit>`. Der ViewModel wird ausschließlich an der Aufrufstelle in `MainActivity.kt` (im `composable<Home>`-Block) instantiiert und sein State/Intent-Handling per Lambda weitergegeben. Damit ist `HomeScreen` vollständig ohne Hilt testbar.
+    - **`HomeScreen.kt`:** Import von `HomeViewModel` durch `HomeIntent` + `SharedFlow` ersetzt (ViewModel-Referenz nur noch für `HomeViewModel.LABEL_NO_BIRTHDAY`-Konstante in `HomeContent`). Alle `viewModel.*`-Calls auf `onIntent(HomeIntent.*)` umgestellt: `syncContacts()`, `consumeSearchFocus()`, `consumeNewlyAddedIdeaId()`, `setIsResettingFilter()`, `scrollToTopEvent`-Handling sowie alle `HomeActions`-Lambdas. `remember`-Schlüssel von `viewModel` auf `onIntent` geändert. Import `collectAsStateWithLifecycle` entfernt.
+    - **`MainActivity.kt`:** Im `composable<Home>`-Block wird nun `val uiState by homeViewModel.uiState.collectAsStateWithLifecycle()` collected und an `HomeScreen` übergeben. `onIntent = homeViewModel::onIntent`, `scrollToTopEvent = homeViewModel.scrollToTopEvent` werden als Lambdas weitergereicht. `HandleIntents`, ContentObserver und Lifecycle-Effekte behalten direkten ViewModel-Zugriff (liegen außerhalb von `HomeScreen`).
+    - **Neuer Test:** [HomeScreenTest.kt](file:///c:/Users/chris/AndroidStudioProjects/BirthdayBuddy/app/src/androidTest/java/com/heckmannch/birthdaybuddy/ui/screens/home/HomeScreenTest.kt) mit 3 Compose-Smoke-Tests (leer, Beispieldaten, `null`-State) – kein Hilt, nur `createComposeRule()`.
+    - **Build:** `compileDebugKotlin` erfolgreich, BUILD SUCCESSFUL in 10s.
+
 202. **Einführung einer Kontrasteinstellung für benutzerdefinierte Themes (Accessibility & Theming):**
     - **Problem:** Nach der Umstellung der Farbgenerierung auf den Google HCT-Algorithmus fehlte eine Möglichkeit, die Kontrastwerte (z. B. für verbesserte Barrierefreiheit) im Theming-System flexibel anzupassen.
     - **Lösung:** Hinzufügen einer `themeContrast`-Option (Standard: `0.0`, Mittel: `0.3`, Hoch: `1.0`) im Theming-System und den Einstellungen.

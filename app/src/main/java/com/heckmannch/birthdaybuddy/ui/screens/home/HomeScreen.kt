@@ -45,7 +45,6 @@ import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.core.content.ContextCompat
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.imageLoader
 import coil.request.ImageRequest
 import com.heckmannch.birthdaybuddy.R
@@ -62,8 +61,10 @@ import com.heckmannch.birthdaybuddy.ui.screens.home.components.topbar.HomeTopBar
 import com.heckmannch.birthdaybuddy.ui.theme.BirthdayBuddyTheme
 import com.heckmannch.birthdaybuddy.ui.theme.SpacingSmall
 import com.heckmannch.birthdaybuddy.ui.util.ContactActions
+import com.heckmannch.birthdaybuddy.viewmodel.HomeIntent
 import com.heckmannch.birthdaybuddy.viewmodel.HomeViewModel
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import kotlin.time.Duration.Companion.milliseconds
@@ -71,10 +72,15 @@ import kotlin.time.Duration.Companion.milliseconds
 /**
  * Der Hauptbildschirm der App.
  * Orchestriert die Suche, Filterung, Geburtstagsliste und die Fast-Scrollbar.
+ *
+ * Die Signatur akzeptiert nur noch reinen UI-State und einen Intent-Handler,
+ * damit der Composable ohne Hilt/ViewModel isoliert testbar ist.
  */
 @Composable
 fun HomeScreen(
-    viewModel: HomeViewModel,
+    uiState: HomeUiState,
+    onIntent: (HomeIntent) -> Unit,
+    scrollToTopEvent: SharedFlow<Unit>,
     windowWidthSizeClass: WindowWidthSizeClass,
     onNavigateToSettings: () -> Unit,
 ) {
@@ -82,7 +88,6 @@ fun HomeScreen(
     val focusManager = LocalFocusManager.current
     val keyboardController = LocalSoftwareKeyboardController.current
 
-    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val homeState = rememberHomeState()
     val contactActions = remember(context) { ContactActions(context) }
     val currentOnNavigateToSettings by rememberUpdatedState(onNavigateToSettings)
@@ -95,7 +100,7 @@ fun HomeScreen(
         rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted ->
             if (isGranted) {
                 Log.d("HomeScreen", "WRITE_CONTACTS permission granted silently")
-                viewModel.syncContacts()
+                onIntent(HomeIntent.SyncContacts())
             }
         }
 
@@ -109,7 +114,7 @@ fun HomeScreen(
                 ) {
                     writePermissionLauncher.launch(Manifest.permission.WRITE_CONTACTS)
                 } else {
-                    viewModel.syncContacts()
+                    onIntent(HomeIntent.SyncContacts())
                 }
             }
         }
@@ -140,14 +145,14 @@ fun HomeScreen(
             delay(500.milliseconds) // Zeit für Animationen lassen
             homeState.searchFocusRequester.requestFocus()
             keyboardController?.show()
-            viewModel.consumeSearchFocus()
+            onIntent(HomeIntent.ConsumeSearchFocus)
         }
     }
 
     LaunchedEffect(uiState.newlyAddedIdeaId) {
         if (uiState.newlyAddedIdeaId != null) {
             delay(100.milliseconds) // Zeit für UI-Fokus-Anforderung lassen
-            viewModel.consumeNewlyAddedIdeaId()
+            onIntent(HomeIntent.ConsumeNewlyAddedIdeaId)
         }
     }
 
@@ -174,8 +179,8 @@ fun HomeScreen(
     }
 
     // --- Listen-Koordination (Scroll-Events & Keyboard) ---
-    LaunchedEffect(viewModel.scrollToTopEvent) {
-        viewModel.scrollToTopEvent.collectLatest {
+    LaunchedEffect(scrollToTopEvent) {
+        scrollToTopEvent.collectLatest {
             homeState.resetScrollRequested = true
         }
     }
@@ -183,7 +188,9 @@ fun HomeScreen(
     // Führt den Scroll-Reset durch, sobald Daten geladen wurden
     LaunchedEffect(uiState.contacts, homeState.resetScrollRequested) {
         if (homeState.resetScrollRequested && (uiState.contacts != null)) {
-            homeState.performScrollReset { viewModel.setIsResettingFilter(isResetting = false) }
+            homeState.performScrollReset {
+                onIntent(HomeIntent.SetIsResettingFilter(isResetting = false))
+            }
         }
     }
 
@@ -196,12 +203,12 @@ fun HomeScreen(
     }
 
     val actions =
-        remember(viewModel, contactActions, permissionLauncher, homeState) {
+        remember(onIntent, contactActions, permissionLauncher, homeState) {
             HomeActions(
-                onSearchQueryChange = viewModel::onSearchQueryChange,
-                onLabelSelected = viewModel::onLabelSelected,
+                onSearchQueryChange = { query -> onIntent(HomeIntent.SearchQueryChanged(query)) },
+                onLabelSelected = { label -> onIntent(HomeIntent.LabelSelected(label)) },
                 onClearSearch = {
-                    viewModel.onSearchQueryChange("")
+                    onIntent(HomeIntent.SearchQueryChanged(""))
                     focusManager.clearFocus()
                     keyboardController?.hide()
                 },
@@ -213,19 +220,29 @@ fun HomeScreen(
                         hasAttemptedBefore = homeState.hasAttemptedContactPermission,
                     ) { homeState.hasAttemptedContactPermission = true }
                 },
-                onAddGiftIdea = viewModel::addGiftIdea,
-                onToggleGiftIdea = viewModel::toggleGiftIdea,
-                onUpdateGiftIdeaText = viewModel::updateGiftIdeaText,
-                onDeleteGiftIdea = viewModel::deleteGiftIdea,
-                onUpdateBirthday = viewModel::updateBirthday,
+                onAddGiftIdea = { lookupKey -> onIntent(HomeIntent.AddGiftIdea(lookupKey)) },
+                onToggleGiftIdea = { lookupKey, idea, isChecked ->
+                    onIntent(HomeIntent.ToggleGiftIdea(lookupKey, idea, isChecked))
+                },
+                onUpdateGiftIdeaText = { lookupKey, ideaId, newText ->
+                    onIntent(HomeIntent.UpdateGiftIdeaText(lookupKey, ideaId, newText))
+                },
+                onDeleteGiftIdea = { lookupKey, ideaId ->
+                    onIntent(HomeIntent.DeleteGiftIdea(lookupKey, ideaId))
+                },
+                onUpdateBirthday = { contactId, birthday ->
+                    onIntent(HomeIntent.UpdateBirthday(contactId, birthday))
+                },
                 onOpenContact = contactActions::openContact,
                 onDial = contactActions::dialNumber,
                 onSendSms = contactActions::sendSms,
                 onOpenMessengerApp = contactActions::openMessengerApp,
-                onRefresh = { viewModel.syncContacts(showLoading = true) },
-                onUnlinkCouple = viewModel::unlinkCouple,
-                onLinkAsCouple = viewModel::linkAsCouple,
-                onIgnoreCoupleSuggestion = viewModel::ignoreCoupleSuggestion,
+                onRefresh = { onIntent(HomeIntent.SyncContacts(showLoading = true)) },
+                onUnlinkCouple = { lookupKey -> onIntent(HomeIntent.UnlinkCouple(lookupKey)) },
+                onLinkAsCouple = { key1, key2 -> onIntent(HomeIntent.LinkAsCouple(key1, key2)) },
+                onIgnoreCoupleSuggestion = { key1, key2 ->
+                    onIntent(HomeIntent.IgnoreCoupleSuggestion(key1, key2))
+                },
             )
         }
 
