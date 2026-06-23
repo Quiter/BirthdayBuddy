@@ -8,6 +8,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
@@ -40,6 +41,7 @@ import androidx.core.content.ContextCompat
 import com.heckmannch.birthdaybuddy.R
 import com.heckmannch.birthdaybuddy.ui.components.AppResponsiveScaffold
 import com.heckmannch.birthdaybuddy.ui.components.InfoCard
+import com.heckmannch.birthdaybuddy.ui.theme.SpacingLarge
 import com.heckmannch.birthdaybuddy.ui.theme.SpacingNormal
 import com.heckmannch.birthdaybuddy.ui.theme.SpacingSmall
 import com.heckmannch.birthdaybuddy.viewmodel.HomeViewModel
@@ -131,13 +133,6 @@ private fun SyncSettingsContent(
             )
         ) {
             item {
-                InfoCard(
-                    title = stringResource(R.string.sync_explanation_title),
-                    description = stringResource(R.string.sync_explanation_desc)
-                )
-            }
-
-            item {
                 Card(
                     shape = MaterialTheme.shapes.extraLarge,
                     colors = CardDefaults.cardColors(
@@ -145,6 +140,7 @@ private fun SyncSettingsContent(
                     ),
                     modifier = Modifier
                         .fillMaxWidth()
+                        .padding(bottom = SpacingLarge)
                 ) {
                     ListItem(
                         headlineContent = { Text(stringResource(R.string.sync_button_title)) },
@@ -159,6 +155,13 @@ private fun SyncSettingsContent(
                         modifier = Modifier.clickable { onSyncClick() }
                     )
                 }
+            }
+
+            item {
+                InfoCard(
+                    title = stringResource(R.string.sync_explanation_title),
+                    description = stringResource(R.string.sync_explanation_desc)
+                )
             }
         }
     }

@@ -4,6 +4,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
@@ -36,6 +37,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.heckmannch.birthdaybuddy.R
 import com.heckmannch.birthdaybuddy.ui.components.AppResponsiveScaffold
 import com.heckmannch.birthdaybuddy.ui.components.InfoCard
+import com.heckmannch.birthdaybuddy.ui.theme.SpacingLarge
 import com.heckmannch.birthdaybuddy.ui.theme.SpacingNormal
 import com.heckmannch.birthdaybuddy.ui.theme.SpacingSmall
 import com.heckmannch.birthdaybuddy.viewmodel.NotificationViewModel
@@ -102,13 +104,6 @@ private fun OtherEventsSettingsContent(
             )
         ) {
             item {
-                InfoCard(
-                    title = stringResource(R.string.other_events_info_title),
-                    description = stringResource(R.string.other_events_info_desc)
-                )
-            }
-
-            item {
                 Card(
                     shape = MaterialTheme.shapes.extraLarge,
                     colors = CardDefaults.cardColors(
@@ -116,6 +111,7 @@ private fun OtherEventsSettingsContent(
                     ),
                     modifier = Modifier
                         .fillMaxWidth()
+                        .padding(bottom = SpacingLarge)
                 ) {
                     ListItem(
                         headlineContent = { Text(stringResource(R.string.other_events_enable)) },
@@ -145,6 +141,13 @@ private fun OtherEventsSettingsContent(
                         colors = ListItemDefaults.colors(containerColor = Color.Transparent)
                     )
                 }
+            }
+
+            item {
+                InfoCard(
+                    title = stringResource(R.string.other_events_info_title),
+                    description = stringResource(R.string.other_events_info_desc)
+                )
             }
         }
     }

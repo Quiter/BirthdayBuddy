@@ -72,6 +72,7 @@ import com.heckmannch.birthdaybuddy.ui.theme.AlphaEmphasisDisabled
 import com.heckmannch.birthdaybuddy.ui.theme.IconSizeLarge
 import com.heckmannch.birthdaybuddy.ui.theme.IconSizeSmall
 import com.heckmannch.birthdaybuddy.ui.theme.SpacingExtraSmall
+import com.heckmannch.birthdaybuddy.ui.theme.SpacingLarge
 import com.heckmannch.birthdaybuddy.ui.theme.SpacingMedium
 import com.heckmannch.birthdaybuddy.ui.theme.SpacingNormal
 import com.heckmannch.birthdaybuddy.ui.theme.SpacingSmall
@@ -244,11 +245,12 @@ private fun CalendarSettingsContent(
                 Card(
                     shape = MaterialTheme.shapes.extraLarge,
                     colors = CardDefaults.cardColors(
-                        containerColor = MaterialTheme.colorScheme.surfaceContainer
+                        containerColor = MaterialTheme.colorScheme.surfaceContainer,
                     ),
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(bottom = SpacingNormal)
+                        .padding(bottom = SpacingLarge)
+                        .padding(top = SpacingLarge),
                 ) {
                     ListItem(
                         headlineContent = { Text(stringResource(R.string.calendar_settings_enable)) },

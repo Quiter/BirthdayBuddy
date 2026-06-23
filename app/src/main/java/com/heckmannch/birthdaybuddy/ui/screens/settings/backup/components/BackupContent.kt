@@ -40,8 +40,8 @@ import com.heckmannch.birthdaybuddy.R
 import com.heckmannch.birthdaybuddy.ui.components.AppResponsiveScaffold
 import com.heckmannch.birthdaybuddy.ui.components.InfoCard
 import com.heckmannch.birthdaybuddy.ui.theme.BirthdayBuddyTheme
-import com.heckmannch.birthdaybuddy.ui.theme.SpacingLarge
 import com.heckmannch.birthdaybuddy.ui.theme.SpacingNormal
+import com.heckmannch.birthdaybuddy.ui.theme.SpacingSmall
 
 /**
  * Die UI-Darstellung der Backup-Seite.
@@ -138,7 +138,7 @@ fun BackupContent(
                 LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
             }
 
-            Spacer(modifier = Modifier.height(SpacingLarge))
+            Spacer(modifier = Modifier.height(SpacingSmall))
 
             InfoCard(
                 title = stringResource(R.string.backup_info_title),
