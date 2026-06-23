@@ -27,6 +27,7 @@ import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
@@ -146,6 +147,20 @@ private fun OtherEventsSettingsContent(
                 }
             }
         }
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun OtherEventsSettingsPreview() {
+    MaterialTheme {
+        OtherEventsSettingsContent(
+            windowWidthSizeClass = WindowWidthSizeClass.Compact,
+            otherEventsEnabled = true,
+            onToggleChange = {},
+            showBackButton = true,
+            onNavigateBack = {}
+        )
     }
 }
 

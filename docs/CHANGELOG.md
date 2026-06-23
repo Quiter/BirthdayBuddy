@@ -1,6 +1,17 @@
 # Changelog: BirthdayBuddy
 > **Note:** Historische Einträge (Meilensteine 1-181) wurden nach [CHANGELOG_ARCHIVE.md](CHANGELOG_ARCHIVE.md) verschoben, um das Kontext-Fenster für LLM-Sessions zu optimieren.
 
+208. **Erstellung von Compose Previews für alle Einstellungsseiten (Developer Experience & UI-Verifikation):**
+    - **Problem:** Für die Einstellungsseiten `CalendarSettingsScreen`, `OtherEventsSettingsScreen`, `SyncSettingsScreen` und `ThemeSettingsScreen` fehlten Jetpack Compose `@Preview`-Funktionen. Dadurch war es nicht möglich, das Design dieser Screens direkt im Android Studio-Editor zu betrachten und zu verifizieren. Zudem war `ThemeSettingsScreen` eng an den `ThemeViewModel` gekoppelt.
+    - **Lösung:**
+      - Hinzufügen von `@Preview`-Funktionen für `CalendarSettingsScreen`, `OtherEventsSettingsScreen` und `SyncSettingsScreen` unter Verwendung ihrer Content-Komponenten.
+      - Refactoring von `ThemeSettingsScreen.kt`: Extraktion der UI-Hierarchie in eine neue `ThemeSettingsContent`-Composable-Funktion, die unabhängig vom `ThemeViewModel` über einfache Parameter und Callbacks konfiguriert wird. Hinzufügen einer `@Preview`-Funktion für `ThemeSettingsContent`.
+    - **Details der Änderungen:**
+      - **`CalendarSettingsScreen.kt`**: Preview für `CalendarSettingsContent` hinzugefügt und `Preview`-Import ergänzt.
+      - **`OtherEventsSettingsScreen.kt`**: Preview für `OtherEventsSettingsContent` hinzugefügt und `Preview`-Import ergänzt.
+      - **`SyncSettingsScreen.kt`**: Preview für `SyncSettingsContent` hinzugefügt und `Preview`-Import ergänzt.
+      - **`ThemeSettingsScreen.kt`**: UI in `ThemeSettingsContent` ausgelagert, die ViewModel-Interaktionen per Lambdas entkoppelt und Preview für `ThemeSettingsContent` hinzugefügt sowie `Preview`-Import ergänzt.
+
 207. **Entfernung ungenutzter ViewModel-Hilfsfunktionen in `HomeViewModel` (Code-Bereinigung / Compiler-Warnungen):**
     - **Problem:** Nach der Entkopplung des `HomeScreen`s vom `HomeViewModel` (Meilenstein 205), bei der alle Interaktionen auf das einheitliche MVI/UDF-Muster (`onIntent`) umgestellt wurden, blieben elf veraltete Hilfsfunktionen im ViewModel zurück. Diese führten zu Compiler-Warnungen über ungenutzten Code.
     - **Lösung:** Entfernung aller ungenutzten Hilfsfunktionen, um den ViewModel sauber zu halten und die Build-Warnungen zu beseitigen.

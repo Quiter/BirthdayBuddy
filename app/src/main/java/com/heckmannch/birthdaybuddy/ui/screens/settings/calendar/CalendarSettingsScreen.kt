@@ -49,6 +49,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -585,6 +586,27 @@ private fun StepItem(
                 actionButton()
             }
         }
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun CalendarSettingsPreview() {
+    MaterialTheme {
+        CalendarSettingsContent(
+            windowWidthSizeClass = WindowWidthSizeClass.Compact,
+            calendarSyncEnabled = true,
+            hasPermission = true,
+            otherEventsEnabled = true,
+            birthdayColor = 0xFFE91E63.toInt(),
+            anniversaryColor = 0xFF9C27B0.toInt(),
+            nameDayColor = 0xFF2196F3.toInt(),
+            showBackButton = true,
+            onToggleChange = {},
+            onColorRowClick = { _, _ -> },
+            onRequestPermission = {},
+            onNavigateBack = {}
+        )
     }
 }
 

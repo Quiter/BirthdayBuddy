@@ -43,6 +43,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -81,6 +82,36 @@ fun ThemeSettingsScreen(
     val themeAccent = uiState.themeAccent
     val themeContrast = uiState.themeContrast
 
+    ThemeSettingsContent(
+        windowWidthSizeClass = windowWidthSizeClass,
+        themeMode = themeMode,
+        themeAmoled = themeAmoled,
+        themeAccent = themeAccent,
+        themeContrast = themeContrast,
+        showBackButton = showBackButton,
+        onThemeModeChange = { viewModel.setThemeMode(it) },
+        onThemeAmoledChange = { viewModel.setThemeAmoled(it) },
+        onThemeContrastChange = { viewModel.setThemeContrast(it) },
+        onThemeAccentChange = { viewModel.setThemeAccent(it) },
+        onNavigateBack = onNavigateBack
+    )
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun ThemeSettingsContent(
+    windowWidthSizeClass: WindowWidthSizeClass,
+    themeMode: String,
+    themeAmoled: Boolean,
+    themeAccent: String,
+    themeContrast: Double,
+    showBackButton: Boolean,
+    onThemeModeChange: (String) -> Unit,
+    onThemeAmoledChange: (Boolean) -> Unit,
+    onThemeContrastChange: (Double) -> Unit,
+    onThemeAccentChange: (String) -> Unit,
+    onNavigateBack: () -> Unit
+) {
     var showColorPickerDialog by remember { mutableStateOf(false) }
 
     val scrollBehavior =
@@ -147,11 +178,11 @@ fun ThemeSettingsScreen(
                                 trailingContent = {
                                     RadioButton(
                                         selected = themeMode == "SYSTEM",
-                                        onClick = { viewModel.setThemeMode("SYSTEM") }
+                                        onClick = { onThemeModeChange("SYSTEM") }
                                     )
                                 },
                                 colors = ListItemDefaults.colors(containerColor = Color.Transparent),
-                                modifier = Modifier.clickable { viewModel.setThemeMode("SYSTEM") }
+                                modifier = Modifier.clickable { onThemeModeChange("SYSTEM") }
                             )
                             HorizontalDivider(
                                 color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f),
@@ -162,11 +193,11 @@ fun ThemeSettingsScreen(
                                 trailingContent = {
                                     RadioButton(
                                         selected = themeMode == "LIGHT",
-                                        onClick = { viewModel.setThemeMode("LIGHT") }
+                                        onClick = { onThemeModeChange("LIGHT") }
                                     )
                                 },
                                 colors = ListItemDefaults.colors(containerColor = Color.Transparent),
-                                modifier = Modifier.clickable { viewModel.setThemeMode("LIGHT") }
+                                modifier = Modifier.clickable { onThemeModeChange("LIGHT") }
                             )
                             HorizontalDivider(
                                 color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f),
@@ -177,11 +208,11 @@ fun ThemeSettingsScreen(
                                 trailingContent = {
                                     RadioButton(
                                         selected = themeMode == "DARK",
-                                        onClick = { viewModel.setThemeMode("DARK") }
+                                        onClick = { onThemeModeChange("DARK") }
                                     )
                                 },
                                 colors = ListItemDefaults.colors(containerColor = Color.Transparent),
-                                modifier = Modifier.clickable { viewModel.setThemeMode("DARK") }
+                                modifier = Modifier.clickable { onThemeModeChange("DARK") }
                             )
                             HorizontalDivider(
                                 color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f),
@@ -203,7 +234,7 @@ fun ThemeSettingsScreen(
                                 trailingContent = {
                                     Switch(
                                         checked = themeAmoled,
-                                        onCheckedChange = { viewModel.setThemeAmoled(it) },
+                                        onCheckedChange = { onThemeAmoledChange(it) },
                                         enabled = isDarkThemeActive,
                                         thumbContent = if (themeAmoled) {
                                             {
@@ -218,7 +249,7 @@ fun ThemeSettingsScreen(
                                 },
                                 colors = ListItemDefaults.colors(containerColor = Color.Transparent),
                                 modifier = Modifier.clickable(enabled = isDarkThemeActive) {
-                                    viewModel.setThemeAmoled(!themeAmoled)
+                                    onThemeAmoledChange(!themeAmoled)
                                 }
                             )
                         }
@@ -262,11 +293,11 @@ fun ThemeSettingsScreen(
                                 trailingContent = {
                                     RadioButton(
                                         selected = themeContrast == 0.0,
-                                        onClick = { viewModel.setThemeContrast(0.0) }
+                                        onClick = { onThemeContrastChange(0.0) }
                                     )
                                 },
                                 colors = ListItemDefaults.colors(containerColor = Color.Transparent),
-                                modifier = Modifier.clickable { viewModel.setThemeContrast(0.0) }
+                                modifier = Modifier.clickable { onThemeContrastChange(0.0) }
                             )
                             HorizontalDivider(
                                 color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f),
@@ -277,11 +308,11 @@ fun ThemeSettingsScreen(
                                 trailingContent = {
                                     RadioButton(
                                         selected = themeContrast == 0.3,
-                                        onClick = { viewModel.setThemeContrast(0.3) }
+                                        onClick = { onThemeContrastChange(0.3) }
                                     )
                                 },
                                 colors = ListItemDefaults.colors(containerColor = Color.Transparent),
-                                modifier = Modifier.clickable { viewModel.setThemeContrast(0.3) }
+                                modifier = Modifier.clickable { onThemeContrastChange(0.3) }
                             )
                             HorizontalDivider(
                                 color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f),
@@ -292,11 +323,11 @@ fun ThemeSettingsScreen(
                                 trailingContent = {
                                     RadioButton(
                                         selected = themeContrast == 1.0,
-                                        onClick = { viewModel.setThemeContrast(1.0) }
+                                        onClick = { onThemeContrastChange(1.0) }
                                     )
                                 },
                                 colors = ListItemDefaults.colors(containerColor = Color.Transparent),
-                                modifier = Modifier.clickable { viewModel.setThemeContrast(1.0) }
+                                modifier = Modifier.clickable { onThemeContrastChange(1.0) }
                             )
                         }
                     }
@@ -387,7 +418,7 @@ fun ThemeSettingsScreen(
                                                 if (option.isCustom) {
                                                     showColorPickerDialog = true
                                                 } else {
-                                                    viewModel.setThemeAccent(option.id)
+                                                    onThemeAccentChange(option.id)
                                                 }
                                             },
                                             modifier = Modifier.weight(1f)
@@ -435,7 +466,7 @@ fun ThemeSettingsScreen(
                         onDismissRequest = { showColorPickerDialog = false },
                         onColorSelected = { color ->
                             val hexString = String.format("#%06X", 0xFFFFFF and color.toArgb())
-                            viewModel.setThemeAccent(hexString)
+                            onThemeAccentChange(hexString)
                             showColorPickerDialog = false
                         },
                         presets = presets
@@ -445,6 +476,27 @@ fun ThemeSettingsScreen(
         }
     }
 }
+
+@Preview(showBackground = true)
+@Composable
+private fun ThemeSettingsPreview() {
+    MaterialTheme {
+        ThemeSettingsContent(
+            windowWidthSizeClass = WindowWidthSizeClass.Compact,
+            themeMode = "SYSTEM",
+            themeAmoled = false,
+            themeAccent = "PURPLE",
+            themeContrast = 0.0,
+            showBackButton = true,
+            onThemeModeChange = {},
+            onThemeAmoledChange = {},
+            onThemeContrastChange = {},
+            onThemeAccentChange = {},
+            onNavigateBack = {}
+        )
+    }
+}
+
 
 data class AccentColorOption(
     val id: String,

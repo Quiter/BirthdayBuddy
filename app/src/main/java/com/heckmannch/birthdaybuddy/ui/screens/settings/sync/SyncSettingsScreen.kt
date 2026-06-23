@@ -30,6 +30,7 @@ import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
@@ -160,6 +161,20 @@ private fun SyncSettingsContent(
                 }
             }
         }
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun SyncSettingsPreview() {
+    MaterialTheme {
+        SyncSettingsContent(
+            windowWidthSizeClass = WindowWidthSizeClass.Compact,
+            snackbarHostState = remember { SnackbarHostState() },
+            onSyncClick = {},
+            showBackButton = true,
+            onNavigateBack = {}
+        )
     }
 }
 
