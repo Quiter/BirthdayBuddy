@@ -301,6 +301,21 @@ class MainActivity : ComponentActivity() {
                     targetContentZIndex = -1f
                 }
             },
+            // Override default predictive back gesture scale/fade animation to use the same
+            // horizontal slide transition with parallax as standard back (pop) navigation.
+            predictivePopTransitionSpec = { _ ->
+                val enter = slideInHorizontally(
+                    initialOffsetX = { -it / 4 },
+                    animationSpec = tween(400, easing = FastOutSlowInEasing)
+                ) + fadeIn(animationSpec = tween(300))
+                val exit = slideOutHorizontally(
+                    targetOffsetX = { it },
+                    animationSpec = tween(400, easing = FastOutSlowInEasing)
+                ) + fadeOut(animationSpec = tween(300))
+                (enter togetherWith exit).apply {
+                    targetContentZIndex = -1f
+                }
+            },
             entryProvider = { key ->
                 when (key) {
                     is Onboarding -> NavEntry(key) {

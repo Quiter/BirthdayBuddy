@@ -15,6 +15,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.tooling.preview.Preview
+import com.heckmannch.birthdaybuddy.ui.theme.BirthdayBuddyTheme
 import com.heckmannch.birthdaybuddy.ui.theme.SpacingNormal
 import com.heckmannch.birthdaybuddy.ui.theme.SpacingSmall
 
@@ -135,4 +137,31 @@ fun SettingsClickableRow(
         colors = ListItemDefaults.colors(containerColor = Color.Transparent),
         modifier = modifier.clickable(enabled = enabled, onClick = onClick)
     )
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun SettingsComponentsPreview() {
+    BirthdayBuddyTheme {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(SpacingNormal)
+        ) {
+            SettingsSectionHeader(title = "Benachrichtigungen")
+            SettingsCard {
+                SettingsSwitchRow(
+                    title = "Geburtstags-Erinnerungen",
+                    description = "Erhalte Benachrichtigungen an Geburtstagen",
+                    checked = true,
+                    onCheckedChange = {}
+                )
+                SettingsClickableRow(
+                    title = "Erinnerungszeit",
+                    description = "09:00 Uhr",
+                    onClick = {}
+                )
+            }
+        }
+    }
 }

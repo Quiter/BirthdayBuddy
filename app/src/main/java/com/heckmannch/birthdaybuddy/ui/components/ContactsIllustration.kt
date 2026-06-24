@@ -23,7 +23,9 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.heckmannch.birthdaybuddy.ui.theme.BirthdayBuddyTheme
 
 @Composable
 fun ContactsIllustration(
@@ -167,6 +169,21 @@ fun ContactsIllustration(
                     )
                 }
             }
+        }
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun ContactsIllustrationPreview() {
+    BirthdayBuddyTheme {
+        Box(
+            modifier = Modifier
+                .size(200.dp)
+                .padding(16.dp),
+            contentAlignment = Alignment.Center
+        ) {
+            ContactsIllustration()
         }
     }
 }

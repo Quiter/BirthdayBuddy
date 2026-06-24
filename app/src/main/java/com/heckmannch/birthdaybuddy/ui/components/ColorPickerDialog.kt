@@ -46,9 +46,11 @@ import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.core.graphics.toColorInt
 import com.heckmannch.birthdaybuddy.R
+import com.heckmannch.birthdaybuddy.ui.theme.BirthdayBuddyTheme
 import com.heckmannch.birthdaybuddy.ui.theme.ContactImageSizeSmall
 import com.heckmannch.birthdaybuddy.ui.theme.IconSizeSmall
 import com.heckmannch.birthdaybuddy.ui.theme.SpacingExtraSmall
@@ -427,5 +429,19 @@ private fun HueSlider(
                 center = Offset(cx, cy)
             )
         }
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun ColorPickerDialogPreview() {
+    BirthdayBuddyTheme {
+        ColorPickerDialog(
+            initialColor = Color.Red,
+            title = "Wähle eine Akzentfarbe",
+            onDismissRequest = {},
+            onColorSelected = {},
+            presets = listOf(Color.Red, Color.Green, Color.Blue, Color.Yellow)
+        )
     }
 }
