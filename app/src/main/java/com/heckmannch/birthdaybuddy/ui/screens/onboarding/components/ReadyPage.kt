@@ -5,6 +5,8 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -18,13 +20,13 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import com.heckmannch.birthdaybuddy.R
+import com.heckmannch.birthdaybuddy.ui.components.StepItem
 import com.heckmannch.birthdaybuddy.ui.illustrations.ReadyIllustration
 import com.heckmannch.birthdaybuddy.ui.theme.AlphaEmphasisSubtle
 import com.heckmannch.birthdaybuddy.ui.theme.BirthdayBuddyTheme
 import com.heckmannch.birthdaybuddy.ui.theme.SearchBarHeight
 import com.heckmannch.birthdaybuddy.ui.theme.SpacingLarge
 import com.heckmannch.birthdaybuddy.ui.theme.SpacingNormal
-import com.heckmannch.birthdaybuddy.ui.theme.SpacingSmall
 
 @Composable
 fun ReadyPage(
@@ -59,21 +61,46 @@ fun ReadyPage(
                         fontWeight = FontWeight.Bold,
                         color = MaterialTheme.colorScheme.primary
                     )
-                    Spacer(modifier = Modifier.height(SpacingSmall))
-                    Text(
-                        text = if (hasContactPermission) stringResource(R.string.onboarding_summary_contacts_enabled)
-                        else stringResource(R.string.onboarding_summary_contacts_disabled),
-                        style = MaterialTheme.typography.bodyMedium
+                    Spacer(modifier = Modifier.height(SpacingNormal))
+
+                    // Contacts Access
+                    StepItem(
+                        title = stringResource(R.string.onboarding_summary_contacts_title),
+                        description = stringResource(
+                            if (hasContactPermission) R.string.onboarding_summary_contacts_desc_enabled
+                            else R.string.onboarding_summary_contacts_desc_disabled
+                        ),
+                        isCompleted = hasContactPermission,
+                        isLocked = !hasContactPermission,
+                        icon = if (!hasContactPermission) Icons.Default.Close else null
                     )
-                    Text(
-                        text = if (notificationsEnabled) stringResource(R.string.onboarding_summary_notif_enabled)
-                        else stringResource(R.string.onboarding_summary_notif_disabled),
-                        style = MaterialTheme.typography.bodyMedium
+
+                    Spacer(modifier = Modifier.height(SpacingNormal))
+
+                    // Notifications
+                    StepItem(
+                        title = stringResource(R.string.onboarding_summary_notif_title),
+                        description = stringResource(
+                            if (notificationsEnabled) R.string.onboarding_summary_notif_desc_enabled
+                            else R.string.onboarding_summary_notif_desc_disabled
+                        ),
+                        isCompleted = notificationsEnabled,
+                        isLocked = !notificationsEnabled,
+                        icon = if (!notificationsEnabled) Icons.Default.Close else null
                     )
-                    Text(
-                        text = if (calendarSyncEnabled) stringResource(R.string.onboarding_summary_calendar_enabled)
-                        else stringResource(R.string.onboarding_summary_calendar_disabled),
-                        style = MaterialTheme.typography.bodyMedium
+
+                    Spacer(modifier = Modifier.height(SpacingNormal))
+
+                    // Calendar Sync
+                    StepItem(
+                        title = stringResource(R.string.onboarding_summary_calendar_title),
+                        description = stringResource(
+                            if (calendarSyncEnabled) R.string.onboarding_summary_calendar_desc_enabled
+                            else R.string.onboarding_summary_calendar_desc_disabled
+                        ),
+                        isCompleted = calendarSyncEnabled,
+                        isLocked = !calendarSyncEnabled,
+                        icon = if (!calendarSyncEnabled) Icons.Default.Close else null
                     )
                 }
             }

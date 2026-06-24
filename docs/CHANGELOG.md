@@ -233,8 +233,9 @@
     - **Lösung:** Ersetzung der rohen `ListItem`-Aufrufe durch die in `SettingsComponents.kt` bereitgestellte Komponente `SettingsClickableRow`.
     - **Details der Änderungen:**
       - **`CalendarSettingsScreen.kt`**: Import für `SettingsClickableRow` hinzugefügt und die drei Farb-Zeilen auf die zentrale Komponente umgestellt.
-
-
-
-
-
+220. **Verwendung von StepItem in der Zusammenfassung auf ReadyPage.kt (UI/UX Polish / Konsistenz):**
+    - **Problem:** Die Zusammenfassung der Einstellungen auf der onboarding-Abschlussseite (`ReadyPage.kt`) wurde als flache Textzeilen mit fest codierten Häkchen/Kreuzen (`✓`/`✗`) gerendert. Das wirkte visuell inkonsistent im Vergleich zum restlichen Onboarding und den Einstellungen, die die neue `StepItem`-Komponente nutzen.
+    - **Lösung:** Umstellung der Zusammenfassungs-Liste auf die wiederverwendbare `StepItem`-Komponente.
+    - **Details der Änderungen:**
+      - **`strings.xml` / `values-de/strings.xml`**: Hinzufügen neuer, bereinigter Strings für Titel und Aktivierungsstatus (ohne das vorangestellte `✓`/`✗`) und Löschung der veralteten XML-Ressourcen.
+      - **`ReadyPage.kt`**: Import von `StepItem` sowie `Icons.Default.Close` hinzugefügt und die drei Statuselemente (Kontakte, Benachrichtigungen, Kalender-Sync) auf das einheitliche `StepItem`-Design umgestellt. Erfolgreiche Status zeigen ein grünes Häkchen, inaktive Status zeigen ein graues Schließen-Kreuz.
