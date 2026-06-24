@@ -35,10 +35,6 @@ import androidx.compose.material3.adaptive.currentWindowAdaptiveInfoV2
 import androidx.compose.material3.adaptive.layout.calculatePaneScaffoldDirective
 import androidx.compose.material3.adaptive.navigation3.ListDetailSceneStrategy
 import androidx.compose.material3.adaptive.navigation3.rememberListDetailSceneStrategy
-import androidx.navigation3.runtime.*
-import androidx.navigation3.ui.NavDisplay
-import kotlinx.serialization.Serializable
-import androidx.compose.ui.unit.dp
 import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
 import androidx.compose.runtime.Composable
@@ -54,7 +50,11 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import androidx.navigation3.runtime.NavEntry
+import androidx.navigation3.runtime.NavKey
+import androidx.navigation3.ui.NavDisplay
 import com.heckmannch.birthdaybuddy.R
 import com.heckmannch.birthdaybuddy.ui.components.AppResponsiveScaffold
 import com.heckmannch.birthdaybuddy.ui.screens.settings.about.AboutScreen
@@ -76,6 +76,7 @@ import com.heckmannch.birthdaybuddy.viewmodel.HomeViewModel
 import com.heckmannch.birthdaybuddy.viewmodel.LabelViewModel
 import com.heckmannch.birthdaybuddy.viewmodel.NotificationViewModel
 import com.heckmannch.birthdaybuddy.viewmodel.ThemeViewModel
+import kotlinx.serialization.Serializable
 
 /**
  * Represents the available settings sections (tabs/screens) in the app.
@@ -284,15 +285,16 @@ private fun SettingsContent(
         // Left side displays the list (master), right side displays the selected screen (detail).
 
         val windowAdaptiveInfo = currentWindowAdaptiveInfoV2()
-        
+
         // Define how panes partition the screen. We disable partition spacing for a seamless look.
         val directive = remember(windowAdaptiveInfo) {
             calculatePaneScaffoldDirective(windowAdaptiveInfo)
                 .copy(horizontalPartitionSpacerSize = 0.dp)
         }
-        
+
         // Strategy used by Navigation 3 to determine pane transitions/positioning.
-        val listDetailStrategy = rememberListDetailSceneStrategy<SettingsNavKey>(directive = directive)
+        val listDetailStrategy =
+            rememberListDetailSceneStrategy<SettingsNavKey>(directive = directive)
 
         // Tracks the currently active/selected settings tab on tablets.
         var activeTab by rememberSaveable { mutableStateOf(SettingsTab.NOTIFICATIONS) }
@@ -341,11 +343,13 @@ private fun SettingsContent(
                     .padding(paddingValues),
                 entryProvider = { key ->
                     when (key) {
-                        is SettingsNavKey.SettingsMenu -> NavEntry(key, metadata = ListDetailSceneStrategy.listPane(
-                            detailPlaceholder = {
-                                Box(modifier = Modifier.fillMaxSize())
-                             }
-                        )) {
+                        is SettingsNavKey.SettingsMenu -> NavEntry(
+                            key,
+                            metadata = ListDetailSceneStrategy.listPane(
+                                detailPlaceholder = {
+                                    Box(modifier = Modifier.fillMaxSize())
+                                }
+                            )) {
                             // Left Pane: Settings Master Menu
                             Column(
                                 modifier = Modifier
@@ -394,7 +398,11 @@ private fun SettingsContent(
                                 SettingsFooter()
                             }
                         }
-                        is SettingsNavKey.SettingsDetail -> NavEntry(key, metadata = ListDetailSceneStrategy.detailPane()) {
+
+                        is SettingsNavKey.SettingsDetail -> NavEntry(
+                            key,
+                            metadata = ListDetailSceneStrategy.detailPane()
+                        ) {
                             // Right Pane: Active Settings Detail Screen
                             Box(
                                 modifier = Modifier.fillMaxSize()

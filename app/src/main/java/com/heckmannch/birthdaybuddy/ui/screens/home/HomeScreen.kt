@@ -22,10 +22,6 @@ import androidx.compose.material3.adaptive.currentWindowAdaptiveInfoV2
 import androidx.compose.material3.adaptive.layout.calculatePaneScaffoldDirective
 import androidx.compose.material3.adaptive.navigation3.ListDetailSceneStrategy
 import androidx.compose.material3.adaptive.navigation3.rememberListDetailSceneStrategy
-import androidx.navigation3.runtime.*
-import androidx.navigation3.ui.NavDisplay
-import kotlinx.serialization.Serializable
-import androidx.compose.ui.unit.dp
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.material3.pulltorefresh.PullToRefreshDefaults
 import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
@@ -46,7 +42,11 @@ import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
+import androidx.navigation3.runtime.NavEntry
+import androidx.navigation3.runtime.NavKey
+import androidx.navigation3.ui.NavDisplay
 import coil.imageLoader
 import coil.request.ImageRequest
 import com.heckmannch.birthdaybuddy.R
@@ -68,6 +68,7 @@ import com.heckmannch.birthdaybuddy.viewmodel.HomeViewModel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.serialization.Serializable
 import kotlin.time.Duration.Companion.milliseconds
 
 /**
@@ -376,13 +377,17 @@ private fun HomeContent(
                     calculatePaneScaffoldDirective(windowAdaptiveInfo)
                         .copy(horizontalPartitionSpacerSize = 0.dp)
                 }
-                val listDetailStrategy = rememberListDetailSceneStrategy<HomeNavKey>(directive = directive)
+                val listDetailStrategy =
+                    rememberListDetailSceneStrategy<HomeNavKey>(directive = directive)
 
                 val backStack = remember(selectedContactId) {
                     if (selectedContactId == null) {
                         listOf<HomeNavKey>(HomeNavKey.ContactList)
                     } else {
-                        listOf<HomeNavKey>(HomeNavKey.ContactList, HomeNavKey.ContactDetail(selectedContactId!!))
+                        listOf<HomeNavKey>(
+                            HomeNavKey.ContactList,
+                            HomeNavKey.ContactDetail(selectedContactId!!)
+                        )
                     }
                 }
 
@@ -395,13 +400,15 @@ private fun HomeContent(
                         .padding(paddingValues),
                     entryProvider = { key ->
                         when (key) {
-                            is HomeNavKey.ContactList -> NavEntry(key, metadata = ListDetailSceneStrategy.listPane(
-                                detailPlaceholder = {
-                                    BirthdayQuotePlaceholder(
-                                        modifier = Modifier.fillMaxSize()
-                                    )
-                                }
-                            )) {
+                            is HomeNavKey.ContactList -> NavEntry(
+                                key,
+                                metadata = ListDetailSceneStrategy.listPane(
+                                    detailPlaceholder = {
+                                        BirthdayQuotePlaceholder(
+                                            modifier = Modifier.fillMaxSize()
+                                        )
+                                    }
+                                )) {
                                 Box(modifier = Modifier.fillMaxSize()) {
                                     BirthdayList(
                                         contacts = contacts,
@@ -432,7 +439,11 @@ private fun HomeContent(
                                     )
                                 }
                             }
-                            is HomeNavKey.ContactDetail -> NavEntry(key, metadata = ListDetailSceneStrategy.detailPane()) {
+
+                            is HomeNavKey.ContactDetail -> NavEntry(
+                                key,
+                                metadata = ListDetailSceneStrategy.detailPane()
+                            ) {
                                 val contact = remember(contacts, key.contactId) {
                                     contacts.find { it.id == key.contactId }
                                 }

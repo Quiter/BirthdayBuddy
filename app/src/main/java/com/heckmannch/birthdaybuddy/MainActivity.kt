@@ -150,7 +150,8 @@ class MainActivity : ComponentActivity() {
                         LocalWindowWidthSizeClass provides windowSizeClass.widthSizeClass,
                         LocalWindowHeightSizeClass provides windowSizeClass.heightSizeClass
                     ) {
-                        val backStack = rememberNavBackStack(if (onboardingCompleted == true) Home else Onboarding)
+                        val backStack =
+                            rememberNavBackStack(if (onboardingCompleted == true) Home else Onboarding)
                         val currentIntent by activityIntent
 
                         // Inaktivitäts-Check: Filter nach 5 Minuten bei Wiederaufnahme (ON_RESUME) zurücksetzen
@@ -180,7 +181,10 @@ class MainActivity : ComponentActivity() {
                                 override fun onChange(selfChange: Boolean) {
                                     super.onChange(selfChange)
                                     mainHandler.removeCallbacks(syncRunnable)
-                                    mainHandler.postDelayed(syncRunnable, 1000) // 1 Sekunde Debounce
+                                    mainHandler.postDelayed(
+                                        syncRunnable,
+                                        1000
+                                    ) // 1 Sekunde Debounce
                                 }
                             }
                             try {
@@ -327,6 +331,7 @@ class MainActivity : ComponentActivity() {
                             backStack.add(Home)
                         }
                     }
+
                     is Home -> NavEntry(key) {
                         val uiState by homeViewModel.uiState.collectAsStateWithLifecycle()
                         HomeScreen(
@@ -339,6 +344,7 @@ class MainActivity : ComponentActivity() {
                             }
                         )
                     }
+
                     is Settings -> NavEntry(key) {
                         SettingsScreen(
                             windowWidthSizeClass = windowWidthSizeClass,
@@ -355,6 +361,7 @@ class MainActivity : ComponentActivity() {
                             if (backStack.size > 1) backStack.removeAt(backStack.lastIndex)
                         }
                     }
+
                     is LabelSettings -> NavEntry(key) {
                         val labelViewModel: LabelViewModel = hiltViewModel()
                         LabelSettingsScreen(
@@ -364,6 +371,7 @@ class MainActivity : ComponentActivity() {
                             if (backStack.size > 1) backStack.removeAt(backStack.lastIndex)
                         }
                     }
+
                     is NotificationSettings -> NavEntry(key) {
                         val notificationViewModel: NotificationViewModel = hiltViewModel()
                         NotificationSettingsScreen(
@@ -373,6 +381,7 @@ class MainActivity : ComponentActivity() {
                             if (backStack.size > 1) backStack.removeAt(backStack.lastIndex)
                         }
                     }
+
                     is OtherEventsSettings -> NavEntry(key) {
                         val notificationViewModel: NotificationViewModel = hiltViewModel()
                         OtherEventsSettingsScreen(
@@ -382,6 +391,7 @@ class MainActivity : ComponentActivity() {
                             if (backStack.size > 1) backStack.removeAt(backStack.lastIndex)
                         }
                     }
+
                     is CalendarSettings -> NavEntry(key) {
                         val calendarViewModel: CalendarViewModel = hiltViewModel()
                         CalendarSettingsScreen(
@@ -391,6 +401,7 @@ class MainActivity : ComponentActivity() {
                             if (backStack.size > 1) backStack.removeAt(backStack.lastIndex)
                         }
                     }
+
                     is BackupSettings -> NavEntry(key) {
                         val backupViewModel: BackupViewModel = hiltViewModel()
                         BackupScreen(
@@ -400,6 +411,7 @@ class MainActivity : ComponentActivity() {
                             if (backStack.size > 1) backStack.removeAt(backStack.lastIndex)
                         }
                     }
+
                     is ThemeSettings -> NavEntry(key) {
                         val themeViewModel: ThemeViewModel = hiltViewModel()
                         ThemeSettingsScreen(
@@ -409,6 +421,7 @@ class MainActivity : ComponentActivity() {
                             if (backStack.size > 1) backStack.removeAt(backStack.lastIndex)
                         }
                     }
+
                     is SyncSettings -> NavEntry(key) {
                         SyncSettingsScreen(
                             windowWidthSizeClass = windowWidthSizeClass,
@@ -417,6 +430,7 @@ class MainActivity : ComponentActivity() {
                             if (backStack.size > 1) backStack.removeAt(backStack.lastIndex)
                         }
                     }
+
                     is About -> NavEntry(key) {
                         AboutScreen(
                             windowWidthSizeClass = windowWidthSizeClass,
@@ -428,11 +442,13 @@ class MainActivity : ComponentActivity() {
                             },
                         )
                     }
+
                     is PrivacyPolicy -> NavEntry(key) {
                         PrivacyPolicyScreen(windowWidthSizeClass = windowWidthSizeClass) {
                             if (backStack.size > 1) backStack.removeAt(backStack.lastIndex)
                         }
                     }
+
                     else -> throw IllegalArgumentException("Unknown key: $key")
                 }
             }

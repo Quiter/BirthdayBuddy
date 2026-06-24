@@ -223,10 +223,10 @@ class HomeViewModelTest {
 
         // Wait for UI State to propagate contacts
         val state = viewModel.uiState.first { it.contacts != null }
-        
+
         // 1. Available labels should be empty because label management is disabled
         assertThat(state.availableLabels).isEmpty()
-        
+
         // 2. Mapped contacts should not contain the ignored label in UI, and should not be filtered out (even if marked ignored)
         assertThat(state.contacts).hasSize(1)
         assertThat(state.contacts?.first()?.labels).isEmpty()
@@ -273,7 +273,7 @@ class HomeViewModelTest {
 
         // Wait for UI State to propagate contacts
         val state = viewModel.uiState.first { it.contacts != null && it.contacts.size == 3 }
-        
+
         // Main list should contain 3 events, sorted by daysUntilNext
         val uiContacts = state.contacts!!
         assertThat(uiContacts).hasSize(3)
@@ -323,7 +323,7 @@ class HomeViewModelTest {
 
         // Wait for UI State to propagate contacts
         val state = viewModel.uiState.first { it.contacts != null && it.contacts.size == 1 }
-        
+
         // Main list should contain only 1 event
         val contacts = state.contacts!!
         assertThat(contacts).hasSize(1)

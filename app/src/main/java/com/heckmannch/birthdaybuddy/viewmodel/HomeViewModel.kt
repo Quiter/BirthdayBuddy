@@ -127,7 +127,10 @@ class HomeViewModel @Inject constructor(
                         contact.fullName.contains(keyword, ignoreCase = true)
                     }
                 }
-                .map { mapper.toUiModelForEvent(it, today, EventType.BIRTHDAY).copy(labels = emptyList()) }
+                .map {
+                    mapper.toUiModelForEvent(it, today, EventType.BIRTHDAY)
+                        .copy(labels = emptyList())
+                }
                 .toList()
 
             // 2. Namenstage (nur wenn weitere Ereignisse aktiviert sind)
@@ -139,7 +142,10 @@ class HomeViewModel @Inject constructor(
                             contact.fullName.contains(keyword, ignoreCase = true)
                         }
                     }
-                    .map { mapper.toUiModelForEvent(it, today, EventType.NAME_DAY).copy(labels = emptyList()) }
+                    .map {
+                        mapper.toUiModelForEvent(it, today, EventType.NAME_DAY)
+                            .copy(labels = emptyList())
+                    }
                     .toList()
             } else emptyList()
 
@@ -156,7 +162,8 @@ class HomeViewModel @Inject constructor(
                     // Suchfilter anwenden
                     if (isSearching && !keywords.all { keyword ->
                             contact.fullName.contains(keyword, ignoreCase = true) ||
-                            (contact.spouseLookupKey?.let { contactMap[it]?.fullName }?.contains(keyword, ignoreCase = true) ?: false)
+                                    (contact.spouseLookupKey?.let { contactMap[it]?.fullName }
+                                        ?.contains(keyword, ignoreCase = true) ?: false)
                         }
                     ) {
                         continue
@@ -169,8 +176,10 @@ class HomeViewModel @Inject constructor(
                         processedKeys.add(contact.lookupKey)
                         processedKeys.add(spouse.lookupKey)
 
-                        val uiModelA = mapper.toUiModelForEvent(contact, today, EventType.ANNIVERSARY)
-                        val uiModelB = mapper.toUiModelForEvent(spouse, today, EventType.ANNIVERSARY)
+                        val uiModelA =
+                            mapper.toUiModelForEvent(contact, today, EventType.ANNIVERSARY)
+                        val uiModelB =
+                            mapper.toUiModelForEvent(spouse, today, EventType.ANNIVERSARY)
 
                         val mergedUiModel = ContactUiModel(
                             id = "${contact.lookupKey}_${spouse.lookupKey}",
@@ -220,7 +229,10 @@ class HomeViewModel @Inject constructor(
                             contact.fullName.contains(keyword, ignoreCase = true)
                         }
                     }
-                    .map { mapper.toUiModelForEvent(it, today, EventType.BIRTHDAY).copy(labels = emptyList()) }
+                    .map {
+                        mapper.toUiModelForEvent(it, today, EventType.BIRTHDAY)
+                            .copy(labels = emptyList())
+                    }
                     .toList()
             } else emptyList()
 
@@ -239,13 +251,17 @@ class HomeViewModel @Inject constructor(
                         }) {
                         return@filter false
                     }
-                    if (label != null && label != LABEL_NO_BIRTHDAY && label != LABEL_NAME_DAY && !contact.labels.contains(label)) {
+                    if (label != null && label != LABEL_NO_BIRTHDAY && label != LABEL_NAME_DAY && !contact.labels.contains(
+                            label
+                        )
+                    ) {
                         return@filter false
                     }
                     if (!isSearching && contact.labels.any { it in ignoredLabels }) {
                         return@filter false
                     }
-                    val hasEvent = if (displayEventType == EventType.NAME_DAY) contact.nameDay != null else contact.birthday != null
+                    val hasEvent =
+                        if (displayEventType == EventType.NAME_DAY) contact.nameDay != null else contact.birthday != null
                     if (!hasEvent) {
                         if (displayEventType != EventType.BIRTHDAY) return@filter false
                         if (!isSearching && label != LABEL_NO_BIRTHDAY) return@filter false
@@ -273,8 +289,10 @@ class HomeViewModel @Inject constructor(
                         processedKeys.add(contact.lookupKey)
                         processedKeys.add(spouse.lookupKey)
 
-                        val uiModelA = mapper.toUiModelForEvent(contact, today, EventType.ANNIVERSARY)
-                        val uiModelB = mapper.toUiModelForEvent(spouse, today, EventType.ANNIVERSARY)
+                        val uiModelA =
+                            mapper.toUiModelForEvent(contact, today, EventType.ANNIVERSARY)
+                        val uiModelB =
+                            mapper.toUiModelForEvent(spouse, today, EventType.ANNIVERSARY)
 
                         val mergedUiModel = ContactUiModel(
                             id = "${contact.lookupKey}_${spouse.lookupKey}",
@@ -302,7 +320,13 @@ class HomeViewModel @Inject constructor(
                         mergedList.add(mergedUiModel)
                     } else {
                         processedKeys.add(contact.lookupKey)
-                        mergedList.add(mapper.toUiModelForEvent(contact, today, EventType.ANNIVERSARY))
+                        mergedList.add(
+                            mapper.toUiModelForEvent(
+                                contact,
+                                today,
+                                EventType.ANNIVERSARY
+                            )
+                        )
                     }
                 }
                 mergedList
@@ -310,7 +334,15 @@ class HomeViewModel @Inject constructor(
                 preFilteredRaw.map { mapper.toUiModelForEvent(it, today, displayEventType) }
             }
 
-            uiListTemp.filter { shouldShowContact(it, keywords, label, ignoredLabels, displayEventType) }
+            uiListTemp.filter {
+                shouldShowContact(
+                    it,
+                    keywords,
+                    label,
+                    ignoredLabels,
+                    displayEventType
+                )
+            }
         }
 
         val result = uiList.sortedWith(

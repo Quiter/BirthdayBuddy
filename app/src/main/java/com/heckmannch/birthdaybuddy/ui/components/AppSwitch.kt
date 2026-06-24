@@ -46,7 +46,9 @@ fun AppSwitch(
                 Icon(
                     imageVector = Icons.Default.Check,
                     contentDescription = null,
-                    tint = if (enabled) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f),
+                    tint = if (enabled) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface.copy(
+                        alpha = 0.38f
+                    ),
                     modifier = Modifier.size(SwitchDefaults.IconSize)
                 )
             }
