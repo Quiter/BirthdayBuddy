@@ -3,7 +3,6 @@ package com.heckmannch.birthdaybuddy.ui.screens.home
 import android.Manifest
 import android.content.pm.PackageManager
 import android.util.Log
-import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.AnimatedVisibility
@@ -19,10 +18,14 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.adaptive.ExperimentalMaterial3AdaptiveApi
-import androidx.compose.material3.adaptive.layout.AnimatedPane
-import androidx.compose.material3.adaptive.layout.ListDetailPaneScaffold
-import androidx.compose.material3.adaptive.layout.ListDetailPaneScaffoldRole
-import androidx.compose.material3.adaptive.navigation.rememberListDetailPaneScaffoldNavigator
+import androidx.compose.material3.adaptive.currentWindowAdaptiveInfoV2
+import androidx.compose.material3.adaptive.layout.calculatePaneScaffoldDirective
+import androidx.compose.material3.adaptive.navigation3.ListDetailSceneStrategy
+import androidx.compose.material3.adaptive.navigation3.rememberListDetailSceneStrategy
+import androidx.navigation3.runtime.*
+import androidx.navigation3.ui.NavDisplay
+import kotlinx.serialization.Serializable
+import androidx.compose.ui.unit.dp
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.material3.pulltorefresh.PullToRefreshDefaults
 import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
@@ -33,7 +36,6 @@ import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
@@ -66,7 +68,6 @@ import com.heckmannch.birthdaybuddy.viewmodel.HomeViewModel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.collectLatest
-import kotlinx.coroutines.launch
 import kotlin.time.Duration.Companion.milliseconds
 
 /**
@@ -361,12 +362,7 @@ private fun HomeContent(
                     )
                 }
             } else {
-                // Tablet/Desktop Layout: ListDetailPaneScaffold aus Material 3 Adaptive
                 var selectedContactId by rememberSaveable { mutableStateOf<String?>(null) }
-
-                val selectedContact = remember(contacts, selectedContactId) {
-                    contacts.find { it.id == selectedContactId }
-                }
 
                 // Deselektieren, wenn der ausgewählte Kontakt nicht mehr in der Liste ist
                 LaunchedEffect(contacts, selectedContactId) {
@@ -375,78 +371,82 @@ private fun HomeContent(
                     }
                 }
 
-                val coroutineScope = rememberCoroutineScope()
-                val navigator = rememberListDetailPaneScaffoldNavigator<Nothing>()
+                val windowAdaptiveInfo = currentWindowAdaptiveInfoV2()
+                val directive = remember(windowAdaptiveInfo) {
+                    calculatePaneScaffoldDirective(windowAdaptiveInfo)
+                        .copy(horizontalPartitionSpacerSize = 0.dp)
+                }
+                val listDetailStrategy = rememberListDetailSceneStrategy<HomeNavKey>(directive = directive)
 
-                BackHandler(navigator.canNavigateBack()) {
-                    coroutineScope.launch {
-                        navigator.navigateBack()
+                val backStack = remember(selectedContactId) {
+                    if (selectedContactId == null) {
+                        listOf<HomeNavKey>(HomeNavKey.ContactList)
+                    } else {
+                        listOf<HomeNavKey>(HomeNavKey.ContactList, HomeNavKey.ContactDetail(selectedContactId!!))
                     }
                 }
 
-                ListDetailPaneScaffold(
+                NavDisplay(
+                    backStack = backStack,
+                    onBack = { selectedContactId = null },
+                    sceneStrategies = listOf(listDetailStrategy),
                     modifier = Modifier
                         .fillMaxSize()
                         .padding(paddingValues),
-                    directive = navigator.scaffoldDirective,
-                    value = navigator.scaffoldValue,
-                    listPane = {
-                        AnimatedPane {
-                            Box(modifier = Modifier.fillMaxSize()) {
-                                BirthdayList(
-                                    contacts = contacts,
-                                    newlyAddedIdeaId = null, // Idee wird im rechten Paneel hinzugefügt
-                                    listState = homeState.listState,
-                                    selectedLabel = uiState.selectedLabel,
-                                    searchQuery = uiState.searchQuery,
-                                    actions = actions,
-                                    coupleSuggestion = uiState.coupleSuggestion,
-                                    selectedContactId = selectedContactId,
-                                    onContactSelected = { contact ->
-                                        selectedContactId = contact.id
-                                        coroutineScope.launch {
-                                            navigator.navigateTo(ListDetailPaneScaffoldRole.Detail)
+                    entryProvider = { key ->
+                        when (key) {
+                            is HomeNavKey.ContactList -> NavEntry(key, metadata = ListDetailSceneStrategy.listPane(
+                                detailPlaceholder = {
+                                    BirthdayQuotePlaceholder(
+                                        modifier = Modifier.fillMaxSize()
+                                    )
+                                }
+                            )) {
+                                Box(modifier = Modifier.fillMaxSize()) {
+                                    BirthdayList(
+                                        contacts = contacts,
+                                        newlyAddedIdeaId = null, // Idee wird im rechten Paneel hinzugefügt
+                                        listState = homeState.listState,
+                                        selectedLabel = uiState.selectedLabel,
+                                        searchQuery = uiState.searchQuery,
+                                        actions = actions,
+                                        coupleSuggestion = uiState.coupleSuggestion,
+                                        selectedContactId = selectedContactId,
+                                        onContactSelected = { contact ->
+                                            selectedContactId = contact.id
+                                        },
+                                        onInteraction = {
+                                            focusManager.clearFocus()
+                                            keyboardController?.hide()
                                         }
-                                    },
-                                    onInteraction = {
-                                        focusManager.clearFocus()
-                                        keyboardController?.hide()
-                                    }
-                                )
+                                    )
 
-                                FastScrollbar(
-                                    listState = homeState.listState,
-                                    contacts = contacts,
-                                    getLabel = getScrollLabel,
-                                    modifier = Modifier
-                                        .align(Alignment.CenterEnd)
-                                        .fillMaxHeight(),
-                                    onSetFastScrolling = { homeState.onSetFastScrolling(it) },
-                                )
+                                    FastScrollbar(
+                                        listState = homeState.listState,
+                                        contacts = contacts,
+                                        getLabel = getScrollLabel,
+                                        modifier = Modifier
+                                            .align(Alignment.CenterEnd)
+                                            .fillMaxHeight(),
+                                        onSetFastScrolling = { homeState.onSetFastScrolling(it) },
+                                    )
+                                }
                             }
-                        }
-                    },
-                    detailPane = {
-                        AnimatedPane {
-                            if (selectedContact != null) {
-                                BirthdayDetailPane(
-                                    contact = selectedContact,
-                                    newlyAddedIdeaId = uiState.newlyAddedIdeaId,
-                                    actions = actions,
-                                    onClose = {
-                                        selectedContactId = null
-                                        if (navigator.canNavigateBack()) {
-                                            coroutineScope.launch {
-                                                navigator.navigateBack()
-                                            }
-                                        }
-                                    },
-                                    modifier = Modifier.fillMaxSize()
-                                )
-                            } else {
-                                BirthdayQuotePlaceholder(
-                                    modifier = Modifier.fillMaxSize()
-                                )
+                            is HomeNavKey.ContactDetail -> NavEntry(key, metadata = ListDetailSceneStrategy.detailPane()) {
+                                val contact = remember(contacts, key.contactId) {
+                                    contacts.find { it.id == key.contactId }
+                                }
+                                if (contact != null) {
+                                    BirthdayDetailPane(
+                                        contact = contact,
+                                        newlyAddedIdeaId = uiState.newlyAddedIdeaId,
+                                        actions = actions,
+                                        onClose = {
+                                            selectedContactId = null
+                                        },
+                                        modifier = Modifier.fillMaxSize()
+                                    )
+                                }
                             }
                         }
                     }
@@ -487,4 +487,13 @@ fun HomePreview() {
             windowWidthSizeClass = WindowWidthSizeClass.Compact
         )
     }
+}
+
+@Serializable
+private sealed interface HomeNavKey : NavKey {
+    @Serializable
+    data object ContactList : HomeNavKey
+
+    @Serializable
+    data class ContactDetail(val contactId: String) : HomeNavKey
 }

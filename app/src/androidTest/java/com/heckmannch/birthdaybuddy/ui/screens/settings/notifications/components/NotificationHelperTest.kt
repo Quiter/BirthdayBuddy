@@ -21,6 +21,7 @@ import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.whenever
 import java.time.LocalDate
+import kotlin.time.Duration.Companion.milliseconds
 
 @RunWith(AndroidJUnit4::class)
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -80,7 +81,7 @@ class NotificationHelperTest {
             birthdayNotification = activeNotifications.find { it.id == 456 }
             if (birthdayNotification != null) break
             android.util.Log.d("NotificationHelperTest", "Polling active notifications, attempt $i")
-            kotlinx.coroutines.delay(100)
+            kotlinx.coroutines.delay(100.milliseconds)
         }
 
         assertThat(birthdayNotification).isNotNull()

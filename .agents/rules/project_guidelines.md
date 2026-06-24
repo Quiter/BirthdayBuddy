@@ -43,9 +43,9 @@ For detailed human-readable descriptions, consult [PROJECT_STRUCTURE.md](file://
 ## 2. Specialized Skills & Technical Standards
 
 ### 2.1 Material 3 Adaptive Layouts
-- Use the official Jetpack Compose `ListDetailPaneScaffold` for Master-Detail views (e.g., `HomeScreen`, `SettingsScreen`).
-- Query and adapt to both `WindowWidthSizeClass` and `WindowHeightSizeClass` via `LocalWindowWidthSizeClass.current` and `LocalWindowHeightSizeClass.current`.
-- On wider screens, render lists or options as multi-column grids via `LazyVerticalGrid`.
+- Use Jetpack Navigation 3's `ListDetailSceneStrategy` / `NavDisplay` for Master-Detail screens (e.g., `HomeScreen`, `SettingsScreen`).
+- Query and adapt to window metrics using `currentWindowAdaptiveInfoV2()` to obtain a `WindowSizeClass`, and compute layout directives using `calculatePaneScaffoldDirective(windowAdaptiveInfo)`.
+- On wider screens, adapt multi-column layouts and side-by-side panes using adaptive pane configurations.
 
 ### 2.2 AGP 9 & Kotlin Gradle DSL
 - Use explicit KTS Gradle DSL configuration (`configure<ApplicationExtension>`) instead of implicit `android { ... }` blocks.
@@ -53,9 +53,11 @@ For detailed human-readable descriptions, consult [PROJECT_STRUCTURE.md](file://
 - Enforce Java 17 as standard (`jvmToolchain(17)`, `sourceCompatibility` / `targetCompatibility`).
 - Enforce strict compiler flags in `gradle.properties`: `android.nonTransitiveRClass=true` and `android.nonFinalResIds=true`.
 
-### 2.3 Type-Safe Navigation
-- Navigation routes MUST be `@Serializable` Kotlin objects or data classes defined in `MainActivity.kt`.
-- Use the type-safe Jetpack Navigation APIs: `navController.navigate(RouteObject)` and `composable<RouteClass>`. String-based route paths are strictly forbidden.
+### 2.3 Type-Safe Navigation (Navigation 3)
+- Both global and local navigation are managed via Jetpack Navigation 3 (`NavDisplay`).
+- **Destinations / Keys**: All routes/keys MUST be `@Serializable` Kotlin objects or data classes. Global routes are defined in `MainActivity.kt`, and local routes/keys (e.g. `HomeNavKey`, `SettingsNavKey`) are defined in their respective screen files.
+- **Back Stack**: The backstack is managed as an observable state list of keys (e.g. `rememberNavBackStack` or a custom backstack state). Programmatic navigation is achieved by mutating this backstack list (e.g., adding keys or popping keys).
+- **ViewModel Scoping**: ViewModels MUST be scoped to their respective `NavEntry` by passing `rememberViewModelStoreNavEntryDecorator()` inside the `entryDecorators` of `NavDisplay`. Use `hiltViewModel()` within the `entryProvider` to obtain these scoped ViewModels.
 
 ### 2.4 Edge-to-Edge Support
 - Support full Edge-to-Edge rendering on Android 15+.

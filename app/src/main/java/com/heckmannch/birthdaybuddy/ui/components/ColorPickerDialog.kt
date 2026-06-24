@@ -143,7 +143,7 @@ fun ColorPickerDialog(
                                     val hexString =
                                         String.format("%06X", 0xFFFFFF and color.toArgb())
                                     val isPresetSelected =
-                                        hexInput.uppercase() == hexString.uppercase()
+                                        hexInput.equals(hexString, ignoreCase = true)
 
                                     Box(
                                         contentAlignment = Alignment.Center,
