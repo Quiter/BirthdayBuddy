@@ -1,6 +1,19 @@
 # Changelog: BirthdayBuddy
 > **Note:** Historische Einträge (Meilensteine 1-181) wurden nach [CHANGELOG_ARCHIVE.md](CHANGELOG_ARCHIVE.md) verschoben, um das Kontext-Fenster für LLM-Sessions zu optimieren.
 
+214. **Zentralisierung der Einstellungs-UI-Elemente in `SettingsComponents.kt` (UI/UX Polish / Code-Bereinigung):**
+    - **Problem:** Auf den verschiedenen Einstellungsseiten wurden UI-Elemente wie Sektions-Header, abgerundete Karten und Einstellungszeilen (mit Schaltern oder Klickeffekten) manuell und redundant mit viel Boilerplate-Code implementiert. Dies erschwerte zukünftige Designänderungen und führte zu potenziellen Fehlern (z.B. bei der Verschachtelung von Eckenradien).
+    - **Lösung:** Einführung einer zentralen Komponente `SettingsComponents.kt` in `ui/components/`. Diese stellt wiederverwendbare, konsistente Material 3 UI-Elemente bereit (`SettingsSectionHeader`, `SettingsCard`, `SettingsSwitchRow` und `SettingsClickableRow`). Alle Einstellungsbildschirme wurden so refaktoriert, dass sie diese neuen Komponenten nutzen, wodurch die Code-Duplizierung eliminiert und ein absolut einheitliches Erscheinungsbild der Einstellungen gewährleistet wird.
+    - **Details der Änderungen:**
+      - **`SettingsComponents.kt` [NEU]**: Erstellung der wiederverwendbaren UI-Elemente für die Einstellungen.
+      - **`PROJECT_STRUCTURE.md`**: Dokumentation der neuen Datei.
+      - **`ThemeSettingsScreen.kt`**: Refaktoriert auf die neuen Komponenten; manuelle Listen-Items für Theme-Auswahl und Kontrast sowie AMOLED-Schalter durch `SettingsClickableRow` und `SettingsSwitchRow` ersetzt.
+      - **`NotificationSettingsScreen.kt`**: Refaktoriert auf die neuen Komponenten.
+      - **`CalendarSettingsScreen.kt`**: Refaktoriert auf die neuen Komponenten.
+      - **`OtherEventsSettingsScreen.kt`**: Refaktoriert auf die neuen Komponenten.
+      - **`SyncSettingsScreen.kt`**: Refaktoriert auf die neuen Komponenten.
+      - **`BackupContent.kt`**: Refaktoriert auf die neuen Komponenten.
+
 213. **Master-Schalter für das Label-Management (Feature):**
     - **Problem:** Wenn ein Nutzer zwar eigene Labels in seinen System-Kontakten definiert hatte, die Label-Filterung und -Verwaltung in BirthdayBuddy jedoch nicht nutzen wollte, gab es keine Möglichkeit, diese Funktion abzuschalten. Sie belegte Platz auf dem Startbildschirm und filterte ungewollt Kontakte aus. Zudem sollten Hochzeitstage und Namenstage bei deaktiviertem Label-Management mit in die Gesamtliste aufgenommen werden.
     - **Lösung:** Einführung eines Master-Schalters ("Label-Management aktivieren") oben im Label-Verwaltungs-Bildschirm. Wenn dieser deaktiviert ist, wird die Filterleiste auf dem Startbildschirm ausgeblendet, Kontakte werden nicht mehr anhand ihrer Labels gefiltert oder im Widget ignoriert, und die Konfigurationskarten im Einstellungsbildschirm werden ausgegraut und gesperrt. Außerdem werden Hochzeitstage und Namenstage (sofern "Weitere Ereignisse" aktiv ist) in der Gesamtliste einsortiert, da die separaten Label-Filtertabs ausgeblendet sind.

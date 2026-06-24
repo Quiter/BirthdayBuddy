@@ -21,15 +21,11 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Palette
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LargeTopAppBar
-import androidx.compose.material3.ListItem
-import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Text
@@ -57,8 +53,11 @@ import androidx.core.graphics.toColorInt
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.heckmannch.birthdaybuddy.R
 import com.heckmannch.birthdaybuddy.ui.components.AppResponsiveScaffold
-import com.heckmannch.birthdaybuddy.ui.components.AppSwitch
 import com.heckmannch.birthdaybuddy.ui.components.ColorPickerDialog
+import com.heckmannch.birthdaybuddy.ui.components.SettingsCard
+import com.heckmannch.birthdaybuddy.ui.components.SettingsClickableRow
+import com.heckmannch.birthdaybuddy.ui.components.SettingsSectionHeader
+import com.heckmannch.birthdaybuddy.ui.components.SettingsSwitchRow
 import com.heckmannch.birthdaybuddy.ui.theme.IconSizeExtraLarge
 import com.heckmannch.birthdaybuddy.ui.theme.IconSizeNormal
 import com.heckmannch.birthdaybuddy.ui.theme.IconSizeSmall
@@ -147,102 +146,66 @@ private fun ThemeSettingsContent(
                         .fillMaxWidth()
                         .padding(bottom = SpacingNormal)
                 ) {
-                    Text(
-                        text = stringResource(R.string.settings_theme_mode_header),
-                        style = MaterialTheme.typography.labelLarge,
-                        color = MaterialTheme.colorScheme.primary,
-                        modifier = Modifier.padding(
-                            start = SpacingNormal,
-                            end = SpacingNormal,
-                            bottom = SpacingSmall
-                        )
-                    )
-                    Card(
-                        shape = MaterialTheme.shapes.extraLarge,
-                        colors = CardDefaults.cardColors(
-                            containerColor = MaterialTheme.colorScheme.surfaceContainer
-                        ),
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = SpacingNormal)
+                    SettingsSectionHeader(title = stringResource(R.string.settings_theme_mode_header))
+                    SettingsCard(
+                        modifier = Modifier.padding(horizontal = SpacingNormal)
                     ) {
-                        Column(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .clip(MaterialTheme.shapes.extraLarge)
-                        ) {
-                            ListItem(
-                                headlineContent = { Text(stringResource(R.string.settings_theme_mode_system)) },
-                                supportingContent = { Text(stringResource(R.string.settings_theme_mode_system_desc)) },
-                                trailingContent = {
-                                    RadioButton(
-                                        selected = themeMode == "SYSTEM",
-                                        onClick = { onThemeModeChange("SYSTEM") }
-                                    )
-                                },
-                                colors = ListItemDefaults.colors(containerColor = Color.Transparent),
-                                modifier = Modifier.clickable { onThemeModeChange("SYSTEM") }
-                            )
-                            HorizontalDivider(
-                                color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f),
-                                modifier = Modifier.padding(horizontal = SpacingNormal)
-                            )
-                            ListItem(
-                                headlineContent = { Text(stringResource(R.string.settings_theme_mode_light)) },
-                                trailingContent = {
-                                    RadioButton(
-                                        selected = themeMode == "LIGHT",
-                                        onClick = { onThemeModeChange("LIGHT") }
-                                    )
-                                },
-                                colors = ListItemDefaults.colors(containerColor = Color.Transparent),
-                                modifier = Modifier.clickable { onThemeModeChange("LIGHT") }
-                            )
-                            HorizontalDivider(
-                                color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f),
-                                modifier = Modifier.padding(horizontal = SpacingNormal)
-                            )
-                            ListItem(
-                                headlineContent = { Text(stringResource(R.string.settings_theme_mode_dark)) },
-                                trailingContent = {
-                                    RadioButton(
-                                        selected = themeMode == "DARK",
-                                        onClick = { onThemeModeChange("DARK") }
-                                    )
-                                },
-                                colors = ListItemDefaults.colors(containerColor = Color.Transparent),
-                                modifier = Modifier.clickable { onThemeModeChange("DARK") }
-                            )
-                            HorizontalDivider(
-                                color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f),
-                                modifier = Modifier.padding(horizontal = SpacingNormal)
-                            )
-                            val isDarkThemeActive =
-                                themeMode == "DARK" || (themeMode == "SYSTEM" && androidx.compose.foundation.isSystemInDarkTheme())
-                            ListItem(
-                                headlineContent = { Text(stringResource(R.string.settings_theme_amoled)) },
-                                supportingContent = {
-                                    Text(
-                                        text = if (isDarkThemeActive) {
-                                            stringResource(R.string.settings_theme_amoled_desc)
-                                        } else {
-                                            stringResource(R.string.settings_theme_amoled_disabled_desc)
-                                        }
-                                    )
-                                },
-                                trailingContent = {
-                                    AppSwitch(
-                                        checked = themeAmoled,
-                                        onCheckedChange = { onThemeAmoledChange(it) },
-                                        enabled = isDarkThemeActive
-                                    )
-                                },
-                                colors = ListItemDefaults.colors(containerColor = Color.Transparent),
-                                modifier = Modifier.clickable(enabled = isDarkThemeActive) {
-                                    onThemeAmoledChange(!themeAmoled)
-                                }
-                            )
-                        }
+                        SettingsClickableRow(
+                            title = stringResource(R.string.settings_theme_mode_system),
+                            description = stringResource(R.string.settings_theme_mode_system_desc),
+                            onClick = { onThemeModeChange("SYSTEM") },
+                            trailingContent = {
+                                RadioButton(
+                                    selected = themeMode == "SYSTEM",
+                                    onClick = { onThemeModeChange("SYSTEM") }
+                                )
+                            }
+                        )
+                        HorizontalDivider(
+                            color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f),
+                            modifier = Modifier.padding(horizontal = SpacingNormal)
+                        )
+                        SettingsClickableRow(
+                            title = stringResource(R.string.settings_theme_mode_light),
+                            onClick = { onThemeModeChange("LIGHT") },
+                            trailingContent = {
+                                RadioButton(
+                                    selected = themeMode == "LIGHT",
+                                    onClick = { onThemeModeChange("LIGHT") }
+                                )
+                            }
+                        )
+                        HorizontalDivider(
+                            color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f),
+                            modifier = Modifier.padding(horizontal = SpacingNormal)
+                        )
+                        SettingsClickableRow(
+                            title = stringResource(R.string.settings_theme_mode_dark),
+                            onClick = { onThemeModeChange("DARK") },
+                            trailingContent = {
+                                RadioButton(
+                                    selected = themeMode == "DARK",
+                                    onClick = { onThemeModeChange("DARK") }
+                                )
+                            }
+                        )
+                        HorizontalDivider(
+                            color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f),
+                            modifier = Modifier.padding(horizontal = SpacingNormal)
+                        )
+                        val isDarkThemeActive =
+                            themeMode == "DARK" || (themeMode == "SYSTEM" && androidx.compose.foundation.isSystemInDarkTheme())
+                        SettingsSwitchRow(
+                            title = stringResource(R.string.settings_theme_amoled),
+                            description = if (isDarkThemeActive) {
+                                stringResource(R.string.settings_theme_amoled_desc)
+                            } else {
+                                stringResource(R.string.settings_theme_amoled_disabled_desc)
+                            },
+                            checked = themeAmoled,
+                            onCheckedChange = onThemeAmoledChange,
+                            enabled = isDarkThemeActive
+                        )
                     }
                 }
             }
@@ -254,72 +217,48 @@ private fun ThemeSettingsContent(
                         .fillMaxWidth()
                         .padding(bottom = SpacingNormal)
                 ) {
-                    Text(
-                        text = stringResource(R.string.settings_theme_contrast_header),
-                        style = MaterialTheme.typography.labelLarge,
-                        color = MaterialTheme.colorScheme.primary,
-                        modifier = Modifier.padding(
-                            start = SpacingNormal,
-                            end = SpacingNormal,
-                            bottom = SpacingSmall
-                        )
-                    )
-                    Card(
-                        shape = MaterialTheme.shapes.extraLarge,
-                        colors = CardDefaults.cardColors(
-                            containerColor = MaterialTheme.colorScheme.surfaceContainer
-                        ),
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = SpacingNormal)
+                    SettingsSectionHeader(title = stringResource(R.string.settings_theme_contrast_header))
+                    SettingsCard(
+                        modifier = Modifier.padding(horizontal = SpacingNormal)
                     ) {
-                        Column(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .clip(MaterialTheme.shapes.extraLarge)
-                        ) {
-                            ListItem(
-                                headlineContent = { Text(stringResource(R.string.settings_theme_contrast_standard)) },
-                                trailingContent = {
-                                    RadioButton(
-                                        selected = themeContrast == 0.0,
-                                        onClick = { onThemeContrastChange(0.0) }
-                                    )
-                                },
-                                colors = ListItemDefaults.colors(containerColor = Color.Transparent),
-                                modifier = Modifier.clickable { onThemeContrastChange(0.0) }
-                            )
-                            HorizontalDivider(
-                                color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f),
-                                modifier = Modifier.padding(horizontal = SpacingNormal)
-                            )
-                            ListItem(
-                                headlineContent = { Text(stringResource(R.string.settings_theme_contrast_medium)) },
-                                trailingContent = {
-                                    RadioButton(
-                                        selected = themeContrast == 0.3,
-                                        onClick = { onThemeContrastChange(0.3) }
-                                    )
-                                },
-                                colors = ListItemDefaults.colors(containerColor = Color.Transparent),
-                                modifier = Modifier.clickable { onThemeContrastChange(0.3) }
-                            )
-                            HorizontalDivider(
-                                color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f),
-                                modifier = Modifier.padding(horizontal = SpacingNormal)
-                            )
-                            ListItem(
-                                headlineContent = { Text(stringResource(R.string.settings_theme_contrast_high)) },
-                                trailingContent = {
-                                    RadioButton(
-                                        selected = themeContrast == 1.0,
-                                        onClick = { onThemeContrastChange(1.0) }
-                                    )
-                                },
-                                colors = ListItemDefaults.colors(containerColor = Color.Transparent),
-                                modifier = Modifier.clickable { onThemeContrastChange(1.0) }
-                            )
-                        }
+                        SettingsClickableRow(
+                            title = stringResource(R.string.settings_theme_contrast_standard),
+                            onClick = { onThemeContrastChange(0.0) },
+                            trailingContent = {
+                                RadioButton(
+                                    selected = themeContrast == 0.0,
+                                    onClick = { onThemeContrastChange(0.0) }
+                                )
+                            }
+                        )
+                        HorizontalDivider(
+                            color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f),
+                            modifier = Modifier.padding(horizontal = SpacingNormal)
+                        )
+                        SettingsClickableRow(
+                            title = stringResource(R.string.settings_theme_contrast_medium),
+                            onClick = { onThemeContrastChange(0.3) },
+                            trailingContent = {
+                                RadioButton(
+                                    selected = themeContrast == 0.3,
+                                    onClick = { onThemeContrastChange(0.3) }
+                                )
+                            }
+                        )
+                        HorizontalDivider(
+                            color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f),
+                            modifier = Modifier.padding(horizontal = SpacingNormal)
+                        )
+                        SettingsClickableRow(
+                            title = stringResource(R.string.settings_theme_contrast_high),
+                            onClick = { onThemeContrastChange(1.0) },
+                            trailingContent = {
+                                RadioButton(
+                                    selected = themeContrast == 1.0,
+                                    onClick = { onThemeContrastChange(1.0) }
+                                )
+                            }
+                        )
                     }
                 }
             }
@@ -331,24 +270,9 @@ private fun ThemeSettingsContent(
                         .fillMaxWidth()
                         .padding(bottom = SpacingNormal)
                 ) {
-                    Text(
-                        text = stringResource(R.string.settings_theme_accent_header),
-                        style = MaterialTheme.typography.labelLarge,
-                        color = MaterialTheme.colorScheme.primary,
-                        modifier = Modifier.padding(
-                            start = SpacingNormal,
-                            end = SpacingNormal,
-                            bottom = SpacingSmall
-                        )
-                    )
-                    Card(
-                        shape = MaterialTheme.shapes.extraLarge,
-                        colors = CardDefaults.cardColors(
-                            containerColor = MaterialTheme.colorScheme.surfaceContainer
-                        ),
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = SpacingNormal)
+                    SettingsSectionHeader(title = stringResource(R.string.settings_theme_accent_header))
+                    SettingsCard(
+                        modifier = Modifier.padding(horizontal = SpacingNormal)
                     ) {
                         Column(
                             modifier = Modifier

@@ -50,7 +50,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.input.nestedscroll.nestedScroll
@@ -63,9 +62,11 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.heckmannch.birthdaybuddy.R
 import com.heckmannch.birthdaybuddy.data.repository.CalendarSyncRepository
 import com.heckmannch.birthdaybuddy.ui.components.AppResponsiveScaffold
-import com.heckmannch.birthdaybuddy.ui.components.AppSwitch
 import com.heckmannch.birthdaybuddy.ui.components.ColorPickerDialog
 import com.heckmannch.birthdaybuddy.ui.components.InfoCard
+import com.heckmannch.birthdaybuddy.ui.components.SettingsCard
+import com.heckmannch.birthdaybuddy.ui.components.SettingsSectionHeader
+import com.heckmannch.birthdaybuddy.ui.components.SettingsSwitchRow
 import com.heckmannch.birthdaybuddy.ui.theme.AlphaContainerMuted
 import com.heckmannch.birthdaybuddy.ui.theme.AlphaContainerSubtle
 import com.heckmannch.birthdaybuddy.ui.theme.AlphaEmphasisDisabled
@@ -242,28 +243,17 @@ private fun CalendarSettingsContent(
             }
 
             item {
-                Card(
-                    shape = MaterialTheme.shapes.extraLarge,
-                    colors = CardDefaults.cardColors(
-                        containerColor = MaterialTheme.colorScheme.surfaceContainer,
-                    ),
-                    modifier = Modifier.fillMaxWidth(),
-                ) {
-                    ListItem(
-                        headlineContent = { Text(stringResource(R.string.calendar_settings_enable)) },
-                        trailingContent = {
-                            AppSwitch(
-                                checked = calendarSyncEnabled,
-                                onCheckedChange = onToggleChange
-                            )
-                        },
-                        leadingContent = {
+                SettingsCard {
+                    SettingsSwitchRow(
+                        title = stringResource(R.string.calendar_settings_enable),
+                        checked = calendarSyncEnabled,
+                        onCheckedChange = onToggleChange,
+                        leadingIcon = {
                             Icon(
                                 imageVector = Icons.Default.DateRange,
                                 contentDescription = null
                             )
-                        },
-                        colors = ListItemDefaults.colors(containerColor = Color.Transparent)
+                        }
                     )
                 }
             }
@@ -273,98 +263,77 @@ private fun CalendarSettingsContent(
                     Column(
                         modifier = Modifier.fillMaxWidth()
                     ) {
-                        Text(
-                            text = stringResource(R.string.calendar_colors_section_title),
-                            style = MaterialTheme.typography.labelLarge,
-                            color = MaterialTheme.colorScheme.primary,
-                            modifier = Modifier.padding(
-                                start = SpacingNormal,
-                                end = SpacingNormal,
-                                bottom = SpacingSmall
+                        SettingsSectionHeader(title = stringResource(R.string.calendar_colors_section_title))
+                        SettingsCard {
+                            ListItem(
+                                headlineContent = { Text(stringResource(R.string.calendar_color_birthdays)) },
+                                leadingContent = {
+                                    Box(
+                                        modifier = Modifier
+                                            .size(IconSizeLarge)
+                                            .background(
+                                                Color(birthdayColor),
+                                                shape = CircleShape
+                                            )
+                                    )
+                                },
+                                modifier = Modifier.clickable {
+                                    onColorRowClick(
+                                        CalendarSyncRepository.CalendarType.BIRTHDAY,
+                                        Color(birthdayColor)
+                                    )
+                                },
+                                colors = ListItemDefaults.colors(containerColor = Color.Transparent)
                             )
-                        )
-                        Card(
-                            shape = MaterialTheme.shapes.extraLarge,
-                            colors = CardDefaults.cardColors(
-                                containerColor = MaterialTheme.colorScheme.surfaceContainer
-                            ),
-                            modifier = Modifier.fillMaxWidth()
-                        ) {
-                            Column(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .clip(MaterialTheme.shapes.extraLarge)
-                            ) {
+                            if (otherEventsEnabled) {
+                                HorizontalDivider(
+                                    color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f),
+                                    modifier = Modifier.padding(horizontal = SpacingNormal)
+                                )
                                 ListItem(
-                                    headlineContent = { Text(stringResource(R.string.calendar_color_birthdays)) },
+                                    headlineContent = { Text(stringResource(R.string.calendar_color_anniversaries)) },
                                     leadingContent = {
                                         Box(
                                             modifier = Modifier
                                                 .size(IconSizeLarge)
                                                 .background(
-                                                    Color(birthdayColor),
+                                                    Color(anniversaryColor),
                                                     shape = CircleShape
                                                 )
                                         )
                                     },
                                     modifier = Modifier.clickable {
                                         onColorRowClick(
-                                            CalendarSyncRepository.CalendarType.BIRTHDAY,
-                                            Color(birthdayColor)
+                                            CalendarSyncRepository.CalendarType.ANNIVERSARY,
+                                            Color(anniversaryColor)
                                         )
                                     },
                                     colors = ListItemDefaults.colors(containerColor = Color.Transparent)
                                 )
-                                if (otherEventsEnabled) {
-                                    HorizontalDivider(
-                                        color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f),
-                                        modifier = Modifier.padding(horizontal = SpacingNormal)
-                                    )
-                                    ListItem(
-                                        headlineContent = { Text(stringResource(R.string.calendar_color_anniversaries)) },
-                                        leadingContent = {
-                                            Box(
-                                                modifier = Modifier
-                                                    .size(IconSizeLarge)
-                                                    .background(
-                                                        Color(anniversaryColor),
-                                                        shape = CircleShape
-                                                    )
-                                            )
-                                        },
-                                        modifier = Modifier.clickable {
-                                            onColorRowClick(
-                                                CalendarSyncRepository.CalendarType.ANNIVERSARY,
-                                                Color(anniversaryColor)
-                                            )
-                                        },
-                                        colors = ListItemDefaults.colors(containerColor = Color.Transparent)
-                                    )
-                                    HorizontalDivider(
-                                        color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f),
-                                        modifier = Modifier.padding(horizontal = SpacingNormal)
-                                    )
-                                    ListItem(
-                                        headlineContent = { Text(stringResource(R.string.calendar_color_namedays)) },
-                                        leadingContent = {
-                                            Box(
-                                                modifier = Modifier
-                                                    .size(IconSizeLarge)
-                                                    .background(
-                                                        Color(nameDayColor),
-                                                        shape = CircleShape
-                                                    )
-                                            )
-                                        },
-                                        modifier = Modifier.clickable {
-                                            onColorRowClick(
-                                                CalendarSyncRepository.CalendarType.NAMEDAY,
-                                                Color(nameDayColor)
-                                            )
-                                        },
-                                        colors = ListItemDefaults.colors(containerColor = Color.Transparent)
-                                    )
-                                }
+                                HorizontalDivider(
+                                    color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f),
+                                    modifier = Modifier.padding(horizontal = SpacingNormal)
+                                )
+                                ListItem(
+                                    headlineContent = { Text(stringResource(R.string.calendar_color_namedays)) },
+                                    leadingContent = {
+                                        Box(
+                                            modifier = Modifier
+                                                .size(IconSizeLarge)
+                                                .background(
+                                                    Color(nameDayColor),
+                                                    shape = CircleShape
+                                                )
+                                        )
+                                    },
+                                    modifier = Modifier.clickable {
+                                        onColorRowClick(
+                                            CalendarSyncRepository.CalendarType.NAMEDAY,
+                                            Color(nameDayColor)
+                                        )
+                                    },
+                                    colors = ListItemDefaults.colors(containerColor = Color.Transparent)
+                                )
                             }
                         }
                     }
