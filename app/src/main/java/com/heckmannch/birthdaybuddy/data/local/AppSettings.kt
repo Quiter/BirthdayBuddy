@@ -20,5 +20,6 @@ data class AppSettings(
     val themeMode: String = "SYSTEM",
     val themeAmoled: Boolean = false,
     val themeAccent: String = "SYSTEM",
-    val themeContrast: Double = 0.0
+    val themeContrast: Double = 0.0,
+    val labelsEnabled: Boolean = true
 )

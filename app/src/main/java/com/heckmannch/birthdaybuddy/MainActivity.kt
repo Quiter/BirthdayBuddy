@@ -13,8 +13,8 @@ import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
-import androidx.compose.animation.scaleIn
-import androidx.compose.animation.scaleOut
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
@@ -278,22 +278,28 @@ class MainActivity : ComponentActivity() {
                 rememberViewModelStoreNavEntryDecorator()
             ),
             transitionSpec = {
-                fadeIn(animationSpec = tween(300)) + scaleIn(
-                    initialScale = 0.94f,
+                val enter = slideInHorizontally(
+                    initialOffsetX = { it },
                     animationSpec = tween(400, easing = FastOutSlowInEasing)
-                ) togetherWith fadeOut(animationSpec = tween(300)) + scaleOut(
-                    targetScale = 0.94f,
+                ) + fadeIn(animationSpec = tween(300))
+                val exit = slideOutHorizontally(
+                    targetOffsetX = { -it / 4 },
                     animationSpec = tween(400, easing = FastOutSlowInEasing)
-                )
+                ) + fadeOut(animationSpec = tween(300))
+                enter togetherWith exit
             },
             popTransitionSpec = {
-                fadeIn(animationSpec = tween(300)) + scaleIn(
-                    initialScale = 0.94f,
+                val enter = slideInHorizontally(
+                    initialOffsetX = { -it / 4 },
                     animationSpec = tween(400, easing = FastOutSlowInEasing)
-                ) togetherWith fadeOut(animationSpec = tween(300)) + scaleOut(
-                    targetScale = 0.94f,
+                ) + fadeIn(animationSpec = tween(300))
+                val exit = slideOutHorizontally(
+                    targetOffsetX = { it },
                     animationSpec = tween(400, easing = FastOutSlowInEasing)
-                )
+                ) + fadeOut(animationSpec = tween(300))
+                (enter togetherWith exit).apply {
+                    targetContentZIndex = -1f
+                }
             },
             entryProvider = { key ->
                 when (key) {

@@ -70,13 +70,16 @@ class HomeViewModel @Inject constructor(
 
 
     // --- Data Processing ---
-    private val ignoredLabels: Flow<Set<String>> = contactRepository.labelConfigs
-        .map { configs ->
-            configs.asSequence()
-                .filter { it.isIgnored }
-                .map { it.name }
-                .toSet()
-        }
+    private val ignoredLabels: Flow<Set<String>> = combine(
+        contactRepository.labelConfigs,
+        contactRepository.labelsEnabled
+    ) { configs, labelsEnabled ->
+        if (!labelsEnabled) emptySet()
+        else configs.asSequence()
+            .filter { it.isIgnored }
+            .map { it.name }
+            .toSet()
+    }
         .distinctUntilChanged()
         .flowOn(Dispatchers.Default)
 
@@ -268,7 +271,9 @@ class HomeViewModel @Inject constructor(
         contactRepository.allContacts,
         contactRepository.labelConfigs,
         contactRepository.otherEventsEnabled,
-    ) { contacts, configs, otherEventsEnabled ->
+        contactRepository.labelsEnabled,
+    ) { contacts, configs, otherEventsEnabled, labelsEnabled ->
+        if (!labelsEnabled) return@combine emptyList()
         val inUseLabels = contacts.asSequence().flatMap { it.labels }.toSet()
         val configMap = configs.associateBy { it.name }
 
@@ -351,10 +356,16 @@ class HomeViewModel @Inject constructor(
         filteredContacts,
         availableLabels,
         _userUiState,
-        coupleSuggestion
-    ) { contacts, labels, userState, suggestion ->
+        coupleSuggestion,
+        contactRepository.labelsEnabled
+    ) { contacts, labels, userState, suggestion, labelsEnabled ->
+        val finalContacts = if (!labelsEnabled && contacts != null) {
+            contacts.map { it.copy(labels = emptyList()) }
+        } else {
+            contacts
+        }
         HomeUiState(
-            contacts = contacts,
+            contacts = finalContacts,
             availableLabels = labels,
             searchQuery = userState.searchQuery,
             selectedLabel = userState.selectedLabel,

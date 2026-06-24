@@ -18,6 +18,12 @@ class LabelViewModel @Inject constructor(
     private val contactRepository: ContactRepository,
 ) : ViewModel() {
 
+    /**
+     * StateFlow indicating whether label management is enabled by the user.
+     */
+    val labelsEnabled: StateFlow<Boolean> = contactRepository.labelsEnabled
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), true)
+
     val labelManagementList: StateFlow<List<LabelManagementModel>> = combine(
         contactRepository.labelConfigs,
         contactRepository.allContacts,
@@ -57,4 +63,11 @@ class LabelViewModel @Inject constructor(
         viewModelScope.launch {
             contactRepository.updateLabelConfig(LabelConfig(name, hidden, ignored, isSystem))
         }
+
+    /**
+     * Updates the status of the label management feature.
+     */
+    fun setLabelsEnabled(enabled: Boolean) = viewModelScope.launch {
+        contactRepository.updateLabelsEnabled(enabled)
+    }
 }

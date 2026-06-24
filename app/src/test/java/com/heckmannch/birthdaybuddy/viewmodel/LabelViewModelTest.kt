@@ -50,6 +50,7 @@ class LabelViewModelTest {
 
         whenever(contactRepository.labelConfigs).thenReturn(flowOf(configs))
         whenever(contactRepository.allContacts).thenReturn(flowOf(contacts))
+        whenever(contactRepository.labelsEnabled).thenReturn(flowOf(true))
 
         val viewModel = LabelViewModel(contactRepository)
 
@@ -68,6 +69,7 @@ class LabelViewModelTest {
     fun `updateLabelConfig should delegate to repository`() = runTest {
         whenever(contactRepository.labelConfigs).thenReturn(flowOf(emptyList()))
         whenever(contactRepository.allContacts).thenReturn(flowOf(emptyList()))
+        whenever(contactRepository.labelsEnabled).thenReturn(flowOf(true))
         val viewModel = LabelViewModel(contactRepository)
 
         // When
@@ -75,5 +77,19 @@ class LabelViewModelTest {
 
         // Then
         verify(contactRepository).updateLabelConfig(any())
+    }
+
+    @Test
+    fun `setLabelsEnabled should delegate to repository`() = runTest {
+        whenever(contactRepository.labelConfigs).thenReturn(flowOf(emptyList()))
+        whenever(contactRepository.allContacts).thenReturn(flowOf(emptyList()))
+        whenever(contactRepository.labelsEnabled).thenReturn(flowOf(true))
+        val viewModel = LabelViewModel(contactRepository)
+
+        // When
+        viewModel.setLabelsEnabled(false)
+
+        // Then
+        verify(contactRepository).updateLabelsEnabled(false)
     }
 }

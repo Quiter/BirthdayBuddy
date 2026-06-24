@@ -201,6 +201,8 @@
 
     <!-- Label Settings Screen -->
     <string name="labels_title">Labels verwalten</string>
+    <string name="labels_enable">Label-Management aktivieren</string>
+    <string name="labels_enable_desc">Kontakte nach Labels/Gruppen filtern und bestimmte Labels ausblenden</string>
     <string name="labels_info_title">Label-Konfiguration</string>
     <string name="labels_empty">Keine Labels gefunden</string>
     <string name="labels_info_hide">Filter verbergen: Label erscheint nicht in der Leiste zum Filtern der Kontakte.</string>

@@ -192,5 +192,35 @@ class SettingsMigrationTest {
 
         settingsCursor.close()
     }
+
+    @Test
+    @Throws(IOException::class)
+    fun migrate7To8() {
+        // 1. Create database in version 7
+        helper.createDatabase(testDb, 7).apply {
+            execSQL(
+                "INSERT INTO app_settings (id, notificationsEnabled, persistentNotifications, onboardingCompleted, lastSyncTimestamp, calendarSyncEnabled, calendarId, otherEventsEnabled, ignoredCouplePairs, birthdayCalendarColor, anniversaryCalendarColor, nameDayCalendarColor, themeMode, themeAmoled, themeAccent, themeContrast) " +
+                        "VALUES (0, 1, 1, 1, 123456789, 0, NULL, 0, '[]', -1564957, -6543440, -26624, 'SYSTEM', 0, 'SYSTEM', 0.0)"
+            )
+            close()
+        }
+
+        // 2. Run migration to version 8 and validate
+        val migratedDb = helper.runMigrationsAndValidate(
+            testDb,
+            8,
+            true,
+            SettingsDatabase.MIGRATION_7_8
+        )
+
+        // 3. Verify columns and default values
+        val settingsCursor = migratedDb.query("SELECT * FROM app_settings WHERE id = 0")
+        assert(settingsCursor.moveToFirst())
+
+        val labelsEnabledIdx = settingsCursor.getColumnIndex("labelsEnabled")
+        assert(settingsCursor.getInt(labelsEnabledIdx) == 1) // represented as 1 (true) in SQLite
+
+        settingsCursor.close()
+    }
 }
 

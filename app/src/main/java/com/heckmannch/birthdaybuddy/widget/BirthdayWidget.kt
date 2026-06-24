@@ -70,8 +70,9 @@ class BirthdayWidget : GlanceAppWidget() {
                 combine(
                     repository.allContacts,
                     repository.labelConfigs,
-                ) { list, configs ->
-                    val ignoredLabels = configs.asSequence()
+                    repository.labelsEnabled,
+                ) { list, configs, labelsEnabled ->
+                    val ignoredLabels = if (!labelsEnabled) emptySet() else configs.asSequence()
                         .filter { it.isIgnored }
                         .map { it.name }
                         .toSet()

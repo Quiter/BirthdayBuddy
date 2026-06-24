@@ -201,6 +201,8 @@
 
     <!-- Label Settings Screen -->
     <string name="labels_title">Manage labels</string>
+    <string name="labels_enable">Enable label management</string>
+    <string name="labels_enable_desc">Filter contacts by labels/groups and hide specific labels</string>
     <string name="labels_info_title">Label Configuration</string>
     <string name="labels_empty">No labels found</string>
     <string name="labels_info_hide">Hide filter: Label does not appear in the bar to filter contacts.</string>

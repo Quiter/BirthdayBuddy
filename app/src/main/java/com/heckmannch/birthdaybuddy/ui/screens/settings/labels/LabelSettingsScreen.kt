@@ -45,17 +45,25 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.draw.alpha
+import androidx.compose.foundation.clickable
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.heckmannch.birthdaybuddy.R
 import com.heckmannch.birthdaybuddy.ui.components.AppResponsiveScaffold
 import com.heckmannch.birthdaybuddy.ui.components.InfoCard
+import com.heckmannch.birthdaybuddy.ui.components.AppSwitch
 import com.heckmannch.birthdaybuddy.ui.model.LabelManagementModel
 import com.heckmannch.birthdaybuddy.ui.theme.BirthdayBuddyTheme
 import com.heckmannch.birthdaybuddy.ui.theme.IconSizeSmall
 import com.heckmannch.birthdaybuddy.ui.theme.SpacingNormal
 import com.heckmannch.birthdaybuddy.ui.theme.SpacingSmall
+import com.heckmannch.birthdaybuddy.ui.theme.AlphaEmphasisDisabled
 import com.heckmannch.birthdaybuddy.viewmodel.HomeViewModel
 import com.heckmannch.birthdaybuddy.viewmodel.LabelViewModel
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.ListItem
+import androidx.compose.material3.ListItemDefaults
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -66,12 +74,15 @@ fun LabelSettingsScreen(
     onNavigateBack: () -> Unit,
 ) {
     val labels by viewModel.labelManagementList.collectAsStateWithLifecycle()
+    val labelsEnabled by viewModel.labelsEnabled.collectAsStateWithLifecycle()
 
-    LabelSettingsContent(
+    LabelSettingsScreenContent(
         windowWidthSizeClass = windowWidthSizeClass,
         labels = labels,
+        labelsEnabled = labelsEnabled,
         showBackButton = showBackButton,
         onNavigateBack = onNavigateBack,
+        onLabelsEnabledChanged = { viewModel.setLabelsEnabled(it) }
     ) { name, hidden, ignored, isSystem ->
         viewModel.updateLabelConfig(name, hidden, ignored, isSystem)
     }
@@ -79,15 +90,19 @@ fun LabelSettingsScreen(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun LabelSettingsContent(
+private fun LabelSettingsScreenContent(
     windowWidthSizeClass: WindowWidthSizeClass,
     labels: List<LabelManagementModel>,
+    labelsEnabled: Boolean,
     showBackButton: Boolean = true,
     onNavigateBack: () -> Unit,
+    onLabelsEnabledChanged: (Boolean) -> Unit,
     onConfigChanged: (String, Boolean, Boolean, Boolean) -> Unit
 ) {
     val scrollBehavior =
         TopAppBarDefaults.exitUntilCollapsedScrollBehavior(rememberTopAppBarState())
+    val layoutDirection = LocalLayoutDirection.current
+
     AppResponsiveScaffold(
         windowWidthSizeClass = windowWidthSizeClass,
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
@@ -108,37 +123,67 @@ private fun LabelSettingsContent(
             )
         }
     ) { paddingValues ->
-        if (labels.isEmpty()) {
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(paddingValues),
-                contentAlignment = Alignment.Center
-            ) {
-                Text(
-                    stringResource(R.string.labels_empty),
-                    style = MaterialTheme.typography.bodyLarge
-                )
+        LazyVerticalGrid(
+            columns = GridCells.Adaptive(minSize = 340.dp),
+            modifier = Modifier.fillMaxSize(),
+            contentPadding = PaddingValues(
+                start = paddingValues.calculateStartPadding(layoutDirection) + SpacingNormal,
+                top = paddingValues.calculateTopPadding() + SpacingNormal,
+                end = paddingValues.calculateEndPadding(layoutDirection) + SpacingNormal,
+                bottom = paddingValues.calculateBottomPadding() + SpacingNormal
+            ),
+            horizontalArrangement = Arrangement.spacedBy(SpacingNormal),
+            verticalArrangement = Arrangement.spacedBy(SpacingNormal)
+        ) {
+            // Master-Switch ganz oben
+            item(span = { GridItemSpan(maxLineSpan) }) {
+                Card(
+                    shape = MaterialTheme.shapes.extraLarge,
+                    colors = CardDefaults.cardColors(
+                        containerColor = MaterialTheme.colorScheme.surfaceContainer
+                    ),
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    ListItem(
+                        headlineContent = { Text(stringResource(R.string.labels_enable)) },
+                        supportingContent = { Text(stringResource(R.string.labels_enable_desc)) },
+                        trailingContent = {
+                            AppSwitch(
+                                checked = labelsEnabled,
+                                onCheckedChange = onLabelsEnabledChanged
+                            )
+                        },
+                        modifier = Modifier.clickable { onLabelsEnabledChanged(!labelsEnabled) },
+                        colors = ListItemDefaults.colors(containerColor = androidx.compose.ui.graphics.Color.Transparent)
+                    )
+                }
             }
-        } else {
-            val layoutDirection = LocalLayoutDirection.current
-            LazyVerticalGrid(
-                columns = GridCells.Adaptive(minSize = 340.dp),
-                modifier = Modifier.fillMaxSize(),
-                contentPadding = PaddingValues(
-                    start = paddingValues.calculateStartPadding(layoutDirection) + SpacingNormal,
-                    top = paddingValues.calculateTopPadding() + SpacingNormal,
-                    end = paddingValues.calculateEndPadding(layoutDirection) + SpacingNormal,
-                    bottom = paddingValues.calculateBottomPadding() + SpacingNormal
-                ),
-                horizontalArrangement = Arrangement.spacedBy(SpacingNormal),
-                verticalArrangement = Arrangement.spacedBy(SpacingNormal)
-            ) {
+
+            if (labelsEnabled && labels.isEmpty()) {
+                item(span = { GridItemSpan(maxLineSpan) }) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 64.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            stringResource(R.string.labels_empty),
+                            style = MaterialTheme.typography.bodyLarge
+                        )
+                    }
+                }
+            } else if (!labelsEnabled && labels.isEmpty()) {
+                // Leerer Zustand wenn deaktiviert: Nichts weiter anzeigen außer dem Switch
+            } else {
                 item(span = { GridItemSpan(maxLineSpan) }) {
                     InfoCard(
                         title = stringResource(R.string.labels_info_title),
                         description = stringResource(R.string.labels_info_hide) + "\n\n" + stringResource(
                             R.string.labels_info_ignore
+                        ),
+                        modifier = Modifier.then(
+                            if (!labelsEnabled) Modifier.alpha(AlphaEmphasisDisabled) else Modifier
                         )
                     )
                 }
@@ -149,6 +194,7 @@ private fun LabelSettingsContent(
                 ) { label ->
                     LabelConfigCard(
                         label = label,
+                        enabled = labelsEnabled,
                         onConfigChanged = onConfigChanged
                     )
                 }
@@ -162,6 +208,7 @@ private fun LabelSettingsContent(
 @Composable
 private fun LabelConfigCard(
     label: LabelManagementModel,
+    enabled: Boolean = true,
     onConfigChanged: (String, Boolean, Boolean, Boolean) -> Unit
 ) {
     // Optimierung 2: Callbacks memoizen, um unnötige Recompositions zu vermeiden
@@ -173,7 +220,9 @@ private fun LabelConfigCard(
     }
 
     OutlinedCard(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier
+            .fillMaxWidth()
+            .then(if (!enabled) Modifier.alpha(AlphaEmphasisDisabled) else Modifier),
         shape = MaterialTheme.shapes.extraLarge
     ) {
         Column(
@@ -222,6 +271,7 @@ private fun LabelConfigCard(
                 FilterChip(
                     selected = label.isHiddenFromFilter,
                     onClick = onHideToggle,
+                    enabled = enabled,
                     label = { Text(stringResource(R.string.labels_action_hide)) },
                     leadingIcon = if (label.isHiddenFromFilter) {
                         {
@@ -242,6 +292,7 @@ private fun LabelConfigCard(
                 FilterChip(
                     selected = label.isIgnored,
                     onClick = onIgnoreToggle,
+                    enabled = enabled,
                     label = { Text(stringResource(R.string.labels_action_ignore)) },
                     leadingIcon = if (label.isIgnored) {
                         {
@@ -267,7 +318,7 @@ private fun LabelConfigCard(
 @Composable
 private fun LabelSettingsPreview() {
     BirthdayBuddyTheme {
-        LabelSettingsContent(
+        LabelSettingsScreenContent(
             windowWidthSizeClass = WindowWidthSizeClass.Compact,
             labels = listOf(
                 LabelManagementModel(
@@ -301,7 +352,9 @@ private fun LabelSettingsPreview() {
                     isSystem = false
                 )
             ),
+            labelsEnabled = true,
             onNavigateBack = {},
+            onLabelsEnabledChanged = {},
             onConfigChanged = { _, _, _, _ -> }
         )
     }

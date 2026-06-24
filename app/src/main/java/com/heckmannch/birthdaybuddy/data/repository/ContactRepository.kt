@@ -59,6 +59,14 @@ class ContactRepository @Inject constructor(
         .map { it?.ignoredCouplePairs ?: emptyList() }
         .distinctUntilChanged()
 
+    /**
+     * Flow indicating whether label management is enabled by the user.
+     * Defaults to true if no settings record is found.
+     */
+    val labelsEnabled: Flow<Boolean> = appSettingsDao.getSettings()
+        .map { it?.labelsEnabled ?: true }
+        .distinctUntilChanged()
+
 
     suspend fun getAllContactsImmediate(): List<Contact> = withContext(Dispatchers.IO) {
         contactDao.getAllContactsImmediate()
@@ -370,6 +378,17 @@ class ContactRepository @Inject constructor(
                 val currentSettings = appSettingsDao.getSettingsImmediate() ?: AppSettings()
                 appSettingsDao.upsertSettings(currentSettings.copy(ignoredCouplePairs = emptyList()))
             }
+        }
+    }
+
+    /**
+     * Updates the status of label management in the settings.
+     * When disabled, label filtering and widget overrides are bypassed.
+     */
+    suspend fun updateLabelsEnabled(enabled: Boolean) = withContext(Dispatchers.IO) {
+        settingsDatabase.withTransaction {
+            val currentSettings = appSettingsDao.getSettingsImmediate() ?: AppSettings()
+            appSettingsDao.upsertSettings(currentSettings.copy(labelsEnabled = enabled))
         }
     }
 }

@@ -53,6 +53,7 @@ class HomeViewModelTest {
         whenever(contactRepository.potentialCouples).doReturn(MutableStateFlow(emptyList()))
         whenever(contactRepository.otherEventsEnabled).doReturn(MutableStateFlow(false))
         whenever(contactRepository.ignoredCouplePairs).doReturn(MutableStateFlow(emptyList()))
+        whenever(contactRepository.labelsEnabled).doReturn(MutableStateFlow(true))
     }
 
     @Test
@@ -194,5 +195,40 @@ class HomeViewModelTest {
                     state.contacts.first().fullName == "Anniversary Person"
         }
         assertThat(anniversaryState.contacts?.first()?.daysUntilNext).isEqualTo(5)
+    }
+
+    @Test
+    fun whenLabelsDisabled_thenAvailableLabelsIsEmptyAndContactsHaveNoLabels() = runTest {
+        val labelConfigs = listOf(
+            LabelConfig("Family", isHiddenFromFilter = false, isIgnored = true)
+        )
+        val contacts = listOf(
+            Contact(
+                contactId = "1",
+                lookupKey = "1",
+                fullName = "Test Contact",
+                birthday = today.plusDays(5),
+                labels = listOf("Family")
+            )
+        )
+        whenever(contactRepository.labelConfigs).thenReturn(MutableStateFlow(labelConfigs))
+        whenever(contactRepository.allContacts).thenReturn(MutableStateFlow(contacts))
+        whenever(contactRepository.labelsEnabled).thenReturn(MutableStateFlow(false))
+
+        viewModel = HomeViewModel(
+            contactRepository = contactRepository,
+            mapper = mapper,
+            timeRepository = timeRepository,
+        )
+
+        // Wait for UI State to propagate contacts
+        val state = viewModel.uiState.first { it.contacts != null }
+        
+        // 1. Available labels should be empty because label management is disabled
+        assertThat(state.availableLabels).isEmpty()
+        
+        // 2. Mapped contacts should not contain the ignored label in UI, and should not be filtered out (even if marked ignored)
+        assertThat(state.contacts).hasSize(1)
+        assertThat(state.contacts?.first()?.labels).isEmpty()
     }
 }
