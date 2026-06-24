@@ -264,6 +264,9 @@ private fun HomeContent(
     actions: HomeActions,
     windowWidthSizeClass: WindowWidthSizeClass,
 ) {
+    val currentUiState by rememberUpdatedState(uiState)
+    val currentActions by rememberUpdatedState(actions)
+
     val focusManager = LocalFocusManager.current
     val keyboardController = LocalSoftwareKeyboardController.current
 
@@ -411,13 +414,13 @@ private fun HomeContent(
                                 )) {
                                 Box(modifier = Modifier.fillMaxSize()) {
                                     BirthdayList(
-                                        contacts = contacts,
+                                        contacts = currentUiState.contacts,
                                         newlyAddedIdeaId = null, // Idee wird im rechten Paneel hinzugefügt
                                         listState = homeState.listState,
-                                        selectedLabel = uiState.selectedLabel,
-                                        searchQuery = uiState.searchQuery,
-                                        actions = actions,
-                                        coupleSuggestion = uiState.coupleSuggestion,
+                                        selectedLabel = currentUiState.selectedLabel,
+                                        searchQuery = currentUiState.searchQuery,
+                                        actions = currentActions,
+                                        coupleSuggestion = currentUiState.coupleSuggestion,
                                         selectedContactId = selectedContactId,
                                         onContactSelected = { contact ->
                                             selectedContactId = contact.id
@@ -430,7 +433,7 @@ private fun HomeContent(
 
                                     FastScrollbar(
                                         listState = homeState.listState,
-                                        contacts = contacts,
+                                        contacts = currentUiState.contacts ?: emptyList(),
                                         getLabel = getScrollLabel,
                                         modifier = Modifier
                                             .align(Alignment.CenterEnd)
@@ -444,14 +447,14 @@ private fun HomeContent(
                                 key,
                                 metadata = ListDetailSceneStrategy.detailPane()
                             ) {
-                                val contact = remember(contacts, key.contactId) {
-                                    contacts.find { it.id == key.contactId }
+                                val contact = remember(currentUiState.contacts, key.contactId) {
+                                    currentUiState.contacts?.find { it.id == key.contactId }
                                 }
                                 if (contact != null) {
                                     BirthdayDetailPane(
                                         contact = contact,
-                                        newlyAddedIdeaId = uiState.newlyAddedIdeaId,
-                                        actions = actions,
+                                        newlyAddedIdeaId = currentUiState.newlyAddedIdeaId,
+                                        actions = currentActions,
                                         onClose = {
                                             selectedContactId = null
                                         },
