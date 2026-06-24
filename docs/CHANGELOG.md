@@ -196,3 +196,20 @@
     - **Details der Änderungen:**
       - **`MainActivity.kt`**: `predictivePopTransitionSpec` zu `NavDisplay` hinzugefügt und auf dieselbe Animation wie `popTransitionSpec` konfiguriert.
 
+216. **Refactoring und Bündelung von Onboarding-Illustrationen in neuem Paket `ui.illustrations` (Clean Architecture / Code-Bereinigung):**
+    - **Problem:** Die Illustrationen auf den Onboarding-Seiten wurden lokal und privat innerhalb der jeweiligen Seitendateien (`WelcomePage.kt`, `CalendarPage.kt`, etc.) definiert. Das führte zu langen Quelldateien (~300 Zeilen) und verhinderte die Wiederverwendung dieser grafischen Elemente in anderen Bereichen wie z.B. den Einstellungsbildschirmen. Zudem lag die bestehende `ContactsIllustration.kt` unter `ui/components/`, was nicht optimal strukturiert war.
+    - **Lösung:** Einführung des neuen Pakets `com.heckmannch.birthdaybuddy.ui.illustrations` und Auslagerung aller Onboarding-Illustrationen in dieses Paket. Dadurch sind alle grafischen Custom-Illustrationen an einem zentralen Ort gebündelt, können in Previews isoliert gerendert werden, und stehen für eine zukünftige Wiederverwendung in den Einstellungsbildschirmen zur Verfügung. Die Onboarding-Seitendateien wurden dadurch erheblich vereinfacht und gekürzt.
+    - **Details der Änderungen:**
+      - **`ui/illustrations/` [NEU]**: Paketverzeichnis erstellt und folgende Dateien angelegt:
+        - `WelcomeIllustration.kt`: Ausgelagerte Illustration für die Begrüßungsseite.
+        - `ContactsIllustration.kt`: Aus `ui/components/` hierher verschoben und Paket angepasst.
+        - `NotificationsIllustration.kt`: Ausgelagerte Illustration für die Benachrichtigungsseite.
+        - `CalendarIllustration.kt`: Ausgelagerte Illustration für die Kalenderseite.
+        - `CalendarGuideIllustration.kt`: Ausgelagerte Illustration für die Kalender-Anleitung.
+        - `ReadyIllustration.kt`: Ausgelagerte Illustration für die Abschlussseite.
+      - **`ui/components/ContactsIllustration.kt` [DELETE]**: Alte Datei gelöscht.
+      - **`WelcomePage.kt`**, **`ContactsPage.kt`**, **`NotificationsPage.kt`**, **`CalendarPage.kt`**, **`CalendarGuidePage.kt`**, **`ReadyPage.kt`**: Importiert die Illustrationen nun aus dem neuen Paket `ui.illustrations`. Lokale Illustrations-Definitionen vollständig entfernt.
+      - **`BirthdayList.kt`**: Import-Pfad von `ContactsIllustration` auf das neue Paket aktualisiert.
+      - **`PROJECT_STRUCTURE.md`**: Dokumentation der neuen Paketstruktur und der verschobenen Dateien.
+
+

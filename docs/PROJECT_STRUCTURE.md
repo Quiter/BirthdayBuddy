@@ -114,10 +114,16 @@
     - `SampleData.kt`: Zentraler Ort für Testdaten für Previews und Tests.
 - ### 📁 UI Components (`ui.components`)
     - `ColorPickerDialog.kt`: Wiederverwendbare, premium Farbauswahl-Komponente mit HSV-Farbraum-Koordinaten (Sättigung/Helligkeit), Hue-Slider, HEX-Texteingabe und Live-Vorschau.
-    - `ContactsIllustration.kt`: Wiederverwendbare, rein native Custom-Animations-Komponente für Kontakte-Berechtigungen.
     - `ResponsiveLayout.kt`: Beinhaltet `AdaptiveContentContainer`, `AppResponsiveScaffold` und den globalen `LocalWindowWidthSizeClass` CompositionLocal-Provider zur flexiblen, abfragefreien Größenklassen-Weitergabe (Handy, Tablet, Chromebook).
     - `AppSwitch.kt`: Wiederverwendbare, standardisierte Switch-Komponente, die das Standard-Material-3-Design anwendet und bei Aktivierung automatisch ein Häkchen-Symbol anzeigt.
     - `SettingsComponents.kt`: Wiederverwendbare UI-Komponenten für Einstellungsseiten (`SettingsSectionHeader`, `SettingsCard`, `SettingsSwitchRow`, `SettingsClickableRow`).
+- ### 📁 UI Illustrations (`ui.illustrations`)
+    - `WelcomeIllustration.kt`: Native Custom-Animations-Komponente für das Begrüßungs-Onboarding.
+    - `ContactsIllustration.kt`: Wiederverwendbare, rein native Custom-Animations-Komponente für Kontakte-Berechtigungen (verschoben aus `ui/components/`).
+    - `NotificationsIllustration.kt`: Wiederverwendbare native Custom-Animations-Komponente für Benachrichtigungs-Berechtigungen und Vorschauen.
+    - `CalendarIllustration.kt`: Wiederverwendbare native Custom-Animations-Komponente für Kalender-Berechtigungen und Events.
+    - `CalendarGuideIllustration.kt`: Wiederverwendbare native Custom-Animations-Komponente für die Kalender-Konfigurationsanleitung.
+    - `ReadyIllustration.kt`: Native Custom-Animations-Komponente mit Konfetti-Effekt für den Abschluss.
 - ### 📁 Theme (`ui.theme`)
     - `Theme.kt`, `Color.kt`, `Type.kt`, `Shapes.kt`: Design-System Definitionen (Farbschemata, Typografie, Eckenradien), custom Farbschemata für Akzentfarben und AMOLED-Erweiterung.
 
