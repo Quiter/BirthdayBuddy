@@ -10,22 +10,24 @@
 
 ---
 
-## 📝 Aktuelle Vorlage (v2.9.0)
+## 📝 Aktuelle Vorlage (v2.11.0)
 
 <!--suppress HtmlUnknownTag, HtmlUnknownTag -->
 <en-US>
-- Redesigned fast-scrollbar with fade-out & arrow capsule
-- Native illustrations in onboarding (Lottie library purged)
-- App size reduced by 400KB for faster installation
-- Master-Detail improvements: quote placeholder & deselect
-- M3 Settings styling: rounded selection pills on tablets
+- Upgraded theme engine to Google HCT for better contrast
+- Added accessibility contrast settings (Standard, Medium, High)
+- Beautiful rounded cards grouping settings options (M3 ExtraLarge)
+- Smooth horizontal page transition animations and gesture support
+- Master switch to enable/disable label management easily
+- Polished onboarding layouts and card shapes alignment
 </en-US>
 <!--suppress HtmlUnknownTag, HtmlUnknownTag -->
 <de-DE>
-- Google Photos-artiger Fast-Scrollbalken mit Fade-out
-- 100% native Onboarding-Illustrationen (ohne Lottie-Bibliothek)
-- Reduzierte App-Größe um 400KB für schnellere Installation
-- Master-Detail-Verbesserungen auf Tablets (Zitat-Platzhalter & X)
-- M3 Einstellungen-Design: schwebende Kapsel-Auswahl auf Tablets
+- Farb-Engine auf Google HCT für optimalen Kontrast aktualisiert
+- Kontrasteinstellungen (Standard, Mittel, Hoch) für Barrierefreiheit
+- Abgerundete Karten-Container für übersichtlichere Einstellungen
+- Weiche horizontale Seitenübergänge und Systemgesten-Unterstützung
+- Master-Schalter zum einfachen Aktivieren/Deaktivieren von Labels
+- Optimiertes Onboarding-Layout mit einheitlichen Eckenradien
 </de-DE>
 
