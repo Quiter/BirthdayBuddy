@@ -78,18 +78,15 @@ fun ThemeSettingsScreen(
     val themeMode = uiState.themeMode
     val themeAmoled = uiState.themeAmoled
     val themeAccent = uiState.themeAccent
-    val themeContrast = uiState.themeContrast
 
     ThemeSettingsContent(
         windowWidthSizeClass = windowWidthSizeClass,
         themeMode = themeMode,
         themeAmoled = themeAmoled,
         themeAccent = themeAccent,
-        themeContrast = themeContrast,
         showBackButton = showBackButton,
         onThemeModeChange = { viewModel.setThemeMode(it) },
         onThemeAmoledChange = { viewModel.setThemeAmoled(it) },
-        onThemeContrastChange = { viewModel.setThemeContrast(it) },
         onThemeAccentChange = { viewModel.setThemeAccent(it) },
         onNavigateBack = onNavigateBack
     )
@@ -102,11 +99,9 @@ private fun ThemeSettingsContent(
     themeMode: String,
     themeAmoled: Boolean,
     themeAccent: String,
-    themeContrast: Double,
     showBackButton: Boolean,
     onThemeModeChange: (String) -> Unit,
     onThemeAmoledChange: (Boolean) -> Unit,
-    onThemeContrastChange: (Double) -> Unit,
     onThemeAccentChange: (String) -> Unit,
     onNavigateBack: () -> Unit
 ) {
@@ -210,58 +205,6 @@ private fun ThemeSettingsContent(
                 }
             }
 
-            // --- Contrast ---
-            item {
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(bottom = SpacingNormal)
-                ) {
-                    SettingsSectionHeader(title = stringResource(R.string.settings_theme_contrast_header))
-                    SettingsCard(
-                        modifier = Modifier.padding(horizontal = SpacingNormal)
-                    ) {
-                        SettingsClickableRow(
-                            title = stringResource(R.string.settings_theme_contrast_standard),
-                            onClick = { onThemeContrastChange(0.0) },
-                            trailingContent = {
-                                RadioButton(
-                                    selected = themeContrast == 0.0,
-                                    onClick = { onThemeContrastChange(0.0) }
-                                )
-                            }
-                        )
-                        HorizontalDivider(
-                            color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f),
-                            modifier = Modifier.padding(horizontal = SpacingNormal)
-                        )
-                        SettingsClickableRow(
-                            title = stringResource(R.string.settings_theme_contrast_medium),
-                            onClick = { onThemeContrastChange(0.3) },
-                            trailingContent = {
-                                RadioButton(
-                                    selected = themeContrast == 0.3,
-                                    onClick = { onThemeContrastChange(0.3) }
-                                )
-                            }
-                        )
-                        HorizontalDivider(
-                            color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f),
-                            modifier = Modifier.padding(horizontal = SpacingNormal)
-                        )
-                        SettingsClickableRow(
-                            title = stringResource(R.string.settings_theme_contrast_high),
-                            onClick = { onThemeContrastChange(1.0) },
-                            trailingContent = {
-                                RadioButton(
-                                    selected = themeContrast == 1.0,
-                                    onClick = { onThemeContrastChange(1.0) }
-                                )
-                            }
-                        )
-                    }
-                }
-            }
 
             // --- Accent Colors ---
             item {
@@ -400,11 +343,9 @@ private fun ThemeSettingsPreview() {
             themeMode = "SYSTEM",
             themeAmoled = false,
             themeAccent = "PURPLE",
-            themeContrast = 0.0,
             showBackButton = true,
             onThemeModeChange = {},
             onThemeAmoledChange = {},
-            onThemeContrastChange = {},
             onThemeAccentChange = {},
             onNavigateBack = {}
         )

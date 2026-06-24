@@ -142,8 +142,7 @@ class MainActivity : ComponentActivity() {
             BirthdayBuddyTheme(
                 themeMode = appSettings.themeMode,
                 themeAmoled = appSettings.themeAmoled,
-                themeAccent = appSettings.themeAccent,
-                themeContrast = appSettings.themeContrast
+                themeAccent = appSettings.themeAccent
             ) {
                 if (onboardingCompleted != null) {
                     CompositionLocalProvider(

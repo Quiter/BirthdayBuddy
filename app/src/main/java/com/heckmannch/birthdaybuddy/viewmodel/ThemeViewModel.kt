@@ -22,8 +22,7 @@ class ThemeViewModel @Inject constructor(
             ThemeUiState(
                 themeMode = settings.themeMode,
                 themeAmoled = settings.themeAmoled,
-                themeAccent = settings.themeAccent,
-                themeContrast = settings.themeContrast
+                themeAccent = settings.themeAccent
             )
         }
         .stateIn(
@@ -42,9 +41,5 @@ class ThemeViewModel @Inject constructor(
 
     fun setThemeAccent(accent: String) = viewModelScope.launch {
         notificationRepository.updateSettings(themeAccent = accent)
-    }
-
-    fun setThemeContrast(contrast: Double) = viewModelScope.launch {
-        notificationRepository.updateSettings(themeContrast = contrast)
     }
 }

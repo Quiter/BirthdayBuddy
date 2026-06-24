@@ -222,5 +222,40 @@ class SettingsMigrationTest {
 
         settingsCursor.close()
     }
+
+    @Test
+    @Throws(IOException::class)
+    fun migrate8To9() {
+        // 1. Create database in version 8
+        helper.createDatabase(testDb, 8).apply {
+            execSQL(
+                "INSERT INTO app_settings (id, notificationsEnabled, persistentNotifications, onboardingCompleted, lastSyncTimestamp, calendarSyncEnabled, calendarId, otherEventsEnabled, ignoredCouplePairs, birthdayCalendarColor, anniversaryCalendarColor, nameDayCalendarColor, themeMode, themeAmoled, themeAccent, themeContrast, labelsEnabled) " +
+                        "VALUES (0, 1, 1, 1, 123456789, 0, NULL, 0, '[]', -1564957, -6543440, -26624, 'SYSTEM', 0, 'SYSTEM', 0.0, 1)"
+            )
+            close()
+        }
+
+        // 2. Run migration to version 9 and validate
+        val migratedDb = helper.runMigrationsAndValidate(
+            testDb,
+            9,
+            true,
+            SettingsDatabase.MIGRATION_8_9
+        )
+
+        // 3. Verify columns and default values
+        val settingsCursor = migratedDb.query("SELECT * FROM app_settings WHERE id = 0")
+        assert(settingsCursor.moveToFirst())
+
+        // Verify that themeContrast column does not exist anymore (-1)
+        val themeContrastIdx = settingsCursor.getColumnIndex("themeContrast")
+        assert(themeContrastIdx == -1)
+
+        // Verify that labelsEnabled still exists and is 1
+        val labelsEnabledIdx = settingsCursor.getColumnIndex("labelsEnabled")
+        assert(settingsCursor.getInt(labelsEnabledIdx) == 1)
+
+        settingsCursor.close()
+    }
 }
 

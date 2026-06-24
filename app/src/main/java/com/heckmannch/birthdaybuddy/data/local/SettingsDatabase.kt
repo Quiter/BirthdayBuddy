@@ -10,7 +10,7 @@ import androidx.sqlite.db.SupportSQLiteDatabase
 
 @Database(
     entities = [LabelConfig::class, NotificationRule::class, AppSettings::class, ContactUserData::class],
-    version = 8,
+    version = 9,
     exportSchema = true
 )
 @TypeConverters(Converters::class, GiftIdeaConverters::class)
@@ -65,6 +65,55 @@ abstract class SettingsDatabase : RoomDatabase() {
             }
         }
 
+        val MIGRATION_8_9 = object : Migration(8, 9) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                // 1. Create a new table without themeContrast
+                db.execSQL("""
+                    CREATE TABLE IF NOT EXISTS `app_settings_new` (
+                        `id` INTEGER NOT NULL, 
+                        `notificationsEnabled` INTEGER NOT NULL, 
+                        `persistentNotifications` INTEGER NOT NULL, 
+                        `onboardingCompleted` INTEGER NOT NULL, 
+                        `lastSyncTimestamp` INTEGER NOT NULL, 
+                        `calendarSyncEnabled` INTEGER NOT NULL, 
+                        `calendarId` INTEGER, 
+                        `otherEventsEnabled` INTEGER NOT NULL, 
+                        `ignoredCouplePairs` TEXT NOT NULL, 
+                        `birthdayCalendarColor` INTEGER NOT NULL, 
+                        `anniversaryCalendarColor` INTEGER NOT NULL, 
+                        `nameDayCalendarColor` INTEGER NOT NULL, 
+                        `themeMode` TEXT NOT NULL, 
+                        `themeAmoled` INTEGER NOT NULL, 
+                        `themeAccent` TEXT NOT NULL, 
+                        `labelsEnabled` INTEGER NOT NULL, 
+                        PRIMARY KEY(`id`)
+                    )
+                """.trimIndent())
+                
+                // 2. Copy the data
+                db.execSQL("""
+                    INSERT INTO app_settings_new (
+                        id, notificationsEnabled, persistentNotifications, onboardingCompleted, 
+                        lastSyncTimestamp, calendarSyncEnabled, calendarId, otherEventsEnabled, 
+                        ignoredCouplePairs, birthdayCalendarColor, anniversaryCalendarColor, 
+                        nameDayCalendarColor, themeMode, themeAmoled, themeAccent, labelsEnabled
+                    )
+                    SELECT 
+                        id, notificationsEnabled, persistentNotifications, onboardingCompleted, 
+                        lastSyncTimestamp, calendarSyncEnabled, calendarId, otherEventsEnabled, 
+                        ignoredCouplePairs, birthdayCalendarColor, anniversaryCalendarColor, 
+                        nameDayCalendarColor, themeMode, themeAmoled, themeAccent, labelsEnabled
+                    FROM app_settings
+                """.trimIndent())
+                
+                // 3. Drop the old table
+                db.execSQL("DROP TABLE app_settings")
+                
+                // 4. Rename the new table
+                db.execSQL("ALTER TABLE app_settings_new RENAME TO app_settings")
+            }
+        }
+
         fun getDatabase(context: Context): SettingsDatabase =
             INSTANCE ?: synchronized(this) {
                 INSTANCE ?: Room.databaseBuilder(
@@ -78,7 +127,8 @@ abstract class SettingsDatabase : RoomDatabase() {
                         MIGRATION_4_5,
                         MIGRATION_5_6,
                         MIGRATION_6_7,
-                        MIGRATION_7_8
+                        MIGRATION_7_8,
+                        MIGRATION_8_9
                     )
                     .build()
                     .also { INSTANCE = it }

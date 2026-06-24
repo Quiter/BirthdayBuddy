@@ -57,8 +57,7 @@ class NotificationRepository @Inject constructor(
         nameDayCalendarColor: Int? = null,
         themeMode: String? = null,
         themeAmoled: Boolean? = null,
-        themeAccent: String? = null,
-        themeContrast: Double? = null
+        themeAccent: String? = null
     ) {
         settingsMutex.withLock {
             val current = appSettingsDao.getSettingsImmediate() ?: AppSettings()
@@ -78,8 +77,7 @@ class NotificationRepository @Inject constructor(
                     nameDayCalendarColor = nameDayCalendarColor ?: current.nameDayCalendarColor,
                     themeMode = themeMode ?: current.themeMode,
                     themeAmoled = themeAmoled ?: current.themeAmoled,
-                    themeAccent = themeAccent ?: current.themeAccent,
-                    themeContrast = themeContrast ?: current.themeContrast
+                    themeAccent = themeAccent ?: current.themeAccent
                 )
             )
         }

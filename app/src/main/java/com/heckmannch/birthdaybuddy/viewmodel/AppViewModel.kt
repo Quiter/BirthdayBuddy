@@ -29,7 +29,7 @@ class AppViewModel @Inject constructor(
 
     /**
      * Reaktiver App-Settings-Flow für das globale Theme (themeMode, themeAmoled,
-     * themeAccent, themeContrast). [SharingStarted.Eagerly] stellt sicher, dass die
+     * themeAccent). [SharingStarted.Eagerly] stellt sicher, dass die
      * Settings sofort beim App-Start verfügbar sind, ohne auf den ersten Collector
      * warten zu müssen – verhindert ein kurzes Theme-Flackern beim Kaltstart.
      */

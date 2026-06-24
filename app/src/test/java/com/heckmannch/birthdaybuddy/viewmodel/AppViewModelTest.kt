@@ -42,8 +42,7 @@ class AppViewModelTest {
         val customSettings = AppSettings(
             themeMode = "DARK",
             themeAmoled = true,
-            themeAccent = "#FF0000",
-            themeContrast = 0.5
+            themeAccent = "#FF0000"
         )
         whenever(notificationRepository.settings).thenReturn(flowOf(customSettings))
 
@@ -54,7 +53,6 @@ class AppViewModelTest {
         assertThat(result.themeMode).isEqualTo("DARK")
         assertThat(result.themeAmoled).isTrue()
         assertThat(result.themeAccent).isEqualTo("#FF0000")
-        assertThat(result.themeContrast).isEqualTo(0.5)
     }
 
     @Test

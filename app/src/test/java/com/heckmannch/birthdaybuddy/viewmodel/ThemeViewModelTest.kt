@@ -37,8 +37,7 @@ class ThemeViewModelTest {
         val testSettings = AppSettings(
             themeMode = "DARK",
             themeAmoled = true,
-            themeAccent = "#FF0000",
-            themeContrast = 0.3
+            themeAccent = "#FF0000"
         )
         whenever(notificationRepository.settings).thenReturn(flowOf(testSettings))
 
@@ -49,7 +48,6 @@ class ThemeViewModelTest {
         assertThat(uiState.themeMode).isEqualTo("DARK")
         assertThat(uiState.themeAmoled).isTrue()
         assertThat(uiState.themeAccent).isEqualTo("#FF0000")
-        assertThat(uiState.themeContrast).isEqualTo(0.3)
     }
 
     @Test
@@ -70,8 +68,7 @@ class ThemeViewModelTest {
             nameDayCalendarColor = eq(null),
             themeMode = eq("LIGHT"),
             themeAmoled = eq(null),
-            themeAccent = eq(null),
-            themeContrast = eq(null)
+            themeAccent = eq(null)
         )
     }
 
@@ -93,8 +90,7 @@ class ThemeViewModelTest {
             nameDayCalendarColor = eq(null),
             themeMode = eq(null),
             themeAmoled = eq(true),
-            themeAccent = eq(null),
-            themeContrast = eq(null)
+            themeAccent = eq(null)
         )
     }
 
@@ -116,31 +112,7 @@ class ThemeViewModelTest {
             nameDayCalendarColor = eq(null),
             themeMode = eq(null),
             themeAmoled = eq(null),
-            themeAccent = eq("#00FF00"),
-            themeContrast = eq(null)
-        )
-    }
-
-    @Test
-    fun `setThemeContrast should delegate to repository`() = runTest {
-        viewModel.setThemeContrast(0.3)
-
-        verify(notificationRepository).updateSettings(
-            notificationsEnabled = eq(null),
-            persistentNotifications = eq(null),
-            onboardingCompleted = eq(null),
-            lastSyncTimestamp = eq(null),
-            calendarSyncEnabled = eq(null),
-            calendarId = eq(null),
-            clearCalendarId = eq(false),
-            otherEventsEnabled = eq(null),
-            birthdayCalendarColor = eq(null),
-            anniversaryCalendarColor = eq(null),
-            nameDayCalendarColor = eq(null),
-            themeMode = eq(null),
-            themeAmoled = eq(null),
-            themeAccent = eq(null),
-            themeContrast = eq(0.3)
+            themeAccent = eq("#00FF00")
         )
     }
 }
