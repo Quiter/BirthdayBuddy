@@ -228,6 +228,13 @@
       - **`ContactsPage.kt`**, **`NotificationsPage.kt`**, **`CalendarPage.kt`**, **`ReadyPage.kt`**: Konfiguration des Card-Parameters `shape = MaterialTheme.shapes.extraLarge` zur Vereinheitlichung der UI-Eckenradien.
       - **`PROJECT_STRUCTURE.md`**: Dokumentation der neuen Datei `StepItem.kt`.
 
+219. **Migration der Kalender-Farbzeilen auf die zentrale `SettingsClickableRow`-Komponente (Code Quality / Konsistenz):**
+    - **Problem:** Die Zeilen zur Auswahl der Kalenderfarben (für Geburtstage, Hochzeitstage und Namenstage) in `CalendarSettingsScreen.kt` nutzten rohe `ListItem`-Aufrufe mit manuellem `clickable`-Modifier und redundantem Design-Boilerplate. Das verletzte das Prinzip der zentralisierten Design-Tokens in Einstellungs-Screens.
+    - **Lösung:** Ersetzung der rohen `ListItem`-Aufrufe durch die in `SettingsComponents.kt` bereitgestellte Komponente `SettingsClickableRow`.
+    - **Details der Änderungen:**
+      - **`CalendarSettingsScreen.kt`**: Import für `SettingsClickableRow` hinzugefügt und die drei Farb-Zeilen auf die zentrale Komponente umgestellt.
+
+
 
 
 

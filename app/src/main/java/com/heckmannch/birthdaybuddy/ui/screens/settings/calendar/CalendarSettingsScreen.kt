@@ -8,7 +8,6 @@ import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -34,8 +33,6 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LargeTopAppBar
-import androidx.compose.material3.ListItem
-import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
@@ -64,6 +61,7 @@ import com.heckmannch.birthdaybuddy.ui.components.AppResponsiveScaffold
 import com.heckmannch.birthdaybuddy.ui.components.ColorPickerDialog
 import com.heckmannch.birthdaybuddy.ui.components.InfoCard
 import com.heckmannch.birthdaybuddy.ui.components.SettingsCard
+import com.heckmannch.birthdaybuddy.ui.components.SettingsClickableRow
 import com.heckmannch.birthdaybuddy.ui.components.SettingsSectionHeader
 import com.heckmannch.birthdaybuddy.ui.components.SettingsSwitchRow
 import com.heckmannch.birthdaybuddy.ui.components.StepItem
@@ -259,9 +257,9 @@ private fun CalendarSettingsContent(
                     ) {
                         SettingsSectionHeader(title = stringResource(R.string.calendar_colors_section_title))
                         SettingsCard {
-                            ListItem(
-                                headlineContent = { Text(stringResource(R.string.calendar_color_birthdays)) },
-                                leadingContent = {
+                            SettingsClickableRow(
+                                title = stringResource(R.string.calendar_color_birthdays),
+                                leadingIcon = {
                                     Box(
                                         modifier = Modifier
                                             .size(IconSizeLarge)
@@ -271,22 +269,21 @@ private fun CalendarSettingsContent(
                                             )
                                     )
                                 },
-                                modifier = Modifier.clickable {
+                                onClick = {
                                     onColorRowClick(
                                         CalendarSyncRepository.CalendarType.BIRTHDAY,
                                         Color(birthdayColor)
                                     )
-                                },
-                                colors = ListItemDefaults.colors(containerColor = Color.Transparent)
+                                }
                             )
                             if (otherEventsEnabled) {
                                 HorizontalDivider(
                                     color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f),
                                     modifier = Modifier.padding(horizontal = SpacingNormal)
                                 )
-                                ListItem(
-                                    headlineContent = { Text(stringResource(R.string.calendar_color_anniversaries)) },
-                                    leadingContent = {
+                                SettingsClickableRow(
+                                    title = stringResource(R.string.calendar_color_anniversaries),
+                                    leadingIcon = {
                                         Box(
                                             modifier = Modifier
                                                 .size(IconSizeLarge)
@@ -296,21 +293,20 @@ private fun CalendarSettingsContent(
                                                 )
                                         )
                                     },
-                                    modifier = Modifier.clickable {
+                                    onClick = {
                                         onColorRowClick(
                                             CalendarSyncRepository.CalendarType.ANNIVERSARY,
                                             Color(anniversaryColor)
                                         )
-                                    },
-                                    colors = ListItemDefaults.colors(containerColor = Color.Transparent)
+                                    }
                                 )
                                 HorizontalDivider(
                                     color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f),
                                     modifier = Modifier.padding(horizontal = SpacingNormal)
                                 )
-                                ListItem(
-                                    headlineContent = { Text(stringResource(R.string.calendar_color_namedays)) },
-                                    leadingContent = {
+                                SettingsClickableRow(
+                                    title = stringResource(R.string.calendar_color_namedays),
+                                    leadingIcon = {
                                         Box(
                                             modifier = Modifier
                                                 .size(IconSizeLarge)
@@ -320,13 +316,12 @@ private fun CalendarSettingsContent(
                                                 )
                                         )
                                     },
-                                    modifier = Modifier.clickable {
+                                    onClick = {
                                         onColorRowClick(
                                             CalendarSyncRepository.CalendarType.NAMEDAY,
                                             Color(nameDayColor)
                                         )
-                                    },
-                                    colors = ListItemDefaults.colors(containerColor = Color.Transparent)
+                                    }
                                 )
                             }
                         }
