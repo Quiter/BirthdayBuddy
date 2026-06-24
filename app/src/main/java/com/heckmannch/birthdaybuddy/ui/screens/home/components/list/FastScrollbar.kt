@@ -140,7 +140,7 @@ fun FastScrollbar(
         }
 
         if (isNeeded && totalItems > 0) {
-            val thumbOffset by remember(trackHeight, headerCount) {
+            val thumbOffset by remember(trackHeight, headerCount, contacts.size) {
                 derivedStateOf {
                     if (isDragging) {
                         with(density) { dragOffsetPx.toDp() }.coerceIn(0.dp, trackHeight)
@@ -153,11 +153,11 @@ fun FastScrollbar(
                         val scrollOffset = listState.firstVisibleItemScrollOffset.toFloat()
                         val itemSize = firstItem.size.toFloat().coerceAtLeast(1f)
 
-                        val contactIndex = (listState.firstVisibleItemIndex - headerCount).coerceAtLeast(0)
+                        val totalListItems = contacts.size + headerCount
                         val fractionalIndex =
-                            contactIndex.toFloat() + (scrollOffset / itemSize)
+                            listState.firstVisibleItemIndex.toFloat() + (scrollOffset / itemSize)
                         val maxScrollIndex =
-                            (totalItems.toFloat() - (layoutInfo.viewportEndOffset / itemSize)).coerceAtLeast(
+                            (totalListItems.toFloat() - (layoutInfo.viewportEndOffset / itemSize)).coerceAtLeast(
                                 1f
                             )
 
@@ -167,12 +167,14 @@ fun FastScrollbar(
                 }
             }
 
-            val currentLabel by remember(contacts, trackHeight) {
+            val currentLabel by remember(contacts, trackHeight, headerCount) {
                 derivedStateOf {
                     val percent =
                         if (trackHeight > 0.dp) (thumbOffset / trackHeight).coerceIn(0f, 1f) else 0f
-                    val index = (percent * (totalItems - 1)).toInt().coerceIn(0, totalItems - 1)
-                    contacts.getOrNull(index)?.let(getLabel) ?: ""
+                    val totalListItems = contacts.size + headerCount
+                    val listIndex = (percent * (totalListItems - 1)).toInt().coerceIn(0, totalListItems - 1)
+                    val contactIndex = (listIndex - headerCount).coerceIn(0, contacts.size - 1)
+                    contacts.getOrNull(contactIndex)?.let(getLabel) ?: ""
                 }
             }
 
@@ -204,11 +206,9 @@ fun FastScrollbar(
                                     currentTrackHeightPx
                                 )
                                 val scrollPercent = dragOffsetPx / currentTrackHeightPx
-                                val (targetIndex, targetOffset) = calculateScrollTarget(
-                                    scrollPercent,
-                                    currentTotalItems
-                                )
-                                scope.launch { listState.scrollToItem(currentHeaderCount + targetIndex, targetOffset) }
+                                val totalListItems = currentTotalItems + currentHeaderCount
+                                val targetIndex = (scrollPercent * (totalListItems - 1)).toInt().coerceIn(0, totalListItems - 1)
+                                scope.launch { listState.scrollToItem(targetIndex, 0) }
                             },
                             onDragEnd = { isDragging = false; currentOnSetFastScrolling(false) },
                             onDragCancel = { isDragging = false; currentOnSetFastScrolling(false) },
@@ -216,11 +216,9 @@ fun FastScrollbar(
                             dragOffsetPx =
                                 (dragOffsetPx + dragAmount).coerceIn(0f, currentTrackHeightPx)
                             val scrollPercent = dragOffsetPx / currentTrackHeightPx
-                            val (targetIndex, targetOffset) = calculateScrollTarget(
-                                scrollPercent,
-                                currentTotalItems
-                            )
-                            scope.launch { listState.scrollToItem(currentHeaderCount + targetIndex, targetOffset) }
+                            val totalListItems = currentTotalItems + currentHeaderCount
+                            val targetIndex = (scrollPercent * (totalListItems - 1)).toInt().coerceIn(0, totalListItems - 1)
+                            scope.launch { listState.scrollToItem(targetIndex, 0) }
                             change.consume()
                         }
                     }
@@ -321,13 +319,4 @@ private fun ScrollbarBubble(
             }
         }
     }
-}
-
-private fun calculateScrollTarget(
-    scrollPercent: Float,
-    totalItems: Int,
-): Pair<Int, Int> {
-    val targetFractionalIndex = scrollPercent * (totalItems - 1)
-    val targetIndex = targetFractionalIndex.toInt().coerceIn(0, totalItems - 1)
-    return targetIndex to 0
 }
