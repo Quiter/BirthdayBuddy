@@ -2,19 +2,19 @@
 > **Note:** Historische Einträge (Meilensteine 1-181) wurden nach [CHANGELOG_ARCHIVE.md](CHANGELOG_ARCHIVE.md) verschoben, um das Kontext-Fenster für LLM-Sessions zu optimieren.
 
 213. **Master-Schalter für das Label-Management (Feature):**
-    - **Problem:** Wenn ein Nutzer zwar eigene Labels in seinen System-Kontakten definiert hatte, die Label-Filterung und -Verwaltung in BirthdayBuddy jedoch nicht nutzen wollte, gab es keine Möglichkeit, diese Funktion abzuschalten. Sie belegte Platz auf dem Startbildschirm und filterte ungewollt Kontakte aus.
-    - **Lösung:** Einführung eines Master-Schalters ("Label-Management aktivieren") oben im Label-Verwaltungs-Bildschirm. Wenn dieser deaktiviert ist, wird die Filterleiste auf dem Startbildschirm ausgeblendet, Kontakte werden nicht mehr anhand ihrer Labels gefiltert oder im Widget ignoriert, und die Konfigurationskarten im Einstellungsbildschirm werden ausgegraut und gesperrt.
+    - **Problem:** Wenn ein Nutzer zwar eigene Labels in seinen System-Kontakten definiert hatte, die Label-Filterung und -Verwaltung in BirthdayBuddy jedoch nicht nutzen wollte, gab es keine Möglichkeit, diese Funktion abzuschalten. Sie belegte Platz auf dem Startbildschirm und filterte ungewollt Kontakte aus. Zudem sollten Hochzeitstage und Namenstage bei deaktiviertem Label-Management mit in die Gesamtliste aufgenommen werden.
+    - **Lösung:** Einführung eines Master-Schalters ("Label-Management aktivieren") oben im Label-Verwaltungs-Bildschirm. Wenn dieser deaktiviert ist, wird die Filterleiste auf dem Startbildschirm ausgeblendet, Kontakte werden nicht mehr anhand ihrer Labels gefiltert oder im Widget ignoriert, und die Konfigurationskarten im Einstellungsbildschirm werden ausgegraut und gesperrt. Außerdem werden Hochzeitstage und Namenstage (sofern "Weitere Ereignisse" aktiv ist) in der Gesamtliste einsortiert, da die separaten Label-Filtertabs ausgeblendet sind.
     - **Details der Änderungen:**
       - **`AppSettings.kt`**: Neues Attribut `labelsEnabled` (default `true`) zur Speicherung der Einstellung.
       - **`SettingsDatabase.kt`**: Datenbankversion auf `8` erhöht und Migration `MIGRATION_7_8` implementiert.
       - **`ContactRepository.kt`**: Flow `labelsEnabled` und Methode `updateLabelsEnabled` bereitgestellt.
       - **`LabelViewModel.kt`**: StateFlow `labelsEnabled` und Methode `setLabelsEnabled` bereitgestellt.
-      - **`HomeViewModel.kt`**: Logik von `ignoredLabels` und `availableLabels` angepasst; löscht Label-Tags der Kontakte im `uiState` wenn das Label-Management deaktiviert ist.
+      - **`HomeViewModel.kt`**: Logik von `ignoredLabels` und `availableLabels` angepasst; löscht Label-Tags der Kontakte im `uiState` wenn das Label-Management deaktiviert ist. Hochzeitstage und Namenstage werden bei deaktiviertem Label-Management und aktiviertem `otherEventsEnabled` in die Gesamtliste integriert.
       - **`BirthdayWidget.kt`**: Deaktiviert das Filtern ignorierter Kontakte im Widget, wenn das Label-Management aus ist.
       - **`LabelSettingsScreen.kt`**: Integration von `AppSwitch` als Master-Schalter und visuelle Sperrung (`AlphaEmphasisDisabled`) der Label-Konfigurationskarten.
       - **`strings.xml` & `strings.xml (de)`**: Texte für den Schalter hinzugefügt.
       - **`SettingsMigrationTest.kt`**: Migrationstest `migrate7To8` zur Absicherung des DB-Updates.
-      - **`LabelViewModelTest.kt` & `HomeViewModelTest.kt` & `HomeViewModelSearchTest.kt`**: Anpassung und Erweiterung der Unit-Tests zur Verifizierung.
+      - **`LabelViewModelTest.kt` & `HomeViewModelTest.kt` & `HomeViewModelSearchTest.kt`**: Anpassung und Erweiterung der Unit-Tests zur Verifizierung (einschließlich Kombination der Ereignisse bei deaktiviertem Label-Management).
 
 212. **Migration der App-Navigation auf Jetpack Navigation 3 & Fix der Navigationsanimationen:**
     - **Problem:** Die Navigation nutzte zuvor das standardmäßige Jetpack Navigation Compose mit `NavHost`. Die Übergangsanimationen und das Z-Index-Verhalten bei Zurück-Navigation (Pop) waren nach der ersten Migration in `MainActivity.kt` fehlerhaft (die eintreffende Seite schob sich über die austreffende Seite, und die Seite verschwand in der Mitte, anstatt seitlich wegzusliden).

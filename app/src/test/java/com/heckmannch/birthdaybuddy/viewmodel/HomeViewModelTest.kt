@@ -231,4 +231,102 @@ class HomeViewModelTest {
         assertThat(state.contacts).hasSize(1)
         assertThat(state.contacts?.first()?.labels).isEmpty()
     }
+
+    @Test
+    fun whenLabelsDisabled_thenMainListCombinesBirthdaysAnniversariesAndNameDays() = runTest {
+        val contacts = listOf(
+            Contact(
+                contactId = "1",
+                lookupKey = "1",
+                fullName = "Birthday Person",
+                birthday = today.plusDays(5),
+                anniversary = null,
+                nameDay = null
+            ),
+            Contact(
+                contactId = "2",
+                lookupKey = "2",
+                fullName = "Anniversary Person",
+                birthday = null,
+                anniversary = today.plusDays(10),
+                nameDay = null
+            ),
+            Contact(
+                contactId = "3",
+                lookupKey = "3",
+                fullName = "NameDay Person",
+                birthday = null,
+                anniversary = null,
+                nameDay = today.plusDays(15)
+            )
+        )
+        whenever(contactRepository.labelConfigs).thenReturn(MutableStateFlow(emptyList()))
+        whenever(contactRepository.allContacts).thenReturn(MutableStateFlow(contacts))
+        whenever(contactRepository.labelsEnabled).thenReturn(MutableStateFlow(false))
+        whenever(contactRepository.otherEventsEnabled).thenReturn(MutableStateFlow(true))
+
+        viewModel = HomeViewModel(
+            contactRepository = contactRepository,
+            mapper = mapper,
+            timeRepository = timeRepository,
+        )
+
+        // Wait for UI State to propagate contacts
+        val state = viewModel.uiState.first { it.contacts != null && it.contacts.size == 3 }
+        
+        // Main list should contain 3 events, sorted by daysUntilNext
+        val uiContacts = state.contacts!!
+        assertThat(uiContacts).hasSize(3)
+        assertThat(uiContacts[0].fullName).isEqualTo("Birthday Person")
+        assertThat(uiContacts[1].fullName).isEqualTo("Anniversary Person")
+        assertThat(uiContacts[2].fullName).isEqualTo("NameDay Person")
+    }
+
+    @Test
+    fun whenLabelsDisabledAndOtherEventsDisabled_thenMainListOnlyContainsBirthdays() = runTest {
+        val contactsList = listOf(
+            Contact(
+                contactId = "1",
+                lookupKey = "1",
+                fullName = "Birthday Person",
+                birthday = today.plusDays(5),
+                anniversary = null,
+                nameDay = null
+            ),
+            Contact(
+                contactId = "2",
+                lookupKey = "2",
+                fullName = "Anniversary Person",
+                birthday = null,
+                anniversary = today.plusDays(10),
+                nameDay = null
+            ),
+            Contact(
+                contactId = "3",
+                lookupKey = "3",
+                fullName = "NameDay Person",
+                birthday = null,
+                anniversary = null,
+                nameDay = today.plusDays(15)
+            )
+        )
+        whenever(contactRepository.labelConfigs).thenReturn(MutableStateFlow(emptyList()))
+        whenever(contactRepository.allContacts).thenReturn(MutableStateFlow(contactsList))
+        whenever(contactRepository.labelsEnabled).thenReturn(MutableStateFlow(false))
+        whenever(contactRepository.otherEventsEnabled).thenReturn(MutableStateFlow(false))
+
+        viewModel = HomeViewModel(
+            contactRepository = contactRepository,
+            mapper = mapper,
+            timeRepository = timeRepository,
+        )
+
+        // Wait for UI State to propagate contacts
+        val state = viewModel.uiState.first { it.contacts != null && it.contacts.size == 1 }
+        
+        // Main list should contain only 1 event
+        val contacts = state.contacts!!
+        assertThat(contacts).hasSize(1)
+        assertThat(contacts[0].fullName).isEqualTo("Birthday Person")
+    }
 }
