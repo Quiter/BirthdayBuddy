@@ -157,12 +157,11 @@
     <string name="onboarding_welcome_title">Willkommen bei BirthdayBuddy</string>
     <string name="onboarding_welcome_desc">Dein zuverlässiger Begleiter, um nie wieder einen Geburtstag zu vergessen. Alle Kontakte an einem Ort, sortiert nach ihrem großen Tag.</string>
     <string name="onboarding_contacts_title">Deine Kontakte</string>
-    <string name="onboarding_contacts_desc">Um dir Geburtstage anzuzeigen, benötigt BirthdayBuddy Zugriff auf deine System-Kontakte. Deine Daten bleiben lokal auf deinem Gerät. Stelle sicher, dass oben „Kontakte synchronisieren“ aktiv ist.</string>
+    <string name="onboarding_contacts_desc">Um dir Geburtstage anzuzeigen, benötigt BirthdayBuddy Zugriff auf deine System-Kontakte. Deine Daten bleiben lokal auf deinem Gerät. Stelle sicher, dass „Kontakte synchronisieren“ aktiv ist.</string>
     <string name="onboarding_contacts_btn">Berechtigung erteilen</string>
-
     <string name="onboarding_contacts_granted">Zugriff gewährt!</string>
     <string name="onboarding_notif_page_title">Erinnerungen</string>
-    <string name="onboarding_notif_page_desc">Wann sollen wir dich erinnern? Du kannst auch entscheiden, ob Erinnerungen aktiv bleiben sollen, bis du sie erledigst.</string>
+    <string name="onboarding_notif_page_desc">Sollen wir dich erinnern? Du kannst auch entscheiden, ob Erinnerungen aktiv bleiben sollen, bis du sie als erledigt markierst.</string>
     <string name="onboarding_notif_enable">Benachrichtigungen aktivieren</string>
     <string name="onboarding_notif_persistent">Persistente Erinnerungen</string>
     <string name="onboarding_notif_btn">Berechtigung erteilen</string>
@@ -183,7 +182,6 @@
     <string name="onboarding_ready_btn">Los geht\'s</string>
     <string name="onboarding_next">Weiter</string>
     <string name="onboarding_back">Zurück</string>
-
 
     <!-- App Shortcuts -->
     <string name="shortcut_add_contact">Kontakt hinzufügen</string>
@@ -247,7 +245,7 @@
     <string name="calendar_name_anniversaries">Hochzeitstage</string>
     <string name="calendar_name_namedays">Namenstage</string>
     <string name="onboarding_calendar_title">Kalender-Sync</string>
-    <string name="onboarding_calendar_desc">Möchtest du Geburtstage in deinen standard System-Kalender eintragen lassen? Es wird ein separater Kalender namens „BirthdayBuddy“ angelegt.</string>
+    <string name="onboarding_calendar_desc">Möchtest du Geburtstage in deinen Kalender eintragen lassen? Es wird ein separater Kalender namens „BirthdayBuddy“ angelegt.</string>
     <string name="onboarding_calendar_enable">In Kalender eintragen</string>
     <string name="onboarding_calendar_btn">Berechtigung erteilen</string>
     <string name="settings_calendar_title">Kalender-Synchronisierung</string>
