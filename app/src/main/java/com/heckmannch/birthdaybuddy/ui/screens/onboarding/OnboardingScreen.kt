@@ -206,8 +206,10 @@ fun OnboardingContent(
         )
     }
 
+    val actualPage = if (!showCalendarGuide && pagerState.currentPage >= 4) pagerState.currentPage + 1 else pagerState.currentPage
+
     val ambientColor by animateColorAsState(
-        targetValue = when (pagerState.currentPage) {
+        targetValue = when (actualPage) {
             0 -> MaterialTheme.colorScheme.primaryContainer.copy(alpha = AlphaContainerSubtle)
             1 -> MaterialTheme.colorScheme.secondaryContainer.copy(alpha = AlphaContainerSubtle)
             2 -> MaterialTheme.colorScheme.tertiaryContainer.copy(alpha = AlphaContainerSubtle)

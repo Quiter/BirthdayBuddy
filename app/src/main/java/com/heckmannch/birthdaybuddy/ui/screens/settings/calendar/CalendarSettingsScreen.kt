@@ -25,7 +25,6 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
@@ -67,13 +66,8 @@ import com.heckmannch.birthdaybuddy.ui.components.InfoCard
 import com.heckmannch.birthdaybuddy.ui.components.SettingsCard
 import com.heckmannch.birthdaybuddy.ui.components.SettingsSectionHeader
 import com.heckmannch.birthdaybuddy.ui.components.SettingsSwitchRow
-import com.heckmannch.birthdaybuddy.ui.theme.AlphaContainerMuted
-import com.heckmannch.birthdaybuddy.ui.theme.AlphaContainerSubtle
-import com.heckmannch.birthdaybuddy.ui.theme.AlphaEmphasisDisabled
+import com.heckmannch.birthdaybuddy.ui.components.StepItem
 import com.heckmannch.birthdaybuddy.ui.theme.IconSizeLarge
-import com.heckmannch.birthdaybuddy.ui.theme.IconSizeSmall
-import com.heckmannch.birthdaybuddy.ui.theme.SpacingExtraSmall
-import com.heckmannch.birthdaybuddy.ui.theme.SpacingMedium
 import com.heckmannch.birthdaybuddy.ui.theme.SpacingNormal
 import com.heckmannch.birthdaybuddy.ui.theme.SpacingSmall
 import com.heckmannch.birthdaybuddy.viewmodel.CalendarViewModel
@@ -457,89 +451,6 @@ private fun openDefaultCalendarApp(context: Context) {
             context.startActivity(intent)
         } catch (e2: Exception) {
             Log.e("CalendarSettingsScreen", "Could not open calendar app", e2)
-        }
-    }
-}
-
-@Composable
-private fun StepItem(
-    stepNumber: Int,
-    title: String,
-    description: String,
-    isCompleted: Boolean,
-    isLocked: Boolean = false,
-    icon: androidx.compose.ui.graphics.vector.ImageVector? = null,
-    actionButton: (@Composable () -> Unit)? = null
-) {
-    val contentAlpha = if (isLocked) AlphaEmphasisDisabled else 1f
-    val primaryColor = MaterialTheme.colorScheme.primary
-    val successColor = Color(0xFF4CAF50)
-    val onSurfaceColor = MaterialTheme.colorScheme.onSurface
-
-    Row(
-        modifier = Modifier.fillMaxWidth(),
-        verticalAlignment = Alignment.Top
-    ) {
-        // Circle indicator
-        Box(
-            modifier = Modifier
-                .size(IconSizeLarge)
-                .background(
-                    color = when {
-                        isCompleted -> successColor.copy(alpha = AlphaContainerSubtle)
-                        isLocked -> MaterialTheme.colorScheme.onSurface.copy(alpha = AlphaContainerMuted)
-                        else -> primaryColor.copy(alpha = AlphaContainerSubtle)
-                    },
-                    shape = CircleShape
-                ),
-            contentAlignment = Alignment.Center
-        ) {
-            if (isCompleted) {
-                Icon(
-                    imageVector = Icons.Default.Check,
-                    contentDescription = null,
-                    tint = successColor,
-                    modifier = Modifier.size(IconSizeSmall)
-                )
-            } else if (icon != null) {
-                Icon(
-                    imageVector = icon,
-                    contentDescription = null,
-                    tint = if (isLocked) onSurfaceColor.copy(alpha = AlphaEmphasisDisabled) else primaryColor,
-                    modifier = Modifier.size(16.dp)
-                )
-            } else {
-                Text(
-                    text = stepNumber.toString(),
-                    style = MaterialTheme.typography.bodyMedium,
-                    fontWeight = FontWeight.Bold,
-                    color = if (isLocked) onSurfaceColor.copy(alpha = AlphaEmphasisDisabled) else primaryColor
-                )
-            }
-        }
-
-        Spacer(modifier = Modifier.width(SpacingMedium))
-
-        Column(
-            modifier = Modifier
-                .weight(1f)
-                .padding(top = SpacingExtraSmall)
-        ) {
-            Text(
-                text = title,
-                style = MaterialTheme.typography.bodyMedium,
-                fontWeight = FontWeight.Bold,
-                color = onSurfaceColor.copy(alpha = contentAlpha)
-            )
-            Spacer(modifier = Modifier.height(2.dp))
-            Text(
-                text = description,
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = contentAlpha)
-            )
-            if (actionButton != null && !isLocked) {
-                actionButton()
-            }
         }
     }
 }

@@ -45,6 +45,7 @@ fun CalendarPage(
         description = stringResource(R.string.onboarding_calendar_desc),
         settingsCard = {
             Card(
+                shape = MaterialTheme.shapes.extraLarge,
                 modifier = Modifier.fillMaxWidth(),
                 colors = CardDefaults.cardColors(
                     containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(

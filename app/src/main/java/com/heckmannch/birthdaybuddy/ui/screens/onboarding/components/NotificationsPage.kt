@@ -48,6 +48,7 @@ fun NotificationsPage(
         description = stringResource(R.string.onboarding_notif_page_desc),
         settingsCard = {
             Card(
+                shape = MaterialTheme.shapes.extraLarge,
                 modifier = Modifier.fillMaxWidth(),
                 colors = CardDefaults.cardColors(
                     containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(

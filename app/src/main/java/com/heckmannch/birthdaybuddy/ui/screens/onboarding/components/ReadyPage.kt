@@ -44,6 +44,7 @@ fun ReadyPage(
         settingsCard = {
             // Zusammenfassung
             Card(
+                shape = MaterialTheme.shapes.extraLarge,
                 modifier = Modifier.fillMaxWidth(),
                 colors = CardDefaults.cardColors(
                     containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(

@@ -117,6 +117,7 @@
     - `ResponsiveLayout.kt`: Beinhaltet `AdaptiveContentContainer`, `AppResponsiveScaffold` und den globalen `LocalWindowWidthSizeClass` CompositionLocal-Provider zur flexiblen, abfragefreien Größenklassen-Weitergabe (Handy, Tablet, Chromebook).
     - `AppSwitch.kt`: Wiederverwendbare, standardisierte Switch-Komponente, die das Standard-Material-3-Design anwendet und bei Aktivierung automatisch ein Häkchen-Symbol anzeigt.
     - `SettingsComponents.kt`: Wiederverwendbare UI-Komponenten für Einstellungsseiten (`SettingsSectionHeader`, `SettingsCard`, `SettingsSwitchRow`, `SettingsClickableRow`).
+    - `StepItem.kt`: Wiederverwendbare, zweispaltige Komponente zur Darstellung von Setup-Schritten mit Nummern oder Icons.
 - ### 📁 UI Illustrations (`ui.illustrations`)
     - `WelcomeIllustration.kt`: Native Custom-Animations-Komponente für das Begrüßungs-Onboarding.
     - `ContactsIllustration.kt`: Wiederverwendbare, rein native Custom-Animations-Komponente für Kontakte-Berechtigungen (verschoben aus `ui/components/`).

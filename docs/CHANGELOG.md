@@ -212,4 +212,22 @@
       - **`BirthdayList.kt`**: Import-Pfad von `ContactsIllustration` auf das neue Paket aktualisiert.
       - **`PROJECT_STRUCTURE.md`**: Dokumentation der neuen Paketstruktur und der verschobenen Dateien.
 
+217. **Präzisierung der Hintergrundfarb-Animation im Onboarding (UI/UX Polish):**
+    - **Problem:** Die Hintergrundfarbe `ambientColor` in `OnboardingScreen.kt` wurde basierend auf `pagerState.currentPage` animiert. Wenn der Kalender-Guide übersprungen wurde, verschob sich der Index der Abschlussseite auf `4`, wodurch fälschlicherweise die Farbe der Kalender-Anleitung (Secondary Container) statt der Abschlussseite (Tertiary Container) angezeigt wurde.
+    - **Lösung:** Berechnung von `actualPage` zur Berücksichtigung der Sichtbarkeit des Kalender-Guides und Kopplung von `ambientColor` an diese berechnete Seite.
+    - **Details der Änderungen:**
+      - **`OnboardingScreen.kt`**: Logik zur Berechnung von `actualPage` hinzugefügt und das Farbschema-Mapping darauf umgestellt.
+
+218. **Einführung der wiederverwendbaren `StepItem`-Komponente und Angleichung der Karten-Ecken (UI/UX Polish / Code Quality):**
+    - **Problem:** Die zweispaltige Darstellung von Setup-Schritten mit einem Kreis-Indikator (Icon/Nummer) links und Text rechts war doppelt und redundant implementiert – einmal privat als `GuideStepItem` in `CalendarGuidePage.kt` und einmal privat als `StepItem` in `CalendarSettingsScreen.kt`. Zudem wiesen die Karten im Onboarding (Radius `medium`) und den Einstellungen (Radius `extraLarge`) einen unterschiedlichen Eckenradius auf, was visuell inkonsistent wirkte.
+    - **Lösung:** Einführung einer zentralen, hochflexiblen `StepItem`-Komponente unter `ui/components/StepItem.kt` zur Nutzung an beiden Stellen. Einheitliche Definition des Eckenradius aller Onboarding-Karten auf `extraLarge`, passend zum Design-System der Einstellungen.
+    - **Details der Änderungen:**
+      - **`StepItem.kt` [NEU]**: Erstellung der flexiblen Komponente mit Unterstützung für Nummern, Icons, erledigte/gesperrte Zustände und Aktions-Buttons.
+      - **`CalendarSettingsScreen.kt`**: Löschung des privaten `StepItem` und Migration auf die zentrale Komponente.
+      - **`CalendarGuidePage.kt`**: Löschung des privaten `GuideStepItem`, Migration auf die neue Komponente und Anpassung des Eckenradius der Karte auf `extraLarge`.
+      - **`ContactsPage.kt`**, **`NotificationsPage.kt`**, **`CalendarPage.kt`**, **`ReadyPage.kt`**: Konfiguration des Card-Parameters `shape = MaterialTheme.shapes.extraLarge` zur Vereinheitlichung der UI-Eckenradien.
+      - **`PROJECT_STRUCTURE.md`**: Dokumentation der neuen Datei `StepItem.kt`.
+
+
+
 
