@@ -3,10 +3,8 @@ package com.heckmannch.birthdaybuddy.ui.screens.settings.backup.components
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -41,7 +39,6 @@ import com.heckmannch.birthdaybuddy.ui.components.AppResponsiveScaffold
 import com.heckmannch.birthdaybuddy.ui.components.InfoCard
 import com.heckmannch.birthdaybuddy.ui.theme.BirthdayBuddyTheme
 import com.heckmannch.birthdaybuddy.ui.theme.SpacingNormal
-import com.heckmannch.birthdaybuddy.ui.theme.SpacingSmall
 
 /**
  * Die UI-Darstellung der Backup-Seite.
@@ -137,8 +134,6 @@ fun BackupContent(
             if (isLoading) {
                 LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
             }
-
-            Spacer(modifier = Modifier.height(SpacingSmall))
 
             InfoCard(
                 title = stringResource(R.string.backup_info_title),

@@ -1,6 +1,32 @@
 # Changelog: BirthdayBuddy
 > **Note:** Historische Einträge (Meilensteine 1-181) wurden nach [CHANGELOG_ARCHIVE.md](CHANGELOG_ARCHIVE.md) verschoben, um das Kontext-Fenster für LLM-Sessions zu optimieren.
 
+211. **Einführung einer wiederverwendbaren `AppSwitch`-Komponente zur Design-Konsistenz (UI/UX Polish):**
+    - **Problem:** Die `Switch`-Komponente wurde an 9 verschiedenen Stellen in den Einstellungen, Onboarding-Seiten und Dialogen verwendet. An fast allen Stellen wurde der Häkchen-Indikator auf dem Daumen (`thumbContent = if (checked) { Icon(...) }`) redundant kopiert. Zukünftige Designänderungen an Schaltern hätten manuelle Updates an allen 9 Orten erfordert.
+    - **Lösung:** Einführung der zentralen Komponente `AppSwitch` in `ui/components/AppSwitch.kt`. Diese kapselt das standardmäßige Design und die Häkchen-Logik. Alle direkten `Switch`-Vorkommen im Projekt wurden durch `AppSwitch` ersetzt.
+    - **Details der Änderungen:**
+      - **`AppSwitch.kt` [NEU]**: Erstellung der Komponente mit vorinstalliertem `Icons.Default.Check` auf dem Schalter-Thumb.
+      - **`PROJECT_STRUCTURE.md`**: Dokumentation der neuen Datei.
+      - **Ersetzungen**: `Switch` durch `AppSwitch` und Bereinigung der duplizierten `thumbContent`-Lambdas in `CalendarSettingsScreen.kt`, `NotificationSettingsScreen.kt`, `OtherEventsSettingsScreen.kt`, `ThemeSettingsScreen.kt`, `BirthdayDatePickerDialog.kt`, `CalendarPage.kt`, `ContactsPage.kt` und `NotificationsPage.kt`.
+
+210. **Vereinheitlichung der Elementabstände in den Einstellungen auf SpacingNormal (UI/UX Polish):**
+    - **Problem:** Die vertikalen Abstände zwischen Karten und Sektionen auf verschiedenen Einstellungsseiten waren uneinheitlich. Einige Seiten verwendeten feste paddings (`SpacingLarge`, `SpacingSmall`) oder Spacer in Kombination mit dem standardmäßigen `Arrangement.spacedBy(SpacingNormal)`, was zu optisch unbalancierten Lücken führte.
+    - **Lösung:** Alle Einstellungslisten auf `Arrangement.spacedBy(SpacingNormal)` (16.dp) umgestellt und ad-hoc Innen-/Außenabstände an den Elementen entfernt.
+    - **Details der Änderungen:**
+      - **`NotificationSettingsScreen.kt`**: Zusätzliches Top/Bottom-Padding von `InfoCard` und Bottom-Padding vom geplanten Benachrichtigungs-Container entfernt. Die Anordnung erfolgt nun ausschließlich über den standardmäßigen Abstand des Grids.
+      - **`BackupContent.kt`**: Unnötigen `Spacer` vor der `InfoCard` entfernt.
+      - **`CalendarSettingsScreen.kt`**: `LazyColumn` auf `verticalArrangement = Arrangement.spacedBy(SpacingNormal)` umgestellt; manuelles Padding bei `SetupStepsCard`, der Sync-Aktivierungskarte und dem Kalenderfarben-Container entfernt.
+      - **`OtherEventsSettingsScreen.kt`**: `LazyColumn` auf `spacedBy(SpacingNormal)` umgestellt und das Bottom-Padding der Sync-Karte entfernt.
+      - **`SyncSettingsScreen.kt`**: `LazyColumn` auf `spacedBy(SpacingNormal)` umgestellt und das Bottom-Padding der Sync-Karte entfernt.
+
+209. **Vereinheitlichung der Eckenradien (Shapes) in den Einstellungen auf Material 3 extraLarge (UI/UX Polish):**
+    - **Problem:** Einige Container auf den Einstellungsseiten (z. B. `InfoCard`, `SetupStepsCard` in `CalendarSettingsScreen` und `LabelConfigCard` in `LabelSettingsScreen`) verwendeten abweichende Eckenradien (`shapes.medium` oder `shapes.large`), was das ansonsten durchgängige Design von Karten mit `shapes.extraLarge` unterbrach.
+    - **Lösung:** Vereinheitlichung aller Einstellungskarten auf den Eckenradius `shapes.extraLarge` (28.dp).
+    - **Details der Änderungen:**
+      - **`InfoCard.kt`**: Umstellung des Eckenradius der `Card` von `shapes.medium` auf `shapes.extraLarge`.
+      - **`CalendarSettingsScreen.kt`**: Eckenradius der `SetupStepsCard` von `shapes.large` auf `shapes.extraLarge` geändert.
+      - **`LabelSettingsScreen.kt`**: Eckenradius der `LabelConfigCard` von `shapes.medium` auf `shapes.extraLarge` geändert.
+
 208. **Erstellung von Compose Previews für alle Einstellungsseiten (Developer Experience & UI-Verifikation):**
     - **Problem:** Für die Einstellungsseiten `CalendarSettingsScreen`, `OtherEventsSettingsScreen`, `SyncSettingsScreen` und `ThemeSettingsScreen` fehlten Jetpack Compose `@Preview`-Funktionen. Dadurch war es nicht möglich, das Design dieser Screens direkt im Android Studio-Editor zu betrachten und zu verifizieren. Zudem war `ThemeSettingsScreen` eng an den `ThemeViewModel` gekoppelt.
     - **Lösung:**

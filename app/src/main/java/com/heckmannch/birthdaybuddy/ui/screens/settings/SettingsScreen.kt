@@ -77,6 +77,9 @@ import com.heckmannch.birthdaybuddy.viewmodel.LabelViewModel
 import com.heckmannch.birthdaybuddy.viewmodel.NotificationViewModel
 import com.heckmannch.birthdaybuddy.viewmodel.ThemeViewModel
 
+/**
+ * Represents the available settings sections (tabs/screens) in the app.
+ */
 enum class SettingsTab {
     NOTIFICATIONS,
     CALENDAR,
@@ -89,6 +92,15 @@ enum class SettingsTab {
     PRIVACY_POLICY
 }
 
+/**
+ * Data holder for items displayed in the settings menu list.
+ *
+ * @property titleRes String resource ID for the item's title.
+ * @property descRes String resource ID for the item's description.
+ * @property icon The icon vector to be displayed next to the title.
+ * @property tab The corresponding [SettingsTab] for this menu item.
+ * @property onClick Action to trigger when the menu item is clicked.
+ */
 private data class SettingsMenuItemData(
     val titleRes: Int,
     val descRes: Int,
@@ -97,6 +109,10 @@ private data class SettingsMenuItemData(
     val onClick: () -> Unit
 )
 
+/**
+ * The main settings screen entry point.
+ * It forwards the navigation callbacks and parameters to [SettingsContent].
+ */
 @Composable
 fun SettingsScreen(
     windowWidthSizeClass: WindowWidthSizeClass,
@@ -126,6 +142,10 @@ fun SettingsScreen(
     )
 }
 
+/**
+ * Displays the actual settings content, switching dynamically between a single-column layout
+ * for compact screens (phones) and a side-by-side split-pane layout for wider screens (tablets/foldables).
+ */
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3AdaptiveApi::class)
 @Composable
 private fun SettingsContent(
@@ -141,6 +161,7 @@ private fun SettingsContent(
     onNavigateToOtherEvents: () -> Unit,
     onNavigateBack: () -> Unit,
 ) {
+    // List of menu items to display in the main settings screen list.
     val menuItems = remember(
         onNavigateToNotifications,
         onNavigateToCalendar,
@@ -212,6 +233,9 @@ private fun SettingsContent(
     }
 
     if (windowWidthSizeClass == WindowWidthSizeClass.Compact) {
+        // --- MOBILE/COMPACT LAYOUT ---
+        // Displays a scrollable settings list on a single screen.
+        // Clicking an item navigates away to a separate screen.
         val scrollBehavior =
             TopAppBarDefaults.exitUntilCollapsedScrollBehavior(rememberTopAppBarState())
         AppResponsiveScaffold(
@@ -255,15 +279,27 @@ private fun SettingsContent(
             }
         }
     } else {
+        // --- TABLET/EXPANDED LAYOUT ---
+        // Implements a split-pane Master-Detail screen using Jetpack Navigation 3.
+        // Left side displays the list (master), right side displays the selected screen (detail).
+
         val windowAdaptiveInfo = currentWindowAdaptiveInfoV2()
+        
+        // Define how panes partition the screen. We disable partition spacing for a seamless look.
         val directive = remember(windowAdaptiveInfo) {
             calculatePaneScaffoldDirective(windowAdaptiveInfo)
                 .copy(horizontalPartitionSpacerSize = 0.dp)
         }
+        
+        // Strategy used by Navigation 3 to determine pane transitions/positioning.
         val listDetailStrategy = rememberListDetailSceneStrategy<SettingsNavKey>(directive = directive)
 
+        // Tracks the currently active/selected settings tab on tablets.
         var activeTab by rememberSaveable { mutableStateOf(SettingsTab.NOTIFICATIONS) }
 
+        // Construct the backstack keys dynamically.
+        // For standard tabs: [SettingsMenu, SettingsDetail(activeTab)]
+        // For Privacy Policy: [SettingsMenu, SettingsDetail(ABOUT), SettingsDetail(PRIVACY_POLICY)] (hierarchical flow)
         val backStack = remember(activeTab) {
             if (activeTab == SettingsTab.PRIVACY_POLICY) {
                 listOf<SettingsNavKey>(
@@ -279,6 +315,7 @@ private fun SettingsContent(
             }
         }
 
+        // ViewModels instantiated once here and shared with the active detail screens.
         val notificationViewModel: NotificationViewModel = hiltViewModel()
         val calendarViewModel: CalendarViewModel = hiltViewModel()
         val labelViewModel: LabelViewModel = hiltViewModel()
@@ -290,6 +327,7 @@ private fun SettingsContent(
             useAdaptiveWidth = false,
             topBar = {}
         ) { paddingValues ->
+            // NavDisplay manages the rendering of screens corresponding to the backStack.
             NavDisplay(
                 backStack = backStack,
                 onBack = {
@@ -306,8 +344,9 @@ private fun SettingsContent(
                         is SettingsNavKey.SettingsMenu -> NavEntry(key, metadata = ListDetailSceneStrategy.listPane(
                             detailPlaceholder = {
                                 Box(modifier = Modifier.fillMaxSize())
-                            }
+                             }
                         )) {
+                            // Left Pane: Settings Master Menu
                             Column(
                                 modifier = Modifier
                                     .fillMaxSize()
@@ -334,6 +373,7 @@ private fun SettingsContent(
                                         .fillMaxWidth()
                                 ) {
                                     items(menuItems) { item ->
+                                        // Highlights the item if it matches the current active tab
                                         val isSelected = when (item.tab) {
                                             SettingsTab.ABOUT -> activeTab == SettingsTab.ABOUT || activeTab == SettingsTab.PRIVACY_POLICY
                                             else -> activeTab == item.tab
@@ -355,6 +395,7 @@ private fun SettingsContent(
                             }
                         }
                         is SettingsNavKey.SettingsDetail -> NavEntry(key, metadata = ListDetailSceneStrategy.detailPane()) {
+                            // Right Pane: Active Settings Detail Screen
                             Box(
                                 modifier = Modifier.fillMaxSize()
                             ) {
@@ -463,8 +504,19 @@ private fun SettingsContent(
 
 @Composable
 private fun SettingsFooter() {
+    // Optional footer placeholder (e.g., for version info or copyright).
 }
 
+/**
+ * A menu item row inside the settings menu.
+ *
+ * @param titleRes String resource for the label.
+ * @param descRes String resource for the description.
+ * @param icon The leading icon to display.
+ * @param isSelected Whether this item is currently highlighted (used in tablet mode).
+ * @param useTabletStyle If true, applies extra padding, background highlight, and rounded corners.
+ * @param onClick Action to run on item tap.
+ */
 @Composable
 private fun SettingsMenuItem(
     titleRes: Int,
@@ -474,6 +526,7 @@ private fun SettingsMenuItem(
     useTabletStyle: Boolean = false,
     onClick: () -> Unit
 ) {
+    // Set container color based on selection state and style context (tablet/mobile).
     val containerColor = if (isSelected && useTabletStyle) {
         MaterialTheme.colorScheme.secondaryContainer
     } else {
@@ -498,6 +551,7 @@ private fun SettingsMenuItem(
         MaterialTheme.colorScheme.onSurfaceVariant
     }
 
+    // Tablet style items are padded and clipped inside the container for a modern card-like look.
     val itemModifier = if (useTabletStyle) {
         Modifier
             .fillMaxWidth()
@@ -559,11 +613,20 @@ private fun SettingsPreview() {
     }
 }
 
+/**
+ * Type-safe navigation keys for Jetpack Navigation 3, annotated with @Serializable.
+ */
 @Serializable
 private sealed interface SettingsNavKey : NavKey {
+    /**
+     * Represents the settings menu pane list.
+     */
     @Serializable
     data object SettingsMenu : SettingsNavKey
 
+    /**
+     * Represents a specific detail screen shown on the right side of the split-pane.
+     */
     @Serializable
     data class SettingsDetail(val tab: SettingsTab) : SettingsNavKey
 }

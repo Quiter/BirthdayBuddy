@@ -5,10 +5,10 @@ import android.content.pm.PackageManager
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
@@ -31,17 +31,16 @@ import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.core.content.ContextCompat
 import com.heckmannch.birthdaybuddy.R
 import com.heckmannch.birthdaybuddy.ui.components.AppResponsiveScaffold
 import com.heckmannch.birthdaybuddy.ui.components.InfoCard
-import com.heckmannch.birthdaybuddy.ui.theme.SpacingLarge
 import com.heckmannch.birthdaybuddy.ui.theme.SpacingNormal
 import com.heckmannch.birthdaybuddy.ui.theme.SpacingSmall
 import com.heckmannch.birthdaybuddy.viewmodel.HomeViewModel
@@ -130,7 +129,8 @@ private fun SyncSettingsContent(
                 top = paddingValues.calculateTopPadding() + SpacingSmall,
                 end = SpacingNormal,
                 bottom = paddingValues.calculateBottomPadding() + SpacingSmall
-            )
+            ),
+            verticalArrangement = Arrangement.spacedBy(SpacingNormal)
         ) {
             item {
                 Card(
@@ -138,9 +138,7 @@ private fun SyncSettingsContent(
                     colors = CardDefaults.cardColors(
                         containerColor = MaterialTheme.colorScheme.surfaceContainer
                     ),
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(bottom = SpacingLarge)
+                    modifier = Modifier.fillMaxWidth()
                 ) {
                     ListItem(
                         headlineContent = { Text(stringResource(R.string.sync_button_title)) },

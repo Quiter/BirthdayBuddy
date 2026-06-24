@@ -9,6 +9,7 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -37,8 +38,6 @@ import androidx.compose.material3.LargeTopAppBar
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Switch
-import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberTopAppBarState
@@ -49,7 +48,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -59,11 +57,13 @@ import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.heckmannch.birthdaybuddy.R
 import com.heckmannch.birthdaybuddy.data.repository.CalendarSyncRepository
 import com.heckmannch.birthdaybuddy.ui.components.AppResponsiveScaffold
+import com.heckmannch.birthdaybuddy.ui.components.AppSwitch
 import com.heckmannch.birthdaybuddy.ui.components.ColorPickerDialog
 import com.heckmannch.birthdaybuddy.ui.components.InfoCard
 import com.heckmannch.birthdaybuddy.ui.theme.AlphaContainerMuted
@@ -72,7 +72,6 @@ import com.heckmannch.birthdaybuddy.ui.theme.AlphaEmphasisDisabled
 import com.heckmannch.birthdaybuddy.ui.theme.IconSizeLarge
 import com.heckmannch.birthdaybuddy.ui.theme.IconSizeSmall
 import com.heckmannch.birthdaybuddy.ui.theme.SpacingExtraSmall
-import com.heckmannch.birthdaybuddy.ui.theme.SpacingLarge
 import com.heckmannch.birthdaybuddy.ui.theme.SpacingMedium
 import com.heckmannch.birthdaybuddy.ui.theme.SpacingNormal
 import com.heckmannch.birthdaybuddy.ui.theme.SpacingSmall
@@ -232,7 +231,8 @@ private fun CalendarSettingsContent(
                 top = paddingValues.calculateTopPadding() + SpacingSmall,
                 end = SpacingNormal,
                 bottom = paddingValues.calculateBottomPadding() + SpacingSmall
-            )
+            ),
+            verticalArrangement = Arrangement.spacedBy(SpacingNormal)
         ) {
             item {
                 InfoCard(
@@ -247,26 +247,14 @@ private fun CalendarSettingsContent(
                     colors = CardDefaults.cardColors(
                         containerColor = MaterialTheme.colorScheme.surfaceContainer,
                     ),
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(bottom = SpacingLarge)
-                        .padding(top = SpacingLarge),
+                    modifier = Modifier.fillMaxWidth(),
                 ) {
                     ListItem(
                         headlineContent = { Text(stringResource(R.string.calendar_settings_enable)) },
                         trailingContent = {
-                            Switch(
+                            AppSwitch(
                                 checked = calendarSyncEnabled,
-                                onCheckedChange = onToggleChange,
-                                thumbContent = if (calendarSyncEnabled) {
-                                    {
-                                        Icon(
-                                            imageVector = Icons.Default.Check,
-                                            contentDescription = null,
-                                            modifier = Modifier.size(SwitchDefaults.IconSize)
-                                        )
-                                    }
-                                } else null
+                                onCheckedChange = onToggleChange
                             )
                         },
                         leadingContent = {
@@ -283,9 +271,7 @@ private fun CalendarSettingsContent(
             if (calendarSyncEnabled) {
                 item {
                     Column(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(bottom = SpacingNormal)
+                        modifier = Modifier.fillMaxWidth()
                     ) {
                         Text(
                             text = stringResource(R.string.calendar_colors_section_title),
@@ -408,10 +394,8 @@ private fun SetupStepsCard(
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f)
         ),
-        shape = MaterialTheme.shapes.large,
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(vertical = SpacingNormal)
+        shape = MaterialTheme.shapes.extraLarge,
+        modifier = Modifier.fillMaxWidth()
     ) {
         Column(
             modifier = Modifier.padding(SpacingNormal)

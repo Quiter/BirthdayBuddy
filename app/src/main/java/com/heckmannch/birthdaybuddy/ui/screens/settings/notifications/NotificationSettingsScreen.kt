@@ -27,7 +27,6 @@ import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.NotificationsOff
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
@@ -41,8 +40,6 @@ import androidx.compose.material3.LargeTopAppBar
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Switch
-import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberTopAppBarState
@@ -72,6 +69,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.heckmannch.birthdaybuddy.R
 import com.heckmannch.birthdaybuddy.data.local.NotificationRule
 import com.heckmannch.birthdaybuddy.ui.components.AppResponsiveScaffold
+import com.heckmannch.birthdaybuddy.ui.components.AppSwitch
 import com.heckmannch.birthdaybuddy.ui.components.InfoCard
 import com.heckmannch.birthdaybuddy.ui.screens.settings.notifications.components.EditRuleDialog
 import com.heckmannch.birthdaybuddy.ui.screens.settings.notifications.components.NotificationRuleItem
@@ -304,18 +302,9 @@ private fun NotificationSettingsContent(
                                 headlineContent = { Text(stringResource(R.string.notifications_header)) },
                                 supportingContent = { Text(stringResource(R.string.notifications_desc)) },
                                 trailingContent = {
-                                    Switch(
+                                    AppSwitch(
                                         checked = notificationsEnabled,
-                                        onCheckedChange = onToggleNotifications,
-                                        thumbContent = if (notificationsEnabled) {
-                                            {
-                                                Icon(
-                                                    imageVector = Icons.Default.Check,
-                                                    contentDescription = null,
-                                                    modifier = Modifier.size(SwitchDefaults.IconSize)
-                                                )
-                                            }
-                                        } else null
+                                        onCheckedChange = onToggleNotifications
                                     )
                                 },
                                 colors = ListItemDefaults.colors(containerColor = Color.Transparent)
@@ -330,18 +319,9 @@ private fun NotificationSettingsContent(
                                     headlineContent = { Text(stringResource(R.string.notifications_persistent_header)) },
                                     supportingContent = { Text(stringResource(R.string.notifications_persistent_desc)) },
                                     trailingContent = {
-                                        Switch(
+                                        AppSwitch(
                                             checked = persistentNotifications,
-                                            onCheckedChange = onTogglePersistent,
-                                            thumbContent = if (persistentNotifications) {
-                                                {
-                                                    Icon(
-                                                        imageVector = Icons.Default.Check,
-                                                        contentDescription = null,
-                                                        modifier = Modifier.size(SwitchDefaults.IconSize)
-                                                    )
-                                                }
-                                            } else null
+                                            onCheckedChange = onTogglePersistent
                                         )
                                     },
                                     colors = ListItemDefaults.colors(containerColor = Color.Transparent)
@@ -356,7 +336,7 @@ private fun NotificationSettingsContent(
                         InfoCard(
                             title = stringResource(R.string.notifications_persistent_info_title),
                             description = stringResource(R.string.notifications_persistent_info_desc),
-                            modifier = Modifier.padding(top = SpacingSmall, bottom = SpacingNormal)
+                            modifier = Modifier
                         )
                     }
 
@@ -378,9 +358,7 @@ private fun NotificationSettingsContent(
                     } else {
                         item(span = { GridItemSpan(maxLineSpan) }) {
                             Column(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(bottom = SpacingNormal)
+                                modifier = Modifier.fillMaxWidth()
                             ) {
                                 Text(
                                     stringResource(R.string.notifications_planned_header),

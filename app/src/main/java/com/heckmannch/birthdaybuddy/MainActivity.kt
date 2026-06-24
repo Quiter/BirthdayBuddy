@@ -9,6 +9,13 @@ import android.provider.ContactsContract
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.scaleIn
+import androidx.compose.animation.scaleOut
+import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -270,6 +277,24 @@ class MainActivity : ComponentActivity() {
                 rememberSaveableStateHolderNavEntryDecorator(),
                 rememberViewModelStoreNavEntryDecorator()
             ),
+            transitionSpec = {
+                fadeIn(animationSpec = tween(300)) + scaleIn(
+                    initialScale = 0.94f,
+                    animationSpec = tween(400, easing = FastOutSlowInEasing)
+                ) togetherWith fadeOut(animationSpec = tween(300)) + scaleOut(
+                    targetScale = 0.94f,
+                    animationSpec = tween(400, easing = FastOutSlowInEasing)
+                )
+            },
+            popTransitionSpec = {
+                fadeIn(animationSpec = tween(300)) + scaleIn(
+                    initialScale = 0.94f,
+                    animationSpec = tween(400, easing = FastOutSlowInEasing)
+                ) togetherWith fadeOut(animationSpec = tween(300)) + scaleOut(
+                    targetScale = 0.94f,
+                    animationSpec = tween(400, easing = FastOutSlowInEasing)
+                )
+            },
             entryProvider = { key ->
                 when (key) {
                     is Onboarding -> NavEntry(key) {

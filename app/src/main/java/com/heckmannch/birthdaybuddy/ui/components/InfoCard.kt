@@ -36,7 +36,7 @@ fun InfoCard(
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.3f)
         ),
-        shape = MaterialTheme.shapes.medium,
+        shape = MaterialTheme.shapes.extraLarge,
         modifier = modifier.fillMaxWidth()
     ) {
         Row(

@@ -27,7 +27,6 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
-import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -35,8 +34,6 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Switch
-import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
 import androidx.compose.runtime.Composable
@@ -49,6 +46,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import com.heckmannch.birthdaybuddy.R
+import com.heckmannch.birthdaybuddy.ui.components.AppSwitch
 import com.heckmannch.birthdaybuddy.ui.theme.AlphaContainerMuted
 import com.heckmannch.birthdaybuddy.ui.theme.AlphaEmphasisLow
 import com.heckmannch.birthdaybuddy.ui.theme.AlphaEmphasisSubtle
@@ -104,16 +102,9 @@ fun CalendarPage(
                     ListItem(
                         headlineContent = { Text(stringResource(R.string.onboarding_calendar_enable)) },
                         trailingContent = {
-                            Switch(
+                            AppSwitch(
                                 checked = enabled,
-                                onCheckedChange = onEnabledChange,
-                                thumbContent = {
-                                    Icon(
-                                        imageVector = if (enabled) Icons.Default.Check else Icons.Default.Close,
-                                        contentDescription = null,
-                                        modifier = Modifier.size(SwitchDefaults.IconSize)
-                                    )
-                                }
+                                onCheckedChange = onEnabledChange
                             )
                         },
                         colors = ListItemDefaults.colors(containerColor = Color.Transparent)

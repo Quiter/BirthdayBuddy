@@ -174,7 +174,7 @@ private fun LabelConfigCard(
 
     OutlinedCard(
         modifier = Modifier.fillMaxWidth(),
-        shape = MaterialTheme.shapes.medium
+        shape = MaterialTheme.shapes.extraLarge
     ) {
         Column(
             modifier = Modifier

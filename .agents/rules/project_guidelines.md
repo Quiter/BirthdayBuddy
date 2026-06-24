@@ -12,6 +12,7 @@ This file provides high-priority, machine-readable instructions, constraints, an
 - **Documentation Safety**:
   - Every significant code modification MUST be appended to [CHANGELOG.md](file:///c:/Users/chris/AndroidStudioProjects/BirthdayBuddy/docs/CHANGELOG.md).
   - Any new file, module, or database entity MUST be documented in [PROJECT_STRUCTURE.md](file:///c:/Users/chris/AndroidStudioProjects/BirthdayBuddy/docs/PROJECT_STRUCTURE.md).
+  - All new or modified classes, public functions, and complex code blocks MUST be documented using English KDoc or inline comments. Explain design decisions and architectural choices to support future LLM interactions.
 - **Database Safety (Room)**:
   - DO NOT use `fallbackToDestructiveMigration` under any circumstances.
   - Schema changes MUST increment the version, define an auto-migration, and export schemas to `app/schemas` for verification.
@@ -58,6 +59,7 @@ For detailed human-readable descriptions, consult [PROJECT_STRUCTURE.md](file://
 - **Destinations / Keys**: All routes/keys MUST be `@Serializable` Kotlin objects or data classes. Global routes are defined in `MainActivity.kt`, and local routes/keys (e.g. `HomeNavKey`, `SettingsNavKey`) are defined in their respective screen files.
 - **Back Stack**: The backstack is managed as an observable state list of keys (e.g. `rememberNavBackStack` or a custom backstack state). Programmatic navigation is achieved by mutating this backstack list (e.g., adding keys or popping keys).
 - **ViewModel Scoping**: ViewModels MUST be scoped to their respective `NavEntry` by passing `rememberViewModelStoreNavEntryDecorator()` inside the `entryDecorators` of `NavDisplay`. Use `hiltViewModel()` within the `entryProvider` to obtain these scoped ViewModels.
+- **ViewModel Arguments**: Since Navigation 3 does not use traditional String bundles, if a ViewModel requires navigation arguments (such as a detail screen contact ID), use **Hilt Assisted Injection** (with a factory and creation callback inside the `NavEntry` block) instead of `SavedStateHandle`.
 
 ### 2.4 Edge-to-Edge Support
 - Support full Edge-to-Edge rendering on Android 15+.
