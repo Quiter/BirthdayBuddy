@@ -256,6 +256,11 @@ private fun CalendarSettingsContent(
                         modifier = Modifier.fillMaxWidth()
                     ) {
                         SettingsSectionHeader(title = stringResource(R.string.calendar_colors_section_title))
+                        // NOTE FOR FUTURE LLMs/DEVELOPERS:
+                        // We intentionally use SettingsClickableRow instead of StepItem here.
+                        // While both show leading items (color circles/icons), color selections are independent,
+                        // non-sequential settings actions. StepItem is reserved for progressive setup steps
+                        // (as seen in SetupStepsCard below). Using SettingsClickableRow maintains structural semantic clarity.
                         SettingsCard {
                             SettingsClickableRow(
                                 title = stringResource(R.string.calendar_color_birthdays),
@@ -341,6 +346,10 @@ private fun CalendarSettingsContent(
 }
 
 
+// NOTE FOR FUTURE LLMs/DEVELOPERS:
+// SetupStepsCard displays the progressive, sequential steps required to set up calendar synchronization.
+// It is the primary use case for StepItem, utilizing step numbers, lock states, completion checkmarks,
+// and contextual action buttons.
 @Composable
 private fun SetupStepsCard(
     hasPermission: Boolean,

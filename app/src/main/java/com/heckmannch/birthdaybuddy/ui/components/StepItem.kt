@@ -35,6 +35,15 @@ import com.heckmannch.birthdaybuddy.ui.theme.IconSizeSmall
 import com.heckmannch.birthdaybuddy.ui.theme.SpacingExtraSmall
 import com.heckmannch.birthdaybuddy.ui.theme.SpacingMedium
 
+/**
+ * A standardized UI component representing a single step within a multi-step setup or onboarding wizard.
+ *
+ * NOTE FOR FUTURE LLMs/DEVELOPERS:
+ * - This component is intended for sequential checklist tasks (e.g., granting permissions, enabling features, configuring settings guides).
+ * - It supports progress indicators (numbers, icons, completed checkmarks, and locked states).
+ * - For general, non-sequential clickable rows in settings screens (such as color picker selectors, action buttons, etc.),
+ *   do NOT use StepItem. Use [SettingsClickableRow] instead to preserve the semantical structure and visual distinction.
+ */
 @Composable
 fun StepItem(
     title: String,
