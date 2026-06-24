@@ -12,11 +12,17 @@ import androidx.compose.animation.scaleIn
 import androidx.compose.animation.scaleOut
 import androidx.compose.foundation.interaction.collectIsDraggedAsState
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.statusBars
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.Surface
 import androidx.compose.material3.adaptive.ExperimentalMaterial3AdaptiveApi
 import androidx.compose.material3.adaptive.currentWindowAdaptiveInfoV2
 import androidx.compose.material3.adaptive.layout.calculatePaneScaffoldDirective
@@ -28,7 +34,6 @@ import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -59,7 +64,7 @@ import com.heckmannch.birthdaybuddy.ui.screens.home.components.list.BirthdayDeta
 import com.heckmannch.birthdaybuddy.ui.screens.home.components.list.BirthdayList
 import com.heckmannch.birthdaybuddy.ui.screens.home.components.list.BirthdayQuotePlaceholder
 import com.heckmannch.birthdaybuddy.ui.screens.home.components.list.FastScrollbar
-import com.heckmannch.birthdaybuddy.ui.screens.home.components.topbar.HomeTopBar
+import com.heckmannch.birthdaybuddy.ui.screens.home.components.topbar.SearchBar
 import com.heckmannch.birthdaybuddy.ui.theme.BirthdayBuddyTheme
 import com.heckmannch.birthdaybuddy.ui.theme.SpacingSmall
 import com.heckmannch.birthdaybuddy.ui.util.ContactActions
@@ -270,26 +275,26 @@ private fun HomeContent(
     val focusManager = LocalFocusManager.current
     val keyboardController = LocalSoftwareKeyboardController.current
 
-    // Optimierung: Filter-Sichtbarkeit in derivedStateOf kapseln, damit HomeContent 
-    // nicht bei jedem Scroll-Pixel re-composed.
-    val isFilterBarVisible by remember(uiState.isResettingFilter, homeState) {
-        derivedStateOf { homeState.isFilterBarVisible(uiState.isResettingFilter) }
-    }
-
     AppResponsiveScaffold(
         windowWidthSizeClass = windowWidthSizeClass,
         useAdaptiveWidth = false,
         snackbarHost = { SnackbarHost(hostState = homeState.snackbarHostState) },
         topBar = {
-            HomeTopBar(
-                searchQuery = uiState.searchQuery,
-                animatedPlaceholder = homeState.animatedPlaceholder,
-                availableLabels = uiState.availableLabels,
-                selectedLabel = uiState.selectedLabel,
-                isFilterBarVisible = isFilterBarVisible,
-                actions = actions,
-                searchFocusRequester = homeState.searchFocusRequester,
-            )
+            Surface(
+                color = MaterialTheme.colorScheme.surface,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                val topPadding = WindowInsets.statusBars.asPaddingValues().calculateTopPadding()
+                SearchBar(
+                    query = uiState.searchQuery,
+                    placeholder = homeState.animatedPlaceholder,
+                    onQueryChange = actions.onSearchQueryChange,
+                    onClearQuery = actions.onClearSearch,
+                    onSettingsClick = actions.onNavigateToSettings,
+                    focusRequester = homeState.searchFocusRequester,
+                    modifier = Modifier.padding(top = topPadding + 8.dp, bottom = 8.dp),
+                )
+            }
         },
         floatingActionButton = {
             AnimatedVisibility(
@@ -343,6 +348,7 @@ private fun HomeContent(
                         contacts = contacts,
                         newlyAddedIdeaId = uiState.newlyAddedIdeaId,
                         listState = homeState.listState,
+                        availableLabels = uiState.availableLabels,
                         selectedLabel = uiState.selectedLabel,
                         searchQuery = uiState.searchQuery,
                         actions = actions,
@@ -354,10 +360,15 @@ private fun HomeContent(
                         contentPadding = paddingValues
                     )
 
+                    val showLabelFilter = uiState.availableLabels.isNotEmpty()
+                    val showCoupleSuggestion = uiState.selectedLabel == HomeViewModel.LABEL_ANNIVERSARY && uiState.coupleSuggestion != null
+                    val headerCount = (if (showLabelFilter) 1 else 0) + (if (showCoupleSuggestion) 1 else 0)
+
                     FastScrollbar(
                         listState = homeState.listState,
                         contacts = contacts ?: emptyList(),
                         getLabel = getScrollLabel,
+                        headerCount = headerCount,
                         modifier = Modifier
                             .align(Alignment.CenterEnd)
                             .fillMaxHeight()
@@ -417,6 +428,7 @@ private fun HomeContent(
                                         contacts = currentUiState.contacts,
                                         newlyAddedIdeaId = null, // Idee wird im rechten Paneel hinzugefügt
                                         listState = homeState.listState,
+                                        availableLabels = currentUiState.availableLabels,
                                         selectedLabel = currentUiState.selectedLabel,
                                         searchQuery = currentUiState.searchQuery,
                                         actions = currentActions,
@@ -431,10 +443,15 @@ private fun HomeContent(
                                         }
                                     )
 
+                                    val currentShowLabelFilter = currentUiState.availableLabels.isNotEmpty()
+                                    val currentShowCoupleSuggestion = currentUiState.selectedLabel == HomeViewModel.LABEL_ANNIVERSARY && currentUiState.coupleSuggestion != null
+                                    val currentHeaderCount = (if (currentShowLabelFilter) 1 else 0) + (if (currentShowCoupleSuggestion) 1 else 0)
+
                                     FastScrollbar(
                                         listState = homeState.listState,
                                         contacts = currentUiState.contacts ?: emptyList(),
                                         getLabel = getScrollLabel,
+                                        headerCount = currentHeaderCount,
                                         modifier = Modifier
                                             .align(Alignment.CenterEnd)
                                             .fillMaxHeight(),

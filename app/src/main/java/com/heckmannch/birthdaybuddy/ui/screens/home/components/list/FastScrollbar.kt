@@ -79,6 +79,7 @@ fun FastScrollbar(
     contacts: List<ContactUiModel>,
     getLabel: (ContactUiModel) -> String,
     modifier: Modifier = Modifier,
+    headerCount: Int = 0,
     onSetFastScrolling: (Boolean) -> Unit = {},
 ) {
     val scope = rememberCoroutineScope()
@@ -130,6 +131,7 @@ fun FastScrollbar(
         val currentTotalItems by rememberUpdatedState(totalItems)
         val currentTrackHeightPx by rememberUpdatedState(trackHeightPx)
         val currentOnSetFastScrolling by rememberUpdatedState(onSetFastScrolling)
+        val currentHeaderCount by rememberUpdatedState(headerCount)
 
         // Best Practice: canScroll entscheidet nur, ob die Scrollbar ÜBERHAUPT existiert.
         // Einmal angezeigt, bleibt sie da, bis die Sichtbarkeit (alpha) sie ausblendet.
@@ -138,7 +140,7 @@ fun FastScrollbar(
         }
 
         if (isNeeded && totalItems > 0) {
-            val thumbOffset by remember(trackHeight) {
+            val thumbOffset by remember(trackHeight, headerCount) {
                 derivedStateOf {
                     if (isDragging) {
                         with(density) { dragOffsetPx.toDp() }.coerceIn(0.dp, trackHeight)
@@ -151,8 +153,9 @@ fun FastScrollbar(
                         val scrollOffset = listState.firstVisibleItemScrollOffset.toFloat()
                         val itemSize = firstItem.size.toFloat().coerceAtLeast(1f)
 
+                        val contactIndex = (listState.firstVisibleItemIndex - headerCount).coerceAtLeast(0)
                         val fractionalIndex =
-                            listState.firstVisibleItemIndex.toFloat() + (scrollOffset / itemSize)
+                            contactIndex.toFloat() + (scrollOffset / itemSize)
                         val maxScrollIndex =
                             (totalItems.toFloat() - (layoutInfo.viewportEndOffset / itemSize)).coerceAtLeast(
                                 1f
@@ -205,7 +208,7 @@ fun FastScrollbar(
                                     scrollPercent,
                                     currentTotalItems
                                 )
-                                scope.launch { listState.scrollToItem(targetIndex, targetOffset) }
+                                scope.launch { listState.scrollToItem(currentHeaderCount + targetIndex, targetOffset) }
                             },
                             onDragEnd = { isDragging = false; currentOnSetFastScrolling(false) },
                             onDragCancel = { isDragging = false; currentOnSetFastScrolling(false) },
@@ -217,7 +220,7 @@ fun FastScrollbar(
                                 scrollPercent,
                                 currentTotalItems
                             )
-                            scope.launch { listState.scrollToItem(targetIndex, targetOffset) }
+                            scope.launch { listState.scrollToItem(currentHeaderCount + targetIndex, targetOffset) }
                             change.consume()
                         }
                     }

@@ -90,6 +90,7 @@ fun BirthdayList(
     newlyAddedIdeaId: String?,
     modifier: Modifier = Modifier,
     listState: LazyListState,
+    availableLabels: List<String> = emptyList(),
     selectedLabel: String? = null,
     searchQuery: String = "",
     actions: HomeActions,
@@ -164,6 +165,17 @@ fun BirthdayList(
             bottom = 80.dp + navBarPadding
         ),
     ) {
+        if (availableLabels.isNotEmpty()) {
+            item(key = "label_filter_bar") {
+                LabelFilterBar(
+                    visible = true,
+                    labels = availableLabels,
+                    selectedLabel = selectedLabel,
+                    onLabelSelected = actions.onLabelSelected,
+                    modifier = Modifier.fillMaxWidth()
+                )
+            }
+        }
         if (selectedLabel == HomeViewModel.LABEL_ANNIVERSARY && coupleSuggestion != null) {
             item(key = "couple_suggestion") {
                 CoupleSuggestionBanner(
@@ -354,6 +366,7 @@ fun BirthdayListPreview() {
             contacts = SampleData.sampleContacts,
             newlyAddedIdeaId = null,
             listState = rememberLazyListState(),
+            availableLabels = listOf("Familie", "Freunde"),
             actions = actions,
         )
     }

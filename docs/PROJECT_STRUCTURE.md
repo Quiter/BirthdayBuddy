@@ -56,16 +56,15 @@
                 - `BirthdayDatePickerDialog.kt`: Wiederverwendbarer, modularer Date-Picker Dialog für die bequeme Eingabe von Geburtstagen.
                 - `BirthdayDetailPane.kt`: Detail-Paneel zur Anzeige aller Informationen (Details, Aktionen, Geschenkideen) eines Kontakts auf Tablets.
                 - `BirthdayItem.kt`: Zentrales Koordinationselement der Kontaktkarte; verwaltet den Expand-State und delegiert an spezialisierte Sub-Komponenten (wie z.B. den BirthdayDatePickerDialog).
-                - `BirthdayList.kt`: LazyColumn-Implementierung mit Optimierungen (Auto-Collapse beim Scrollen und Filterwechsel) sowie intelligent unterdrückten Platzierungsanimationen (`skipPlacementAnimation`) bei Filter- und Suchwechseln.
+                - `BirthdayList.kt`: LazyColumn-Implementierung mit Optimierungen (Auto-Collapse beim Scrollen und Filterwechsel), intelligent unterdrückten Platzierungsanimationen (`skipPlacementAnimation`) bei Filter- und Suchwechseln sowie Einbettung der `LabelFilterBar` als scrollbare Kopfzeile.
                 - `BirthdayQuotePlaceholder.kt`: Platzhalter-Paneel mit Zitat für den unselektierten Zustand auf Tablets.
                 - `BirthdayStatus.kt`: Anzeige des Alters und der verbleibenden Tage.
                 - `ConfettiEffect.kt`: Hochperformantes Partikelsystem für Geburtstags-Animationen.
                 - `ContactImage.kt`: Komponente für das Kontaktbild oder die Initialen.
-                - `FastScrollbar.kt`: Hochperformante Scrollbar mit Sub-Pixel-Präzision. Intern sauber strukturiert durch private Sub-Composables (`ScrollbarBubble` und `ScrollbarTrackAndThumb`) zur Trennung von Layout, Gesten- und Zeichenlogik. Nutzt die `Popup`-API für die Bubble, um Clipping und Z-Order-Überlagerungen durch die `HomeTopBar` zu vermeiden.
+                - `FastScrollbar.kt`: Hochperformante Scrollbar mit Sub-Pixel-Präzision (unterstützt einen `headerCount`-Offset für Kopfzeilen). Intern sauber strukturiert durch private Sub-Composables (`ScrollbarBubble` und `ScrollbarTrackAndThumb`) zur Trennung von Layout, Gesten- und Zeichenlogik. Nutzt die `Popup`-API für die Bubble, um Clipping und Z-Order-Überlagerungen zu vermeiden.
                 - `GiftIdeaList.kt`: Spezialisierte Komponente für die Inline-Verwaltung von Geschenkideen.
+                - `LabelFilterBar.kt`: Chip-Leiste zur Filterung nach Labels (nun als scrollbarer Listen-Header in die BirthdayList integriert).
             - ###### 📁 TopBar (`home.components.topbar`)
-                - `HomeTopBar.kt`: Kombiniert SearchBar und LabelFilterBar; unterstützt adaptive Layouts durch Zentrierung auf breiten Bildschirmen.
-                - `LabelFilterBar.kt`: Chip-Leiste zur Filterung nach Labels.
                 - `SearchBar.kt`: M3 SearchBar-Integration.
             - ###### 📁 Actions (`home.components.actions`)
                 - `ContactActionRow.kt`: Reihe mit Messenger- und Kontakt-Aktionen.

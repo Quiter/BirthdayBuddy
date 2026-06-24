@@ -31,27 +31,15 @@ class HomeState(
     var hasAttemptedContactPermission by mutableStateOf(false)
     var resetScrollRequested by mutableStateOf(false)
     var animatedPlaceholder by mutableStateOf("")
-    var filterVisibilityLock by mutableStateOf<Boolean?>(null)
     var isFastScrolling by mutableStateOf(false)
 
     val showScrollUp by derivedStateOf { listState.firstVisibleItemIndex > 0 }
 
     /**
-     * Entscheidet, ob die Filterleiste sichtbar sein soll.
-     * Sie ist nur sichtbar, wenn wir ganz oben in der Liste sind.
-     */
-    fun isFilterBarVisible(isResetting: Boolean): Boolean {
-        return if (isResetting) true
-        else filterVisibilityLock
-            ?: (listState.firstVisibleItemIndex == 0 && listState.firstVisibleItemScrollOffset == 0)
-    }
-
-    /**
-     * Steuert den Sperr-Status der Filterleiste während des schnellen Scrollen.
+     * Steuert den Sperr-Status während des schnellen Scrollens.
      */
     fun onSetFastScrolling(isScrolling: Boolean) {
         isFastScrolling = isScrolling
-        filterVisibilityLock = if (isScrolling) (listState.firstVisibleItemIndex == 0) else null
     }
 
     /**
