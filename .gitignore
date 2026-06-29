@@ -20,5 +20,7 @@ local.properties
 /settings_database*
 .aider*
 
-# Antigravity/Gemini agent external skills
+# Antigravity/Gemini agent external/copied skills
 .agents/external/
+.agents/skills/*
+!.agents/skills/projekt-kontext/

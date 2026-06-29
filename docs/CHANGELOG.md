@@ -269,3 +269,9 @@
     - **Import-Hygiene:** Alle ungenutzten Compose-, Layout- und M3-Imports, die nach dem Auslagern des UI-Layouts in `HomeContent.kt` übrig geblieben waren, wurden restlos entfernt.
 
 
+226. **Relozierung der Agenten-Skills & Gradle-Bereinigung (DX & Tooling):**
+    - **Direkte Skill-Ablage:** Relozierung der externen Agent-Skills direkt in das Standardverzeichnis `.agents/skills/`, damit sie nativ und automatisch von Antigravity geladen werden, ohne eine `.agents/skills.json` pflegen zu müssen.
+    - **Entfernung von `skills.json`:** Die nicht mehr benötigte Konfigurationsdatei `.agents/skills.json` wurde vollständig gelöscht.
+    - **Gradle-Automatisierung:** Die Gradle-Tasks `checkAgentSkills` und `updateAgentSkills` wurden in [build.gradle.kts](file:///c:/Users/chris/AndroidStudioProjects/BirthdayBuddy/build.gradle.kts) überarbeitet. Es wurde die Klasse `SkillSyncer` eingeführt, die voll kompatibel mit dem Gradle Configuration Cache ist. Sie sucht rekursiv nach `SKILL.md` Dateien in `.agents/external/` und spiegelt diese nach `.agents/skills/` wider, während verwaiste Ordner bereinigt werden.
+    - **Git-Integration:** Anpassung von [.gitignore](file:///c:/Users/chris/AndroidStudioProjects/BirthdayBuddy/.gitignore) um `.agents/skills/*` zu ignorieren, während das lokale `projekt-kontext` via `!.agents/skills/projekt-kontext/` explizit versioniert bleibt.
+    - **Richtlinien-Update:** Dokumentation der neuen Skill-Struktur und Task-Aufrufe in [.agents/rules/project_guidelines.md](file:///c:/Users/chris/AndroidStudioProjects/BirthdayBuddy/.agents/rules/project_guidelines.md).

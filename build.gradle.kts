@@ -48,6 +48,8 @@ tasks.register("checkAgentSkills") {
                 logger.error("Failed to clone android-skills: ${e.message}")
             }
         }
+        
+        SkillSyncer.sync(projectDirFile)
     }
 }
 
@@ -91,10 +93,62 @@ tasks.register("updateAgentSkills") {
                 logger.error("Failed to update android-skills: ${e.message}")
             }
         }
+        
+        SkillSyncer.sync(projectDirFile)
     }
 }
 
 // Hook into Android Studio project synchronization / Kotlin script preparation
 tasks.matching { it.name == "prepareKotlinBuildScriptModel" }.all {
     dependsOn("checkAgentSkills")
+}
+
+class SkillSyncer {
+    companion object {
+        fun sync(projectDir: File) {
+            val externalDir = File(projectDir, ".agents/external")
+            val skillsDir = File(projectDir, ".agents/skills")
+            
+            if (!externalDir.exists()) {
+                return
+            }
+            if (!skillsDir.exists()) {
+                skillsDir.mkdirs()
+            }
+            
+            // Find all directories in externalDir that contain SKILL.md
+            val externalSkills = mutableListOf<File>()
+            externalDir.walkTopDown().forEach { file ->
+                if (file.isDirectory && File(file, "SKILL.md").exists()) {
+                    externalSkills.add(file)
+                }
+            }
+            
+            val externalSkillNames = externalSkills.map { it.name }.toSet()
+            
+            // Clean up orphaned external skills in .agents/skills
+            skillsDir.listFiles()?.forEach { file ->
+                if (file.isDirectory && file.name != "projekt-kontext") {
+                    if (!externalSkillNames.contains(file.name)) {
+                        println("Removing orphaned skill: ${file.name}")
+                        file.deleteRecursively()
+                    }
+                }
+            }
+            
+            // Copy external skills to .agents/skills
+            externalSkills.forEach { sourceSkillDir ->
+                val skillName = sourceSkillDir.name
+                if (skillName == "projekt-kontext") {
+                    return@forEach
+                }
+                val targetSkillDir = File(skillsDir, skillName)
+                println("Syncing skill $skillName to ${targetSkillDir.absolutePath}")
+                
+                // Remove target if it exists to avoid merged dirty states
+                targetSkillDir.deleteRecursively()
+                sourceSkillDir.copyRecursively(targetSkillDir, overwrite = true)
+            }
+        }
+    }
 }

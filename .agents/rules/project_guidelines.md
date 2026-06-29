@@ -84,10 +84,10 @@ For detailed human-readable descriptions, consult [PROJECT_STRUCTURE.md](file://
 
 - **Location & Exclusions**:
   - External skill repositories are automatically cloned/downloaded into `.agents/external/` which is ignored by Git via `.gitignore`. Do not commit external code.
-- **Dynamic Registry**:
-  - Skills are registered dynamically in [.agents/skills.json](file:///c:/Users/chris/AndroidStudioProjects/BirthdayBuddy/.agents/skills.json).
+- **Automatic Registration**:
+  - Skills are automatically copied/synced to `.agents/skills/` under their respective names so they are natively detected by Antigravity.
 - **Gradle Tasks**:
-  - **Download / Check**: The Gradle task `checkAgentSkills` runs automatically during Android Studio sync (prep stage) and clones the official Google skills ([android/skills](https://github.com/android/skills)) and community Material 3 skill ([hamen/material-3-skill](https://github.com/hamen/material-3-skill)) repositories if missing.
-  - **Manual Update**: Run `.\gradlew updateAgentSkills` to execute `git pull` in both external repositories to download the latest skills.
+  - **Download / Check**: The Gradle task `checkAgentSkills` runs automatically during Android Studio sync (prep stage) and clones the official Google skills ([android/skills](https://github.com/android/skills)) and community Material 3 skill ([hamen/material-3-skill](https://github.com/hamen/material-3-skill)) repositories if missing, and syncs individual skills to `.agents/skills/`.
+  - **Manual Update**: Run `.\gradlew updateAgentSkills` to execute `git pull` in both external repositories and sync the updated skills to `.agents/skills/`.
 - **Precedence**:
   - The community `material-3` skill is subordinate to all official Google skills. In case of rules contradiction, official Google skills take precedence.
