@@ -43,17 +43,25 @@ class NotificationWorker @AssistedInject constructor(
         val rules = notificationRepository.getAllRulesImmediate()
         if (rules.isEmpty()) return Result.success()
 
+        // Vorjahres-Einträge bereinigen, damit die pendingId nicht unbegrenzt wächst
+        // und PendingIntent-Request-Code-Kollisionen verhindert werden.
+        val currentYear = LocalDate.now().year
+        notificationRepository.deleteOldNotifications(currentYear)
+
         // Sync contacts before evaluating rules to make sure we work with the latest data
         contactRepository.syncContacts()
 
         val now = LocalDateTime.now()
         val currentLocalTime = now.toLocalTime().withSecond(0).withNano(0)
 
-        // Finde Regeln, die in den letzten 15 Minuten fällig geworden sind (robust gegen WorkManager Verzögerungen)
+        // Finde Regeln, die in den letzten 45 Minuten fällig geworden sind.
+        // Robuster Puffer gegen WorkManager-Verzögerungen durch Doze Mode / aggressives
+        // Battery-Management (Huawei, Xiaomi, Samsung). Duplikate werden durch
+        // hasNotificationBeenScheduled sicher verhindert.
         val currentRules = rules.filter { rule ->
             val ruleTime = LocalTime.of(rule.hour, rule.minute)
             val diffMinutes = Duration.between(ruleTime, currentLocalTime).toMinutes()
-            diffMinutes in 0..14
+            diffMinutes in 0..44
         }
 
         if (currentRules.isNotEmpty()) {
@@ -132,10 +140,11 @@ class NotificationWorker @AssistedInject constructor(
         }
 
         // Plane den nächsten Lauf sauber mit einer kurzen Verzögerung nach Beendigung dieser Ausführung.
-        // Dies verhindert eine Race-Condition, bei der sich der aktuell laufende Worker durch REPLACE selbst abbricht.
+        // forceReplace=false → KEEP-Policy: verhindert, dass ein bereits geplanter Worker
+        // durch die Selbst-Neu-Planung abgebrochen wird (Race-Condition mit REPLACE).
         applicationScope.launch {
             delay(1000.milliseconds)
-            scheduleNext(context, rules)
+            scheduleNext(context, rules, forceReplace = false)
         }
 
         return Result.success()
@@ -203,9 +212,13 @@ class NotificationWorker @AssistedInject constructor(
 
         /**
          * Plant den nächsten fälligen Zeitpunkt basierend auf allen Regeln.
+         *
+         * @param forceReplace Wenn true, wird ein bereits geplanter Worker ersetzt (REPLACE).
+         *   Nutze true nach Settings-Änderungen. Nutze false nach einem Worker-Run, damit
+         *   kein noch laufender Worker durch die Selbst-Neu-Planung abgebrochen wird.
          */
         @JvmStatic
-        fun scheduleNext(context: Context, rules: List<NotificationRule>) {
+        fun scheduleNext(context: Context, rules: List<NotificationRule>, forceReplace: Boolean = true) {
             if (rules.isEmpty()) {
                 cancelNotification(context)
                 return
@@ -234,9 +247,11 @@ class NotificationWorker @AssistedInject constructor(
                 .addTag("birthday_notification")
                 .build()
 
+            val policy = if (forceReplace) ExistingWorkPolicy.REPLACE else ExistingWorkPolicy.KEEP
+
             WorkManager.getInstance(context).enqueueUniqueWork(
                 WORK_NAME,
-                ExistingWorkPolicy.REPLACE,
+                policy,
                 request,
             )
         }

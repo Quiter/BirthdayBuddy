@@ -123,4 +123,7 @@ class NotificationRepository @Inject constructor(
     suspend fun incrementDismissCount(id: Int) = pendingNotificationDao.incrementDismissCount(id)
 
     suspend fun markAsDone(id: Int) = pendingNotificationDao.markAsDone(id)
+
+    suspend fun deleteOldNotifications(currentYear: Int) =
+        pendingNotificationDao.deleteOldNotifications(currentYear)
 }

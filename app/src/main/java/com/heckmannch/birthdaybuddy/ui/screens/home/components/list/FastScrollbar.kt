@@ -173,7 +173,9 @@ fun FastScrollbar(
     val expectedItemHeights = remember(contacts.size, headerCount) {
         val heights = FloatArray(contacts.size + headerCount)
         val dp = density.density
-        for (i in 0 until headerCount) heights[i] = 56f * dp
+        if (headerCount > 0) {
+            repeat(headerCount) { i -> heights[i] = 56f * dp }
+        }
         for (i in headerCount until heights.size) heights[i] = 80f * dp
         heights
     }

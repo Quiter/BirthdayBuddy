@@ -74,7 +74,7 @@ class NotificationHelper @Inject constructor(
             putExtra("PENDING_ID", pendingId)
         }
         val donePendingIntent = PendingIntent.getBroadcast(
-            context, notificationId + 2000, doneIntent,
+            context, notificationId * 10 + 2, doneIntent,
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
 
@@ -95,7 +95,7 @@ class NotificationHelper @Inject constructor(
             putExtra("LOOKUP_KEYS", dbKeys)
         }
         val snoozePendingIntent = PendingIntent.getBroadcast(
-            context, notificationId + 1000, snoozeIntent,
+            context, notificationId * 10 + 1, snoozeIntent,
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
 
@@ -105,7 +105,7 @@ class NotificationHelper @Inject constructor(
             flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
         }
         val settingsPendingIntent = PendingIntent.getActivity(
-            context, notificationId + 4000, settingsIntent,
+            context, notificationId * 10 + 4, settingsIntent,
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
 
@@ -118,7 +118,7 @@ class NotificationHelper @Inject constructor(
             putExtra("LOOKUP_KEYS", dbKeys)
         }
         val deletePendingIntent = PendingIntent.getBroadcast(
-            context, notificationId + 3000, deleteIntent,
+            context, notificationId * 10 + 3, deleteIntent,
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
 
