@@ -15,8 +15,8 @@ configure<com.android.build.api.dsl.ApplicationExtension> {
         applicationId = "com.heckmannch.birthdaybuddy"
         minSdk = 28
         targetSdk = 37
-        versionCode = 41
-        versionName = "2.11.9"
+        versionCode = 42
+        versionName = "2.11.10"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
