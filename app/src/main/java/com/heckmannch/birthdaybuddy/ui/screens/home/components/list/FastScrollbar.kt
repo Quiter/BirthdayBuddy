@@ -116,8 +116,24 @@ data class ScrollSection(
  *    - It becomes visible ONLY after the user has manually scrolled the list (`hasUserScrolled`).
  *    - **Pull-To-Refresh Exclusion**: Ignore list drags when the list is at the very top
  *      (index 0, offset 0) to avoid showing the scrollbar during refresh gestures.
- *    - **Tab / Filter Switches**: Automatically reset `hasUserScrolled` to `false` when
- *      `contacts` change, so programmatic list resets do not trigger visibility.
+ *    - **Top-of-List Reset**: Reset `hasUserScrolled` to `false` (and hide the scrollbar)
+ *      as soon as the list is scrolled completely back to the top (index 0, offset 0).
+ *      This ensures UI elements at the very top of the LazyColumn (e.g. [LabelFilterBar]) are
+ *      fully visible and not obscured by the scrollbar.
+ *    - **Tab / Filter Switches**: Automatically reset `hasUserScrolled` to `false` AND
+ *      `dragOffsetPx` to `0f` when `contacts` change, so programmatic list resets do not
+ *      trigger visibility and the thumb always starts at the correct (top) position.
+ * 7. **LabelFilterBar / Header Items (IMPORTANT)**:
+ *    - The [LabelFilterBar] is rendered as the **first item** inside the [BirthdayList]
+ *      [LazyColumn] (not as a separate sticky overlay). This means:
+ *      a) It scrolls away when the user scrolls down, and reappears when scrolling back up.
+ *      b) The `headerCount` parameter MUST be set to 1 when `availableLabels` is non-empty,
+ *         plus 1 more if a couple-suggestion banner is shown. The caller (HomeContent) is
+ *         responsible for computing and passing the correct value.
+ *      c) The [expectedItemHeights] array allocates `headerCount` slots of 56 dp each before
+ *         the contact items (80 dp each), so the linear height model stays accurate.
+ *      d) Do NOT move [LabelFilterBar] back to a top-of-screen sticky overlay — that would
+ *         break the [headerCount] accounting and cause the scrollbar thumb to jump.
  */
 @Composable
 fun FastScrollbar(
@@ -207,11 +223,21 @@ fun FastScrollbar(
         if (isListDragged && (firstVisibleIndex.value > 0 || firstVisibleOffset.value > 0)) {
             hasUserScrolled = true
         }
+        // Hide the scrollbar (and reset the user-scrolled flag) as soon as the list
+        // is back at the very top. This makes the LabelFilterBar and other top items
+        // fully visible again, and restores the pull-to-refresh exclusion guard.
+        if (!listState.isScrollInProgress && firstVisibleIndex.value == 0 && firstVisibleOffset.value == 0) {
+            hasUserScrolled = false
+        }
     }
 
-    // Reset visibility state on new search or list updates
+    // Reset visibility state on new search, tab switch, or list updates.
+    // Also reset dragOffsetPx so the thumb always starts at the top after a programmatic
+    // list reset — without this, the thumb would remain at the old position the first time
+    // the user drags again (because onDragStart re-anchors to the touch point, not the thumb).
     LaunchedEffect(contacts) {
         hasUserScrolled = false
+        dragOffsetPx = 0f
     }
 
     // Dragging the scrollbar thumb counts as manual user scrolling

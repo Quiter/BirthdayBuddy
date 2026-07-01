@@ -83,6 +83,22 @@ import kotlin.time.Duration.Companion.milliseconds
 /**
  * Verwaltet die Liste der Geburtstage.
  * Kümmert sich um den Empty-State und die exklusive Expansion von Items.
+ *
+ * ### WICHTIGE ARCHITEKTUR-HINWEISE FÜR KI-AGENTEN (LLMs):
+ * 1. **LabelFilterBar als erstes LazyColumn-Item**:
+ *    - Die [LabelFilterBar] wird als **erstes `item`** in der [LazyColumn] gerendert (Key:
+ *      `"label_filter_bar"`), NICHT als separater Overlay oder Sticky-Header.
+ *    - Dadurch scrollt sie mit der Liste nach oben weg und wird beim Hochscrollen wieder
+ *      sichtbar — genau das erwartete Verhalten.
+ *    - Do NOT convert it back to a Box/Column outside the LazyColumn: that would decouple
+ *      it from the scroll state and break the `headerCount` accounting in [FastScrollbar].
+ * 2. **headerCount-Vertrag**:
+ *    - Der Aufrufer (HomeContent) berechnet `headerCount` als Summe der nicht-Contact-Items
+ *      am Anfang der Liste: `(if (showLabelFilter) 1 else 0) + (if (showCoupleSuggestion) 1 else 0)`.
+ *    - Dieser Wert MUSS an [FastScrollbar] weitergegeben werden, damit die Scrollbar-Höhen-
+ *      berechnung korrekt arbeitet (Header = 56 dp, Contacts = 80 dp).
+ *    - Bei jeder Änderung der Header-Items (Hinzufügen / Entfernen) MUSS `headerCount` in
+ *      HomeContent entsprechend angepasst werden.
  */
 @Composable
 fun BirthdayList(
@@ -166,6 +182,9 @@ fun BirthdayList(
         ),
     ) {
         if (availableLabels.isNotEmpty()) {
+            // IMPORTANT: LabelFilterBar is the first LazyColumn item (not a sticky overlay).
+            // It scrolls away and reappears naturally. Do NOT move it outside the LazyColumn;
+            // doing so would break the headerCount accounting in FastScrollbar.
             item(key = "label_filter_bar") {
                 LabelFilterBar(
                     visible = true,
