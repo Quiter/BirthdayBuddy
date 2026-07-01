@@ -6,6 +6,7 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.animation.scaleIn
 import androidx.compose.animation.scaleOut
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxHeight
@@ -25,6 +26,7 @@ import androidx.compose.material3.adaptive.navigation3.rememberListDetailSceneSt
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.material3.pulltorefresh.PullToRefreshDefaults
 import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
+import androidx.compose.material3.windowsizeclass.WindowHeightSizeClass
 import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -50,7 +52,9 @@ import com.heckmannch.birthdaybuddy.ui.model.SampleData
 import com.heckmannch.birthdaybuddy.ui.screens.home.components.actions.HomeFAB
 import com.heckmannch.birthdaybuddy.ui.screens.home.components.list.BirthdayDetailPane
 import com.heckmannch.birthdaybuddy.ui.screens.home.components.list.BirthdayList
+import com.heckmannch.birthdaybuddy.ui.components.LocalWindowHeightSizeClass
 import com.heckmannch.birthdaybuddy.ui.screens.home.components.list.BirthdayQuotePlaceholder
+import com.heckmannch.birthdaybuddy.ui.screens.home.components.list.LabelFilterBar
 import com.heckmannch.birthdaybuddy.ui.screens.home.components.list.FastScrollbar
 import com.heckmannch.birthdaybuddy.ui.screens.home.components.topbar.SearchBar
 import com.heckmannch.birthdaybuddy.ui.theme.BirthdayBuddyTheme
@@ -66,6 +70,11 @@ fun HomeContent(
     actions: HomeActions,
     windowWidthSizeClass: WindowWidthSizeClass,
 ) {
+    val windowHeightSizeClass = LocalWindowHeightSizeClass.current
+    val showFilterBarInTopBar = !uiState.contacts.isNullOrEmpty() &&
+            windowWidthSizeClass != WindowWidthSizeClass.Compact &&
+            windowHeightSizeClass != WindowHeightSizeClass.Compact
+
     val currentUiState by rememberUpdatedState(uiState)
     val currentActions by rememberUpdatedState(actions)
 
@@ -82,15 +91,28 @@ fun HomeContent(
                 modifier = Modifier.fillMaxWidth()
             ) {
                 val topPadding = WindowInsets.statusBars.asPaddingValues().calculateTopPadding()
-                SearchBar(
-                    query = uiState.searchQuery,
-                    placeholder = homeState.animatedPlaceholder,
-                    onQueryChange = actions.onSearchQueryChange,
-                    onClearQuery = actions.onClearSearch,
-                    onSettingsClick = actions.onNavigateToSettings,
-                    focusRequester = homeState.searchFocusRequester,
-                    modifier = Modifier.padding(top = topPadding + 8.dp, bottom = 8.dp),
-                )
+                Column(
+                    modifier = Modifier.padding(top = topPadding)
+                ) {
+                    SearchBar(
+                        query = uiState.searchQuery,
+                        placeholder = homeState.animatedPlaceholder,
+                        onQueryChange = actions.onSearchQueryChange,
+                        onClearQuery = actions.onClearSearch,
+                        onSettingsClick = actions.onNavigateToSettings,
+                        focusRequester = homeState.searchFocusRequester,
+                        modifier = Modifier.padding(top = 8.dp, bottom = 8.dp),
+                    )
+                    if (showFilterBarInTopBar && uiState.availableLabels.isNotEmpty()) {
+                        LabelFilterBar(
+                            visible = true,
+                            labels = uiState.availableLabels,
+                            selectedLabel = uiState.selectedLabel,
+                            onLabelSelected = actions.onLabelSelected,
+                            modifier = Modifier.fillMaxWidth()
+                        )
+                    }
+                }
             }
         },
         floatingActionButton = {
@@ -154,10 +176,11 @@ fun HomeContent(
                             focusManager.clearFocus()
                             keyboardController?.hide()
                         },
-                        contentPadding = paddingValues
+                        contentPadding = paddingValues,
+                        showLabelFilter = !showFilterBarInTopBar
                     )
 
-                    val showLabelFilter = uiState.availableLabels.isNotEmpty()
+                    val showLabelFilter = uiState.availableLabels.isNotEmpty() && !showFilterBarInTopBar
                     val showCoupleSuggestion = uiState.selectedLabel == HomeViewModel.LABEL_ANNIVERSARY && uiState.coupleSuggestion != null
                     val headerCount = (if (showLabelFilter) 1 else 0) + (if (showCoupleSuggestion) 1 else 0)
 
@@ -237,10 +260,11 @@ fun HomeContent(
                                         onInteraction = {
                                             focusManager.clearFocus()
                                             keyboardController?.hide()
-                                        }
+                                        },
+                                        showLabelFilter = !showFilterBarInTopBar
                                     )
 
-                                    val currentShowLabelFilter = currentUiState.availableLabels.isNotEmpty()
+                                    val currentShowLabelFilter = currentUiState.availableLabels.isNotEmpty() && !showFilterBarInTopBar
                                     val currentShowCoupleSuggestion = currentUiState.selectedLabel == HomeViewModel.LABEL_ANNIVERSARY && currentUiState.coupleSuggestion != null
                                     val currentHeaderCount = (if (currentShowLabelFilter) 1 else 0) + (if (currentShowCoupleSuggestion) 1 else 0)
 

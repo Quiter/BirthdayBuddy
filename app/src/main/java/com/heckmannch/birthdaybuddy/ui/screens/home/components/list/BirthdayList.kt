@@ -115,6 +115,7 @@ fun BirthdayList(
     onContactSelected: ((ContactUiModel) -> Unit)? = null,
     onInteraction: () -> Unit = {},
     contentPadding: PaddingValues = PaddingValues(0.dp),
+    showLabelFilter: Boolean = true,
 ) {
     val context = LocalContext.current
 
@@ -181,7 +182,7 @@ fun BirthdayList(
             bottom = 80.dp + navBarPadding
         ),
     ) {
-        if (availableLabels.isNotEmpty()) {
+        if (showLabelFilter && availableLabels.isNotEmpty()) {
             // IMPORTANT: LabelFilterBar is the first LazyColumn item (not a sticky overlay).
             // It scrolls away and reappears naturally. Do NOT move it outside the LazyColumn;
             // doing so would break the headerCount accounting in FastScrollbar.
