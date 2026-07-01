@@ -10,24 +10,24 @@
 
 ---
 
-## 📝 Aktuelle Vorlage (v2.11.0)
+## 📝 Aktuelle Vorlage (v2.11.9)
 
 <!--suppress HtmlUnknownTag, HtmlUnknownTag -->
 <en-US>
 - Upgraded theme engine to Google HCT for better contrast
-- Added accessibility contrast settings (Standard, Medium, High)
-- Beautiful rounded cards grouping settings options (M3 ExtraLarge)
-- Smooth horizontal page transition animations and gesture support
-- Master switch to enable/disable label management easily
-- Polished onboarding layouts and card shapes alignment
+- Added master switch to easily enable/disable label management
+- WhatsApp-style scrolling for label filter bar on phones
+- Rounded card containers for settings (Material 3 ExtraLarge)
+- Fluid horizontal transitions and support for system back gestures
+- Fixed label filtering issue on tablet layouts
 </en-US>
 <!--suppress HtmlUnknownTag, HtmlUnknownTag -->
 <de-DE>
 - Farb-Engine auf Google HCT für optimalen Kontrast aktualisiert
-- Kontrasteinstellungen (Standard, Mittel, Hoch) für Barrierefreiheit
-- Abgerundete Karten-Container für übersichtlichere Einstellungen
-- Weiche horizontale Seitenübergänge und Systemgesten-Unterstützung
-- Master-Schalter zum einfachen Aktivieren/Deaktivieren von Labels
-- Optimiertes Onboarding-Layout mit einheitlichen Eckenradien
+- Neuer Master-Schalter zum Deaktivieren des Label-Managements
+- Filterleiste scrollt jetzt flüssig mit der Geburtstagsliste
+- Einstellungen im abgerundeten Material 3 Kartendesign
+- Weiche Übergangsanimationen und Android-Zurückgesten-Fix
+- Filterfunktion für Label-Chips im Tablet-Layout korrigiert
 </de-DE>
 

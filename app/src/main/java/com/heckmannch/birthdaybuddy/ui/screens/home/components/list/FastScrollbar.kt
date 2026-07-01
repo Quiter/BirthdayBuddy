@@ -98,12 +98,15 @@ data class ScrollSection(
  * 4. **Stable Linear Model for Thumb Position — List → Thumb (IMPORTANT)**:
  *    - The thumb position when the user scrolls the list manually MUST use a purely linear
  *      model based on `expectedItemHeights` prefix sums.
- *    - Formula: `scrollPercent = cumulativeScrolledPx / maxScrollPx`
- *    - Both `cumulativeScrolledPx` and `maxScrollPx` are derived from the stable
- *      `cumulativeHeights` array (not from dynamic layout info).
+ *    - Formula: `scrollPercent = scrolledPx / maxScrollPx`
+ *    - `scrolledPx = cumulativeHeights[firstVisibleIndex] + firstVisibleScrollOffset`
+ *    - `maxScrollPx = totalHeight - viewportHeight + afterContentPadding`
+ *    - The `afterContentPadding` (from [LazyListState.layoutInfo]) is CRITICAL: the
+ *      LazyColumn’s bottom contentPadding (`80.dp + navBarPadding`) extends the scroll range
+ *      beyond what items alone contribute. Omitting it causes `maxScrollPx` to be too small
+ *      (or negative for short filtered lists), making the thumb jump to the bottom.
  *    - Do NOT use section-based calculations for this forward mapping (List → Thumb).
- *      Doing so causes a "rubber ruler" effect where the thumb jumps back on manual scroll,
- *      because section boundaries shift relative to the overall scroll position.
+ *      Doing so causes a “rubber ruler” effect where the thumb jumps back on manual scroll.
  *    - The section-based mapping is used ONLY for the inverse direction (Thumb Drag → List).
  * 5. **Fractional requestScrollToItem Gestures**:
  *    - Scrolling during drags is initiated with `listState.requestScrollToItem(index, offsetPx)`.
@@ -240,10 +243,8 @@ fun FastScrollbar(
         dragOffsetPx = 0f
     }
 
-    // Dragging the scrollbar thumb counts as manual user scrolling
-    LaunchedEffect(isDragging) {
-        if (isDragging) hasUserScrolled = true
-    }
+    // NOTE: hasUserScrolled = true for thumb drags is set directly in onDragStart
+    // (no LaunchedEffect needed; the gesture callback is synchronous).
 
     var isVisible by remember { mutableStateOf(false) }
     LaunchedEffect(listState.isScrollInProgress, isDragging, hasUserScrolled) {
@@ -285,19 +286,27 @@ fun FastScrollbar(
         // ─────────────────────────────────────────────────────────────────────
         // FORWARD MAPPING: List position → Thumb position (LINEAR)
         //
-        // scrollPercent = totalScrolledPx / maxScrollPx
-        //   totalScrolledPx = cumulativeHeights[firstIndex] + firstVisibleScrollOffset
-        //   maxScrollPx     = totalHeight - viewportHeight
+        // scrollPercent = scrolledPx / maxScrollPx
+        //   scrolledPx  = cumulativeHeights[firstIndex] + firstVisibleScrollOffset
+        //   maxScrollPx = totalHeight - viewportHeight + afterContentPadding
         //
-        // This is purely based on the stable expectedItemHeights model and is therefore
-        // completely independent of visible items or section boundaries. No jumping.
+        // afterContentPadding (= LazyColumn bottom contentPadding in px) is CRITICAL:
+        // it extends the scrollable range beyond the item heights. Without it,
+        // maxScrollPx is too small (or negative for short filtered lists), causing
+        // scrollPercent to be coerced to 1.0 and the thumb to jump to the bottom.
+        //
+        // This is purely based on the stable expectedItemHeights model and is
+        // therefore independent of visible items or section boundaries. No jumping.
         // ─────────────────────────────────────────────────────────────────────
         val scrollPercent by remember(totalHeight, cumulativeHeights) {
             derivedStateOf {
                 val viewportHeight = listState.layoutInfo.viewportSize.height.toFloat()
                 if (viewportHeight <= 0f) return@derivedStateOf 0f
 
-                val maxScrollPx = (totalHeight - viewportHeight).coerceAtLeast(1f)
+                val afterPad = listState.layoutInfo.afterContentPadding.toFloat()
+                val maxScrollPx = totalHeight - viewportHeight + afterPad
+                if (maxScrollPx <= 0f) return@derivedStateOf 0f
+
                 val firstIndex = listState.firstVisibleItemIndex
                     .coerceIn(0, (expectedItemHeights.size - 1).coerceAtLeast(0))
                 val firstOffset = listState.firstVisibleItemScrollOffset.toFloat()
@@ -336,6 +345,15 @@ fun FastScrollbar(
         fun updateScrollPosition(y: Float) {
             if (sections.isEmpty()) return
             val percent = (y / trackHeightPx).coerceIn(0f, 1f)
+
+            // Special case: thumb at the very top → scroll to index 0 so that all
+            // header items (e.g. LabelFilterBar at index 0) become visible again.
+            // Without this, the section-based mapping would resolve to
+            // section.startIndex = headerCount (≥ 1) and skip the header entirely.
+            if (percent == 0f) {
+                listState.requestScrollToItem(0, 0)
+                return
+            }
 
             val sectionFloat = percent * sections.size.toFloat()
             val sectionIndex = sectionFloat.toInt().coerceIn(0, sections.size - 1)
@@ -393,6 +411,7 @@ fun FastScrollbar(
                     detectVerticalDragGestures(
                         onDragStart = { offset ->
                             isDragging = true
+                            hasUserScrolled = true
                             onSetFastScrolling(true)
                             dragOffsetPx = (offset.y - thumbHeightPx / 2f).coerceIn(0f, trackHeightPx)
                             updateScrollPosition(dragOffsetPx)
