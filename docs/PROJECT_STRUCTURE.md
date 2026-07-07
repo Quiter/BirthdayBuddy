@@ -189,5 +189,8 @@ Diese Tests erfordern ein Android-Gerät oder einen Emulator (z. B. für Room-Da
 - `data/local/SettingsMigrationTest.kt`: Automatisierte Datenbank-Migrationstests für die Einstellungsdatenbank (V2 bis V6).
 - `data/repository/NotificationRepositoryTest.kt`: Integrationstests für das Room-basierte Erinnerungs-Repository.
 - `data/repository/SystemContactDataSourceTest.kt`: Tests für den realen Android-Content-Provider des Adressbuchs.
+- `data/repository/ContactRepositoryCoupleLinkTest.kt`: Integrationstests für Ehepaar-Verknüpfungen im ContactRepository.
+- `data/repository/ContactRepositoryGiftIdeaTest.kt`: Integrationstests für Geschenkideen-Operationen im ContactRepository.
+- `data/repository/CalendarSyncRepositoryTest.kt`: Integrationstests für die Kalender-Synchronisation im CalendarSyncRepository.
 - `ui/components/BirthdayItemInteractionTest.kt`: Compose UI-Tests für die Interaktionen mit Kontakt-Karten.
 - `ui/screens/settings/notifications/components/NotificationHelperTest.kt`: Tests zum Erzeugen und Validieren von System-Notifications.

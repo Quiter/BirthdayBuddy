@@ -222,7 +222,16 @@ class CalendarSyncRepository @Inject constructor(
                 }
                 val dtStart = startCal.timeInMillis
 
-                val op = ContentProviderOperation.newInsert(CalendarContract.Events.CONTENT_URI)
+                val insertUri = CalendarContract.Events.CONTENT_URI.buildUpon()
+                    .appendQueryParameter(CalendarContract.CALLER_IS_SYNCADAPTER, "true")
+                    .appendQueryParameter(CalendarContract.Calendars.ACCOUNT_NAME, "BirthdayBuddy")
+                    .appendQueryParameter(
+                        CalendarContract.Calendars.ACCOUNT_TYPE,
+                        CalendarContract.ACCOUNT_TYPE_LOCAL
+                    )
+                    .build()
+
+                val op = ContentProviderOperation.newInsert(insertUri)
                     .withValue(CalendarContract.Events.CALENDAR_ID, calId)
                     .withValue(CalendarContract.Events.TITLE, title)
                     .withValue(CalendarContract.Events.DESCRIPTION, description)
