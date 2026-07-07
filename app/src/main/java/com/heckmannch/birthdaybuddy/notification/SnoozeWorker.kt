@@ -1,4 +1,4 @@
-package com.heckmannch.birthdaybuddy.ui.screens.settings.notifications.components
+package com.heckmannch.birthdaybuddy.notification
 
 import android.content.Context
 import androidx.hilt.work.HiltWorker

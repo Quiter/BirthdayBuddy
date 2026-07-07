@@ -1,4 +1,4 @@
-package com.heckmannch.birthdaybuddy.viewmodel
+package com.heckmannch.birthdaybuddy.ui.screens.settings.notifications
 
 import com.google.common.truth.Truth.assertThat
 import com.heckmannch.birthdaybuddy.MainDispatcherRule

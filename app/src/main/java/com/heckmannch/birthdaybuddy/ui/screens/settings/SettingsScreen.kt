@@ -70,12 +70,12 @@ import com.heckmannch.birthdaybuddy.ui.theme.AlphaEmphasisMedium
 import com.heckmannch.birthdaybuddy.ui.theme.BirthdayBuddyTheme
 import com.heckmannch.birthdaybuddy.ui.theme.SpacingMedium
 import com.heckmannch.birthdaybuddy.ui.theme.SpacingNormal
-import com.heckmannch.birthdaybuddy.viewmodel.BackupViewModel
-import com.heckmannch.birthdaybuddy.viewmodel.CalendarViewModel
-import com.heckmannch.birthdaybuddy.viewmodel.HomeViewModel
-import com.heckmannch.birthdaybuddy.viewmodel.LabelViewModel
-import com.heckmannch.birthdaybuddy.viewmodel.NotificationViewModel
-import com.heckmannch.birthdaybuddy.viewmodel.ThemeViewModel
+import com.heckmannch.birthdaybuddy.ui.screens.settings.backup.BackupViewModel
+import com.heckmannch.birthdaybuddy.ui.screens.settings.calendar.CalendarViewModel
+import com.heckmannch.birthdaybuddy.ui.screens.home.HomeViewModel
+import com.heckmannch.birthdaybuddy.ui.screens.settings.labels.LabelViewModel
+import com.heckmannch.birthdaybuddy.ui.screens.settings.notifications.NotificationViewModel
+import com.heckmannch.birthdaybuddy.ui.screens.settings.theme.ThemeViewModel
 import kotlinx.serialization.Serializable
 
 /**

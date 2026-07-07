@@ -14,7 +14,6 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import com.heckmannch.birthdaybuddy.R
 import com.heckmannch.birthdaybuddy.ui.screens.settings.backup.components.BackupContent
-import com.heckmannch.birthdaybuddy.viewmodel.BackupViewModel
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 

@@ -3,6 +3,8 @@
 ## 📁 Root
 - `MainActivity.kt`: Haupteinstiegspunkt der App. Regelt das Navigations-Hosting (NavHost), das globale Intent-Handling (z.B. Widget-Klicks) über Compose-seitiges `activityIntent` State-Handling, automatische Filter-Resets bei Inaktivität über einen batterieschonenden `LifecycleEventObserver`, und die Echtzeit-Synchronisation bei Änderungen im System-Adressbuch via `ContentObserver`.
 - `BirthdayBuddyApplication.kt`: Hilt-Application Klasse zur Initialisierung der Dependency Injection und Konfiguration des WorkManagers.
+- `AppViewModel.kt`: App-weites `@HiltViewModel`, das auf Activity-Ebene gehalten wird (Root-Package, da Activity-weit gültig).
+- `AppViewModelTest.kt`: Tests für `AppViewModel`.
 - `PROJECT_STATUS.md`: Dokumentation des aktuellen Entwicklungsstands, der Architektur-Constraints und Meilensteine.
 - `PROJECT_STRUCTURE.md`: Diese Datei (Struktur-Dokumentation des Projekts).
 - `CHANGELOG.md`: Vollständige Historie aller signifikanten Änderungen und Feature-Releases.
@@ -48,10 +50,11 @@
 ## 📁 UI Layer (`ui`)
 - ### 📁 Screens (`ui.screens`)
     - #### 📁 Home (`home`)
-        - `HomeScreen.kt`: Einstiegspunkt und koordinierende Komponente des Hauptbildschirms. Kümmert sich um Berechtigungs-Launcher, Bild-Prefetching, Fokus-Management, Scroll-Koordination und bindet Benutzerinteraktionen an View-Modell-Intents.
-        - `HomeContent.kt`: Reine UI-Layout Komponente für den Homescreen. Beherbergt das Scaffold, die Pull-To-Refresh-Struktur, die Fast-Scrollbar und steuert das adaptive Master-Detail-Layout (Navigation 3).
+        - `HomeScreen.kt`: Einstiegspunkt und koordinierende Komponente des Hauptbildschirms.
+        - `HomeContent.kt`: Reine UI-Layout Komponente für den Homescreen.
         - `HomeState.kt`: Plain State Holder für die UI-Logik (Scroll-Zustand, Fokus).
         - `HomeActions.kt`: Wrapper für Benutzeraktionen zur Reduzierung von Prop-Drilling.
+        - `HomeViewModel.kt`: Zuständig für die Kontaktliste, Suche, Filterung und den Home-Screen State. Nutzt ein leichtgewichtiges MVI/UDF-Muster mit dem `HomeIntent` Interface und einem konsolidierten `UserUiState` Flow. **Feature-co-located** neben den zugehörigen Screen-Dateien.
         - ##### 📁 Components (`home.components`)
             - ###### 📁 List (`home.components.list`)
                 - `BirthdayDatePickerDialog.kt`: Wiederverwendbarer, modularer Date-Picker Dialog für die bequeme Eingabe von Geburtstagen.
@@ -73,6 +76,7 @@
                 - `MessengerApp.kt`: Enum zur Definition unterstützter Messenger und deren Branding.
     - #### 📁 Onboarding (`onboarding`)
         - `OnboardingScreen.kt`: Multi-Page Flow für die initiale Konfiguration.
+        - `OnboardingViewModel.kt`: Zuständig für den Onboarding-Status und Erststart-Prozess. **Feature-co-located** neben `OnboardingScreen.kt`.
         - ##### 📁 Components (`onboarding.components`)
             - `OnboardingCommon.kt`: Gemeinsame UI-Komponenten und Wrapper.
             - `WelcomePage.kt`: Individuelle Onboarding-Seite für die Begrüßung.
@@ -85,20 +89,18 @@
     - #### 📁 Settings (`settings`)
         - `SettingsScreen.kt`: Haupteinstellungsmenü.
         - `labels/LabelSettingsScreen.kt`: Verwaltung der Label-Sichtbarkeit.
+        - `labels/LabelViewModel.kt`: Logik für die Label-Verwaltung und Konfiguration. **Feature-co-located**.
         - `notifications/NotificationSettingsScreen.kt`: Konfiguration des Erinnerungssystems.
-        - `calendar/CalendarSettingsScreen.kt`: Screen zur detaillierten Kalender-Sync-Konfiguration mit einer interaktiven Schritt-für-Schritt Anleitung (`SetupStepsCard`) und einem Direktlink zur Standard-Kalender-App.
-        - ##### 📁 Components (`notifications.components`)
-            - `NotificationRuleItem.kt`: UI-Element für eine einzelne Benachrichtigungsregel.
-            - `EditRuleDialog.kt`: Dialog zum Bearbeiten/Erstellen von Erinnerungsregeln. Ermöglicht eine präzise, textbasierte Vorwarnzeit-Eingabe in Tagen oder Wochen (Einheiten-Auswahl per RadioButtons) mit integriertem System-TimePicker.
-            - `NotificationWorker.kt`: Hintergrund-Prozess für die Benachrichtigungs-Logik.
-            - `SnoozeWorker.kt`: Hintergrund-Prozess für die "Später"-Funktion.
-            - `NotificationActionReceiver.kt`: Verarbeitet Klicks auf Benachrichtigungs-Buttons.
-            - `NotificationHelper.kt`: Hilfsklasse für den System-Notification-Manager.
+        - `notifications/NotificationViewModel.kt`: Verwaltung der Benachrichtigungsregeln und deren Synchronisation mit dem WorkManager. **Feature-co-located**.
+        - `calendar/CalendarSettingsScreen.kt`: Screen zur detaillierten Kalender-Sync-Konfiguration.
+        - `calendar/CalendarViewModel.kt`: ViewModel für die Kalender-Einstellungen. **Feature-co-located**.
         - `backup/BackupScreen.kt`: Screen für den Import/Export von Geschenkideen.
-        - `theme/ThemeSettingsScreen.kt`: Einstellungsbildschirm zur manuellen Auswahl des Designs (Hell/Dunkel/System), AMOLED Black-Option und Grid-Auswahl für Akzentfarben.
-        - `otherevents/OtherEventsSettingsScreen.kt`: Screen zur Aktivierung und Konfiguration des Features für weitere Ereignisse (Hochzeitstage und Namenstage).
-        - `sync/SyncSettingsScreen.kt`: Screen zur manuellen Synchronisierung der Kontakte mit Snackbar-Bestätigung.
-        - `about/AboutScreen.kt`: Anzeige von App-Informationen und Entwickler-Details.
+        - `backup/BackupViewModel.kt`: Logik für den Import und Export von Geschenkideen. **Feature-co-located**.
+        - `theme/ThemeSettingsScreen.kt`: Einstellungsbildschirm zur Design-Auswahl.
+        - `theme/ThemeViewModel.kt`: Hält und aktualisiert den UI-Zustand für das App-Design. **Feature-co-located**.
+        - `otherevents/OtherEventsSettingsScreen.kt`: Screen zur Aktivierung des Features für weitere Ereignisse.
+        - `sync/SyncSettingsScreen.kt`: Screen zur manuellen Synchronisierung der Kontakte.
+        - `about/AboutScreen.kt`: Anzeige von App-Informationen.
         - `about/PrivacyPolicyScreen.kt`: Anzeige der Datenschutzerklärung.
 - ### 📁 Models (`ui.model`)
     - `ContactUiModel.kt`: Immutable UI-Modell für Kontakte.
@@ -128,15 +130,19 @@
 - ### 📁 Theme (`ui.theme`)
     - `Theme.kt`, `Color.kt`, `Type.kt`, `Shapes.kt`: Design-System Definitionen (Farbschemata, Typografie, Eckenradien), custom Farbschemata für Akzentfarben und AMOLED-Erweiterung.
 
-## 📁 ViewModel (`viewmodel`)
-- `AppViewModel.kt`: App-weites `@HiltViewModel`, das auf Activity-Ebene gehalten wird. Hält `appSettings: StateFlow<AppSettings>` (mit `SharingStarted.Eagerly` für sofortige Theme-Verfügbarkeit) und triggert `NotificationRepository.syncScheduling()` einmalig im `init {}`-Block. Entkoppelt `MainActivity` vollständig vom Data Layer.
-- `HomeViewModel.kt`: Zuständig für die Kontaktliste, Suche, Filterung und den Home-Screen State. Nutzt ein leichtgewichtiges MVI/UDF-Muster mit dem `HomeIntent` Interface und einem konsolidierten `UserUiState` Flow zur Vermeidung asynchroner Konflikte.
-- `NotificationViewModel.kt`: Verwaltung der Benachrichtigungsregeln und deren Synchronisation mit dem WorkManager.
-- `OnboardingViewModel.kt`: Zuständig für den Onboarding-Status und Erststart-Prozess.
-- `CalendarViewModel.kt`: ViewModel für die Kalender-Einstellungen; steuert die Synchronisation und die Entfernung des Kalenders aus der App.
-- `LabelViewModel.kt`: Spezialer Logik für die Label-Verwaltung und Konfiguration.
-- `BackupViewModel.kt`: Logik für den Import und Export von Geschenkideen.
-- `ThemeViewModel.kt`: Hält und aktualisiert den UI-Zustand für das App-Design.
+## 📁 Notification-Infrastruktur (`notification`)
+- `NotificationWorker.kt`: Hintergrund-Prozess für die Benachrichtigungs-Logik (`@AssistedInject` Hilt-Worker).
+- `SnoozeWorker.kt`: Hintergrund-Prozess für die "Später"-Funktion.
+- `NotificationActionReceiver.kt`: Verarbeitet Klicks auf Benachrichtigungs-Buttons (Snooze, Erledigt, Dismissed). Im `AndroidManifest.xml` als Receiver registriert.
+- `NotificationHelper.kt`: Hilfsklasse für den System-Notification-Manager (Erstellen und Anzeigen von Benachrichtigungen).
+
+> [!NOTE]
+> Dieses Package enthält **keine UI-Komponenten**. Die UI-seitigen Elemente (`EditRuleDialog.kt`, `NotificationRuleItem.kt`) verbleiben in `ui/screens/settings/notifications/components/`.
+
+## 📁 ViewModel (feature-co-located)
+> ViewModels liegen **direkt neben ihren Screen-Dateien** (feature-co-located), nicht in einem globalen `viewmodel/`-Package.
+> Das Root-Package enthält `AppViewModel.kt` (Activity-weit, keinem einzelnen Screen zugehörig).
+> Alle anderen ViewModels befinden sich in ihrem jeweiligen Feature-Package unter `ui/screens/`.
 
 ## 📁 Utilities (`util`)
 - `DateUtils.kt`: Robuste Erweiterungsfunktionen für LocalDate.

@@ -1,7 +1,6 @@
-package com.heckmannch.birthdaybuddy.viewmodel
+package com.heckmannch.birthdaybuddy
 
 import com.google.common.truth.Truth.assertThat
-import com.heckmannch.birthdaybuddy.MainDispatcherRule
 import com.heckmannch.birthdaybuddy.data.local.AppSettings
 import com.heckmannch.birthdaybuddy.data.repository.NotificationRepository
 import kotlinx.coroutines.ExperimentalCoroutinesApi

@@ -1,4 +1,4 @@
-package com.heckmannch.birthdaybuddy.viewmodel
+package com.heckmannch.birthdaybuddy.ui.screens.settings.notifications
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope

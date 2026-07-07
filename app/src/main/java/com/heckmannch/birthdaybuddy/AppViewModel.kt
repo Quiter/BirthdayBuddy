@@ -1,4 +1,4 @@
-package com.heckmannch.birthdaybuddy.viewmodel
+package com.heckmannch.birthdaybuddy
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope

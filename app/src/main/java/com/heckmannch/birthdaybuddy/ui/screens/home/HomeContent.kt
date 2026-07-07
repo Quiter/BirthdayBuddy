@@ -59,7 +59,6 @@ import com.heckmannch.birthdaybuddy.ui.screens.home.components.list.FastScrollba
 import com.heckmannch.birthdaybuddy.ui.screens.home.components.topbar.SearchBar
 import com.heckmannch.birthdaybuddy.ui.theme.BirthdayBuddyTheme
 import com.heckmannch.birthdaybuddy.ui.theme.SpacingSmall
-import com.heckmannch.birthdaybuddy.viewmodel.HomeViewModel
 import kotlinx.serialization.Serializable
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3AdaptiveApi::class)

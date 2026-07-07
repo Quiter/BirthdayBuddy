@@ -74,7 +74,7 @@
         </receiver>
 
         <receiver
-            android:name=".ui.screens.settings.notifications.components.NotificationActionReceiver"
+            android:name=".notification.NotificationActionReceiver"
             android:exported="false">
             <intent-filter>
                 <action android:name="SNOOZE" />

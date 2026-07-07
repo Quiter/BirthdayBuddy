@@ -1,4 +1,4 @@
-package com.heckmannch.birthdaybuddy.viewmodel
+package com.heckmannch.birthdaybuddy.ui.screens.home
 
 import android.util.Log
 import androidx.lifecycle.ViewModel

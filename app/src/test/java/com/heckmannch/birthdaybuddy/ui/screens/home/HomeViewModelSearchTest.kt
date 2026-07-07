@@ -1,4 +1,4 @@
-package com.heckmannch.birthdaybuddy.viewmodel
+package com.heckmannch.birthdaybuddy.ui.screens.home
 
 import androidx.lifecycle.viewModelScope
 import com.google.common.truth.Truth.assertThat
