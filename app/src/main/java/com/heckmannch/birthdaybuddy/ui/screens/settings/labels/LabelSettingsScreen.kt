@@ -62,7 +62,7 @@ import com.heckmannch.birthdaybuddy.ui.theme.BirthdayBuddyTheme
 import com.heckmannch.birthdaybuddy.ui.theme.IconSizeSmall
 import com.heckmannch.birthdaybuddy.ui.theme.SpacingNormal
 import com.heckmannch.birthdaybuddy.ui.theme.SpacingSmall
-import com.heckmannch.birthdaybuddy.ui.screens.home.HomeViewModel
+import com.heckmannch.birthdaybuddy.data.local.ContactLabels
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -234,7 +234,7 @@ private fun LabelConfigCard(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 modifier = Modifier.fillMaxWidth()
             ) {
-                val displayName = if (label.name == HomeViewModel.LABEL_NO_BIRTHDAY) {
+                val displayName = if (label.name == ContactLabels.LABEL_NO_BIRTHDAY) {
                     stringResource(R.string.home_filter_no_birthday)
                 } else {
                     label.name

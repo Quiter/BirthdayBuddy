@@ -4,6 +4,7 @@ import androidx.lifecycle.viewModelScope
 import com.google.common.truth.Truth.assertThat
 import com.heckmannch.birthdaybuddy.MainDispatcherRule
 import com.heckmannch.birthdaybuddy.data.local.Contact
+import com.heckmannch.birthdaybuddy.data.local.ContactLabels
 import com.heckmannch.birthdaybuddy.data.local.LabelConfig
 import com.heckmannch.birthdaybuddy.data.mapper.ContactMapper
 import com.heckmannch.birthdaybuddy.data.repository.ContactRepository
@@ -183,14 +184,14 @@ class HomeViewModelTest {
 
         // Verify availableLabels contains anniversary and name_day labels
         val initialLabelsState = viewModel.uiState.first { it.availableLabels.isNotEmpty() }
-        assertThat(initialLabelsState.availableLabels).contains(HomeViewModel.LABEL_ANNIVERSARY)
-        assertThat(initialLabelsState.availableLabels).contains(HomeViewModel.LABEL_NAME_DAY)
+        assertThat(initialLabelsState.availableLabels).contains(ContactLabels.LABEL_ANNIVERSARY)
+        assertThat(initialLabelsState.availableLabels).contains(ContactLabels.LABEL_NAME_DAY)
 
         // Select Anniversary label
-        viewModel.onLabelSelected(HomeViewModel.LABEL_ANNIVERSARY)
+        viewModel.onLabelSelected(ContactLabels.LABEL_ANNIVERSARY)
 
         val anniversaryState = viewModel.uiState.first { state ->
-            state.selectedLabel == HomeViewModel.LABEL_ANNIVERSARY &&
+            state.selectedLabel == ContactLabels.LABEL_ANNIVERSARY &&
                     state.contacts?.size == 1 &&
                     state.contacts.first().fullName == "Anniversary Person"
         }

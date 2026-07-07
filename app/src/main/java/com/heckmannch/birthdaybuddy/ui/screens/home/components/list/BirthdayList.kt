@@ -76,7 +76,7 @@ import com.heckmannch.birthdaybuddy.ui.theme.SpacingExtraSmall
 import com.heckmannch.birthdaybuddy.ui.theme.SpacingMedium
 import com.heckmannch.birthdaybuddy.ui.theme.SpacingNormal
 import com.heckmannch.birthdaybuddy.ui.theme.SpacingSmall
-import com.heckmannch.birthdaybuddy.ui.screens.home.HomeViewModel
+import com.heckmannch.birthdaybuddy.data.local.ContactLabels
 import kotlinx.coroutines.delay
 import kotlin.time.Duration.Companion.milliseconds
 
@@ -196,7 +196,7 @@ fun BirthdayList(
                 )
             }
         }
-        if (selectedLabel == HomeViewModel.LABEL_ANNIVERSARY && coupleSuggestion != null) {
+        if (selectedLabel == ContactLabels.LABEL_ANNIVERSARY && coupleSuggestion != null) {
             item(key = "couple_suggestion") {
                 CoupleSuggestionBanner(
                     suggestion = coupleSuggestion,

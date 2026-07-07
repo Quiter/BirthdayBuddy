@@ -3,6 +3,7 @@ package com.heckmannch.birthdaybuddy.ui.screens.home
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.heckmannch.birthdaybuddy.data.local.ContactLabels
 import com.heckmannch.birthdaybuddy.data.mapper.ContactMapper
 import com.heckmannch.birthdaybuddy.data.repository.ContactRepository
 import com.heckmannch.birthdaybuddy.data.repository.TimeRepository
@@ -56,9 +57,6 @@ class HomeViewModel @Inject constructor(
     private val _userUiState = MutableStateFlow(UserUiState())
 
     companion object {
-        const val LABEL_NO_BIRTHDAY = "special:no_birthday"
-        const val LABEL_ANNIVERSARY = "special:anniversary"
-        const val LABEL_NAME_DAY = "special:name_day"
         private val WHITESPACE_REGEX = "\\s+".toRegex()
     }
 
@@ -239,8 +237,8 @@ class HomeViewModel @Inject constructor(
             birthdays + nameDays + pairedAnniversaries + contactsWithNoEvent
         } else {
             val displayEventType: EventType = when (label) {
-                LABEL_ANNIVERSARY -> EventType.ANNIVERSARY
-                LABEL_NAME_DAY -> EventType.NAME_DAY
+                ContactLabels.LABEL_ANNIVERSARY -> EventType.ANNIVERSARY
+                ContactLabels.LABEL_NAME_DAY -> EventType.NAME_DAY
                 else -> EventType.BIRTHDAY
             }
 
@@ -251,7 +249,7 @@ class HomeViewModel @Inject constructor(
                         }) {
                         return@filter false
                     }
-                    if (label != null && label != LABEL_NO_BIRTHDAY && label != LABEL_NAME_DAY && !contact.labels.contains(
+                    if (label != null && label != ContactLabels.LABEL_NO_BIRTHDAY && label != ContactLabels.LABEL_NAME_DAY && !contact.labels.contains(
                             label
                         )
                     ) {
@@ -264,8 +262,8 @@ class HomeViewModel @Inject constructor(
                         if (displayEventType == EventType.NAME_DAY) contact.nameDay != null else contact.birthday != null
                     if (!hasEvent) {
                         if (displayEventType != EventType.BIRTHDAY) return@filter false
-                        if (!isSearching && label != LABEL_NO_BIRTHDAY) return@filter false
-                    } else if (label == LABEL_NO_BIRTHDAY) {
+                        if (!isSearching && label != ContactLabels.LABEL_NO_BIRTHDAY) return@filter false
+                    } else if (label == ContactLabels.LABEL_NO_BIRTHDAY) {
                         return@filter false
                     }
                     true
@@ -373,7 +371,7 @@ class HomeViewModel @Inject constructor(
 
         // 1. Sichtbarkeit prüfen (Ereignis vorhanden & Ignoriert-Status)
         val isMissingEvent = contact.dateText == "-"
-        val isNoBirthdayFilter = label == LABEL_NO_BIRTHDAY
+        val isNoBirthdayFilter = label == ContactLabels.LABEL_NO_BIRTHDAY
 
         // Ereignislose Kontakte ausblenden (außer bei Suche, sofern es sich um Geburtstage handelt.
         // Für Hochzeitstag und Namenstag blenden wir Kontakte ohne dieses Ereignis IMMER aus!)
@@ -395,9 +393,9 @@ class HomeViewModel @Inject constructor(
         // 3. Label-Filter
         return when (label) {
             null -> true
-            LABEL_NO_BIRTHDAY -> isMissingEvent
-            LABEL_ANNIVERSARY -> true // bereits oben über isMissingEvent und displayEventType gefiltert
-            LABEL_NAME_DAY -> true    // bereits oben über isMissingEvent und displayEventType gefiltert
+            ContactLabels.LABEL_NO_BIRTHDAY -> isMissingEvent
+            ContactLabels.LABEL_ANNIVERSARY -> true // bereits oben über isMissingEvent und displayEventType gefiltert
+            ContactLabels.LABEL_NAME_DAY -> true    // bereits oben über isMissingEvent und displayEventType gefiltert
             else -> contact.labels.contains(label)
         }
     }
@@ -413,7 +411,7 @@ class HomeViewModel @Inject constructor(
         val configMap = configs.associateBy { it.name }
 
         // Pseudo-Label "Ohne Datum" Konfiguration laden und Sichtbarkeit prüfen
-        val pseudoConfig = configMap[LABEL_NO_BIRTHDAY]
+        val pseudoConfig = configMap[ContactLabels.LABEL_NO_BIRTHDAY]
         val showPseudo = contacts.any { it.birthday == null } &&
                 pseudoConfig?.isHiddenFromFilter != true &&
                 pseudoConfig?.isIgnored != true
@@ -421,7 +419,7 @@ class HomeViewModel @Inject constructor(
         // Prüfen, ob aktive, nicht-versteckte User-Labels vorhanden sind
         val hasActiveUserLabels = inUseLabels.any { name ->
             val config = configMap[name]
-            config?.isSystem == false && !(config.isHiddenFromFilter) && !(config.isIgnored) && name != LABEL_NO_BIRTHDAY
+            config?.isSystem == false && !(config.isHiddenFromFilter) && !(config.isIgnored) && name != ContactLabels.LABEL_NO_BIRTHDAY
         }
 
         val showAnniversary = otherEventsEnabled && contacts.any { it.anniversary != null }
@@ -437,7 +435,7 @@ class HomeViewModel @Inject constructor(
             inUseLabels.asSequence()
                 .filter { name ->
                     val config = configMap[name]
-                    (config?.isSystem == false) && !(config.isHiddenFromFilter) && !(config.isIgnored) && name != LABEL_NO_BIRTHDAY
+                    (config?.isSystem == false) && !(config.isHiddenFromFilter) && !(config.isIgnored) && name != ContactLabels.LABEL_NO_BIRTHDAY
                 }
                 .sorted()
                 .forEach { labels.add(it) }
@@ -445,15 +443,15 @@ class HomeViewModel @Inject constructor(
 
         // "Ohne Datum" immer als Letztes von Geburtstagen, falls aktiv
         if (showPseudo) {
-            labels.add(LABEL_NO_BIRTHDAY)
+            labels.add(ContactLabels.LABEL_NO_BIRTHDAY)
         }
 
         // Weitere Ereignisse ganz rechts
         if (showAnniversary) {
-            labels.add(LABEL_ANNIVERSARY)
+            labels.add(ContactLabels.LABEL_ANNIVERSARY)
         }
         if (showNameDay) {
-            labels.add(LABEL_NAME_DAY)
+            labels.add(ContactLabels.LABEL_NAME_DAY)
         }
 
         labels
@@ -464,7 +462,7 @@ class HomeViewModel @Inject constructor(
         contactRepository.ignoredCouplePairs,
         _userUiState.map { it.selectedLabel }.distinctUntilChanged(),
     ) { potentials, ignoredPairs, label ->
-        if (label != LABEL_ANNIVERSARY || potentials.isEmpty()) return@combine null
+        if (label != ContactLabels.LABEL_ANNIVERSARY || potentials.isEmpty()) return@combine null
 
         potentials.firstOrNull { couple ->
             val pairKey = if (couple.firstLookupKey < couple.secondLookupKey) {

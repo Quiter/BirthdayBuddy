@@ -60,6 +60,7 @@ import com.heckmannch.birthdaybuddy.ui.screens.home.components.topbar.SearchBar
 import com.heckmannch.birthdaybuddy.ui.theme.BirthdayBuddyTheme
 import com.heckmannch.birthdaybuddy.ui.theme.SpacingSmall
 import kotlinx.serialization.Serializable
+import com.heckmannch.birthdaybuddy.data.local.ContactLabels
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3AdaptiveApi::class)
 @Composable
@@ -152,7 +153,7 @@ fun HomeContent(
 
             val getScrollLabel: (ContactUiModel) -> String = remember(uiState.selectedLabel) {
                 { contact ->
-                    if (uiState.selectedLabel == HomeViewModel.LABEL_NO_BIRTHDAY) {
+                    if (uiState.selectedLabel == ContactLabels.LABEL_NO_BIRTHDAY) {
                         contact.fullName.firstOrNull()?.uppercaseChar()?.toString() ?: ""
                     } else {
                         contact.monthName
@@ -180,7 +181,7 @@ fun HomeContent(
                     )
 
                     val showLabelFilter = uiState.availableLabels.isNotEmpty() && !showFilterBarInTopBar
-                    val showCoupleSuggestion = uiState.selectedLabel == HomeViewModel.LABEL_ANNIVERSARY && uiState.coupleSuggestion != null
+                    val showCoupleSuggestion = uiState.selectedLabel == ContactLabels.LABEL_ANNIVERSARY && uiState.coupleSuggestion != null
                     val headerCount = (if (showLabelFilter) 1 else 0) + (if (showCoupleSuggestion) 1 else 0)
 
                     FastScrollbar(
@@ -264,7 +265,7 @@ fun HomeContent(
                                     )
 
                                     val currentShowLabelFilter = currentUiState.availableLabels.isNotEmpty() && !showFilterBarInTopBar
-                                    val currentShowCoupleSuggestion = currentUiState.selectedLabel == HomeViewModel.LABEL_ANNIVERSARY && currentUiState.coupleSuggestion != null
+                                    val currentShowCoupleSuggestion = currentUiState.selectedLabel == ContactLabels.LABEL_ANNIVERSARY && currentUiState.coupleSuggestion != null
                                     val currentHeaderCount = (if (currentShowLabelFilter) 1 else 0) + (if (currentShowCoupleSuggestion) 1 else 0)
 
                                     FastScrollbar(

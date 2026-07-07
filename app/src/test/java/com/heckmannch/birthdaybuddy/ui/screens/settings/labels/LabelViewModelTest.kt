@@ -3,9 +3,9 @@ package com.heckmannch.birthdaybuddy.ui.screens.settings.labels
 import com.google.common.truth.Truth.assertThat
 import com.heckmannch.birthdaybuddy.MainDispatcherRule
 import com.heckmannch.birthdaybuddy.data.local.Contact
+import com.heckmannch.birthdaybuddy.data.local.ContactLabels
 import com.heckmannch.birthdaybuddy.data.local.LabelConfig
 import com.heckmannch.birthdaybuddy.data.repository.ContactRepository
-import com.heckmannch.birthdaybuddy.ui.screens.home.HomeViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flowOf
@@ -33,7 +33,7 @@ class LabelViewModelTest {
             LabelConfig("Family", isHiddenFromFilter = false, isIgnored = false),
             LabelConfig("Friends", isHiddenFromFilter = true, isIgnored = false),
             LabelConfig(
-                HomeViewModel.LABEL_NO_BIRTHDAY,
+                ContactLabels.LABEL_NO_BIRTHDAY,
                 isHiddenFromFilter = false,
                 isIgnored = true
             )
@@ -62,7 +62,7 @@ class LabelViewModelTest {
         assertThat(list).hasSize(3)
         assertThat(list[0].name).isEqualTo("Family")
         assertThat(list[1].name).isEqualTo("Friends")
-        assertThat(list[2].name).isEqualTo(HomeViewModel.LABEL_NO_BIRTHDAY)
+        assertThat(list[2].name).isEqualTo(ContactLabels.LABEL_NO_BIRTHDAY)
         assertThat(list[2].isIgnored).isTrue()
     }
 

@@ -23,7 +23,7 @@ import com.heckmannch.birthdaybuddy.R
 import com.heckmannch.birthdaybuddy.ui.theme.BirthdayBuddyTheme
 import com.heckmannch.birthdaybuddy.ui.theme.SpacingNormal
 import com.heckmannch.birthdaybuddy.ui.theme.SpacingSmall
-import com.heckmannch.birthdaybuddy.ui.screens.home.HomeViewModel
+import com.heckmannch.birthdaybuddy.data.local.ContactLabels
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -68,9 +68,9 @@ fun LabelFilterBar(
                     key = { it }
                 ) { label ->
                     val displayLabel = when (label) {
-                        HomeViewModel.LABEL_NO_BIRTHDAY -> stringResource(R.string.home_filter_no_birthday)
-                        HomeViewModel.LABEL_ANNIVERSARY -> stringResource(R.string.home_filter_anniversary)
-                        HomeViewModel.LABEL_NAME_DAY -> stringResource(R.string.home_filter_name_day)
+                        ContactLabels.LABEL_NO_BIRTHDAY -> stringResource(R.string.home_filter_no_birthday)
+                        ContactLabels.LABEL_ANNIVERSARY -> stringResource(R.string.home_filter_anniversary)
+                        ContactLabels.LABEL_NAME_DAY -> stringResource(R.string.home_filter_name_day)
                         else -> label
                     }
 

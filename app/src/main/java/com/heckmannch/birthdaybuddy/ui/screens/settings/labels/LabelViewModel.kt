@@ -5,7 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.heckmannch.birthdaybuddy.data.local.LabelConfig
 import com.heckmannch.birthdaybuddy.data.repository.ContactRepository
 import com.heckmannch.birthdaybuddy.ui.model.LabelManagementModel
-import com.heckmannch.birthdaybuddy.ui.screens.home.HomeViewModel
+import com.heckmannch.birthdaybuddy.data.local.ContactLabels
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -34,7 +34,7 @@ class LabelViewModel @Inject constructor(
 
         // Standard-Labels sortiert nach Name (ohne das Pseudo-Label)
         val standardList = configs.asSequence()
-            .filter { it.name in labelsInUse && it.name != HomeViewModel.LABEL_NO_BIRTHDAY }
+            .filter { it.name in labelsInUse && it.name != ContactLabels.LABEL_NO_BIRTHDAY }
             .map { config ->
                 LabelManagementModel(
                     config.name,
@@ -47,8 +47,8 @@ class LabelViewModel @Inject constructor(
         // Pseudo-Label "Ohne Datum" am Ende anhängen, falls Kontakte ohne Geburtstag da sind
         val hasMissingBirthdays = contacts.any { it.birthday == null }
         if (hasMissingBirthdays) {
-            val pseudoConfig = configMap[HomeViewModel.LABEL_NO_BIRTHDAY]
-                ?: LabelConfig(HomeViewModel.LABEL_NO_BIRTHDAY)
+            val pseudoConfig = configMap[ContactLabels.LABEL_NO_BIRTHDAY]
+                ?: LabelConfig(ContactLabels.LABEL_NO_BIRTHDAY)
             standardList + LabelManagementModel(
                 pseudoConfig.name,
                 pseudoConfig.isHiddenFromFilter,
