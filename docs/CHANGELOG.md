@@ -105,3 +105,20 @@
     - **Technische Rahmenbedingungen:**
         - Einsatz von `MockK` für relaxed Mocks aller DAOs und des Schedulers.
         - Umleitung der Main-Coroutine auf den Test-Dispatcher über `MainDispatcherRule` und Ausführung in `runTest`.
+
+240. **Strukturelle Aufteilung von `FastScrollbar.kt` (Code Quality & Maintainability):**
+    - **Motivation:** `FastScrollbar.kt` war mit ~25 KB / 525 Zeilen die größte UI-Datei im Projekt und enthielt sowohl die Public-API als auch eine vollständig isolierbare private Composable.
+    - **Extraktion:** `ScrollbarBubble` (das animierte Label-Bubble neben dem Scrollbar-Thumb) wurde 1:1 in die neue Datei [ScrollbarBubble.kt](file:///c:/Users/chris/AndroidStudioProjects/BirthdayBuddy/app/src/main/java/com/heckmannch/birthdaybuddy/ui/screens/home/components/list/ScrollbarBubble.kt) ausgelagert. Sichtbarkeit von `private` auf `internal` angehoben (minimale Erweiterung, da beide Dateien im selben Package `ui.screens.home.components.list` liegen – kein Public-API-Leak).
+    - **`FastScrollbar.kt`** (verkleinert auf ~461 Zeilen): Enthält weiterhin `ScrollbarDefaults`, `ScrollSection` (Public-API), den vollständigen `FastScrollbar()`-Composable mit State-Management, Geometrie-Berechnungen, Drag-Gestures und Thumb-UI. KDoc um einen „File Structure"-Abschnitt ergänzt.
+    - **`ScrollbarBubble.kt`** (neu, ~100 Zeilen): Vollständig isoliertes `internal fun ScrollbarBubble()`-Composable mit eigenem KDoc (inkl. Designentscheidungen zu `MutableTransitionState` und Lambda-Offset).
+    - **Keine funktionalen Änderungen.** Alle Aufrufer (`HomeContent.kt`) kompilieren unverändert.
+    - **Verifikation:** `.\gradlew compileDebugKotlin` erfolgreich.
+
+241. **Migration von `ScrollbarBubble.kt` auf standardisierte `Dimensions.kt` Token (Code Quality & UI-Konsistenz):**
+    - **Problem:** In [ScrollbarBubble.kt](file:///c:/Users/chris/AndroidStudioProjects/BirthdayBuddy/app/src/main/java/com/heckmannch/birthdaybuddy/ui/screens/home/components/list/ScrollbarBubble.kt) wurden die Abstände (Paddings) hartkodiert mit `16.dp` und `8.dp` definiert. Dies verstößt gegen die UI-Richtlinien des Projekts, die eine einheitliche Nutzung von Dimensions-Token vorschreiben.
+    - **Lösung:** Ersetzung aller hardcodierten `.dp`-Abstände durch standardisierte Token aus [Dimensions.kt](file:///c:/Users/chris/AndroidStudioProjects/BirthdayBuddy/app/src/main/java/com/heckmannch/birthdaybuddy/ui/theme/Dimensions.kt):
+        - `16.dp` wurde durch `SpacingNormal` ersetzt.
+        - `8.dp` wurde durch `SpacingSmall` ersetzt.
+        - Bereinigung der nicht mehr benötigten Imports (Entfernung von `import androidx.compose.ui.unit.dp`).
+    - **Verifikation:** Erfolgreiche Kompilierung und Durchlauf aller Unit-Tests.
+

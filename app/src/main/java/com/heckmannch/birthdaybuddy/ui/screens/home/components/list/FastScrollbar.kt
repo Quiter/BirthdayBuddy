@@ -1,13 +1,7 @@
 package com.heckmannch.birthdaybuddy.ui.screens.home.components.list
 
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.core.MutableTransitionState
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
-import androidx.compose.animation.slideInHorizontally
-import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.foundation.gestures.detectVerticalDragGestures
 import androidx.compose.foundation.interaction.collectIsDraggedAsState
 import androidx.compose.foundation.layout.Arrangement
@@ -30,7 +24,6 @@ import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
@@ -48,17 +41,12 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.Dp
-import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.window.Popup
-import androidx.compose.ui.window.PopupProperties
 import com.heckmannch.birthdaybuddy.ui.model.ContactUiModel
 import kotlinx.coroutines.delay
 import kotlin.time.Duration.Companion.milliseconds
 
-private object ScrollbarDefaults {
+internal object ScrollbarDefaults {
     val BarWidth = 150.dp
     val ThumbSize = 48.dp
     const val BUBBLE_DELAY = 500L
@@ -82,6 +70,13 @@ data class ScrollSection(
 /**
  * FastScrollbar displays a custom, draggable scroll bar overlay on a list.
  *
+ * ### File Structure
+ * This composable is split across two files in the same package:
+ * - `FastScrollbar.kt` (this file): public API, [ScrollSection] data class, all state
+ *   management, geometry calculations, drag-gesture handling and thumb UI.
+ * - `ScrollbarBubble.kt`: the isolated animated label bubble ([ScrollbarBubble]), extracted
+ *   for readability. It is `internal` so it remains package-private.
+ *
  * ### CRITICAL INSTRUCTIONS FOR AI CODING AGENTS (LLMs):
  * 1. **Core Purpose**: Enables fast vertical scrolling and visual tracking in lists using
  *    alphabetical or monthly groupings.
@@ -102,11 +97,11 @@ data class ScrollSection(
  *    - `scrolledPx = cumulativeHeights[firstVisibleIndex] + firstVisibleScrollOffset`
  *    - `maxScrollPx = totalHeight - viewportHeight + afterContentPadding`
  *    - The `afterContentPadding` (from [LazyListState.layoutInfo]) is CRITICAL: the
- *      LazyColumn’s bottom contentPadding (`80.dp + navBarPadding`) extends the scroll range
+ *      LazyColumn's bottom contentPadding (`80.dp + navBarPadding`) extends the scroll range
  *      beyond what items alone contribute. Omitting it causes `maxScrollPx` to be too small
  *      (or negative for short filtered lists), making the thumb jump to the bottom.
  *    - Do NOT use section-based calculations for this forward mapping (List → Thumb).
- *      Doing so causes a “rubber ruler” effect where the thumb jumps back on manual scroll.
+ *      Doing so causes a "rubber ruler" effect where the thumb jumps back on manual scroll.
  *    - The section-based mapping is used ONLY for the inverse direction (Thumb Drag → List).
  * 5. **Fractional requestScrollToItem Gestures**:
  *    - Scrolling during drags is initiated with `listState.requestScrollToItem(index, offsetPx)`.
@@ -463,62 +458,3 @@ fun FastScrollbar(
     }
 }
 
-@Composable
-private fun ScrollbarBubble(
-    visible: Boolean,
-    label: String,
-    thumbOffset: () -> Dp,
-) {
-    val transitionState = remember { MutableTransitionState(initialState = false) }
-    transitionState.targetState = visible
-
-    if (transitionState.currentState || transitionState.targetState) {
-        Popup(
-            alignment = Alignment.TopStart,
-            offset = remember { IntOffset.Zero },
-            properties = PopupProperties(
-                focusable = false,
-                dismissOnBackPress = false,
-                dismissOnClickOutside = false,
-                clippingEnabled = false,
-                usePlatformDefaultWidth = false
-            )
-        ) {
-            Box(
-                modifier = Modifier
-                    .width(ScrollbarDefaults.BarWidth)
-                    .fillMaxHeight()
-            ) {
-                Box(modifier = Modifier.graphicsLayer {
-                    translationY =
-                        (thumbOffset() - ScrollbarDefaults.BubbleOffsetY).toPx().coerceAtLeast(0f)
-                }) {
-                    AnimatedVisibility(
-                        visibleState = transitionState,
-                        enter = fadeIn() + slideInHorizontally { it / 2 },
-                        exit = fadeOut() + slideOutHorizontally { it / 2 },
-                    ) {
-                        Surface(
-                            shape = RoundedCornerShape(
-                                topStart = ScrollbarDefaults.BubbleCornerLarge,
-                                bottomStart = ScrollbarDefaults.BubbleCornerLarge,
-                                topEnd = ScrollbarDefaults.BubbleCornerSmall,
-                                bottomEnd = ScrollbarDefaults.BubbleCornerLarge
-                            ),
-                            color = MaterialTheme.colorScheme.primary,
-                            tonalElevation = ScrollbarDefaults.BubbleElevation,
-                            modifier = Modifier.padding(end = 16.dp)
-                        ) {
-                            Text(
-                                text = label,
-                                modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
-                                color = MaterialTheme.colorScheme.onPrimary,
-                                style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
-                            )
-                        }
-                    }
-                }
-            }
-        }
-    }
-}
