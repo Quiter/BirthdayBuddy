@@ -4,8 +4,10 @@ import com.heckmannch.birthdaybuddy.data.local.ContactLabels
 import com.heckmannch.birthdaybuddy.domain.model.Contact
 import com.heckmannch.birthdaybuddy.domain.model.LabelConfig
 import dagger.Reusable
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.flowOn
 import javax.inject.Inject
 
 /**
@@ -87,5 +89,5 @@ class GetAvailableLabelsUseCase @Inject constructor() {
         }
 
         labels
-    }
+    }.flowOn(Dispatchers.Default)
 }

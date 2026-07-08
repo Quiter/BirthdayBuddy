@@ -141,7 +141,9 @@ class HomeViewModel @Inject constructor(
             newlyAddedIdeaId = userState.newlyAddedIdeaId,
             coupleSuggestion = suggestion
         )
-    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), HomeUiState())
+    }
+        .flowOn(Dispatchers.Default)
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), HomeUiState())
 
     // --- MVI Intent Processing ---
     fun onIntent(intent: HomeIntent) {

@@ -319,3 +319,9 @@
     - **Analyse weiterer Flows:** Die vier verbleibenden `appSettingsDao`-Flows (`otherEventsEnabled`, `ignoredCouplePairs`, `labelsEnabled`, `potentialCouples`) führen ausschließlich triviale O(1)-Feldextraktionen durch und benötigen kein `flowOn`.
     - **Tests:** Alle bestehenden JVM-Unit-Tests grün (die Änderung ist rein additiv hinter dem Repository-Interface und berührt keine gemockten Implementierungen).
 
+234. **Optimierung der Coroutine-Threading-Strategie in GetAvailableLabelsUseCase & HomeViewModel (Performance / Richtlinie §2.7):**
+    - **GetAvailableLabelsUseCase:** Hinzufügen von `.flowOn(Dispatchers.Default)` am Ende der kombinierenden Flow-Kette in [GetAvailableLabelsUseCase.kt](file:///c:/Users/chris/AndroidStudioProjects/BirthdayBuddy/app/src/main/java/com/heckmannch/birthdaybuddy/domain/usecase/GetAvailableLabelsUseCase.kt). Dadurch werden die CPU-intensiven Berechnungen der verfügbaren Filter-Labels (Filterung, Sortierung, Einbindung von Pseudo-Labels) sicher vom Main-Thread entkoppelt.
+    - **HomeViewModel - Audit & uiState:**
+        - Audit von `coupleSuggestion`: Verifiziert, dass dieser Flow durch die Verwendung von `.flowOn(Dispatchers.Default)` im [HomeViewModel.kt](file:///c:/Users/chris/AndroidStudioProjects/BirthdayBuddy/app/src/main/java/com/heckmannch/birthdaybuddy/ui/screens/home/HomeViewModel.kt) bereits korrekt im Default-Dispatcher ausgeführt wird.
+        - Ergänzung von `.flowOn(Dispatchers.Default)` beim `uiState`-Flow vor dem `.stateIn(...)`-Terminaloperator. Dies sorgt dafür, dass die finale Konsolidierung des UI-States (einschließlich des Mappings zur Bereinigung der Labels bei deaktivierter Label-Filterung) im Default-Dispatcher ausgeführt wird.
+    - **Validierung:** Alle bestehenden JUnit-Tests laufen weiterhin fehlerfrei durch.
