@@ -1,7 +1,7 @@
 package com.heckmannch.birthdaybuddy.data.local
 
 import androidx.room.TypeConverter
-import com.heckmannch.birthdaybuddy.ui.model.GiftIdea
+import com.heckmannch.birthdaybuddy.domain.model.GiftIdea
 import org.json.JSONArray
 import org.json.JSONObject
 

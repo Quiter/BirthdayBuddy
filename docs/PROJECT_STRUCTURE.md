@@ -1,7 +1,7 @@
 # Project Structure: BirthdayBuddy
 
 ## 📁 Root
-- `MainActivity.kt`: Haupteinstiegspunkt der App. Regelt das Navigations-Hosting (NavHost), das globale Intent-Handling (z.B. Widget-Klicks) über Compose-seitiges `activityIntent` State-Handling, automatische Filter-Resets bei Inaktivität über einen batterieschonenden `LifecycleEventObserver`, und die Echtzeit-Synchronisation bei Änderungen im System-Adressbuch via `ContentObserver`.
+- `MainActivity.kt`: Schlanker Einstiegspunkt der App (~130 Zeilen). Verantwortlich für: Splash-Screen, Edge-to-Edge, Theme-Bereitstellung, globales Intent-Handling (z.B. Widget-Klicks) via `activityIntent`-State und Inaktivitäts-Reset über `LifecycleEventObserver`. Die Navigationslogik liegt in `AppNavHost.kt`, der ContentObserver in `ContactSyncEffect.kt`, die Routen in `NavRoutes.kt`.
 - `BirthdayBuddyApplication.kt`: Hilt-Application Klasse zur Initialisierung der Dependency Injection und Konfiguration des WorkManagers.
 - `AppViewModel.kt`: App-weites `@HiltViewModel`, das auf Activity-Ebene gehalten wird (Root-Package, da Activity-weit gültig).
 - `AppViewModelTest.kt`: Tests für `AppViewModel`.
@@ -34,6 +34,7 @@
     - `PendingNotification.kt`: Entity zur Nachverfolgung aktiver System-Benachrichtigungen.
     - `PendingNotificationDao.kt`: DAO für die Verwaltung noch nicht quittierter Erinnerungen.
     - `PotentialCouple.kt`: Datenklasse zur Repräsentation eines potenziellen Ehepaars, das denselben Hochzeitstag teilt.
+    - `ContactLabels.kt`: Zentrales `object` mit system-definierten Pseudo-Label-Identifiern (`LABEL_NO_BIRTHDAY`, `LABEL_ANNIVERSARY`, `LABEL_NAME_DAY`). Liegt im Data-Layer, da diese Werte als `LabelConfig`-Einträge in der Datenbank gespeichert werden und von mehreren Schichten genutzt werden (ViewModels, UI-Screens). Löst die frühere Abhängigkeit auf `HomeViewModel.companion`.
 - ### 📁 Repository (`data.repository`)
     - `CalendarSyncRepository.kt`: Orchestriert die Synchronisation von Geburtstagen, Namenstagen und Hochzeitstagen mit dem System-Kalender unter Verwendung von `SystemCalendarDataSource`.
     - `ContactRepository.kt`: Orchestriert den Datenfluss zwischen Room-DB und der System-Kontaktquelle; implementiert die Sync-Logik, reaktive Widget-Updates und Geschäftslogik für Geschenkideen.
@@ -114,8 +115,12 @@
     - `GiftIdea.kt`: Modell für Geschenkideen mit JSON- und Manipulations-Logik.
     - `CoupleSuggestionUiModel.kt`: Immutable UI-Modell für Paar-Vorschläge, entkoppelt die UI-Schicht von der Room-Entity.
     - `SampleData.kt`: Zentraler Ort für Testdaten für Previews und Tests.
+- ### 📁 Navigation (`ui.navigation`)
+    - `NavRoutes.kt`: Alle 12 typsicheren, serialisierbaren `NavKey`-Routenobjekte (`Home`, `Settings`, `LabelSettings`, `NotificationSettings`, etc.). Zentrale Quelle der Navigationsstruktur.
+    - `AppNavHost.kt`: Zentrales Navigations-Composable. Verwaltet den `NavDisplay` (Navigation 3) inklusive Screen-zu-Screen-Transitions (Push/Pop/PredictiveBack mit Parallax-Effekt) und das vollständige Route-zu-Screen-Mapping mit ViewModel-Verknüpfungen.
 - ### 📁 UI Components (`ui.components`)
     - `ColorPickerDialog.kt`: Wiederverwendbare, premium Farbauswahl-Komponente mit HSV-Farbraum-Koordinaten (Sättigung/Helligkeit), Hue-Slider, HEX-Texteingabe und Live-Vorschau.
+    - `ContactSyncEffect.kt`: Composable Effect, der Änderungen im System-Adressbuch beobachtet und `onSyncNeeded` mit einem 1-Sekunde-Debounce aufruft. Kapselt den `ContentObserver` und deregistriert ihn automatisch mit dem Compose-Lifecycle.
     - `ResponsiveLayout.kt`: Beinhaltet `AdaptiveContentContainer`, `AppResponsiveScaffold` und den globalen `LocalWindowWidthSizeClass` CompositionLocal-Provider zur flexiblen, abfragefreien Größenklassen-Weitergabe (Handy, Tablet, Chromebook).
     - `AppSwitch.kt`: Wiederverwendbare, standardisierte Switch-Komponente, die das Standard-Material-3-Design anwendet und bei Aktivierung automatisch ein Häkchen-Symbol anzeigt.
     - `SettingsComponents.kt`: Wiederverwendbare UI-Komponenten für Einstellungsseiten (`SettingsSectionHeader`, `SettingsCard`, `SettingsSwitchRow`, `SettingsClickableRow`).
@@ -179,9 +184,9 @@ Diese Tests laufen ohne Emulator/Gerät direkt auf dem Entwicklungsrechner und s
 - `data/local/GiftIdeaConvertersTest.kt`: Tests für Geschenkideen-TypeConverter.
 - `data/mapper/ContactMapperTest.kt`: Tests für die Transformation von Datenbank-Entitäten in UI-Modelle (mit JVM-Safe Fallback für die Formatierung).
 - `util/DateUtilsTest.kt`: Logiktests für Datumsberechnungen (Alter, Tage bis Geburtstag, etc.).
-- `viewmodel/AppViewModelTest.kt`: Tests für `AppViewModel`: Verifikation der initialen `AppSettings`-Emission, reaktiver Settings-Propagation und einmaligem `syncScheduling()`-Aufruf im `init`.
-- `viewmodel/HomeViewModelSearchTest.kt`: Tests der Such- und Filterlogik im `HomeViewModel`.
-- `viewmodel/HomeViewModelTest.kt`: Tests für das reaktive State-Management und die UI-Filterung im `HomeViewModel`.
+- `AppViewModelTest.kt`: Tests für `AppViewModel`: Verifikation der initialen `AppSettings`-Emission, reaktiver Settings-Propagation und einmaligem `syncScheduling()`-Aufruf im `init`.
+- `ui/screens/home/HomeViewModelSearchTest.kt`: Tests der Such- und Filterlogik im `HomeViewModel`. **Feature-co-located** neben `HomeViewModel.kt`.
+- `ui/screens/home/HomeViewModelTest.kt`: Tests für das reaktive State-Management und die UI-Filterung im `HomeViewModel`. **Feature-co-located** neben `HomeViewModel.kt`.
 
 ### 📁 Instrumentierte Integrationstests (`app/src/androidTest`)
 Diese Tests erfordern ein Android-Gerät oder einen Emulator (z. B. für Room-Datenbanken, Systemdienste oder Compose-UI-Interaktionen).

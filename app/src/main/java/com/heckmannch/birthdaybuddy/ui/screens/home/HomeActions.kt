@@ -1,7 +1,7 @@
 package com.heckmannch.birthdaybuddy.ui.screens.home
 
 import androidx.compose.runtime.Stable
-import com.heckmannch.birthdaybuddy.ui.model.GiftIdea
+import com.heckmannch.birthdaybuddy.domain.model.GiftIdea
 
 import com.heckmannch.birthdaybuddy.ui.screens.home.components.actions.MessengerApp
 
