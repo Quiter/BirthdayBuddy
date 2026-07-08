@@ -68,10 +68,10 @@ fun HomeScreen(
 
     // homeState stores local UI visual states: search focus states, snackbar queues, list scroll state, etc.
     val homeState = rememberHomeState()
-    
+
     // contactActions acts as a wrapper around Android Intent mechanisms (calling, messaging, contacts app).
     val contactActions = remember(context) { ContactActions(context) }
-    
+
     // Ensures lambda captures the latest callback reference without triggering recompositions.
     val currentOnNavigateToSettings by rememberUpdatedState(onNavigateToSettings)
 
@@ -252,23 +252,23 @@ fun HomeScreen(
             HomeActions(
                 // Search bar input queries
                 onSearchQueryChange = { query -> onIntent(HomeIntent.SearchQueryChanged(query)) },
-                
+
                 // Label-based filtering selection
                 onLabelSelected = { label -> onIntent(HomeIntent.LabelSelected(label)) },
-                
+
                 // Clearing query: clears query text, focus, and hides keyboard
                 onClearSearch = {
                     onIntent(HomeIntent.SearchQueryChanged(""))
                     focusManager.clearFocus()
                     keyboardController?.hide()
                 },
-                
+
                 // Navigation to app settings
                 onNavigateToSettings = { currentOnNavigateToSettings() },
-                
+
                 // Adding a new system contact via implicit intent
                 onAddContact = contactActions::addContact,
-                
+
                 // Contact read/write permission requests flow coordination
                 onRequestPermission = {
                     contactActions.requestContactPermission(
@@ -276,7 +276,7 @@ fun HomeScreen(
                         hasAttemptedBefore = homeState.hasAttemptedContactPermission,
                     ) { homeState.hasAttemptedContactPermission = true }
                 },
-                
+
                 // Gift idea lifecycle commands
                 onAddGiftIdea = { lookupKey -> onIntent(HomeIntent.AddGiftIdea(lookupKey)) },
                 onToggleGiftIdea = { lookupKey, idea, isChecked ->
@@ -288,21 +288,21 @@ fun HomeScreen(
                 onDeleteGiftIdea = { lookupKey, ideaId ->
                     onIntent(HomeIntent.DeleteGiftIdea(lookupKey, ideaId))
                 },
-                
+
                 // Birthday edit command
                 onUpdateBirthday = { contactId, birthday ->
                     onIntent(HomeIntent.UpdateBirthday(contactId, birthday))
                 },
-                
+
                 // Launching external dialers, messenger, and device contacts editor
                 onOpenContact = contactActions::openContact,
                 onDial = contactActions::dialNumber,
                 onSendSms = contactActions::sendSms,
                 onOpenMessengerApp = contactActions::openMessengerApp,
-                
+
                 // User-pulled swipe refresh action
                 onRefresh = { onIntent(HomeIntent.SyncContacts(showLoading = true)) },
-                
+
                 // Couple suggestion / relationship actions
                 onUnlinkCouple = { lookupKey -> onIntent(HomeIntent.UnlinkCouple(lookupKey)) },
                 onLinkAsCouple = { key1, key2 -> onIntent(HomeIntent.LinkAsCouple(key1, key2)) },

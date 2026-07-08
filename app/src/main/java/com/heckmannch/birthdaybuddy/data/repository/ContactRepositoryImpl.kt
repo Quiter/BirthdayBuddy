@@ -209,11 +209,12 @@ class ContactRepositoryImpl @Inject constructor(
         widgetUpdater.updateWidget()
     }
 
-    override suspend fun addGiftIdea(lookupKey: String, newIdea: GiftIdea) = withContext(Dispatchers.IO) {
-        val contact = contactDao.getContactByLookupKey(lookupKey) ?: return@withContext
-        val updatedIdeas = GiftIdea.withNewIdea(contact.giftIdeas, newIdea)
-        updateGiftIdeas(lookupKey, updatedIdeas)
-    }
+    override suspend fun addGiftIdea(lookupKey: String, newIdea: GiftIdea) =
+        withContext(Dispatchers.IO) {
+            val contact = contactDao.getContactByLookupKey(lookupKey) ?: return@withContext
+            val updatedIdeas = GiftIdea.withNewIdea(contact.giftIdeas, newIdea)
+            updateGiftIdeas(lookupKey, updatedIdeas)
+        }
 
     override suspend fun toggleGiftIdea(lookupKey: String, idea: GiftIdea, isChecked: Boolean) =
         withContext(Dispatchers.IO) {
@@ -222,11 +223,12 @@ class ContactRepositoryImpl @Inject constructor(
             updateGiftIdeas(lookupKey, updatedIdeas)
         }
 
-    override suspend fun deleteGiftIdea(lookupKey: String, ideaId: String) = withContext(Dispatchers.IO) {
-        val contact = contactDao.getContactByLookupKey(lookupKey) ?: return@withContext
-        val updatedIdeas = contact.giftIdeas.filter { it.id != ideaId }
-        updateGiftIdeas(lookupKey, updatedIdeas)
-    }
+    override suspend fun deleteGiftIdea(lookupKey: String, ideaId: String) =
+        withContext(Dispatchers.IO) {
+            val contact = contactDao.getContactByLookupKey(lookupKey) ?: return@withContext
+            val updatedIdeas = contact.giftIdeas.filter { it.id != ideaId }
+            updateGiftIdeas(lookupKey, updatedIdeas)
+        }
 
     override suspend fun updateGiftIdeaText(lookupKey: String, ideaId: String, newText: String) =
         withContext(Dispatchers.IO) {
@@ -242,7 +244,10 @@ class ContactRepositoryImpl @Inject constructor(
         widgetUpdater.updateWidget()
     }
 
-    override suspend fun updateContactBirthday(contactId: String, birthday: java.time.LocalDate): Boolean {
+    override suspend fun updateContactBirthday(
+        contactId: String,
+        birthday: java.time.LocalDate
+    ): Boolean {
         val success = systemContactDataSource.updateContactBirthday(contactId, birthday)
         if (success) {
             syncContacts()

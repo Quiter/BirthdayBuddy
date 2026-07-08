@@ -31,11 +31,12 @@ class CalendarSyncRepositoryImpl @Inject constructor(
         NAMEDAY("BirthdayBuddy_NameDays", R.string.calendar_name_namedays);
 
         companion object {
-            fun fromDomain(type: CalendarSyncRepository.CalendarType): LocalCalendarType = when (type) {
-                CalendarSyncRepository.CalendarType.BIRTHDAY -> BIRTHDAY
-                CalendarSyncRepository.CalendarType.ANNIVERSARY -> ANNIVERSARY
-                CalendarSyncRepository.CalendarType.NAMEDAY -> NAMEDAY
-            }
+            fun fromDomain(type: CalendarSyncRepository.CalendarType): LocalCalendarType =
+                when (type) {
+                    CalendarSyncRepository.CalendarType.BIRTHDAY -> BIRTHDAY
+                    CalendarSyncRepository.CalendarType.ANNIVERSARY -> ANNIVERSARY
+                    CalendarSyncRepository.CalendarType.NAMEDAY -> NAMEDAY
+                }
         }
     }
 
@@ -100,7 +101,10 @@ class CalendarSyncRepositoryImpl @Inject constructor(
         }
     }
 
-    override suspend fun updateCalendarColor(type: CalendarSyncRepository.CalendarType, newColor: Int): Boolean =
+    override suspend fun updateCalendarColor(
+        type: CalendarSyncRepository.CalendarType,
+        newColor: Int
+    ): Boolean =
         withContext(Dispatchers.IO) {
             val currentSettings = appSettingsDao.getSettingsImmediate() ?: AppSettingsEntity()
             val localType = LocalCalendarType.fromDomain(type)
@@ -165,201 +169,208 @@ class CalendarSyncRepositoryImpl @Inject constructor(
         Log.d("CalendarSyncRepo", "=== END DEBUG PRINT ALL CALENDARS ===")
     }
 
-    override suspend fun syncBirthdays(contacts: List<Contact>): Boolean = withContext(Dispatchers.IO) {
-        if (!hasCalendarPermissions()) return@withContext false
+    override suspend fun syncBirthdays(contacts: List<Contact>): Boolean =
+        withContext(Dispatchers.IO) {
+            if (!hasCalendarPermissions()) return@withContext false
 
-        // Aufräumen veralteter oder doppelter Kalender vor dem Sync
-        cleanCalendars()
+            // Aufräumen veralteter oder doppelter Kalender vor dem Sync
+            cleanCalendars()
 
-        val currentSettings = appSettingsDao.getSettingsImmediate() ?: AppSettingsEntity()
-        val otherEventsEnabled = currentSettings.otherEventsEnabled
+            val currentSettings = appSettingsDao.getSettingsImmediate() ?: AppSettingsEntity()
+            val otherEventsEnabled = currentSettings.otherEventsEnabled
 
-        // IDs für alle aktiven Kalender abrufen oder erstellen
-        val birthdayCalId = getOrCreateCalendar(LocalCalendarType.BIRTHDAY) ?: return@withContext false
-        val anniversaryCalId =
-            if (otherEventsEnabled) getOrCreateCalendar(LocalCalendarType.ANNIVERSARY) else null
-        val nameDayCalId =
-            if (otherEventsEnabled) getOrCreateCalendar(LocalCalendarType.NAMEDAY) else null
+            // IDs für alle aktiven Kalender abrufen oder erstellen
+            val birthdayCalId =
+                getOrCreateCalendar(LocalCalendarType.BIRTHDAY) ?: return@withContext false
+            val anniversaryCalId =
+                if (otherEventsEnabled) getOrCreateCalendar(LocalCalendarType.ANNIVERSARY) else null
+            val nameDayCalId =
+                if (otherEventsEnabled) getOrCreateCalendar(LocalCalendarType.NAMEDAY) else null
 
-        try {
-            // Geburtstage leeren
-            systemCalendarDataSource.clearCalendarEvents(birthdayCalId)
+            try {
+                // Geburtstage leeren
+                systemCalendarDataSource.clearCalendarEvents(birthdayCalId)
 
-            // Hochzeitstage leeren oder Kalender löschen, falls deaktiviert
-            if (anniversaryCalId != null) {
-                systemCalendarDataSource.clearCalendarEvents(anniversaryCalId)
-            } else {
-                systemCalendarDataSource.findCalendarIdByName(LocalCalendarType.ANNIVERSARY.calendarName)
-                    ?.let { id ->
-                        systemCalendarDataSource.deleteCalendarById(
-                            id,
-                            "BirthdayBuddy",
+                // Hochzeitstage leeren oder Kalender löschen, falls deaktiviert
+                if (anniversaryCalId != null) {
+                    systemCalendarDataSource.clearCalendarEvents(anniversaryCalId)
+                } else {
+                    systemCalendarDataSource.findCalendarIdByName(LocalCalendarType.ANNIVERSARY.calendarName)
+                        ?.let { id ->
+                            systemCalendarDataSource.deleteCalendarById(
+                                id,
+                                "BirthdayBuddy",
+                                CalendarContract.ACCOUNT_TYPE_LOCAL
+                            )
+                        }
+                }
+
+                // Namenstage leeren oder Kalender löschen, falls deaktiviert
+                if (nameDayCalId != null) {
+                    systemCalendarDataSource.clearCalendarEvents(nameDayCalId)
+                } else {
+                    systemCalendarDataSource.findCalendarIdByName(LocalCalendarType.NAMEDAY.calendarName)
+                        ?.let { id ->
+                            systemCalendarDataSource.deleteCalendarById(
+                                id,
+                                "BirthdayBuddy",
+                                CalendarContract.ACCOUNT_TYPE_LOCAL
+                            )
+                        }
+                }
+
+                val operations = ArrayList<ContentProviderOperation>()
+
+                suspend fun addEvent(
+                    calId: Long,
+                    date: java.time.LocalDate,
+                    title: String,
+                    description: String
+                ) {
+                    val year = if (date.hasYear) date.year else 2000
+                    val startCal = Calendar.getInstance(TimeZone.getTimeZone("UTC")).apply {
+                        clear()
+                        set(year, date.monthValue - 1, date.dayOfMonth, 0, 0, 0)
+                    }
+                    val dtStart = startCal.timeInMillis
+
+                    val insertUri = CalendarContract.Events.CONTENT_URI.buildUpon()
+                        .appendQueryParameter(CalendarContract.CALLER_IS_SYNCADAPTER, "true")
+                        .appendQueryParameter(
+                            CalendarContract.Calendars.ACCOUNT_NAME,
+                            "BirthdayBuddy"
+                        )
+                        .appendQueryParameter(
+                            CalendarContract.Calendars.ACCOUNT_TYPE,
                             CalendarContract.ACCOUNT_TYPE_LOCAL
                         )
-                    }
-            }
+                        .build()
 
-            // Namenstage leeren oder Kalender löschen, falls deaktiviert
-            if (nameDayCalId != null) {
-                systemCalendarDataSource.clearCalendarEvents(nameDayCalId)
-            } else {
-                systemCalendarDataSource.findCalendarIdByName(LocalCalendarType.NAMEDAY.calendarName)
-                    ?.let { id ->
-                        systemCalendarDataSource.deleteCalendarById(
-                            id,
-                            "BirthdayBuddy",
-                            CalendarContract.ACCOUNT_TYPE_LOCAL
+                    val op = ContentProviderOperation.newInsert(insertUri)
+                        .withValue(CalendarContract.Events.CALENDAR_ID, calId)
+                        .withValue(CalendarContract.Events.TITLE, title)
+                        .withValue(CalendarContract.Events.DESCRIPTION, description)
+                        .withValue(CalendarContract.Events.DTSTART, dtStart)
+                        .withValue(CalendarContract.Events.DURATION, "P1D")
+                        .withValue(CalendarContract.Events.RRULE, "FREQ=YEARLY")
+                        .withValue(CalendarContract.Events.EVENT_TIMEZONE, "UTC")
+                        .withValue(CalendarContract.Events.ALL_DAY, 1)
+                        .withValue(
+                            CalendarContract.Events.STATUS,
+                            CalendarContract.Events.STATUS_CONFIRMED
                         )
+                        .build()
+
+                    operations.add(op)
+
+                    if (operations.size >= 400) {
+                        systemCalendarDataSource.applyBatch(operations)
+                        operations.clear()
                     }
-            }
-
-            val operations = ArrayList<ContentProviderOperation>()
-
-            suspend fun addEvent(
-                calId: Long,
-                date: java.time.LocalDate,
-                title: String,
-                description: String
-            ) {
-                val year = if (date.hasYear) date.year else 2000
-                val startCal = Calendar.getInstance(TimeZone.getTimeZone("UTC")).apply {
-                    clear()
-                    set(year, date.monthValue - 1, date.dayOfMonth, 0, 0, 0)
-                }
-                val dtStart = startCal.timeInMillis
-
-                val insertUri = CalendarContract.Events.CONTENT_URI.buildUpon()
-                    .appendQueryParameter(CalendarContract.CALLER_IS_SYNCADAPTER, "true")
-                    .appendQueryParameter(CalendarContract.Calendars.ACCOUNT_NAME, "BirthdayBuddy")
-                    .appendQueryParameter(
-                        CalendarContract.Calendars.ACCOUNT_TYPE,
-                        CalendarContract.ACCOUNT_TYPE_LOCAL
-                    )
-                    .build()
-
-                val op = ContentProviderOperation.newInsert(insertUri)
-                    .withValue(CalendarContract.Events.CALENDAR_ID, calId)
-                    .withValue(CalendarContract.Events.TITLE, title)
-                    .withValue(CalendarContract.Events.DESCRIPTION, description)
-                    .withValue(CalendarContract.Events.DTSTART, dtStart)
-                    .withValue(CalendarContract.Events.DURATION, "P1D")
-                    .withValue(CalendarContract.Events.RRULE, "FREQ=YEARLY")
-                    .withValue(CalendarContract.Events.EVENT_TIMEZONE, "UTC")
-                    .withValue(CalendarContract.Events.ALL_DAY, 1)
-                    .withValue(
-                        CalendarContract.Events.STATUS,
-                        CalendarContract.Events.STATUS_CONFIRMED
-                    )
-                    .build()
-
-                operations.add(op)
-
-                if (operations.size >= 400) {
-                    systemCalendarDataSource.applyBatch(operations)
-                    operations.clear()
-                }
-            }
-
-            val processedAnniversaries = HashSet<String>()
-
-            for (contact in contacts) {
-                // 1. Geburtstage in den Geburtstags-Kalender eintragen
-                contact.birthday?.let { birthday ->
-                    val title = context.getString(R.string.calendar_event_title, contact.fullName)
-                    val description = if (birthday.hasYear) {
-                        context.getString(R.string.calendar_event_birth_year, birthday.year)
-                    } else {
-                        context.getString(R.string.calendar_event_no_year)
-                    }
-                    addEvent(birthdayCalId, birthday, title, description)
                 }
 
-                // 2. Hochzeitstage in den Hochzeits-Kalender eintragen (falls aktiviert)
-                if (otherEventsEnabled && anniversaryCalId != null) {
-                    contact.anniversary?.let { anniversary ->
-                        val spouseKey = contact.spouseLookupKey
-                        if (spouseKey != null) {
-                            if (!processedAnniversaries.contains(contact.lookupKey)) {
-                                val spouse =
-                                    contacts.find { it.lookupKey == spouseKey && it.anniversary != null }
-                                if (spouse != null) {
-                                    val mergedName = com.heckmannch.birthdaybuddy.util.mergeNames(
-                                        contact.fullName,
-                                        spouse.fullName
-                                    )
-                                    val title = context.getString(
-                                        R.string.calendar_event_anniversary_title,
-                                        mergedName
-                                    )
-                                    val description = if (anniversary.hasYear) {
-                                        context.getString(
-                                            R.string.calendar_event_anniversary_year,
-                                            anniversary.year
-                                        )
-                                    } else {
-                                        context.getString(R.string.calendar_event_anniversary_no_year)
-                                    }
-                                    addEvent(anniversaryCalId, anniversary, title, description)
-                                    processedAnniversaries.add(contact.lookupKey)
-                                    processedAnniversaries.add(spouse.lookupKey)
-                                } else {
-                                    val title = context.getString(
-                                        R.string.calendar_event_anniversary_title,
-                                        contact.fullName
-                                    )
-                                    val description = if (anniversary.hasYear) {
-                                        context.getString(
-                                            R.string.calendar_event_anniversary_year,
-                                            anniversary.year
-                                        )
-                                    } else {
-                                        context.getString(R.string.calendar_event_anniversary_no_year)
-                                    }
-                                    addEvent(anniversaryCalId, anniversary, title, description)
-                                    processedAnniversaries.add(contact.lookupKey)
-                                }
-                            }
+                val processedAnniversaries = HashSet<String>()
+
+                for (contact in contacts) {
+                    // 1. Geburtstage in den Geburtstags-Kalender eintragen
+                    contact.birthday?.let { birthday ->
+                        val title =
+                            context.getString(R.string.calendar_event_title, contact.fullName)
+                        val description = if (birthday.hasYear) {
+                            context.getString(R.string.calendar_event_birth_year, birthday.year)
                         } else {
+                            context.getString(R.string.calendar_event_no_year)
+                        }
+                        addEvent(birthdayCalId, birthday, title, description)
+                    }
+
+                    // 2. Hochzeitstage in den Hochzeits-Kalender eintragen (falls aktiviert)
+                    if (otherEventsEnabled && anniversaryCalId != null) {
+                        contact.anniversary?.let { anniversary ->
+                            val spouseKey = contact.spouseLookupKey
+                            if (spouseKey != null) {
+                                if (!processedAnniversaries.contains(contact.lookupKey)) {
+                                    val spouse =
+                                        contacts.find { it.lookupKey == spouseKey && it.anniversary != null }
+                                    if (spouse != null) {
+                                        val mergedName =
+                                            com.heckmannch.birthdaybuddy.util.mergeNames(
+                                                contact.fullName,
+                                                spouse.fullName
+                                            )
+                                        val title = context.getString(
+                                            R.string.calendar_event_anniversary_title,
+                                            mergedName
+                                        )
+                                        val description = if (anniversary.hasYear) {
+                                            context.getString(
+                                                R.string.calendar_event_anniversary_year,
+                                                anniversary.year
+                                            )
+                                        } else {
+                                            context.getString(R.string.calendar_event_anniversary_no_year)
+                                        }
+                                        addEvent(anniversaryCalId, anniversary, title, description)
+                                        processedAnniversaries.add(contact.lookupKey)
+                                        processedAnniversaries.add(spouse.lookupKey)
+                                    } else {
+                                        val title = context.getString(
+                                            R.string.calendar_event_anniversary_title,
+                                            contact.fullName
+                                        )
+                                        val description = if (anniversary.hasYear) {
+                                            context.getString(
+                                                R.string.calendar_event_anniversary_year,
+                                                anniversary.year
+                                            )
+                                        } else {
+                                            context.getString(R.string.calendar_event_anniversary_no_year)
+                                        }
+                                        addEvent(anniversaryCalId, anniversary, title, description)
+                                        processedAnniversaries.add(contact.lookupKey)
+                                    }
+                                }
+                            } else {
+                                val title = context.getString(
+                                    R.string.calendar_event_anniversary_title,
+                                    contact.fullName
+                                )
+                                val description = if (anniversary.hasYear) {
+                                    context.getString(
+                                        R.string.calendar_event_anniversary_year,
+                                        anniversary.year
+                                    )
+                                } else {
+                                    context.getString(R.string.calendar_event_anniversary_no_year)
+                                }
+                                addEvent(anniversaryCalId, anniversary, title, description)
+                            }
+                        }
+                    }
+
+                    // 3. Namenstage in den Namenstags-Kalender eintragen (falls aktiviert)
+                    if (otherEventsEnabled && nameDayCalId != null) {
+                        contact.nameDay?.let { nameDay ->
                             val title = context.getString(
-                                R.string.calendar_event_anniversary_title,
+                                R.string.calendar_event_nameday_title,
                                 contact.fullName
                             )
-                            val description = if (anniversary.hasYear) {
-                                context.getString(
-                                    R.string.calendar_event_anniversary_year,
-                                    anniversary.year
-                                )
-                            } else {
-                                context.getString(R.string.calendar_event_anniversary_no_year)
-                            }
-                            addEvent(anniversaryCalId, anniversary, title, description)
+                            val description = context.getString(
+                                R.string.calendar_event_nameday_description,
+                                contact.fullName
+                            )
+                            addEvent(nameDayCalId, nameDay, title, description)
                         }
                     }
                 }
 
-                // 3. Namenstage in den Namenstags-Kalender eintragen (falls aktiviert)
-                if (otherEventsEnabled && nameDayCalId != null) {
-                    contact.nameDay?.let { nameDay ->
-                        val title = context.getString(
-                            R.string.calendar_event_nameday_title,
-                            contact.fullName
-                        )
-                        val description = context.getString(
-                            R.string.calendar_event_nameday_description,
-                            contact.fullName
-                        )
-                        addEvent(nameDayCalId, nameDay, title, description)
-                    }
+                if (operations.isNotEmpty()) {
+                    systemCalendarDataSource.applyBatch(operations)
                 }
+                true
+            } catch (e: Exception) {
+                Log.e("CalendarSyncRepo", "Error syncing events to calendars", e)
+                false
             }
-
-            if (operations.isNotEmpty()) {
-                systemCalendarDataSource.applyBatch(operations)
-            }
-            true
-        } catch (e: Exception) {
-            Log.e("CalendarSyncRepo", "Error syncing events to calendars", e)
-            false
         }
-    }
 }

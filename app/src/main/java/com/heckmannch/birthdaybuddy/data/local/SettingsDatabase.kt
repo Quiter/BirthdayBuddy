@@ -68,7 +68,8 @@ abstract class SettingsDatabase : RoomDatabase() {
         val MIGRATION_8_9 = object : Migration(8, 9) {
             override fun migrate(db: SupportSQLiteDatabase) {
                 // 1. Create a new table without themeContrast
-                db.execSQL("""
+                db.execSQL(
+                    """
                     CREATE TABLE IF NOT EXISTS `app_settings_new` (
                         `id` INTEGER NOT NULL, 
                         `notificationsEnabled` INTEGER NOT NULL, 
@@ -88,10 +89,12 @@ abstract class SettingsDatabase : RoomDatabase() {
                         `labelsEnabled` INTEGER NOT NULL, 
                         PRIMARY KEY(`id`)
                     )
-                """.trimIndent())
-                
+                """.trimIndent()
+                )
+
                 // 2. Copy the data
-                db.execSQL("""
+                db.execSQL(
+                    """
                     INSERT INTO app_settings_new (
                         id, notificationsEnabled, persistentNotifications, onboardingCompleted, 
                         lastSyncTimestamp, calendarSyncEnabled, calendarId, otherEventsEnabled, 
@@ -104,11 +107,12 @@ abstract class SettingsDatabase : RoomDatabase() {
                         ignoredCouplePairs, birthdayCalendarColor, anniversaryCalendarColor, 
                         nameDayCalendarColor, themeMode, themeAmoled, themeAccent, labelsEnabled
                     FROM app_settings
-                """.trimIndent())
-                
+                """.trimIndent()
+                )
+
                 // 3. Drop the old table
                 db.execSQL("DROP TABLE app_settings")
-                
+
                 // 4. Rename the new table
                 db.execSQL("ALTER TABLE app_settings_new RENAME TO app_settings")
             }

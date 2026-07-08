@@ -101,23 +101,39 @@ class MainActivity : ComponentActivity() {
 
                         // React to intent changes (Initial start and onNewIntent)
                         LaunchedEffect(currentIntent) {
-                            if (currentIntent?.getBooleanExtra(IntentExtras.SCROLL_TO_TOP, false) == true) {
+                            if (currentIntent?.getBooleanExtra(
+                                    IntentExtras.SCROLL_TO_TOP,
+                                    false
+                                ) == true
+                            ) {
                                 homeViewModel.triggerScrollToTop()
                                 currentIntent?.removeExtra(IntentExtras.SCROLL_TO_TOP)
                             }
-                            if (currentIntent?.getBooleanExtra(IntentExtras.NAVIGATE_TO_NOTIFICATIONS, false) == true) {
+                            if (currentIntent?.getBooleanExtra(
+                                    IntentExtras.NAVIGATE_TO_NOTIFICATIONS,
+                                    false
+                                ) == true
+                            ) {
                                 if (!backStack.contains(NotificationSettings)) {
                                     backStack.add(NotificationSettings)
                                 }
                                 currentIntent?.removeExtra(IntentExtras.NAVIGATE_TO_NOTIFICATIONS)
                             }
-                            if (currentIntent?.getBooleanExtra(IntentExtras.OPEN_SEARCH, false) == true) {
+                            if (currentIntent?.getBooleanExtra(
+                                    IntentExtras.OPEN_SEARCH,
+                                    false
+                                ) == true
+                            ) {
                                 backStack.clear()
                                 backStack.add(Home)
                                 homeViewModel.triggerSearchFocus()
                                 currentIntent?.removeExtra(IntentExtras.OPEN_SEARCH)
                             }
-                            if (currentIntent?.getBooleanExtra(IntentExtras.OPEN_ADD_CONTACT, false) == true) {
+                            if (currentIntent?.getBooleanExtra(
+                                    IntentExtras.OPEN_ADD_CONTACT,
+                                    false
+                                ) == true
+                            ) {
                                 homeViewModel.syncContacts()
                                 currentIntent?.removeExtra(IntentExtras.OPEN_ADD_CONTACT)
                             }

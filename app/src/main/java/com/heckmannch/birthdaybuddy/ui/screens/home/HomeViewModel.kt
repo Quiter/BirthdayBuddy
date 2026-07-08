@@ -70,7 +70,6 @@ class HomeViewModel @Inject constructor(
     val syncCompletedEvent: SharedFlow<Unit> = _syncCompletedEvent.asSharedFlow()
 
 
-
     private val labelSettingsState: Flow<GetContactsUseCase.LabelSettingsState> = combine(
         contactRepository.labelConfigs,
         contactRepository.labelsEnabled,

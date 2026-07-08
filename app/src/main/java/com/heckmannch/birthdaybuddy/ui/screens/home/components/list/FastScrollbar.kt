@@ -413,7 +413,8 @@ fun FastScrollbar(
                             isDragging = true
                             hasUserScrolled = true
                             onSetFastScrolling(true)
-                            dragOffsetPx = (offset.y - thumbHeightPx / 2f).coerceIn(0f, trackHeightPx)
+                            dragOffsetPx =
+                                (offset.y - thumbHeightPx / 2f).coerceIn(0f, trackHeightPx)
                             updateScrollPosition(dragOffsetPx)
                         },
                         onDragEnd = { isDragging = false; onSetFastScrolling(false) },

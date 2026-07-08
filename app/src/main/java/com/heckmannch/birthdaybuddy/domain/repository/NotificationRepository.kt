@@ -13,7 +13,7 @@ interface NotificationRepository {
     val settings: Flow<AppSettings>
 
     suspend fun syncScheduling()
-    
+
     suspend fun updateSettings(
         notificationsEnabled: Boolean? = null,
         persistentNotifications: Boolean? = null,
@@ -45,6 +45,7 @@ interface NotificationRepository {
         daysBefore: Int,
         lookupKey: String
     ): Boolean
+
     suspend fun incrementDismissCount(id: Int)
     suspend fun markAsDone(id: Int)
     suspend fun deleteOldNotifications(currentYear: Int)

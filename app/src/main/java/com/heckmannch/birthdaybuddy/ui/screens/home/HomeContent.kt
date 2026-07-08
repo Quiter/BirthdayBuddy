@@ -180,9 +180,12 @@ fun HomeContent(
                         showLabelFilter = !showFilterBarInTopBar
                     )
 
-                    val showLabelFilter = uiState.availableLabels.isNotEmpty() && !showFilterBarInTopBar
-                    val showCoupleSuggestion = uiState.selectedLabel == ContactLabels.LABEL_ANNIVERSARY && uiState.coupleSuggestion != null
-                    val headerCount = (if (showLabelFilter) 1 else 0) + (if (showCoupleSuggestion) 1 else 0)
+                    val showLabelFilter =
+                        uiState.availableLabels.isNotEmpty() && !showFilterBarInTopBar
+                    val showCoupleSuggestion =
+                        uiState.selectedLabel == ContactLabels.LABEL_ANNIVERSARY && uiState.coupleSuggestion != null
+                    val headerCount =
+                        (if (showLabelFilter) 1 else 0) + (if (showCoupleSuggestion) 1 else 0)
 
                     FastScrollbar(
                         listState = homeState.listState,
@@ -264,9 +267,12 @@ fun HomeContent(
                                         showLabelFilter = !showFilterBarInTopBar
                                     )
 
-                                    val currentShowLabelFilter = currentUiState.availableLabels.isNotEmpty() && !showFilterBarInTopBar
-                                    val currentShowCoupleSuggestion = currentUiState.selectedLabel == ContactLabels.LABEL_ANNIVERSARY && currentUiState.coupleSuggestion != null
-                                    val currentHeaderCount = (if (currentShowLabelFilter) 1 else 0) + (if (currentShowCoupleSuggestion) 1 else 0)
+                                    val currentShowLabelFilter =
+                                        currentUiState.availableLabels.isNotEmpty() && !showFilterBarInTopBar
+                                    val currentShowCoupleSuggestion =
+                                        currentUiState.selectedLabel == ContactLabels.LABEL_ANNIVERSARY && currentUiState.coupleSuggestion != null
+                                    val currentHeaderCount =
+                                        (if (currentShowLabelFilter) 1 else 0) + (if (currentShowCoupleSuggestion) 1 else 0)
 
                                     FastScrollbar(
                                         listState = homeState.listState,

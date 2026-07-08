@@ -87,7 +87,11 @@ class NotificationWorker @AssistedInject constructor(
          *   kein noch laufender Worker durch die Selbst-Neu-Planung abgebrochen wird.
          */
         @JvmStatic
-        fun scheduleNext(context: Context, rules: List<NotificationRule>, forceReplace: Boolean = true) {
+        fun scheduleNext(
+            context: Context,
+            rules: List<NotificationRule>,
+            forceReplace: Boolean = true
+        ) {
             if (rules.isEmpty()) {
                 cancelNotification(context)
                 return

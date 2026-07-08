@@ -113,13 +113,15 @@ class NotificationRepositoryImpl @Inject constructor(
 
     // Pending Notifications
     override suspend fun getActiveNotificationsImmediate(): List<PendingNotification> =
-        pendingNotificationDao.getActiveNotificationsImmediate().map { pendingNotificationMapper.toDomain(it) }
+        pendingNotificationDao.getActiveNotificationsImmediate()
+            .map { pendingNotificationMapper.toDomain(it) }
 
     override suspend fun insertPendingNotification(notification: PendingNotification): Long =
         pendingNotificationDao.upsert(pendingNotificationMapper.toEntity(notification))
 
     override suspend fun getPendingNotificationById(id: Int): PendingNotification? =
-        pendingNotificationDao.getNotificationById(id)?.let { pendingNotificationMapper.toDomain(it) }
+        pendingNotificationDao.getNotificationById(id)
+            ?.let { pendingNotificationMapper.toDomain(it) }
 
     override suspend fun hasNotificationBeenScheduled(
         year: Int,

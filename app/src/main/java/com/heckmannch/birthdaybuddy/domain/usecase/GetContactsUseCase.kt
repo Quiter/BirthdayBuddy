@@ -68,7 +68,7 @@ class GetContactsUseCase @Inject constructor(
             Log.d(
                 TAG,
                 "Filtering ${rawContacts.size} -> ${result.size} contacts took " +
-                    "${System.currentTimeMillis() - startTime}ms",
+                        "${System.currentTimeMillis() - startTime}ms",
             )
         }
         result
@@ -274,8 +274,8 @@ class GetContactsUseCase @Inject constructor(
             // Optional search filter (only applied in the no-labels path)
             if (applySearchFilter && isSearching && !keywords.all { keyword ->
                     contact.fullName.contains(keyword, ignoreCase = true) ||
-                        (contact.spouseLookupKey?.let { contactMap[it]?.fullName }
-                            ?.contains(keyword, ignoreCase = true) ?: false)
+                            (contact.spouseLookupKey?.let { contactMap[it]?.fullName }
+                                ?.contains(keyword, ignoreCase = true) ?: false)
                 }
             ) continue
 

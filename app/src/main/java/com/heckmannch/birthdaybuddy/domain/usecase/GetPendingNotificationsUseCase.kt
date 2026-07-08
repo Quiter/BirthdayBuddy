@@ -92,7 +92,8 @@ class GetPendingNotificationsUseCase @Inject constructor(
                     if (processedAnniversaries.contains(contact.lookupKey)) continue
 
                     val spouseKey = contact.spouseLookupKey
-                    val spouse = if (spouseKey != null) anniversaries.find { it.lookupKey == spouseKey } else null
+                    val spouse =
+                        if (spouseKey != null) anniversaries.find { it.lookupKey == spouseKey } else null
 
                     if (spouse != null) {
                         val dbKeys = listOf(
