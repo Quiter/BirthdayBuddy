@@ -3,7 +3,8 @@ package com.heckmannch.birthdaybuddy.ui.screens.settings.backup
 import android.content.ContentResolver
 import android.net.Uri
 import com.heckmannch.birthdaybuddy.MainDispatcherRule
-import com.heckmannch.birthdaybuddy.data.repository.ContactRepository
+import com.heckmannch.birthdaybuddy.domain.usecase.ExportGiftIdeasUseCase
+import com.heckmannch.birthdaybuddy.domain.usecase.ImportGiftIdeasUseCase
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.runTest
@@ -25,7 +26,8 @@ class BackupViewModelTest {
     @get:Rule
     val mainDispatcherRule = MainDispatcherRule(testDispatcher)
 
-    private val contactRepository: ContactRepository = mock()
+    private val exportGiftIdeasUseCase: ExportGiftIdeasUseCase = mock()
+    private val importGiftIdeasUseCase: ImportGiftIdeasUseCase = mock()
     private val contentResolver: ContentResolver = mock()
     private val uri: Uri = mock()
 
@@ -33,16 +35,16 @@ class BackupViewModelTest {
 
     @Before
     fun setup() {
-        viewModel = BackupViewModel(contactRepository)
+        viewModel = BackupViewModel(exportGiftIdeasUseCase, importGiftIdeasUseCase)
         viewModel.ioDispatcher = testDispatcher
     }
 
     @Test
-    fun `exportGiftIdeas should write JSON from repository to output stream`() =
+    fun `exportGiftIdeas should write JSON from usecase to output stream`() =
         runTest(testDispatcher) {
             // Given
             val testJson = "{\"test\": \"data\"}"
-            whenever(contactRepository.exportGiftIdeas()).thenReturn(testJson)
+            whenever(exportGiftIdeasUseCase()).thenReturn(testJson)
             val outputStream = ByteArrayOutputStream()
             whenever(contentResolver.openOutputStream(uri)).thenReturn(outputStream)
 
@@ -53,7 +55,7 @@ class BackupViewModelTest {
             viewModel.exportGiftIdeas(contentResolver, uri, onSuccess, onError)
 
             // Then
-            verify(contactRepository).exportGiftIdeas()
+            verify(exportGiftIdeasUseCase).invoke()
             verify(contentResolver).openOutputStream(uri)
             verify(onSuccess).invoke()
             assert(outputStream.toString() == testJson)
@@ -63,7 +65,7 @@ class BackupViewModelTest {
     fun `exportGiftIdeas should call onError when exception occurs`() = runTest(testDispatcher) {
         // Given
         val exception = RuntimeException("Export failed")
-        whenever(contactRepository.exportGiftIdeas()).thenThrow(exception)
+        whenever(exportGiftIdeasUseCase()).thenThrow(exception)
 
         val onSuccess: () -> Unit = mock()
         val onError: (Exception) -> Unit = mock()
@@ -76,13 +78,13 @@ class BackupViewModelTest {
     }
 
     @Test
-    fun `importGiftIdeas should read JSON from input stream and delegate to repository`() =
+    fun `importGiftIdeas should read JSON from input stream and delegate to usecase`() =
         runTest(testDispatcher) {
             // Given
             val testJson = "{\"test\": \"data\"}"
             val inputStream = ByteArrayInputStream(testJson.toByteArray())
             whenever(contentResolver.openInputStream(uri)).thenReturn(inputStream)
-            whenever(contactRepository.importGiftIdeas(testJson)).thenReturn(5)
+            whenever(importGiftIdeasUseCase(testJson)).thenReturn(5)
 
             val onSuccess: (Int) -> Unit = mock()
             val onInvalid: () -> Unit = mock()
@@ -93,18 +95,18 @@ class BackupViewModelTest {
 
             // Then
             verify(contentResolver).openInputStream(uri)
-            verify(contactRepository).importGiftIdeas(testJson)
+            verify(importGiftIdeasUseCase).invoke(testJson)
             verify(onSuccess).invoke(5)
         }
 
     @Test
-    fun `importGiftIdeas should call onInvalid when repository returns negative count`() =
+    fun `importGiftIdeas should call onInvalid when usecase returns negative count`() =
         runTest(testDispatcher) {
             // Given
             val testJson = "invalid json"
             val inputStream = ByteArrayInputStream(testJson.toByteArray())
             whenever(contentResolver.openInputStream(uri)).thenReturn(inputStream)
-            whenever(contactRepository.importGiftIdeas(testJson)).thenReturn(-1)
+            whenever(importGiftIdeasUseCase(testJson)).thenReturn(-1)
 
             val onSuccess: (Int) -> Unit = mock()
             val onInvalid: () -> Unit = mock()

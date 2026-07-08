@@ -4,8 +4,9 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.heckmannch.birthdaybuddy.BuildConfig
 import com.heckmannch.birthdaybuddy.data.repository.CalendarSyncRepository
-import com.heckmannch.birthdaybuddy.data.repository.ContactRepository
 import com.heckmannch.birthdaybuddy.data.repository.NotificationRepository
+import com.heckmannch.birthdaybuddy.domain.usecase.SetCalendarSyncEnabledUseCase
+import com.heckmannch.birthdaybuddy.domain.usecase.UpdateCalendarColorUseCase
 import com.heckmannch.birthdaybuddy.ui.model.CalendarUiState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.SharingStarted
@@ -17,9 +18,10 @@ import javax.inject.Inject
 
 @HiltViewModel
 class CalendarViewModel @Inject constructor(
-    private val notificationRepository: NotificationRepository,
+    notificationRepository: NotificationRepository,
     private val calendarSyncRepository: CalendarSyncRepository,
-    private val contactRepository: ContactRepository,
+    private val setCalendarSyncEnabledUseCase: SetCalendarSyncEnabledUseCase,
+    private val updateCalendarColorUseCase: UpdateCalendarColorUseCase,
 ) : ViewModel() {
 
     init {
@@ -46,7 +48,7 @@ class CalendarViewModel @Inject constructor(
 
     fun updateCalendarColor(type: CalendarSyncRepository.CalendarType, color: Int) =
         viewModelScope.launch {
-            calendarSyncRepository.updateCalendarColor(type, color)
+            updateCalendarColorUseCase(type, color)
         }
 
     fun hasCalendarPermissions(): Boolean {
@@ -54,14 +56,6 @@ class CalendarViewModel @Inject constructor(
     }
 
     fun setCalendarSyncEnabled(enabled: Boolean) = viewModelScope.launch {
-        notificationRepository.updateSettings(calendarSyncEnabled = enabled)
-        if (enabled) {
-            // Trigger calendar sync by fetching all contacts and syncing them
-            val contacts = contactRepository.getAllContactsImmediate()
-            calendarSyncRepository.syncBirthdays(contacts)
-        } else {
-            // Delete calendar entirely
-            calendarSyncRepository.deleteCalendar()
-        }
+        setCalendarSyncEnabledUseCase(enabled)
     }
 }

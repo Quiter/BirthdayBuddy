@@ -4,8 +4,9 @@ import com.google.common.truth.Truth.assertThat
 import com.heckmannch.birthdaybuddy.MainDispatcherRule
 import com.heckmannch.birthdaybuddy.data.local.AppSettings
 import com.heckmannch.birthdaybuddy.data.repository.CalendarSyncRepository
-import com.heckmannch.birthdaybuddy.data.repository.ContactRepository
 import com.heckmannch.birthdaybuddy.data.repository.NotificationRepository
+import com.heckmannch.birthdaybuddy.domain.usecase.SetCalendarSyncEnabledUseCase
+import com.heckmannch.birthdaybuddy.domain.usecase.UpdateCalendarColorUseCase
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flowOf
@@ -13,8 +14,6 @@ import kotlinx.coroutines.test.runTest
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
-import org.mockito.kotlin.any
-import org.mockito.kotlin.eq
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
@@ -27,15 +26,20 @@ class CalendarViewModelTest {
 
     private val notificationRepository: NotificationRepository = mock()
     private val calendarSyncRepository: CalendarSyncRepository = mock()
-    private val contactRepository: ContactRepository = mock()
+    private val setCalendarSyncEnabledUseCase: SetCalendarSyncEnabledUseCase = mock()
+    private val updateCalendarColorUseCase: UpdateCalendarColorUseCase = mock()
 
     private lateinit var viewModel: CalendarViewModel
 
     @Before
     fun setup() {
         whenever(notificationRepository.settings).thenReturn(flowOf(AppSettings()))
-        viewModel =
-            CalendarViewModel(notificationRepository, calendarSyncRepository, contactRepository)
+        viewModel = CalendarViewModel(
+            notificationRepository,
+            calendarSyncRepository,
+            setCalendarSyncEnabledUseCase,
+            updateCalendarColorUseCase
+        )
     }
 
     @Test
@@ -49,8 +53,12 @@ class CalendarViewModelTest {
         )
         whenever(notificationRepository.settings).thenReturn(flowOf(testSettings))
 
-        val viewModel =
-            CalendarViewModel(notificationRepository, calendarSyncRepository, contactRepository)
+        val viewModel = CalendarViewModel(
+            notificationRepository,
+            calendarSyncRepository,
+            setCalendarSyncEnabledUseCase,
+            updateCalendarColorUseCase
+        )
         val uiState = viewModel.uiState.first { it.calendarSyncEnabled }
 
         assertThat(uiState.calendarSyncEnabled).isTrue()
@@ -61,61 +69,17 @@ class CalendarViewModelTest {
     }
 
     @Test
-    fun `updateCalendarColor should delegate to repository`() = runTest {
+    fun `updateCalendarColor should delegate to usecase`() = runTest {
         val type = CalendarSyncRepository.CalendarType.BIRTHDAY
         viewModel.updateCalendarColor(type, 111)
 
-        verify(calendarSyncRepository).updateCalendarColor(type, 111)
+        verify(updateCalendarColorUseCase).invoke(type, 111)
     }
 
     @Test
-    fun `setCalendarSyncEnabled(true) should update settings and trigger sync`() = runTest {
-        whenever(contactRepository.getAllContactsImmediate()).thenReturn(emptyList())
-        whenever(calendarSyncRepository.syncBirthdays(any())).thenReturn(true)
-
+    fun `setCalendarSyncEnabled should delegate to usecase`() = runTest {
         viewModel.setCalendarSyncEnabled(true)
 
-        verify(notificationRepository).updateSettings(
-            notificationsEnabled = eq(null),
-            persistentNotifications = eq(null),
-            onboardingCompleted = eq(null),
-            lastSyncTimestamp = eq(null),
-            calendarSyncEnabled = eq(true),
-            calendarId = eq(null),
-            clearCalendarId = eq(false),
-            otherEventsEnabled = eq(null),
-            birthdayCalendarColor = eq(null),
-            anniversaryCalendarColor = eq(null),
-            nameDayCalendarColor = eq(null),
-            themeMode = eq(null),
-            themeAmoled = eq(null),
-            themeAccent = eq(null)
-        )
-        verify(calendarSyncRepository).syncBirthdays(any())
-    }
-
-    @Test
-    fun `setCalendarSyncEnabled(false) should update settings and delete calendar`() = runTest {
-        whenever(calendarSyncRepository.deleteCalendar()).thenReturn(true)
-
-        viewModel.setCalendarSyncEnabled(false)
-
-        verify(notificationRepository).updateSettings(
-            notificationsEnabled = eq(null),
-            persistentNotifications = eq(null),
-            onboardingCompleted = eq(null),
-            lastSyncTimestamp = eq(null),
-            calendarSyncEnabled = eq(false),
-            calendarId = eq(null),
-            clearCalendarId = eq(false),
-            otherEventsEnabled = eq(null),
-            birthdayCalendarColor = eq(null),
-            anniversaryCalendarColor = eq(null),
-            nameDayCalendarColor = eq(null),
-            themeMode = eq(null),
-            themeAmoled = eq(null),
-            themeAccent = eq(null)
-        )
-        verify(calendarSyncRepository).deleteCalendar()
+        verify(setCalendarSyncEnabledUseCase).invoke(true)
     }
 }

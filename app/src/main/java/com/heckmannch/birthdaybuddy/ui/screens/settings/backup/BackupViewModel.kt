@@ -4,7 +4,8 @@ import android.content.ContentResolver
 import android.net.Uri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.heckmannch.birthdaybuddy.data.repository.ContactRepository
+import com.heckmannch.birthdaybuddy.domain.usecase.ExportGiftIdeasUseCase
+import com.heckmannch.birthdaybuddy.domain.usecase.ImportGiftIdeasUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
@@ -14,7 +15,8 @@ import javax.inject.Inject
 
 @HiltViewModel
 class BackupViewModel @Inject constructor(
-    private val contactRepository: ContactRepository,
+    private val exportGiftIdeasUseCase: ExportGiftIdeasUseCase,
+    private val importGiftIdeasUseCase: ImportGiftIdeasUseCase,
 ) : ViewModel() {
 
     var ioDispatcher: CoroutineDispatcher = Dispatchers.IO
@@ -27,7 +29,7 @@ class BackupViewModel @Inject constructor(
     ) {
         viewModelScope.launch {
             try {
-                val json = contactRepository.exportGiftIdeas()
+                val json = exportGiftIdeasUseCase()
                 withContext(ioDispatcher) {
                     contentResolver.openOutputStream(uri)?.use { outputStream ->
                         outputStream.write(json.toByteArray())
@@ -55,7 +57,7 @@ class BackupViewModel @Inject constructor(
                     }
                 }
                 if (json != null) {
-                    val count = contactRepository.importGiftIdeas(json)
+                    val count = importGiftIdeasUseCase(json)
                     if (count >= 0) {
                         onSuccess(count)
                     } else {

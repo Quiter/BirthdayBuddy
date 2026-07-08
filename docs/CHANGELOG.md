@@ -294,3 +294,10 @@
     - **Refactoring:** Bereinigung des `HomeViewModel` und Anpassung der Testumgebungen (`HomeViewModelTest`, `HomeViewModelSearchTest`).
     - **Unit-Tests:** Erstellung von `GetCoupleSuggestionUseCaseTest` mit expliziter Absicherung für ungleiche Nachnamen bei gleichem Hochzeitsdatum.
 
+230. **Einführung des Backup- & Kalendersynchronisations-Domain-Layers (Architecture & Code Quality):**
+    - **ExportGiftIdeasUseCase & ImportGiftIdeasUseCase:** Kapselung des JSON-Exports/Imports von Geschenkideen.
+    - **SetCalendarSyncEnabledUseCase & UpdateCalendarColorUseCase:** Kapselung der Aktivierung/Deaktivierung der Kalendersynchronisation sowie Farbänderungen.
+    - **SyncCalendarUseCase:** Kapselung der Geschäftslogik zur Kalendersynchronisation.
+    - **Refactoring:** Bereinigung von `BackupViewModel` und `CalendarViewModel` durch Entkopplung von Repository-Direktaufrufen.
+    - **Unit-Tests:** Erstellung neuer Testklassen (`ExportGiftIdeasUseCaseTest`, `ImportGiftIdeasUseCaseTest`, `SetCalendarSyncEnabledUseCaseTest`) sowie Anpassung bestehender ViewModel-Tests.
+

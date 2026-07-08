@@ -1,0 +1,17 @@
+package com.heckmannch.birthdaybuddy.domain.usecase
+
+import com.heckmannch.birthdaybuddy.data.repository.ContactRepository
+import dagger.Reusable
+import javax.inject.Inject
+
+/**
+ * Domain Use Case to export all gift ideas as a JSON-encoded string.
+ */
+@Reusable
+class ExportGiftIdeasUseCase @Inject constructor(
+    private val contactRepository: ContactRepository
+) {
+    suspend operator fun invoke(): String {
+        return contactRepository.exportGiftIdeas()
+    }
+}
