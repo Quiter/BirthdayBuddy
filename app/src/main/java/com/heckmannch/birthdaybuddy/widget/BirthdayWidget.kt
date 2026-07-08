@@ -37,7 +37,7 @@ import androidx.glance.text.TextStyle
 import com.heckmannch.birthdaybuddy.MainActivity
 import com.heckmannch.birthdaybuddy.R
 import com.heckmannch.birthdaybuddy.domain.model.Contact
-import com.heckmannch.birthdaybuddy.data.repository.ContactRepository
+import com.heckmannch.birthdaybuddy.domain.repository.ContactRepository
 import com.heckmannch.birthdaybuddy.util.IntentExtras
 import com.heckmannch.birthdaybuddy.util.hasYear
 import com.heckmannch.birthdaybuddy.util.safeDaysUntilNext

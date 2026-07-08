@@ -1,15 +1,15 @@
-package com.heckmannch.birthdaybuddy.data.local
+package com.heckmannch.birthdaybuddy.domain.model
 
-import androidx.room.Entity
-import androidx.room.PrimaryKey
-
-@Entity(tableName = "app_settings")
+/**
+ * Pure domain model representing application settings.
+ * Decoupled from any database-specific attributes.
+ */
 data class AppSettings(
-    @PrimaryKey val id: Int = 0, // Es gibt nur einen Datensatz mit ID 0
+    val id: Int = 0,
     val notificationsEnabled: Boolean = false,
-    val persistentNotifications: Boolean = true, // NEU: Benachrichtigungen müssen aktiv quittiert werden
-    val onboardingCompleted: Boolean = false, // NEU: Flag für den Erststart
-    val lastSyncTimestamp: Long = 0L, // Zeitstempel des letzten erfolgreichen Syncs
+    val persistentNotifications: Boolean = true,
+    val onboardingCompleted: Boolean = false,
+    val lastSyncTimestamp: Long = 0L,
     val calendarSyncEnabled: Boolean = false,
     val calendarId: Long? = null,
     val otherEventsEnabled: Boolean = false,

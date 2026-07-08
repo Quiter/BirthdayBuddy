@@ -15,7 +15,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import com.heckmannch.birthdaybuddy.R
-import com.heckmannch.birthdaybuddy.data.local.NotificationRule
+import com.heckmannch.birthdaybuddy.domain.model.NotificationRule
 
 @Composable
 fun NotificationRuleItem(

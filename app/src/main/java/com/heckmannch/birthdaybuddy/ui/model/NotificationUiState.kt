@@ -1,6 +1,6 @@
 package com.heckmannch.birthdaybuddy.ui.model
 
-import com.heckmannch.birthdaybuddy.data.local.NotificationRule
+import com.heckmannch.birthdaybuddy.domain.model.NotificationRule
 
 data class NotificationUiState(
     val notificationsEnabled: Boolean = false,

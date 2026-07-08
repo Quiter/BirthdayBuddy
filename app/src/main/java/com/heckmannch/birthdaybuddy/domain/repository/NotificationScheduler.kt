@@ -1,7 +1,10 @@
-package com.heckmannch.birthdaybuddy.util
+package com.heckmannch.birthdaybuddy.domain.repository
 
-import com.heckmannch.birthdaybuddy.data.local.NotificationRule
+import com.heckmannch.birthdaybuddy.domain.model.NotificationRule
 
+/**
+ * Domain interface for scheduling and managing notifications.
+ */
 interface NotificationScheduler {
     fun scheduleNext(rules: List<NotificationRule>)
     fun cancelNotification()

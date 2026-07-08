@@ -4,7 +4,7 @@ import androidx.room.Entity
 import androidx.room.PrimaryKey
 
 @Entity(tableName = "label_configs")
-data class LabelConfig(
+data class LabelConfigEntity(
     @PrimaryKey
     val name: String,
     val isHiddenFromFilter: Boolean = false,

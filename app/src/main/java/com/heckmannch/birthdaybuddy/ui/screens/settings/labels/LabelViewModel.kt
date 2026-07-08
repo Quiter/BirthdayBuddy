@@ -2,10 +2,10 @@ package com.heckmannch.birthdaybuddy.ui.screens.settings.labels
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.heckmannch.birthdaybuddy.data.local.LabelConfig
-import com.heckmannch.birthdaybuddy.data.repository.ContactRepository
-import com.heckmannch.birthdaybuddy.ui.model.LabelManagementModel
 import com.heckmannch.birthdaybuddy.data.local.ContactLabels
+import com.heckmannch.birthdaybuddy.domain.model.LabelConfig
+import com.heckmannch.birthdaybuddy.domain.repository.ContactRepository
+import com.heckmannch.birthdaybuddy.ui.model.LabelManagementModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow

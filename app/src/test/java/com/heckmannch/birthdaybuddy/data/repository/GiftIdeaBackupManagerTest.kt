@@ -1,8 +1,8 @@
 package com.heckmannch.birthdaybuddy.data.repository
 
 import com.google.common.truth.Truth.assertThat
-import com.heckmannch.birthdaybuddy.data.local.ContactEntity
 import com.heckmannch.birthdaybuddy.data.local.ContactDao
+import com.heckmannch.birthdaybuddy.data.local.ContactEntity
 import com.heckmannch.birthdaybuddy.data.local.ContactUserData
 import com.heckmannch.birthdaybuddy.data.local.ContactUserDataDao
 import com.heckmannch.birthdaybuddy.domain.model.GiftIdea

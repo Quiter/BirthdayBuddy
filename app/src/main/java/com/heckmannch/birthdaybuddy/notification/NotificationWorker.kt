@@ -7,10 +7,10 @@ import androidx.work.ExistingWorkPolicy
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
 import androidx.work.WorkerParameters
-import com.heckmannch.birthdaybuddy.data.local.NotificationRule
-import com.heckmannch.birthdaybuddy.data.local.PendingNotification
-import com.heckmannch.birthdaybuddy.data.repository.ContactRepository
-import com.heckmannch.birthdaybuddy.data.repository.NotificationRepository
+import com.heckmannch.birthdaybuddy.domain.model.NotificationRule
+import com.heckmannch.birthdaybuddy.domain.model.PendingNotification
+import com.heckmannch.birthdaybuddy.domain.repository.ContactRepository
+import com.heckmannch.birthdaybuddy.domain.repository.NotificationRepository
 import com.heckmannch.birthdaybuddy.domain.usecase.GetPendingNotificationsUseCase
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject

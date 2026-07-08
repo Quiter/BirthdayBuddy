@@ -2,9 +2,9 @@ package com.heckmannch.birthdaybuddy.ui.screens.settings.calendar
 
 import com.google.common.truth.Truth.assertThat
 import com.heckmannch.birthdaybuddy.MainDispatcherRule
-import com.heckmannch.birthdaybuddy.data.local.AppSettings
-import com.heckmannch.birthdaybuddy.data.repository.CalendarSyncRepository
-import com.heckmannch.birthdaybuddy.data.repository.NotificationRepository
+import com.heckmannch.birthdaybuddy.domain.model.AppSettings
+import com.heckmannch.birthdaybuddy.domain.repository.CalendarSyncRepository
+import com.heckmannch.birthdaybuddy.domain.repository.NotificationRepository
 import com.heckmannch.birthdaybuddy.domain.usecase.SetCalendarSyncEnabledUseCase
 import com.heckmannch.birthdaybuddy.domain.usecase.UpdateCalendarColorUseCase
 import kotlinx.coroutines.ExperimentalCoroutinesApi

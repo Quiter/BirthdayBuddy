@@ -1,8 +1,9 @@
-package com.heckmannch.birthdaybuddy.util
+package com.heckmannch.birthdaybuddy.data.repository
 
 import android.content.Context
 import android.util.Log
 import androidx.glance.appwidget.updateAll
+import com.heckmannch.birthdaybuddy.domain.repository.WidgetUpdater
 import com.heckmannch.birthdaybuddy.widget.BirthdayWidget
 import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject

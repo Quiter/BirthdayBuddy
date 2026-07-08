@@ -3,10 +3,10 @@ package com.heckmannch.birthdaybuddy.ui.screens.home
 import androidx.lifecycle.viewModelScope
 import com.google.common.truth.Truth.assertThat
 import com.heckmannch.birthdaybuddy.MainDispatcherRule
-import com.heckmannch.birthdaybuddy.domain.model.Contact
 import com.heckmannch.birthdaybuddy.data.mapper.ContactMapper
-import com.heckmannch.birthdaybuddy.data.repository.ContactRepository
-import com.heckmannch.birthdaybuddy.data.repository.TimeRepository
+import com.heckmannch.birthdaybuddy.domain.model.Contact
+import com.heckmannch.birthdaybuddy.domain.repository.ContactRepository
+import com.heckmannch.birthdaybuddy.domain.repository.TimeRepository
 import com.heckmannch.birthdaybuddy.domain.usecase.GetContactsUseCase
 import com.heckmannch.birthdaybuddy.domain.usecase.GetCoupleSuggestionUseCase
 import com.heckmannch.birthdaybuddy.domain.usecase.IgnoreCoupleSuggestionUseCase

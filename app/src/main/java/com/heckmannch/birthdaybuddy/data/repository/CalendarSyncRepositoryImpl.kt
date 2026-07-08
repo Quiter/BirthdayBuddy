@@ -5,9 +5,10 @@ import android.content.Context
 import android.provider.CalendarContract
 import android.util.Log
 import com.heckmannch.birthdaybuddy.R
-import com.heckmannch.birthdaybuddy.data.local.AppSettings
 import com.heckmannch.birthdaybuddy.data.local.AppSettingsDao
+import com.heckmannch.birthdaybuddy.data.local.AppSettingsEntity
 import com.heckmannch.birthdaybuddy.domain.model.Contact
+import com.heckmannch.birthdaybuddy.domain.repository.CalendarSyncRepository
 import com.heckmannch.birthdaybuddy.util.hasYear
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
@@ -18,33 +19,37 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
-class CalendarSyncRepository @Inject constructor(
+class CalendarSyncRepositoryImpl @Inject constructor(
     @param:ApplicationContext private val context: Context,
     private val appSettingsDao: AppSettingsDao,
     private val systemCalendarDataSource: SystemCalendarDataSource,
-) {
+) : CalendarSyncRepository {
 
-    enum class CalendarType(val calendarName: String, val displayNameRes: Int, val color: Int) {
-        BIRTHDAY("BirthdayBuddy_Birthdays", R.string.calendar_name_birthdays, 0xFFE91E63.toInt()),
-        ANNIVERSARY(
-            "BirthdayBuddy_Anniversaries",
-            R.string.calendar_name_anniversaries,
-            0xFF9C27B0.toInt()
-        ),
-        NAMEDAY("BirthdayBuddy_NameDays", R.string.calendar_name_namedays, 0xFFFF9800.toInt())
+    private enum class LocalCalendarType(val calendarName: String, val displayNameRes: Int) {
+        BIRTHDAY("BirthdayBuddy_Birthdays", R.string.calendar_name_birthdays),
+        ANNIVERSARY("BirthdayBuddy_Anniversaries", R.string.calendar_name_anniversaries),
+        NAMEDAY("BirthdayBuddy_NameDays", R.string.calendar_name_namedays);
+
+        companion object {
+            fun fromDomain(type: CalendarSyncRepository.CalendarType): LocalCalendarType = when (type) {
+                CalendarSyncRepository.CalendarType.BIRTHDAY -> BIRTHDAY
+                CalendarSyncRepository.CalendarType.ANNIVERSARY -> ANNIVERSARY
+                CalendarSyncRepository.CalendarType.NAMEDAY -> NAMEDAY
+            }
+        }
     }
 
-    fun hasCalendarPermissions(): Boolean {
+    override fun hasCalendarPermissions(): Boolean {
         return systemCalendarDataSource.hasCalendarPermissions()
     }
 
-    private suspend fun getOrCreateCalendar(type: CalendarType): Long? =
+    private suspend fun getOrCreateCalendar(type: LocalCalendarType): Long? =
         withContext(Dispatchers.IO) {
-            val currentSettings = appSettingsDao.getSettingsImmediate() ?: AppSettings()
+            val currentSettings = appSettingsDao.getSettingsImmediate() ?: AppSettingsEntity()
             val preferredColor = when (type) {
-                CalendarType.BIRTHDAY -> currentSettings.birthdayCalendarColor
-                CalendarType.ANNIVERSARY -> currentSettings.anniversaryCalendarColor
-                CalendarType.NAMEDAY -> currentSettings.nameDayCalendarColor
+                LocalCalendarType.BIRTHDAY -> currentSettings.birthdayCalendarColor
+                LocalCalendarType.ANNIVERSARY -> currentSettings.anniversaryCalendarColor
+                LocalCalendarType.NAMEDAY -> currentSettings.nameDayCalendarColor
             }
             systemCalendarDataSource.getOrCreateCalendar(
                 type.calendarName,
@@ -55,9 +60,9 @@ class CalendarSyncRepository @Inject constructor(
 
     private suspend fun cleanCalendars(): Unit = withContext(Dispatchers.IO) {
         val activeNames = setOf(
-            CalendarType.BIRTHDAY.calendarName,
-            CalendarType.ANNIVERSARY.calendarName,
-            CalendarType.NAMEDAY.calendarName
+            LocalCalendarType.BIRTHDAY.calendarName,
+            LocalCalendarType.ANNIVERSARY.calendarName,
+            LocalCalendarType.NAMEDAY.calendarName
         )
         val calendars = systemCalendarDataSource.queryAllCalendars()
         val seenActiveIds = mutableMapOf<String, Long>()
@@ -95,17 +100,18 @@ class CalendarSyncRepository @Inject constructor(
         }
     }
 
-    suspend fun updateCalendarColor(type: CalendarType, newColor: Int): Boolean =
+    override suspend fun updateCalendarColor(type: CalendarSyncRepository.CalendarType, newColor: Int): Boolean =
         withContext(Dispatchers.IO) {
-            val currentSettings = appSettingsDao.getSettingsImmediate() ?: AppSettings()
-            val updatedSettings = when (type) {
-                CalendarType.BIRTHDAY -> currentSettings.copy(birthdayCalendarColor = newColor)
-                CalendarType.ANNIVERSARY -> currentSettings.copy(anniversaryCalendarColor = newColor)
-                CalendarType.NAMEDAY -> currentSettings.copy(nameDayCalendarColor = newColor)
+            val currentSettings = appSettingsDao.getSettingsImmediate() ?: AppSettingsEntity()
+            val localType = LocalCalendarType.fromDomain(type)
+            val updatedSettings = when (localType) {
+                LocalCalendarType.BIRTHDAY -> currentSettings.copy(birthdayCalendarColor = newColor)
+                LocalCalendarType.ANNIVERSARY -> currentSettings.copy(anniversaryCalendarColor = newColor)
+                LocalCalendarType.NAMEDAY -> currentSettings.copy(nameDayCalendarColor = newColor)
             }
             appSettingsDao.upsertSettings(updatedSettings)
 
-            val calendarId = systemCalendarDataSource.findCalendarIdByName(type.calendarName)
+            val calendarId = systemCalendarDataSource.findCalendarIdByName(localType.calendarName)
             if (calendarId != null) {
                 systemCalendarDataSource.updateCalendarColor(calendarId, newColor)
             } else {
@@ -113,15 +119,15 @@ class CalendarSyncRepository @Inject constructor(
             }
         }
 
-    suspend fun deleteCalendar(): Boolean = withContext(Dispatchers.IO) {
-        val currentSettings = appSettingsDao.getSettingsImmediate() ?: AppSettings()
+    override suspend fun deleteCalendar(): Boolean = withContext(Dispatchers.IO) {
+        val currentSettings = appSettingsDao.getSettingsImmediate() ?: AppSettingsEntity()
 
         var deletedAny = false
         val allTargetNames = setOf(
             "BirthdayBuddyCalendar",
-            CalendarType.BIRTHDAY.calendarName,
-            CalendarType.ANNIVERSARY.calendarName,
-            CalendarType.NAMEDAY.calendarName
+            LocalCalendarType.BIRTHDAY.calendarName,
+            LocalCalendarType.ANNIVERSARY.calendarName,
+            LocalCalendarType.NAMEDAY.calendarName
         )
         val calendars = systemCalendarDataSource.queryAllCalendars()
         for (calendar in calendars) {
@@ -146,7 +152,7 @@ class CalendarSyncRepository @Inject constructor(
         deletedAny
     }
 
-    fun debugPrintAllCalendars() {
+    override fun debugPrintAllCalendars() {
         Log.d("CalendarSyncRepo", "=== START DEBUG PRINT ALL CALENDARS ===")
         val calendars =
             kotlinx.coroutines.runBlocking { systemCalendarDataSource.queryAllCalendars() }
@@ -159,21 +165,21 @@ class CalendarSyncRepository @Inject constructor(
         Log.d("CalendarSyncRepo", "=== END DEBUG PRINT ALL CALENDARS ===")
     }
 
-    suspend fun syncBirthdays(contacts: List<Contact>): Boolean = withContext(Dispatchers.IO) {
+    override suspend fun syncBirthdays(contacts: List<Contact>): Boolean = withContext(Dispatchers.IO) {
         if (!hasCalendarPermissions()) return@withContext false
 
         // Aufräumen veralteter oder doppelter Kalender vor dem Sync
         cleanCalendars()
 
-        val currentSettings = appSettingsDao.getSettingsImmediate() ?: AppSettings()
+        val currentSettings = appSettingsDao.getSettingsImmediate() ?: AppSettingsEntity()
         val otherEventsEnabled = currentSettings.otherEventsEnabled
 
         // IDs für alle aktiven Kalender abrufen oder erstellen
-        val birthdayCalId = getOrCreateCalendar(CalendarType.BIRTHDAY) ?: return@withContext false
+        val birthdayCalId = getOrCreateCalendar(LocalCalendarType.BIRTHDAY) ?: return@withContext false
         val anniversaryCalId =
-            if (otherEventsEnabled) getOrCreateCalendar(CalendarType.ANNIVERSARY) else null
+            if (otherEventsEnabled) getOrCreateCalendar(LocalCalendarType.ANNIVERSARY) else null
         val nameDayCalId =
-            if (otherEventsEnabled) getOrCreateCalendar(CalendarType.NAMEDAY) else null
+            if (otherEventsEnabled) getOrCreateCalendar(LocalCalendarType.NAMEDAY) else null
 
         try {
             // Geburtstage leeren
@@ -183,7 +189,7 @@ class CalendarSyncRepository @Inject constructor(
             if (anniversaryCalId != null) {
                 systemCalendarDataSource.clearCalendarEvents(anniversaryCalId)
             } else {
-                systemCalendarDataSource.findCalendarIdByName(CalendarType.ANNIVERSARY.calendarName)
+                systemCalendarDataSource.findCalendarIdByName(LocalCalendarType.ANNIVERSARY.calendarName)
                     ?.let { id ->
                         systemCalendarDataSource.deleteCalendarById(
                             id,
@@ -197,7 +203,7 @@ class CalendarSyncRepository @Inject constructor(
             if (nameDayCalId != null) {
                 systemCalendarDataSource.clearCalendarEvents(nameDayCalId)
             } else {
-                systemCalendarDataSource.findCalendarIdByName(CalendarType.NAMEDAY.calendarName)
+                systemCalendarDataSource.findCalendarIdByName(LocalCalendarType.NAMEDAY.calendarName)
                     ?.let { id ->
                         systemCalendarDataSource.deleteCalendarById(
                             id,

@@ -3,8 +3,8 @@ package com.heckmannch.birthdaybuddy.domain.usecase
 import com.google.common.truth.Truth.assertThat
 import com.heckmannch.birthdaybuddy.MainDispatcherRule
 import com.heckmannch.birthdaybuddy.data.local.ContactLabels
-import com.heckmannch.birthdaybuddy.domain.model.Contact
 import com.heckmannch.birthdaybuddy.data.mapper.ContactMapper
+import com.heckmannch.birthdaybuddy.domain.model.Contact
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.first

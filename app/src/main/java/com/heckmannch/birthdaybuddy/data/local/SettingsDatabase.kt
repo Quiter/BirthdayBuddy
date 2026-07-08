@@ -9,7 +9,7 @@ import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
 
 @Database(
-    entities = [LabelConfig::class, NotificationRule::class, AppSettings::class, ContactUserData::class],
+    entities = [LabelConfigEntity::class, NotificationRuleEntity::class, AppSettingsEntity::class, ContactUserData::class],
     version = 9,
     exportSchema = true
 )

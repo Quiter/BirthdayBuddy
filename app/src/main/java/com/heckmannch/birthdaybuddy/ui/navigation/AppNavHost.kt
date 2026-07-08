@@ -12,11 +12,11 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.navigation3.rememberViewModelStoreNavEntryDecorator
 import androidx.navigation3.runtime.NavEntry
 import androidx.navigation3.runtime.NavKey
 import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
 import androidx.navigation3.ui.NavDisplay
-import androidx.lifecycle.viewmodel.navigation3.rememberViewModelStoreNavEntryDecorator
 import com.heckmannch.birthdaybuddy.ui.screens.home.HomeScreen
 import com.heckmannch.birthdaybuddy.ui.screens.home.HomeViewModel
 import com.heckmannch.birthdaybuddy.ui.screens.onboarding.OnboardingScreen
@@ -41,7 +41,7 @@ import com.heckmannch.birthdaybuddy.ui.screens.settings.theme.ThemeViewModel
  * Zentrale Navigations-Komponente der App.
  *
  * Verwaltet den NavDisplay (Navigation 3) mit allen Routen, Screen-zu-Screen-Transitions
- * und ViewModel-Verknüpfungen. Die Route-Definitionen selbst befinden sich in [NavRoutes.kt].
+ * und ViewModel-Verknüpfungen. Die Route-Definitionen selbst befinden sich in NavRoutes.kt.
  *
  * @param backStack Der gemeinsame Back-Stack, der von der Activity gehalten wird.
  * @param homeViewModel Activity-weites ViewModel für den Home-Screen.

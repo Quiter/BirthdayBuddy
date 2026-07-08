@@ -1,8 +1,8 @@
 package com.heckmannch.birthdaybuddy.ui.model
 
 import androidx.compose.runtime.Immutable
-import java.time.LocalDate
 import com.heckmannch.birthdaybuddy.domain.model.GiftIdea
+import java.time.LocalDate
 
 /**
  * UI-Modell für einen Kontakt. 

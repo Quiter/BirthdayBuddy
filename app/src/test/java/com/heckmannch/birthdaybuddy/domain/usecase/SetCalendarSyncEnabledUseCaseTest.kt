@@ -1,9 +1,9 @@
 package com.heckmannch.birthdaybuddy.domain.usecase
 
 import com.heckmannch.birthdaybuddy.domain.model.Contact
-import com.heckmannch.birthdaybuddy.data.repository.CalendarSyncRepository
-import com.heckmannch.birthdaybuddy.data.repository.ContactRepository
-import com.heckmannch.birthdaybuddy.data.repository.NotificationRepository
+import com.heckmannch.birthdaybuddy.domain.repository.CalendarSyncRepository
+import com.heckmannch.birthdaybuddy.domain.repository.ContactRepository
+import com.heckmannch.birthdaybuddy.domain.repository.NotificationRepository
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runTest
 import org.junit.Before

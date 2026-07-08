@@ -7,7 +7,12 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.google.common.truth.Truth.assertThat
 import com.heckmannch.birthdaybuddy.data.local.AppDatabase
 import com.heckmannch.birthdaybuddy.data.local.SettingsDatabase
-import com.heckmannch.birthdaybuddy.util.NotificationScheduler
+import com.heckmannch.birthdaybuddy.data.mapper.AppSettingsMapper
+import com.heckmannch.birthdaybuddy.data.mapper.NotificationRuleMapper
+import com.heckmannch.birthdaybuddy.data.mapper.PendingNotificationMapper
+import com.heckmannch.birthdaybuddy.domain.model.NotificationRule
+import com.heckmannch.birthdaybuddy.domain.repository.NotificationRepository
+import com.heckmannch.birthdaybuddy.domain.repository.NotificationScheduler
 import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.runTest
@@ -29,15 +34,18 @@ class NotificationRepositoryTest {
         db = Room.inMemoryDatabaseBuilder(context, AppDatabase::class.java).build()
         settingsDb = Room.inMemoryDatabaseBuilder(context, SettingsDatabase::class.java).build()
         val scheduler = object : NotificationScheduler {
-            override fun scheduleNext(rules: List<com.heckmannch.birthdaybuddy.data.local.NotificationRule>) {}
+            override fun scheduleNext(rules: List<NotificationRule>) {}
             override fun cancelNotification() {}
             override fun snoozeNotification(pendingId: Int, daysBefore: Int, lookupKeys: List<String>) {}
         }
-        repository = NotificationRepository(
+        repository = NotificationRepositoryImpl(
             notificationRuleDao = settingsDb.notificationRuleDao(),
             pendingNotificationDao = db.pendingNotificationDao(),
             appSettingsDao = settingsDb.appSettingsDao(),
-            notificationScheduler = scheduler
+            notificationScheduler = scheduler,
+            appSettingsMapper = AppSettingsMapper(),
+            notificationRuleMapper = NotificationRuleMapper(),
+            pendingNotificationMapper = PendingNotificationMapper()
         )
     }
 

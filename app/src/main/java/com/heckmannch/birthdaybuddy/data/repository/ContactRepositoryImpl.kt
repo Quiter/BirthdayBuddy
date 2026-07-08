@@ -7,19 +7,23 @@ import android.util.Log
 import androidx.core.content.ContextCompat
 import androidx.room.withTransaction
 import com.heckmannch.birthdaybuddy.data.local.AppDatabase
-import com.heckmannch.birthdaybuddy.data.local.AppSettings
 import com.heckmannch.birthdaybuddy.data.local.AppSettingsDao
+import com.heckmannch.birthdaybuddy.data.local.AppSettingsEntity
 import com.heckmannch.birthdaybuddy.data.local.ContactDao
 import com.heckmannch.birthdaybuddy.data.local.ContactUserData
 import com.heckmannch.birthdaybuddy.data.local.ContactUserDataDao
-import com.heckmannch.birthdaybuddy.data.local.LabelConfig
 import com.heckmannch.birthdaybuddy.data.local.LabelConfigDao
-import com.heckmannch.birthdaybuddy.data.local.PotentialCouple
+import com.heckmannch.birthdaybuddy.data.local.LabelConfigEntity
 import com.heckmannch.birthdaybuddy.data.local.SettingsDatabase
 import com.heckmannch.birthdaybuddy.data.mapper.ContactDbMapper
+import com.heckmannch.birthdaybuddy.data.mapper.LabelConfigMapper
 import com.heckmannch.birthdaybuddy.domain.model.Contact
 import com.heckmannch.birthdaybuddy.domain.model.GiftIdea
-import com.heckmannch.birthdaybuddy.util.WidgetUpdater
+import com.heckmannch.birthdaybuddy.domain.model.LabelConfig
+import com.heckmannch.birthdaybuddy.domain.model.PotentialCouple
+import com.heckmannch.birthdaybuddy.domain.repository.CalendarSyncRepository
+import com.heckmannch.birthdaybuddy.domain.repository.ContactRepository
+import com.heckmannch.birthdaybuddy.domain.repository.WidgetUpdater
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
@@ -32,7 +36,7 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
-class ContactRepository @Inject constructor(
+class ContactRepositoryImpl @Inject constructor(
     @param:ApplicationContext private val context: Context,
     private val contactDao: ContactDao,
     private val labelConfigDao: LabelConfigDao,
@@ -45,41 +49,37 @@ class ContactRepository @Inject constructor(
     private val appDatabase: AppDatabase,
     private val settingsDatabase: SettingsDatabase,
     private val contactDbMapper: ContactDbMapper,
-) {
+    private val labelConfigMapper: LabelConfigMapper,
+) : ContactRepository {
 
-    val allContacts: Flow<List<Contact>> = contactDao.getAllContacts()
+    override val allContacts: Flow<List<Contact>> = contactDao.getAllContacts()
         .map { entities -> entities.map { contactDbMapper.toDomain(it) } }
         .distinctUntilChanged()
-    val potentialCouples: Flow<List<PotentialCouple>> = contactDao.getPotentialCouples()
+
+    override val potentialCouples: Flow<List<PotentialCouple>> = contactDao.getPotentialCouples()
         .distinctUntilChanged()
-    val labelConfigs: Flow<List<LabelConfig>> = labelConfigDao.getAllConfigs()
+
+    override val labelConfigs: Flow<List<LabelConfig>> = labelConfigDao.getAllConfigs()
+        .map { entities -> entities.map { labelConfigMapper.toDomain(it) } }
         .distinctUntilChanged()
-    val otherEventsEnabled: Flow<Boolean> = appSettingsDao.getSettings()
+
+    override val otherEventsEnabled: Flow<Boolean> = appSettingsDao.getSettings()
         .map { it?.otherEventsEnabled ?: false }
         .distinctUntilChanged()
 
-    val ignoredCouplePairs: Flow<List<String>> = appSettingsDao.getSettings()
+    override val ignoredCouplePairs: Flow<List<String>> = appSettingsDao.getSettings()
         .map { it?.ignoredCouplePairs ?: emptyList() }
         .distinctUntilChanged()
 
-    /**
-     * Flow indicating whether label management is enabled by the user.
-     * Defaults to true if no settings record is found.
-     */
-    val labelsEnabled: Flow<Boolean> = appSettingsDao.getSettings()
+    override val labelsEnabled: Flow<Boolean> = appSettingsDao.getSettings()
         .map { it?.labelsEnabled ?: true }
         .distinctUntilChanged()
 
-
-    suspend fun getAllContactsImmediate(): List<Contact> = withContext(Dispatchers.IO) {
+    override suspend fun getAllContactsImmediate(): List<Contact> = withContext(Dispatchers.IO) {
         contactDao.getAllContactsImmediate().map { contactDbMapper.toDomain(it) }
     }
 
-    /**
-     * Intelligenter Sync: Vergleicht System-Kontakte mit DB, erhält lokale Daten (Geschenkideen)
-     * und führt nur notwendige Änderungen durch (Diffing).
-     */
-    suspend fun syncContacts() = withContext(Dispatchers.IO) {
+    override suspend fun syncContacts() = withContext(Dispatchers.IO) {
         try {
             if (ContextCompat.checkSelfPermission(context, Manifest.permission.READ_CONTACTS)
                 != PackageManager.PERMISSION_GRANTED
@@ -124,7 +124,7 @@ class ContactRepository @Inject constructor(
                 contactDao.refreshContacts(finalEntities)
 
                 // 5. Kalender synchronisieren, falls aktiviert
-                val currentSettings = appSettingsDao.getSettingsImmediate() ?: AppSettings()
+                val currentSettings = appSettingsDao.getSettingsImmediate() ?: AppSettingsEntity()
                 if (currentSettings.calendarSyncEnabled) {
                     calendarSyncRepository.syncBirthdays(finalContacts)
                 }
@@ -140,18 +140,18 @@ class ContactRepository @Inject constructor(
 
     private suspend fun syncLabelConfigs(
         systemContacts: List<Contact>,
-        existingConfigs: Map<String, LabelConfig>,
+        existingConfigs: Map<String, LabelConfigEntity>,
         groups: Map<Long, GroupInfo>
     ) {
         val allLabelsInSystem = systemContacts.asSequence().flatMap { it.labels }.toSet()
-        val configsToInsert = mutableListOf<LabelConfig>()
+        val configsToInsert = mutableListOf<LabelConfigEntity>()
 
         // Alle System-Gruppen verarbeiten
         groups.values.asSequence().distinctBy { it.title }.forEach { group ->
             val existing = existingConfigs[group.title]
             if ((existing == null) || (existing.isSystem != group.isSystem)) {
                 configsToInsert.add(
-                    LabelConfig(
+                    LabelConfigEntity(
                         name = group.title,
                         isHiddenFromFilter = existing?.isHiddenFromFilter ?: false,
                         isIgnored = existing?.isIgnored ?: false,
@@ -164,7 +164,7 @@ class ContactRepository @Inject constructor(
         // Fehlende Labels (die vielleicht keine System-Gruppe haben) hinzufügen
         allLabelsInSystem.forEach { label ->
             if (!existingConfigs.containsKey(label) && groups.values.none { it.title == label }) {
-                configsToInsert.add(LabelConfig(name = label))
+                configsToInsert.add(LabelConfigEntity(name = label))
             }
         }
 
@@ -209,26 +209,26 @@ class ContactRepository @Inject constructor(
         widgetUpdater.updateWidget()
     }
 
-    suspend fun addGiftIdea(lookupKey: String, newIdea: GiftIdea) = withContext(Dispatchers.IO) {
+    override suspend fun addGiftIdea(lookupKey: String, newIdea: GiftIdea) = withContext(Dispatchers.IO) {
         val contact = contactDao.getContactByLookupKey(lookupKey) ?: return@withContext
         val updatedIdeas = GiftIdea.withNewIdea(contact.giftIdeas, newIdea)
         updateGiftIdeas(lookupKey, updatedIdeas)
     }
 
-    suspend fun toggleGiftIdea(lookupKey: String, idea: GiftIdea, isChecked: Boolean) =
+    override suspend fun toggleGiftIdea(lookupKey: String, idea: GiftIdea, isChecked: Boolean) =
         withContext(Dispatchers.IO) {
             val contact = contactDao.getContactByLookupKey(lookupKey) ?: return@withContext
             val updatedIdeas = GiftIdea.withToggledIdea(contact.giftIdeas, idea, isChecked)
             updateGiftIdeas(lookupKey, updatedIdeas)
         }
 
-    suspend fun deleteGiftIdea(lookupKey: String, ideaId: String) = withContext(Dispatchers.IO) {
+    override suspend fun deleteGiftIdea(lookupKey: String, ideaId: String) = withContext(Dispatchers.IO) {
         val contact = contactDao.getContactByLookupKey(lookupKey) ?: return@withContext
         val updatedIdeas = contact.giftIdeas.filter { it.id != ideaId }
         updateGiftIdeas(lookupKey, updatedIdeas)
     }
 
-    suspend fun updateGiftIdeaText(lookupKey: String, ideaId: String, newText: String) =
+    override suspend fun updateGiftIdeaText(lookupKey: String, ideaId: String, newText: String) =
         withContext(Dispatchers.IO) {
             val contact = contactDao.getContactByLookupKey(lookupKey) ?: return@withContext
             val updatedIdeas = contact.giftIdeas.map {
@@ -237,12 +237,12 @@ class ContactRepository @Inject constructor(
             updateGiftIdeas(lookupKey, updatedIdeas)
         }
 
-    suspend fun updateLabelConfig(config: LabelConfig) {
-        labelConfigDao.upsertConfig(config)
+    override suspend fun updateLabelConfig(config: LabelConfig) {
+        labelConfigDao.upsertConfig(labelConfigMapper.toEntity(config))
         widgetUpdater.updateWidget()
     }
 
-    suspend fun updateContactBirthday(contactId: String, birthday: java.time.LocalDate): Boolean {
+    override suspend fun updateContactBirthday(contactId: String, birthday: java.time.LocalDate): Boolean {
         val success = systemContactDataSource.updateContactBirthday(contactId, birthday)
         if (success) {
             syncContacts()
@@ -250,9 +250,9 @@ class ContactRepository @Inject constructor(
         return success
     }
 
-    suspend fun exportGiftIdeas(): String = giftIdeaBackupManager.exportGiftIdeas()
+    override suspend fun exportGiftIdeas(): String = giftIdeaBackupManager.exportGiftIdeas()
 
-    suspend fun importGiftIdeas(jsonString: String): Int {
+    override suspend fun importGiftIdeas(jsonString: String): Int {
         val count = giftIdeaBackupManager.importGiftIdeas(jsonString)
         if (count > 0) {
             syncContacts() // Cache aktualisieren
@@ -260,7 +260,7 @@ class ContactRepository @Inject constructor(
         return count
     }
 
-    suspend fun linkAsCouple(lookupKey1: String, lookupKey2: String) {
+    override suspend fun linkAsCouple(lookupKey1: String, lookupKey2: String) {
         withContext(Dispatchers.IO) {
             // Vorherigen Zustand für möglichen Rollback lesen
             val prevUserData1 = contactUserDataDao.getUserDataForContact(lookupKey1)
@@ -312,7 +312,7 @@ class ContactRepository @Inject constructor(
         updateWidgetAndSyncCalendar()
     }
 
-    suspend fun unlinkCouple(lookupKey: String) {
+    override suspend fun unlinkCouple(lookupKey: String) {
         withContext(Dispatchers.IO) {
             val contact = contactDao.getContactByLookupKey(lookupKey) ?: return@withContext
             val spouseKey = contact.spouseLookupKey ?: return@withContext
@@ -356,16 +356,16 @@ class ContactRepository @Inject constructor(
     private suspend fun updateWidgetAndSyncCalendar() {
         widgetUpdater.updateWidget()
         val allContactsImmediate = getAllContactsImmediate()
-        val currentSettings = appSettingsDao.getSettingsImmediate() ?: AppSettings()
+        val currentSettings = appSettingsDao.getSettingsImmediate() ?: AppSettingsEntity()
         if (currentSettings.calendarSyncEnabled) {
             calendarSyncRepository.syncBirthdays(allContactsImmediate)
         }
     }
 
-    suspend fun ignoreCoupleSuggestion(lookupKey1: String, lookupKey2: String) {
+    override suspend fun ignoreCoupleSuggestion(lookupKey1: String, lookupKey2: String) {
         withContext(Dispatchers.IO) {
             settingsDatabase.withTransaction {
-                val currentSettings = appSettingsDao.getSettingsImmediate() ?: AppSettings()
+                val currentSettings = appSettingsDao.getSettingsImmediate() ?: AppSettingsEntity()
                 val pairKey =
                     if (lookupKey1 < lookupKey2) "$lookupKey1:$lookupKey2" else "$lookupKey2:$lookupKey1"
                 if (!currentSettings.ignoredCouplePairs.contains(pairKey)) {
@@ -376,22 +376,18 @@ class ContactRepository @Inject constructor(
         }
     }
 
-    suspend fun clearIgnoredCouplePairs() {
+    override suspend fun clearIgnoredCouplePairs() {
         withContext(Dispatchers.IO) {
             settingsDatabase.withTransaction {
-                val currentSettings = appSettingsDao.getSettingsImmediate() ?: AppSettings()
+                val currentSettings = appSettingsDao.getSettingsImmediate() ?: AppSettingsEntity()
                 appSettingsDao.upsertSettings(currentSettings.copy(ignoredCouplePairs = emptyList()))
             }
         }
     }
 
-    /**
-     * Updates the status of label management in the settings.
-     * When disabled, label filtering and widget overrides are bypassed.
-     */
-    suspend fun updateLabelsEnabled(enabled: Boolean) = withContext(Dispatchers.IO) {
+    override suspend fun updateLabelsEnabled(enabled: Boolean) = withContext(Dispatchers.IO) {
         settingsDatabase.withTransaction {
-            val currentSettings = appSettingsDao.getSettingsImmediate() ?: AppSettings()
+            val currentSettings = appSettingsDao.getSettingsImmediate() ?: AppSettingsEntity()
             appSettingsDao.upsertSettings(currentSettings.copy(labelsEnabled = enabled))
         }
     }

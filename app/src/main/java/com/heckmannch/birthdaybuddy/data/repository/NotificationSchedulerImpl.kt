@@ -1,17 +1,17 @@
-package com.heckmannch.birthdaybuddy.util
+package com.heckmannch.birthdaybuddy.data.repository
 
 import android.content.Context
-import com.heckmannch.birthdaybuddy.data.local.NotificationRule
-import com.heckmannch.birthdaybuddy.notification.NotificationWorker
-import dagger.hilt.android.qualifiers.ApplicationContext
-import javax.inject.Inject
-import javax.inject.Singleton
-
 import androidx.work.Data
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
+import com.heckmannch.birthdaybuddy.domain.model.NotificationRule
+import com.heckmannch.birthdaybuddy.domain.repository.NotificationScheduler
+import com.heckmannch.birthdaybuddy.notification.NotificationWorker
 import com.heckmannch.birthdaybuddy.notification.SnoozeWorker
+import dagger.hilt.android.qualifiers.ApplicationContext
 import java.util.concurrent.TimeUnit
+import javax.inject.Inject
+import javax.inject.Singleton
 
 @Singleton
 class NotificationSchedulerImpl @Inject constructor(

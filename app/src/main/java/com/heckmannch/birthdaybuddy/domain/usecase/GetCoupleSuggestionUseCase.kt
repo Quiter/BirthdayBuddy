@@ -1,7 +1,7 @@
 package com.heckmannch.birthdaybuddy.domain.usecase
 
 import com.heckmannch.birthdaybuddy.data.local.ContactLabels
-import com.heckmannch.birthdaybuddy.data.repository.ContactRepository
+import com.heckmannch.birthdaybuddy.domain.repository.ContactRepository
 import com.heckmannch.birthdaybuddy.ui.model.CoupleSuggestionUiModel
 import com.heckmannch.birthdaybuddy.util.getInitials
 import dagger.Reusable

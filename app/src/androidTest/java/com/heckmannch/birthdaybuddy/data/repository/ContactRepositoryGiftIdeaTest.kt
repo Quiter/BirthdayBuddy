@@ -10,7 +10,9 @@ import com.heckmannch.birthdaybuddy.data.local.ContactEntity
 import com.heckmannch.birthdaybuddy.data.local.ContactUserData
 import com.heckmannch.birthdaybuddy.data.local.SettingsDatabase
 import com.heckmannch.birthdaybuddy.data.mapper.ContactDbMapper
+import com.heckmannch.birthdaybuddy.data.mapper.LabelConfigMapper
 import com.heckmannch.birthdaybuddy.domain.model.GiftIdea
+import com.heckmannch.birthdaybuddy.domain.repository.ContactRepository
 import kotlinx.coroutines.test.runTest
 import org.junit.After
 import org.junit.Before
@@ -60,7 +62,7 @@ class ContactRepositoryGiftIdeaTest {
             .allowMainThreadQueries()
             .build()
 
-        repository = ContactRepository(
+        repository = ContactRepositoryImpl(
             context = context,
             contactDao = appDb.contactDao(),
             labelConfigDao = settingsDb.labelConfigDao(),
@@ -73,6 +75,7 @@ class ContactRepositoryGiftIdeaTest {
             appDatabase = appDb,
             settingsDatabase = settingsDb,
             contactDbMapper = ContactDbMapper(),
+            labelConfigMapper = LabelConfigMapper(),
         )
     }
 

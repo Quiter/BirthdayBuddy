@@ -1,8 +1,8 @@
 package com.heckmannch.birthdaybuddy.domain.usecase
 
 import com.heckmannch.birthdaybuddy.domain.model.Contact
-import com.heckmannch.birthdaybuddy.data.repository.ContactRepository
-import com.heckmannch.birthdaybuddy.data.repository.NotificationRepository
+import com.heckmannch.birthdaybuddy.domain.repository.ContactRepository
+import com.heckmannch.birthdaybuddy.domain.repository.NotificationRepository
 import dagger.Reusable
 import kotlinx.coroutines.flow.first
 import java.time.Duration

@@ -8,13 +8,13 @@ import kotlinx.coroutines.flow.Flow
 @Dao
 interface PendingNotificationDao {
     @Query("SELECT * FROM pending_notifications WHERE isDone = 0")
-    fun getActiveNotifications(): Flow<List<PendingNotification>>
+    fun getActiveNotifications(): Flow<List<PendingNotificationEntity>>
 
     @Query("SELECT * FROM pending_notifications WHERE isDone = 0")
-    suspend fun getActiveNotificationsImmediate(): List<PendingNotification>
+    suspend fun getActiveNotificationsImmediate(): List<PendingNotificationEntity>
 
     @Query("SELECT * FROM pending_notifications WHERE id = :id")
-    suspend fun getNotificationById(id: Int): PendingNotification?
+    suspend fun getNotificationById(id: Int): PendingNotificationEntity?
 
     @Query("SELECT EXISTS(SELECT 1 FROM pending_notifications WHERE year = :year AND daysBefore = :daysBefore AND contactLookupKeys LIKE :lookupKeyPattern)")
     suspend fun hasNotificationBeenScheduled(
@@ -24,7 +24,7 @@ interface PendingNotificationDao {
     ): Boolean
 
     @Upsert
-    suspend fun upsert(notification: PendingNotification): Long
+    suspend fun upsert(notification: PendingNotificationEntity): Long
 
     @Query("UPDATE pending_notifications SET isDone = 1 WHERE id = :id")
     suspend fun markAsDone(id: Int)

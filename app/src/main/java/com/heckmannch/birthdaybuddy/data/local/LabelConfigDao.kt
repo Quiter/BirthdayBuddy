@@ -8,17 +8,17 @@ import kotlinx.coroutines.flow.Flow
 @Dao
 interface LabelConfigDao {
     @Query("SELECT * FROM label_configs")
-    fun getAllConfigs(): Flow<List<LabelConfig>>
+    fun getAllConfigs(): Flow<List<LabelConfigEntity>>
 
     @Query("SELECT * FROM label_configs")
-    suspend fun getAllConfigsImmediate(): List<LabelConfig>
+    suspend fun getAllConfigsImmediate(): List<LabelConfigEntity>
 
     @Query("SELECT * FROM label_configs WHERE name = :name")
-    suspend fun getConfigForLabel(name: String): LabelConfig?
+    suspend fun getConfigForLabel(name: String): LabelConfigEntity?
 
     @Upsert
-    suspend fun upsertConfig(config: LabelConfig)
+    suspend fun upsertConfig(config: LabelConfigEntity)
 
     @Upsert
-    suspend fun upsertConfigs(configs: List<LabelConfig>)
+    suspend fun upsertConfigs(configs: List<LabelConfigEntity>)
 }

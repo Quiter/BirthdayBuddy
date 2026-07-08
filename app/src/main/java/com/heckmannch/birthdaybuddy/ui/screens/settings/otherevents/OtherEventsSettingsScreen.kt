@@ -28,9 +28,9 @@ import com.heckmannch.birthdaybuddy.ui.components.AppResponsiveScaffold
 import com.heckmannch.birthdaybuddy.ui.components.InfoCard
 import com.heckmannch.birthdaybuddy.ui.components.SettingsCard
 import com.heckmannch.birthdaybuddy.ui.components.SettingsSwitchRow
+import com.heckmannch.birthdaybuddy.ui.screens.settings.notifications.NotificationViewModel
 import com.heckmannch.birthdaybuddy.ui.theme.SpacingNormal
 import com.heckmannch.birthdaybuddy.ui.theme.SpacingSmall
-import com.heckmannch.birthdaybuddy.ui.screens.settings.notifications.NotificationViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

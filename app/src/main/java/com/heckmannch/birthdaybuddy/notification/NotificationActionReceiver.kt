@@ -7,15 +7,14 @@ import android.content.Intent
 import androidx.work.Data
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
-import com.heckmannch.birthdaybuddy.data.repository.NotificationRepository
+import com.heckmannch.birthdaybuddy.domain.repository.NotificationRepository
+import com.heckmannch.birthdaybuddy.domain.usecase.SnoozeNotificationUseCase
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
-
-import com.heckmannch.birthdaybuddy.domain.usecase.SnoozeNotificationUseCase
 
 @AndroidEntryPoint
 class NotificationActionReceiver : BroadcastReceiver() {

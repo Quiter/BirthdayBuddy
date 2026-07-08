@@ -1,7 +1,7 @@
 package com.heckmannch.birthdaybuddy.ui.model
 
-import java.time.LocalDate
 import com.heckmannch.birthdaybuddy.domain.model.GiftIdea
+import java.time.LocalDate
 
 /**
  * Zentraler Ort für Testdaten, die in Previews und Tests verwendet werden.

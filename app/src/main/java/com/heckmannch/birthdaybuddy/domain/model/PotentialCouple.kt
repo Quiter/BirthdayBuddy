@@ -1,8 +1,7 @@
-package com.heckmannch.birthdaybuddy.data.local
+package com.heckmannch.birthdaybuddy.domain.model
 
 /**
- * Datenmodell für ein potenzielles Ehepaar, das aus der Datenbank geladen wird.
- * Repräsentiert zwei Kontakte mit dem gleichen Hochzeitstag (Tag & Monat).
+ * Pure domain model representing a potential couple suggestions based on wedding anniversaries.
  */
 data class PotentialCouple(
     val firstLookupKey: String,

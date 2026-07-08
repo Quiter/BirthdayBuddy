@@ -3,8 +3,8 @@ package com.heckmannch.birthdaybuddy.ui.screens.settings.calendar
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.heckmannch.birthdaybuddy.BuildConfig
-import com.heckmannch.birthdaybuddy.data.repository.CalendarSyncRepository
-import com.heckmannch.birthdaybuddy.data.repository.NotificationRepository
+import com.heckmannch.birthdaybuddy.domain.repository.CalendarSyncRepository
+import com.heckmannch.birthdaybuddy.domain.repository.NotificationRepository
 import com.heckmannch.birthdaybuddy.domain.usecase.SetCalendarSyncEnabledUseCase
 import com.heckmannch.birthdaybuddy.domain.usecase.UpdateCalendarColorUseCase
 import com.heckmannch.birthdaybuddy.ui.model.CalendarUiState

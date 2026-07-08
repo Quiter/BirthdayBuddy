@@ -3,7 +3,7 @@ package com.heckmannch.birthdaybuddy
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
-import com.heckmannch.birthdaybuddy.data.repository.NotificationRepository
+import com.heckmannch.birthdaybuddy.domain.repository.NotificationRepository
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers

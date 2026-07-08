@@ -5,9 +5,10 @@ import android.provider.CalendarContract
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import com.google.common.truth.Truth.assertThat
-import com.heckmannch.birthdaybuddy.data.local.AppSettings
 import com.heckmannch.birthdaybuddy.data.local.AppSettingsDao
+import com.heckmannch.birthdaybuddy.data.local.AppSettingsEntity
 import com.heckmannch.birthdaybuddy.domain.model.Contact
+import com.heckmannch.birthdaybuddy.domain.repository.CalendarSyncRepository
 import kotlinx.coroutines.test.runTest
 import org.junit.Before
 import org.junit.Test
@@ -29,7 +30,7 @@ class CalendarSyncRepositoryTest {
     @Before
     fun setUp() {
         val context = InstrumentationRegistry.getInstrumentation().targetContext
-        repository = CalendarSyncRepository(context, appSettingsDao, systemCalendarDataSource)
+        repository = CalendarSyncRepositoryImpl(context, appSettingsDao, systemCalendarDataSource)
     }
 
     @Test
@@ -45,7 +46,7 @@ class CalendarSyncRepositoryTest {
 
         whenever(systemCalendarDataSource.hasCalendarPermissions()).thenReturn(true)
         whenever(systemCalendarDataSource.queryAllCalendars()).thenReturn(emptyList())
-        whenever(appSettingsDao.getSettingsImmediate()).thenReturn(AppSettings(otherEventsEnabled = false))
+        whenever(appSettingsDao.getSettingsImmediate()).thenReturn(AppSettingsEntity(otherEventsEnabled = false))
         whenever(systemCalendarDataSource.getOrCreateCalendar(any(), any(), any())).thenReturn(123L)
         whenever(systemCalendarDataSource.clearCalendarEvents(123L)).thenReturn(true)
         whenever(systemCalendarDataSource.applyBatch(any())).thenReturn(true)

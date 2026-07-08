@@ -10,17 +10,17 @@ import kotlinx.coroutines.flow.Flow
 @Dao
 interface NotificationRuleDao {
     @Query("SELECT * FROM notification_rules ORDER BY daysBefore ASC, hour ASC, minute ASC")
-    fun getAllRules(): Flow<List<NotificationRule>>
+    fun getAllRules(): Flow<List<NotificationRuleEntity>>
 
     @Query("SELECT * FROM notification_rules ORDER BY daysBefore ASC, hour ASC, minute ASC")
-    suspend fun getAllRulesImmediate(): List<NotificationRule>
+    suspend fun getAllRulesImmediate(): List<NotificationRuleEntity>
 
     @Upsert
-    suspend fun upsertRule(rule: NotificationRule)
+    suspend fun upsertRule(rule: NotificationRuleEntity)
 
     @Update
-    suspend fun updateRule(rule: NotificationRule)
+    suspend fun updateRule(rule: NotificationRuleEntity)
 
     @Delete
-    suspend fun deleteRule(rule: NotificationRule)
+    suspend fun deleteRule(rule: NotificationRuleEntity)
 }

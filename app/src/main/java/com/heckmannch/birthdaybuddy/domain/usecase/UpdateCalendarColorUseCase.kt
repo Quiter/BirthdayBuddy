@@ -1,6 +1,6 @@
 package com.heckmannch.birthdaybuddy.domain.usecase
 
-import com.heckmannch.birthdaybuddy.data.repository.CalendarSyncRepository
+import com.heckmannch.birthdaybuddy.domain.repository.CalendarSyncRepository
 import dagger.Reusable
 import javax.inject.Inject
 

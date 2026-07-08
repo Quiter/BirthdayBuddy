@@ -1,7 +1,7 @@
 package com.heckmannch.birthdaybuddy.domain.usecase
 
 import com.google.common.truth.Truth.assertThat
-import com.heckmannch.birthdaybuddy.data.repository.ContactRepository
+import com.heckmannch.birthdaybuddy.domain.repository.ContactRepository
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runTest
 import org.junit.Before

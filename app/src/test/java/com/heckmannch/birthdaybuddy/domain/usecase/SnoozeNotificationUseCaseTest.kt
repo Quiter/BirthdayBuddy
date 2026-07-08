@@ -1,6 +1,6 @@
 package com.heckmannch.birthdaybuddy.domain.usecase
 
-import com.heckmannch.birthdaybuddy.util.NotificationScheduler
+import com.heckmannch.birthdaybuddy.domain.repository.NotificationScheduler
 import org.junit.Before
 import org.junit.Test
 import org.mockito.kotlin.mock

@@ -8,11 +8,11 @@ import kotlinx.coroutines.flow.Flow
 @Dao
 interface AppSettingsDao {
     @Query("SELECT * FROM app_settings WHERE id = 0")
-    fun getSettings(): Flow<AppSettings?>
+    fun getSettings(): Flow<AppSettingsEntity?>
 
     @Query("SELECT * FROM app_settings WHERE id = 0")
-    suspend fun getSettingsImmediate(): AppSettings?
+    suspend fun getSettingsImmediate(): AppSettingsEntity?
 
     @Upsert
-    suspend fun upsertSettings(settings: AppSettings)
+    suspend fun upsertSettings(settings: AppSettingsEntity)
 }

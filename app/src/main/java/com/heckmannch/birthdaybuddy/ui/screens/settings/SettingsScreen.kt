@@ -57,25 +57,25 @@ import androidx.navigation3.runtime.NavKey
 import androidx.navigation3.ui.NavDisplay
 import com.heckmannch.birthdaybuddy.R
 import com.heckmannch.birthdaybuddy.ui.components.AppResponsiveScaffold
+import com.heckmannch.birthdaybuddy.ui.screens.home.HomeViewModel
 import com.heckmannch.birthdaybuddy.ui.screens.settings.about.AboutScreen
 import com.heckmannch.birthdaybuddy.ui.screens.settings.about.PrivacyPolicyScreen
 import com.heckmannch.birthdaybuddy.ui.screens.settings.backup.BackupScreen
+import com.heckmannch.birthdaybuddy.ui.screens.settings.backup.BackupViewModel
 import com.heckmannch.birthdaybuddy.ui.screens.settings.calendar.CalendarSettingsScreen
+import com.heckmannch.birthdaybuddy.ui.screens.settings.calendar.CalendarViewModel
 import com.heckmannch.birthdaybuddy.ui.screens.settings.labels.LabelSettingsScreen
+import com.heckmannch.birthdaybuddy.ui.screens.settings.labels.LabelViewModel
 import com.heckmannch.birthdaybuddy.ui.screens.settings.notifications.NotificationSettingsScreen
+import com.heckmannch.birthdaybuddy.ui.screens.settings.notifications.NotificationViewModel
 import com.heckmannch.birthdaybuddy.ui.screens.settings.otherevents.OtherEventsSettingsScreen
 import com.heckmannch.birthdaybuddy.ui.screens.settings.sync.SyncSettingsScreen
 import com.heckmannch.birthdaybuddy.ui.screens.settings.theme.ThemeSettingsScreen
+import com.heckmannch.birthdaybuddy.ui.screens.settings.theme.ThemeViewModel
 import com.heckmannch.birthdaybuddy.ui.theme.AlphaEmphasisMedium
 import com.heckmannch.birthdaybuddy.ui.theme.BirthdayBuddyTheme
 import com.heckmannch.birthdaybuddy.ui.theme.SpacingMedium
 import com.heckmannch.birthdaybuddy.ui.theme.SpacingNormal
-import com.heckmannch.birthdaybuddy.ui.screens.settings.backup.BackupViewModel
-import com.heckmannch.birthdaybuddy.ui.screens.settings.calendar.CalendarViewModel
-import com.heckmannch.birthdaybuddy.ui.screens.home.HomeViewModel
-import com.heckmannch.birthdaybuddy.ui.screens.settings.labels.LabelViewModel
-import com.heckmannch.birthdaybuddy.ui.screens.settings.notifications.NotificationViewModel
-import com.heckmannch.birthdaybuddy.ui.screens.settings.theme.ThemeViewModel
 import kotlinx.serialization.Serializable
 
 /**

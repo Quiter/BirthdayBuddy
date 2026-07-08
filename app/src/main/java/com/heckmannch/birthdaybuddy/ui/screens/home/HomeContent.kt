@@ -45,22 +45,22 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation3.runtime.NavEntry
 import androidx.navigation3.runtime.NavKey
 import androidx.navigation3.ui.NavDisplay
+import com.heckmannch.birthdaybuddy.data.local.ContactLabels
 import com.heckmannch.birthdaybuddy.ui.components.AppResponsiveScaffold
+import com.heckmannch.birthdaybuddy.ui.components.LocalWindowHeightSizeClass
 import com.heckmannch.birthdaybuddy.ui.model.ContactUiModel
 import com.heckmannch.birthdaybuddy.ui.model.HomeUiState
 import com.heckmannch.birthdaybuddy.ui.model.SampleData
 import com.heckmannch.birthdaybuddy.ui.screens.home.components.actions.HomeFAB
 import com.heckmannch.birthdaybuddy.ui.screens.home.components.list.BirthdayDetailPane
 import com.heckmannch.birthdaybuddy.ui.screens.home.components.list.BirthdayList
-import com.heckmannch.birthdaybuddy.ui.components.LocalWindowHeightSizeClass
 import com.heckmannch.birthdaybuddy.ui.screens.home.components.list.BirthdayQuotePlaceholder
-import com.heckmannch.birthdaybuddy.ui.screens.home.components.list.LabelFilterBar
 import com.heckmannch.birthdaybuddy.ui.screens.home.components.list.FastScrollbar
+import com.heckmannch.birthdaybuddy.ui.screens.home.components.list.LabelFilterBar
 import com.heckmannch.birthdaybuddy.ui.screens.home.components.topbar.SearchBar
 import com.heckmannch.birthdaybuddy.ui.theme.BirthdayBuddyTheme
 import com.heckmannch.birthdaybuddy.ui.theme.SpacingSmall
 import kotlinx.serialization.Serializable
-import com.heckmannch.birthdaybuddy.data.local.ContactLabels
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3AdaptiveApi::class)
 @Composable

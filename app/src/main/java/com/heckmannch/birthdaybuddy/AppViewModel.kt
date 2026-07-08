@@ -2,8 +2,8 @@ package com.heckmannch.birthdaybuddy
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.heckmannch.birthdaybuddy.data.local.AppSettings
-import com.heckmannch.birthdaybuddy.data.repository.NotificationRepository
+import com.heckmannch.birthdaybuddy.domain.model.AppSettings
+import com.heckmannch.birthdaybuddy.domain.repository.NotificationRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow

@@ -1,5 +1,6 @@
 package com.heckmannch.birthdaybuddy.data.repository
 
+import com.heckmannch.birthdaybuddy.domain.repository.TimeRepository
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.distinctUntilChanged
@@ -12,11 +13,11 @@ import javax.inject.Singleton
 import kotlin.time.Duration.Companion.milliseconds
 
 @Singleton
-class TimeRepository @Inject constructor() {
+class TimeRepositoryImpl @Inject constructor() : TimeRepository {
     /**
      * Ein Flow, der das aktuelle Datum emittiert und sich automatisch um Mitternacht aktualisiert.
      */
-    val currentDate: Flow<LocalDate> = flow {
+    override val currentDate: Flow<LocalDate> = flow {
         while (true) {
             val now = LocalDateTime.now()
             emit(now.toLocalDate())
