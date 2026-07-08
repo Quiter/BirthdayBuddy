@@ -53,6 +53,8 @@
     - `GiftIdea.kt`: Reines Domänenmodell für Geschenkideen (id, text, isChecked) mit statischen Hilfsmethoden zum Hinzufügen, Sortieren und Umschalten von Ideen.
 - ### 📁 Use Cases (`domain.usecase`)
     - `GetContactsUseCase.kt`: Kapselt die gesamte Filterlogik für die Home-Kontaktliste. Empfängt reaktive Inputs (Kontakte, Datum, Suchbegriff, Labels, Einstellungen) und gibt einen sortierten `Flow<List<ContactUiModel>>` zurück. Enthält die Pairing-Logik für Ehepaar-Jubiläen und die `LabelSettingsState`-Datenklasse. Annotiert mit `@Reusable` (kein Singleton nötig).
+    - `GetPendingNotificationsUseCase.kt`: Evaluert die aktiven Benachrichtigungsregeln für den aktuellen Zeitpunkt und liefert die fälligen Termine (Geburtstage, Hochzeitstage mit Paar-Verknüpfung, Namenstage) zurück, die noch nicht geplant wurden.
+    - `SnoozeNotificationUseCase.kt`: Kapselt die Logik für das Schlummern von Benachrichtigungen und delegiert dies an den plattformspezifischen Scheduler.
 
 ## 📁 UI Layer (`ui`)
 
@@ -191,6 +193,8 @@ Diese Tests laufen ohne Emulator/Gerät direkt auf dem Entwicklungsrechner und s
 - `data/local/GiftIdeaConvertersTest.kt`: Tests für Geschenkideen-TypeConverter.
 - `data/mapper/ContactMapperTest.kt`: Tests für die Transformation von Datenbank-Entitäten in UI-Modelle (mit JVM-Safe Fallback für die Formatierung).
 - `util/DateUtilsTest.kt`: Logiktests für Datumsberechnungen (Alter, Tage bis Geburtstag, etc.).
+- `domain/usecase/GetPendingNotificationsUseCaseTest.kt`: JVM Unit-Tests zur Überprüfung der Benachrichtigungsregeln und Fälligkeits-Kalkulation.
+- `domain/usecase/SnoozeNotificationUseCaseTest.kt`: JVM Unit-Tests zur Überprüfung der Schlummer-Delegation.
 - `AppViewModelTest.kt`: Tests für `AppViewModel`: Verifikation der initialen `AppSettings`-Emission, reaktiver Settings-Propagation und einmaligem `syncScheduling()`-Aufruf im `init`.
 - `ui/screens/home/HomeViewModelSearchTest.kt`: Tests der Such- und Filterlogik im `HomeViewModel`. **Feature-co-located** neben `HomeViewModel.kt`.
 - `ui/screens/home/HomeViewModelTest.kt`: Tests für das reaktive State-Management und die UI-Filterung im `HomeViewModel`. **Feature-co-located** neben `HomeViewModel.kt`.

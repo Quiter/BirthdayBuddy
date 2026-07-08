@@ -15,11 +15,16 @@ import kotlinx.coroutines.launch
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 
+import com.heckmannch.birthdaybuddy.domain.usecase.SnoozeNotificationUseCase
+
 @AndroidEntryPoint
 class NotificationActionReceiver : BroadcastReceiver() {
 
     @Inject
     lateinit var notificationRepository: NotificationRepository
+
+    @Inject
+    lateinit var snoozeNotificationUseCase: SnoozeNotificationUseCase
 
     override fun onReceive(context: Context?, intent: Intent?) {
         if (context == null || intent == null) return
@@ -35,20 +40,12 @@ class NotificationActionReceiver : BroadcastReceiver() {
                 context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
             notificationManager.cancel(notificationId)
 
-            // 2. Erneute Erinnerung in 2 Stunden planen
-            val data = Data.Builder()
-                .putInt("DAYS_BEFORE", daysBefore)
-                .putInt("PENDING_ID", pendingId)
-                .putStringArray("LOOKUP_KEYS", lookupKeys)
-                .build()
-
-            val snoozeRequest = OneTimeWorkRequestBuilder<SnoozeWorker>()
-                .setInitialDelay(2, TimeUnit.HOURS)
-                .setInputData(data)
-                .addTag("notification_snooze")
-                .build()
-
-            WorkManager.getInstance(context).enqueue(snoozeRequest)
+            // 2. Erneute Erinnerung in 2 Stunden planen (via Use Case)
+            snoozeNotificationUseCase(
+                pendingId = pendingId,
+                daysBefore = daysBefore,
+                lookupKeys = lookupKeys.toList()
+            )
         } else if (intent.action == "DONE") {
             // 1. Aktuelle Benachrichtigung schließen
             val notificationManager =

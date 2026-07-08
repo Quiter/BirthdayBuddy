@@ -282,3 +282,9 @@
     - **Neue Testsuite:** Erstellung von [CalendarSyncRepositoryTest.kt](file:///c:/Users/chris/AndroidStudioProjects/BirthdayBuddy/app/src/androidTest/java/com/heckmannch/birthdaybuddy/data/repository/CalendarSyncRepositoryTest.kt) zur Verifikation, dass alle Termin-Inserts über den korrekten Sync-Adapter-URI durchgeführt werden.
     - **Kompilierungs-Fix:** Fehlender Import für `NotificationHelper` in [NotificationHelperTest.kt](file:///c:/Users/chris/AndroidStudioProjects/BirthdayBuddy/app/src/androidTest/java/com/heckmannch/birthdaybuddy/ui/screens/settings/notifications/components/NotificationHelperTest.kt) korrigiert.
 
+228. **Einführung des Notification-Domain-Layers (Architecture & Code Quality):**
+    - **GetPendingNotificationsUseCase:** Kapselung der Ermittlung fälliger Benachrichtigungen (Geburtstage, Hochzeitstage mit Ehepartner-Kopplung, Namenstage) basierend auf aktiven Regeln und der Vermeidung bereits geplanter Erinnerungen.
+    - **SnoozeNotificationUseCase:** Kapselung der Schlummer-Erinnerungslogik (Delegation an den plattformspezifischen Scheduler).
+    - **Refactoring:** Bereinigung des `NotificationWorker` und `NotificationActionReceiver` zur Entkopplung von Android-Framework-Abhängigkeiten und reiner Geschäftslogik.
+    - **Unit-Tests:** Implementierung umfassender JVM-Unit-Tests in `GetPendingNotificationsUseCaseTest` (Regel-Aktivierung, Geburtstag, Name Day, Joint-Anniversary, Duplikat-Filterung) und `SnoozeNotificationUseCaseTest`.
+
