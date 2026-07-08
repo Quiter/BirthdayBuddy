@@ -288,3 +288,9 @@
     - **Refactoring:** Bereinigung des `NotificationWorker` und `NotificationActionReceiver` zur Entkopplung von Android-Framework-Abhängigkeiten und reiner Geschäftslogik.
     - **Unit-Tests:** Implementierung umfassender JVM-Unit-Tests in `GetPendingNotificationsUseCaseTest` (Regel-Aktivierung, Geburtstag, Name Day, Joint-Anniversary, Duplikat-Filterung) und `SnoozeNotificationUseCaseTest`.
 
+229. **Einführung des Couple-Linking-Domain-Layers (Architecture & Code Quality):**
+    - **GetCoupleSuggestionUseCase:** Kapselung der Ermittlung von Ehepartner-Kopplungsvorschlägen für den Hochzeitstag-Filter (unterstützt vollautomatisch unterschiedliche Nachnamen).
+    - **Link- / Unlink- / Ignore-UseCases:** Auslagerung der entsprechenden DB-Schreibaktionen aus dem `HomeViewModel` in eigenständige Use Cases (`LinkAsCoupleUseCase`, `UnlinkCoupleUseCase`, `IgnoreCoupleSuggestionUseCase`).
+    - **Refactoring:** Bereinigung des `HomeViewModel` und Anpassung der Testumgebungen (`HomeViewModelTest`, `HomeViewModelSearchTest`).
+    - **Unit-Tests:** Erstellung von `GetCoupleSuggestionUseCaseTest` mit expliziter Absicherung für ungleiche Nachnamen bei gleichem Hochzeitsdatum.
+

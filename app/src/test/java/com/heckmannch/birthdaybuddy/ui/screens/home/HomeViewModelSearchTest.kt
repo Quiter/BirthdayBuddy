@@ -8,6 +8,10 @@ import com.heckmannch.birthdaybuddy.data.mapper.ContactMapper
 import com.heckmannch.birthdaybuddy.data.repository.ContactRepository
 import com.heckmannch.birthdaybuddy.data.repository.TimeRepository
 import com.heckmannch.birthdaybuddy.domain.usecase.GetContactsUseCase
+import com.heckmannch.birthdaybuddy.domain.usecase.GetCoupleSuggestionUseCase
+import com.heckmannch.birthdaybuddy.domain.usecase.IgnoreCoupleSuggestionUseCase
+import com.heckmannch.birthdaybuddy.domain.usecase.LinkAsCoupleUseCase
+import com.heckmannch.birthdaybuddy.domain.usecase.UnlinkCoupleUseCase
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -44,6 +48,10 @@ class HomeViewModelSearchTest {
     private val contactRepository: ContactRepository = mock()
     private val timeRepository: TimeRepository = mock()
     private val getContactsUseCase = GetContactsUseCase(ContactMapper())
+    private val getCoupleSuggestionUseCase = GetCoupleSuggestionUseCase(contactRepository)
+    private val linkAsCoupleUseCase = LinkAsCoupleUseCase(contactRepository)
+    private val unlinkCoupleUseCase = UnlinkCoupleUseCase(contactRepository)
+    private val ignoreCoupleSuggestionUseCase = IgnoreCoupleSuggestionUseCase(contactRepository)
 
     @Before
     fun setup() {
@@ -78,6 +86,10 @@ class HomeViewModelSearchTest {
         viewModel = HomeViewModel(
             contactRepository = contactRepository,
             getContactsUseCase = getContactsUseCase,
+            getCoupleSuggestionUseCase = getCoupleSuggestionUseCase,
+            linkAsCoupleUseCase = linkAsCoupleUseCase,
+            unlinkCoupleUseCase = unlinkCoupleUseCase,
+            ignoreCoupleSuggestionUseCase = ignoreCoupleSuggestionUseCase,
             timeRepository = timeRepository,
         )
 
@@ -108,6 +120,10 @@ class HomeViewModelSearchTest {
         viewModel = HomeViewModel(
             contactRepository = contactRepository,
             getContactsUseCase = getContactsUseCase,
+            getCoupleSuggestionUseCase = getCoupleSuggestionUseCase,
+            linkAsCoupleUseCase = linkAsCoupleUseCase,
+            unlinkCoupleUseCase = unlinkCoupleUseCase,
+            ignoreCoupleSuggestionUseCase = ignoreCoupleSuggestionUseCase,
             timeRepository = timeRepository,
         )
 

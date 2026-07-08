@@ -7,9 +7,12 @@ import com.heckmannch.birthdaybuddy.data.repository.ContactRepository
 import com.heckmannch.birthdaybuddy.data.repository.TimeRepository
 import com.heckmannch.birthdaybuddy.domain.model.GiftIdea
 import com.heckmannch.birthdaybuddy.domain.usecase.GetContactsUseCase
+import com.heckmannch.birthdaybuddy.domain.usecase.GetCoupleSuggestionUseCase
+import com.heckmannch.birthdaybuddy.domain.usecase.IgnoreCoupleSuggestionUseCase
+import com.heckmannch.birthdaybuddy.domain.usecase.LinkAsCoupleUseCase
+import com.heckmannch.birthdaybuddy.domain.usecase.UnlinkCoupleUseCase
 import com.heckmannch.birthdaybuddy.ui.model.CoupleSuggestionUiModel
 import com.heckmannch.birthdaybuddy.ui.model.HomeUiState
-import com.heckmannch.birthdaybuddy.util.getInitials
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.FlowPreview
@@ -37,6 +40,10 @@ import kotlin.time.Duration.Companion.milliseconds
 class HomeViewModel @Inject constructor(
     private val contactRepository: ContactRepository,
     getContactsUseCase: GetContactsUseCase,
+    getCoupleSuggestionUseCase: GetCoupleSuggestionUseCase,
+    private val linkAsCoupleUseCase: LinkAsCoupleUseCase,
+    private val unlinkCoupleUseCase: UnlinkCoupleUseCase,
+    private val ignoreCoupleSuggestionUseCase: IgnoreCoupleSuggestionUseCase,
     timeRepository: TimeRepository,
 ) : ViewModel() {
 
@@ -157,33 +164,9 @@ class HomeViewModel @Inject constructor(
         labels
     }
 
-    val coupleSuggestion: Flow<CoupleSuggestionUiModel?> = combine(
-        contactRepository.potentialCouples,
-        contactRepository.ignoredCouplePairs,
-        _userUiState.map { it.selectedLabel }.distinctUntilChanged(),
-    ) { potentials, ignoredPairs, label ->
-        if (label != ContactLabels.LABEL_ANNIVERSARY || potentials.isEmpty()) return@combine null
-
-        potentials.firstOrNull { couple ->
-            val pairKey = if (couple.firstLookupKey < couple.secondLookupKey) {
-                "${couple.firstLookupKey}:${couple.secondLookupKey}"
-            } else {
-                "${couple.secondLookupKey}:${couple.firstLookupKey}"
-            }
-            !ignoredPairs.contains(pairKey)
-        }?.let { couple ->
-            CoupleSuggestionUiModel(
-                firstLookupKey = couple.firstLookupKey,
-                firstName = couple.firstName,
-                firstImageUri = couple.firstImageUri,
-                firstInitials = couple.firstName.getInitials(),
-                secondLookupKey = couple.secondLookupKey,
-                secondName = couple.secondName,
-                secondImageUri = couple.secondImageUri,
-                secondInitials = couple.secondName.getInitials()
-            )
-        }
-    }.flowOn(Dispatchers.Default)
+    val coupleSuggestion: Flow<CoupleSuggestionUiModel?> = getCoupleSuggestionUseCase(
+        selectedLabel = _userUiState.map { it.selectedLabel }.distinctUntilChanged()
+    ).flowOn(Dispatchers.Default)
 
     val uiState: StateFlow<HomeUiState> = combine(
         filteredContacts,
@@ -333,19 +316,19 @@ class HomeViewModel @Inject constructor(
 
             is HomeIntent.LinkAsCouple -> {
                 viewModelScope.launch {
-                    contactRepository.linkAsCouple(intent.lookupKey1, intent.lookupKey2)
+                    linkAsCoupleUseCase(intent.lookupKey1, intent.lookupKey2)
                 }
             }
 
             is HomeIntent.UnlinkCouple -> {
                 viewModelScope.launch {
-                    contactRepository.unlinkCouple(intent.lookupKey)
+                    unlinkCoupleUseCase(intent.lookupKey)
                 }
             }
 
             is HomeIntent.IgnoreCoupleSuggestion -> {
                 viewModelScope.launch {
-                    contactRepository.ignoreCoupleSuggestion(intent.lookupKey1, intent.lookupKey2)
+                    ignoreCoupleSuggestionUseCase(intent.lookupKey1, intent.lookupKey2)
                 }
             }
 
