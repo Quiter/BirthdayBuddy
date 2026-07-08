@@ -348,3 +348,9 @@
         - Umgehung des Hängens/Deadlocks bei Room-Transaktionen (`withTransaction`) auf gemockten Datenbanken im JVM-Kontext durch reflexionsbasierte Instanziierung von `TransactionElement(ContinuationInterceptor)`.
         - Standard-Dispatcher-Umleitung für Datenbank-Transaktionen über Executor-Mocking (`transactionExecutor`, `queryExecutor`) auf `it.run()`.
     - **Validierung:** Erfolgreicher Durchlauf aller Tests im Gradle-Task `testDebugUnitTest`.
+
+237. **Übersetzung verbleibender deutscher Kommentare ins Englische (Code Quality / Documentation Safety):**
+    - **Projekt-Richtlinie (§1):** Vollständige Übersetzung aller verbleibenden deutschen Inline-Kommentare und KDoc-Texte ins Englische zur Durchsetzung einheitlicher englischer Entwicklerdokumentation.
+    - **ContactRepositoryImpl.kt:** Übersetzung von 18 internen Implementierungskommentaren zur Transaktionssteuerung, Synchronisation, Diffs, Rollbacks und Caching.
+    - **ContactMapper.kt:** Übersetzung des KDoc-Klassenkommentars sowie von Hilfskommentaren zur Datumsformatierung und Test-Fallbacks.
+    - **Audits:** Verifikation von `HomeViewModel.kt` und `GetContactsUseCase.kt` auf Freiheit von deutschen Kommentaren.

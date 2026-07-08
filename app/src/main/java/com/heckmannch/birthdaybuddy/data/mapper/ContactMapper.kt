@@ -18,20 +18,20 @@ import java.util.Locale
 import javax.inject.Inject
 
 /**
- * Hilfsklasse zur Umwandlung von Datenbank-Modellen in UI-Modelle.
+ * Helper class for converting database models into UI models.
  */
 @Reusable
 class ContactMapper @Inject constructor() {
     private val dateFormatter = DateTimeFormatter.ofLocalizedDate(FormatStyle.LONG)
 
-    // Erzeugt das beste Format NUR für Tag/Monat basierend auf der Sprache des Nutzers (z.B. "12. Mai" vs "May 12")
+    // Creates the best format ONLY for day/month based on the user's locale (e.g. "12. Mai" vs "May 12")
     private val dayMonthFormatter = try {
         DateTimeFormatter.ofPattern(
             DateFormat.getBestDateTimePattern(Locale.getDefault(), "dMMMM"),
             Locale.getDefault(),
         )
     } catch (_: Throwable) {
-        // Fallback für lokale JVM-Tests (wo DateFormat nicht gemockt ist)
+        // Fallback for local JVM tests (where DateFormat is not mocked)
         if (Locale.getDefault().language == Locale.GERMAN.language) {
             DateTimeFormatter.ofPattern("d. MMMM", Locale.getDefault())
         } else {
