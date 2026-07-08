@@ -29,6 +29,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 
@@ -74,7 +75,8 @@ fun BirthdayDetailPane(
     Card(
         modifier = modifier
             .fillMaxSize()
-            .padding(SpacingNormal),
+            .padding(SpacingNormal)
+            .testTag("birthday_detail_pane"),
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.surfaceContainerHigh
         ),
@@ -211,6 +213,7 @@ fun BirthdayDetailPane(
                 modifier = Modifier
                     .align(Alignment.TopEnd)
                     .padding(SpacingSmall)
+                    .testTag("detail_close_button")
             ) {
                 Icon(
                     imageVector = Icons.Default.Close,

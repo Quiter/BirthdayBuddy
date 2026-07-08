@@ -23,6 +23,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -117,7 +118,9 @@ fun OnboardingFooter(
                     TextButton(
                         onClick = onNext,
                         enabled = isNextEnabled,
-                        modifier = Modifier.width(OnboardingFooterButtonWidth)
+                        modifier = Modifier
+                            .width(OnboardingFooterButtonWidth)
+                            .testTag("onboarding_next_button")
                     ) {
                         Text(
                             text = stringResource(R.string.onboarding_next),

@@ -15,6 +15,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -121,6 +122,7 @@ fun ReadyPage(
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(SearchBarHeight)
+                    .testTag("onboarding_start_button")
             ) {
                 Text(stringResource(R.string.onboarding_ready_btn))
             }

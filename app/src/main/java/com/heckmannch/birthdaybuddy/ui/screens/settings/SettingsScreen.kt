@@ -45,6 +45,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
@@ -246,7 +247,10 @@ private fun SettingsContent(
                 LargeTopAppBar(
                     title = { Text(stringResource(R.string.settings_title)) },
                     navigationIcon = {
-                        IconButton(onClick = onNavigateBack) {
+                        IconButton(
+                            onClick = onNavigateBack,
+                            modifier = Modifier.testTag("settings_back_button")
+                        ) {
                             Icon(
                                 imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                                 contentDescription = stringResource(R.string.notifications_back),
@@ -359,7 +363,10 @@ private fun SettingsContent(
                                 TopAppBar(
                                     title = { Text(stringResource(R.string.settings_title)) },
                                     navigationIcon = {
-                                        IconButton(onClick = onNavigateBack) {
+                                        IconButton(
+                                            onClick = onNavigateBack,
+                                            modifier = Modifier.testTag("settings_back_button")
+                                        ) {
                                             Icon(
                                                 imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                                                 contentDescription = stringResource(R.string.notifications_back),

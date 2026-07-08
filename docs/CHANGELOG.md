@@ -122,3 +122,18 @@
         - Bereinigung der nicht mehr benötigten Imports (Entfernung von `import androidx.compose.ui.unit.dp`).
     - **Verifikation:** Erfolgreiche Kompilierung und Durchlauf aller Unit-Tests.
 
+242. **Refactoring der Geschenkideen-Sektion in `BirthdayItem.kt` (Code Quality & Maintainability):**
+    - **Extraktion:** Der expandierbare Geschenkideen-Bereich (Toggle-Row, LaunchedEffect zur Auto-Expansion und die Einbindung der `GiftIdeaList`) wurde aus der Haupt-Composable `BirthdayItem` in eine private Hilfs-Composable `BirthdayItemGiftIdeaSection` am Ende der Datei [BirthdayItem.kt](file:///c:/Users/chris/AndroidStudioProjects/BirthdayBuddy/app/src/main/java/com/heckmannch/birthdaybuddy/ui/screens/home/components/list/BirthdayItem.kt) ausgelagert.
+    - **Einschränkungen & Kapselung:** Alle `remember`-Schlüssel (inkl. `remember(isExpanded)`), `LaunchedEffect`-Blöcke und Padding-Regeln blieben unverändert erhalten. Die Lokalisierung des `FocusManager` wurde sauber in die neue Hilfs-Composable verlagert.
+    - **Code-Bereinigung:** Reduzierung der Komplexität und Größe der Haupt-Kompensation `BirthdayItem` zur besseren Lesbarkeit und Wartbarkeit.
+    - **Verifikation:** Erfolgreiche Ausführung von `.\gradlew compileDebugKotlin` und `.\gradlew testDebugUnitTest`.
+
+243. **Aktualisierung der Baseline Profiles & Journeys für Navigation 3 & Adaptive Layouts (Performance / DX):**
+    - **Pre-granting von Berechtigungen:** Integration von ADB-Shell-Befehlen im `BaselineProfileGenerator` zur automatischen Freigabe aller kritischen Berechtigungen (`READ_CONTACTS`, `WRITE_CONTACTS`, `POST_NOTIFICATIONS`, `READ_CALENDAR`, `WRITE_CALENDAR`) vor dem App-Start. Dadurch wird das Hängenbleiben an System-Berechtigungsdialogen vermieden.
+    - **Robuste Onboarding-Durchquerung:** Hinzufügen von Compose `testTag`s (`onboarding_next_button` in [OnboardingFooter.kt](file:///c:/Users/chris/AndroidStudioProjects/BirthdayBuddy/app/src/main/java/com/heckmannch/birthdaybuddy/ui/screens/onboarding/components/OnboardingFooter.kt) und `onboarding_start_button` in [ReadyPage.kt](file:///c:/Users/chris/AndroidStudioProjects/BirthdayBuddy/app/src/main/java/com/heckmannch/birthdaybuddy/ui/screens/onboarding/components/ReadyPage.kt)), um den Onboarding-Flow bei Erstinstallationen vollautomatisch und zuverlässig zu durchlaufen.
+    - **FastScrollbar-Erfassung:** Aktualisierung der Scroll-Journey in [BaselineProfileGenerator.kt](file:///c:/Users/chris/AndroidStudioProjects/BirthdayBuddy/baselineprofile/src/main/java/com/heckmannch/birthdaybuddy/baselineprofile/BaselineProfileGenerator.kt) zur gezielten Interaktion mit der `FastScrollbar` (mittels `By.desc("Scrollbar")` und `device.drag`). Ein Fallback auf Standard-List-Flinging schützt den Testlauf bei geringer Kontaktanzahl.
+    - **Adaptive Detail-Pane-Unterstützung:** Anpassung der Detail-Journey, um sowohl das Aufklappen von Elementen im Kompakt-Modus (Phones) als auch das Öffnen/Schließen des neuen Detail-Panes im geteilten Modus (Tablets/Foldables) abzudecken. Dafür wurden die Tags `birthday_detail_pane` und `detail_close_button` in [BirthdayDetailPane.kt](file:///c:/Users/chris/AndroidStudioProjects/BirthdayBuddy/app/src/main/java/com/heckmannch/birthdaybuddy/ui/screens/home/components/list/BirthdayDetailPane.kt) eingeführt.
+    - **Settings-Navigation:** Ergänzung von `settings_back_button` in [SettingsScreen.kt](file:///c:/Users/chris/AndroidStudioProjects/BirthdayBuddy/app/src/main/java/com/heckmannch/birthdaybuddy/ui/screens/settings/SettingsScreen.kt) zur zuverlässigen Rückkehr aus den App-Einstellungen.
+    - **Verifikation:** Erfolgreiche Validierung des Build-Setups unter AGP 9.2.1.
+
+

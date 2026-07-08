@@ -83,10 +83,8 @@ fun BirthdayItem(
     modifier: Modifier = Modifier,
     isSelected: Boolean = false,
 ) {
-    val focusManager = LocalFocusManager.current
     val haptic = LocalHapticFeedback.current
 
-    var giftIdeasExpanded by remember(isExpanded) { mutableStateOf(value = false) }
     val showDatePicker = remember { mutableStateOf(value = false) }
 
     if (showDatePicker.value) {
@@ -97,13 +95,6 @@ fun BirthdayItem(
                 actions.onUpdateBirthday(contact.contactId, date)
             }
         )
-    }
-
-    // Automatisches Aufklappen, wenn eine neue Idee hinzugefügt wurde
-    LaunchedEffect(newlyAddedIdeaId) {
-        if (newlyAddedIdeaId != null) {
-            giftIdeasExpanded = true
-        }
     }
 
     val borderStroke = remember(contact.isToday, contact.birthdayTier) {
@@ -252,63 +243,12 @@ fun BirthdayItem(
                         color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = AlphaEmphasisLow)
                     )
 
-                    // Toggle-Bereich für Geschenkideen
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clickable { giftIdeasExpanded = !giftIdeasExpanded }
-                            .padding(horizontal = SpacingNormal, vertical = SpacingMedium)
-                            .testTag("gift_ideas_toggle"),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(SpacingMedium)
-                    ) {
-                        Surface(
-                            modifier = Modifier.size(IconSizeLarge),
-                            shape = MaterialTheme.shapes.small,
-                            color = MaterialTheme.colorScheme.primaryContainer,
-                            contentColor = MaterialTheme.colorScheme.onPrimaryContainer
-                        ) {
-                            Box(contentAlignment = Alignment.Center) {
-                                Icon(
-                                    imageVector = Icons.Default.CardGiftcard,
-                                    contentDescription = null,
-                                    modifier = Modifier.size(IconSizeSmall)
-                                )
-                            }
-                        }
-
-                        Text(
-                            text = stringResource(R.string.item_action_gifts),
-                            style = MaterialTheme.typography.titleSmall,
-                            modifier = Modifier.weight(1f)
-                        )
-
-                        Icon(
-                            imageVector = if (giftIdeasExpanded) Icons.Default.ExpandLess else Icons.Default.ExpandMore,
-                            contentDescription = null,
-                            tint = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                    }
-
-                    if (giftIdeasExpanded) {
-                        GiftIdeaList(
-                            giftIdeas = contact.giftIdeas,
-                            newlyAddedId = newlyAddedIdeaId,
-                            onAddNewIdea = { actions.onAddGiftIdea(contact.lookupKey) },
-                            onCheckedChange = { idea, checked ->
-                                actions.onToggleGiftIdea(contact.lookupKey, idea, checked)
-                            },
-                            onTextChange = { idea, newText ->
-                                actions.onUpdateGiftIdeaText(contact.lookupKey, idea.id, newText)
-                            },
-                            onDelete = { idea ->
-                                actions.onDeleteGiftIdea(contact.lookupKey, idea.id)
-                            }
-                        ) {
-                            if (it.text.isNotBlank()) actions.onAddGiftIdea(contact.lookupKey)
-                            else focusManager.clearFocus()
-                        }
-                    }
+                    BirthdayItemGiftIdeaSection(
+                        contact = contact,
+                        isExpanded = isExpanded,
+                        newlyAddedIdeaId = newlyAddedIdeaId,
+                        actions = actions,
+                    )
                 }
             }
 
@@ -317,6 +257,85 @@ fun BirthdayItem(
                     colors = confettiColors,
                     modifier = Modifier.matchParentSize()
                 )
+            }
+        }
+    }
+}
+
+@Composable
+private fun BirthdayItemGiftIdeaSection(
+    contact: ContactUiModel,
+    isExpanded: Boolean,
+    newlyAddedIdeaId: String?,
+    actions: HomeActions,
+    modifier: Modifier = Modifier,
+) {
+    var giftIdeasExpanded by remember(isExpanded) { mutableStateOf(value = false) }
+    val focusManager = LocalFocusManager.current
+
+    // Automatisches Aufklappen, wenn eine neue Idee hinzugefügt wurde
+    LaunchedEffect(newlyAddedIdeaId) {
+        if (newlyAddedIdeaId != null) {
+            giftIdeasExpanded = true
+        }
+    }
+
+    Column(modifier = modifier) {
+        // Toggle-Bereich für Geschenkideen
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .clickable { giftIdeasExpanded = !giftIdeasExpanded }
+                .padding(horizontal = SpacingNormal, vertical = SpacingMedium)
+                .testTag("gift_ideas_toggle"),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(SpacingMedium)
+        ) {
+            Surface(
+                modifier = Modifier.size(IconSizeLarge),
+                shape = MaterialTheme.shapes.small,
+                color = MaterialTheme.colorScheme.primaryContainer,
+                contentColor = MaterialTheme.colorScheme.onPrimaryContainer
+            ) {
+                Box(contentAlignment = Alignment.Center) {
+                    Icon(
+                        imageVector = Icons.Default.CardGiftcard,
+                        contentDescription = null,
+                        modifier = Modifier.size(IconSizeSmall)
+                    )
+                }
+            }
+
+            Text(
+                text = stringResource(R.string.item_action_gifts),
+                style = MaterialTheme.typography.titleSmall,
+                modifier = Modifier.weight(1f)
+            )
+
+            Icon(
+                imageVector = if (giftIdeasExpanded) Icons.Default.ExpandLess else Icons.Default.ExpandMore,
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        }
+
+        if (giftIdeasExpanded) {
+            GiftIdeaList(
+                giftIdeas = contact.giftIdeas,
+                newlyAddedId = newlyAddedIdeaId,
+                onAddNewIdea = { actions.onAddGiftIdea(contact.lookupKey) },
+                onCheckedChange = { idea, checked ->
+                    actions.onToggleGiftIdea(contact.lookupKey, idea, checked)
+                },
+                onTextChange = { idea, newText ->
+                    actions.onUpdateGiftIdeaText(contact.lookupKey, idea.id, newText)
+                },
+                onDelete = { idea ->
+                    actions.onDeleteGiftIdea(contact.lookupKey, idea.id)
+                }
+            ) {
+                if (it.text.isNotBlank()) actions.onAddGiftIdea(contact.lookupKey)
+                else focusManager.clearFocus()
             }
         }
     }
