@@ -9,7 +9,6 @@ import androidx.room.withTransaction
 import com.heckmannch.birthdaybuddy.data.local.AppDatabase
 import com.heckmannch.birthdaybuddy.data.local.AppSettings
 import com.heckmannch.birthdaybuddy.data.local.AppSettingsDao
-import com.heckmannch.birthdaybuddy.data.local.Contact
 import com.heckmannch.birthdaybuddy.data.local.ContactDao
 import com.heckmannch.birthdaybuddy.data.local.ContactUserData
 import com.heckmannch.birthdaybuddy.data.local.ContactUserDataDao
@@ -17,6 +16,8 @@ import com.heckmannch.birthdaybuddy.data.local.LabelConfig
 import com.heckmannch.birthdaybuddy.data.local.LabelConfigDao
 import com.heckmannch.birthdaybuddy.data.local.PotentialCouple
 import com.heckmannch.birthdaybuddy.data.local.SettingsDatabase
+import com.heckmannch.birthdaybuddy.data.mapper.ContactDbMapper
+import com.heckmannch.birthdaybuddy.domain.model.Contact
 import com.heckmannch.birthdaybuddy.domain.model.GiftIdea
 import com.heckmannch.birthdaybuddy.util.WidgetUpdater
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -43,9 +44,11 @@ class ContactRepository @Inject constructor(
     private val widgetUpdater: WidgetUpdater,
     private val appDatabase: AppDatabase,
     private val settingsDatabase: SettingsDatabase,
+    private val contactDbMapper: ContactDbMapper,
 ) {
 
     val allContacts: Flow<List<Contact>> = contactDao.getAllContacts()
+        .map { entities -> entities.map { contactDbMapper.toDomain(it) } }
         .distinctUntilChanged()
     val potentialCouples: Flow<List<PotentialCouple>> = contactDao.getPotentialCouples()
         .distinctUntilChanged()
@@ -69,7 +72,7 @@ class ContactRepository @Inject constructor(
 
 
     suspend fun getAllContactsImmediate(): List<Contact> = withContext(Dispatchers.IO) {
-        contactDao.getAllContactsImmediate()
+        contactDao.getAllContactsImmediate().map { contactDbMapper.toDomain(it) }
     }
 
     /**
@@ -117,7 +120,8 @@ class ContactRepository @Inject constructor(
                 }
 
                 // 4. Batch Update via Transaction
-                contactDao.refreshContacts(finalContacts)
+                val finalEntities = finalContacts.map { contactDbMapper.toEntity(it) }
+                contactDao.refreshContacts(finalEntities)
 
                 // 5. Kalender synchronisieren, falls aktiviert
                 val currentSettings = appSettingsDao.getSettingsImmediate() ?: AppSettings()

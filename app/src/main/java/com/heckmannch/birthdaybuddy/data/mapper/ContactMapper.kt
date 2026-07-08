@@ -1,7 +1,7 @@
 package com.heckmannch.birthdaybuddy.data.mapper
 
 import android.text.format.DateFormat
-import com.heckmannch.birthdaybuddy.data.local.Contact
+import com.heckmannch.birthdaybuddy.domain.model.Contact
 import com.heckmannch.birthdaybuddy.ui.model.BirthdayTier
 import com.heckmannch.birthdaybuddy.ui.model.ContactUiModel
 import com.heckmannch.birthdaybuddy.ui.model.EventType

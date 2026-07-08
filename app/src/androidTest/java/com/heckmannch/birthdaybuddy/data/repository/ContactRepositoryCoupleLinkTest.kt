@@ -6,10 +6,10 @@ import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.google.common.truth.Truth.assertThat
 import com.heckmannch.birthdaybuddy.data.local.AppDatabase
-import com.heckmannch.birthdaybuddy.data.local.Contact
+import com.heckmannch.birthdaybuddy.data.local.ContactEntity
 import com.heckmannch.birthdaybuddy.data.local.ContactUserData
 import com.heckmannch.birthdaybuddy.data.local.SettingsDatabase
-import com.heckmannch.birthdaybuddy.util.WidgetUpdater
+import com.heckmannch.birthdaybuddy.data.mapper.ContactDbMapper
 import kotlinx.coroutines.test.runTest
 import org.junit.After
 import org.junit.Before
@@ -32,7 +32,7 @@ class ContactRepositoryCoupleLinkTest {
     private lateinit var settingsDb: SettingsDatabase
     private lateinit var repository: ContactRepository
 
-    private fun makeContact(lookupKey: String, name: String) = Contact(
+    private fun makeContact(lookupKey: String, name: String) = ContactEntity(
         contactId = lookupKey,
         lookupKey = lookupKey,
         fullName = name
@@ -59,9 +59,10 @@ class ContactRepositoryCoupleLinkTest {
             systemContactDataSource = mock(),
             giftIdeaBackupManager = mock(),
             calendarSyncRepository = mock(),
-            widgetUpdater = mock<WidgetUpdater>(),
+            widgetUpdater = mock(),
             appDatabase = appDb,
             settingsDatabase = settingsDb,
+            contactDbMapper = ContactDbMapper(),
         )
     }
 

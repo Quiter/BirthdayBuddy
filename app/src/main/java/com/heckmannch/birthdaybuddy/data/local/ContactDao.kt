@@ -9,19 +9,19 @@ import kotlinx.coroutines.flow.Flow
 @Dao
 interface ContactDao {
     @Query("SELECT * FROM contacts ORDER BY birthday ASC")
-    fun getAllContacts(): Flow<List<Contact>>
+    fun getAllContacts(): Flow<List<ContactEntity>>
 
     @Query("SELECT * FROM contacts")
-    suspend fun getAllContactsImmediate(): List<Contact>
+    suspend fun getAllContactsImmediate(): List<ContactEntity>
 
     @Upsert
-    suspend fun upsertContacts(contacts: List<Contact>)
+    suspend fun upsertContacts(contacts: List<ContactEntity>)
 
     @Upsert
-    suspend fun upsertContact(contact: Contact)
+    suspend fun upsertContact(contact: ContactEntity)
 
     @Query("SELECT * FROM contacts WHERE lookupKey = :lookupKey")
-    suspend fun getContactByLookupKey(lookupKey: String): Contact?
+    suspend fun getContactByLookupKey(lookupKey: String): ContactEntity?
 
     @Query("DELETE FROM contacts")
     suspend fun deleteAllContacts()
@@ -30,7 +30,7 @@ interface ContactDao {
     suspend fun deleteContactsNotIn(keys: List<String>)
 
     @Transaction
-    suspend fun refreshContacts(contacts: List<Contact>) {
+    suspend fun refreshContacts(contacts: List<ContactEntity>) {
         if (contacts.isEmpty()) {
             deleteAllContacts()
         } else {

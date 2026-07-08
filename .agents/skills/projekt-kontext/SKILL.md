@@ -83,17 +83,20 @@ Dieses Dokument dient als systemischer Kontext für die Entwicklung von Features
 
 ### Verzeichnisstruktur
 - **`di/`**: Hilt-Konfigurationsmodule (z.B. [AppModule.kt](file:///c:/Users/chris/AndroidStudioProjects/BirthdayBuddy/di/AppModule.kt)).
+- **`domain/`**:
+  - **`model/`**: Reine Kotlin-Geschäftsmodelle (z.B. `Contact`, `GiftIdea`).
+  - **`usecase/`**: Fachliche Anwendungsfälle / Use Cases (z.B. `GetContactsUseCase`).
 - **`data/`**:
-  - **`local/`**: Room-Datenbank, Entitäten (`Contact`, `AppSettings`, `NotificationRule`, `PendingNotification`) und DAOs.
+  - **`local/`**: Room-Datenbank, Entitäten (`ContactEntity`, `AppSettings`, `NotificationRule`, `PendingNotification`) und DAOs.
   - **`repository/`**: Orchestriert den Datenfluss (z.B. `ContactRepository`, `CalendarSyncRepository`).
-  - **`mapper/`**: Mappings von DB-Entitäten zu UI-Modellen (z.B. `ContactMapper`).
+  - **`mapper/`**: Mappings von DB-Entitäten zu Domain-Modellen (`ContactDbMapper`) sowie UI-Modellen (`ContactMapper`).
 - **`ui/`**:
   - **`screens/`**: Feature-basierte Verzeichnisse (z.B. `home/`, `onboarding/`, `settings/`). Jedes Feature beherbergt Screen, Content, State, Actions und Sub-Komponenten.
   - **`model/`**: Immutable UI-Modelle, Enums (z.B. `BirthdayTier`, `EventType`) und UI-States.
   - **`components/`**: Globale, wiederverwendbare Custom-Komponenten (z.B. `ColorPickerDialog.kt`).
   - **`illustrations/`**: Native Compose-Animationen (`ContactsIllustration.kt`).
   - **`theme/`**: Jetpack Compose Design-System (Farben, Typografie, Formen, [Dimensions.kt](file:///c:/Users/chris/AndroidStudioProjects/BirthdayBuddy/ui/theme/Dimensions.kt)).
-- **`viewmodel/`**: Zentraler Ort für alle Screen-ViewModels.
+- **`viewmodel/`**: Zentraler Ort für alle Screen-ViewModels (veraltet, da ViewModels gemäß Clean Architecture idealerweise nahe bei den Screens liegen; existierende ViewModels verbleiben hier vorerst).
 - **`util/` & `ui/util/`**: Allgemeingültige Hilfsklassen (z.B. `DateUtils.kt`, `IntentExtras.kt`).
 - **`widget/`**: Glance App-Widget Implementierung.
 

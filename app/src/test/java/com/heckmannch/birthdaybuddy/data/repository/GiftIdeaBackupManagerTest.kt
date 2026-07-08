@@ -1,7 +1,7 @@
 package com.heckmannch.birthdaybuddy.data.repository
 
 import com.google.common.truth.Truth.assertThat
-import com.heckmannch.birthdaybuddy.data.local.Contact
+import com.heckmannch.birthdaybuddy.data.local.ContactEntity
 import com.heckmannch.birthdaybuddy.data.local.ContactDao
 import com.heckmannch.birthdaybuddy.data.local.ContactUserData
 import com.heckmannch.birthdaybuddy.data.local.ContactUserDataDao
@@ -31,7 +31,7 @@ class GiftIdeaBackupManagerTest {
         // Given
         val giftIdeas = listOf(GiftIdea(text = "Book"))
         val userData = listOf(ContactUserData(lookupKey = "key1", giftIdeas = giftIdeas))
-        val contacts = listOf(Contact(contactId = "1", lookupKey = "key1", fullName = "John Doe"))
+        val contacts = listOf(ContactEntity(contactId = "1", lookupKey = "key1", fullName = "John Doe"))
 
         whenever(contactUserDataDao.getAllUserDataImmediate()).thenReturn(userData)
         whenever(contactDao.getAllContactsImmediate()).thenReturn(contacts)
@@ -52,7 +52,7 @@ class GiftIdeaBackupManagerTest {
     fun `importGiftIdeas should delegate to repository and match by lookupKey`() = runTest {
         // Given
         val json = "[{\"lookupKey\": \"key1\", \"fullName\": \"John Doe\", \"giftIdeas\": \"[]\"}]"
-        val contacts = listOf(Contact(contactId = "1", lookupKey = "key1", fullName = "John Doe"))
+        val contacts = listOf(ContactEntity(contactId = "1", lookupKey = "key1", fullName = "John Doe"))
         whenever(contactDao.getAllContactsImmediate()).thenReturn(contacts)
 
         // When
@@ -69,7 +69,7 @@ class GiftIdeaBackupManagerTest {
         val json =
             "[{\"lookupKey\": \"wrong_key\", \"fullName\": \"John Doe\", \"giftIdeas\": \"[]\"}]"
         val contacts =
-            listOf(Contact(contactId = "1", lookupKey = "correct_key", fullName = "John Doe"))
+            listOf(ContactEntity(contactId = "1", lookupKey = "correct_key", fullName = "John Doe"))
         whenever(contactDao.getAllContactsImmediate()).thenReturn(contacts)
 
         // When

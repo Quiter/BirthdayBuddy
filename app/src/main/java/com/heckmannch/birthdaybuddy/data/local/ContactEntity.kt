@@ -8,7 +8,7 @@ import com.heckmannch.birthdaybuddy.domain.model.GiftIdea
 import java.time.LocalDate
 
 /**
- * Repräsentiert einen Kontakt mit Geburtstag.
+ * Repräsentiert einen Kontakt mit Geburtstag in der Datenbank.
  */
 @Entity(
     tableName = "contacts",
@@ -17,7 +17,7 @@ import java.time.LocalDate
         Index(value = ["birthday"])
     ]
 )
-data class Contact(
+data class ContactEntity(
     @PrimaryKey(autoGenerate = true)
     val localId: Long = 0,      // Interner Key für Room-Relationen
     val contactId: String,       // Aktuelle _ID vom Android-System (für schnellen Zugriff)

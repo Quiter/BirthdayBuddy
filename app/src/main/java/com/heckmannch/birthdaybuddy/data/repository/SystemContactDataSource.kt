@@ -4,7 +4,7 @@ import android.content.ContentProviderOperation
 import android.content.Context
 import android.provider.ContactsContract
 import android.util.Log
-import com.heckmannch.birthdaybuddy.data.local.Contact
+import com.heckmannch.birthdaybuddy.domain.model.Contact
 import com.heckmannch.birthdaybuddy.util.NO_YEAR_MARKER
 import com.heckmannch.birthdaybuddy.util.hasYear
 import dagger.hilt.android.qualifiers.ApplicationContext

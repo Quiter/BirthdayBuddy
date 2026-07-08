@@ -31,6 +31,7 @@ class NotificationRepositoryTest {
         val scheduler = object : NotificationScheduler {
             override fun scheduleNext(rules: List<com.heckmannch.birthdaybuddy.data.local.NotificationRule>) {}
             override fun cancelNotification() {}
+            override fun snoozeNotification(pendingId: Int, daysBefore: Int, lookupKeys: List<String>) {}
         }
         repository = NotificationRepository(
             notificationRuleDao = settingsDb.notificationRuleDao(),

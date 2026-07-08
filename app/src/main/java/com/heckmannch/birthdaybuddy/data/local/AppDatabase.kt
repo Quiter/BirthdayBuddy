@@ -9,7 +9,7 @@ import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
 
 @Database(
-    entities = [Contact::class, PendingNotification::class],
+    entities = [ContactEntity::class, PendingNotification::class],
     version = 9,
     exportSchema = true
 )
