@@ -87,7 +87,7 @@ class HomeViewModel @Inject constructor(
         .flowOn(Dispatchers.Default)
 
     init {
-        syncContacts()
+        onIntent(HomeIntent.SyncContacts())
     }
 
     private val searchKeywords = _userUiState
@@ -164,7 +164,7 @@ class HomeViewModel @Inject constructor(
                         )
                     }
                 }
-                triggerScrollToTop()
+                onIntent(HomeIntent.TriggerScrollToTop)
             }
 
             is HomeIntent.LabelSelected -> {
@@ -173,7 +173,7 @@ class HomeViewModel @Inject constructor(
                     if (state.selectedLabel == newLabel) state
                     else state.copy(selectedLabel = newLabel, isResettingFilter = true)
                 }
-                triggerScrollToTop()
+                onIntent(HomeIntent.TriggerScrollToTop)
             }
 
             is HomeIntent.ResetFilters -> {
@@ -184,7 +184,7 @@ class HomeViewModel @Inject constructor(
                         state
                     }
                 }
-                triggerScrollToTop()
+                onIntent(HomeIntent.TriggerScrollToTop)
             }
 
             is HomeIntent.AddGiftIdea -> {
@@ -288,30 +288,7 @@ class HomeViewModel @Inject constructor(
         }
     }
 
-    // --- Legacy / Compatibility Actions ---
-    fun onSearchQueryChange(newQuery: String) {
-        onIntent(HomeIntent.SearchQueryChanged(newQuery))
-    }
 
-    fun onLabelSelected(label: String?) {
-        onIntent(HomeIntent.LabelSelected(label))
-    }
-
-    fun resetFilters() {
-        onIntent(HomeIntent.ResetFilters)
-    }
-
-    fun syncContacts(showLoading: Boolean = false) {
-        onIntent(HomeIntent.SyncContacts(showLoading))
-    }
-
-    fun triggerScrollToTop() {
-        onIntent(HomeIntent.TriggerScrollToTop)
-    }
-
-    fun triggerSearchFocus() {
-        onIntent(HomeIntent.TriggerSearchFocus)
-    }
 }
 
 // --- Home MVI Intent Definition ---

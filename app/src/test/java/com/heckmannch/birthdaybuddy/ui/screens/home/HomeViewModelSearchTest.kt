@@ -97,7 +97,7 @@ class HomeViewModelSearchTest {
         )
 
         // Suche nach "Mustermann Max"
-        viewModel.onSearchQueryChange("Mustermann Max")
+        viewModel.onIntent(HomeIntent.SearchQueryChanged("Mustermann Max"))
 
         // Warten bis der State die Suche reflektiert und Ergebnisse liefert
         val state = viewModel.uiState
@@ -131,7 +131,7 @@ class HomeViewModelSearchTest {
             timeRepository = timeRepository,
         )
 
-        viewModel.onSearchQueryChange("  Max  ")
+        viewModel.onIntent(HomeIntent.SearchQueryChanged("  Max  "))
 
         val state = viewModel.uiState
             .filter { (it.searchQuery == "  Max  ") && (it.contacts != null) }

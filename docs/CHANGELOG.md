@@ -306,3 +306,9 @@
     - **Refactoring:** Entfernung der direkten Berechnung im `HomeViewModel` und stattdessen Verwendung des neuen Use Cases via Hilt-Injection.
     - **Unit-Tests:** Erstellung von `GetAvailableLabelsUseCaseTest` (Validierung von Label-Verhalten bei deaktivierten/aktivierten Filtern, Sortierung und Sonder-Labels) sowie Anpassung der Testumgebungen `HomeViewModelTest` und `HomeViewModelSearchTest`.
 
+232. **Konsolidierung des MVI-Prinzips im HomeViewModel (Architecture & Code Quality):**
+    - **Entfernung von Legacy-Wrapper-Methoden:** Die sechs verbleibenden Legacy-Eingabemethoden (`onSearchQueryChange()`, `onLabelSelected()`, `resetFilters()`, `syncContacts()`, `triggerScrollToTop()` und `triggerSearchFocus()`) wurden vollständig aus dem `HomeViewModel` entfernt, um eine parallele API zu vermeiden und das UDF/MVI-Prinzip zu stärken.
+    - **Direkte Intent-Delegation:** Alle Aufrufstellen (in `MainActivity.kt`, `SyncSettingsScreen.kt`, `HomeViewModel.kt` selbst und den Unit-Tests) wurden auf den zentralen `onIntent(...)`-Handler umgestellt.
+    - **Test-Stabilität:** Erfolgreiche Anpassung und Validierung der Unit-Tests (`HomeViewModelTest`, `HomeViewModelSearchTest`), um die korrekte Funktionalität nach dem Refactoring sicherzustellen.
+
+

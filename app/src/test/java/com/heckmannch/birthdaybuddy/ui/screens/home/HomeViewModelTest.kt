@@ -99,7 +99,7 @@ class HomeViewModelTest {
             ignoreCoupleSuggestionUseCase = ignoreCoupleSuggestionUseCase,
             timeRepository = timeRepository,
         )
-        viewModel.onLabelSelected("Freunde")
+        viewModel.onIntent(HomeIntent.LabelSelected("Freunde"))
 
         val state = viewModel.uiState.first { it.selectedLabel == "Freunde" }
         assertThat(state.selectedLabel).isEqualTo("Freunde")
@@ -136,7 +136,7 @@ class HomeViewModelTest {
             timeRepository = timeRepository,
         )
 
-        viewModel.onLabelSelected("Freunde")
+        viewModel.onIntent(HomeIntent.LabelSelected("Freunde"))
         val state = viewModel.uiState.first { state ->
             state.selectedLabel == "Freunde" && state.contacts?.size == 1
         }
@@ -224,7 +224,7 @@ class HomeViewModelTest {
         assertThat(initialLabelsState.availableLabels).contains(ContactLabels.LABEL_NAME_DAY)
 
         // Select Anniversary label
-        viewModel.onLabelSelected(ContactLabels.LABEL_ANNIVERSARY)
+        viewModel.onIntent(HomeIntent.LabelSelected(ContactLabels.LABEL_ANNIVERSARY))
 
         val anniversaryState = viewModel.uiState.first { state ->
             state.selectedLabel == ContactLabels.LABEL_ANNIVERSARY &&

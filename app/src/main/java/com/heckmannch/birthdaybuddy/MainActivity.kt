@@ -30,6 +30,7 @@ import com.heckmannch.birthdaybuddy.ui.navigation.AppNavHost
 import com.heckmannch.birthdaybuddy.ui.navigation.Home
 import com.heckmannch.birthdaybuddy.ui.navigation.NotificationSettings
 import com.heckmannch.birthdaybuddy.ui.navigation.Onboarding
+import com.heckmannch.birthdaybuddy.ui.screens.home.HomeIntent
 import com.heckmannch.birthdaybuddy.ui.screens.home.HomeViewModel
 import com.heckmannch.birthdaybuddy.ui.screens.onboarding.OnboardingViewModel
 import com.heckmannch.birthdaybuddy.ui.theme.BirthdayBuddyTheme
@@ -88,7 +89,7 @@ class MainActivity : ComponentActivity() {
                             val observer = LifecycleEventObserver { _, event ->
                                 if (event == Lifecycle.Event.ON_RESUME) {
                                     if ((System.currentTimeMillis() - lastInteractionTime) > (5 * 60 * 1000)) {
-                                        homeViewModel.resetFilters()
+                                        homeViewModel.onIntent(HomeIntent.ResetFilters)
                                     }
                                 }
                             }
@@ -97,7 +98,7 @@ class MainActivity : ComponentActivity() {
                         }
 
                         // Live-Sync bei Änderungen im System-Adressbuch
-                        ContactSyncEffect(onSyncNeeded = homeViewModel::syncContacts)
+                        ContactSyncEffect(onSyncNeeded = { homeViewModel.onIntent(HomeIntent.SyncContacts()) })
 
                         // React to intent changes (Initial start and onNewIntent)
                         LaunchedEffect(currentIntent) {
@@ -106,7 +107,7 @@ class MainActivity : ComponentActivity() {
                                     false
                                 ) == true
                             ) {
-                                homeViewModel.triggerScrollToTop()
+                                homeViewModel.onIntent(HomeIntent.TriggerScrollToTop)
                                 currentIntent?.removeExtra(IntentExtras.SCROLL_TO_TOP)
                             }
                             if (currentIntent?.getBooleanExtra(
@@ -126,7 +127,7 @@ class MainActivity : ComponentActivity() {
                             ) {
                                 backStack.clear()
                                 backStack.add(Home)
-                                homeViewModel.triggerSearchFocus()
+                                homeViewModel.onIntent(HomeIntent.TriggerSearchFocus)
                                 currentIntent?.removeExtra(IntentExtras.OPEN_SEARCH)
                             }
                             if (currentIntent?.getBooleanExtra(
@@ -134,7 +135,7 @@ class MainActivity : ComponentActivity() {
                                     false
                                 ) == true
                             ) {
-                                homeViewModel.syncContacts()
+                                homeViewModel.onIntent(HomeIntent.SyncContacts())
                                 currentIntent?.removeExtra(IntentExtras.OPEN_ADD_CONTACT)
                             }
                         }

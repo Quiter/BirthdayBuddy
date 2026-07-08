@@ -36,6 +36,7 @@ import com.heckmannch.birthdaybuddy.ui.components.AppResponsiveScaffold
 import com.heckmannch.birthdaybuddy.ui.components.InfoCard
 import com.heckmannch.birthdaybuddy.ui.components.SettingsCard
 import com.heckmannch.birthdaybuddy.ui.components.SettingsClickableRow
+import com.heckmannch.birthdaybuddy.ui.screens.home.HomeIntent
 import com.heckmannch.birthdaybuddy.ui.screens.home.HomeViewModel
 import com.heckmannch.birthdaybuddy.ui.theme.SpacingNormal
 import com.heckmannch.birthdaybuddy.ui.theme.SpacingSmall
@@ -62,14 +63,14 @@ fun SyncSettingsScreen(
         ActivityResultContracts.RequestPermission(),
     ) { isGranted ->
         if (isGranted) {
-            viewModel.syncContacts(showLoading = true)
+            viewModel.onIntent(HomeIntent.SyncContacts(showLoading = true))
         }
     }
 
     val onSyncClick: () -> Unit = {
         when (PackageManager.PERMISSION_GRANTED) {
             ContextCompat.checkSelfPermission(context, Manifest.permission.READ_CONTACTS) -> {
-                viewModel.syncContacts(showLoading = true)
+                viewModel.onIntent(HomeIntent.SyncContacts(showLoading = true))
             }
 
             else -> permissionLauncher.launch(Manifest.permission.READ_CONTACTS)
