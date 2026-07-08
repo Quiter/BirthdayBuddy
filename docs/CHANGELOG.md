@@ -311,4 +311,11 @@
     - **Direkte Intent-Delegation:** Alle Aufrufstellen (in `MainActivity.kt`, `SyncSettingsScreen.kt`, `HomeViewModel.kt` selbst und den Unit-Tests) wurden auf den zentralen `onIntent(...)`-Handler umgestellt.
     - **Test-Stabilität:** Erfolgreiche Anpassung und Validierung der Unit-Tests (`HomeViewModelTest`, `HomeViewModelSearchTest`), um die korrekte Funktionalität nach dem Refactoring sicherzustellen.
 
+233. **Explizites Offloading von CPU-intensiven Mappings auf `Dispatchers.Default` in `ContactRepositoryImpl` (Performance / Code Quality):**
+    - **Problem:** Die Flows `allContacts` und `labelConfigs` in [ContactRepositoryImpl.kt](file:///c:/Users/chris/AndroidStudioProjects/BirthdayBuddy/app/src/main/java/com/heckmannch/birthdaybuddy/data/repository/ContactRepositoryImpl.kt) führten pro Emission eine O(n)-Iteration über alle DB-Entitäten durch (`entities.map { mapper.toDomain(it) }`). Ohne explizites `flowOn` liefen diese CPU-intensiven Transformationen implizit auf dem Room-IO-Thread-Pool – entgegen der Projekt-Richtlinie §2.7, die rechenintensive Mappings auf `Dispatchers.Default` vorschreibt.
+    - **Lösung:** Einfügen von `.flowOn(Dispatchers.Default)` unmittelbar nach dem `.map`-Operator und vor `.distinctUntilChanged()` bei den Flows `allContacts` und `labelConfigs`.
+        - Die Reihenfolge `map → flowOn → distinctUntilChanged` ist korrekt: `flowOn` wirkt auf alle upstream-Operatoren (das Mapping), während `distinctUntilChanged` downstream auf dem Collector-Dispatcher läuft.
+        - Import `kotlinx.coroutines.flow.flowOn` ergänzt.
+    - **Analyse weiterer Flows:** Die vier verbleibenden `appSettingsDao`-Flows (`otherEventsEnabled`, `ignoredCouplePairs`, `labelsEnabled`, `potentialCouples`) führen ausschließlich triviale O(1)-Feldextraktionen durch und benötigen kein `flowOn`.
+    - **Tests:** Alle bestehenden JVM-Unit-Tests grün (die Änderung ist rein additiv hinter dem Repository-Interface und berührt keine gemockten Implementierungen).
 

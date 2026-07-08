@@ -30,6 +30,7 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
@@ -52,15 +53,22 @@ class ContactRepositoryImpl @Inject constructor(
     private val labelConfigMapper: LabelConfigMapper,
 ) : ContactRepository {
 
+    // The entity-to-domain mapping is O(n) CPU work and is therefore explicitly
+    // offloaded to Dispatchers.Default (project guideline §2.7). flowOn is placed
+    // *before* distinctUntilChanged so that the deduplication check runs downstream
+    // on whatever dispatcher the collector uses.
     override val allContacts: Flow<List<Contact>> = contactDao.getAllContacts()
         .map { entities -> entities.map { contactDbMapper.toDomain(it) } }
+        .flowOn(Dispatchers.Default)
         .distinctUntilChanged()
 
     override val potentialCouples: Flow<List<PotentialCouple>> = contactDao.getPotentialCouples()
         .distinctUntilChanged()
 
+    // Same reasoning as allContacts: O(n) mapping offloaded to Dispatchers.Default.
     override val labelConfigs: Flow<List<LabelConfig>> = labelConfigDao.getAllConfigs()
         .map { entities -> entities.map { labelConfigMapper.toDomain(it) } }
+        .flowOn(Dispatchers.Default)
         .distinctUntilChanged()
 
     override val otherEventsEnabled: Flow<Boolean> = appSettingsDao.getSettings()
