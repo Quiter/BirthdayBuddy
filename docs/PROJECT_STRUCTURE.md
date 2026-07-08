@@ -211,6 +211,7 @@ Diese Tests laufen ohne Emulator/Gerät direkt auf dem Entwicklungsrechner und s
 - `domain/usecase/ImportGiftIdeasUseCaseTest.kt`: JVM Unit-Tests zum Geschenkideen-Import.
 - `domain/usecase/SetCalendarSyncEnabledUseCaseTest.kt`: JVM Unit-Tests zur Aktivierung/Deaktivierung der Kalendersynchronisation.
 - `AppViewModelTest.kt`: Tests für `AppViewModel`: Verifikation der initialen `AppSettings`-Emission, reaktiver Settings-Propagation und einmaligem `syncScheduling()`-Aufruf im `init`.
+- `ui/screens/home/HomeViewModelGiftIdeaTest.kt`: Tests für Geschenkideen- und Geburtstags-Intents im `HomeViewModel`. **Feature-co-located** neben `HomeViewModel.kt`.
 - `ui/screens/home/HomeViewModelSearchTest.kt`: Tests der Such- und Filterlogik im `HomeViewModel`. **Feature-co-located** neben `HomeViewModel.kt`.
 - `ui/screens/home/HomeViewModelTest.kt`: Tests für das reaktive State-Management und die UI-Filterung im `HomeViewModel`. **Feature-co-located** neben `HomeViewModel.kt`.
 

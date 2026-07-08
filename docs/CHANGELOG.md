@@ -354,3 +354,11 @@
     - **ContactRepositoryImpl.kt:** Übersetzung von 18 internen Implementierungskommentaren zur Transaktionssteuerung, Synchronisation, Diffs, Rollbacks und Caching.
     - **ContactMapper.kt:** Übersetzung des KDoc-Klassenkommentars sowie von Hilfskommentaren zur Datumsformatierung und Test-Fallbacks.
     - **Audits:** Verifikation von `HomeViewModel.kt` und `GetContactsUseCase.kt` auf Freiheit von deutschen Kommentaren.
+
+238. **Kapselung von `flowOn(Dispatchers.Default)` in `GetContactsUseCase` (Performance / §2.7):**
+    - **Problem:** `GetContactsUseCase.invoke()` führte schwere CPU-Arbeit (Keyword-Suche, Couple-Merging `buildAnniversaryList`, Sortierung) innerhalb seines `combine`-Lambdas aus. Das `.flowOn(Dispatchers.Default)` wurde jedoch nicht vom Use Case selbst, sondern nachträglich vom Aufrufer (`HomeViewModel.filteredContacts`) gesetzt. Dies verletzte das Kapselungsprinzip: Ein zukünftiger Aufrufer könnte das `flowOn` vergessen und damit unbemerkt den Main-Thread blockieren.
+    - **Lösung:** Gemäß Richtlinie §2.7 wurde `.flowOn(Dispatchers.Default)` als letzter Operator direkt in `invoke()` von [GetContactsUseCase.kt](file:///c:/Users/chris/AndroidStudioProjects/BirthdayBuddy/app/src/main/java/com/heckmannch/birthdaybuddy/domain/usecase/GetContactsUseCase.kt) eingebaut. Der Use Case kapselt nun vollständig seine eigene Threading-Entscheidung.
+    - **`HomeViewModel.kt`:** Das jetzt redundante `.flowOn(Dispatchers.Default)` auf `filteredContacts` wurde entfernt. Das `.flowOn(Dispatchers.Default)` auf `uiState` (State-Konsolidierung) bleibt erhalten.
+    - **KDoc:** Die KDoc von `invoke()` wurde um einen expliziten Hinweis auf den gepinnten Dispatcher und den Hinweis `Callers MUST NOT add an additional flowOn on top of this flow` ergänzt.
+    - **Validierung:** Alle Unit-Tests (`testDebugUnitTest`) grün. Kein Regressionen.
+

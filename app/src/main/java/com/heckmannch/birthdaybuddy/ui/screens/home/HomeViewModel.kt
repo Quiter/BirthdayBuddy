@@ -105,7 +105,7 @@ class HomeViewModel @Inject constructor(
         searchKeywords = searchKeywords,
         selectedLabel = _userUiState.map { it.selectedLabel }.distinctUntilChanged(),
         labelSettings = labelSettingsState,
-    ).flowOn(Dispatchers.Default)
+    )
 
     val availableLabels: Flow<List<String>> = getAvailableLabelsUseCase(
         contacts = contactRepository.allContacts,

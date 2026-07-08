@@ -8,8 +8,10 @@ import com.heckmannch.birthdaybuddy.ui.model.ContactUiModel
 import com.heckmannch.birthdaybuddy.ui.model.EventType
 import com.heckmannch.birthdaybuddy.util.mergeNames
 import dagger.Reusable
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.flowOn
 import java.time.LocalDate
 import javax.inject.Inject
 
@@ -42,6 +44,11 @@ class GetContactsUseCase @Inject constructor(
      * Returns a [Flow] that emits the filtered, merged and sorted list of
      * [ContactUiModel]s whenever any of the upstream inputs changes.
      *
+     * The returned flow is pinned to [Dispatchers.Default] via [flowOn] so that
+     * the heavy CPU work (keyword search, couple-merging, sorting) is always
+     * offloaded from the Main thread, regardless of the calling dispatcher.
+     * Callers MUST NOT add an additional [flowOn] on top of this flow.
+     *
      * @param contacts        Raw contacts from the DB.
      * @param currentDate     Today's date (auto-refreshes at midnight).
      * @param searchKeywords  Debounced, trimmed keyword list from the search field.
@@ -72,7 +79,7 @@ class GetContactsUseCase @Inject constructor(
             )
         }
         result
-    }
+    }.flowOn(Dispatchers.Default)
 
     // ---------------------------------------------------------------------------
     // Internal helpers
