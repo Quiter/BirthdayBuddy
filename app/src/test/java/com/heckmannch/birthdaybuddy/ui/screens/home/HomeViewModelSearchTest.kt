@@ -7,6 +7,7 @@ import com.heckmannch.birthdaybuddy.data.local.Contact
 import com.heckmannch.birthdaybuddy.data.mapper.ContactMapper
 import com.heckmannch.birthdaybuddy.data.repository.ContactRepository
 import com.heckmannch.birthdaybuddy.data.repository.TimeRepository
+import com.heckmannch.birthdaybuddy.domain.usecase.GetContactsUseCase
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -42,7 +43,7 @@ class HomeViewModelSearchTest {
 
     private val contactRepository: ContactRepository = mock()
     private val timeRepository: TimeRepository = mock()
-    private val mapper = ContactMapper()
+    private val getContactsUseCase = GetContactsUseCase(ContactMapper())
 
     @Before
     fun setup() {
@@ -76,7 +77,7 @@ class HomeViewModelSearchTest {
 
         viewModel = HomeViewModel(
             contactRepository = contactRepository,
-            mapper = mapper,
+            getContactsUseCase = getContactsUseCase,
             timeRepository = timeRepository,
         )
 
@@ -106,7 +107,7 @@ class HomeViewModelSearchTest {
 
         viewModel = HomeViewModel(
             contactRepository = contactRepository,
-            mapper = mapper,
+            getContactsUseCase = getContactsUseCase,
             timeRepository = timeRepository,
         )
 

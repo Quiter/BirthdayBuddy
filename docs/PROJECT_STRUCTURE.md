@@ -48,7 +48,14 @@
 - ### 📁 Mapper (`data.mapper`)
     - `ContactMapper.kt`: Reine Logik-Komponente zur Transformation von Datenbank-Entitäten in Anzeige-Modelle (mittels `@Reusable` für effiziente DI-Instanziierung optimiert).
 
+## 📁 Domain Layer (`domain`)
+- ### 📁 Models (`domain.model`)
+    - `GiftIdea.kt`: Reines Domänenmodell für Geschenkideen (id, text, isChecked) mit statischen Hilfsmethoden zum Hinzufügen, Sortieren und Umschalten von Ideen.
+- ### 📁 Use Cases (`domain.usecase`)
+    - `GetContactsUseCase.kt`: Kapselt die gesamte Filterlogik für die Home-Kontaktliste. Empfängt reaktive Inputs (Kontakte, Datum, Suchbegriff, Labels, Einstellungen) und gibt einen sortierten `Flow<List<ContactUiModel>>` zurück. Enthält die Pairing-Logik für Ehepaar-Jubiläen und die `LabelSettingsState`-Datenklasse. Annotiert mit `@Reusable` (kein Singleton nötig).
+
 ## 📁 UI Layer (`ui`)
+
 - ### 📁 Screens (`ui.screens`)
     - #### 📁 Home (`home`)
         - `HomeScreen.kt`: Einstiegspunkt und koordinierende Komponente des Hauptbildschirms.
@@ -112,7 +119,7 @@
     - `NotificationUiState.kt`: Gebündelter State für den Benachrichtigungs-Einstellungs-Screen.
     - `ThemeUiState.kt`: Gebündelter State für den Design-Einstellungs-Screen.
     - `LabelManagementModel.kt`: Modell für die Label-Verwaltung.
-    - `GiftIdea.kt`: Modell für Geschenkideen mit JSON- und Manipulations-Logik.
+    - `GiftIdea.kt`: Reines Domänenmodell für Geschenkideen (id, text, isChecked) mit Manipulations-Logik (Hinzufügen, Sortieren, Umschalten).
     - `CoupleSuggestionUiModel.kt`: Immutable UI-Modell für Paar-Vorschläge, entkoppelt die UI-Schicht von der Room-Entity.
     - `SampleData.kt`: Zentraler Ort für Testdaten für Previews und Tests.
 - ### 📁 Navigation (`ui.navigation`)

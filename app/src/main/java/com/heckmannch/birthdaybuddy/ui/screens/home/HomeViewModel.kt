@@ -1,19 +1,15 @@
 package com.heckmannch.birthdaybuddy.ui.screens.home
 
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.heckmannch.birthdaybuddy.data.local.ContactLabels
-import com.heckmannch.birthdaybuddy.data.mapper.ContactMapper
 import com.heckmannch.birthdaybuddy.data.repository.ContactRepository
 import com.heckmannch.birthdaybuddy.data.repository.TimeRepository
-import com.heckmannch.birthdaybuddy.ui.model.ContactUiModel
-import com.heckmannch.birthdaybuddy.ui.model.CoupleSuggestionUiModel
-import com.heckmannch.birthdaybuddy.ui.model.EventType
 import com.heckmannch.birthdaybuddy.domain.model.GiftIdea
+import com.heckmannch.birthdaybuddy.domain.usecase.GetContactsUseCase
+import com.heckmannch.birthdaybuddy.ui.model.CoupleSuggestionUiModel
 import com.heckmannch.birthdaybuddy.ui.model.HomeUiState
 import com.heckmannch.birthdaybuddy.util.getInitials
-import com.heckmannch.birthdaybuddy.util.mergeNames
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.FlowPreview
@@ -40,7 +36,7 @@ import kotlin.time.Duration.Companion.milliseconds
 @HiltViewModel
 class HomeViewModel @Inject constructor(
     private val contactRepository: ContactRepository,
-    private val mapper: ContactMapper,
+    getContactsUseCase: GetContactsUseCase,
     timeRepository: TimeRepository,
 ) : ViewModel() {
 
@@ -67,13 +63,8 @@ class HomeViewModel @Inject constructor(
     val syncCompletedEvent: SharedFlow<Unit> = _syncCompletedEvent.asSharedFlow()
 
 
-    private data class LabelSettingsState(
-        val ignoredLabels: Set<String>,
-        val labelsEnabled: Boolean,
-        val otherEventsEnabled: Boolean
-    )
 
-    private val labelSettingsState: Flow<LabelSettingsState> = combine(
+    private val labelSettingsState: Flow<GetContactsUseCase.LabelSettingsState> = combine(
         contactRepository.labelConfigs,
         contactRepository.labelsEnabled,
         contactRepository.otherEventsEnabled
@@ -83,7 +74,7 @@ class HomeViewModel @Inject constructor(
             .filter { it.isIgnored }
             .map { it.name }
             .toSet()
-        LabelSettingsState(ignored, labelsEnabled, otherEventsEnabled)
+        GetContactsUseCase.LabelSettingsState(ignored, labelsEnabled, otherEventsEnabled)
     }
         .distinctUntilChanged()
         .flowOn(Dispatchers.Default)
@@ -101,304 +92,13 @@ class HomeViewModel @Inject constructor(
         .map { if (it.isEmpty()) emptyList() else it.split(WHITESPACE_REGEX) }
         .flowOn(Dispatchers.Default)
 
-    private val filteredContacts: Flow<List<ContactUiModel>?> = combine(
-        contactRepository.allContacts,
-        timeRepository.currentDate,
-        searchKeywords,
-        _userUiState.map { it.selectedLabel }.distinctUntilChanged(),
-        labelSettingsState,
-    ) { rawContacts, today, keywords, label, settingsState ->
-        val startTime = System.currentTimeMillis()
-        val isSearching = keywords.isNotEmpty()
-        val ignoredLabels = settingsState.ignoredLabels
-        val labelsEnabled = settingsState.labelsEnabled
-        val otherEventsEnabled = settingsState.otherEventsEnabled
-
-        val uiList = if (!labelsEnabled) {
-            // Wenn Label-Management deaktiviert ist, alle drei Ereignistypen in die Liste einfügen
-
-            // 1. Geburtstage
-            val birthdays = rawContacts.asSequence()
-                .filter { it.birthday != null }
-                .filter { contact ->
-                    !isSearching || keywords.all { keyword ->
-                        contact.fullName.contains(keyword, ignoreCase = true)
-                    }
-                }
-                .map {
-                    mapper.toUiModelForEvent(it, today, EventType.BIRTHDAY)
-                        .copy(labels = emptyList())
-                }
-                .toList()
-
-            // 2. Namenstage (nur wenn weitere Ereignisse aktiviert sind)
-            val nameDays = if (otherEventsEnabled) {
-                rawContacts.asSequence()
-                    .filter { it.nameDay != null }
-                    .filter { contact ->
-                        !isSearching || keywords.all { keyword ->
-                            contact.fullName.contains(keyword, ignoreCase = true)
-                        }
-                    }
-                    .map {
-                        mapper.toUiModelForEvent(it, today, EventType.NAME_DAY)
-                            .copy(labels = emptyList())
-                    }
-                    .toList()
-            } else emptyList()
-
-            // 3. Hochzeitstage (mit Pairing-Logik analog zum Standard, nur wenn weitere Ereignisse aktiviert sind)
-            val pairedAnniversaries = if (otherEventsEnabled) {
-                val processedKeys = mutableSetOf<String>()
-                val list = mutableListOf<ContactUiModel>()
-                val contactMap = rawContacts.associateBy { it.lookupKey }
-
-                for (contact in rawContacts) {
-                    if (contact.anniversary == null) continue
-                    if (processedKeys.contains(contact.lookupKey)) continue
-
-                    // Suchfilter anwenden
-                    if (isSearching && !keywords.all { keyword ->
-                            contact.fullName.contains(keyword, ignoreCase = true) ||
-                                    (contact.spouseLookupKey?.let { contactMap[it]?.fullName }
-                                        ?.contains(keyword, ignoreCase = true) ?: false)
-                        }
-                    ) {
-                        continue
-                    }
-
-                    val spouseKey = contact.spouseLookupKey
-                    val spouse = if (spouseKey != null) contactMap[spouseKey] else null
-
-                    if (spouse != null && spouse.anniversary != null) {
-                        processedKeys.add(contact.lookupKey)
-                        processedKeys.add(spouse.lookupKey)
-
-                        val uiModelA =
-                            mapper.toUiModelForEvent(contact, today, EventType.ANNIVERSARY)
-                        val uiModelB =
-                            mapper.toUiModelForEvent(spouse, today, EventType.ANNIVERSARY)
-
-                        val mergedUiModel = ContactUiModel(
-                            id = "${contact.lookupKey}_${spouse.lookupKey}",
-                            contactId = contact.contactId,
-                            lookupKey = contact.lookupKey,
-                            fullName = mergeNames(contact.fullName, spouse.fullName),
-                            dateText = uiModelA.dateText,
-                            monthName = uiModelA.monthName,
-                            imageUri = contact.imageUri,
-                            phoneNumber = contact.phoneNumber,
-                            initials = uiModelA.initials,
-                            nextAge = uiModelA.nextAge,
-                            daysUntilNext = uiModelA.daysUntilNext,
-                            isToday = uiModelA.isToday,
-                            hasWhatsApp = contact.hasWhatsApp || spouse.hasWhatsApp,
-                            hasSignal = contact.hasSignal || spouse.hasSignal,
-                            labels = emptyList(),
-                            giftIdeas = uiModelA.giftIdeas + uiModelB.giftIdeas,
-                            birthday = contact.birthday,
-                            secondImageUri = spouse.imageUri,
-                            secondInitials = uiModelB.initials,
-                            secondFullName = spouse.fullName,
-                            isCouple = true
-                        )
-                        list.add(mergedUiModel)
-                    } else {
-                        processedKeys.add(contact.lookupKey)
-                        list.add(
-                            mapper.toUiModelForEvent(contact, today, EventType.ANNIVERSARY)
-                                .copy(labels = emptyList())
-                        )
-                    }
-                }
-                list
-            } else emptyList()
-
-            // 4. Ereignislose Kontakte nur bei aktiver Suche anzeigen
-            val contactsWithNoEvent = if (isSearching) {
-                rawContacts.asSequence()
-                    .filter { contact ->
-                        val hasNoAnniversary = !otherEventsEnabled || contact.anniversary == null
-                        val hasNoNameDay = !otherEventsEnabled || contact.nameDay == null
-                        contact.birthday == null && hasNoAnniversary && hasNoNameDay
-                    }
-                    .filter { contact ->
-                        keywords.all { keyword ->
-                            contact.fullName.contains(keyword, ignoreCase = true)
-                        }
-                    }
-                    .map {
-                        mapper.toUiModelForEvent(it, today, EventType.BIRTHDAY)
-                            .copy(labels = emptyList())
-                    }
-                    .toList()
-            } else emptyList()
-
-            birthdays + nameDays + pairedAnniversaries + contactsWithNoEvent
-        } else {
-            val displayEventType: EventType = when (label) {
-                ContactLabels.LABEL_ANNIVERSARY -> EventType.ANNIVERSARY
-                ContactLabels.LABEL_NAME_DAY -> EventType.NAME_DAY
-                else -> EventType.BIRTHDAY
-            }
-
-            val preFilteredRaw = if (displayEventType != EventType.ANNIVERSARY) {
-                rawContacts.asSequence().filter { contact ->
-                    if (isSearching && !keywords.all { keyword ->
-                            contact.fullName.contains(keyword, ignoreCase = true)
-                        }) {
-                        return@filter false
-                    }
-                    if (label != null && label != ContactLabels.LABEL_NO_BIRTHDAY && label != ContactLabels.LABEL_NAME_DAY && !contact.labels.contains(
-                            label
-                        )
-                    ) {
-                        return@filter false
-                    }
-                    if (!isSearching && contact.labels.any { it in ignoredLabels }) {
-                        return@filter false
-                    }
-                    val hasEvent =
-                        if (displayEventType == EventType.NAME_DAY) contact.nameDay != null else contact.birthday != null
-                    if (!hasEvent) {
-                        if (displayEventType != EventType.BIRTHDAY) return@filter false
-                        if (!isSearching && label != ContactLabels.LABEL_NO_BIRTHDAY) return@filter false
-                    } else if (label == ContactLabels.LABEL_NO_BIRTHDAY) {
-                        return@filter false
-                    }
-                    true
-                }.toList()
-            } else {
-                rawContacts
-            }
-
-            val uiListTemp = if (displayEventType == EventType.ANNIVERSARY) {
-                val processedKeys = mutableSetOf<String>()
-                val mergedList = mutableListOf<ContactUiModel>()
-                val contactMap = rawContacts.associateBy { it.lookupKey }
-
-                for (contact in rawContacts) {
-                    if (processedKeys.contains(contact.lookupKey)) continue
-
-                    val spouseKey = contact.spouseLookupKey
-                    val spouse = if (spouseKey != null) contactMap[spouseKey] else null
-
-                    if (spouse != null && contact.anniversary != null && spouse.anniversary != null) {
-                        processedKeys.add(contact.lookupKey)
-                        processedKeys.add(spouse.lookupKey)
-
-                        val uiModelA =
-                            mapper.toUiModelForEvent(contact, today, EventType.ANNIVERSARY)
-                        val uiModelB =
-                            mapper.toUiModelForEvent(spouse, today, EventType.ANNIVERSARY)
-
-                        val mergedUiModel = ContactUiModel(
-                            id = "${contact.lookupKey}_${spouse.lookupKey}",
-                            contactId = contact.contactId,
-                            lookupKey = contact.lookupKey,
-                            fullName = mergeNames(contact.fullName, spouse.fullName),
-                            dateText = uiModelA.dateText,
-                            monthName = uiModelA.monthName,
-                            imageUri = contact.imageUri,
-                            phoneNumber = contact.phoneNumber,
-                            initials = uiModelA.initials,
-                            nextAge = uiModelA.nextAge,
-                            daysUntilNext = uiModelA.daysUntilNext,
-                            isToday = uiModelA.isToday,
-                            hasWhatsApp = contact.hasWhatsApp || spouse.hasWhatsApp,
-                            hasSignal = contact.hasSignal || spouse.hasSignal,
-                            labels = (contact.labels + spouse.labels).distinct(),
-                            giftIdeas = uiModelA.giftIdeas + uiModelB.giftIdeas,
-                            birthday = contact.birthday,
-                            secondImageUri = spouse.imageUri,
-                            secondInitials = uiModelB.initials,
-                            secondFullName = spouse.fullName,
-                            isCouple = true
-                        )
-                        mergedList.add(mergedUiModel)
-                    } else {
-                        processedKeys.add(contact.lookupKey)
-                        mergedList.add(
-                            mapper.toUiModelForEvent(
-                                contact,
-                                today,
-                                EventType.ANNIVERSARY
-                            )
-                        )
-                    }
-                }
-                mergedList
-            } else {
-                preFilteredRaw.map { mapper.toUiModelForEvent(it, today, displayEventType) }
-            }
-
-            uiListTemp.filter {
-                shouldShowContact(
-                    it,
-                    keywords,
-                    label,
-                    ignoredLabels,
-                    displayEventType
-                )
-            }
-        }
-
-        val result = uiList.sortedWith(
-            compareBy<ContactUiModel, Long?>(nullsLast(naturalOrder())) { it.daysUntilNext }
-                .thenBy { it.fullName }
-        )
-
-        if (rawContacts.size > 1000) {
-            Log.d(
-                "HomeViewModel",
-                "Filtering ${rawContacts.size} -> ${result.size} contacts took ${System.currentTimeMillis() - startTime}ms"
-            )
-        }
-        result
-    }.flowOn(Dispatchers.Default)
-
-    /**
-     * Zentrale Filter-Logik für Kontakte.
-     */
-    private fun shouldShowContact(
-        contact: ContactUiModel,
-        keywords: List<String>,
-        label: String?,
-        ignoredLabels: Set<String>,
-        displayEventType: EventType
-    ): Boolean {
-        val isSearching = keywords.isNotEmpty()
-
-        // 1. Sichtbarkeit prüfen (Ereignis vorhanden & Ignoriert-Status)
-        val isMissingEvent = contact.dateText == "-"
-        val isNoBirthdayFilter = label == ContactLabels.LABEL_NO_BIRTHDAY
-
-        // Ereignislose Kontakte ausblenden (außer bei Suche, sofern es sich um Geburtstage handelt.
-        // Für Hochzeitstag und Namenstag blenden wir Kontakte ohne dieses Ereignis IMMER aus!)
-        if (isMissingEvent) {
-            if (displayEventType != EventType.BIRTHDAY) return false
-            if (!isSearching && !isNoBirthdayFilter) return false
-        }
-
-        // Ignorierte Labels ausblenden (außer bei aktiver Suche)
-        val isIgnored = contact.labels.any { it in ignoredLabels }
-        if (isIgnored && !isSearching) return false
-
-        // 2. Suche (Keywords)
-        val matchesQuery = !isSearching || keywords.all { keyword ->
-            contact.fullName.contains(keyword, ignoreCase = true)
-        }
-        if (!matchesQuery) return false
-
-        // 3. Label-Filter
-        return when (label) {
-            null -> true
-            ContactLabels.LABEL_NO_BIRTHDAY -> isMissingEvent
-            ContactLabels.LABEL_ANNIVERSARY -> true // bereits oben über isMissingEvent und displayEventType gefiltert
-            ContactLabels.LABEL_NAME_DAY -> true    // bereits oben über isMissingEvent und displayEventType gefiltert
-            else -> contact.labels.contains(label)
-        }
-    }
+    private val filteredContacts = getContactsUseCase(
+        contacts = contactRepository.allContacts,
+        currentDate = timeRepository.currentDate,
+        searchKeywords = searchKeywords,
+        selectedLabel = _userUiState.map { it.selectedLabel }.distinctUntilChanged(),
+        labelSettings = labelSettingsState,
+    ).flowOn(Dispatchers.Default)
 
     val availableLabels: Flow<List<String>> = combine(
         contactRepository.allContacts,
@@ -492,7 +192,7 @@ class HomeViewModel @Inject constructor(
         coupleSuggestion,
         contactRepository.labelsEnabled
     ) { contacts, labels, userState, suggestion, labelsEnabled ->
-        val finalContacts = if (!labelsEnabled && contacts != null) {
+        val finalContacts = if (!labelsEnabled) {
             contacts.map { it.copy(labels = emptyList()) }
         } else {
             contacts

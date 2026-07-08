@@ -9,6 +9,7 @@ import com.heckmannch.birthdaybuddy.data.local.LabelConfig
 import com.heckmannch.birthdaybuddy.data.mapper.ContactMapper
 import com.heckmannch.birthdaybuddy.data.repository.ContactRepository
 import com.heckmannch.birthdaybuddy.data.repository.TimeRepository
+import com.heckmannch.birthdaybuddy.domain.usecase.GetContactsUseCase
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -43,7 +44,7 @@ class HomeViewModelTest {
 
     private val contactRepository: ContactRepository = mock()
     private val timeRepository: TimeRepository = mock()
-    private val mapper = ContactMapper()
+    private val getContactsUseCase = GetContactsUseCase(ContactMapper())
     private val today = LocalDate.of(2024, 5, 15)
 
     @Before
@@ -61,7 +62,7 @@ class HomeViewModelTest {
     fun initialState_isCorrect() = runTest {
         viewModel = HomeViewModel(
             contactRepository = contactRepository,
-            mapper = mapper,
+            getContactsUseCase = getContactsUseCase,
             timeRepository = timeRepository,
         )
         val state = viewModel.uiState.first()
@@ -75,7 +76,7 @@ class HomeViewModelTest {
     fun onLabelSelected_updatesState() = runTest {
         viewModel = HomeViewModel(
             contactRepository = contactRepository,
-            mapper = mapper,
+            getContactsUseCase = getContactsUseCase,
             timeRepository = timeRepository,
         )
         viewModel.onLabelSelected("Freunde")
@@ -106,7 +107,7 @@ class HomeViewModelTest {
 
         viewModel = HomeViewModel(
             contactRepository = contactRepository,
-            mapper = mapper,
+            getContactsUseCase = getContactsUseCase,
             timeRepository = timeRepository,
         )
 
@@ -144,7 +145,7 @@ class HomeViewModelTest {
 
         viewModel = HomeViewModel(
             contactRepository = contactRepository,
-            mapper = mapper,
+            getContactsUseCase = getContactsUseCase,
             timeRepository = timeRepository,
         )
         val state = viewModel.uiState.first { (it.contacts != null) }
@@ -178,7 +179,7 @@ class HomeViewModelTest {
 
         viewModel = HomeViewModel(
             contactRepository = contactRepository,
-            mapper = mapper,
+            getContactsUseCase = getContactsUseCase,
             timeRepository = timeRepository,
         )
 
@@ -218,7 +219,7 @@ class HomeViewModelTest {
 
         viewModel = HomeViewModel(
             contactRepository = contactRepository,
-            mapper = mapper,
+            getContactsUseCase = getContactsUseCase,
             timeRepository = timeRepository,
         )
 
@@ -268,7 +269,7 @@ class HomeViewModelTest {
 
         viewModel = HomeViewModel(
             contactRepository = contactRepository,
-            mapper = mapper,
+            getContactsUseCase = getContactsUseCase,
             timeRepository = timeRepository,
         )
 
@@ -318,7 +319,7 @@ class HomeViewModelTest {
 
         viewModel = HomeViewModel(
             contactRepository = contactRepository,
-            mapper = mapper,
+            getContactsUseCase = getContactsUseCase,
             timeRepository = timeRepository,
         )
 
