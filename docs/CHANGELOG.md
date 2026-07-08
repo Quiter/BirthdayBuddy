@@ -335,3 +335,16 @@
         4. Kontakte ohne Geburtstage blenden das Pseudo-Label `LABEL_NO_BIRTHDAY` ein, sofern es nicht in den Einstellungen ignoriert/versteckt wird.
         5. Eine Mischung aus Benutzer-Labels, Pseudo-Labels und System-Labels wird in der exakten Reihenfolge ausgegeben: Benutzer-Labels (alphabetisch) → `LABEL_NO_BIRTHDAY` → `LABEL_ANNIVERSARY` → `LABEL_NAME_DAY`.
     - **Validierung:** Alle neuen Tests wurden erfolgreich ausgeführt und verifiziert. Keine Regressionen in anderen Home-Screen-Tests.
+
+236. **Unit-Tests für `ContactRepositoryImpl` (Test-Abdeckung & Richtlinie §2.6):**
+    - **Unit-Tests:** Erstellung der neuen JVM-Unit-Testdatei [ContactRepositoryImplTest.kt](file:///c:/Users/chris/AndroidStudioProjects/BirthdayBuddy/app/src/test/java/com/heckmannch/birthdaybuddy/data/repository/ContactRepositoryImplTest.kt) zur vollständigen Abdeckung kritischer Logikpfade des `ContactRepositoryImpl`.
+    - **Abgedeckte Szenarien:**
+        1. `allContacts`-Flow emittiert korrekt gemappte Domain-Objekte (`Contact`) bei DAO-Updates.
+        2. `labelsEnabled`-Flow liefert den Standardwert `true`, wenn keine `AppSettingsEntity` existiert.
+        3. `syncContacts()` bricht sofort ab und ruft keine System-Dienste auf, wenn die Kontakt-Berechtigung (`Manifest.permission.READ_CONTACTS`) verweigert ist.
+        4. `addGiftIdea()` delegiert korrekt das Speichern an das `ContactUserDataDao` und aktualisiert den App-Cache im `ContactDao`.
+        5. `labelConfigs`-Flow mappt korrekt die von der DAO gelieferten `LabelConfigEntity` in `LabelConfig` Domain-Modelle.
+    - **Technische Besonderheiten:**
+        - Umgehung des Hängens/Deadlocks bei Room-Transaktionen (`withTransaction`) auf gemockten Datenbanken im JVM-Kontext durch reflexionsbasierte Instanziierung von `TransactionElement(ContinuationInterceptor)`.
+        - Standard-Dispatcher-Umleitung für Datenbank-Transaktionen über Executor-Mocking (`transactionExecutor`, `queryExecutor`) auf `it.run()`.
+    - **Validierung:** Erfolgreicher Durchlauf aller Tests im Gradle-Task `testDebugUnitTest`.

@@ -202,6 +202,7 @@ Diese Tests laufen ohne Emulator/Gerät direkt auf dem Entwicklungsrechner und s
 - `data/local/ConvertersTest.kt`: Tests für die TypeConverter (LocalDate, Listen).
 - `data/local/GiftIdeaConvertersTest.kt`: Tests für Geschenkideen-TypeConverter.
 - `data/mapper/ContactMapperTest.kt`: Tests für die Transformation von Datenbank-Entitäten in UI-Modelle (mit JVM-Safe Fallback für die Formatierung).
+- `data/repository/ContactRepositoryImplTest.kt`: JVM Unit-Tests für `ContactRepositoryImpl` (Abdeckung von allContacts, labelsEnabled, syncContacts, addGiftIdea, und labelConfigs).
 - `util/DateUtilsTest.kt`: Logiktests für Datumsberechnungen (Alter, Tage bis Geburtstag, etc.).
 - `domain/usecase/GetPendingNotificationsUseCaseTest.kt`: JVM Unit-Tests zur Überprüfung der Benachrichtigungsregeln und Fälligkeits-Kalkulation.
 - `domain/usecase/SnoozeNotificationUseCaseTest.kt`: JVM Unit-Tests zur Überprüfung der Schlummer-Delegation.
