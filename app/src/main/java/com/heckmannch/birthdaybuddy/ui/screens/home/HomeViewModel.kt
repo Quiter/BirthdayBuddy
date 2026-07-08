@@ -2,10 +2,10 @@ package com.heckmannch.birthdaybuddy.ui.screens.home
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.heckmannch.birthdaybuddy.data.local.ContactLabels
 import com.heckmannch.birthdaybuddy.domain.model.GiftIdea
 import com.heckmannch.birthdaybuddy.domain.repository.ContactRepository
 import com.heckmannch.birthdaybuddy.domain.repository.TimeRepository
+import com.heckmannch.birthdaybuddy.domain.usecase.GetAvailableLabelsUseCase
 import com.heckmannch.birthdaybuddy.domain.usecase.GetContactsUseCase
 import com.heckmannch.birthdaybuddy.domain.usecase.GetCoupleSuggestionUseCase
 import com.heckmannch.birthdaybuddy.domain.usecase.IgnoreCoupleSuggestionUseCase
@@ -40,6 +40,7 @@ import kotlin.time.Duration.Companion.milliseconds
 class HomeViewModel @Inject constructor(
     private val contactRepository: ContactRepository,
     getContactsUseCase: GetContactsUseCase,
+    getAvailableLabelsUseCase: GetAvailableLabelsUseCase,
     getCoupleSuggestionUseCase: GetCoupleSuggestionUseCase,
     private val linkAsCoupleUseCase: LinkAsCoupleUseCase,
     private val unlinkCoupleUseCase: UnlinkCoupleUseCase,
@@ -106,62 +107,12 @@ class HomeViewModel @Inject constructor(
         labelSettings = labelSettingsState,
     ).flowOn(Dispatchers.Default)
 
-    val availableLabels: Flow<List<String>> = combine(
-        contactRepository.allContacts,
-        contactRepository.labelConfigs,
-        contactRepository.otherEventsEnabled,
-        contactRepository.labelsEnabled,
-    ) { contacts, configs, otherEventsEnabled, labelsEnabled ->
-        if (!labelsEnabled) return@combine emptyList()
-        val inUseLabels = contacts.asSequence().flatMap { it.labels }.toSet()
-        val configMap = configs.associateBy { it.name }
-
-        // Pseudo-Label "Ohne Datum" Konfiguration laden und Sichtbarkeit prüfen
-        val pseudoConfig = configMap[ContactLabels.LABEL_NO_BIRTHDAY]
-        val showPseudo = contacts.any { it.birthday == null } &&
-                pseudoConfig?.isHiddenFromFilter != true &&
-                pseudoConfig?.isIgnored != true
-
-        // Prüfen, ob aktive, nicht-versteckte User-Labels vorhanden sind
-        val hasActiveUserLabels = inUseLabels.any { name ->
-            val config = configMap[name]
-            config?.isSystem == false && !(config.isHiddenFromFilter) && !(config.isIgnored) && name != ContactLabels.LABEL_NO_BIRTHDAY
-        }
-
-        val showAnniversary = otherEventsEnabled && contacts.any { it.anniversary != null }
-        val showNameDay = otherEventsEnabled && contacts.any { it.nameDay != null }
-
-        // Wenn weder aktive User-Labels noch das Pseudo-Label noch andere Events aktiv sind -> Bar verstecken
-        if (!hasActiveUserLabels && !showPseudo && !showAnniversary && !showNameDay) return@combine emptyList()
-
-        val labels = mutableListOf<String>()
-
-        // Zuerst die User-Label
-        if (hasActiveUserLabels) {
-            inUseLabels.asSequence()
-                .filter { name ->
-                    val config = configMap[name]
-                    (config?.isSystem == false) && !(config.isHiddenFromFilter) && !(config.isIgnored) && name != ContactLabels.LABEL_NO_BIRTHDAY
-                }
-                .sorted()
-                .forEach { labels.add(it) }
-        }
-
-        // "Ohne Datum" immer als Letztes von Geburtstagen, falls aktiv
-        if (showPseudo) {
-            labels.add(ContactLabels.LABEL_NO_BIRTHDAY)
-        }
-
-        // Weitere Ereignisse ganz rechts
-        if (showAnniversary) {
-            labels.add(ContactLabels.LABEL_ANNIVERSARY)
-        }
-        if (showNameDay) {
-            labels.add(ContactLabels.LABEL_NAME_DAY)
-        }
-
-        labels
-    }
+    val availableLabels: Flow<List<String>> = getAvailableLabelsUseCase(
+        contacts = contactRepository.allContacts,
+        configs = contactRepository.labelConfigs,
+        otherEventsEnabled = contactRepository.otherEventsEnabled,
+        labelsEnabled = contactRepository.labelsEnabled,
+    )
 
     val coupleSuggestion: Flow<CoupleSuggestionUiModel?> = getCoupleSuggestionUseCase(
         selectedLabel = _userUiState.map { it.selectedLabel }.distinctUntilChanged()

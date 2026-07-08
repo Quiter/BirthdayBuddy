@@ -301,3 +301,8 @@
     - **Refactoring:** Bereinigung von `BackupViewModel` und `CalendarViewModel` durch Entkopplung von Repository-Direktaufrufen.
     - **Unit-Tests:** Erstellung neuer Testklassen (`ExportGiftIdeasUseCaseTest`, `ImportGiftIdeasUseCaseTest`, `SetCalendarSyncEnabledUseCaseTest`) sowie Anpassung bestehender ViewModel-Tests.
 
+231. **Auslagerung der Label-Filter-Logik in GetAvailableLabelsUseCase (Architecture & Code Quality):**
+    - **GetAvailableLabelsUseCase:** Kapselung der Geschäftslogik zur Ermittlung der verfügbaren Filter-Labels (berechnet basierend auf Kontakten, Label-Konfigurationen und App-Einstellungen) unter `com.heckmannch.birthdaybuddy.domain.usecase`.
+    - **Refactoring:** Entfernung der direkten Berechnung im `HomeViewModel` und stattdessen Verwendung des neuen Use Cases via Hilt-Injection.
+    - **Unit-Tests:** Erstellung von `GetAvailableLabelsUseCaseTest` (Validierung von Label-Verhalten bei deaktivierten/aktivierten Filtern, Sortierung und Sonder-Labels) sowie Anpassung der Testumgebungen `HomeViewModelTest` und `HomeViewModelSearchTest`.
+

@@ -7,6 +7,7 @@ import com.heckmannch.birthdaybuddy.data.mapper.ContactMapper
 import com.heckmannch.birthdaybuddy.domain.model.Contact
 import com.heckmannch.birthdaybuddy.domain.repository.ContactRepository
 import com.heckmannch.birthdaybuddy.domain.repository.TimeRepository
+import com.heckmannch.birthdaybuddy.domain.usecase.GetAvailableLabelsUseCase
 import com.heckmannch.birthdaybuddy.domain.usecase.GetContactsUseCase
 import com.heckmannch.birthdaybuddy.domain.usecase.GetCoupleSuggestionUseCase
 import com.heckmannch.birthdaybuddy.domain.usecase.IgnoreCoupleSuggestionUseCase
@@ -48,6 +49,7 @@ class HomeViewModelSearchTest {
     private val contactRepository: ContactRepository = mock()
     private val timeRepository: TimeRepository = mock()
     private val getContactsUseCase = GetContactsUseCase(ContactMapper())
+    private val getAvailableLabelsUseCase = GetAvailableLabelsUseCase()
     private val getCoupleSuggestionUseCase = GetCoupleSuggestionUseCase(contactRepository)
     private val linkAsCoupleUseCase = LinkAsCoupleUseCase(contactRepository)
     private val unlinkCoupleUseCase = UnlinkCoupleUseCase(contactRepository)
@@ -86,6 +88,7 @@ class HomeViewModelSearchTest {
         viewModel = HomeViewModel(
             contactRepository = contactRepository,
             getContactsUseCase = getContactsUseCase,
+            getAvailableLabelsUseCase = getAvailableLabelsUseCase,
             getCoupleSuggestionUseCase = getCoupleSuggestionUseCase,
             linkAsCoupleUseCase = linkAsCoupleUseCase,
             unlinkCoupleUseCase = unlinkCoupleUseCase,
@@ -120,6 +123,7 @@ class HomeViewModelSearchTest {
         viewModel = HomeViewModel(
             contactRepository = contactRepository,
             getContactsUseCase = getContactsUseCase,
+            getAvailableLabelsUseCase = getAvailableLabelsUseCase,
             getCoupleSuggestionUseCase = getCoupleSuggestionUseCase,
             linkAsCoupleUseCase = linkAsCoupleUseCase,
             unlinkCoupleUseCase = unlinkCoupleUseCase,

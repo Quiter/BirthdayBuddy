@@ -53,6 +53,7 @@
     - `GiftIdea.kt`: Reines Domänenmodell für Geschenkideen (id, text, isChecked) mit statischen Hilfsmethoden zum Hinzufügen, Sortieren und Umschalten von Ideen.
 - ### 📁 Use Cases (`domain.usecase`)
     - `GetContactsUseCase.kt`: Kapselt die gesamte Filterlogik für die Home-Kontaktliste. Empfängt reaktive Inputs (Kontakte, Datum, Suchbegriff, Labels, Einstellungen) und gibt einen sortierten `Flow<List<ContactUiModel>>` zurück. Enthält die Pairing-Logik für Ehepaar-Jubiläen und die `LabelSettingsState`-Datenklasse. Annotiert mit `@Reusable` (kein Singleton nötig).
+    - `GetAvailableLabelsUseCase.kt`: Kapselt die Logik zur Ermittlung der verfügbaren Filter-Labels für den Home-Screen (User-Labels, "Ohne Datum"-Pseudo-Label und weitere Ereignistyp-Labels wie Hochzeitstag und Namenstag). Annotiert mit `@Reusable`.
     - `GetPendingNotificationsUseCase.kt`: Evaluert die aktiven Benachrichtigungsregeln für den aktuellen Zeitpunkt und liefert die fälligen Termine (Geburtstage, Hochzeitstage mit Paar-Verknüpfung, Namenstage) zurück, die noch nicht geplant wurden.
     - `SnoozeNotificationUseCase.kt`: Kapselt die Logik für das Schlummern von Benachrichtigungen und delegiert dies an den plattformspezifischen Scheduler.
     - `GetCoupleSuggestionUseCase.kt`: Ermittelt reaktiv den ersten unignorierten Paar-Kopplungsvorschlag auf dem Home-Screen.
