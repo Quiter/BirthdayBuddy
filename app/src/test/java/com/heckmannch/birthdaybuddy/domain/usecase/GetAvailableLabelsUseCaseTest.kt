@@ -35,6 +35,7 @@ class GetAvailableLabelsUseCaseTest {
 
     @Test
     fun whenLabelsDisabled_returnsEmptyList() = runTest {
+        // Scenario 1: labelsEnabled = false -> empty list returned
         val contacts = listOf(
             Contact(contactId = "1", lookupKey = "k1", fullName = "Alice", labels = listOf("Family"))
         )
@@ -54,6 +55,7 @@ class GetAvailableLabelsUseCaseTest {
 
     @Test
     fun whenLabelsEnabled_noActiveLabelsOrEvents_returnsEmptyList() = runTest {
+        // Verify that with active contacts but no labels, pseudo-labels, or other events, the list is empty
         val contacts = listOf(
             Contact(contactId = "1", lookupKey = "k1", fullName = "Alice", birthday = LocalDate.of(1990, 5, 10))
         )
@@ -70,33 +72,93 @@ class GetAvailableLabelsUseCaseTest {
     }
 
     @Test
-    fun whenLabelsEnabled_includesAllCategoriesCorrectlySortedAndOrdered() = runTest {
-        // Alice: birthday = null, has "Family" label
-        // Bob: has birthday, anniversary, and "Colleagues" label
-        // Charlie: has nameDay and a hidden/ignored label "Secret"
+    fun whenAllLabelsAreIgnored_returnsEmptyList() = runTest {
+        // Scenario 2: All labels are marked as isIgnored = true -> empty list
         val contacts = listOf(
-            Contact(contactId = "1", lookupKey = "k1", fullName = "Alice", birthday = null, labels = listOf("Family")),
             Contact(
-                contactId = "2",
-                lookupKey = "k2",
-                fullName = "Bob",
-                birthday = LocalDate.of(1995, 1, 1),
-                anniversary = LocalDate.of(2020, 10, 10),
-                labels = listOf("Colleagues")
-            ),
+                contactId = "1",
+                lookupKey = "k1",
+                fullName = "Alice",
+                birthday = LocalDate.of(1990, 5, 10),
+                labels = listOf("Family", "Work")
+            )
+        )
+        val configs = listOf(
+            LabelConfig(name = "Family", isHiddenFromFilter = false, isIgnored = true, isSystem = false),
+            LabelConfig(name = "Work", isHiddenFromFilter = false, isIgnored = true, isSystem = false)
+        )
+
+        val result = useCase(
+            contacts = MutableStateFlow(contacts),
+            configs = MutableStateFlow(configs),
+            otherEventsEnabled = MutableStateFlow(false),
+            labelsEnabled = MutableStateFlow(true)
+        ).first()
+
+        assertThat(result).isEmpty()
+    }
+
+    @Test
+    fun whenOtherEventsEnabledAndContactsWithAnniversary_includesAnniversaryLabel() = runTest {
+        // Scenario 3: otherEventsEnabled = true + contacts with anniversary -> LABEL_ANNIVERSARY appears in the list
+        val contacts = listOf(
             Contact(
-                contactId = "3",
-                lookupKey = "k3",
-                fullName = "Charlie",
-                nameDay = LocalDate.of(2000, 3, 3),
-                labels = listOf("Secret")
+                contactId = "1",
+                lookupKey = "k1",
+                fullName = "Alice",
+                birthday = LocalDate.of(1990, 5, 10),
+                anniversary = LocalDate.of(2020, 10, 10)
             )
         )
 
+        val result = useCase(
+            contacts = MutableStateFlow(contacts),
+            configs = MutableStateFlow(emptyList()),
+            otherEventsEnabled = MutableStateFlow(true),
+            labelsEnabled = MutableStateFlow(true)
+        ).first()
+
+        assertThat(result).containsExactly(ContactLabels.LABEL_ANNIVERSARY)
+    }
+
+    @Test
+    fun whenContactsWithoutBirthdayAndPseudoLabelNotHidden_includesNoBirthdayLabel() = runTest {
+        // Scenario 4: Contacts without birthday present + pseudo-label not hidden -> LABEL_NO_BIRTHDAY appears
+        val contacts = listOf(
+            Contact(contactId = "1", lookupKey = "k1", fullName = "Alice", birthday = null)
+        )
+        val configs = listOf(
+            LabelConfig(name = ContactLabels.LABEL_NO_BIRTHDAY, isHiddenFromFilter = false, isIgnored = false, isSystem = true)
+        )
+
+        val result = useCase(
+            contacts = MutableStateFlow(contacts),
+            configs = MutableStateFlow(configs),
+            otherEventsEnabled = MutableStateFlow(false),
+            labelsEnabled = MutableStateFlow(true)
+        ).first()
+
+        assertThat(result).containsExactly(ContactLabels.LABEL_NO_BIRTHDAY)
+    }
+
+    @Test
+    fun whenMixOfUserLabelsPseudoLabelAndSystemLabels_returnsCorrectlyOrderedList() = runTest {
+        // Scenario 5: Mixture of User-Labels, Pseudo-Label and System-Labels -> correct order
+        // Order: User-Labels alphabetically -> LABEL_NO_BIRTHDAY -> LABEL_ANNIVERSARY -> LABEL_NAME_DAY
+        val contacts = listOf(
+            Contact(
+                contactId = "1",
+                lookupKey = "k1",
+                fullName = "Alice",
+                birthday = null, // triggers LABEL_NO_BIRTHDAY
+                anniversary = LocalDate.of(2020, 10, 10), // triggers LABEL_ANNIVERSARY
+                nameDay = LocalDate.of(2020, 10, 10), // triggers LABEL_NAME_DAY
+                labels = listOf("Work", "Family") // user labels (unsorted order to verify alphabetic sort)
+            )
+        )
         val configs = listOf(
             LabelConfig(name = "Family", isHiddenFromFilter = false, isIgnored = false, isSystem = false),
-            LabelConfig(name = "Colleagues", isHiddenFromFilter = false, isIgnored = false, isSystem = false),
-            LabelConfig(name = "Secret", isHiddenFromFilter = true, isIgnored = false, isSystem = false),
+            LabelConfig(name = "Work", isHiddenFromFilter = false, isIgnored = false, isSystem = false),
             LabelConfig(name = ContactLabels.LABEL_NO_BIRTHDAY, isHiddenFromFilter = false, isIgnored = false, isSystem = true)
         )
 
@@ -107,15 +169,9 @@ class GetAvailableLabelsUseCaseTest {
             labelsEnabled = MutableStateFlow(true)
         ).first()
 
-        // 1. User labels (Family, Colleagues) are included and sorted alphabetically -> Colleagues, Family
-        // 2. Secret is hidden, so excluded
-        // 3. No Birthday is included because Alice has birthday = null -> LABEL_NO_BIRTHDAY
-        // 4. Anniversary is included because Bob has anniversary != null -> LABEL_ANNIVERSARY
-        // 5. Name Day is included because Charlie has nameDay != null -> LABEL_NAME_DAY
-        // Expected order: User Labels sorted, then No Birthday, then Anniversary, then Name Day
         assertThat(result).containsExactly(
-            "Colleagues",
             "Family",
+            "Work",
             ContactLabels.LABEL_NO_BIRTHDAY,
             ContactLabels.LABEL_ANNIVERSARY,
             ContactLabels.LABEL_NAME_DAY

@@ -325,3 +325,13 @@
         - Audit von `coupleSuggestion`: Verifiziert, dass dieser Flow durch die Verwendung von `.flowOn(Dispatchers.Default)` im [HomeViewModel.kt](file:///c:/Users/chris/AndroidStudioProjects/BirthdayBuddy/app/src/main/java/com/heckmannch/birthdaybuddy/ui/screens/home/HomeViewModel.kt) bereits korrekt im Default-Dispatcher ausgeführt wird.
         - Ergänzung von `.flowOn(Dispatchers.Default)` beim `uiState`-Flow vor dem `.stateIn(...)`-Terminaloperator. Dies sorgt dafür, dass die finale Konsolidierung des UI-States (einschließlich des Mappings zur Bereinigung der Labels bei deaktivierter Label-Filterung) im Default-Dispatcher ausgeführt wird.
     - **Validierung:** Alle bestehenden JUnit-Tests laufen weiterhin fehlerfrei durch.
+
+235. **Erweiterte Unit-Tests für GetAvailableLabelsUseCase (Test-Abdeckung & Code Quality):**
+    - **GetAvailableLabelsUseCaseTest:** Hinzufügen von 5 neuen, zielgerichteten Unit-Tests in [GetAvailableLabelsUseCaseTest.kt](file:///c:/Users/chris/AndroidStudioProjects/BirthdayBuddy/app/src/test/java/com/heckmannch/birthdaybuddy/domain/usecase/GetAvailableLabelsUseCaseTest.kt) zur vollständigen Abdeckung der verfügbaren Label-Filter-Logik.
+    - **Abgedeckte Szenarien:**
+        1. Globale Deaktivierung der Label-Filterung (`labelsEnabled = false`) gibt eine leere Liste zurück.
+        2. Alle zugewiesenen Labels sind als ignoriert (`isIgnored = true`) markiert, was zu einer leeren Liste führt.
+        3. Jahrestage (`LABEL_ANNIVERSARY`) werden korrekt einbezogen, wenn `otherEventsEnabled = true` und Kontakte mit Jahrestagen vorhanden sind.
+        4. Kontakte ohne Geburtstage blenden das Pseudo-Label `LABEL_NO_BIRTHDAY` ein, sofern es nicht in den Einstellungen ignoriert/versteckt wird.
+        5. Eine Mischung aus Benutzer-Labels, Pseudo-Labels und System-Labels wird in der exakten Reihenfolge ausgegeben: Benutzer-Labels (alphabetisch) → `LABEL_NO_BIRTHDAY` → `LABEL_ANNIVERSARY` → `LABEL_NAME_DAY`.
+    - **Validierung:** Alle neuen Tests wurden erfolgreich ausgeführt und verifiziert. Keine Regressionen in anderen Home-Screen-Tests.
