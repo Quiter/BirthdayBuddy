@@ -8,11 +8,10 @@ import androidx.work.ExistingWorkPolicy
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
 import androidx.work.WorkerParameters
+import com.heckmannch.birthdaybuddy.di.ApplicationScope
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.time.Duration
@@ -21,10 +20,18 @@ import java.time.LocalTime
 import java.util.concurrent.TimeUnit
 import kotlin.time.Duration.Companion.milliseconds
 
+/**
+ * Worker to trigger updating the app widget.
+ *
+ * @property applicationScope Application-scoped coroutine scope for post-work scheduling.
+ *   Intentionally outlives the Worker to schedule the next run after WorkManager finishes this
+ *   execution, ensuring the next run is scheduled without being cancelled by the worker termination.
+ */
 @HiltWorker
 class BirthdayWidgetWorker @AssistedInject constructor(
     @Assisted private val context: Context,
     @Assisted workerParameters: WorkerParameters,
+    @param:ApplicationScope private val applicationScope: CoroutineScope,
 ) : CoroutineWorker(context, workerParameters) {
 
     override suspend fun doWork(): Result {
@@ -45,7 +52,6 @@ class BirthdayWidgetWorker @AssistedInject constructor(
 
     companion object {
         private const val WORK_NAME = "DailyWidgetUpdateSingle"
-        private val applicationScope = CoroutineScope(Dispatchers.Default + SupervisorJob())
 
         fun enqueueNextUpdate(context: Context) {
             val request = OneTimeWorkRequestBuilder<BirthdayWidgetWorker>()

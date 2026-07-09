@@ -12,11 +12,10 @@ import com.heckmannch.birthdaybuddy.domain.model.PendingNotification
 import com.heckmannch.birthdaybuddy.domain.repository.ContactRepository
 import com.heckmannch.birthdaybuddy.domain.repository.NotificationRepository
 import com.heckmannch.birthdaybuddy.domain.usecase.GetPendingNotificationsUseCase
+import com.heckmannch.birthdaybuddy.di.ApplicationScope
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.time.Duration
@@ -26,6 +25,13 @@ import java.time.LocalTime
 import java.util.concurrent.TimeUnit
 import kotlin.time.Duration.Companion.milliseconds
 
+/**
+ * Worker to evaluate rules and post notifications for upcoming birthdays.
+ *
+ * @property applicationScope Application-scoped coroutine scope for post-work scheduling.
+ *   Intentionally outlives the Worker to schedule the next run after WorkManager finishes this
+ *   execution, ensuring the next run is scheduled without being cancelled by the worker termination.
+ */
 @HiltWorker
 class NotificationWorker @AssistedInject constructor(
     @Assisted private val context: Context,
@@ -34,6 +40,7 @@ class NotificationWorker @AssistedInject constructor(
     private val notificationRepository: NotificationRepository,
     private val notificationHelper: NotificationHelper,
     private val getPendingNotificationsUseCase: GetPendingNotificationsUseCase,
+    @param:ApplicationScope private val applicationScope: CoroutineScope,
 ) : CoroutineWorker(context, workerParameters) {
 
     override suspend fun doWork(): Result {
@@ -77,7 +84,6 @@ class NotificationWorker @AssistedInject constructor(
 
     companion object {
         private const val WORK_NAME = "FlexibleNotificationUpdate"
-        private val applicationScope = CoroutineScope(Dispatchers.Default + SupervisorJob())
 
         /**
          * Plant den nächsten fälligen Zeitpunkt basierend auf allen Regeln.
