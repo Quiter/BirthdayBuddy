@@ -112,21 +112,24 @@ class ContactRepositoryImpl @Inject constructor(
                 // 2. Synchronize labels
                 syncLabelConfigs(systemContacts, dbConfigs, groups)
 
-                // 3. Diffing: Reconcile contacts
-                val finalContacts = systemContacts.map { systemContact ->
-                    val lookupKey = systemContact.lookupKey
-                    val existing = dbContacts[lookupKey]
-                    val userData = userDataMap[lookupKey]
+                // 3. Diffing: Reconcile contacts (CPU-intensive operation offloaded to Dispatchers.Default)
+                val (finalContacts, finalEntities) = withContext(Dispatchers.Default) {
+                    val contacts = systemContacts.map { systemContact ->
+                        val lookupKey = systemContact.lookupKey
+                        val existing = dbContacts[lookupKey]
+                        val userData = userDataMap[lookupKey]
 
-                    systemContact.copy(
-                        localId = existing?.localId ?: 0,
-                        giftIdeas = userData?.giftIdeas ?: existing?.giftIdeas ?: emptyList(),
-                        spouseLookupKey = userData?.spouseLookupKey
-                    )
+                        systemContact.copy(
+                            localId = existing?.localId ?: 0,
+                            giftIdeas = userData?.giftIdeas ?: existing?.giftIdeas ?: emptyList(),
+                            spouseLookupKey = userData?.spouseLookupKey
+                        )
+                    }
+                    val entities = contacts.map { contactDbMapper.toEntity(it) }
+                    contacts to entities
                 }
 
                 // 4. Batch update via transaction
-                val finalEntities = finalContacts.map { contactDbMapper.toEntity(it) }
                 contactDao.refreshContacts(finalEntities)
 
                 // 5. Synchronize calendar if enabled

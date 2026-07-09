@@ -176,8 +176,10 @@
     - **NotificationViewModel:** Hinzufügen von `onIntent(NotificationIntent)` als zentralen Dispatch-Punkt und Umwandlung der bestehenden öffentlichen Methoden in private Helferfunktionen.
     - **UI-Refactoring:** Anpassung von `NotificationSettingsScreen.kt` und `OtherEventsSettingsScreen.kt`, um alle Aktionen ausschließlich über `viewModel.onIntent` an das ViewModel zu senden.
     - **Unit-Tests:** Umstellung der Testfälle in `NotificationViewModelTest.kt` auf die Verwendung von `onIntent`.
-
 254. **Entfernung redundanter @Singleton-Annotationen von Implementierungsklassen (Code-Qualität & Dependency Injection):**
     - **@Singleton-Bereinigung:** Entfernung der redundanten `@Singleton`-Annotationen auf den Implementierungs-Klassen (`BirthdayWidgetUpdater`, `CalendarSyncRepositoryImpl`, `ContactRepositoryImpl`, `NotificationRepositoryImpl`, `NotificationSchedulerImpl`, `SystemCalendarDataSourceImpl` und `TimeRepositoryImpl`), da diese ausschließlich über `@Binds` in `HelperBindingsModule` bereitgestellt werden, wo `@Singleton` bereits auf Methodenebene deklariert ist.
     - **Unbenutzte Imports:** Bereinigung der nicht mehr benötigten `import javax.inject.Singleton` Imports in den betroffenen Dateien.
     - **Erhalt direkter Singletons:** Die Klassen `GiftIdeaBackupManager` und `SystemContactDataSource` behalten ihre `@Singleton`-Annotationen, da sie ohne `@Binds` direkt injiziert werden.
+255. **Threading-Optimierung in `ContactRepositoryImpl.syncContacts()` (Performance & Thread-Management):**
+    - **Default-Dispatcher für CPU-Last:** Das CPU-intensive Reconcilement der Systemkontakte mit den Datenbank- und Nutzerdaten (`finalContacts`) sowie das Mapping auf DB-Entities (`finalEntities`) wurden in ein inneres `withContext(Dispatchers.Default)` ausgelagert.
+    - **Erhalt des IO-Dispatchers:** Alle reinen I/O-Operationen wie das Auslesen der Datenquellen zu Beginn, die Synchronisation der Label-Konfigurationen, die Batch-Aktualisierung über Room-Transaktionen und die Kalendersynchronisation verbleiben auf `Dispatchers.IO`.
