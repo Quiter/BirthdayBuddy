@@ -17,6 +17,14 @@ import java.util.Calendar
 import java.util.TimeZone
 import javax.inject.Inject
 
+/**
+ * Implementation of [CalendarSyncRepository] that synchronizes contact events
+ * (such as birthdays, anniversaries, and name days) with Android's system calendar database.
+ *
+ * It uses content providers to manage custom application-specific calendars ("BirthdayBuddy")
+ * and schedules recurring sync operations. Design decisions include offloading the heavy ContentProvider
+ * batch operations to [Dispatchers.IO] to keep UI threads responsive.
+ */
 class CalendarSyncRepositoryImpl @Inject constructor(
     @param:ApplicationContext private val context: Context,
     private val appSettingsDao: AppSettingsDao,

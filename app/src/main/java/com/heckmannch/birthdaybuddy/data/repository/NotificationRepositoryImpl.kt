@@ -22,6 +22,14 @@ import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
+/**
+ * Implementation of [NotificationRepository] that coordinates notification rules,
+ * pending notification states, and application settings.
+ *
+ * This repository coordinates data storage through local DAOs and manages scheduling
+ * by delegating to [NotificationScheduler]. Thread safety during settings updates
+ * is ensured using a coroutine [Mutex].
+ */
 class NotificationRepositoryImpl @Inject constructor(
     private val notificationRuleDao: NotificationRuleDao,
     private val pendingNotificationDao: PendingNotificationDao,

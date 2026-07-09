@@ -35,6 +35,15 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
+/**
+ * Implementation of [ContactRepository] that acts as the single source of truth
+ * for contacts, user-defined labels, and gift ideas in the application.
+ *
+ * It bridges the local Room database ([AppDatabase], [SettingsDatabase]) with the Android
+ * system's contact provider ([SystemContactDataSource]). It handles contact synchronization,
+ * updates home widgets, exports/imports gift ideas, and handles coroutine dispatching
+ * offloading heavy mapping calculations to [Dispatchers.Default] or [Dispatchers.IO].
+ */
 class ContactRepositoryImpl @Inject constructor(
     @param:ApplicationContext private val context: Context,
     private val contactDao: ContactDao,

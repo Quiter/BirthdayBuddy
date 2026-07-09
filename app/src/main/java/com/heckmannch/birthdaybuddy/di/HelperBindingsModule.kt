@@ -25,34 +25,82 @@ import javax.inject.Singleton
 @InstallIn(SingletonComponent::class)
 interface HelperBindingsModule {
 
+    /**
+     * Binds the clock abstraction interface to its system clock implementation.
+     *
+     * @param clock The [SystemClock] implementation.
+     * @return The bound [Clock] interface.
+     */
     @Binds
     @Singleton
     fun bindClock(clock: SystemClock): Clock
 
+    /**
+     * Binds the widget updater abstraction to its implementation.
+     *
+     * @param updater The [BirthdayWidgetUpdater] implementation.
+     * @return The bound [WidgetUpdater] interface.
+     */
     @Binds
     @Singleton
     fun bindWidgetUpdater(updater: BirthdayWidgetUpdater): WidgetUpdater
 
+    /**
+     * Binds the notification scheduler abstraction to its implementation.
+     *
+     * @param scheduler The [NotificationSchedulerImpl] implementation.
+     * @return The bound [NotificationScheduler] interface.
+     */
     @Binds
     @Singleton
     fun bindNotificationScheduler(scheduler: NotificationSchedulerImpl): NotificationScheduler
 
+    /**
+     * Binds the system calendar data source abstraction to its implementation.
+     *
+     * @param dataSource The [com.heckmannch.birthdaybuddy.data.repository.SystemCalendarDataSourceImpl] implementation.
+     * @return The bound [com.heckmannch.birthdaybuddy.data.repository.SystemCalendarDataSource] interface.
+     */
     @Binds
     @Singleton
     fun bindCalendarDataSource(dataSource: com.heckmannch.birthdaybuddy.data.repository.SystemCalendarDataSourceImpl): com.heckmannch.birthdaybuddy.data.repository.SystemCalendarDataSource
 
+    /**
+     * Binds the contact repository interface to its implementation.
+     *
+     * @param repository The [ContactRepositoryImpl] implementation.
+     * @return The bound [ContactRepository] interface.
+     */
     @Binds
     @Singleton
     fun bindContactRepository(repository: ContactRepositoryImpl): ContactRepository
 
+    /**
+     * Binds the notification repository interface to its implementation.
+     *
+     * @param repository The [NotificationRepositoryImpl] implementation.
+     * @return The bound [NotificationRepository] interface.
+     */
     @Binds
     @Singleton
     fun bindNotificationRepository(repository: NotificationRepositoryImpl): NotificationRepository
 
+    /**
+     * Binds the calendar sync repository interface to its implementation.
+     *
+     * @param repository The [CalendarSyncRepositoryImpl] implementation.
+     * @return The bound [CalendarSyncRepository] interface.
+     */
     @Binds
     @Singleton
     fun bindCalendarSyncRepository(repository: CalendarSyncRepositoryImpl): CalendarSyncRepository
 
+    /**
+     * Binds the time repository interface to its implementation.
+     *
+     * @param repository The [TimeRepositoryImpl] implementation.
+     * @return The bound [TimeRepository] interface.
+     */
     @Binds
     @Singleton
     fun bindTimeRepository(repository: TimeRepositoryImpl): TimeRepository

@@ -1,7 +1,7 @@
 # Project Structure: BirthdayBuddy
 
 ## 📁 Root
-- `MainActivity.kt`: Schlanker Einstiegspunkt der App (~130 Zeilen). Verantwortlich für: Splash-Screen, Edge-to-Edge, Theme-Bereitstellung, globales Intent-Handling (z.B. Widget-Klicks) via `activityIntent`-State und Inaktivitäts-Reset über `LifecycleEventObserver`. Die Navigationslogik liegt in `AppNavHost.kt`, der ContentObserver in `ContactSyncEffect.kt`, die Routen in `NavRoutes.kt`.
+- `MainActivity.kt`: Schlanker Einstiegspunkt der App (~164 Zeilen). Verantwortlich für: Splash-Screen, Edge-to-Edge, Theme-Bereitstellung, globales Intent-Handling (z.B. Widget-Klicks) via `activityIntent`-State und Inaktivitäts-Reset über `LifecycleEventObserver`. Die Navigationslogik liegt in `AppNavHost.kt`, der ContentObserver in `ContactSyncEffect.kt`, die Routen in `NavRoutes.kt`.
 - `BirthdayBuddyApplication.kt`: Hilt-Application Klasse zur Initialisierung der Dependency Injection und Konfiguration des WorkManagers.
 - `AppViewModel.kt`: App-weites `@HiltViewModel`, das auf Activity-Ebene gehalten wird (Root-Package, da Activity-weit gültig).
 - `AppViewModelTest.kt`: Tests für `AppViewModel`.
@@ -9,7 +9,7 @@
 - `PROJECT_STRUCTURE.md`: Diese Datei (Struktur-Dokumentation des Projekts).
 - `CHANGELOG.md`: Vollständige Historie aller signifikanten Änderungen und Feature-Releases.
 - `scripts/`: Ordner für nützliche Hilfs- und Inspektionsskripte (z. B. Python-Skripte zur Validierung von emulatorbasierten Benachrichtigungsregeln und Datenbankabfragen).
-- `.agents/`: Enthält agentenspezifische Konfigurationen, darunter Projekt-Richtlinien (`rules/project_guidelines.md`), die Skill-Registrierung (`skills.json`), lokale Workspace-Skills (`skills/`) und per Git-Submodule verlinkte Community-Skills (`external/`).
+- `.agents/`: Enthält agentenspezifische Konfigurationen, darunter Projekt-Richtlinien (`rules/project_guidelines.md`), lokale Workspace-Skills (`skills/`) und per Git-Submodule verlinkte Community-Skills (`external/`).
 
 ## 📁 DI (`di`)
 - `AppModule.kt`: Hilt-Modul zur Bereitstellung von Singleton-Instanzen und performanten, leichtgewichtigen `@Reusable` DAO-Bindings zur Steigerung der DI-Performanz.
@@ -204,8 +204,10 @@ Diese Tests laufen ohne Emulator/Gerät direkt auf dem Entwicklungsrechner und s
 - `data/local/ConvertersTest.kt`: Tests für die TypeConverter (LocalDate, Listen).
 - `data/local/GiftIdeaConvertersTest.kt`: Tests für Geschenkideen-TypeConverter.
 - `data/mapper/ContactMapperTest.kt`: Tests für die Transformation von Datenbank-Entitäten in UI-Modelle (mit JVM-Safe Fallback für die Formatierung).
+- `data/mapper/ContactMapperTierTest.kt`: Tests für die `BirthdayTier`-Logik und deren Integration mit `ContactMapper`.
 - `data/repository/ContactRepositoryImplTest.kt`: JVM Unit-Tests für `ContactRepositoryImpl` (Abdeckung von allContacts, labelsEnabled, syncContacts, addGiftIdea, und labelConfigs).
 - `util/DateUtilsTest.kt`: Logiktests für Datumsberechnungen (Alter, Tage bis Geburtstag, etc.).
+- `domain/usecase/GetContactsUseCaseTest.kt`: JVM Unit-Tests für `GetContactsUseCase` zur Absicherung der Filter- und Pairing-Logik.
 - `domain/usecase/GetPendingNotificationsUseCaseTest.kt`: JVM Unit-Tests zur Überprüfung der Benachrichtigungsregeln und Fälligkeits-Kalkulation.
 - `domain/usecase/SnoozeNotificationUseCaseTest.kt`: JVM Unit-Tests zur Überprüfung der Schlummer-Delegation.
 - `domain/usecase/GetCoupleSuggestionUseCaseTest.kt`: JVM Unit-Tests zur Überprüfung der Ehepartner-Vorschlagsermittlung (inkl. ungleicher Nachnamen).
@@ -216,6 +218,7 @@ Diese Tests laufen ohne Emulator/Gerät direkt auf dem Entwicklungsrechner und s
 - `ui/screens/home/HomeViewModelGiftIdeaTest.kt`: Tests für Geschenkideen- und Geburtstags-Intents im `HomeViewModel`. **Feature-co-located** neben `HomeViewModel.kt`.
 - `ui/screens/home/HomeViewModelSearchTest.kt`: Tests der Such- und Filterlogik im `HomeViewModel`. **Feature-co-located** neben `HomeViewModel.kt`.
 - `ui/screens/home/HomeViewModelTest.kt`: Tests für das reaktive State-Management und die UI-Filterung im `HomeViewModel`. **Feature-co-located** neben `HomeViewModel.kt`.
+- `ui/screens/onboarding/OnboardingViewModelTest.kt`: Tests für den Onboarding-Status und Erststart-Prozess im `OnboardingViewModel`. **Feature-co-located** neben `OnboardingViewModel.kt`.
 - `viewmodel/BackupViewModelTest.kt`: Tests für `BackupViewModel` zur Absicherung des Geschenkideen-Im- und Exports.
 - `viewmodel/CalendarViewModelTest.kt`: Tests für `CalendarViewModel` zur Absicherung der Kalendereinstellungs- und Synchronisationssteuerung.
 - `viewmodel/LabelViewModelTest.kt`: Tests für `LabelViewModel` zur Absicherung der dynamischen Labels-Filterungslogik.

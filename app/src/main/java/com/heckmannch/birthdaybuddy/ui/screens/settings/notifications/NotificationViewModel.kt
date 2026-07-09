@@ -48,6 +48,14 @@ class NotificationViewModel @Inject constructor(
         }
     }
 
+    /**
+     * Enables or disables global notifications.
+     *
+     * If enabled and no rules exist, a default rule (9:00 AM on the exact day) is automatically created.
+     * Design: Immediate rules lookup ensures a fallback rule is set only when enabling notifications for the first time.
+     *
+     * @param enabled True to enable notifications, false to disable.
+     */
     private fun setNotificationsEnabled(enabled: Boolean) = viewModelScope.launch {
         if (enabled) {
             val rules = notificationRepository.getAllRulesImmediate()
@@ -58,10 +66,25 @@ class NotificationViewModel @Inject constructor(
         notificationRepository.updateSettings(notificationsEnabled = enabled)
     }
 
+    /**
+     * Toggles whether notifications should be persistent (ongoing/non-dismissible).
+     *
+     * Design: Persistent notifications help prevent users from accidentally dismissing important reminders.
+     *
+     * @param persistent True to make notifications persistent, false otherwise.
+     */
     private fun setPersistentNotifications(persistent: Boolean) = viewModelScope.launch {
         notificationRepository.updateSettings(persistentNotifications = persistent)
     }
 
+    /**
+     * Enables or disables notifications for other events like anniversaries and name days.
+     *
+     * Design: Toggling this setting triggers a full sync of contacts so that their non-birthday events
+     * are correctly populated or cleared in the local cache.
+     *
+     * @param enabled True to enable other events, false to disable.
+     */
     private fun setOtherEventsEnabled(enabled: Boolean) = viewModelScope.launch {
         notificationRepository.updateSettings(otherEventsEnabled = enabled)
         if (enabled) {
