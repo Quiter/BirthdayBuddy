@@ -10,7 +10,8 @@
 
 # --- Room Database ---
 # Room Entities und DAOs schützen, damit das Mapping zur Laufzeit funktioniert.
--keep class com.heckmannch.birthdaybuddy.data.local.** { *; }
+# Room TypeConverters – not covered by Room's consumer rules
+-keep class com.heckmannch.birthdaybuddy.data.local.**Converter* { *; }
 -keep @androidx.room.Entity class *
 -keep class * { @androidx.room.Dao *; }
 

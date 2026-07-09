@@ -224,5 +224,9 @@
 266. **Differenzierung des One-Case für verbleibende Tage (Bug Fix & Lokalisierung):**
     - **strings.xml / strings.xml (German):** Anpassung der Plural-Ressource `item_days_left`. Der `quantity="one"` Case wurde in beiden Sprachdateien abgeändert, sodass er keinen Formatbezeichner mehr enthält ("in 1 d." statt "in %d d." bzw. "in 1 T." statt "in %d T.").
     - **Code-Prüfung:** Der Code-Aufruf (`pluralStringResource` / `getQuantityString`) benötigt keine Anpassung, da ungenutzte Argumente ignoriert werden, wenn kein Format-Specifier im quantity="one" Item vorhanden ist.
+267. **Optimierung der ProGuard/R8-Regeln für das lokale Datenpaket (Performance & Shrinking):**
+    - **Entfernung der Wildcard-Regel:** Löschung der pauschalen Regel `-keep class com.heckmannch.birthdaybuddy.data.local.** { *; }`, welche jegliches Code-Shrinking im `data.local`-Paket verhinderte.
+    - **Spezifische Keep-Regeln für TypeConverter:** Hinzufügen der Regel `-keep class com.heckmannch.birthdaybuddy.data.local.**Converter* { *; }` zum gezielten Schutz der Room TypeConverter (`Converters` und `GiftIdeaConverters`), da diese nicht durch Room-Consumer-Rules abgedeckt sind.
+    - **Room Entity- und DAO-Optimierung:** `@Entity`- und `@Dao`-Klassen sowie Datenbank-Klassen verbleiben ohne explizite ProGuard-Einträge, da sie vollautomatisch über die eingebauten Room-Consumer-Rules geschützt und optimiert werden.
 
 
