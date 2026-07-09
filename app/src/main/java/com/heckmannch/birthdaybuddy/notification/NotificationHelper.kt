@@ -9,6 +9,7 @@ import androidx.core.app.NotificationCompat
 import com.heckmannch.birthdaybuddy.MainActivity
 import com.heckmannch.birthdaybuddy.R
 import com.heckmannch.birthdaybuddy.domain.model.Contact
+import com.heckmannch.birthdaybuddy.domain.model.EventType
 import com.heckmannch.birthdaybuddy.domain.repository.NotificationRepository
 import com.heckmannch.birthdaybuddy.util.IntentExtras
 import com.heckmannch.birthdaybuddy.util.hasYear
@@ -33,7 +34,7 @@ class NotificationHelper @Inject constructor(
         contacts: List<Contact>,
         daysBefore: Int,
         pendingId: Int = -1,
-        eventType: String = "birthday"
+        eventType: EventType = EventType.BIRTHDAY
     ) {
         val settings = notificationRepository.settings.first()
         val isPersistent = settings.persistentNotifications
@@ -80,8 +81,8 @@ class NotificationHelper @Inject constructor(
 
         val dbKeys = contacts.map { contact ->
             when (eventType) {
-                "anniversary" -> "anniversary:${contact.lookupKey}"
-                "nameday" -> "nameday:${contact.lookupKey}"
+                EventType.ANNIVERSARY -> "anniversary:${contact.lookupKey}"
+                EventType.NAME_DAY -> "nameday:${contact.lookupKey}"
                 else -> contact.lookupKey
             }
         }.toTypedArray()
@@ -122,7 +123,7 @@ class NotificationHelper @Inject constructor(
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
 
-        val isCoupleAnniversary = eventType == "anniversary" && contacts.size == 2 &&
+        val isCoupleAnniversary = eventType == EventType.ANNIVERSARY && contacts.size == 2 &&
                 contacts[0].spouseLookupKey == contacts[1].lookupKey &&
                 contacts[1].spouseLookupKey == contacts[0].lookupKey
 
@@ -138,7 +139,7 @@ class NotificationHelper @Inject constructor(
             val contact = contacts.first()
 
             when (eventType) {
-                "anniversary" -> {
+                EventType.ANNIVERSARY -> {
                     val anniversary = contact.anniversary
                     val hasYear = anniversary?.hasYear ?: false
                     val nextYears = anniversary?.safeNextAge(LocalDate.now()) ?: -1
@@ -181,7 +182,7 @@ class NotificationHelper @Inject constructor(
                     }
                 }
 
-                "nameday" -> {
+                EventType.NAME_DAY -> {
                     when (daysBefore) {
                         0 -> context.getString(R.string.notif_title_today_nameday, name)
                         1 -> context.getString(R.string.notif_title_tomorrow_nameday, name)
@@ -242,7 +243,7 @@ class NotificationHelper @Inject constructor(
             }
         } else {
             when (eventType) {
-                "anniversary" -> {
+                EventType.ANNIVERSARY -> {
                     when (daysBefore) {
                         0 -> context.resources.getQuantityString(
                             R.plurals.notif_title_today_anniversary_plural,
@@ -271,7 +272,7 @@ class NotificationHelper @Inject constructor(
                     }
                 }
 
-                "nameday" -> {
+                EventType.NAME_DAY -> {
                     when (daysBefore) {
                         0 -> context.resources.getQuantityString(
                             R.plurals.notif_title_today_nameday_plural,
@@ -333,8 +334,8 @@ class NotificationHelper @Inject constructor(
 
         val contentText = if (contacts.size == 1 || isCoupleAnniversary) {
             val defaultDesc = when (eventType) {
-                "anniversary" -> context.getString(R.string.notif_desc_anniversary)
-                "nameday" -> context.getString(R.string.notif_desc_nameday)
+                EventType.ANNIVERSARY -> context.getString(R.string.notif_desc_anniversary)
+                EventType.NAME_DAY -> context.getString(R.string.notif_desc_nameday)
                 else -> context.getString(R.string.notif_desc_named)
             }
             if (showHint) context.getString(R.string.notif_hint_persistent)

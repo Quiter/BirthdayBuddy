@@ -1,6 +1,7 @@
 package com.heckmannch.birthdaybuddy.domain.usecase
 
 import com.heckmannch.birthdaybuddy.domain.model.Contact
+import com.heckmannch.birthdaybuddy.domain.model.EventType
 import com.heckmannch.birthdaybuddy.domain.repository.ContactRepository
 import com.heckmannch.birthdaybuddy.domain.repository.NotificationRepository
 import dagger.Reusable
@@ -25,7 +26,7 @@ class GetPendingNotificationsUseCase @Inject constructor(
      */
     data class PendingNotificationEvent(
         val contacts: List<Contact>,
-        val eventType: String, // "birthday", "anniversary", "nameday"
+        val eventType: EventType,
         val dbKeys: List<String>,
         val daysBefore: Int
     )
@@ -71,7 +72,7 @@ class GetPendingNotificationsUseCase @Inject constructor(
                     pendingEvents.add(
                         PendingNotificationEvent(
                             contacts = listOf(contact),
-                            eventType = "birthday",
+                            eventType = EventType.BIRTHDAY,
                             dbKeys = listOf(dbKey),
                             daysBefore = rule.daysBefore
                         )
@@ -109,7 +110,7 @@ class GetPendingNotificationsUseCase @Inject constructor(
                             pendingEvents.add(
                                 PendingNotificationEvent(
                                     contacts = listOf(contact, spouse),
-                                    eventType = "anniversary",
+                                    eventType = EventType.ANNIVERSARY,
                                     dbKeys = dbKeys,
                                     daysBefore = rule.daysBefore
                                 )
@@ -126,7 +127,7 @@ class GetPendingNotificationsUseCase @Inject constructor(
                             pendingEvents.add(
                                 PendingNotificationEvent(
                                     contacts = listOf(contact),
-                                    eventType = "anniversary",
+                                    eventType = EventType.ANNIVERSARY,
                                     dbKeys = listOf(dbKey),
                                     daysBefore = rule.daysBefore
                                 )
@@ -151,7 +152,7 @@ class GetPendingNotificationsUseCase @Inject constructor(
                         pendingEvents.add(
                             PendingNotificationEvent(
                                 contacts = listOf(contact),
-                                eventType = "nameday",
+                                eventType = EventType.NAME_DAY,
                                 dbKeys = listOf(dbKey),
                                 daysBefore = rule.daysBefore
                             )

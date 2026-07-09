@@ -4,6 +4,7 @@ import android.content.Context
 import androidx.hilt.work.HiltWorker
 import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
+import com.heckmannch.birthdaybuddy.domain.model.EventType
 import com.heckmannch.birthdaybuddy.domain.repository.ContactRepository
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
@@ -27,11 +28,20 @@ class SnoozeWorker @AssistedInject constructor(
         val targetContacts = allContacts.filter { it.lookupKey in rawKeys }
 
         if (targetContacts.isNotEmpty()) {
-            val firstKey = lookupKeys.firstOrNull() ?: ""
-            val eventType = when {
-                firstKey.startsWith("anniversary:") -> "anniversary"
-                firstKey.startsWith("nameday:") -> "nameday"
-                else -> "birthday"
+            val eventTypeStr = inputData.getString("EVENT_TYPE")
+            val eventType = if (eventTypeStr != null) {
+                try {
+                    EventType.valueOf(eventTypeStr)
+                } catch (e: IllegalArgumentException) {
+                    EventType.BIRTHDAY
+                }
+            } else {
+                val firstKey = lookupKeys.firstOrNull() ?: ""
+                when {
+                    firstKey.startsWith("anniversary:") -> EventType.ANNIVERSARY
+                    firstKey.startsWith("nameday:") -> EventType.NAME_DAY
+                    else -> EventType.BIRTHDAY
+                }
             }
             notificationHelper.showBirthdayNotification(
                 targetContacts,

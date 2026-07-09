@@ -4,6 +4,7 @@ import com.google.common.truth.Truth.assertThat
 import com.heckmannch.birthdaybuddy.MainDispatcherRule
 import com.heckmannch.birthdaybuddy.domain.model.AppSettings
 import com.heckmannch.birthdaybuddy.domain.model.Contact
+import com.heckmannch.birthdaybuddy.domain.model.EventType
 import com.heckmannch.birthdaybuddy.domain.model.NotificationRule
 import com.heckmannch.birthdaybuddy.domain.repository.ContactRepository
 import com.heckmannch.birthdaybuddy.domain.repository.NotificationRepository
@@ -129,7 +130,7 @@ class GetPendingNotificationsUseCaseTest {
         // Assert
         assertThat(result).hasSize(1)
         val event = result[0]
-        assertThat(event.eventType).isEqualTo("birthday")
+        assertThat(event.eventType).isEqualTo(EventType.BIRTHDAY)
         assertThat(event.contacts).containsExactly(contacts[0])
         assertThat(event.daysBefore).isEqualTo(1)
         assertThat(event.dbKeys).containsExactly("key1")
@@ -211,7 +212,7 @@ class GetPendingNotificationsUseCaseTest {
         // Assert
         assertThat(result).hasSize(1)
         val event = result[0]
-        assertThat(event.eventType).isEqualTo("nameday")
+        assertThat(event.eventType).isEqualTo(EventType.NAME_DAY)
         assertThat(event.dbKeys).containsExactly("nameday:key1")
     }
 
@@ -248,7 +249,7 @@ class GetPendingNotificationsUseCaseTest {
         // Assert
         assertThat(result).hasSize(1)
         val event = result[0]
-        assertThat(event.eventType).isEqualTo("anniversary")
+        assertThat(event.eventType).isEqualTo(EventType.ANNIVERSARY)
         assertThat(event.contacts).containsExactly(contacts[0], contacts[1])
         assertThat(event.dbKeys).containsExactly("anniversary:key1", "anniversary:key2")
     }

@@ -7,6 +7,7 @@ import android.content.Intent
 import androidx.work.Data
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
+import com.heckmannch.birthdaybuddy.domain.model.EventType
 import com.heckmannch.birthdaybuddy.domain.repository.NotificationRepository
 import com.heckmannch.birthdaybuddy.domain.usecase.SnoozeNotificationUseCase
 import dagger.hilt.android.AndroidEntryPoint
@@ -76,10 +77,17 @@ class NotificationActionReceiver : BroadcastReceiver() {
                         // Wir brauchen den NotificationHelper. Da wir in einem Receiver sind,
                         // nutzen wir am besten den Worker oder wir triggern einen schnellen Re-show.
                         // Einfachster Weg: Snooze mit 1 Sekunde Delay oder direkter Aufruf.
+                        val firstKey = lookupKeys.firstOrNull() ?: ""
+                        val eventType = when {
+                            firstKey.startsWith("anniversary:") -> EventType.ANNIVERSARY
+                            firstKey.startsWith("nameday:") -> EventType.NAME_DAY
+                            else -> EventType.BIRTHDAY
+                        }
                         val data = Data.Builder()
                             .putInt("DAYS_BEFORE", daysBefore)
                             .putInt("PENDING_ID", pendingId)
                             .putStringArray("LOOKUP_KEYS", lookupKeys)
+                            .putString("EVENT_TYPE", eventType.name)
                             .build()
 
                         val reShowRequest = OneTimeWorkRequestBuilder<SnoozeWorker>()

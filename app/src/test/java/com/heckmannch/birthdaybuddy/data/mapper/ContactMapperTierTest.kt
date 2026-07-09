@@ -3,7 +3,7 @@ package com.heckmannch.birthdaybuddy.data.mapper
 import com.google.common.truth.Truth.assertThat
 import com.heckmannch.birthdaybuddy.domain.model.Contact
 import com.heckmannch.birthdaybuddy.ui.model.BirthdayTier
-import com.heckmannch.birthdaybuddy.ui.model.EventType
+import com.heckmannch.birthdaybuddy.domain.model.EventType
 import com.heckmannch.birthdaybuddy.util.NO_YEAR_MARKER
 import org.junit.Test
 import java.time.LocalDate

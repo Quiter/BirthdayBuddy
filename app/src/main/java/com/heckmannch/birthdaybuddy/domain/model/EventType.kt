@@ -1,4 +1,4 @@
-package com.heckmannch.birthdaybuddy.ui.model
+package com.heckmannch.birthdaybuddy.domain.model
 
 /**
  * Typsicherer Diskriminator für den aktuell angezeigten Ereignistyp.

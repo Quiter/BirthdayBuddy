@@ -164,4 +164,12 @@
     - **Anpassung der Imports:** Aktualisierung aller UI-Komponenten (`HomeContent.kt`, `BirthdayList.kt`, `LabelFilterBar.kt`, `LabelSettingsScreen.kt`, `LabelViewModel.kt`) und Domain-UseCases (`GetAvailableLabelsUseCase.kt`, `GetContactsUseCase.kt`, `GetCoupleSuggestionUseCase.kt`) sowie aller zugehörigen Unit-Tests auf den neuen Domain-Import.
     - **Dokumentation:** Aktualisierung der Projektstruktur in `PROJECT_STRUCTURE.md`.
 
+252. **Typsicheres Refactoring des Event-Typs im Notification-Layer (Architektur & Typ-Sicherheit):**
+    - **Verschiebung von `EventType`:** Die `EventType`-Enum wurde aus `ui/model/` nach `domain/model/` verlagert, da sie nun auch intensiv im Notification- und Use-Case-Layer genutzt wird. Alle Imports wurden angepasst.
+    - **GetPendingNotificationsUseCase:** Die Rückgabeklasse `PendingNotificationEvent` verwendet nun das typ-sichere `EventType`-Enum anstelle von rohen String-Literalen.
+    - **NotificationHelper:** Die Methode `showBirthdayNotification` akzeptiert nun `EventType` als Parameter, und alle internen Fallunterscheidungen wurden auf Enum-basierte `when`-Ausdrücke umgestellt.
+    - **Snooze- & Reschedule-Logik:** `SnoozeWorker` parst nun beim Lesen aus der WorkData den `EVENT_TYPE` per `EventType.valueOf(...)` mit Fallback auf `EventType.BIRTHDAY`. `NotificationSchedulerImpl` und `NotificationActionReceiver` übergeben nun den passenden Enum-Namen beim Planen von Snooze-Workern.
+    - **Unit-Tests:** Anpassung der Tests in `GetPendingNotificationsUseCaseTest` an die neuen Enum-Typen.
+
+
 
