@@ -46,6 +46,8 @@ import com.heckmannch.birthdaybuddy.ui.theme.AlphaEmphasisLow
 import com.heckmannch.birthdaybuddy.ui.theme.AlphaEmphasisMedium
 import com.heckmannch.birthdaybuddy.ui.theme.BirthdayBuddyTheme
 import com.heckmannch.birthdaybuddy.ui.theme.SearchBarHeight
+import com.heckmannch.birthdaybuddy.ui.theme.SearchBarBorderWidth
+import com.heckmannch.birthdaybuddy.ui.theme.SearchBarFocusedElevation
 import com.heckmannch.birthdaybuddy.ui.theme.SpacingExtraSmall
 import com.heckmannch.birthdaybuddy.ui.theme.SpacingNormal
 
@@ -76,7 +78,7 @@ fun SearchBar(
     )
 
     val borderWidth by animateDpAsState(
-        targetValue = if (isFocused.value) 2.dp else 0.dp,
+        targetValue = if (isFocused.value) SearchBarBorderWidth else 0.dp,
         label = "SearchBarBorderWidth"
     )
 
@@ -88,7 +90,7 @@ fun SearchBar(
             .border(width = borderWidth, color = borderColor, shape = CircleShape),
         shape = CircleShape,
         color = containerColor,
-        tonalElevation = if (isFocused.value) 4.dp else 0.dp
+        tonalElevation = if (isFocused.value) SearchBarFocusedElevation else 0.dp
     ) {
         TextField(
             value = query,

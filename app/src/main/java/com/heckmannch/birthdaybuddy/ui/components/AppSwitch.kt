@@ -20,6 +20,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.heckmannch.birthdaybuddy.ui.theme.BirthdayBuddyTheme
+import com.heckmannch.birthdaybuddy.ui.theme.AlphaEmphasisDisabled
 
 /**
  * A standardized Switch component for BirthdayBuddy.
@@ -47,7 +48,7 @@ fun AppSwitch(
                     imageVector = Icons.Default.Check,
                     contentDescription = null,
                     tint = if (enabled) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface.copy(
-                        alpha = 0.38f
+                        alpha = AlphaEmphasisDisabled
                     ),
                     modifier = Modifier.size(SwitchDefaults.IconSize)
                 )

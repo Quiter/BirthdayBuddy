@@ -20,6 +20,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
+import com.heckmannch.birthdaybuddy.ui.theme.AlphaContainerMedium
 import com.heckmannch.birthdaybuddy.ui.theme.BirthdayBuddyTheme
 import com.heckmannch.birthdaybuddy.ui.theme.IconSizeNormal
 import com.heckmannch.birthdaybuddy.ui.theme.SpacingExtraSmall
@@ -34,7 +35,7 @@ fun InfoCard(
 ) {
     Card(
         colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.3f)
+            containerColor = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = AlphaContainerMedium)
         ),
         shape = MaterialTheme.shapes.extraLarge,
         modifier = modifier.fillMaxWidth()

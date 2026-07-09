@@ -32,6 +32,8 @@ import com.heckmannch.birthdaybuddy.ui.theme.AlphaEmphasisDisabled
 import com.heckmannch.birthdaybuddy.ui.theme.BirthdayBuddyTheme
 import com.heckmannch.birthdaybuddy.ui.theme.IconSizeLarge
 import com.heckmannch.birthdaybuddy.ui.theme.IconSizeSmall
+import com.heckmannch.birthdaybuddy.ui.theme.IconSizeExtraSmall
+import com.heckmannch.birthdaybuddy.ui.theme.OnboardingGuideTinySpacer
 import com.heckmannch.birthdaybuddy.ui.theme.SpacingExtraSmall
 import com.heckmannch.birthdaybuddy.ui.theme.SpacingMedium
 
@@ -90,7 +92,7 @@ fun StepItem(
                     imageVector = icon,
                     contentDescription = null,
                     tint = if (isLocked) onSurfaceColor.copy(alpha = AlphaEmphasisDisabled) else primaryColor,
-                    modifier = Modifier.size(16.dp)
+                    modifier = Modifier.size(IconSizeExtraSmall)
                 )
             } else if (stepNumber != null) {
                 Text(
@@ -115,7 +117,7 @@ fun StepItem(
                 fontWeight = FontWeight.Bold,
                 color = onSurfaceColor.copy(alpha = contentAlpha)
             )
-            Spacer(modifier = Modifier.height(2.dp))
+            Spacer(modifier = Modifier.height(OnboardingGuideTinySpacer))
             Text(
                 text = description,
                 style = MaterialTheme.typography.bodySmall,

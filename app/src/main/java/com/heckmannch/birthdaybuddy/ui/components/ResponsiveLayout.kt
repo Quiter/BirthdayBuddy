@@ -35,6 +35,8 @@ import androidx.compose.ui.tooling.preview.Devices
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.heckmannch.birthdaybuddy.ui.theme.BirthdayBuddyTheme
+import com.heckmannch.birthdaybuddy.ui.theme.MaxWidthMedium
+import com.heckmannch.birthdaybuddy.ui.theme.MaxWidthExpanded
 
 /**
  * CompositionLocal zur Bereitstellung der aktuellen Fensterbreitenklasse.
@@ -66,8 +68,8 @@ fun AdaptiveContentContainer(
     val maxWidth = Modifier
         .then(
             when (windowWidthSizeClass) {
-                WindowWidthSizeClass.Medium -> Modifier.widthIn(max = 600.dp)
-                WindowWidthSizeClass.Expanded -> Modifier.widthIn(max = 840.dp)
+                WindowWidthSizeClass.Medium -> Modifier.widthIn(max = MaxWidthMedium)
+                WindowWidthSizeClass.Expanded -> Modifier.widthIn(max = MaxWidthExpanded)
                 else -> Modifier
             }
         )

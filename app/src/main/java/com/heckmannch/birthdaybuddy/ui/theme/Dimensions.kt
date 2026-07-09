@@ -15,7 +15,7 @@ val SpacingExtraLarge = 32.dp
 /**
  * Standardized icon sizes.
  */
-val IconSizeExtraSmall = 14.dp
+val IconSizeExtraSmall = 16.dp // Extra small icons (e.g., small edit indicators or status icons)
 val IconSizeSmall = 18.dp
 val IconSizeNormal = 24.dp
 val IconSizeLarge = 32.dp
@@ -31,6 +31,7 @@ val ContactImageSizeSmall = 40.dp
 val ContactImageSizeNormal = 64.dp
 val ContactImageSizeLarge = 96.dp
 val ContactImageSizeOnboarding = 180.dp
+val FabBottomSpacing = 80.dp // Spacing from bottom of screen to float above FAB
 
 /**
  * Semantic Alpha (Transparency) levels.
@@ -42,6 +43,7 @@ const val AlphaEmphasisSubtle = 0.3f
 const val AlphaEmphasisDisabled = 0.38f
 const val AlphaContainerSubtle = 0.15f
 const val AlphaContainerMuted = 0.08f
+const val AlphaContainerMedium = 0.3f // Medium container alpha (e.g., for info cards)
 const val AlphaSurfaceContainerLow = 0.5f
 const val AlphaSurfaceContainerHigh = 0.6f
 
@@ -75,6 +77,10 @@ val OnboardingGuideTinySpacer = 2.dp
 val ElevationOnboardingCard = 6.dp
 val SelectedBorderWidth = 1.5.dp
 val BirthdayBorderWidth = 2.dp
+val SearchBarBorderWidth = 2.dp // Border width of the SearchBar when focused
+val SearchBarFocusedElevation = 4.dp // Elevation of the SearchBar when focused
+val MaxWidthMedium = 600.dp // Max width for medium screens
+val MaxWidthExpanded = 840.dp // Max width for expanded screens
 
 const val AlphaOnboardingCard = 0.9f
 const val AlphaOnboardingCalendarDisabled = 0.4f

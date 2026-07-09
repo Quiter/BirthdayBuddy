@@ -76,6 +76,8 @@ import com.heckmannch.birthdaybuddy.ui.theme.SpacingExtraLarge
 import com.heckmannch.birthdaybuddy.ui.theme.SpacingExtraSmall
 import com.heckmannch.birthdaybuddy.ui.theme.SpacingMedium
 import com.heckmannch.birthdaybuddy.ui.theme.SpacingNormal
+import com.heckmannch.birthdaybuddy.ui.theme.ContactImageSizeSmall
+import com.heckmannch.birthdaybuddy.ui.theme.FabBottomSpacing
 import com.heckmannch.birthdaybuddy.ui.theme.SpacingSmall
 import kotlinx.coroutines.delay
 import kotlin.time.Duration.Companion.milliseconds
@@ -143,7 +145,7 @@ fun BirthdayList(
             modifier = modifier.fillMaxSize(),
             contentPadding = PaddingValues(
                 top = contentPadding.calculateTopPadding(),
-                bottom = 80.dp + navBarPadding
+                bottom = FabBottomSpacing + navBarPadding
             ),
             userScrollEnabled = false,
         ) {
@@ -179,7 +181,7 @@ fun BirthdayList(
             .testTag("birthday_list"),
         contentPadding = PaddingValues(
             top = contentPadding.calculateTopPadding(),
-            bottom = 80.dp + navBarPadding
+            bottom = FabBottomSpacing + navBarPadding
         ),
     ) {
         if (showLabelFilter && availableLabels.isNotEmpty()) {
@@ -281,7 +283,7 @@ private fun BirthdayItemSkeleton() {
         ) {
             Box(
                 modifier = Modifier
-                    .size(40.dp)
+                    .size(ContactImageSizeSmall)
                     .background(
                         MaterialTheme.colorScheme.onSurface.copy(alpha = 0.1f),
                         MaterialTheme.shapes.medium
