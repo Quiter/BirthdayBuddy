@@ -36,7 +36,7 @@
     <string name="item_action_skype">Skype</string>
     <string name="item_action_discord">Discord</string>
     <plurals name="item_days_left">
-        <item quantity="one">in %d T.</item>
+        <item quantity="one">in 1 T.</item>
         <item quantity="other">in %d T.</item>
     </plurals>
 

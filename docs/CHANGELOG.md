@@ -221,3 +221,8 @@
     - **Format-Specifier Vereinheitlichung:** Die Format-Specifier in den Plural-Blöcken `notif_title_days_named` und `notif_title_days_plural` wurden in [strings.xml](file:///c:/Users/chris/AndroidStudioProjects/BirthdayBuddy/app/src/main/res/values/strings.xml) und [strings.xml (German)](file:///c:/Users/chris/AndroidStudioProjects/BirthdayBuddy/app/src/main/res/values-de/strings.xml) durchgehend auf nummerierte Bezeichner umgestellt (`%1$d`, `%2$s` bzw. `%2$d`).
     - **Fehlerbehebung:** Behebung potenzieller `MissingFormatArgumentException`-Fehler und falscher Argumentzuweisungen (wie fälschlicherweise formatierte IDs oder Indizes in den quantity="one" Varianten).
 
+266. **Differenzierung des One-Case für verbleibende Tage (Bug Fix & Lokalisierung):**
+    - **strings.xml / strings.xml (German):** Anpassung der Plural-Ressource `item_days_left`. Der `quantity="one"` Case wurde in beiden Sprachdateien abgeändert, sodass er keinen Formatbezeichner mehr enthält ("in 1 d." statt "in %d d." bzw. "in 1 T." statt "in %d T.").
+    - **Code-Prüfung:** Der Code-Aufruf (`pluralStringResource` / `getQuantityString`) benötigt keine Anpassung, da ungenutzte Argumente ignoriert werden, wenn kein Format-Specifier im quantity="one" Item vorhanden ist.
+
+
