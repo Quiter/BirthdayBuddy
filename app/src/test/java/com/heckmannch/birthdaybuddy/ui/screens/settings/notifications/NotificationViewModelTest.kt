@@ -63,7 +63,7 @@ class NotificationViewModelTest {
     fun `setNotificationsEnabled should delegate to repository`() = runTest {
         whenever(notificationRepository.getAllRulesImmediate()).thenReturn(testRules)
 
-        viewModel.setNotificationsEnabled(false)
+        viewModel.onIntent(NotificationIntent.SetEnabled(false))
 
         verify(notificationRepository).updateSettings(
             notificationsEnabled = eq(false),
@@ -85,7 +85,7 @@ class NotificationViewModelTest {
 
     @Test
     fun `setPersistentNotifications should delegate to repository`() = runTest {
-        viewModel.setPersistentNotifications(true)
+        viewModel.onIntent(NotificationIntent.SetPersistent(true))
 
         verify(notificationRepository).updateSettings(
             notificationsEnabled = eq(null),
@@ -107,7 +107,7 @@ class NotificationViewModelTest {
 
     @Test
     fun `setOtherEventsEnabled should delegate to repository and sync contacts`() = runTest {
-        viewModel.setOtherEventsEnabled(true)
+        viewModel.onIntent(NotificationIntent.SetOtherEventsEnabled(true))
 
         verify(notificationRepository).updateSettings(
             notificationsEnabled = eq(null),
@@ -130,7 +130,7 @@ class NotificationViewModelTest {
 
     @Test
     fun `addNotificationRule should delegate to repository`() = runTest {
-        viewModel.addNotificationRule(daysBefore = 2, hour = 10, minute = 30)
+        viewModel.onIntent(NotificationIntent.AddRule(daysBefore = 2, hour = 10, minute = 30))
 
         verify(notificationRepository).insertRule(any())
     }
@@ -138,14 +138,14 @@ class NotificationViewModelTest {
     @Test
     fun `updateNotificationRule should delegate to repository`() = runTest {
         val rule = testRules[0]
-        viewModel.updateNotificationRule(rule)
+        viewModel.onIntent(NotificationIntent.UpdateRule(rule))
         verify(notificationRepository).updateRule(rule)
     }
 
     @Test
     fun `deleteNotificationRule should delegate to repository`() = runTest {
         val rule = testRules[0]
-        viewModel.deleteNotificationRule(rule)
+        viewModel.onIntent(NotificationIntent.DeleteRule(rule))
         verify(notificationRepository).deleteRule(rule)
     }
 }

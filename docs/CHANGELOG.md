@@ -171,5 +171,12 @@
     - **Snooze- & Reschedule-Logik:** `SnoozeWorker` parst nun beim Lesen aus der WorkData den `EVENT_TYPE` per `EventType.valueOf(...)` mit Fallback auf `EventType.BIRTHDAY`. `NotificationSchedulerImpl` und `NotificationActionReceiver` übergeben nun den passenden Enum-Namen beim Planen von Snooze-Workern.
     - **Unit-Tests:** Anpassung der Tests in `GetPendingNotificationsUseCaseTest` an die neuen Enum-Typen.
 
+253. **Konsolidierung des MVI-Prinzips im NotificationViewModel (Architektur & Code-Qualität):**
+    - **NotificationIntent:** Einführung des sealed interfaces `NotificationIntent` mit data classes für alle Benutzer-Aktionen (`SetEnabled`, `SetPersistent`, `SetOtherEventsEnabled`, `AddRule`, `UpdateRule`, `DeleteRule`).
+    - **NotificationViewModel:** Hinzufügen von `onIntent(NotificationIntent)` als zentralen Dispatch-Punkt und Umwandlung der bestehenden öffentlichen Methoden in private Helferfunktionen.
+    - **UI-Refactoring:** Anpassung von `NotificationSettingsScreen.kt` und `OtherEventsSettingsScreen.kt`, um alle Aktionen ausschließlich über `viewModel.onIntent` an das ViewModel zu senden.
+    - **Unit-Tests:** Umstellung der Testfälle in `NotificationViewModelTest.kt` auf die Verwendung von `onIntent`.
+
+
 
 

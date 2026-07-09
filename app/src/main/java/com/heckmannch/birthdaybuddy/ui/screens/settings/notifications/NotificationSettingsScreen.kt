@@ -118,7 +118,7 @@ fun NotificationSettingsScreen(
         hasAttemptedPermission = true
         hasSystemPermission = isGranted
         if (isGranted) {
-            viewModel.setNotificationsEnabled(true)
+            viewModel.onIntent(NotificationIntent.SetEnabled(true))
         }
     }
 
@@ -133,22 +133,22 @@ fun NotificationSettingsScreen(
         onToggleNotifications = { enabled ->
             if (enabled) {
                 if (hasSystemPermission) {
-                    viewModel.setNotificationsEnabled(true)
+                    viewModel.onIntent(NotificationIntent.SetEnabled(true))
                 } else {
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
                         permissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
                     } else {
-                        viewModel.setNotificationsEnabled(true)
+                        viewModel.onIntent(NotificationIntent.SetEnabled(true))
                     }
                 }
             } else {
-                viewModel.setNotificationsEnabled(false)
+                viewModel.onIntent(NotificationIntent.SetEnabled(false))
             }
         },
-        onTogglePersistent = viewModel::setPersistentNotifications,
-        onAddRule = viewModel::addNotificationRule,
-        onUpdateRule = viewModel::updateNotificationRule,
-        onDeleteRule = viewModel::deleteNotificationRule,
+        onTogglePersistent = { viewModel.onIntent(NotificationIntent.SetPersistent(it)) },
+        onAddRule = { days, hour, minute -> viewModel.onIntent(NotificationIntent.AddRule(days, hour, minute)) },
+        onUpdateRule = { viewModel.onIntent(NotificationIntent.UpdateRule(it)) },
+        onDeleteRule = { viewModel.onIntent(NotificationIntent.DeleteRule(it)) },
         onRequestPermission = {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
                 val activity = context as? Activity

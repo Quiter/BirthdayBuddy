@@ -37,7 +37,18 @@ class NotificationViewModel @Inject constructor(
     )
 
 
-    fun setNotificationsEnabled(enabled: Boolean) = viewModelScope.launch {
+    fun onIntent(intent: NotificationIntent) {
+        when (intent) {
+            is NotificationIntent.SetEnabled -> setNotificationsEnabled(intent.enabled)
+            is NotificationIntent.SetPersistent -> setPersistentNotifications(intent.persistent)
+            is NotificationIntent.SetOtherEventsEnabled -> setOtherEventsEnabled(intent.enabled)
+            is NotificationIntent.AddRule -> addNotificationRule(intent.daysBefore, intent.hour, intent.minute)
+            is NotificationIntent.UpdateRule -> updateNotificationRule(intent.rule)
+            is NotificationIntent.DeleteRule -> deleteNotificationRule(intent.rule)
+        }
+    }
+
+    private fun setNotificationsEnabled(enabled: Boolean) = viewModelScope.launch {
         if (enabled) {
             val rules = notificationRepository.getAllRulesImmediate()
             if (rules.isEmpty()) {
@@ -47,18 +58,18 @@ class NotificationViewModel @Inject constructor(
         notificationRepository.updateSettings(notificationsEnabled = enabled)
     }
 
-    fun setPersistentNotifications(persistent: Boolean) = viewModelScope.launch {
+    private fun setPersistentNotifications(persistent: Boolean) = viewModelScope.launch {
         notificationRepository.updateSettings(persistentNotifications = persistent)
     }
 
-    fun setOtherEventsEnabled(enabled: Boolean) = viewModelScope.launch {
+    private fun setOtherEventsEnabled(enabled: Boolean) = viewModelScope.launch {
         notificationRepository.updateSettings(otherEventsEnabled = enabled)
         if (enabled) {
             contactRepository.syncContacts()
         }
     }
 
-    fun addNotificationRule(daysBefore: Int, hour: Int, minute: Int) = viewModelScope.launch {
+    private fun addNotificationRule(daysBefore: Int, hour: Int, minute: Int) = viewModelScope.launch {
         notificationRepository.insertRule(
             NotificationRule(
                 daysBefore = daysBefore,
@@ -68,11 +79,20 @@ class NotificationViewModel @Inject constructor(
         )
     }
 
-    fun updateNotificationRule(rule: NotificationRule) = viewModelScope.launch {
+    private fun updateNotificationRule(rule: NotificationRule) = viewModelScope.launch {
         notificationRepository.updateRule(rule)
     }
 
-    fun deleteNotificationRule(rule: NotificationRule) = viewModelScope.launch {
+    private fun deleteNotificationRule(rule: NotificationRule) = viewModelScope.launch {
         notificationRepository.deleteRule(rule)
     }
+}
+
+sealed interface NotificationIntent {
+    data class SetEnabled(val enabled: Boolean) : NotificationIntent
+    data class SetPersistent(val persistent: Boolean) : NotificationIntent
+    data class SetOtherEventsEnabled(val enabled: Boolean) : NotificationIntent
+    data class AddRule(val daysBefore: Int, val hour: Int, val minute: Int) : NotificationIntent
+    data class UpdateRule(val rule: NotificationRule) : NotificationIntent
+    data class DeleteRule(val rule: NotificationRule) : NotificationIntent
 }

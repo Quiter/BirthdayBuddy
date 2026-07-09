@@ -28,6 +28,7 @@ import com.heckmannch.birthdaybuddy.ui.components.AppResponsiveScaffold
 import com.heckmannch.birthdaybuddy.ui.components.InfoCard
 import com.heckmannch.birthdaybuddy.ui.components.SettingsCard
 import com.heckmannch.birthdaybuddy.ui.components.SettingsSwitchRow
+import com.heckmannch.birthdaybuddy.ui.screens.settings.notifications.NotificationIntent
 import com.heckmannch.birthdaybuddy.ui.screens.settings.notifications.NotificationViewModel
 import com.heckmannch.birthdaybuddy.ui.theme.SpacingNormal
 import com.heckmannch.birthdaybuddy.ui.theme.SpacingSmall
@@ -46,7 +47,7 @@ fun OtherEventsSettingsScreen(
     OtherEventsSettingsContent(
         windowWidthSizeClass = windowWidthSizeClass,
         otherEventsEnabled = otherEventsEnabled,
-        onToggleChange = { viewModel.setOtherEventsEnabled(it) },
+        onToggleChange = { viewModel.onIntent(NotificationIntent.SetOtherEventsEnabled(it)) },
         showBackButton = showBackButton,
         onNavigateBack = onNavigateBack
     )
