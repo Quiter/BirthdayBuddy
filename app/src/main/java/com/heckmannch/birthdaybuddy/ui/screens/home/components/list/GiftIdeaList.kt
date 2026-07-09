@@ -23,6 +23,7 @@ import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -59,14 +60,16 @@ fun GiftIdeaList(
             .padding(bottom = SpacingSmall)
     ) {
         giftIdeas.forEach { idea ->
-            GiftIdeaItem(
-                idea = idea,
-                isNew = idea.id == newlyAddedId,
-                onCheckedChange = { onCheckedChange(idea, it) },
-                onTextChange = { onTextChange(idea, it) },
-                onDelete = { onDelete(idea) },
-                onDone = { onDone(idea) }
-            )
+            key(idea.id) {
+                GiftIdeaItem(
+                    idea = idea,
+                    isNew = idea.id == newlyAddedId,
+                    onCheckedChange = { onCheckedChange(idea, it) },
+                    onTextChange = { onTextChange(idea, it) },
+                    onDelete = { onDelete(idea) },
+                    onDone = { onDone(idea) }
+                )
+            }
         }
 
         TextButton(
