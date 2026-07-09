@@ -229,4 +229,7 @@
     - **Spezifische Keep-Regeln für TypeConverter:** Hinzufügen der Regel `-keep class com.heckmannch.birthdaybuddy.data.local.**Converter* { *; }` zum gezielten Schutz der Room TypeConverter (`Converters` und `GiftIdeaConverters`), da diese nicht durch Room-Consumer-Rules abgedeckt sind.
     - **Room Entity- und DAO-Optimierung:** `@Entity`- und `@Dao`-Klassen sowie Datenbank-Klassen verbleiben ohne explizite ProGuard-Einträge, da sie vollautomatisch über die eingebauten Room-Consumer-Rules geschützt und optimiert werden.
 
-
+268. **Einführung namespace-qualifizierter Broadcast-Actions für Benachrichtigungen (Security & Code Quality):**
+    - **NotificationActions:** Einführung eines zentralen Kotlin-Objekts `NotificationActions` mit namespace-qualifizierten Konstanten für die Broadcast-Actions `ACTION_SNOOZE` ("com.heckmannch.birthdaybuddy.action.SNOOZE"), `ACTION_DONE` ("com.heckmannch.birthdaybuddy.action.DONE") und `ACTION_DISMISSED` ("com.heckmannch.birthdaybuddy.action.DISMISSED").
+    - **AndroidManifest.xml:** Registrierung der namespace-qualifizierten Action-Strings im `NotificationActionReceiver` anstelle generischer Strings zur Vermeidung von Namespace-Kollisionen.
+    - **NotificationHelper & NotificationActionReceiver:** Umstellung der PendingIntent-Erstellung und der `onReceive`-Empfänger-Verzweigungen von hardcodierten, generischen Literalen auf die neuen `NotificationActions`-Konstanten und einen idiomatischen `when`-Block.

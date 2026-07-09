@@ -77,9 +77,9 @@
             android:name=".notification.NotificationActionReceiver"
             android:exported="false">
             <intent-filter>
-                <action android:name="SNOOZE" />
-                <action android:name="DONE" />
-                <action android:name="DISMISSED" />
+                <action android:name="com.heckmannch.birthdaybuddy.action.SNOOZE" />
+                <action android:name="com.heckmannch.birthdaybuddy.action.DONE" />
+                <action android:name="com.heckmannch.birthdaybuddy.action.DISMISSED" />
             </intent-filter>
         </receiver>
 

@@ -70,7 +70,7 @@ class NotificationHelper @Inject constructor(
 
         // Action-Intent: Erledigt
         val doneIntent = Intent(context, NotificationActionReceiver::class.java).apply {
-            action = "DONE"
+            action = NotificationActions.ACTION_DONE
             putExtra("NOTIFICATION_ID", notificationId)
             putExtra("PENDING_ID", pendingId)
         }
@@ -89,7 +89,7 @@ class NotificationHelper @Inject constructor(
 
         // Action-Intent: Später erinnern (Snooze)
         val snoozeIntent = Intent(context, NotificationActionReceiver::class.java).apply {
-            action = "SNOOZE"
+            action = NotificationActions.ACTION_SNOOZE
             putExtra("NOTIFICATION_ID", notificationId)
             putExtra("PENDING_ID", pendingId)
             putExtra("DAYS_BEFORE", daysBefore)
@@ -112,7 +112,7 @@ class NotificationHelper @Inject constructor(
 
         // Delete-Intent: Falls weggeschoben wird -> Re-post (für echte Persistenz)
         val deleteIntent = Intent(context, NotificationActionReceiver::class.java).apply {
-            action = "DISMISSED"
+            action = NotificationActions.ACTION_DISMISSED
             putExtra("NOTIFICATION_ID", notificationId)
             putExtra("PENDING_ID", pendingId)
             putExtra("DAYS_BEFORE", daysBefore)

@@ -34,67 +34,71 @@ class NotificationActionReceiver : BroadcastReceiver() {
         val daysBefore = intent.getIntExtra("DAYS_BEFORE", 0)
         val lookupKeys = intent.getStringArrayExtra("LOOKUP_KEYS") ?: emptyArray()
 
-        if (intent.action == "SNOOZE") {
-            // 1. Aktuelle Benachrichtigung schließen
-            val notificationManager =
-                context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-            notificationManager.cancel(notificationId)
+        when (intent.action) {
+            NotificationActions.ACTION_SNOOZE -> {
+                // 1. Aktuelle Benachrichtigung schließen
+                val notificationManager =
+                    context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+                notificationManager.cancel(notificationId)
 
-            // 2. Erneute Erinnerung in 2 Stunden planen (via Use Case)
-            snoozeNotificationUseCase(
-                pendingId = pendingId,
-                daysBefore = daysBefore,
-                lookupKeys = lookupKeys.toList()
-            )
-        } else if (intent.action == "DONE") {
-            // 1. Dismiss the current notification
-            val notificationManager =
-                context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-            notificationManager.cancel(notificationId)
+                // 2. Erneute Erinnerung in 2 Stunden planen (via Use Case)
+                snoozeNotificationUseCase(
+                    pendingId = pendingId,
+                    daysBefore = daysBefore,
+                    lookupKeys = lookupKeys.toList()
+                )
+            }
+            NotificationActions.ACTION_DONE -> {
+                // 1. Dismiss the current notification
+                val notificationManager =
+                    context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+                notificationManager.cancel(notificationId)
 
-            // 2. Mark as done using goAsync() to prevent process termination before database write completes
-            if (pendingId != -1) {
-                val pendingResult = goAsync()
-                CoroutineScope(Dispatchers.IO).launch {
-                    try {
-                        notificationRepository.markAsDone(pendingId)
-                    } finally {
-                        pendingResult.finish()
+                // 2. Mark as done using goAsync() to prevent process termination before database write completes
+                if (pendingId != -1) {
+                    val pendingResult = goAsync()
+                    CoroutineScope(Dispatchers.IO).launch {
+                        try {
+                            notificationRepository.markAsDone(pendingId)
+                        } finally {
+                            pendingResult.finish()
+                        }
                     }
                 }
             }
-        } else if (intent.action == "DISMISSED") {
-            // Wenn weggeschoben wurde, aber nicht erledigt/gesnoozed -> Sofort wieder anzeigen
-            // (Das erzwingt die Persistenz auch auf Android 14+)
-            if (pendingId != -1) {
-                CoroutineScope(Dispatchers.IO).launch {
-                    // Zähler für Wisch-Versuche erhöhen
-                    notificationRepository.incrementDismissCount(pendingId)
+            NotificationActions.ACTION_DISMISSED -> {
+                // Wenn weggeschoben wurde, aber nicht erledigt/gesnoozed -> Sofort wieder anzeigen
+                // (Das erzwingt die Persistenz auch auf Android 14+)
+                if (pendingId != -1) {
+                    CoroutineScope(Dispatchers.IO).launch {
+                        // Zähler für Wisch-Versuche erhöhen
+                        notificationRepository.incrementDismissCount(pendingId)
 
-                    val allContacts = notificationRepository.getActiveNotificationsImmediate()
-                    val isStillActive = allContacts.any { it.id == pendingId }
-                    if (isStillActive) {
-                        // Wir brauchen den NotificationHelper. Da wir in einem Receiver sind,
-                        // nutzen wir am besten den Worker oder wir triggern einen schnellen Re-show.
-                        // Einfachster Weg: Snooze mit 1 Sekunde Delay oder direkter Aufruf.
-                        val firstKey = lookupKeys.firstOrNull() ?: ""
-                        val eventType = when {
-                            firstKey.startsWith("anniversary:") -> EventType.ANNIVERSARY
-                            firstKey.startsWith("nameday:") -> EventType.NAME_DAY
-                            else -> EventType.BIRTHDAY
+                        val allContacts = notificationRepository.getActiveNotificationsImmediate()
+                        val isStillActive = allContacts.any { it.id == pendingId }
+                        if (isStillActive) {
+                            // Wir brauchen den NotificationHelper. Da wir in einem Receiver sind,
+                            // nutzen wir am besten den Worker oder wir triggern einen schnellen Re-show.
+                            // Einfachster Weg: Snooze mit 1 Sekunde Delay oder direkter Aufruf.
+                            val firstKey = lookupKeys.firstOrNull() ?: ""
+                            val eventType = when {
+                                firstKey.startsWith("anniversary:") -> EventType.ANNIVERSARY
+                                firstKey.startsWith("nameday:") -> EventType.NAME_DAY
+                                else -> EventType.BIRTHDAY
+                            }
+                            val data = Data.Builder()
+                                .putInt("DAYS_BEFORE", daysBefore)
+                                .putInt("PENDING_ID", pendingId)
+                                .putStringArray("LOOKUP_KEYS", lookupKeys)
+                                .putString("EVENT_TYPE", eventType.name)
+                                .build()
+
+                            val reShowRequest = OneTimeWorkRequestBuilder<SnoozeWorker>()
+                                .setInitialDelay(500, TimeUnit.MILLISECONDS)
+                                .setInputData(data)
+                                .build()
+                            WorkManager.getInstance(context).enqueue(reShowRequest)
                         }
-                        val data = Data.Builder()
-                            .putInt("DAYS_BEFORE", daysBefore)
-                            .putInt("PENDING_ID", pendingId)
-                            .putStringArray("LOOKUP_KEYS", lookupKeys)
-                            .putString("EVENT_TYPE", eventType.name)
-                            .build()
-
-                        val reShowRequest = OneTimeWorkRequestBuilder<SnoozeWorker>()
-                            .setInitialDelay(500, TimeUnit.MILLISECONDS)
-                            .setInputData(data)
-                            .build()
-                        WorkManager.getInstance(context).enqueue(reShowRequest)
                     }
                 }
             }
