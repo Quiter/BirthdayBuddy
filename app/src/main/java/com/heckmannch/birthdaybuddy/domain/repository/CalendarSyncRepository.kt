@@ -16,6 +16,6 @@ interface CalendarSyncRepository {
     fun hasCalendarPermissions(): Boolean
     suspend fun updateCalendarColor(type: CalendarType, newColor: Int): Boolean
     suspend fun deleteCalendar(): Boolean
-    fun debugPrintAllCalendars()
+    suspend fun debugPrintAllCalendars()
     suspend fun syncBirthdays(contacts: List<Contact>): Boolean
 }

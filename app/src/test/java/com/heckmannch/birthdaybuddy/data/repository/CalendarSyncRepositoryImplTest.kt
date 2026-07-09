@@ -219,7 +219,7 @@ class CalendarSyncRepositoryImplTest {
     }
 
     @Test
-    fun debugPrintAllCalendars_queriesAllCalendarsAndLogsThem() {
+    fun debugPrintAllCalendars_queriesAllCalendarsAndLogsThem() = runTest {
         // Arrange
         val calendars = listOf(
             SystemCalendarInfo(id = 1L, name = "Cal1", accountName = "acc1", accountType = "type1", displayName = "disp1", visible = 1)

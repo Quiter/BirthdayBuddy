@@ -26,7 +26,9 @@ class CalendarViewModel @Inject constructor(
 
     init {
         if (BuildConfig.DEBUG) {
-            calendarSyncRepository.debugPrintAllCalendars()
+            viewModelScope.launch {
+                calendarSyncRepository.debugPrintAllCalendars()
+            }
         }
     }
 

@@ -152,3 +152,8 @@
     - **Lösung:** Verwendung des offiziellen `goAsync()`-Musters. Durch Aufruf von `goAsync()` vor dem Start der Coroutine und Aufruf von `pendingResult.finish()` im `finally`-Block der Coroutine wird dem System signalisiert, dass der Receiver im Hintergrund weiterarbeitet, bis der Schreibvorgang abgeschlossen ist.
     - **Dokumentation:** Die zugehörigen deutschen Kommentare im modifizierten Code-Abschnitt wurden ins Englische übersetzt, um die Projekt-Richtlinien bezüglich einer einheitlichen englischen Entwicklerdokumentation einzuhalten.
 
+246. **Entkopplung der Debug-Kalenderprotokollierung vom Main-Thread (Performance & Stabilität / ANR-Fix):**
+    - **Problem:** Die Methode `CalendarSyncRepositoryImpl.debugPrintAllCalendars()` blockierte über `runBlocking` den aufrufenden Thread, um Kalenderdaten synchron abzufragen. Da diese Methode in `CalendarViewModel.init` unter Debug-Builds direkt aufgerufen wurde, blockierte dies den Main-Thread beim App-Start vollständig und konnte auf langsameren Geräten zu ANRs führen.
+    - **Lösung:** `CalendarSyncRepository.debugPrintAllCalendars()` wurde als `suspend fun` deklariert und die synchrone Blockierung (`runBlocking`) entfernt. Der Aufruf in `CalendarViewModel.init` wurde in ein `viewModelScope.launch` eingebettet, sodass die Protokollierung asynchron im Hintergrund erfolgt. Der entsprechende Unit-Test wurde auf `runTest` umgestellt.
+
+

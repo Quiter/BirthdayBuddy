@@ -156,10 +156,9 @@ class CalendarSyncRepositoryImpl @Inject constructor(
         deletedAny
     }
 
-    override fun debugPrintAllCalendars() {
+    override suspend fun debugPrintAllCalendars() {
         Log.d("CalendarSyncRepo", "=== START DEBUG PRINT ALL CALENDARS ===")
-        val calendars =
-            kotlinx.coroutines.runBlocking { systemCalendarDataSource.queryAllCalendars() }
+        val calendars = systemCalendarDataSource.queryAllCalendars()
         for (calendar in calendars) {
             Log.d(
                 "CalendarSyncRepo",
