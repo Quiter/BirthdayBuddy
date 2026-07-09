@@ -1,5 +1,6 @@
 package com.heckmannch.birthdaybuddy.widget
 
+import androidx.annotation.VisibleForTesting
 import android.content.Context
 import androidx.glance.appwidget.updateAll
 import androidx.hilt.work.HiltWorker
@@ -66,8 +67,8 @@ class BirthdayWidgetWorker @AssistedInject constructor(
             )
         }
 
-        private fun calculateDelayUntilMidnight(): Long {
-            val now = LocalDateTime.now()
+        @VisibleForTesting
+        internal fun calculateDelayUntilMidnight(now: LocalDateTime = LocalDateTime.now()): Long {
             // Wir planen für 00:01 Uhr, um sicherzustellen, dass das Datum wirklich umgesprungen ist
             val midnight = LocalDateTime.of(now.toLocalDate().plusDays(1), LocalTime.of(0, 1))
             return Duration.between(now, midnight).toMillis()
