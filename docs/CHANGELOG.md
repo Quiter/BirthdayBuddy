@@ -158,4 +158,10 @@
     - **OnboardingScreen:** OnboardingContent ist nun zustandslos bezüglich Systemberechtigungen und liest keine Permission-Werte selbst aus. Es ruft Callbacks auf und bindet `collectAsStateWithLifecycle()` ein. System-Berechtigungen werden bei `ON_RESUME` automatisch aktualisiert.
     - **Unit-Tests:** Anpassung und Erweiterung von `OnboardingViewModelTest` zur vollständigen Absicherung des neuen MVI-Zustandsflusses und der Berechtigungssteuerung.
 
+251. **Entkopplung der UI-Schicht von Data-Layer-Modellen (Architektur & Code-Qualität):**
+    - **Verschiebung von `ContactLabels`:** Relozierung der Pseudo-Label-Identifier (`LABEL_NO_BIRTHDAY`, `LABEL_ANNIVERSARY`, `LABEL_NAME_DAY`) aus dem Data-Layer (`data.local.ContactLabels`) in den Domain-Layer (`domain.model.ContactLabels`). Dies verhindert unerwünschte Direktkopplungen der UI-Schicht und der Domain-UseCases an lokale Implementierungsdetails des Data-Layers.
+    - **Rückwärtskompatibilität:** Um eventuelle andere Data-Layer-Klassen oder externe Verwendungen nicht zu beeinträchtigen, verbleibt eine deprecated Version von `ContactLabels` in `data.local`, die ihre Konstanten an das neue Domain-Modell delegiert.
+    - **Anpassung der Imports:** Aktualisierung aller UI-Komponenten (`HomeContent.kt`, `BirthdayList.kt`, `LabelFilterBar.kt`, `LabelSettingsScreen.kt`, `LabelViewModel.kt`) und Domain-UseCases (`GetAvailableLabelsUseCase.kt`, `GetContactsUseCase.kt`, `GetCoupleSuggestionUseCase.kt`) sowie aller zugehörigen Unit-Tests auf den neuen Domain-Import.
+    - **Dokumentation:** Aktualisierung der Projektstruktur in `PROJECT_STRUCTURE.md`.
+
 

@@ -2,7 +2,7 @@ package com.heckmannch.birthdaybuddy.ui.screens.settings.labels
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.heckmannch.birthdaybuddy.data.local.ContactLabels
+import com.heckmannch.birthdaybuddy.domain.model.ContactLabels
 import com.heckmannch.birthdaybuddy.domain.model.LabelConfig
 import com.heckmannch.birthdaybuddy.domain.repository.ContactRepository
 import com.heckmannch.birthdaybuddy.ui.model.LabelManagementModel

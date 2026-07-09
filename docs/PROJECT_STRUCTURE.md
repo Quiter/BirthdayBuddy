@@ -34,7 +34,7 @@
     - `PendingNotification.kt`: Entity zur Nachverfolgung aktiver System-Benachrichtigungen.
     - `PendingNotificationDao.kt`: DAO für die Verwaltung noch nicht quittierter Erinnerungen.
     - `PotentialCouple.kt`: Datenklasse zur Repräsentation eines potenziellen Ehepaars, das denselben Hochzeitstag teilt.
-    - `ContactLabels.kt`: Zentrales `object` mit system-definierten Pseudo-Label-Identifiern (`LABEL_NO_BIRTHDAY`, `LABEL_ANNIVERSARY`, `LABEL_NAME_DAY`). Liegt im Data-Layer, da diese Werte als `LabelConfig`-Einträge in der Datenbank gespeichert werden und von mehreren Schichten genutzt werden (ViewModels, UI-Screens). Löst die frühere Abhängigkeit auf `HomeViewModel.companion`.
+    - `ContactLabels.kt` (Veraltet): Hält aus Gründen der Rückwärtskompatibilität eine deprecated Delegation der Pseudo-Label-Identifier, die nun in der Domain-Schicht liegen.
 - ### 📁 Repository (`data.repository`)
     - `CalendarSyncRepository.kt`: Orchestriert die Synchronisation von Geburtstagen, Namenstagen und Hochzeitstagen mit dem System-Kalender unter Verwendung von `SystemCalendarDataSource`.
     - `ContactRepository.kt`: Orchestriert den Datenfluss zwischen Room-DB und der System-Kontaktquelle; implementiert die Sync-Logik, reaktive Widget-Updates und Geschäftslogik für Geschenkideen.
@@ -50,6 +50,7 @@
 
 ## 📁 Domain Layer (`domain`)
 - ### 📁 Models (`domain.model`)
+    - `ContactLabels.kt`: Zentrales `object` mit system-definierten Pseudo-Label-Identifiern (`LABEL_NO_BIRTHDAY`, `LABEL_ANNIVERSARY`, `LABEL_NAME_DAY`). Liegt im Domain-Layer, um die UI-Schicht und Use Cases von der Data-Schicht zu entkoppeln.
     - `GiftIdea.kt`: Reines Domänenmodell für Geschenkideen (id, text, isChecked) mit statischen Hilfsmethoden zum Hinzufügen, Sortieren und Umschalten von Ideen.
 - ### 📁 Use Cases (`domain.usecase`)
     - `GetContactsUseCase.kt`: Kapselt die gesamte Filterlogik für die Home-Kontaktliste. Empfängt reaktive Inputs (Kontakte, Datum, Suchbegriff, Labels, Einstellungen) und gibt einen sortierten `Flow<List<ContactUiModel>>` zurück. Enthält die Pairing-Logik für Ehepaar-Jubiläen und die `LabelSettingsState`-Datenklasse. Annotiert mit `@Reusable` (kein Singleton nötig).

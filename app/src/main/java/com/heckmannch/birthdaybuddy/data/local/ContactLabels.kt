@@ -1,16 +1,21 @@
 package com.heckmannch.birthdaybuddy.data.local
 
+import com.heckmannch.birthdaybuddy.domain.model.ContactLabels as DomainContactLabels
+
 /**
  * System-defined special label identifiers used to represent pseudo-categories
  * (contacts without a birthday, anniversaries, name days) in the label filter
- * and [LabelConfig] system.
+ * and LabelConfig system.
  *
- * These values are stored as [LabelConfig] entries in the database and are
- * referenced across multiple layers (ViewModels, UI screens). Placing them
- * here in the data layer avoids cross-package ViewModel dependencies.
+ * @deprecated Use [com.heckmannch.birthdaybuddy.domain.model.ContactLabels] instead.
  */
+@Deprecated(
+    message = "Use com.heckmannch.birthdaybuddy.domain.model.ContactLabels instead",
+    replaceWith = ReplaceWith("ContactLabels", "com.heckmannch.birthdaybuddy.domain.model.ContactLabels")
+)
+@Suppress("unused")
 object ContactLabels {
-    const val LABEL_NO_BIRTHDAY = "special:no_birthday"
-    const val LABEL_ANNIVERSARY = "special:anniversary"
-    const val LABEL_NAME_DAY = "special:name_day"
+    const val LABEL_NO_BIRTHDAY = DomainContactLabels.LABEL_NO_BIRTHDAY
+    const val LABEL_ANNIVERSARY = DomainContactLabels.LABEL_ANNIVERSARY
+    const val LABEL_NAME_DAY = DomainContactLabels.LABEL_NAME_DAY
 }

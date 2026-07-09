@@ -1,6 +1,6 @@
 package com.heckmannch.birthdaybuddy.domain.usecase
 
-import com.heckmannch.birthdaybuddy.data.local.ContactLabels
+import com.heckmannch.birthdaybuddy.domain.model.ContactLabels
 import com.heckmannch.birthdaybuddy.domain.model.Contact
 import com.heckmannch.birthdaybuddy.domain.model.LabelConfig
 import dagger.Reusable
