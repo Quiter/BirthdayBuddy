@@ -460,3 +460,10 @@
     - **Bereinigung:** Vollständiges Entfernen der redundanten/veralteten Testklassen unter dem `ui.screens.settings` Verzeichnisbaum.
     - **Methodik:** Verwendung von `Mockito` zur Mocking-Injektion der Repository- und Use-Case-Abhängigkeiten sowie Einbindung der `MainDispatcherRule` zur Coroutine-Ausführung unter `runTest`.
 
+274. **Einführung der Clock-Abstraktion in HomeViewModel & Hilt-Bindung (Architektur & Testbarkeit):**
+    - **Clock-Interface:** Erstellung des `Clock`-Interfaces und der Hilt-bereiten Standardimplementierung `SystemClock` unter `com.heckmannch.birthdaybuddy.util` zur Kapselung des Systemzeit-Zugriffs.
+    - **Hilt-Bindung:** Einbindung von `SystemClock` via `@Binds` in `HelperBindingsModule` zur Auflösung als `Clock`.
+    - **HomeViewModel-Refactoring:** Injektion der `Clock` via `@Inject constructor` und Ersetzung aller direkten `System.currentTimeMillis()` Aufrufe durch `clock.currentTimeMillis()`. Vollständiges Entfernen des redundanten `@VisibleForTesting internal var currentTimeProvider`.
+    - **Test-Abdeckung:** Erstellung einer `FakeClock` in [HomeViewModelTest.kt](file:///c:/Users/chris/AndroidStudioProjects/BirthdayBuddy/app/src/test/java/com/heckmannch/birthdaybuddy/ui/screens/home/HomeViewModelTest.kt) und Anpassung der restlichen Testklassen ([HomeViewModelSearchTest.kt](file:///c:/Users/chris/AndroidStudioProjects/BirthdayBuddy/app/src/test/java/com/heckmannch/birthdaybuddy/ui/screens/home/HomeViewModelSearchTest.kt), [HomeViewModelGiftIdeaTest.kt](file:///c:/Users/chris/AndroidStudioProjects/BirthdayBuddy/app/src/test/java/com/heckmannch/birthdaybuddy/ui/screens/home/HomeViewModelGiftIdeaTest.kt)), um die injizierte `Clock` zu verwenden. Hinzufügen von zwei neuen Testfällen zur präzisen Absicherung des 800ms Lade-Throttles bei der Kontaktsynchronisation unter Nutzung des virtuellen Coroutine-TestSchedulers (`runCurrent()`-Flusssteuerung).
+
+

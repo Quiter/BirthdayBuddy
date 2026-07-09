@@ -13,6 +13,7 @@ import com.heckmannch.birthdaybuddy.domain.usecase.IgnoreCoupleSuggestionUseCase
 import com.heckmannch.birthdaybuddy.domain.usecase.LinkAsCoupleUseCase
 import com.heckmannch.birthdaybuddy.domain.usecase.UnlinkCoupleUseCase
 import android.content.Context
+import com.heckmannch.birthdaybuddy.util.Clock
 import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk
@@ -28,16 +29,6 @@ import org.junit.Rule
 import org.junit.Test
 import java.time.LocalDate
 
-/**
- * JVM Unit Tests for writing intents in [HomeViewModel].
- *
- * This test suite targets intents that modify database state via [ContactRepository],
- * specifically gift idea management and contact birthday updates, fulfilling
- * Project Guideline §2.6 test coverage requirements.
- *
- * It uses MockK for mocking dependencies and verification, and uses the [MainDispatcherRule]
- * to direct UI state flows and coroutines onto the UnconfinedTestDispatcher.
- */
 @OptIn(ExperimentalCoroutinesApi::class)
 class HomeViewModelGiftIdeaTest {
 
@@ -56,6 +47,7 @@ class HomeViewModelGiftIdeaTest {
     private val ignoreCoupleSuggestionUseCase: IgnoreCoupleSuggestionUseCase = mockk(relaxed = true)
     private val timeRepository: TimeRepository = mockk(relaxed = true)
     private val context: Context = mockk(relaxed = true)
+    private val clock = TestClock()
 
     private val today = LocalDate.of(2024, 5, 15)
 
@@ -85,7 +77,12 @@ class HomeViewModelGiftIdeaTest {
             ignoreCoupleSuggestionUseCase = ignoreCoupleSuggestionUseCase,
             timeRepository = timeRepository,
             context = context,
+            clock = clock,
         )
+    }
+
+    private class TestClock(var time: Long = 0L) : Clock {
+        override fun currentTimeMillis(): Long = time
     }
 
     @After

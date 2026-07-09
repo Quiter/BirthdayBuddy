@@ -17,6 +17,7 @@ import com.heckmannch.birthdaybuddy.domain.usecase.LinkAsCoupleUseCase
 import com.heckmannch.birthdaybuddy.domain.usecase.UnlinkCoupleUseCase
 import com.heckmannch.birthdaybuddy.ui.model.CoupleSuggestionUiModel
 import com.heckmannch.birthdaybuddy.ui.model.HomeUiState
+import com.heckmannch.birthdaybuddy.util.Clock
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
@@ -52,12 +53,10 @@ class HomeViewModel @Inject constructor(
     private val ignoreCoupleSuggestionUseCase: IgnoreCoupleSuggestionUseCase,
     timeRepository: TimeRepository,
     @param:ApplicationContext private val context: Context,
+    private val clock: Clock,
 ) : ViewModel() {
 
-    private var lastInteractionTime: Long = System.currentTimeMillis()
-
-    @get:androidx.annotation.VisibleForTesting
-    internal var currentTimeProvider: () -> Long = { System.currentTimeMillis() }
+    private var lastInteractionTime: Long = clock.currentTimeMillis()
 
     // --- Search & Filter State (MVI Consolidated UI State) ---
     private data class UserUiState(
@@ -172,15 +171,15 @@ class HomeViewModel @Inject constructor(
     // --- MVI Intent Processing ---
     fun onIntent(intent: HomeIntent) {
         if (intent !is HomeIntent.AppResumed) {
-            lastInteractionTime = currentTimeProvider()
+            lastInteractionTime = clock.currentTimeMillis()
         }
         when (intent) {
             is HomeIntent.AppResumed -> {
                 _userUiState.update { it.copy(hasContactPermission = checkContactPermission()) }
-                if ((currentTimeProvider() - lastInteractionTime) > (5 * 60 * 1000)) {
+                if ((clock.currentTimeMillis() - lastInteractionTime) > (5 * 60 * 1000)) {
                     onIntent(HomeIntent.ResetFilters)
                 }
-                lastInteractionTime = currentTimeProvider()
+                lastInteractionTime = clock.currentTimeMillis()
             }
             is HomeIntent.SearchQueryChanged -> {
                 val newQuery = intent.query
@@ -270,10 +269,10 @@ class HomeViewModel @Inject constructor(
                         _userUiState.update { it.copy(isSyncing = true) }
                         contactRepository.clearIgnoredCouplePairs()
                     }
-                    val startTime = System.currentTimeMillis()
+                    val startTime = clock.currentTimeMillis()
                     contactRepository.syncContacts()
                     if (intent.showLoading) {
-                        val elapsedTime = System.currentTimeMillis() - startTime
+                        val elapsedTime = clock.currentTimeMillis() - startTime
                         if (elapsedTime < 800) {
                             delay((800 - elapsedTime).milliseconds)
                         }

@@ -12,6 +12,8 @@ import com.heckmannch.birthdaybuddy.domain.repository.NotificationRepository
 import com.heckmannch.birthdaybuddy.domain.repository.NotificationScheduler
 import com.heckmannch.birthdaybuddy.domain.repository.TimeRepository
 import com.heckmannch.birthdaybuddy.domain.repository.WidgetUpdater
+import com.heckmannch.birthdaybuddy.util.Clock
+import com.heckmannch.birthdaybuddy.util.SystemClock
 import dagger.Binds
 import dagger.Module
 import dagger.hilt.InstallIn
@@ -22,6 +24,10 @@ import javax.inject.Singleton
 @Module
 @InstallIn(SingletonComponent::class)
 interface HelperBindingsModule {
+
+    @Binds
+    @Singleton
+    fun bindClock(clock: SystemClock): Clock
 
     @Binds
     @Singleton

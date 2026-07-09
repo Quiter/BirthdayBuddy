@@ -13,6 +13,7 @@ import com.heckmannch.birthdaybuddy.domain.usecase.GetCoupleSuggestionUseCase
 import com.heckmannch.birthdaybuddy.domain.usecase.IgnoreCoupleSuggestionUseCase
 import com.heckmannch.birthdaybuddy.domain.usecase.LinkAsCoupleUseCase
 import com.heckmannch.birthdaybuddy.domain.usecase.UnlinkCoupleUseCase
+import com.heckmannch.birthdaybuddy.util.Clock
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -55,6 +56,11 @@ class HomeViewModelSearchTest {
     private val unlinkCoupleUseCase = UnlinkCoupleUseCase(contactRepository)
     private val ignoreCoupleSuggestionUseCase = IgnoreCoupleSuggestionUseCase(contactRepository)
     private val context: android.content.Context = mock()
+    private val clock = TestClock()
+
+    private class TestClock(var time: Long = 0L) : Clock {
+        override fun currentTimeMillis(): Long = time
+    }
 
     @Before
     fun setup() {
@@ -96,6 +102,7 @@ class HomeViewModelSearchTest {
             ignoreCoupleSuggestionUseCase = ignoreCoupleSuggestionUseCase,
             timeRepository = timeRepository,
             context = context,
+            clock = clock,
         )
 
         // Suche nach "Mustermann Max"
@@ -132,6 +139,7 @@ class HomeViewModelSearchTest {
             ignoreCoupleSuggestionUseCase = ignoreCoupleSuggestionUseCase,
             timeRepository = timeRepository,
             context = context,
+            clock = clock,
         )
 
         viewModel.onIntent(HomeIntent.SearchQueryChanged("  Max  "))

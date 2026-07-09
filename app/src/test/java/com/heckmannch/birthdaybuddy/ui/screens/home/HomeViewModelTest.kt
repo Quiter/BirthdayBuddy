@@ -20,11 +20,14 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest
 import org.junit.After
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
+import com.heckmannch.birthdaybuddy.util.Clock
 import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.whenever
@@ -49,6 +52,11 @@ class HomeViewModelTest {
     val mainDispatcherRule = MainDispatcherRule()
 
     private val contactRepository: ContactRepository = mock()
+    private val clock = FakeClock()
+
+    private class FakeClock(var time: Long = 0L) : Clock {
+        override fun currentTimeMillis(): Long = time
+    }
     private val timeRepository: TimeRepository = mock()
     private val getContactsUseCase = GetContactsUseCase(ContactMapper())
     private val getAvailableLabelsUseCase = GetAvailableLabelsUseCase()
@@ -82,6 +90,7 @@ class HomeViewModelTest {
             ignoreCoupleSuggestionUseCase = ignoreCoupleSuggestionUseCase,
             timeRepository = timeRepository,
             context = context,
+            clock = clock,
         )
         val state = viewModel.uiState.first()
 
@@ -102,6 +111,7 @@ class HomeViewModelTest {
             ignoreCoupleSuggestionUseCase = ignoreCoupleSuggestionUseCase,
             timeRepository = timeRepository,
             context = context,
+            clock = clock,
         )
         viewModel.onIntent(HomeIntent.LabelSelected("Freunde"))
 
@@ -139,6 +149,7 @@ class HomeViewModelTest {
             ignoreCoupleSuggestionUseCase = ignoreCoupleSuggestionUseCase,
             timeRepository = timeRepository,
             context = context,
+            clock = clock,
         )
 
         viewModel.onIntent(HomeIntent.LabelSelected("Freunde"))
@@ -183,6 +194,7 @@ class HomeViewModelTest {
             ignoreCoupleSuggestionUseCase = ignoreCoupleSuggestionUseCase,
             timeRepository = timeRepository,
             context = context,
+            clock = clock,
         )
         val state = viewModel.uiState.first { (it.contacts != null) }
 
@@ -223,6 +235,7 @@ class HomeViewModelTest {
             ignoreCoupleSuggestionUseCase = ignoreCoupleSuggestionUseCase,
             timeRepository = timeRepository,
             context = context,
+            clock = clock,
         )
 
         // Verify availableLabels contains anniversary and name_day labels
@@ -269,6 +282,7 @@ class HomeViewModelTest {
             ignoreCoupleSuggestionUseCase = ignoreCoupleSuggestionUseCase,
             timeRepository = timeRepository,
             context = context,
+            clock = clock,
         )
 
         // Wait for UI State to propagate contacts
@@ -325,6 +339,7 @@ class HomeViewModelTest {
             ignoreCoupleSuggestionUseCase = ignoreCoupleSuggestionUseCase,
             timeRepository = timeRepository,
             context = context,
+            clock = clock,
         )
 
         // Wait for UI State to propagate contacts
@@ -381,6 +396,7 @@ class HomeViewModelTest {
             ignoreCoupleSuggestionUseCase = ignoreCoupleSuggestionUseCase,
             timeRepository = timeRepository,
             context = context,
+            clock = clock,
         )
 
         // Wait for UI State to propagate contacts
@@ -404,20 +420,20 @@ class HomeViewModelTest {
             ignoreCoupleSuggestionUseCase = ignoreCoupleSuggestionUseCase,
             timeRepository = timeRepository,
             context = context,
+            clock = clock,
         )
 
         // Set search query so we have active filters
         viewModel.onIntent(HomeIntent.SearchQueryChanged("test"))
         viewModel.uiState.first { it.searchQuery == "test" }
 
-        // Mock current time to be 4 minutes later
-        var mockTime = System.currentTimeMillis()
-        viewModel.currentTimeProvider = { mockTime }
+        // Mock current time using FakeClock
+        clock.time = 1000000L
         
         // Simulating the user interaction
-        viewModel.onIntent(HomeIntent.SearchQueryChanged("test")) // this sets lastInteractionTime to mockTime
+        viewModel.onIntent(HomeIntent.SearchQueryChanged("test")) // this sets lastInteractionTime to clock.time
         
-        mockTime += 4 * 60 * 1000 // advance by 4 mins
+        clock.time += 4 * 60 * 1000 // advance by 4 mins
 
         viewModel.onIntent(HomeIntent.AppResumed)
 
@@ -438,26 +454,92 @@ class HomeViewModelTest {
             ignoreCoupleSuggestionUseCase = ignoreCoupleSuggestionUseCase,
             timeRepository = timeRepository,
             context = context,
+            clock = clock,
         )
 
         // Set search query so we have active filters
         viewModel.onIntent(HomeIntent.SearchQueryChanged("test"))
         viewModel.uiState.first { it.searchQuery == "test" }
 
-        // Mock current time to be 6 minutes later
-        var mockTime = System.currentTimeMillis()
-        viewModel.currentTimeProvider = { mockTime }
+        // Mock current time using FakeClock
+        clock.time = 1000000L
         
         // Simulating the user interaction
-        viewModel.onIntent(HomeIntent.SearchQueryChanged("test")) // this sets lastInteractionTime to mockTime
+        viewModel.onIntent(HomeIntent.SearchQueryChanged("test")) // this sets lastInteractionTime to clock.time
         
-        mockTime += 6 * 60 * 1000 // advance by 6 mins
+        clock.time += 6 * 60 * 1000 // advance by 6 mins
 
         viewModel.onIntent(HomeIntent.AppResumed)
 
         // Verify filter is reset
         val state = viewModel.uiState.first { it.searchQuery.isEmpty() }
         assertThat(state.searchQuery).isEmpty()
+    }
+
+    @Test
+    fun syncContacts_withShowLoading_throttlesMinimum800ms() = runTest {
+        clock.time = 1000L
+        whenever(contactRepository.syncContacts()).thenAnswer {
+            clock.time += 200
+        }
+
+        viewModel = HomeViewModel(
+            contactRepository = contactRepository,
+            getContactsUseCase = getContactsUseCase,
+            getAvailableLabelsUseCase = getAvailableLabelsUseCase,
+            getCoupleSuggestionUseCase = getCoupleSuggestionUseCase,
+            linkAsCoupleUseCase = linkAsCoupleUseCase,
+            unlinkCoupleUseCase = unlinkCoupleUseCase,
+            ignoreCoupleSuggestionUseCase = ignoreCoupleSuggestionUseCase,
+            timeRepository = timeRepository,
+            context = context,
+            clock = clock,
+        )
+
+        val startTime = testScheduler.currentTime
+        val syncCompletedJob = launch {
+            viewModel.syncCompletedEvent.first()
+        }
+        runCurrent()
+        viewModel.onIntent(HomeIntent.SyncContacts(showLoading = true))
+        
+        syncCompletedJob.join()
+        
+        val duration = testScheduler.currentTime - startTime
+        assertThat(duration).isEqualTo(600)
+    }
+
+    @Test
+    fun syncContacts_withShowLoading_noThrottleIfSyncTakesMoreThan800ms() = runTest {
+        clock.time = 1000L
+        whenever(contactRepository.syncContacts()).thenAnswer {
+            clock.time += 1000
+        }
+
+        viewModel = HomeViewModel(
+            contactRepository = contactRepository,
+            getContactsUseCase = getContactsUseCase,
+            getAvailableLabelsUseCase = getAvailableLabelsUseCase,
+            getCoupleSuggestionUseCase = getCoupleSuggestionUseCase,
+            linkAsCoupleUseCase = linkAsCoupleUseCase,
+            unlinkCoupleUseCase = unlinkCoupleUseCase,
+            ignoreCoupleSuggestionUseCase = ignoreCoupleSuggestionUseCase,
+            timeRepository = timeRepository,
+            context = context,
+            clock = clock,
+        )
+
+        val startTime = testScheduler.currentTime
+        val syncCompletedJob = launch {
+            viewModel.syncCompletedEvent.first()
+        }
+        runCurrent()
+        viewModel.onIntent(HomeIntent.SyncContacts(showLoading = true))
+        
+        syncCompletedJob.join()
+        
+        val duration = testScheduler.currentTime - startTime
+        assertThat(duration).isEqualTo(0)
     }
 }
 
