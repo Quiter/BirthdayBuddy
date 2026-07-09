@@ -234,9 +234,9 @@ fun ColorPickerDialog(
                             }
                         }
                     },
-                    label = { Text("HEX Code") },
+                    label = { Text(stringResource(R.string.color_picker_hex_label)) },
                     prefix = { Text("#") },
-                    placeholder = { Text("e.g. FF5722") },
+                    placeholder = { Text(stringResource(R.string.color_picker_hex_placeholder)) },
                     isError = hexInput.isNotEmpty() && !isValid,
                     supportingText = {
                         if (hexInput.isNotEmpty() && !isValid) {

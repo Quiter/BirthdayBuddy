@@ -394,6 +394,8 @@
     <string name="theme_accent_custom_dialog_save">Speichern</string>
     <string name="theme_accent_custom_dialog_cancel">Abbrechen</string>
     <string name="theme_accent_custom_invalid_hex">Ungültiger Hex-Code (z.B. #FF5722)</string>
+    <string name="color_picker_hex_label">HEX-Code</string>
+    <string name="color_picker_hex_placeholder">z.B. FF5722</string>
     <string name="color_picker_preview">Vorschau</string>
 
     <!-- Adaptive Details Screen -->
