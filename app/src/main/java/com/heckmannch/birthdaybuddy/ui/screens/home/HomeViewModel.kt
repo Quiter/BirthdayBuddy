@@ -332,7 +332,7 @@ class HomeViewModel @Inject constructor(
 sealed interface HomeIntent {
     data class SearchQueryChanged(val query: String) : HomeIntent
     data class LabelSelected(val label: String?) : HomeIntent
-    object ResetFilters : HomeIntent
+    data object ResetFilters : HomeIntent
     data class AddGiftIdea(val lookupKey: String) : HomeIntent
     data class ToggleGiftIdea(val lookupKey: String, val idea: GiftIdea, val isChecked: Boolean) :
         HomeIntent
@@ -343,10 +343,10 @@ sealed interface HomeIntent {
 
     data class UpdateBirthday(val contactId: String, val birthday: java.time.LocalDate) : HomeIntent
     data class SyncContacts(val showLoading: Boolean = false) : HomeIntent
-    object TriggerScrollToTop : HomeIntent
-    object TriggerSearchFocus : HomeIntent
-    object ConsumeSearchFocus : HomeIntent
-    object ConsumeNewlyAddedIdeaId : HomeIntent
+    data object TriggerScrollToTop : HomeIntent
+    data object TriggerSearchFocus : HomeIntent
+    data object ConsumeSearchFocus : HomeIntent
+    data object ConsumeNewlyAddedIdeaId : HomeIntent
     data class LinkAsCouple(val lookupKey1: String, val lookupKey2: String) : HomeIntent
     data class UnlinkCouple(val lookupKey: String) : HomeIntent
     data class IgnoreCoupleSuggestion(val lookupKey1: String, val lookupKey2: String) : HomeIntent
