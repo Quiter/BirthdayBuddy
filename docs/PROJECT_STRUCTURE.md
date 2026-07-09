@@ -216,6 +216,11 @@ Diese Tests laufen ohne Emulator/Gerät direkt auf dem Entwicklungsrechner und s
 - `ui/screens/home/HomeViewModelGiftIdeaTest.kt`: Tests für Geschenkideen- und Geburtstags-Intents im `HomeViewModel`. **Feature-co-located** neben `HomeViewModel.kt`.
 - `ui/screens/home/HomeViewModelSearchTest.kt`: Tests der Such- und Filterlogik im `HomeViewModel`. **Feature-co-located** neben `HomeViewModel.kt`.
 - `ui/screens/home/HomeViewModelTest.kt`: Tests für das reaktive State-Management und die UI-Filterung im `HomeViewModel`. **Feature-co-located** neben `HomeViewModel.kt`.
+- `viewmodel/BackupViewModelTest.kt`: Tests für `BackupViewModel` zur Absicherung des Geschenkideen-Im- und Exports.
+- `viewmodel/CalendarViewModelTest.kt`: Tests für `CalendarViewModel` zur Absicherung der Kalendereinstellungs- und Synchronisationssteuerung.
+- `viewmodel/LabelViewModelTest.kt`: Tests für `LabelViewModel` zur Absicherung der dynamischen Labels-Filterungslogik.
+- `viewmodel/ThemeViewModelTest.kt`: Tests für `ThemeViewModel` zur Absicherung der Design-Einstellungen.
+
 
 ### 📁 Instrumentierte Integrationstests (`app/src/androidTest`)
 Diese Tests erfordern ein Android-Gerät oder einen Emulator (z. B. für Room-Datenbanken, Systemdienste oder Compose-UI-Interaktionen).
