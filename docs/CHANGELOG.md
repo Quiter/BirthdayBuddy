@@ -151,4 +151,11 @@
     - **AppResumed-Verarbeitung:** Bei Erhalt des `AppResumed` Intents wird geprüft, ob mehr als 5 Minuten seit `lastInteractionTime` vergangen sind. Wenn ja, wird `HomeIntent.ResetFilters` aufgerufen. Unabhängig davon wird `lastInteractionTime` aktualisiert.
     - **MainActivity-Bereinigung:** Die Activity hält nun keine Zeitstempel (`lastInteractionTime`) oder Zeitberechnungen mehr. `onUserInteraction()` wurde entfernt und der `ON_RESUME` Lifecycle-Observer ruft nun direkt `homeViewModel.onIntent(HomeIntent.AppResumed)` auf.
     - **Unit-Tests:** Hinzufügen von `onAppResumed_underFiveMinutes_doesNotResetFilters` und `onAppResumed_overFiveMinutes_resetsFilters` in `HomeViewModelTest.kt`.
+250. **Refactoring der Onboarding-Berechtigungssteuerung (Code-Qualität & MVVM):**
+    - **OnboardingUiState:** Neuer UI-Zustand für Onboarding mit den Feldern `hasContactPermission`, `hasNotificationPermission`, `hasCalendarPermission`, `isPersistentNotificationEnabled` und `currentPage`.
+    - **OnboardingViewModel:** Hält nun `StateFlow<OnboardingUiState>` und verarbeitet MVI-Intents wie `RefreshPermissions`, `SetPersistentNotifications` und `SetCurrentPage`. Berechtigungsprüfungen wurden unter Verwendung des Application-Contexts in das ViewModel verlagert.
+    - **PermissionHelper:** Neue Hilfsklasse `PermissionHelper` zur Prüfung von Rationale-Zuständen (`shouldShowRequestPermissionRationale`) ausgelagert, so dass die UI-Komponente keine Android-APIs direkt ansprechen muss.
+    - **OnboardingScreen:** OnboardingContent ist nun zustandslos bezüglich Systemberechtigungen und liest keine Permission-Werte selbst aus. Es ruft Callbacks auf und bindet `collectAsStateWithLifecycle()` ein. System-Berechtigungen werden bei `ON_RESUME` automatisch aktualisiert.
+    - **Unit-Tests:** Anpassung und Erweiterung von `OnboardingViewModelTest` zur vollständigen Absicherung des neuen MVI-Zustandsflusses und der Berechtigungssteuerung.
+
 

@@ -2,7 +2,6 @@ package com.heckmannch.birthdaybuddy.ui.screens.onboarding
 
 import android.Manifest
 import android.content.Intent
-import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Build
 import android.provider.Settings
@@ -25,6 +24,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -35,12 +35,12 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.core.app.ActivityCompat
-import androidx.core.content.ContextCompat
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.heckmannch.birthdaybuddy.ui.components.AppResponsiveScaffold
+import com.heckmannch.birthdaybuddy.ui.model.OnboardingUiState
 import com.heckmannch.birthdaybuddy.ui.screens.onboarding.components.CalendarGuidePage
 import com.heckmannch.birthdaybuddy.ui.screens.onboarding.components.CalendarPage
 import com.heckmannch.birthdaybuddy.ui.screens.onboarding.components.ContactsPage
@@ -50,6 +50,7 @@ import com.heckmannch.birthdaybuddy.ui.screens.onboarding.components.ReadyPage
 import com.heckmannch.birthdaybuddy.ui.screens.onboarding.components.WelcomePage
 import com.heckmannch.birthdaybuddy.ui.theme.AlphaContainerSubtle
 import com.heckmannch.birthdaybuddy.ui.theme.BirthdayBuddyTheme
+import com.heckmannch.birthdaybuddy.util.PermissionHelper
 import com.heckmannch.birthdaybuddy.util.findActivity
 import kotlinx.coroutines.launch
 import kotlin.time.Duration.Companion.milliseconds
@@ -60,106 +61,62 @@ fun OnboardingScreen(
     windowWidthSizeClass: WindowWidthSizeClass,
     onFinish: () -> Unit,
 ) {
-    OnboardingContent(
-        windowWidthSizeClass = windowWidthSizeClass,
-        onFinish = { persistentEnabled, notificationsEnabled, calendarEnabled ->
-            viewModel.setPersistentNotifications(persistentEnabled)
-            viewModel.completeOnboarding(
-                notificationsEnabled = notificationsEnabled,
-                calendarSyncEnabled = calendarEnabled
-            )
-            onFinish()
-        }
-    )
-}
-
-@Composable
-fun OnboardingContent(
-    windowWidthSizeClass: WindowWidthSizeClass,
-    onFinish: (persistentEnabled: Boolean, notificationsEnabled: Boolean, calendarEnabled: Boolean) -> Unit,
-) {
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val context = LocalContext.current
+    val activity = context.findActivity()
     val scope = rememberCoroutineScope()
     val lifecycleOwner = LocalLifecycleOwner.current
 
-    var contactsEnabled by remember { mutableStateOf(value = true) }
-    var notificationsEnabled by remember { mutableStateOf(value = true) }
-    var persistentEnabled by remember { mutableStateOf(value = true) }
-    var calendarEnabled by remember { mutableStateOf(value = true) }
+    val contactLauncher =
+        rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted ->
+            viewModel.onIntent(OnboardingIntent.RefreshPermissions)
+            if (isGranted) {
+                scope.launch {
+                    kotlinx.coroutines.delay(300.milliseconds)
+                    viewModel.onIntent(OnboardingIntent.SetCurrentPage(uiState.currentPage + 1))
+                }
+            }
+        }
 
-    var hasContactPermission by remember {
-        mutableStateOf(
-            ContextCompat.checkSelfPermission(
-                context,
-                Manifest.permission.READ_CONTACTS
-            ) == PackageManager.PERMISSION_GRANTED
-        )
-    }
+    val notifLauncher =
+        rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted ->
+            viewModel.onIntent(OnboardingIntent.RefreshPermissions)
+            if (isGranted) {
+                scope.launch {
+                    kotlinx.coroutines.delay(300.milliseconds)
+                    viewModel.onIntent(OnboardingIntent.SetCurrentPage(uiState.currentPage + 1))
+                }
+            }
+        }
 
-    // Re-check permissions when coming back to the app (e.g. from settings)
+    val calendarLauncher =
+        rememberLauncherForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { permissions ->
+            val granted = permissions[Manifest.permission.READ_CALENDAR] == true &&
+                    permissions[Manifest.permission.WRITE_CALENDAR] == true
+            viewModel.onIntent(OnboardingIntent.RefreshPermissions)
+            if (granted) {
+                scope.launch {
+                    kotlinx.coroutines.delay(300.milliseconds)
+                    viewModel.onIntent(OnboardingIntent.SetCurrentPage(uiState.currentPage + 1))
+                }
+            }
+        }
+
+    val permissionHelper = remember(activity) { activity?.let { PermissionHelper(it) } }
+
     DisposableEffect(lifecycleOwner) {
         val observer = LifecycleEventObserver { _, event ->
             if (event == Lifecycle.Event.ON_RESUME) {
-                hasContactPermission = ContextCompat.checkSelfPermission(
-                    context,
-                    Manifest.permission.READ_CONTACTS
-                ) == PackageManager.PERMISSION_GRANTED
+                viewModel.onIntent(OnboardingIntent.RefreshPermissions)
             }
         }
         lifecycleOwner.lifecycle.addObserver(observer)
         onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
     }
 
-    var hasNotifPermission by remember {
-        mutableStateOf(
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                ContextCompat.checkSelfPermission(
-                    context,
-                    Manifest.permission.POST_NOTIFICATIONS
-                ) == PackageManager.PERMISSION_GRANTED
-            } else {
-                true
-            }
-        )
-    }
-
-    var hasCalendarPermission by remember {
-        mutableStateOf(
-            ContextCompat.checkSelfPermission(
-                context,
-                Manifest.permission.READ_CALENDAR
-            ) == PackageManager.PERMISSION_GRANTED &&
-                    ContextCompat.checkSelfPermission(
-                        context,
-                        Manifest.permission.WRITE_CALENDAR
-                    ) == PackageManager.PERMISSION_GRANTED
-        )
-    }
-
-    val showCalendarGuide = calendarEnabled && hasCalendarPermission
-    val pagerState = rememberPagerState { if (showCalendarGuide) 6 else 5 }
-
-    val contactLauncher =
-        rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted ->
-            hasContactPermission = isGranted
-            if (isGranted) {
-                scope.launch {
-                    kotlinx.coroutines.delay(300.milliseconds)
-                    pagerState.animateScrollToPage(pagerState.currentPage + 1)
-                }
-            }
-        }
-
-    val onRequestContactPermission = {
-        val activity = context.findActivity()
-        val shouldShowRationale = activity?.let {
-            ActivityCompat.shouldShowRequestPermissionRationale(
-                it,
-                Manifest.permission.READ_CONTACTS
-            )
-        } ?: false
-
-        if (shouldShowRationale || !hasContactPermission) {
+    val onRequestContactPermission: () -> Unit = {
+        val shouldShowRationale = permissionHelper?.shouldShowRationale(Manifest.permission.READ_CONTACTS) ?: false
+        if (shouldShowRationale || !uiState.hasContactPermission) {
             contactLauncher.launch(Manifest.permission.READ_CONTACTS)
         } else {
             try {
@@ -172,37 +129,76 @@ fun OnboardingContent(
         }
     }
 
-    val notifLauncher =
-        rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted ->
-            hasNotifPermission = isGranted
-            if (isGranted) {
-                scope.launch {
-                    kotlinx.coroutines.delay(300.milliseconds)
-                    pagerState.animateScrollToPage(pagerState.currentPage + 1)
+    val onRequestNotificationPermission: () -> Unit = {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            val shouldShowRationale = permissionHelper?.shouldShowRationale(Manifest.permission.POST_NOTIFICATIONS) ?: false
+            if (shouldShowRationale || !uiState.hasNotificationPermission) {
+                notifLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+            } else {
+                try {
+                    val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
+                        data = Uri.fromParts("package", context.packageName, null)
+                    }
+                    context.startActivity(intent)
+                } catch (_: Exception) {
                 }
             }
-        }
-
-    val calendarLauncher =
-        rememberLauncherForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { permissions ->
-            val granted = permissions[Manifest.permission.READ_CALENDAR] == true &&
-                    permissions[Manifest.permission.WRITE_CALENDAR] == true
-            hasCalendarPermission = granted
-            if (granted) {
-                scope.launch {
-                    kotlinx.coroutines.delay(300.milliseconds)
-                    pagerState.animateScrollToPage(pagerState.currentPage + 1)
-                }
+        } else {
+            viewModel.onIntent(OnboardingIntent.RefreshPermissions)
+            scope.launch {
+                kotlinx.coroutines.delay(300.milliseconds)
+                viewModel.onIntent(OnboardingIntent.SetCurrentPage(uiState.currentPage + 1))
             }
         }
+    }
 
-    val onRequestCalendarPermission = {
+    val onRequestCalendarPermission: () -> Unit = {
         calendarLauncher.launch(
             arrayOf(
                 Manifest.permission.READ_CALENDAR,
                 Manifest.permission.WRITE_CALENDAR
             )
         )
+    }
+
+    OnboardingContent(
+        uiState = uiState,
+        windowWidthSizeClass = windowWidthSizeClass,
+        onIntent = { viewModel.onIntent(it) },
+        onRequestContactPermission = onRequestContactPermission,
+        onRequestNotificationPermission = onRequestNotificationPermission,
+        onRequestCalendarPermission = onRequestCalendarPermission,
+        onFinish = { _, notificationsEnabled, calendarEnabled ->
+            viewModel.completeOnboarding(
+                notificationsEnabled = notificationsEnabled && uiState.hasNotificationPermission,
+                calendarSyncEnabled = calendarEnabled && uiState.hasCalendarPermission
+            )
+            onFinish()
+        }
+    )
+}
+
+@Composable
+fun OnboardingContent(
+    uiState: OnboardingUiState,
+    windowWidthSizeClass: WindowWidthSizeClass,
+    onIntent: (OnboardingIntent) -> Unit,
+    onRequestContactPermission: () -> Unit,
+    onRequestNotificationPermission: () -> Unit,
+    onRequestCalendarPermission: () -> Unit,
+    onFinish: (contactsEnabled: Boolean, notificationsEnabled: Boolean, calendarEnabled: Boolean) -> Unit,
+) {
+    var contactsEnabled by remember { mutableStateOf(value = true) }
+    var notificationsEnabled by remember { mutableStateOf(value = true) }
+    var calendarEnabled by remember { mutableStateOf(value = true) }
+
+    val showCalendarGuide = calendarEnabled && uiState.hasCalendarPermission
+    val pagerState = rememberPagerState { if (showCalendarGuide) 6 else 5 }
+
+    LaunchedEffect(uiState.currentPage) {
+        if (uiState.currentPage != pagerState.currentPage && uiState.currentPage in 0 until pagerState.pageCount) {
+            pagerState.animateScrollToPage(uiState.currentPage)
+        }
     }
 
     val actualPage =
@@ -245,17 +241,17 @@ fun OnboardingContent(
                     pageCount = pagerState.pageCount,
                     isNextEnabled = when (pagerState.currentPage) {
                         0 -> true
-                        1 -> !contactsEnabled || hasContactPermission
-                        2 -> !notificationsEnabled || hasNotifPermission
-                        3 -> !calendarEnabled || hasCalendarPermission
+                        1 -> !contactsEnabled || uiState.hasContactPermission
+                        2 -> !notificationsEnabled || uiState.hasNotificationPermission
+                        3 -> !calendarEnabled || uiState.hasCalendarPermission
                         else -> true
                     },
                     windowWidthSizeClass = windowWidthSizeClass,
                     onBack = {
-                        scope.launch { pagerState.animateScrollToPage(pagerState.currentPage - 1) }
+                        onIntent(OnboardingIntent.SetCurrentPage(pagerState.currentPage - 1))
                     },
                     onNext = {
-                        scope.launch { pagerState.animateScrollToPage(pagerState.currentPage + 1) }
+                        onIntent(OnboardingIntent.SetCurrentPage(pagerState.currentPage + 1))
                     }
                 )
             }
@@ -274,7 +270,7 @@ fun OnboardingContent(
                         windowWidthSizeClass = windowWidthSizeClass,
                         enabled = contactsEnabled,
                         onEnabledChange = { contactsEnabled = it },
-                        isGranted = hasContactPermission,
+                        isGranted = uiState.hasContactPermission,
                         onGrant = onRequestContactPermission
                     )
 
@@ -282,26 +278,17 @@ fun OnboardingContent(
                         windowWidthSizeClass = windowWidthSizeClass,
                         enabled = notificationsEnabled,
                         onEnabledChange = { notificationsEnabled = it },
-                        persistent = persistentEnabled,
-                        onPersistentChange = { persistentEnabled = it },
-                        isGranted = hasNotifPermission
-                    ) {
-                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                            notifLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
-                        } else {
-                            hasNotifPermission = true
-                            scope.launch {
-                                kotlinx.coroutines.delay(300.milliseconds)
-                                pagerState.animateScrollToPage(pagerState.currentPage + 1)
-                            }
-                        }
-                    }
+                        persistent = uiState.isPersistentNotificationEnabled,
+                        onPersistentChange = { onIntent(OnboardingIntent.SetPersistentNotifications(it)) },
+                        isGranted = uiState.hasNotificationPermission,
+                        onGrant = onRequestNotificationPermission
+                    )
 
                     3 -> CalendarPage(
                         windowWidthSizeClass = windowWidthSizeClass,
                         enabled = calendarEnabled,
                         onEnabledChange = { calendarEnabled = it },
-                        isGranted = hasCalendarPermission,
+                        isGranted = uiState.hasCalendarPermission,
                         onGrant = onRequestCalendarPermission
                     )
 
@@ -309,14 +296,14 @@ fun OnboardingContent(
 
                     5 -> ReadyPage(
                         windowWidthSizeClass = windowWidthSizeClass,
-                        hasContactPermission = contactsEnabled && hasContactPermission,
-                        notificationsEnabled = notificationsEnabled && hasNotifPermission,
-                        calendarSyncEnabled = calendarEnabled && hasCalendarPermission
+                        hasContactPermission = contactsEnabled && uiState.hasContactPermission,
+                        notificationsEnabled = notificationsEnabled && uiState.hasNotificationPermission,
+                        calendarSyncEnabled = calendarEnabled && uiState.hasCalendarPermission
                     ) {
                         onFinish(
-                            persistentEnabled,
-                            notificationsEnabled && hasNotifPermission,
-                            calendarEnabled && hasCalendarPermission
+                            contactsEnabled,
+                            notificationsEnabled,
+                            calendarEnabled
                         )
                     }
                 }
@@ -330,9 +317,13 @@ fun OnboardingContent(
 private fun OnboardingScreenPreview() {
     BirthdayBuddyTheme {
         OnboardingContent(
+            uiState = OnboardingUiState(),
             windowWidthSizeClass = WindowWidthSizeClass.Compact,
+            onIntent = {},
+            onRequestContactPermission = {},
+            onRequestNotificationPermission = {},
+            onRequestCalendarPermission = {},
             onFinish = { _, _, _ -> }
         )
     }
 }
-
