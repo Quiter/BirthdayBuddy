@@ -156,4 +156,7 @@
     - **Problem:** Die Methode `CalendarSyncRepositoryImpl.debugPrintAllCalendars()` blockierte über `runBlocking` den aufrufenden Thread, um Kalenderdaten synchron abzufragen. Da diese Methode in `CalendarViewModel.init` unter Debug-Builds direkt aufgerufen wurde, blockierte dies den Main-Thread beim App-Start vollständig und konnte auf langsameren Geräten zu ANRs führen.
     - **Lösung:** `CalendarSyncRepository.debugPrintAllCalendars()` wurde als `suspend fun` deklariert und die synchrone Blockierung (`runBlocking`) entfernt. Der Aufruf in `CalendarViewModel.init` wurde in ein `viewModelScope.launch` eingebettet, sodass die Protokollierung asynchron im Hintergrund erfolgt. Der entsprechende Unit-Test wurde auf `runTest` umgestellt.
 
-
+247. **Explizites Offloading von CPU-intensiven Mappings auf `Dispatchers.Default` in `NotificationRepositoryImpl` (Performance / Richtlinie §2.7):**
+    - **Problem:** Die Flows `allRules` und `settings` in [NotificationRepositoryImpl.kt](file:///c:/Users/chris/AndroidStudioProjects/BirthdayBuddy/app/src/main/java/com/heckmannch/birthdaybuddy/data/repository/NotificationRepositoryImpl.kt) führten Entity-zu-Domain-Objekt-Mappings via `.map { ... }` durch. Da `flowOn` fehlte, liefen diese CPU-intensiven Operationen auf dem Collector-Thread (typischerweise dem Main-Thread).
+    - **Lösung:** Einfügen von `.flowOn(Dispatchers.Default)` unmittelbar nach dem `.map`-Operator und vor `.distinctUntilChanged()` bei beiden Flows, analog zum Muster in `ContactRepositoryImpl`. Import `kotlinx.coroutines.flow.flowOn` ergänzt.
+    - **Verifikation:** Erfolgreicher Durchlauf aller JVM-Unit-Tests (`.\gradlew testDebugUnitTest`).

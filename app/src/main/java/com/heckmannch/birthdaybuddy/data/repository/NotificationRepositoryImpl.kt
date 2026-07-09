@@ -15,6 +15,7 @@ import com.heckmannch.birthdaybuddy.domain.repository.NotificationScheduler
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
@@ -36,10 +37,12 @@ class NotificationRepositoryImpl @Inject constructor(
 
     override val allRules: Flow<List<NotificationRule>> = notificationRuleDao.getAllRules()
         .map { entities -> entities.map { notificationRuleMapper.toDomain(it) } }
+        .flowOn(Dispatchers.Default)
         .distinctUntilChanged()
 
     override val settings: Flow<AppSettings> = appSettingsDao.getSettings()
         .map { entity -> appSettingsMapper.toDomain(entity ?: AppSettingsEntity()) }
+        .flowOn(Dispatchers.Default)
         .distinctUntilChanged()
 
     override suspend fun syncScheduling() = withContext(Dispatchers.IO) {
