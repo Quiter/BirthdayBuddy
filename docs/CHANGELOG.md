@@ -147,4 +147,8 @@
     - **Bypass statischer Android-Konstanten:** Da unter JVM die statischen finalen Android-SDK-Felder wie `CalendarContract.Events.CONTENT_URI` standardmäßig `null` sind, wird `sun.misc.Unsafe` verwendet, um diese Felder via Speicher-Offset direkt mit Mocks zu belegen und NullPointerExceptions bei Batch-Operationen zuverlässig zu verhindern.
     - **Verifikation:** Erfolgreicher Durchlauf aller JVM-Tests (`.\gradlew testDebugUnitTest`).
 
+245. **Implementierung des `goAsync()`-Musters im `NotificationActionReceiver` (Bug Fix & Reliability):**
+    - **Problem:** Im `DONE`-Aktionspfad von `NotificationActionReceiver` wurde ein Datenbank-Schreibvorgang (`notificationRepository.markAsDone(pendingId)`) asynchron via `CoroutineScope(Dispatchers.IO).launch { ... }` gestartet, ohne `goAsync()` zu verwenden. Unter Android API 26+ führt dies bei Broadcast-Receivern zu einem extrem strikten Ausführungsfenster. Der Host-Prozess konnte beendet werden, bevor der Datenbank-Schreibvorgang beendet war, wodurch der Status "Erledigt" verloren ging.
+    - **Lösung:** Verwendung des offiziellen `goAsync()`-Musters. Durch Aufruf von `goAsync()` vor dem Start der Coroutine und Aufruf von `pendingResult.finish()` im `finally`-Block der Coroutine wird dem System signalisiert, dass der Receiver im Hintergrund weiterarbeitet, bis der Schreibvorgang abgeschlossen ist.
+    - **Dokumentation:** Die zugehörigen deutschen Kommentare im modifizierten Code-Abschnitt wurden ins Englische übersetzt, um die Projekt-Richtlinien bezüglich einer einheitlichen englischen Entwicklerdokumentation einzuhalten.
 

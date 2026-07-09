@@ -46,15 +46,20 @@ class NotificationActionReceiver : BroadcastReceiver() {
                 lookupKeys = lookupKeys.toList()
             )
         } else if (intent.action == "DONE") {
-            // 1. Aktuelle Benachrichtigung schließen
+            // 1. Dismiss the current notification
             val notificationManager =
                 context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
             notificationManager.cancel(notificationId)
 
-            // 2. Als erledigt markieren
+            // 2. Mark as done using goAsync() to prevent process termination before database write completes
             if (pendingId != -1) {
+                val pendingResult = goAsync()
                 CoroutineScope(Dispatchers.IO).launch {
-                    notificationRepository.markAsDone(pendingId)
+                    try {
+                        notificationRepository.markAsDone(pendingId)
+                    } finally {
+                        pendingResult.finish()
+                    }
                 }
             }
         } else if (intent.action == "DISMISSED") {
