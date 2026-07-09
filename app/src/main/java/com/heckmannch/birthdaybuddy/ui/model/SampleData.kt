@@ -78,5 +78,6 @@ object SampleData {
     val homeUiState = HomeUiState(
         contacts = sampleContacts,
         availableLabels = listOf("Familie", "Freunde", "Arbeit"),
+        hasContactPermission = true,
     )
 }

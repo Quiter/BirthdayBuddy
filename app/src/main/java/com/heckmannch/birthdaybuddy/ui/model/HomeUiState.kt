@@ -16,4 +16,5 @@ data class HomeUiState(
     val searchFocusRequested: Boolean = false,
     val newlyAddedIdeaId: String? = null,
     val coupleSuggestion: CoupleSuggestionUiModel? = null,
+    val hasContactPermission: Boolean = false,
 )

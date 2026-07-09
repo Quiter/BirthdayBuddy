@@ -1,5 +1,9 @@
 package com.heckmannch.birthdaybuddy.ui.screens.home
 
+import android.Manifest
+import android.content.Context
+import android.content.pm.PackageManager
+import androidx.core.content.ContextCompat
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.heckmannch.birthdaybuddy.domain.model.GiftIdea
@@ -14,6 +18,7 @@ import com.heckmannch.birthdaybuddy.domain.usecase.UnlinkCoupleUseCase
 import com.heckmannch.birthdaybuddy.ui.model.CoupleSuggestionUiModel
 import com.heckmannch.birthdaybuddy.ui.model.HomeUiState
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.delay
@@ -46,6 +51,7 @@ class HomeViewModel @Inject constructor(
     private val unlinkCoupleUseCase: UnlinkCoupleUseCase,
     private val ignoreCoupleSuggestionUseCase: IgnoreCoupleSuggestionUseCase,
     timeRepository: TimeRepository,
+    @param:ApplicationContext private val context: Context,
 ) : ViewModel() {
 
     private var lastInteractionTime: Long = System.currentTimeMillis()
@@ -60,10 +66,22 @@ class HomeViewModel @Inject constructor(
         val isResettingFilter: Boolean = false,
         val isSyncing: Boolean = false,
         val searchFocusRequested: Boolean = false,
-        val newlyAddedIdeaId: String? = null
+        val newlyAddedIdeaId: String? = null,
+        val hasContactPermission: Boolean = false
     )
 
-    private val _userUiState = MutableStateFlow(UserUiState())
+    private fun checkContactPermission(): Boolean {
+        return ContextCompat.checkSelfPermission(
+            context,
+            Manifest.permission.READ_CONTACTS
+        ) == PackageManager.PERMISSION_GRANTED
+    }
+
+    private val _userUiState = MutableStateFlow(
+        UserUiState(
+            hasContactPermission = checkContactPermission()
+        )
+    )
 
     companion object {
         private val WHITESPACE_REGEX = "\\s+".toRegex()
@@ -144,7 +162,8 @@ class HomeViewModel @Inject constructor(
             isSyncing = userState.isSyncing,
             searchFocusRequested = userState.searchFocusRequested,
             newlyAddedIdeaId = userState.newlyAddedIdeaId,
-            coupleSuggestion = suggestion
+            coupleSuggestion = suggestion,
+            hasContactPermission = userState.hasContactPermission
         )
     }
         .flowOn(Dispatchers.Default)
@@ -157,6 +176,7 @@ class HomeViewModel @Inject constructor(
         }
         when (intent) {
             is HomeIntent.AppResumed -> {
+                _userUiState.update { it.copy(hasContactPermission = checkContactPermission()) }
                 if ((currentTimeProvider() - lastInteractionTime) > (5 * 60 * 1000)) {
                     onIntent(HomeIntent.ResetFilters)
                 }
@@ -244,6 +264,7 @@ class HomeViewModel @Inject constructor(
             }
 
             is HomeIntent.SyncContacts -> {
+                _userUiState.update { it.copy(hasContactPermission = checkContactPermission()) }
                 viewModelScope.launch {
                     if (intent.showLoading) {
                         _userUiState.update { it.copy(isSyncing = true) }

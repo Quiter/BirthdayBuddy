@@ -12,6 +12,7 @@ import com.heckmannch.birthdaybuddy.domain.usecase.GetCoupleSuggestionUseCase
 import com.heckmannch.birthdaybuddy.domain.usecase.IgnoreCoupleSuggestionUseCase
 import com.heckmannch.birthdaybuddy.domain.usecase.LinkAsCoupleUseCase
 import com.heckmannch.birthdaybuddy.domain.usecase.UnlinkCoupleUseCase
+import android.content.Context
 import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk
@@ -54,6 +55,7 @@ class HomeViewModelGiftIdeaTest {
     private val unlinkCoupleUseCase: UnlinkCoupleUseCase = mockk(relaxed = true)
     private val ignoreCoupleSuggestionUseCase: IgnoreCoupleSuggestionUseCase = mockk(relaxed = true)
     private val timeRepository: TimeRepository = mockk(relaxed = true)
+    private val context: Context = mockk(relaxed = true)
 
     private val today = LocalDate.of(2024, 5, 15)
 
@@ -82,6 +84,7 @@ class HomeViewModelGiftIdeaTest {
             unlinkCoupleUseCase = unlinkCoupleUseCase,
             ignoreCoupleSuggestionUseCase = ignoreCoupleSuggestionUseCase,
             timeRepository = timeRepository,
+            context = context,
         )
     }
 

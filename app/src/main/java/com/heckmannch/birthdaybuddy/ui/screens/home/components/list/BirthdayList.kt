@@ -1,7 +1,6 @@
 package com.heckmannch.birthdaybuddy.ui.screens.home.components.list
 
-import android.Manifest
-import android.content.pm.PackageManager
+
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.Spring
@@ -53,14 +52,14 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
+
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
-import androidx.core.content.ContextCompat
+
 import com.heckmannch.birthdaybuddy.R
 import com.heckmannch.birthdaybuddy.domain.model.ContactLabels
 import com.heckmannch.birthdaybuddy.ui.illustrations.ContactsIllustration
@@ -106,6 +105,7 @@ import kotlin.time.Duration.Companion.milliseconds
 fun BirthdayList(
     contacts: List<ContactUiModel>?,
     newlyAddedIdeaId: String?,
+    hasContactPermission: Boolean,
     modifier: Modifier = Modifier,
     listState: LazyListState,
     availableLabels: List<String> = emptyList(),
@@ -119,23 +119,6 @@ fun BirthdayList(
     contentPadding: PaddingValues = PaddingValues(0.dp),
     showLabelFilter: Boolean = true,
 ) {
-    val context = LocalContext.current
-
-    var hasPermission by remember(context) {
-        mutableStateOf(
-            ContextCompat.checkSelfPermission(
-                context,
-                Manifest.permission.READ_CONTACTS,
-            ) == PackageManager.PERMISSION_GRANTED
-        )
-    }
-
-    LaunchedEffect(contacts) {
-        hasPermission = ContextCompat.checkSelfPermission(
-            context,
-            Manifest.permission.READ_CONTACTS,
-        ) == PackageManager.PERMISSION_GRANTED
-    }
 
     val navBarPadding = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
 
@@ -215,7 +198,7 @@ fun BirthdayList(
         if (contacts.isEmpty()) {
             item(key = "empty_state") {
                 EmptyListState(
-                    hasPermission = hasPermission,
+                    hasPermission = hasContactPermission,
                     onRequestPermission = actions.onRequestPermission,
                     modifier = Modifier.fillParentMaxSize()
                 )
@@ -392,6 +375,7 @@ fun BirthdayListPreview() {
         BirthdayList(
             contacts = SampleData.sampleContacts,
             newlyAddedIdeaId = null,
+            hasContactPermission = true,
             listState = rememberLazyListState(),
             availableLabels = listOf("Familie", "Freunde"),
             actions = actions,

@@ -166,6 +166,7 @@ fun HomeContent(
                     BirthdayList(
                         contacts = contacts,
                         newlyAddedIdeaId = uiState.newlyAddedIdeaId,
+                        hasContactPermission = uiState.hasContactPermission,
                         listState = homeState.listState,
                         availableLabels = uiState.availableLabels,
                         selectedLabel = uiState.selectedLabel,
@@ -250,6 +251,7 @@ fun HomeContent(
                                     BirthdayList(
                                         contacts = currentUiState.contacts,
                                         newlyAddedIdeaId = null, // Idee wird im rechten Paneel hinzugefügt
+                                        hasContactPermission = currentUiState.hasContactPermission,
                                         listState = homeState.listState,
                                         availableLabels = currentUiState.availableLabels,
                                         selectedLabel = currentUiState.selectedLabel,

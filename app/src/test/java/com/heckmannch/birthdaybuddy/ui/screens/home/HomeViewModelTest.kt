@@ -1,5 +1,6 @@
 package com.heckmannch.birthdaybuddy.ui.screens.home
 
+import android.content.Context
 import androidx.lifecycle.viewModelScope
 import com.google.common.truth.Truth.assertThat
 import com.heckmannch.birthdaybuddy.MainDispatcherRule
@@ -56,6 +57,7 @@ class HomeViewModelTest {
     private val unlinkCoupleUseCase = UnlinkCoupleUseCase(contactRepository)
     private val ignoreCoupleSuggestionUseCase = IgnoreCoupleSuggestionUseCase(contactRepository)
     private val today = LocalDate.of(2024, 5, 15)
+    private val context: Context = mock()
 
     @Before
     fun setup() {
@@ -79,6 +81,7 @@ class HomeViewModelTest {
             unlinkCoupleUseCase = unlinkCoupleUseCase,
             ignoreCoupleSuggestionUseCase = ignoreCoupleSuggestionUseCase,
             timeRepository = timeRepository,
+            context = context,
         )
         val state = viewModel.uiState.first()
 
@@ -98,6 +101,7 @@ class HomeViewModelTest {
             unlinkCoupleUseCase = unlinkCoupleUseCase,
             ignoreCoupleSuggestionUseCase = ignoreCoupleSuggestionUseCase,
             timeRepository = timeRepository,
+            context = context,
         )
         viewModel.onIntent(HomeIntent.LabelSelected("Freunde"))
 
@@ -134,6 +138,7 @@ class HomeViewModelTest {
             unlinkCoupleUseCase = unlinkCoupleUseCase,
             ignoreCoupleSuggestionUseCase = ignoreCoupleSuggestionUseCase,
             timeRepository = timeRepository,
+            context = context,
         )
 
         viewModel.onIntent(HomeIntent.LabelSelected("Freunde"))
@@ -177,6 +182,7 @@ class HomeViewModelTest {
             unlinkCoupleUseCase = unlinkCoupleUseCase,
             ignoreCoupleSuggestionUseCase = ignoreCoupleSuggestionUseCase,
             timeRepository = timeRepository,
+            context = context,
         )
         val state = viewModel.uiState.first { (it.contacts != null) }
 
@@ -216,6 +222,7 @@ class HomeViewModelTest {
             unlinkCoupleUseCase = unlinkCoupleUseCase,
             ignoreCoupleSuggestionUseCase = ignoreCoupleSuggestionUseCase,
             timeRepository = timeRepository,
+            context = context,
         )
 
         // Verify availableLabels contains anniversary and name_day labels
@@ -261,6 +268,7 @@ class HomeViewModelTest {
             unlinkCoupleUseCase = unlinkCoupleUseCase,
             ignoreCoupleSuggestionUseCase = ignoreCoupleSuggestionUseCase,
             timeRepository = timeRepository,
+            context = context,
         )
 
         // Wait for UI State to propagate contacts
@@ -316,6 +324,7 @@ class HomeViewModelTest {
             unlinkCoupleUseCase = unlinkCoupleUseCase,
             ignoreCoupleSuggestionUseCase = ignoreCoupleSuggestionUseCase,
             timeRepository = timeRepository,
+            context = context,
         )
 
         // Wait for UI State to propagate contacts
@@ -371,6 +380,7 @@ class HomeViewModelTest {
             unlinkCoupleUseCase = unlinkCoupleUseCase,
             ignoreCoupleSuggestionUseCase = ignoreCoupleSuggestionUseCase,
             timeRepository = timeRepository,
+            context = context,
         )
 
         // Wait for UI State to propagate contacts
@@ -393,6 +403,7 @@ class HomeViewModelTest {
             unlinkCoupleUseCase = unlinkCoupleUseCase,
             ignoreCoupleSuggestionUseCase = ignoreCoupleSuggestionUseCase,
             timeRepository = timeRepository,
+            context = context,
         )
 
         // Set search query so we have active filters
@@ -426,6 +437,7 @@ class HomeViewModelTest {
             unlinkCoupleUseCase = unlinkCoupleUseCase,
             ignoreCoupleSuggestionUseCase = ignoreCoupleSuggestionUseCase,
             timeRepository = timeRepository,
+            context = context,
         )
 
         // Set search query so we have active filters

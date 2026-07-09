@@ -54,6 +54,7 @@ class HomeViewModelSearchTest {
     private val linkAsCoupleUseCase = LinkAsCoupleUseCase(contactRepository)
     private val unlinkCoupleUseCase = UnlinkCoupleUseCase(contactRepository)
     private val ignoreCoupleSuggestionUseCase = IgnoreCoupleSuggestionUseCase(contactRepository)
+    private val context: android.content.Context = mock()
 
     @Before
     fun setup() {
@@ -94,6 +95,7 @@ class HomeViewModelSearchTest {
             unlinkCoupleUseCase = unlinkCoupleUseCase,
             ignoreCoupleSuggestionUseCase = ignoreCoupleSuggestionUseCase,
             timeRepository = timeRepository,
+            context = context,
         )
 
         // Suche nach "Mustermann Max"
@@ -129,6 +131,7 @@ class HomeViewModelSearchTest {
             unlinkCoupleUseCase = unlinkCoupleUseCase,
             ignoreCoupleSuggestionUseCase = ignoreCoupleSuggestionUseCase,
             timeRepository = timeRepository,
+            context = context,
         )
 
         viewModel.onIntent(HomeIntent.SearchQueryChanged("  Max  "))
