@@ -198,3 +198,8 @@
 259. **Vermeidung additiver Top-Paddings für flüssige Animationen (UI-Qualität & Richtlinien):**
     - **HomeContent.kt:** Entfernung des `top = SpacingSmall` Paddings bei der `SearchBar` zur Einhaltung der Projekt-Richtlinie, dass Abstände zwischen Elementen Bottom-Padding nutzen müssen, um Sprünge bei `AnimatedVisibility` zu verhindern. Der Abstand zur Status Bar wird sauber durch die übergeordnete `Column` mit `topPadding` gewährleistet.
     - **BirthdayList.kt / CoupleSuggestionBanner:** Entfernung des `top = SpacingSmall` Paddings am `CoupleSuggestionBanner`. Um den visuellen Abstand identisch zu halten, wird stattdessen das Bottom-Padding des Vorgängerelements (`LabelFilterBar`) dynamisch um `SpacingSmall` erhöht, falls ein Kopplungsvorschlag vorliegt.
+
+260. **Effizientere Rekompositions-Skips durch Hinzufügen von Key-Parametern in LazyColumn (Performance & UI-Qualität):**
+    - **BirthdayList.kt:** Hinzufügen des `key = { it }` Parameters im items()-Aufruf für die `BirthdayItemSkeleton`-Platzhalter.
+    - **SettingsScreen.kt:** Hinzufügen des `key = { it.tab }` Parameters in den beiden `items(menuItems)`-Aufrufen für das Einstellungsmenü (sowohl im kompakten als auch im geteilten Tablet-Layout).
+

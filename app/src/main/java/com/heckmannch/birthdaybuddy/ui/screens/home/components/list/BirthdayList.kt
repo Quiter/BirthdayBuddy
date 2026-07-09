@@ -149,7 +149,7 @@ fun BirthdayList(
             ),
             userScrollEnabled = false,
         ) {
-            items(10) {
+            items(10, key = { it }) {
                 BirthdayItemSkeleton()
             }
         }

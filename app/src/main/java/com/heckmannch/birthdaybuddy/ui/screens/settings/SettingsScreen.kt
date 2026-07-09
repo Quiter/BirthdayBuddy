@@ -271,7 +271,7 @@ private fun SettingsContent(
                         .fillMaxWidth(),
                     contentPadding = paddingValues
                 ) {
-                    items(menuItems) { item ->
+                    items(menuItems, key = { it.tab }) { item ->
                         SettingsMenuItem(
                             titleRes = item.titleRes,
                             descRes = item.descRes,
@@ -384,7 +384,7 @@ private fun SettingsContent(
                                         .weight(1f)
                                         .fillMaxWidth()
                                 ) {
-                                    items(menuItems) { item ->
+                                    items(menuItems, key = { it.tab }) { item ->
                                         // Highlights the item if it matches the current active tab
                                         val isSelected = when (item.tab) {
                                             SettingsTab.ABOUT -> activeTab == SettingsTab.ABOUT || activeTab == SettingsTab.PRIVACY_POLICY
