@@ -101,7 +101,7 @@ fun HomeContent(
                         onClearQuery = actions.onClearSearch,
                         onSettingsClick = actions.onNavigateToSettings,
                         focusRequester = homeState.searchFocusRequester,
-                        modifier = Modifier.padding(top = SpacingSmall, bottom = SpacingSmall),
+                        modifier = Modifier.padding(bottom = SpacingSmall),
                     )
                     if (showFilterBarInTopBar && uiState.availableLabels.isNotEmpty()) {
                         LabelFilterBar(
