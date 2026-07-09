@@ -13,9 +13,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.util.TimeZone
 import javax.inject.Inject
-import javax.inject.Singleton
 
-@Singleton
 class SystemCalendarDataSourceImpl @Inject constructor(
     @param:ApplicationContext private val context: Context,
 ) : SystemCalendarDataSource {

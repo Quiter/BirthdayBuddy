@@ -21,9 +21,7 @@ import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
-import javax.inject.Singleton
 
-@Singleton
 class NotificationRepositoryImpl @Inject constructor(
     private val notificationRuleDao: NotificationRuleDao,
     private val pendingNotificationDao: PendingNotificationDao,

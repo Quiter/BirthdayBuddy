@@ -16,9 +16,7 @@ import kotlinx.coroutines.withContext
 import java.util.Calendar
 import java.util.TimeZone
 import javax.inject.Inject
-import javax.inject.Singleton
 
-@Singleton
 class CalendarSyncRepositoryImpl @Inject constructor(
     @param:ApplicationContext private val context: Context,
     private val appSettingsDao: AppSettingsDao,

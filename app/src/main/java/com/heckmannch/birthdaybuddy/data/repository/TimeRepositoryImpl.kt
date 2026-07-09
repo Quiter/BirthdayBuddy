@@ -9,10 +9,8 @@ import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.temporal.ChronoUnit
 import javax.inject.Inject
-import javax.inject.Singleton
 import kotlin.time.Duration.Companion.milliseconds
 
-@Singleton
 class TimeRepositoryImpl @Inject constructor() : TimeRepository {
     /**
      * Ein Flow, der das aktuelle Datum emittiert und sich automatisch um Mitternacht aktualisiert.

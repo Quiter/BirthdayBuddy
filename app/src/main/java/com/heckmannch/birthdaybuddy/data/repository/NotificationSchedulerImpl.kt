@@ -12,9 +12,7 @@ import com.heckmannch.birthdaybuddy.notification.SnoozeWorker
 import dagger.hilt.android.qualifiers.ApplicationContext
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
-import javax.inject.Singleton
 
-@Singleton
 class NotificationSchedulerImpl @Inject constructor(
     @param:ApplicationContext private val context: Context,
 ) : NotificationScheduler {

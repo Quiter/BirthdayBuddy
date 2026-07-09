@@ -177,6 +177,7 @@
     - **UI-Refactoring:** Anpassung von `NotificationSettingsScreen.kt` und `OtherEventsSettingsScreen.kt`, um alle Aktionen ausschließlich über `viewModel.onIntent` an das ViewModel zu senden.
     - **Unit-Tests:** Umstellung der Testfälle in `NotificationViewModelTest.kt` auf die Verwendung von `onIntent`.
 
-
-
-
+254. **Entfernung redundanter @Singleton-Annotationen von Implementierungsklassen (Code-Qualität & Dependency Injection):**
+    - **@Singleton-Bereinigung:** Entfernung der redundanten `@Singleton`-Annotationen auf den Implementierungs-Klassen (`BirthdayWidgetUpdater`, `CalendarSyncRepositoryImpl`, `ContactRepositoryImpl`, `NotificationRepositoryImpl`, `NotificationSchedulerImpl`, `SystemCalendarDataSourceImpl` und `TimeRepositoryImpl`), da diese ausschließlich über `@Binds` in `HelperBindingsModule` bereitgestellt werden, wo `@Singleton` bereits auf Methodenebene deklariert ist.
+    - **Unbenutzte Imports:** Bereinigung der nicht mehr benötigten `import javax.inject.Singleton` Imports in den betroffenen Dateien.
+    - **Erhalt direkter Singletons:** Die Klassen `GiftIdeaBackupManager` und `SystemContactDataSource` behalten ihre `@Singleton`-Annotationen, da sie ohne `@Binds` direkt injiziert werden.
