@@ -1,5 +1,8 @@
 package com.heckmannch.birthdaybuddy.ui.model
 
+import androidx.compose.runtime.Immutable
+
+@Immutable
 data class CalendarUiState(
     val calendarSyncEnabled: Boolean = false,
     val otherEventsEnabled: Boolean = false,
