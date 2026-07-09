@@ -130,16 +130,16 @@
         <item quantity="other">%d people have their birthday in one week!</item>
     </plurals>
     <plurals name="notif_title_days_named">
-        <item quantity="one">In one day it\'s %1$s\'s birthday!</item>
-        <item quantity="other">In %d days it\'s %s\'s birthday!</item>
+        <item quantity="one">In one day it\'s %2$s\'s birthday!</item>
+        <item quantity="other">In %1$d days it\'s %2$s\'s birthday!</item>
     </plurals>
     <plurals name="notif_title_days_age">
         <item quantity="one">In one day %1$s turns %2$d!</item>
         <item quantity="other">In %1$d days %2$s turns %3$d!</item>
     </plurals>
     <plurals name="notif_title_days_plural">
-        <item quantity="one">In one day %d people have their birthday!</item>
-        <item quantity="other">In %d days %d people have their birthday!</item>
+        <item quantity="one">In one day %2$d people have their birthday!</item>
+        <item quantity="other">In %1$d days %2$d people have their birthday!</item>
     </plurals>
     <string name="notif_desc_named">Don\'t forget to congratulate!</string>
 

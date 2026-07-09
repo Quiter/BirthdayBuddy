@@ -217,3 +217,7 @@
     - **Ressourcen:** Hinzufügen der neuen String-Ressourcen `color_picker_hex_label` ("HEX Code" / "HEX-Code") und `color_picker_hex_placeholder` ("e.g. FF5722" / "z.B. FF5722") in [strings.xml](file:///c:/Users/chris/AndroidStudioProjects/BirthdayBuddy/app/src/main/res/values/strings.xml) und [strings.xml](file:///c:/Users/chris/AndroidStudioProjects/BirthdayBuddy/app/src/main/res/values-de/strings.xml).
     - **Einbindung:** Ersetzung der hardcodierten Strings für Label und Placeholder im `TextField` bzw. `OutlinedTextField` des [ColorPickerDialog.kt](file:///c:/Users/chris/AndroidStudioProjects/BirthdayBuddy/app/src/main/java/com/heckmannch/birthdaybuddy/ui/components/ColorPickerDialog.kt) durch `stringResource` Verweise auf die neuen XML-Keys.
 
+265. **Harmonisierung und Korrektur von Plural-Formatbezeichnern (Bug Fix & Code-Qualität):**
+    - **Format-Specifier Vereinheitlichung:** Die Format-Specifier in den Plural-Blöcken `notif_title_days_named` und `notif_title_days_plural` wurden in [strings.xml](file:///c:/Users/chris/AndroidStudioProjects/BirthdayBuddy/app/src/main/res/values/strings.xml) und [strings.xml (German)](file:///c:/Users/chris/AndroidStudioProjects/BirthdayBuddy/app/src/main/res/values-de/strings.xml) durchgehend auf nummerierte Bezeichner umgestellt (`%1$d`, `%2$s` bzw. `%2$d`).
+    - **Fehlerbehebung:** Behebung potenzieller `MissingFormatArgumentException`-Fehler und falscher Argumentzuweisungen (wie fälschlicherweise formatierte IDs oder Indizes in den quantity="one" Varianten).
+
