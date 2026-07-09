@@ -3,7 +3,7 @@ plugins {
     alias(libs.plugins.androidx.baselineprofile)
 }
 
-configure<com.android.build.api.dsl.TestExtension> {
+android {
     namespace = "com.heckmannch.birthdaybuddy.baselineprofile"
     compileSdk = 37
 
