@@ -381,4 +381,71 @@ class HomeViewModelTest {
         assertThat(contacts).hasSize(1)
         assertThat(contacts[0].fullName).isEqualTo("Birthday Person")
     }
+
+    @Test
+    fun onAppResumed_underFiveMinutes_doesNotResetFilters() = runTest {
+        viewModel = HomeViewModel(
+            contactRepository = contactRepository,
+            getContactsUseCase = getContactsUseCase,
+            getAvailableLabelsUseCase = getAvailableLabelsUseCase,
+            getCoupleSuggestionUseCase = getCoupleSuggestionUseCase,
+            linkAsCoupleUseCase = linkAsCoupleUseCase,
+            unlinkCoupleUseCase = unlinkCoupleUseCase,
+            ignoreCoupleSuggestionUseCase = ignoreCoupleSuggestionUseCase,
+            timeRepository = timeRepository,
+        )
+
+        // Set search query so we have active filters
+        viewModel.onIntent(HomeIntent.SearchQueryChanged("test"))
+        viewModel.uiState.first { it.searchQuery == "test" }
+
+        // Mock current time to be 4 minutes later
+        var mockTime = System.currentTimeMillis()
+        viewModel.currentTimeProvider = { mockTime }
+        
+        // Simulating the user interaction
+        viewModel.onIntent(HomeIntent.SearchQueryChanged("test")) // this sets lastInteractionTime to mockTime
+        
+        mockTime += 4 * 60 * 1000 // advance by 4 mins
+
+        viewModel.onIntent(HomeIntent.AppResumed)
+
+        // Verify filter is still present
+        val state = viewModel.uiState.first { it.searchQuery == "test" }
+        assertThat(state.searchQuery).isEqualTo("test")
+    }
+
+    @Test
+    fun onAppResumed_overFiveMinutes_resetsFilters() = runTest {
+        viewModel = HomeViewModel(
+            contactRepository = contactRepository,
+            getContactsUseCase = getContactsUseCase,
+            getAvailableLabelsUseCase = getAvailableLabelsUseCase,
+            getCoupleSuggestionUseCase = getCoupleSuggestionUseCase,
+            linkAsCoupleUseCase = linkAsCoupleUseCase,
+            unlinkCoupleUseCase = unlinkCoupleUseCase,
+            ignoreCoupleSuggestionUseCase = ignoreCoupleSuggestionUseCase,
+            timeRepository = timeRepository,
+        )
+
+        // Set search query so we have active filters
+        viewModel.onIntent(HomeIntent.SearchQueryChanged("test"))
+        viewModel.uiState.first { it.searchQuery == "test" }
+
+        // Mock current time to be 6 minutes later
+        var mockTime = System.currentTimeMillis()
+        viewModel.currentTimeProvider = { mockTime }
+        
+        // Simulating the user interaction
+        viewModel.onIntent(HomeIntent.SearchQueryChanged("test")) // this sets lastInteractionTime to mockTime
+        
+        mockTime += 6 * 60 * 1000 // advance by 6 mins
+
+        viewModel.onIntent(HomeIntent.AppResumed)
+
+        // Verify filter is reset
+        val state = viewModel.uiState.first { it.searchQuery.isEmpty() }
+        assertThat(state.searchQuery).isEmpty()
+    }
 }
+

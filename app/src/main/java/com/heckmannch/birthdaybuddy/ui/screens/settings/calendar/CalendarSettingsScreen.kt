@@ -39,7 +39,6 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -54,6 +53,8 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.compose.LifecycleEventEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.heckmannch.birthdaybuddy.R
 import com.heckmannch.birthdaybuddy.domain.repository.CalendarSyncRepository
@@ -84,7 +85,7 @@ fun CalendarSettingsScreen(
     val birthdayColor = uiState.birthdayCalendarColor
     val anniversaryColor = uiState.anniversaryCalendarColor
     val nameDayColor = uiState.nameDayCalendarColor
-    var hasPermission by remember { mutableStateOf(viewModel.hasCalendarPermissions()) }
+    val hasPermission = uiState.hasCalendarPermission
 
     var activeColorPickerType by remember {
         mutableStateOf<CalendarSyncRepository.CalendarType?>(
@@ -98,16 +99,16 @@ fun CalendarSettingsScreen(
     ) { permissions ->
         val granted = permissions[Manifest.permission.READ_CALENDAR] == true &&
                 permissions[Manifest.permission.WRITE_CALENDAR] == true
-        hasPermission = granted
         if (granted) {
             viewModel.setCalendarSyncEnabled(true)
         } else {
             viewModel.setCalendarSyncEnabled(false)
         }
+        viewModel.checkPermissionStatus()
     }
 
-    LaunchedEffect(Unit) {
-        hasPermission = viewModel.hasCalendarPermissions()
+    LifecycleEventEffect(Lifecycle.Event.ON_RESUME) {
+        viewModel.checkPermissionStatus()
     }
 
     val onToggleChange: (Boolean) -> Unit = { enabled ->

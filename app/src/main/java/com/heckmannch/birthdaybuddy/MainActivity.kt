@@ -41,7 +41,6 @@ import dagger.hilt.android.AndroidEntryPoint
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
 
-    private var lastInteractionTime: Long = System.currentTimeMillis()
     private val activityIntent = mutableStateOf<Intent?>(null)
 
     @OptIn(ExperimentalMaterial3WindowSizeClassApi::class)
@@ -88,9 +87,7 @@ class MainActivity : ComponentActivity() {
                         DisposableEffect(lifecycleOwner) {
                             val observer = LifecycleEventObserver { _, event ->
                                 if (event == Lifecycle.Event.ON_RESUME) {
-                                    if ((System.currentTimeMillis() - lastInteractionTime) > (5 * 60 * 1000)) {
-                                        homeViewModel.onIntent(HomeIntent.ResetFilters)
-                                    }
+                                    homeViewModel.onIntent(HomeIntent.AppResumed)
                                 }
                             }
                             lifecycleOwner.lifecycle.addObserver(observer)
@@ -155,11 +152,6 @@ class MainActivity : ComponentActivity() {
                 }
             }
         }
-    }
-
-    override fun onUserInteraction() {
-        super.onUserInteraction()
-        lastInteractionTime = System.currentTimeMillis()
     }
 
     override fun onNewIntent(intent: Intent) {

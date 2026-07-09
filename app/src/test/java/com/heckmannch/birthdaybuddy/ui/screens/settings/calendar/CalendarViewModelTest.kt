@@ -10,6 +10,8 @@ import com.heckmannch.birthdaybuddy.domain.usecase.UpdateCalendarColorUseCase
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest
 import org.junit.Before
 import org.junit.Rule
@@ -34,6 +36,7 @@ class CalendarViewModelTest {
     @Before
     fun setup() {
         whenever(notificationRepository.settings).thenReturn(flowOf(AppSettings()))
+        whenever(calendarSyncRepository.hasCalendarPermissions()).thenReturn(false)
         viewModel = CalendarViewModel(
             notificationRepository,
             calendarSyncRepository,
@@ -52,6 +55,7 @@ class CalendarViewModelTest {
             nameDayCalendarColor = 789
         )
         whenever(notificationRepository.settings).thenReturn(flowOf(testSettings))
+        whenever(calendarSyncRepository.hasCalendarPermissions()).thenReturn(true)
 
         val viewModel = CalendarViewModel(
             notificationRepository,
@@ -66,6 +70,44 @@ class CalendarViewModelTest {
         assertThat(uiState.birthdayCalendarColor).isEqualTo(123)
         assertThat(uiState.anniversaryCalendarColor).isEqualTo(456)
         assertThat(uiState.nameDayCalendarColor).isEqualTo(789)
+        assertThat(uiState.hasCalendarPermission).isTrue()
+    }
+
+    @Test
+    fun `uiState should reflect calendar permission`() = runTest {
+        whenever(calendarSyncRepository.hasCalendarPermissions()).thenReturn(true)
+        val viewModel = CalendarViewModel(
+            notificationRepository,
+            calendarSyncRepository,
+            setCalendarSyncEnabledUseCase,
+            updateCalendarColorUseCase
+        )
+        val collectJob = launch { viewModel.uiState.collect {} }
+        runCurrent()
+        assertThat(viewModel.uiState.value.hasCalendarPermission).isTrue()
+        collectJob.cancel()
+    }
+
+    @Test
+    fun `checkPermissionStatus should update uiState hasCalendarPermission`() = runTest {
+        whenever(calendarSyncRepository.hasCalendarPermissions()).thenReturn(false)
+        val viewModel = CalendarViewModel(
+            notificationRepository,
+            calendarSyncRepository,
+            setCalendarSyncEnabledUseCase,
+            updateCalendarColorUseCase
+        )
+        
+        val collectJob = launch { viewModel.uiState.collect {} }
+        runCurrent()
+        assertThat(viewModel.uiState.value.hasCalendarPermission).isFalse()
+
+        whenever(calendarSyncRepository.hasCalendarPermissions()).thenReturn(true)
+        viewModel.checkPermissionStatus()
+        runCurrent()
+
+        assertThat(viewModel.uiState.value.hasCalendarPermission).isTrue()
+        collectJob.cancel()
     }
 
     @Test

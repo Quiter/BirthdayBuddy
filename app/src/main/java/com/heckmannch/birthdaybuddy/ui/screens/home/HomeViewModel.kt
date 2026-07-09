@@ -48,6 +48,11 @@ class HomeViewModel @Inject constructor(
     timeRepository: TimeRepository,
 ) : ViewModel() {
 
+    private var lastInteractionTime: Long = System.currentTimeMillis()
+
+    @get:androidx.annotation.VisibleForTesting
+    internal var currentTimeProvider: () -> Long = { System.currentTimeMillis() }
+
     // --- Search & Filter State (MVI Consolidated UI State) ---
     private data class UserUiState(
         val searchQuery: String = "",
@@ -147,7 +152,16 @@ class HomeViewModel @Inject constructor(
 
     // --- MVI Intent Processing ---
     fun onIntent(intent: HomeIntent) {
+        if (intent !is HomeIntent.AppResumed) {
+            lastInteractionTime = currentTimeProvider()
+        }
         when (intent) {
+            is HomeIntent.AppResumed -> {
+                if ((currentTimeProvider() - lastInteractionTime) > (5 * 60 * 1000)) {
+                    onIntent(HomeIntent.ResetFilters)
+                }
+                lastInteractionTime = currentTimeProvider()
+            }
             is HomeIntent.SearchQueryChanged -> {
                 val newQuery = intent.query
                 _userUiState.update { state ->
@@ -316,4 +330,5 @@ sealed interface HomeIntent {
     data class UnlinkCouple(val lookupKey: String) : HomeIntent
     data class IgnoreCoupleSuggestion(val lookupKey1: String, val lookupKey2: String) : HomeIntent
     data class SetIsResettingFilter(val isResetting: Boolean) : HomeIntent
+    data object AppResumed : HomeIntent
 }
