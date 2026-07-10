@@ -8,6 +8,7 @@ import javax.inject.Inject
 /**
  * Mapper for converting database entities ([ContactEntity]) to domain models ([Contact]).
  * Keeps the data layer fully decoupled from the UI representation.
+ * Note: This mapper performs database-to-domain transformation.
  */
 @Reusable
 class ContactMapper @Inject constructor() {
