@@ -3,8 +3,8 @@ package com.heckmannch.birthdaybuddy.ui.screens.home
 import androidx.lifecycle.viewModelScope
 import com.google.common.truth.Truth.assertThat
 import com.heckmannch.birthdaybuddy.MainDispatcherRule
-import com.heckmannch.birthdaybuddy.data.mapper.ContactMapper
 import com.heckmannch.birthdaybuddy.domain.model.Contact
+import com.heckmannch.birthdaybuddy.ui.mapper.ContactUiMapper
 import com.heckmannch.birthdaybuddy.domain.repository.ContactRepository
 import com.heckmannch.birthdaybuddy.domain.repository.TimeRepository
 import com.heckmannch.birthdaybuddy.domain.usecase.GetAvailableLabelsUseCase
@@ -49,7 +49,7 @@ class HomeViewModelSearchTest {
 
     private val contactRepository: ContactRepository = mock()
     private val timeRepository: TimeRepository = mock()
-    private val getContactsUseCase = GetContactsUseCase(ContactMapper())
+    private val getContactsUseCase = GetContactsUseCase()
     private val getAvailableLabelsUseCase = GetAvailableLabelsUseCase()
     private val getCoupleSuggestionUseCase = GetCoupleSuggestionUseCase(contactRepository)
     private val linkAsCoupleUseCase = LinkAsCoupleUseCase(contactRepository)
@@ -95,6 +95,7 @@ class HomeViewModelSearchTest {
         viewModel = HomeViewModel(
             contactRepository = contactRepository,
             getContactsUseCase = getContactsUseCase,
+            contactUiMapper = ContactUiMapper(),
             getAvailableLabelsUseCase = getAvailableLabelsUseCase,
             getCoupleSuggestionUseCase = getCoupleSuggestionUseCase,
             linkAsCoupleUseCase = linkAsCoupleUseCase,
@@ -132,6 +133,7 @@ class HomeViewModelSearchTest {
         viewModel = HomeViewModel(
             contactRepository = contactRepository,
             getContactsUseCase = getContactsUseCase,
+            contactUiMapper = ContactUiMapper(),
             getAvailableLabelsUseCase = getAvailableLabelsUseCase,
             getCoupleSuggestionUseCase = getCoupleSuggestionUseCase,
             linkAsCoupleUseCase = linkAsCoupleUseCase,

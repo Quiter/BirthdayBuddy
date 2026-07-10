@@ -46,7 +46,7 @@
     - `SystemContactDataSource.kt`: Kapselt den Low-Level Zugriff auf den Android ContentResolver (Kontakte, Gruppen, Events).
     - `TimeRepository.kt`: Reaktive Zeitquelle, die bei Datumswechseln (Mitternacht) automatische UI-Updates triggert.
 - ### 📁 Mapper (`data.mapper`)
-    - `ContactMapper.kt`: Reine Logik-Komponente zur Transformation von Datenbank-Entitäten in Anzeige-Modelle (mittels `@Reusable` für effiziente DI-Instanziierung optimiert).
+    - `ContactMapper.kt`: Reine Logik-Komponente zur Transformation von Datenbank-Entitäten in Domain-Modelle (`ContactEntity` -> `Contact`) (mittels `@Reusable` für effiziente DI-Instanziierung optimiert).
 
 ## 📁 Domain Layer (`domain`)
 - ### 📁 Models (`domain.model`)
@@ -54,7 +54,7 @@
     - `GiftIdea.kt`: Reines Domänenmodell für Geschenkideen (id, text, isChecked) mit statischen Hilfsmethoden zum Hinzufügen, Sortieren und Umschalten von Ideen.
     - `EventType.kt`: Typsicheres Enum zur Diskriminierung des aktiven Ereignistyps (`BIRTHDAY`, `ANNIVERSARY`, `NAME_DAY`). Liegt im Domain-Layer, um Tippfehler und stilles Fehlverhalten in der Filter-, Mapping- und Benachrichtigungslogik zu verhindern.
 - ### 📁 Use Cases (`domain.usecase`)
-    - `GetContactsUseCase.kt`: Kapselt die gesamte Filterlogik für die Home-Kontaktliste. Empfängt reaktive Inputs (Kontakte, Datum, Suchbegriff, Labels, Einstellungen) und gibt einen sortierten `Flow<List<ContactUiModel>>` zurück. Enthält die Pairing-Logik für Ehepaar-Jubiläen und die `LabelSettingsState`-Datenklasse. Annotiert mit `@Reusable` (kein Singleton nötig).
+    - `GetContactsUseCase.kt`: Kapselt die gesamte Filterlogik für die Home-Kontaktliste. Empfängt reaktive Inputs (Kontakte, Datum, Suchbegriff, Labels, Einstellungen) und gibt einen gefilterten Domain-Fluss `Flow<List<Contact>>` zurück. Enthält die `LabelSettingsState`-Datenklasse. Annotiert mit `@Reusable` (kein Singleton nötig).
     - `GetAvailableLabelsUseCase.kt`: Kapselt die Logik zur Ermittlung der verfügbaren Filter-Labels für den Home-Screen (User-Labels, "Ohne Datum"-Pseudo-Label und weitere Ereignistyp-Labels wie Hochzeitstag und Namenstag). Annotiert mit `@Reusable`.
     - `GetPendingNotificationsUseCase.kt`: Evaluert die aktiven Benachrichtigungsregeln für den aktuellen Zeitpunkt und liefert die fälligen Termine (Geburtstage, Hochzeitstage mit Paar-Verknüpfung, Namenstage) zurück, die noch nicht geplant wurden.
     - `SnoozeNotificationUseCase.kt`: Kapselt die Logik für das Schlummern von Benachrichtigungen und delegiert dies an den plattformspezifischen Scheduler.
@@ -69,6 +69,9 @@
     - `UpdateCalendarColorUseCase.kt`: Aktualisiert die Systemkalenderfarbe für einen bestimmten Ereignistyp.
 
 ## 📁 UI Layer (`ui`)
+
+- ### 📁 Mappers (`ui.mapper`)
+    - `ContactUiMapper.kt`: Mapper zur Konvertierung von Domain-Modellen (`Contact`) in UI-Modelle (`ContactUiModel`). Kapselt visuelle Logik, Formatting, Event-Type-Evaluation und Couple-Pairing/Merging-Logik.
 
 - ### 📁 Screens (`ui.screens`)
     - #### 📁 Home (`home`)
@@ -127,7 +130,7 @@
         - `about/PrivacyPolicyScreen.kt`: Anzeige der Datenschutzerklärung.
 - ### 📁 Models (`ui.model`)
     - `ContactUiModel.kt`: Immutable UI-Modell für Kontakte.
-    - `BirthdayTier.kt`: Typsicheres Enum zur Klassifizierung des visuellen Tiers eines Kontakts (`MILESTONE_GOLD`, `MILESTONE_SILVER`, `CHILD`, `REGULAR`). Die Berechnung erfolgt einmalig in `ContactMapper` via `BirthdayTier.from(nextAge?)` und wird über `ContactUiModel.birthdayTier` an die UI übergeben. Ersetzt die doppelte Inline-Logik in `BirthdayItem.kt`.
+    - `BirthdayTier.kt`: Typsicheres Enum zur Klassifizierung des visuellen Tiers eines Kontakts (`MILESTONE_GOLD`, `MILESTONE_SILVER`, `CHILD`, `REGULAR`). Die Berechnung erfolgt einmalig in `ContactUiMapper` via `BirthdayTier.from(nextAge?)` und wird über `ContactUiModel.birthdayTier` an die UI übergeben. Ersetzt die doppelte Inline-Logik in `BirthdayItem.kt`.
     - `HomeUiState.kt`: Gebündelter State für den Home-Screen.
     - `CalendarUiState.kt`: Gebündelter State für den Kalender-Einstellungs-Screen.
     - `NotificationUiState.kt`: Gebündelter State für den Benachrichtigungs-Einstellungs-Screen.

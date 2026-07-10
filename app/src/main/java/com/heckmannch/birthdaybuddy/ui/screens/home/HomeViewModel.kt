@@ -15,6 +15,8 @@ import com.heckmannch.birthdaybuddy.domain.usecase.GetCoupleSuggestionUseCase
 import com.heckmannch.birthdaybuddy.domain.usecase.IgnoreCoupleSuggestionUseCase
 import com.heckmannch.birthdaybuddy.domain.usecase.LinkAsCoupleUseCase
 import com.heckmannch.birthdaybuddy.domain.usecase.UnlinkCoupleUseCase
+import com.heckmannch.birthdaybuddy.ui.mapper.ContactUiMapper
+import com.heckmannch.birthdaybuddy.ui.model.ContactUiModel
 import com.heckmannch.birthdaybuddy.ui.model.CoupleSuggestionUiModel
 import com.heckmannch.birthdaybuddy.ui.model.HomeUiState
 import com.heckmannch.birthdaybuddy.util.Clock
@@ -46,6 +48,7 @@ import kotlin.time.Duration.Companion.milliseconds
 class HomeViewModel @Inject constructor(
     private val contactRepository: ContactRepository,
     getContactsUseCase: GetContactsUseCase,
+    private val contactUiMapper: ContactUiMapper,
     getAvailableLabelsUseCase: GetAvailableLabelsUseCase,
     getCoupleSuggestionUseCase: GetCoupleSuggestionUseCase,
     private val linkAsCoupleUseCase: LinkAsCoupleUseCase,
@@ -129,6 +132,22 @@ class HomeViewModel @Inject constructor(
         labelSettings = labelSettingsState,
     )
 
+    private val uiContacts: Flow<List<ContactUiModel>> = combine(
+        filteredContacts,
+        timeRepository.currentDate,
+        _userUiState.map { it.selectedLabel }.distinctUntilChanged(),
+        contactRepository.labelsEnabled,
+        contactRepository.otherEventsEnabled
+    ) { contacts, today, selectedLabel, labelsEnabled, otherEventsEnabled ->
+        contactUiMapper.mapToUiModels(
+            contacts = contacts,
+            today = today,
+            selectedLabel = selectedLabel,
+            labelsEnabled = labelsEnabled,
+            otherEventsEnabled = otherEventsEnabled
+        )
+    }.flowOn(Dispatchers.Default)
+
     val availableLabels: Flow<List<String>> = getAvailableLabelsUseCase(
         contacts = contactRepository.allContacts,
         configs = contactRepository.labelConfigs,
@@ -141,19 +160,14 @@ class HomeViewModel @Inject constructor(
     ).flowOn(Dispatchers.Default)
 
     val uiState: StateFlow<HomeUiState> = combine(
-        filteredContacts,
+        uiContacts,
         availableLabels,
         _userUiState,
         coupleSuggestion,
         contactRepository.labelsEnabled
     ) { contacts, labels, userState, suggestion, labelsEnabled ->
-        val finalContacts = if (!labelsEnabled) {
-            contacts.map { it.copy(labels = emptyList()) }
-        } else {
-            contacts
-        }
         HomeUiState(
-            contacts = finalContacts,
+            contacts = contacts,
             availableLabels = labels,
             searchQuery = userState.searchQuery,
             selectedLabel = userState.selectedLabel,

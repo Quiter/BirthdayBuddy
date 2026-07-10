@@ -5,7 +5,6 @@ import androidx.lifecycle.viewModelScope
 import com.google.common.truth.Truth.assertThat
 import com.heckmannch.birthdaybuddy.MainDispatcherRule
 import com.heckmannch.birthdaybuddy.domain.model.ContactLabels
-import com.heckmannch.birthdaybuddy.data.mapper.ContactMapper
 import com.heckmannch.birthdaybuddy.domain.model.Contact
 import com.heckmannch.birthdaybuddy.domain.model.LabelConfig
 import com.heckmannch.birthdaybuddy.domain.repository.ContactRepository
@@ -16,6 +15,8 @@ import com.heckmannch.birthdaybuddy.domain.usecase.GetCoupleSuggestionUseCase
 import com.heckmannch.birthdaybuddy.domain.usecase.IgnoreCoupleSuggestionUseCase
 import com.heckmannch.birthdaybuddy.domain.usecase.LinkAsCoupleUseCase
 import com.heckmannch.birthdaybuddy.domain.usecase.UnlinkCoupleUseCase
+import com.heckmannch.birthdaybuddy.ui.mapper.ContactUiMapper
+import com.heckmannch.birthdaybuddy.util.Clock
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -27,7 +28,6 @@ import org.junit.After
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
-import com.heckmannch.birthdaybuddy.util.Clock
 import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.whenever
@@ -47,7 +47,6 @@ class HomeViewModelTest {
         }
     }
 
-
     @get:Rule
     val mainDispatcherRule = MainDispatcherRule()
 
@@ -58,7 +57,8 @@ class HomeViewModelTest {
         override fun currentTimeMillis(): Long = time
     }
     private val timeRepository: TimeRepository = mock()
-    private val getContactsUseCase = GetContactsUseCase(ContactMapper())
+    private val getContactsUseCase = GetContactsUseCase()
+    private val contactUiMapper = ContactUiMapper()
     private val getAvailableLabelsUseCase = GetAvailableLabelsUseCase()
     private val getCoupleSuggestionUseCase = GetCoupleSuggestionUseCase(contactRepository)
     private val linkAsCoupleUseCase = LinkAsCoupleUseCase(contactRepository)
@@ -78,11 +78,11 @@ class HomeViewModelTest {
         whenever(contactRepository.labelsEnabled).doReturn(MutableStateFlow(true))
     }
 
-    @Test
-    fun initialState_isCorrect() = runTest {
-        viewModel = HomeViewModel(
+    private fun createViewModel(): HomeViewModel {
+        return HomeViewModel(
             contactRepository = contactRepository,
             getContactsUseCase = getContactsUseCase,
+            contactUiMapper = contactUiMapper,
             getAvailableLabelsUseCase = getAvailableLabelsUseCase,
             getCoupleSuggestionUseCase = getCoupleSuggestionUseCase,
             linkAsCoupleUseCase = linkAsCoupleUseCase,
@@ -92,6 +92,11 @@ class HomeViewModelTest {
             context = context,
             clock = clock,
         )
+    }
+
+    @Test
+    fun initialState_isCorrect() = runTest {
+        viewModel = createViewModel()
         val state = viewModel.uiState.first()
 
         assertThat(state.searchQuery).isEmpty()
@@ -101,18 +106,7 @@ class HomeViewModelTest {
 
     @Test
     fun onLabelSelected_updatesState() = runTest {
-        viewModel = HomeViewModel(
-            contactRepository = contactRepository,
-            getContactsUseCase = getContactsUseCase,
-            getAvailableLabelsUseCase = getAvailableLabelsUseCase,
-            getCoupleSuggestionUseCase = getCoupleSuggestionUseCase,
-            linkAsCoupleUseCase = linkAsCoupleUseCase,
-            unlinkCoupleUseCase = unlinkCoupleUseCase,
-            ignoreCoupleSuggestionUseCase = ignoreCoupleSuggestionUseCase,
-            timeRepository = timeRepository,
-            context = context,
-            clock = clock,
-        )
+        viewModel = createViewModel()
         viewModel.onIntent(HomeIntent.LabelSelected("Freunde"))
 
         val state = viewModel.uiState.first { it.selectedLabel == "Freunde" }
@@ -139,18 +133,7 @@ class HomeViewModelTest {
         )
         whenever(contactRepository.allContacts).thenReturn(MutableStateFlow(contacts))
 
-        viewModel = HomeViewModel(
-            contactRepository = contactRepository,
-            getContactsUseCase = getContactsUseCase,
-            getAvailableLabelsUseCase = getAvailableLabelsUseCase,
-            getCoupleSuggestionUseCase = getCoupleSuggestionUseCase,
-            linkAsCoupleUseCase = linkAsCoupleUseCase,
-            unlinkCoupleUseCase = unlinkCoupleUseCase,
-            ignoreCoupleSuggestionUseCase = ignoreCoupleSuggestionUseCase,
-            timeRepository = timeRepository,
-            context = context,
-            clock = clock,
-        )
+        viewModel = createViewModel()
 
         viewModel.onIntent(HomeIntent.LabelSelected("Freunde"))
         val state = viewModel.uiState.first { state ->
@@ -184,18 +167,7 @@ class HomeViewModelTest {
         whenever(contactRepository.allContacts).thenReturn(MutableStateFlow(contacts))
         whenever(contactRepository.labelConfigs).thenReturn(MutableStateFlow(labelConfigs))
 
-        viewModel = HomeViewModel(
-            contactRepository = contactRepository,
-            getContactsUseCase = getContactsUseCase,
-            getAvailableLabelsUseCase = getAvailableLabelsUseCase,
-            getCoupleSuggestionUseCase = getCoupleSuggestionUseCase,
-            linkAsCoupleUseCase = linkAsCoupleUseCase,
-            unlinkCoupleUseCase = unlinkCoupleUseCase,
-            ignoreCoupleSuggestionUseCase = ignoreCoupleSuggestionUseCase,
-            timeRepository = timeRepository,
-            context = context,
-            clock = clock,
-        )
+        viewModel = createViewModel()
         val state = viewModel.uiState.first { (it.contacts != null) }
 
         assertThat(state.contacts).hasSize(1)
@@ -225,18 +197,7 @@ class HomeViewModelTest {
         whenever(contactRepository.allContacts).thenReturn(MutableStateFlow(contacts))
         whenever(contactRepository.otherEventsEnabled).thenReturn(MutableStateFlow(true))
 
-        viewModel = HomeViewModel(
-            contactRepository = contactRepository,
-            getContactsUseCase = getContactsUseCase,
-            getAvailableLabelsUseCase = getAvailableLabelsUseCase,
-            getCoupleSuggestionUseCase = getCoupleSuggestionUseCase,
-            linkAsCoupleUseCase = linkAsCoupleUseCase,
-            unlinkCoupleUseCase = unlinkCoupleUseCase,
-            ignoreCoupleSuggestionUseCase = ignoreCoupleSuggestionUseCase,
-            timeRepository = timeRepository,
-            context = context,
-            clock = clock,
-        )
+        viewModel = createViewModel()
 
         // Verify availableLabels contains anniversary and name_day labels
         val initialLabelsState = viewModel.uiState.first { it.availableLabels.isNotEmpty() }
@@ -272,18 +233,7 @@ class HomeViewModelTest {
         whenever(contactRepository.allContacts).thenReturn(MutableStateFlow(contacts))
         whenever(contactRepository.labelsEnabled).thenReturn(MutableStateFlow(false))
 
-        viewModel = HomeViewModel(
-            contactRepository = contactRepository,
-            getContactsUseCase = getContactsUseCase,
-            getAvailableLabelsUseCase = getAvailableLabelsUseCase,
-            getCoupleSuggestionUseCase = getCoupleSuggestionUseCase,
-            linkAsCoupleUseCase = linkAsCoupleUseCase,
-            unlinkCoupleUseCase = unlinkCoupleUseCase,
-            ignoreCoupleSuggestionUseCase = ignoreCoupleSuggestionUseCase,
-            timeRepository = timeRepository,
-            context = context,
-            clock = clock,
-        )
+        viewModel = createViewModel()
 
         // Wait for UI State to propagate contacts
         val state = viewModel.uiState.first { it.contacts != null }
@@ -329,18 +279,7 @@ class HomeViewModelTest {
         whenever(contactRepository.labelsEnabled).thenReturn(MutableStateFlow(false))
         whenever(contactRepository.otherEventsEnabled).thenReturn(MutableStateFlow(true))
 
-        viewModel = HomeViewModel(
-            contactRepository = contactRepository,
-            getContactsUseCase = getContactsUseCase,
-            getAvailableLabelsUseCase = getAvailableLabelsUseCase,
-            getCoupleSuggestionUseCase = getCoupleSuggestionUseCase,
-            linkAsCoupleUseCase = linkAsCoupleUseCase,
-            unlinkCoupleUseCase = unlinkCoupleUseCase,
-            ignoreCoupleSuggestionUseCase = ignoreCoupleSuggestionUseCase,
-            timeRepository = timeRepository,
-            context = context,
-            clock = clock,
-        )
+        viewModel = createViewModel()
 
         // Wait for UI State to propagate contacts
         val state = viewModel.uiState.first { it.contacts != null && it.contacts.size == 3 }
@@ -386,18 +325,7 @@ class HomeViewModelTest {
         whenever(contactRepository.labelsEnabled).thenReturn(MutableStateFlow(false))
         whenever(contactRepository.otherEventsEnabled).thenReturn(MutableStateFlow(false))
 
-        viewModel = HomeViewModel(
-            contactRepository = contactRepository,
-            getContactsUseCase = getContactsUseCase,
-            getAvailableLabelsUseCase = getAvailableLabelsUseCase,
-            getCoupleSuggestionUseCase = getCoupleSuggestionUseCase,
-            linkAsCoupleUseCase = linkAsCoupleUseCase,
-            unlinkCoupleUseCase = unlinkCoupleUseCase,
-            ignoreCoupleSuggestionUseCase = ignoreCoupleSuggestionUseCase,
-            timeRepository = timeRepository,
-            context = context,
-            clock = clock,
-        )
+        viewModel = createViewModel()
 
         // Wait for UI State to propagate contacts
         val state = viewModel.uiState.first { it.contacts != null && it.contacts.size == 1 }
@@ -410,18 +338,7 @@ class HomeViewModelTest {
 
     @Test
     fun onAppResumed_underFiveMinutes_doesNotResetFilters() = runTest {
-        viewModel = HomeViewModel(
-            contactRepository = contactRepository,
-            getContactsUseCase = getContactsUseCase,
-            getAvailableLabelsUseCase = getAvailableLabelsUseCase,
-            getCoupleSuggestionUseCase = getCoupleSuggestionUseCase,
-            linkAsCoupleUseCase = linkAsCoupleUseCase,
-            unlinkCoupleUseCase = unlinkCoupleUseCase,
-            ignoreCoupleSuggestionUseCase = ignoreCoupleSuggestionUseCase,
-            timeRepository = timeRepository,
-            context = context,
-            clock = clock,
-        )
+        viewModel = createViewModel()
 
         // Set search query so we have active filters
         viewModel.onIntent(HomeIntent.SearchQueryChanged("test"))
@@ -444,18 +361,7 @@ class HomeViewModelTest {
 
     @Test
     fun onAppResumed_overFiveMinutes_resetsFilters() = runTest {
-        viewModel = HomeViewModel(
-            contactRepository = contactRepository,
-            getContactsUseCase = getContactsUseCase,
-            getAvailableLabelsUseCase = getAvailableLabelsUseCase,
-            getCoupleSuggestionUseCase = getCoupleSuggestionUseCase,
-            linkAsCoupleUseCase = linkAsCoupleUseCase,
-            unlinkCoupleUseCase = unlinkCoupleUseCase,
-            ignoreCoupleSuggestionUseCase = ignoreCoupleSuggestionUseCase,
-            timeRepository = timeRepository,
-            context = context,
-            clock = clock,
-        )
+        viewModel = createViewModel()
 
         // Set search query so we have active filters
         viewModel.onIntent(HomeIntent.SearchQueryChanged("test"))
@@ -483,18 +389,7 @@ class HomeViewModelTest {
             clock.time += 200
         }
 
-        viewModel = HomeViewModel(
-            contactRepository = contactRepository,
-            getContactsUseCase = getContactsUseCase,
-            getAvailableLabelsUseCase = getAvailableLabelsUseCase,
-            getCoupleSuggestionUseCase = getCoupleSuggestionUseCase,
-            linkAsCoupleUseCase = linkAsCoupleUseCase,
-            unlinkCoupleUseCase = unlinkCoupleUseCase,
-            ignoreCoupleSuggestionUseCase = ignoreCoupleSuggestionUseCase,
-            timeRepository = timeRepository,
-            context = context,
-            clock = clock,
-        )
+        viewModel = createViewModel()
 
         val startTime = testScheduler.currentTime
         val syncCompletedJob = launch {
@@ -516,18 +411,7 @@ class HomeViewModelTest {
             clock.time += 1000
         }
 
-        viewModel = HomeViewModel(
-            contactRepository = contactRepository,
-            getContactsUseCase = getContactsUseCase,
-            getAvailableLabelsUseCase = getAvailableLabelsUseCase,
-            getCoupleSuggestionUseCase = getCoupleSuggestionUseCase,
-            linkAsCoupleUseCase = linkAsCoupleUseCase,
-            unlinkCoupleUseCase = unlinkCoupleUseCase,
-            ignoreCoupleSuggestionUseCase = ignoreCoupleSuggestionUseCase,
-            timeRepository = timeRepository,
-            context = context,
-            clock = clock,
-        )
+        viewModel = createViewModel()
 
         val startTime = testScheduler.currentTime
         val syncCompletedJob = launch {
@@ -542,4 +426,3 @@ class HomeViewModelTest {
         assertThat(duration).isEqualTo(0)
     }
 }
-

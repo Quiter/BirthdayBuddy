@@ -3,7 +3,6 @@ package com.heckmannch.birthdaybuddy.domain.usecase
 import com.google.common.truth.Truth.assertThat
 import com.heckmannch.birthdaybuddy.MainDispatcherRule
 import com.heckmannch.birthdaybuddy.domain.model.ContactLabels
-import com.heckmannch.birthdaybuddy.data.mapper.ContactMapper
 import com.heckmannch.birthdaybuddy.domain.model.Contact
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -16,9 +15,7 @@ import java.time.LocalDate
 
 /**
  * Unit tests for [GetContactsUseCase].
- *
- * All inputs are supplied as [MutableStateFlow]s so each test can verify a single
- * configuration in isolation without the Android framework or any mocks.
+ * Verifies domain-level filtering logic.
  */
 @OptIn(ExperimentalCoroutinesApi::class)
 class GetContactsUseCaseTest {
@@ -39,12 +36,8 @@ class GetContactsUseCaseTest {
 
     @Before
     fun setUp() {
-        useCase = GetContactsUseCase(ContactMapper())
+        useCase = GetContactsUseCase()
     }
-
-    // ---------------------------------------------------------------------------
-    // Helper
-    // ---------------------------------------------------------------------------
 
     private fun invoke(
         contacts: List<Contact>,
@@ -58,36 +51,6 @@ class GetContactsUseCaseTest {
         selectedLabel = MutableStateFlow(selectedLabel),
         labelSettings = MutableStateFlow(settings),
     )
-
-    // ---------------------------------------------------------------------------
-    // Sorting
-    // ---------------------------------------------------------------------------
-
-    @Test
-    fun sorting_byDaysUntilNext_thenByName() = runTest {
-        val contacts = listOf(
-            Contact(contactId = "1", lookupKey = "k1", fullName = "Zara", birthday = today.plusDays(10)),
-            Contact(contactId = "2", lookupKey = "k2", fullName = "Anna", birthday = today.plusDays(10)),
-            Contact(contactId = "3", lookupKey = "k3", fullName = "Bob", birthday = today.plusDays(1)),
-        )
-
-        val result = invoke(contacts).first()
-
-        assertThat(result.map { it.fullName }).containsExactly("Bob", "Anna", "Zara").inOrder()
-    }
-
-    @Test
-    fun sorting_contactsWithNullDaysUntilNext_areLastInList() = runTest {
-        val contacts = listOf(
-            Contact(contactId = "1", lookupKey = "k1", fullName = "No Date"),          // birthday = null
-            Contact(contactId = "2", lookupKey = "k2", fullName = "Has Date", birthday = today.plusDays(5)),
-        )
-
-        val result = invoke(contacts, keywords = listOf("Date")).first()
-
-        assertThat(result.first().fullName).isEqualTo("Has Date")
-        assertThat(result.last().fullName).isEqualTo("No Date")
-    }
 
     // ---------------------------------------------------------------------------
     // Keyword search
@@ -113,7 +76,6 @@ class GetContactsUseCaseTest {
             Contact(contactId = "2", lookupKey = "k2", fullName = "Erika Mustermann", birthday = today),
         )
 
-        // "Max" AND "Mustermann" -> only Max Mustermann
         val result = invoke(contacts, keywords = listOf("Max", "Mustermann")).first()
 
         assertThat(result).hasSize(1)
@@ -214,11 +176,11 @@ class GetContactsUseCaseTest {
     }
 
     // ---------------------------------------------------------------------------
-    // Anniversary pairing
+    // Anniversary filtering
     // ---------------------------------------------------------------------------
 
     @Test
-    fun anniversary_twoCoupledContacts_areMergedIntoOneEntry() = runTest {
+    fun anniversary_contactsAreReturned() = runTest {
         val contacts = listOf(
             Contact(
                 contactId = "1", lookupKey = "k1", fullName = "Alice",
@@ -237,30 +199,8 @@ class GetContactsUseCaseTest {
             settings = settings,
         ).first()
 
-        // Two partners merged into a single couple entry
-        assertThat(result).hasSize(1)
-        assertThat(result.first().isCouple).isTrue()
-        assertThat(result.first().secondFullName).isNotNull()
-    }
-
-    @Test
-    fun anniversary_singleContactWithNoSpouse_isNotMerged() = runTest {
-        val contacts = listOf(
-            Contact(
-                contactId = "1", lookupKey = "k1", fullName = "Single",
-                anniversary = today.plusDays(5),
-            ),
-        )
-        val settings = defaultSettings.copy(otherEventsEnabled = true)
-
-        val result = invoke(
-            contacts = contacts,
-            selectedLabel = ContactLabels.LABEL_ANNIVERSARY,
-            settings = settings,
-        ).first()
-
-        assertThat(result).hasSize(1)
-        assertThat(result.first().isCouple).isFalse()
+        assertThat(result).hasSize(2)
+        assertThat(result.map { it.fullName }).containsExactly("Alice", "Bob")
     }
 
     // ---------------------------------------------------------------------------
@@ -285,26 +225,6 @@ class GetContactsUseCaseTest {
         assertThat(result).hasSize(3)
         assertThat(result.map { it.fullName })
             .containsExactly("Birthday Person", "NameDay Person", "Anniversary Person")
-            .inOrder()
-    }
-
-    @Test
-    fun labelsDisabled_contactLabelsStrippedFromOutput() = runTest {
-        val contacts = listOf(
-            Contact(
-                contactId = "1", lookupKey = "k1", fullName = "Tagged",
-                birthday = today, labels = listOf("VIP"),
-            ),
-        )
-        val settings = GetContactsUseCase.LabelSettingsState(
-            ignoredLabels = emptySet(),
-            labelsEnabled = false,
-            otherEventsEnabled = false,
-        )
-
-        val result = invoke(contacts, settings = settings).first()
-
-        assertThat(result.first().labels).isEmpty()
     }
 
     @Test
