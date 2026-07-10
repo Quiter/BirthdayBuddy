@@ -133,23 +133,36 @@ abstract class AppDatabase : RoomDatabase() {
         }
 
         /**
-         * Migration von 5 auf 6.
-         * Ändert die Spalte 'birthday' in 'contacts' auf NULLABLE und fügt Indizes hinzu.
+         * Migration from database version 5 to 6.
+         *
+         * Recreates the 'contacts' table to apply the V7-compatible schema (nullable birthday,
+         * indexes, etc.) because SQLite does not support ALTER TABLE COLUMN NULLABILITY natively.
+         *
+         * If an error occurs, it executes a rollback to the previous state using [rollbackContactsTable]
+         * and then rethrows the exception wrapped in a [RuntimeException]. Rethrowing is critical so that Room
+         * aborts the migration transaction, crashes cleanly, and reports the error, preventing silent database corruption.
          */
         val MIGRATION_5_6 = object : Migration(5, 6) {
             override fun migrate(db: SupportSQLiteDatabase) {
                 try {
                     recreateContactsTable(db)
-                } catch (_: Exception) {
+                } catch (e: Exception) {
                     rollbackContactsTable(db)
+                    throw RuntimeException("Migration 5 to 6 failed: contacts table recreation error. Rollback executed.", e)
                 }
             }
         }
 
         /**
-         * Migration von 6 auf 7.
-         * Entfernt Tabellen, die nicht mehr zu AppDatabase gehören (jetzt in SettingsDatabase).
-         * Zudem wird sichergestellt, dass das Schema der 'contacts'-Tabelle dem korrekten V7-Schema (not null giftIdeas) entspricht.
+         * Migration from database version 6 to 7.
+         *
+         * Drops legacy tables (`label_configs`, `notification_rules`, `app_settings`) that were moved
+         * to SettingsDatabase, and ensures the 'contacts' table conforms to the V7-compatible schema
+         * where `giftIdeas` is marked NOT NULL.
+         *
+         * If dropping tables or contacts schema verification fails, the migration throws a [RuntimeException]
+         * to prevent silent failures. If contacts table reconstruction fails, it attempts a rollback via
+         * [rollbackContactsTable] before rethrowing, ensuring the database does not stay in an inconsistent state.
          */
         val MIGRATION_6_7 = object : Migration(6, 7) {
             override fun migrate(db: SupportSQLiteDatabase) {
@@ -157,8 +170,8 @@ abstract class AppDatabase : RoomDatabase() {
                     db.execSQL("DROP TABLE IF EXISTS `label_configs`")
                     db.execSQL("DROP TABLE IF EXISTS `notification_rules`")
                     db.execSQL("DROP TABLE IF EXISTS `app_settings`")
-                } catch (_: Exception) {
-                    // Ignorieren
+                } catch (e: Exception) {
+                    throw RuntimeException("Migration 6 to 7 failed: dropping legacy tables failed.", e)
                 }
 
                 try {
@@ -179,8 +192,9 @@ abstract class AppDatabase : RoomDatabase() {
                     if (!isGiftIdeasNotNull) {
                         recreateContactsTable(db)
                     }
-                } catch (_: Exception) {
+                } catch (e: Exception) {
                     rollbackContactsTable(db)
+                    throw RuntimeException("Migration 6 to 7 failed: contacts table check or recreation error. Rollback executed.", e)
                 }
             }
         }
