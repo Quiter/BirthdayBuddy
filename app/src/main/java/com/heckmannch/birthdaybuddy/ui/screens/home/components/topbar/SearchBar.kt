@@ -1,10 +1,15 @@
 package com.heckmannch.birthdaybuddy.ui.screens.home.components.topbar
 
+import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
+import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
@@ -101,11 +106,20 @@ fun SearchBar(
                 .focusRequester(focusRequester)
                 .onFocusChanged { isFocused.value = it.isFocused },
             placeholder = {
-                Text(
-                    text = placeholder,
-                    style = MaterialTheme.typography.bodyLarge,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = AlphaEmphasisMedium)
-                )
+                AnimatedContent(
+                    targetState = placeholder,
+                    transitionSpec = {
+                        (slideInVertically { height -> height } + fadeIn(animationSpec = tween(300))) togetherWith
+                        (slideOutVertically { height -> -height } + fadeOut(animationSpec = tween(300)))
+                    },
+                    label = "SearchBarPlaceholderTransition"
+                ) { targetPlaceholder ->
+                    Text(
+                        text = targetPlaceholder,
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = AlphaEmphasisMedium)
+                    )
+                }
             },
             leadingIcon = {
                 Icon(
