@@ -61,14 +61,20 @@ class OnboardingViewModel @Inject constructor(
             is OnboardingIntent.SetCurrentPage -> {
                 _currentPage.value = intent.page
             }
+            is OnboardingIntent.CompleteOnboarding -> {
+                completeOnboarding(
+                    notificationsEnabled = intent.notificationsEnabled,
+                    calendarSyncEnabled = intent.calendarSyncEnabled
+                )
+            }
         }
     }
 
-    fun setPersistentNotifications(persistent: Boolean) = viewModelScope.launch {
+    private fun setPersistentNotifications(persistent: Boolean) = viewModelScope.launch {
         notificationRepository.updateSettings(persistentNotifications = persistent)
     }
 
-    fun completeOnboarding(
+    private fun completeOnboarding(
         notificationsEnabled: Boolean,
         calendarSyncEnabled: Boolean,
     ) = viewModelScope.launch {
@@ -116,4 +122,8 @@ sealed interface OnboardingIntent {
     data object RefreshPermissions : OnboardingIntent
     data class SetPersistentNotifications(val enabled: Boolean) : OnboardingIntent
     data class SetCurrentPage(val page: Int) : OnboardingIntent
+    data class CompleteOnboarding(
+        val notificationsEnabled: Boolean,
+        val calendarSyncEnabled: Boolean
+    ) : OnboardingIntent
 }

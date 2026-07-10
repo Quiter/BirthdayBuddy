@@ -103,21 +103,21 @@ fun CalendarSettingsScreen(
         val granted = permissions[Manifest.permission.READ_CALENDAR] == true &&
                 permissions[Manifest.permission.WRITE_CALENDAR] == true
         if (granted) {
-            viewModel.setCalendarSyncEnabled(true)
+            viewModel.onIntent(CalendarIntent.SetCalendarSyncEnabled(true))
         } else {
-            viewModel.setCalendarSyncEnabled(false)
+            viewModel.onIntent(CalendarIntent.SetCalendarSyncEnabled(false))
         }
-        viewModel.checkPermissionStatus()
+        viewModel.onIntent(CalendarIntent.CheckPermissionStatus)
     }
 
     LifecycleEventEffect(Lifecycle.Event.ON_RESUME) {
-        viewModel.checkPermissionStatus()
+        viewModel.onIntent(CalendarIntent.CheckPermissionStatus)
     }
 
     val onToggleChange: (Boolean) -> Unit = { enabled ->
         if (enabled) {
             if (hasPermission) {
-                viewModel.setCalendarSyncEnabled(true)
+                viewModel.onIntent(CalendarIntent.SetCalendarSyncEnabled(true))
             } else {
                 permissionLauncher.launch(
                     arrayOf(
@@ -127,7 +127,7 @@ fun CalendarSettingsScreen(
                 )
             }
         } else {
-            viewModel.setCalendarSyncEnabled(false)
+            viewModel.onIntent(CalendarIntent.SetCalendarSyncEnabled(false))
         }
     }
 
@@ -174,7 +174,7 @@ fun CalendarSettingsScreen(
             title = stringResource(R.string.calendar_color_picker_title),
             onDismissRequest = { activeColorPickerType = null },
             onColorSelected = { selectedColor ->
-                viewModel.updateCalendarColor(type, selectedColor.toArgb())
+                viewModel.onIntent(CalendarIntent.UpdateCalendarColor(type, selectedColor.toArgb()))
                 activeColorPickerType = null
             },
             presets = presets

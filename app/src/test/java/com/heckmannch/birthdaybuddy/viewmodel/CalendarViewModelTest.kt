@@ -7,6 +7,7 @@ import com.heckmannch.birthdaybuddy.domain.repository.CalendarSyncRepository
 import com.heckmannch.birthdaybuddy.domain.repository.NotificationRepository
 import com.heckmannch.birthdaybuddy.domain.usecase.SetCalendarSyncEnabledUseCase
 import com.heckmannch.birthdaybuddy.domain.usecase.UpdateCalendarColorUseCase
+import com.heckmannch.birthdaybuddy.ui.screens.settings.calendar.CalendarIntent
 import com.heckmannch.birthdaybuddy.ui.screens.settings.calendar.CalendarViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.first
@@ -104,7 +105,7 @@ class CalendarViewModelTest {
         assertThat(viewModel.uiState.value.hasCalendarPermission).isFalse()
 
         whenever(calendarSyncRepository.hasCalendarPermissions()).thenReturn(true)
-        viewModel.checkPermissionStatus()
+        viewModel.onIntent(CalendarIntent.CheckPermissionStatus)
         runCurrent()
 
         assertThat(viewModel.uiState.value.hasCalendarPermission).isTrue()
@@ -114,14 +115,14 @@ class CalendarViewModelTest {
     @Test
     fun `updateCalendarColor should delegate to usecase`() = runTest {
         val type = CalendarSyncRepository.CalendarType.BIRTHDAY
-        viewModel.updateCalendarColor(type, 111)
+        viewModel.onIntent(CalendarIntent.UpdateCalendarColor(type, 111))
 
         verify(updateCalendarColorUseCase).invoke(type, 111)
     }
 
     @Test
     fun `setCalendarSyncEnabled should delegate to usecase`() = runTest {
-        viewModel.setCalendarSyncEnabled(true)
+        viewModel.onIntent(CalendarIntent.SetCalendarSyncEnabled(true))
 
         verify(setCalendarSyncEnabledUseCase).invoke(true)
     }

@@ -108,7 +108,7 @@
                 - `MessengerApp.kt`: Enum zur Definition unterstützter Messenger und deren Branding.
     - #### 📁 Onboarding (`onboarding`)
         - `OnboardingScreen.kt`: Multi-Page Flow für die initiale Konfiguration.
-        - `OnboardingViewModel.kt`: Zuständig für den Onboarding-Status und Erststart-Prozess. **Feature-co-located** neben `OnboardingScreen.kt`.
+        - `OnboardingViewModel.kt`: Zuständig für den Onboarding-Status und Erststart-Prozess. Nutzt MVI-Intents und `onIntent()`. **Feature-co-located** neben `OnboardingScreen.kt`.
         - ##### 📁 Components (`onboarding.components`)
             - `OnboardingCommon.kt`: Gemeinsame UI-Komponenten und Wrapper.
             - `WelcomePage.kt`: Individuelle Onboarding-Seite für die Begrüßung.
@@ -121,15 +121,15 @@
     - #### 📁 Settings (`settings`)
         - `SettingsScreen.kt`: Haupteinstellungsmenü.
         - `labels/LabelSettingsScreen.kt`: Verwaltung der Label-Sichtbarkeit.
-        - `labels/LabelViewModel.kt`: Logik für die Label-Verwaltung und Konfiguration. **Feature-co-located**.
+        - `labels/LabelViewModel.kt`: Logik für die Label-Verwaltung und Konfiguration. Nutzt MVI-Intents und `onIntent()`. **Feature-co-located**.
         - `notifications/NotificationSettingsScreen.kt`: Konfiguration des Erinnerungssystems.
         - `notifications/NotificationViewModel.kt`: Verwaltung der Benachrichtigungsregeln und deren Synchronisation mit dem WorkManager. **Feature-co-located**.
         - `calendar/CalendarSettingsScreen.kt`: Screen zur detaillierten Kalender-Sync-Konfiguration.
-        - `calendar/CalendarViewModel.kt`: ViewModel für die Kalender-Einstellungen. **Feature-co-located**.
+        - `calendar/CalendarViewModel.kt`: ViewModel für die Kalender-Einstellungen. Nutzt MVI-Intents und `onIntent()`. **Feature-co-located**.
         - `backup/BackupScreen.kt`: Screen für den Import/Export von Geschenkideen.
         - `backup/BackupViewModel.kt`: Logik für den Import und Export von Geschenkideen. **Feature-co-located**.
         - `theme/ThemeSettingsScreen.kt`: Einstellungsbildschirm zur Design-Auswahl.
-        - `theme/ThemeViewModel.kt`: Hält und aktualisiert den UI-Zustand für das App-Design. **Feature-co-located**.
+        - `theme/ThemeViewModel.kt`: Hält und aktualisiert den UI-Zustand für das App-Design. Nutzt MVI-Intents und `onIntent()`. **Feature-co-located**.
         - `otherevents/OtherEventsSettingsScreen.kt`: Screen zur Aktivierung des Features für weitere Ereignisse.
         - `sync/SyncSettingsScreen.kt`: Screen zur manuellen Synchronisierung der Kontakte.
         - `about/AboutScreen.kt`: Anzeige von App-Informationen.

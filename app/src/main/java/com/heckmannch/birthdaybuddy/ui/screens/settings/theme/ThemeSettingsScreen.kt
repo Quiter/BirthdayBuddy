@@ -86,9 +86,9 @@ fun ThemeSettingsScreen(
         themeAmoled = themeAmoled,
         themeAccent = themeAccent,
         showBackButton = showBackButton,
-        onThemeModeChange = { viewModel.setThemeMode(it) },
-        onThemeAmoledChange = { viewModel.setThemeAmoled(it) },
-        onThemeAccentChange = { viewModel.setThemeAccent(it) },
+        onThemeModeChange = { viewModel.onIntent(ThemeIntent.SetThemeMode(it)) },
+        onThemeAmoledChange = { viewModel.onIntent(ThemeIntent.SetThemeAmoled(it)) },
+        onThemeAccentChange = { viewModel.onIntent(ThemeIntent.SetThemeAccent(it)) },
         onNavigateBack = onNavigateBack
     )
 }

@@ -53,16 +53,41 @@ class CalendarViewModel @Inject constructor(
         initialValue = CalendarUiState()
     )
 
-    fun updateCalendarColor(type: CalendarSyncRepository.CalendarType, color: Int) =
+    fun onIntent(intent: CalendarIntent) {
+        when (intent) {
+            is CalendarIntent.UpdateCalendarColor -> {
+                updateCalendarColor(intent.type, intent.color)
+            }
+            is CalendarIntent.CheckPermissionStatus -> {
+                checkPermissionStatus()
+            }
+            is CalendarIntent.SetCalendarSyncEnabled -> {
+                setCalendarSyncEnabled(intent.enabled)
+            }
+        }
+    }
+
+    private fun updateCalendarColor(type: CalendarSyncRepository.CalendarType, color: Int) =
         viewModelScope.launch {
             updateCalendarColorUseCase(type, color)
         }
 
-    fun checkPermissionStatus() {
+    private fun checkPermissionStatus() {
         _hasCalendarPermission.value = calendarSyncRepository.hasCalendarPermissions()
     }
 
-    fun setCalendarSyncEnabled(enabled: Boolean) = viewModelScope.launch {
+    private fun setCalendarSyncEnabled(enabled: Boolean) = viewModelScope.launch {
         setCalendarSyncEnabledUseCase(enabled)
     }
+}
+
+sealed interface CalendarIntent {
+    data class UpdateCalendarColor(
+        val type: CalendarSyncRepository.CalendarType,
+        val color: Int
+    ) : CalendarIntent
+
+    data object CheckPermissionStatus : CalendarIntent
+
+    data class SetCalendarSyncEnabled(val enabled: Boolean) : CalendarIntent
 }

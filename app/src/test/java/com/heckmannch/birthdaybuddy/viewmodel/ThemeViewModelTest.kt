@@ -4,6 +4,7 @@ import com.google.common.truth.Truth.assertThat
 import com.heckmannch.birthdaybuddy.MainDispatcherRule
 import com.heckmannch.birthdaybuddy.domain.model.AppSettings
 import com.heckmannch.birthdaybuddy.domain.repository.NotificationRepository
+import com.heckmannch.birthdaybuddy.ui.screens.settings.theme.ThemeIntent
 import com.heckmannch.birthdaybuddy.ui.screens.settings.theme.ThemeViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.first
@@ -53,7 +54,7 @@ class ThemeViewModelTest {
 
     @Test
     fun `setThemeMode should delegate to repository`() = runTest {
-        viewModel.setThemeMode("LIGHT")
+        viewModel.onIntent(ThemeIntent.SetThemeMode("LIGHT"))
 
         verify(notificationRepository).updateSettings(
             notificationsEnabled = eq(null),
@@ -75,7 +76,7 @@ class ThemeViewModelTest {
 
     @Test
     fun `setThemeAmoled should delegate to repository`() = runTest {
-        viewModel.setThemeAmoled(true)
+        viewModel.onIntent(ThemeIntent.SetThemeAmoled(true))
 
         verify(notificationRepository).updateSettings(
             notificationsEnabled = eq(null),
@@ -97,7 +98,7 @@ class ThemeViewModelTest {
 
     @Test
     fun `setThemeAccent should delegate to repository`() = runTest {
-        viewModel.setThemeAccent("#00FF00")
+        viewModel.onIntent(ThemeIntent.SetThemeAccent("#00FF00"))
 
         verify(notificationRepository).updateSettings(
             notificationsEnabled = eq(null),

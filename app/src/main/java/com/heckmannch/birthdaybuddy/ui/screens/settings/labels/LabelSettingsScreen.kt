@@ -81,9 +81,9 @@ fun LabelSettingsScreen(
         labelsEnabled = labelsEnabled,
         showBackButton = showBackButton,
         onNavigateBack = onNavigateBack,
-        onLabelsEnabledChanged = { viewModel.setLabelsEnabled(it) }
+        onLabelsEnabledChanged = { viewModel.onIntent(LabelIntent.SetLabelsEnabled(it)) }
     ) { name, hidden, ignored, isSystem ->
-        viewModel.updateLabelConfig(name, hidden, ignored, isSystem)
+        viewModel.onIntent(LabelIntent.UpdateLabelConfig(name, hidden, ignored, isSystem))
     }
 }
 

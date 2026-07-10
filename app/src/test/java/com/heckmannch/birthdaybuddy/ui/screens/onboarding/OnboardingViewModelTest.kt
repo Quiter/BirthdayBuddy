@@ -123,34 +123,14 @@ class OnboardingViewModelTest {
     }
 
     @Test
-    fun `setPersistentNotifications should delegate to repository`() = runTest {
-        viewModel.setPersistentNotifications(true)
-
-        verify(notificationRepository).updateSettings(
-            notificationsEnabled = eq(null),
-            persistentNotifications = eq(true),
-            onboardingCompleted = eq(null),
-            lastSyncTimestamp = eq(null),
-            calendarSyncEnabled = eq(null),
-            calendarId = eq(null),
-            clearCalendarId = eq(false),
-            otherEventsEnabled = eq(null),
-            birthdayCalendarColor = eq(null),
-            anniversaryCalendarColor = eq(null),
-            nameDayCalendarColor = eq(null),
-            themeMode = eq(null),
-            themeAmoled = eq(null),
-            themeAccent = eq(null)
-        )
-    }
-
-    @Test
     fun `completeOnboarding should update settings and trigger sync`() = runTest {
         whenever(notificationRepository.getAllRulesImmediate()).thenReturn(emptyList())
 
-        viewModel.completeOnboarding(
-            notificationsEnabled = true,
-            calendarSyncEnabled = true
+        viewModel.onIntent(
+            OnboardingIntent.CompleteOnboarding(
+                notificationsEnabled = true,
+                calendarSyncEnabled = true
+            )
         )
 
         verify(notificationRepository).updateSettings(
@@ -177,9 +157,11 @@ class OnboardingViewModelTest {
         runTest {
             whenever(notificationRepository.getAllRulesImmediate()).thenReturn(emptyList())
 
-            viewModel.completeOnboarding(
-                notificationsEnabled = true,
-                calendarSyncEnabled = false
+            viewModel.onIntent(
+                OnboardingIntent.CompleteOnboarding(
+                    notificationsEnabled = true,
+                    calendarSyncEnabled = false
+                )
             )
 
             verify(notificationRepository).insertRule(any())
@@ -187,9 +169,11 @@ class OnboardingViewModelTest {
 
     @Test
     fun `completeOnboarding should NOT insert rule if notifications disabled`() = runTest {
-        viewModel.completeOnboarding(
-            notificationsEnabled = false,
-            calendarSyncEnabled = false
+        viewModel.onIntent(
+            OnboardingIntent.CompleteOnboarding(
+                notificationsEnabled = false,
+                calendarSyncEnabled = false
+            )
         )
 
         verify(notificationRepository, never()).insertRule(any())
@@ -199,9 +183,11 @@ class OnboardingViewModelTest {
     fun `completeOnboarding should NOT insert rule if rules already exist`() = runTest {
         whenever(notificationRepository.getAllRulesImmediate()).thenReturn(listOf(mock()))
 
-        viewModel.completeOnboarding(
-            notificationsEnabled = true,
-            calendarSyncEnabled = false
+        viewModel.onIntent(
+            OnboardingIntent.CompleteOnboarding(
+                notificationsEnabled = true,
+                calendarSyncEnabled = false
+            )
         )
 
         verify(notificationRepository, never()).insertRule(any())

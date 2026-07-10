@@ -31,15 +31,29 @@ class ThemeViewModel @Inject constructor(
             initialValue = ThemeUiState()
         )
 
-    fun setThemeMode(mode: String) = viewModelScope.launch {
+    fun onIntent(intent: ThemeIntent) {
+        when (intent) {
+            is ThemeIntent.SetThemeMode -> setThemeMode(intent.mode)
+            is ThemeIntent.SetThemeAmoled -> setThemeAmoled(intent.enabled)
+            is ThemeIntent.SetThemeAccent -> setThemeAccent(intent.accent)
+        }
+    }
+
+    private fun setThemeMode(mode: String) = viewModelScope.launch {
         notificationRepository.updateSettings(themeMode = mode)
     }
 
-    fun setThemeAmoled(enabled: Boolean) = viewModelScope.launch {
+    private fun setThemeAmoled(enabled: Boolean) = viewModelScope.launch {
         notificationRepository.updateSettings(themeAmoled = enabled)
     }
 
-    fun setThemeAccent(accent: String) = viewModelScope.launch {
+    private fun setThemeAccent(accent: String) = viewModelScope.launch {
         notificationRepository.updateSettings(themeAccent = accent)
     }
+}
+
+sealed interface ThemeIntent {
+    data class SetThemeMode(val mode: String) : ThemeIntent
+    data class SetThemeAmoled(val enabled: Boolean) : ThemeIntent
+    data class SetThemeAccent(val accent: String) : ThemeIntent
 }

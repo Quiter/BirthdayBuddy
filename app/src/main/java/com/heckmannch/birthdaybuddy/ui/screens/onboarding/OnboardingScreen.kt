@@ -169,9 +169,11 @@ fun OnboardingScreen(
         onRequestNotificationPermission = onRequestNotificationPermission,
         onRequestCalendarPermission = onRequestCalendarPermission,
         onFinish = { _, notificationsEnabled, calendarEnabled ->
-            viewModel.completeOnboarding(
-                notificationsEnabled = notificationsEnabled && uiState.hasNotificationPermission,
-                calendarSyncEnabled = calendarEnabled && uiState.hasCalendarPermission
+            viewModel.onIntent(
+                OnboardingIntent.CompleteOnboarding(
+                    notificationsEnabled = notificationsEnabled && uiState.hasNotificationPermission,
+                    calendarSyncEnabled = calendarEnabled && uiState.hasCalendarPermission
+                )
             )
             onFinish()
         }

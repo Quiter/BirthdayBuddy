@@ -6,6 +6,7 @@ import com.heckmannch.birthdaybuddy.domain.model.ContactLabels
 import com.heckmannch.birthdaybuddy.domain.model.Contact
 import com.heckmannch.birthdaybuddy.domain.model.LabelConfig
 import com.heckmannch.birthdaybuddy.domain.repository.ContactRepository
+import com.heckmannch.birthdaybuddy.ui.screens.settings.labels.LabelIntent
 import com.heckmannch.birthdaybuddy.ui.screens.settings.labels.LabelViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.first
@@ -75,7 +76,7 @@ class LabelViewModelTest {
         val viewModel = LabelViewModel(contactRepository)
 
         // When
-        viewModel.updateLabelConfig("Test", hidden = true, ignored = false, isSystem = true)
+        viewModel.onIntent(LabelIntent.UpdateLabelConfig("Test", hidden = true, ignored = false, isSystem = true))
 
         // Then
         verify(contactRepository).updateLabelConfig(any())
@@ -89,7 +90,7 @@ class LabelViewModelTest {
         val viewModel = LabelViewModel(contactRepository)
 
         // When
-        viewModel.setLabelsEnabled(false)
+        viewModel.onIntent(LabelIntent.SetLabelsEnabled(false))
 
         // Then
         verify(contactRepository).updateLabelsEnabled(false)

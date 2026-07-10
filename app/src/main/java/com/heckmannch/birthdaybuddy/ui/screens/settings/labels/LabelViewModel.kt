@@ -60,7 +60,18 @@ class LabelViewModel @Inject constructor(
         }
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
-    fun updateLabelConfig(name: String, hidden: Boolean, ignored: Boolean, isSystem: Boolean) =
+    fun onIntent(intent: LabelIntent) {
+        when (intent) {
+            is LabelIntent.UpdateLabelConfig -> {
+                updateLabelConfig(intent.name, intent.hidden, intent.ignored, intent.isSystem)
+            }
+            is LabelIntent.SetLabelsEnabled -> {
+                setLabelsEnabled(intent.enabled)
+            }
+        }
+    }
+
+    private fun updateLabelConfig(name: String, hidden: Boolean, ignored: Boolean, isSystem: Boolean) =
         viewModelScope.launch {
             contactRepository.updateLabelConfig(LabelConfig(name, hidden, ignored, isSystem))
         }
@@ -68,7 +79,18 @@ class LabelViewModel @Inject constructor(
     /**
      * Updates the status of the label management feature.
      */
-    fun setLabelsEnabled(enabled: Boolean) = viewModelScope.launch {
+    private fun setLabelsEnabled(enabled: Boolean) = viewModelScope.launch {
         contactRepository.updateLabelsEnabled(enabled)
     }
+}
+
+sealed interface LabelIntent {
+    data class UpdateLabelConfig(
+        val name: String,
+        val hidden: Boolean,
+        val ignored: Boolean,
+        val isSystem: Boolean
+    ) : LabelIntent
+
+    data class SetLabelsEnabled(val enabled: Boolean) : LabelIntent
 }
