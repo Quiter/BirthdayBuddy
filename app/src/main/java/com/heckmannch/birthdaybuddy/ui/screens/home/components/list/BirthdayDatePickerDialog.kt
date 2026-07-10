@@ -45,6 +45,7 @@ import com.heckmannch.birthdaybuddy.R
 import com.heckmannch.birthdaybuddy.ui.components.AppSwitch
 import com.heckmannch.birthdaybuddy.ui.theme.SpacingLarge
 import com.heckmannch.birthdaybuddy.ui.theme.SpacingNormal
+import com.heckmannch.birthdaybuddy.ui.theme.AlphaOnboardingCalendarDisabled
 import com.heckmannch.birthdaybuddy.ui.theme.SpacingSmall
 import com.heckmannch.birthdaybuddy.util.NO_YEAR_MARKER
 import com.heckmannch.birthdaybuddy.util.hasYear
@@ -302,7 +303,7 @@ private fun WheelPicker(
                 val isSelected = index == currentSelection
                 // Visuelle Zylinder-Optik durch Größen- und Opazitätsverlauf
                 val scale = if (isSelected) 1.15f else 0.85f
-                val alpha = if (isSelected) 1f else 0.4f
+                val alpha = if (isSelected) 1f else AlphaOnboardingCalendarDisabled
 
                 Box(
                     modifier = Modifier

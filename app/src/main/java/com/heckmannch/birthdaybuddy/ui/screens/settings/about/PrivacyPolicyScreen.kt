@@ -145,7 +145,7 @@ private fun MarkdownContent(text: String) {
 
             trimmed.startsWith("* ") -> {
                 Row(modifier = Modifier.padding(start = SpacingSmall)) {
-                    Text("• ", style = MaterialTheme.typography.bodyLarge)
+                    Text(stringResource(R.string.bullet_point), style = MaterialTheme.typography.bodyLarge)
                     Text(
                         text = parseMarkdownInline(trimmed.removePrefix("* "), linkColor),
                         style = MaterialTheme.typography.bodyLarge

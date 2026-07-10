@@ -68,6 +68,8 @@ import com.heckmannch.birthdaybuddy.ui.components.SettingsSwitchRow
 import com.heckmannch.birthdaybuddy.ui.components.StepItem
 import com.heckmannch.birthdaybuddy.ui.theme.BirthdayKidGreen
 import com.heckmannch.birthdaybuddy.ui.theme.IconSizeLarge
+import com.heckmannch.birthdaybuddy.ui.theme.AlphaEmphasisLow
+import com.heckmannch.birthdaybuddy.ui.theme.AlphaContainerMedium
 import com.heckmannch.birthdaybuddy.ui.theme.SpacingNormal
 import com.heckmannch.birthdaybuddy.ui.theme.SpacingSmall
 
@@ -284,7 +286,7 @@ private fun CalendarSettingsContent(
                             )
                             if (otherEventsEnabled) {
                                 HorizontalDivider(
-                                    color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f),
+                                    color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = AlphaEmphasisLow),
                                     modifier = Modifier.padding(horizontal = SpacingNormal)
                                 )
                                 SettingsClickableRow(
@@ -307,7 +309,7 @@ private fun CalendarSettingsContent(
                                     }
                                 )
                                 HorizontalDivider(
-                                    color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f),
+                                    color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = AlphaEmphasisLow),
                                     modifier = Modifier.padding(horizontal = SpacingNormal)
                                 )
                                 SettingsClickableRow(
@@ -360,7 +362,7 @@ private fun SetupStepsCard(
     val context = LocalContext.current
     Card(
         colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f)
+            containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = AlphaContainerMedium)
         ),
         shape = MaterialTheme.shapes.extraLarge,
         modifier = Modifier.fillMaxWidth()

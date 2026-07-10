@@ -29,6 +29,9 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.heckmannch.birthdaybuddy.R
+import com.heckmannch.birthdaybuddy.ui.theme.AlphaEmphasisLow
+import com.heckmannch.birthdaybuddy.ui.theme.AlphaEmphasisMedium
+import com.heckmannch.birthdaybuddy.ui.theme.AlphaOnboardingCalendarDisabled
 
 @Composable
 fun BirthdayQuotePlaceholder(
@@ -54,7 +57,7 @@ fun BirthdayQuotePlaceholder(
             Surface(
                 modifier = Modifier.size(120.dp),
                 shape = CircleShape,
-                color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.4f),
+                color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = AlphaOnboardingCalendarDisabled),
                 border = BorderStroke(
                     width = 2.dp,
                     color = MaterialTheme.colorScheme.primary.copy(alpha = 0.2f)
@@ -85,10 +88,10 @@ fun BirthdayQuotePlaceholder(
             Surface(
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(16.dp),
-                color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
+                color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = AlphaEmphasisLow),
                 border = BorderStroke(
                     width = 1.dp,
-                    color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.4f)
+                    color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = AlphaOnboardingCalendarDisabled)
                 )
             ) {
                 Text(
@@ -108,7 +111,7 @@ fun BirthdayQuotePlaceholder(
             Text(
                 text = stringResource(R.string.detail_placeholder_subtitle),
                 style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
+                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = AlphaEmphasisMedium),
                 textAlign = TextAlign.Center
             )
         }

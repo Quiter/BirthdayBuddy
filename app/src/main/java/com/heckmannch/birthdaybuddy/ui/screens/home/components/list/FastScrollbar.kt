@@ -43,6 +43,7 @@ import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import com.heckmannch.birthdaybuddy.ui.model.ContactUiModel
+import com.heckmannch.birthdaybuddy.ui.theme.AlphaOnboardingCard
 import kotlinx.coroutines.delay
 import kotlin.time.Duration.Companion.milliseconds
 
@@ -431,7 +432,7 @@ fun FastScrollbar(
                     .graphicsLayer { translationY = thumbOffset.toPx() }
                     .semantics { contentDescription = "Scrollbar" },
                 shape = RoundedCornerShape(12.dp),
-                color = MaterialTheme.colorScheme.primary.copy(alpha = 0.9f),
+                color = MaterialTheme.colorScheme.primary.copy(alpha = AlphaOnboardingCard),
                 tonalElevation = 4.dp
             ) {
                 Column(

@@ -33,6 +33,7 @@ import com.heckmannch.birthdaybuddy.ui.components.InfoCard
 import com.heckmannch.birthdaybuddy.ui.components.SettingsCard
 import com.heckmannch.birthdaybuddy.ui.components.SettingsClickableRow
 import com.heckmannch.birthdaybuddy.ui.theme.BirthdayBuddyTheme
+import com.heckmannch.birthdaybuddy.ui.theme.AlphaEmphasisLow
 import com.heckmannch.birthdaybuddy.ui.theme.SpacingNormal
 
 /**
@@ -97,7 +98,7 @@ fun BackupContent(
                     enabled = !isLoading
                 )
                 HorizontalDivider(
-                    color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f),
+                    color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = AlphaEmphasisLow),
                     modifier = Modifier.padding(horizontal = SpacingNormal)
                 )
                 SettingsClickableRow(

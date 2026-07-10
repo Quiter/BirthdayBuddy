@@ -25,6 +25,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.heckmannch.birthdaybuddy.ui.theme.AlphaOnboardingCalendarDisabled
 import com.heckmannch.birthdaybuddy.ui.theme.BirthdayBuddyTheme
 
 @Composable
@@ -88,7 +89,7 @@ fun ContactsIllustration(
                 .padding(end = 24.dp, bottom = 16.dp)
                 .graphicsLayer {
                     translationY = offsetY * 1.2f * density
-                    alpha = 0.4f
+                    alpha = AlphaOnboardingCalendarDisabled
                 }
                 .background(
                     color = MaterialTheme.colorScheme.primary.copy(alpha = 0.2f),

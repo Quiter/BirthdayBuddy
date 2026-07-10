@@ -62,6 +62,7 @@ import com.heckmannch.birthdaybuddy.ui.theme.IconSizeExtraLarge
 import com.heckmannch.birthdaybuddy.ui.theme.IconSizeNormal
 import com.heckmannch.birthdaybuddy.ui.theme.IconSizeSmall
 import com.heckmannch.birthdaybuddy.ui.theme.SpacingExtraSmall
+import com.heckmannch.birthdaybuddy.ui.theme.AlphaEmphasisLow
 import com.heckmannch.birthdaybuddy.ui.theme.SpacingNormal
 import com.heckmannch.birthdaybuddy.ui.theme.SpacingSmall
 import com.heckmannch.birthdaybuddy.ui.theme.BirthdayKidGreen
@@ -157,7 +158,7 @@ private fun ThemeSettingsContent(
                             }
                         )
                         HorizontalDivider(
-                            color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f),
+                            color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = AlphaEmphasisLow),
                             modifier = Modifier.padding(horizontal = SpacingNormal)
                         )
                         SettingsClickableRow(
@@ -171,7 +172,7 @@ private fun ThemeSettingsContent(
                             }
                         )
                         HorizontalDivider(
-                            color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f),
+                            color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = AlphaEmphasisLow),
                             modifier = Modifier.padding(horizontal = SpacingNormal)
                         )
                         SettingsClickableRow(
@@ -185,7 +186,7 @@ private fun ThemeSettingsContent(
                             }
                         )
                         HorizontalDivider(
-                            color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f),
+                            color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = AlphaEmphasisLow),
                             modifier = Modifier.padding(horizontal = SpacingNormal)
                         )
                         val isDarkThemeActive =

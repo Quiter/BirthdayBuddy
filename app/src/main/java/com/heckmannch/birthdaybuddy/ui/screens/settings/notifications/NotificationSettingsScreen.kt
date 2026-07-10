@@ -69,6 +69,7 @@ import com.heckmannch.birthdaybuddy.ui.components.SettingsSectionHeader
 import com.heckmannch.birthdaybuddy.ui.components.SettingsSwitchRow
 import com.heckmannch.birthdaybuddy.ui.screens.settings.notifications.components.EditRuleDialog
 import com.heckmannch.birthdaybuddy.ui.screens.settings.notifications.components.NotificationRuleItem
+import com.heckmannch.birthdaybuddy.ui.theme.AlphaEmphasisLow
 import com.heckmannch.birthdaybuddy.ui.theme.AlphaSurfaceContainerHigh
 import com.heckmannch.birthdaybuddy.ui.theme.BirthdayBuddyTheme
 import com.heckmannch.birthdaybuddy.ui.theme.ContactImageSizeNormal
@@ -289,7 +290,7 @@ private fun NotificationSettingsContent(
 
                         if (notificationsEnabled) {
                             HorizontalDivider(
-                                color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f),
+                                color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = AlphaEmphasisLow),
                                 modifier = Modifier.padding(horizontal = SpacingNormal)
                             )
                             SettingsSwitchRow(
@@ -342,7 +343,7 @@ private fun NotificationSettingsContent(
                                         if (index < rules.size - 1) {
                                             HorizontalDivider(
                                                 color = MaterialTheme.colorScheme.outlineVariant.copy(
-                                                    alpha = 0.5f
+                                                    alpha = AlphaEmphasisLow
                                                 ),
                                                 modifier = Modifier.padding(horizontal = SpacingNormal)
                                             )
