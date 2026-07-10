@@ -503,3 +503,12 @@
 280. **Absicherung der Datenbank-Migrationen vor stillem Exception-Schlucken (Datenbank-Sicherheit / Richtlinie §1.15):**
     - **AppDatabase.kt:** Überarbeitung der Catch-Blöcke in [AppDatabase.kt](file:///c:/Users/chris/AndroidStudioProjects/BirthdayBuddy/app/src/main/java/com/heckmannch/birthdaybuddy/data/local/AppDatabase.kt) für `MIGRATION_5_6` und `MIGRATION_6_7`. Anstatt Fehler stumm zu schlucken, führen wir nun bei Fehlern den Tabellen-Rollback aus und werfen danach eine `RuntimeException` mit der Original-Exception als Cause. Dies stellt sicher, dass Room Transaktionen abbricht und fehlerhafte Migrationen sauber crasht.
     - **Dokumentation:** Hinzufügen von detaillierten KDoc-Kommentaren in englischer Sprache bei beiden Migrationen zur Erläuterung der Fehlerbehandlungs- und Rollback-Strategie.
+
+281. **Hilt-Konstruktor-Injektion für CoroutineDispatcher & Decoupling von BackupViewModel (Architecture & Code Quality):**
+    - **IoDispatcher-Qualifier:** Einführung der `@IoDispatcher` Hilt-Qualifier-Annotation und Bereitstellung eines entsprechenden Providers (`CoroutineDispatcher`) in [AppModule.kt](file:///c:/Users/chris/AndroidStudioProjects/BirthdayBuddy/app/src/main/java/com/heckmannch/birthdaybuddy/di/AppModule.kt) returning `Dispatchers.IO`.
+    - **ContentResolver-Provider:** Bereitstellung von `ContentResolver` im `AppModule` zur direkten Hilt-Constructor-Injektion in Repositories.
+    - **Decoupling von BackupViewModel:** Das `BackupViewModel` wurde vollständig von Android-Framework-Abhängigkeiten wie `ContentResolver` entkoppelt. Das Auslesen und Beschreiben von Dateien via Streams (`openInputStream`/`openOutputStream`) wurde in das `ContactRepository` / `ContactRepositoryImpl` verlagert.
+    - **MVI-Refactoring:** Umstellung aller öffentlichen ViewModel-Methoden auf MVI-Intents. Die Composable `BackupScreen` sendet nun `BackupIntent.ExportBackup` und `BackupIntent.ImportBackup` über den zentralen `onIntent(BackupIntent)` Handler.
+    - **Hilt-Konstruktor-Injektion:** Injizieren des `@IoDispatcher CoroutineDispatcher` als `private val` in `BackupViewModel` sowie von `ContentResolver` in `ContactRepositoryImpl`.
+    - **Test-Updates:** Anpassung der Unit-Tests (`BackupViewModelTest.kt`, `ExportGiftIdeasUseCaseTest.kt`, `ImportGiftIdeasUseCaseTest.kt` und `ContactRepositoryImplTest.kt`) an die neuen Dispatcher-Injektionen und I/O-Signaturen.
+

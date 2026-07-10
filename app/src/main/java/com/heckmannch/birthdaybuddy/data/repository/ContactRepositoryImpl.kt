@@ -1,8 +1,10 @@
 package com.heckmannch.birthdaybuddy.data.repository
 
 import android.Manifest
+import android.content.ContentResolver
 import android.content.Context
 import android.content.pm.PackageManager
+import android.net.Uri
 import android.util.Log
 import androidx.core.content.ContextCompat
 import androidx.room.withTransaction
@@ -46,6 +48,7 @@ import javax.inject.Inject
  */
 class ContactRepositoryImpl @Inject constructor(
     @param:ApplicationContext private val context: Context,
+    private val contentResolver: ContentResolver,
     private val contactDao: ContactDao,
     private val labelConfigDao: LabelConfigDao,
     private val appSettingsDao: AppSettingsDao,
@@ -273,14 +276,32 @@ class ContactRepositoryImpl @Inject constructor(
         return success
     }
 
-    override suspend fun exportGiftIdeas(): String = giftIdeaBackupManager.exportGiftIdeas()
+    private suspend fun exportGiftIdeas(): String = giftIdeaBackupManager.exportGiftIdeas()
 
-    override suspend fun importGiftIdeas(jsonString: String): Int {
+    private suspend fun importGiftIdeas(jsonString: String): Int {
         val count = giftIdeaBackupManager.importGiftIdeas(jsonString)
         if (count > 0) {
             syncContacts() // Update cache
         }
         return count
+    }
+
+    override suspend fun exportGiftIdeas(uri: Uri) {
+        val json = exportGiftIdeas()
+        withContext(Dispatchers.IO) {
+            contentResolver.openOutputStream(uri)?.use { outputStream ->
+                outputStream.write(json.toByteArray())
+            }
+        }
+    }
+
+    override suspend fun importGiftIdeas(uri: Uri): Int {
+        val json = withContext(Dispatchers.IO) {
+            contentResolver.openInputStream(uri)?.use { inputStream ->
+                inputStream.bufferedReader().readText()
+            }
+        } ?: return -1
+        return importGiftIdeas(json)
     }
 
     override suspend fun linkAsCouple(lookupKey1: String, lookupKey2: String) {

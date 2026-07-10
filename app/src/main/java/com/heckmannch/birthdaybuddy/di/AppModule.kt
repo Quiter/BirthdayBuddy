@@ -10,18 +10,25 @@ import com.heckmannch.birthdaybuddy.data.local.LabelConfigDao
 import com.heckmannch.birthdaybuddy.data.local.NotificationRuleDao
 import com.heckmannch.birthdaybuddy.data.local.PendingNotificationDao
 import com.heckmannch.birthdaybuddy.data.local.SettingsDatabase
+import android.content.ContentResolver
 import dagger.Module
 import dagger.Provides
 import dagger.Reusable
 import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import javax.inject.Qualifier
 import javax.inject.Singleton
+
+@Qualifier
+@Retention(AnnotationRetention.BINARY)
+annotation class IoDispatcher
+
 
 @Qualifier
 @Retention(AnnotationRetention.BINARY)
@@ -153,5 +160,22 @@ object AppModule {
             Log.e("ApplicationScope", "Unhandled exception in applicationScope", throwable)
         }
         return CoroutineScope(SupervisorJob() + Dispatchers.Default + exceptionHandler)
+    }
+
+    /**
+     * Provides the CoroutineDispatcher for I/O operations.
+     */
+    @Provides
+    @IoDispatcher
+    fun provideIoDispatcher(): CoroutineDispatcher {
+        return Dispatchers.IO
+    }
+
+    /**
+     * Provides the Android ContentResolver for file operations.
+     */
+    @Provides
+    fun provideContentResolver(@ApplicationContext context: Context): ContentResolver {
+        return context.contentResolver
     }
 }

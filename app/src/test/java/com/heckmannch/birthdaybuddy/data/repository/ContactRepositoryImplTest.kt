@@ -1,8 +1,12 @@
 package com.heckmannch.birthdaybuddy.data.repository
 
 import android.Manifest
+import android.content.ContentResolver
 import android.content.Context
 import android.content.pm.PackageManager
+import android.net.Uri
+import java.io.ByteArrayInputStream
+import java.io.ByteArrayOutputStream
 import com.google.common.truth.Truth.assertThat
 import com.heckmannch.birthdaybuddy.MainDispatcherRule
 import com.heckmannch.birthdaybuddy.data.local.AppDatabase
@@ -43,6 +47,7 @@ class ContactRepositoryImplTest {
     val mainDispatcherRule = MainDispatcherRule()
 
     private val context: Context = mock()
+    private val contentResolver: ContentResolver = mock()
     private val contactDao: ContactDao = mock()
     private val labelConfigDao: LabelConfigDao = mock()
     private val appSettingsDao: AppSettingsDao = mock()
@@ -81,6 +86,7 @@ class ContactRepositoryImplTest {
 
         repository = ContactRepositoryImpl(
             context = context,
+            contentResolver = contentResolver,
             contactDao = contactDao,
             labelConfigDao = labelConfigDao,
             appSettingsDao = appSettingsDao,
@@ -242,5 +248,45 @@ class ContactRepositoryImplTest {
         assertThat(config2.isHiddenFromFilter).isTrue()
         assertThat(config2.isIgnored).isFalse()
         assertThat(config2.isSystem).isTrue()
+    }
+
+    @Test
+    fun exportGiftIdeas_writesBackupToOutputStream() = runTest {
+        // Arrange
+        val uri: Uri = mock()
+        val json = "{\"ideas\": []}"
+        whenever(giftIdeaBackupManager.exportGiftIdeas()).thenReturn(json)
+        val outputStream = ByteArrayOutputStream()
+        whenever(contentResolver.openOutputStream(uri)).thenReturn(outputStream)
+
+        // Act
+        repository.exportGiftIdeas(uri)
+
+        // Assert
+        verify(giftIdeaBackupManager).exportGiftIdeas()
+        verify(contentResolver).openOutputStream(uri)
+        assertThat(outputStream.toString()).isEqualTo(json)
+    }
+
+    @Test
+    fun importGiftIdeas_readsBackupFromInputStreamAndTriggersSync() = runTest {
+        // Arrange
+        val uri: Uri = mock()
+        val json = "{\"ideas\": []}"
+        val inputStream = ByteArrayInputStream(json.toByteArray())
+        whenever(contentResolver.openInputStream(uri)).thenReturn(inputStream)
+        whenever(giftIdeaBackupManager.importGiftIdeas(json)).thenReturn(3)
+
+        // Stub syncContacts requirements
+        whenever(context.checkPermission(eq(Manifest.permission.READ_CONTACTS), any(), any()))
+            .thenReturn(PackageManager.PERMISSION_DENIED)
+
+        // Act
+        val result = repository.importGiftIdeas(uri)
+
+        // Assert
+        verify(contentResolver).openInputStream(uri)
+        verify(giftIdeaBackupManager).importGiftIdeas(json)
+        assertThat(result).isEqualTo(3)
     }
 }

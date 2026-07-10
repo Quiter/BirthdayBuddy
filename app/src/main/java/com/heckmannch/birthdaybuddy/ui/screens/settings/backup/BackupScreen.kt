@@ -41,18 +41,19 @@ fun BackupScreen(
     ) { uri: Uri? ->
         if (uri != null) {
             isLoading = true
-            viewModel.exportGiftIdeas(
-                contentResolver = context.contentResolver,
-                uri = uri,
-                onSuccess = {
-                    isLoading = false
-                    Toast.makeText(context, exportSuccessMsg, Toast.LENGTH_SHORT).show()
-                },
-                onError = { e ->
-                    isLoading = false
-                    Toast.makeText(context, exportFailedMsg.format(e.message), Toast.LENGTH_LONG)
-                        .show()
-                }
+            viewModel.onIntent(
+                BackupIntent.ExportBackup(
+                    uri = uri,
+                    onSuccess = {
+                        isLoading = false
+                        Toast.makeText(context, exportSuccessMsg, Toast.LENGTH_SHORT).show()
+                    },
+                    onError = { e ->
+                        isLoading = false
+                        Toast.makeText(context, exportFailedMsg.format(e.message), Toast.LENGTH_LONG)
+                            .show()
+                    }
+                )
             )
         }
     }
@@ -62,27 +63,28 @@ fun BackupScreen(
     ) { uri: Uri? ->
         if (uri != null) {
             isLoading = true
-            viewModel.importGiftIdeas(
-                contentResolver = context.contentResolver,
-                uri = uri,
-                onSuccess = { count ->
-                    isLoading = false
-                    val message = context.applicationContext.resources.getQuantityString(
-                        R.plurals.backup_import_success,
-                        count,
-                        count
-                    )
-                    Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
-                },
-                onInvalid = {
-                    isLoading = false
-                    Toast.makeText(context, importInvalidMsg, Toast.LENGTH_SHORT).show()
-                },
-                onError = { e ->
-                    isLoading = false
-                    Toast.makeText(context, importFailedMsg.format(e.message), Toast.LENGTH_LONG)
-                        .show()
-                }
+            viewModel.onIntent(
+                BackupIntent.ImportBackup(
+                    uri = uri,
+                    onSuccess = { count ->
+                        isLoading = false
+                        val message = context.applicationContext.resources.getQuantityString(
+                            R.plurals.backup_import_success,
+                            count,
+                            count
+                        )
+                        Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
+                    },
+                    onInvalid = {
+                        isLoading = false
+                        Toast.makeText(context, importInvalidMsg, Toast.LENGTH_SHORT).show()
+                    },
+                    onError = { e ->
+                        isLoading = false
+                        Toast.makeText(context, importFailedMsg.format(e.message), Toast.LENGTH_LONG)
+                            .show()
+                    }
+                )
             )
         }
     }

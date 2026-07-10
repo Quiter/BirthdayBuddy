@@ -1,18 +1,19 @@
 package com.heckmannch.birthdaybuddy.domain.usecase
 
-import com.google.common.truth.Truth.assertThat
+import android.net.Uri
 import com.heckmannch.birthdaybuddy.domain.repository.ContactRepository
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runTest
 import org.junit.Before
 import org.junit.Test
 import org.mockito.kotlin.mock
-import org.mockito.kotlin.whenever
+import org.mockito.kotlin.verify
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class ExportGiftIdeasUseCaseTest {
 
     private val contactRepository: ContactRepository = mock()
+    private val uri: Uri = mock()
     private lateinit var useCase: ExportGiftIdeasUseCase
 
     @Before
@@ -22,14 +23,10 @@ class ExportGiftIdeasUseCaseTest {
 
     @Test
     fun `invoke should delegate export call to repository`() = runTest {
-        // Arrange
-        val expectedJson = "{\"ideas\": []}"
-        whenever(contactRepository.exportGiftIdeas()).thenReturn(expectedJson)
-
         // Act
-        val result = useCase()
+        useCase(uri)
 
         // Assert
-        assertThat(result).isEqualTo(expectedJson)
+        verify(contactRepository).exportGiftIdeas(uri)
     }
 }
