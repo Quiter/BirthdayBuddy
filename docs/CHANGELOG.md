@@ -533,3 +533,8 @@
 285. **Animation für Suchleisten-Placeholder (UI & UX):**
     - **AnimatedContent:** Hinzufügen einer eleganten Gleit- und Ausblend-Animation (M3 Standard) für den Suchleisten-Placeholder in [SearchBar.kt](file:///c:/Users/chris/AndroidStudioProjects/BirthdayBuddy/app/src/main/java/com/heckmannch/birthdaybuddy/ui/screens/home/components/topbar/SearchBar.kt).
     - **Detail:** Beim Übergang zwischen der Anwendungsbezeichnung („BirthdayBuddy“) und dem Suchhinweis („Kontakte suchen...“) gleitet der alte Text nach oben weg und blendet aus, während der neue Text von unten herein gleitet und einblendet.
+
+286. **Behebung mehrfach deklarierter Test-Abhängigkeiten in `app/build.gradle.kts` (Code Quality & Build-Optimierung):**
+    - **Problem:** Die Test-Abhängigkeiten für Coroutines-Test, Truth und Mockito wurden redundant sowohl unter `testImplementation` als auch unter `androidTestImplementation` in [build.gradle.kts](file:///c:/Users/chris/AndroidStudioProjects/BirthdayBuddy/app/build.gradle.kts) aufgeführt, was zu Warnungen über doppelte Deklarationen führte.
+    - **Lösung:** Entfernung der redundanten Duplikate (`kotlinx.coroutines.test`, `truth`, `mockito.core`, `mockito.kotlin`) aus dem `androidTestImplementation` Block und stattdessen Definition einer `configurations`-Vererbung (`androidTestImplementation.get().extendsFrom(testImplementation.get())`). Dadurch erben die Android-Instrumentierungstests diese Kern-Testbibliotheken automatisch aus dem JVM-Test-Scope.
+    - **Kompilierungs-Fix:** Behebung von Compilerfehlern in den Instrumentierungstests (`ContactRepositoryCoupleLinkTest.kt` und `ContactRepositoryGiftIdeaTest.kt`), bei denen der `contentResolver`-Parameter beim Instanziieren von `ContactRepositoryImpl` fehlte.

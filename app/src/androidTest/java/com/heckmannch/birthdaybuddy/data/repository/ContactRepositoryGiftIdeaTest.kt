@@ -64,6 +64,7 @@ class ContactRepositoryGiftIdeaTest {
 
         repository = ContactRepositoryImpl(
             context = context,
+            contentResolver = context.contentResolver,
             contactDao = appDb.contactDao(),
             labelConfigDao = settingsDb.labelConfigDao(),
             appSettingsDao = settingsDb.appSettingsDao(),
