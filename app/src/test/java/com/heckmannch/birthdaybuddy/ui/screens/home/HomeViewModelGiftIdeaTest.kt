@@ -12,7 +12,7 @@ import com.heckmannch.birthdaybuddy.domain.usecase.GetCoupleSuggestionUseCase
 import com.heckmannch.birthdaybuddy.domain.usecase.IgnoreCoupleSuggestionUseCase
 import com.heckmannch.birthdaybuddy.domain.usecase.LinkAsCoupleUseCase
 import com.heckmannch.birthdaybuddy.domain.usecase.UnlinkCoupleUseCase
-import android.content.Context
+import com.heckmannch.birthdaybuddy.domain.permission.PermissionChecker
 import com.heckmannch.birthdaybuddy.ui.mapper.ContactUiMapper
 import com.heckmannch.birthdaybuddy.ui.mapper.CoupleSuggestionUiMapper
 import com.heckmannch.birthdaybuddy.util.Clock
@@ -48,7 +48,7 @@ class HomeViewModelGiftIdeaTest {
     private val unlinkCoupleUseCase: UnlinkCoupleUseCase = mockk(relaxed = true)
     private val ignoreCoupleSuggestionUseCase: IgnoreCoupleSuggestionUseCase = mockk(relaxed = true)
     private val timeRepository: TimeRepository = mockk(relaxed = true)
-    private val context: Context = mockk(relaxed = true)
+    private val permissionChecker: PermissionChecker = mockk(relaxed = true)
     private val clock = TestClock()
 
     private val today = LocalDate.of(2024, 5, 15)
@@ -68,6 +68,7 @@ class HomeViewModelGiftIdeaTest {
         every { getContactsUseCase(any(), any(), any(), any(), any()) } returns MutableStateFlow(emptyList())
         every { getAvailableLabelsUseCase(any(), any(), any(), any()) } returns MutableStateFlow(emptyList())
         every { getCoupleSuggestionUseCase(any()) } returns MutableStateFlow(null)
+        every { permissionChecker.hasContactsPermission() } returns true
 
         viewModel = HomeViewModel(
             contactRepository = contactRepository,
@@ -80,7 +81,7 @@ class HomeViewModelGiftIdeaTest {
             unlinkCoupleUseCase = unlinkCoupleUseCase,
             ignoreCoupleSuggestionUseCase = ignoreCoupleSuggestionUseCase,
             timeRepository = timeRepository,
-            context = context,
+            permissionChecker = permissionChecker,
             clock = clock,
         )
     }

@@ -1,10 +1,7 @@
 package com.heckmannch.birthdaybuddy.ui.screens.home
 
-import android.Manifest
-import android.content.Context
-import android.content.pm.PackageManager
-import androidx.core.content.ContextCompat
 import androidx.lifecycle.ViewModel
+import com.heckmannch.birthdaybuddy.domain.permission.PermissionChecker
 import androidx.lifecycle.viewModelScope
 import com.heckmannch.birthdaybuddy.domain.model.GiftIdea
 import com.heckmannch.birthdaybuddy.domain.repository.ContactRepository
@@ -22,7 +19,6 @@ import com.heckmannch.birthdaybuddy.ui.model.CoupleSuggestionUiModel
 import com.heckmannch.birthdaybuddy.ui.model.HomeUiState
 import com.heckmannch.birthdaybuddy.util.Clock
 import dagger.hilt.android.lifecycle.HiltViewModel
-import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.delay
@@ -57,7 +53,7 @@ class HomeViewModel @Inject constructor(
     private val unlinkCoupleUseCase: UnlinkCoupleUseCase,
     private val ignoreCoupleSuggestionUseCase: IgnoreCoupleSuggestionUseCase,
     timeRepository: TimeRepository,
-    @param:ApplicationContext private val context: Context,
+    private val permissionChecker: PermissionChecker,
     private val clock: Clock,
 ) : ViewModel() {
 
@@ -75,10 +71,7 @@ class HomeViewModel @Inject constructor(
     )
 
     private fun checkContactPermission(): Boolean {
-        return ContextCompat.checkSelfPermission(
-            context,
-            Manifest.permission.READ_CONTACTS
-        ) == PackageManager.PERMISSION_GRANTED
+        return permissionChecker.hasContactsPermission()
     }
 
     private val _userUiState = MutableStateFlow(
@@ -167,9 +160,8 @@ class HomeViewModel @Inject constructor(
         uiContacts,
         availableLabels,
         _userUiState,
-        coupleSuggestion,
-        contactRepository.labelsEnabled
-    ) { contacts, labels, userState, suggestion, labelsEnabled ->
+        coupleSuggestion
+    ) { contacts, labels, userState, suggestion ->
         HomeUiState(
             contacts = contacts,
             availableLabels = labels,

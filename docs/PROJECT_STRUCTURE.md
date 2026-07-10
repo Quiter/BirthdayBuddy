@@ -47,8 +47,12 @@
     - `TimeRepository.kt`: Reaktive Zeitquelle, die bei Datumswechseln (Mitternacht) automatische UI-Updates triggert.
 - ### 📁 Mapper (`data.mapper`)
     - `ContactMapper.kt`: Reine Logik-Komponente zur Transformation von Datenbank-Entitäten in Domain-Modelle (`ContactEntity` -> `Contact`) (mittels `@Reusable` für effiziente DI-Instanziierung optimiert).
+- ### 📁 Permission (`data.permission`)
+    - `AndroidPermissionChecker.kt`: Konkrete plattformspezifische Implementierung des `PermissionChecker` Interfaces unter Verwendung von ContextCompat APIs und App-Kontext.
 
 ## 📁 Domain Layer (`domain`)
+- ### 📁 Permission (`domain.permission`)
+    - `PermissionChecker.kt`: Domänen-Interface zur Definition von Methoden für Berechtigungsabfragen, entkoppelt ViewModels vollständig von Android Platform-APIs.
 - ### 📁 Models (`domain.model`)
     - `ContactLabels.kt`: Zentrales `object` mit system-definierten Pseudo-Label-Identifiern (`LABEL_NO_BIRTHDAY`, `LABEL_ANNIVERSARY`, `LABEL_NAME_DAY`). Liegt im Domain-Layer, um die UI-Schicht und Use Cases von der Data-Schicht zu entkoppeln.
     - `CoupleSuggestion.kt`: Reines Domänenmodell für Paar-Kopplungsvorschläge (frei von Android- oder UI-Abhängigkeiten).

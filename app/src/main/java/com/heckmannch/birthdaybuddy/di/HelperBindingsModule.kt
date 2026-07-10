@@ -10,6 +10,8 @@ import com.heckmannch.birthdaybuddy.domain.repository.CalendarSyncRepository
 import com.heckmannch.birthdaybuddy.domain.repository.ContactRepository
 import com.heckmannch.birthdaybuddy.domain.repository.NotificationRepository
 import com.heckmannch.birthdaybuddy.domain.repository.NotificationScheduler
+import com.heckmannch.birthdaybuddy.data.permission.AndroidPermissionChecker
+import com.heckmannch.birthdaybuddy.domain.permission.PermissionChecker
 import com.heckmannch.birthdaybuddy.domain.repository.TimeRepository
 import com.heckmannch.birthdaybuddy.domain.repository.WidgetUpdater
 import com.heckmannch.birthdaybuddy.util.Clock
@@ -104,4 +106,14 @@ interface HelperBindingsModule {
     @Binds
     @Singleton
     fun bindTimeRepository(repository: TimeRepositoryImpl): TimeRepository
+
+    /**
+     * Binds the permission checker abstraction to its Android implementation.
+     *
+     * @param checker The [AndroidPermissionChecker] implementation.
+     * @return The bound [PermissionChecker] interface.
+     */
+    @Binds
+    @Singleton
+    fun bindPermissionChecker(checker: AndroidPermissionChecker): PermissionChecker
 }

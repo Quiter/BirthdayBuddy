@@ -1,11 +1,7 @@
 package com.heckmannch.birthdaybuddy.ui.screens.onboarding
 
-import android.Manifest
-import android.content.Context
-import android.content.pm.PackageManager
-import android.os.Build
-import androidx.core.content.ContextCompat
 import androidx.lifecycle.ViewModel
+import com.heckmannch.birthdaybuddy.domain.permission.PermissionChecker
 import androidx.lifecycle.viewModelScope
 import com.heckmannch.birthdaybuddy.domain.model.AppSettings
 import com.heckmannch.birthdaybuddy.domain.model.NotificationRule
@@ -13,7 +9,6 @@ import com.heckmannch.birthdaybuddy.domain.repository.ContactRepository
 import com.heckmannch.birthdaybuddy.domain.repository.NotificationRepository
 import com.heckmannch.birthdaybuddy.ui.model.OnboardingUiState
 import dagger.hilt.android.lifecycle.HiltViewModel
-import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -27,7 +22,7 @@ import javax.inject.Inject
 class OnboardingViewModel @Inject constructor(
     private val notificationRepository: NotificationRepository,
     private val contactRepository: ContactRepository,
-    @param:ApplicationContext private val context: Context,
+    private val permissionChecker: PermissionChecker,
 ) : ViewModel() {
 
     private val _currentPage = MutableStateFlow(0)
@@ -103,28 +98,9 @@ class OnboardingViewModel @Inject constructor(
     }
 
     private fun checkPermissions(): OnboardingPermissions {
-        val hasContact = ContextCompat.checkSelfPermission(
-            context,
-            Manifest.permission.READ_CONTACTS
-        ) == PackageManager.PERMISSION_GRANTED
-
-        val hasNotif = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            ContextCompat.checkSelfPermission(
-                context,
-                Manifest.permission.POST_NOTIFICATIONS
-            ) == PackageManager.PERMISSION_GRANTED
-        } else {
-            true
-        }
-
-        val hasCalendar = ContextCompat.checkSelfPermission(
-            context,
-            Manifest.permission.READ_CALENDAR
-        ) == PackageManager.PERMISSION_GRANTED &&
-                ContextCompat.checkSelfPermission(
-                    context,
-                    Manifest.permission.WRITE_CALENDAR
-                ) == PackageManager.PERMISSION_GRANTED
+        val hasContact = permissionChecker.hasContactsPermission()
+        val hasNotif = permissionChecker.hasNotificationPermission()
+        val hasCalendar = permissionChecker.hasCalendarPermission()
 
         return OnboardingPermissions(hasContact, hasNotif, hasCalendar)
     }

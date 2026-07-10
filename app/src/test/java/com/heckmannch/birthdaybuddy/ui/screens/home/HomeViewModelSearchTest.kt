@@ -14,6 +14,7 @@ import com.heckmannch.birthdaybuddy.domain.usecase.GetCoupleSuggestionUseCase
 import com.heckmannch.birthdaybuddy.domain.usecase.IgnoreCoupleSuggestionUseCase
 import com.heckmannch.birthdaybuddy.domain.usecase.LinkAsCoupleUseCase
 import com.heckmannch.birthdaybuddy.domain.usecase.UnlinkCoupleUseCase
+import com.heckmannch.birthdaybuddy.domain.permission.PermissionChecker
 import com.heckmannch.birthdaybuddy.util.Clock
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.Job
@@ -56,7 +57,7 @@ class HomeViewModelSearchTest {
     private val linkAsCoupleUseCase = LinkAsCoupleUseCase(contactRepository)
     private val unlinkCoupleUseCase = UnlinkCoupleUseCase(contactRepository)
     private val ignoreCoupleSuggestionUseCase = IgnoreCoupleSuggestionUseCase(contactRepository)
-    private val context: android.content.Context = mock()
+    private val permissionChecker: PermissionChecker = mock()
     private val clock = TestClock()
 
     private class TestClock(var time: Long = 0L) : Clock {
@@ -73,6 +74,7 @@ class HomeViewModelSearchTest {
         whenever(contactRepository.ignoredCouplePairs).doReturn(MutableStateFlow(emptyList()))
         whenever(contactRepository.labelsEnabled).doReturn(MutableStateFlow(true))
         whenever(timeRepository.currentDate).doReturn(MutableStateFlow(LocalDate.of(2024, 5, 15)))
+        whenever(permissionChecker.hasContactsPermission()).doReturn(true)
     }
 
     @Test
@@ -104,7 +106,7 @@ class HomeViewModelSearchTest {
             unlinkCoupleUseCase = unlinkCoupleUseCase,
             ignoreCoupleSuggestionUseCase = ignoreCoupleSuggestionUseCase,
             timeRepository = timeRepository,
-            context = context,
+            permissionChecker = permissionChecker,
             clock = clock,
         )
 
@@ -143,7 +145,7 @@ class HomeViewModelSearchTest {
             unlinkCoupleUseCase = unlinkCoupleUseCase,
             ignoreCoupleSuggestionUseCase = ignoreCoupleSuggestionUseCase,
             timeRepository = timeRepository,
-            context = context,
+            permissionChecker = permissionChecker,
             clock = clock,
         )
 

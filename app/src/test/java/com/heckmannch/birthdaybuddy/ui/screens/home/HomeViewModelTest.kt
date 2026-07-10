@@ -1,6 +1,6 @@
 package com.heckmannch.birthdaybuddy.ui.screens.home
 
-import android.content.Context
+import com.heckmannch.birthdaybuddy.domain.permission.PermissionChecker
 import androidx.lifecycle.viewModelScope
 import com.google.common.truth.Truth.assertThat
 import com.heckmannch.birthdaybuddy.MainDispatcherRule
@@ -67,7 +67,7 @@ class HomeViewModelTest {
     private val unlinkCoupleUseCase = UnlinkCoupleUseCase(contactRepository)
     private val ignoreCoupleSuggestionUseCase = IgnoreCoupleSuggestionUseCase(contactRepository)
     private val today = LocalDate.of(2024, 5, 15)
-    private val context: Context = mock()
+    private val permissionChecker: PermissionChecker = mock()
 
     @Before
     fun setup() {
@@ -78,6 +78,7 @@ class HomeViewModelTest {
         whenever(contactRepository.otherEventsEnabled).doReturn(MutableStateFlow(false))
         whenever(contactRepository.ignoredCouplePairs).doReturn(MutableStateFlow(emptyList()))
         whenever(contactRepository.labelsEnabled).doReturn(MutableStateFlow(true))
+        whenever(permissionChecker.hasContactsPermission()).doReturn(true)
     }
 
     private fun createViewModel(): HomeViewModel {
@@ -92,7 +93,7 @@ class HomeViewModelTest {
             unlinkCoupleUseCase = unlinkCoupleUseCase,
             ignoreCoupleSuggestionUseCase = ignoreCoupleSuggestionUseCase,
             timeRepository = timeRepository,
-            context = context,
+            permissionChecker = permissionChecker,
             clock = clock,
         )
     }

@@ -1,10 +1,7 @@
 package com.heckmannch.birthdaybuddy.ui.screens.onboarding
 
-import android.Manifest
-import android.content.Context
-import android.content.pm.PackageManager
-import android.os.Build
 import com.google.common.truth.Truth.assertThat
+import com.heckmannch.birthdaybuddy.domain.permission.PermissionChecker
 import com.heckmannch.birthdaybuddy.MainDispatcherRule
 import com.heckmannch.birthdaybuddy.domain.model.AppSettings
 import com.heckmannch.birthdaybuddy.domain.repository.ContactRepository
@@ -33,16 +30,18 @@ class OnboardingViewModelTest {
 
     private val notificationRepository: NotificationRepository = mock()
     private val contactRepository: ContactRepository = mock()
-    private val context: Context = mock()
+    private val permissionChecker: PermissionChecker = mock()
 
     private lateinit var viewModel: OnboardingViewModel
 
     @Before
     fun setup() {
         whenever(notificationRepository.settings).thenReturn(flowOf(AppSettings(onboardingCompleted = false)))
-        // Default permission mock values to DENIED
-        whenever(context.checkPermission(any(), any(), any())).thenReturn(PackageManager.PERMISSION_DENIED)
-        viewModel = OnboardingViewModel(notificationRepository, contactRepository, context)
+        // Default permission mock values to false
+        whenever(permissionChecker.hasContactsPermission()).thenReturn(false)
+        whenever(permissionChecker.hasNotificationPermission()).thenReturn(false)
+        whenever(permissionChecker.hasCalendarPermission()).thenReturn(false)
+        viewModel = OnboardingViewModel(notificationRepository, contactRepository, permissionChecker)
     }
 
     @Test
@@ -53,18 +52,18 @@ class OnboardingViewModelTest {
 
     @Test
     fun `uiState should reflect permissions and app settings`() = runTest {
-        whenever(context.checkPermission(eq(Manifest.permission.READ_CONTACTS), any(), any()))
-            .thenReturn(PackageManager.PERMISSION_GRANTED)
+        whenever(permissionChecker.hasContactsPermission()).thenReturn(true)
+        whenever(permissionChecker.hasNotificationPermission()).thenReturn(true)
+        whenever(permissionChecker.hasCalendarPermission()).thenReturn(false)
 
-        val localViewModel = OnboardingViewModel(notificationRepository, contactRepository, context)
+        val localViewModel = OnboardingViewModel(notificationRepository, contactRepository, permissionChecker)
         val collectJob = launch { localViewModel.uiState.collect {} }
         runCurrent()
 
         val state = localViewModel.uiState.value
         println("TEST STATE: hasContact=${state.hasContactPermission}, hasNotif=${state.hasNotificationPermission}, hasCalendar=${state.hasCalendarPermission}")
-        val expectedNotificationPermission = Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU
         assertThat(state.hasContactPermission).isTrue()
-        assertThat(state.hasNotificationPermission).isEqualTo(expectedNotificationPermission)
+        assertThat(state.hasNotificationPermission).isTrue()
         assertThat(state.hasCalendarPermission).isFalse()
         assertThat(state.currentPage).isEqualTo(0)
 
@@ -79,8 +78,7 @@ class OnboardingViewModelTest {
         assertThat(viewModel.uiState.value.hasContactPermission).isFalse()
 
         // Grant permission and refresh
-        whenever(context.checkPermission(eq(Manifest.permission.READ_CONTACTS), any(), any()))
-            .thenReturn(PackageManager.PERMISSION_GRANTED)
+        whenever(permissionChecker.hasContactsPermission()).thenReturn(true)
         viewModel.onIntent(OnboardingIntent.RefreshPermissions)
         runCurrent()
 
