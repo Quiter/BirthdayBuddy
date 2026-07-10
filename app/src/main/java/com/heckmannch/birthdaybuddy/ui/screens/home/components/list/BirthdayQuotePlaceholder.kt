@@ -26,12 +26,20 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import com.heckmannch.birthdaybuddy.R
+import com.heckmannch.birthdaybuddy.ui.theme.AlphaBorderSubtle
 import com.heckmannch.birthdaybuddy.ui.theme.AlphaEmphasisLow
 import com.heckmannch.birthdaybuddy.ui.theme.AlphaEmphasisMedium
 import com.heckmannch.birthdaybuddy.ui.theme.AlphaOnboardingCalendarDisabled
+import com.heckmannch.birthdaybuddy.ui.theme.BorderWidthThick
+import com.heckmannch.birthdaybuddy.ui.theme.BorderWidthThin
+import com.heckmannch.birthdaybuddy.ui.theme.CardCornerRadiusLarge
+import com.heckmannch.birthdaybuddy.ui.theme.CardCornerRadiusNormal
+import com.heckmannch.birthdaybuddy.ui.theme.BirthdayQuoteIconContainerSize
+import com.heckmannch.birthdaybuddy.ui.theme.ContactImageSizeNormal
+import com.heckmannch.birthdaybuddy.ui.theme.SpacingExtraLarge
+import com.heckmannch.birthdaybuddy.ui.theme.SpacingLarge
+import com.heckmannch.birthdaybuddy.ui.theme.SpacingNormal
 
 @Composable
 fun BirthdayQuotePlaceholder(
@@ -40,40 +48,40 @@ fun BirthdayQuotePlaceholder(
     Card(
         modifier = modifier
             .fillMaxSize()
-            .padding(16.dp),
+            .padding(SpacingNormal),
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.surfaceContainerHigh
         ),
-        shape = RoundedCornerShape(24.dp)
+        shape = RoundedCornerShape(CardCornerRadiusLarge)
     ) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(32.dp),
+                .padding(SpacingExtraLarge),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
             // Premium Icon Container
             Surface(
-                modifier = Modifier.size(120.dp),
+                modifier = Modifier.size(BirthdayQuoteIconContainerSize),
                 shape = CircleShape,
                 color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = AlphaOnboardingCalendarDisabled),
                 border = BorderStroke(
-                    width = 2.dp,
-                    color = MaterialTheme.colorScheme.primary.copy(alpha = 0.2f)
+                    width = BorderWidthThick,
+                    color = MaterialTheme.colorScheme.primary.copy(alpha = AlphaBorderSubtle)
                 )
             ) {
                 Box(contentAlignment = Alignment.Center) {
                     Icon(
                         imageVector = Icons.Default.Cake,
                         contentDescription = null,
-                        modifier = Modifier.size(64.dp),
+                        modifier = Modifier.size(ContactImageSizeNormal),
                         tint = MaterialTheme.colorScheme.primary
                     )
                 }
             }
 
-            Spacer(modifier = Modifier.height(24.dp))
+            Spacer(modifier = Modifier.height(SpacingLarge))
 
             Text(
                 text = stringResource(R.string.detail_placeholder_title),
@@ -82,31 +90,30 @@ fun BirthdayQuotePlaceholder(
                 textAlign = TextAlign.Center
             )
 
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(SpacingNormal))
 
             // Beautiful Quote Card
             Surface(
                 modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(16.dp),
+                shape = RoundedCornerShape(CardCornerRadiusNormal),
                 color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = AlphaEmphasisLow),
                 border = BorderStroke(
-                    width = 1.dp,
+                    width = BorderWidthThin,
                     color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = AlphaOnboardingCalendarDisabled)
                 )
             ) {
                 Text(
                     text = stringResource(R.string.detail_placeholder_quote),
                     style = MaterialTheme.typography.bodyLarge.copy(
-                        fontStyle = FontStyle.Italic,
-                        lineHeight = 24.sp
+                        fontStyle = FontStyle.Italic
                     ),
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     textAlign = TextAlign.Center,
-                    modifier = Modifier.padding(24.dp)
+                    modifier = Modifier.padding(SpacingLarge)
                 )
             }
 
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(SpacingNormal))
 
             Text(
                 text = stringResource(R.string.detail_placeholder_subtitle),

@@ -32,6 +32,7 @@ val ContactImageSizeNormal = 64.dp
 val ContactImageSizeLarge = 96.dp
 val ContactImageSizeOnboarding = 180.dp
 val FabBottomSpacing = 80.dp // Spacing from bottom of screen to float above FAB
+val BirthdayQuoteIconContainerSize = 120.dp
 
 /**
  * Semantic Alpha (Transparency) levels.
@@ -46,6 +47,7 @@ const val AlphaContainerMuted = 0.08f
 const val AlphaContainerMedium = 0.3f // Medium container alpha (e.g., for info cards)
 const val AlphaSurfaceContainerLow = 0.5f
 const val AlphaSurfaceContainerHigh = 0.6f
+const val AlphaBorderSubtle = 0.2f
 
 /**
  * Onboarding Layout & Illustration Specific tokens.
@@ -79,6 +81,10 @@ val SelectedBorderWidth = 1.5.dp
 val BirthdayBorderWidth = 2.dp
 val SearchBarBorderWidth = 2.dp // Border width of the SearchBar when focused
 val SearchBarFocusedElevation = 4.dp // Elevation of the SearchBar when focused
+val BorderWidthThin = 1.dp
+val BorderWidthThick = 2.dp
+val CardCornerRadiusNormal = 16.dp
+val CardCornerRadiusLarge = 24.dp
 val MaxWidthMedium = 600.dp // Max width for medium screens
 val MaxWidthExpanded = 840.dp // Max width for expanded screens
 
