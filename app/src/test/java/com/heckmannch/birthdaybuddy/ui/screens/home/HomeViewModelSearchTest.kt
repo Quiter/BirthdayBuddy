@@ -5,6 +5,7 @@ import com.google.common.truth.Truth.assertThat
 import com.heckmannch.birthdaybuddy.MainDispatcherRule
 import com.heckmannch.birthdaybuddy.domain.model.Contact
 import com.heckmannch.birthdaybuddy.ui.mapper.ContactUiMapper
+import com.heckmannch.birthdaybuddy.ui.mapper.CoupleSuggestionUiMapper
 import com.heckmannch.birthdaybuddy.domain.repository.ContactRepository
 import com.heckmannch.birthdaybuddy.domain.repository.TimeRepository
 import com.heckmannch.birthdaybuddy.domain.usecase.GetAvailableLabelsUseCase
@@ -96,6 +97,7 @@ class HomeViewModelSearchTest {
             contactRepository = contactRepository,
             getContactsUseCase = getContactsUseCase,
             contactUiMapper = ContactUiMapper(),
+            coupleSuggestionUiMapper = CoupleSuggestionUiMapper(),
             getAvailableLabelsUseCase = getAvailableLabelsUseCase,
             getCoupleSuggestionUseCase = getCoupleSuggestionUseCase,
             linkAsCoupleUseCase = linkAsCoupleUseCase,
@@ -134,6 +136,7 @@ class HomeViewModelSearchTest {
             contactRepository = contactRepository,
             getContactsUseCase = getContactsUseCase,
             contactUiMapper = ContactUiMapper(),
+            coupleSuggestionUiMapper = CoupleSuggestionUiMapper(),
             getAvailableLabelsUseCase = getAvailableLabelsUseCase,
             getCoupleSuggestionUseCase = getCoupleSuggestionUseCase,
             linkAsCoupleUseCase = linkAsCoupleUseCase,

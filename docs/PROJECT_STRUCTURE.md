@@ -51,6 +51,7 @@
 ## 📁 Domain Layer (`domain`)
 - ### 📁 Models (`domain.model`)
     - `ContactLabels.kt`: Zentrales `object` mit system-definierten Pseudo-Label-Identifiern (`LABEL_NO_BIRTHDAY`, `LABEL_ANNIVERSARY`, `LABEL_NAME_DAY`). Liegt im Domain-Layer, um die UI-Schicht und Use Cases von der Data-Schicht zu entkoppeln.
+    - `CoupleSuggestion.kt`: Reines Domänenmodell für Paar-Kopplungsvorschläge (frei von Android- oder UI-Abhängigkeiten).
     - `GiftIdea.kt`: Reines Domänenmodell für Geschenkideen (id, text, isChecked) mit statischen Hilfsmethoden zum Hinzufügen, Sortieren und Umschalten von Ideen.
     - `EventType.kt`: Typsicheres Enum zur Diskriminierung des aktiven Ereignistyps (`BIRTHDAY`, `ANNIVERSARY`, `NAME_DAY`). Liegt im Domain-Layer, um Tippfehler und stilles Fehlverhalten in der Filter-, Mapping- und Benachrichtigungslogik zu verhindern.
 - ### 📁 Use Cases (`domain.usecase`)
@@ -72,6 +73,7 @@
 
 - ### 📁 Mappers (`ui.mapper`)
     - `ContactUiMapper.kt`: Mapper zur Konvertierung von Domain-Modellen (`Contact`) in UI-Modelle (`ContactUiModel`). Kapselt visuelle Logik, Formatting, Event-Type-Evaluation und Couple-Pairing/Merging-Logik.
+    - `CoupleSuggestionUiMapper.kt`: Mapper zur Konvertierung von Domänenmodellen (`CoupleSuggestion`) in UI-Modelle (`CoupleSuggestionUiModel`).
 
 - ### 📁 Screens (`ui.screens`)
     - #### 📁 Home (`home`)

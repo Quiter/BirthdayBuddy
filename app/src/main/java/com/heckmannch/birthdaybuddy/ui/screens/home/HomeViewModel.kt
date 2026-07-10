@@ -16,6 +16,7 @@ import com.heckmannch.birthdaybuddy.domain.usecase.IgnoreCoupleSuggestionUseCase
 import com.heckmannch.birthdaybuddy.domain.usecase.LinkAsCoupleUseCase
 import com.heckmannch.birthdaybuddy.domain.usecase.UnlinkCoupleUseCase
 import com.heckmannch.birthdaybuddy.ui.mapper.ContactUiMapper
+import com.heckmannch.birthdaybuddy.ui.mapper.CoupleSuggestionUiMapper
 import com.heckmannch.birthdaybuddy.ui.model.ContactUiModel
 import com.heckmannch.birthdaybuddy.ui.model.CoupleSuggestionUiModel
 import com.heckmannch.birthdaybuddy.ui.model.HomeUiState
@@ -49,6 +50,7 @@ class HomeViewModel @Inject constructor(
     private val contactRepository: ContactRepository,
     getContactsUseCase: GetContactsUseCase,
     private val contactUiMapper: ContactUiMapper,
+    private val coupleSuggestionUiMapper: CoupleSuggestionUiMapper,
     getAvailableLabelsUseCase: GetAvailableLabelsUseCase,
     getCoupleSuggestionUseCase: GetCoupleSuggestionUseCase,
     private val linkAsCoupleUseCase: LinkAsCoupleUseCase,
@@ -157,7 +159,9 @@ class HomeViewModel @Inject constructor(
 
     val coupleSuggestion: Flow<CoupleSuggestionUiModel?> = getCoupleSuggestionUseCase(
         selectedLabel = _userUiState.map { it.selectedLabel }.distinctUntilChanged()
-    ).flowOn(Dispatchers.Default)
+    ).map { suggestion ->
+        suggestion?.let { coupleSuggestionUiMapper.toUiModel(it) }
+    }.flowOn(Dispatchers.Default)
 
     val uiState: StateFlow<HomeUiState> = combine(
         uiContacts,

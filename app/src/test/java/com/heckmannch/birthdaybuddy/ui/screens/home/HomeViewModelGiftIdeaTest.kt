@@ -14,6 +14,7 @@ import com.heckmannch.birthdaybuddy.domain.usecase.LinkAsCoupleUseCase
 import com.heckmannch.birthdaybuddy.domain.usecase.UnlinkCoupleUseCase
 import android.content.Context
 import com.heckmannch.birthdaybuddy.ui.mapper.ContactUiMapper
+import com.heckmannch.birthdaybuddy.ui.mapper.CoupleSuggestionUiMapper
 import com.heckmannch.birthdaybuddy.util.Clock
 import io.mockk.coVerify
 import io.mockk.every
@@ -72,6 +73,7 @@ class HomeViewModelGiftIdeaTest {
             contactRepository = contactRepository,
             getContactsUseCase = getContactsUseCase,
             contactUiMapper = ContactUiMapper(),
+            coupleSuggestionUiMapper = CoupleSuggestionUiMapper(),
             getAvailableLabelsUseCase = getAvailableLabelsUseCase,
             getCoupleSuggestionUseCase = getCoupleSuggestionUseCase,
             linkAsCoupleUseCase = linkAsCoupleUseCase,

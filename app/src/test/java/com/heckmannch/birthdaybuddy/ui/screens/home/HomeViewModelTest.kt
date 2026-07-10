@@ -16,6 +16,7 @@ import com.heckmannch.birthdaybuddy.domain.usecase.IgnoreCoupleSuggestionUseCase
 import com.heckmannch.birthdaybuddy.domain.usecase.LinkAsCoupleUseCase
 import com.heckmannch.birthdaybuddy.domain.usecase.UnlinkCoupleUseCase
 import com.heckmannch.birthdaybuddy.ui.mapper.ContactUiMapper
+import com.heckmannch.birthdaybuddy.ui.mapper.CoupleSuggestionUiMapper
 import com.heckmannch.birthdaybuddy.util.Clock
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.Job
@@ -59,6 +60,7 @@ class HomeViewModelTest {
     private val timeRepository: TimeRepository = mock()
     private val getContactsUseCase = GetContactsUseCase()
     private val contactUiMapper = ContactUiMapper()
+    private val coupleSuggestionUiMapper = CoupleSuggestionUiMapper()
     private val getAvailableLabelsUseCase = GetAvailableLabelsUseCase()
     private val getCoupleSuggestionUseCase = GetCoupleSuggestionUseCase(contactRepository)
     private val linkAsCoupleUseCase = LinkAsCoupleUseCase(contactRepository)
@@ -83,6 +85,7 @@ class HomeViewModelTest {
             contactRepository = contactRepository,
             getContactsUseCase = getContactsUseCase,
             contactUiMapper = contactUiMapper,
+            coupleSuggestionUiMapper = coupleSuggestionUiMapper,
             getAvailableLabelsUseCase = getAvailableLabelsUseCase,
             getCoupleSuggestionUseCase = getCoupleSuggestionUseCase,
             linkAsCoupleUseCase = linkAsCoupleUseCase,
