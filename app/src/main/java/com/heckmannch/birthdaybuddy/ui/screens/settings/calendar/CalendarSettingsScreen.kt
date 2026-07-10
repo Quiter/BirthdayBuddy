@@ -66,6 +66,7 @@ import com.heckmannch.birthdaybuddy.ui.components.SettingsClickableRow
 import com.heckmannch.birthdaybuddy.ui.components.SettingsSectionHeader
 import com.heckmannch.birthdaybuddy.ui.components.SettingsSwitchRow
 import com.heckmannch.birthdaybuddy.ui.components.StepItem
+import com.heckmannch.birthdaybuddy.ui.theme.BirthdayKidGreen
 import com.heckmannch.birthdaybuddy.ui.theme.IconSizeLarge
 import com.heckmannch.birthdaybuddy.ui.theme.SpacingNormal
 import com.heckmannch.birthdaybuddy.ui.theme.SpacingSmall
@@ -160,7 +161,7 @@ fun CalendarSettingsScreen(
                 Color(0xFF9C27B0), // Violet
                 Color(0xFF2196F3), // Blue
                 Color(0xFF00BCD4), // Cyan
-                Color(0xFF4CAF50), // Green
+                BirthdayKidGreen, // Green
                 Color(0xFFFFC107), // Amber
                 Color(0xFFFF9800), // Orange
                 Color(0xFF795548)  // Brown

@@ -64,6 +64,7 @@ import com.heckmannch.birthdaybuddy.ui.theme.IconSizeSmall
 import com.heckmannch.birthdaybuddy.ui.theme.SpacingExtraSmall
 import com.heckmannch.birthdaybuddy.ui.theme.SpacingNormal
 import com.heckmannch.birthdaybuddy.ui.theme.SpacingSmall
+import com.heckmannch.birthdaybuddy.ui.theme.BirthdayKidGreen
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -313,7 +314,7 @@ private fun ThemeSettingsContent(
                             Color(0xFF795548), // Brown
                             Color(0xFFFF5722), // Deep Orange
                             Color(0xFF607D8B), // Blue Grey
-                            Color(0xFF4CAF50)  // Green
+                            BirthdayKidGreen  // Green
                         )
                     }
                     ColorPickerDialog(
@@ -388,7 +389,7 @@ private fun ColorItem(
                                     Color(0xFFE91E63),
                                     Color(0xFF9C27B0),
                                     Color(0xFF2196F3),
-                                    Color(0xFF4CAF50),
+                                    BirthdayKidGreen,
                                     Color(0xFFFFEB3B),
                                     Color(0xFFFF9800),
                                     Color(0xFFE91E63)

@@ -21,7 +21,6 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
@@ -30,9 +29,10 @@ import com.heckmannch.birthdaybuddy.ui.theme.AlphaContainerMuted
 import com.heckmannch.birthdaybuddy.ui.theme.AlphaContainerSubtle
 import com.heckmannch.birthdaybuddy.ui.theme.AlphaEmphasisDisabled
 import com.heckmannch.birthdaybuddy.ui.theme.BirthdayBuddyTheme
+import com.heckmannch.birthdaybuddy.ui.theme.BirthdayKidGreen
+import com.heckmannch.birthdaybuddy.ui.theme.IconSizeExtraSmall
 import com.heckmannch.birthdaybuddy.ui.theme.IconSizeLarge
 import com.heckmannch.birthdaybuddy.ui.theme.IconSizeSmall
-import com.heckmannch.birthdaybuddy.ui.theme.IconSizeExtraSmall
 import com.heckmannch.birthdaybuddy.ui.theme.OnboardingGuideTinySpacer
 import com.heckmannch.birthdaybuddy.ui.theme.SpacingExtraSmall
 import com.heckmannch.birthdaybuddy.ui.theme.SpacingMedium
@@ -59,7 +59,7 @@ fun StepItem(
 ) {
     val contentAlpha = if (isLocked) AlphaEmphasisDisabled else 1f
     val primaryColor = MaterialTheme.colorScheme.primary
-    val successColor = Color(0xFF4CAF50)
+    val successColor = BirthdayKidGreen
     val onSurfaceColor = MaterialTheme.colorScheme.onSurface
 
     Row(
