@@ -304,7 +304,7 @@ class CalendarSyncRepositoryImpl @Inject constructor(
                                                 spouse.fullName
                                             )
                                         val title = context.getString(
-                                            R.string.calendar_event_anniversary_title,
+                                            R.string.calendar_event_anniversary_title_couple,
                                             mergedName
                                         )
                                         val description = if (anniversary.hasYear) {

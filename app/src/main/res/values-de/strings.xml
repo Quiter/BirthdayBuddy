@@ -276,6 +276,7 @@
     <string name="calendar_event_birth_year">Geburtsjahr: %1$d</string>
     <string name="calendar_event_no_year">Geburtstag ohne Jahr</string>
     <string name="calendar_event_anniversary_title">%1$s hat Hochzeitstag</string>
+    <string name="calendar_event_anniversary_title_couple">%1$s haben Hochzeitstag</string>
     <string name="calendar_event_anniversary_year">Hochzeitsjahr: %1$d</string>
     <string name="calendar_event_anniversary_no_year">Hochzeitstag ohne Jahr</string>
     <string name="calendar_event_nameday_title">%1$s hat Namenstag</string>
@@ -304,10 +305,13 @@
     <!-- Benachrichtigungen Hochzeitstage -->
     <string name="notif_title_today_anniversary_age">Heute ist der %2$d. Hochzeitstag von %1$s!</string>
     <string name="notif_title_today_anniversary">%1$s hat heute Hochzeitstag!</string>
+    <string name="notif_title_today_anniversary_couple">%1$s haben heute Hochzeitstag!</string>
     <string name="notif_title_tomorrow_anniversary_age">Morgen ist der %2$d. Hochzeitstag von %1$s!</string>
     <string name="notif_title_tomorrow_anniversary">%1$s hat morgen Hochzeitstag!</string>
+    <string name="notif_title_tomorrow_anniversary_couple">%1$s haben morgen Hochzeitstag!</string>
     <string name="notif_title_week_anniversary_age">In einer Woche ist der %2$d. Hochzeitstag von %1$s!</string>
     <string name="notif_title_week_anniversary">In einer Woche hat %1$s Hochzeitstag!</string>
+    <string name="notif_title_week_anniversary_couple">In einer Woche haben %1$s Hochzeitstag!</string>
     <plurals name="notif_title_days_anniversary_age">
         <item quantity="one">In einem Tag ist der %3$d. Hochzeitstag von %2$s!</item>
         <item quantity="other">In %1$d Tagen ist der %3$d. Hochzeitstag von %2$s!</item>
@@ -315,6 +319,10 @@
     <plurals name="notif_title_days_anniversary">
         <item quantity="one">In einem Tag hat %2$s Hochzeitstag!</item>
         <item quantity="other">In %1$d Tagen hat %2$s Hochzeitstag!</item>
+    </plurals>
+    <plurals name="notif_title_days_anniversary_couple">
+        <item quantity="one">In einem Tag haben %2$s Hochzeitstag!</item>
+        <item quantity="other">In %1$d Tagen haben %2$s Hochzeitstag!</item>
     </plurals>
 
     <plurals name="notif_title_today_anniversary_plural">

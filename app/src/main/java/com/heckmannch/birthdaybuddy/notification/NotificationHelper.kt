@@ -150,21 +150,42 @@ class NotificationHelper @Inject constructor(
                             name,
                             nextYears
                         )
-                        else context.getString(R.string.notif_title_today_anniversary, name)
+                        else {
+                            val resId = if (isCoupleAnniversary) {
+                                R.string.notif_title_today_anniversary_couple
+                            } else {
+                                R.string.notif_title_today_anniversary
+                            }
+                            context.getString(resId, name)
+                        }
 
                         1 -> if (hasYear) context.getString(
                             R.string.notif_title_tomorrow_anniversary_age,
                             name,
                             nextYears
                         )
-                        else context.getString(R.string.notif_title_tomorrow_anniversary, name)
+                        else {
+                            val resId = if (isCoupleAnniversary) {
+                                R.string.notif_title_tomorrow_anniversary_couple
+                            } else {
+                                R.string.notif_title_tomorrow_anniversary
+                            }
+                            context.getString(resId, name)
+                        }
 
                         7 -> if (hasYear) context.getString(
                             R.string.notif_title_week_anniversary_age,
                             name,
                             nextYears
                         )
-                        else context.getString(R.string.notif_title_week_anniversary, name)
+                        else {
+                            val resId = if (isCoupleAnniversary) {
+                                R.string.notif_title_week_anniversary_couple
+                            } else {
+                                R.string.notif_title_week_anniversary
+                            }
+                            context.getString(resId, name)
+                        }
 
                         else -> if (hasYear) context.resources.getQuantityString(
                             R.plurals.notif_title_days_anniversary_age,
@@ -173,12 +194,19 @@ class NotificationHelper @Inject constructor(
                             name,
                             nextYears
                         )
-                        else context.resources.getQuantityString(
-                            R.plurals.notif_title_days_anniversary,
-                            daysBefore,
-                            daysBefore,
-                            name
-                        )
+                        else {
+                            val pluralsId = if (isCoupleAnniversary) {
+                                R.plurals.notif_title_days_anniversary_couple
+                            } else {
+                                R.plurals.notif_title_days_anniversary
+                            }
+                            context.resources.getQuantityString(
+                                pluralsId,
+                                daysBefore,
+                                daysBefore,
+                                name
+                            )
+                        }
                     }
                 }
 
