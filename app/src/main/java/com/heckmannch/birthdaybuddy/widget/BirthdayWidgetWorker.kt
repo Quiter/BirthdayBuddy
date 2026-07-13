@@ -38,8 +38,8 @@ class BirthdayWidgetWorker @AssistedInject constructor(
     override suspend fun doWork(): Result {
         try {
             BirthdayWidget().updateAll(context)
-            // Plane den nächsten Lauf für morgen Mitternacht sauber mit einer kurzen Verzögerung.
-            // Dies verhindert eine Race-Condition, bei der sich der aktuell laufende Worker durch REPLACE selbst abbricht.
+            // Schedule the next run for tomorrow midnight cleanly with a short delay.
+            // This prevents a race condition where the currently running worker cancels itself through REPLACE.
             applicationScope.launch {
                 delay(1000.milliseconds)
                 enqueueNextUpdate(context)
@@ -69,7 +69,7 @@ class BirthdayWidgetWorker @AssistedInject constructor(
 
         @VisibleForTesting
         internal fun calculateDelayUntilMidnight(now: LocalDateTime = LocalDateTime.now()): Long {
-            // Wir planen für 00:01 Uhr, um sicherzustellen, dass das Datum wirklich umgesprungen ist
+            // We plan for 00:01 AM to ensure the date has actually rolled over.
             val midnight = LocalDateTime.of(now.toLocalDate().plusDays(1), LocalTime.of(0, 1))
             return Duration.between(now, midnight).toMillis()
         }

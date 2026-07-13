@@ -38,6 +38,12 @@ import com.heckmannch.birthdaybuddy.MainActivity
 import com.heckmannch.birthdaybuddy.R
 import com.heckmannch.birthdaybuddy.domain.model.Contact
 import com.heckmannch.birthdaybuddy.domain.repository.ContactRepository
+import com.heckmannch.birthdaybuddy.ui.theme.SpacingExtraSmall
+import com.heckmannch.birthdaybuddy.ui.theme.SpacingMedium
+import com.heckmannch.birthdaybuddy.ui.theme.SpacingSmall
+import com.heckmannch.birthdaybuddy.ui.theme.SpacingTiny
+import com.heckmannch.birthdaybuddy.ui.theme.WidgetCornerRadius
+import com.heckmannch.birthdaybuddy.ui.theme.WidgetItemMinHeight
 import com.heckmannch.birthdaybuddy.util.IntentExtras
 import com.heckmannch.birthdaybuddy.util.hasYear
 import com.heckmannch.birthdaybuddy.util.safeDaysUntilNext
@@ -106,16 +112,17 @@ class BirthdayWidget : GlanceAppWidget() {
             )
         }
 
-        // Äußeres Column-Padding abziehen (top=4dp, bottom=4dp -> 8dp)
-        val availableHeight = (size.height.value - 8).coerceAtLeast(0f)
-        val minItemBlockHeight = 58.dp
+        // Subtract outer Column padding (top=SpacingExtraSmall, bottom=SpacingExtraSmall -> 2 * SpacingExtraSmall)
+        val outerVerticalPadding = SpacingExtraSmall.value * 2
+        val availableHeight = (size.height.value - outerVerticalPadding).coerceAtLeast(0f)
+        val minItemBlockHeight = WidgetItemMinHeight
 
-        // 1. Berechne wie viele Elemente maximal auf die verfügbare Höhe passen
+        // 1. Calculate the maximum number of items that fit into the available height
         val maxItems = (availableHeight / minItemBlockHeight.value).toInt().coerceIn(1, 10)
         val displayContacts = contacts.take(maxItems)
         val count = displayContacts.size
 
-        // 2. Verteile die verfügbare Gesamthöhe gleichmäßig auf alle anzuzeigenden Elemente
+        // 2. Distribute the total available height evenly among all items to be displayed
         val dynamicBlockHeight = if (count > 0) {
             (availableHeight / count).dp
         } else {
@@ -125,7 +132,7 @@ class BirthdayWidget : GlanceAppWidget() {
         Column(
             modifier = GlanceModifier
                 .fillMaxSize()
-                .padding(horizontal = 8.dp, vertical = 4.dp)
+                .padding(horizontal = SpacingSmall, vertical = SpacingExtraSmall)
                 .clickable(
                     actionStartActivity(
                         Intent(context, MainActivity::class.java).apply {
@@ -195,15 +202,15 @@ class BirthdayWidget : GlanceAppWidget() {
             modifier = GlanceModifier
                 .height(blockHeight)
                 .fillMaxWidth()
-                .padding(top = 2.dp, bottom = 2.dp),
+                .padding(top = SpacingTiny, bottom = SpacingTiny),
             contentAlignment = Alignment.Center,
         ) {
             Box(
                 modifier = GlanceModifier
                     .fillMaxSize()
                     .background(itemBgColor)
-                    .cornerRadius(12.dp)
-                    .padding(horizontal = 12.dp, vertical = 4.dp),
+                    .cornerRadius(WidgetCornerRadius)
+                    .padding(horizontal = SpacingMedium, vertical = SpacingExtraSmall),
                 contentAlignment = Alignment.Center,
             ) {
                 Row(

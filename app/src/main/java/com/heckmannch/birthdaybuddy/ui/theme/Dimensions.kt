@@ -85,6 +85,9 @@ val BorderWidthThin = 1.dp
 val BorderWidthThick = 2.dp
 val CardCornerRadiusNormal = 16.dp
 val CardCornerRadiusLarge = 24.dp
+val WidgetCornerRadius = 12.dp
+val WidgetItemMinHeight = 58.dp
+val SpacingTiny = 2.dp
 val MaxWidthMedium = 600.dp // Max width for medium screens
 val MaxWidthExpanded = 840.dp // Max width for expanded screens
 
