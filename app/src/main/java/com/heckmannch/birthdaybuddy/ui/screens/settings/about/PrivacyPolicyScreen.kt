@@ -20,7 +20,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberTopAppBarState
-import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
+import com.heckmannch.birthdaybuddy.ui.components.AppWidthSizeClass
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -52,7 +52,7 @@ import kotlinx.coroutines.withContext
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PrivacyPolicyScreen(
-    windowWidthSizeClass: WindowWidthSizeClass,
+    windowWidthSizeClass: AppWidthSizeClass,
     showBackButton: Boolean = true,
     onNavigateBack: () -> Unit
 ) {
@@ -234,7 +234,7 @@ private fun AnnotatedString.Builder.appendBoldText(text: String) {
 fun PrivacyPolicyScreenPreview() {
     MaterialTheme {
         PrivacyPolicyScreen(
-            windowWidthSizeClass = WindowWidthSizeClass.Compact,
+            windowWidthSizeClass = AppWidthSizeClass.COMPACT,
             onNavigateBack = {}
         )
     }

@@ -22,7 +22,7 @@ import androidx.compose.material3.ListItem
 import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
+import com.heckmannch.birthdaybuddy.ui.components.AppWidthSizeClass
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -44,7 +44,7 @@ import com.heckmannch.birthdaybuddy.ui.theme.SpacingSmall
 
 @Composable
 fun ContactsPage(
-    windowWidthSizeClass: WindowWidthSizeClass,
+    windowWidthSizeClass: AppWidthSizeClass,
     enabled: Boolean,
     onEnabledChange: (Boolean) -> Unit,
     isGranted: Boolean,
@@ -143,7 +143,7 @@ fun ContactsPage(
 private fun ContactsPagePreview() {
     BirthdayBuddyTheme {
         ContactsPage(
-            windowWidthSizeClass = WindowWidthSizeClass.Compact,
+            windowWidthSizeClass = AppWidthSizeClass.COMPACT,
             enabled = true,
             onEnabledChange = {},
             isGranted = false,
@@ -157,7 +157,7 @@ private fun ContactsPagePreview() {
 private fun ContactsPageGrantedPreview() {
     BirthdayBuddyTheme {
         ContactsPage(
-            windowWidthSizeClass = WindowWidthSizeClass.Compact,
+            windowWidthSizeClass = AppWidthSizeClass.COMPACT,
             enabled = true,
             onEnabledChange = {},
             isGranted = true,

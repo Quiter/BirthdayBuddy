@@ -11,7 +11,7 @@ import androidx.compose.material3.ListItem
 import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
+import com.heckmannch.birthdaybuddy.ui.components.AppWidthSizeClass
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -27,7 +27,7 @@ import com.heckmannch.birthdaybuddy.ui.theme.SpacingSmall
 
 @Composable
 fun NotificationsPage(
-    windowWidthSizeClass: WindowWidthSizeClass,
+    windowWidthSizeClass: AppWidthSizeClass,
     enabled: Boolean,
     onEnabledChange: (Boolean) -> Unit,
     persistent: Boolean,
@@ -104,7 +104,7 @@ fun NotificationsPage(
 private fun NotificationsPagePreview() {
     BirthdayBuddyTheme {
         NotificationsPage(
-            windowWidthSizeClass = WindowWidthSizeClass.Compact,
+            windowWidthSizeClass = AppWidthSizeClass.COMPACT,
             enabled = true,
             onEnabledChange = {},
             persistent = true,

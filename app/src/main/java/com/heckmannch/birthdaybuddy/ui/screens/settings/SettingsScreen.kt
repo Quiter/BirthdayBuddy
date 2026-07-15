@@ -36,7 +36,7 @@ import androidx.compose.material3.adaptive.layout.calculatePaneScaffoldDirective
 import androidx.compose.material3.adaptive.navigation3.ListDetailSceneStrategy
 import androidx.compose.material3.adaptive.navigation3.rememberListDetailSceneStrategy
 import androidx.compose.material3.rememberTopAppBarState
-import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
+import com.heckmannch.birthdaybuddy.ui.components.AppWidthSizeClass
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -118,7 +118,7 @@ private data class SettingsMenuItemData(
  */
 @Composable
 fun SettingsScreen(
-    windowWidthSizeClass: WindowWidthSizeClass,
+    windowWidthSizeClass: AppWidthSizeClass,
     homeViewModel: HomeViewModel?,
     onNavigateToLabels: () -> Unit,
     onNavigateToNotifications: () -> Unit,
@@ -152,7 +152,7 @@ fun SettingsScreen(
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3AdaptiveApi::class)
 @Composable
 private fun SettingsContent(
-    windowWidthSizeClass: WindowWidthSizeClass,
+    windowWidthSizeClass: AppWidthSizeClass,
     homeViewModel: HomeViewModel?,
     onNavigateToSync: () -> Unit,
     onNavigateToLabels: () -> Unit,
@@ -235,7 +235,7 @@ private fun SettingsContent(
         )
     }
 
-    if (windowWidthSizeClass == WindowWidthSizeClass.Compact) {
+    if (windowWidthSizeClass == AppWidthSizeClass.COMPACT) {
         // --- MOBILE/COMPACT LAYOUT ---
         // Displays a scrollable settings list on a single screen.
         // Clicking an item navigates away to a separate screen.
@@ -614,7 +614,7 @@ private fun SettingsMenuItem(
 private fun SettingsPreview() {
     BirthdayBuddyTheme {
         SettingsContent(
-            windowWidthSizeClass = WindowWidthSizeClass.Compact,
+            windowWidthSizeClass = AppWidthSizeClass.COMPACT,
             homeViewModel = null,
             onNavigateToSync = {},
             onNavigateToLabels = {},

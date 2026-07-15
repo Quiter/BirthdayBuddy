@@ -38,7 +38,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberTopAppBarState
-import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
+import com.heckmannch.birthdaybuddy.ui.components.AppWidthSizeClass
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
@@ -67,7 +67,7 @@ import com.heckmannch.birthdaybuddy.ui.theme.SpacingSmall
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun LabelSettingsScreen(
-    windowWidthSizeClass: WindowWidthSizeClass,
+    windowWidthSizeClass: AppWidthSizeClass,
     viewModel: LabelViewModel,
     showBackButton: Boolean = true,
     onNavigateBack: () -> Unit,
@@ -90,7 +90,7 @@ fun LabelSettingsScreen(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun LabelSettingsScreenContent(
-    windowWidthSizeClass: WindowWidthSizeClass,
+    windowWidthSizeClass: AppWidthSizeClass,
     labels: List<LabelManagementModel>,
     labelsEnabled: Boolean,
     showBackButton: Boolean = true,
@@ -318,7 +318,7 @@ private fun LabelConfigCard(
 private fun LabelSettingsPreview() {
     BirthdayBuddyTheme {
         LabelSettingsScreenContent(
-            windowWidthSizeClass = WindowWidthSizeClass.Compact,
+            windowWidthSizeClass = AppWidthSizeClass.COMPACT,
             labels = listOf(
                 LabelManagementModel(
                     "Familie",

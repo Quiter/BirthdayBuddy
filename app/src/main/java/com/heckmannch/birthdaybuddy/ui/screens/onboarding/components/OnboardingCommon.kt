@@ -22,8 +22,8 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.windowsizeclass.WindowHeightSizeClass
-import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
+import com.heckmannch.birthdaybuddy.ui.components.AppHeightSizeClass
+import com.heckmannch.birthdaybuddy.ui.components.AppWidthSizeClass
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -47,7 +47,7 @@ import com.heckmannch.birthdaybuddy.ui.theme.SpacingSmall
  */
 @Composable
 fun OnboardingPageTemplate(
-    windowWidthSizeClass: WindowWidthSizeClass,
+    windowWidthSizeClass: AppWidthSizeClass,
     illustration: @Composable (Modifier) -> Unit,
     title: String,
     description: String,
@@ -56,9 +56,9 @@ fun OnboardingPageTemplate(
     actionButton: @Composable (BoxScope.() -> Unit)? = null
 ) {
     val windowHeightSizeClass = LocalWindowHeightSizeClass.current
-    val isShortScreen = windowHeightSizeClass == WindowHeightSizeClass.Compact
+    val isShortScreen = windowHeightSizeClass == AppHeightSizeClass.COMPACT
 
-    if (windowWidthSizeClass == WindowWidthSizeClass.Compact) {
+    if (windowWidthSizeClass == AppWidthSizeClass.COMPACT) {
         Column(
             modifier = modifier
                 .fillMaxSize()
@@ -199,7 +199,7 @@ fun OnboardingPageTemplatePreview() {
     MaterialTheme {
         Surface {
             OnboardingPageTemplate(
-                windowWidthSizeClass = WindowWidthSizeClass.Compact,
+                windowWidthSizeClass = AppWidthSizeClass.COMPACT,
                 illustration = { modifier ->
                     Icon(
                         imageVector = Icons.Default.Cake,

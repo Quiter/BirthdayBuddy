@@ -21,7 +21,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberTopAppBarState
-import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
+import com.heckmannch.birthdaybuddy.ui.components.AppWidthSizeClass
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
@@ -42,7 +42,7 @@ import com.heckmannch.birthdaybuddy.ui.theme.SpacingNormal
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun BackupContent(
-    windowWidthSizeClass: WindowWidthSizeClass,
+    windowWidthSizeClass: AppWidthSizeClass,
     isLoading: Boolean,
     showBackButton: Boolean = true,
     onExportClick: () -> Unit,
@@ -128,7 +128,7 @@ fun BackupContent(
 private fun BackupPreview() {
     BirthdayBuddyTheme {
         BackupContent(
-            windowWidthSizeClass = WindowWidthSizeClass.Compact,
+            windowWidthSizeClass = AppWidthSizeClass.COMPACT,
             isLoading = false,
             onExportClick = {},
             onImportClick = {},
@@ -142,7 +142,7 @@ private fun BackupPreview() {
 private fun BackupLoadingPreview() {
     BirthdayBuddyTheme {
         BackupContent(
-            windowWidthSizeClass = WindowWidthSizeClass.Compact,
+            windowWidthSizeClass = AppWidthSizeClass.COMPACT,
             isLoading = true,
             onExportClick = {},
             onImportClick = {},

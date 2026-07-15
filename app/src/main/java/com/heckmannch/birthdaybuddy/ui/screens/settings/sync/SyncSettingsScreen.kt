@@ -21,7 +21,7 @@ import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberTopAppBarState
-import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
+import com.heckmannch.birthdaybuddy.ui.components.AppWidthSizeClass
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
@@ -44,7 +44,7 @@ import com.heckmannch.birthdaybuddy.ui.theme.SpacingSmall
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SyncSettingsScreen(
-    windowWidthSizeClass: WindowWidthSizeClass,
+    windowWidthSizeClass: AppWidthSizeClass,
     viewModel: HomeViewModel,
     showBackButton: Boolean = true,
     onNavigateBack: () -> Unit,
@@ -89,7 +89,7 @@ fun SyncSettingsScreen(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun SyncSettingsContent(
-    windowWidthSizeClass: WindowWidthSizeClass,
+    windowWidthSizeClass: AppWidthSizeClass,
     snackbarHostState: SnackbarHostState,
     onSyncClick: () -> Unit,
     showBackButton: Boolean,
@@ -159,7 +159,7 @@ private fun SyncSettingsContent(
 private fun SyncSettingsPreview() {
     MaterialTheme {
         SyncSettingsContent(
-            windowWidthSizeClass = WindowWidthSizeClass.Compact,
+            windowWidthSizeClass = AppWidthSizeClass.COMPACT,
             snackbarHostState = remember { SnackbarHostState() },
             onSyncClick = {},
             showBackButton = true,

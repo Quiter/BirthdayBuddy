@@ -12,7 +12,7 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
+import com.heckmannch.birthdaybuddy.ui.components.AppWidthSizeClass
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
@@ -31,7 +31,7 @@ import com.heckmannch.birthdaybuddy.ui.theme.SpacingNormal
 
 @Composable
 fun ReadyPage(
-    windowWidthSizeClass: WindowWidthSizeClass,
+    windowWidthSizeClass: AppWidthSizeClass,
     hasContactPermission: Boolean,
     notificationsEnabled: Boolean,
     calendarSyncEnabled: Boolean,
@@ -112,7 +112,7 @@ fun ReadyPage(
                 text = if (hasContactPermission) stringResource(R.string.onboarding_ready_sync_info)
                 else stringResource(R.string.onboarding_ready_no_sync_info),
                 style = MaterialTheme.typography.bodyMedium,
-                textAlign = if (windowWidthSizeClass == WindowWidthSizeClass.Compact) TextAlign.Center else TextAlign.Start,
+                textAlign = if (windowWidthSizeClass == AppWidthSizeClass.COMPACT) TextAlign.Center else TextAlign.Start,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
         },
@@ -135,7 +135,7 @@ fun ReadyPage(
 private fun ReadyPagePreview() {
     BirthdayBuddyTheme {
         ReadyPage(
-            windowWidthSizeClass = WindowWidthSizeClass.Compact,
+            windowWidthSizeClass = AppWidthSizeClass.COMPACT,
             hasContactPermission = true,
             notificationsEnabled = true,
             calendarSyncEnabled = true,

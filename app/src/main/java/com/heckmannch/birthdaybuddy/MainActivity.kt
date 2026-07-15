@@ -8,9 +8,11 @@ import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
-import androidx.compose.material3.windowsizeclass.ExperimentalMaterial3WindowSizeClassApi
-import androidx.compose.material3.windowsizeclass.calculateWindowSizeClass
+import androidx.compose.material3.adaptive.currentWindowAdaptiveInfoV2
+import androidx.window.core.layout.WindowSizeClass
 import androidx.compose.runtime.CompositionLocalProvider
+import com.heckmannch.birthdaybuddy.ui.components.AppWidthSizeClass
+import com.heckmannch.birthdaybuddy.ui.components.AppHeightSizeClass
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -43,7 +45,6 @@ class MainActivity : ComponentActivity() {
 
     private val activityIntent = mutableStateOf<Intent?>(null)
 
-    @OptIn(ExperimentalMaterial3WindowSizeClassApi::class)
     override fun onCreate(savedInstanceState: Bundle?) {
         val splashScreen = installSplashScreen()
         super.onCreate(savedInstanceState)
@@ -55,7 +56,18 @@ class MainActivity : ComponentActivity() {
         BirthdayWidgetWorker.enqueueNextUpdate(this)
 
         setContent {
-            val windowSizeClass = calculateWindowSizeClass(this)
+            val windowAdaptiveInfo = currentWindowAdaptiveInfoV2()
+            val windowSizeClass = windowAdaptiveInfo.windowSizeClass
+            val widthSizeClass = when {
+                windowSizeClass.isWidthAtLeastBreakpoint(WindowSizeClass.WIDTH_DP_EXPANDED_LOWER_BOUND) -> AppWidthSizeClass.EXPANDED
+                windowSizeClass.isWidthAtLeastBreakpoint(WindowSizeClass.WIDTH_DP_MEDIUM_LOWER_BOUND) -> AppWidthSizeClass.MEDIUM
+                else -> AppWidthSizeClass.COMPACT
+            }
+            val heightSizeClass = when {
+                windowSizeClass.isHeightAtLeastBreakpoint(WindowSizeClass.HEIGHT_DP_EXPANDED_LOWER_BOUND) -> AppHeightSizeClass.EXPANDED
+                windowSizeClass.isHeightAtLeastBreakpoint(WindowSizeClass.HEIGHT_DP_MEDIUM_LOWER_BOUND) -> AppHeightSizeClass.MEDIUM
+                else -> AppHeightSizeClass.COMPACT
+            }
             val appViewModel: AppViewModel = hiltViewModel()
             val homeViewModel: HomeViewModel = hiltViewModel()
             val onboardingViewModel: OnboardingViewModel = hiltViewModel()
@@ -74,8 +86,8 @@ class MainActivity : ComponentActivity() {
             ) {
                 if (onboardingCompleted != null) {
                     CompositionLocalProvider(
-                        LocalWindowWidthSizeClass provides windowSizeClass.widthSizeClass,
-                        LocalWindowHeightSizeClass provides windowSizeClass.heightSizeClass
+                        LocalWindowWidthSizeClass provides widthSizeClass,
+                        LocalWindowHeightSizeClass provides heightSizeClass
                     ) {
                         val backStack = rememberNavBackStack(
                             if (onboardingCompleted == true) Home else Onboarding
@@ -145,7 +157,7 @@ class MainActivity : ComponentActivity() {
                                 backStack = backStack,
                                 homeViewModel = homeViewModel,
                                 onboardingViewModel = onboardingViewModel,
-                                windowWidthSizeClass = windowSizeClass.widthSizeClass
+                                windowWidthSizeClass = widthSizeClass
                             )
                         }
                     }

@@ -26,8 +26,8 @@ import androidx.compose.material3.adaptive.navigation3.rememberListDetailSceneSt
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.material3.pulltorefresh.PullToRefreshDefaults
 import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
-import androidx.compose.material3.windowsizeclass.WindowHeightSizeClass
-import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
+import com.heckmannch.birthdaybuddy.ui.components.AppHeightSizeClass
+import com.heckmannch.birthdaybuddy.ui.components.AppWidthSizeClass
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -68,12 +68,12 @@ fun HomeContent(
     uiState: HomeUiState,
     homeState: HomeState,
     actions: HomeActions,
-    windowWidthSizeClass: WindowWidthSizeClass,
+    windowWidthSizeClass: AppWidthSizeClass,
 ) {
     val windowHeightSizeClass = LocalWindowHeightSizeClass.current
     val showFilterBarInTopBar = !uiState.contacts.isNullOrEmpty() &&
-            windowWidthSizeClass != WindowWidthSizeClass.Compact &&
-            windowHeightSizeClass != WindowHeightSizeClass.Compact
+            windowWidthSizeClass != AppWidthSizeClass.COMPACT &&
+            windowHeightSizeClass != AppHeightSizeClass.COMPACT
 
     val currentUiState by rememberUpdatedState(uiState)
     val currentActions by rememberUpdatedState(actions)
@@ -161,7 +161,7 @@ fun HomeContent(
                 }
             }
 
-            if (contacts.isNullOrEmpty() || windowWidthSizeClass == WindowWidthSizeClass.Compact) {
+            if (contacts.isNullOrEmpty() || windowWidthSizeClass == AppWidthSizeClass.COMPACT) {
                 Box(modifier = Modifier.fillMaxSize()) {
                     BirthdayList(
                         contacts = contacts,
@@ -344,7 +344,7 @@ fun HomePreview() {
             uiState = SampleData.homeUiState,
             homeState = rememberHomeState(),
             actions = actions,
-            windowWidthSizeClass = WindowWidthSizeClass.Compact
+            windowWidthSizeClass = AppWidthSizeClass.COMPACT
         )
     }
 }

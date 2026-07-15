@@ -37,7 +37,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberTopAppBarState
-import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
+import com.heckmannch.birthdaybuddy.ui.components.AppWidthSizeClass
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -76,7 +76,7 @@ import com.heckmannch.birthdaybuddy.ui.theme.SpacingSmall
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CalendarSettingsScreen(
-    windowWidthSizeClass: WindowWidthSizeClass,
+    windowWidthSizeClass: AppWidthSizeClass,
     viewModel: CalendarViewModel,
     showBackButton: Boolean = true,
     onNavigateBack: () -> Unit,
@@ -185,7 +185,7 @@ fun CalendarSettingsScreen(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun CalendarSettingsContent(
-    windowWidthSizeClass: WindowWidthSizeClass,
+    windowWidthSizeClass: AppWidthSizeClass,
     calendarSyncEnabled: Boolean,
     hasPermission: Boolean,
     otherEventsEnabled: Boolean,
@@ -467,7 +467,7 @@ private fun openDefaultCalendarApp(context: Context) {
 private fun CalendarSettingsPreview() {
     MaterialTheme {
         CalendarSettingsContent(
-            windowWidthSizeClass = WindowWidthSizeClass.Compact,
+            windowWidthSizeClass = AppWidthSizeClass.COMPACT,
             calendarSyncEnabled = true,
             hasPermission = true,
             otherEventsEnabled = true,

@@ -39,7 +39,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberTopAppBarState
-import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
+import com.heckmannch.birthdaybuddy.ui.components.AppWidthSizeClass
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.getValue
@@ -79,7 +79,7 @@ import com.heckmannch.birthdaybuddy.ui.theme.SpacingNormal
 
 @Composable
 fun NotificationSettingsScreen(
-    windowWidthSizeClass: WindowWidthSizeClass,
+    windowWidthSizeClass: AppWidthSizeClass,
     viewModel: NotificationViewModel,
     showBackButton: Boolean = true,
     onNavigateBack: () -> Unit,
@@ -213,7 +213,7 @@ fun rememberNotificationSettingsState(): NotificationSettingsState {
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun NotificationSettingsContent(
-    windowWidthSizeClass: WindowWidthSizeClass,
+    windowWidthSizeClass: AppWidthSizeClass,
     notificationsEnabled: Boolean,
     persistentNotifications: Boolean,
     rules: List<NotificationRule>,
@@ -416,7 +416,7 @@ private fun PermissionRequestState(
 private fun NotificationSettingsPreview() {
     BirthdayBuddyTheme {
         NotificationSettingsContent(
-            windowWidthSizeClass = WindowWidthSizeClass.Compact,
+            windowWidthSizeClass = AppWidthSizeClass.COMPACT,
             notificationsEnabled = true,
             persistentNotifications = true,
             rules = listOf(

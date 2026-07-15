@@ -31,7 +31,7 @@ import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberTopAppBarState
-import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
+import com.heckmannch.birthdaybuddy.ui.components.AppWidthSizeClass
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -70,7 +70,7 @@ import com.heckmannch.birthdaybuddy.ui.theme.BirthdayKidGreen
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ThemeSettingsScreen(
-    windowWidthSizeClass: WindowWidthSizeClass,
+    windowWidthSizeClass: AppWidthSizeClass,
     viewModel: ThemeViewModel,
     showBackButton: Boolean = true,
     onNavigateBack: () -> Unit
@@ -96,7 +96,7 @@ fun ThemeSettingsScreen(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun ThemeSettingsContent(
-    windowWidthSizeClass: WindowWidthSizeClass,
+    windowWidthSizeClass: AppWidthSizeClass,
     themeMode: String,
     themeAmoled: Boolean,
     themeAccent: String,
@@ -340,7 +340,7 @@ private fun ThemeSettingsContent(
 private fun ThemeSettingsPreview() {
     MaterialTheme {
         ThemeSettingsContent(
-            windowWidthSizeClass = WindowWidthSizeClass.Compact,
+            windowWidthSizeClass = AppWidthSizeClass.COMPACT,
             themeMode = "SYSTEM",
             themeAmoled = false,
             themeAccent = "PURPLE",

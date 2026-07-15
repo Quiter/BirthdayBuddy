@@ -11,7 +11,7 @@ import androidx.compose.material3.ListItem
 import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
+import com.heckmannch.birthdaybuddy.ui.components.AppWidthSizeClass
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -27,7 +27,7 @@ import com.heckmannch.birthdaybuddy.ui.theme.SpacingSmall
 
 @Composable
 fun CalendarPage(
-    windowWidthSizeClass: WindowWidthSizeClass,
+    windowWidthSizeClass: AppWidthSizeClass,
     enabled: Boolean,
     onEnabledChange: (Boolean) -> Unit,
     isGranted: Boolean,
@@ -89,7 +89,7 @@ fun CalendarPage(
 fun CalendarPagePreview_Enabled() {
     BirthdayBuddyTheme {
         CalendarPage(
-            windowWidthSizeClass = WindowWidthSizeClass.Compact,
+            windowWidthSizeClass = AppWidthSizeClass.COMPACT,
             enabled = true,
             onEnabledChange = {},
             isGranted = false,
@@ -103,7 +103,7 @@ fun CalendarPagePreview_Enabled() {
 fun CalendarPagePreview_Disabled() {
     BirthdayBuddyTheme {
         CalendarPage(
-            windowWidthSizeClass = WindowWidthSizeClass.Compact,
+            windowWidthSizeClass = AppWidthSizeClass.COMPACT,
             enabled = false,
             onEnabledChange = {},
             isGranted = false,

@@ -1,6 +1,6 @@
 package com.heckmannch.birthdaybuddy.ui.screens.home
 
-import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
+import com.heckmannch.birthdaybuddy.ui.components.AppWidthSizeClass
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -45,7 +45,7 @@ class HomeScreenTest {
                     uiState = fakeState,
                     onIntent = { /* no-op */ },
                     scrollToTopEvent = MutableSharedFlow(),
-                    windowWidthSizeClass = WindowWidthSizeClass.Compact,
+                    windowWidthSizeClass = AppWidthSizeClass.COMPACT,
                     onNavigateToSettings = {}
                 )
             }
@@ -67,7 +67,7 @@ class HomeScreenTest {
                     uiState = fakeState,
                     onIntent = { /* no-op */ },
                     scrollToTopEvent = MutableSharedFlow(),
-                    windowWidthSizeClass = WindowWidthSizeClass.Compact,
+                    windowWidthSizeClass = AppWidthSizeClass.COMPACT,
                     onNavigateToSettings = {}
                 )
             }
@@ -89,7 +89,7 @@ class HomeScreenTest {
                     uiState = fakeState,
                     onIntent = { /* no-op */ },
                     scrollToTopEvent = MutableSharedFlow(),
-                    windowWidthSizeClass = WindowWidthSizeClass.Compact,
+                    windowWidthSizeClass = AppWidthSizeClass.COMPACT,
                     onNavigateToSettings = {}
                 )
             }
@@ -202,7 +202,7 @@ class HomeScreenTest {
                         }
                     },
                     scrollToTopEvent = MutableSharedFlow(),
-                    windowWidthSizeClass = WindowWidthSizeClass.Expanded,
+                    windowWidthSizeClass = AppWidthSizeClass.EXPANDED,
                     onNavigateToSettings = {}
                 )
             }

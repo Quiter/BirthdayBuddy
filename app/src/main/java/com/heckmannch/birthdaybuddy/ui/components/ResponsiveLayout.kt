@@ -22,8 +22,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.contentColorFor
-import androidx.compose.material3.windowsizeclass.WindowHeightSizeClass
-import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
+
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.compositionLocalOf
@@ -39,19 +38,27 @@ import com.heckmannch.birthdaybuddy.ui.theme.BirthdayBuddyTheme
 import com.heckmannch.birthdaybuddy.ui.theme.MaxWidthMedium
 import com.heckmannch.birthdaybuddy.ui.theme.MaxWidthExpanded
 
+enum class AppWidthSizeClass {
+    COMPACT, MEDIUM, EXPANDED
+}
+
+enum class AppHeightSizeClass {
+    COMPACT, MEDIUM, EXPANDED
+}
+
 /**
  * CompositionLocal zur Bereitstellung der aktuellen Fensterbreitenklasse.
  * Verhindert Parameter-Drilling in tieferen UI-Hierarchien.
  */
-val LocalWindowWidthSizeClass = compositionLocalOf<WindowWidthSizeClass> {
-    WindowWidthSizeClass.Compact
+val LocalWindowWidthSizeClass = compositionLocalOf<AppWidthSizeClass> {
+    AppWidthSizeClass.COMPACT
 }
 
 /**
  * CompositionLocal zur Bereitstellung der aktuellen Fensterhöhenklasse.
  */
-val LocalWindowHeightSizeClass = compositionLocalOf<WindowHeightSizeClass> {
-    WindowHeightSizeClass.Medium
+val LocalWindowHeightSizeClass = compositionLocalOf<AppHeightSizeClass> {
+    AppHeightSizeClass.MEDIUM
 }
 
 /**
@@ -62,15 +69,15 @@ val LocalWindowHeightSizeClass = compositionLocalOf<WindowHeightSizeClass> {
 @Composable
 fun AdaptiveContentContainer(
     modifier: Modifier = Modifier,
-    windowWidthSizeClass: WindowWidthSizeClass = LocalWindowWidthSizeClass.current,
+    windowWidthSizeClass: AppWidthSizeClass = LocalWindowWidthSizeClass.current,
     includeDisplayCutout: Boolean = true,
     content: @Composable () -> Unit
 ) {
     val maxWidth = Modifier
         .then(
             when (windowWidthSizeClass) {
-                WindowWidthSizeClass.Medium -> Modifier.widthIn(max = MaxWidthMedium)
-                WindowWidthSizeClass.Expanded -> Modifier.widthIn(max = MaxWidthExpanded)
+                AppWidthSizeClass.MEDIUM -> Modifier.widthIn(max = MaxWidthMedium)
+                AppWidthSizeClass.EXPANDED -> Modifier.widthIn(max = MaxWidthExpanded)
                 else -> Modifier
             }
         )
@@ -105,7 +112,7 @@ fun AdaptiveContentContainer(
 @Composable
 fun AppResponsiveScaffold(
     modifier: Modifier = Modifier,
-    windowWidthSizeClass: WindowWidthSizeClass = LocalWindowWidthSizeClass.current,
+    windowWidthSizeClass: AppWidthSizeClass = LocalWindowWidthSizeClass.current,
     topBar: @Composable () -> Unit = {},
     bottomBar: @Composable () -> Unit = {},
     floatingActionButton: @Composable () -> Unit = {},
@@ -154,11 +161,11 @@ fun AppResponsiveScaffold(
 private fun ResponsiveScaffoldPhonePreview() {
     BirthdayBuddyTheme {
         CompositionLocalProvider(
-            LocalWindowWidthSizeClass provides WindowWidthSizeClass.Compact,
-            LocalWindowHeightSizeClass provides WindowHeightSizeClass.Medium
+            LocalWindowWidthSizeClass provides AppWidthSizeClass.COMPACT,
+            LocalWindowHeightSizeClass provides AppHeightSizeClass.MEDIUM
         ) {
             AppResponsiveScaffold(
-                windowWidthSizeClass = WindowWidthSizeClass.Compact,
+                windowWidthSizeClass = AppWidthSizeClass.COMPACT,
                 topBar = {
                     TopAppBar(title = { Text("Phone Layout") })
                 }
@@ -175,11 +182,11 @@ private fun ResponsiveScaffoldPhonePreview() {
 private fun ResponsiveScaffoldTabletPreview() {
     BirthdayBuddyTheme {
         CompositionLocalProvider(
-            LocalWindowWidthSizeClass provides WindowWidthSizeClass.Medium,
-            LocalWindowHeightSizeClass provides WindowHeightSizeClass.Medium
+            LocalWindowWidthSizeClass provides AppWidthSizeClass.MEDIUM,
+            LocalWindowHeightSizeClass provides AppHeightSizeClass.MEDIUM
         ) {
             AppResponsiveScaffold(
-                windowWidthSizeClass = WindowWidthSizeClass.Medium,
+                windowWidthSizeClass = AppWidthSizeClass.MEDIUM,
                 topBar = {
                     TopAppBar(title = { Text("Tablet Layout") })
                 }
@@ -196,11 +203,11 @@ private fun ResponsiveScaffoldTabletPreview() {
 private fun ResponsiveScaffoldDesktopPreview() {
     BirthdayBuddyTheme {
         CompositionLocalProvider(
-            LocalWindowWidthSizeClass provides WindowWidthSizeClass.Expanded,
-            LocalWindowHeightSizeClass provides WindowHeightSizeClass.Medium
+            LocalWindowWidthSizeClass provides AppWidthSizeClass.EXPANDED,
+            LocalWindowHeightSizeClass provides AppHeightSizeClass.MEDIUM
         ) {
             AppResponsiveScaffold(
-                windowWidthSizeClass = WindowWidthSizeClass.Expanded,
+                windowWidthSizeClass = AppWidthSizeClass.EXPANDED,
                 topBar = {
                     TopAppBar(title = { Text("Desktop Layout (Centered)") })
                 }
@@ -217,11 +224,11 @@ private fun ResponsiveScaffoldDesktopPreview() {
 private fun ResponsiveScaffoldDesktopFullWidthPreview() {
     BirthdayBuddyTheme {
         CompositionLocalProvider(
-            LocalWindowWidthSizeClass provides WindowWidthSizeClass.Expanded,
-            LocalWindowHeightSizeClass provides WindowHeightSizeClass.Medium
+            LocalWindowWidthSizeClass provides AppWidthSizeClass.EXPANDED,
+            LocalWindowHeightSizeClass provides AppHeightSizeClass.MEDIUM
         ) {
             AppResponsiveScaffold(
-                windowWidthSizeClass = WindowWidthSizeClass.Expanded,
+                windowWidthSizeClass = AppWidthSizeClass.EXPANDED,
                 useAdaptiveWidth = false,
                 topBar = {
                     TopAppBar(title = { Text("Desktop Layout (Full Width)") })

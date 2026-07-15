@@ -17,7 +17,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
-import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
+import com.heckmannch.birthdaybuddy.ui.components.AppWidthSizeClass
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -42,7 +42,7 @@ fun OnboardingFooter(
     currentPage: Int,
     pageCount: Int,
     isNextEnabled: Boolean,
-    windowWidthSizeClass: WindowWidthSizeClass,
+    windowWidthSizeClass: AppWidthSizeClass,
     onBack: () -> Unit,
     onNext: () -> Unit
 ) {
@@ -147,7 +147,7 @@ fun OnboardingFooterPreview() {
             currentPage = 0,
             pageCount = 3,
             isNextEnabled = true,
-            windowWidthSizeClass = WindowWidthSizeClass.Compact,
+            windowWidthSizeClass = AppWidthSizeClass.COMPACT,
             onBack = {},
             onNext = {}
         )
@@ -162,7 +162,7 @@ fun OnboardingFooterMiddlePagePreview() {
             currentPage = 1,
             pageCount = 3,
             isNextEnabled = true,
-            windowWidthSizeClass = WindowWidthSizeClass.Compact,
+            windowWidthSizeClass = AppWidthSizeClass.COMPACT,
             onBack = {},
             onNext = {}
         )

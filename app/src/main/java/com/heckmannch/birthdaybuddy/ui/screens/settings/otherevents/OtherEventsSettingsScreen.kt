@@ -15,7 +15,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberTopAppBarState
-import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
+import com.heckmannch.birthdaybuddy.ui.components.AppWidthSizeClass
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
@@ -36,7 +36,7 @@ import com.heckmannch.birthdaybuddy.ui.theme.SpacingSmall
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun OtherEventsSettingsScreen(
-    windowWidthSizeClass: WindowWidthSizeClass,
+    windowWidthSizeClass: AppWidthSizeClass,
     viewModel: NotificationViewModel,
     showBackButton: Boolean = true,
     onNavigateBack: () -> Unit,
@@ -56,7 +56,7 @@ fun OtherEventsSettingsScreen(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun OtherEventsSettingsContent(
-    windowWidthSizeClass: WindowWidthSizeClass,
+    windowWidthSizeClass: AppWidthSizeClass,
     otherEventsEnabled: Boolean,
     onToggleChange: (Boolean) -> Unit,
     showBackButton: Boolean,
@@ -127,7 +127,7 @@ private fun OtherEventsSettingsContent(
 private fun OtherEventsSettingsPreview() {
     MaterialTheme {
         OtherEventsSettingsContent(
-            windowWidthSizeClass = WindowWidthSizeClass.Compact,
+            windowWidthSizeClass = AppWidthSizeClass.COMPACT,
             otherEventsEnabled = true,
             onToggleChange = {},
             showBackButton = true,

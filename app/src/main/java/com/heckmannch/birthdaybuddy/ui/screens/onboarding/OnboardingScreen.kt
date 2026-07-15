@@ -21,7 +21,7 @@ import androidx.compose.foundation.layout.union
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
+import com.heckmannch.birthdaybuddy.ui.components.AppWidthSizeClass
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -58,7 +58,7 @@ import kotlin.time.Duration.Companion.milliseconds
 @Composable
 fun OnboardingScreen(
     viewModel: OnboardingViewModel,
-    windowWidthSizeClass: WindowWidthSizeClass,
+    windowWidthSizeClass: AppWidthSizeClass,
     onFinish: () -> Unit,
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -183,7 +183,7 @@ fun OnboardingScreen(
 @Composable
 fun OnboardingContent(
     uiState: OnboardingUiState,
-    windowWidthSizeClass: WindowWidthSizeClass,
+    windowWidthSizeClass: AppWidthSizeClass,
     onIntent: (OnboardingIntent) -> Unit,
     onRequestContactPermission: () -> Unit,
     onRequestNotificationPermission: () -> Unit,
@@ -320,7 +320,7 @@ private fun OnboardingScreenPreview() {
     BirthdayBuddyTheme {
         OnboardingContent(
             uiState = OnboardingUiState(),
-            windowWidthSizeClass = WindowWidthSizeClass.Compact,
+            windowWidthSizeClass = AppWidthSizeClass.COMPACT,
             onIntent = {},
             onRequestContactPermission = {},
             onRequestNotificationPermission = {},
