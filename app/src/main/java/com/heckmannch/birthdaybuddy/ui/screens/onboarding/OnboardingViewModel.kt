@@ -1,10 +1,10 @@
 package com.heckmannch.birthdaybuddy.ui.screens.onboarding
 
 import androidx.lifecycle.ViewModel
-import com.heckmannch.birthdaybuddy.domain.permission.PermissionChecker
 import androidx.lifecycle.viewModelScope
 import com.heckmannch.birthdaybuddy.domain.model.AppSettings
 import com.heckmannch.birthdaybuddy.domain.model.NotificationRule
+import com.heckmannch.birthdaybuddy.domain.permission.PermissionChecker
 import com.heckmannch.birthdaybuddy.domain.repository.ContactRepository
 import com.heckmannch.birthdaybuddy.domain.repository.NotificationRepository
 import com.heckmannch.birthdaybuddy.ui.model.OnboardingUiState

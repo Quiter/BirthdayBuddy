@@ -1,10 +1,10 @@
 package com.heckmannch.birthdaybuddy.ui.screens.onboarding.components
 
-import com.heckmannch.birthdaybuddy.ui.components.AppWidthSizeClass
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import com.heckmannch.birthdaybuddy.R
+import com.heckmannch.birthdaybuddy.ui.components.AppWidthSizeClass
 import com.heckmannch.birthdaybuddy.ui.illustrations.WelcomeIllustration
 import com.heckmannch.birthdaybuddy.ui.theme.BirthdayBuddyTheme
 

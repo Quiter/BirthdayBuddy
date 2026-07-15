@@ -1,8 +1,8 @@
 package com.heckmannch.birthdaybuddy.domain.usecase
 
 import android.util.Log
-import com.heckmannch.birthdaybuddy.domain.model.ContactLabels
 import com.heckmannch.birthdaybuddy.domain.model.Contact
+import com.heckmannch.birthdaybuddy.domain.model.ContactLabels
 import dagger.Reusable
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
@@ -52,7 +52,7 @@ class GetContactsUseCase @Inject constructor() {
         searchKeywords,
         selectedLabel,
         labelSettings,
-    ) { rawContacts, today, keywords, label, settingsState ->
+    ) { rawContacts, _, keywords, label, settingsState ->
         val startTime = System.currentTimeMillis()
         val result = buildContactList(rawContacts, keywords, label, settingsState)
 

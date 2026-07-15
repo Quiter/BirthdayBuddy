@@ -1,5 +1,6 @@
 package com.heckmannch.birthdaybuddy.di
 
+import android.content.ContentResolver
 import android.content.Context
 import android.util.Log
 import com.heckmannch.birthdaybuddy.data.local.AppDatabase
@@ -10,7 +11,6 @@ import com.heckmannch.birthdaybuddy.data.local.LabelConfigDao
 import com.heckmannch.birthdaybuddy.data.local.NotificationRuleDao
 import com.heckmannch.birthdaybuddy.data.local.PendingNotificationDao
 import com.heckmannch.birthdaybuddy.data.local.SettingsDatabase
-import android.content.ContentResolver
 import dagger.Module
 import dagger.Provides
 import dagger.Reusable

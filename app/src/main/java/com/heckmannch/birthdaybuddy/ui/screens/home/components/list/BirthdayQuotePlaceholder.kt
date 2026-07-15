@@ -31,11 +31,11 @@ import com.heckmannch.birthdaybuddy.ui.theme.AlphaBorderSubtle
 import com.heckmannch.birthdaybuddy.ui.theme.AlphaEmphasisLow
 import com.heckmannch.birthdaybuddy.ui.theme.AlphaEmphasisMedium
 import com.heckmannch.birthdaybuddy.ui.theme.AlphaOnboardingCalendarDisabled
+import com.heckmannch.birthdaybuddy.ui.theme.BirthdayQuoteIconContainerSize
 import com.heckmannch.birthdaybuddy.ui.theme.BorderWidthThick
 import com.heckmannch.birthdaybuddy.ui.theme.BorderWidthThin
 import com.heckmannch.birthdaybuddy.ui.theme.CardCornerRadiusLarge
 import com.heckmannch.birthdaybuddy.ui.theme.CardCornerRadiusNormal
-import com.heckmannch.birthdaybuddy.ui.theme.BirthdayQuoteIconContainerSize
 import com.heckmannch.birthdaybuddy.ui.theme.ContactImageSizeNormal
 import com.heckmannch.birthdaybuddy.ui.theme.SpacingExtraLarge
 import com.heckmannch.birthdaybuddy.ui.theme.SpacingLarge

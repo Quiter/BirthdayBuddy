@@ -1,7 +1,7 @@
 package com.heckmannch.birthdaybuddy.widget
 
-import androidx.annotation.VisibleForTesting
 import android.content.Context
+import androidx.annotation.VisibleForTesting
 import androidx.glance.appwidget.updateAll
 import androidx.hilt.work.HiltWorker
 import androidx.work.CoroutineWorker

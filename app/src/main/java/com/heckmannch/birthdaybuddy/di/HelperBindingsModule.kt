@@ -1,17 +1,17 @@
 package com.heckmannch.birthdaybuddy.di
 
+import com.heckmannch.birthdaybuddy.data.permission.AndroidPermissionChecker
 import com.heckmannch.birthdaybuddy.data.repository.BirthdayWidgetUpdater
 import com.heckmannch.birthdaybuddy.data.repository.CalendarSyncRepositoryImpl
 import com.heckmannch.birthdaybuddy.data.repository.ContactRepositoryImpl
 import com.heckmannch.birthdaybuddy.data.repository.NotificationRepositoryImpl
 import com.heckmannch.birthdaybuddy.data.repository.NotificationSchedulerImpl
 import com.heckmannch.birthdaybuddy.data.repository.TimeRepositoryImpl
+import com.heckmannch.birthdaybuddy.domain.permission.PermissionChecker
 import com.heckmannch.birthdaybuddy.domain.repository.CalendarSyncRepository
 import com.heckmannch.birthdaybuddy.domain.repository.ContactRepository
 import com.heckmannch.birthdaybuddy.domain.repository.NotificationRepository
 import com.heckmannch.birthdaybuddy.domain.repository.NotificationScheduler
-import com.heckmannch.birthdaybuddy.data.permission.AndroidPermissionChecker
-import com.heckmannch.birthdaybuddy.domain.permission.PermissionChecker
 import com.heckmannch.birthdaybuddy.domain.repository.TimeRepository
 import com.heckmannch.birthdaybuddy.domain.repository.WidgetUpdater
 import com.heckmannch.birthdaybuddy.util.Clock
