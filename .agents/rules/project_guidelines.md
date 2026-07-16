@@ -45,7 +45,7 @@ For detailed human-readable descriptions, consult [PROJECT_STRUCTURE.md](file://
 
 ### 2.1 Material 3 Adaptive Layouts
 - Use Jetpack Navigation 3's `ListDetailSceneStrategy` / `NavDisplay` for Master-Detail screens (e.g., `HomeScreen`, `SettingsScreen`).
-- **WindowSizeClass API (canonical)**: Use `currentWindowAdaptiveInfo()` (from `androidx.compose.material3.adaptive`) inside a `@Composable` context to obtain `WindowAdaptiveInfo`. Access width/height classes via `windowAdaptiveInfo.windowSizeClass.windowWidthSizeClass` / `.windowHeightSizeClass`. The types `WindowWidthSizeClass` / `WindowHeightSizeClass` come from `androidx.window.core.layout` and use SCREAMING_SNAKE_CASE constants (`COMPACT`, `MEDIUM`, `EXPANDED`).
+- **WindowSizeClass API**: Use the modern `WindowSizeClass` (from `androidx.window.core.layout`) via `LocalWindowSizeClass.current` or passed parameter. Check breakpoints using the extension properties (e.g., `isWidthCompact`, `isWidthMedium`, `isWidthExpanded`, `isHeightCompact`, etc.) defined in [ResponsiveLayout.kt](file:///c:/Users/chris/AndroidStudioProjects/BirthdayBuddy/app/src/main/java/com/heckmannch/birthdaybuddy/ui/components/ResponsiveLayout.kt). Do not use the deprecated `WindowWidthSizeClass` or `WindowHeightSizeClass` classes/enums.
 - **DO NOT use** the legacy `calculateWindowSizeClass(Activity)` from `androidx.compose.material3.windowsizeclass` – this library has been removed from the project dependencies.
 - Compute layout directives using `calculatePaneScaffoldDirective(windowAdaptiveInfo)` from `androidx.compose.material3.adaptive.layout`.
 - On wider screens, adapt multi-column layouts and side-by-side panes using adaptive pane configurations.
