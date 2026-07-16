@@ -27,6 +27,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
@@ -48,7 +49,6 @@ import com.heckmannch.birthdaybuddy.ui.theme.SpacingSmall
  */
 @Composable
 fun OnboardingPageTemplate(
-    windowSizeClass: WindowSizeClass,
     illustration: @Composable (Modifier) -> Unit,
     title: String,
     description: String,
@@ -56,8 +56,8 @@ fun OnboardingPageTemplate(
     settingsCard: @Composable (ColumnScope.() -> Unit)? = null,
     actionButton: @Composable (BoxScope.() -> Unit)? = null
 ) {
-    val windowSizeClassLocal = LocalWindowSizeClass.current
-    val isShortScreen = windowSizeClassLocal.isHeightCompact
+    val windowSizeClass = LocalWindowSizeClass.current
+    val isShortScreen = windowSizeClass.isHeightCompact
 
     if (windowSizeClass.isWidthCompact) {
         Column(
@@ -199,30 +199,33 @@ fun OnboardingPageTemplate(
 fun OnboardingPageTemplatePreview() {
     MaterialTheme {
         Surface {
-            OnboardingPageTemplate(
-                windowSizeClass = WindowSizeClass(360, 640),
-                illustration = { modifier ->
-                    Icon(
-                        imageVector = Icons.Default.Cake,
-                        contentDescription = null,
-                        modifier = modifier.size(120.dp)
-                    )
-                },
-                title = "Einstellungen",
-                description = "Konfiguriere deine Benachrichtigungen für anstehende Geburtstage.",
-                settingsCard = {
-                    Text(
-                        "Hier könnten Einstellungen stehen",
-                        modifier = Modifier.padding(16.dp),
-                        style = MaterialTheme.typography.bodyMedium
-                    )
-                },
-                actionButton = {
-                    Button(onClick = {}) {
-                        Text("Weiter")
+            CompositionLocalProvider(
+                LocalWindowSizeClass provides WindowSizeClass(360, 640)
+            ) {
+                OnboardingPageTemplate(
+                    illustration = { modifier ->
+                        Icon(
+                            imageVector = Icons.Default.Cake,
+                            contentDescription = null,
+                            modifier = modifier.size(120.dp)
+                        )
+                    },
+                    title = "Einstellungen",
+                    description = "Konfiguriere deine Benachrichtigungen für anstehende Geburtstage.",
+                    settingsCard = {
+                        Text(
+                            "Hier könnten Einstellungen stehen",
+                            modifier = Modifier.padding(16.dp),
+                            style = MaterialTheme.typography.bodyMedium
+                        )
+                    },
+                    actionButton = {
+                        Button(onClick = {}) {
+                            Text("Weiter")
+                        }
                     }
-                }
-            )
+                )
+            }
         }
     }
 }

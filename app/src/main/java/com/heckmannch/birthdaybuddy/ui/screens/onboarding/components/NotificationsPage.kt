@@ -1,6 +1,5 @@
 package com.heckmannch.birthdaybuddy.ui.screens.onboarding.components
 
-import androidx.window.core.layout.WindowSizeClass
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -27,7 +26,6 @@ import com.heckmannch.birthdaybuddy.ui.theme.SpacingSmall
 
 @Composable
 fun NotificationsPage(
-    windowSizeClass: WindowSizeClass,
     enabled: Boolean,
     onEnabledChange: (Boolean) -> Unit,
     persistent: Boolean,
@@ -36,7 +34,6 @@ fun NotificationsPage(
     onGrant: () -> Unit,
 ) {
     OnboardingPageTemplate(
-        windowSizeClass = windowSizeClass,
         illustration = { modifier ->
             NotificationsIllustration(
                 enabled = enabled,
@@ -104,7 +101,6 @@ fun NotificationsPage(
 private fun NotificationsPagePreview() {
     BirthdayBuddyTheme {
         NotificationsPage(
-            windowSizeClass = WindowSizeClass(360, 640),
             enabled = true,
             onEnabledChange = {},
             persistent = true,

@@ -1,6 +1,7 @@
 package com.heckmannch.birthdaybuddy.ui.screens.settings
 
 import androidx.window.core.layout.WindowSizeClass
+import com.heckmannch.birthdaybuddy.ui.components.LocalWindowSizeClass
 import com.heckmannch.birthdaybuddy.ui.components.isWidthCompact
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -39,6 +40,7 @@ import androidx.compose.material3.adaptive.navigation3.ListDetailSceneStrategy
 import androidx.compose.material3.adaptive.navigation3.rememberListDetailSceneStrategy
 import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -119,7 +121,6 @@ private data class SettingsMenuItemData(
  */
 @Composable
 fun SettingsScreen(
-    windowSizeClass: WindowSizeClass,
     homeViewModel: HomeViewModel?,
     onNavigateToLabels: () -> Unit,
     onNavigateToNotifications: () -> Unit,
@@ -132,7 +133,6 @@ fun SettingsScreen(
     onNavigateBack: () -> Unit,
 ) {
     SettingsContent(
-        windowSizeClass = windowSizeClass,
         homeViewModel = homeViewModel,
         onNavigateToSync = onNavigateToSync,
         onNavigateToLabels = onNavigateToLabels,
@@ -153,7 +153,6 @@ fun SettingsScreen(
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3AdaptiveApi::class)
 @Composable
 private fun SettingsContent(
-    windowSizeClass: WindowSizeClass,
     homeViewModel: HomeViewModel?,
     onNavigateToSync: () -> Unit,
     onNavigateToLabels: () -> Unit,
@@ -165,6 +164,7 @@ private fun SettingsContent(
     onNavigateToOtherEvents: () -> Unit,
     onNavigateBack: () -> Unit,
 ) {
+    val windowSizeClass = LocalWindowSizeClass.current
     // List of menu items to display in the main settings screen list.
     val menuItems = remember(
         onNavigateToNotifications,
@@ -243,7 +243,6 @@ private fun SettingsContent(
         val scrollBehavior =
             TopAppBarDefaults.exitUntilCollapsedScrollBehavior(rememberTopAppBarState())
         AppResponsiveScaffold(
-            windowSizeClass = windowSizeClass,
             modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
             topBar = {
                 LargeTopAppBar(
@@ -331,7 +330,6 @@ private fun SettingsContent(
         val themeViewModel: ThemeViewModel = hiltViewModel()
 
         AppResponsiveScaffold(
-            windowSizeClass = windowSizeClass,
             useAdaptiveWidth = false,
             topBar = {}
         ) { paddingValues ->
@@ -419,7 +417,6 @@ private fun SettingsContent(
                                 when (key.tab) {
                                     SettingsTab.NOTIFICATIONS -> {
                                         NotificationSettingsScreen(
-                                            windowSizeClass = windowSizeClass,
                                             viewModel = notificationViewModel,
                                             showBackButton = false,
                                             onNavigateBack = {}
@@ -428,7 +425,6 @@ private fun SettingsContent(
 
                                     SettingsTab.CALENDAR -> {
                                         CalendarSettingsScreen(
-                                            windowSizeClass = windowSizeClass,
                                             viewModel = calendarViewModel,
                                             showBackButton = false,
                                             onNavigateBack = {}
@@ -437,7 +433,6 @@ private fun SettingsContent(
 
                                     SettingsTab.LABELS -> {
                                         LabelSettingsScreen(
-                                            windowSizeClass = windowSizeClass,
                                             viewModel = labelViewModel,
                                             showBackButton = false,
                                             onNavigateBack = {}
@@ -446,7 +441,6 @@ private fun SettingsContent(
 
                                     SettingsTab.BACKUP -> {
                                         BackupScreen(
-                                            windowSizeClass = windowSizeClass,
                                             viewModel = backupViewModel,
                                             showBackButton = false,
                                             onNavigateBack = {}
@@ -455,7 +449,6 @@ private fun SettingsContent(
 
                                     SettingsTab.THEME -> {
                                         ThemeSettingsScreen(
-                                            windowSizeClass = windowSizeClass,
                                             viewModel = themeViewModel,
                                             showBackButton = false,
                                             onNavigateBack = {}
@@ -465,7 +458,6 @@ private fun SettingsContent(
                                     SettingsTab.SYNC -> {
                                         if (homeViewModel != null) {
                                             SyncSettingsScreen(
-                                                windowSizeClass = windowSizeClass,
                                                 viewModel = homeViewModel,
                                                 showBackButton = false,
                                                 onNavigateBack = {}
@@ -482,7 +474,6 @@ private fun SettingsContent(
 
                                     SettingsTab.OTHER_EVENTS -> {
                                         OtherEventsSettingsScreen(
-                                            windowSizeClass = windowSizeClass,
                                             viewModel = notificationViewModel,
                                             showBackButton = false,
                                             onNavigateBack = {}
@@ -491,7 +482,6 @@ private fun SettingsContent(
 
                                     SettingsTab.ABOUT -> {
                                         AboutScreen(
-                                            windowSizeClass = windowSizeClass,
                                             showBackButton = false,
                                             onNavigateBack = {},
                                             onNavigateToPrivacyPolicy = {
@@ -502,7 +492,6 @@ private fun SettingsContent(
 
                                     SettingsTab.PRIVACY_POLICY -> {
                                         PrivacyPolicyScreen(
-                                            windowSizeClass = windowSizeClass,
                                             showBackButton = false,
                                             onNavigateBack = {
                                                 activeTab = SettingsTab.ABOUT
@@ -614,19 +603,22 @@ private fun SettingsMenuItem(
 @Composable
 private fun SettingsPreview() {
     BirthdayBuddyTheme {
-        SettingsContent(
-            windowSizeClass = WindowSizeClass(360, 640),
-            homeViewModel = null,
-            onNavigateToSync = {},
-            onNavigateToLabels = {},
-            onNavigateToNotifications = {},
-            onNavigateToCalendar = {},
-            onNavigateToBackup = {},
-            onNavigateToTheme = {},
-            onNavigateToAbout = {},
-            onNavigateToOtherEvents = {},
-            onNavigateBack = {}
-        )
+        CompositionLocalProvider(
+            LocalWindowSizeClass provides WindowSizeClass(360, 640)
+        ) {
+            SettingsContent(
+                homeViewModel = null,
+                onNavigateToSync = {},
+                onNavigateToLabels = {},
+                onNavigateToNotifications = {},
+                onNavigateToCalendar = {},
+                onNavigateToBackup = {},
+                onNavigateToTheme = {},
+                onNavigateToAbout = {},
+                onNavigateToOtherEvents = {},
+                onNavigateBack = {}
+            )
+        }
     }
 }
 

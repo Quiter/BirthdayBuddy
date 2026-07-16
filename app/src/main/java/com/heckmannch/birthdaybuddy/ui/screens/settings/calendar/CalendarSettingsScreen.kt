@@ -1,6 +1,5 @@
 package com.heckmannch.birthdaybuddy.ui.screens.settings.calendar
 
-import androidx.window.core.layout.WindowSizeClass
 import android.Manifest
 import android.content.Context
 import android.content.Intent
@@ -76,7 +75,6 @@ import com.heckmannch.birthdaybuddy.ui.theme.SpacingSmall
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CalendarSettingsScreen(
-    windowSizeClass: WindowSizeClass,
     viewModel: CalendarViewModel,
     showBackButton: Boolean = true,
     onNavigateBack: () -> Unit,
@@ -132,7 +130,6 @@ fun CalendarSettingsScreen(
     }
 
     CalendarSettingsContent(
-        windowSizeClass = windowSizeClass,
         calendarSyncEnabled = calendarSyncEnabled && hasPermission,
         hasPermission = hasPermission,
         otherEventsEnabled = otherEventsEnabled,
@@ -185,7 +182,6 @@ fun CalendarSettingsScreen(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun CalendarSettingsContent(
-    windowSizeClass: WindowSizeClass,
     calendarSyncEnabled: Boolean,
     hasPermission: Boolean,
     otherEventsEnabled: Boolean,
@@ -201,7 +197,6 @@ private fun CalendarSettingsContent(
     val scrollBehavior =
         TopAppBarDefaults.exitUntilCollapsedScrollBehavior(rememberTopAppBarState())
     AppResponsiveScaffold(
-        windowSizeClass = windowSizeClass,
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
         topBar = {
             LargeTopAppBar(
@@ -467,7 +462,6 @@ private fun openDefaultCalendarApp(context: Context) {
 private fun CalendarSettingsPreview() {
     MaterialTheme {
         CalendarSettingsContent(
-            windowSizeClass = WindowSizeClass(360, 640),
             calendarSyncEnabled = true,
             hasPermission = true,
             otherEventsEnabled = true,

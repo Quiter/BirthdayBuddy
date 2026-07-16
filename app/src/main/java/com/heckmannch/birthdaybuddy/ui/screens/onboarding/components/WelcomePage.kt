@@ -1,6 +1,5 @@
 package com.heckmannch.birthdaybuddy.ui.screens.onboarding.components
 
-import androidx.window.core.layout.WindowSizeClass
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
@@ -9,9 +8,8 @@ import com.heckmannch.birthdaybuddy.ui.illustrations.WelcomeIllustration
 import com.heckmannch.birthdaybuddy.ui.theme.BirthdayBuddyTheme
 
 @Composable
-fun WelcomePage(windowSizeClass: WindowSizeClass) {
+fun WelcomePage() {
     OnboardingPageTemplate(
-        windowSizeClass = windowSizeClass,
         illustration = { modifier ->
             WelcomeIllustration(modifier)
         },
@@ -24,6 +22,6 @@ fun WelcomePage(windowSizeClass: WindowSizeClass) {
 @Composable
 private fun WelcomePagePreview() {
     BirthdayBuddyTheme {
-        WelcomePage(windowSizeClass = WindowSizeClass(360, 640))
+        WelcomePage()
     }
 }

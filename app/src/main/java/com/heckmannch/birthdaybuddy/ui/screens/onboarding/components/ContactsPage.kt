@@ -1,6 +1,5 @@
 package com.heckmannch.birthdaybuddy.ui.screens.onboarding.components
 
-import androidx.window.core.layout.WindowSizeClass
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -44,14 +43,12 @@ import com.heckmannch.birthdaybuddy.ui.theme.SpacingSmall
 
 @Composable
 fun ContactsPage(
-    windowSizeClass: WindowSizeClass,
     enabled: Boolean,
     onEnabledChange: (Boolean) -> Unit,
     isGranted: Boolean,
     onGrant: () -> Unit,
 ) {
     OnboardingPageTemplate(
-        windowSizeClass = windowSizeClass,
         illustration = { modifier ->
             AnimatedContent(
                 targetState = isGranted,
@@ -143,7 +140,6 @@ fun ContactsPage(
 private fun ContactsPagePreview() {
     BirthdayBuddyTheme {
         ContactsPage(
-            windowSizeClass = WindowSizeClass(360, 640),
             enabled = true,
             onEnabledChange = {},
             isGranted = false,
@@ -157,7 +153,6 @@ private fun ContactsPagePreview() {
 private fun ContactsPageGrantedPreview() {
     BirthdayBuddyTheme {
         ContactsPage(
-            windowSizeClass = WindowSizeClass(360, 640),
             enabled = true,
             onEnabledChange = {},
             isGranted = true,

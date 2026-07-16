@@ -1,6 +1,5 @@
 package com.heckmannch.birthdaybuddy.ui.navigation
 
-import androidx.window.core.layout.WindowSizeClass
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
@@ -46,14 +45,12 @@ import com.heckmannch.birthdaybuddy.ui.screens.settings.theme.ThemeViewModel
  * @param backStack Der gemeinsame Back-Stack, der von der Activity gehalten wird.
  * @param homeViewModel Activity-weites ViewModel für den Home-Screen.
  * @param onboardingViewModel Activity-weites ViewModel für den Onboarding-Flow.
- * @param windowSizeClass Aktuelle Fensterbreiten-Klasse für adaptive Layouts.
  */
 @Composable
 fun AppNavHost(
     backStack: MutableList<NavKey>,
     homeViewModel: HomeViewModel,
     onboardingViewModel: OnboardingViewModel,
-    windowSizeClass: WindowSizeClass,
 ) {
     val onboardingCompleted by onboardingViewModel.onboardingCompleted.collectAsStateWithLifecycle()
 
@@ -115,7 +112,6 @@ fun AppNavHost(
                 is Onboarding -> NavEntry(key) {
                     OnboardingScreen(
                         viewModel = onboardingViewModel,
-                        windowSizeClass = windowSizeClass
                     ) {
                         backStack.clear()
                         backStack.add(Home)
@@ -128,7 +124,6 @@ fun AppNavHost(
                         uiState = uiState,
                         onIntent = homeViewModel::onIntent,
                         scrollToTopEvent = homeViewModel.scrollToTopEvent,
-                        windowSizeClass = windowSizeClass,
                         onNavigateToSettings = {
                             backStack.add(Settings)
                         }
@@ -137,7 +132,6 @@ fun AppNavHost(
 
                 is Settings -> NavEntry(key) {
                     SettingsScreen(
-                        windowSizeClass = windowSizeClass,
                         homeViewModel = homeViewModel,
                         onNavigateToLabels = { backStack.add(LabelSettings) },
                         onNavigateToNotifications = { backStack.add(NotificationSettings) },
@@ -155,7 +149,6 @@ fun AppNavHost(
                 is LabelSettings -> NavEntry(key) {
                     val labelViewModel: LabelViewModel = hiltViewModel()
                     LabelSettingsScreen(
-                        windowSizeClass = windowSizeClass,
                         viewModel = labelViewModel
                     ) {
                         if (backStack.size > 1) backStack.removeAt(backStack.lastIndex)
@@ -165,7 +158,6 @@ fun AppNavHost(
                 is NotificationSettings -> NavEntry(key) {
                     val notificationViewModel: NotificationViewModel = hiltViewModel()
                     NotificationSettingsScreen(
-                        windowSizeClass = windowSizeClass,
                         viewModel = notificationViewModel
                     ) {
                         if (backStack.size > 1) backStack.removeAt(backStack.lastIndex)
@@ -175,7 +167,6 @@ fun AppNavHost(
                 is OtherEventsSettings -> NavEntry(key) {
                     val notificationViewModel: NotificationViewModel = hiltViewModel()
                     OtherEventsSettingsScreen(
-                        windowSizeClass = windowSizeClass,
                         viewModel = notificationViewModel
                     ) {
                         if (backStack.size > 1) backStack.removeAt(backStack.lastIndex)
@@ -185,7 +176,6 @@ fun AppNavHost(
                 is CalendarSettings -> NavEntry(key) {
                     val calendarViewModel: CalendarViewModel = hiltViewModel()
                     CalendarSettingsScreen(
-                        windowSizeClass = windowSizeClass,
                         viewModel = calendarViewModel
                     ) {
                         if (backStack.size > 1) backStack.removeAt(backStack.lastIndex)
@@ -195,7 +185,6 @@ fun AppNavHost(
                 is BackupSettings -> NavEntry(key) {
                     val backupViewModel: BackupViewModel = hiltViewModel()
                     BackupScreen(
-                        windowSizeClass = windowSizeClass,
                         viewModel = backupViewModel
                     ) {
                         if (backStack.size > 1) backStack.removeAt(backStack.lastIndex)
@@ -205,7 +194,6 @@ fun AppNavHost(
                 is ThemeSettings -> NavEntry(key) {
                     val themeViewModel: ThemeViewModel = hiltViewModel()
                     ThemeSettingsScreen(
-                        windowSizeClass = windowSizeClass,
                         viewModel = themeViewModel
                     ) {
                         if (backStack.size > 1) backStack.removeAt(backStack.lastIndex)
@@ -214,7 +202,6 @@ fun AppNavHost(
 
                 is SyncSettings -> NavEntry(key) {
                     SyncSettingsScreen(
-                        windowSizeClass = windowSizeClass,
                         viewModel = homeViewModel
                     ) {
                         if (backStack.size > 1) backStack.removeAt(backStack.lastIndex)
@@ -223,7 +210,6 @@ fun AppNavHost(
 
                 is About -> NavEntry(key) {
                     AboutScreen(
-                        windowSizeClass = windowSizeClass,
                         onNavigateBack = {
                             if (backStack.size > 1) backStack.removeAt(backStack.lastIndex)
                         },
@@ -234,7 +220,7 @@ fun AppNavHost(
                 }
 
                 is PrivacyPolicy -> NavEntry(key) {
-                    PrivacyPolicyScreen(windowSizeClass = windowSizeClass) {
+                    PrivacyPolicyScreen {
                         if (backStack.size > 1) backStack.removeAt(backStack.lastIndex)
                     }
                 }

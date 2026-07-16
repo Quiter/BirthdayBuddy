@@ -1,6 +1,5 @@
 package com.heckmannch.birthdaybuddy.ui.screens.settings.sync
 
-import androidx.window.core.layout.WindowSizeClass
 import android.Manifest
 import android.content.pm.PackageManager
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -44,7 +43,6 @@ import com.heckmannch.birthdaybuddy.ui.theme.SpacingSmall
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SyncSettingsScreen(
-    windowSizeClass: WindowSizeClass,
     viewModel: HomeViewModel,
     showBackButton: Boolean = true,
     onNavigateBack: () -> Unit,
@@ -78,7 +76,6 @@ fun SyncSettingsScreen(
     }
 
     SyncSettingsContent(
-        windowSizeClass = windowSizeClass,
         snackbarHostState = snackbarHostState,
         onSyncClick = onSyncClick,
         showBackButton = showBackButton,
@@ -89,7 +86,6 @@ fun SyncSettingsScreen(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun SyncSettingsContent(
-    windowSizeClass: WindowSizeClass,
     snackbarHostState: SnackbarHostState,
     onSyncClick: () -> Unit,
     showBackButton: Boolean,
@@ -98,7 +94,6 @@ private fun SyncSettingsContent(
     val scrollBehavior =
         TopAppBarDefaults.exitUntilCollapsedScrollBehavior(rememberTopAppBarState())
     AppResponsiveScaffold(
-        windowSizeClass = windowSizeClass,
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
         snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
         topBar = {
@@ -159,7 +154,6 @@ private fun SyncSettingsContent(
 private fun SyncSettingsPreview() {
     MaterialTheme {
         SyncSettingsContent(
-            windowSizeClass = WindowSizeClass(360, 640),
             snackbarHostState = remember { SnackbarHostState() },
             onSyncClick = {},
             showBackButton = true,

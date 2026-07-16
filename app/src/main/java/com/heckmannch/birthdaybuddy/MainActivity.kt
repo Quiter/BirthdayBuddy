@@ -142,7 +142,6 @@ class MainActivity : ComponentActivity() {
                                 backStack = backStack,
                                 homeViewModel = homeViewModel,
                                 onboardingViewModel = onboardingViewModel,
-                                windowSizeClass = windowSizeClass
                             )
                         }
                     }

@@ -1,6 +1,5 @@
 package com.heckmannch.birthdaybuddy.ui.screens.onboarding.components
 
-import androidx.window.core.layout.WindowSizeClass
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.foundation.background
@@ -42,7 +41,6 @@ fun OnboardingFooter(
     currentPage: Int,
     pageCount: Int,
     isNextEnabled: Boolean,
-    windowSizeClass: WindowSizeClass,
     onBack: () -> Unit,
     onNext: () -> Unit
 ) {
@@ -52,7 +50,6 @@ fun OnboardingFooter(
         tonalElevation = 3.dp
     ) {
         AdaptiveContentContainer(
-            windowSizeClass = windowSizeClass,
             includeDisplayCutout = false
         ) {
             Row(
@@ -147,7 +144,6 @@ fun OnboardingFooterPreview() {
             currentPage = 0,
             pageCount = 3,
             isNextEnabled = true,
-            windowSizeClass = WindowSizeClass(360, 640),
             onBack = {},
             onNext = {}
         )
@@ -162,7 +158,6 @@ fun OnboardingFooterMiddlePagePreview() {
             currentPage = 1,
             pageCount = 3,
             isNextEnabled = true,
-            windowSizeClass = WindowSizeClass(360, 640),
             onBack = {},
             onNext = {}
         )

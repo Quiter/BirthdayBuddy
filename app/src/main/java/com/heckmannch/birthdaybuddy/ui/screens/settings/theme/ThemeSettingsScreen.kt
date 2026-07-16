@@ -1,6 +1,5 @@
 package com.heckmannch.birthdaybuddy.ui.screens.settings.theme
 
-import androidx.window.core.layout.WindowSizeClass
 import android.os.Build
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.background
@@ -70,7 +69,6 @@ import com.heckmannch.birthdaybuddy.ui.theme.SpacingSmall
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ThemeSettingsScreen(
-    windowSizeClass: WindowSizeClass,
     viewModel: ThemeViewModel,
     showBackButton: Boolean = true,
     onNavigateBack: () -> Unit
@@ -81,7 +79,6 @@ fun ThemeSettingsScreen(
     val themeAccent = uiState.themeAccent
 
     ThemeSettingsContent(
-        windowSizeClass = windowSizeClass,
         themeMode = themeMode,
         themeAmoled = themeAmoled,
         themeAccent = themeAccent,
@@ -96,7 +93,6 @@ fun ThemeSettingsScreen(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun ThemeSettingsContent(
-    windowSizeClass: WindowSizeClass,
     themeMode: String,
     themeAmoled: Boolean,
     themeAccent: String,
@@ -112,7 +108,6 @@ private fun ThemeSettingsContent(
         TopAppBarDefaults.exitUntilCollapsedScrollBehavior(rememberTopAppBarState())
 
     AppResponsiveScaffold(
-        windowSizeClass = windowSizeClass,
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
         topBar = {
             LargeTopAppBar(
@@ -340,7 +335,6 @@ private fun ThemeSettingsContent(
 private fun ThemeSettingsPreview() {
     MaterialTheme {
         ThemeSettingsContent(
-            windowSizeClass = WindowSizeClass(360, 640),
             themeMode = "SYSTEM",
             themeAmoled = false,
             themeAccent = "PURPLE",
@@ -352,7 +346,6 @@ private fun ThemeSettingsPreview() {
         )
     }
 }
-
 
 data class AccentColorOption(
     val id: String,

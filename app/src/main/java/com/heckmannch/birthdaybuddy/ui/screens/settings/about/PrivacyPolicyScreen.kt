@@ -1,6 +1,5 @@
 package com.heckmannch.birthdaybuddy.ui.screens.settings.about
 
-import androidx.window.core.layout.WindowSizeClass
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -52,7 +51,6 @@ import kotlinx.coroutines.withContext
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PrivacyPolicyScreen(
-    windowSizeClass: WindowSizeClass,
     showBackButton: Boolean = true,
     onNavigateBack: () -> Unit
 ) {
@@ -75,7 +73,6 @@ fun PrivacyPolicyScreen(
     val scrollBehavior =
         TopAppBarDefaults.exitUntilCollapsedScrollBehavior(rememberTopAppBarState())
     AppResponsiveScaffold(
-        windowSizeClass = windowSizeClass,
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
         topBar = {
             LargeTopAppBar(
@@ -234,7 +231,6 @@ private fun AnnotatedString.Builder.appendBoldText(text: String) {
 fun PrivacyPolicyScreenPreview() {
     MaterialTheme {
         PrivacyPolicyScreen(
-            windowSizeClass = WindowSizeClass(360, 640),
             onNavigateBack = {}
         )
     }

@@ -1,6 +1,5 @@
 package com.heckmannch.birthdaybuddy.ui.screens.settings.labels
 
-import androidx.window.core.layout.WindowSizeClass
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -67,7 +66,6 @@ import com.heckmannch.birthdaybuddy.ui.theme.SpacingSmall
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun LabelSettingsScreen(
-    windowSizeClass: WindowSizeClass,
     viewModel: LabelViewModel,
     showBackButton: Boolean = true,
     onNavigateBack: () -> Unit,
@@ -76,7 +74,6 @@ fun LabelSettingsScreen(
     val labelsEnabled by viewModel.labelsEnabled.collectAsStateWithLifecycle()
 
     LabelSettingsScreenContent(
-        windowSizeClass = windowSizeClass,
         labels = labels,
         labelsEnabled = labelsEnabled,
         showBackButton = showBackButton,
@@ -90,7 +87,6 @@ fun LabelSettingsScreen(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun LabelSettingsScreenContent(
-    windowSizeClass: WindowSizeClass,
     labels: List<LabelManagementModel>,
     labelsEnabled: Boolean,
     showBackButton: Boolean = true,
@@ -103,7 +99,6 @@ private fun LabelSettingsScreenContent(
     val layoutDirection = LocalLayoutDirection.current
 
     AppResponsiveScaffold(
-        windowSizeClass = windowSizeClass,
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
         topBar = {
             LargeTopAppBar(
@@ -318,7 +313,6 @@ private fun LabelConfigCard(
 private fun LabelSettingsPreview() {
     BirthdayBuddyTheme {
         LabelSettingsScreenContent(
-            windowSizeClass = WindowSizeClass(360, 640),
             labels = listOf(
                 LabelManagementModel(
                     "Familie",

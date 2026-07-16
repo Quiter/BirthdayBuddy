@@ -1,6 +1,5 @@
 package com.heckmannch.birthdaybuddy.ui.screens.settings.about
 
-import androidx.window.core.layout.WindowSizeClass
 import android.content.pm.PackageInfo
 import android.content.pm.PackageManager
 import android.os.Build
@@ -48,7 +47,6 @@ import com.heckmannch.birthdaybuddy.ui.theme.SpacingNormal
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AboutScreen(
-    windowSizeClass: WindowSizeClass,
     showBackButton: Boolean = true,
     onNavigateBack: () -> Unit,
     onNavigateToPrivacyPolicy: () -> Unit
@@ -75,7 +73,6 @@ fun AboutScreen(
     val scrollBehavior =
         TopAppBarDefaults.exitUntilCollapsedScrollBehavior(rememberTopAppBarState())
     AppResponsiveScaffold(
-        windowSizeClass = windowSizeClass,
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
         topBar = {
             LargeTopAppBar(
@@ -193,7 +190,6 @@ fun AboutScreen(
 private fun AboutPreview() {
     BirthdayBuddyTheme {
         AboutScreen(
-            windowSizeClass = WindowSizeClass(360, 640),
             onNavigateBack = {},
             onNavigateToPrivacyPolicy = {}
         )

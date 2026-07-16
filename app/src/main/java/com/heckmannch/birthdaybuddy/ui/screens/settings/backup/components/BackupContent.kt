@@ -1,6 +1,5 @@
 package com.heckmannch.birthdaybuddy.ui.screens.settings.backup.components
 
-import androidx.window.core.layout.WindowSizeClass
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -42,7 +41,6 @@ import com.heckmannch.birthdaybuddy.ui.theme.SpacingNormal
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun BackupContent(
-    windowSizeClass: WindowSizeClass,
     isLoading: Boolean,
     showBackButton: Boolean = true,
     onExportClick: () -> Unit,
@@ -52,7 +50,6 @@ fun BackupContent(
     val scrollBehavior =
         TopAppBarDefaults.exitUntilCollapsedScrollBehavior(rememberTopAppBarState())
     AppResponsiveScaffold(
-        windowSizeClass = windowSizeClass,
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
         topBar = {
             LargeTopAppBar(
@@ -128,7 +125,6 @@ fun BackupContent(
 private fun BackupPreview() {
     BirthdayBuddyTheme {
         BackupContent(
-            windowSizeClass = WindowSizeClass(360, 640),
             isLoading = false,
             onExportClick = {},
             onImportClick = {},
@@ -142,7 +138,6 @@ private fun BackupPreview() {
 private fun BackupLoadingPreview() {
     BirthdayBuddyTheme {
         BackupContent(
-            windowSizeClass = WindowSizeClass(360, 640),
             isLoading = true,
             onExportClick = {},
             onImportClick = {},

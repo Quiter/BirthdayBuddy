@@ -1,6 +1,5 @@
 package com.heckmannch.birthdaybuddy.ui.screens.settings.otherevents
 
-import androidx.window.core.layout.WindowSizeClass
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
@@ -36,7 +35,6 @@ import com.heckmannch.birthdaybuddy.ui.theme.SpacingSmall
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun OtherEventsSettingsScreen(
-    windowSizeClass: WindowSizeClass,
     viewModel: NotificationViewModel,
     showBackButton: Boolean = true,
     onNavigateBack: () -> Unit,
@@ -45,7 +43,6 @@ fun OtherEventsSettingsScreen(
     val otherEventsEnabled = uiState.otherEventsEnabled
 
     OtherEventsSettingsContent(
-        windowSizeClass = windowSizeClass,
         otherEventsEnabled = otherEventsEnabled,
         onToggleChange = { viewModel.onIntent(NotificationIntent.SetOtherEventsEnabled(it)) },
         showBackButton = showBackButton,
@@ -56,7 +53,6 @@ fun OtherEventsSettingsScreen(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun OtherEventsSettingsContent(
-    windowSizeClass: WindowSizeClass,
     otherEventsEnabled: Boolean,
     onToggleChange: (Boolean) -> Unit,
     showBackButton: Boolean,
@@ -66,7 +62,6 @@ private fun OtherEventsSettingsContent(
         TopAppBarDefaults.exitUntilCollapsedScrollBehavior(rememberTopAppBarState())
 
     AppResponsiveScaffold(
-        windowSizeClass = windowSizeClass,
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
         topBar = {
             LargeTopAppBar(
@@ -127,7 +122,6 @@ private fun OtherEventsSettingsContent(
 private fun OtherEventsSettingsPreview() {
     MaterialTheme {
         OtherEventsSettingsContent(
-            windowSizeClass = WindowSizeClass(360, 640),
             otherEventsEnabled = true,
             onToggleChange = {},
             showBackButton = true,

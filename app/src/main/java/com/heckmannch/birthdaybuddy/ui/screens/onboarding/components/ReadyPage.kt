@@ -1,6 +1,6 @@
 package com.heckmannch.birthdaybuddy.ui.screens.onboarding.components
 
-import androidx.window.core.layout.WindowSizeClass
+import com.heckmannch.birthdaybuddy.ui.components.LocalWindowSizeClass
 import com.heckmannch.birthdaybuddy.ui.components.isWidthCompact
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -32,14 +32,13 @@ import com.heckmannch.birthdaybuddy.ui.theme.SpacingNormal
 
 @Composable
 fun ReadyPage(
-    windowSizeClass: WindowSizeClass,
     hasContactPermission: Boolean,
     notificationsEnabled: Boolean,
     calendarSyncEnabled: Boolean,
     onStart: () -> Unit,
 ) {
+    val windowSizeClass = LocalWindowSizeClass.current
     OnboardingPageTemplate(
-        windowSizeClass = windowSizeClass,
         illustration = { modifier ->
             ReadyIllustration(modifier)
         },
@@ -136,7 +135,6 @@ fun ReadyPage(
 private fun ReadyPagePreview() {
     BirthdayBuddyTheme {
         ReadyPage(
-            windowSizeClass = WindowSizeClass(360, 640),
             hasContactPermission = true,
             notificationsEnabled = true,
             calendarSyncEnabled = true,

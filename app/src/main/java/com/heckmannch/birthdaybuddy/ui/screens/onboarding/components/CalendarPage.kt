@@ -1,6 +1,5 @@
 package com.heckmannch.birthdaybuddy.ui.screens.onboarding.components
 
-import androidx.window.core.layout.WindowSizeClass
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -27,14 +26,12 @@ import com.heckmannch.birthdaybuddy.ui.theme.SpacingSmall
 
 @Composable
 fun CalendarPage(
-    windowSizeClass: WindowSizeClass,
     enabled: Boolean,
     onEnabledChange: (Boolean) -> Unit,
     isGranted: Boolean,
     onGrant: () -> Unit,
 ) {
     OnboardingPageTemplate(
-        windowSizeClass = windowSizeClass,
         illustration = { modifier ->
             CalendarIllustration(
                 enabled = enabled,
@@ -89,7 +86,6 @@ fun CalendarPage(
 fun CalendarPagePreview_Enabled() {
     BirthdayBuddyTheme {
         CalendarPage(
-            windowSizeClass = WindowSizeClass(360, 640),
             enabled = true,
             onEnabledChange = {},
             isGranted = false,
@@ -103,7 +99,6 @@ fun CalendarPagePreview_Enabled() {
 fun CalendarPagePreview_Disabled() {
     BirthdayBuddyTheme {
         CalendarPage(
-            windowSizeClass = WindowSizeClass(360, 640),
             enabled = false,
             onEnabledChange = {},
             isGranted = false,

@@ -1,6 +1,5 @@
 package com.heckmannch.birthdaybuddy.ui.screens.home
 
-import androidx.window.core.layout.WindowSizeClass
 import android.Manifest
 import android.content.pm.PackageManager
 import android.util.Log
@@ -48,8 +47,6 @@ import kotlin.time.Duration.Companion.milliseconds
  * @param onIntent Callback lambda used to dispatch user actions ([HomeIntent]) to the underlying ViewModel.
  * @param scrollToTopEvent A [SharedFlow] used to trigger scroll-to-top actions from global events
  *   (e.g., clicking on navigation items, status bar taps).
- * @param windowSizeClass Window sizing categories to adapt screen layouts for different device classes
- *   (e.g., compact phones, split-screen, tablets, foldables).
  * @param onNavigateToSettings Callback executed when the user initiates navigation to the app settings screen.
  */
 @OptIn(ExperimentalMaterial3Api::class)
@@ -58,7 +55,6 @@ fun HomeScreen(
     uiState: HomeUiState,
     onIntent: (HomeIntent) -> Unit,
     scrollToTopEvent: SharedFlow<Unit>,
-    windowSizeClass: WindowSizeClass,
     onNavigateToSettings: () -> Unit,
 ) {
     // Android platform CompositionLocals for focus, keyboard, and package/system services context.
@@ -318,6 +314,5 @@ fun HomeScreen(
         uiState = uiState,
         homeState = homeState,
         actions = actions,
-        windowSizeClass = windowSizeClass
     )
 }

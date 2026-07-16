@@ -1,6 +1,7 @@
 package com.heckmannch.birthdaybuddy.ui.screens.home
 
 import androidx.window.core.layout.WindowSizeClass
+import androidx.compose.runtime.CompositionLocalProvider
 import com.heckmannch.birthdaybuddy.ui.components.LocalWindowSizeClass
 import com.heckmannch.birthdaybuddy.ui.components.isWidthCompact
 import com.heckmannch.birthdaybuddy.ui.components.isHeightCompact
@@ -69,12 +70,11 @@ fun HomeContent(
     uiState: HomeUiState,
     homeState: HomeState,
     actions: HomeActions,
-    windowSizeClass: WindowSizeClass,
 ) {
-    val windowSizeClassLocal = LocalWindowSizeClass.current
+    val windowSizeClass = LocalWindowSizeClass.current
     val showFilterBarInTopBar = !uiState.contacts.isNullOrEmpty() &&
             !windowSizeClass.isWidthCompact &&
-            !windowSizeClassLocal.isHeightCompact
+            !windowSizeClass.isHeightCompact
 
     val currentUiState by rememberUpdatedState(uiState)
     val currentActions by rememberUpdatedState(actions)
@@ -341,12 +341,15 @@ fun HomePreview() {
     )
 
     BirthdayBuddyTheme {
-        HomeContent(
-            uiState = SampleData.homeUiState,
-            homeState = rememberHomeState(),
-            actions = actions,
-            windowSizeClass = WindowSizeClass(360, 640)
-        )
+        CompositionLocalProvider(
+            LocalWindowSizeClass provides WindowSizeClass(360, 640)
+        ) {
+            HomeContent(
+                uiState = SampleData.homeUiState,
+                homeState = rememberHomeState(),
+                actions = actions,
+            )
+        }
     }
 }
 

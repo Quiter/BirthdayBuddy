@@ -1,6 +1,5 @@
 package com.heckmannch.birthdaybuddy.ui.screens.onboarding
 
-import androidx.window.core.layout.WindowSizeClass
 import android.Manifest
 import android.content.Intent
 import android.net.Uri
@@ -58,7 +57,6 @@ import kotlin.time.Duration.Companion.milliseconds
 @Composable
 fun OnboardingScreen(
     viewModel: OnboardingViewModel,
-    windowSizeClass: WindowSizeClass,
     onFinish: () -> Unit,
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -163,7 +161,6 @@ fun OnboardingScreen(
 
     OnboardingContent(
         uiState = uiState,
-        windowSizeClass = windowSizeClass,
         onIntent = { viewModel.onIntent(it) },
         onRequestContactPermission = onRequestContactPermission,
         onRequestNotificationPermission = onRequestNotificationPermission,
@@ -183,7 +180,6 @@ fun OnboardingScreen(
 @Composable
 fun OnboardingContent(
     uiState: OnboardingUiState,
-    windowSizeClass: WindowSizeClass,
     onIntent: (OnboardingIntent) -> Unit,
     onRequestContactPermission: () -> Unit,
     onRequestNotificationPermission: () -> Unit,
@@ -232,7 +228,6 @@ fun OnboardingContent(
             )
     ) {
         AppResponsiveScaffold(
-            windowSizeClass = windowSizeClass,
             modifier = Modifier.fillMaxSize(),
             containerColor = Color.Transparent,
             contentWindowInsets = WindowInsets.statusBars.union(WindowInsets.navigationBars)
@@ -248,7 +243,6 @@ fun OnboardingContent(
                         3 -> !calendarEnabled || uiState.hasCalendarPermission
                         else -> true
                     },
-                    windowSizeClass = windowSizeClass,
                     onBack = {
                         onIntent(OnboardingIntent.SetCurrentPage(pagerState.currentPage - 1))
                     },
@@ -267,9 +261,8 @@ fun OnboardingContent(
             ) { page ->
                 val actualPage = if (!showCalendarGuide && page >= 4) page + 1 else page
                 when (actualPage) {
-                    0 -> WelcomePage(windowSizeClass = windowSizeClass)
+                    0 -> WelcomePage()
                     1 -> ContactsPage(
-                        windowSizeClass = windowSizeClass,
                         enabled = contactsEnabled,
                         onEnabledChange = { contactsEnabled = it },
                         isGranted = uiState.hasContactPermission,
@@ -277,7 +270,6 @@ fun OnboardingContent(
                     )
 
                     2 -> NotificationsPage(
-                        windowSizeClass = windowSizeClass,
                         enabled = notificationsEnabled,
                         onEnabledChange = { notificationsEnabled = it },
                         persistent = uiState.isPersistentNotificationEnabled,
@@ -287,17 +279,15 @@ fun OnboardingContent(
                     )
 
                     3 -> CalendarPage(
-                        windowSizeClass = windowSizeClass,
                         enabled = calendarEnabled,
                         onEnabledChange = { calendarEnabled = it },
                         isGranted = uiState.hasCalendarPermission,
                         onGrant = onRequestCalendarPermission
                     )
 
-                    4 -> CalendarGuidePage(windowSizeClass = windowSizeClass)
+                    4 -> CalendarGuidePage()
 
                     5 -> ReadyPage(
-                        windowSizeClass = windowSizeClass,
                         hasContactPermission = contactsEnabled && uiState.hasContactPermission,
                         notificationsEnabled = notificationsEnabled && uiState.hasNotificationPermission,
                         calendarSyncEnabled = calendarEnabled && uiState.hasCalendarPermission
@@ -320,7 +310,6 @@ private fun OnboardingScreenPreview() {
     BirthdayBuddyTheme {
         OnboardingContent(
             uiState = OnboardingUiState(),
-            windowSizeClass = WindowSizeClass(360, 640),
             onIntent = {},
             onRequestContactPermission = {},
             onRequestNotificationPermission = {},

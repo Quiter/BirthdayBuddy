@@ -1,6 +1,5 @@
 package com.heckmannch.birthdaybuddy.ui.screens.onboarding.components
 
-import androidx.window.core.layout.WindowSizeClass
 import android.content.Context
 import android.content.Intent
 import android.provider.CalendarContract
@@ -42,11 +41,10 @@ import com.heckmannch.birthdaybuddy.ui.theme.SpacingNormal
 import com.heckmannch.birthdaybuddy.ui.theme.SpacingSmall
 
 @Composable
-fun CalendarGuidePage(windowSizeClass: WindowSizeClass) {
+fun CalendarGuidePage() {
     val context = LocalContext.current
 
     OnboardingPageTemplate(
-        windowSizeClass = windowSizeClass,
         illustration = { modifier ->
             CalendarGuideIllustration(modifier)
         },
@@ -138,6 +136,6 @@ private fun openDefaultCalendarApp(context: Context) {
 @Composable
 private fun CalendarGuidePagePreview() {
     BirthdayBuddyTheme {
-        CalendarGuidePage(windowSizeClass = WindowSizeClass(360, 640))
+        CalendarGuidePage()
     }
 }
