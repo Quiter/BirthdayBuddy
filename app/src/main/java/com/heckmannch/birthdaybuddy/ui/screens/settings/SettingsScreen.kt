@@ -34,7 +34,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.adaptive.ExperimentalMaterial3AdaptiveApi
-import androidx.compose.material3.adaptive.currentWindowAdaptiveInfoV2
+import com.heckmannch.birthdaybuddy.ui.components.LocalWindowAdaptiveInfo
 import androidx.compose.material3.adaptive.layout.calculatePaneScaffoldDirective
 import androidx.compose.material3.adaptive.navigation3.ListDetailSceneStrategy
 import androidx.compose.material3.adaptive.navigation3.rememberListDetailSceneStrategy
@@ -289,7 +289,7 @@ private fun SettingsContent(
         // Implements a split-pane Master-Detail screen using Jetpack Navigation 3.
         // Left side displays the list (master), right side displays the selected screen (detail).
 
-        val windowAdaptiveInfo = currentWindowAdaptiveInfoV2()
+        val windowAdaptiveInfo = LocalWindowAdaptiveInfo.current
 
         // Define how panes partition the screen. We disable partition spacing for a seamless look.
         val directive = remember(windowAdaptiveInfo) {

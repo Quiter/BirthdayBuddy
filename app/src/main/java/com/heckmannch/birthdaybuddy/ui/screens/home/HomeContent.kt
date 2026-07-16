@@ -24,7 +24,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.Surface
 import androidx.compose.material3.adaptive.ExperimentalMaterial3AdaptiveApi
-import androidx.compose.material3.adaptive.currentWindowAdaptiveInfoV2
+import com.heckmannch.birthdaybuddy.ui.components.LocalWindowAdaptiveInfo
 import androidx.compose.material3.adaptive.layout.calculatePaneScaffoldDirective
 import androidx.compose.material3.adaptive.navigation3.ListDetailSceneStrategy
 import androidx.compose.material3.adaptive.navigation3.rememberListDetailSceneStrategy
@@ -211,7 +211,7 @@ fun HomeContent(
                     }
                 }
 
-                val windowAdaptiveInfo = currentWindowAdaptiveInfoV2()
+                val windowAdaptiveInfo = LocalWindowAdaptiveInfo.current
                 val directive = remember(windowAdaptiveInfo) {
                     calculatePaneScaffoldDirective(windowAdaptiveInfo)
                         .copy(horizontalPartitionSpacerSize = 0.dp)

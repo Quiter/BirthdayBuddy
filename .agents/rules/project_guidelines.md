@@ -25,6 +25,10 @@ This file provides high-priority, machine-readable instructions, constraints, an
 - **Layout & Spacing Restrictions**:
   - DO NOT use additive vertical paddings. Spacings between elements MUST use bottom padding to avoid layout jumps inside `AnimatedVisibility` components.
   - All spacing, icon sizes, and transparency values MUST use standard tokens from `ui/theme/Dimensions.kt` (e.g., `SpacingNormal`, `IconSizeSmall`, `AlphaEmphasisNormal`). No magic/hardcoded values.
+- **Warnings & Suppressions**:
+  - Compiler, linter, and deprecation warnings MUST be resolved cleanly rather than suppressed.
+  - Using `@Suppress` (such as `@Suppress("DEPRECATION")`) or `@SuppressLint` is prohibited unless absolutely necessary (e.g., when calling platform-deprecated APIs on older Android SDK branches where no back-ported V2/compat alternative exists).
+
 
 ### 1.1 Directory Map (LLM Navigation Aid)
 For detailed human-readable descriptions, consult [PROJECT_STRUCTURE.md](file:///c:/Users/chris/AndroidStudioProjects/BirthdayBuddy/docs/PROJECT_STRUCTURE.md). Use this quick map for navigation:

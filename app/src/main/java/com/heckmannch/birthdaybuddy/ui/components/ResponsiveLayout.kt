@@ -25,6 +25,7 @@ import androidx.compose.material3.contentColorFor
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.compositionLocalOf
+import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -33,6 +34,7 @@ import androidx.compose.ui.tooling.preview.Devices
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.window.core.layout.WindowSizeClass
+import androidx.compose.material3.adaptive.WindowAdaptiveInfo
 import com.heckmannch.birthdaybuddy.ui.theme.AlphaContainerMedium
 import com.heckmannch.birthdaybuddy.ui.theme.BirthdayBuddyTheme
 import com.heckmannch.birthdaybuddy.ui.theme.MaxWidthExpanded
@@ -64,6 +66,14 @@ val WindowSizeClass.isHeightExpanded: Boolean
  */
 val LocalWindowSizeClass = compositionLocalOf<WindowSizeClass> {
     WindowSizeClass(360, 640)
+}
+
+/**
+ * CompositionLocal zur Bereitstellung der aktuellen WindowAdaptiveInfo.
+ * Verhindert redundante Berechnungen und Parameter-Drilling.
+ */
+val LocalWindowAdaptiveInfo = staticCompositionLocalOf<WindowAdaptiveInfo> {
+    error("No WindowAdaptiveInfo provided")
 }
 
 /**

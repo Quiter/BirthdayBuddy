@@ -55,7 +55,7 @@ Dieses Dokument dient als systemischer Kontext für die Entwicklung von Features
   - Keine additiven vertikalen Paddings verwenden. Abstände zwischen Elementen müssen über `bottom-padding` definiert werden, um Layout-Sprünge innerhalb von `AnimatedVisibility` zu verhindern.
   - Alle UI-Maße (Spacings, Icons, Opazitäten) müssen aus [Dimensions.kt](file:///c:/Users/chris/AndroidStudioProjects/BirthdayBuddy/ui/theme/Dimensions.kt) stammen (keine Hardcoded/Magic-Values).
 - **Responsive Layouts**:
-  - Multi-Column-Layouts auf Tablets/Chromebooks mittels `currentWindowAdaptiveInfoV2()` und `calculatePaneScaffoldDirective(windowAdaptiveInfo)` realisieren (Master-Detail).
+  - Multi-Column-Layouts auf Tablets/Chromebooks mittels `currentWindowAdaptiveInfo()` und `LocalWindowAdaptiveInfo` sowie `calculatePaneScaffoldDirective(windowAdaptiveInfo)` realisieren (Master-Detail).
   - Volle Edge-to-Edge Unterstützung (Android 15+) unter Verwendung von `AppResponsiveScaffold` für automatische System-Insets.
 - **Bilder & Scrolling**:
   - Coil-Bilder vorab über `enqueue` mit expliziten Memory-Cache-Keys laden, um Scroll-Lag in Fast-Scroll-Listen zu verhindern.

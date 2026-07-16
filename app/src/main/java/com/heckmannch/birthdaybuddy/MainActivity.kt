@@ -23,6 +23,7 @@ import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation3.runtime.rememberNavBackStack
 import com.heckmannch.birthdaybuddy.ui.components.ContactSyncEffect
+import com.heckmannch.birthdaybuddy.ui.components.LocalWindowAdaptiveInfo
 import com.heckmannch.birthdaybuddy.ui.components.LocalWindowSizeClass
 import com.heckmannch.birthdaybuddy.ui.navigation.AppNavHost
 import com.heckmannch.birthdaybuddy.ui.navigation.Home
@@ -72,7 +73,8 @@ class MainActivity : ComponentActivity() {
             ) {
                 if (onboardingCompleted != null) {
                     CompositionLocalProvider(
-                        LocalWindowSizeClass provides windowSizeClass
+                        LocalWindowSizeClass provides windowSizeClass,
+                        LocalWindowAdaptiveInfo provides windowAdaptiveInfo
                     ) {
                         val backStack = rememberNavBackStack(
                             if (onboardingCompleted == true) Home else Onboarding
