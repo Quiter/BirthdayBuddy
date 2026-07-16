@@ -118,7 +118,8 @@ class OnboardingViewModelTest {
             nameDayCalendarColor = eq(null),
             themeMode = eq(null),
             themeAmoled = eq(null),
-            themeAccent = eq(null)
+            themeAccent = eq(null),
+            customAccentColor = eq(null)
         )
     }
 
@@ -147,7 +148,8 @@ class OnboardingViewModelTest {
             nameDayCalendarColor = eq(null),
             themeMode = eq(null),
             themeAmoled = eq(null),
-            themeAccent = eq(null)
+            themeAccent = eq(null),
+            customAccentColor = eq(null)
         )
         verify(contactRepository).syncContacts()
     }

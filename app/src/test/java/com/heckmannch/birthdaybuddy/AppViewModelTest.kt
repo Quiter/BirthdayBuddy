@@ -2,6 +2,8 @@ package com.heckmannch.birthdaybuddy
 
 import com.google.common.truth.Truth.assertThat
 import com.heckmannch.birthdaybuddy.domain.model.AppSettings
+import com.heckmannch.birthdaybuddy.domain.model.ThemeMode
+import com.heckmannch.birthdaybuddy.domain.model.ThemeAccent
 import com.heckmannch.birthdaybuddy.domain.repository.NotificationRepository
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.first
@@ -39,19 +41,21 @@ class AppViewModelTest {
     @Test
     fun `appSettings emits values from repository settings flow`() = runTest {
         val customSettings = AppSettings(
-            themeMode = "DARK",
+            themeMode = ThemeMode.DARK,
             themeAmoled = true,
-            themeAccent = "#FF0000"
+            themeAccent = ThemeAccent.CUSTOM,
+            customAccentColor = "#FF0000"
         )
         whenever(notificationRepository.settings).thenReturn(flowOf(customSettings))
 
         // Re-initialize to collect from the new flow
         val freshViewModel = AppViewModel(notificationRepository)
-        val result = freshViewModel.appSettings.first { it.themeMode == "DARK" }
+        val result = freshViewModel.appSettings.first { it.themeMode == ThemeMode.DARK }
 
-        assertThat(result.themeMode).isEqualTo("DARK")
+        assertThat(result.themeMode).isEqualTo(ThemeMode.DARK)
         assertThat(result.themeAmoled).isTrue()
-        assertThat(result.themeAccent).isEqualTo("#FF0000")
+        assertThat(result.themeAccent).isEqualTo(ThemeAccent.CUSTOM)
+        assertThat(result.customAccentColor).isEqualTo("#FF0000")
     }
 
     @Test

@@ -3,6 +3,8 @@ package com.heckmannch.birthdaybuddy.viewmodel
 import com.google.common.truth.Truth.assertThat
 import com.heckmannch.birthdaybuddy.MainDispatcherRule
 import com.heckmannch.birthdaybuddy.domain.model.AppSettings
+import com.heckmannch.birthdaybuddy.domain.model.ThemeAccent
+import com.heckmannch.birthdaybuddy.domain.model.ThemeMode
 import com.heckmannch.birthdaybuddy.domain.repository.NotificationRepository
 import com.heckmannch.birthdaybuddy.ui.screens.settings.theme.ThemeIntent
 import com.heckmannch.birthdaybuddy.ui.screens.settings.theme.ThemeViewModel
@@ -37,24 +39,26 @@ class ThemeViewModelTest {
     @Test
     fun `uiState should reflect theme settings`() = runTest {
         val testSettings = AppSettings(
-            themeMode = "DARK",
+            themeMode = ThemeMode.DARK,
             themeAmoled = true,
-            themeAccent = "#FF0000"
+            themeAccent = ThemeAccent.CUSTOM,
+            customAccentColor = "#FF0000"
         )
         whenever(notificationRepository.settings).thenReturn(flowOf(testSettings))
 
         // Re-initialize to collect from new flow
         val viewModel = ThemeViewModel(notificationRepository)
-        val uiState = viewModel.uiState.first { it.themeMode == "DARK" }
+        val uiState = viewModel.uiState.first { it.themeMode == ThemeMode.DARK }
 
-        assertThat(uiState.themeMode).isEqualTo("DARK")
+        assertThat(uiState.themeMode).isEqualTo(ThemeMode.DARK)
         assertThat(uiState.themeAmoled).isTrue()
-        assertThat(uiState.themeAccent).isEqualTo("#FF0000")
+        assertThat(uiState.themeAccent).isEqualTo(ThemeAccent.CUSTOM)
+        assertThat(uiState.customAccentColor).isEqualTo("#FF0000")
     }
 
     @Test
     fun `setThemeMode should delegate to repository`() = runTest {
-        viewModel.onIntent(ThemeIntent.SetThemeMode("LIGHT"))
+        viewModel.onIntent(ThemeIntent.SetThemeMode(ThemeMode.LIGHT))
 
         verify(notificationRepository).updateSettings(
             notificationsEnabled = eq(null),
@@ -68,9 +72,10 @@ class ThemeViewModelTest {
             birthdayCalendarColor = eq(null),
             anniversaryCalendarColor = eq(null),
             nameDayCalendarColor = eq(null),
-            themeMode = eq("LIGHT"),
+            themeMode = eq(ThemeMode.LIGHT),
             themeAmoled = eq(null),
-            themeAccent = eq(null)
+            themeAccent = eq(null),
+            customAccentColor = eq(null)
         )
     }
 
@@ -92,13 +97,14 @@ class ThemeViewModelTest {
             nameDayCalendarColor = eq(null),
             themeMode = eq(null),
             themeAmoled = eq(true),
-            themeAccent = eq(null)
+            themeAccent = eq(null),
+            customAccentColor = eq(null)
         )
     }
 
     @Test
     fun `setThemeAccent should delegate to repository`() = runTest {
-        viewModel.onIntent(ThemeIntent.SetThemeAccent("#00FF00"))
+        viewModel.onIntent(ThemeIntent.SetThemeAccent(ThemeAccent.CUSTOM, "#00FF00"))
 
         verify(notificationRepository).updateSettings(
             notificationsEnabled = eq(null),
@@ -114,7 +120,8 @@ class ThemeViewModelTest {
             nameDayCalendarColor = eq(null),
             themeMode = eq(null),
             themeAmoled = eq(null),
-            themeAccent = eq("#00FF00")
+            themeAccent = eq(ThemeAccent.CUSTOM),
+            customAccentColor = eq("#00FF00")
         )
     }
 }

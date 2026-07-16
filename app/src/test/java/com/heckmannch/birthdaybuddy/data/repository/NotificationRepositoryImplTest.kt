@@ -12,6 +12,7 @@ import com.heckmannch.birthdaybuddy.data.mapper.AppSettingsMapper
 import com.heckmannch.birthdaybuddy.data.mapper.NotificationRuleMapper
 import com.heckmannch.birthdaybuddy.data.mapper.PendingNotificationMapper
 import com.heckmannch.birthdaybuddy.domain.model.AppSettings
+import com.heckmannch.birthdaybuddy.domain.model.ThemeMode
 import com.heckmannch.birthdaybuddy.domain.model.NotificationRule
 import com.heckmannch.birthdaybuddy.domain.model.PendingNotification
 import com.heckmannch.birthdaybuddy.domain.repository.NotificationScheduler
@@ -110,7 +111,7 @@ class NotificationRepositoryImplTest {
             notificationsEnabled = true,
             persistentNotifications = false,
             onboardingCompleted = true,
-            themeMode = "DARK"
+            themeMode = ThemeMode.DARK
         )
         settingsFlow.value = settingsEntity
 
@@ -122,7 +123,7 @@ class NotificationRepositoryImplTest {
         assertThat(result.notificationsEnabled).isTrue()
         assertThat(result.persistentNotifications).isFalse()
         assertThat(result.onboardingCompleted).isTrue()
-        assertThat(result.themeMode).isEqualTo("DARK")
+        assertThat(result.themeMode).isEqualTo(ThemeMode.DARK)
     }
 
     @Test
@@ -209,7 +210,7 @@ class NotificationRepositoryImplTest {
             id = 0,
             notificationsEnabled = false,
             persistentNotifications = true,
-            themeMode = "LIGHT"
+            themeMode = ThemeMode.LIGHT
         )
         coEvery { appSettingsDao.getSettingsImmediate() } returns currentSettings
         coEvery { notificationRuleDao.getAllRulesImmediate() } returns emptyList()
@@ -227,7 +228,7 @@ class NotificationRepositoryImplTest {
             birthdayCalendarColor = null,
             anniversaryCalendarColor = null,
             nameDayCalendarColor = null,
-            themeMode = "DARK",
+            themeMode = ThemeMode.DARK,
             themeAmoled = null,
             themeAccent = null
         )
@@ -239,7 +240,7 @@ class NotificationRepositoryImplTest {
         assertThat(saved.notificationsEnabled).isTrue()
         assertThat(saved.persistentNotifications).isTrue()
         assertThat(saved.calendarId).isEqualTo(42L)
-        assertThat(saved.themeMode).isEqualTo("DARK")
+        assertThat(saved.themeMode).isEqualTo(ThemeMode.DARK)
 
         // Verify sync scheduling is triggered
         coVerify { appSettingsDao.getSettingsImmediate() }
