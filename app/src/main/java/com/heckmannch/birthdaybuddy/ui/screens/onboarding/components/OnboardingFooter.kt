@@ -1,5 +1,6 @@
 package com.heckmannch.birthdaybuddy.ui.screens.onboarding.components
 
+import androidx.window.core.layout.WindowSizeClass
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.foundation.background
@@ -28,7 +29,6 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.heckmannch.birthdaybuddy.R
 import com.heckmannch.birthdaybuddy.ui.components.AdaptiveContentContainer
-import com.heckmannch.birthdaybuddy.ui.components.AppWidthSizeClass
 import com.heckmannch.birthdaybuddy.ui.theme.AlphaContainerSubtle
 import com.heckmannch.birthdaybuddy.ui.theme.AlphaEmphasisDisabled
 import com.heckmannch.birthdaybuddy.ui.theme.BirthdayBuddyTheme
@@ -42,7 +42,7 @@ fun OnboardingFooter(
     currentPage: Int,
     pageCount: Int,
     isNextEnabled: Boolean,
-    windowWidthSizeClass: AppWidthSizeClass,
+    windowSizeClass: WindowSizeClass,
     onBack: () -> Unit,
     onNext: () -> Unit
 ) {
@@ -52,7 +52,7 @@ fun OnboardingFooter(
         tonalElevation = 3.dp
     ) {
         AdaptiveContentContainer(
-            windowWidthSizeClass = windowWidthSizeClass,
+            windowSizeClass = windowSizeClass,
             includeDisplayCutout = false
         ) {
             Row(
@@ -147,7 +147,7 @@ fun OnboardingFooterPreview() {
             currentPage = 0,
             pageCount = 3,
             isNextEnabled = true,
-            windowWidthSizeClass = AppWidthSizeClass.COMPACT,
+            windowSizeClass = WindowSizeClass(360, 640),
             onBack = {},
             onNext = {}
         )
@@ -162,7 +162,7 @@ fun OnboardingFooterMiddlePagePreview() {
             currentPage = 1,
             pageCount = 3,
             isNextEnabled = true,
-            windowWidthSizeClass = AppWidthSizeClass.COMPACT,
+            windowSizeClass = WindowSizeClass(360, 640),
             onBack = {},
             onNext = {}
         )

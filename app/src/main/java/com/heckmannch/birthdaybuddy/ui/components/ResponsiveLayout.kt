@@ -32,32 +32,38 @@ import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.tooling.preview.Devices
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.window.core.layout.WindowSizeClass
 import com.heckmannch.birthdaybuddy.ui.theme.AlphaContainerMedium
 import com.heckmannch.birthdaybuddy.ui.theme.BirthdayBuddyTheme
 import com.heckmannch.birthdaybuddy.ui.theme.MaxWidthExpanded
 import com.heckmannch.birthdaybuddy.ui.theme.MaxWidthMedium
 
-enum class AppWidthSizeClass {
-    COMPACT, MEDIUM, EXPANDED
-}
+// --- Extensions for clean breakpoint checks ---
 
-enum class AppHeightSizeClass {
-    COMPACT, MEDIUM, EXPANDED
-}
+val WindowSizeClass.isWidthCompact: Boolean
+    get() = !isWidthAtLeastBreakpoint(600)
+
+val WindowSizeClass.isWidthMedium: Boolean
+    get() = isWidthAtLeastBreakpoint(600) && !isWidthAtLeastBreakpoint(840)
+
+val WindowSizeClass.isWidthExpanded: Boolean
+    get() = isWidthAtLeastBreakpoint(840)
+
+val WindowSizeClass.isHeightCompact: Boolean
+    get() = !isHeightAtLeastBreakpoint(480)
+
+val WindowSizeClass.isHeightMedium: Boolean
+    get() = isHeightAtLeastBreakpoint(480) && !isHeightAtLeastBreakpoint(900)
+
+val WindowSizeClass.isHeightExpanded: Boolean
+    get() = isHeightAtLeastBreakpoint(900)
 
 /**
- * CompositionLocal zur Bereitstellung der aktuellen Fensterbreitenklasse.
+ * CompositionLocal zur Bereitstellung der aktuellen Fenstergrößenklasse.
  * Verhindert Parameter-Drilling in tieferen UI-Hierarchien.
  */
-val LocalWindowWidthSizeClass = compositionLocalOf<AppWidthSizeClass> {
-    AppWidthSizeClass.COMPACT
-}
-
-/**
- * CompositionLocal zur Bereitstellung der aktuellen Fensterhöhenklasse.
- */
-val LocalWindowHeightSizeClass = compositionLocalOf<AppHeightSizeClass> {
-    AppHeightSizeClass.MEDIUM
+val LocalWindowSizeClass = compositionLocalOf<WindowSizeClass> {
+    WindowSizeClass(360, 640)
 }
 
 /**
@@ -68,15 +74,15 @@ val LocalWindowHeightSizeClass = compositionLocalOf<AppHeightSizeClass> {
 @Composable
 fun AdaptiveContentContainer(
     modifier: Modifier = Modifier,
-    windowWidthSizeClass: AppWidthSizeClass = LocalWindowWidthSizeClass.current,
+    windowSizeClass: WindowSizeClass = LocalWindowSizeClass.current,
     includeDisplayCutout: Boolean = true,
     content: @Composable () -> Unit
 ) {
     val maxWidth = Modifier
         .then(
-            when (windowWidthSizeClass) {
-                AppWidthSizeClass.MEDIUM -> Modifier.widthIn(max = MaxWidthMedium)
-                AppWidthSizeClass.EXPANDED -> Modifier.widthIn(max = MaxWidthExpanded)
+            when {
+                windowSizeClass.isWidthExpanded -> Modifier.widthIn(max = MaxWidthExpanded)
+                windowSizeClass.isWidthMedium -> Modifier.widthIn(max = MaxWidthMedium)
                 else -> Modifier
             }
         )
@@ -111,7 +117,7 @@ fun AdaptiveContentContainer(
 @Composable
 fun AppResponsiveScaffold(
     modifier: Modifier = Modifier,
-    windowWidthSizeClass: AppWidthSizeClass = LocalWindowWidthSizeClass.current,
+    windowSizeClass: WindowSizeClass = LocalWindowSizeClass.current,
     topBar: @Composable () -> Unit = {},
     bottomBar: @Composable () -> Unit = {},
     floatingActionButton: @Composable () -> Unit = {},
@@ -140,7 +146,7 @@ fun AppResponsiveScaffold(
 
             if (useAdaptiveWidth) {
                 AdaptiveContentContainer(
-                    windowWidthSizeClass = windowWidthSizeClass,
+                    windowSizeClass = windowSizeClass,
                     modifier = contentModifier
                 ) {
                     content(if (consumePadding) paddingValues else PaddingValues(0.dp))
@@ -160,11 +166,10 @@ fun AppResponsiveScaffold(
 private fun ResponsiveScaffoldPhonePreview() {
     BirthdayBuddyTheme {
         CompositionLocalProvider(
-            LocalWindowWidthSizeClass provides AppWidthSizeClass.COMPACT,
-            LocalWindowHeightSizeClass provides AppHeightSizeClass.MEDIUM
+            LocalWindowSizeClass provides WindowSizeClass(360, 640)
         ) {
             AppResponsiveScaffold(
-                windowWidthSizeClass = AppWidthSizeClass.COMPACT,
+                windowSizeClass = WindowSizeClass(360, 640),
                 topBar = {
                     TopAppBar(title = { Text("Phone Layout") })
                 }
@@ -181,11 +186,10 @@ private fun ResponsiveScaffoldPhonePreview() {
 private fun ResponsiveScaffoldTabletPreview() {
     BirthdayBuddyTheme {
         CompositionLocalProvider(
-            LocalWindowWidthSizeClass provides AppWidthSizeClass.MEDIUM,
-            LocalWindowHeightSizeClass provides AppHeightSizeClass.MEDIUM
+            LocalWindowSizeClass provides WindowSizeClass(600, 640)
         ) {
             AppResponsiveScaffold(
-                windowWidthSizeClass = AppWidthSizeClass.MEDIUM,
+                windowSizeClass = WindowSizeClass(600, 640),
                 topBar = {
                     TopAppBar(title = { Text("Tablet Layout") })
                 }
@@ -202,11 +206,10 @@ private fun ResponsiveScaffoldTabletPreview() {
 private fun ResponsiveScaffoldDesktopPreview() {
     BirthdayBuddyTheme {
         CompositionLocalProvider(
-            LocalWindowWidthSizeClass provides AppWidthSizeClass.EXPANDED,
-            LocalWindowHeightSizeClass provides AppHeightSizeClass.MEDIUM
+            LocalWindowSizeClass provides WindowSizeClass(840, 640)
         ) {
             AppResponsiveScaffold(
-                windowWidthSizeClass = AppWidthSizeClass.EXPANDED,
+                windowSizeClass = WindowSizeClass(840, 640),
                 topBar = {
                     TopAppBar(title = { Text("Desktop Layout (Centered)") })
                 }
@@ -223,11 +226,10 @@ private fun ResponsiveScaffoldDesktopPreview() {
 private fun ResponsiveScaffoldDesktopFullWidthPreview() {
     BirthdayBuddyTheme {
         CompositionLocalProvider(
-            LocalWindowWidthSizeClass provides AppWidthSizeClass.EXPANDED,
-            LocalWindowHeightSizeClass provides AppHeightSizeClass.MEDIUM
+            LocalWindowSizeClass provides WindowSizeClass(840, 640)
         ) {
             AppResponsiveScaffold(
-                windowWidthSizeClass = AppWidthSizeClass.EXPANDED,
+                windowSizeClass = WindowSizeClass(840, 640),
                 useAdaptiveWidth = false,
                 topBar = {
                     TopAppBar(title = { Text("Desktop Layout (Full Width)") })

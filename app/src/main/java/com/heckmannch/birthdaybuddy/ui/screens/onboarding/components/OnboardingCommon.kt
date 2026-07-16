@@ -1,5 +1,9 @@
 package com.heckmannch.birthdaybuddy.ui.screens.onboarding.components
 
+import androidx.window.core.layout.WindowSizeClass
+import com.heckmannch.birthdaybuddy.ui.components.LocalWindowSizeClass
+import com.heckmannch.birthdaybuddy.ui.components.isWidthCompact
+import com.heckmannch.birthdaybuddy.ui.components.isHeightCompact
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
@@ -29,9 +33,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.heckmannch.birthdaybuddy.ui.components.AppHeightSizeClass
-import com.heckmannch.birthdaybuddy.ui.components.AppWidthSizeClass
-import com.heckmannch.birthdaybuddy.ui.components.LocalWindowHeightSizeClass
 import com.heckmannch.birthdaybuddy.ui.theme.IconSizeExtraLarge
 import com.heckmannch.birthdaybuddy.ui.theme.OnboardingIllustrationHeight
 import com.heckmannch.birthdaybuddy.ui.theme.OnboardingIllustrationHeightSmall
@@ -47,7 +48,7 @@ import com.heckmannch.birthdaybuddy.ui.theme.SpacingSmall
  */
 @Composable
 fun OnboardingPageTemplate(
-    windowWidthSizeClass: AppWidthSizeClass,
+    windowSizeClass: WindowSizeClass,
     illustration: @Composable (Modifier) -> Unit,
     title: String,
     description: String,
@@ -55,10 +56,10 @@ fun OnboardingPageTemplate(
     settingsCard: @Composable (ColumnScope.() -> Unit)? = null,
     actionButton: @Composable (BoxScope.() -> Unit)? = null
 ) {
-    val windowHeightSizeClass = LocalWindowHeightSizeClass.current
-    val isShortScreen = windowHeightSizeClass == AppHeightSizeClass.COMPACT
+    val windowSizeClassLocal = LocalWindowSizeClass.current
+    val isShortScreen = windowSizeClassLocal.isHeightCompact
 
-    if (windowWidthSizeClass == AppWidthSizeClass.COMPACT) {
+    if (windowSizeClass.isWidthCompact) {
         Column(
             modifier = modifier
                 .fillMaxSize()
@@ -199,7 +200,7 @@ fun OnboardingPageTemplatePreview() {
     MaterialTheme {
         Surface {
             OnboardingPageTemplate(
-                windowWidthSizeClass = AppWidthSizeClass.COMPACT,
+                windowSizeClass = WindowSizeClass(360, 640),
                 illustration = { modifier ->
                     Icon(
                         imageVector = Icons.Default.Cake,

@@ -1,5 +1,6 @@
 package com.heckmannch.birthdaybuddy.ui.screens.settings.backup
 
+import androidx.window.core.layout.WindowSizeClass
 import android.net.Uri
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -12,7 +13,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import com.heckmannch.birthdaybuddy.R
-import com.heckmannch.birthdaybuddy.ui.components.AppWidthSizeClass
 import com.heckmannch.birthdaybuddy.ui.screens.settings.backup.components.BackupContent
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
@@ -23,7 +23,7 @@ import java.time.format.DateTimeFormatter
  */
 @Composable
 fun BackupScreen(
-    windowWidthSizeClass: AppWidthSizeClass,
+    windowSizeClass: WindowSizeClass,
     viewModel: BackupViewModel,
     showBackButton: Boolean = true,
     onNavigateBack: () -> Unit
@@ -90,7 +90,7 @@ fun BackupScreen(
     }
 
     BackupContent(
-        windowWidthSizeClass = windowWidthSizeClass,
+        windowSizeClass = windowSizeClass,
         isLoading = isLoading,
         showBackButton = showBackButton,
         onExportClick = {

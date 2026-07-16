@@ -1,5 +1,6 @@
 package com.heckmannch.birthdaybuddy.ui.screens.onboarding.components
 
+import androidx.window.core.layout.WindowSizeClass
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -18,7 +19,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import com.heckmannch.birthdaybuddy.R
 import com.heckmannch.birthdaybuddy.ui.components.AppSwitch
-import com.heckmannch.birthdaybuddy.ui.components.AppWidthSizeClass
 import com.heckmannch.birthdaybuddy.ui.illustrations.CalendarIllustration
 import com.heckmannch.birthdaybuddy.ui.theme.AlphaEmphasisLow
 import com.heckmannch.birthdaybuddy.ui.theme.BirthdayBuddyTheme
@@ -27,14 +27,14 @@ import com.heckmannch.birthdaybuddy.ui.theme.SpacingSmall
 
 @Composable
 fun CalendarPage(
-    windowWidthSizeClass: AppWidthSizeClass,
+    windowSizeClass: WindowSizeClass,
     enabled: Boolean,
     onEnabledChange: (Boolean) -> Unit,
     isGranted: Boolean,
     onGrant: () -> Unit,
 ) {
     OnboardingPageTemplate(
-        windowWidthSizeClass = windowWidthSizeClass,
+        windowSizeClass = windowSizeClass,
         illustration = { modifier ->
             CalendarIllustration(
                 enabled = enabled,
@@ -89,7 +89,7 @@ fun CalendarPage(
 fun CalendarPagePreview_Enabled() {
     BirthdayBuddyTheme {
         CalendarPage(
-            windowWidthSizeClass = AppWidthSizeClass.COMPACT,
+            windowSizeClass = WindowSizeClass(360, 640),
             enabled = true,
             onEnabledChange = {},
             isGranted = false,
@@ -103,7 +103,7 @@ fun CalendarPagePreview_Enabled() {
 fun CalendarPagePreview_Disabled() {
     BirthdayBuddyTheme {
         CalendarPage(
-            windowWidthSizeClass = AppWidthSizeClass.COMPACT,
+            windowSizeClass = WindowSizeClass(360, 640),
             enabled = false,
             onEnabledChange = {},
             isGranted = false,

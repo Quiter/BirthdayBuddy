@@ -1,5 +1,6 @@
 package com.heckmannch.birthdaybuddy.ui.screens.settings.calendar
 
+import androidx.window.core.layout.WindowSizeClass
 import android.Manifest
 import android.content.Context
 import android.content.Intent
@@ -58,7 +59,6 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.heckmannch.birthdaybuddy.R
 import com.heckmannch.birthdaybuddy.domain.repository.CalendarSyncRepository
 import com.heckmannch.birthdaybuddy.ui.components.AppResponsiveScaffold
-import com.heckmannch.birthdaybuddy.ui.components.AppWidthSizeClass
 import com.heckmannch.birthdaybuddy.ui.components.ColorPickerDialog
 import com.heckmannch.birthdaybuddy.ui.components.InfoCard
 import com.heckmannch.birthdaybuddy.ui.components.SettingsCard
@@ -76,7 +76,7 @@ import com.heckmannch.birthdaybuddy.ui.theme.SpacingSmall
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CalendarSettingsScreen(
-    windowWidthSizeClass: AppWidthSizeClass,
+    windowSizeClass: WindowSizeClass,
     viewModel: CalendarViewModel,
     showBackButton: Boolean = true,
     onNavigateBack: () -> Unit,
@@ -132,7 +132,7 @@ fun CalendarSettingsScreen(
     }
 
     CalendarSettingsContent(
-        windowWidthSizeClass = windowWidthSizeClass,
+        windowSizeClass = windowSizeClass,
         calendarSyncEnabled = calendarSyncEnabled && hasPermission,
         hasPermission = hasPermission,
         otherEventsEnabled = otherEventsEnabled,
@@ -185,7 +185,7 @@ fun CalendarSettingsScreen(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun CalendarSettingsContent(
-    windowWidthSizeClass: AppWidthSizeClass,
+    windowSizeClass: WindowSizeClass,
     calendarSyncEnabled: Boolean,
     hasPermission: Boolean,
     otherEventsEnabled: Boolean,
@@ -201,7 +201,7 @@ private fun CalendarSettingsContent(
     val scrollBehavior =
         TopAppBarDefaults.exitUntilCollapsedScrollBehavior(rememberTopAppBarState())
     AppResponsiveScaffold(
-        windowWidthSizeClass = windowWidthSizeClass,
+        windowSizeClass = windowSizeClass,
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
         topBar = {
             LargeTopAppBar(
@@ -467,7 +467,7 @@ private fun openDefaultCalendarApp(context: Context) {
 private fun CalendarSettingsPreview() {
     MaterialTheme {
         CalendarSettingsContent(
-            windowWidthSizeClass = AppWidthSizeClass.COMPACT,
+            windowSizeClass = WindowSizeClass(360, 640),
             calendarSyncEnabled = true,
             hasPermission = true,
             otherEventsEnabled = true,

@@ -1,5 +1,7 @@
 package com.heckmannch.birthdaybuddy.ui.screens.onboarding.components
 
+import androidx.window.core.layout.WindowSizeClass
+import com.heckmannch.birthdaybuddy.ui.components.isWidthCompact
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -20,7 +22,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import com.heckmannch.birthdaybuddy.R
-import com.heckmannch.birthdaybuddy.ui.components.AppWidthSizeClass
 import com.heckmannch.birthdaybuddy.ui.components.StepItem
 import com.heckmannch.birthdaybuddy.ui.illustrations.ReadyIllustration
 import com.heckmannch.birthdaybuddy.ui.theme.AlphaEmphasisSubtle
@@ -31,14 +32,14 @@ import com.heckmannch.birthdaybuddy.ui.theme.SpacingNormal
 
 @Composable
 fun ReadyPage(
-    windowWidthSizeClass: AppWidthSizeClass,
+    windowSizeClass: WindowSizeClass,
     hasContactPermission: Boolean,
     notificationsEnabled: Boolean,
     calendarSyncEnabled: Boolean,
     onStart: () -> Unit,
 ) {
     OnboardingPageTemplate(
-        windowWidthSizeClass = windowWidthSizeClass,
+        windowSizeClass = windowSizeClass,
         illustration = { modifier ->
             ReadyIllustration(modifier)
         },
@@ -112,7 +113,7 @@ fun ReadyPage(
                 text = if (hasContactPermission) stringResource(R.string.onboarding_ready_sync_info)
                 else stringResource(R.string.onboarding_ready_no_sync_info),
                 style = MaterialTheme.typography.bodyMedium,
-                textAlign = if (windowWidthSizeClass == AppWidthSizeClass.COMPACT) TextAlign.Center else TextAlign.Start,
+                textAlign = if (windowSizeClass.isWidthCompact) TextAlign.Center else TextAlign.Start,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
         },
@@ -135,7 +136,7 @@ fun ReadyPage(
 private fun ReadyPagePreview() {
     BirthdayBuddyTheme {
         ReadyPage(
-            windowWidthSizeClass = AppWidthSizeClass.COMPACT,
+            windowSizeClass = WindowSizeClass(360, 640),
             hasContactPermission = true,
             notificationsEnabled = true,
             calendarSyncEnabled = true,

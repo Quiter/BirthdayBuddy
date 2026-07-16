@@ -1,5 +1,7 @@
 package com.heckmannch.birthdaybuddy.ui.screens.settings
 
+import androidx.window.core.layout.WindowSizeClass
+import com.heckmannch.birthdaybuddy.ui.components.isWidthCompact
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
@@ -57,7 +59,6 @@ import androidx.navigation3.runtime.NavKey
 import androidx.navigation3.ui.NavDisplay
 import com.heckmannch.birthdaybuddy.R
 import com.heckmannch.birthdaybuddy.ui.components.AppResponsiveScaffold
-import com.heckmannch.birthdaybuddy.ui.components.AppWidthSizeClass
 import com.heckmannch.birthdaybuddy.ui.screens.home.HomeViewModel
 import com.heckmannch.birthdaybuddy.ui.screens.settings.about.AboutScreen
 import com.heckmannch.birthdaybuddy.ui.screens.settings.about.PrivacyPolicyScreen
@@ -118,7 +119,7 @@ private data class SettingsMenuItemData(
  */
 @Composable
 fun SettingsScreen(
-    windowWidthSizeClass: AppWidthSizeClass,
+    windowSizeClass: WindowSizeClass,
     homeViewModel: HomeViewModel?,
     onNavigateToLabels: () -> Unit,
     onNavigateToNotifications: () -> Unit,
@@ -131,7 +132,7 @@ fun SettingsScreen(
     onNavigateBack: () -> Unit,
 ) {
     SettingsContent(
-        windowWidthSizeClass = windowWidthSizeClass,
+        windowSizeClass = windowSizeClass,
         homeViewModel = homeViewModel,
         onNavigateToSync = onNavigateToSync,
         onNavigateToLabels = onNavigateToLabels,
@@ -152,7 +153,7 @@ fun SettingsScreen(
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3AdaptiveApi::class)
 @Composable
 private fun SettingsContent(
-    windowWidthSizeClass: AppWidthSizeClass,
+    windowSizeClass: WindowSizeClass,
     homeViewModel: HomeViewModel?,
     onNavigateToSync: () -> Unit,
     onNavigateToLabels: () -> Unit,
@@ -235,14 +236,14 @@ private fun SettingsContent(
         )
     }
 
-    if (windowWidthSizeClass == AppWidthSizeClass.COMPACT) {
+    if (windowSizeClass.isWidthCompact) {
         // --- MOBILE/COMPACT LAYOUT ---
         // Displays a scrollable settings list on a single screen.
         // Clicking an item navigates away to a separate screen.
         val scrollBehavior =
             TopAppBarDefaults.exitUntilCollapsedScrollBehavior(rememberTopAppBarState())
         AppResponsiveScaffold(
-            windowWidthSizeClass = windowWidthSizeClass,
+            windowSizeClass = windowSizeClass,
             modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
             topBar = {
                 LargeTopAppBar(
@@ -330,7 +331,7 @@ private fun SettingsContent(
         val themeViewModel: ThemeViewModel = hiltViewModel()
 
         AppResponsiveScaffold(
-            windowWidthSizeClass = windowWidthSizeClass,
+            windowSizeClass = windowSizeClass,
             useAdaptiveWidth = false,
             topBar = {}
         ) { paddingValues ->
@@ -418,7 +419,7 @@ private fun SettingsContent(
                                 when (key.tab) {
                                     SettingsTab.NOTIFICATIONS -> {
                                         NotificationSettingsScreen(
-                                            windowWidthSizeClass = windowWidthSizeClass,
+                                            windowSizeClass = windowSizeClass,
                                             viewModel = notificationViewModel,
                                             showBackButton = false,
                                             onNavigateBack = {}
@@ -427,7 +428,7 @@ private fun SettingsContent(
 
                                     SettingsTab.CALENDAR -> {
                                         CalendarSettingsScreen(
-                                            windowWidthSizeClass = windowWidthSizeClass,
+                                            windowSizeClass = windowSizeClass,
                                             viewModel = calendarViewModel,
                                             showBackButton = false,
                                             onNavigateBack = {}
@@ -436,7 +437,7 @@ private fun SettingsContent(
 
                                     SettingsTab.LABELS -> {
                                         LabelSettingsScreen(
-                                            windowWidthSizeClass = windowWidthSizeClass,
+                                            windowSizeClass = windowSizeClass,
                                             viewModel = labelViewModel,
                                             showBackButton = false,
                                             onNavigateBack = {}
@@ -445,7 +446,7 @@ private fun SettingsContent(
 
                                     SettingsTab.BACKUP -> {
                                         BackupScreen(
-                                            windowWidthSizeClass = windowWidthSizeClass,
+                                            windowSizeClass = windowSizeClass,
                                             viewModel = backupViewModel,
                                             showBackButton = false,
                                             onNavigateBack = {}
@@ -454,7 +455,7 @@ private fun SettingsContent(
 
                                     SettingsTab.THEME -> {
                                         ThemeSettingsScreen(
-                                            windowWidthSizeClass = windowWidthSizeClass,
+                                            windowSizeClass = windowSizeClass,
                                             viewModel = themeViewModel,
                                             showBackButton = false,
                                             onNavigateBack = {}
@@ -464,7 +465,7 @@ private fun SettingsContent(
                                     SettingsTab.SYNC -> {
                                         if (homeViewModel != null) {
                                             SyncSettingsScreen(
-                                                windowWidthSizeClass = windowWidthSizeClass,
+                                                windowSizeClass = windowSizeClass,
                                                 viewModel = homeViewModel,
                                                 showBackButton = false,
                                                 onNavigateBack = {}
@@ -481,7 +482,7 @@ private fun SettingsContent(
 
                                     SettingsTab.OTHER_EVENTS -> {
                                         OtherEventsSettingsScreen(
-                                            windowWidthSizeClass = windowWidthSizeClass,
+                                            windowSizeClass = windowSizeClass,
                                             viewModel = notificationViewModel,
                                             showBackButton = false,
                                             onNavigateBack = {}
@@ -490,7 +491,7 @@ private fun SettingsContent(
 
                                     SettingsTab.ABOUT -> {
                                         AboutScreen(
-                                            windowWidthSizeClass = windowWidthSizeClass,
+                                            windowSizeClass = windowSizeClass,
                                             showBackButton = false,
                                             onNavigateBack = {},
                                             onNavigateToPrivacyPolicy = {
@@ -501,7 +502,7 @@ private fun SettingsContent(
 
                                     SettingsTab.PRIVACY_POLICY -> {
                                         PrivacyPolicyScreen(
-                                            windowWidthSizeClass = windowWidthSizeClass,
+                                            windowSizeClass = windowSizeClass,
                                             showBackButton = false,
                                             onNavigateBack = {
                                                 activeTab = SettingsTab.ABOUT
@@ -614,7 +615,7 @@ private fun SettingsMenuItem(
 private fun SettingsPreview() {
     BirthdayBuddyTheme {
         SettingsContent(
-            windowWidthSizeClass = AppWidthSizeClass.COMPACT,
+            windowSizeClass = WindowSizeClass(360, 640),
             homeViewModel = null,
             onNavigateToSync = {},
             onNavigateToLabels = {},

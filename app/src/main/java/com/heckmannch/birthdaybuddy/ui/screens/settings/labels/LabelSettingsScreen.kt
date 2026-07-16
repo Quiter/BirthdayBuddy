@@ -1,5 +1,6 @@
 package com.heckmannch.birthdaybuddy.ui.screens.settings.labels
 
+import androidx.window.core.layout.WindowSizeClass
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -55,7 +56,6 @@ import com.heckmannch.birthdaybuddy.R
 import com.heckmannch.birthdaybuddy.domain.model.ContactLabels
 import com.heckmannch.birthdaybuddy.ui.components.AppResponsiveScaffold
 import com.heckmannch.birthdaybuddy.ui.components.AppSwitch
-import com.heckmannch.birthdaybuddy.ui.components.AppWidthSizeClass
 import com.heckmannch.birthdaybuddy.ui.components.InfoCard
 import com.heckmannch.birthdaybuddy.ui.model.LabelManagementModel
 import com.heckmannch.birthdaybuddy.ui.theme.AlphaEmphasisDisabled
@@ -67,7 +67,7 @@ import com.heckmannch.birthdaybuddy.ui.theme.SpacingSmall
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun LabelSettingsScreen(
-    windowWidthSizeClass: AppWidthSizeClass,
+    windowSizeClass: WindowSizeClass,
     viewModel: LabelViewModel,
     showBackButton: Boolean = true,
     onNavigateBack: () -> Unit,
@@ -76,7 +76,7 @@ fun LabelSettingsScreen(
     val labelsEnabled by viewModel.labelsEnabled.collectAsStateWithLifecycle()
 
     LabelSettingsScreenContent(
-        windowWidthSizeClass = windowWidthSizeClass,
+        windowSizeClass = windowSizeClass,
         labels = labels,
         labelsEnabled = labelsEnabled,
         showBackButton = showBackButton,
@@ -90,7 +90,7 @@ fun LabelSettingsScreen(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun LabelSettingsScreenContent(
-    windowWidthSizeClass: AppWidthSizeClass,
+    windowSizeClass: WindowSizeClass,
     labels: List<LabelManagementModel>,
     labelsEnabled: Boolean,
     showBackButton: Boolean = true,
@@ -103,7 +103,7 @@ private fun LabelSettingsScreenContent(
     val layoutDirection = LocalLayoutDirection.current
 
     AppResponsiveScaffold(
-        windowWidthSizeClass = windowWidthSizeClass,
+        windowSizeClass = windowSizeClass,
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
         topBar = {
             LargeTopAppBar(
@@ -318,7 +318,7 @@ private fun LabelConfigCard(
 private fun LabelSettingsPreview() {
     BirthdayBuddyTheme {
         LabelSettingsScreenContent(
-            windowWidthSizeClass = AppWidthSizeClass.COMPACT,
+            windowSizeClass = WindowSizeClass(360, 640),
             labels = listOf(
                 LabelManagementModel(
                     "Familie",

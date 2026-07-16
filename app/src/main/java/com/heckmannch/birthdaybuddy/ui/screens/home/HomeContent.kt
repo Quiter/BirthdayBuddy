@@ -1,5 +1,9 @@
 package com.heckmannch.birthdaybuddy.ui.screens.home
 
+import androidx.window.core.layout.WindowSizeClass
+import com.heckmannch.birthdaybuddy.ui.components.LocalWindowSizeClass
+import com.heckmannch.birthdaybuddy.ui.components.isWidthCompact
+import com.heckmannch.birthdaybuddy.ui.components.isHeightCompact
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -44,10 +48,7 @@ import androidx.navigation3.runtime.NavEntry
 import androidx.navigation3.runtime.NavKey
 import androidx.navigation3.ui.NavDisplay
 import com.heckmannch.birthdaybuddy.domain.model.ContactLabels
-import com.heckmannch.birthdaybuddy.ui.components.AppHeightSizeClass
 import com.heckmannch.birthdaybuddy.ui.components.AppResponsiveScaffold
-import com.heckmannch.birthdaybuddy.ui.components.AppWidthSizeClass
-import com.heckmannch.birthdaybuddy.ui.components.LocalWindowHeightSizeClass
 import com.heckmannch.birthdaybuddy.ui.model.ContactUiModel
 import com.heckmannch.birthdaybuddy.ui.model.HomeUiState
 import com.heckmannch.birthdaybuddy.ui.model.SampleData
@@ -68,12 +69,12 @@ fun HomeContent(
     uiState: HomeUiState,
     homeState: HomeState,
     actions: HomeActions,
-    windowWidthSizeClass: AppWidthSizeClass,
+    windowSizeClass: WindowSizeClass,
 ) {
-    val windowHeightSizeClass = LocalWindowHeightSizeClass.current
+    val windowSizeClassLocal = LocalWindowSizeClass.current
     val showFilterBarInTopBar = !uiState.contacts.isNullOrEmpty() &&
-            windowWidthSizeClass != AppWidthSizeClass.COMPACT &&
-            windowHeightSizeClass != AppHeightSizeClass.COMPACT
+            !windowSizeClass.isWidthCompact &&
+            !windowSizeClassLocal.isHeightCompact
 
     val currentUiState by rememberUpdatedState(uiState)
     val currentActions by rememberUpdatedState(actions)
@@ -82,7 +83,7 @@ fun HomeContent(
     val keyboardController = LocalSoftwareKeyboardController.current
 
     AppResponsiveScaffold(
-        windowWidthSizeClass = windowWidthSizeClass,
+        windowSizeClass = windowSizeClass,
         useAdaptiveWidth = false,
         snackbarHost = { SnackbarHost(hostState = homeState.snackbarHostState) },
         topBar = {
@@ -161,7 +162,7 @@ fun HomeContent(
                 }
             }
 
-            if (contacts.isNullOrEmpty() || windowWidthSizeClass == AppWidthSizeClass.COMPACT) {
+            if (contacts.isNullOrEmpty() || windowSizeClass.isWidthCompact) {
                 Box(modifier = Modifier.fillMaxSize()) {
                     BirthdayList(
                         contacts = contacts,
@@ -344,7 +345,7 @@ fun HomePreview() {
             uiState = SampleData.homeUiState,
             homeState = rememberHomeState(),
             actions = actions,
-            windowWidthSizeClass = AppWidthSizeClass.COMPACT
+            windowSizeClass = WindowSizeClass(360, 640)
         )
     }
 }

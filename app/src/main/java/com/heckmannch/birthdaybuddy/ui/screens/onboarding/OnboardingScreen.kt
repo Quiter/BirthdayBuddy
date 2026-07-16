@@ -1,5 +1,6 @@
 package com.heckmannch.birthdaybuddy.ui.screens.onboarding
 
+import androidx.window.core.layout.WindowSizeClass
 import android.Manifest
 import android.content.Intent
 import android.net.Uri
@@ -39,7 +40,6 @@ import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.heckmannch.birthdaybuddy.ui.components.AppResponsiveScaffold
-import com.heckmannch.birthdaybuddy.ui.components.AppWidthSizeClass
 import com.heckmannch.birthdaybuddy.ui.model.OnboardingUiState
 import com.heckmannch.birthdaybuddy.ui.screens.onboarding.components.CalendarGuidePage
 import com.heckmannch.birthdaybuddy.ui.screens.onboarding.components.CalendarPage
@@ -58,7 +58,7 @@ import kotlin.time.Duration.Companion.milliseconds
 @Composable
 fun OnboardingScreen(
     viewModel: OnboardingViewModel,
-    windowWidthSizeClass: AppWidthSizeClass,
+    windowSizeClass: WindowSizeClass,
     onFinish: () -> Unit,
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -163,7 +163,7 @@ fun OnboardingScreen(
 
     OnboardingContent(
         uiState = uiState,
-        windowWidthSizeClass = windowWidthSizeClass,
+        windowSizeClass = windowSizeClass,
         onIntent = { viewModel.onIntent(it) },
         onRequestContactPermission = onRequestContactPermission,
         onRequestNotificationPermission = onRequestNotificationPermission,
@@ -183,7 +183,7 @@ fun OnboardingScreen(
 @Composable
 fun OnboardingContent(
     uiState: OnboardingUiState,
-    windowWidthSizeClass: AppWidthSizeClass,
+    windowSizeClass: WindowSizeClass,
     onIntent: (OnboardingIntent) -> Unit,
     onRequestContactPermission: () -> Unit,
     onRequestNotificationPermission: () -> Unit,
@@ -232,7 +232,7 @@ fun OnboardingContent(
             )
     ) {
         AppResponsiveScaffold(
-            windowWidthSizeClass = windowWidthSizeClass,
+            windowSizeClass = windowSizeClass,
             modifier = Modifier.fillMaxSize(),
             containerColor = Color.Transparent,
             contentWindowInsets = WindowInsets.statusBars.union(WindowInsets.navigationBars)
@@ -248,7 +248,7 @@ fun OnboardingContent(
                         3 -> !calendarEnabled || uiState.hasCalendarPermission
                         else -> true
                     },
-                    windowWidthSizeClass = windowWidthSizeClass,
+                    windowSizeClass = windowSizeClass,
                     onBack = {
                         onIntent(OnboardingIntent.SetCurrentPage(pagerState.currentPage - 1))
                     },
@@ -267,9 +267,9 @@ fun OnboardingContent(
             ) { page ->
                 val actualPage = if (!showCalendarGuide && page >= 4) page + 1 else page
                 when (actualPage) {
-                    0 -> WelcomePage(windowWidthSizeClass = windowWidthSizeClass)
+                    0 -> WelcomePage(windowSizeClass = windowSizeClass)
                     1 -> ContactsPage(
-                        windowWidthSizeClass = windowWidthSizeClass,
+                        windowSizeClass = windowSizeClass,
                         enabled = contactsEnabled,
                         onEnabledChange = { contactsEnabled = it },
                         isGranted = uiState.hasContactPermission,
@@ -277,7 +277,7 @@ fun OnboardingContent(
                     )
 
                     2 -> NotificationsPage(
-                        windowWidthSizeClass = windowWidthSizeClass,
+                        windowSizeClass = windowSizeClass,
                         enabled = notificationsEnabled,
                         onEnabledChange = { notificationsEnabled = it },
                         persistent = uiState.isPersistentNotificationEnabled,
@@ -287,17 +287,17 @@ fun OnboardingContent(
                     )
 
                     3 -> CalendarPage(
-                        windowWidthSizeClass = windowWidthSizeClass,
+                        windowSizeClass = windowSizeClass,
                         enabled = calendarEnabled,
                         onEnabledChange = { calendarEnabled = it },
                         isGranted = uiState.hasCalendarPermission,
                         onGrant = onRequestCalendarPermission
                     )
 
-                    4 -> CalendarGuidePage(windowWidthSizeClass = windowWidthSizeClass)
+                    4 -> CalendarGuidePage(windowSizeClass = windowSizeClass)
 
                     5 -> ReadyPage(
-                        windowWidthSizeClass = windowWidthSizeClass,
+                        windowSizeClass = windowSizeClass,
                         hasContactPermission = contactsEnabled && uiState.hasContactPermission,
                         notificationsEnabled = notificationsEnabled && uiState.hasNotificationPermission,
                         calendarSyncEnabled = calendarEnabled && uiState.hasCalendarPermission
@@ -320,7 +320,7 @@ private fun OnboardingScreenPreview() {
     BirthdayBuddyTheme {
         OnboardingContent(
             uiState = OnboardingUiState(),
-            windowWidthSizeClass = AppWidthSizeClass.COMPACT,
+            windowSizeClass = WindowSizeClass(360, 640),
             onIntent = {},
             onRequestContactPermission = {},
             onRequestNotificationPermission = {},

@@ -1,5 +1,6 @@
 package com.heckmannch.birthdaybuddy.ui.screens.settings.notifications
 
+import androidx.window.core.layout.WindowSizeClass
 import android.Manifest
 import android.app.Activity
 import android.content.Intent
@@ -62,7 +63,6 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.heckmannch.birthdaybuddy.R
 import com.heckmannch.birthdaybuddy.domain.model.NotificationRule
 import com.heckmannch.birthdaybuddy.ui.components.AppResponsiveScaffold
-import com.heckmannch.birthdaybuddy.ui.components.AppWidthSizeClass
 import com.heckmannch.birthdaybuddy.ui.components.InfoCard
 import com.heckmannch.birthdaybuddy.ui.components.SettingsCard
 import com.heckmannch.birthdaybuddy.ui.components.SettingsSectionHeader
@@ -79,7 +79,7 @@ import com.heckmannch.birthdaybuddy.ui.theme.SpacingNormal
 
 @Composable
 fun NotificationSettingsScreen(
-    windowWidthSizeClass: AppWidthSizeClass,
+    windowSizeClass: WindowSizeClass,
     viewModel: NotificationViewModel,
     showBackButton: Boolean = true,
     onNavigateBack: () -> Unit,
@@ -124,7 +124,7 @@ fun NotificationSettingsScreen(
     }
 
     NotificationSettingsContent(
-        windowWidthSizeClass = windowWidthSizeClass,
+        windowSizeClass = windowSizeClass,
         notificationsEnabled = notificationsEnabled,
         persistentNotifications = persistentNotifications,
         rules = rules,
@@ -213,7 +213,7 @@ fun rememberNotificationSettingsState(): NotificationSettingsState {
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun NotificationSettingsContent(
-    windowWidthSizeClass: AppWidthSizeClass,
+    windowSizeClass: WindowSizeClass,
     notificationsEnabled: Boolean,
     persistentNotifications: Boolean,
     rules: List<NotificationRule>,
@@ -231,7 +231,7 @@ private fun NotificationSettingsContent(
     val scrollBehavior =
         TopAppBarDefaults.exitUntilCollapsedScrollBehavior(rememberTopAppBarState())
     AppResponsiveScaffold(
-        windowWidthSizeClass = windowWidthSizeClass,
+        windowSizeClass = windowSizeClass,
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
         topBar = {
             LargeTopAppBar(
@@ -416,7 +416,7 @@ private fun PermissionRequestState(
 private fun NotificationSettingsPreview() {
     BirthdayBuddyTheme {
         NotificationSettingsContent(
-            windowWidthSizeClass = AppWidthSizeClass.COMPACT,
+            windowSizeClass = WindowSizeClass(360, 640),
             notificationsEnabled = true,
             persistentNotifications = true,
             rules = listOf(

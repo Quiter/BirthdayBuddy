@@ -1,5 +1,6 @@
 package com.heckmannch.birthdaybuddy.ui.screens.settings.theme
 
+import androidx.window.core.layout.WindowSizeClass
 import android.os.Build
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.background
@@ -52,7 +53,6 @@ import androidx.core.graphics.toColorInt
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.heckmannch.birthdaybuddy.R
 import com.heckmannch.birthdaybuddy.ui.components.AppResponsiveScaffold
-import com.heckmannch.birthdaybuddy.ui.components.AppWidthSizeClass
 import com.heckmannch.birthdaybuddy.ui.components.ColorPickerDialog
 import com.heckmannch.birthdaybuddy.ui.components.SettingsCard
 import com.heckmannch.birthdaybuddy.ui.components.SettingsClickableRow
@@ -70,7 +70,7 @@ import com.heckmannch.birthdaybuddy.ui.theme.SpacingSmall
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ThemeSettingsScreen(
-    windowWidthSizeClass: AppWidthSizeClass,
+    windowSizeClass: WindowSizeClass,
     viewModel: ThemeViewModel,
     showBackButton: Boolean = true,
     onNavigateBack: () -> Unit
@@ -81,7 +81,7 @@ fun ThemeSettingsScreen(
     val themeAccent = uiState.themeAccent
 
     ThemeSettingsContent(
-        windowWidthSizeClass = windowWidthSizeClass,
+        windowSizeClass = windowSizeClass,
         themeMode = themeMode,
         themeAmoled = themeAmoled,
         themeAccent = themeAccent,
@@ -96,7 +96,7 @@ fun ThemeSettingsScreen(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun ThemeSettingsContent(
-    windowWidthSizeClass: AppWidthSizeClass,
+    windowSizeClass: WindowSizeClass,
     themeMode: String,
     themeAmoled: Boolean,
     themeAccent: String,
@@ -112,7 +112,7 @@ private fun ThemeSettingsContent(
         TopAppBarDefaults.exitUntilCollapsedScrollBehavior(rememberTopAppBarState())
 
     AppResponsiveScaffold(
-        windowWidthSizeClass = windowWidthSizeClass,
+        windowSizeClass = windowSizeClass,
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
         topBar = {
             LargeTopAppBar(
@@ -340,7 +340,7 @@ private fun ThemeSettingsContent(
 private fun ThemeSettingsPreview() {
     MaterialTheme {
         ThemeSettingsContent(
-            windowWidthSizeClass = AppWidthSizeClass.COMPACT,
+            windowSizeClass = WindowSizeClass(360, 640),
             themeMode = "SYSTEM",
             themeAmoled = false,
             themeAccent = "PURPLE",

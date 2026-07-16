@@ -22,12 +22,8 @@ import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation3.runtime.rememberNavBackStack
-import androidx.window.core.layout.WindowSizeClass
-import com.heckmannch.birthdaybuddy.ui.components.AppHeightSizeClass
-import com.heckmannch.birthdaybuddy.ui.components.AppWidthSizeClass
 import com.heckmannch.birthdaybuddy.ui.components.ContactSyncEffect
-import com.heckmannch.birthdaybuddy.ui.components.LocalWindowHeightSizeClass
-import com.heckmannch.birthdaybuddy.ui.components.LocalWindowWidthSizeClass
+import com.heckmannch.birthdaybuddy.ui.components.LocalWindowSizeClass
 import com.heckmannch.birthdaybuddy.ui.navigation.AppNavHost
 import com.heckmannch.birthdaybuddy.ui.navigation.Home
 import com.heckmannch.birthdaybuddy.ui.navigation.NotificationSettings
@@ -58,16 +54,6 @@ class MainActivity : ComponentActivity() {
         setContent {
             val windowAdaptiveInfo = currentWindowAdaptiveInfoV2()
             val windowSizeClass = windowAdaptiveInfo.windowSizeClass
-            val widthSizeClass = when {
-                windowSizeClass.isWidthAtLeastBreakpoint(WindowSizeClass.WIDTH_DP_EXPANDED_LOWER_BOUND) -> AppWidthSizeClass.EXPANDED
-                windowSizeClass.isWidthAtLeastBreakpoint(WindowSizeClass.WIDTH_DP_MEDIUM_LOWER_BOUND) -> AppWidthSizeClass.MEDIUM
-                else -> AppWidthSizeClass.COMPACT
-            }
-            val heightSizeClass = when {
-                windowSizeClass.isHeightAtLeastBreakpoint(WindowSizeClass.HEIGHT_DP_EXPANDED_LOWER_BOUND) -> AppHeightSizeClass.EXPANDED
-                windowSizeClass.isHeightAtLeastBreakpoint(WindowSizeClass.HEIGHT_DP_MEDIUM_LOWER_BOUND) -> AppHeightSizeClass.MEDIUM
-                else -> AppHeightSizeClass.COMPACT
-            }
             val appViewModel: AppViewModel = hiltViewModel()
             val homeViewModel: HomeViewModel = hiltViewModel()
             val onboardingViewModel: OnboardingViewModel = hiltViewModel()
@@ -86,8 +72,7 @@ class MainActivity : ComponentActivity() {
             ) {
                 if (onboardingCompleted != null) {
                     CompositionLocalProvider(
-                        LocalWindowWidthSizeClass provides widthSizeClass,
-                        LocalWindowHeightSizeClass provides heightSizeClass
+                        LocalWindowSizeClass provides windowSizeClass
                     ) {
                         val backStack = rememberNavBackStack(
                             if (onboardingCompleted == true) Home else Onboarding
@@ -157,7 +142,7 @@ class MainActivity : ComponentActivity() {
                                 backStack = backStack,
                                 homeViewModel = homeViewModel,
                                 onboardingViewModel = onboardingViewModel,
-                                windowWidthSizeClass = widthSizeClass
+                                windowSizeClass = windowSizeClass
                             )
                         }
                     }

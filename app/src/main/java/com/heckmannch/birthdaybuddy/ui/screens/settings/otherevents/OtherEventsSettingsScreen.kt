@@ -1,5 +1,6 @@
 package com.heckmannch.birthdaybuddy.ui.screens.settings.otherevents
 
+import androidx.window.core.layout.WindowSizeClass
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
@@ -24,7 +25,6 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.heckmannch.birthdaybuddy.R
 import com.heckmannch.birthdaybuddy.ui.components.AppResponsiveScaffold
-import com.heckmannch.birthdaybuddy.ui.components.AppWidthSizeClass
 import com.heckmannch.birthdaybuddy.ui.components.InfoCard
 import com.heckmannch.birthdaybuddy.ui.components.SettingsCard
 import com.heckmannch.birthdaybuddy.ui.components.SettingsSwitchRow
@@ -36,7 +36,7 @@ import com.heckmannch.birthdaybuddy.ui.theme.SpacingSmall
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun OtherEventsSettingsScreen(
-    windowWidthSizeClass: AppWidthSizeClass,
+    windowSizeClass: WindowSizeClass,
     viewModel: NotificationViewModel,
     showBackButton: Boolean = true,
     onNavigateBack: () -> Unit,
@@ -45,7 +45,7 @@ fun OtherEventsSettingsScreen(
     val otherEventsEnabled = uiState.otherEventsEnabled
 
     OtherEventsSettingsContent(
-        windowWidthSizeClass = windowWidthSizeClass,
+        windowSizeClass = windowSizeClass,
         otherEventsEnabled = otherEventsEnabled,
         onToggleChange = { viewModel.onIntent(NotificationIntent.SetOtherEventsEnabled(it)) },
         showBackButton = showBackButton,
@@ -56,7 +56,7 @@ fun OtherEventsSettingsScreen(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun OtherEventsSettingsContent(
-    windowWidthSizeClass: AppWidthSizeClass,
+    windowSizeClass: WindowSizeClass,
     otherEventsEnabled: Boolean,
     onToggleChange: (Boolean) -> Unit,
     showBackButton: Boolean,
@@ -66,7 +66,7 @@ private fun OtherEventsSettingsContent(
         TopAppBarDefaults.exitUntilCollapsedScrollBehavior(rememberTopAppBarState())
 
     AppResponsiveScaffold(
-        windowWidthSizeClass = windowWidthSizeClass,
+        windowSizeClass = windowSizeClass,
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
         topBar = {
             LargeTopAppBar(
@@ -127,7 +127,7 @@ private fun OtherEventsSettingsContent(
 private fun OtherEventsSettingsPreview() {
     MaterialTheme {
         OtherEventsSettingsContent(
-            windowWidthSizeClass = AppWidthSizeClass.COMPACT,
+            windowSizeClass = WindowSizeClass(360, 640),
             otherEventsEnabled = true,
             onToggleChange = {},
             showBackButton = true,

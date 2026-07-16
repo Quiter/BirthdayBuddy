@@ -1,5 +1,6 @@
 package com.heckmannch.birthdaybuddy.ui.screens.settings.backup.components
 
+import androidx.window.core.layout.WindowSizeClass
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -28,7 +29,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import com.heckmannch.birthdaybuddy.R
 import com.heckmannch.birthdaybuddy.ui.components.AppResponsiveScaffold
-import com.heckmannch.birthdaybuddy.ui.components.AppWidthSizeClass
 import com.heckmannch.birthdaybuddy.ui.components.InfoCard
 import com.heckmannch.birthdaybuddy.ui.components.SettingsCard
 import com.heckmannch.birthdaybuddy.ui.components.SettingsClickableRow
@@ -42,7 +42,7 @@ import com.heckmannch.birthdaybuddy.ui.theme.SpacingNormal
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun BackupContent(
-    windowWidthSizeClass: AppWidthSizeClass,
+    windowSizeClass: WindowSizeClass,
     isLoading: Boolean,
     showBackButton: Boolean = true,
     onExportClick: () -> Unit,
@@ -52,7 +52,7 @@ fun BackupContent(
     val scrollBehavior =
         TopAppBarDefaults.exitUntilCollapsedScrollBehavior(rememberTopAppBarState())
     AppResponsiveScaffold(
-        windowWidthSizeClass = windowWidthSizeClass,
+        windowSizeClass = windowSizeClass,
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
         topBar = {
             LargeTopAppBar(
@@ -128,7 +128,7 @@ fun BackupContent(
 private fun BackupPreview() {
     BirthdayBuddyTheme {
         BackupContent(
-            windowWidthSizeClass = AppWidthSizeClass.COMPACT,
+            windowSizeClass = WindowSizeClass(360, 640),
             isLoading = false,
             onExportClick = {},
             onImportClick = {},
@@ -142,7 +142,7 @@ private fun BackupPreview() {
 private fun BackupLoadingPreview() {
     BirthdayBuddyTheme {
         BackupContent(
-            windowWidthSizeClass = AppWidthSizeClass.COMPACT,
+            windowSizeClass = WindowSizeClass(360, 640),
             isLoading = true,
             onExportClick = {},
             onImportClick = {},
