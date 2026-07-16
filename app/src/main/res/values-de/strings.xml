@@ -412,4 +412,7 @@
     <string name="detail_placeholder_title">Wähle einen Kontakt</string>
     <string name="detail_placeholder_subtitle">Wähle links einen Kontakt aus, um Details anzuzeigen oder Geschenkideen zu verwalten.</string>
     <string name="detail_placeholder_quote">„Jeder Geburtstag ist der Beginn einer neuen 365-tägigen Reise um die Sonne. Genieße die Fahrt!“</string>
+
+    <string name="navigate_back">Zurück navigieren</string>
+    <string name="settings_privacy_title">Datenschutzerklärung</string>
 </resources>
