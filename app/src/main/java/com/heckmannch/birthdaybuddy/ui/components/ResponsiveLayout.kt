@@ -32,6 +32,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.tooling.preview.Devices
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.window.core.layout.WindowSizeClass
 import androidx.compose.material3.adaptive.WindowAdaptiveInfo
@@ -39,6 +41,8 @@ import com.heckmannch.birthdaybuddy.ui.theme.AlphaContainerMedium
 import com.heckmannch.birthdaybuddy.ui.theme.BirthdayBuddyTheme
 import com.heckmannch.birthdaybuddy.ui.theme.MaxWidthExpanded
 import com.heckmannch.birthdaybuddy.ui.theme.MaxWidthMedium
+import com.heckmannch.birthdaybuddy.ui.theme.SpacingNormal
+import com.heckmannch.birthdaybuddy.ui.theme.SpacingSmall
 
 // --- Extensions for clean breakpoint checks ---
 
@@ -169,6 +173,26 @@ fun AppResponsiveScaffold(
         }
     )
 }
+
+/**
+ * Adds standardized inner content padding to scaffold [PaddingValues].
+ * Used by settings detail screens to add horizontal/vertical insets
+ * while correctly consuming all scaffold insets (system bars, cutouts).
+ *
+ * @param horizontal Additional horizontal padding on top of scaffold insets. Default: [SpacingNormal].
+ * @param vertical Additional vertical padding on top of scaffold insets. Default: [SpacingSmall].
+ */
+@Composable
+fun PaddingValues.withSettingsInsets(
+    layoutDirection: LayoutDirection = LocalLayoutDirection.current,
+    horizontal: Dp = SpacingNormal,
+    vertical: Dp = SpacingSmall
+): PaddingValues = PaddingValues(
+    start = calculateStartPadding(layoutDirection) + horizontal,
+    top = calculateTopPadding() + vertical,
+    end = calculateEndPadding(layoutDirection) + horizontal,
+    bottom = calculateBottomPadding() + vertical
+)
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Preview(showBackground = true, device = Devices.PHONE, name = "Phone (Compact)")

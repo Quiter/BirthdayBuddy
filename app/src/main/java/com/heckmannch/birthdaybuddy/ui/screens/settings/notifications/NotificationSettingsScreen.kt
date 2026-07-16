@@ -12,10 +12,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.calculateEndPadding
-import androidx.compose.foundation.layout.calculateStartPadding
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -41,11 +38,9 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.Lifecycle
@@ -59,11 +54,13 @@ import com.heckmannch.birthdaybuddy.ui.components.SettingsDetailScaffold
 import com.heckmannch.birthdaybuddy.ui.components.SettingsDivider
 import com.heckmannch.birthdaybuddy.ui.components.SettingsSection
 import com.heckmannch.birthdaybuddy.ui.components.SettingsSwitchRow
+import com.heckmannch.birthdaybuddy.ui.components.withSettingsInsets
 import com.heckmannch.birthdaybuddy.ui.screens.settings.notifications.components.EditRuleDialog
 import com.heckmannch.birthdaybuddy.ui.screens.settings.notifications.components.NotificationRuleItem
 import com.heckmannch.birthdaybuddy.ui.theme.AlphaSurfaceContainerHigh
 import com.heckmannch.birthdaybuddy.ui.theme.BirthdayBuddyTheme
 import com.heckmannch.birthdaybuddy.ui.theme.ContactImageSizeNormal
+import com.heckmannch.birthdaybuddy.ui.theme.GridColumnMinWidth
 import com.heckmannch.birthdaybuddy.ui.theme.SpacingExtraLarge
 import com.heckmannch.birthdaybuddy.ui.theme.SpacingLarge
 import com.heckmannch.birthdaybuddy.ui.theme.SpacingNormal
@@ -236,16 +233,10 @@ private fun NotificationSettingsContent(
                 modifier = Modifier.padding(paddingValues)
             )
         } else {
-            val layoutDirection = LocalLayoutDirection.current
             LazyVerticalGrid(
-                columns = GridCells.Adaptive(minSize = 340.dp),
+                columns = GridCells.Adaptive(minSize = GridColumnMinWidth),
                 modifier = Modifier.fillMaxSize(),
-                contentPadding = PaddingValues(
-                    start = paddingValues.calculateStartPadding(layoutDirection) + SpacingNormal,
-                    top = paddingValues.calculateTopPadding() + SpacingNormal,
-                    end = paddingValues.calculateEndPadding(layoutDirection) + SpacingNormal,
-                    bottom = paddingValues.calculateBottomPadding() + SpacingNormal
-                ),
+                contentPadding = paddingValues.withSettingsInsets(vertical = SpacingNormal),
                 horizontalArrangement = Arrangement.spacedBy(SpacingNormal),
                 verticalArrangement = Arrangement.spacedBy(SpacingNormal)
             ) {

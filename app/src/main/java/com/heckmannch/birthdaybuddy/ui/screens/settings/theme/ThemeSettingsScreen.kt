@@ -39,7 +39,6 @@ import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
 import androidx.core.graphics.toColorInt
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.heckmannch.birthdaybuddy.R
@@ -51,10 +50,14 @@ import com.heckmannch.birthdaybuddy.ui.components.SettingsDetailScaffold
 import com.heckmannch.birthdaybuddy.ui.components.SettingsDivider
 import com.heckmannch.birthdaybuddy.ui.components.SettingsSection
 import com.heckmannch.birthdaybuddy.ui.components.SettingsSwitchRow
+import com.heckmannch.birthdaybuddy.ui.components.withSettingsInsets
+import com.heckmannch.birthdaybuddy.ui.theme.AccentPresetColors
 import com.heckmannch.birthdaybuddy.ui.theme.BirthdayKidGreen
+import com.heckmannch.birthdaybuddy.ui.theme.BorderWidthThin
 import com.heckmannch.birthdaybuddy.ui.theme.IconSizeExtraLarge
 import com.heckmannch.birthdaybuddy.ui.theme.IconSizeNormal
 import com.heckmannch.birthdaybuddy.ui.theme.IconSizeSmall
+import com.heckmannch.birthdaybuddy.ui.theme.SelectedBorderWidthThick
 import com.heckmannch.birthdaybuddy.ui.theme.SpacingExtraSmall
 import com.heckmannch.birthdaybuddy.ui.theme.SpacingNormal
 import com.heckmannch.birthdaybuddy.ui.theme.SpacingSmall
@@ -105,7 +108,7 @@ private fun ThemeSettingsContent(
     ) { paddingValues ->
         LazyColumn(
             modifier = Modifier.fillMaxSize(),
-            contentPadding = paddingValues
+            contentPadding = paddingValues.withSettingsInsets()
         ) {
              // --- Theme Mode ---
              item {
@@ -183,12 +186,12 @@ private fun ThemeSettingsContent(
 
                         colors.addAll(
                             listOf(
-                                AccentColorOption(ThemeAccent.PURPLE, Color(0xFF6750A4)),
-                                AccentColorOption(ThemeAccent.BLUE, Color(0xFF005FAF)),
-                                AccentColorOption(ThemeAccent.GREEN, Color(0xFF388E3C)),
-                                AccentColorOption(ThemeAccent.RED, Color(0xFFBA1A1A)),
-                                AccentColorOption(ThemeAccent.ORANGE, Color(0xFFF57C00)),
-                                AccentColorOption(ThemeAccent.PINK, Color(0xFFC2185B))
+                                AccentColorOption(ThemeAccent.PURPLE, AccentPresetColors[5]),
+                                AccentColorOption(ThemeAccent.BLUE, AccentPresetColors[0]),
+                                AccentColorOption(ThemeAccent.GREEN, AccentPresetColors[1]),
+                                AccentColorOption(ThemeAccent.RED, AccentPresetColors[2]),
+                                AccentColorOption(ThemeAccent.ORANGE, AccentPresetColors[3]),
+                                AccentColorOption(ThemeAccent.PINK, AccentPresetColors[4])
                             )
                         )
 
@@ -345,7 +348,7 @@ private fun ColorItem(
                     }
                 )
                 .border(
-                    width = if (isSelected) 3.dp else 1.dp,
+                    width = if (isSelected) SelectedBorderWidthThick else BorderWidthThin,
                     color = if (isSelected) MaterialTheme.colorScheme.outline else MaterialTheme.colorScheme.outlineVariant,
                     shape = CircleShape
                 )

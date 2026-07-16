@@ -4,11 +4,8 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.calculateEndPadding
-import androidx.compose.foundation.layout.calculateStartPadding
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -39,20 +36,23 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
-import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.heckmannch.birthdaybuddy.R
 import com.heckmannch.birthdaybuddy.domain.model.ContactLabels
 import com.heckmannch.birthdaybuddy.ui.components.AppSwitch
 import com.heckmannch.birthdaybuddy.ui.components.InfoCard
 import com.heckmannch.birthdaybuddy.ui.components.SettingsDetailScaffold
+import com.heckmannch.birthdaybuddy.ui.components.withSettingsInsets
 import com.heckmannch.birthdaybuddy.ui.model.LabelManagementModel
 import com.heckmannch.birthdaybuddy.ui.theme.AlphaEmphasisDisabled
 import com.heckmannch.birthdaybuddy.ui.theme.BirthdayBuddyTheme
+import com.heckmannch.birthdaybuddy.ui.theme.ChipPaddingHorizontal
+import com.heckmannch.birthdaybuddy.ui.theme.ChipPaddingVertical
+import com.heckmannch.birthdaybuddy.ui.theme.EmptyStatePadding
+import com.heckmannch.birthdaybuddy.ui.theme.GridColumnMinWidth
 import com.heckmannch.birthdaybuddy.ui.theme.IconSizeSmall
 import com.heckmannch.birthdaybuddy.ui.theme.SpacingNormal
 import com.heckmannch.birthdaybuddy.ui.theme.SpacingSmall
@@ -86,22 +86,15 @@ private fun LabelSettingsScreenContent(
     onLabelsEnabledChanged: (Boolean) -> Unit,
     onConfigChanged: (String, Boolean, Boolean, Boolean) -> Unit
 ) {
-    val layoutDirection = LocalLayoutDirection.current
-
     SettingsDetailScaffold(
         title = stringResource(R.string.settings_labels_title),
         showBackButton = showBackButton,
         onNavigateBack = onNavigateBack
     ) { paddingValues ->
         LazyVerticalGrid(
-            columns = GridCells.Adaptive(minSize = 340.dp),
+            columns = GridCells.Adaptive(minSize = GridColumnMinWidth),
             modifier = Modifier.fillMaxSize(),
-            contentPadding = PaddingValues(
-                start = paddingValues.calculateStartPadding(layoutDirection) + SpacingNormal,
-                top = paddingValues.calculateTopPadding() + SpacingNormal,
-                end = paddingValues.calculateEndPadding(layoutDirection) + SpacingNormal,
-                bottom = paddingValues.calculateBottomPadding() + SpacingNormal
-            ),
+            contentPadding = paddingValues.withSettingsInsets(vertical = SpacingNormal),
             horizontalArrangement = Arrangement.spacedBy(SpacingNormal),
             verticalArrangement = Arrangement.spacedBy(SpacingNormal)
         ) {
@@ -134,7 +127,7 @@ private fun LabelSettingsScreenContent(
                     Box(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(vertical = 64.dp),
+                            .padding(vertical = EmptyStatePadding),
                         contentAlignment = Alignment.Center
                     ) {
                         Text(
@@ -225,7 +218,7 @@ private fun LabelConfigCard(
                         Text(
                             text = stringResource(R.string.labels_system_tag),
                             style = MaterialTheme.typography.labelSmall,
-                            modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp),
+                            modifier = Modifier.padding(horizontal = ChipPaddingHorizontal, vertical = ChipPaddingVertical),
                             color = MaterialTheme.colorScheme.onSecondaryContainer
                         )
                     }

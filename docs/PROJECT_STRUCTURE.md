@@ -163,7 +163,7 @@
     - `CalendarGuideIllustration.kt`: Wiederverwendbare native Custom-Animations-Komponente für die Kalender-Konfigurationsanleitung.
     - `ReadyIllustration.kt`: Native Custom-Animations-Komponente mit Konfetti-Effekt für den Abschluss.
 - ### 📁 Theme (`ui.theme`)
-    - `Theme.kt`, `Color.kt`, `Type.kt`, `Shapes.kt`: Design-System Definitionen (Farbschemata, Typografie, Eckenradien), custom Farbschemata für Akzentfarben und AMOLED-Erweiterung.
+    - `Theme.kt`, `Color.kt`, `ColorPresets.kt`, `Type.kt`, `Shapes.kt`: Design-System Definitionen (Farbschemata, Typografie, Eckenradien, Farb-Presets), custom Farbschemata für Akzentfarben und AMOLED-Erweiterung.
 
 ## 📁 Notification-Infrastruktur (`notification`)
 - `NotificationWorker.kt`: Hintergrund-Prozess für die Benachrichtigungs-Logik (`@AssistedInject` Hilt-Worker).

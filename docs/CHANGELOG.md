@@ -590,5 +590,11 @@
         8. [SyncSettingsScreen.kt](file:///c:/Users/chris/AndroidStudioProjects/BirthdayBuddy/app/src/main/java/com/heckmannch/birthdaybuddy/ui/screens/settings/sync/SyncSettingsScreen.kt)
         9. [ThemeSettingsScreen.kt](file:///c:/Users/chris/AndroidStudioProjects/BirthdayBuddy/app/src/main/java/com/heckmannch/birthdaybuddy/ui/screens/settings/theme/ThemeSettingsScreen.kt)
 
+294. **Extraktion und Zentralisierung der Farb-Presets in `ColorPresets.kt` (Refactoring & Code Quality):**
+    - **Einführung von `ColorPresets.kt`:** Erstellung der neuen Theme-Datei [ColorPresets.kt](file:///c:/Users/chris/AndroidStudioProjects/BirthdayBuddy/app/src/main/java/com/heckmannch/birthdaybuddy/ui/theme/ColorPresets.kt) zur Auslagerung von vordefinierten Kalenderfarben (`CalendarPresetColors`) und Akzentfarben (`AccentPresetColors`).
+    - **Refactoring der Screens:** Migration der lokalen Farblisten in [CalendarSettingsScreen.kt](file:///c:/Users/chris/AndroidStudioProjects/BirthdayBuddy/app/src/main/java/com/heckmannch/birthdaybuddy/ui/screens/settings/calendar/CalendarSettingsScreen.kt) and [ThemeSettingsScreen.kt](file:///c:/Users/chris/AndroidStudioProjects/BirthdayBuddy/app/src/main/java/com/heckmannch/birthdaybuddy/ui/screens/settings/theme/ThemeSettingsScreen.kt) auf die zentralen Konstanten unter Beibehaltung der exakten Rendering-Reihenfolge.
+    - **Bereinigung von Code-Altlasten:** Entfernung ungenutzter Imports (z. B. `BirthdayKidGreen` in `CalendarSettingsScreen.kt`).
+
+
 
 

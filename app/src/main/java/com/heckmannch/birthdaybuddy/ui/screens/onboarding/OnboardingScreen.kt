@@ -48,6 +48,8 @@ import com.heckmannch.birthdaybuddy.ui.screens.onboarding.components.OnboardingF
 import com.heckmannch.birthdaybuddy.ui.screens.onboarding.components.ReadyPage
 import com.heckmannch.birthdaybuddy.ui.screens.onboarding.components.WelcomePage
 import com.heckmannch.birthdaybuddy.ui.theme.AlphaContainerSubtle
+import com.heckmannch.birthdaybuddy.ui.theme.AnimDelayPermission
+import com.heckmannch.birthdaybuddy.ui.theme.AnimDurationMedium
 import com.heckmannch.birthdaybuddy.ui.theme.BirthdayBuddyTheme
 import com.heckmannch.birthdaybuddy.util.PermissionHelper
 import com.heckmannch.birthdaybuddy.util.findActivity
@@ -70,7 +72,7 @@ fun OnboardingScreen(
             viewModel.onIntent(OnboardingIntent.RefreshPermissions)
             if (isGranted) {
                 scope.launch {
-                    kotlinx.coroutines.delay(300.milliseconds)
+                    kotlinx.coroutines.delay(AnimDelayPermission.milliseconds)
                     viewModel.onIntent(OnboardingIntent.SetCurrentPage(uiState.currentPage + 1))
                 }
             }
@@ -81,7 +83,7 @@ fun OnboardingScreen(
             viewModel.onIntent(OnboardingIntent.RefreshPermissions)
             if (isGranted) {
                 scope.launch {
-                    kotlinx.coroutines.delay(300.milliseconds)
+                    kotlinx.coroutines.delay(AnimDelayPermission.milliseconds)
                     viewModel.onIntent(OnboardingIntent.SetCurrentPage(uiState.currentPage + 1))
                 }
             }
@@ -94,7 +96,7 @@ fun OnboardingScreen(
             viewModel.onIntent(OnboardingIntent.RefreshPermissions)
             if (granted) {
                 scope.launch {
-                    kotlinx.coroutines.delay(300.milliseconds)
+                    kotlinx.coroutines.delay(AnimDelayPermission.milliseconds)
                     viewModel.onIntent(OnboardingIntent.SetCurrentPage(uiState.currentPage + 1))
                 }
             }
@@ -144,7 +146,7 @@ fun OnboardingScreen(
         } else {
             viewModel.onIntent(OnboardingIntent.RefreshPermissions)
             scope.launch {
-                kotlinx.coroutines.delay(300.milliseconds)
+                kotlinx.coroutines.delay(AnimDelayPermission.milliseconds)
                 viewModel.onIntent(OnboardingIntent.SetCurrentPage(uiState.currentPage + 1))
             }
         }
@@ -211,7 +213,7 @@ fun OnboardingContent(
             4 -> MaterialTheme.colorScheme.secondaryContainer.copy(alpha = AlphaContainerSubtle)
             else -> MaterialTheme.colorScheme.tertiaryContainer.copy(alpha = AlphaContainerSubtle)
         },
-        animationSpec = tween(durationMillis = 500),
+        animationSpec = tween(durationMillis = AnimDurationMedium),
         label = "ambient_color"
     )
 

@@ -1,7 +1,6 @@
 package com.heckmannch.birthdaybuddy.ui.screens.settings.otherevents
 
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
@@ -19,10 +18,10 @@ import com.heckmannch.birthdaybuddy.ui.components.InfoCard
 import com.heckmannch.birthdaybuddy.ui.components.SettingsCard
 import com.heckmannch.birthdaybuddy.ui.components.SettingsDetailScaffold
 import com.heckmannch.birthdaybuddy.ui.components.SettingsSwitchRow
+import com.heckmannch.birthdaybuddy.ui.components.withSettingsInsets
 import com.heckmannch.birthdaybuddy.ui.screens.settings.notifications.NotificationIntent
 import com.heckmannch.birthdaybuddy.ui.screens.settings.notifications.NotificationViewModel
 import com.heckmannch.birthdaybuddy.ui.theme.SpacingNormal
-import com.heckmannch.birthdaybuddy.ui.theme.SpacingSmall
 
 @Composable
 fun OtherEventsSettingsScreen(
@@ -55,12 +54,7 @@ private fun OtherEventsSettingsContent(
     ) { paddingValues ->
         LazyColumn(
             modifier = Modifier.fillMaxSize(),
-            contentPadding = PaddingValues(
-                start = SpacingNormal,
-                top = paddingValues.calculateTopPadding() + SpacingSmall,
-                end = SpacingNormal,
-                bottom = paddingValues.calculateBottomPadding() + SpacingSmall
-            ),
+            contentPadding = paddingValues.withSettingsInsets(),
             verticalArrangement = Arrangement.spacedBy(SpacingNormal)
         ) {
             item {

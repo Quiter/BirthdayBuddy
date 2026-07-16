@@ -11,7 +11,6 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -43,7 +42,6 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LifecycleEventEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -58,9 +56,11 @@ import com.heckmannch.birthdaybuddy.ui.components.SettingsDivider
 import com.heckmannch.birthdaybuddy.ui.components.SettingsSection
 import com.heckmannch.birthdaybuddy.ui.components.SettingsSwitchRow
 import com.heckmannch.birthdaybuddy.ui.components.StepItem
+import com.heckmannch.birthdaybuddy.ui.components.withSettingsInsets
 import com.heckmannch.birthdaybuddy.ui.theme.AlphaContainerMedium
-import com.heckmannch.birthdaybuddy.ui.theme.BirthdayKidGreen
+import com.heckmannch.birthdaybuddy.ui.theme.CalendarPresetColors
 import com.heckmannch.birthdaybuddy.ui.theme.IconSizeLarge
+import com.heckmannch.birthdaybuddy.ui.theme.IconSizeMedium
 import com.heckmannch.birthdaybuddy.ui.theme.SpacingNormal
 import com.heckmannch.birthdaybuddy.ui.theme.SpacingSmall
 
@@ -145,18 +145,7 @@ fun CalendarSettingsScreen(
     )
 
     activeColorPickerType?.let { type ->
-        val presets = remember {
-            listOf(
-                Color(0xFFE91E63), // Pink
-                Color(0xFF9C27B0), // Violet
-                Color(0xFF2196F3), // Blue
-                Color(0xFF00BCD4), // Cyan
-                BirthdayKidGreen, // Green
-                Color(0xFFFFC107), // Amber
-                Color(0xFFFF9800), // Orange
-                Color(0xFF795548)  // Brown
-            )
-        }
+        val presets = remember { CalendarPresetColors }
         ColorPickerDialog(
             initialColor = activeColorPickerInitialColor,
             title = stringResource(R.string.calendar_color_picker_title),
@@ -191,12 +180,7 @@ private fun CalendarSettingsContent(
     ) { paddingValues ->
         LazyColumn(
             modifier = Modifier.fillMaxSize(),
-            contentPadding = PaddingValues(
-                start = SpacingNormal,
-                top = paddingValues.calculateTopPadding() + SpacingSmall,
-                end = SpacingNormal,
-                bottom = paddingValues.calculateBottomPadding() + SpacingSmall
-            ),
+            contentPadding = paddingValues.withSettingsInsets(),
             verticalArrangement = Arrangement.spacedBy(SpacingNormal)
         ) {
             item {
@@ -387,7 +371,7 @@ private fun SetupStepsCard(
                         Icon(
                             imageVector = Icons.Default.DateRange,
                             contentDescription = null,
-                            modifier = Modifier.size(20.dp)
+                            modifier = Modifier.size(IconSizeMedium)
                         )
                         Spacer(modifier = Modifier.width(SpacingSmall))
                         Text(stringResource(R.string.onboarding_calendar_guide_btn))
