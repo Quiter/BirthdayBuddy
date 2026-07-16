@@ -51,6 +51,8 @@ import androidx.compose.ui.unit.dp
 import androidx.core.graphics.toColorInt
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.heckmannch.birthdaybuddy.R
+import com.heckmannch.birthdaybuddy.domain.model.ThemeAccent
+import com.heckmannch.birthdaybuddy.domain.model.ThemeMode
 import com.heckmannch.birthdaybuddy.ui.components.AppResponsiveScaffold
 import com.heckmannch.birthdaybuddy.ui.components.ColorPickerDialog
 import com.heckmannch.birthdaybuddy.ui.components.SettingsCard
@@ -77,15 +79,17 @@ fun ThemeSettingsScreen(
     val themeMode = uiState.themeMode
     val themeAmoled = uiState.themeAmoled
     val themeAccent = uiState.themeAccent
+    val customAccentColor = uiState.customAccentColor
 
     ThemeSettingsContent(
         themeMode = themeMode,
         themeAmoled = themeAmoled,
         themeAccent = themeAccent,
+        customAccentColor = customAccentColor,
         showBackButton = showBackButton,
         onThemeModeChange = { viewModel.onIntent(ThemeIntent.SetThemeMode(it)) },
         onThemeAmoledChange = { viewModel.onIntent(ThemeIntent.SetThemeAmoled(it)) },
-        onThemeAccentChange = { viewModel.onIntent(ThemeIntent.SetThemeAccent(it)) },
+        onThemeAccentChange = { accent, customColor -> viewModel.onIntent(ThemeIntent.SetThemeAccent(accent, customColor)) },
         onNavigateBack = onNavigateBack
     )
 }
@@ -93,13 +97,14 @@ fun ThemeSettingsScreen(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun ThemeSettingsContent(
-    themeMode: String,
+    themeMode: ThemeMode,
     themeAmoled: Boolean,
-    themeAccent: String,
+    themeAccent: ThemeAccent,
+    customAccentColor: String?,
     showBackButton: Boolean,
-    onThemeModeChange: (String) -> Unit,
+    onThemeModeChange: (ThemeMode) -> Unit,
     onThemeAmoledChange: (Boolean) -> Unit,
-    onThemeAccentChange: (String) -> Unit,
+    onThemeAccentChange: (ThemeAccent, String?) -> Unit,
     onNavigateBack: () -> Unit
 ) {
     var showColorPickerDialog by remember { mutableStateOf(false) }
@@ -144,11 +149,11 @@ private fun ThemeSettingsContent(
                         SettingsClickableRow(
                             title = stringResource(R.string.settings_theme_mode_system),
                             description = stringResource(R.string.settings_theme_mode_system_desc),
-                            onClick = { onThemeModeChange("SYSTEM") },
+                            onClick = { onThemeModeChange(ThemeMode.SYSTEM) },
                             trailingContent = {
                                 RadioButton(
-                                    selected = themeMode == "SYSTEM",
-                                    onClick = { onThemeModeChange("SYSTEM") }
+                                    selected = themeMode == ThemeMode.SYSTEM,
+                                    onClick = { onThemeModeChange(ThemeMode.SYSTEM) }
                                 )
                             }
                         )
@@ -158,11 +163,11 @@ private fun ThemeSettingsContent(
                         )
                         SettingsClickableRow(
                             title = stringResource(R.string.settings_theme_mode_light),
-                            onClick = { onThemeModeChange("LIGHT") },
+                            onClick = { onThemeModeChange(ThemeMode.LIGHT) },
                             trailingContent = {
                                 RadioButton(
-                                    selected = themeMode == "LIGHT",
-                                    onClick = { onThemeModeChange("LIGHT") }
+                                    selected = themeMode == ThemeMode.LIGHT,
+                                    onClick = { onThemeModeChange(ThemeMode.LIGHT) }
                                 )
                             }
                         )
@@ -172,11 +177,11 @@ private fun ThemeSettingsContent(
                         )
                         SettingsClickableRow(
                             title = stringResource(R.string.settings_theme_mode_dark),
-                            onClick = { onThemeModeChange("DARK") },
+                            onClick = { onThemeModeChange(ThemeMode.DARK) },
                             trailingContent = {
                                 RadioButton(
-                                    selected = themeMode == "DARK",
-                                    onClick = { onThemeModeChange("DARK") }
+                                    selected = themeMode == ThemeMode.DARK,
+                                    onClick = { onThemeModeChange(ThemeMode.DARK) }
                                 )
                             }
                         )
@@ -185,7 +190,7 @@ private fun ThemeSettingsContent(
                             modifier = Modifier.padding(horizontal = SpacingNormal)
                         )
                         val isDarkThemeActive =
-                            themeMode == "DARK" || (themeMode == "SYSTEM" && androidx.compose.foundation.isSystemInDarkTheme())
+                            themeMode == ThemeMode.DARK || (themeMode == ThemeMode.SYSTEM && androidx.compose.foundation.isSystemInDarkTheme())
                         SettingsSwitchRow(
                             title = stringResource(R.string.settings_theme_amoled),
                             description = if (isDarkThemeActive) {
@@ -223,7 +228,7 @@ private fun ThemeSettingsContent(
                             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
                                 colors.add(
                                     AccentColorOption(
-                                        "SYSTEM",
+                                        ThemeAccent.SYSTEM,
                                         Color.Transparent,
                                         isSystem = true
                                     )
@@ -232,26 +237,26 @@ private fun ThemeSettingsContent(
 
                             colors.addAll(
                                 listOf(
-                                    AccentColorOption("PURPLE", Color(0xFF6750A4)),
-                                    AccentColorOption("BLUE", Color(0xFF005FAF)),
-                                    AccentColorOption("GREEN", Color(0xFF388E3C)),
-                                    AccentColorOption("RED", Color(0xFFBA1A1A)),
-                                    AccentColorOption("ORANGE", Color(0xFFF57C00)),
-                                    AccentColorOption("PINK", Color(0xFFC2185B))
+                                    AccentColorOption(ThemeAccent.PURPLE, Color(0xFF6750A4)),
+                                    AccentColorOption(ThemeAccent.BLUE, Color(0xFF005FAF)),
+                                    AccentColorOption(ThemeAccent.GREEN, Color(0xFF388E3C)),
+                                    AccentColorOption(ThemeAccent.RED, Color(0xFFBA1A1A)),
+                                    AccentColorOption(ThemeAccent.ORANGE, Color(0xFFF57C00)),
+                                    AccentColorOption(ThemeAccent.PINK, Color(0xFFC2185B))
                                 )
                             )
 
-                            val isCustomAccent = themeAccent.startsWith("#")
-                            val customColor = if (isCustomAccent) {
+                            val isCustomAccent = themeAccent == ThemeAccent.CUSTOM
+                            val customColor = if (isCustomAccent && customAccentColor != null) {
                                 try {
-                                    Color(themeAccent.toColorInt())
+                                    Color(customAccentColor.toColorInt())
                                 } catch (_: Exception) {
                                     Color(0xFFE91E63)
                                 }
                             } else {
                                 Color(0xFFE91E63)
                             }
-                            colors.add(AccentColorOption("CUSTOM", customColor, isCustom = true))
+                            colors.add(AccentColorOption(ThemeAccent.CUSTOM, customColor, isCustom = true))
 
                             // Akzentfarben in Zeilen von je 4 Elementen rendern
                             colors.chunked(4).forEach { rowColors ->
@@ -262,8 +267,7 @@ private fun ThemeSettingsContent(
                                     horizontalArrangement = Arrangement.spacedBy(SpacingNormal)
                                 ) {
                                     rowColors.forEach { option ->
-                                        val isSelected =
-                                            if (option.isCustom) isCustomAccent else themeAccent == option.id
+                                        val isSelected = themeAccent == option.id
                                         ColorItem(
                                             option = option,
                                             isSelected = isSelected,
@@ -271,7 +275,7 @@ private fun ThemeSettingsContent(
                                                 if (option.isCustom) {
                                                     showColorPickerDialog = true
                                                 } else {
-                                                    onThemeAccentChange(option.id)
+                                                    onThemeAccentChange(option.id, null)
                                                 }
                                             },
                                             modifier = Modifier.weight(1f)
@@ -290,10 +294,10 @@ private fun ThemeSettingsContent(
 
             item {
                 if (showColorPickerDialog) {
-                    val parsedInitialColor = remember(themeAccent) {
-                        if (themeAccent.startsWith("#")) {
+                    val parsedInitialColor = remember(customAccentColor) {
+                        if (customAccentColor != null && customAccentColor.startsWith("#")) {
                             try {
-                                Color(themeAccent.toColorInt())
+                                Color(customAccentColor.toColorInt())
                             } catch (_: Exception) {
                                 Color(0xFFE91E63)
                             }
@@ -319,7 +323,7 @@ private fun ThemeSettingsContent(
                         onDismissRequest = { showColorPickerDialog = false },
                         onColorSelected = { color ->
                             val hexString = String.format("#%06X", 0xFFFFFF and color.toArgb())
-                            onThemeAccentChange(hexString)
+                            onThemeAccentChange(ThemeAccent.CUSTOM, hexString)
                             showColorPickerDialog = false
                         },
                         presets = presets
@@ -335,20 +339,21 @@ private fun ThemeSettingsContent(
 private fun ThemeSettingsPreview() {
     MaterialTheme {
         ThemeSettingsContent(
-            themeMode = "SYSTEM",
+            themeMode = ThemeMode.SYSTEM,
             themeAmoled = false,
-            themeAccent = "PURPLE",
+            themeAccent = ThemeAccent.PURPLE,
+            customAccentColor = null,
             showBackButton = true,
             onThemeModeChange = {},
             onThemeAmoledChange = {},
-            onThemeAccentChange = {},
+            onThemeAccentChange = { _, _ -> },
             onNavigateBack = {}
         )
     }
 }
 
 data class AccentColorOption(
-    val id: String,
+    val id: ThemeAccent,
     val color: Color,
     val isSystem: Boolean = false,
     val isCustom: Boolean = false
@@ -407,12 +412,12 @@ private fun ColorItem(
                     tint = if (option.isSystem) Color.White else if (option.isCustom) {
                         if (option.color.luminance() > 0.5f) Color.Black else Color.White
                     } else if (option.id in listOf(
-                            "SYSTEM",
-                            "BLUE",
-                            "GREEN",
-                            "PURPLE",
-                            "RED",
-                            "PINK"
+                            ThemeAccent.SYSTEM,
+                            ThemeAccent.BLUE,
+                            ThemeAccent.GREEN,
+                            ThemeAccent.PURPLE,
+                            ThemeAccent.RED,
+                            ThemeAccent.PINK
                         )
                     ) {
                         Color.White
@@ -441,15 +446,14 @@ private fun ColorItem(
         Spacer(modifier = Modifier.height(SpacingExtraSmall))
 
         val label = when (option.id) {
-            "SYSTEM" -> stringResource(R.string.theme_accent_system)
-            "PURPLE" -> stringResource(R.string.theme_accent_purple)
-            "BLUE" -> stringResource(R.string.theme_accent_blue)
-            "GREEN" -> stringResource(R.string.theme_accent_green)
-            "RED" -> stringResource(R.string.theme_accent_red)
-            "ORANGE" -> stringResource(R.string.theme_accent_orange)
-            "PINK" -> stringResource(R.string.theme_accent_pink)
-            "CUSTOM" -> stringResource(R.string.theme_accent_custom)
-            else -> option.id
+            ThemeAccent.SYSTEM -> stringResource(R.string.theme_accent_system)
+            ThemeAccent.PURPLE -> stringResource(R.string.theme_accent_purple)
+            ThemeAccent.BLUE -> stringResource(R.string.theme_accent_blue)
+            ThemeAccent.GREEN -> stringResource(R.string.theme_accent_green)
+            ThemeAccent.RED -> stringResource(R.string.theme_accent_red)
+            ThemeAccent.ORANGE -> stringResource(R.string.theme_accent_orange)
+            ThemeAccent.PINK -> stringResource(R.string.theme_accent_pink)
+            ThemeAccent.CUSTOM -> stringResource(R.string.theme_accent_custom)
         }
 
         Text(

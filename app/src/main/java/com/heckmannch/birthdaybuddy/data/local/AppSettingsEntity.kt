@@ -2,6 +2,7 @@ package com.heckmannch.birthdaybuddy.data.local
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey
+import com.heckmannch.birthdaybuddy.domain.model.ThemeMode
 
 @Entity(tableName = "app_settings")
 data class AppSettingsEntity(
@@ -17,7 +18,7 @@ data class AppSettingsEntity(
     val birthdayCalendarColor: Int = 0xFFE91E63.toInt(),
     val anniversaryCalendarColor: Int = 0xFF9C27B0.toInt(),
     val nameDayCalendarColor: Int = 0xFFFF9800.toInt(),
-    val themeMode: String = "SYSTEM",
+    val themeMode: ThemeMode = ThemeMode.SYSTEM,
     val themeAmoled: Boolean = false,
     val themeAccent: String = "SYSTEM",
     val labelsEnabled: Boolean = true

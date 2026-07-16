@@ -2,6 +2,8 @@ package com.heckmannch.birthdaybuddy.ui.screens.settings.theme
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.heckmannch.birthdaybuddy.domain.model.ThemeAccent
+import com.heckmannch.birthdaybuddy.domain.model.ThemeMode
 import com.heckmannch.birthdaybuddy.domain.repository.NotificationRepository
 import com.heckmannch.birthdaybuddy.ui.model.ThemeUiState
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -22,7 +24,8 @@ class ThemeViewModel @Inject constructor(
             ThemeUiState(
                 themeMode = settings.themeMode,
                 themeAmoled = settings.themeAmoled,
-                themeAccent = settings.themeAccent
+                themeAccent = settings.themeAccent,
+                customAccentColor = settings.customAccentColor
             )
         }
         .stateIn(
@@ -35,11 +38,11 @@ class ThemeViewModel @Inject constructor(
         when (intent) {
             is ThemeIntent.SetThemeMode -> setThemeMode(intent.mode)
             is ThemeIntent.SetThemeAmoled -> setThemeAmoled(intent.enabled)
-            is ThemeIntent.SetThemeAccent -> setThemeAccent(intent.accent)
+            is ThemeIntent.SetThemeAccent -> setThemeAccent(intent.accent, intent.customColor)
         }
     }
 
-    private fun setThemeMode(mode: String) = viewModelScope.launch {
+    private fun setThemeMode(mode: ThemeMode) = viewModelScope.launch {
         notificationRepository.updateSettings(themeMode = mode)
     }
 
@@ -47,13 +50,13 @@ class ThemeViewModel @Inject constructor(
         notificationRepository.updateSettings(themeAmoled = enabled)
     }
 
-    private fun setThemeAccent(accent: String) = viewModelScope.launch {
-        notificationRepository.updateSettings(themeAccent = accent)
+    private fun setThemeAccent(accent: ThemeAccent, customColor: String?) = viewModelScope.launch {
+        notificationRepository.updateSettings(themeAccent = accent, customAccentColor = customColor)
     }
 }
 
 sealed interface ThemeIntent {
-    data class SetThemeMode(val mode: String) : ThemeIntent
+    data class SetThemeMode(val mode: ThemeMode) : ThemeIntent
     data class SetThemeAmoled(val enabled: Boolean) : ThemeIntent
-    data class SetThemeAccent(val accent: String) : ThemeIntent
+    data class SetThemeAccent(val accent: ThemeAccent, val customColor: String? = null) : ThemeIntent
 }

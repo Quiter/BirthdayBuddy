@@ -3,6 +3,8 @@ package com.heckmannch.birthdaybuddy.domain.repository
 import com.heckmannch.birthdaybuddy.domain.model.AppSettings
 import com.heckmannch.birthdaybuddy.domain.model.NotificationRule
 import com.heckmannch.birthdaybuddy.domain.model.PendingNotification
+import com.heckmannch.birthdaybuddy.domain.model.ThemeAccent
+import com.heckmannch.birthdaybuddy.domain.model.ThemeMode
 import kotlinx.coroutines.flow.Flow
 
 /**
@@ -26,9 +28,10 @@ interface NotificationRepository {
         birthdayCalendarColor: Int? = null,
         anniversaryCalendarColor: Int? = null,
         nameDayCalendarColor: Int? = null,
-        themeMode: String? = null,
+        themeMode: ThemeMode? = null,
         themeAmoled: Boolean? = null,
-        themeAccent: String? = null
+        themeAccent: ThemeAccent? = null,
+        customAccentColor: String? = null
     )
 
     suspend fun getAllRulesImmediate(): List<NotificationRule>

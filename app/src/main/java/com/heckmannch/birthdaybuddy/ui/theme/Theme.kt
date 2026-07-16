@@ -12,6 +12,8 @@ import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalInspectionMode
 import androidx.core.graphics.toColorInt
+import com.heckmannch.birthdaybuddy.domain.model.ThemeAccent
+import com.heckmannch.birthdaybuddy.domain.model.ThemeMode
 import com.materialkolor.dynamiccolor.MaterialDynamicColors
 import com.materialkolor.hct.Hct
 import com.materialkolor.scheme.SchemeContent
@@ -84,20 +86,25 @@ private fun createHctColorScheme(seedColor: Color, isDark: Boolean): ColorScheme
     )
 }
 
-private fun getCustomColorScheme(accent: String, darkTheme: Boolean, amoled: Boolean): ColorScheme {
-    val seedColor = if (accent.startsWith("#")) {
+private fun getCustomColorScheme(
+    accent: ThemeAccent,
+    customAccentColorHex: String?,
+    darkTheme: Boolean,
+    amoled: Boolean
+): ColorScheme {
+    val seedColor = if (accent == ThemeAccent.CUSTOM && customAccentColorHex != null) {
         try {
-            Color(accent.toColorInt())
+            Color(customAccentColorHex.toColorInt())
         } catch (_: Exception) {
             Color(0xFF6750A4) // Fallback
         }
     } else {
         when (accent) {
-            "BLUE" -> Color(0xFF005FAF)
-            "GREEN" -> Color(0xFF388E3C)
-            "RED" -> Color(0xFFBA1A1A)
-            "ORANGE" -> Color(0xFFF57C00)
-            "PINK" -> Color(0xFFC2185B)
+            ThemeAccent.BLUE -> Color(0xFF005FAF)
+            ThemeAccent.GREEN -> Color(0xFF388E3C)
+            ThemeAccent.RED -> Color(0xFFBA1A1A)
+            ThemeAccent.ORANGE -> Color(0xFFF57C00)
+            ThemeAccent.PINK -> Color(0xFFC2185B)
             else -> Color(0xFF6750A4) // Purple/Default
         }
     }
@@ -107,20 +114,21 @@ private fun getCustomColorScheme(accent: String, darkTheme: Boolean, amoled: Boo
 
 @Composable
 fun BirthdayBuddyTheme(
-    themeMode: String = "SYSTEM",
+    themeMode: ThemeMode = ThemeMode.SYSTEM,
     themeAmoled: Boolean = false,
-    themeAccent: String = "SYSTEM",
+    themeAccent: ThemeAccent = ThemeAccent.SYSTEM,
+    customAccentColorHex: String? = null,
     content: @Composable () -> Unit
 ) {
     val darkTheme = when (themeMode) {
-        "LIGHT" -> false
-        "DARK" -> true
-        else -> isSystemInDarkTheme()
+        ThemeMode.LIGHT -> false
+        ThemeMode.DARK -> true
+        ThemeMode.SYSTEM -> isSystemInDarkTheme()
     }
 
     val isPreview = LocalInspectionMode.current
     val dynamicColor =
-        !isPreview && themeAccent == "SYSTEM" && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S
+        !isPreview && themeAccent == ThemeAccent.SYSTEM && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S
 
     val colorScheme = when {
         dynamicColor -> {
@@ -133,6 +141,7 @@ fun BirthdayBuddyTheme(
         else -> {
             getCustomColorScheme(
                 accent = themeAccent,
+                customAccentColorHex = customAccentColorHex,
                 darkTheme = darkTheme,
                 amoled = themeAmoled
             )

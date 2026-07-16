@@ -10,6 +10,8 @@ import com.heckmannch.birthdaybuddy.data.mapper.PendingNotificationMapper
 import com.heckmannch.birthdaybuddy.domain.model.AppSettings
 import com.heckmannch.birthdaybuddy.domain.model.NotificationRule
 import com.heckmannch.birthdaybuddy.domain.model.PendingNotification
+import com.heckmannch.birthdaybuddy.domain.model.ThemeAccent
+import com.heckmannch.birthdaybuddy.domain.model.ThemeMode
 import com.heckmannch.birthdaybuddy.domain.repository.NotificationRepository
 import com.heckmannch.birthdaybuddy.domain.repository.NotificationScheduler
 import kotlinx.coroutines.Dispatchers
@@ -73,12 +75,18 @@ class NotificationRepositoryImpl @Inject constructor(
         birthdayCalendarColor: Int?,
         anniversaryCalendarColor: Int?,
         nameDayCalendarColor: Int?,
-        themeMode: String?,
+        themeMode: ThemeMode?,
         themeAmoled: Boolean?,
-        themeAccent: String?
+        themeAccent: ThemeAccent?,
+        customAccentColor: String?
     ) {
         settingsMutex.withLock {
             val current = appSettingsDao.getSettingsImmediate() ?: AppSettingsEntity()
+            val newThemeAccent = when (themeAccent) {
+                ThemeAccent.CUSTOM -> customAccentColor ?: current.themeAccent
+                null -> current.themeAccent
+                else -> themeAccent.name
+            }
             appSettingsDao.upsertSettings(
                 current.copy(
                     notificationsEnabled = notificationsEnabled ?: current.notificationsEnabled,
@@ -95,7 +103,7 @@ class NotificationRepositoryImpl @Inject constructor(
                     nameDayCalendarColor = nameDayCalendarColor ?: current.nameDayCalendarColor,
                     themeMode = themeMode ?: current.themeMode,
                     themeAmoled = themeAmoled ?: current.themeAmoled,
-                    themeAccent = themeAccent ?: current.themeAccent
+                    themeAccent = newThemeAccent
                 )
             )
         }
