@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.MaterialTheme
@@ -19,6 +20,7 @@ import androidx.compose.ui.draw.clip
 
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
+import com.heckmannch.birthdaybuddy.ui.theme.AlphaEmphasisLow
 import com.heckmannch.birthdaybuddy.ui.theme.BirthdayBuddyTheme
 import com.heckmannch.birthdaybuddy.ui.theme.SpacingNormal
 import com.heckmannch.birthdaybuddy.ui.theme.SpacingSmall
@@ -45,6 +47,32 @@ fun SettingsSectionHeader(
             bottom = SpacingSmall
         )
     )
+}
+
+/**
+ * Standardized settings section combining a [SettingsSectionHeader] with a [SettingsCard].
+ * Applies consistent bottom padding between sections.
+ *
+ * @param title The section header title.
+ * @param content The card content (usually a list of SettingsSwitchRow / SettingsClickableRow).
+ */
+@Composable
+fun SettingsSection(
+    title: String,
+    modifier: Modifier = Modifier,
+    content: @Composable ColumnScope.() -> Unit
+) {
+    Column(
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(bottom = SpacingNormal)
+    ) {
+        SettingsSectionHeader(title = title)
+        SettingsCard(
+            modifier = Modifier.padding(horizontal = SpacingNormal),
+            content = content
+        )
+    }
 }
 
 /**
@@ -140,6 +168,18 @@ fun SettingsClickableRow(
         trailingContent = trailingContent,
         colors = ListItemDefaults.colors(containerColor = Color.Transparent),
         modifier = modifier.clickable(enabled = enabled, onClick = onClick)
+    )
+}
+
+/**
+ * A standardized divider for use between rows inside a [SettingsCard].
+ * Uses reduced-alpha outline-variant color per MD3 spec for decorative dividers.
+ */
+@Composable
+fun SettingsDivider(modifier: Modifier = Modifier) {
+    HorizontalDivider(
+        color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = AlphaEmphasisLow),
+        modifier = modifier.padding(horizontal = SpacingNormal)
     )
 }
 

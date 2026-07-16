@@ -29,7 +29,6 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LargeTopAppBar
@@ -62,11 +61,11 @@ import com.heckmannch.birthdaybuddy.ui.components.ColorPickerDialog
 import com.heckmannch.birthdaybuddy.ui.components.InfoCard
 import com.heckmannch.birthdaybuddy.ui.components.SettingsCard
 import com.heckmannch.birthdaybuddy.ui.components.SettingsClickableRow
-import com.heckmannch.birthdaybuddy.ui.components.SettingsSectionHeader
+import com.heckmannch.birthdaybuddy.ui.components.SettingsDivider
+import com.heckmannch.birthdaybuddy.ui.components.SettingsSection
 import com.heckmannch.birthdaybuddy.ui.components.SettingsSwitchRow
 import com.heckmannch.birthdaybuddy.ui.components.StepItem
 import com.heckmannch.birthdaybuddy.ui.theme.AlphaContainerMedium
-import com.heckmannch.birthdaybuddy.ui.theme.AlphaEmphasisLow
 import com.heckmannch.birthdaybuddy.ui.theme.BirthdayKidGreen
 import com.heckmannch.birthdaybuddy.ui.theme.IconSizeLarge
 import com.heckmannch.birthdaybuddy.ui.theme.SpacingNormal
@@ -250,83 +249,72 @@ private fun CalendarSettingsContent(
 
             if (calendarSyncEnabled) {
                 item {
-                    Column(
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        SettingsSectionHeader(title = stringResource(R.string.calendar_colors_section_title))
+                    SettingsSection(title = stringResource(R.string.calendar_colors_section_title)) {
                         // NOTE FOR FUTURE LLMs/DEVELOPERS:
                         // We intentionally use SettingsClickableRow instead of StepItem here.
                         // While both show leading items (color circles/icons), color selections are independent,
                         // non-sequential settings actions. StepItem is reserved for progressive setup steps
                         // (as seen in SetupStepsCard below). Using SettingsClickableRow maintains structural semantic clarity.
-                        SettingsCard {
+                        SettingsClickableRow(
+                            title = stringResource(R.string.calendar_color_birthdays),
+                            leadingIcon = {
+                                Box(
+                                    modifier = Modifier
+                                        .size(IconSizeLarge)
+                                        .background(
+                                            Color(birthdayColor),
+                                            shape = CircleShape
+                                        )
+                                )
+                            },
+                            onClick = {
+                                onColorRowClick(
+                                    CalendarSyncRepository.CalendarType.BIRTHDAY,
+                                    Color(birthdayColor)
+                                )
+                            }
+                        )
+                        if (otherEventsEnabled) {
+                            SettingsDivider()
                             SettingsClickableRow(
-                                title = stringResource(R.string.calendar_color_birthdays),
+                                title = stringResource(R.string.calendar_color_anniversaries),
                                 leadingIcon = {
                                     Box(
                                         modifier = Modifier
                                             .size(IconSizeLarge)
                                             .background(
-                                                Color(birthdayColor),
+                                                Color(anniversaryColor),
                                                 shape = CircleShape
                                             )
                                     )
                                 },
                                 onClick = {
                                     onColorRowClick(
-                                        CalendarSyncRepository.CalendarType.BIRTHDAY,
-                                        Color(birthdayColor)
+                                        CalendarSyncRepository.CalendarType.ANNIVERSARY,
+                                        Color(anniversaryColor)
                                     )
                                 }
                             )
-                            if (otherEventsEnabled) {
-                                HorizontalDivider(
-                                    color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = AlphaEmphasisLow),
-                                    modifier = Modifier.padding(horizontal = SpacingNormal)
-                                )
-                                SettingsClickableRow(
-                                    title = stringResource(R.string.calendar_color_anniversaries),
-                                    leadingIcon = {
-                                        Box(
-                                            modifier = Modifier
-                                                .size(IconSizeLarge)
-                                                .background(
-                                                    Color(anniversaryColor),
-                                                    shape = CircleShape
-                                                )
-                                        )
-                                    },
-                                    onClick = {
-                                        onColorRowClick(
-                                            CalendarSyncRepository.CalendarType.ANNIVERSARY,
-                                            Color(anniversaryColor)
-                                        )
-                                    }
-                                )
-                                HorizontalDivider(
-                                    color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = AlphaEmphasisLow),
-                                    modifier = Modifier.padding(horizontal = SpacingNormal)
-                                )
-                                SettingsClickableRow(
-                                    title = stringResource(R.string.calendar_color_namedays),
-                                    leadingIcon = {
-                                        Box(
-                                            modifier = Modifier
-                                                .size(IconSizeLarge)
-                                                .background(
-                                                    Color(nameDayColor),
-                                                    shape = CircleShape
-                                                )
-                                        )
-                                    },
-                                    onClick = {
-                                        onColorRowClick(
-                                            CalendarSyncRepository.CalendarType.NAMEDAY,
-                                            Color(nameDayColor)
-                                        )
-                                    }
-                                )
-                            }
+                            SettingsDivider()
+                            SettingsClickableRow(
+                                title = stringResource(R.string.calendar_color_namedays),
+                                leadingIcon = {
+                                    Box(
+                                        modifier = Modifier
+                                            .size(IconSizeLarge)
+                                            .background(
+                                                Color(nameDayColor),
+                                                shape = CircleShape
+                                            )
+                                    )
+                                },
+                                onClick = {
+                                    onColorRowClick(
+                                        CalendarSyncRepository.CalendarType.NAMEDAY,
+                                        Color(nameDayColor)
+                                    )
+                                }
+                            )
                         }
                     }
                 }

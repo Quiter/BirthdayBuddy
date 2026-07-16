@@ -13,19 +13,19 @@ Dieses Dokument dient als systemischer Kontext für die Entwicklung von Features
 
 - **Plattform & Build**:
   - **SDK / Java**: Java 17 (`jvmToolchain(17)`, `sourceCompatibility` / `targetCompatibility`).
-  - **Gradle / AGP**: Gradle 9.5, Android Gradle Plugin (AGP) 9.2.1.
+  - **Gradle / AGP**: Gradle 9.6.1, Android Gradle Plugin (AGP) 9.3.0.
   - **Gradle DSL**: Ausschließlich Kotlin DSL mit expliziter Konfiguration (`configure<ApplicationExtension>`). Legacy `apply plugin` ist verboten; alle Plugins im `plugins { ... }`-Block deklarieren.
   - **Compiler-Flags** (in `gradle.properties` erzwungen):
     - `android.nonTransitiveRClass=true` (R-Klassen nicht transitiv)
     - `android.nonFinalResIds=true` (Ressourcen-IDs sind nicht final)
 - **UI & UX**:
-  - **Framework**: Jetpack Compose (BOM 2026.05.01), Material 3 Adaptive Layouts.
+  - **Framework**: Jetpack Compose (BOM 2026.06.01), Material 3 Adaptive Layouts.
   - **Homescreen-Widgets**: Jetpack Glance (mit transparentem Container & 80% transluzenten M3-Karten).
   - **Animationen**: 100% native Compose-Illustrationen und animierte Shader (vollständiger Verzicht auf Lottie für minimierte APK-Größe).
 - **Data & Architecture**:
   - **Datenbank**: Room (2.8.4) für Caching & Einstellungen.
-  - **Hintergrund-Tasks**: WorkManager (2.11).
-  - **Dependency Injection**: Hilt (2.59).
+  - **Hintergrund-Tasks**: WorkManager (2.11.2).
+  - **Dependency Injection**: Hilt (2.60.1).
   - **Architektur-Pattern**: Clean Architecture (Feature-based Layering) & MVI/UDF (Uni-Directional Data Flow) mit `@Immutable` UI-Modellen und Screen-spezifischen ViewModels.
 
 ---
@@ -55,7 +55,7 @@ Dieses Dokument dient als systemischer Kontext für die Entwicklung von Features
   - Keine additiven vertikalen Paddings verwenden. Abstände zwischen Elementen müssen über `bottom-padding` definiert werden, um Layout-Sprünge innerhalb von `AnimatedVisibility` zu verhindern.
   - Alle UI-Maße (Spacings, Icons, Opazitäten) müssen aus [Dimensions.kt](file:///c:/Users/chris/AndroidStudioProjects/BirthdayBuddy/ui/theme/Dimensions.kt) stammen (keine Hardcoded/Magic-Values).
 - **Responsive Layouts**:
-  - Multi-Column-Layouts auf Tablets/Chromebooks mittels `currentWindowAdaptiveInfo()` und `LocalWindowAdaptiveInfo` sowie `calculatePaneScaffoldDirective(windowAdaptiveInfo)` realisieren (Master-Detail).
+  - Multi-Column-Layouts auf Tablets/Chromebooks mittels `currentWindowAdaptiveInfoV2()` (V2-API verwenden, nicht die ältere V1-Variante) und `LocalWindowAdaptiveInfo` sowie `calculatePaneScaffoldDirective(windowAdaptiveInfo)` realisieren (Master-Detail).
   - Volle Edge-to-Edge Unterstützung (Android 15+) unter Verwendung von `AppResponsiveScaffold` für automatische System-Insets.
 - **Bilder & Scrolling**:
   - Coil-Bilder vorab über `enqueue` mit expliziten Memory-Cache-Keys laden, um Scroll-Lag in Fast-Scroll-Listen zu verhindern.

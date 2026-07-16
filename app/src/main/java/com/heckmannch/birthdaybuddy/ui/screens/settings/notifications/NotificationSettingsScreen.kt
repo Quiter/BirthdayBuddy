@@ -31,7 +31,6 @@ import androidx.compose.material.icons.filled.NotificationsOff
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LargeTopAppBar
@@ -64,11 +63,11 @@ import com.heckmannch.birthdaybuddy.domain.model.NotificationRule
 import com.heckmannch.birthdaybuddy.ui.components.AppResponsiveScaffold
 import com.heckmannch.birthdaybuddy.ui.components.InfoCard
 import com.heckmannch.birthdaybuddy.ui.components.SettingsCard
-import com.heckmannch.birthdaybuddy.ui.components.SettingsSectionHeader
+import com.heckmannch.birthdaybuddy.ui.components.SettingsDivider
+import com.heckmannch.birthdaybuddy.ui.components.SettingsSection
 import com.heckmannch.birthdaybuddy.ui.components.SettingsSwitchRow
 import com.heckmannch.birthdaybuddy.ui.screens.settings.notifications.components.EditRuleDialog
 import com.heckmannch.birthdaybuddy.ui.screens.settings.notifications.components.NotificationRuleItem
-import com.heckmannch.birthdaybuddy.ui.theme.AlphaEmphasisLow
 import com.heckmannch.birthdaybuddy.ui.theme.AlphaSurfaceContainerHigh
 import com.heckmannch.birthdaybuddy.ui.theme.BirthdayBuddyTheme
 import com.heckmannch.birthdaybuddy.ui.theme.ContactImageSizeNormal
@@ -284,10 +283,7 @@ private fun NotificationSettingsContent(
                         )
 
                         if (notificationsEnabled) {
-                            HorizontalDivider(
-                                color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = AlphaEmphasisLow),
-                                modifier = Modifier.padding(horizontal = SpacingNormal)
-                            )
+                            SettingsDivider()
                             SettingsSwitchRow(
                                 title = stringResource(R.string.notifications_persistent_header),
                                 description = stringResource(R.string.notifications_persistent_desc),
@@ -324,25 +320,15 @@ private fun NotificationSettingsContent(
                         }
                     } else {
                         item(span = { GridItemSpan(maxLineSpan) }) {
-                            Column(
-                                modifier = Modifier.fillMaxWidth()
-                            ) {
-                                SettingsSectionHeader(title = stringResource(R.string.notifications_planned_header))
-                                SettingsCard {
-                                    rules.forEachIndexed { index, rule ->
-                                        NotificationRuleItem(
-                                            rule = rule,
-                                            onEditRule = { state.openEditDialog(it) },
-                                            onDeleteRule = onDeleteRule,
-                                        )
-                                        if (index < rules.size - 1) {
-                                            HorizontalDivider(
-                                                color = MaterialTheme.colorScheme.outlineVariant.copy(
-                                                    alpha = AlphaEmphasisLow
-                                                ),
-                                                modifier = Modifier.padding(horizontal = SpacingNormal)
-                                            )
-                                        }
+                            SettingsSection(title = stringResource(R.string.notifications_planned_header)) {
+                                rules.forEachIndexed { index, rule ->
+                                    NotificationRuleItem(
+                                        rule = rule,
+                                        onEditRule = { state.openEditDialog(it) },
+                                        onDeleteRule = onDeleteRule,
+                                    )
+                                    if (index < rules.size - 1) {
+                                        SettingsDivider()
                                     }
                                 }
                             }

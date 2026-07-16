@@ -78,9 +78,9 @@ import com.heckmannch.birthdaybuddy.ui.screens.settings.theme.ThemeSettingsScree
 import com.heckmannch.birthdaybuddy.ui.screens.settings.theme.ThemeViewModel
 import com.heckmannch.birthdaybuddy.ui.theme.AlphaEmphasisMedium
 import com.heckmannch.birthdaybuddy.ui.theme.BirthdayBuddyTheme
-import com.heckmannch.birthdaybuddy.ui.theme.OnboardingGuideTinySpacer
 import com.heckmannch.birthdaybuddy.ui.theme.SpacingMedium
 import com.heckmannch.birthdaybuddy.ui.theme.SpacingNormal
+import com.heckmannch.birthdaybuddy.ui.theme.SpacingTiny
 import kotlinx.serialization.Serializable
 
 /**
@@ -561,7 +561,7 @@ private fun SettingsMenuItem(
     val itemModifier = if (useTabletStyle) {
         Modifier
             .fillMaxWidth()
-            .padding(horizontal = SpacingMedium, vertical = OnboardingGuideTinySpacer)
+            .padding(horizontal = SpacingMedium, vertical = SpacingTiny)
             .clip(RoundedCornerShape(SpacingNormal))
             .background(containerColor)
             .clickable { onClick() }

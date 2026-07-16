@@ -22,7 +22,6 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Palette
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LargeTopAppBar
@@ -55,11 +54,10 @@ import com.heckmannch.birthdaybuddy.domain.model.ThemeAccent
 import com.heckmannch.birthdaybuddy.domain.model.ThemeMode
 import com.heckmannch.birthdaybuddy.ui.components.AppResponsiveScaffold
 import com.heckmannch.birthdaybuddy.ui.components.ColorPickerDialog
-import com.heckmannch.birthdaybuddy.ui.components.SettingsCard
 import com.heckmannch.birthdaybuddy.ui.components.SettingsClickableRow
-import com.heckmannch.birthdaybuddy.ui.components.SettingsSectionHeader
+import com.heckmannch.birthdaybuddy.ui.components.SettingsDivider
+import com.heckmannch.birthdaybuddy.ui.components.SettingsSection
 import com.heckmannch.birthdaybuddy.ui.components.SettingsSwitchRow
-import com.heckmannch.birthdaybuddy.ui.theme.AlphaEmphasisLow
 import com.heckmannch.birthdaybuddy.ui.theme.BirthdayKidGreen
 import com.heckmannch.birthdaybuddy.ui.theme.IconSizeExtraLarge
 import com.heckmannch.birthdaybuddy.ui.theme.IconSizeNormal
@@ -135,156 +133,129 @@ private fun ThemeSettingsContent(
             modifier = Modifier.fillMaxSize(),
             contentPadding = paddingValues
         ) {
-            // --- Theme Mode ---
-            item {
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(bottom = SpacingNormal)
-                ) {
-                    SettingsSectionHeader(title = stringResource(R.string.settings_theme_mode_header))
-                    SettingsCard(
-                        modifier = Modifier.padding(horizontal = SpacingNormal)
-                    ) {
-                        SettingsClickableRow(
-                            title = stringResource(R.string.settings_theme_mode_system),
-                            description = stringResource(R.string.settings_theme_mode_system_desc),
-                            onClick = { onThemeModeChange(ThemeMode.SYSTEM) },
-                            trailingContent = {
-                                RadioButton(
-                                    selected = themeMode == ThemeMode.SYSTEM,
-                                    onClick = { onThemeModeChange(ThemeMode.SYSTEM) }
-                                )
-                            }
-                        )
-                        HorizontalDivider(
-                            color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = AlphaEmphasisLow),
-                            modifier = Modifier.padding(horizontal = SpacingNormal)
-                        )
-                        SettingsClickableRow(
-                            title = stringResource(R.string.settings_theme_mode_light),
-                            onClick = { onThemeModeChange(ThemeMode.LIGHT) },
-                            trailingContent = {
-                                RadioButton(
-                                    selected = themeMode == ThemeMode.LIGHT,
-                                    onClick = { onThemeModeChange(ThemeMode.LIGHT) }
-                                )
-                            }
-                        )
-                        HorizontalDivider(
-                            color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = AlphaEmphasisLow),
-                            modifier = Modifier.padding(horizontal = SpacingNormal)
-                        )
-                        SettingsClickableRow(
-                            title = stringResource(R.string.settings_theme_mode_dark),
-                            onClick = { onThemeModeChange(ThemeMode.DARK) },
-                            trailingContent = {
-                                RadioButton(
-                                    selected = themeMode == ThemeMode.DARK,
-                                    onClick = { onThemeModeChange(ThemeMode.DARK) }
-                                )
-                            }
-                        )
-                        HorizontalDivider(
-                            color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = AlphaEmphasisLow),
-                            modifier = Modifier.padding(horizontal = SpacingNormal)
-                        )
-                        val isDarkThemeActive =
-                            themeMode == ThemeMode.DARK || (themeMode == ThemeMode.SYSTEM && androidx.compose.foundation.isSystemInDarkTheme())
-                        SettingsSwitchRow(
-                            title = stringResource(R.string.settings_theme_amoled),
-                            description = if (isDarkThemeActive) {
-                                stringResource(R.string.settings_theme_amoled_desc)
-                            } else {
-                                stringResource(R.string.settings_theme_amoled_disabled_desc)
-                            },
-                            checked = themeAmoled,
-                            onCheckedChange = onThemeAmoledChange,
-                            enabled = isDarkThemeActive
-                        )
-                    }
-                }
-            }
+             // --- Theme Mode ---
+             item {
+                 SettingsSection(title = stringResource(R.string.settings_theme_mode_header)) {
+                     SettingsClickableRow(
+                         title = stringResource(R.string.settings_theme_mode_system),
+                         description = stringResource(R.string.settings_theme_mode_system_desc),
+                         onClick = { onThemeModeChange(ThemeMode.SYSTEM) },
+                         trailingContent = {
+                             RadioButton(
+                                 selected = themeMode == ThemeMode.SYSTEM,
+                                 onClick = { onThemeModeChange(ThemeMode.SYSTEM) }
+                             )
+                         }
+                     )
+                     SettingsDivider()
+                     SettingsClickableRow(
+                         title = stringResource(R.string.settings_theme_mode_light),
+                         onClick = { onThemeModeChange(ThemeMode.LIGHT) },
+                         trailingContent = {
+                             RadioButton(
+                                 selected = themeMode == ThemeMode.LIGHT,
+                                 onClick = { onThemeModeChange(ThemeMode.LIGHT) }
+                             )
+                         }
+                     )
+                     SettingsDivider()
+                     SettingsClickableRow(
+                         title = stringResource(R.string.settings_theme_mode_dark),
+                         onClick = { onThemeModeChange(ThemeMode.DARK) },
+                         trailingContent = {
+                             RadioButton(
+                                 selected = themeMode == ThemeMode.DARK,
+                                 onClick = { onThemeModeChange(ThemeMode.DARK) }
+                             )
+                         }
+                     )
+                     SettingsDivider()
+                     val isDarkThemeActive =
+                         themeMode == ThemeMode.DARK || (themeMode == ThemeMode.SYSTEM && androidx.compose.foundation.isSystemInDarkTheme())
+                     SettingsSwitchRow(
+                         title = stringResource(R.string.settings_theme_amoled),
+                         description = if (isDarkThemeActive) {
+                             stringResource(R.string.settings_theme_amoled_desc)
+                         } else {
+                             stringResource(R.string.settings_theme_amoled_disabled_desc)
+                         },
+                         checked = themeAmoled,
+                         onCheckedChange = onThemeAmoledChange,
+                         enabled = isDarkThemeActive
+                     )
+                 }
+             }
 
 
             // --- Accent Colors ---
             item {
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(bottom = SpacingNormal)
-                ) {
-                    SettingsSectionHeader(title = stringResource(R.string.settings_theme_accent_header))
-                    SettingsCard(
-                        modifier = Modifier.padding(horizontal = SpacingNormal)
+                SettingsSection(title = stringResource(R.string.settings_theme_accent_header)) {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = SpacingNormal, vertical = SpacingNormal)
                     ) {
-                        Column(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(horizontal = SpacingNormal, vertical = SpacingNormal)
-                        ) {
-                            val colors = mutableListOf<AccentColorOption>()
+                        val colors = mutableListOf<AccentColorOption>()
 
-                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-                                colors.add(
-                                    AccentColorOption(
-                                        ThemeAccent.SYSTEM,
-                                        Color.Transparent,
-                                        isSystem = true
-                                    )
-                                )
-                            }
-
-                            colors.addAll(
-                                listOf(
-                                    AccentColorOption(ThemeAccent.PURPLE, Color(0xFF6750A4)),
-                                    AccentColorOption(ThemeAccent.BLUE, Color(0xFF005FAF)),
-                                    AccentColorOption(ThemeAccent.GREEN, Color(0xFF388E3C)),
-                                    AccentColorOption(ThemeAccent.RED, Color(0xFFBA1A1A)),
-                                    AccentColorOption(ThemeAccent.ORANGE, Color(0xFFF57C00)),
-                                    AccentColorOption(ThemeAccent.PINK, Color(0xFFC2185B))
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                            colors.add(
+                                AccentColorOption(
+                                    ThemeAccent.SYSTEM,
+                                    Color.Transparent,
+                                    isSystem = true
                                 )
                             )
+                        }
 
-                            val isCustomAccent = themeAccent == ThemeAccent.CUSTOM
-                            val customColor = if (isCustomAccent && customAccentColor != null) {
-                                try {
-                                    Color(customAccentColor.toColorInt())
-                                } catch (_: Exception) {
-                                    Color(0xFFE91E63)
-                                }
-                            } else {
+                        colors.addAll(
+                            listOf(
+                                AccentColorOption(ThemeAccent.PURPLE, Color(0xFF6750A4)),
+                                AccentColorOption(ThemeAccent.BLUE, Color(0xFF005FAF)),
+                                AccentColorOption(ThemeAccent.GREEN, Color(0xFF388E3C)),
+                                AccentColorOption(ThemeAccent.RED, Color(0xFFBA1A1A)),
+                                AccentColorOption(ThemeAccent.ORANGE, Color(0xFFF57C00)),
+                                AccentColorOption(ThemeAccent.PINK, Color(0xFFC2185B))
+                            )
+                        )
+
+                        val isCustomAccent = themeAccent == ThemeAccent.CUSTOM
+                        val customColor = if (isCustomAccent && customAccentColor != null) {
+                            try {
+                                Color(customAccentColor.toColorInt())
+                            } catch (_: Exception) {
                                 Color(0xFFE91E63)
                             }
-                            colors.add(AccentColorOption(ThemeAccent.CUSTOM, customColor, isCustom = true))
+                        } else {
+                            Color(0xFFE91E63)
+                        }
+                        colors.add(AccentColorOption(ThemeAccent.CUSTOM, customColor, isCustom = true))
 
-                            // Akzentfarben in Zeilen von je 4 Elementen rendern
-                            colors.chunked(4).forEach { rowColors ->
-                                Row(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .padding(vertical = SpacingSmall),
-                                    horizontalArrangement = Arrangement.spacedBy(SpacingNormal)
-                                ) {
-                                    rowColors.forEach { option ->
-                                        val isSelected = themeAccent == option.id
-                                        ColorItem(
-                                            option = option,
-                                            isSelected = isSelected,
-                                            onClick = {
-                                                if (option.isCustom) {
-                                                    showColorPickerDialog = true
-                                                } else {
-                                                    onThemeAccentChange(option.id, null)
-                                                }
-                                            },
-                                            modifier = Modifier.weight(1f)
-                                        )
-                                    }
-                                    // Filler, falls die Zeile nicht voll ist (z.B. am Ende des Grids)
-                                    repeat(4 - rowColors.size) {
-                                        Spacer(modifier = Modifier.weight(1f))
-                                    }
+                        // Akzentfarben in Zeilen von je 4 Elementen rendern
+                        colors.chunked(4).forEach { rowColors ->
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(vertical = SpacingSmall),
+                                horizontalArrangement = Arrangement.spacedBy(SpacingNormal)
+                            ) {
+                                rowColors.forEach { option ->
+                                    val isSelected = themeAccent == option.id
+                                    ColorItem(
+                                        option = option,
+                                        isSelected = isSelected,
+                                        onClick = {
+                                            if (option.isCustom) {
+                                                showColorPickerDialog = true
+                                            } else {
+                                                onThemeAccentChange(option.id, null)
+                                            }
+                                        },
+                                        modifier = Modifier.weight(1f)
+                                    )
+                                }
+                                // Filler, falls die Zeile nicht voll ist (z.B. am Ende des Grids)
+                                repeat(4 - rowColors.size) {
+                                    Spacer(modifier = Modifier.weight(1f))
                                 }
                             }
                         }
