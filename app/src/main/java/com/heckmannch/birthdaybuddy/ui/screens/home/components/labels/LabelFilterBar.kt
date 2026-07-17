@@ -1,4 +1,4 @@
-package com.heckmannch.birthdaybuddy.ui.screens.home.components.list
+package com.heckmannch.birthdaybuddy.ui.screens.home.components.labels
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.expandVertically

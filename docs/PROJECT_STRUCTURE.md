@@ -99,9 +99,11 @@
                 - `FastScrollbar.kt`: Hochperformante Scrollbar mit Sub-Pixel-Präzision (unterstützt einen `headerCount`-Offset für Kopfzeilen). Enthält die öffentliche API (`FastScrollbar()`, `ScrollSection`), alle State-Variablen, Geometrie-Berechnungen, Drag-Gesture-Handler und die Thumb-UI. Nutzt `ScrollbarBubble.kt` (selbes Package) für die animierte Label-Bubble.
                 - `ScrollbarBubble.kt`: Isoliertes, animiertes Label-Bubble-Composable (`internal fun ScrollbarBubble`), das während des Scrollens neben dem Thumb erscheint. Wird aus `FastScrollbar.kt` heraus aufgerufen. Nutzt die `Popup`-API für korrekte Z-Order und kein Clipping.
                 - `GiftIdeaList.kt`: Spezialisierte Komponente für die Inline-Verwaltung von Geschenkideen.
+            - ###### 📁 Labels (`home.components.labels`)
                 - `LabelFilterBar.kt`: Chip-Leiste zur Filterung nach Labels (nun als scrollbarer Listen-Header in die BirthdayList integriert).
+                - `LabelSidebar.kt`: Vertikale Sidebar zur Filterung nach Labels auf Tablets/Wide-Screens (unterstützt Expanded/Collapsed-Modi, Tooltips und Marquee-Text-Effekte).
             - ###### 📁 TopBar (`home.components.topbar`)
-                - `SearchBar.kt`: M3 SearchBar-Integration.
+                - `SearchBar.kt`: M3 SearchBar-Integration (unterstützt optionales leading navigationIcon).
             - ###### 📁 Actions (`home.components.actions`)
                 - `ContactActionRow.kt`: Reihe mit Messenger- und Kontakt-Aktionen.
                 - `HomeFAB.kt`: Multifunktionaler FAB mit Morphing-Animation.

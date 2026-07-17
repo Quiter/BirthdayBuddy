@@ -595,6 +595,13 @@
     - **Refactoring der Screens:** Migration der lokalen Farblisten in [CalendarSettingsScreen.kt](file:///c:/Users/chris/AndroidStudioProjects/BirthdayBuddy/app/src/main/java/com/heckmannch/birthdaybuddy/ui/screens/settings/calendar/CalendarSettingsScreen.kt) and [ThemeSettingsScreen.kt](file:///c:/Users/chris/AndroidStudioProjects/BirthdayBuddy/app/src/main/java/com/heckmannch/birthdaybuddy/ui/screens/settings/theme/ThemeSettingsScreen.kt) auf die zentralen Konstanten unter Beibehaltung der exakten Rendering-Reihenfolge.
     - **Bereinigung von Code-Altlasten:** Entfernung ungenutzter Imports (z. B. `BirthdayKidGreen` in `CalendarSettingsScreen.kt`).
 
+295. **Labels-Sidebar für Tablet-Layouts & Labels-Paket-Refactoring (Responsive UI & DX):**
+    - **Labels-Sidebar:** Erstellung einer vertikalen [LabelSidebar.kt](file:///c:/Users/chris/AndroidStudioProjects/BirthdayBuddy/app/src/main/java/com/heckmannch/birthdaybuddy/ui/screens/home/components/labels/LabelSidebar.kt), die auf Tablets/Wide-Screens (`!isWidthCompact && !isHeightCompact`) die Filter-Labels links darstellt und sich über ein Hamburger-Menü-Icon in der Suchleiste zwischen expanded (Standard-Drawer, 240dp) und collapsed (Navigation-Rail, 80dp) umschalten lässt. Zu lange Namen werden per Ellipsis abgeschnitten, scrollen bei Auswahl horizontal via `basicMarquee()` und zeigen Tooltips per `TooltipBox` bei Hover/Long-Press.
+    - **Labels-Paket-Refactoring:** Verschiebung von [LabelFilterBar.kt](file:///c:/Users/chris/AndroidStudioProjects/BirthdayBuddy/app/src/main/java/com/heckmannch/birthdaybuddy/ui/screens/home/components/labels/LabelFilterBar.kt) aus `components/list/` in das neu erstellte Paket `home/components/labels/` zur besseren logischen Strukturierung und Wiederverwendung.
+    - **Layout-Integration:** Anpassung von [HomeContent.kt](file:///c:/Users/chris/AndroidStudioProjects/BirthdayBuddy/app/src/main/java/com/heckmannch/birthdaybuddy/ui/screens/home/HomeContent.kt) zur Einbindung des `PermanentNavigationDrawer` und Anpassung der horizontalen Filter-Sichtbarkeit. Anpassung der Imports in [BirthdayList.kt](file:///c:/Users/chris/AndroidStudioProjects/BirthdayBuddy/app/src/main/java/com/heckmannch/birthdaybuddy/ui/screens/home/components/list/BirthdayList.kt).
+    - **Suchleisten-Anpassung:** Erweiterung der [SearchBar.kt](file:///c:/Users/chris/AndroidStudioProjects/BirthdayBuddy/app/src/main/java/com/heckmannch/birthdaybuddy/ui/screens/home/components/topbar/SearchBar.kt) um den Parameter `navigationIcon`, um das Hamburger-Icon auf Tablets dynamisch darzustellen.
+
+
 
 
 

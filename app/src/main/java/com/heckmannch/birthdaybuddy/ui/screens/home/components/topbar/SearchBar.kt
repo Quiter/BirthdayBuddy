@@ -66,6 +66,7 @@ fun SearchBar(
     onSettingsClick: () -> Unit,
     focusRequester: FocusRequester,
     modifier: Modifier = Modifier,
+    navigationIcon: @Composable (() -> Unit)? = null,
 ) {
     val focusManager = LocalFocusManager.current
     val isFocused = remember { mutableStateOf(false) }
@@ -122,11 +123,15 @@ fun SearchBar(
                 }
             },
             leadingIcon = {
-                Icon(
-                    imageVector = Icons.Default.Search,
-                    contentDescription = null,
-                    tint = MaterialTheme.colorScheme.primary
-                )
+                if (navigationIcon != null) {
+                    navigationIcon()
+                } else {
+                    Icon(
+                        imageVector = Icons.Default.Search,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.primary
+                    )
+                }
             },
             trailingIcon = {
                 Row(modifier = Modifier.padding(end = SpacingExtraSmall)) {
