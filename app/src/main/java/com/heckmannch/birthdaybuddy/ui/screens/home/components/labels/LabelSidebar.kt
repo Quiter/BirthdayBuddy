@@ -91,12 +91,7 @@ fun LabelSidebar(
 
         // Built-in & custom label items
         labels.forEach { label ->
-            val displayLabel = when (label) {
-                ContactLabels.LABEL_NO_BIRTHDAY -> stringResource(R.string.home_filter_no_birthday)
-                ContactLabels.LABEL_ANNIVERSARY -> stringResource(R.string.home_filter_anniversary)
-                ContactLabels.LABEL_NAME_DAY -> stringResource(R.string.home_filter_name_day)
-                else -> label
-            }
+            val displayLabel = label.toDisplayLabel()
 
             val iconVector = when (label) {
                 ContactLabels.LABEL_NO_BIRTHDAY -> Icons.Default.DateRange

@@ -41,8 +41,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.heckmannch.birthdaybuddy.R
-import com.heckmannch.birthdaybuddy.domain.model.ContactLabels
 import com.heckmannch.birthdaybuddy.ui.components.AppSwitch
+import com.heckmannch.birthdaybuddy.ui.screens.home.components.labels.toDisplayLabel
 import com.heckmannch.birthdaybuddy.ui.components.InfoCard
 import com.heckmannch.birthdaybuddy.ui.components.SettingsDetailScaffold
 import com.heckmannch.birthdaybuddy.ui.components.withSettingsInsets
@@ -198,11 +198,7 @@ private fun LabelConfigCard(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 modifier = Modifier.fillMaxWidth()
             ) {
-                val displayName = if (label.name == ContactLabels.LABEL_NO_BIRTHDAY) {
-                    stringResource(R.string.home_filter_no_birthday)
-                } else {
-                    label.name
-                }
+                val displayName = label.name.toDisplayLabel()
                 Text(
                     text = displayName,
                     style = MaterialTheme.typography.titleMedium,
