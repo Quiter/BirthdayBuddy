@@ -214,6 +214,13 @@
     <string name="labels_system_tag">SYSTEM</string>
     <string name="labels_action_hide">Verbergen</string>
     <string name="labels_action_ignore">Ignorieren</string>
+    <string name="labels_granular_title">Granulare Steuerung</string>
+    <string name="labels_notifications_title">Benachrichtigungen</string>
+    <string name="labels_notifications_desc">Benachrichtigungen für Geburtstage mit diesem Label erhalten</string>
+    <string name="labels_widget_title">Im Widget anzeigen</string>
+    <string name="labels_widget_desc">Kontakte mit diesem Label im Homescreen-Widget anzeigen</string>
+    <string name="labels_expand_card">Details anzeigen</string>
+    <string name="labels_collapse_card">Details verbergen</string>
 
     <!-- Backup Screen -->
     <string name="backup_title">Daten sichern</string>

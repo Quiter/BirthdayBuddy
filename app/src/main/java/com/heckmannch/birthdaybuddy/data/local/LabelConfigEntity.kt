@@ -9,5 +9,7 @@ data class LabelConfigEntity(
     val name: String,
     val isHiddenFromFilter: Boolean = false,
     val isIgnored: Boolean = false,
-    val isSystem: Boolean = false
+    val isSystem: Boolean = false,
+    val notificationsEnabled: Boolean = true,
+    val showInWidget: Boolean = true
 )

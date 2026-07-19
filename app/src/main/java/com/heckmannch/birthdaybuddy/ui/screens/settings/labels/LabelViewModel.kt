@@ -41,6 +41,8 @@ class LabelViewModel @Inject constructor(
                     config.isHiddenFromFilter,
                     config.isIgnored,
                     config.isSystem,
+                    config.notificationsEnabled,
+                    config.showInWidget,
                 )
             }.sortedBy { it.name }.toList()
 
@@ -54,6 +56,8 @@ class LabelViewModel @Inject constructor(
                 pseudoConfig.isHiddenFromFilter,
                 pseudoConfig.isIgnored,
                 pseudoConfig.isSystem,
+                pseudoConfig.notificationsEnabled,
+                pseudoConfig.showInWidget,
             )
         } else {
             standardList
@@ -63,7 +67,14 @@ class LabelViewModel @Inject constructor(
     fun onIntent(intent: LabelIntent) {
         when (intent) {
             is LabelIntent.UpdateLabelConfig -> {
-                updateLabelConfig(intent.name, intent.hidden, intent.ignored, intent.isSystem)
+                updateLabelConfig(
+                    intent.name,
+                    intent.hidden,
+                    intent.ignored,
+                    intent.isSystem,
+                    intent.notificationsEnabled,
+                    intent.showInWidget
+                )
             }
             is LabelIntent.SetLabelsEnabled -> {
                 setLabelsEnabled(intent.enabled)
@@ -71,9 +82,25 @@ class LabelViewModel @Inject constructor(
         }
     }
 
-    private fun updateLabelConfig(name: String, hidden: Boolean, ignored: Boolean, isSystem: Boolean) =
+    private fun updateLabelConfig(
+        name: String,
+        hidden: Boolean,
+        ignored: Boolean,
+        isSystem: Boolean,
+        notificationsEnabled: Boolean,
+        showInWidget: Boolean
+    ) =
         viewModelScope.launch {
-            contactRepository.updateLabelConfig(LabelConfig(name, hidden, ignored, isSystem))
+            contactRepository.updateLabelConfig(
+                LabelConfig(
+                    name = name,
+                    isHiddenFromFilter = hidden,
+                    isIgnored = ignored,
+                    isSystem = isSystem,
+                    notificationsEnabled = notificationsEnabled,
+                    showInWidget = showInWidget
+                )
+            )
         }
 
     /**
@@ -89,7 +116,9 @@ sealed interface LabelIntent {
         val name: String,
         val hidden: Boolean,
         val ignored: Boolean,
-        val isSystem: Boolean
+        val isSystem: Boolean,
+        val notificationsEnabled: Boolean = true,
+        val showInWidget: Boolean = true
     ) : LabelIntent
 
     data class SetLabelsEnabled(val enabled: Boolean) : LabelIntent

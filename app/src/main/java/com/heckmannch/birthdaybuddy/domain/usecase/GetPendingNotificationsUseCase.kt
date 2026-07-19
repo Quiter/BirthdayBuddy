@@ -51,7 +51,16 @@ class GetPendingNotificationsUseCase @Inject constructor(
 
         if (currentRules.isEmpty()) return emptyList()
 
-        val allContacts = contactRepository.allContacts.first()
+        val labelsEnabled = contactRepository.labelsEnabled.first()
+        val disabledNotificationLabels = if (!labelsEnabled) emptySet() else contactRepository.labelConfigs.first()
+            .asSequence()
+            .filter { it.isIgnored || !it.notificationsEnabled }
+            .map { it.name }
+            .toSet()
+
+        val allContacts = contactRepository.allContacts.first().filter { contact ->
+            !labelsEnabled || contact.labels.none { it in disabledNotificationLabels }
+        }
         val pendingEvents = mutableListOf<PendingNotificationEvent>()
 
         for (rule in currentRules) {

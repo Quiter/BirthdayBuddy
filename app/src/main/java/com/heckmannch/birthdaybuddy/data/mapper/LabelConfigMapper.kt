@@ -16,7 +16,9 @@ class LabelConfigMapper @Inject constructor() {
             name = entity.name,
             isHiddenFromFilter = entity.isHiddenFromFilter,
             isIgnored = entity.isIgnored,
-            isSystem = entity.isSystem
+            isSystem = entity.isSystem,
+            notificationsEnabled = entity.notificationsEnabled,
+            showInWidget = entity.showInWidget
         )
     }
 
@@ -25,7 +27,9 @@ class LabelConfigMapper @Inject constructor() {
             name = domain.name,
             isHiddenFromFilter = domain.isHiddenFromFilter,
             isIgnored = domain.isIgnored,
-            isSystem = domain.isSystem
+            isSystem = domain.isSystem,
+            notificationsEnabled = domain.notificationsEnabled,
+            showInWidget = domain.showInWidget
         )
     }
 }

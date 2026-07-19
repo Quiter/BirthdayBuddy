@@ -14,7 +14,6 @@ import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.runTest
 import org.junit.Rule
 import org.junit.Test
-import org.mockito.kotlin.any
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
@@ -76,10 +75,28 @@ class LabelViewModelTest {
         val viewModel = LabelViewModel(contactRepository)
 
         // When
-        viewModel.onIntent(LabelIntent.UpdateLabelConfig("Test", hidden = true, ignored = false, isSystem = true))
+        viewModel.onIntent(
+            LabelIntent.UpdateLabelConfig(
+                name = "Test",
+                hidden = true,
+                ignored = false,
+                isSystem = true,
+                notificationsEnabled = false,
+                showInWidget = true
+            )
+        )
 
         // Then
-        verify(contactRepository).updateLabelConfig(any())
+        verify(contactRepository).updateLabelConfig(
+            LabelConfig(
+                name = "Test",
+                isHiddenFromFilter = true,
+                isIgnored = false,
+                isSystem = true,
+                notificationsEnabled = false,
+                showInWidget = true
+            )
+        )
     }
 
     @Test

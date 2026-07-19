@@ -5,6 +5,7 @@ import com.heckmannch.birthdaybuddy.MainDispatcherRule
 import com.heckmannch.birthdaybuddy.domain.model.AppSettings
 import com.heckmannch.birthdaybuddy.domain.model.Contact
 import com.heckmannch.birthdaybuddy.domain.model.EventType
+import com.heckmannch.birthdaybuddy.domain.model.LabelConfig
 import com.heckmannch.birthdaybuddy.domain.model.NotificationRule
 import com.heckmannch.birthdaybuddy.domain.repository.ContactRepository
 import com.heckmannch.birthdaybuddy.domain.repository.NotificationRepository
@@ -36,6 +37,8 @@ class GetPendingNotificationsUseCaseTest {
 
     @Before
     fun setUp() {
+        whenever(contactRepository.labelsEnabled).thenReturn(flowOf(false))
+        whenever(contactRepository.labelConfigs).thenReturn(flowOf(emptyList()))
         useCase = GetPendingNotificationsUseCase(contactRepository, notificationRepository)
     }
 
@@ -283,6 +286,36 @@ class GetPendingNotificationsUseCaseTest {
             .thenReturn(true)
         whenever(notificationRepository.hasNotificationBeenScheduled(eq(2024), eq(0), eq("anniversary:key2")))
             .thenReturn(false)
+
+        // Act
+        val result = useCase(baseTime)
+
+        // Assert
+        assertThat(result).isEmpty()
+    }
+
+    @Test
+    fun `when label notifications are disabled, skips contacts with that label`() = runTest {
+        // Arrange
+        val settings = AppSettings(notificationsEnabled = true)
+        val rule = NotificationRule(id = 1, daysBefore = 0, hour = 9, minute = 0)
+        val contactWithDisabledLabel = Contact(
+            contactId = "1",
+            lookupKey = "key1",
+            fullName = "Work Colleague",
+            birthday = LocalDate.of(1990, 5, 15),
+            labels = listOf("Work")
+        )
+        val labelConfigs = listOf(
+            LabelConfig(name = "Work", notificationsEnabled = false)
+        )
+
+        whenever(notificationRepository.settings).thenReturn(flowOf(settings))
+        whenever(notificationRepository.getAllRulesImmediate()).thenReturn(listOf(rule))
+        whenever(contactRepository.allContacts).thenReturn(flowOf(listOf(contactWithDisabledLabel)))
+        whenever(contactRepository.labelsEnabled).thenReturn(flowOf(true))
+        whenever(contactRepository.labelConfigs).thenReturn(flowOf(labelConfigs))
+        whenever(notificationRepository.hasNotificationBeenScheduled(any(), any(), any())).thenReturn(false)
 
         // Act
         val result = useCase(baseTime)

@@ -78,13 +78,13 @@ class BirthdayWidget : GlanceAppWidget() {
                     repository.labelConfigs,
                     repository.labelsEnabled,
                 ) { list, configs, labelsEnabled ->
-                    val ignoredLabels = if (!labelsEnabled) emptySet() else configs.asSequence()
-                        .filter { it.isIgnored }
+                    val disabledLabels = if (!labelsEnabled) emptySet() else configs.asSequence()
+                        .filter { it.isIgnored || !it.showInWidget }
                         .map { it.name }
                         .toSet()
                     list.asSequence()
                         .filter { contact ->
-                            (contact.birthday != null) && contact.labels.none { it in ignoredLabels }
+                            (contact.birthday != null) && contact.labels.none { it in disabledLabels }
                         }
                         .sortedBy { it.birthday!!.safeDaysUntilNext() }
                         .toList()

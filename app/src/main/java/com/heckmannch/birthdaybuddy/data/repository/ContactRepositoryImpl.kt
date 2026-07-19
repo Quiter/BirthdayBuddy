@@ -176,7 +176,9 @@ class ContactRepositoryImpl @Inject constructor(
                         name = group.title,
                         isHiddenFromFilter = existing?.isHiddenFromFilter ?: false,
                         isIgnored = existing?.isIgnored ?: false,
-                        isSystem = group.isSystem
+                        isSystem = group.isSystem,
+                        notificationsEnabled = existing?.notificationsEnabled ?: true,
+                        showInWidget = existing?.showInWidget ?: true
                     )
                 )
             }

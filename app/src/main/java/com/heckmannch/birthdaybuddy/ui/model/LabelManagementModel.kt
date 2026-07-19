@@ -11,4 +11,6 @@ data class LabelManagementModel(
     val isHiddenFromFilter: Boolean,
     val isIgnored: Boolean,
     val isSystem: Boolean,
+    val notificationsEnabled: Boolean = true,
+    val showInWidget: Boolean = true,
 )

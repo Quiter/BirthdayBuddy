@@ -20,6 +20,9 @@ import com.heckmannch.birthdaybuddy.ui.model.HomeUiState
 import com.heckmannch.birthdaybuddy.ui.model.SampleData
 import com.heckmannch.birthdaybuddy.ui.theme.BirthdayBuddyTheme
 import kotlinx.coroutines.flow.MutableSharedFlow
+import androidx.compose.ui.test.hasAnyAncestor
+import androidx.compose.ui.test.hasTestTag
+import androidx.compose.ui.test.hasText
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -228,7 +231,7 @@ class HomeScreenTest {
         composeTestRule.onNodeWithText("Bob Clausen").assertIsDisplayed()
 
         // Filter-Chip "Familie" anklicken
-        composeTestRule.onNodeWithText("Familie").performClick()
+        composeTestRule.onNode(hasText("Familie") and hasAnyAncestor(hasTestTag("birthday_list"))).performClick()
 
         // Überprüfen, dass nur Alice (mit Label "Familie") angezeigt wird und Bob ausgeblendet wird
         composeTestRule.onNodeWithText("Alice Becker").assertIsDisplayed()

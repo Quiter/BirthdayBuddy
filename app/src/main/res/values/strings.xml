@@ -214,6 +214,13 @@
     <string name="labels_system_tag">SYSTEM</string>
     <string name="labels_action_hide">Hide</string>
     <string name="labels_action_ignore">Ignore</string>
+    <string name="labels_granular_title">Granular controls</string>
+    <string name="labels_notifications_title">Notifications</string>
+    <string name="labels_notifications_desc">Receive notifications for birthdays with this label</string>
+    <string name="labels_widget_title">Show in widget</string>
+    <string name="labels_widget_desc">Show contacts with this label in the home screen widget</string>
+    <string name="labels_expand_card">Show details</string>
+    <string name="labels_collapse_card">Hide details</string>
 
     <!-- Backup Screen -->
     <string name="backup_title">Backup data</string>

@@ -1,5 +1,6 @@
 package com.heckmannch.birthdaybuddy.ui.screens.settings.labels
 
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -17,13 +18,17 @@ import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.ExpandLess
+import androidx.compose.material.icons.filled.ExpandMore
 import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FilterChipDefaults
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.MaterialTheme
@@ -32,21 +37,25 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.heckmannch.birthdaybuddy.R
 import com.heckmannch.birthdaybuddy.ui.components.AppSwitch
-import com.heckmannch.birthdaybuddy.ui.screens.home.components.labels.toDisplayLabel
 import com.heckmannch.birthdaybuddy.ui.components.InfoCard
 import com.heckmannch.birthdaybuddy.ui.components.SettingsDetailScaffold
 import com.heckmannch.birthdaybuddy.ui.components.withSettingsInsets
 import com.heckmannch.birthdaybuddy.ui.model.LabelManagementModel
+import com.heckmannch.birthdaybuddy.ui.screens.home.components.labels.toDisplayLabel
 import com.heckmannch.birthdaybuddy.ui.theme.AlphaEmphasisDisabled
 import com.heckmannch.birthdaybuddy.ui.theme.BirthdayBuddyTheme
 import com.heckmannch.birthdaybuddy.ui.theme.ChipPaddingHorizontal
@@ -72,8 +81,17 @@ fun LabelSettingsScreen(
         showBackButton = showBackButton,
         onNavigateBack = onNavigateBack,
         onLabelsEnabledChanged = { viewModel.onIntent(LabelIntent.SetLabelsEnabled(it)) }
-    ) { name, hidden, ignored, isSystem ->
-        viewModel.onIntent(LabelIntent.UpdateLabelConfig(name, hidden, ignored, isSystem))
+    ) { name, hidden, ignored, isSystem, notificationsEnabled, showInWidget ->
+        viewModel.onIntent(
+            LabelIntent.UpdateLabelConfig(
+                name = name,
+                hidden = hidden,
+                ignored = ignored,
+                isSystem = isSystem,
+                notificationsEnabled = notificationsEnabled,
+                showInWidget = showInWidget
+            )
+        )
     }
 }
 
@@ -84,7 +102,7 @@ private fun LabelSettingsScreenContent(
     showBackButton: Boolean = true,
     onNavigateBack: () -> Unit,
     onLabelsEnabledChanged: (Boolean) -> Unit,
-    onConfigChanged: (String, Boolean, Boolean, Boolean) -> Unit
+    onConfigChanged: (String, Boolean, Boolean, Boolean, Boolean, Boolean) -> Unit
 ) {
     SettingsDetailScaffold(
         title = stringResource(R.string.settings_labels_title),
@@ -117,7 +135,7 @@ private fun LabelSettingsScreenContent(
                             )
                         },
                         modifier = Modifier.clickable { onLabelsEnabledChanged(!labelsEnabled) },
-                        colors = ListItemDefaults.colors(containerColor = androidx.compose.ui.graphics.Color.Transparent)
+                        colors = ListItemDefaults.colors(containerColor = Color.Transparent)
                     )
                 }
             }
@@ -172,15 +190,72 @@ private fun LabelSettingsScreenContent(
 private fun LabelConfigCard(
     label: LabelManagementModel,
     enabled: Boolean = true,
-    onConfigChanged: (String, Boolean, Boolean, Boolean) -> Unit
+    onConfigChanged: (String, Boolean, Boolean, Boolean, Boolean, Boolean) -> Unit
 ) {
-    // Optimierung 2: Callbacks memoizen, um unnötige Recompositions zu vermeiden
-    val onHideToggle = remember(label) {
-        { onConfigChanged(label.name, !label.isHiddenFromFilter, label.isIgnored, label.isSystem) }
+    var expanded by rememberSaveable { mutableStateOf(false) }
+
+    androidx.compose.runtime.LaunchedEffect(label.isIgnored) {
+        if (label.isIgnored) {
+            expanded = false
+        }
     }
-    val onIgnoreToggle = remember(label) {
-        { onConfigChanged(label.name, label.isHiddenFromFilter, !label.isIgnored, label.isSystem) }
+
+    val onHideToggle = remember(label, onConfigChanged) {
+        {
+            val newHidden = !label.isHiddenFromFilter
+            val newNotifications = if (newHidden) false else true
+            val newWidget = if (newHidden) false else true
+            onConfigChanged(
+                label.name,
+                newHidden,
+                label.isIgnored,
+                label.isSystem,
+                newNotifications,
+                newWidget
+            )
+        }
     }
+    val onIgnoreToggle = remember(label, onConfigChanged) {
+        {
+            val newIgnored = !label.isIgnored
+            val newNotifications = if (newIgnored) false else label.notificationsEnabled
+            val newWidget = if (newIgnored) false else label.showInWidget
+            onConfigChanged(
+                label.name,
+                label.isHiddenFromFilter,
+                newIgnored,
+                label.isSystem,
+                newNotifications,
+                newWidget
+            )
+        }
+    }
+    val onNotificationsToggle = remember(label, onConfigChanged) {
+        { newNotificationsEnabled: Boolean ->
+            onConfigChanged(
+                label.name,
+                label.isHiddenFromFilter,
+                label.isIgnored,
+                label.isSystem,
+                newNotificationsEnabled,
+                label.showInWidget
+            )
+        }
+    }
+    val onWidgetToggle = remember(label, onConfigChanged) {
+        { newShowInWidget: Boolean ->
+            onConfigChanged(
+                label.name,
+                label.isHiddenFromFilter,
+                label.isIgnored,
+                label.isSystem,
+                label.notificationsEnabled,
+                newShowInWidget
+            )
+        }
+    }
+
+    val isExpandEnabled = enabled && !label.isIgnored
 
     OutlinedCard(
         modifier = Modifier
@@ -198,30 +273,51 @@ private fun LabelConfigCard(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 modifier = Modifier.fillMaxWidth()
             ) {
-                val displayName = label.name.toDisplayLabel()
-                Text(
-                    text = displayName,
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.onSurface
-                )
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(SpacingSmall),
+                    modifier = Modifier.weight(1f)
+                ) {
+                    val displayName = label.name.toDisplayLabel()
+                    Text(
+                        text = displayName,
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
 
-                if (label.isSystem) {
-                    Surface(
-                        color = MaterialTheme.colorScheme.secondaryContainer,
-                        shape = MaterialTheme.shapes.extraSmall,
-                    ) {
-                        Text(
-                            text = stringResource(R.string.labels_system_tag),
-                            style = MaterialTheme.typography.labelSmall,
-                            modifier = Modifier.padding(horizontal = ChipPaddingHorizontal, vertical = ChipPaddingVertical),
-                            color = MaterialTheme.colorScheme.onSecondaryContainer
-                        )
+                    if (label.isSystem) {
+                        Surface(
+                            color = MaterialTheme.colorScheme.secondaryContainer,
+                            shape = MaterialTheme.shapes.extraSmall,
+                        ) {
+                            Text(
+                                text = stringResource(R.string.labels_system_tag),
+                                style = MaterialTheme.typography.labelSmall,
+                                modifier = Modifier.padding(
+                                    horizontal = ChipPaddingHorizontal,
+                                    vertical = ChipPaddingVertical
+                                ),
+                                color = MaterialTheme.colorScheme.onSecondaryContainer
+                            )
+                        }
                     }
+                }
+
+                IconButton(
+                    onClick = { expanded = !expanded },
+                    enabled = isExpandEnabled
+                ) {
+                    Icon(
+                        imageVector = if (expanded && !label.isIgnored) Icons.Default.ExpandLess else Icons.Default.ExpandMore,
+                        contentDescription = stringResource(
+                            if (expanded && !label.isIgnored) R.string.labels_collapse_card else R.string.labels_expand_card
+                        )
+                    )
                 }
             }
 
-            Spacer(modifier = Modifier.height(SpacingNormal))
+            Spacer(modifier = Modifier.height(SpacingSmall))
 
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -269,6 +365,59 @@ private fun LabelConfigCard(
                     )
                 )
             }
+
+            AnimatedVisibility(visible = expanded && !label.isIgnored) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = SpacingSmall)
+                ) {
+                    HorizontalDivider(
+                        modifier = Modifier.padding(vertical = SpacingSmall),
+                        color = MaterialTheme.colorScheme.outlineVariant
+                    )
+
+                    Text(
+                        text = stringResource(R.string.labels_granular_title),
+                        style = MaterialTheme.typography.labelLarge,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.padding(bottom = SpacingSmall)
+                    )
+
+                    ListItem(
+                        headlineContent = { Text(stringResource(R.string.labels_notifications_title)) },
+                        supportingContent = { Text(stringResource(R.string.labels_notifications_desc)) },
+                        trailingContent = {
+                            AppSwitch(
+                                checked = label.notificationsEnabled,
+                                onCheckedChange = { onNotificationsToggle(it) },
+                                enabled = enabled
+                            )
+                        },
+                        modifier = Modifier.clickable(enabled = enabled) {
+                            onNotificationsToggle(!label.notificationsEnabled)
+                        },
+                        colors = ListItemDefaults.colors(containerColor = Color.Transparent)
+                    )
+
+                    ListItem(
+                        headlineContent = { Text(stringResource(R.string.labels_widget_title)) },
+                        supportingContent = { Text(stringResource(R.string.labels_widget_desc)) },
+                        trailingContent = {
+                            AppSwitch(
+                                checked = label.showInWidget,
+                                onCheckedChange = { onWidgetToggle(it) },
+                                enabled = enabled
+                            )
+                        },
+                        modifier = Modifier.clickable(enabled = enabled) {
+                            onWidgetToggle(!label.showInWidget)
+                        },
+                        colors = ListItemDefaults.colors(containerColor = Color.Transparent)
+                    )
+                }
+            }
         }
     }
 }
@@ -283,37 +432,47 @@ private fun LabelSettingsPreview() {
                     "Familie",
                     isHiddenFromFilter = false,
                     isIgnored = false,
-                    isSystem = true
+                    isSystem = true,
+                    notificationsEnabled = true,
+                    showInWidget = true
                 ),
                 LabelManagementModel(
                     "Freunde",
                     isHiddenFromFilter = true,
                     isIgnored = false,
-                    isSystem = false
+                    isSystem = false,
+                    notificationsEnabled = true,
+                    showInWidget = false
                 ),
                 LabelManagementModel(
                     "Arbeit",
                     isHiddenFromFilter = false,
                     isIgnored = false,
-                    isSystem = false
+                    isSystem = false,
+                    notificationsEnabled = false,
+                    showInWidget = true
                 ),
                 LabelManagementModel(
                     "Ex-Kollegen",
                     isHiddenFromFilter = false,
                     isIgnored = true,
-                    isSystem = false
+                    isSystem = false,
+                    notificationsEnabled = false,
+                    showInWidget = false
                 ),
                 LabelManagementModel(
                     "Sport",
                     isHiddenFromFilter = true,
                     isIgnored = true,
-                    isSystem = false
+                    isSystem = false,
+                    notificationsEnabled = true,
+                    showInWidget = true
                 )
             ),
             labelsEnabled = true,
             onNavigateBack = {},
             onLabelsEnabledChanged = {},
-            onConfigChanged = { _, _, _, _ -> }
+            onConfigChanged = { _, _, _, _, _, _ -> }
         )
     }
 }
