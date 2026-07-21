@@ -32,11 +32,14 @@ class BootReceiver : BroadcastReceiver() {
             action != Intent.ACTION_MY_PACKAGE_REPLACED
         ) return
 
+        val pendingResult = goAsync()
         CoroutineScope(Dispatchers.IO).launch {
             try {
                 notificationRepository.syncScheduling()
             } catch (_: Exception) {
                 // Safeguard: Scheduler-Fehler dürfen den Boot-Prozess nicht blockieren.
+            } finally {
+                pendingResult.finish()
             }
         }
     }
