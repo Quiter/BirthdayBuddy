@@ -64,4 +64,15 @@ class AppViewModelTest {
         // The viewModel is already created in @Before – verify the call occurred.
         verify(notificationRepository).syncScheduling()
     }
+
+    @Test
+    fun `onboardingCompleted emits value from repository settings`() = runTest {
+        val completedSettings = AppSettings(onboardingCompleted = true)
+        whenever(notificationRepository.settings).thenReturn(flowOf(completedSettings))
+
+        val freshViewModel = AppViewModel(notificationRepository)
+        val result = freshViewModel.onboardingCompleted.first { it != null }
+
+        assertThat(result).isTrue()
+    }
 }

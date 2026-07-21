@@ -7,6 +7,7 @@ import com.heckmannch.birthdaybuddy.domain.repository.NotificationRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -39,6 +40,19 @@ class AppViewModel @Inject constructor(
             started = SharingStarted.Eagerly,
             initialValue = AppSettings()
         )
+
+    /**
+     * Exposes whether onboarding is completed for splash screen handling
+     * and initial navigation key selection.
+     */
+    val onboardingCompleted: StateFlow<Boolean?> = notificationRepository.settings
+        .map<AppSettings, Boolean?> { it.onboardingCompleted }
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.Eagerly,
+            initialValue = null
+        )
+
 
     init {
         viewModelScope.launch {

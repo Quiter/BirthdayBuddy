@@ -10,30 +10,19 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.adaptive.currentWindowAdaptiveInfoV2
 import androidx.compose.runtime.CompositionLocalProvider
-import androidx.compose.runtime.DisposableEffect
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.Modifier
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
-import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.LifecycleEventObserver
-import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation3.runtime.rememberNavBackStack
-import com.heckmannch.birthdaybuddy.ui.components.ContactSyncEffect
 import com.heckmannch.birthdaybuddy.ui.components.LocalWindowAdaptiveInfo
 import com.heckmannch.birthdaybuddy.ui.components.LocalWindowSizeClass
 import com.heckmannch.birthdaybuddy.ui.navigation.AppNavHost
 import com.heckmannch.birthdaybuddy.ui.navigation.Home
-import com.heckmannch.birthdaybuddy.ui.navigation.NotificationSettings
 import com.heckmannch.birthdaybuddy.ui.navigation.Onboarding
-import com.heckmannch.birthdaybuddy.ui.screens.home.HomeIntent
-import com.heckmannch.birthdaybuddy.ui.screens.home.HomeViewModel
-import com.heckmannch.birthdaybuddy.ui.screens.onboarding.OnboardingViewModel
 import com.heckmannch.birthdaybuddy.ui.theme.BirthdayBuddyTheme
-import com.heckmannch.birthdaybuddy.util.IntentExtras
 import com.heckmannch.birthdaybuddy.widget.BirthdayWidgetWorker
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -56,9 +45,7 @@ class MainActivity : ComponentActivity() {
             val windowAdaptiveInfo = currentWindowAdaptiveInfoV2()
             val windowSizeClass = windowAdaptiveInfo.windowSizeClass
             val appViewModel: AppViewModel = hiltViewModel()
-            val homeViewModel: HomeViewModel = hiltViewModel()
-            val onboardingViewModel: OnboardingViewModel = hiltViewModel()
-            val onboardingCompleted by onboardingViewModel.onboardingCompleted.collectAsStateWithLifecycle()
+            val onboardingCompleted by appViewModel.onboardingCompleted.collectAsStateWithLifecycle()
             val appSettings by appViewModel.appSettings.collectAsStateWithLifecycle()
 
             // Splash Screen so lange anzeigen, bis wir wissen, wo es hingeht
@@ -82,69 +69,13 @@ class MainActivity : ComponentActivity() {
                         )
                         val currentIntent by activityIntent
 
-                        // Inaktivitäts-Check: Filter nach 5 Minuten bei Wiederaufnahme zurücksetzen
-                        val lifecycleOwner = LocalLifecycleOwner.current
-                        DisposableEffect(lifecycleOwner) {
-                            val observer = LifecycleEventObserver { _, event ->
-                                if (event == Lifecycle.Event.ON_RESUME) {
-                                    homeViewModel.onIntent(HomeIntent.AppResumed)
-                                }
-                            }
-                            lifecycleOwner.lifecycle.addObserver(observer)
-                            onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
-                        }
-
-                        // Live-Sync bei Änderungen im System-Adressbuch
-                        ContactSyncEffect(onSyncNeeded = { homeViewModel.onIntent(HomeIntent.SyncContacts()) })
-
-                        // React to intent changes (Initial start and onNewIntent)
-                        LaunchedEffect(currentIntent) {
-                            if (currentIntent?.getBooleanExtra(
-                                    IntentExtras.SCROLL_TO_TOP,
-                                    false
-                                ) == true
-                            ) {
-                                homeViewModel.onIntent(HomeIntent.TriggerScrollToTop)
-                                currentIntent?.removeExtra(IntentExtras.SCROLL_TO_TOP)
-                            }
-                            if (currentIntent?.getBooleanExtra(
-                                    IntentExtras.NAVIGATE_TO_NOTIFICATIONS,
-                                    false
-                                ) == true
-                            ) {
-                                if (!backStack.contains(NotificationSettings)) {
-                                    backStack.add(NotificationSettings)
-                                }
-                                currentIntent?.removeExtra(IntentExtras.NAVIGATE_TO_NOTIFICATIONS)
-                            }
-                            if (currentIntent?.getBooleanExtra(
-                                    IntentExtras.OPEN_SEARCH,
-                                    false
-                                ) == true
-                            ) {
-                                backStack.clear()
-                                backStack.add(Home)
-                                homeViewModel.onIntent(HomeIntent.TriggerSearchFocus)
-                                currentIntent?.removeExtra(IntentExtras.OPEN_SEARCH)
-                            }
-                            if (currentIntent?.getBooleanExtra(
-                                    IntentExtras.OPEN_ADD_CONTACT,
-                                    false
-                                ) == true
-                            ) {
-                                homeViewModel.onIntent(HomeIntent.SyncContacts())
-                                currentIntent?.removeExtra(IntentExtras.OPEN_ADD_CONTACT)
-                            }
-                        }
-
                         Surface(
                             modifier = Modifier.fillMaxSize(),
                             color = MaterialTheme.colorScheme.background,
                         ) {
                             AppNavHost(
                                 backStack = backStack,
-                                homeViewModel = homeViewModel,
-                                onboardingViewModel = onboardingViewModel,
+                                intent = currentIntent
                             )
                         }
                     }

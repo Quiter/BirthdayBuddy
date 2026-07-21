@@ -1,8 +1,5 @@
 package com.heckmannch.birthdaybuddy.ui.screens.settings
 
-import androidx.window.core.layout.WindowSizeClass
-import com.heckmannch.birthdaybuddy.ui.components.LocalWindowSizeClass
-import com.heckmannch.birthdaybuddy.ui.components.isWidthCompact
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
@@ -34,7 +31,6 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.adaptive.ExperimentalMaterial3AdaptiveApi
-import com.heckmannch.birthdaybuddy.ui.components.LocalWindowAdaptiveInfo
 import androidx.compose.material3.adaptive.layout.calculatePaneScaffoldDirective
 import androidx.compose.material3.adaptive.navigation3.ListDetailSceneStrategy
 import androidx.compose.material3.adaptive.navigation3.rememberListDetailSceneStrategy
@@ -46,7 +42,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
@@ -59,9 +54,12 @@ import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.navigation3.runtime.NavEntry
 import androidx.navigation3.runtime.NavKey
 import androidx.navigation3.ui.NavDisplay
+import androidx.window.core.layout.WindowSizeClass
 import com.heckmannch.birthdaybuddy.R
 import com.heckmannch.birthdaybuddy.ui.components.AppResponsiveScaffold
-import com.heckmannch.birthdaybuddy.ui.screens.home.HomeViewModel
+import com.heckmannch.birthdaybuddy.ui.components.LocalWindowAdaptiveInfo
+import com.heckmannch.birthdaybuddy.ui.components.LocalWindowSizeClass
+import com.heckmannch.birthdaybuddy.ui.components.isWidthCompact
 import com.heckmannch.birthdaybuddy.ui.screens.settings.about.AboutScreen
 import com.heckmannch.birthdaybuddy.ui.screens.settings.about.PrivacyPolicyScreen
 import com.heckmannch.birthdaybuddy.ui.screens.settings.backup.BackupScreen
@@ -74,6 +72,7 @@ import com.heckmannch.birthdaybuddy.ui.screens.settings.notifications.Notificati
 import com.heckmannch.birthdaybuddy.ui.screens.settings.notifications.NotificationViewModel
 import com.heckmannch.birthdaybuddy.ui.screens.settings.otherevents.OtherEventsSettingsScreen
 import com.heckmannch.birthdaybuddy.ui.screens.settings.sync.SyncSettingsScreen
+import com.heckmannch.birthdaybuddy.ui.screens.settings.sync.SyncViewModel
 import com.heckmannch.birthdaybuddy.ui.screens.settings.theme.ThemeSettingsScreen
 import com.heckmannch.birthdaybuddy.ui.screens.settings.theme.ThemeViewModel
 import com.heckmannch.birthdaybuddy.ui.theme.AlphaEmphasisMedium
@@ -121,7 +120,6 @@ private data class SettingsMenuItemData(
  */
 @Composable
 fun SettingsScreen(
-    homeViewModel: HomeViewModel?,
     onNavigateToLabels: () -> Unit,
     onNavigateToNotifications: () -> Unit,
     onNavigateToCalendar: () -> Unit,
@@ -133,7 +131,6 @@ fun SettingsScreen(
     onNavigateBack: () -> Unit,
 ) {
     SettingsContent(
-        homeViewModel = homeViewModel,
         onNavigateToSync = onNavigateToSync,
         onNavigateToLabels = onNavigateToLabels,
         onNavigateToNotifications = onNavigateToNotifications,
@@ -153,7 +150,6 @@ fun SettingsScreen(
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3AdaptiveApi::class)
 @Composable
 private fun SettingsContent(
-    homeViewModel: HomeViewModel?,
     onNavigateToSync: () -> Unit,
     onNavigateToLabels: () -> Unit,
     onNavigateToNotifications: () -> Unit,
@@ -328,6 +324,7 @@ private fun SettingsContent(
         val labelViewModel: LabelViewModel = hiltViewModel()
         val backupViewModel: BackupViewModel = hiltViewModel()
         val themeViewModel: ThemeViewModel = hiltViewModel()
+        val syncViewModel: SyncViewModel = hiltViewModel()
 
         AppResponsiveScaffold(
             useAdaptiveWidth = false,
@@ -456,20 +453,11 @@ private fun SettingsContent(
                                     }
 
                                     SettingsTab.SYNC -> {
-                                        if (homeViewModel != null) {
-                                            SyncSettingsScreen(
-                                                viewModel = homeViewModel,
-                                                showBackButton = false,
-                                                onNavigateBack = {}
-                                            )
-                                        } else {
-                                            Box(
-                                                modifier = Modifier.fillMaxSize(),
-                                                contentAlignment = Alignment.Center
-                                            ) {
-                                                Text("Sync is not available in preview")
-                                            }
-                                        }
+                                        SyncSettingsScreen(
+                                            viewModel = syncViewModel,
+                                            showBackButton = false,
+                                            onNavigateBack = {}
+                                        )
                                     }
 
                                     SettingsTab.OTHER_EVENTS -> {
@@ -607,7 +595,6 @@ private fun SettingsPreview() {
             LocalWindowSizeClass provides WindowSizeClass(360, 640)
         ) {
             SettingsContent(
-                homeViewModel = null,
                 onNavigateToSync = {},
                 onNavigateToLabels = {},
                 onNavigateToNotifications = {},

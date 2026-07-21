@@ -1,5 +1,6 @@
 package com.heckmannch.birthdaybuddy.ui.navigation
 
+import android.content.Intent
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
@@ -8,14 +9,21 @@ import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.animation.togetherWith
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.navigation3.rememberViewModelStoreNavEntryDecorator
 import androidx.navigation3.runtime.NavEntry
 import androidx.navigation3.runtime.NavKey
 import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
 import androidx.navigation3.ui.NavDisplay
+import com.heckmannch.birthdaybuddy.ui.components.ContactSyncEffect
+import com.heckmannch.birthdaybuddy.ui.screens.home.HomeIntent
 import com.heckmannch.birthdaybuddy.ui.screens.home.HomeScreen
 import com.heckmannch.birthdaybuddy.ui.screens.home.HomeViewModel
 import com.heckmannch.birthdaybuddy.ui.screens.onboarding.OnboardingScreen
@@ -33,8 +41,10 @@ import com.heckmannch.birthdaybuddy.ui.screens.settings.notifications.Notificati
 import com.heckmannch.birthdaybuddy.ui.screens.settings.notifications.NotificationViewModel
 import com.heckmannch.birthdaybuddy.ui.screens.settings.otherevents.OtherEventsSettingsScreen
 import com.heckmannch.birthdaybuddy.ui.screens.settings.sync.SyncSettingsScreen
+import com.heckmannch.birthdaybuddy.ui.screens.settings.sync.SyncViewModel
 import com.heckmannch.birthdaybuddy.ui.screens.settings.theme.ThemeSettingsScreen
 import com.heckmannch.birthdaybuddy.ui.screens.settings.theme.ThemeViewModel
+import com.heckmannch.birthdaybuddy.util.IntentExtras
 
 /**
  * Zentrale Navigations-Komponente der App.
@@ -42,20 +52,27 @@ import com.heckmannch.birthdaybuddy.ui.screens.settings.theme.ThemeViewModel
  * Verwaltet den NavDisplay (Navigation 3) mit allen Routen, Screen-zu-Screen-Transitions
  * und ViewModel-Verknüpfungen. Die Route-Definitionen selbst befinden sich in NavRoutes.kt.
  *
+ * ViewModels wie HomeViewModel und OnboardingViewModel werden via hiltViewModel() direkt
+ * in ihren jeweiligen NavEntry-Blöcken instanziiert und über rememberViewModelStoreNavEntryDecorator()
+ * an den Lifecycle des Eintrags gebunden.
+ *
  * @param backStack Der gemeinsame Back-Stack, der von der Activity gehalten wird.
- * @param homeViewModel Activity-weites ViewModel für den Home-Screen.
- * @param onboardingViewModel Activity-weites ViewModel für den Onboarding-Flow.
+ * @param intent Der aktuelle Intent der Activity für Deep-Links und Intent-Aktionen.
  */
 @Composable
 fun AppNavHost(
     backStack: MutableList<NavKey>,
-    homeViewModel: HomeViewModel,
-    onboardingViewModel: OnboardingViewModel,
+    intent: Intent? = null,
 ) {
-    val onboardingCompleted by onboardingViewModel.onboardingCompleted.collectAsStateWithLifecycle()
-
-    // Warten bis der Status geladen wurde, um Flackern zu vermeiden
-    if (onboardingCompleted == null) return
+    // Navigations-Intents behandeln (z.B. Benachrichtigungseinstellungen direkt öffnen)
+    LaunchedEffect(intent) {
+        if (intent?.getBooleanExtra(IntentExtras.NAVIGATE_TO_NOTIFICATIONS, false) == true) {
+            if (!backStack.contains(NotificationSettings)) {
+                backStack.add(NotificationSettings)
+            }
+            intent.removeExtra(IntentExtras.NAVIGATE_TO_NOTIFICATIONS)
+        }
+    }
 
     NavDisplay(
         backStack = backStack,
@@ -110,6 +127,7 @@ fun AppNavHost(
         entryProvider = { key ->
             when (key) {
                 is Onboarding -> NavEntry(key) {
+                    val onboardingViewModel: OnboardingViewModel = hiltViewModel()
                     OnboardingScreen(
                         viewModel = onboardingViewModel,
                     ) {
@@ -119,7 +137,44 @@ fun AppNavHost(
                 }
 
                 is Home -> NavEntry(key) {
+                    val homeViewModel: HomeViewModel = hiltViewModel()
                     val uiState by homeViewModel.uiState.collectAsStateWithLifecycle()
+
+                    // Inaktivitäts-Check: Filter nach 5 Minuten bei Wiederaufnahme zurücksetzen
+                    val lifecycleOwner = LocalLifecycleOwner.current
+                    DisposableEffect(lifecycleOwner) {
+                        val observer = LifecycleEventObserver { _, event ->
+                            if (event == Lifecycle.Event.ON_RESUME) {
+                                homeViewModel.onIntent(HomeIntent.AppResumed)
+                            }
+                        }
+                        lifecycleOwner.lifecycle.addObserver(observer)
+                        onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
+                    }
+
+                    // Live-Sync bei Änderungen im System-Adressbuch
+                    ContactSyncEffect(onSyncNeeded = { homeViewModel.onIntent(HomeIntent.SyncContacts()) })
+
+                    // Intent-Events für den Home-Screen verarbeiten (z.B. Widget / App Shortcuts)
+                    LaunchedEffect(intent) {
+                        if (intent?.getBooleanExtra(IntentExtras.SCROLL_TO_TOP, false) == true) {
+                            homeViewModel.onIntent(HomeIntent.TriggerScrollToTop)
+                            intent.removeExtra(IntentExtras.SCROLL_TO_TOP)
+                        }
+                        if (intent?.getBooleanExtra(IntentExtras.OPEN_SEARCH, false) == true) {
+                            if (backStack.lastOrNull() != Home) {
+                                backStack.clear()
+                                backStack.add(Home)
+                            }
+                            homeViewModel.onIntent(HomeIntent.TriggerSearchFocus)
+                            intent.removeExtra(IntentExtras.OPEN_SEARCH)
+                        }
+                        if (intent?.getBooleanExtra(IntentExtras.OPEN_ADD_CONTACT, false) == true) {
+                            homeViewModel.onIntent(HomeIntent.SyncContacts())
+                            intent.removeExtra(IntentExtras.OPEN_ADD_CONTACT)
+                        }
+                    }
+
                     HomeScreen(
                         uiState = uiState,
                         onIntent = homeViewModel::onIntent,
@@ -132,7 +187,6 @@ fun AppNavHost(
 
                 is Settings -> NavEntry(key) {
                     SettingsScreen(
-                        homeViewModel = homeViewModel,
                         onNavigateToLabels = { backStack.add(LabelSettings) },
                         onNavigateToNotifications = { backStack.add(NotificationSettings) },
                         onNavigateToCalendar = { backStack.add(CalendarSettings) },
@@ -201,8 +255,9 @@ fun AppNavHost(
                 }
 
                 is SyncSettings -> NavEntry(key) {
+                    val syncViewModel: SyncViewModel = hiltViewModel()
                     SyncSettingsScreen(
-                        viewModel = homeViewModel
+                        viewModel = syncViewModel
                     ) {
                         if (backStack.size > 1) backStack.removeAt(backStack.lastIndex)
                     }

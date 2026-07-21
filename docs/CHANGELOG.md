@@ -609,6 +609,13 @@
 297. **Asynchrone Ausführung im `BootReceiver` via `goAsync()` abgesichert (Bug Fix & Zuverlässigkeit):**
     - **Problem:** Bei Empfang von `BOOT_COMPLETED` oder `MY_PACKAGE_REPLACED` wurde der Coroutine-Scope asynchron auf dem IO-Dispatcher gestartet, ohne dem Android-System über `goAsync()` mitzuteilen, dass der Receiver noch arbeitet. Dadurch konnte der Android-Prozess beendet werden, bevor `syncScheduling()` abgeschlossen war.
     - **Lösung:** Verwendung von `goAsync()` vor dem Coroutine-Start in [BootReceiver.kt](file:///c:/Users/chris/AndroidStudioProjects/BirthdayBuddy/app/src/main/java/com/heckmannch/birthdaybuddy/BootReceiver.kt) sowie Aufruf von `pendingResult.finish()` in einem `finally`-Block, damit der Prozess während der Synchronisation nicht vorzeitig vom System beendet wird und `pendingResult.finish()` selbst im Fehlerfall garantiert ausgeführt wird.
+298. **Decoupling von ViewModels aus MainActivity & Navigation 3 NavEntry Scoping (Architecture & Memory Optimization):**
+    - **`NavEntry` Scoping:** `HomeViewModel` und `OnboardingViewModel` wurden aus `MainActivity.kt` entfernt und direkt in die jeweiligen `NavEntry`-Blöcke in [AppNavHost.kt](file:///c:/Users/chris/AndroidStudioProjects/BirthdayBuddy/app/src/main/java/com/heckmannch/birthdaybuddy/ui/navigation/AppNavHost.kt) verschoben. Durch den `rememberViewModelStoreNavEntryDecorator()` ist der Lifecycle der ViewModels nun strikt an den jeweiligen `NavEntry` gebunden und wird beim Entfernen aus dem Backstack automatisch freigegeben.
+    - **Vollständige Entkopplung von `MainActivity`:** `MainActivity.kt` wurde von allen direkten ViewModel-Referenzen befreit. Sie nutzt nun ausschließlich das Activity-weite `AppViewModel` für Theme und Splash-Screen-Zustand (`onboardingCompleted`).
+    - **Intent-Handling:** Intent-Reaktionen (`SCROLL_TO_TOP`, `OPEN_SEARCH`, `OPEN_ADD_CONTACT`, `SyncContacts`, `AppResumed`) wurden in den `NavEntry(Home)` verlagert und werden reaktiv über das `intent`-Objekt gesteuert.
+    - **Eigenständiges `SyncViewModel`:** Erstellung von [SyncViewModel.kt](file:///c:/Users/chris/AndroidStudioProjects/BirthdayBuddy/app/src/main/java/com/heckmannch/birthdaybuddy/ui/screens/settings/sync/SyncViewModel.kt) für `SyncSettingsScreen.kt`, um den Einstellungsbereich vollständig von `HomeViewModel` zu entkoppeln.
+    - **Testabdeckung:** Erstellung von [SyncViewModelTest.kt](file:///c:/Users/chris/AndroidStudioProjects/BirthdayBuddy/app/src/test/java/com/heckmannch/birthdaybuddy/ui/screens/settings/sync/SyncViewModelTest.kt) und Aktualisierung von [AppViewModelTest.kt](file:///c:/Users/chris/AndroidStudioProjects/BirthdayBuddy/app/src/test/java/com/heckmannch/birthdaybuddy/AppViewModelTest.kt).
+
 
 
 

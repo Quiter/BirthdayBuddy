@@ -22,18 +22,17 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.core.content.ContextCompat
 import com.heckmannch.birthdaybuddy.R
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import com.heckmannch.birthdaybuddy.ui.components.InfoCard
 import com.heckmannch.birthdaybuddy.ui.components.SettingsCard
 import com.heckmannch.birthdaybuddy.ui.components.SettingsClickableRow
 import com.heckmannch.birthdaybuddy.ui.components.SettingsDetailScaffold
 import com.heckmannch.birthdaybuddy.ui.components.withSettingsInsets
-import com.heckmannch.birthdaybuddy.ui.screens.home.HomeIntent
-import com.heckmannch.birthdaybuddy.ui.screens.home.HomeViewModel
 import com.heckmannch.birthdaybuddy.ui.theme.SpacingNormal
 
 @Composable
 fun SyncSettingsScreen(
-    viewModel: HomeViewModel,
+    viewModel: SyncViewModel = hiltViewModel(),
     showBackButton: Boolean = true,
     onNavigateBack: () -> Unit,
 ) {
@@ -41,7 +40,7 @@ fun SyncSettingsScreen(
     val snackbarHostState = remember { SnackbarHostState() }
     val syncSuccessMessage = stringResource(R.string.sync_success)
 
-    LaunchedEffect(Unit) {
+    LaunchedEffect(viewModel, syncSuccessMessage) {
         viewModel.syncCompletedEvent.collect {
             snackbarHostState.showSnackbar(syncSuccessMessage)
         }
@@ -51,14 +50,14 @@ fun SyncSettingsScreen(
         ActivityResultContracts.RequestPermission(),
     ) { isGranted ->
         if (isGranted) {
-            viewModel.onIntent(HomeIntent.SyncContacts(showLoading = true))
+            viewModel.syncContacts()
         }
     }
 
-    val onSyncClick: () -> Unit = {
+    val onSyncClick = {
         when (PackageManager.PERMISSION_GRANTED) {
             ContextCompat.checkSelfPermission(context, Manifest.permission.READ_CONTACTS) -> {
-                viewModel.onIntent(HomeIntent.SyncContacts(showLoading = true))
+                viewModel.syncContacts()
             }
 
             else -> permissionLauncher.launch(Manifest.permission.READ_CONTACTS)

@@ -134,6 +134,7 @@
         - `theme/ThemeViewModel.kt`: Hält und aktualisiert den UI-Zustand für das App-Design. Nutzt MVI-Intents und `onIntent()`. **Feature-co-located**.
         - `otherevents/OtherEventsSettingsScreen.kt`: Screen zur Aktivierung des Features für weitere Ereignisse.
         - `sync/SyncSettingsScreen.kt`: Screen zur manuellen Synchronisierung der Kontakte.
+        - `sync/SyncViewModel.kt`: ViewModel für die manuelle Synchronisierung. **Feature-co-located**.
         - `about/AboutScreen.kt`: Anzeige von App-Informationen.
         - `about/PrivacyPolicyScreen.kt`: Anzeige der Datenschutzerklärung.
 - ### 📁 Models (`ui.model`)
