@@ -71,10 +71,17 @@ import com.heckmannch.birthdaybuddy.ui.theme.AlphaEmphasisMedium
 import com.heckmannch.birthdaybuddy.ui.theme.AlphaOnboardingCalendarDisabled
 import com.heckmannch.birthdaybuddy.ui.theme.AlphaSurfaceContainerHigh
 import com.heckmannch.birthdaybuddy.ui.theme.BirthdayBuddyTheme
+import com.heckmannch.birthdaybuddy.ui.theme.BorderWidthThin
+import com.heckmannch.birthdaybuddy.ui.theme.ContactImageSizeNormal
 import com.heckmannch.birthdaybuddy.ui.theme.ContactImageSizeSmall
+import com.heckmannch.birthdaybuddy.ui.theme.ContactItemSkeletonHeight
 import com.heckmannch.birthdaybuddy.ui.theme.FabBottomSpacing
+import com.heckmannch.birthdaybuddy.ui.theme.OnboardingIllustrationHeight
+import com.heckmannch.birthdaybuddy.ui.theme.OnboardingIllustrationHeightSmall
+import com.heckmannch.birthdaybuddy.ui.theme.SidebarWidthCollapsed
 import com.heckmannch.birthdaybuddy.ui.theme.SpacingExtraLarge
 import com.heckmannch.birthdaybuddy.ui.theme.SpacingExtraSmall
+import com.heckmannch.birthdaybuddy.ui.theme.SpacingLarge
 import com.heckmannch.birthdaybuddy.ui.theme.SpacingMedium
 import com.heckmannch.birthdaybuddy.ui.theme.SpacingNormal
 import com.heckmannch.birthdaybuddy.ui.theme.SpacingSmall
@@ -261,7 +268,7 @@ private fun BirthdayItemSkeleton() {
             .fillMaxWidth()
             .padding(horizontal = SpacingNormal)
             .padding(bottom = SpacingSmall)
-            .height(72.dp),
+            .height(ContactItemSkeletonHeight),
         shape = MaterialTheme.shapes.medium,
         color = MaterialTheme.colorScheme.surfaceContainerLow.copy(alpha = alpha)
     ) {
@@ -277,25 +284,25 @@ private fun BirthdayItemSkeleton() {
                         MaterialTheme.shapes.medium
                     )
             )
-            Spacer(modifier = Modifier.width(16.dp))
+            Spacer(modifier = Modifier.width(SpacingNormal))
             Column(modifier = Modifier.weight(1f)) {
                 Box(
                     modifier = Modifier
-                        .width(120.dp)
-                        .height(16.dp)
+                        .width(OnboardingIllustrationHeightSmall)
+                        .height(SpacingNormal)
                         .background(
                             MaterialTheme.colorScheme.onSurface.copy(alpha = 0.1f),
-                            RoundedCornerShape(4.dp)
+                            RoundedCornerShape(SpacingExtraSmall)
                         )
                 )
                 Spacer(modifier = Modifier.height(SpacingSmall))
                 Box(
                     modifier = Modifier
-                        .width(80.dp)
-                        .height(12.dp)
+                        .width(SidebarWidthCollapsed)
+                        .height(SpacingMedium)
                         .background(
                             MaterialTheme.colorScheme.onSurface.copy(alpha = 0.1f),
-                            RoundedCornerShape(4.dp)
+                            RoundedCornerShape(SpacingExtraSmall)
                         )
                 )
             }
@@ -317,17 +324,17 @@ private fun EmptyListState(
     ) {
         if (!hasPermission) {
             ContactsIllustration(
-                modifier = Modifier.size(160.dp)
+                modifier = Modifier.size(OnboardingIllustrationHeight)
             )
         } else {
             Icon(
                 imageVector = Icons.Default.Face,
                 contentDescription = null,
-                modifier = Modifier.size(64.dp),
+                modifier = Modifier.size(ContactImageSizeNormal),
                 tint = MaterialTheme.colorScheme.primary.copy(alpha = AlphaSurfaceContainerHigh),
             )
         }
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(SpacingNormal))
 
         if (!hasPermission) {
             Text(
@@ -335,7 +342,7 @@ private fun EmptyListState(
                 textAlign = TextAlign.Center,
                 style = MaterialTheme.typography.bodyLarge,
             )
-            Spacer(modifier = Modifier.height(24.dp))
+            Spacer(modifier = Modifier.height(SpacingLarge))
             Button(onClick = onRequestPermission) {
                 Text(stringResource(R.string.empty_permission_btn))
             }
@@ -398,7 +405,7 @@ fun CoupleSuggestionBanner(
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = AlphaOnboardingCalendarDisabled)
         ),
-        border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.2f)),
+        border = BorderStroke(BorderWidthThin, MaterialTheme.colorScheme.primary.copy(alpha = 0.2f)),
         shape = RoundedCornerShape(SpacingNormal)
     ) {
         Row(
@@ -457,7 +464,7 @@ fun CoupleSuggestionBanner(
                             )
                         },
                         border = BorderStroke(
-                            1.dp,
+                            BorderWidthThin,
                             MaterialTheme.colorScheme.primary.copy(alpha = AlphaEmphasisLow)
                         )
                     ) {

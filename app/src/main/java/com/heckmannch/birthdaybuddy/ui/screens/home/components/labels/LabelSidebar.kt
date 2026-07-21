@@ -33,9 +33,10 @@ import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.unit.dp
 import com.heckmannch.birthdaybuddy.R
 import com.heckmannch.birthdaybuddy.domain.model.ContactLabels
+import com.heckmannch.birthdaybuddy.ui.theme.SidebarHeaderSpacerHeight
+import com.heckmannch.birthdaybuddy.ui.theme.SidebarItemWidthCollapsed
 import com.heckmannch.birthdaybuddy.ui.theme.SpacingMedium
 import com.heckmannch.birthdaybuddy.ui.theme.SpacingNormal
 import com.heckmannch.birthdaybuddy.ui.theme.SpacingSmall
@@ -69,7 +70,7 @@ fun LabelSidebar(
                 modifier = Modifier.padding(horizontal = SpacingMedium + SpacingSmall, vertical = SpacingSmall)
             )
         } else {
-            Spacer(modifier = Modifier.height(36.dp)) // Vertical alignment placeholder
+            Spacer(modifier = Modifier.height(SidebarHeaderSpacerHeight)) // Vertical alignment placeholder
         }
 
         // "All" item
@@ -161,7 +162,7 @@ private fun SidebarLabelItem(
             modifier = modifier
                 .padding(horizontal = SpacingSmall)
                 .then(
-                    if (!isExpanded) Modifier.width(64.dp) else Modifier
+                    if (!isExpanded) Modifier.width(SidebarItemWidthCollapsed) else Modifier
                 ),
             colors = NavigationDrawerItemDefaults.colors(
                 selectedContainerColor = MaterialTheme.colorScheme.secondaryContainer,

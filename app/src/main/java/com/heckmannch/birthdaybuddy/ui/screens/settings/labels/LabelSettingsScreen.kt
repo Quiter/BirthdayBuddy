@@ -370,10 +370,9 @@ private fun LabelConfigCard(
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(top = SpacingSmall)
                 ) {
                     HorizontalDivider(
-                        modifier = Modifier.padding(vertical = SpacingSmall),
+                        modifier = Modifier.padding(bottom = SpacingSmall),
                         color = MaterialTheme.colorScheme.outlineVariant
                     )
 

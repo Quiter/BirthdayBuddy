@@ -17,10 +17,11 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.Dp
-import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.heckmannch.birthdaybuddy.R
+import com.heckmannch.birthdaybuddy.ui.theme.ContactImageSizeSmall
+import com.heckmannch.birthdaybuddy.ui.theme.SelectedBorderWidth
 
 @Composable
 fun ContactImage(
@@ -31,7 +32,7 @@ fun ContactImage(
     secondImageUri: String? = null,
     secondInitials: String? = null,
     secondFullName: String? = null,
-    size: Dp = 40.dp,
+    size: Dp = ContactImageSizeSmall,
 ) {
     val outerCorner = remember(size) { size * 0.3f }
     val nestedSize = remember(size) { size * 0.7f }
@@ -61,7 +62,7 @@ fun ContactImage(
             ) {
                 Text(
                     text = initials,
-                    style = if (size > 40.dp) MaterialTheme.typography.titleLarge else MaterialTheme.typography.titleSmall,
+                    style = if (size > ContactImageSizeSmall) MaterialTheme.typography.titleLarge else MaterialTheme.typography.titleSmall,
                     color = MaterialTheme.colorScheme.onPrimaryContainer
                 )
             }
@@ -98,7 +99,7 @@ fun ContactImage(
                     ) {
                         Text(
                             text = initials,
-                            style = if (size > 40.dp) MaterialTheme.typography.titleSmall else MaterialTheme.typography.labelSmall,
+                            style = if (size > ContactImageSizeSmall) MaterialTheme.typography.titleSmall else MaterialTheme.typography.labelSmall,
                             color = MaterialTheme.colorScheme.onPrimaryContainer
                         )
                     }
@@ -112,7 +113,7 @@ fun ContactImage(
                     .align(Alignment.BottomEnd)
                     .clip(RoundedCornerShape(nestedCorner))
                     .background(MaterialTheme.colorScheme.surface)
-                    .padding(remember(size) { (size * 0.0375f).coerceAtLeast(1.5.dp) })
+                    .padding(remember(size) { (size * 0.0375f).coerceAtLeast(SelectedBorderWidth) })
                     .clip(RoundedCornerShape(remember(nestedCorner) { nestedCorner * 0.875f }))
             ) {
                 if (secondImageUri != null) {
@@ -138,7 +139,7 @@ fun ContactImage(
                     ) {
                         Text(
                             text = secondInitials,
-                            style = if (size > 40.dp) MaterialTheme.typography.titleSmall else MaterialTheme.typography.labelSmall,
+                            style = if (size > ContactImageSizeSmall) MaterialTheme.typography.titleSmall else MaterialTheme.typography.labelSmall,
                             color = MaterialTheme.colorScheme.onSecondaryContainer
                         )
                     }

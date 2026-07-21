@@ -37,6 +37,19 @@ val BirthdayQuoteIconContainerSize = 120.dp
 val GridColumnMinWidth = 340.dp // Minimum column width for adaptive settings grids
 val EmptyStatePadding = 64.dp  // Padding for centered empty state containers
 val ElevationDefault = 2.dp    // Default tonal elevation for surface cards
+val ElevationLow = 3.dp        // Low elevation for footers/cards
+val ElevationHigh = 6.dp       // High elevation for picker dialogs/floating containers
+val SidebarWidthExpanded = 240.dp
+val SidebarWidthCollapsed = 80.dp
+val SidebarHeaderSpacerHeight = 36.dp
+val SidebarItemWidthCollapsed = 64.dp
+val ContactItemSkeletonHeight = 72.dp
+val ScrollbarTouchTargetWidth = 150.dp
+val ScrollbarThumbWidth = 26.dp
+val ScrollbarThumbHeight = 44.dp
+val ScrollbarBubbleElevation = 8.dp
+val ScrollbarArrowSize = 14.dp
+val WheelPickerItemHeight = 48.dp
 
 /**
  * Semantic Alpha (Transparency) levels.

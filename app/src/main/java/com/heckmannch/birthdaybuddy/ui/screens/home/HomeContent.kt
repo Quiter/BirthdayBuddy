@@ -69,6 +69,8 @@ import com.heckmannch.birthdaybuddy.ui.screens.home.components.labels.LabelFilte
 import com.heckmannch.birthdaybuddy.ui.screens.home.components.labels.LabelSidebar
 import com.heckmannch.birthdaybuddy.ui.screens.home.components.topbar.SearchBar
 import com.heckmannch.birthdaybuddy.ui.theme.BirthdayBuddyTheme
+import com.heckmannch.birthdaybuddy.ui.theme.SidebarWidthCollapsed
+import com.heckmannch.birthdaybuddy.ui.theme.SidebarWidthExpanded
 import com.heckmannch.birthdaybuddy.ui.theme.SpacingSmall
 import kotlinx.serialization.Serializable
 
@@ -343,7 +345,7 @@ fun HomeContent(
         PermanentNavigationDrawer(
             drawerContent = {
                 PermanentDrawerSheet(
-                    modifier = Modifier.width(if (isSidebarExpanded) 240.dp else 80.dp),
+                    modifier = Modifier.width(if (isSidebarExpanded) SidebarWidthExpanded else SidebarWidthCollapsed),
                     drawerContainerColor = MaterialTheme.colorScheme.surfaceContainerLow
                 ) {
                     LabelSidebar(

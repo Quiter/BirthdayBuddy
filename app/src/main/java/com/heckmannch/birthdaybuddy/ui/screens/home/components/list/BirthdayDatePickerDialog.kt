@@ -39,14 +39,16 @@ import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
-import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import com.heckmannch.birthdaybuddy.R
 import com.heckmannch.birthdaybuddy.ui.components.AppSwitch
 import com.heckmannch.birthdaybuddy.ui.theme.AlphaOnboardingCalendarDisabled
+import com.heckmannch.birthdaybuddy.ui.theme.BorderWidthThin
+import com.heckmannch.birthdaybuddy.ui.theme.ElevationHigh
 import com.heckmannch.birthdaybuddy.ui.theme.SpacingLarge
 import com.heckmannch.birthdaybuddy.ui.theme.SpacingNormal
 import com.heckmannch.birthdaybuddy.ui.theme.SpacingSmall
+import com.heckmannch.birthdaybuddy.ui.theme.WheelPickerItemHeight
 import com.heckmannch.birthdaybuddy.util.NO_YEAR_MARKER
 import com.heckmannch.birthdaybuddy.util.hasYear
 import java.time.LocalDate
@@ -126,7 +128,7 @@ fun BirthdayDatePickerDialog(
         Surface(
             shape = MaterialTheme.shapes.extraLarge,
             color = MaterialTheme.colorScheme.surfaceContainerHigh,
-            tonalElevation = 6.dp,
+            tonalElevation = ElevationHigh,
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = SpacingNormal)
@@ -244,7 +246,7 @@ private fun WheelPicker(
     onIndexSelected: (Int) -> Unit,
     modifier: Modifier = Modifier,
     visibleItemsCount: Int = 3,
-    itemHeight: Dp = 48.dp,
+    itemHeight: Dp = WheelPickerItemHeight,
 ) {
     val lazyListState = rememberLazyListState(initialFirstVisibleItemIndex = selectedIndex)
     val flingBehavior = rememberSnapFlingBehavior(lazyListState = lazyListState)
@@ -282,14 +284,14 @@ private fun WheelPicker(
                 .align(Alignment.Center)
                 .graphicsLayer { translationY = -offsetTranslationPx },
             color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.6f),
-            thickness = 1.dp
+            thickness = BorderWidthThin
         )
         HorizontalDivider(
             modifier = Modifier
                 .align(Alignment.Center)
                 .graphicsLayer { translationY = offsetTranslationPx },
             color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.6f),
-            thickness = 1.dp
+            thickness = BorderWidthThin
         )
 
         LazyColumn(

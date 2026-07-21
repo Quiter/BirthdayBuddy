@@ -44,19 +44,30 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import com.heckmannch.birthdaybuddy.ui.model.ContactUiModel
 import com.heckmannch.birthdaybuddy.ui.theme.AlphaOnboardingCard
+import com.heckmannch.birthdaybuddy.ui.theme.CardCornerRadiusLarge
+import com.heckmannch.birthdaybuddy.ui.theme.IconSizeExtraLarge
+import com.heckmannch.birthdaybuddy.ui.theme.SearchBarFocusedElevation
+import com.heckmannch.birthdaybuddy.ui.theme.ScrollbarArrowSize
+import com.heckmannch.birthdaybuddy.ui.theme.ScrollbarBubbleElevation
+import com.heckmannch.birthdaybuddy.ui.theme.ScrollbarThumbHeight
+import com.heckmannch.birthdaybuddy.ui.theme.ScrollbarThumbWidth
+import com.heckmannch.birthdaybuddy.ui.theme.ScrollbarTouchTargetWidth
+import com.heckmannch.birthdaybuddy.ui.theme.SpacingExtraSmall
+import com.heckmannch.birthdaybuddy.ui.theme.SpacingTiny
+import com.heckmannch.birthdaybuddy.ui.theme.WidgetCornerRadius
 import kotlinx.coroutines.delay
 import kotlin.time.Duration.Companion.milliseconds
 
 internal object ScrollbarDefaults {
-    val BarWidth = 150.dp
-    val ThumbSize = 48.dp
+    val BarWidth = ScrollbarTouchTargetWidth
+    val ThumbSize = IconSizeExtraLarge
     const val BUBBLE_DELAY = 500L
-    val ThumbWidth = 26.dp
-    val ThumbHeight = 44.dp
-    val BubbleOffsetY = 4.dp
-    val BubbleCornerLarge = 24.dp
-    val BubbleCornerSmall = 4.dp
-    val BubbleElevation = 8.dp
+    val ThumbWidth = ScrollbarThumbWidth
+    val ThumbHeight = ScrollbarThumbHeight
+    val BubbleOffsetY = SpacingExtraSmall
+    val BubbleCornerLarge = CardCornerRadiusLarge
+    val BubbleCornerSmall = SpacingExtraSmall
+    val BubbleElevation = ScrollbarBubbleElevation
 }
 
 /**
@@ -426,14 +437,14 @@ fun FastScrollbar(
             Surface(
                 modifier = Modifier
                     .align(Alignment.TopEnd)
-                    .padding(end = 4.dp)
+                    .padding(end = SpacingExtraSmall)
                     .width(ScrollbarDefaults.ThumbWidth)
                     .height(ScrollbarDefaults.ThumbHeight)
                     .graphicsLayer { translationY = thumbOffset.toPx() }
                     .semantics { contentDescription = "Scrollbar" },
-                shape = RoundedCornerShape(12.dp),
+                shape = RoundedCornerShape(WidgetCornerRadius),
                 color = MaterialTheme.colorScheme.primary.copy(alpha = AlphaOnboardingCard),
-                tonalElevation = 4.dp
+                tonalElevation = SearchBarFocusedElevation
             ) {
                 Column(
                     horizontalAlignment = Alignment.CenterHorizontally,
@@ -443,14 +454,14 @@ fun FastScrollbar(
                     Icon(
                         Icons.Default.KeyboardArrowUp,
                         null,
-                        Modifier.size(14.dp),
+                        Modifier.size(ScrollbarArrowSize),
                         tint = MaterialTheme.colorScheme.onPrimary
                     )
-                    Spacer(Modifier.height(2.dp))
+                    Spacer(Modifier.height(SpacingTiny))
                     Icon(
                         Icons.Default.KeyboardArrowDown,
                         null,
-                        Modifier.size(14.dp),
+                        Modifier.size(ScrollbarArrowSize),
                         tint = MaterialTheme.colorScheme.onPrimary
                     )
                 }

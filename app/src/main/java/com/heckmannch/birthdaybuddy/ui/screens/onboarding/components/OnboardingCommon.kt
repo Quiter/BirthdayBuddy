@@ -1,9 +1,5 @@
 package com.heckmannch.birthdaybuddy.ui.screens.onboarding.components
 
-import androidx.window.core.layout.WindowSizeClass
-import com.heckmannch.birthdaybuddy.ui.components.LocalWindowSizeClass
-import com.heckmannch.birthdaybuddy.ui.components.isWidthCompact
-import com.heckmannch.birthdaybuddy.ui.components.isHeightCompact
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
@@ -33,7 +29,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
+import androidx.window.core.layout.WindowSizeClass
+import com.heckmannch.birthdaybuddy.ui.components.LocalWindowSizeClass
+import com.heckmannch.birthdaybuddy.ui.components.isHeightCompact
+import com.heckmannch.birthdaybuddy.ui.components.isWidthCompact
 import com.heckmannch.birthdaybuddy.ui.theme.IconSizeExtraLarge
 import com.heckmannch.birthdaybuddy.ui.theme.OnboardingIllustrationHeight
 import com.heckmannch.birthdaybuddy.ui.theme.OnboardingIllustrationHeightSmall
@@ -207,7 +206,7 @@ fun OnboardingPageTemplatePreview() {
                         Icon(
                             imageVector = Icons.Default.Cake,
                             contentDescription = null,
-                            modifier = modifier.size(120.dp)
+                            modifier = modifier.size(OnboardingIllustrationHeightSmall)
                         )
                     },
                     title = "Einstellungen",
@@ -215,7 +214,7 @@ fun OnboardingPageTemplatePreview() {
                     settingsCard = {
                         Text(
                             "Hier könnten Einstellungen stehen",
-                            modifier = Modifier.padding(16.dp),
+                            modifier = Modifier.padding(SpacingNormal),
                             style = MaterialTheme.typography.bodyMedium
                         )
                     },
