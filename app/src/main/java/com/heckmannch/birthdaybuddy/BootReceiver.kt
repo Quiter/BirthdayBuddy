@@ -3,10 +3,10 @@ package com.heckmannch.birthdaybuddy
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
+import com.heckmannch.birthdaybuddy.di.ApplicationScope
 import com.heckmannch.birthdaybuddy.domain.repository.NotificationRepository
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -22,6 +22,10 @@ import javax.inject.Inject
 class BootReceiver : BroadcastReceiver() {
 
     @Inject
+    @ApplicationScope
+    lateinit var applicationScope: CoroutineScope
+
+    @Inject
     lateinit var notificationRepository: NotificationRepository
 
     override fun onReceive(context: Context?, intent: Intent?) {
@@ -33,7 +37,7 @@ class BootReceiver : BroadcastReceiver() {
         ) return
 
         val pendingResult = goAsync()
-        CoroutineScope(Dispatchers.IO).launch {
+        applicationScope.launch {
             try {
                 notificationRepository.syncScheduling()
             } catch (_: Exception) {

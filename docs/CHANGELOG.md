@@ -614,11 +614,11 @@
     - **Vollständige Entkopplung von `MainActivity`:** `MainActivity.kt` wurde von allen direkten ViewModel-Referenzen befreit. Sie nutzt nun ausschließlich das Activity-weite `AppViewModel` für Theme und Splash-Screen-Zustand (`onboardingCompleted`).
     - **Intent-Handling:** Intent-Reaktionen (`SCROLL_TO_TOP`, `OPEN_SEARCH`, `OPEN_ADD_CONTACT`, `SyncContacts`, `AppResumed`) wurden in den `NavEntry(Home)` verlagert und werden reaktiv über das `intent`-Objekt gesteuert.
     - **Eigenständiges `SyncViewModel`:** Erstellung von [SyncViewModel.kt](file:///c:/Users/chris/AndroidStudioProjects/BirthdayBuddy/app/src/main/java/com/heckmannch/birthdaybuddy/ui/screens/settings/sync/SyncViewModel.kt) für `SyncSettingsScreen.kt`, um den Einstellungsbereich vollständig von `HomeViewModel` zu entkoppeln.
-    - **Testabdeckung:** Erstellung von [SyncViewModelTest.kt](file:///c:/Users/chris/AndroidStudioProjects/BirthdayBuddy/app/src/test/java/com/heckmannch/birthdaybuddy/ui/screens/settings/sync/SyncViewModelTest.kt) und Aktualisierung von [AppViewModelTest.kt](file:///c:/Users/chris/AndroidStudioProjects/BirthdayBuddy/app/src/test/java/com/heckmannch/birthdaybuddy/AppViewModelTest.kt).
 
-
-
-
+299. **Verwendung des zentralen Hilt-`@ApplicationScope` in BroadcastReceivern (Architecture & Coroutine-Safety):**
+    - **`BootReceiver`:** Injizierung des in `AppModule` definierten `@ApplicationScope CoroutineScope` und Ersetzung des ad-hoc `CoroutineScope(Dispatchers.IO)` in [BootReceiver.kt](file:///c:/Users/chris/AndroidStudioProjects/BirthdayBuddy/app/src/main/java/com/heckmannch/birthdaybuddy/BootReceiver.kt).
+    - **`NotificationActionReceiver`:** Injizierung des `@ApplicationScope CoroutineScope` in [NotificationActionReceiver.kt](file:///c:/Users/chris/AndroidStudioProjects/BirthdayBuddy/app/src/main/java/com/heckmannch/birthdaybuddy/notification/NotificationActionReceiver.kt) sowie Umstellung der `ACTION_DONE`- und `ACTION_DISMISSED`-Aktionen auf `applicationScope.launch`.
+    - **`goAsync()`-Absicherung:** Ergänzung von `goAsync()` und `try { ... } finally { pendingResult.finish() }` in `ACTION_DISMISSED`, um asynchrone Datenbank- und WorkManager-Operationen während der Benachrichtigungsverwaltung zuverlässig abzusichern.
 
 
 

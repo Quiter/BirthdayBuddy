@@ -7,18 +7,22 @@ import android.content.Intent
 import androidx.work.Data
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
+import com.heckmannch.birthdaybuddy.di.ApplicationScope
 import com.heckmannch.birthdaybuddy.domain.model.EventType
 import com.heckmannch.birthdaybuddy.domain.repository.NotificationRepository
 import com.heckmannch.birthdaybuddy.domain.usecase.SnoozeNotificationUseCase
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 
 @AndroidEntryPoint
 class NotificationActionReceiver : BroadcastReceiver() {
+
+    @Inject
+    @ApplicationScope
+    lateinit var applicationScope: CoroutineScope
 
     @Inject
     lateinit var notificationRepository: NotificationRepository
@@ -57,7 +61,7 @@ class NotificationActionReceiver : BroadcastReceiver() {
                 // 2. Mark as done using goAsync() to prevent process termination before database write completes
                 if (pendingId != -1) {
                     val pendingResult = goAsync()
-                    CoroutineScope(Dispatchers.IO).launch {
+                    applicationScope.launch {
                         try {
                             notificationRepository.markAsDone(pendingId)
                         } finally {
@@ -70,34 +74,39 @@ class NotificationActionReceiver : BroadcastReceiver() {
                 // Wenn weggeschoben wurde, aber nicht erledigt/gesnoozed -> Sofort wieder anzeigen
                 // (Das erzwingt die Persistenz auch auf Android 14+)
                 if (pendingId != -1) {
-                    CoroutineScope(Dispatchers.IO).launch {
-                        // Zähler für Wisch-Versuche erhöhen
-                        notificationRepository.incrementDismissCount(pendingId)
+                    val pendingResult = goAsync()
+                    applicationScope.launch {
+                        try {
+                            // Zähler für Wisch-Versuche erhöhen
+                            notificationRepository.incrementDismissCount(pendingId)
 
-                        val allContacts = notificationRepository.getActiveNotificationsImmediate()
-                        val isStillActive = allContacts.any { it.id == pendingId }
-                        if (isStillActive) {
-                            // Wir brauchen den NotificationHelper. Da wir in einem Receiver sind,
-                            // nutzen wir am besten den Worker oder wir triggern einen schnellen Re-show.
-                            // Einfachster Weg: Snooze mit 1 Sekunde Delay oder direkter Aufruf.
-                            val firstKey = lookupKeys.firstOrNull() ?: ""
-                            val eventType = when {
-                                firstKey.startsWith("anniversary:") -> EventType.ANNIVERSARY
-                                firstKey.startsWith("nameday:") -> EventType.NAME_DAY
-                                else -> EventType.BIRTHDAY
+                            val allContacts = notificationRepository.getActiveNotificationsImmediate()
+                            val isStillActive = allContacts.any { it.id == pendingId }
+                            if (isStillActive) {
+                                // Wir brauchen den NotificationHelper. Da wir in einem Receiver sind,
+                                // nutzen wir am besten den Worker oder wir triggern einen schnellen Re-show.
+                                // Einfachster Weg: Snooze mit 1 Sekunde Delay oder direkter Aufruf.
+                                val firstKey = lookupKeys.firstOrNull() ?: ""
+                                val eventType = when {
+                                    firstKey.startsWith("anniversary:") -> EventType.ANNIVERSARY
+                                    firstKey.startsWith("nameday:") -> EventType.NAME_DAY
+                                    else -> EventType.BIRTHDAY
+                                }
+                                val data = Data.Builder()
+                                    .putInt("DAYS_BEFORE", daysBefore)
+                                    .putInt("PENDING_ID", pendingId)
+                                    .putStringArray("LOOKUP_KEYS", lookupKeys)
+                                    .putString("EVENT_TYPE", eventType.name)
+                                    .build()
+
+                                val reShowRequest = OneTimeWorkRequestBuilder<SnoozeWorker>()
+                                    .setInitialDelay(500, TimeUnit.MILLISECONDS)
+                                    .setInputData(data)
+                                    .build()
+                                WorkManager.getInstance(context).enqueue(reShowRequest)
                             }
-                            val data = Data.Builder()
-                                .putInt("DAYS_BEFORE", daysBefore)
-                                .putInt("PENDING_ID", pendingId)
-                                .putStringArray("LOOKUP_KEYS", lookupKeys)
-                                .putString("EVENT_TYPE", eventType.name)
-                                .build()
-
-                            val reShowRequest = OneTimeWorkRequestBuilder<SnoozeWorker>()
-                                .setInitialDelay(500, TimeUnit.MILLISECONDS)
-                                .setInputData(data)
-                                .build()
-                            WorkManager.getInstance(context).enqueue(reShowRequest)
+                        } finally {
+                            pendingResult.finish()
                         }
                     }
                 }

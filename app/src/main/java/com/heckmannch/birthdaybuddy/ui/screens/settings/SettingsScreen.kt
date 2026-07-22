@@ -63,18 +63,12 @@ import com.heckmannch.birthdaybuddy.ui.components.isWidthCompact
 import com.heckmannch.birthdaybuddy.ui.screens.settings.about.AboutScreen
 import com.heckmannch.birthdaybuddy.ui.screens.settings.about.PrivacyPolicyScreen
 import com.heckmannch.birthdaybuddy.ui.screens.settings.backup.BackupScreen
-import com.heckmannch.birthdaybuddy.ui.screens.settings.backup.BackupViewModel
 import com.heckmannch.birthdaybuddy.ui.screens.settings.calendar.CalendarSettingsScreen
-import com.heckmannch.birthdaybuddy.ui.screens.settings.calendar.CalendarViewModel
 import com.heckmannch.birthdaybuddy.ui.screens.settings.labels.LabelSettingsScreen
-import com.heckmannch.birthdaybuddy.ui.screens.settings.labels.LabelViewModel
 import com.heckmannch.birthdaybuddy.ui.screens.settings.notifications.NotificationSettingsScreen
-import com.heckmannch.birthdaybuddy.ui.screens.settings.notifications.NotificationViewModel
 import com.heckmannch.birthdaybuddy.ui.screens.settings.otherevents.OtherEventsSettingsScreen
 import com.heckmannch.birthdaybuddy.ui.screens.settings.sync.SyncSettingsScreen
-import com.heckmannch.birthdaybuddy.ui.screens.settings.sync.SyncViewModel
 import com.heckmannch.birthdaybuddy.ui.screens.settings.theme.ThemeSettingsScreen
-import com.heckmannch.birthdaybuddy.ui.screens.settings.theme.ThemeViewModel
 import com.heckmannch.birthdaybuddy.ui.theme.AlphaEmphasisMedium
 import com.heckmannch.birthdaybuddy.ui.theme.BirthdayBuddyTheme
 import com.heckmannch.birthdaybuddy.ui.theme.SpacingMedium
@@ -318,14 +312,6 @@ private fun SettingsContent(
             }
         }
 
-        // ViewModels instantiated once here and shared with the active detail screens.
-        val notificationViewModel: NotificationViewModel = hiltViewModel()
-        val calendarViewModel: CalendarViewModel = hiltViewModel()
-        val labelViewModel: LabelViewModel = hiltViewModel()
-        val backupViewModel: BackupViewModel = hiltViewModel()
-        val themeViewModel: ThemeViewModel = hiltViewModel()
-        val syncViewModel: SyncViewModel = hiltViewModel()
-
         AppResponsiveScaffold(
             useAdaptiveWidth = false,
             topBar = {}
@@ -414,7 +400,7 @@ private fun SettingsContent(
                                 when (key.tab) {
                                     SettingsTab.NOTIFICATIONS -> {
                                         NotificationSettingsScreen(
-                                            viewModel = notificationViewModel,
+                                            viewModel = hiltViewModel(),
                                             showBackButton = false,
                                             onNavigateBack = {}
                                         )
@@ -422,7 +408,7 @@ private fun SettingsContent(
 
                                     SettingsTab.CALENDAR -> {
                                         CalendarSettingsScreen(
-                                            viewModel = calendarViewModel,
+                                            viewModel = hiltViewModel(),
                                             showBackButton = false,
                                             onNavigateBack = {}
                                         )
@@ -430,7 +416,7 @@ private fun SettingsContent(
 
                                     SettingsTab.LABELS -> {
                                         LabelSettingsScreen(
-                                            viewModel = labelViewModel,
+                                            viewModel = hiltViewModel(),
                                             showBackButton = false,
                                             onNavigateBack = {}
                                         )
@@ -438,7 +424,7 @@ private fun SettingsContent(
 
                                     SettingsTab.BACKUP -> {
                                         BackupScreen(
-                                            viewModel = backupViewModel,
+                                            viewModel = hiltViewModel(),
                                             showBackButton = false,
                                             onNavigateBack = {}
                                         )
@@ -446,7 +432,7 @@ private fun SettingsContent(
 
                                     SettingsTab.THEME -> {
                                         ThemeSettingsScreen(
-                                            viewModel = themeViewModel,
+                                            viewModel = hiltViewModel(),
                                             showBackButton = false,
                                             onNavigateBack = {}
                                         )
@@ -454,7 +440,7 @@ private fun SettingsContent(
 
                                     SettingsTab.SYNC -> {
                                         SyncSettingsScreen(
-                                            viewModel = syncViewModel,
+                                            viewModel = hiltViewModel(),
                                             showBackButton = false,
                                             onNavigateBack = {}
                                         )
@@ -462,7 +448,7 @@ private fun SettingsContent(
 
                                     SettingsTab.OTHER_EVENTS -> {
                                         OtherEventsSettingsScreen(
-                                            viewModel = notificationViewModel,
+                                            viewModel = hiltViewModel(),
                                             showBackButton = false,
                                             onNavigateBack = {}
                                         )

@@ -16,9 +16,9 @@ android {
         minSdk = 28
         targetSdk = 37
         versionCode = 44
-        versionName = "2.12.21"
+        versionName = "2.12.22"
 
-        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+        testInstrumentationRunner = "com.heckmannch.birthdaybuddy.HiltTestRunner"
     }
 
     sourceSets {
@@ -123,6 +123,8 @@ dependencies {
     androidTestImplementation(libs.androidx.test.rules)
     androidTestImplementation(libs.androidx.room.testing)
     androidTestImplementation(libs.mockito.android)
+    androidTestImplementation(libs.hilt.android.testing)
+    kspAndroidTest(libs.hilt.compiler)
     debugImplementation(libs.androidx.compose.ui.test.manifest)
     debugImplementation(libs.androidx.compose.ui.tooling)
 }
