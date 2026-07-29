@@ -8,6 +8,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.Text
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.v2.createComposeRule
 import androidx.compose.ui.test.onNodeWithContentDescription
@@ -18,12 +19,18 @@ import androidx.compose.ui.unit.dp
 import com.heckmannch.birthdaybuddy.ui.model.SampleData
 import com.heckmannch.birthdaybuddy.ui.screens.home.components.list.FastScrollbar
 import com.heckmannch.birthdaybuddy.ui.theme.BirthdayBuddyTheme
+import dagger.hilt.android.testing.HiltAndroidRule
+import dagger.hilt.android.testing.HiltAndroidTest
 import org.junit.Rule
 import org.junit.Test
 
+@HiltAndroidTest
 class FastScrollbarTest {
 
-    @get:Rule
+    @get:Rule(order = 0)
+    val hiltRule = HiltAndroidRule(this)
+
+    @get:Rule(order = 1)
     val composeTestRule = createComposeRule()
 
     @Test
@@ -45,13 +52,12 @@ class FastScrollbarTest {
         }
 
         // Der Scrollbar sollte am Anfang nicht existieren oder alpha 0 haben
-        // Wir prüfen hier auf das Fehlen der Content Description
         composeTestRule.onNodeWithContentDescription("Scrollbar", substring = true)
             .assertDoesNotExist()
     }
 
     @Test
-    fun fastScrollbar_appears_on_scroll() {
+    fun fastScrollbar_appears_on_scroll_and_shows_bubble_on_drag() {
         composeTestRule.setContent {
             BirthdayBuddyTheme {
                 val listState = rememberLazyListState()
@@ -67,8 +73,8 @@ class FastScrollbarTest {
                     }
                     FastScrollbar(
                         listState = listState,
-                        contacts = List(15) { SampleData.sampleContacts.first() }, // Explizit 15 Items
-                        getLabel = { "Label" }
+                        contacts = List(15) { SampleData.sampleContacts.first() },
+                        getLabel = { "TestLabel" }
                     )
                 }
             }
@@ -83,5 +89,22 @@ class FastScrollbarTest {
 
         composeTestRule.onNodeWithContentDescription("Scrollbar", substring = true)
             .assertIsDisplayed()
+
+        // Drag the scrollbar thumb
+        composeTestRule.onNodeWithContentDescription("Scrollbar", substring = true)
+            .performTouchInput {
+                down(center)
+                moveBy(Offset(0f, 50f))
+            }
+
+        // The bubble should appear while dragging
+        composeTestRule.waitForIdle()
+        composeTestRule.onNodeWithText("TestLabel", useUnmergedTree = true).assertIsDisplayed()
+
+        // Release the drag
+        composeTestRule.onNodeWithContentDescription("Scrollbar", substring = true)
+            .performTouchInput {
+                up()
+            }
     }
 }
