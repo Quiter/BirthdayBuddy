@@ -12,9 +12,9 @@ import com.heckmannch.birthdaybuddy.data.mapper.AppSettingsMapper
 import com.heckmannch.birthdaybuddy.data.mapper.NotificationRuleMapper
 import com.heckmannch.birthdaybuddy.data.mapper.PendingNotificationMapper
 import com.heckmannch.birthdaybuddy.domain.model.AppSettings
-import com.heckmannch.birthdaybuddy.domain.model.ThemeMode
 import com.heckmannch.birthdaybuddy.domain.model.NotificationRule
 import com.heckmannch.birthdaybuddy.domain.model.PendingNotification
+import com.heckmannch.birthdaybuddy.domain.model.ThemeMode
 import com.heckmannch.birthdaybuddy.domain.repository.NotificationScheduler
 import io.mockk.coEvery
 import io.mockk.coVerify

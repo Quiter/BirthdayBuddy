@@ -32,6 +32,7 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import com.heckmannch.birthdaybuddy.R
 import com.heckmannch.birthdaybuddy.domain.model.NotificationRule
+import com.heckmannch.birthdaybuddy.ui.theme.AlphaBorderSubtle
 import com.heckmannch.birthdaybuddy.ui.theme.SpacingExtraSmall
 import com.heckmannch.birthdaybuddy.ui.theme.SpacingMedium
 import com.heckmannch.birthdaybuddy.ui.theme.SpacingSmall
@@ -158,7 +159,7 @@ fun EditRuleDialog(
 
                 HorizontalDivider(
                     modifier = Modifier.padding(vertical = SpacingSmall),
-                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.2f)
+                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = AlphaBorderSubtle)
                 )
 
                 Row(
@@ -181,7 +182,7 @@ fun EditRuleDialog(
 
                 HorizontalDivider(
                     modifier = Modifier.padding(vertical = SpacingSmall),
-                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.2f)
+                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = AlphaBorderSubtle)
                 )
             }
         },

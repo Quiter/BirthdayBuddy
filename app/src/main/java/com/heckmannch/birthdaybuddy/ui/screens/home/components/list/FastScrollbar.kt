@@ -46,12 +46,12 @@ import com.heckmannch.birthdaybuddy.ui.model.ContactUiModel
 import com.heckmannch.birthdaybuddy.ui.theme.AlphaOnboardingCard
 import com.heckmannch.birthdaybuddy.ui.theme.CardCornerRadiusLarge
 import com.heckmannch.birthdaybuddy.ui.theme.IconSizeExtraLarge
-import com.heckmannch.birthdaybuddy.ui.theme.SearchBarFocusedElevation
 import com.heckmannch.birthdaybuddy.ui.theme.ScrollbarArrowSize
 import com.heckmannch.birthdaybuddy.ui.theme.ScrollbarBubbleElevation
 import com.heckmannch.birthdaybuddy.ui.theme.ScrollbarThumbHeight
 import com.heckmannch.birthdaybuddy.ui.theme.ScrollbarThumbWidth
 import com.heckmannch.birthdaybuddy.ui.theme.ScrollbarTouchTargetWidth
+import com.heckmannch.birthdaybuddy.ui.theme.SearchBarFocusedElevation
 import com.heckmannch.birthdaybuddy.ui.theme.SpacingExtraSmall
 import com.heckmannch.birthdaybuddy.ui.theme.SpacingTiny
 import com.heckmannch.birthdaybuddy.ui.theme.WidgetCornerRadius

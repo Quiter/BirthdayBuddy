@@ -24,7 +24,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
 import com.heckmannch.birthdaybuddy.ui.theme.AlphaContainerMuted
 import com.heckmannch.birthdaybuddy.ui.theme.AlphaContainerSubtle
 import com.heckmannch.birthdaybuddy.ui.theme.AlphaEmphasisDisabled
@@ -36,6 +35,8 @@ import com.heckmannch.birthdaybuddy.ui.theme.IconSizeSmall
 import com.heckmannch.birthdaybuddy.ui.theme.OnboardingGuideTinySpacer
 import com.heckmannch.birthdaybuddy.ui.theme.SpacingExtraSmall
 import com.heckmannch.birthdaybuddy.ui.theme.SpacingMedium
+import com.heckmannch.birthdaybuddy.ui.theme.SpacingNormal
+import com.heckmannch.birthdaybuddy.ui.theme.SpacingSmall
 
 /**
  * A standardized UI component representing a single step within a multi-step setup or onboarding wizard.
@@ -134,7 +135,7 @@ fun StepItem(
 @Composable
 private fun StepItemNumberPreview() {
     BirthdayBuddyTheme {
-        Column(modifier = Modifier.padding(16.dp)) {
+        Column(modifier = Modifier.padding(SpacingNormal)) {
             StepItem(
                 stepNumber = 1,
                 title = "Schritt 1: Berechtigungen",
@@ -148,7 +149,7 @@ private fun StepItemNumberPreview() {
 @Composable
 private fun StepItemCompletedPreview() {
     BirthdayBuddyTheme {
-        Column(modifier = Modifier.padding(16.dp)) {
+        Column(modifier = Modifier.padding(SpacingNormal)) {
             StepItem(
                 stepNumber = 2,
                 title = "Schritt 2: Aktiviert",
@@ -163,7 +164,7 @@ private fun StepItemCompletedPreview() {
 @Composable
 private fun StepItemLockedPreview() {
     BirthdayBuddyTheme {
-        Column(modifier = Modifier.padding(16.dp)) {
+        Column(modifier = Modifier.padding(SpacingNormal)) {
             StepItem(
                 stepNumber = 3,
                 title = "Schritt 3: Abgeschlossen",
@@ -178,7 +179,7 @@ private fun StepItemLockedPreview() {
 @Composable
 private fun StepItemIconPreview() {
     BirthdayBuddyTheme {
-        Column(modifier = Modifier.padding(16.dp)) {
+        Column(modifier = Modifier.padding(SpacingNormal)) {
             StepItem(
                 icon = Icons.Default.PlayArrow,
                 title = "Onboarding starten",
@@ -192,13 +193,13 @@ private fun StepItemIconPreview() {
 @Composable
 private fun StepItemWithButtonPreview() {
     BirthdayBuddyTheme {
-        Column(modifier = Modifier.padding(16.dp)) {
+        Column(modifier = Modifier.padding(SpacingNormal)) {
             StepItem(
                 stepNumber = 1,
                 title = "Aktion erforderlich",
                 description = "Bitte gewähre der App Zugriff auf den Kalender.",
                 actionButton = {
-                    Button(onClick = {}, modifier = Modifier.padding(top = 8.dp)) {
+                    Button(onClick = {}, modifier = Modifier.padding(top = SpacingSmall)) {
                         Text("Berechtigung erteilen")
                     }
                 }

@@ -33,13 +33,13 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
 import com.heckmannch.birthdaybuddy.ui.theme.AlphaContainerMuted
 import com.heckmannch.birthdaybuddy.ui.theme.AlphaContainerSubtle
 import com.heckmannch.birthdaybuddy.ui.theme.AlphaOnboardingCard
 import com.heckmannch.birthdaybuddy.ui.theme.BirthdayBuddyTheme
 import com.heckmannch.birthdaybuddy.ui.theme.ElevationOnboardingCard
 import com.heckmannch.birthdaybuddy.ui.theme.IconSizeExtraSmall
+import com.heckmannch.birthdaybuddy.ui.theme.IllustrationPreviewSize
 import com.heckmannch.birthdaybuddy.ui.theme.OnboardingCalendarEventAlpha
 import com.heckmannch.birthdaybuddy.ui.theme.OnboardingCardGuideHeight
 import com.heckmannch.birthdaybuddy.ui.theme.OnboardingCardGuideWidth
@@ -213,8 +213,8 @@ private fun CalendarGuideIllustrationPreview() {
     BirthdayBuddyTheme {
         Box(
             modifier = Modifier
-                .size(200.dp)
-                .padding(16.dp),
+                .size(IllustrationPreviewSize)
+                .padding(SpacingNormal),
             contentAlignment = Alignment.Center
         ) {
             CalendarGuideIllustration()

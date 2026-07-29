@@ -60,11 +60,13 @@ const val AlphaEmphasisLow = 0.5f
 const val AlphaEmphasisSubtle = 0.3f
 const val AlphaEmphasisDisabled = 0.38f
 const val AlphaContainerSubtle = 0.15f
+const val AlphaContainerLow = 0.1f
 const val AlphaContainerMuted = 0.08f
 const val AlphaContainerMedium = 0.3f // Medium container alpha (e.g., for info cards)
 const val AlphaSurfaceContainerLow = 0.5f
 const val AlphaSurfaceContainerHigh = 0.6f
 const val AlphaBorderSubtle = 0.2f
+val ColorPickerHandleInnerRadius = 6.dp
 const val AnimDurationMedium = 500  // Medium animation duration in ms
 const val AnimDelayPermission = 300 // Delay before requesting permissions after navigation (ms)
 
@@ -112,6 +114,9 @@ val WidgetItemMinHeight = 58.dp
 val SpacingTiny = 2.dp
 val MaxWidthMedium = 600.dp // Max width for medium screens
 val MaxWidthExpanded = 840.dp // Max width for expanded screens
+val IllustrationPreviewSize = 200.dp // Container size for previewing illustrations
+val IllustrationCardContainerSize = 140.dp
+val ContactAvatarHeaderSize = 68.dp
 
 const val AlphaOnboardingCard = 0.9f
 const val AlphaOnboardingCalendarDisabled = 0.4f

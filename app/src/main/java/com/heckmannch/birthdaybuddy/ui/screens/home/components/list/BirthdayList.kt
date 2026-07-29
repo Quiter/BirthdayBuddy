@@ -60,14 +60,17 @@ import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import com.heckmannch.birthdaybuddy.R
 import com.heckmannch.birthdaybuddy.domain.model.ContactLabels
-import com.heckmannch.birthdaybuddy.ui.screens.home.components.labels.LabelFilterBar
 import com.heckmannch.birthdaybuddy.ui.illustrations.ContactsIllustration
 import com.heckmannch.birthdaybuddy.ui.model.ContactUiModel
 import com.heckmannch.birthdaybuddy.ui.model.CoupleSuggestionUiModel
 import com.heckmannch.birthdaybuddy.ui.model.SampleData
 import com.heckmannch.birthdaybuddy.ui.screens.home.HomeActions
+import com.heckmannch.birthdaybuddy.ui.screens.home.components.labels.LabelFilterBar
+import com.heckmannch.birthdaybuddy.ui.theme.AlphaBorderSubtle
+import com.heckmannch.birthdaybuddy.ui.theme.AlphaContainerLow
 import com.heckmannch.birthdaybuddy.ui.theme.AlphaEmphasisLow
 import com.heckmannch.birthdaybuddy.ui.theme.AlphaEmphasisMedium
+import com.heckmannch.birthdaybuddy.ui.theme.AlphaEmphasisSubtle
 import com.heckmannch.birthdaybuddy.ui.theme.AlphaOnboardingCalendarDisabled
 import com.heckmannch.birthdaybuddy.ui.theme.AlphaSurfaceContainerHigh
 import com.heckmannch.birthdaybuddy.ui.theme.BirthdayBuddyTheme
@@ -254,8 +257,8 @@ fun BirthdayList(
 private fun BirthdayItemSkeleton() {
     val transition = rememberInfiniteTransition(label = "shimmer")
     val alpha by transition.animateFloat(
-        initialValue = 0.3f,
-        targetValue = 0.7f,
+        initialValue = AlphaEmphasisSubtle,
+        targetValue = AlphaEmphasisMedium,
         animationSpec = infiniteRepeatable(
             animation = tween(1000, easing = LinearEasing),
             repeatMode = RepeatMode.Reverse
@@ -280,7 +283,7 @@ private fun BirthdayItemSkeleton() {
                 modifier = Modifier
                     .size(ContactImageSizeSmall)
                     .background(
-                        MaterialTheme.colorScheme.onSurface.copy(alpha = 0.1f),
+                        MaterialTheme.colorScheme.onSurface.copy(alpha = AlphaContainerLow),
                         MaterialTheme.shapes.medium
                     )
             )
@@ -291,7 +294,7 @@ private fun BirthdayItemSkeleton() {
                         .width(OnboardingIllustrationHeightSmall)
                         .height(SpacingNormal)
                         .background(
-                            MaterialTheme.colorScheme.onSurface.copy(alpha = 0.1f),
+                            MaterialTheme.colorScheme.onSurface.copy(alpha = AlphaContainerLow),
                             RoundedCornerShape(SpacingExtraSmall)
                         )
                 )
@@ -301,7 +304,7 @@ private fun BirthdayItemSkeleton() {
                         .width(SidebarWidthCollapsed)
                         .height(SpacingMedium)
                         .background(
-                            MaterialTheme.colorScheme.onSurface.copy(alpha = 0.1f),
+                            MaterialTheme.colorScheme.onSurface.copy(alpha = AlphaContainerLow),
                             RoundedCornerShape(SpacingExtraSmall)
                         )
                 )
@@ -405,7 +408,7 @@ fun CoupleSuggestionBanner(
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = AlphaOnboardingCalendarDisabled)
         ),
-        border = BorderStroke(BorderWidthThin, MaterialTheme.colorScheme.primary.copy(alpha = 0.2f)),
+        border = BorderStroke(BorderWidthThin, MaterialTheme.colorScheme.primary.copy(alpha = AlphaBorderSubtle)),
         shape = RoundedCornerShape(SpacingNormal)
     ) {
         Row(

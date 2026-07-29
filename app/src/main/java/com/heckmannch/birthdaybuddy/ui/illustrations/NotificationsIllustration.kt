@@ -49,6 +49,7 @@ import com.heckmannch.birthdaybuddy.ui.theme.AlphaOnboardingCard
 import com.heckmannch.birthdaybuddy.ui.theme.BirthdayBuddyTheme
 import com.heckmannch.birthdaybuddy.ui.theme.ElevationOnboardingCard
 import com.heckmannch.birthdaybuddy.ui.theme.IconSizeExtraSmall
+import com.heckmannch.birthdaybuddy.ui.theme.IllustrationPreviewSize
 import com.heckmannch.birthdaybuddy.ui.theme.OnboardingCalendarCellSize
 import com.heckmannch.birthdaybuddy.ui.theme.OnboardingCalendarEventIconSize
 import com.heckmannch.birthdaybuddy.ui.theme.OnboardingCalendarEventPadding
@@ -197,8 +198,8 @@ private fun NotificationsIllustrationEnabledPreview() {
     BirthdayBuddyTheme {
         Box(
             modifier = Modifier
-                .size(200.dp)
-                .padding(16.dp),
+                .size(IllustrationPreviewSize)
+                .padding(SpacingNormal),
             contentAlignment = Alignment.Center
         ) {
             NotificationsIllustration(enabled = true, persistent = true)
@@ -212,8 +213,8 @@ private fun NotificationsIllustrationDisabledPreview() {
     BirthdayBuddyTheme {
         Box(
             modifier = Modifier
-                .size(200.dp)
-                .padding(16.dp),
+                .size(IllustrationPreviewSize)
+                .padding(SpacingNormal),
             contentAlignment = Alignment.Center
         ) {
             NotificationsIllustration(enabled = false, persistent = false)

@@ -18,9 +18,9 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
 import com.heckmannch.birthdaybuddy.ui.theme.AlphaEmphasisDisabled
 import com.heckmannch.birthdaybuddy.ui.theme.BirthdayBuddyTheme
+import com.heckmannch.birthdaybuddy.ui.theme.SpacingNormal
 
 /**
  * A standardized Switch component for BirthdayBuddy.
@@ -62,25 +62,25 @@ fun AppSwitch(
 private fun AppSwitchPreview() {
     BirthdayBuddyTheme {
         Column(
-            modifier = Modifier.padding(16.dp),
+            modifier = Modifier.padding(SpacingNormal),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             AppSwitch(
                 checked = true,
                 onCheckedChange = {}
             )
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(SpacingNormal))
             AppSwitch(
                 checked = false,
                 onCheckedChange = {}
             )
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(SpacingNormal))
             AppSwitch(
                 checked = true,
                 enabled = false,
                 onCheckedChange = {}
             )
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(SpacingNormal))
             AppSwitch(
                 checked = false,
                 enabled = false,

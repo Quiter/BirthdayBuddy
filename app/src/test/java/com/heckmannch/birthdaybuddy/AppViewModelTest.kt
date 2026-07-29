@@ -2,8 +2,8 @@ package com.heckmannch.birthdaybuddy
 
 import com.google.common.truth.Truth.assertThat
 import com.heckmannch.birthdaybuddy.domain.model.AppSettings
-import com.heckmannch.birthdaybuddy.domain.model.ThemeMode
 import com.heckmannch.birthdaybuddy.domain.model.ThemeAccent
+import com.heckmannch.birthdaybuddy.domain.model.ThemeMode
 import com.heckmannch.birthdaybuddy.domain.repository.NotificationRepository
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.first

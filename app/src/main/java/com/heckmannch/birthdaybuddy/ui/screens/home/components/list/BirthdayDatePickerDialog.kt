@@ -43,6 +43,7 @@ import androidx.compose.ui.window.Dialog
 import com.heckmannch.birthdaybuddy.R
 import com.heckmannch.birthdaybuddy.ui.components.AppSwitch
 import com.heckmannch.birthdaybuddy.ui.theme.AlphaOnboardingCalendarDisabled
+import com.heckmannch.birthdaybuddy.ui.theme.AlphaSurfaceContainerHigh
 import com.heckmannch.birthdaybuddy.ui.theme.BorderWidthThin
 import com.heckmannch.birthdaybuddy.ui.theme.ElevationHigh
 import com.heckmannch.birthdaybuddy.ui.theme.SpacingLarge
@@ -283,14 +284,14 @@ private fun WheelPicker(
             modifier = Modifier
                 .align(Alignment.Center)
                 .graphicsLayer { translationY = -offsetTranslationPx },
-            color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.6f),
+            color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = AlphaSurfaceContainerHigh),
             thickness = BorderWidthThin
         )
         HorizontalDivider(
             modifier = Modifier
                 .align(Alignment.Center)
                 .graphicsLayer { translationY = offsetTranslationPx },
-            color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.6f),
+            color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = AlphaSurfaceContainerHigh),
             thickness = BorderWidthThin
         )
 

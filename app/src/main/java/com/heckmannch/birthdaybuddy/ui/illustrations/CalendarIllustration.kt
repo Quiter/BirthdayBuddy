@@ -40,7 +40,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
 import com.heckmannch.birthdaybuddy.ui.theme.AlphaContainerMuted
 import com.heckmannch.birthdaybuddy.ui.theme.AlphaEmphasisSubtle
 import com.heckmannch.birthdaybuddy.ui.theme.AlphaOnboardingCalendarDisabled
@@ -48,6 +47,7 @@ import com.heckmannch.birthdaybuddy.ui.theme.AlphaOnboardingCalendarInactive
 import com.heckmannch.birthdaybuddy.ui.theme.AlphaOnboardingCard
 import com.heckmannch.birthdaybuddy.ui.theme.BirthdayBuddyTheme
 import com.heckmannch.birthdaybuddy.ui.theme.ElevationOnboardingCard
+import com.heckmannch.birthdaybuddy.ui.theme.IllustrationPreviewSize
 import com.heckmannch.birthdaybuddy.ui.theme.OnboardingCalendarCellSize
 import com.heckmannch.birthdaybuddy.ui.theme.OnboardingCalendarEventAlpha
 import com.heckmannch.birthdaybuddy.ui.theme.OnboardingCalendarEventCornerRadius
@@ -229,8 +229,8 @@ private fun CalendarIllustrationEnabledPreview() {
     BirthdayBuddyTheme {
         Box(
             modifier = Modifier
-                .size(200.dp)
-                .padding(16.dp),
+                .size(IllustrationPreviewSize)
+                .padding(SpacingNormal),
             contentAlignment = Alignment.Center
         ) {
             CalendarIllustration(enabled = true)
@@ -244,8 +244,8 @@ private fun CalendarIllustrationDisabledPreview() {
     BirthdayBuddyTheme {
         Box(
             modifier = Modifier
-                .size(200.dp)
-                .padding(16.dp),
+                .size(IllustrationPreviewSize)
+                .padding(SpacingNormal),
             contentAlignment = Alignment.Center
         ) {
             CalendarIllustration(enabled = false)

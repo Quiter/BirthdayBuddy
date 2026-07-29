@@ -9,13 +9,11 @@ import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
@@ -30,17 +28,15 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
 import com.heckmannch.birthdaybuddy.ui.theme.AlphaContainerMuted
 import com.heckmannch.birthdaybuddy.ui.theme.AlphaOnboardingCard
 import com.heckmannch.birthdaybuddy.ui.theme.BirthdayBuddyTheme
-import com.heckmannch.birthdaybuddy.ui.theme.ContactImageSizeSmall
 import com.heckmannch.birthdaybuddy.ui.theme.ElevationOnboardingCard
+import com.heckmannch.birthdaybuddy.ui.theme.IllustrationPreviewSize
 import com.heckmannch.birthdaybuddy.ui.theme.OnboardingCardWelcomeHeight
 import com.heckmannch.birthdaybuddy.ui.theme.OnboardingCardWelcomeWidth
 import com.heckmannch.birthdaybuddy.ui.theme.OnboardingIllustrationCircleSize
 import com.heckmannch.birthdaybuddy.ui.theme.SpacingExtraSmall
-import com.heckmannch.birthdaybuddy.ui.theme.SpacingMedium
 import com.heckmannch.birthdaybuddy.ui.theme.SpacingNormal
 
 @Composable
@@ -49,10 +45,10 @@ fun WelcomeIllustration(
 ) {
     val infiniteTransition = rememberInfiniteTransition(label = "welcome_float")
     val offsetY by infiniteTransition.animateFloat(
-        initialValue = -8f,
-        targetValue = 8f,
+        initialValue = -6f,
+        targetValue = 6f,
         animationSpec = infiniteRepeatable(
-            animation = tween(durationMillis = 2000, easing = FastOutSlowInEasing),
+            animation = tween(durationMillis = 3000, easing = FastOutSlowInEasing),
             repeatMode = RepeatMode.Reverse
         ),
         label = "offsetY"
@@ -62,7 +58,7 @@ fun WelcomeIllustration(
         modifier = modifier.fillMaxSize(),
         contentAlignment = Alignment.Center
     ) {
-        // Soft glowing background circle
+        // Background soft glowing circle
         Box(
             modifier = Modifier
                 .size(OnboardingIllustrationCircleSize)
@@ -72,42 +68,27 @@ fun WelcomeIllustration(
                 )
         )
 
-        // Floating Card
+        // Floating Welcome Card
         Card(
             modifier = Modifier
-                .width(OnboardingCardWelcomeWidth)
-                .height(OnboardingCardWelcomeHeight)
-                .graphicsLayer { translationY = offsetY * density },
+                .size(width = OnboardingCardWelcomeWidth, height = OnboardingCardWelcomeHeight)
+                .graphicsLayer {
+                    translationY = offsetY * density
+                },
             shape = RoundedCornerShape(SpacingNormal),
             colors = CardDefaults.cardColors(
                 containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = AlphaOnboardingCard)
             ),
-            elevation = CardDefaults.cardElevation(defaultElevation = ElevationOnboardingCard)
+            elevation = CardDefaults.cardElevation(
+                defaultElevation = ElevationOnboardingCard
+            )
         ) {
-            Row(
+            Box(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(SpacingMedium),
-                verticalAlignment = Alignment.CenterVertically
+                    .padding(SpacingNormal),
+                contentAlignment = Alignment.Center
             ) {
-                // Avatar Representation
-                Box(
-                    modifier = Modifier
-                        .size(ContactImageSizeSmall)
-                        .background(
-                            color = MaterialTheme.colorScheme.primaryContainer,
-                            shape = CircleShape
-                        ),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text(
-                        text = "🎂",
-                        style = MaterialTheme.typography.titleMedium
-                    )
-                }
-
-                Spacer(modifier = Modifier.width(SpacingMedium))
-
                 Column {
                     Text(
                         text = "Erika Mustermann",
@@ -134,8 +115,8 @@ private fun WelcomeIllustrationPreview() {
     BirthdayBuddyTheme {
         Box(
             modifier = Modifier
-                .size(200.dp)
-                .padding(16.dp),
+                .size(IllustrationPreviewSize)
+                .padding(SpacingNormal),
             contentAlignment = Alignment.Center
         ) {
             WelcomeIllustration()

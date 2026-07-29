@@ -24,9 +24,25 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
+import com.heckmannch.birthdaybuddy.ui.theme.AlphaBorderSubtle
+import com.heckmannch.birthdaybuddy.ui.theme.AlphaContainerLow
 import com.heckmannch.birthdaybuddy.ui.theme.AlphaOnboardingCalendarDisabled
+import com.heckmannch.birthdaybuddy.ui.theme.AlphaSurfaceContainerHigh
 import com.heckmannch.birthdaybuddy.ui.theme.BirthdayBuddyTheme
+import com.heckmannch.birthdaybuddy.ui.theme.BirthdayQuoteIconContainerSize
+import com.heckmannch.birthdaybuddy.ui.theme.ContactAvatarHeaderSize
+import com.heckmannch.birthdaybuddy.ui.theme.ElevationDefault
+import com.heckmannch.birthdaybuddy.ui.theme.ElevationHigh
+import com.heckmannch.birthdaybuddy.ui.theme.IconSizeExtraLarge
+import com.heckmannch.birthdaybuddy.ui.theme.IconSizeExtraSmall
+import com.heckmannch.birthdaybuddy.ui.theme.IllustrationCardContainerSize
+import com.heckmannch.birthdaybuddy.ui.theme.IllustrationPreviewSize
+import com.heckmannch.birthdaybuddy.ui.theme.OnboardingCalendarEventIconSize
+import com.heckmannch.birthdaybuddy.ui.theme.SidebarHeaderSpacerHeight
+import com.heckmannch.birthdaybuddy.ui.theme.SpacingLarge
+import com.heckmannch.birthdaybuddy.ui.theme.SpacingMedium
+import com.heckmannch.birthdaybuddy.ui.theme.SpacingNormal
+import com.heckmannch.birthdaybuddy.ui.theme.SpacingSmall
 
 @Composable
 fun ContactsIllustration(
@@ -59,9 +75,9 @@ fun ContactsIllustration(
         // Soft glowing background circle
         Box(
             modifier = Modifier
-                .size(120.dp)
+                .size(BirthdayQuoteIconContainerSize)
                 .background(
-                    color = MaterialTheme.colorScheme.primary.copy(alpha = 0.1f),
+                    color = MaterialTheme.colorScheme.primary.copy(alpha = AlphaContainerLow),
                     shape = CircleShape
                 )
         )
@@ -69,30 +85,30 @@ fun ContactsIllustration(
         // Small floating accent circles/bubbles
         Box(
             modifier = Modifier
-                .size(16.dp)
+                .size(IconSizeExtraSmall)
                 .align(Alignment.TopStart)
-                .padding(start = 16.dp, top = 16.dp)
+                .padding(start = SpacingNormal, top = SpacingNormal)
                 .graphicsLayer {
                     translationY = -offsetY * 1.5f * density
-                    alpha = 0.6f
+                    alpha = AlphaSurfaceContainerHigh
                 }
                 .background(
-                    color = MaterialTheme.colorScheme.secondary.copy(alpha = 0.2f),
+                    color = MaterialTheme.colorScheme.secondary.copy(alpha = AlphaBorderSubtle),
                     shape = CircleShape
                 )
         )
 
         Box(
             modifier = Modifier
-                .size(12.dp)
+                .size(OnboardingCalendarEventIconSize)
                 .align(Alignment.BottomEnd)
-                .padding(end = 24.dp, bottom = 16.dp)
+                .padding(end = SpacingLarge, bottom = SpacingNormal)
                 .graphicsLayer {
                     translationY = offsetY * 1.2f * density
                     alpha = AlphaOnboardingCalendarDisabled
                 }
                 .background(
-                    color = MaterialTheme.colorScheme.primary.copy(alpha = 0.2f),
+                    color = MaterialTheme.colorScheme.primary.copy(alpha = AlphaBorderSubtle),
                     shape = CircleShape
                 )
         )
@@ -100,7 +116,7 @@ fun ContactsIllustration(
         // Main Contacts Container (overlapping avatars)
         Box(
             modifier = Modifier
-                .size(140.dp)
+                .size(IllustrationCardContainerSize)
                 .graphicsLayer {
                     translationY = offsetY * density
                 },
@@ -109,15 +125,15 @@ fun ContactsIllustration(
             // Left contact circle (secondary contact)
             Surface(
                 modifier = Modifier
-                    .size(48.dp)
+                    .size(IconSizeExtraLarge)
                     .align(Alignment.CenterStart)
                     .graphicsLayer {
-                        translationX = 12.dp.toPx()
-                        translationY = -8.dp.toPx()
+                        translationX = SpacingMedium.toPx()
+                        translationY = -SpacingSmall.toPx()
                     },
                 shape = CircleShape,
                 color = MaterialTheme.colorScheme.secondaryContainer,
-                tonalElevation = 2.dp
+                tonalElevation = ElevationDefault
             ) {
                 Box(contentAlignment = Alignment.Center) {
                     Text(
@@ -130,15 +146,15 @@ fun ContactsIllustration(
             // Right contact circle (tertiary contact)
             Surface(
                 modifier = Modifier
-                    .size(48.dp)
+                    .size(IconSizeExtraLarge)
                     .align(Alignment.CenterEnd)
                     .graphicsLayer {
-                        translationX = -12.dp.toPx()
-                        translationY = 8.dp.toPx()
+                        translationX = -SpacingMedium.toPx()
+                        translationY = SpacingSmall.toPx()
                     },
                 shape = CircleShape,
                 color = MaterialTheme.colorScheme.tertiaryContainer,
-                tonalElevation = 2.dp
+                tonalElevation = ElevationDefault
             ) {
                 Box(contentAlignment = Alignment.Center) {
                     Text(
@@ -151,7 +167,7 @@ fun ContactsIllustration(
             // Center main contact circle (larger, on top)
             Surface(
                 modifier = Modifier
-                    .size(68.dp)
+                    .size(ContactAvatarHeaderSize)
                     .align(Alignment.Center)
                     .graphicsLayer {
                         scaleX = scale
@@ -159,13 +175,13 @@ fun ContactsIllustration(
                     },
                 shape = CircleShape,
                 color = MaterialTheme.colorScheme.primary,
-                tonalElevation = 6.dp
+                tonalElevation = ElevationHigh
             ) {
                 Box(contentAlignment = Alignment.Center) {
                     Icon(
                         imageVector = Icons.Default.Person,
                         contentDescription = null,
-                        modifier = Modifier.size(36.dp),
+                        modifier = Modifier.size(SidebarHeaderSpacerHeight),
                         tint = MaterialTheme.colorScheme.onPrimary
                     )
                 }
@@ -180,8 +196,8 @@ private fun ContactsIllustrationPreview() {
     BirthdayBuddyTheme {
         Box(
             modifier = Modifier
-                .size(200.dp)
-                .padding(16.dp),
+                .size(IllustrationPreviewSize)
+                .padding(SpacingNormal),
             contentAlignment = Alignment.Center
         ) {
             ContactsIllustration()

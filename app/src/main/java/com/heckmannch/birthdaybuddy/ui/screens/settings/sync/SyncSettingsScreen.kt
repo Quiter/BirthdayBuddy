@@ -21,8 +21,8 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.core.content.ContextCompat
-import com.heckmannch.birthdaybuddy.R
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import com.heckmannch.birthdaybuddy.R
 import com.heckmannch.birthdaybuddy.ui.components.InfoCard
 import com.heckmannch.birthdaybuddy.ui.components.SettingsCard
 import com.heckmannch.birthdaybuddy.ui.components.SettingsClickableRow

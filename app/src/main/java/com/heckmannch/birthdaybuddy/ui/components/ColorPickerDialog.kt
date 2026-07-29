@@ -47,12 +47,15 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
 import androidx.core.graphics.toColorInt
 import com.heckmannch.birthdaybuddy.R
 import com.heckmannch.birthdaybuddy.ui.theme.BirthdayBuddyTheme
+import com.heckmannch.birthdaybuddy.ui.theme.BorderWidthThick
+import com.heckmannch.birthdaybuddy.ui.theme.BorderWidthThin
+import com.heckmannch.birthdaybuddy.ui.theme.ColorPickerHandleInnerRadius
 import com.heckmannch.birthdaybuddy.ui.theme.ContactImageSizeSmall
 import com.heckmannch.birthdaybuddy.ui.theme.IconSizeSmall
+import com.heckmannch.birthdaybuddy.ui.theme.SelectedBorderWidthThick
 import com.heckmannch.birthdaybuddy.ui.theme.SpacingExtraSmall
 import com.heckmannch.birthdaybuddy.ui.theme.SpacingMedium
 import com.heckmannch.birthdaybuddy.ui.theme.SpacingNormal
@@ -154,7 +157,7 @@ fun ColorPickerDialog(
                                             .clip(CircleShape)
                                             .background(color)
                                             .border(
-                                                width = if (isPresetSelected) 3.dp else 1.dp,
+                                                width = if (isPresetSelected) SelectedBorderWidthThick else BorderWidthThin,
                                                 color = if (isPresetSelected) MaterialTheme.colorScheme.outline else Color.Transparent,
                                                 shape = CircleShape
                                             )
@@ -264,7 +267,7 @@ fun ColorPickerDialog(
                                 .size(ContactImageSizeSmall)
                                 .clip(CircleShape)
                                 .background(selectedColor)
-                                .border(1.dp, MaterialTheme.colorScheme.outlineVariant, CircleShape)
+                                .border(BorderWidthThin, MaterialTheme.colorScheme.outlineVariant, CircleShape)
                         )
                         Text(
                             text = stringResource(R.string.color_picker_preview),
@@ -359,11 +362,11 @@ private fun SaturationValueBox(
                 color = Color.Black,
                 radius = SpacingSmall.toPx(),
                 center = Offset(cx, cy),
-                style = Stroke(width = 2.dp.toPx())
+                style = Stroke(width = BorderWidthThick.toPx())
             )
             drawCircle(
                 color = Color.White,
-                radius = 6.dp.toPx(), // Maintain precise drawing size
+                radius = ColorPickerHandleInnerRadius.toPx(),
                 center = Offset(cx, cy)
             )
         }
@@ -421,11 +424,11 @@ private fun HueSlider(
                 color = Color.Black,
                 radius = SpacingSmall.toPx(),
                 center = Offset(cx, cy),
-                style = Stroke(width = 2.dp.toPx())
+                style = Stroke(width = BorderWidthThick.toPx())
             )
             drawCircle(
                 color = Color.White,
-                radius = 6.dp.toPx(), // Maintain precise drawing size
+                radius = ColorPickerHandleInnerRadius.toPx(),
                 center = Offset(cx, cy)
             )
         }

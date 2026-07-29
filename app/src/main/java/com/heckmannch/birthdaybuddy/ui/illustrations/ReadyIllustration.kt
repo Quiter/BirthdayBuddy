@@ -21,10 +21,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
 import com.heckmannch.birthdaybuddy.ui.screens.home.components.list.ConfettiEffect
 import com.heckmannch.birthdaybuddy.ui.theme.BirthdayBuddyTheme
+import com.heckmannch.birthdaybuddy.ui.theme.IllustrationPreviewSize
 import com.heckmannch.birthdaybuddy.ui.theme.OnboardingIllustrationCircleSize
+import com.heckmannch.birthdaybuddy.ui.theme.SpacingNormal
 
 @Composable
 fun ReadyIllustration(
@@ -82,8 +83,8 @@ private fun ReadyIllustrationPreview() {
     BirthdayBuddyTheme {
         Box(
             modifier = Modifier
-                .size(200.dp)
-                .padding(16.dp),
+                .size(IllustrationPreviewSize)
+                .padding(SpacingNormal),
             contentAlignment = Alignment.Center
         ) {
             ReadyIllustration()

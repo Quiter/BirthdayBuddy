@@ -21,6 +21,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.adaptive.WindowAdaptiveInfo
 import androidx.compose.material3.contentColorFor
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
@@ -36,7 +37,6 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.window.core.layout.WindowSizeClass
-import androidx.compose.material3.adaptive.WindowAdaptiveInfo
 import com.heckmannch.birthdaybuddy.ui.theme.AlphaContainerMedium
 import com.heckmannch.birthdaybuddy.ui.theme.BirthdayBuddyTheme
 import com.heckmannch.birthdaybuddy.ui.theme.MaxWidthExpanded
@@ -281,7 +281,7 @@ private fun PreviewContent(text: String) {
         modifier = Modifier
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = AlphaContainerMedium))
-            .padding(16.dp),
+            .padding(SpacingNormal),
         contentAlignment = Alignment.Center
     ) {
         Text(
