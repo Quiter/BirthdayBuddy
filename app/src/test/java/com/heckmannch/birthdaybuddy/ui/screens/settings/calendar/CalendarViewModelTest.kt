@@ -1,4 +1,4 @@
-package com.heckmannch.birthdaybuddy.viewmodel
+package com.heckmannch.birthdaybuddy.ui.screens.settings.calendar
 
 import com.google.common.truth.Truth.assertThat
 import com.heckmannch.birthdaybuddy.MainDispatcherRule
@@ -7,8 +7,6 @@ import com.heckmannch.birthdaybuddy.domain.repository.CalendarSyncRepository
 import com.heckmannch.birthdaybuddy.domain.repository.NotificationRepository
 import com.heckmannch.birthdaybuddy.domain.usecase.SetCalendarSyncEnabledUseCase
 import com.heckmannch.birthdaybuddy.domain.usecase.UpdateCalendarColorUseCase
-import com.heckmannch.birthdaybuddy.ui.screens.settings.calendar.CalendarIntent
-import com.heckmannch.birthdaybuddy.ui.screens.settings.calendar.CalendarViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flowOf

@@ -1,4 +1,4 @@
-package com.heckmannch.birthdaybuddy.viewmodel
+package com.heckmannch.birthdaybuddy.ui.screens.settings.labels
 
 import com.google.common.truth.Truth.assertThat
 import com.heckmannch.birthdaybuddy.MainDispatcherRule
@@ -6,8 +6,6 @@ import com.heckmannch.birthdaybuddy.domain.model.Contact
 import com.heckmannch.birthdaybuddy.domain.model.ContactLabels
 import com.heckmannch.birthdaybuddy.domain.model.LabelConfig
 import com.heckmannch.birthdaybuddy.domain.repository.ContactRepository
-import com.heckmannch.birthdaybuddy.ui.screens.settings.labels.LabelIntent
-import com.heckmannch.birthdaybuddy.ui.screens.settings.labels.LabelViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flowOf

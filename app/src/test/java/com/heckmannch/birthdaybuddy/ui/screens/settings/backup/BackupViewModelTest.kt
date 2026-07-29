@@ -1,11 +1,9 @@
-package com.heckmannch.birthdaybuddy.viewmodel
+package com.heckmannch.birthdaybuddy.ui.screens.settings.backup
 
 import android.net.Uri
 import com.heckmannch.birthdaybuddy.MainDispatcherRule
 import com.heckmannch.birthdaybuddy.domain.usecase.ExportGiftIdeasUseCase
 import com.heckmannch.birthdaybuddy.domain.usecase.ImportGiftIdeasUseCase
-import com.heckmannch.birthdaybuddy.ui.screens.settings.backup.BackupIntent
-import com.heckmannch.birthdaybuddy.ui.screens.settings.backup.BackupViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.runTest

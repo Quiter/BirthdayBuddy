@@ -1,4 +1,4 @@
-package com.heckmannch.birthdaybuddy.viewmodel
+package com.heckmannch.birthdaybuddy.ui.screens.settings.theme
 
 import com.google.common.truth.Truth.assertThat
 import com.heckmannch.birthdaybuddy.MainDispatcherRule
@@ -6,8 +6,6 @@ import com.heckmannch.birthdaybuddy.domain.model.AppSettings
 import com.heckmannch.birthdaybuddy.domain.model.ThemeAccent
 import com.heckmannch.birthdaybuddy.domain.model.ThemeMode
 import com.heckmannch.birthdaybuddy.domain.repository.NotificationRepository
-import com.heckmannch.birthdaybuddy.ui.screens.settings.theme.ThemeIntent
-import com.heckmannch.birthdaybuddy.ui.screens.settings.theme.ThemeViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flowOf
