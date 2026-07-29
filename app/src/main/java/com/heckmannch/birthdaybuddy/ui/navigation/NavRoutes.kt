@@ -8,37 +8,37 @@ import kotlinx.serialization.Serializable
  * Jede Route ist ein typsicheres, serialisierbares NavKey-Objekt.
  */
 @Serializable
-object Home : NavKey
+data object Home : NavKey
 
 @Serializable
-object Onboarding : NavKey
+data object Onboarding : NavKey
 
 @Serializable
-object Settings : NavKey
+data object Settings : NavKey
 
 @Serializable
-object LabelSettings : NavKey
+data object LabelSettings : NavKey
 
 @Serializable
-object NotificationSettings : NavKey
+data object NotificationSettings : NavKey
 
 @Serializable
-object OtherEventsSettings : NavKey
+data object OtherEventsSettings : NavKey
 
 @Serializable
-object CalendarSettings : NavKey
+data object CalendarSettings : NavKey
 
 @Serializable
-object BackupSettings : NavKey
+data object BackupSettings : NavKey
 
 @Serializable
-object ThemeSettings : NavKey
+data object ThemeSettings : NavKey
 
 @Serializable
-object SyncSettings : NavKey
+data object SyncSettings : NavKey
 
 @Serializable
-object About : NavKey
+data object About : NavKey
 
 @Serializable
-object PrivacyPolicy : NavKey
+data object PrivacyPolicy : NavKey
