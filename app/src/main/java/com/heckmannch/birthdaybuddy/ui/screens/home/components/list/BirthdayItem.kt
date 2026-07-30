@@ -1,8 +1,15 @@
 package com.heckmannch.birthdaybuddy.ui.screens.home.components.list
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.spring
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -11,6 +18,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -61,11 +69,14 @@ import com.heckmannch.birthdaybuddy.ui.theme.BirthdayBuddyTheme
 import com.heckmannch.birthdaybuddy.ui.theme.BirthdayGold
 import com.heckmannch.birthdaybuddy.ui.theme.BirthdayKidAmber
 import com.heckmannch.birthdaybuddy.ui.theme.BirthdaySilver
+import com.heckmannch.birthdaybuddy.ui.theme.ContactAvatarHeaderSize
+import com.heckmannch.birthdaybuddy.ui.theme.ContactImageSizeSmall
 import com.heckmannch.birthdaybuddy.ui.theme.IconSizeExtraSmall
 import com.heckmannch.birthdaybuddy.ui.theme.IconSizeLarge
 import com.heckmannch.birthdaybuddy.ui.theme.IconSizeSmall
 import com.heckmannch.birthdaybuddy.ui.theme.KidColors
 import com.heckmannch.birthdaybuddy.ui.theme.SelectedBorderWidth
+import com.heckmannch.birthdaybuddy.ui.theme.SpacingExtraSmall
 import com.heckmannch.birthdaybuddy.ui.theme.SpacingMedium
 import com.heckmannch.birthdaybuddy.ui.theme.SpacingNormal
 import com.heckmannch.birthdaybuddy.ui.theme.SpacingSmall
@@ -131,11 +142,26 @@ fun BirthdayItem(
         }
     }
 
-    val containerColor = when {
-        isSelected -> MaterialTheme.colorScheme.primaryContainer.copy(alpha = AlphaSurfaceContainerHigh)
-        isExpanded -> MaterialTheme.colorScheme.surfaceContainerHigh
-        else -> MaterialTheme.colorScheme.surfaceContainerLow
-    }
+    val containerColor by animateColorAsState(
+        targetValue = when {
+            isSelected -> MaterialTheme.colorScheme.primaryContainer.copy(alpha = AlphaSurfaceContainerHigh)
+            isExpanded -> MaterialTheme.colorScheme.surfaceContainerHigh
+            else -> MaterialTheme.colorScheme.surfaceContainerLow
+        },
+        animationSpec = spring(
+            stiffness = Spring.StiffnessMediumLow
+        ),
+        label = "cardContainerColor"
+    )
+
+    val imageSize by animateDpAsState(
+        targetValue = if (isExpanded) ContactAvatarHeaderSize else ContactImageSizeSmall,
+        animationSpec = spring(
+            dampingRatio = Spring.DampingRatioNoBouncy,
+            stiffness = Spring.StiffnessMediumLow
+        ),
+        label = "contactImageSize"
+    )
 
     Card(
         modifier = modifier
@@ -171,7 +197,7 @@ fun BirthdayItem(
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             Text(
                                 text = contact.fullName,
-                                style = MaterialTheme.typography.titleMedium
+                                style = if (isExpanded) MaterialTheme.typography.titleLarge else MaterialTheme.typography.titleMedium
                             )
                             if (contact.hasGiftIdeas) {
                                 Spacer(modifier = Modifier.width(SpacingSmall))
@@ -185,11 +211,23 @@ fun BirthdayItem(
                         }
                     },
                     supportingContent = {
-                        Text(
-                            text = contact.dateText,
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
+                        Column {
+                            Text(
+                                text = contact.dateText,
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                            if (isExpanded && contact.labels.isNotEmpty()) {
+                                Spacer(modifier = Modifier.height(SpacingExtraSmall))
+                                Text(
+                                    text = contact.labels.joinToString(", "),
+                                    style = MaterialTheme.typography.labelSmall,
+                                    color = MaterialTheme.colorScheme.primary.copy(alpha = AlphaEmphasisMedium),
+                                    maxLines = 1,
+                                    overflow = TextOverflow.Ellipsis
+                                )
+                            }
+                        }
                     },
                     leadingContent = {
                         ContactImage(
@@ -199,7 +237,8 @@ fun BirthdayItem(
                             lookupKey = contact.lookupKey,
                             secondImageUri = contact.secondImageUri,
                             secondInitials = contact.secondInitials,
-                            secondFullName = contact.secondFullName
+                            secondFullName = contact.secondFullName,
+                            size = imageSize
                         )
                     },
                     trailingContent = {
@@ -214,42 +253,36 @@ fun BirthdayItem(
                     colors = ListItemDefaults.colors(containerColor = Color.Transparent)
                 )
 
-                if (isExpanded) {
-                    if (contact.labels.isNotEmpty()) {
-                        Text(
-                            text = contact.labels.joinToString(", "),
-                            style = MaterialTheme.typography.labelSmall,
-                            color = MaterialTheme.colorScheme.primary.copy(alpha = AlphaEmphasisMedium),
-                            modifier = Modifier.padding(
-                                horizontal = SpacingNormal,
-                                vertical = SpacingSmall
-                            ),
-                            maxLines = 1,
-                            overflow = TextOverflow.Ellipsis
+                AnimatedVisibility(
+                    visible = isExpanded,
+                    enter = fadeIn(animationSpec = spring(stiffness = Spring.StiffnessMediumLow)) +
+                            expandVertically(animationSpec = spring(stiffness = Spring.StiffnessMediumLow)),
+                    exit = fadeOut(animationSpec = spring(stiffness = Spring.StiffnessMediumLow)) +
+                           shrinkVertically(animationSpec = spring(stiffness = Spring.StiffnessMediumLow))
+                ) {
+                    Column {
+                        ContactActionRow(
+                            contactId = contact.contactId,
+                            lookupKey = contact.lookupKey,
+                            phoneNumber = contact.phoneNumber,
+                            hasBirthday = contact.daysUntilNext != null,
+                            onAddBirthday = { showDatePicker.value = true },
+                            actions = actions,
+                            isCouple = contact.isCouple
+                        )
+
+                        HorizontalDivider(
+                            modifier = Modifier.padding(horizontal = SpacingNormal),
+                            color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = AlphaEmphasisLow)
+                        )
+
+                        BirthdayItemGiftIdeaSection(
+                            contact = contact,
+                            isExpanded = isExpanded,
+                            newlyAddedIdeaId = newlyAddedIdeaId,
+                            actions = actions,
                         )
                     }
-
-                    ContactActionRow(
-                        contactId = contact.contactId,
-                        lookupKey = contact.lookupKey,
-                        phoneNumber = contact.phoneNumber,
-                        hasBirthday = contact.daysUntilNext != null,
-                        onAddBirthday = { showDatePicker.value = true },
-                        actions = actions,
-                        isCouple = contact.isCouple
-                    )
-
-                    HorizontalDivider(
-                        modifier = Modifier.padding(horizontal = SpacingNormal),
-                        color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = AlphaEmphasisLow)
-                    )
-
-                    BirthdayItemGiftIdeaSection(
-                        contact = contact,
-                        isExpanded = isExpanded,
-                        newlyAddedIdeaId = newlyAddedIdeaId,
-                        actions = actions,
-                    )
                 }
             }
 

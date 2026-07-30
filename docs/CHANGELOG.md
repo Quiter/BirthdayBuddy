@@ -632,3 +632,9 @@
     - **Refactoring in Navigation & MainActivity:** Umstellung aller Flag-Prüfungen in [AppNavHost.kt](file:///c:/Users/chris/AndroidStudioProjects/BirthdayBuddy/app/src/main/java/com/heckmannch/birthdaybuddy/ui/navigation/AppNavHost.kt) auf die neue Extension-Funktion `intent.safeGetAndRemoveBooleanExtra(...)`. Dokumentation der `onNewIntent(intent)` Intent-Aktualisierungslogik in [MainActivity.kt](file:///c:/Users/chris/AndroidStudioProjects/BirthdayBuddy/app/src/main/java/com/heckmannch/birthdaybuddy/MainActivity.kt).
     - **Unit-Tests:** Implementierung von [IntentExtrasTest.kt](file:///c:/Users/chris/AndroidStudioProjects/BirthdayBuddy/app/src/test/java/com/heckmannch/birthdaybuddy/util/IntentExtrasTest.kt) zur Absicherung von Type-Mismatch, Null-Intents, fehlenden Extras, korrekter Extraktion und automatischer Bereinigung.
 
+302. **Material 3 Fluid Expand-Animation & Dynamische Layout-Reorganisation in BirthdayItem (UX & UI Motion):**
+    - **Animierte Bildvergrößerung:** Einführung von `animateDpAsState` mit Material 3 Spring-Physik (`Spring.DampingRatioNoBouncy`, `Spring.StiffnessMediumLow`) in [BirthdayItem.kt](file:///c:/Users/chris/AndroidStudioProjects/BirthdayBuddy/app/src/main/java/com/heckmannch/birthdaybuddy/ui/screens/home/components/list/BirthdayItem.kt). Das Kontaktbild (Einzel- und Paar-Avatare in `ContactImage`) skaliert beim Aufklappen stufenlos von `40 dp` (`ContactImageSizeSmall`) auf `68 dp` (`ContactAvatarHeaderSize`).
+    - **Dynamische Typografie & Text-Fluss:** Sanfter Übergang der Namensschriftart von `titleMedium` auf `titleLarge` sowie Einordnung der Filter-Labels direkt unter das Geburtsdatum im ausgeklappten Zustand für optimale Lesbarkeit.
+    - **Container- & Inhalt-Transitionen:** Weiche Kartenfarb-Animation (`animateColorAsState`) und sanfte Ein- und Ausblendung (`AnimatedVisibility` mit `fadeIn` + `expandVertically`) für Aktionsleiste und Geschenkideen.
+
+
