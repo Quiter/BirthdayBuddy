@@ -1,6 +1,11 @@
 # Changelog: BirthdayBuddy (Reihenfolge: Chronologisch aufsteigend / Älteste oben, Neueste unten - neue Einträge unten anfügen)
 > **Note:** Historische Einträge (Meilensteine 1-225) wurden nach [CHANGELOG_ARCHIVE.md](CHANGELOG_ARCHIVE.md) verschoben, um das Kontext-Fenster für LLM-Sessions zu optimieren.
 > 
+235. **Navigation 3 Alpha → Stable Update & Adaptive Scenes Audit (DX & UI):**
+    - **Abhängigkeiten aktualisiert:** Upgrade von `navigation3-runtime` auf Version `1.2.0-alpha07`.
+    - **Adaptive Scenes in `SettingsScreen`:** Die manuelle Unterscheidung zwischen kompakten und erweiterten Bildschirmen (Bypass von `NavDisplay` auf Smartphones) wurde entfernt. Die Oberfläche verwendet nun bedingungslos `NavDisplay` mit `ListDetailSceneStrategy` und profitiert vom integrierten Adaptiv-Layout. Der Code nutzt die neue `rememberNavBackStack()` Methode und die `entryProvider { }` DSL.
+    - **Adaptive Scenes in `HomeContent`:** Ähnlich wie in `SettingsScreen` wurde der manuelle Fallback auf Mobilgeräten entfernt. `NavDisplay` wird nun konsequent genutzt, wobei `HomeNavKey.ContactDetail` ordnungsgemäß als Detail-Pane über die Backstack-List verarbeitet wird.
+    - **Hilt Assisted Injection Audit:** Bestätigt, dass derzeit kein Detail-ViewModel existiert, das Nav-Args empfängt. Die Vorgaben für Hilt Assisted Injection (§2.3) werden vollständig eingehalten.
 226. **Relozierung der Agenten-Skills & Gradle-Bereinigung (DX & Tooling):**
     - **Direkte Skill-Ablage:** Relozierung der externen Agent-Skills direkt in das Standardverzeichnis `.agents/skills/`, damit sie nativ und automatisch von Antigravity geladen werden, ohne eine `.agents/skills.json` pflegen zu müssen.
     - **Entfernung von `skills.json`:** Die nicht mehr benötigte Konfigurationsdatei `.agents/skills.json` wurde vollständig gelöscht.
@@ -650,3 +655,11 @@
     - **Dependency Bump:** Aktualisierung der Glance-Bibliotheken `androidx.glance:glance-appwidget` und `androidx.glance:glance-material3` von Version `1.1.1` auf `1.2.0-rc01` in [gradle/libs.versions.toml](file:///c:/Users/chris/AndroidStudioProjects/BirthdayBuddy/gradle/libs.versions.toml).
     - **API- & Deprecation-Audit:** Überprüfung aller Glance-Widget-Komponenten (`BirthdayWidget.kt`, `BirthdayWidgetReceiver.kt`, `BirthdayWidgetWorker.kt`, `BirthdayWidgetUpdater.kt`) auf Kompatibilität mit der Glance 1.2.x API. Bestätigt, dass `provideGlance(...)`, `GlanceAppWidgetReceiver` und translucent Material 3-Karten (`0xCCFFFFFF` / `0xCC1E1E1E`) einwandfrei ohne Deprecation-Warnungen funktionieren.
     - **Validierung:** Erfolgreiche Kompilierung via `./gradlew :app:assembleDebug`, Durchlauf aller JVM-Unit-Tests via `./gradlew test` und Ausführung von `./gradlew :app:lintDebug` ohne Fehler.
+
+305. **Baseline Profile Audit & AGP-9-Kompatibilitätsprüfung (Dependency & Build Verification):**
+    - **Audit & Version Check:** Überprüfung der aktuellen Release-Stände für Baseline Profiles in Google Maven. Das Baseline Profile Gradle Plugin `androidx.baselineprofile` ist in der stabilen Version `1.4.1` sowie in Alpha-Releases (`1.5.0-alpha07`) verfügbar.
+    - **AGP 9.3 Inkompatibilität von Baseline Profile Plugin 1.4.1:** Version `1.4.1` unterstützt AGP 9.3 nicht (Fehler: `Module :app is not a supported android module` aufgrund von internen AGP-API-Änderungen in AGP 9).
+    - **Ergebnis & Fixierung:** `baselineprofile = "1.5.0-alpha07"` bleibt in [gradle/libs.versions.toml](file:///c:/Users/chris/AndroidStudioProjects/BirthdayBuddy/gradle/libs.versions.toml) für die AGP 9.3-Kompatibilität aktiv. `androidx.profileinstaller:profileinstaller` ist auf Version `1.4.1` konfiguriert.
+    - **Baseline-Profile-Modul & Rules:** Audit von [baselineprofile/build.gradle.kts](file:///c:/Users/chris/AndroidStudioProjects/BirthdayBuddy/baselineprofile/build.gradle.kts) und [BaselineProfileGenerator.kt](file:///c:/Users/chris/AndroidStudioProjects/BirthdayBuddy/baselineprofile/src/main/java/com/heckmannch/birthdaybuddy/baselineprofile/BaselineProfileGenerator.kt) – `BaselineProfileRule` ist korrekt konfiguriert.
+    - **Build-Validierung:** Erfolgreicher Build von `./gradlew :app:assembleRelease` in 2m 24s. Die Merge- und Kompilierungs-Tasks für Baseline Profiles (`:app:mergeReleaseStartupProfile`, `:app:mergeReleaseArtProfile`, `:app:compileReleaseArtProfile`) wurden fehlerfrei ausgeführt.
+

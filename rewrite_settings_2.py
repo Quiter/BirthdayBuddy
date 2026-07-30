@@ -1,127 +1,30 @@
-package com.heckmannch.birthdaybuddy.ui.screens.settings
+import re
 
-import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.automirrored.filled.Label
-import androidx.compose.material.icons.filled.DateRange
-import androidx.compose.material.icons.filled.Info
-import androidx.compose.material.icons.filled.Notifications
-import androidx.compose.material.icons.filled.Palette
-import androidx.compose.material.icons.filled.Refresh
-import androidx.compose.material.icons.filled.Share
-import androidx.compose.material.icons.filled.Star
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.ListItem
-import androidx.compose.material3.ListItemDefaults
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults
-import androidx.compose.material3.adaptive.ExperimentalMaterial3AdaptiveApi
-import androidx.compose.material3.adaptive.layout.calculatePaneScaffoldDirective
-import androidx.compose.material3.adaptive.navigation3.ListDetailSceneStrategy
-import androidx.compose.material3.adaptive.navigation3.rememberListDetailSceneStrategy
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.CompositionLocalProvider
-import androidx.compose.runtime.remember
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.testTag
-import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
-import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
-import androidx.navigation3.runtime.NavKey
+with open('app/src/main/java/com/heckmannch/birthdaybuddy/ui/screens/settings/SettingsScreen.kt', 'r', encoding='utf-8') as f:
+    content = f.read()
+
+# Add imports
+imports_to_add = '''import androidx.navigation3.runtime.NavBackStack
 import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.runtime.rememberNavBackStack
-import androidx.navigation3.ui.NavDisplay
-import androidx.window.core.layout.WindowSizeClass
-import com.heckmannch.birthdaybuddy.R
-import com.heckmannch.birthdaybuddy.ui.components.AppResponsiveScaffold
-import com.heckmannch.birthdaybuddy.ui.components.LocalWindowAdaptiveInfo
-import com.heckmannch.birthdaybuddy.ui.components.LocalWindowSizeClass
-import com.heckmannch.birthdaybuddy.ui.components.isWidthCompact
-import com.heckmannch.birthdaybuddy.ui.screens.settings.about.AboutScreen
-import com.heckmannch.birthdaybuddy.ui.screens.settings.about.PrivacyPolicyScreen
-import com.heckmannch.birthdaybuddy.ui.screens.settings.backup.BackupScreen
-import com.heckmannch.birthdaybuddy.ui.screens.settings.calendar.CalendarSettingsScreen
-import com.heckmannch.birthdaybuddy.ui.screens.settings.labels.LabelSettingsScreen
-import com.heckmannch.birthdaybuddy.ui.screens.settings.notifications.NotificationSettingsScreen
-import com.heckmannch.birthdaybuddy.ui.screens.settings.otherevents.OtherEventsSettingsScreen
-import com.heckmannch.birthdaybuddy.ui.screens.settings.sync.SyncSettingsScreen
-import com.heckmannch.birthdaybuddy.ui.screens.settings.theme.ThemeSettingsScreen
-import com.heckmannch.birthdaybuddy.ui.theme.AlphaEmphasisMedium
-import com.heckmannch.birthdaybuddy.ui.theme.BirthdayBuddyTheme
-import com.heckmannch.birthdaybuddy.ui.theme.SpacingMedium
-import com.heckmannch.birthdaybuddy.ui.theme.SpacingNormal
-import com.heckmannch.birthdaybuddy.ui.theme.SpacingTiny
-import kotlinx.serialization.Serializable
+'''
+content = content.replace('import androidx.navigation3.runtime.NavEntry\n', imports_to_add + 'import androidx.navigation3.runtime.NavEntry\n')
 
-/**
- * Represents the available settings sections (tabs/screens) in the app.
- */
-enum class SettingsTab {
-    NOTIFICATIONS,
-    CALENDAR,
-    LABELS,
-    BACKUP,
-    THEME,
-    SYNC,
-    OTHER_EVENTS,
-    ABOUT,
-    PRIVACY_POLICY
-}
+# We need to change the body of SettingsContent.
+# Find the start of SettingsContent and the end of it.
+start_idx = content.find('private fun SettingsContent(')
+end_idx = content.find('}\n\n@Composable\nprivate fun SettingsFooter()')
 
-/**
- * Data holder for items displayed in the settings menu list.
- *
- * @property titleRes String resource ID for the item's title.
- * @property descRes String resource ID for the item's description.
- * @property icon The icon vector to be displayed next to the title.
- * @property tab The corresponding [SettingsTab] for this menu item.
- * @property onClick Action to trigger when the menu item is clicked.
- */
-private data class SettingsMenuItemData(
-    val titleRes: Int,
-    val descRes: Int,
-    val icon: androidx.compose.ui.graphics.vector.ImageVector,
-    val tab: SettingsTab,
-    val onClick: () -> Unit
-)
-
-/**
- * The main settings screen entry point.
- * It forwards the navigation callbacks and parameters to [SettingsContent].
- */
-@Composable
-fun SettingsScreen(
-    onNavigateBack: () -> Unit,
-) {
-    SettingsContent(
-        onNavigateBack = onNavigateBack,
-    )
-}
-
-/**
- * Displays the actual settings content, switching dynamically between a single-column layout
- * for compact screens (phones) and a side-by-side split-pane layout for wider screens (tablets/foldables).
- */
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3AdaptiveApi::class)
-@Composable
-private fun SettingsContent(
+if start_idx != -1 and end_idx != -1:
+    new_settings_content = '''private fun SettingsContent(
+    onNavigateToSync: () -> Unit,
+    onNavigateToLabels: () -> Unit,
+    onNavigateToNotifications: () -> Unit,
+    onNavigateToCalendar: () -> Unit,
+    onNavigateToBackup: () -> Unit,
+    onNavigateToTheme: () -> Unit,
+    onNavigateToAbout: () -> Unit,
+    onNavigateToOtherEvents: () -> Unit,
     onNavigateBack: () -> Unit,
 ) {
     val windowAdaptiveInfo = LocalWindowAdaptiveInfo.current
@@ -132,8 +35,8 @@ private fun SettingsContent(
             .copy(horizontalPartitionSpacerSize = 0.dp)
     }
 
-    val listDetailStrategy = rememberListDetailSceneStrategy<NavKey>(directive = directive)
-    val backStack = rememberNavBackStack(SettingsNavKey.SettingsMenu)
+    val listDetailStrategy = rememberListDetailSceneStrategy<SettingsNavKey>(directive = directive)
+    val backStack = rememberNavBackStack<SettingsNavKey>(SettingsNavKey.SettingsMenu)
 
     val activeTab = (backStack.lastOrNull() as? SettingsNavKey.SettingsDetail)?.tab
 
@@ -342,128 +245,8 @@ private fun SettingsContent(
             }
         )
     }
-}
-
-@Composable
-private fun SettingsFooter() {
-    // Optional footer placeholder (e.g., for version info or copyright).
-}
-
-/**
- * A menu item row inside the settings menu.
- *
- * @param titleRes String resource for the label.
- * @param descRes String resource for the description.
- * @param icon The leading icon to display.
- * @param isSelected Whether this item is currently highlighted (used in tablet mode).
- * @param useTabletStyle If true, applies extra padding, background highlight, and rounded corners.
- * @param onClick Action to run on item tap.
- */
-@Composable
-private fun SettingsMenuItem(
-    titleRes: Int,
-    descRes: Int,
-    icon: androidx.compose.ui.graphics.vector.ImageVector,
-    isSelected: Boolean = false,
-    useTabletStyle: Boolean = false,
-    onClick: () -> Unit
-) {
-    // Set container color based on selection state and style context (tablet/mobile).
-    val containerColor = if (isSelected && useTabletStyle) {
-        MaterialTheme.colorScheme.secondaryContainer
-    } else {
-        Color.Transparent
-    }
-
-    val contentColor = if (isSelected && useTabletStyle) {
-        MaterialTheme.colorScheme.onSecondaryContainer
-    } else {
-        MaterialTheme.colorScheme.onSurface
-    }
-
-    val supportingColor = if (isSelected && useTabletStyle) {
-        MaterialTheme.colorScheme.onSecondaryContainer.copy(alpha = AlphaEmphasisMedium)
-    } else {
-        MaterialTheme.colorScheme.onSurfaceVariant
-    }
-
-    val iconColor = if (isSelected && useTabletStyle) {
-        MaterialTheme.colorScheme.onSecondaryContainer
-    } else {
-        MaterialTheme.colorScheme.onSurfaceVariant
-    }
-
-    // Tablet style items are padded and clipped inside the container for a modern card-like look.
-    val itemModifier = if (useTabletStyle) {
-        Modifier
-            .fillMaxWidth()
-            .padding(horizontal = SpacingMedium, vertical = SpacingTiny)
-            .clip(RoundedCornerShape(SpacingNormal))
-            .background(containerColor)
-            .clickable { onClick() }
-    } else {
-        Modifier
-            .fillMaxWidth()
-            .clickable { onClick() }
-    }
-
-    Box(modifier = itemModifier) {
-        ListItem(
-            headlineContent = {
-                Text(
-                    text = stringResource(titleRes),
-                    color = contentColor
-                )
-            },
-            supportingContent = {
-                Text(
-                    text = stringResource(descRes),
-                    color = supportingColor
-                )
-            },
-            leadingContent = {
-                Icon(
-                    imageVector = icon,
-                    contentDescription = null,
-                    tint = iconColor
-                )
-            },
-            colors = ListItemDefaults.colors(
-                containerColor = Color.Transparent
-            )
-        )
-    }
-}
-
-@Preview(showBackground = true)
-@Composable
-private fun SettingsPreview() {
-    BirthdayBuddyTheme {
-        CompositionLocalProvider(
-            LocalWindowSizeClass provides WindowSizeClass(360, 640)
-        ) {
-            SettingsContent(
-                onNavigateBack = {}
-            )
-        }
-    }
-}
-
-/**
- * Type-safe navigation keys for Jetpack Navigation 3, annotated with @Serializable.
- */
-@Serializable
-private sealed interface SettingsNavKey : NavKey {
-    /**
-     * Represents the settings menu pane list.
-     */
-    @Serializable
-    data object SettingsMenu : SettingsNavKey
-
-    /**
-     * Represents a specific detail screen shown on the right side of the split-pane.
-     */
-    @Serializable
-    data class SettingsDetail(val tab: SettingsTab) : SettingsNavKey
-}
-
+'''
+    content = content[:start_idx] + new_settings_content + content[end_idx:]
+    with open('app/src/main/java/com/heckmannch/birthdaybuddy/ui/screens/settings/SettingsScreen.kt', 'w', encoding='utf-8') as f:
+        f.write(content)
+    print("Done")

@@ -10,8 +10,8 @@ import coil3.SingletonImageLoader
 import coil3.disk.DiskCache
 import coil3.memory.MemoryCache
 import coil3.request.crossfade
-import okio.Path.Companion.toPath
 import dagger.hilt.android.HiltAndroidApp
+import okio.Path.Companion.toPath
 import javax.inject.Inject
 
 @HiltAndroidApp
