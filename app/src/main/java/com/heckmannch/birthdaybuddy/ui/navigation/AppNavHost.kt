@@ -45,6 +45,7 @@ import com.heckmannch.birthdaybuddy.ui.screens.settings.sync.SyncViewModel
 import com.heckmannch.birthdaybuddy.ui.screens.settings.theme.ThemeSettingsScreen
 import com.heckmannch.birthdaybuddy.ui.screens.settings.theme.ThemeViewModel
 import com.heckmannch.birthdaybuddy.util.IntentExtras
+import com.heckmannch.birthdaybuddy.util.safeGetAndRemoveBooleanExtra
 
 /**
  * Zentrale Navigations-Komponente der App.
@@ -66,11 +67,10 @@ fun AppNavHost(
 ) {
     // Navigations-Intents behandeln (z.B. Benachrichtigungseinstellungen direkt öffnen)
     LaunchedEffect(intent) {
-        if (intent?.getBooleanExtra(IntentExtras.NAVIGATE_TO_NOTIFICATIONS, false) == true) {
+        if (intent.safeGetAndRemoveBooleanExtra(IntentExtras.NAVIGATE_TO_NOTIFICATIONS)) {
             if (!backStack.contains(NotificationSettings)) {
                 backStack.add(NotificationSettings)
             }
-            intent.removeExtra(IntentExtras.NAVIGATE_TO_NOTIFICATIONS)
         }
     }
 
@@ -157,21 +157,18 @@ fun AppNavHost(
 
                     // Intent-Events für den Home-Screen verarbeiten (z.B. Widget / App Shortcuts)
                     LaunchedEffect(intent) {
-                        if (intent?.getBooleanExtra(IntentExtras.SCROLL_TO_TOP, false) == true) {
+                        if (intent.safeGetAndRemoveBooleanExtra(IntentExtras.SCROLL_TO_TOP)) {
                             homeViewModel.onIntent(HomeIntent.TriggerScrollToTop)
-                            intent.removeExtra(IntentExtras.SCROLL_TO_TOP)
                         }
-                        if (intent?.getBooleanExtra(IntentExtras.OPEN_SEARCH, false) == true) {
+                        if (intent.safeGetAndRemoveBooleanExtra(IntentExtras.OPEN_SEARCH)) {
                             if (backStack.lastOrNull() != Home) {
                                 backStack.clear()
                                 backStack.add(Home)
                             }
                             homeViewModel.onIntent(HomeIntent.TriggerSearchFocus)
-                            intent.removeExtra(IntentExtras.OPEN_SEARCH)
                         }
-                        if (intent?.getBooleanExtra(IntentExtras.OPEN_ADD_CONTACT, false) == true) {
+                        if (intent.safeGetAndRemoveBooleanExtra(IntentExtras.OPEN_ADD_CONTACT)) {
                             homeViewModel.onIntent(HomeIntent.SyncContacts())
-                            intent.removeExtra(IntentExtras.OPEN_ADD_CONTACT)
                         }
                     }
 

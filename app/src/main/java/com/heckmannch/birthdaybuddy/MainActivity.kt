@@ -26,6 +26,12 @@ import com.heckmannch.birthdaybuddy.ui.theme.BirthdayBuddyTheme
 import com.heckmannch.birthdaybuddy.widget.BirthdayWidgetWorker
 import dagger.hilt.android.AndroidEntryPoint
 
+/**
+ * Haupt-Activity von BirthdayBuddy.
+ *
+ * Reagiert auf eingehende Intents (z.B. App-Shortcuts, Widget-Klicks, Benachrichtigungen)
+ * und reicht diese an [AppNavHost] zur sicheren, typen-geprüften Verarbeitung weiter.
+ */
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
 
@@ -86,7 +92,8 @@ class MainActivity : ComponentActivity() {
 
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
-        // Update activity intent so LaunchedEffect in setContent can react to it
+        // Gemäß Android Intent Security Best Practices:
+        // setIntent(intent) muss aufgerufen werden, um die Intent-Referenz der Activity zu aktualisieren.
         setIntent(intent)
         activityIntent.value = intent
     }
