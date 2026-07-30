@@ -23,20 +23,37 @@ import com.heckmannch.birthdaybuddy.R
 import com.heckmannch.birthdaybuddy.ui.theme.ContactImageSizeSmall
 import com.heckmannch.birthdaybuddy.ui.theme.SelectedBorderWidth
 
+/**
+ * Computes a robust cache key for contact avatar images used in Coil memory and disk caches.
+ * Combining lookupKey (if available) with imageUri ensures stable cache keys across list renders and fast scrolling.
+ */
+fun getAvatarCacheKey(imageUri: String, lookupKey: String? = null): String {
+    return if (!lookupKey.isNullOrBlank()) "avatar_${lookupKey}_${imageUri}" else "avatar_${imageUri}"
+}
+
 @Composable
 fun ContactImage(
     imageUri: String?,
     fullName: String,
     initials: String,
     modifier: Modifier = Modifier,
+    lookupKey: String? = null,
     secondImageUri: String? = null,
     secondInitials: String? = null,
     secondFullName: String? = null,
+    secondLookupKey: String? = null,
     size: Dp = ContactImageSizeSmall,
 ) {
     val outerCorner = remember(size) { size * 0.3f }
     val nestedSize = remember(size) { size * 0.7f }
     val nestedCorner = remember(nestedSize) { nestedSize * 0.28f }
+
+    val firstCacheKey = remember(imageUri, lookupKey) {
+        imageUri?.let { getAvatarCacheKey(it, lookupKey) }
+    }
+    val secondCacheKey = remember(secondImageUri, secondLookupKey) {
+        secondImageUri?.let { getAvatarCacheKey(it, secondLookupKey) }
+    }
 
     if (secondInitials == null) {
         if (imageUri != null) {
@@ -44,7 +61,8 @@ fun ContactImage(
                 model = ImageRequest.Builder(LocalContext.current)
                     .data(imageUri)
                     .crossfade(true)
-                    .memoryCacheKey(imageUri)
+                    .memoryCacheKey(firstCacheKey)
+                    .diskCacheKey(firstCacheKey)
                     .build(),
                 contentDescription = stringResource(R.string.item_image_desc, fullName),
                 modifier = modifier
@@ -84,7 +102,8 @@ fun ContactImage(
                         model = ImageRequest.Builder(LocalContext.current)
                             .data(imageUri)
                             .crossfade(true)
-                            .memoryCacheKey(imageUri)
+                            .memoryCacheKey(firstCacheKey)
+                            .diskCacheKey(firstCacheKey)
                             .build(),
                         contentDescription = stringResource(R.string.item_image_desc, fullName),
                         modifier = Modifier.fillMaxSize(),
@@ -121,7 +140,8 @@ fun ContactImage(
                         model = ImageRequest.Builder(LocalContext.current)
                             .data(secondImageUri)
                             .crossfade(true)
-                            .memoryCacheKey(secondImageUri)
+                            .memoryCacheKey(secondCacheKey)
+                            .diskCacheKey(secondCacheKey)
                             .build(),
                         contentDescription = stringResource(
                             R.string.item_image_desc,
@@ -148,3 +168,4 @@ fun ContactImage(
         }
     }
 }
+

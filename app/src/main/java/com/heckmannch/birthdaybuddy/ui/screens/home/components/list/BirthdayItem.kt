@@ -196,6 +196,7 @@ fun BirthdayItem(
                             imageUri = contact.imageUri,
                             fullName = contact.fullName,
                             initials = contact.initials,
+                            lookupKey = contact.lookupKey,
                             secondImageUri = contact.secondImageUri,
                             secondInitials = contact.secondInitials,
                             secondFullName = contact.secondFullName

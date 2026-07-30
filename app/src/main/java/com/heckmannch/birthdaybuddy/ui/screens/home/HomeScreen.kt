@@ -21,6 +21,7 @@ import coil.imageLoader
 import coil.request.ImageRequest
 import com.heckmannch.birthdaybuddy.R
 import com.heckmannch.birthdaybuddy.ui.model.HomeUiState
+import com.heckmannch.birthdaybuddy.ui.screens.home.components.list.getAvatarCacheKey
 import com.heckmannch.birthdaybuddy.ui.util.ContactActions
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.SharedFlow
@@ -174,31 +175,37 @@ fun HomeScreen(
 
     // --- SECTION 3: Performance & Coil Image Prefetching ---
 
-    // Deduplicate state changes: Only recalculate the list of first 20 contact IDs if the list content changes.
-    val firstContactIds = remember(uiState.contacts) {
-        uiState.contacts?.take(20)?.map { it.id } ?: emptyList()
-    }
-
     /**
      * Image Prefetching Optimization:
-     * Preloads the profile picture avatars of the first 20 visible contacts in memory.
-     * By asynchronously requesting images through the Coil imageLoader before they are laid out in the
-     * viewport, we avoid frame drops and scrolling stutters. Specifying memoryCacheKey prevents
-     * redundant reads/decodes when the list recomposes.
+     * Preloads profile picture avatars of contacts in memory using Coil's imageLoader.enqueue.
+     * By asynchronously requesting images before they are laid out in the viewport, we avoid
+     * frame drops and scrolling stutters, especially during FastScrollbar operations.
+     * Specifying explicit memoryCacheKey and diskCacheKey matching ContactImage guarantees instant
+     * retrieval from memory without redundant reads/decodes or disk/provider queries.
      */
-    LaunchedEffect(firstContactIds) {
+    LaunchedEffect(uiState.contacts) {
         val contacts = uiState.contacts
         if (!contacts.isNullOrEmpty()) {
-            contacts.take(20)
-                .mapNotNull { it.imageUri }
-                .forEach { uri ->
+            contacts.forEach { contact ->
+                contact.imageUri?.let { uri ->
+                    val cacheKey = getAvatarCacheKey(uri, contact.lookupKey)
                     val request = ImageRequest.Builder(context)
                         .data(uri)
-                        .size(150) // Bounds-constrained bitmap scale size
-                        .memoryCacheKey(uri) // Identical cache key matches the list item renderer image load
+                        .memoryCacheKey(cacheKey)
+                        .diskCacheKey(cacheKey)
                         .build()
                     context.imageLoader.enqueue(request)
                 }
+                contact.secondImageUri?.let { secondUri ->
+                    val secondCacheKey = getAvatarCacheKey(secondUri, null)
+                    val request = ImageRequest.Builder(context)
+                        .data(secondUri)
+                        .memoryCacheKey(secondCacheKey)
+                        .diskCacheKey(secondCacheKey)
+                        .build()
+                    context.imageLoader.enqueue(request)
+                }
+            }
         }
     }
 

@@ -420,9 +420,11 @@ fun CoupleSuggestionBanner(
                 imageUri = suggestion.firstImageUri,
                 fullName = suggestion.firstName,
                 initials = suggestion.firstInitials,
+                lookupKey = suggestion.firstLookupKey,
                 secondImageUri = suggestion.secondImageUri,
                 secondInitials = suggestion.secondInitials,
-                secondFullName = suggestion.secondName
+                secondFullName = suggestion.secondName,
+                secondLookupKey = suggestion.secondLookupKey
             )
 
             Column(modifier = Modifier.weight(1f)) {
