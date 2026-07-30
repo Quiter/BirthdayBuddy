@@ -645,3 +645,8 @@
     - **`ContactImage.kt`:** Imports von `coil.compose.AsyncImage` und `coil.request.ImageRequest` auf `coil3.*` aktualisiert. Da `crossfade()` am `ImageRequest.Builder` in Coil 3 ebenfalls eine Extension-Funktion in `coil3.request` ist und der `ImageLoader` bereits global `crossfade(true)` konfiguriert, wurden die redundanten `.crossfade(true)`-Aufrufe in den einzelnen Requests entfernt.
     - **ProGuard:** Keine Anpassungen notwendig – Coil 3 liefert eigene Consumer-Rules mit.
     - **Verifikation:** `./gradlew compileDebugKotlin` und `./gradlew testDebugUnitTest` erfolgreich (alle 32 Tasks grün, keine Regressionen).
+
+304. **Glance AppWidget Dependency Upgrade auf Version 1.2.0-rc01 (Dependency & Widget Compatibility):**
+    - **Dependency Bump:** Aktualisierung der Glance-Bibliotheken `androidx.glance:glance-appwidget` und `androidx.glance:glance-material3` von Version `1.1.1` auf `1.2.0-rc01` in [gradle/libs.versions.toml](file:///c:/Users/chris/AndroidStudioProjects/BirthdayBuddy/gradle/libs.versions.toml).
+    - **API- & Deprecation-Audit:** Überprüfung aller Glance-Widget-Komponenten (`BirthdayWidget.kt`, `BirthdayWidgetReceiver.kt`, `BirthdayWidgetWorker.kt`, `BirthdayWidgetUpdater.kt`) auf Kompatibilität mit der Glance 1.2.x API. Bestätigt, dass `provideGlance(...)`, `GlanceAppWidgetReceiver` und translucent Material 3-Karten (`0xCCFFFFFF` / `0xCC1E1E1E`) einwandfrei ohne Deprecation-Warnungen funktionieren.
+    - **Validierung:** Erfolgreiche Kompilierung via `./gradlew :app:assembleDebug`, Durchlauf aller JVM-Unit-Tests via `./gradlew test` und Ausführung von `./gradlew :app:lintDebug` ohne Fehler.
