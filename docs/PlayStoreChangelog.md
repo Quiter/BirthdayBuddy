@@ -10,24 +10,25 @@
 
 ---
 
-## 📝 Aktuelle Vorlage (v2.11.9)
+## 📝 Aktuelle Vorlage (v2.12.0)
 
 <!--suppress HtmlUnknownTag, HtmlUnknownTag -->
 <en-US>
-- Upgraded theme engine to Google HCT for better contrast
-- Added master switch to easily enable/disable label management
-- WhatsApp-style scrolling for label filter bar on phones
-- Rounded card containers for settings (Material 3 ExtraLarge)
-- Fluid horizontal transitions and support for system back gestures
-- Fixed label filtering issue on tablet layouts
+- Granular label controls: Customize notifications & widget visibility per label
+- New vertical label sidebar for tablets & large screens
+- Smooth search bar placeholder animations & tablet menu integration
+- Ultra-smooth scrolling with optimized contact avatar caching
+- Improved notification & calendar titles for couples
+- Background stability, security, and performance enhancements
 </en-US>
 <!--suppress HtmlUnknownTag, HtmlUnknownTag -->
 <de-DE>
-- Farb-Engine auf Google HCT für optimalen Kontrast aktualisiert
-- Neuer Master-Schalter zum Deaktivieren des Label-Managements
-- Filterleiste scrollt jetzt flüssig mit der Geburtstagsliste
-- Einstellungen im abgerundeten Material 3 Kartendesign
-- Weiche Übergangsanimationen und Android-Zurückgesten-Fix
-- Filterfunktion für Label-Chips im Tablet-Layout korrigiert
+- Granulare Steuerung: Benachrichtigungen & Widget-Sichtbarkeit pro Label anpassbar
+- Neue Label-Seitenleiste für Tablets & große Bildschirme
+- Flüssigere Suchleisten-Animationen & optimierte Navigation
+- Noch schnelleres Scrollen durch verbessertes Avatar-Caching
+- Korrigierte Benachrichtigungs- & Kalendertitel für Paare
+- Stabilitäts- & Sicherheitsverbesserungen im Hintergrund
 </de-DE>
+
 
