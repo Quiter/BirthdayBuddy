@@ -17,28 +17,4 @@ data object Onboarding : NavKey
 data object Settings : NavKey
 
 @Serializable
-data object LabelSettings : NavKey
-
-@Serializable
 data object NotificationSettings : NavKey
-
-@Serializable
-data object OtherEventsSettings : NavKey
-
-@Serializable
-data object CalendarSettings : NavKey
-
-@Serializable
-data object BackupSettings : NavKey
-
-@Serializable
-data object ThemeSettings : NavKey
-
-@Serializable
-data object SyncSettings : NavKey
-
-@Serializable
-data object About : NavKey
-
-@Serializable
-data object PrivacyPolicy : NavKey

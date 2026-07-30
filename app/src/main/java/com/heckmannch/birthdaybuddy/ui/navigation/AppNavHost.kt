@@ -29,21 +29,6 @@ import com.heckmannch.birthdaybuddy.ui.screens.home.HomeViewModel
 import com.heckmannch.birthdaybuddy.ui.screens.onboarding.OnboardingScreen
 import com.heckmannch.birthdaybuddy.ui.screens.onboarding.OnboardingViewModel
 import com.heckmannch.birthdaybuddy.ui.screens.settings.SettingsScreen
-import com.heckmannch.birthdaybuddy.ui.screens.settings.about.AboutScreen
-import com.heckmannch.birthdaybuddy.ui.screens.settings.about.PrivacyPolicyScreen
-import com.heckmannch.birthdaybuddy.ui.screens.settings.backup.BackupScreen
-import com.heckmannch.birthdaybuddy.ui.screens.settings.backup.BackupViewModel
-import com.heckmannch.birthdaybuddy.ui.screens.settings.calendar.CalendarSettingsScreen
-import com.heckmannch.birthdaybuddy.ui.screens.settings.calendar.CalendarViewModel
-import com.heckmannch.birthdaybuddy.ui.screens.settings.labels.LabelSettingsScreen
-import com.heckmannch.birthdaybuddy.ui.screens.settings.labels.LabelViewModel
-import com.heckmannch.birthdaybuddy.ui.screens.settings.notifications.NotificationSettingsScreen
-import com.heckmannch.birthdaybuddy.ui.screens.settings.notifications.NotificationViewModel
-import com.heckmannch.birthdaybuddy.ui.screens.settings.otherevents.OtherEventsSettingsScreen
-import com.heckmannch.birthdaybuddy.ui.screens.settings.sync.SyncSettingsScreen
-import com.heckmannch.birthdaybuddy.ui.screens.settings.sync.SyncViewModel
-import com.heckmannch.birthdaybuddy.ui.screens.settings.theme.ThemeSettingsScreen
-import com.heckmannch.birthdaybuddy.ui.screens.settings.theme.ThemeViewModel
 import com.heckmannch.birthdaybuddy.util.IntentExtras
 import com.heckmannch.birthdaybuddy.util.safeGetAndRemoveBooleanExtra
 
@@ -183,96 +168,7 @@ fun AppNavHost(
                 }
 
                 is Settings -> NavEntry(key) {
-                    SettingsScreen(
-                        onNavigateToLabels = { backStack.add(LabelSettings) },
-                        onNavigateToNotifications = { backStack.add(NotificationSettings) },
-                        onNavigateToCalendar = { backStack.add(CalendarSettings) },
-                        onNavigateToBackup = { backStack.add(BackupSettings) },
-                        onNavigateToTheme = { backStack.add(ThemeSettings) },
-                        onNavigateToSync = { backStack.add(SyncSettings) },
-                        onNavigateToAbout = { backStack.add(About) },
-                        onNavigateToOtherEvents = { backStack.add(OtherEventsSettings) },
-                    ) {
-                        if (backStack.size > 1) backStack.removeAt(backStack.lastIndex)
-                    }
-                }
-
-                is LabelSettings -> NavEntry(key) {
-                    val labelViewModel: LabelViewModel = hiltViewModel()
-                    LabelSettingsScreen(
-                        viewModel = labelViewModel
-                    ) {
-                        if (backStack.size > 1) backStack.removeAt(backStack.lastIndex)
-                    }
-                }
-
-                is NotificationSettings -> NavEntry(key) {
-                    val notificationViewModel: NotificationViewModel = hiltViewModel()
-                    NotificationSettingsScreen(
-                        viewModel = notificationViewModel
-                    ) {
-                        if (backStack.size > 1) backStack.removeAt(backStack.lastIndex)
-                    }
-                }
-
-                is OtherEventsSettings -> NavEntry(key) {
-                    val notificationViewModel: NotificationViewModel = hiltViewModel()
-                    OtherEventsSettingsScreen(
-                        viewModel = notificationViewModel
-                    ) {
-                        if (backStack.size > 1) backStack.removeAt(backStack.lastIndex)
-                    }
-                }
-
-                is CalendarSettings -> NavEntry(key) {
-                    val calendarViewModel: CalendarViewModel = hiltViewModel()
-                    CalendarSettingsScreen(
-                        viewModel = calendarViewModel
-                    ) {
-                        if (backStack.size > 1) backStack.removeAt(backStack.lastIndex)
-                    }
-                }
-
-                is BackupSettings -> NavEntry(key) {
-                    val backupViewModel: BackupViewModel = hiltViewModel()
-                    BackupScreen(
-                        viewModel = backupViewModel
-                    ) {
-                        if (backStack.size > 1) backStack.removeAt(backStack.lastIndex)
-                    }
-                }
-
-                is ThemeSettings -> NavEntry(key) {
-                    val themeViewModel: ThemeViewModel = hiltViewModel()
-                    ThemeSettingsScreen(
-                        viewModel = themeViewModel
-                    ) {
-                        if (backStack.size > 1) backStack.removeAt(backStack.lastIndex)
-                    }
-                }
-
-                is SyncSettings -> NavEntry(key) {
-                    val syncViewModel: SyncViewModel = hiltViewModel()
-                    SyncSettingsScreen(
-                        viewModel = syncViewModel
-                    ) {
-                        if (backStack.size > 1) backStack.removeAt(backStack.lastIndex)
-                    }
-                }
-
-                is About -> NavEntry(key) {
-                    AboutScreen(
-                        onNavigateBack = {
-                            if (backStack.size > 1) backStack.removeAt(backStack.lastIndex)
-                        },
-                        onNavigateToPrivacyPolicy = {
-                            backStack.add(PrivacyPolicy)
-                        },
-                    )
-                }
-
-                is PrivacyPolicy -> NavEntry(key) {
-                    PrivacyPolicyScreen {
+                    SettingsScreen {
                         if (backStack.size > 1) backStack.removeAt(backStack.lastIndex)
                     }
                 }
