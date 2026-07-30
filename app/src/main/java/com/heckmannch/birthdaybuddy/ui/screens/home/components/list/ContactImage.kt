@@ -17,8 +17,8 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.Dp
-import coil.compose.AsyncImage
-import coil.request.ImageRequest
+import coil3.compose.AsyncImage
+import coil3.request.ImageRequest
 import com.heckmannch.birthdaybuddy.R
 import com.heckmannch.birthdaybuddy.ui.theme.ContactImageSizeSmall
 import com.heckmannch.birthdaybuddy.ui.theme.SelectedBorderWidth
@@ -60,7 +60,6 @@ fun ContactImage(
             AsyncImage(
                 model = ImageRequest.Builder(LocalContext.current)
                     .data(imageUri)
-                    .crossfade(true)
                     .memoryCacheKey(firstCacheKey)
                     .diskCacheKey(firstCacheKey)
                     .build(),
@@ -101,7 +100,6 @@ fun ContactImage(
                     AsyncImage(
                         model = ImageRequest.Builder(LocalContext.current)
                             .data(imageUri)
-                            .crossfade(true)
                             .memoryCacheKey(firstCacheKey)
                             .diskCacheKey(firstCacheKey)
                             .build(),
@@ -139,7 +137,6 @@ fun ContactImage(
                     AsyncImage(
                         model = ImageRequest.Builder(LocalContext.current)
                             .data(secondImageUri)
-                            .crossfade(true)
                             .memoryCacheKey(secondCacheKey)
                             .diskCacheKey(secondCacheKey)
                             .build(),

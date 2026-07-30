@@ -637,4 +637,11 @@
     - **Dynamische Typografie & Text-Fluss:** Sanfter Übergang der Namensschriftart von `titleMedium` auf `titleLarge` sowie Einordnung der Filter-Labels direkt unter das Geburtsdatum im ausgeklappten Zustand für optimale Lesbarkeit.
     - **Container- & Inhalt-Transitionen:** Weiche Kartenfarb-Animation (`animateColorAsState`) und sanfte Ein- und Ausblendung (`AnimatedVisibility` mit `fadeIn` + `expandVertically`) für Aktionsleiste und Geschenkideen.
 
-
+303. **Migration von Coil 2.x auf Coil 3.x (Dependency-Upgrade & Kotlin Multiplatform):**
+    - **Versionsbump:** `io.coil-kt:coil-compose:2.7.0` → `io.coil-kt.coil3:coil-compose:3.5.0` (Coil 3 nutzt die neue Group-ID `io.coil-kt.coil3` für Kotlin-Multiplatform-Kompatibilität).
+    - **Neue Abhängigkeit:** `io.coil-kt.coil3:coil-network-okhttp:3.5.0` hinzugefügt, da Coil 3 keinen integrierten HTTP-Client mehr enthält. OkHttp war bereits als transitive Abhängigkeit vorhanden.
+    - **`BirthdayBuddyApplication.kt`:** Migration von `ImageLoaderFactory` auf `SingletonImageLoader.Factory` (Coil-3-Pendant). Signatur von `newImageLoader()` auf `newImageLoader(context: PlatformContext)` aktualisiert. `MemoryCache.Builder` nimmt in Coil 3 keinen Kontext-Parameter mehr im Konstruktor entgegen – Kontext wird stattdessen an `.maxSizePercent(context, 0.25)` übergeben. `DiskCache.Builder.directory()` erwartet nun `okio.Path` statt `java.io.File` – Konvertierung via `.absolutePath.toPath()` (Import `okio.Path.Companion.toPath`). Die entfernte Methode `respectCacheHeaders()` wurde gestrichen. `crossfade(true)` am `ImageLoader.Builder` ist in Coil 3 eine Extension-Funktion in `coil3.request` – expliziter Import `import coil3.request.crossfade` ergänzt.
+    - **`HomeScreen.kt`:** Imports von `coil.*` auf `coil3.*` aktualisiert (`coil3.imageLoader`, `coil3.request.ImageRequest`). Prefetch-Logik via `context.imageLoader.enqueue(request)` funktioniert identisch.
+    - **`ContactImage.kt`:** Imports von `coil.compose.AsyncImage` und `coil.request.ImageRequest` auf `coil3.*` aktualisiert. Da `crossfade()` am `ImageRequest.Builder` in Coil 3 ebenfalls eine Extension-Funktion in `coil3.request` ist und der `ImageLoader` bereits global `crossfade(true)` konfiguriert, wurden die redundanten `.crossfade(true)`-Aufrufe in den einzelnen Requests entfernt.
+    - **ProGuard:** Keine Anpassungen notwendig – Coil 3 liefert eigene Consumer-Rules mit.
+    - **Verifikation:** `./gradlew compileDebugKotlin` und `./gradlew testDebugUnitTest` erfolgreich (alle 32 Tasks grün, keine Regressionen).

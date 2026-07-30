@@ -5,15 +5,17 @@ import android.content.pm.ApplicationInfo
 import android.util.Log
 import androidx.hilt.work.HiltWorkerFactory
 import androidx.work.Configuration
-import coil.ImageLoader
-import coil.ImageLoaderFactory
-import coil.disk.DiskCache
-import coil.memory.MemoryCache
+import coil3.ImageLoader
+import coil3.SingletonImageLoader
+import coil3.disk.DiskCache
+import coil3.memory.MemoryCache
+import coil3.request.crossfade
+import okio.Path.Companion.toPath
 import dagger.hilt.android.HiltAndroidApp
 import javax.inject.Inject
 
 @HiltAndroidApp
-class BirthdayBuddyApplication : Application(), Configuration.Provider, ImageLoaderFactory {
+class BirthdayBuddyApplication : Application(), Configuration.Provider, SingletonImageLoader.Factory {
 
     @Inject
     lateinit var workerFactory: HiltWorkerFactory
@@ -24,20 +26,19 @@ class BirthdayBuddyApplication : Application(), Configuration.Provider, ImageLoa
             .setMinimumLoggingLevel(if (isDebuggable()) Log.DEBUG else Log.ERROR)
             .build()
 
-    override fun newImageLoader(): ImageLoader {
-        return ImageLoader.Builder(this)
+    override fun newImageLoader(context: coil3.PlatformContext): ImageLoader {
+        return ImageLoader.Builder(context)
             .memoryCache {
-                MemoryCache.Builder(this)
-                    .maxSizePercent(0.25)
+                MemoryCache.Builder()
+                    .maxSizePercent(context, 0.25)
                     .build()
             }
             .diskCache {
                 DiskCache.Builder()
-                    .directory(cacheDir.resolve("image_cache"))
+                    .directory(cacheDir.resolve("image_cache").absolutePath.toPath())
                     .maxSizePercent(0.02)
                     .build()
             }
-            .respectCacheHeaders(false)
             .crossfade(true)
             .build()
     }
