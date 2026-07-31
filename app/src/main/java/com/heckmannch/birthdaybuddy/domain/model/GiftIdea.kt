@@ -1,10 +1,12 @@
 package com.heckmannch.birthdaybuddy.domain.model
 
+import androidx.compose.runtime.Immutable
 import java.util.UUID
 
 /**
  * Modell für eine Geschenkidee.
  */
+@Immutable
 data class GiftIdea(
     val id: String = UUID.randomUUID().toString(),
     val text: String,
