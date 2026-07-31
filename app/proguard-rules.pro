@@ -3,43 +3,19 @@
 # proguardFiles setting in build.gradle.
 
 # --- Crash Reporting & Stacktraces ---
-# Zeilennummern in Crash-Stacktraces beibehalten (Play Console / Crashlytics).
+# Preserve line numbers and source file attributes for crash stacktraces (Play Console / Crashlytics).
 -keepattributes SourceFile,LineNumberTable
-# Originaldateinamen durch generischen Platzhalter ersetzen (Größenersparnis).
 -renamesourcefileattribute SourceFile
 
 # --- Room Database ---
-# Room Entities und DAOs schützen, damit das Mapping zur Laufzeit funktioniert.
-# Room TypeConverters – not covered by Room's consumer rules
--keep class com.heckmannch.birthdaybuddy.data.local.**Converter* { *; }
--keep @androidx.room.Entity class *
--keep class * { @androidx.room.Dao *; }
+# Room Entities and DAOs are covered by Room's bundled consumer rules.
+# TypeConverters are preserved to safeguard custom type conversions.
+-keep class com.heckmannch.birthdaybuddy.data.local.converter.** { *; }
 
-# --- Hilt & WorkManager ---
-# Hilt benötigt Zugriff auf generierte Klassen und Worker-Fabriken.
--keep class androidx.hilt.work.** { *; }
--keep class * extends androidx.work.ListenableWorker {
-    public <init>(android.content.Context, androidx.work.WorkerParameters);
-}
-
-# --- kotlinx.serialization (Jetpack Navigation 2.8+) ---
-# Notwendig für die typsichere Navigation. Verhindert das Wegschneiden der Serializer.
+# --- Jetpack Navigation 3 & kotlinx.serialization ---
+# Preserve annotations and type signatures required for kotlinx.serialization.
 -keepattributes *Annotation*, EnclosingMethod, Signature
--keep class * extends kotlinx.serialization.KSerializer { *; }
--keepclassmembers class * {
-    @kotlinx.serialization.Serializable *;
-    <fields>;
-}
--keepclassmembers class * {
-    public static ** Companion;
-}
--keep class **$$serializer { *; }
 
-# Automatischer Schutz für alle serialisierbaren Klassen und Navigations-Routen
+# Protect all @Serializable classes (Navigation 3 NavKeys and data models) from stripping fields or constructors.
 -keep @kotlinx.serialization.Serializable class * { *; }
 
-# --- Kotlin Coroutines ---
-# Verhindert Probleme bei der Initialisierung des Main-Dispatchers im Release-Build.
--keepnames class kotlinx.coroutines.internal.MainDispatcherLoader {}
--keepnames class kotlinx.coroutines.CoroutineExceptionHandler {}
--keepnames class kotlinx.coroutines.android.HandlerContext {}
