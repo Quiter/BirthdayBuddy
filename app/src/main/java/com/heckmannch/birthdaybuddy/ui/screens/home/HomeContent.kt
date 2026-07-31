@@ -58,6 +58,7 @@ import com.heckmannch.birthdaybuddy.ui.components.LocalWindowAdaptiveInfo
 import com.heckmannch.birthdaybuddy.ui.components.LocalWindowSizeClass
 import com.heckmannch.birthdaybuddy.ui.components.isHeightCompact
 import com.heckmannch.birthdaybuddy.ui.components.isWidthCompact
+import com.heckmannch.birthdaybuddy.ui.components.isWidthExpanded
 import com.heckmannch.birthdaybuddy.ui.model.ContactUiModel
 import com.heckmannch.birthdaybuddy.ui.model.HomeUiState
 import com.heckmannch.birthdaybuddy.ui.model.SampleData
@@ -83,7 +84,7 @@ fun HomeContent(
     actions: HomeActions,
 ) {
     val windowSizeClass = LocalWindowSizeClass.current
-    var isSidebarExpanded by rememberSaveable { mutableStateOf(true) }
+    var isSidebarExpanded by rememberSaveable(windowSizeClass.isWidthExpanded) { mutableStateOf(windowSizeClass.isWidthExpanded) }
     val showSidebar = !windowSizeClass.isWidthCompact && !windowSizeClass.isHeightCompact
     val showFilterBarInTopBar = !uiState.contacts.isNullOrEmpty() &&
             !windowSizeClass.isWidthCompact &&
