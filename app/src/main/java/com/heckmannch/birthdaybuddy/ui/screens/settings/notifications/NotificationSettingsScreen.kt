@@ -43,6 +43,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import androidx.annotation.VisibleForTesting
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LifecycleEventEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -196,8 +197,9 @@ fun rememberNotificationSettingsState(): NotificationSettingsState {
     return remember { NotificationSettingsState() }
 }
 
+@VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
 @Composable
-private fun NotificationSettingsContent(
+internal fun NotificationSettingsContent(
     notificationsEnabled: Boolean,
     persistentNotifications: Boolean,
     rules: List<NotificationRule>,

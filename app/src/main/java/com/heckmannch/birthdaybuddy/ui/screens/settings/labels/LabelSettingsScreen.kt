@@ -49,6 +49,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.annotation.VisibleForTesting
 import com.heckmannch.birthdaybuddy.R
 import com.heckmannch.birthdaybuddy.ui.components.AppSwitch
 import com.heckmannch.birthdaybuddy.ui.components.InfoCard
@@ -95,8 +96,9 @@ fun LabelSettingsScreen(
     }
 }
 
+@VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
 @Composable
-private fun LabelSettingsScreenContent(
+internal fun LabelSettingsScreenContent(
     labels: List<LabelManagementModel>,
     labelsEnabled: Boolean,
     showBackButton: Boolean = true,

@@ -248,3 +248,51 @@ Diese Tests erfordern ein Android-Gerät oder einen Emulator (z. B. für Room-Da
 - `data/repository/CalendarSyncRepositoryTest.kt`: Integrationstests für die Kalender-Synchronisation im CalendarSyncRepository.
 - `ui/components/BirthdayItemInteractionTest.kt`: Compose UI-Tests für die Interaktionen mit Kontakt-Karten.
 - `ui/screens/settings/notifications/components/NotificationHelperTest.kt`: Tests zum Erzeugen und Validieren von System-Notifications.
+
+### 📸 Screenshot-Tests (`app/src/test/java/.../screenshot/`)
+JVM-basierte Compose Screenshot-Tests mit **Roborazzi 1.68.0** und Robolectric. Laufen ohne Emulator.
+
+#### Verzeichnisstruktur
+```
+screenshot/
+├── BaseScreenshotTest.kt              # Abstrakte Basisklasse (ComposeRule, RoborazziRule, Helfer)
+├── home/
+│   ├── HomeContentScreenshotTest.kt   # HomeContent (Phone/Tablet, Light/Dark, leer, loading)
+│   ├── BirthdayListScreenshotTest.kt  # BirthdayList (mit/ohne Kontakte, Shimmer, Labels)
+│   └── BirthdayItemScreenshotTest.kt  # BirthdayItem (REGULAR, GOLD, SILVER, CHILD, expanded)
+└── settings/
+    ├── LabelSettingsScreenshotTest.kt         # LabelSettingsScreenContent (an/aus, leer, Tablet)
+    └── NotificationSettingsScreenshotTest.kt  # NotificationSettingsContent (Regeln, kein Permission)
+```
+
+#### Golden-Images
+- Pfad: `app/src/test/snapshots/images/` (von Git versioniert)
+- Namenskonvention: `{TestClass}_{methodName}.png` (automatisch von Roborazzi generiert)
+
+#### Größen-Matrix
+| Bezeichnung  | Breite | Höhe   | Klasse              |
+|--------------|--------|--------|---------------------|
+| `phoneSize`  | 360 dp | 640 dp | Compact width       |
+| `phoneTallSize` | 360 dp | 1000 dp | Compact, tall    |
+| `tabletSize` | 840 dp | 640 dp | Expanded width      |
+
+#### CI-Befehle
+```bash
+# Golden-Images initial aufzeichnen (einmalig oder nach bewussten UI-Änderungen)
+./gradlew recordRoborazziDebug
+
+# Screenshots gegen Golden-Images validieren (in CI)
+./gradlew verifyRoborazziDebug
+
+# Diff-Bericht bei Abweichungen generieren
+./gradlew compareRoborazziDebug
+
+# Alle Unit-Tests inkl. Screenshot-Tests ausführen
+./gradlew testDebugUnitTest
+```
+
+#### Workflow für UI-Änderungen
+1. UI-Änderung implementieren
+2. `./gradlew verifyRoborazziDebug` ausführen → Diff-Bilder prüfen
+3. Wenn Änderung beabsichtigt: `./gradlew recordRoborazziDebug` → Golden-Images aktualisieren
+4. Neue Golden-Images committen

@@ -663,3 +663,11 @@
     - **Baseline-Profile-Modul & Rules:** Audit von [baselineprofile/build.gradle.kts](file:///c:/Users/chris/AndroidStudioProjects/BirthdayBuddy/baselineprofile/build.gradle.kts) und [BaselineProfileGenerator.kt](file:///c:/Users/chris/AndroidStudioProjects/BirthdayBuddy/baselineprofile/src/main/java/com/heckmannch/birthdaybuddy/baselineprofile/BaselineProfileGenerator.kt) – `BaselineProfileRule` ist korrekt konfiguriert.
     - **Build-Validierung:** Erfolgreicher Build von `./gradlew :app:assembleRelease` in 2m 24s. Die Merge- und Kompilierungs-Tasks für Baseline Profiles (`:app:mergeReleaseStartupProfile`, `:app:mergeReleaseArtProfile`, `:app:compileReleaseArtProfile`) wurden fehlerfrei ausgeführt.
 
+306. **Roborazzi Screenshot-Tests eingeführt (Testing Infrastructure):**
+    - **Framework:** Einführung von **Roborazzi 1.68.0** + Robolectric 4.14.1 für JVM-basierte Compose Screenshot-Tests ohne Emulator.
+    - **Build-Konfiguration:** Roborazzi-Plugin in Root- und App-`build.gradle.kts`. `unitTests.isIncludeAndroidResources = true` für Robolectric+Compose. `kspTest` für Hilt-Compiler.
+    - **5 neue Testdateien (~35 Screenshot-Varianten):** `BaseScreenshotTest`, `HomeContentScreenshotTest` (9), `BirthdayListScreenshotTest` (7), `BirthdayItemScreenshotTest` (10), `LabelSettingsScreenshotTest` (6), `NotificationSettingsScreenshotTest` (7).
+    - **Sichtbarkeitsänderungen:** `LabelSettingsScreenContent` und `NotificationSettingsContent` auf `internal` + `@VisibleForTesting` geändert.
+    - **Robolectric-Konfiguration:** `robolectric.properties` mit SDK 35 + `HiltTestApplication`.
+    - **Golden-Images:** Unter `app/src/test/snapshots/images/`. Aufzeichnung: `./gradlew recordRoborazziDebug`. CI-Validierung: `./gradlew verifyRoborazziDebug`.
+    - **Dokumentation:** `PROJECT_STRUCTURE.md` mit Screenshot-Test-Abschnitt (Struktur, Matrix, CI-Befehle) erweitert.
