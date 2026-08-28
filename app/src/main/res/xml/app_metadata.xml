@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    App-level metadata consumed by the Android system and on-device AI agents.
+    This file acts as a global operational guide describing how BirthdayBuddy's
+    AppFunctions relate to each other and what constraints apply.
+-->
+<AppFunctionAppMetadata
+    xmlns:appfn="http://schemas.android.com/apk/androidx.appfunctions"
+    appfn:description="BirthdayBuddy manages birthday, anniversary, and name-day reminders for
+    Android contacts. It provides functions to query upcoming events and initiate
+    birthday messages or birthday edits.
+
+    Operational Patterns:
+    - Always obtain a contactId by calling getUpcomingBirthdays or getContactBirthday before
+      passing it to sendBirthdayMessage or addBirthdayToContact.
+    - Use getUpcomingBirthdays to surface who has a birthday soon; use getContactBirthday to
+      look up details for a named individual.
+    - sendBirthdayMessage returns a PendingIntent — the user must tap to open the messaging app.
+    - addBirthdayToContact returns a PendingIntent that opens the in-app edit screen for user
+      confirmation; it does not write data directly.
+
+    Constraints:
+    - withinDays in getUpcomingBirthdays is clamped to 1–365.
+    - contactName matching is case-insensitive substring; the first alphabetical match is returned.
+    - Supported values for the app parameter in sendBirthdayMessage are: whatsapp, signal,
+      telegram, sms.
+    - month must be 1–12 and day must be 1–31 in addBirthdayToContact."
+    appfn:displayDescription="@string/app_description_for_agents" />

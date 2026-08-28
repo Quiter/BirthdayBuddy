@@ -19,3 +19,10 @@
 # Protect all @Serializable classes (Navigation 3 NavKeys and data models) from stripping fields or constructors.
 -keep @kotlinx.serialization.Serializable class * { *; }
 
+# --- AppFunctions ---
+# Preserve @AppFunctionSerializable data classes so KSP-generated XML schema and runtime
+# reflection can resolve all fields correctly in release builds.
+-keep @androidx.appfunctions.AppFunctionSerializable class * { *; }
+
+# Keep the KSP-generated AppFunctionService subclass referenced by name in AndroidManifest.xml.
+-keep class com.heckmannch.birthdaybuddy.domain.appfunctions.BirthdayBuddyGeneratedAppFunctionService { *; }

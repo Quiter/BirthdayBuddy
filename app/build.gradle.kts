@@ -111,6 +111,10 @@ dependencies {
     implementation(libs.androidx.hilt.work)
     ksp(libs.androidx.hilt.compiler)
 
+    // AppFunctions (Android AI agent integration, API 36+)
+    implementation(libs.androidx.appfunctions)
+    ksp(libs.androidx.appfunctions.compiler)
+
     ksp(libs.androidx.room.compiler)
 
     testImplementation(libs.junit)
@@ -147,6 +151,7 @@ configurations {
 
 ksp {
     arg("room.schemaLocation", "$projectDir/schemas")
+    arg("appfunctions:aggregateAppFunctions", "true")
 }
 
 kotlin {

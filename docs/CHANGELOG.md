@@ -893,3 +893,16 @@
     - **Massive APK-Größenreduktion:** Reduzierung der Release-APK-Größe (`app-release-unsigned.apk`) von **20.30 MB (21.286.292 Bytes)** auf **5.98 MB (6.272.423 Bytes)** – eine Einsparung von ca. **14.3 MB (70.5% Größenreduktion)**.
     - **Missing-Rule- & Warnings-Detection:** Bestätigt, dass `minifyReleaseWithR8` fehlerfrei und ohne `Missing class`-Warnungen durchläuft. Alle JVM-Unit-Tests (`testDebugUnitTest`) laufen zu 100% grün durch.
 
+310. **AppFunctions Integration – Android AI Agent Interface (Feature & Architecture):**
+    - **Ziel:** Exposition von vier atomaren BirthdayBuddy-Workflows als Android AppFunctions (API 36+), sodass Google Assistant, Gemini und andere On-Device-KI-Agenten Geburtstagsdaten abrufen und Aktionen auslösen können, ohne die App-UI zu öffnen.
+    - **API-Version:** Verwendet die neueste `androidx.appfunctions:1.0.0-alpha10`-Architektur (`@AppFunctionServiceEntryPoint` + `@AndroidEntryPoint`), die das veraltete `appfunctions-service`-Artifact und `AppFunctionConfiguration.Provider` vollständig ersetzt. KSP generiert zur Compile-Zeit die konkrete Service-Unterklasse (`BirthdayBuddyGeneratedAppFunctionService`) und das Assets-XML.
+    - **Neue Abhängigkeiten:** `androidx.appfunctions:appfunctions:1.0.0-alpha10` (implementation) und `androidx.appfunctions:appfunctions-compiler:1.0.0-alpha10` (ksp) in `libs.versions.toml` + `app/build.gradle.kts`. KSP-Argument `appfunctions:aggregateAppFunctions=true` aktiviert.
+    - **`BirthdayAppFunctionService.kt`** (`domain/appfunctions/`): Abstrakte `AppFunctionService`-Unterklasse mit `@AndroidEntryPoint` für Hilt-Injection (`ContactRepository`, `IoDispatcher`). Vier `@AppFunction`-Methoden: `getUpcomingBirthdays`, `getContactBirthday`, `sendBirthdayMessage`, `addBirthdayToContact`.
+    - **`@AppFunctionSerializable`-Modelle** (`domain/appfunctions/model/`): `UpcomingBirthday.kt` + `ContactBirthday.kt` mit vollständiger Inline-KDoc (KSP-Pflicht).
+    - **`res/xml/app_metadata.xml`**: `AppFunctionAppMetadata` mit Operational-Patterns und Constraints für KI-Agenten.
+    - **`AndroidManifest.xml`**: App-Metadata-Property und Service-Deklaration mit `BIND_APP_FUNCTION_SERVICE`-Permission (System-Only).
+    - **`proguard-rules.pro`**: Keep-Rules für `@AppFunctionSerializable`-Klassen und KSP-generierte Unterklasse.
+    - **Strings (i18n):** `app_description_for_agents` in `values/strings.xml` (EN) und `values-de/strings.xml` (DE).
+    - **Unit-Tests** (`domain/appfunctions/BirthdayAppFunctionServiceTest.kt`): 12 JVM-Tests mit MockK & Truth.
+    - **Dokumentation:** `PROJECT_STRUCTURE.md` und `CHANGELOG.md` aktualisiert.
+

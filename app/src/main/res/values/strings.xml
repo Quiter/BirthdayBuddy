@@ -21,6 +21,7 @@
     <!-- Birthday Item -->
 
     <string name="item_image_desc">Contact picture of %1$s</string>
+    <string name="contact_favorite_desc">Favorite</string>
     <string name="item_action_gifts">Gift ideas</string>
     <string name="item_action_contact">Contact</string>
     <string name="item_today">Today!</string>
@@ -422,4 +423,7 @@
 
     <string name="navigate_back">Navigate back</string>
     <string name="settings_privacy_title">Privacy Policy</string>
+
+    <!-- AppFunctions: user-visible app description shown by AI assistants -->
+    <string name="app_description_for_agents">BirthdayBuddy helps you remember birthdays and special occasions for your contacts.</string>
 </resources>

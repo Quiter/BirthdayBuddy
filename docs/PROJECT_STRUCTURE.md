@@ -72,6 +72,19 @@
     - `SyncCalendarUseCase.kt`: Synchronisiert Geburtstage, Hochzeitstage und Namenstage in den Systemkalender, sofern aktiviert.
     - `SetCalendarSyncEnabledUseCase.kt`: Konfiguriert die Kalendersynchronisation und führt Initialisierungs- oder Löschaktionen durch.
     - `UpdateCalendarColorUseCase.kt`: Aktualisiert die Systemkalenderfarbe für einen bestimmten Ereignistyp.
+- ### 📁 AppFunctions (`domain.appfunctions`) — *Android 16+ / AI-Agent Integration*
+    - `BirthdayAppFunctionService.kt`: Abstrakte `AppFunctionService`-Unterklasse (alpha10-API), annotiert mit `@AppFunctionServiceEntryPoint` und `@AndroidEntryPoint`. Stellt vier `@AppFunction`-Methoden bereit, die das Android-System und KI-Agenten (Google Assistant, Gemini) aufrufen können, ohne die App-UI zu öffnen. KSP generiert zur Compile-Zeit die konkrete Unterklasse `BirthdayBuddyGeneratedAppFunctionService` sowie das Assets-XML. Abhängigkeiten (`ContactRepository`, `IoDispatcher`) werden per Hilt field-injiziert.
+    - `model/UpcomingBirthday.kt`: `@AppFunctionSerializable` Datenklasse für einen Geburtstags-Treffer (Rückgabe von `getUpcomingBirthdays`).
+    - `model/ContactBirthday.kt`: `@AppFunctionSerializable` Datenklasse für die Geburtstagsdetails eines einzelnen Kontakts (Rückgabe von `getContactBirthday`).
+
+    **Bereitgestellte AppFunctions:**
+
+    | Funktion | Eingabe | Ausgabe | Beschreibung |
+    |---|---|---|---|
+    | `getUpcomingBirthdays` | `withinDays: Int = 30` | `List<UpcomingBirthday>` | Gibt Kontakte zurück, deren Geburtstag innerhalb des Fensters liegt; sortiert nach `daysUntil`. |
+    | `getContactBirthday` | `contactName: String` | `ContactBirthday?` | Sucht einen Kontakt per (Teil-)Name (case-insensitive); gibt null zurück, wenn kein Treffer. |
+    | `sendBirthdayMessage` | `contactId, app` | `PendingIntent` | Öffnet eine Messaging-App für die Telefonnummer des Kontakts (WhatsApp, Signal, Telegram, SMS). |
+    | `addBirthdayToContact` | `contactId, year?, month, day` | `PendingIntent` | Öffnet den In-App-Editierscreen per Deep-Link (kein Direktschreiben — User-Bestätigung erforderlich). |
 
 ## 📁 UI Layer (`ui`)
 
@@ -226,6 +239,7 @@ Diese Tests laufen ohne Emulator/Gerät direkt auf dem Entwicklungsrechner und s
 - `domain/usecase/ExportGiftIdeasUseCaseTest.kt`: JVM Unit-Tests zum Geschenkideen-Export.
 - `domain/usecase/ImportGiftIdeasUseCaseTest.kt`: JVM Unit-Tests zum Geschenkideen-Import.
 - `domain/usecase/SetCalendarSyncEnabledUseCaseTest.kt`: JVM Unit-Tests zur Aktivierung/Deaktivierung der Kalendersynchronisation.
+- `domain/appfunctions/BirthdayAppFunctionServiceTest.kt`: JVM Unit-Tests für `BirthdayAppFunctionService`: Überprüfung der Filter-/Mapping-Logik von `getUpcomingBirthdays` (Fensterfilterung, Sortierung, Jahr-Mapping) und `getContactBirthday` (Teil-Match, Null-Handling, Blanknamen-Fehler, alphabetische Erstauflösung).
 - `AppViewModelTest.kt`: Tests für `AppViewModel`: Verifikation der initialen `AppSettings`-Emission, reaktiver Settings-Propagation und einmaligem `syncScheduling()`-Aufruf im `init`.
 - `ui/screens/home/HomeViewModelGiftIdeaTest.kt`: Tests für Geschenkideen- und Geburtstags-Intents im `HomeViewModel`. **Feature-co-located** neben `HomeViewModel.kt`.
 - `ui/screens/home/HomeViewModelSearchTest.kt`: Tests der Such- und Filterlogik im `HomeViewModel`. **Feature-co-located** neben `HomeViewModel.kt`.
