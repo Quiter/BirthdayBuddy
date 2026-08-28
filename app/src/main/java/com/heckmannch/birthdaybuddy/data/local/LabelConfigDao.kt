@@ -21,4 +21,7 @@ interface LabelConfigDao {
 
     @Upsert
     suspend fun upsertConfigs(configs: List<LabelConfigEntity>)
+
+    @Query("DELETE FROM label_configs WHERE LOWER(name) IN (:names)")
+    suspend fun deleteConfigsByNames(names: List<String>)
 }

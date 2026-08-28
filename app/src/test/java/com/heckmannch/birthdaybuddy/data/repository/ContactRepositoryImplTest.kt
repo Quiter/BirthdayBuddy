@@ -121,6 +121,7 @@ class ContactRepositoryImplTest {
                 lookupKey = "key1",
                 fullName = "Alice",
                 birthday = LocalDate.of(1990, 5, 10),
+                isFavorite = true,
                 labels = listOf("Friends"),
                 giftIdeas = emptyList(),
                 spouseLookupKey = "spouse_key"
@@ -139,6 +140,7 @@ class ContactRepositoryImplTest {
         assertThat(contact.lookupKey).isEqualTo("key1")
         assertThat(contact.fullName).isEqualTo("Alice")
         assertThat(contact.birthday).isEqualTo(LocalDate.of(1990, 5, 10))
+        assertThat(contact.isFavorite).isTrue()
         assertThat(contact.labels).containsExactly("Friends")
         assertThat(contact.spouseLookupKey).isEqualTo("spouse_key")
     }

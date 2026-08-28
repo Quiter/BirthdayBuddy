@@ -26,6 +26,7 @@ class ContactUiMapperTest {
             fullName = "Max Mustermann",
             birthday = LocalDate.of(1990, 5, 20),
             phoneNumber = "0123456789",
+            isFavorite = true,
             hasWhatsApp = true,
             hasSignal = false,
             labels = listOf("Freunde")
@@ -37,6 +38,7 @@ class ContactUiMapperTest {
         assertThat(uiModel.lookupKey).isEqualTo("abc")
         assertThat(uiModel.fullName).isEqualTo("Max Mustermann")
         assertThat(uiModel.phoneNumber).isEqualTo("0123456789")
+        assertThat(uiModel.isFavorite).isTrue()
         assertThat(uiModel.hasWhatsApp).isTrue()
         assertThat(uiModel.hasSignal).isFalse()
         assertThat(uiModel.labels).containsExactly("Freunde")

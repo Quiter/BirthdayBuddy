@@ -906,3 +906,13 @@
     - **Unit-Tests** (`domain/appfunctions/BirthdayAppFunctionServiceTest.kt`): 12 JVM-Tests mit MockK & Truth.
     - **Dokumentation:** `PROJECT_STRUCTURE.md` und `CHANGELOG.md` aktualisiert.
 
+311. **Entkopplung der Android-Favoriten von der Label-Logik & Stern-Badge (Feature & Bugfix):**
+    - **Problem:** Kontakte, die in der Android Kontakte-App als Favorit markiert wurden, wurden bisher als filterbares System-Label (`Starred in Android`) importiert. Wurde dieses Label in den Einstellungen versehentlich auf "Ignorieren" gesetzt, wurden sämtliche Favoriten-Kontakte in der Hauptansicht, im Widget und in den Benachrichtigungen unterdrückt.
+    - **Natives Favoriten-Attribut:** `Contact` (Domain), `ContactEntity` (Room) und `ContactUiModel` wurden um das native Attribut `isFavorite: Boolean` erweitert.
+    - **SystemContactDataSource:** `ContactsContract.Contacts.STARRED` wird nun direkt bei der Kontaktabfrage ausgelesen. `redundantLabels` schließt System-Gruppen wie `starred in android`, `starred`, `favorites`, `favoriten` und `all contacts` explizit aus, sodass keine Pseudo-Labels mehr entstehen.
+    - **Bereinigung alter Label-Konfigurationen:** `syncLabelConfigs` in `ContactRepositoryImpl` löscht beim Synchronisieren verwaiste/redundante Favoriten-Einträge via `LabelConfigDao.deleteConfigsByNames`.
+    - **UI-Anpassung:** Favoriten werden in `BirthdayItem` und `BirthdayDetailPane` mit einem goldenen Stern-Icon (`Icons.Default.Star`, `BirthdayGold`) neben dem Kontaktnamen hervorgehoben.
+    - **Datenbank-Migration:** `AppDatabase` Version auf 10 erhöht und `MIGRATION_9_10` (`ALTER TABLE contacts ADD COLUMN isFavorite INTEGER NOT NULL DEFAULT 0`) implementiert. Schema-Export (`10.json`) aktualisiert.
+    - **I18n & Tests:** `contact_favorite_desc` in `strings.xml` (DE/EN) ergänzt; Unit-Tests (`ContactRepositoryImplTest`, `ContactUiMapperTest`, `BirthdayAppFunctionServiceTest`) aktualisiert und verifiziert (267 Tests grün).
+
+

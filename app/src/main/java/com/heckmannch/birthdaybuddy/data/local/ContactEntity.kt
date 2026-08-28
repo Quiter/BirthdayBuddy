@@ -29,6 +29,8 @@ data class ContactEntity(
     val imageUri: String? = null,
     val phoneNumber: String? = null,
     @ColumnInfo(defaultValue = "0")
+    val isFavorite: Boolean = false,
+    @ColumnInfo(defaultValue = "0")
     val hasWhatsApp: Boolean = false,
     @ColumnInfo(defaultValue = "0")
     val hasSignal: Boolean = false,

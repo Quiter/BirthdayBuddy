@@ -6,6 +6,7 @@ import android.net.Uri
 import android.os.Build
 import androidx.annotation.RequiresApi
 import androidx.appfunctions.AppFunction
+import androidx.core.net.toUri
 import androidx.appfunctions.AppFunctionInvalidArgumentException
 import androidx.appfunctions.AppFunctionService
 import androidx.appfunctions.AppFunctionServiceEntryPoint
@@ -183,17 +184,17 @@ abstract class BirthdayAppFunctionService : AppFunctionService() {
 
         val intent: Intent = when (app.lowercase()) {
             "whatsapp" -> Intent(Intent.ACTION_VIEW).apply {
-                data = Uri.parse("https://wa.me/${phone.filter { it.isDigit() }}")
+                data = "https://wa.me/${phone.filter { it.isDigit() }}".toUri()
                 setPackage("com.whatsapp")
             }
             "signal" -> Intent(Intent.ACTION_VIEW).apply {
-                data = Uri.parse("sgnl://send?phone=${Uri.encode(phone)}")
+                data = "sgnl://send?phone=${Uri.encode(phone)}".toUri()
             }
             "telegram" -> Intent(Intent.ACTION_VIEW).apply {
-                data = Uri.parse("tg://msg?to=${Uri.encode(phone)}")
+                data = "tg://msg?to=${Uri.encode(phone)}".toUri()
             }
             "sms" -> Intent(Intent.ACTION_VIEW).apply {
-                data = Uri.parse("sms:${phone.filter { it.isDigit() }}")
+                data = "sms:${phone.filter { it.isDigit() }}".toUri()
             }
             else -> throw AppFunctionInvalidArgumentException(
                 errorMessage = "Unsupported app '$app'. Valid values: whatsapp, signal, telegram, sms.",

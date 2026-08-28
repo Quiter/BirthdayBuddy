@@ -79,6 +79,7 @@ class ContactUiMapper @Inject constructor() {
             nextAge = nextAgeValue,
             daysUntilNext = daysLeft,
             isToday = eventDate?.isBirthdayToday(today) ?: false,
+            isFavorite = contact.isFavorite,
             hasWhatsApp = contact.hasWhatsApp,
             hasSignal = contact.hasSignal,
             labels = contact.labels,
@@ -186,6 +187,7 @@ class ContactUiMapper @Inject constructor() {
                     nextAge = uiModelA.nextAge,
                     daysUntilNext = uiModelA.daysUntilNext,
                     isToday = uiModelA.isToday,
+                    isFavorite = contact.isFavorite || spouse.isFavorite,
                     hasWhatsApp = contact.hasWhatsApp || spouse.hasWhatsApp,
                     hasSignal = contact.hasSignal || spouse.hasSignal,
                     labels = if (mergeLabels) {

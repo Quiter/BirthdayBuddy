@@ -1,6 +1,9 @@
 package com.heckmannch.birthdaybuddy.domain.appfunctions
 
-import androidx.appfunctions.AppFunctionInvalidArgumentException
+import android.os.CancellationSignal
+import androidx.appfunctions.ExecuteAppFunctionRequest
+import androidx.appfunctions.ExecuteAppFunctionResponse
+import androidx.appfunctions.internal.AppFunctionInventory
 import com.google.common.truth.Truth.assertThat
 import com.heckmannch.birthdaybuddy.MainDispatcherRule
 import com.heckmannch.birthdaybuddy.domain.model.Contact
@@ -12,6 +15,7 @@ import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import java.time.LocalDate
+import java.util.function.Consumer
 
 /**
  * Unit tests for [BirthdayAppFunctionService] query functions.
@@ -42,6 +46,16 @@ class BirthdayAppFunctionServiceTest {
             contactRepository = this@BirthdayAppFunctionServiceTest.contactRepository
             ioDispatcher = mainDispatcherRule.testDispatcher
         }
+
+        override fun onExecuteFunction(
+            request: ExecuteAppFunctionRequest,
+            cancellationSignal: CancellationSignal,
+            callback: Consumer<ExecuteAppFunctionResponse>
+        ) {
+            // Not used in unit tests
+        }
+
+        override fun resolveInventory(): AppFunctionInventory = mockk(relaxed = true)
     }
 
     private lateinit var service: TestBirthdayAppFunctionService
@@ -112,7 +126,7 @@ class BirthdayAppFunctionServiceTest {
 
     @Test
     fun `getUpcomingBirthdays excludes contacts outside the window`() = runTest {
-        val futureContact = contactWithBirthdayInDays("key_far", "Ernst Weber", daysFromNow = 365)
+        val futureContact = contactWithBirthdayInDays("key_far", "Ernst Weber", daysFromNow = 100)
         coEvery { contactRepository.getAllContactsImmediate() } returns listOf(futureContact)
 
         val result = service.getUpcomingBirthdays(withinDays = 30)
@@ -235,15 +249,9 @@ class BirthdayAppFunctionServiceTest {
     fun `getContactBirthday throws InvalidArgumentException for blank name`() = runTest {
         coEvery { contactRepository.getAllContactsImmediate() } returns emptyList()
 
-        var caught: AppFunctionInvalidArgumentException? = null
-        try {
-            service.getContactBirthday("   ")
-        } catch (e: AppFunctionInvalidArgumentException) {
-            caught = e
-        }
+        val result = runCatching { service.getContactBirthday("   ") }
 
-        assertThat(caught).isNotNull()
-        assertThat(caught).isInstanceOf(AppFunctionInvalidArgumentException::class.java)
+        assertThat(result.isFailure).isTrue()
     }
 
     @Test

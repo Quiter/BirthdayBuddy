@@ -5,16 +5,19 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CardGiftcard
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.HorizontalDivider
@@ -40,7 +43,9 @@ import com.heckmannch.birthdaybuddy.ui.screens.home.components.actions.ContactAc
 import com.heckmannch.birthdaybuddy.ui.theme.AlphaContainerSubtle
 import com.heckmannch.birthdaybuddy.ui.theme.AlphaEmphasisLow
 import com.heckmannch.birthdaybuddy.ui.theme.AlphaEmphasisMedium
+import com.heckmannch.birthdaybuddy.ui.theme.BirthdayGold
 import com.heckmannch.birthdaybuddy.ui.theme.ContactImageSizeLarge
+import com.heckmannch.birthdaybuddy.ui.theme.IconSizeMedium
 import com.heckmannch.birthdaybuddy.ui.theme.IconSizeSmall
 import com.heckmannch.birthdaybuddy.ui.theme.SpacingExtraLarge
 import com.heckmannch.birthdaybuddy.ui.theme.SpacingLarge
@@ -104,12 +109,26 @@ fun BirthdayDetailPane(
                 )
 
                 // Name des Kontakts
-                Text(
-                    text = contact.fullName,
-                    style = MaterialTheme.typography.headlineMedium,
-                    textAlign = TextAlign.Center,
-                    color = MaterialTheme.colorScheme.onSurface
-                )
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.Center
+                ) {
+                    Text(
+                        text = contact.fullName,
+                        style = MaterialTheme.typography.headlineMedium,
+                        textAlign = TextAlign.Center,
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+                    if (contact.isFavorite) {
+                        Spacer(modifier = Modifier.width(SpacingSmall))
+                        Icon(
+                            imageVector = Icons.Default.Star,
+                            contentDescription = stringResource(R.string.contact_favorite_desc),
+                            modifier = Modifier.size(IconSizeMedium),
+                            tint = BirthdayGold
+                        )
+                    }
+                }
 
                 // Geburtstag Datumstext
                 Text(

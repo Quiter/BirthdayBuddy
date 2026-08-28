@@ -16,6 +16,7 @@ data class Contact(
     val nameDay: LocalDate? = null,
     val imageUri: String? = null,
     val phoneNumber: String? = null,
+    val isFavorite: Boolean = false,
     val hasWhatsApp: Boolean = false,
     val hasSignal: Boolean = false,
     val labels: List<String> = emptyList(),

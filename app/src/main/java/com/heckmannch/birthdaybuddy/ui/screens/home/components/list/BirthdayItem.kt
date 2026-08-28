@@ -27,6 +27,7 @@ import androidx.compose.material.icons.filled.CardGiftcard
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.ExpandLess
 import androidx.compose.material.icons.filled.ExpandMore
+import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -199,6 +200,15 @@ fun BirthdayItem(
                                 text = contact.fullName,
                                 style = if (isExpanded) MaterialTheme.typography.titleLarge else MaterialTheme.typography.titleMedium
                             )
+                            if (contact.isFavorite) {
+                                Spacer(modifier = Modifier.width(SpacingSmall))
+                                Icon(
+                                    imageVector = Icons.Default.Star,
+                                    contentDescription = stringResource(R.string.contact_favorite_desc),
+                                    modifier = Modifier.size(IconSizeSmall),
+                                    tint = BirthdayGold
+                                )
+                            }
                             if (contact.hasGiftIdeas) {
                                 Spacer(modifier = Modifier.width(SpacingSmall))
                                 Icon(

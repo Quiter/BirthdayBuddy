@@ -11,7 +11,7 @@ import com.heckmannch.birthdaybuddy.data.local.AppDatabase.Companion.rollbackCon
 
 @Database(
     entities = [ContactEntity::class, PendingNotificationEntity::class],
-    version = 9,
+    version = 10,
     exportSchema = true
 )
 @TypeConverters(Converters::class, GiftIdeaConverters::class)
@@ -25,7 +25,7 @@ abstract class AppDatabase : RoomDatabase() {
 
 
         /**
-         * Hilfsfunktion zum sauberen Neuaufbau der 'contacts'-Tabelle auf das korrekte V7-Schema.
+         * Hilfsfunktion zum sauberen Neuaufbau der 'contacts'-Tabelle auf das korrekte Schema.
          * Da SQLite ALTER TABLE COLUMN NULLABILITY nicht nativ unterstützt,
          * erstellen wir die Tabelle neu und übertragen die Daten.
          * Siehe https://www.sqlite.org/lang_altertable.html#otheralter
@@ -34,8 +34,8 @@ abstract class AppDatabase : RoomDatabase() {
             // 1. Bestehende Tabelle umbenennen
             db.execSQL("ALTER TABLE contacts RENAME TO contacts_old")
 
-            // 2. Neue Tabelle mit korrektem V9-Schema erstellen
-            db.execSQL("CREATE TABLE IF NOT EXISTS `contacts` (`localId` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `contactId` TEXT NOT NULL, `lookupKey` TEXT NOT NULL, `fullName` TEXT NOT NULL, `birthday` TEXT, `imageUri` TEXT, `phoneNumber` TEXT, `hasWhatsApp` INTEGER NOT NULL DEFAULT 0, `hasSignal` INTEGER NOT NULL DEFAULT 0, `labels` TEXT NOT NULL, `giftIdeas` TEXT NOT NULL, `anniversary` TEXT, `nameDay` TEXT, `spouseLookupKey` TEXT)")
+            // 2. Neue Tabelle mit korrektem V10-Schema erstellen
+            db.execSQL("CREATE TABLE IF NOT EXISTS `contacts` (`localId` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `contactId` TEXT NOT NULL, `lookupKey` TEXT NOT NULL, `fullName` TEXT NOT NULL, `birthday` TEXT, `imageUri` TEXT, `phoneNumber` TEXT, `isFavorite` INTEGER NOT NULL DEFAULT 0, `hasWhatsApp` INTEGER NOT NULL DEFAULT 0, `hasSignal` INTEGER NOT NULL DEFAULT 0, `labels` TEXT NOT NULL, `giftIdeas` TEXT NOT NULL, `anniversary` TEXT, `nameDay` TEXT, `spouseLookupKey` TEXT)")
 
             // 3. Vorhandene Spalten ermitteln, um fehlende Spalten (falls vorherige Migrationen fehlschlugen) robust abzufangen
             val columnsInOld = mutableSetOf<String>()
@@ -60,6 +60,12 @@ abstract class AppDatabase : RoomDatabase() {
                 selectColumns.add("phoneNumber")
             } else {
                 selectColumns.add("NULL AS phoneNumber")
+            }
+
+            if (columnsInOld.contains("isFavorite")) {
+                selectColumns.add("COALESCE(isFavorite, 0) AS isFavorite")
+            } else {
+                selectColumns.add("0 AS isFavorite")
             }
 
             if (columnsInOld.contains("hasWhatsApp")) {
@@ -107,7 +113,7 @@ abstract class AppDatabase : RoomDatabase() {
             val selectQuery = selectColumns.joinToString(", ")
 
             // 4. Daten kopieren mit dynamic fallback
-            db.execSQL("INSERT INTO contacts (localId, contactId, lookupKey, fullName, birthday, imageUri, phoneNumber, hasWhatsApp, hasSignal, labels, giftIdeas, anniversary, nameDay, spouseLookupKey) SELECT $selectQuery FROM contacts_old")
+            db.execSQL("INSERT INTO contacts (localId, contactId, lookupKey, fullName, birthday, imageUri, phoneNumber, isFavorite, hasWhatsApp, hasSignal, labels, giftIdeas, anniversary, nameDay, spouseLookupKey) SELECT $selectQuery FROM contacts_old")
 
             // 5. Alte Tabelle löschen
             db.execSQL("DROP TABLE IF EXISTS contacts_old")
@@ -243,6 +249,28 @@ abstract class AppDatabase : RoomDatabase() {
             }
         }
 
+        /**
+         * Migration from database version 9 to 10.
+         * Adds the 'isFavorite' column to the 'contacts' table.
+         */
+        val MIGRATION_9_10 = object : Migration(9, 10) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                val columnCursor = db.query("PRAGMA table_info(contacts)")
+                val columns = mutableSetOf<String>()
+                while (columnCursor.moveToNext()) {
+                    val nameIndex = columnCursor.getColumnIndex("name")
+                    if (nameIndex != -1) {
+                        columns.add(columnCursor.getString(nameIndex))
+                    }
+                }
+                columnCursor.close()
+
+                if (!columns.contains("isFavorite")) {
+                    db.execSQL("ALTER TABLE contacts ADD COLUMN isFavorite INTEGER NOT NULL DEFAULT 0")
+                }
+            }
+        }
+
         private fun buildDatabase(context: Context): AppDatabase {
             return Room.databaseBuilder(
                 context.applicationContext,
@@ -253,7 +281,8 @@ abstract class AppDatabase : RoomDatabase() {
                     MIGRATION_5_6,
                     MIGRATION_6_7,
                     MIGRATION_7_8,
-                    MIGRATION_8_9
+                    MIGRATION_8_9,
+                    MIGRATION_9_10
                 )
                 .build()
         }

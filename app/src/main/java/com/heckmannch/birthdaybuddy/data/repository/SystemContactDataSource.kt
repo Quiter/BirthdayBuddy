@@ -26,14 +26,25 @@ class SystemContactDataSource @Inject constructor(
         DateTimeFormatter.ofPattern("yyyyMMdd"),
     )
 
-    private val redundantLabels = setOf("my contacts", "contacts", "ich", "me")
+    companion object {
+        val redundantLabels = setOf(
+            "my contacts",
+            "contacts",
+            "all contacts",
+            "ich",
+            "me",
+            "starred in android",
+            "starred",
+            "favorites",
+            "favoriten"
+        )
+    }
 
     /**
      * System-Gruppen, die nicht dazu führen sollen, dass die Label-Bar angezeigt wird.
-     * "Starred in Android" ist oft kein offizielles System-ID-Feld, verhält sich aber so.
      */
     private val pureSystemGroups =
-        setOf("starred in android", "my contacts", "all contacts", "contacts")
+        setOf("my contacts", "all contacts", "contacts")
 
 
     suspend fun updateContactBirthday(contactId: String, birthday: LocalDate): Boolean =
@@ -205,6 +216,7 @@ class SystemContactDataSource @Inject constructor(
                 ContactsContract.Contacts.LOOKUP_KEY,
                 ContactsContract.Contacts.DISPLAY_NAME,
                 ContactsContract.Contacts.PHOTO_THUMBNAIL_URI,
+                ContactsContract.Contacts.STARRED,
             )
 
             context.contentResolver.query(
@@ -218,15 +230,18 @@ class SystemContactDataSource @Inject constructor(
                 val lookupIdx = cursor.getColumnIndex(ContactsContract.Contacts.LOOKUP_KEY)
                 val nameIdx = cursor.getColumnIndex(ContactsContract.Contacts.DISPLAY_NAME)
                 val photoIdx = cursor.getColumnIndex(ContactsContract.Contacts.PHOTO_THUMBNAIL_URI)
+                val starredIdx = cursor.getColumnIndex(ContactsContract.Contacts.STARRED)
 
                 while (cursor.moveToNext()) {
                     val contactId = cursor.getString(idIdx) ?: continue
+                    val isStarred = if (starredIdx != -1) cursor.getInt(starredIdx) == 1 else false
                     contactsMap[contactId] = Contact(
                         contactId = contactId,
                         lookupKey = cursor.getString(lookupIdx) ?: "",
                         fullName = cursor.getString(nameIdx) ?: "Unbekannt",
                         birthday = null,
-                        imageUri = cursor.getString(photoIdx)
+                        imageUri = cursor.getString(photoIdx),
+                        isFavorite = isStarred,
                     )
                 }
             }
