@@ -56,6 +56,94 @@ class IntentExtrasTest {
     }
 
     @Test
+    fun `safeGetAndRemoveStringExtra returns default value when intent is null`() {
+        val nullIntent: Intent? = null
+        val result = IntentExtras.safeGetAndRemoveStringExtra(nullIntent, IntentExtras.APPFN_CONTACT_ID)
+
+        assertThat(result).isNull()
+    }
+
+    @Test
+    fun `safeGetAndRemoveStringExtra returns default value when extra is missing`() {
+        val intent = mockk<Intent>()
+        every { intent.hasExtra(IntentExtras.APPFN_CONTACT_ID) } returns false
+
+        val result = intent.safeGetAndRemoveStringExtra(IntentExtras.APPFN_CONTACT_ID)
+
+        assertThat(result).isNull()
+    }
+
+    @Test
+    fun `safeGetAndRemoveStringExtra extracts string value and removes extra from intent`() {
+        val intent = mockk<Intent>()
+        every { intent.hasExtra(IntentExtras.APPFN_CONTACT_ID) } returns true
+        every { intent.getStringExtra(IntentExtras.APPFN_CONTACT_ID) } returns "contact_lookup_123"
+        every { intent.removeExtra(IntentExtras.APPFN_CONTACT_ID) } just runs
+
+        val result = intent.safeGetAndRemoveStringExtra(IntentExtras.APPFN_CONTACT_ID)
+
+        assertThat(result).isEqualTo("contact_lookup_123")
+        verify { intent.removeExtra(IntentExtras.APPFN_CONTACT_ID) }
+    }
+
+    @Test
+    fun `safeGetAndRemoveStringExtra handles type mismatch gracefully without crashing`() {
+        val intent = mockk<Intent>()
+        every { intent.hasExtra(IntentExtras.APPFN_CONTACT_ID) } returns true
+        every { intent.getStringExtra(IntentExtras.APPFN_CONTACT_ID) } throws ClassCastException("Int cannot be cast to String")
+        every { intent.removeExtra(IntentExtras.APPFN_CONTACT_ID) } just runs
+
+        val result = intent.safeGetAndRemoveStringExtra(IntentExtras.APPFN_CONTACT_ID, "default_id")
+
+        assertThat(result).isEqualTo("default_id")
+        verify { intent.removeExtra(IntentExtras.APPFN_CONTACT_ID) }
+    }
+
+    @Test
+    fun `safeGetAndRemoveIntExtra returns default value when intent is null`() {
+        val nullIntent: Intent? = null
+        val result = IntentExtras.safeGetAndRemoveIntExtra(nullIntent, IntentExtras.APPFN_BIRTHDAY_MONTH, -1)
+
+        assertThat(result).isEqualTo(-1)
+    }
+
+    @Test
+    fun `safeGetAndRemoveIntExtra returns default value when extra is missing`() {
+        val intent = mockk<Intent>()
+        every { intent.hasExtra(IntentExtras.APPFN_BIRTHDAY_MONTH) } returns false
+
+        val result = intent.safeGetAndRemoveIntExtra(IntentExtras.APPFN_BIRTHDAY_MONTH, -1)
+
+        assertThat(result).isEqualTo(-1)
+    }
+
+    @Test
+    fun `safeGetAndRemoveIntExtra extracts int value and removes extra from intent`() {
+        val intent = mockk<Intent>()
+        every { intent.hasExtra(IntentExtras.APPFN_BIRTHDAY_MONTH) } returns true
+        every { intent.getIntExtra(IntentExtras.APPFN_BIRTHDAY_MONTH, -1) } returns 12
+        every { intent.removeExtra(IntentExtras.APPFN_BIRTHDAY_MONTH) } just runs
+
+        val result = intent.safeGetAndRemoveIntExtra(IntentExtras.APPFN_BIRTHDAY_MONTH, -1)
+
+        assertThat(result).isEqualTo(12)
+        verify { intent.removeExtra(IntentExtras.APPFN_BIRTHDAY_MONTH) }
+    }
+
+    @Test
+    fun `safeGetAndRemoveIntExtra handles type mismatch gracefully without crashing`() {
+        val intent = mockk<Intent>()
+        every { intent.hasExtra(IntentExtras.APPFN_BIRTHDAY_MONTH) } returns true
+        every { intent.getIntExtra(IntentExtras.APPFN_BIRTHDAY_MONTH, -1) } throws ClassCastException("String cannot be cast to Int")
+        every { intent.removeExtra(IntentExtras.APPFN_BIRTHDAY_MONTH) } just runs
+
+        val result = intent.safeGetAndRemoveIntExtra(IntentExtras.APPFN_BIRTHDAY_MONTH, -1)
+
+        assertThat(result).isEqualTo(-1)
+        verify { intent.removeExtra(IntentExtras.APPFN_BIRTHDAY_MONTH) }
+    }
+
+    @Test
     fun `safeGetIntExtra extracts valid int and handles type mismatch safely`() {
         val validIntent = mockk<Intent>()
         every { validIntent.hasExtra("KEY_INT") } returns true

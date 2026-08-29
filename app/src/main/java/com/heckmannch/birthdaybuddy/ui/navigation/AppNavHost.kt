@@ -31,7 +31,10 @@ import com.heckmannch.birthdaybuddy.ui.screens.onboarding.OnboardingViewModel
 import com.heckmannch.birthdaybuddy.ui.screens.settings.SettingsScreen
 import com.heckmannch.birthdaybuddy.ui.screens.settings.SettingsTab
 import com.heckmannch.birthdaybuddy.util.IntentExtras
+import com.heckmannch.birthdaybuddy.util.NO_YEAR_MARKER
 import com.heckmannch.birthdaybuddy.util.safeGetAndRemoveBooleanExtra
+import com.heckmannch.birthdaybuddy.util.safeGetAndRemoveIntExtra
+import com.heckmannch.birthdaybuddy.util.safeGetAndRemoveStringExtra
 
 /**
  * Zentrale Navigations-Komponente der App.
@@ -56,6 +59,11 @@ fun AppNavHost(
         if (intent.safeGetAndRemoveBooleanExtra(IntentExtras.NAVIGATE_TO_NOTIFICATIONS)) {
             if (!backStack.contains(NotificationSettings)) {
                 backStack.add(NotificationSettings)
+            }
+        } else if (intent != null && intent.hasExtra(IntentExtras.APPFN_CONTACT_ID)) {
+            if (backStack.lastOrNull() != Home) {
+                backStack.clear()
+                backStack.add(Home)
             }
         }
     }
@@ -141,7 +149,7 @@ fun AppNavHost(
                     // Live-Sync bei Änderungen im System-Adressbuch
                     ContactSyncEffect(onSyncNeeded = { homeViewModel.onIntent(HomeIntent.SyncContacts()) })
 
-                    // Intent-Events für den Home-Screen verarbeiten (z.B. Widget / App Shortcuts)
+                    // Intent-Events für den Home-Screen verarbeiten (z.B. Widget / App Shortcuts / AppFunctions)
                     LaunchedEffect(intent) {
                         if (intent.safeGetAndRemoveBooleanExtra(IntentExtras.SCROLL_TO_TOP)) {
                             homeViewModel.onIntent(HomeIntent.TriggerScrollToTop)
@@ -155,6 +163,26 @@ fun AppNavHost(
                         }
                         if (intent.safeGetAndRemoveBooleanExtra(IntentExtras.OPEN_ADD_CONTACT)) {
                             homeViewModel.onIntent(HomeIntent.SyncContacts())
+                        }
+
+                        // AppFunctions Deep Link: addBirthdayToContact
+                        val appFnContactId = intent.safeGetAndRemoveStringExtra(IntentExtras.APPFN_CONTACT_ID)
+                        if (appFnContactId != null) {
+                            val yearExtra = intent.safeGetAndRemoveIntExtra(IntentExtras.APPFN_BIRTHDAY_YEAR, NO_YEAR_MARKER)
+                            val month = intent.safeGetAndRemoveIntExtra(IntentExtras.APPFN_BIRTHDAY_MONTH, -1)
+                            val day = intent.safeGetAndRemoveIntExtra(IntentExtras.APPFN_BIRTHDAY_DAY, -1)
+                            // Clean APPFN_CONTACT_NAME extra from intent as well
+                            intent.safeGetAndRemoveStringExtra(IntentExtras.APPFN_CONTACT_NAME)
+
+                            val year = if (yearExtra > 0 && yearExtra != NO_YEAR_MARKER) yearExtra else null
+                            homeViewModel.onIntent(
+                                HomeIntent.OpenBirthdayPicker(
+                                    contactLookupKey = appFnContactId,
+                                    year = year,
+                                    month = month,
+                                    day = day,
+                                )
+                            )
                         }
                     }
 

@@ -25,6 +25,13 @@ object IntentExtras {
     /** Weist MainActivity an, die Kontaktliste nach einem neu hinzugefügten Kontakt zu synchronisieren. */
     const val OPEN_ADD_CONTACT = "OPEN_ADD_CONTACT"
 
+    /** AppFunctions Deep Link Extras */
+    const val APPFN_CONTACT_ID = "APPFN_CONTACT_ID"
+    const val APPFN_CONTACT_NAME = "APPFN_CONTACT_NAME"
+    const val APPFN_BIRTHDAY_YEAR = "APPFN_BIRTHDAY_YEAR"
+    const val APPFN_BIRTHDAY_MONTH = "APPFN_BIRTHDAY_MONTH"
+    const val APPFN_BIRTHDAY_DAY = "APPFN_BIRTHDAY_DAY"
+
     /**
      * Liest ein Boolean-Extra sicher aus einem [Intent] aus und entfernt es anschließend zwingend aus dem Intent.
      *
@@ -54,6 +61,78 @@ object IntentExtras {
             }
         } catch (e: Exception) {
             Log.w(TAG, "Fehler beim sicheren Auslesen/Entfernen des Intent-Extras '$key'", e)
+            try {
+                intent.removeExtra(key)
+            } catch (cleanupException: Exception) {
+                Log.w(TAG, "Bereinigung des Intent-Extras '$key' fehlgeschlagen", cleanupException)
+            }
+            defaultValue
+        }
+    }
+
+    /**
+     * Liest ein String-Extra sicher aus einem [Intent] aus und entfernt es anschließend zwingend aus dem Intent.
+     *
+     * Fängt jegliche Type-Mismatch- (z.B. [ClassCastException]) oder Unparceling-Fehler ab.
+     * Bereinigt den Intent zwingend mittels [Intent.removeExtra].
+     *
+     * @param intent Der zu verarbeitende Intent.
+     * @param key Der Schlüssel des auszulesenden Extras.
+     * @param defaultValue Der Standardwert, falls das Extra nicht vorhanden ist oder ein Fehler auftritt.
+     * @return Den ausgelesenen String-Wert oder [defaultValue], falls nicht gefunden oder ungültig.
+     */
+    fun safeGetAndRemoveStringExtra(
+        intent: Intent?,
+        key: String,
+        defaultValue: String? = null
+    ): String? {
+        if (intent == null) return defaultValue
+        return try {
+            if (intent.hasExtra(key)) {
+                val value = intent.getStringExtra(key) ?: defaultValue
+                intent.removeExtra(key)
+                value
+            } else {
+                defaultValue
+            }
+        } catch (e: Exception) {
+            Log.w(TAG, "Fehler beim sicheren Auslesen/Entfernen des String-Extras '$key'", e)
+            try {
+                intent.removeExtra(key)
+            } catch (cleanupException: Exception) {
+                Log.w(TAG, "Bereinigung des Intent-Extras '$key' fehlgeschlagen", cleanupException)
+            }
+            defaultValue
+        }
+    }
+
+    /**
+     * Liest ein Int-Extra sicher aus einem [Intent] aus und entfernt es anschließend zwingend aus dem Intent.
+     *
+     * Fängt jegliche Type-Mismatch- oder Unparceling-Fehler ab.
+     * Bereinigt den Intent zwingend mittels [Intent.removeExtra].
+     *
+     * @param intent Der zu verarbeitende Intent.
+     * @param key Der Schlüssel des auszulesenden Extras.
+     * @param defaultValue Der Standardwert, falls das Extra nicht vorhanden ist oder ein Fehler auftritt.
+     * @return Den ausgelesenen Int-Wert oder [defaultValue], falls nicht gefunden oder ungültig.
+     */
+    fun safeGetAndRemoveIntExtra(
+        intent: Intent?,
+        key: String,
+        defaultValue: Int = -1
+    ): Int {
+        if (intent == null) return defaultValue
+        return try {
+            if (intent.hasExtra(key)) {
+                val value = intent.getIntExtra(key, defaultValue)
+                intent.removeExtra(key)
+                value
+            } else {
+                defaultValue
+            }
+        } catch (e: Exception) {
+            Log.w(TAG, "Fehler beim sicheren Auslesen/Entfernen des Int-Extras '$key'", e)
             try {
                 intent.removeExtra(key)
             } catch (cleanupException: Exception) {
@@ -116,4 +195,21 @@ object IntentExtras {
  */
 fun Intent?.safeGetAndRemoveBooleanExtra(key: String, defaultValue: Boolean = false): Boolean =
     IntentExtras.safeGetAndRemoveBooleanExtra(this, key, defaultValue)
+
+/**
+ * Extension-Funktion für [Intent?], um ein String-Extra sicher auszulesen und zwingend zu entfernen.
+ *
+ * @see IntentExtras.safeGetAndRemoveStringExtra
+ */
+fun Intent?.safeGetAndRemoveStringExtra(key: String, defaultValue: String? = null): String? =
+    IntentExtras.safeGetAndRemoveStringExtra(this, key, defaultValue)
+
+/**
+ * Extension-Funktion für [Intent?], um ein Int-Extra sicher auszulesen und zwingend zu entfernen.
+ *
+ * @see IntentExtras.safeGetAndRemoveIntExtra
+ */
+fun Intent?.safeGetAndRemoveIntExtra(key: String, defaultValue: Int = -1): Int =
+    IntentExtras.safeGetAndRemoveIntExtra(this, key, defaultValue)
+
 

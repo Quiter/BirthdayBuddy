@@ -18,6 +18,8 @@ import com.heckmannch.birthdaybuddy.domain.usecase.UnlinkCoupleUseCase
 import com.heckmannch.birthdaybuddy.ui.mapper.ContactUiMapper
 import com.heckmannch.birthdaybuddy.ui.mapper.CoupleSuggestionUiMapper
 import com.heckmannch.birthdaybuddy.util.Clock
+import com.heckmannch.birthdaybuddy.util.NO_YEAR_MARKER
+import com.heckmannch.birthdaybuddy.util.hasYear
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -428,5 +430,140 @@ class HomeViewModelTest {
         
         val duration = testScheduler.currentTime - startTime
         assertThat(duration).isEqualTo(0)
+    }
+
+    @Test
+    fun onOpenBirthdayPicker_withValidLookupKeyAndYear_setsPendingBirthdayEdit() = runTest {
+        val contact = Contact(
+            contactId = "c1",
+            lookupKey = "key1",
+            fullName = "Max Mustermann",
+            birthday = null,
+        )
+        whenever(contactRepository.getAllContactsImmediate()).thenReturn(listOf(contact))
+
+        viewModel = createViewModel()
+
+        viewModel.onIntent(
+            HomeIntent.OpenBirthdayPicker(
+                contactLookupKey = "key1",
+                year = 1995,
+                month = 8,
+                day = 29,
+            )
+        )
+
+        val state = viewModel.uiState.first { it.pendingBirthdayEdit != null }
+        val edit = state.pendingBirthdayEdit
+        assertThat(edit).isNotNull()
+        assertThat(edit!!.contactId).isEqualTo("c1")
+        assertThat(edit.initialDate).isEqualTo(LocalDate.of(1995, 8, 29))
+        assertThat(edit.initialDate.hasYear).isTrue()
+    }
+
+    @Test
+    fun onOpenBirthdayPicker_withoutYear_usesNoYearMarker() = runTest {
+        val contact = Contact(
+            contactId = "c2",
+            lookupKey = "key2",
+            fullName = "Erika Mustermann",
+            birthday = null,
+        )
+        whenever(contactRepository.getAllContactsImmediate()).thenReturn(listOf(contact))
+
+        viewModel = createViewModel()
+
+        viewModel.onIntent(
+            HomeIntent.OpenBirthdayPicker(
+                contactLookupKey = "key2",
+                year = null,
+                month = 12,
+                day = 25,
+            )
+        )
+
+        val state = viewModel.uiState.first { it.pendingBirthdayEdit != null }
+        val edit = state.pendingBirthdayEdit
+        assertThat(edit).isNotNull()
+        assertThat(edit!!.contactId).isEqualTo("c2")
+        assertThat(edit.initialDate).isEqualTo(LocalDate.of(NO_YEAR_MARKER, 12, 25))
+        assertThat(edit.initialDate.hasYear).isFalse()
+    }
+
+    @Test
+    fun onOpenBirthdayPicker_matchingContactId_setsPendingBirthdayEdit() = runTest {
+        val contact = Contact(
+            contactId = "123",
+            lookupKey = "lookup_123",
+            fullName = "John Doe",
+            birthday = null,
+        )
+        whenever(contactRepository.getAllContactsImmediate()).thenReturn(listOf(contact))
+
+        viewModel = createViewModel()
+
+        viewModel.onIntent(
+            HomeIntent.OpenBirthdayPicker(
+                contactLookupKey = "123",
+                year = 2000,
+                month = 5,
+                day = 10,
+            )
+        )
+
+        val state = viewModel.uiState.first { it.pendingBirthdayEdit != null }
+        val edit = state.pendingBirthdayEdit
+        assertThat(edit).isNotNull()
+        assertThat(edit!!.contactId).isEqualTo("123")
+        assertThat(edit.initialDate).isEqualTo(LocalDate.of(2000, 5, 10))
+    }
+
+    @Test
+    fun onDismissBirthdayPicker_clearsPendingBirthdayEdit() = runTest {
+        val contact = Contact(
+            contactId = "c1",
+            lookupKey = "key1",
+            fullName = "Max Mustermann",
+            birthday = null,
+        )
+        whenever(contactRepository.getAllContactsImmediate()).thenReturn(listOf(contact))
+
+        viewModel = createViewModel()
+
+        viewModel.onIntent(
+            HomeIntent.OpenBirthdayPicker(
+                contactLookupKey = "key1",
+                year = 1995,
+                month = 8,
+                day = 29,
+            )
+        )
+
+        val stateWithEdit = viewModel.uiState.first { it.pendingBirthdayEdit != null }
+        assertThat(stateWithEdit.pendingBirthdayEdit).isNotNull()
+
+        viewModel.onIntent(HomeIntent.DismissBirthdayPicker)
+
+        val stateDismissed = viewModel.uiState.first { it.pendingBirthdayEdit == null }
+        assertThat(stateDismissed.pendingBirthdayEdit).isNull()
+    }
+
+    @Test
+    fun onOpenBirthdayPicker_withUnknownContact_doesNotSetPendingBirthdayEdit() = runTest {
+        whenever(contactRepository.getAllContactsImmediate()).thenReturn(emptyList())
+
+        viewModel = createViewModel()
+
+        viewModel.onIntent(
+            HomeIntent.OpenBirthdayPicker(
+                contactLookupKey = "unknown_key",
+                year = 2000,
+                month = 1,
+                day = 1,
+            )
+        )
+
+        val state = viewModel.uiState.first()
+        assertThat(state.pendingBirthdayEdit).isNull()
     }
 }

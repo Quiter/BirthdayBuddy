@@ -17,12 +17,17 @@ import com.heckmannch.birthdaybuddy.ui.mapper.CoupleSuggestionUiMapper
 import com.heckmannch.birthdaybuddy.ui.model.ContactUiModel
 import com.heckmannch.birthdaybuddy.ui.model.CoupleSuggestionUiModel
 import com.heckmannch.birthdaybuddy.ui.model.HomeUiState
+import com.heckmannch.birthdaybuddy.ui.model.PendingBirthdayEdit
 import com.heckmannch.birthdaybuddy.util.Clock
+import com.heckmannch.birthdaybuddy.util.NO_YEAR_MARKER
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
+import java.time.LocalDate
+import java.time.Month
+import java.time.Year
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
@@ -67,7 +72,8 @@ class HomeViewModel @Inject constructor(
         val isSyncing: Boolean = false,
         val searchFocusRequested: Boolean = false,
         val newlyAddedIdeaId: String? = null,
-        val hasContactPermission: Boolean = false
+        val hasContactPermission: Boolean = false,
+        val pendingBirthdayEdit: PendingBirthdayEdit? = null,
     )
 
     private fun checkContactPermission(): Boolean {
@@ -172,7 +178,8 @@ class HomeViewModel @Inject constructor(
             searchFocusRequested = userState.searchFocusRequested,
             newlyAddedIdeaId = userState.newlyAddedIdeaId,
             coupleSuggestion = suggestion,
-            hasContactPermission = userState.hasContactPermission
+            hasContactPermission = userState.hasContactPermission,
+            pendingBirthdayEdit = userState.pendingBirthdayEdit,
         )
     }
         .flowOn(Dispatchers.Default)
@@ -331,6 +338,38 @@ class HomeViewModel @Inject constructor(
             is HomeIntent.SetIsResettingFilter -> {
                 _userUiState.update { it.copy(isResettingFilter = intent.isResetting) }
             }
+
+            is HomeIntent.OpenBirthdayPicker -> {
+                viewModelScope.launch {
+                    var contact = contactRepository.getAllContactsImmediate()
+                        .find { it.lookupKey == intent.contactLookupKey || it.contactId == intent.contactLookupKey }
+                    if (contact == null) {
+                        contactRepository.syncContacts()
+                        contact = contactRepository.getAllContactsImmediate()
+                            .find { it.lookupKey == intent.contactLookupKey || it.contactId == intent.contactLookupKey }
+                    }
+                    if (contact != null) {
+                        val targetYear = if (intent.year != null && intent.year > 0 && intent.year != NO_YEAR_MARKER) intent.year else NO_YEAR_MARKER
+                        val safeMonth = intent.month.coerceIn(1, 12)
+                        val maxDays = Month.of(safeMonth).length(Year.isLeap(targetYear.toLong()))
+                        val safeDay = intent.day.coerceIn(1, maxDays)
+                        val initialDate = LocalDate.of(targetYear, safeMonth, safeDay)
+
+                        _userUiState.update {
+                            it.copy(
+                                pendingBirthdayEdit = PendingBirthdayEdit(
+                                    contactId = contact.contactId,
+                                    initialDate = initialDate
+                                )
+                            )
+                        }
+                    }
+                }
+            }
+
+            is HomeIntent.DismissBirthdayPicker -> {
+                _userUiState.update { it.copy(pendingBirthdayEdit = null) }
+            }
         }
     }
 
@@ -361,4 +400,11 @@ sealed interface HomeIntent {
     data class IgnoreCoupleSuggestion(val lookupKey1: String, val lookupKey2: String) : HomeIntent
     data class SetIsResettingFilter(val isResetting: Boolean) : HomeIntent
     data object AppResumed : HomeIntent
+    data class OpenBirthdayPicker(
+        val contactLookupKey: String,
+        val year: Int?,
+        val month: Int,
+        val day: Int,
+    ) : HomeIntent
+    data object DismissBirthdayPicker : HomeIntent
 }

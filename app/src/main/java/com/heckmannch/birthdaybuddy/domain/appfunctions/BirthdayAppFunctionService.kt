@@ -14,6 +14,7 @@ import com.heckmannch.birthdaybuddy.di.IoDispatcher
 import com.heckmannch.birthdaybuddy.domain.appfunctions.model.ContactBirthday
 import com.heckmannch.birthdaybuddy.domain.appfunctions.model.UpcomingBirthday
 import com.heckmannch.birthdaybuddy.domain.repository.ContactRepository
+import com.heckmannch.birthdaybuddy.util.IntentExtras
 import com.heckmannch.birthdaybuddy.util.NO_YEAR_MARKER
 import com.heckmannch.birthdaybuddy.util.hasYear
 import com.heckmannch.birthdaybuddy.util.safeDaysUntilNext
@@ -259,17 +260,17 @@ abstract class BirthdayAppFunctionService : AppFunctionService() {
             )
 
         // Deep-link into MainActivity with the contact's ID so the edit screen opens.
-        // MainActivity resolves EXTRA_CONTACT_ID and EXTRA_BIRTHDAY_* to pre-fill the picker.
+        // MainActivity resolves APPFN_CONTACT_ID and APPFN_BIRTHDAY_* to pre-fill the picker.
         val intent = Intent(this@BirthdayAppFunctionService, Class.forName(
             "com.heckmannch.birthdaybuddy.MainActivity"
         )).apply {
             action = Intent.ACTION_VIEW
             addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP)
-            putExtra(EXTRA_CONTACT_ID, contactId)
-            putExtra(EXTRA_CONTACT_NAME, contact.fullName)
-            putExtra(EXTRA_BIRTHDAY_YEAR, year ?: NO_YEAR_MARKER)
-            putExtra(EXTRA_BIRTHDAY_MONTH, month)
-            putExtra(EXTRA_BIRTHDAY_DAY, day)
+            putExtra(IntentExtras.APPFN_CONTACT_ID, contactId)
+            putExtra(IntentExtras.APPFN_CONTACT_NAME, contact.fullName)
+            putExtra(IntentExtras.APPFN_BIRTHDAY_YEAR, year ?: NO_YEAR_MARKER)
+            putExtra(IntentExtras.APPFN_BIRTHDAY_MONTH, month)
+            putExtra(IntentExtras.APPFN_BIRTHDAY_DAY, day)
         }
 
         PendingIntent.getActivity(
@@ -278,13 +279,5 @@ abstract class BirthdayAppFunctionService : AppFunctionService() {
             intent,
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
         )
-    }
-
-    private companion object {
-        const val EXTRA_CONTACT_ID = "APPFN_CONTACT_ID"
-        const val EXTRA_CONTACT_NAME = "APPFN_CONTACT_NAME"
-        const val EXTRA_BIRTHDAY_YEAR = "APPFN_BIRTHDAY_YEAR"
-        const val EXTRA_BIRTHDAY_MONTH = "APPFN_BIRTHDAY_MONTH"
-        const val EXTRA_BIRTHDAY_DAY = "APPFN_BIRTHDAY_DAY"
     }
 }

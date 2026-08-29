@@ -21,6 +21,7 @@ import coil3.imageLoader
 import coil3.request.ImageRequest
 import com.heckmannch.birthdaybuddy.R
 import com.heckmannch.birthdaybuddy.ui.model.HomeUiState
+import com.heckmannch.birthdaybuddy.ui.screens.home.components.list.BirthdayDatePickerDialog
 import com.heckmannch.birthdaybuddy.ui.screens.home.components.list.getAvatarCacheKey
 import com.heckmannch.birthdaybuddy.ui.util.ContactActions
 import kotlinx.coroutines.delay
@@ -315,7 +316,22 @@ fun HomeScreen(
             )
         }
 
-    // --- SECTION 6: View Layer Invocation ---
+    // --- SECTION 6: Global Dialog Overlays ---
+    if (uiState.pendingBirthdayEdit != null) {
+        val edit = uiState.pendingBirthdayEdit
+        BirthdayDatePickerDialog(
+            initialDate = edit.initialDate,
+            onDismissRequest = {
+                onIntent(HomeIntent.DismissBirthdayPicker)
+            },
+            onDateSelected = { date ->
+                onIntent(HomeIntent.UpdateBirthday(edit.contactId, date))
+                onIntent(HomeIntent.DismissBirthdayPicker)
+            }
+        )
+    }
+
+    // --- SECTION 7: View Layer Invocation ---
     // Passes state and consolidated actions down to the layout rendering container.
     HomeContent(
         uiState = uiState,

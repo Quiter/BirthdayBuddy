@@ -922,5 +922,13 @@
     - **System-Back-Handling:** Das `onBack`-Handhabungselement im `NavDisplay` von `SettingsContent` wurde abgesichert, sodass bei einem Backstack mit nur einem Element die übergeordnete `onNavigateBack`-Aktion aufgerufen wird.
     - **Tests:** Neue Unit-Test-Klasse `NavRoutesTest.kt` unter `app/src/test/java/com/heckmannch/birthdaybuddy/ui/navigation/` angelegt. Alle 270 Unit-Tests laufen zu 100% grün durch.
 
+313. **Vollständige Verarbeitung des AppFunctions Deep-Links `addBirthdayToContact` (Feature & AppFunctions):**
+    - **Zentrale Intent-Extras & Type Safety (`IntentExtras.kt`):** Konstanten `APPFN_CONTACT_ID`, `APPFN_CONTACT_NAME`, `APPFN_BIRTHDAY_YEAR`, `APPFN_BIRTHDAY_MONTH` und `APPFN_BIRTHDAY_DAY` zentral definiert. Neue sichere Extraktions- und Bereinigungsmethoden `safeGetAndRemoveStringExtra` und `safeGetAndRemoveIntExtra` inklusive Extension-Funktionen implementiert.
+    - **AppFunction Service (`BirthdayAppFunctionService.kt`):** Umstellung des `PendingIntent`-Generators auf die zentralen `IntentExtras`-Konstanten und Entfernung privater Duplikate.
+    - **UDF/MVI State & ViewModels (`HomeUiState.kt` & `HomeViewModel.kt`):** Hinzufügen von `@Immutable data class PendingBirthdayEdit(contactId, initialDate)` in `HomeUiState`. Neuer MVI-Intent `HomeIntent.OpenBirthdayPicker(contactLookupKey, year, month, day)` und `HomeIntent.DismissBirthdayPicker`. Automatische Kontakt-Auflösung via LookupKey/ContactID und sichere Datums-Validierung (`NO_YEAR_MARKER`-Unterstützung).
+    - **UI & Navigation (`AppNavHost.kt` & `HomeScreen.kt`):** Intent-Verarbeitung im `AppNavHost` leitet bei Empfang von AppFunctions-Intents auf die Startseite weiter und stößt den Picker-Intent an. `HomeScreen` rendert den `BirthdayDatePickerDialog` mit den übergebenen Werten vorbefüllt und persistiert bei Bestätigung über `HomeIntent.UpdateBirthday`.
+    - **Unit-Tests:** Umfassende Unit-Tests in `IntentExtrasTest.kt` und `HomeViewModelTest.kt` ergänzt. Alle 275+ Unit-Tests laufen fehlerfrei durch.
+
+
 
 

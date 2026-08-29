@@ -10,7 +10,10 @@
 # --- Room Database ---
 # Room Entities and DAOs are covered by Room's bundled consumer rules.
 # TypeConverters are preserved to safeguard custom type conversions.
--keep class com.heckmannch.birthdaybuddy.data.local.converter.** { *; }
+-keep class com.heckmannch.birthdaybuddy.data.local.*Converters { *; }
+-keep class * {
+    @androidx.room.TypeConverter <methods>;
+}
 
 # --- Jetpack Navigation 3 & kotlinx.serialization ---
 # Preserve annotations and type signatures required for kotlinx.serialization.
