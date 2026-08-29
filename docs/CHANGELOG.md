@@ -929,6 +929,8 @@
     - **UI & Navigation (`AppNavHost.kt` & `HomeScreen.kt`):** Intent-Verarbeitung im `AppNavHost` leitet bei Empfang von AppFunctions-Intents auf die Startseite weiter und stößt den Picker-Intent an. `HomeScreen` rendert den `BirthdayDatePickerDialog` mit den übergebenen Werten vorbefüllt und persistiert bei Bestätigung über `HomeIntent.UpdateBirthday`.
     - **Unit-Tests:** Umfassende Unit-Tests in `IntentExtrasTest.kt` und `HomeViewModelTest.kt` ergänzt. Alle 275+ Unit-Tests laufen fehlerfrei durch.
 
-
-
+314. **Optimierung des Berechtigungs-Handlings beim App-Start (Android & Google Play Guidelines):**
+    - **Entfernung ungefragter WRITE_CONTACTS Berechtigungsanfrage:** Der automatische `LaunchedEffect(Unit)` in [HomeScreen.kt](file:///c:/Users/chris/AndroidStudioProjects/BirthdayBuddy/app/src/main/java/com/heckmannch/birthdaybuddy/ui/screens/home/HomeScreen.kt), der beim Öffnen der Startseite ungefragt einen Berechtigungsdialog für `WRITE_CONTACTS` triggerte, wurde entfernt.
+    - **In-Context Permission Flow:** Die Berechtigungsanforderung für Kontakte erfolgt nun ausschließlich nutzerinitiiert bzw. im Nutzungskontext.
+    - **Tests:** Alle Unit-Tests via `./gradlew testDebugUnitTest` erfolgreich verifiziert.
 

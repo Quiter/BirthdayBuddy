@@ -115,25 +115,6 @@ fun HomeScreen(
             }
         }
 
-    /**
-     * Startup Permission Check Side-Effect:
-     * Automatically attempts to request [Manifest.permission.WRITE_CONTACTS] silently if the user
-     * has already granted read access, but write access is somehow missing or revoked.
-     */
-    LaunchedEffect(Unit) {
-        if (ContextCompat.checkSelfPermission(
-                context,
-                Manifest.permission.READ_CONTACTS
-            ) == PackageManager.PERMISSION_GRANTED &&
-            ContextCompat.checkSelfPermission(
-                context,
-                Manifest.permission.WRITE_CONTACTS
-            ) != PackageManager.PERMISSION_GRANTED
-        ) {
-            writePermissionLauncher.launch(Manifest.permission.WRITE_CONTACTS)
-        }
-    }
-
     // --- SECTION 2: UI Coordination, Focus, & Micro-Animations ---
 
     /**
