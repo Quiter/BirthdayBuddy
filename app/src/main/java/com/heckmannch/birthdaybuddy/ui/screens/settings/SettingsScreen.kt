@@ -108,9 +108,11 @@ private data class SettingsMenuItemData(
  */
 @Composable
 fun SettingsScreen(
+    initialTab: SettingsTab? = null,
     onNavigateBack: () -> Unit,
 ) {
     SettingsContent(
+        initialTab = initialTab,
         onNavigateBack = onNavigateBack,
     )
 }
@@ -122,6 +124,7 @@ fun SettingsScreen(
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3AdaptiveApi::class)
 @Composable
 private fun SettingsContent(
+    initialTab: SettingsTab? = null,
     onNavigateBack: () -> Unit,
 ) {
     val windowAdaptiveInfo = LocalWindowAdaptiveInfo.current
@@ -133,7 +136,11 @@ private fun SettingsContent(
     }
 
     val listDetailStrategy = rememberListDetailSceneStrategy<NavKey>(directive = directive)
-    val backStack = rememberNavBackStack(SettingsNavKey.SettingsMenu)
+    val backStack = if (initialTab != null) {
+        rememberNavBackStack(SettingsNavKey.SettingsMenu, SettingsNavKey.SettingsDetail(initialTab))
+    } else {
+        rememberNavBackStack(SettingsNavKey.SettingsMenu)
+    }
 
     val activeTab = (backStack.lastOrNull() as? SettingsNavKey.SettingsDetail)?.tab
 
@@ -204,7 +211,13 @@ private fun SettingsContent(
     ) { paddingValues ->
         NavDisplay(
             backStack = backStack,
-            onBack = { backStack.removeLastOrNull() },
+            onBack = {
+                if (backStack.size > 1) {
+                    backStack.removeLastOrNull()
+                } else {
+                    onNavigateBack()
+                }
+            },
             sceneStrategies = listOf(listDetailStrategy),
             modifier = Modifier
                 .fillMaxSize()

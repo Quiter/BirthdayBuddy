@@ -29,6 +29,7 @@ import com.heckmannch.birthdaybuddy.ui.screens.home.HomeViewModel
 import com.heckmannch.birthdaybuddy.ui.screens.onboarding.OnboardingScreen
 import com.heckmannch.birthdaybuddy.ui.screens.onboarding.OnboardingViewModel
 import com.heckmannch.birthdaybuddy.ui.screens.settings.SettingsScreen
+import com.heckmannch.birthdaybuddy.ui.screens.settings.SettingsTab
 import com.heckmannch.birthdaybuddy.util.IntentExtras
 import com.heckmannch.birthdaybuddy.util.safeGetAndRemoveBooleanExtra
 
@@ -171,6 +172,15 @@ fun AppNavHost(
                     SettingsScreen {
                         if (backStack.size > 1) backStack.removeAt(backStack.lastIndex)
                     }
+                }
+
+                is NotificationSettings -> NavEntry(key) {
+                    SettingsScreen(
+                        initialTab = SettingsTab.NOTIFICATIONS,
+                        onNavigateBack = {
+                            if (backStack.size > 1) backStack.removeAt(backStack.lastIndex)
+                        }
+                    )
                 }
 
                 else -> throw IllegalArgumentException("Unknown key: $key")

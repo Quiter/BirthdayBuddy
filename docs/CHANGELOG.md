@@ -915,4 +915,12 @@
     - **Datenbank-Migration:** `AppDatabase` Version auf 10 erhöht und `MIGRATION_9_10` (`ALTER TABLE contacts ADD COLUMN isFavorite INTEGER NOT NULL DEFAULT 0`) implementiert. Schema-Export (`10.json`) aktualisiert.
     - **I18n & Tests:** `contact_favorite_desc` in `strings.xml` (DE/EN) ergänzt; Unit-Tests (`ContactRepositoryImplTest`, `ContactUiMapperTest`, `BirthdayAppFunctionServiceTest`) aktualisiert und verifiziert (267 Tests grün).
 
+312. **Behebung des Navigations-Absturzes bei Intent-Benachrichtigungseinstellungen (Bugfix & Navigation 3):**
+    - **Problem:** Wenn der Nutzer in einer System-Benachrichtigung auf den Action-Button "Einstellungen" tippte, löste der Intent-Extra `IntentExtras.NAVIGATE_TO_NOTIFICATIONS` in `AppNavHost.kt` das Hinzufügen von `NotificationSettings` zum `backStack` aus. Im `entryProvider` existierte jedoch kein `NavEntry` für `NotificationSettings`, was sofort mit `IllegalArgumentException: Unknown key: NotificationSettings` abstürzte.
+    - **AppNavHost & Navigation 3:** Im `entryProvider` von `AppNavHost.kt` wurde ein eigener `NavEntry` für `NotificationSettings` registriert, der `SettingsScreen(initialTab = SettingsTab.NOTIFICATIONS, onNavigateBack = ...)` aufruft.
+    - **Adaptive UI & Parameterisierung in SettingsScreen:** `SettingsScreen` und `SettingsContent` wurden um den optionalen Parameter `initialTab: SettingsTab? = null` erweitert. Ist dieser gesetzt, wird der interne Backstack von `SettingsContent` mit `SettingsNavKey.SettingsDetail(initialTab)` auf dem `SettingsNavKey.SettingsMenu` initialisiert. Dadurch wird auf Mobilgeräten (Compact Layout) direkt die Notification-Settings-Detailseite angezeigt und auf Tablets/Foldables das geteilte zweispaltige Layout mit aktiv selektiertem Benachrichtigungs-Tab.
+    - **System-Back-Handling:** Das `onBack`-Handhabungselement im `NavDisplay` von `SettingsContent` wurde abgesichert, sodass bei einem Backstack mit nur einem Element die übergeordnete `onNavigateBack`-Aktion aufgerufen wird.
+    - **Tests:** Neue Unit-Test-Klasse `NavRoutesTest.kt` unter `app/src/test/java/com/heckmannch/birthdaybuddy/ui/navigation/` angelegt. Alle 270 Unit-Tests laufen zu 100% grün durch.
+
+
 
