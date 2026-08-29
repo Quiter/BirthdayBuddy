@@ -1,11 +1,13 @@
 package com.heckmannch.birthdaybuddy.ui.screens.home.components.actions
 
 import android.annotation.SuppressLint
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Message
 import androidx.compose.material.icons.filled.Add
@@ -60,6 +62,7 @@ fun ContactActionRow(
     Row(
         modifier = modifier
             .fillMaxWidth()
+            .horizontalScroll(rememberScrollState())
             .padding(horizontal = SpacingNormal, vertical = SpacingSmall),
         horizontalArrangement = Arrangement.spacedBy(SpacingSmall),
         verticalAlignment = Alignment.CenterVertically

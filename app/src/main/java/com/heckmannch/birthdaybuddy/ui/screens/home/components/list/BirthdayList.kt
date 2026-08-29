@@ -28,9 +28,10 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Face
+import androidx.compose.material.icons.filled.Cake
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -69,8 +70,9 @@ import com.heckmannch.birthdaybuddy.ui.theme.AlphaEmphasisLow
 import com.heckmannch.birthdaybuddy.ui.theme.AlphaEmphasisMedium
 import com.heckmannch.birthdaybuddy.ui.theme.AlphaEmphasisSubtle
 import com.heckmannch.birthdaybuddy.ui.theme.AlphaOnboardingCalendarDisabled
-import com.heckmannch.birthdaybuddy.ui.theme.AlphaSurfaceContainerHigh
 import com.heckmannch.birthdaybuddy.ui.theme.BirthdayBuddyTheme
+import com.heckmannch.birthdaybuddy.ui.theme.BirthdayQuoteIconContainerSize
+import com.heckmannch.birthdaybuddy.ui.theme.BorderWidthThick
 import com.heckmannch.birthdaybuddy.ui.theme.BorderWidthThin
 import com.heckmannch.birthdaybuddy.ui.theme.ContactImageSizeNormal
 import com.heckmannch.birthdaybuddy.ui.theme.ContactImageSizeSmall
@@ -325,14 +327,26 @@ private fun EmptyListState(
                 modifier = Modifier.size(OnboardingIllustrationHeight)
             )
         } else {
-            Icon(
-                imageVector = Icons.Default.Face,
-                contentDescription = null,
-                modifier = Modifier.size(ContactImageSizeNormal),
-                tint = MaterialTheme.colorScheme.primary.copy(alpha = AlphaSurfaceContainerHigh),
-            )
+            Surface(
+                modifier = Modifier.size(BirthdayQuoteIconContainerSize),
+                shape = CircleShape,
+                color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = AlphaOnboardingCalendarDisabled),
+                border = BorderStroke(
+                    width = BorderWidthThick,
+                    color = MaterialTheme.colorScheme.primary.copy(alpha = AlphaBorderSubtle)
+                )
+            ) {
+                Box(contentAlignment = Alignment.Center) {
+                    Icon(
+                        imageVector = Icons.Default.Cake,
+                        contentDescription = null,
+                        modifier = Modifier.size(ContactImageSizeNormal),
+                        tint = MaterialTheme.colorScheme.primary
+                    )
+                }
+            }
         }
-        Spacer(modifier = Modifier.height(SpacingNormal))
+        Spacer(modifier = Modifier.height(SpacingLarge))
 
         if (!hasPermission) {
             Text(
@@ -348,7 +362,8 @@ private fun EmptyListState(
             Text(
                 text = stringResource(R.string.empty_no_birthdays),
                 textAlign = TextAlign.Center,
-                style = MaterialTheme.typography.bodyLarge,
+                style = MaterialTheme.typography.titleMedium,
+                color = MaterialTheme.colorScheme.onSurface
             )
         }
     }

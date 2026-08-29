@@ -68,7 +68,6 @@ import com.heckmannch.birthdaybuddy.ui.theme.AlphaSurfaceContainerHigh
 import com.heckmannch.birthdaybuddy.ui.theme.BirthdayBorderWidth
 import com.heckmannch.birthdaybuddy.ui.theme.BirthdayBuddyTheme
 import com.heckmannch.birthdaybuddy.ui.theme.BirthdayGold
-import com.heckmannch.birthdaybuddy.ui.theme.BirthdayKidAmber
 import com.heckmannch.birthdaybuddy.ui.theme.BirthdaySilver
 import com.heckmannch.birthdaybuddy.ui.theme.ContactAvatarHeaderSize
 import com.heckmannch.birthdaybuddy.ui.theme.ContactImageSizeSmall
@@ -81,6 +80,8 @@ import com.heckmannch.birthdaybuddy.ui.theme.SpacingExtraSmall
 import com.heckmannch.birthdaybuddy.ui.theme.SpacingMedium
 import com.heckmannch.birthdaybuddy.ui.theme.SpacingNormal
 import com.heckmannch.birthdaybuddy.ui.theme.SpacingSmall
+import com.heckmannch.birthdaybuddy.ui.theme.birthdayGoldColor
+import com.heckmannch.birthdaybuddy.ui.theme.birthdayKidAmberColor
 import kotlinx.coroutines.delay
 import kotlin.time.Duration.Companion.milliseconds
 
@@ -203,19 +204,19 @@ fun BirthdayItem(
                             if (contact.isFavorite) {
                                 Spacer(modifier = Modifier.width(SpacingSmall))
                                 Icon(
-                                    imageVector = Icons.Default.Star,
-                                    contentDescription = stringResource(R.string.contact_favorite_desc),
-                                    modifier = Modifier.size(IconSizeSmall),
-                                    tint = BirthdayGold
+                                     imageVector = Icons.Default.Star,
+                                     contentDescription = stringResource(R.string.contact_favorite_desc),
+                                     modifier = Modifier.size(IconSizeSmall),
+                                     tint = birthdayGoldColor
                                 )
                             }
                             if (contact.hasGiftIdeas) {
                                 Spacer(modifier = Modifier.width(SpacingSmall))
                                 Icon(
-                                    Icons.Default.Edit,
-                                    contentDescription = null,
-                                    modifier = Modifier.size(IconSizeExtraSmall),
-                                    tint = BirthdayKidAmber
+                                     Icons.Default.Edit,
+                                     contentDescription = null,
+                                     modifier = Modifier.size(IconSizeExtraSmall),
+                                     tint = birthdayKidAmberColor
                                 )
                             }
                         }

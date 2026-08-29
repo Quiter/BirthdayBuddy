@@ -25,9 +25,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
-import java.time.LocalDate
-import java.time.Month
-import java.time.Year
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
@@ -42,6 +39,9 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import java.time.LocalDate
+import java.time.Month
+import java.time.Year
 import javax.inject.Inject
 import kotlin.time.Duration.Companion.milliseconds
 
@@ -389,7 +389,7 @@ sealed interface HomeIntent {
     data class UpdateGiftIdeaText(val lookupKey: String, val ideaId: String, val newText: String) :
         HomeIntent
 
-    data class UpdateBirthday(val contactId: String, val birthday: java.time.LocalDate) : HomeIntent
+    data class UpdateBirthday(val contactId: String, val birthday: LocalDate) : HomeIntent
     data class SyncContacts(val showLoading: Boolean = false) : HomeIntent
     data object TriggerScrollToTop : HomeIntent
     data object TriggerSearchFocus : HomeIntent

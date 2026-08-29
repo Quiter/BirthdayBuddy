@@ -6,10 +6,10 @@ import android.net.Uri
 import android.os.Build
 import androidx.annotation.RequiresApi
 import androidx.appfunctions.AppFunction
-import androidx.core.net.toUri
 import androidx.appfunctions.AppFunctionInvalidArgumentException
 import androidx.appfunctions.AppFunctionService
 import androidx.appfunctions.AppFunctionServiceEntryPoint
+import androidx.core.net.toUri
 import com.heckmannch.birthdaybuddy.di.IoDispatcher
 import com.heckmannch.birthdaybuddy.domain.appfunctions.model.ContactBirthday
 import com.heckmannch.birthdaybuddy.domain.appfunctions.model.UpcomingBirthday

@@ -35,7 +35,6 @@ import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
-
 import com.heckmannch.birthdaybuddy.R
 import com.heckmannch.birthdaybuddy.ui.model.ContactUiModel
 import com.heckmannch.birthdaybuddy.ui.screens.home.HomeActions
@@ -43,7 +42,6 @@ import com.heckmannch.birthdaybuddy.ui.screens.home.components.actions.ContactAc
 import com.heckmannch.birthdaybuddy.ui.theme.AlphaContainerSubtle
 import com.heckmannch.birthdaybuddy.ui.theme.AlphaEmphasisLow
 import com.heckmannch.birthdaybuddy.ui.theme.AlphaEmphasisMedium
-import com.heckmannch.birthdaybuddy.ui.theme.BirthdayGold
 import com.heckmannch.birthdaybuddy.ui.theme.ContactImageSizeLarge
 import com.heckmannch.birthdaybuddy.ui.theme.IconSizeMedium
 import com.heckmannch.birthdaybuddy.ui.theme.IconSizeSmall
@@ -52,6 +50,7 @@ import com.heckmannch.birthdaybuddy.ui.theme.SpacingLarge
 import com.heckmannch.birthdaybuddy.ui.theme.SpacingMedium
 import com.heckmannch.birthdaybuddy.ui.theme.SpacingNormal
 import com.heckmannch.birthdaybuddy.ui.theme.SpacingSmall
+import com.heckmannch.birthdaybuddy.ui.theme.birthdayGoldColor
 
 /**
  * Ein Detail-Paneel zur Anzeige aller Informationen eines Kontakts auf Tablets.
@@ -125,7 +124,7 @@ fun BirthdayDetailPane(
                             imageVector = Icons.Default.Star,
                             contentDescription = stringResource(R.string.contact_favorite_desc),
                             modifier = Modifier.size(IconSizeMedium),
-                            tint = BirthdayGold
+                            tint = birthdayGoldColor
                         )
                     }
                 }

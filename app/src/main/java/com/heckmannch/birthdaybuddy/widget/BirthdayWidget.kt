@@ -251,10 +251,11 @@ class BirthdayWidget : GlanceAppWidget() {
                             text = daysLeftText,
                             style = TextStyle(
                                 color = if (daysLeft == 0L) {
-                                    GlanceTheme.colors.error
+                                    GlanceTheme.colors.primary
                                 } else {
                                     GlanceTheme.colors.onSurfaceVariant
                                 },
+                                fontWeight = if (daysLeft == 0L) FontWeight.Bold else FontWeight.Normal,
                                 fontSize = 11.sp,
                             ),
                         )

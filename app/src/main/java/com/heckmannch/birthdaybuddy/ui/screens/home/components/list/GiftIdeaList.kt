@@ -39,8 +39,8 @@ import androidx.compose.ui.text.input.KeyboardCapitalization
 import com.heckmannch.birthdaybuddy.R
 import com.heckmannch.birthdaybuddy.domain.model.GiftIdea
 import com.heckmannch.birthdaybuddy.ui.theme.AlphaEmphasisMedium
+import com.heckmannch.birthdaybuddy.ui.theme.IconSizeMedium
 import com.heckmannch.birthdaybuddy.ui.theme.IconSizeSmall
-import com.heckmannch.birthdaybuddy.ui.theme.OnboardingCalendarCellSize
 import com.heckmannch.birthdaybuddy.ui.theme.SpacingExtraSmall
 import com.heckmannch.birthdaybuddy.ui.theme.SpacingSmall
 
@@ -165,7 +165,7 @@ private fun GiftIdeaItem(
                 Icons.Default.DeleteOutline,
                 contentDescription = stringResource(R.string.gift_dialog_delete),
                 tint = MaterialTheme.colorScheme.error.copy(alpha = AlphaEmphasisMedium),
-                modifier = Modifier.size(OnboardingCalendarCellSize)
+                modifier = Modifier.size(IconSizeMedium)
             )
         }
     }
