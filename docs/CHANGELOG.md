@@ -934,3 +934,9 @@
     - **In-Context Permission Flow:** Die Berechtigungsanforderung für Kontakte erfolgt nun ausschließlich nutzerinitiiert bzw. im Nutzungskontext.
     - **Tests:** Alle Unit-Tests via `./gradlew testDebugUnitTest` erfolgreich verifiziert.
 
+315. **Bereinigung veralteter Ressourcen-Ordner und ungenutzter Strings (Code Quality & Lint):**
+    - **Redundanter Qualifier:** Der Ordner `app/src/main/res/mipmap-anydpi-v26` wurde nach `app/src/main/res/mipmap-anydpi` überführt und bereinigt (da `minSdkVersion` = 28).
+    - **Ungenutzte Strings (I18n):** 9 redundante bzw. ungenutzte Strings (`home_scrollbar_desc`, `about_title`, `privacy_policy_title`, `backup_title`, `sync_title`, `calendar_settings_title`, `other_events_title`, `theme_accent_custom_dialog_save`, `theme_accent_custom_dialog_cancel`) synchron aus [strings.xml (EN)](file:///c:/Users/chris/AndroidStudioProjects/BirthdayBuddy/app/src/main/res/values/strings.xml) und [strings.xml (DE)](file:///c:/Users/chris/AndroidStudioProjects/BirthdayBuddy/app/src/main/res/values-de/strings.xml) entfernt.
+    - **Verifikation:** `./gradlew lintDebug testDebugUnitTest` erfolgreich und ohne Warnungen/Fehler abgeschlossen.
+
+

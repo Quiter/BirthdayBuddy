@@ -11,7 +11,6 @@
     <string name="home_filter_no_birthday">Ohne Datum</string>
     <string name="home_scroll_to_top">Nach oben scrollen</string>
     <string name="home_add_contact">Kontakt hinzufügen</string>
-    <string name="home_scrollbar_desc">Schnell-Scrollleiste, aktuell: %1$s</string>
 
     <!-- Birthday List -->
     <string name="empty_permission_desc">Um deine Geburtstage zu sehen, benötigt BirthdayBuddy Zugriff auf deine Kontakte.</string>
@@ -146,14 +145,10 @@
     <string name="notif_desc_named">Vergiss nicht zu gratulieren!</string>
 
     <!-- About Screen -->
-    <string name="about_title">Über die App</string>
     <string name="about_description">BirthdayBuddy hilft dir dabei, nie wieder einen Geburtstag zu vergessen. Erhalte rechtzeitig Erinnerungen und verwalte Geschenkideen direkt in der App.</string>
 
     <string name="about_privacy_policy">Datenschutzerklärung</string>
     <string name="about_copyright">© 2024–2026 Christof Heckmann</string>
-
-    <!-- Privacy Policy -->
-    <string name="privacy_policy_title">Datenschutzerklärung</string>
 
     <!-- Onboarding Screen -->
     <string name="onboarding_welcome_title">Willkommen bei BirthdayBuddy</string>
@@ -224,7 +219,6 @@
     <string name="labels_collapse_card">Details verbergen</string>
 
     <!-- Backup Screen -->
-    <string name="backup_title">Daten sichern</string>
     <string name="backup_desc">Exportiere deine Geschenkideen in eine Datei, um sie später wiederherzustellen oder auf ein anderes Gerät zu übertragen.</string>
     <string name="backup_export_title">Geschenkideen exportieren</string>
     <string name="backup_export_desc">Speichert alle Ideen in einer JSON-Datei</string>
@@ -242,7 +236,6 @@
     <string name="backup_import_failed">Import fehlgeschlagen: %1$s</string>
 
     <!-- Sync Settings Screen -->
-    <string name="sync_title">Kontakte synchronisieren</string>
     <string name="sync_explanation_title">Alternative Synchronisierung</string>
     <string name="sync_explanation_desc">Du kannst deine Kontakte auch ganz einfach direkt auf der Startseite aktualisieren, indem du die Liste nach unten ziehst (Pull to Refresh).</string>
     <string name="sync_button_title">Manuell synchronisieren</string>
@@ -259,7 +252,6 @@
     <string name="onboarding_calendar_btn">Berechtigung erteilen</string>
     <string name="settings_calendar_title">Kalender-Synchronisierung</string>
     <string name="settings_calendar_desc">Geburtstage in den standard Kalender eintragen</string>
-    <string name="calendar_settings_title">Kalender-Sync</string>
     <string name="calendar_settings_header">Kalender-Integration</string>
     <string name="calendar_settings_desc">Trage Geburtstage vollautomatisch als ganztägige Serientermine in einen eigenen Kalender ein. Deine Benachrichtigungen bleiben wie gewohnt in der App.</string>
     <string name="calendar_settings_enable">In Kalender-App eintragen</string>
@@ -300,7 +292,6 @@
     <string name="onboarding_calendar_guide_btn">Kalender-App öffnen</string>
 
     <!-- Weitere Ereignisse -->
-    <string name="other_events_title">Weitere Ereignisse</string>
     <string name="other_events_enable">Weitere Ereignisse aktivieren</string>
     <string name="other_events_desc">Zeige Namenstage und Hochzeitstage aus deinen System-Kontakten an.</string>
     <string name="other_events_info_title">Verstecktes Feature</string>
@@ -408,8 +399,6 @@
     <string name="theme_accent_custom">Eigene</string>
     <string name="theme_accent_custom_dialog_title">Eigene Akzentfarbe</string>
     <string name="theme_accent_custom_dialog_desc">Wähle eine Vorlage oder gib einen Hex-Code ein:</string>
-    <string name="theme_accent_custom_dialog_save">Speichern</string>
-    <string name="theme_accent_custom_dialog_cancel">Abbrechen</string>
     <string name="theme_accent_custom_invalid_hex">Ungültiger Hex-Code (z.B. #FF5722)</string>
     <string name="color_picker_hex_label">HEX-Code</string>
     <string name="color_picker_hex_placeholder">z.B. FF5722</string>

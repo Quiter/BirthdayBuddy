@@ -11,7 +11,6 @@
     <string name="home_filter_no_birthday">No Birthday</string>
     <string name="home_scroll_to_top">Scroll to top</string>
     <string name="home_add_contact">Add contact</string>
-    <string name="home_scrollbar_desc">Fast scrollbar, current: %1$s</string>
 
     <!-- Birthday List -->
     <string name="empty_permission_desc">To see your birthdays, BirthdayBuddy needs access to your contacts.</string>
@@ -146,14 +145,10 @@
     <string name="notif_desc_named">Don\'t forget to congratulate!</string>
 
     <!-- About Screen -->
-    <string name="about_title">About the app</string>
     <string name="about_description">BirthdayBuddy helps you never forget a birthday again. Receive reminders in time and manage gift ideas directly in the app.</string>
 
     <string name="about_privacy_policy">Privacy Policy</string>
     <string name="about_copyright">© 2024–2026 Christof Heckmann</string>
-
-    <!-- Privacy Policy -->
-    <string name="privacy_policy_title">Privacy Policy</string>
 
     <!-- Onboarding Screen -->
     <string name="onboarding_welcome_title">Welcome to BirthdayBuddy</string>
@@ -224,7 +219,6 @@
     <string name="labels_collapse_card">Hide details</string>
 
     <!-- Backup Screen -->
-    <string name="backup_title">Backup data</string>
     <string name="backup_desc">Export your gift ideas to a file to restore them later or transfer them to another device.</string>
     <string name="backup_export_title">Export gift ideas</string>
     <string name="backup_export_desc">Saves all ideas in a JSON file</string>
@@ -242,7 +236,6 @@
     <string name="backup_import_failed">Import failed: %1$s</string>
 
     <!-- Sync Settings Screen -->
-    <string name="sync_title">Sync contacts</string>
     <string name="sync_explanation_title">Alternative synchronization</string>
     <string name="sync_explanation_desc">You can also easily synchronize your contacts directly on the home screen by pulling the list down (Pull to Refresh).</string>
     <string name="sync_button_title">Synchronize manually</string>
@@ -259,7 +252,6 @@
     <string name="onboarding_calendar_btn">Grant Permission</string>
     <string name="settings_calendar_title">Calendar Sync</string>
     <string name="settings_calendar_desc">Add birthdays to standard Calendar</string>
-    <string name="calendar_settings_title">Calendar Sync</string>
     <string name="calendar_settings_header">Calendar Integration</string>
     <string name="calendar_settings_desc">Automatically write birthdays as all-day events into a separate calendar. Reminders remain in the app as requested.</string>
     <string name="calendar_settings_enable">Sync to Calendar app</string>
@@ -300,7 +292,6 @@
     <string name="onboarding_calendar_guide_btn">Open Calendar App</string>
 
     <!-- Weitere Ereignisse -->
-    <string name="other_events_title">Additional Events</string>
     <string name="other_events_enable">Enable additional events</string>
     <string name="other_events_desc">Show name days and wedding anniversaries from your system contacts.</string>
     <string name="other_events_info_title">Experimental Feature</string>
@@ -408,8 +399,6 @@
     <string name="theme_accent_custom">Custom</string>
     <string name="theme_accent_custom_dialog_title">Custom Accent Color</string>
     <string name="theme_accent_custom_dialog_desc">Choose a preset or enter a hex color code:</string>
-    <string name="theme_accent_custom_dialog_save">Save</string>
-    <string name="theme_accent_custom_dialog_cancel">Cancel</string>
     <string name="theme_accent_custom_invalid_hex">Invalid hex code (e.g. #FF5722)</string>
     <string name="color_picker_hex_label">HEX Code</string>
     <string name="color_picker_hex_placeholder">e.g. FF5722</string>
