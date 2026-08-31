@@ -12,6 +12,7 @@ import com.heckmannch.birthdaybuddy.data.local.AppSettingsDao
 import com.heckmannch.birthdaybuddy.data.local.AppSettingsEntity
 import com.heckmannch.birthdaybuddy.data.local.ContactDao
 import com.heckmannch.birthdaybuddy.data.local.ContactEntity
+import com.heckmannch.birthdaybuddy.data.local.ContactUserData
 import com.heckmannch.birthdaybuddy.data.local.ContactUserDataDao
 import com.heckmannch.birthdaybuddy.data.local.LabelConfigDao
 import com.heckmannch.birthdaybuddy.data.local.LabelConfigEntity
@@ -210,6 +211,46 @@ class ContactRepositoryImplTest {
             assertThat(it.lookupKey).isEqualTo("key1")
             assertThat(it.giftIdeas).hasSize(1)
             assertThat(it.giftIdeas.first().text).isEqualTo("Book")
+        })
+        verify(widgetUpdater).updateWidget()
+    }
+
+    @Test
+    fun addGiftIdea_preservesSpouseLookupKey() = runTest(
+        createTransactionElement()
+    ) {
+        // Arrange
+        val contactEntity = ContactEntity(
+            contactId = "c1",
+            lookupKey = "key1",
+            fullName = "John Doe",
+            giftIdeas = emptyList(),
+            spouseLookupKey = "spouse_key"
+        )
+        val existingUserData = ContactUserData(
+            lookupKey = "key1",
+            giftIdeas = emptyList(),
+            spouseLookupKey = "spouse_key"
+        )
+        whenever(contactDao.getContactByLookupKey("key1")).thenReturn(contactEntity)
+        whenever(contactUserDataDao.getUserDataForContact("key1")).thenReturn(existingUserData)
+
+        val newIdea = GiftIdea(id = "idea1", text = "Book")
+
+        // Act
+        repository.addGiftIdea("key1", newIdea)
+
+        // Assert
+        verify(contactUserDataDao).upsertUserData(org.mockito.kotlin.check {
+            assertThat(it.lookupKey).isEqualTo("key1")
+            assertThat(it.giftIdeas).hasSize(1)
+            assertThat(it.giftIdeas.first().text).isEqualTo("Book")
+            assertThat(it.spouseLookupKey).isEqualTo("spouse_key")
+        })
+        verify(contactDao).upsertContact(org.mockito.kotlin.check {
+            assertThat(it.lookupKey).isEqualTo("key1")
+            assertThat(it.giftIdeas).hasSize(1)
+            assertThat(it.spouseLookupKey).isEqualTo("spouse_key")
         })
         verify(widgetUpdater).updateWidget()
     }

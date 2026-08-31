@@ -83,6 +83,26 @@ class GiftIdeaBackupManagerTest {
     }
 
     @Test
+    fun `importGiftIdeas should preserve existing spouseLookupKey`() = runTest {
+        // Given
+        val json = "[{\"lookupKey\": \"key1\", \"fullName\": \"John Doe\", \"giftIdeas\": \"[]\"}]"
+        val contacts = listOf(ContactEntity(contactId = "1", lookupKey = "key1", fullName = "John Doe"))
+        val existingUserData = ContactUserData(lookupKey = "key1", giftIdeas = emptyList(), spouseLookupKey = "spouse_key")
+        whenever(contactDao.getAllContactsImmediate()).thenReturn(contacts)
+        whenever(contactUserDataDao.getUserDataForContact("key1")).thenReturn(existingUserData)
+
+        // When
+        val count = manager.importGiftIdeas(json)
+
+        // Then
+        assertThat(count).isEqualTo(1)
+        verify(contactUserDataDao).upsertUserData(org.mockito.kotlin.check {
+            assertThat(it.lookupKey).isEqualTo("key1")
+            assertThat(it.spouseLookupKey).isEqualTo("spouse_key")
+        })
+    }
+
+    @Test
     fun `importGiftIdeas should return negative on failure`() = runTest {
         // Given
         val json = "invalid json"

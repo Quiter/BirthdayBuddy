@@ -213,7 +213,11 @@ class ContactRepositoryImpl @Inject constructor(
             // 1. Write the source of truth first atomically (SettingsDB)
             settingsDatabase.withTransaction {
                 contactUserDataDao.upsertUserData(
-                    ContactUserData(lookupKey = lookupKey, giftIdeas = ideas)
+                    ContactUserData(
+                        lookupKey = lookupKey,
+                        giftIdeas = ideas,
+                        spouseLookupKey = prevUserData?.spouseLookupKey
+                    )
                 )
             }
 

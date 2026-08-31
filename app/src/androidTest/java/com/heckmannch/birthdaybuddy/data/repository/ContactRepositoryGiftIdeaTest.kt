@@ -134,6 +134,30 @@ class ContactRepositoryGiftIdeaTest {
     }
 
     @Test
+    fun addGiftIdea_preservesExistingSpouseLookupKey() = runTest {
+        // Arrange – Alice hat bereits einen Partner verknüpft
+        appDb.contactDao().upsertContact(
+            makeContact("alice", "Alice").copy(spouseLookupKey = "bob")
+        )
+        settingsDb.contactUserDataDao().upsertUserData(
+            ContactUserData(lookupKey = "alice", giftIdeas = emptyList(), spouseLookupKey = "bob")
+        )
+        val newIdea = makeIdea("Schokolade")
+
+        // Act
+        repository.addGiftIdea("alice", newIdea)
+
+        // Assert – spouseLookupKey in beiden DBs erhalten
+        val userData = settingsDb.contactUserDataDao().getUserDataForContact("alice")
+        assertThat(userData?.spouseLookupKey).isEqualTo("bob")
+        assertThat(userData?.giftIdeas).hasSize(1)
+
+        val cachedContact = appDb.contactDao().getContactByLookupKey("alice")
+        assertThat(cachedContact?.spouseLookupKey).isEqualTo("bob")
+        assertThat(cachedContact?.giftIdeas).hasSize(1)
+    }
+
+    @Test
     fun addGiftIdea_insertsNewIdeaBeforeCheckedItems() = runTest {
         // Arrange – Eine bereits erledigte Idee vorhanden
         val doneIdea = makeIdea("Erledigt", isChecked = true)

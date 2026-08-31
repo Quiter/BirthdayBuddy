@@ -69,8 +69,13 @@ class GiftIdeaBackupManager @Inject constructor(
 
                 if (targetLookupKey != null) {
                     val giftIdeas = converters.toGiftIdeaList(giftIdeasStr)
+                    val existingUserData = contactUserDataDao.getUserDataForContact(targetLookupKey)
                     contactUserDataDao.upsertUserData(
-                        ContactUserData(lookupKey = targetLookupKey, giftIdeas = giftIdeas)
+                        ContactUserData(
+                            lookupKey = targetLookupKey,
+                            giftIdeas = giftIdeas,
+                            spouseLookupKey = existingUserData?.spouseLookupKey
+                        )
                     )
                     count++
                 }
