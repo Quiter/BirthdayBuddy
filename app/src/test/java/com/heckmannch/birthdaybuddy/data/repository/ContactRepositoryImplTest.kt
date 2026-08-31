@@ -256,6 +256,231 @@ class ContactRepositoryImplTest {
     }
 
     @Test
+    fun toggleGiftIdea_updatesContactGiftIdeas_whenIdeaBelongsToContact() = runTest(
+        createTransactionElement()
+    ) {
+        // Arrange
+        val idea = GiftIdea(id = "idea1", text = "Book", isChecked = false)
+        val contactEntity = ContactEntity(
+            contactId = "c1",
+            lookupKey = "key1",
+            fullName = "John Doe",
+            giftIdeas = listOf(idea)
+        )
+        whenever(contactDao.getContactByLookupKey("key1")).thenReturn(contactEntity)
+        whenever(contactUserDataDao.getUserDataForContact("key1")).thenReturn(
+            ContactUserData(lookupKey = "key1", giftIdeas = listOf(idea))
+        )
+
+        // Act
+        repository.toggleGiftIdea("key1", idea, isChecked = true)
+
+        // Assert
+        verify(contactUserDataDao).upsertUserData(org.mockito.kotlin.check {
+            assertThat(it.lookupKey).isEqualTo("key1")
+            assertThat(it.giftIdeas.first().isChecked).isTrue()
+        })
+        verify(contactDao).upsertContact(org.mockito.kotlin.check {
+            assertThat(it.lookupKey).isEqualTo("key1")
+            assertThat(it.giftIdeas.first().isChecked).isTrue()
+        })
+        verify(widgetUpdater).updateWidget()
+    }
+
+    @Test
+    fun toggleGiftIdea_updatesSpouseGiftIdeas_whenIdeaBelongsToSpouse() = runTest(
+        createTransactionElement()
+    ) {
+        // Arrange
+        val spouseIdea = GiftIdea(id = "idea_spouse", text = "Perfume", isChecked = false)
+        val contactEntity = ContactEntity(
+            contactId = "c1",
+            lookupKey = "key1",
+            fullName = "Max",
+            giftIdeas = emptyList(),
+            spouseLookupKey = "spouse_key"
+        )
+        val spouseEntity = ContactEntity(
+            contactId = "c2",
+            lookupKey = "spouse_key",
+            fullName = "Erika",
+            giftIdeas = listOf(spouseIdea),
+            spouseLookupKey = "key1"
+        )
+        whenever(contactDao.getContactByLookupKey("key1")).thenReturn(contactEntity)
+        whenever(contactDao.getContactByLookupKey("spouse_key")).thenReturn(spouseEntity)
+        whenever(contactUserDataDao.getUserDataForContact("spouse_key")).thenReturn(
+            ContactUserData(lookupKey = "spouse_key", giftIdeas = listOf(spouseIdea), spouseLookupKey = "key1")
+        )
+
+        // Act - Call toggle using primary contact key1
+        repository.toggleGiftIdea("key1", spouseIdea, isChecked = true)
+
+        // Assert - Updates should be applied to spouse_key
+        verify(contactUserDataDao).upsertUserData(org.mockito.kotlin.check {
+            assertThat(it.lookupKey).isEqualTo("spouse_key")
+            assertThat(it.giftIdeas.first().isChecked).isTrue()
+            assertThat(it.spouseLookupKey).isEqualTo("key1")
+        })
+        verify(contactDao).upsertContact(org.mockito.kotlin.check {
+            assertThat(it.lookupKey).isEqualTo("spouse_key")
+            assertThat(it.giftIdeas.first().isChecked).isTrue()
+            assertThat(it.spouseLookupKey).isEqualTo("key1")
+        })
+        verify(widgetUpdater).updateWidget()
+    }
+
+    @Test
+    fun deleteGiftIdea_deletesFromContact_whenIdeaBelongsToContact() = runTest(
+        createTransactionElement()
+    ) {
+        // Arrange
+        val idea = GiftIdea(id = "idea1", text = "Book")
+        val contactEntity = ContactEntity(
+            contactId = "c1",
+            lookupKey = "key1",
+            fullName = "John Doe",
+            giftIdeas = listOf(idea)
+        )
+        whenever(contactDao.getContactByLookupKey("key1")).thenReturn(contactEntity)
+        whenever(contactUserDataDao.getUserDataForContact("key1")).thenReturn(
+            ContactUserData(lookupKey = "key1", giftIdeas = listOf(idea))
+        )
+
+        // Act
+        repository.deleteGiftIdea("key1", "idea1")
+
+        // Assert
+        verify(contactUserDataDao).upsertUserData(org.mockito.kotlin.check {
+            assertThat(it.lookupKey).isEqualTo("key1")
+            assertThat(it.giftIdeas).isEmpty()
+        })
+        verify(contactDao).upsertContact(org.mockito.kotlin.check {
+            assertThat(it.lookupKey).isEqualTo("key1")
+            assertThat(it.giftIdeas).isEmpty()
+        })
+        verify(widgetUpdater).updateWidget()
+    }
+
+    @Test
+    fun deleteGiftIdea_deletesFromSpouse_whenIdeaBelongsToSpouse() = runTest(
+        createTransactionElement()
+    ) {
+        // Arrange
+        val spouseIdea = GiftIdea(id = "idea_spouse", text = "Perfume")
+        val contactEntity = ContactEntity(
+            contactId = "c1",
+            lookupKey = "key1",
+            fullName = "Max",
+            giftIdeas = emptyList(),
+            spouseLookupKey = "spouse_key"
+        )
+        val spouseEntity = ContactEntity(
+            contactId = "c2",
+            lookupKey = "spouse_key",
+            fullName = "Erika",
+            giftIdeas = listOf(spouseIdea),
+            spouseLookupKey = "key1"
+        )
+        whenever(contactDao.getContactByLookupKey("key1")).thenReturn(contactEntity)
+        whenever(contactDao.getContactByLookupKey("spouse_key")).thenReturn(spouseEntity)
+        whenever(contactUserDataDao.getUserDataForContact("spouse_key")).thenReturn(
+            ContactUserData(lookupKey = "spouse_key", giftIdeas = listOf(spouseIdea), spouseLookupKey = "key1")
+        )
+
+        // Act - Call delete using primary contact key1
+        repository.deleteGiftIdea("key1", "idea_spouse")
+
+        // Assert - Deletion should happen on spouse_key
+        verify(contactUserDataDao).upsertUserData(org.mockito.kotlin.check {
+            assertThat(it.lookupKey).isEqualTo("spouse_key")
+            assertThat(it.giftIdeas).isEmpty()
+            assertThat(it.spouseLookupKey).isEqualTo("key1")
+        })
+        verify(contactDao).upsertContact(org.mockito.kotlin.check {
+            assertThat(it.lookupKey).isEqualTo("spouse_key")
+            assertThat(it.giftIdeas).isEmpty()
+            assertThat(it.spouseLookupKey).isEqualTo("key1")
+        })
+        verify(widgetUpdater).updateWidget()
+    }
+
+    @Test
+    fun updateGiftIdeaText_updatesContactGiftIdea_whenIdeaBelongsToContact() = runTest(
+        createTransactionElement()
+    ) {
+        // Arrange
+        val idea = GiftIdea(id = "idea1", text = "Old text")
+        val contactEntity = ContactEntity(
+            contactId = "c1",
+            lookupKey = "key1",
+            fullName = "John Doe",
+            giftIdeas = listOf(idea)
+        )
+        whenever(contactDao.getContactByLookupKey("key1")).thenReturn(contactEntity)
+        whenever(contactUserDataDao.getUserDataForContact("key1")).thenReturn(
+            ContactUserData(lookupKey = "key1", giftIdeas = listOf(idea))
+        )
+
+        // Act
+        repository.updateGiftIdeaText("key1", "idea1", "Updated text")
+
+        // Assert
+        verify(contactUserDataDao).upsertUserData(org.mockito.kotlin.check {
+            assertThat(it.lookupKey).isEqualTo("key1")
+            assertThat(it.giftIdeas.first().text).isEqualTo("Updated text")
+        })
+        verify(contactDao).upsertContact(org.mockito.kotlin.check {
+            assertThat(it.lookupKey).isEqualTo("key1")
+            assertThat(it.giftIdeas.first().text).isEqualTo("Updated text")
+        })
+        verify(widgetUpdater).updateWidget()
+    }
+
+    @Test
+    fun updateGiftIdeaText_updatesSpouseGiftIdea_whenIdeaBelongsToSpouse() = runTest(
+        createTransactionElement()
+    ) {
+        // Arrange
+        val spouseIdea = GiftIdea(id = "idea_spouse", text = "Old text")
+        val contactEntity = ContactEntity(
+            contactId = "c1",
+            lookupKey = "key1",
+            fullName = "Max",
+            giftIdeas = emptyList(),
+            spouseLookupKey = "spouse_key"
+        )
+        val spouseEntity = ContactEntity(
+            contactId = "c2",
+            lookupKey = "spouse_key",
+            fullName = "Erika",
+            giftIdeas = listOf(spouseIdea),
+            spouseLookupKey = "key1"
+        )
+        whenever(contactDao.getContactByLookupKey("key1")).thenReturn(contactEntity)
+        whenever(contactDao.getContactByLookupKey("spouse_key")).thenReturn(spouseEntity)
+        whenever(contactUserDataDao.getUserDataForContact("spouse_key")).thenReturn(
+            ContactUserData(lookupKey = "spouse_key", giftIdeas = listOf(spouseIdea), spouseLookupKey = "key1")
+        )
+
+        // Act - Call update using primary contact key1
+        repository.updateGiftIdeaText("key1", "idea_spouse", "Updated text")
+
+        // Assert - Update should happen on spouse_key
+        verify(contactUserDataDao).upsertUserData(org.mockito.kotlin.check {
+            assertThat(it.lookupKey).isEqualTo("spouse_key")
+            assertThat(it.giftIdeas.first().text).isEqualTo("Updated text")
+            assertThat(it.spouseLookupKey).isEqualTo("key1")
+        })
+        verify(contactDao).upsertContact(org.mockito.kotlin.check {
+            assertThat(it.lookupKey).isEqualTo("spouse_key")
+            assertThat(it.giftIdeas.first().text).isEqualTo("Updated text")
+            assertThat(it.spouseLookupKey).isEqualTo("key1")
+        })
+        verify(widgetUpdater).updateWidget()
+    }
+
+    @Test
     fun labelConfigs_emitsCorrectlyMappedDomainObjects() = runTest {
         // Arrange
         val entityList = listOf(

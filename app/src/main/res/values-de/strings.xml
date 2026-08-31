@@ -135,7 +135,7 @@
         <item quantity="other">In %1$d Tagen hat %2$s Geburtstag!</item>
     </plurals>
     <plurals name="notif_title_days_age">
-        <item quantity="one">In einem Tag wird %1$s %2$d!</item>
+        <item quantity="one">In einem Tag wird %2$s %3$d!</item>
         <item quantity="other">In %1$d Tagen wird %2$s %3$d!</item>
     </plurals>
     <plurals name="notif_title_days_plural">

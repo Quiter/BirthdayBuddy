@@ -12,6 +12,7 @@ import com.heckmannch.birthdaybuddy.data.local.AppDatabase
 import com.heckmannch.birthdaybuddy.data.local.AppSettingsDao
 import com.heckmannch.birthdaybuddy.data.local.AppSettingsEntity
 import com.heckmannch.birthdaybuddy.data.local.ContactDao
+import com.heckmannch.birthdaybuddy.data.local.ContactEntity
 import com.heckmannch.birthdaybuddy.data.local.ContactUserData
 import com.heckmannch.birthdaybuddy.data.local.ContactUserDataDao
 import com.heckmannch.birthdaybuddy.data.local.LabelConfigDao
@@ -245,6 +246,22 @@ class ContactRepositoryImpl @Inject constructor(
         widgetUpdater.updateWidget()
     }
 
+    private suspend fun resolveContactForGiftIdea(
+        lookupKey: String,
+        ideaId: String
+    ): Pair<String, ContactEntity>? {
+        val contact = contactDao.getContactByLookupKey(lookupKey) ?: return null
+        if (contact.giftIdeas.any { it.id == ideaId }) {
+            return lookupKey to contact
+        }
+        val spouseKey = contact.spouseLookupKey ?: return null
+        val spouseContact = contactDao.getContactByLookupKey(spouseKey) ?: return null
+        if (spouseContact.giftIdeas.any { it.id == ideaId }) {
+            return spouseKey to spouseContact
+        }
+        return null
+    }
+
     override suspend fun addGiftIdea(lookupKey: String, newIdea: GiftIdea) =
         withContext(Dispatchers.IO) {
             val contact = contactDao.getContactByLookupKey(lookupKey) ?: return@withContext
@@ -254,25 +271,28 @@ class ContactRepositoryImpl @Inject constructor(
 
     override suspend fun toggleGiftIdea(lookupKey: String, idea: GiftIdea, isChecked: Boolean) =
         withContext(Dispatchers.IO) {
-            val contact = contactDao.getContactByLookupKey(lookupKey) ?: return@withContext
-            val updatedIdeas = GiftIdea.withToggledIdea(contact.giftIdeas, idea, isChecked)
-            updateGiftIdeas(lookupKey, updatedIdeas)
+            val (targetKey, targetContact) = resolveContactForGiftIdea(lookupKey, idea.id)
+                ?: return@withContext
+            val updatedIdeas = GiftIdea.withToggledIdea(targetContact.giftIdeas, idea, isChecked)
+            updateGiftIdeas(targetKey, updatedIdeas)
         }
 
     override suspend fun deleteGiftIdea(lookupKey: String, ideaId: String) =
         withContext(Dispatchers.IO) {
-            val contact = contactDao.getContactByLookupKey(lookupKey) ?: return@withContext
-            val updatedIdeas = contact.giftIdeas.filter { it.id != ideaId }
-            updateGiftIdeas(lookupKey, updatedIdeas)
+            val (targetKey, targetContact) = resolveContactForGiftIdea(lookupKey, ideaId)
+                ?: return@withContext
+            val updatedIdeas = targetContact.giftIdeas.filter { it.id != ideaId }
+            updateGiftIdeas(targetKey, updatedIdeas)
         }
 
     override suspend fun updateGiftIdeaText(lookupKey: String, ideaId: String, newText: String) =
         withContext(Dispatchers.IO) {
-            val contact = contactDao.getContactByLookupKey(lookupKey) ?: return@withContext
-            val updatedIdeas = contact.giftIdeas.map {
+            val (targetKey, targetContact) = resolveContactForGiftIdea(lookupKey, ideaId)
+                ?: return@withContext
+            val updatedIdeas = targetContact.giftIdeas.map {
                 if (it.id == ideaId) it.copy(text = newText) else it
             }
-            updateGiftIdeas(lookupKey, updatedIdeas)
+            updateGiftIdeas(targetKey, updatedIdeas)
         }
 
     override suspend fun updateLabelConfig(config: LabelConfig) {
