@@ -32,7 +32,7 @@ interface PendingNotificationDao {
     @Query("UPDATE pending_notifications SET dismissCount = dismissCount + 1 WHERE id = :id")
     suspend fun incrementDismissCount(id: Int)
 
-    @Query("DELETE FROM pending_notifications WHERE year < :currentYear")
+    @Query("DELETE FROM pending_notifications WHERE year < :currentYear - 1 OR (year < :currentYear AND isDone = 1)")
     suspend fun deleteOldNotifications(currentYear: Int)
 
     @Query("DELETE FROM pending_notifications")
