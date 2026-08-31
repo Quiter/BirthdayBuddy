@@ -20,7 +20,13 @@ class Converters {
     }
 
     @TypeConverter
-    fun fromString(value: String?): LocalDate? = value?.let { LocalDate.parse(it) }
+    fun fromString(value: String?): LocalDate? = value?.let {
+        try {
+            LocalDate.parse(it)
+        } catch (_: Exception) {
+            null
+        }
+    }
 
     @TypeConverter
     fun dateToString(date: LocalDate?): String? = date?.toString()
