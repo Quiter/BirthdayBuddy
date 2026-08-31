@@ -955,3 +955,9 @@
     - **Unit-Tests & Test-Coverage:** Umfassende neue Testfälle in `DateUtilsTest.kt`, `SystemContactDataSourceTest.kt` und `HomeViewModelTest.kt` hinzugefügt; Test-Konfigurationen in `CalendarSyncRepositoryImplTest.kt`, `BirthdayAppFunctionServiceTest.kt` und `SampleData.kt` synchronisiert.
     - **Verifikation:** Alle Unit-Tests via `./gradlew test` erfolgreich abgeschlossen.
 
+318. **Schaltjahr-sichere Fälligkeitsprüfung für Benachrichtigungen (Bugfix & Leap-Year-Handling):**
+    - **Problem:** In [GetPendingNotificationsUseCase.kt](file:///c:/Users/chris/AndroidStudioProjects/BirthdayBuddy/app/src/main/java/com/heckmannch/birthdaybuddy/domain/usecase/GetPendingNotificationsUseCase.kt) wurde für die Fälligkeit von Benachrichtigungen ein direkter Monats- und Tagesabgleich durchgeführt (`bday.month == targetDate.month && bday.dayOfMonth == targetDate.dayOfMonth`). Da der 29. Februar in Nicht-Schaltjahren nicht existiert, wurden Benachrichtigungen für Personen mit Geburtstag am 29. Februar in 3 von 4 Jahren nie ausgelöst.
+    - **Lösung via DateUtils.toYear:** Umstellung des Datumsabgleichs für Geburtstage, Hochzeitstage (Anniversaries) und Namenstage (Name Days) auf `eventDate.toYear(targetDate.year) == targetDate`. Dadurch wird der 29. Februar in Nicht-Schaltjahren automatisch und konsistent auf den 28. Februar projiziert.
+    - **Unit-Tests & Test-Coverage:** Umfassende neue Testfälle in [GetPendingNotificationsUseCaseTest.kt](file:///c:/Users/chris/AndroidStudioProjects/BirthdayBuddy/app/src/test/java/com/heckmannch/birthdaybuddy/domain/usecase/GetPendingNotificationsUseCaseTest.kt) für Schaltjahre (2028: Trigger am 29. Feb bzw. am 28. Feb bei Vorlauf) und Nicht-Schaltjahre (2027: Trigger am 28. Feb am Geburtstag selbst bzw. am 27. Feb bei 1 Tag Vorlauf) sowie für Hochzeitstage und Namenstage implementiert.
+    - **Verifikation:** Alle Unit-Tests via `./gradlew test` erfolgreich abgeschlossen.
+

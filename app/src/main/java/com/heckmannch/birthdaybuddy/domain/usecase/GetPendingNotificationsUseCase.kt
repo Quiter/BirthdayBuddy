@@ -4,6 +4,7 @@ import com.heckmannch.birthdaybuddy.domain.model.Contact
 import com.heckmannch.birthdaybuddy.domain.model.EventType
 import com.heckmannch.birthdaybuddy.domain.repository.ContactRepository
 import com.heckmannch.birthdaybuddy.domain.repository.NotificationRepository
+import com.heckmannch.birthdaybuddy.util.toYear
 import dagger.Reusable
 import kotlinx.coroutines.flow.first
 import java.time.Duration
@@ -69,7 +70,7 @@ class GetPendingNotificationsUseCase @Inject constructor(
             // 1. Birthdays
             val birthdays = allContacts.filter { contact ->
                 contact.birthday?.let { bday ->
-                    (bday.month == targetDate.month) && (bday.dayOfMonth == targetDate.dayOfMonth)
+                    bday.toYear(targetDate.year) == targetDate
                 } ?: false
             }
             for (contact in birthdays) {
@@ -94,7 +95,7 @@ class GetPendingNotificationsUseCase @Inject constructor(
                 // Anniversaries with spouse coupling
                 val anniversaries = allContacts.filter { contact ->
                     contact.anniversary?.let { anniv ->
-                        (anniv.month == targetDate.month) && (anniv.dayOfMonth == targetDate.dayOfMonth)
+                        anniv.toYear(targetDate.year) == targetDate
                     } ?: false
                 }
                 val processedAnniversaries = mutableSetOf<String>()
@@ -149,7 +150,7 @@ class GetPendingNotificationsUseCase @Inject constructor(
                 // Name days
                 val nameDays = allContacts.filter { contact ->
                     contact.nameDay?.let { nd ->
-                        (nd.month == targetDate.month) && (nd.dayOfMonth == targetDate.dayOfMonth)
+                        nd.toYear(targetDate.year) == targetDate
                     } ?: false
                 }
                 for (contact in nameDays) {

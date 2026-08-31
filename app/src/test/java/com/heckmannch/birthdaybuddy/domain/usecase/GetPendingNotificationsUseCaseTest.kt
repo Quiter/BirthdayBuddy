@@ -323,4 +323,208 @@ class GetPendingNotificationsUseCaseTest {
         // Assert
         assertThat(result).isEmpty()
     }
+
+    @Test
+    fun `when contact has leap day birthday in leap year 2028 on Feb 29, returns birthday event`() = runTest {
+        // Arrange
+        val leapYearTime = LocalDateTime.of(2028, 2, 29, 9, 0)
+        val settings = AppSettings(notificationsEnabled = true)
+        val rule = NotificationRule(id = 1, daysBefore = 0, hour = 9, minute = 0)
+        val leapDayContact = Contact(
+            contactId = "1",
+            lookupKey = "leap_key",
+            fullName = "Leap Year Baby",
+            birthday = LocalDate.of(2000, 2, 29)
+        )
+
+        whenever(notificationRepository.settings).thenReturn(flowOf(settings))
+        whenever(notificationRepository.getAllRulesImmediate()).thenReturn(listOf(rule))
+        whenever(contactRepository.allContacts).thenReturn(flowOf(listOf(leapDayContact)))
+        whenever(notificationRepository.hasNotificationBeenScheduled(eq(2028), eq(0), eq("leap_key")))
+            .thenReturn(false)
+
+        // Act
+        val result = useCase(leapYearTime)
+
+        // Assert
+        assertThat(result).hasSize(1)
+        val event = result[0]
+        assertThat(event.eventType).isEqualTo(EventType.BIRTHDAY)
+        assertThat(event.contacts).containsExactly(leapDayContact)
+        assertThat(event.daysBefore).isEqualTo(0)
+    }
+
+    @Test
+    fun `when contact has leap day birthday in leap year 2028 on Feb 28 with daysBefore 0, returns empty list`() = runTest {
+        // Arrange
+        val leapYearEve = LocalDateTime.of(2028, 2, 28, 9, 0)
+        val settings = AppSettings(notificationsEnabled = true)
+        val rule = NotificationRule(id = 1, daysBefore = 0, hour = 9, minute = 0)
+        val leapDayContact = Contact(
+            contactId = "1",
+            lookupKey = "leap_key",
+            fullName = "Leap Year Baby",
+            birthday = LocalDate.of(2000, 2, 29)
+        )
+
+        whenever(notificationRepository.settings).thenReturn(flowOf(settings))
+        whenever(notificationRepository.getAllRulesImmediate()).thenReturn(listOf(rule))
+        whenever(contactRepository.allContacts).thenReturn(flowOf(listOf(leapDayContact)))
+
+        // Act
+        val result = useCase(leapYearEve)
+
+        // Assert
+        assertThat(result).isEmpty()
+    }
+
+    @Test
+    fun `when contact has leap day birthday in leap year 2028 on Feb 28 with daysBefore 1, returns birthday event`() = runTest {
+        // Arrange
+        val leapYearEve = LocalDateTime.of(2028, 2, 28, 9, 0)
+        val settings = AppSettings(notificationsEnabled = true)
+        val rule = NotificationRule(id = 1, daysBefore = 1, hour = 9, minute = 0)
+        val leapDayContact = Contact(
+            contactId = "1",
+            lookupKey = "leap_key",
+            fullName = "Leap Year Baby",
+            birthday = LocalDate.of(2000, 2, 29)
+        )
+
+        whenever(notificationRepository.settings).thenReturn(flowOf(settings))
+        whenever(notificationRepository.getAllRulesImmediate()).thenReturn(listOf(rule))
+        whenever(contactRepository.allContacts).thenReturn(flowOf(listOf(leapDayContact)))
+        whenever(notificationRepository.hasNotificationBeenScheduled(eq(2028), eq(1), eq("leap_key")))
+            .thenReturn(false)
+
+        // Act
+        val result = useCase(leapYearEve)
+
+        // Assert
+        assertThat(result).hasSize(1)
+        val event = result[0]
+        assertThat(event.eventType).isEqualTo(EventType.BIRTHDAY)
+        assertThat(event.contacts).containsExactly(leapDayContact)
+        assertThat(event.daysBefore).isEqualTo(1)
+    }
+
+    @Test
+    fun `when contact has leap day birthday in non-leap year 2027 on Feb 28 with daysBefore 0, returns birthday event`() = runTest {
+        // Arrange
+        val nonLeapYearDate = LocalDateTime.of(2027, 2, 28, 9, 0)
+        val settings = AppSettings(notificationsEnabled = true)
+        val rule = NotificationRule(id = 1, daysBefore = 0, hour = 9, minute = 0)
+        val leapDayContact = Contact(
+            contactId = "1",
+            lookupKey = "leap_key",
+            fullName = "Leap Year Baby",
+            birthday = LocalDate.of(2000, 2, 29)
+        )
+
+        whenever(notificationRepository.settings).thenReturn(flowOf(settings))
+        whenever(notificationRepository.getAllRulesImmediate()).thenReturn(listOf(rule))
+        whenever(contactRepository.allContacts).thenReturn(flowOf(listOf(leapDayContact)))
+        whenever(notificationRepository.hasNotificationBeenScheduled(eq(2027), eq(0), eq("leap_key")))
+            .thenReturn(false)
+
+        // Act
+        val result = useCase(nonLeapYearDate)
+
+        // Assert
+        assertThat(result).hasSize(1)
+        val event = result[0]
+        assertThat(event.eventType).isEqualTo(EventType.BIRTHDAY)
+        assertThat(event.contacts).containsExactly(leapDayContact)
+        assertThat(event.daysBefore).isEqualTo(0)
+    }
+
+    @Test
+    fun `when contact has leap day birthday in non-leap year 2027 on Feb 27 with daysBefore 1, returns birthday event`() = runTest {
+        // Arrange
+        val nonLeapYearEve = LocalDateTime.of(2027, 2, 27, 9, 0)
+        val settings = AppSettings(notificationsEnabled = true)
+        val rule = NotificationRule(id = 1, daysBefore = 1, hour = 9, minute = 0)
+        val leapDayContact = Contact(
+            contactId = "1",
+            lookupKey = "leap_key",
+            fullName = "Leap Year Baby",
+            birthday = LocalDate.of(2000, 2, 29)
+        )
+
+        whenever(notificationRepository.settings).thenReturn(flowOf(settings))
+        whenever(notificationRepository.getAllRulesImmediate()).thenReturn(listOf(rule))
+        whenever(contactRepository.allContacts).thenReturn(flowOf(listOf(leapDayContact)))
+        whenever(notificationRepository.hasNotificationBeenScheduled(eq(2027), eq(1), eq("leap_key")))
+            .thenReturn(false)
+
+        // Act
+        val result = useCase(nonLeapYearEve)
+
+        // Assert
+        assertThat(result).hasSize(1)
+        val event = result[0]
+        assertThat(event.eventType).isEqualTo(EventType.BIRTHDAY)
+        assertThat(event.contacts).containsExactly(leapDayContact)
+        assertThat(event.daysBefore).isEqualTo(1)
+    }
+
+    @Test
+    fun `when contact has leap day birthday in non-leap year 2027 on Feb 27 with daysBefore 0, returns empty list`() = runTest {
+        // Arrange
+        val nonLeapYearEve = LocalDateTime.of(2027, 2, 27, 9, 0)
+        val settings = AppSettings(notificationsEnabled = true)
+        val rule = NotificationRule(id = 1, daysBefore = 0, hour = 9, minute = 0)
+        val leapDayContact = Contact(
+            contactId = "1",
+            lookupKey = "leap_key",
+            fullName = "Leap Year Baby",
+            birthday = LocalDate.of(2000, 2, 29)
+        )
+
+        whenever(notificationRepository.settings).thenReturn(flowOf(settings))
+        whenever(notificationRepository.getAllRulesImmediate()).thenReturn(listOf(rule))
+        whenever(contactRepository.allContacts).thenReturn(flowOf(listOf(leapDayContact)))
+
+        // Act
+        val result = useCase(nonLeapYearEve)
+
+        // Assert
+        assertThat(result).isEmpty()
+    }
+
+    @Test
+    fun `when contact has leap day anniversary and name day in non-leap year 2027 on Feb 28, returns events`() = runTest {
+        // Arrange
+        val nonLeapYearDate = LocalDateTime.of(2027, 2, 28, 9, 0)
+        val settings = AppSettings(notificationsEnabled = true, otherEventsEnabled = true)
+        val rule = NotificationRule(id = 1, daysBefore = 0, hour = 9, minute = 0)
+        val leapDayContact = Contact(
+            contactId = "1",
+            lookupKey = "leap_key",
+            fullName = "Leap Year Contact",
+            anniversary = LocalDate.of(2016, 2, 29),
+            nameDay = LocalDate.of(2004, 2, 29)
+        )
+
+        whenever(notificationRepository.settings).thenReturn(flowOf(settings))
+        whenever(notificationRepository.getAllRulesImmediate()).thenReturn(listOf(rule))
+        whenever(contactRepository.allContacts).thenReturn(flowOf(listOf(leapDayContact)))
+        whenever(notificationRepository.hasNotificationBeenScheduled(eq(2027), eq(0), eq("anniversary:leap_key")))
+            .thenReturn(false)
+        whenever(notificationRepository.hasNotificationBeenScheduled(eq(2027), eq(0), eq("nameday:leap_key")))
+            .thenReturn(false)
+
+        // Act
+        val result = useCase(nonLeapYearDate)
+
+        // Assert
+        assertThat(result).hasSize(2)
+        val anniversaryEvent = result.first { it.eventType == EventType.ANNIVERSARY }
+        assertThat(anniversaryEvent.contacts).containsExactly(leapDayContact)
+        assertThat(anniversaryEvent.dbKeys).containsExactly("anniversary:leap_key")
+
+        val nameDayEvent = result.first { it.eventType == EventType.NAME_DAY }
+        assertThat(nameDayEvent.contacts).containsExactly(leapDayContact)
+        assertThat(nameDayEvent.dbKeys).containsExactly("nameday:leap_key")
+    }
 }
