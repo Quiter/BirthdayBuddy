@@ -14,12 +14,12 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 
 /**
- * Empfängt BOOT_COMPLETED und MY_PACKAGE_REPLACED, um den WorkManager-Notification-Job
- * nach einem Geräteneustart oder App-Update neu zu planen.
+ * Empfängt BOOT_COMPLETED, MY_PACKAGE_REPLACED, TIMEZONE_CHANGED, TIME_SET und DATE_CHANGED,
+ * um den WorkManager-Notification-Job nach einem Geräteneustart, App-Update oder Zeitanpassungen neu zu planen.
  *
  * Hintergrund: OneTimeWorkRequests werden vom Android-System beim Neustart gelöscht.
- * Ohne diesen Receiver würden Benachrichtigungen nach einem Neustart nicht mehr kommen,
- * bis der Nutzer die App manuell öffnet.
+ * Zudem verbleibt bei Zeitzonen- oder Uhrzeitwechseln der geplante Job auf der alten absoluten Zeit.
+ * Dieser Receiver stellt sicher, dass Benachrichtigungen stets zur korrekten lokalen Uhrzeit ausgelöst werden.
  *
  * Hinweis zur Hilt-Injection:
  * Der Receiver verwendet [EntryPointAccessors] anstelle von @AndroidEntryPoint mit try-catch,
@@ -42,7 +42,10 @@ class BootReceiver : BroadcastReceiver() {
 
         val action = intent.action ?: return
         if (action != Intent.ACTION_BOOT_COMPLETED &&
-            action != Intent.ACTION_MY_PACKAGE_REPLACED
+            action != Intent.ACTION_MY_PACKAGE_REPLACED &&
+            action != Intent.ACTION_TIMEZONE_CHANGED &&
+            action != Intent.ACTION_TIME_CHANGED &&
+            action != Intent.ACTION_DATE_CHANGED
         ) return
 
         val entryPoint = try {

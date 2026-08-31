@@ -4,6 +4,7 @@
 - `MainActivity.kt`: Schlanker Einstiegspunkt der App (~164 Zeilen). Verantwortlich für: Splash-Screen, Edge-to-Edge, Theme-Bereitstellung, globales Intent-Handling (z.B. Widget-Klicks) via `activityIntent`-State und Inaktivitäts-Reset über `LifecycleEventObserver`. Die Navigationslogik liegt in `AppNavHost.kt`, der ContentObserver in `ContactSyncEffect.kt`, die Routen in `NavRoutes.kt`.
 - `BirthdayBuddyApplication.kt`: Hilt-Application Klasse zur Initialisierung der Dependency Injection und Konfiguration des WorkManagers.
 - `AppViewModel.kt`: App-weites `@HiltViewModel`, das auf Activity-Ebene gehalten wird (Root-Package, da Activity-weit gültig).
+- `BootReceiver.kt`: BroadcastReceiver für Geräteneustart (`BOOT_COMPLETED`), App-Updates (`MY_PACKAGE_REPLACED`) sowie Zeitzonen- und Uhrzeitanpassungen (`TIMEZONE_CHANGED`, `TIME_SET`, `DATE_CHANGED`) zur automatischen Neuplanung von Benachrichtigungen via `syncScheduling()`.
 - `AppViewModelTest.kt`: Tests für `AppViewModel`.
 - `PROJECT_STATUS.md`: Dokumentation des aktuellen Entwicklungsstands, der Architektur-Constraints und Meilensteine.
 - `PROJECT_STRUCTURE.md`: Diese Datei (Struktur-Dokumentation des Projekts).
@@ -242,6 +243,7 @@ Diese Tests laufen ohne Emulator/Gerät direkt auf dem Entwicklungsrechner und s
 - `domain/usecase/SetCalendarSyncEnabledUseCaseTest.kt`: JVM Unit-Tests zur Aktivierung/Deaktivierung der Kalendersynchronisation.
 - `domain/appfunctions/BirthdayAppFunctionServiceTest.kt`: JVM Unit-Tests für `BirthdayAppFunctionService`: Überprüfung der Filter-/Mapping-Logik von `getUpcomingBirthdays` (Fensterfilterung, Sortierung, Jahr-Mapping) und `getContactBirthday` (Teil-Match, Null-Handling, Blanknamen-Fehler, alphabetische Erstauflösung).
 - `AppViewModelTest.kt`: Tests für `AppViewModel`: Verifikation der initialen `AppSettings`-Emission, reaktiver Settings-Propagation und einmaligem `syncScheduling()`-Aufruf im `init`.
+- `BootReceiverTest.kt`: JVM Unit-Tests für `BootReceiver`: Absicherung aller Broadcast-Aktionen (`BOOT_COMPLETED`, `MY_PACKAGE_REPLACED`, `TIMEZONE_CHANGED`, `TIME_SET`, `DATE_CHANGED`), Ignorieren unpassender Aktionen und Exception-Handling.
 - `ui/screens/home/HomeViewModelGiftIdeaTest.kt`: Tests für Geschenkideen- und Geburtstags-Intents im `HomeViewModel`. **Feature-co-located** neben `HomeViewModel.kt`.
 - `ui/screens/home/HomeViewModelSearchTest.kt`: Tests der Such- und Filterlogik im `HomeViewModel`. **Feature-co-located** neben `HomeViewModel.kt`.
 - `ui/screens/home/HomeViewModelTest.kt`: Tests für das reaktive State-Management und die UI-Filterung im `HomeViewModel`. **Feature-co-located** neben `HomeViewModel.kt`.

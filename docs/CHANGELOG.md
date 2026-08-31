@@ -967,4 +967,12 @@
     - **Unit-Tests:** [GetPendingNotificationsUseCaseTest.kt](file:///c:/Users/chris/AndroidStudioProjects/BirthdayBuddy/app/src/test/java/com/heckmannch/birthdaybuddy/domain/usecase/GetPendingNotificationsUseCaseTest.kt) um umfassende Tests für verspätete Aufrufe (z. B. 50 Minuten Verspätung, 2 Stunden Verspätung, deduplizierte Mehrfachaufrufe und Multi-Regel-Tagesläufe) erweitert.
     - **Verifikation:** Alle Unit-Tests via `./gradlew test` erfolgreich abgeschlossen.
 
+320. **Erweiterung des `BootReceiver` für Zeitzonen- und Uhrzeitwechsel (Feature & Reliability):**
+    - **Problem:** `BootReceiver` verarbeitete bisher nur `ACTION_BOOT_COMPLETED` und `ACTION_MY_PACKAGE_REPLACED`. Bei Zeitzonenwechseln (z. B. Reisen), Sommer-/Winterzeit-Umstellungen oder manuellen Zeit- und Datumsänderungen verblieben geplante `OneTimeWorkRequest`-Instanzen auf der veralteten absoluten Systemzeit.
+    - **AndroidManifest.xml:** Erweiterung des Intent-Filters für `BootReceiver` um `android.intent.action.TIMEZONE_CHANGED`, `android.intent.action.TIME_SET` und `android.intent.action.DATE_CHANGED`.
+    - **BootReceiver.kt:** Aktualisierung der `action`-Filterung in `onReceive` auf `Intent.ACTION_TIMEZONE_CHANGED`, `Intent.ACTION_TIME_CHANGED` (`android.intent.action.TIME_SET`) und `Intent.ACTION_DATE_CHANGED`, um bei jedem dieser Ereignisse asynchron `entryPoint.notificationRepository().syncScheduling()` auszulösen.
+    - **Unit-Tests:** Erstellung der neuen Testsuite [BootReceiverTest.kt](file:///c:/Users/chris/AndroidStudioProjects/BirthdayBuddy/app/src/test/java/com/heckmannch/birthdaybuddy/BootReceiverTest.kt) mit vollständiger Abdeckung aller Broadcast-Aktionen, Ignorierung fremder Aktionen und robuster Fehlerbehandlung (Hilt-EntryPoint-Fehlschläge und Scheduler-Exceptions).
+    - **Verifikation:** Alle Unit-Tests via `./gradlew test` erfolgreich abgeschlossen.
+
+
 
