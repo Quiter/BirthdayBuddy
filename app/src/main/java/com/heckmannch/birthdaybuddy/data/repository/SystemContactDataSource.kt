@@ -447,11 +447,30 @@ class SystemContactDataSource @Inject constructor(
         result.mapValues { it.value.toList() }
     }
 
-    private fun parseDate(dateStr: String?): LocalDate? {
+    internal fun parseDate(dateStr: String?): LocalDate? {
         if (dateStr == null) return null
         return try {
             if (dateStr.startsWith("--")) {
-                LocalDate.parse("$NO_YEAR_MARKER-${dateStr.substring(2)}")
+                val clean = dateStr.removePrefix("--")
+                val parts = clean.split("-")
+                if (parts.size == 2) {
+                    val month = parts[0].toIntOrNull()
+                    val day = parts[1].toIntOrNull()
+                    if (month != null && day != null) {
+                        LocalDate.of(NO_YEAR_MARKER, month, day)
+                    } else null
+                } else if (clean.length == 4 && clean.all { it.isDigit() }) {
+                    val month = clean.substring(0, 2).toIntOrNull()
+                    val day = clean.substring(2, 4).toIntOrNull()
+                    if (month != null && day != null) {
+                        LocalDate.of(NO_YEAR_MARKER, month, day)
+                    } else null
+                } else {
+                    runCatching {
+                        val monthDay = java.time.MonthDay.parse(dateStr)
+                        monthDay.atYear(NO_YEAR_MARKER)
+                    }.getOrNull()
+                }
             } else {
                 dateFormats.firstNotNullOfOrNull { format ->
                     runCatching { LocalDate.parse(dateStr, format) }.getOrNull()

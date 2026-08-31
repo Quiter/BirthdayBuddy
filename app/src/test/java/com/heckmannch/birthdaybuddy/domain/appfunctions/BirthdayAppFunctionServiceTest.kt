@@ -8,6 +8,7 @@ import com.google.common.truth.Truth.assertThat
 import com.heckmannch.birthdaybuddy.MainDispatcherRule
 import com.heckmannch.birthdaybuddy.domain.model.Contact
 import com.heckmannch.birthdaybuddy.domain.repository.ContactRepository
+import com.heckmannch.birthdaybuddy.util.NO_YEAR_MARKER
 import io.mockk.coEvery
 import io.mockk.mockk
 import kotlinx.coroutines.test.runTest
@@ -75,7 +76,7 @@ class BirthdayAppFunctionServiceTest {
         val birthdayDate = if (year != null) {
             LocalDate.of(year, date.monthValue, date.dayOfMonth)
         } else {
-            LocalDate.of(1900, date.monthValue, date.dayOfMonth) // NO_YEAR_MARKER
+            LocalDate.of(NO_YEAR_MARKER, date.monthValue, date.dayOfMonth)
         }
         return Contact(
             contactId = lookupKey,

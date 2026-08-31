@@ -11,6 +11,7 @@ import com.heckmannch.birthdaybuddy.data.local.AppSettingsDao
 import com.heckmannch.birthdaybuddy.data.local.AppSettingsEntity
 import com.heckmannch.birthdaybuddy.domain.model.Contact
 import com.heckmannch.birthdaybuddy.domain.repository.CalendarSyncRepository
+import com.heckmannch.birthdaybuddy.util.NO_YEAR_MARKER
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
@@ -311,7 +312,7 @@ class CalendarSyncRepositoryImplTest {
 
         val contacts = listOf(
             Contact(contactId = "c1", lookupKey = "key1", fullName = "Alice", birthday = LocalDate.of(1990, 5, 10)),
-            Contact(contactId = "c2", lookupKey = "key2", fullName = "Bob", birthday = LocalDate.of(1900, 10, 20))
+            Contact(contactId = "c2", lookupKey = "key2", fullName = "Bob", birthday = LocalDate.of(NO_YEAR_MARKER, 10, 20))
         )
 
         every { context.getString(any()) } returns "MockNoYear"
@@ -373,7 +374,7 @@ class CalendarSyncRepositoryImplTest {
                 contactId = "c5",
                 lookupKey = "keyE",
                 fullName = "Eva",
-                nameDay = LocalDate.of(1900, 12, 24)
+                nameDay = LocalDate.of(NO_YEAR_MARKER, 12, 24)
             )
         )
 

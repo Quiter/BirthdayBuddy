@@ -947,6 +947,11 @@
     - **Token-Bereinigung:** Ersetzung von `OnboardingCalendarCellSize` durch `IconSizeMedium` in [GiftIdeaList.kt](file:///c:/Users/chris/AndroidStudioProjects/BirthdayBuddy/app/src/main/java/com/heckmannch/birthdaybuddy/ui/screens/home/components/list/GiftIdeaList.kt).
     - **Verifikation:** Alle Unit-Tests via `./gradlew testDebugUnitTest` erfolgreich durchgelaufen.
 
-
-
+317. **Behebung des 29. Februar Bugs für Kontakte ohne hinterlegtes Geburtsjahr (Bugfix & Leap-Year-Handling):**
+    - **Problem:** `NO_YEAR_MARKER` war historisch auf `1900` gesetzt. Da 1900 im Gregorianischen Kalender kein Schaltjahr ist (teilbar durch 100, nicht durch 400), schlug `LocalDate.parse("1900-02-29")` in `SystemContactDataSource.kt` mit einer `DateTimeParseException` fehl, wodurch Android-Kontakte mit Geburtstag am 29. Februar ohne hinterlegtes Jahr (`--02-29`) verworfen wurden. Zudem begrenzte der Date-Picker (`BirthdayDatePickerDialog.kt`) und das `HomeViewModel.kt` den Februar bei ausgeschaltetem Jahr fälschlicherweise auf 28 Tage.
+    - **NO_YEAR_MARKER Umstellung:** `NO_YEAR_MARKER` in [DateUtils.kt](file:///c:/Users/chris/AndroidStudioProjects/BirthdayBuddy/app/src/main/java/com/heckmannch/birthdaybuddy/util/DateUtils.kt) wurde auf das valide Schaltjahr `4` (Jahr 4 n. Chr., kein Konflikt mit lebenden Personen) geändert. `LocalDate.hasYear` (`this.year != NO_YEAR_MARKER`) arbeitet weiterhin unverändert zuverlässig.
+    - **SystemContactDataSource:** `parseDate` zerlegt Datumsstrings mit führendem `"--"` nun strukturiert und parst sie via `LocalDate.of(NO_YEAR_MARKER, month, day)` bzw. `MonthDay.parse(dateStr).atYear(NO_YEAR_MARKER)`, sodass auch `"--02-29"` und `"--0229"` fehlerfrei geparst werden.
+    - **DatePicker & ViewModel Absicherung:** In [BirthdayDatePickerDialog.kt](file:///c:/Users/chris/AndroidStudioProjects/BirthdayBuddy/app/src/main/java/com/heckmannch/birthdaybuddy/ui/screens/home/components/list/BirthdayDatePickerDialog.kt) und [HomeViewModel.kt](file:///c:/Users/chris/AndroidStudioProjects/BirthdayBuddy/app/src/main/java/com/heckmannch/birthdaybuddy/ui/screens/home/HomeViewModel.kt) ermittelt `Year.isLeap(NO_YEAR_MARKER)` nun korrekt 29 Tage für den Februar ohne Jahr, formatiert lokalisierte Strings (z.B. "29. Februar") sauber und verhindert ungewolltes Kürzen auf den 28. Tag.
+    - **Unit-Tests & Test-Coverage:** Umfassende neue Testfälle in `DateUtilsTest.kt`, `SystemContactDataSourceTest.kt` und `HomeViewModelTest.kt` hinzugefügt; Test-Konfigurationen in `CalendarSyncRepositoryImplTest.kt`, `BirthdayAppFunctionServiceTest.kt` und `SampleData.kt` synchronisiert.
+    - **Verifikation:** Alle Unit-Tests via `./gradlew test` erfolgreich abgeschlossen.
 

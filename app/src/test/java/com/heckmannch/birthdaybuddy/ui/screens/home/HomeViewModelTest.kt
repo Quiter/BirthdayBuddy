@@ -566,4 +566,34 @@ class HomeViewModelTest {
         val state = viewModel.uiState.first()
         assertThat(state.pendingBirthdayEdit).isNull()
     }
+
+    @Test
+    fun onOpenBirthdayPicker_withoutYear_february29_preservesLeapDay() = runTest {
+        val contact = Contact(
+            contactId = "c_leap",
+            lookupKey = "key_leap",
+            fullName = "Leap Day Baby",
+            birthday = null,
+        )
+        whenever(contactRepository.getAllContactsImmediate()).thenReturn(listOf(contact))
+
+        viewModel = createViewModel()
+
+        viewModel.onIntent(
+            HomeIntent.OpenBirthdayPicker(
+                contactLookupKey = "key_leap",
+                year = null,
+                month = 2,
+                day = 29,
+            )
+        )
+
+        val state = viewModel.uiState.first { it.pendingBirthdayEdit != null }
+        val edit = state.pendingBirthdayEdit
+        assertThat(edit).isNotNull()
+        assertThat(edit!!.contactId).isEqualTo("c_leap")
+        assertThat(edit.initialDate).isEqualTo(LocalDate.of(NO_YEAR_MARKER, 2, 29))
+        assertThat(edit.initialDate.dayOfMonth).isEqualTo(29)
+        assertThat(edit.initialDate.hasYear).isFalse()
+    }
 }

@@ -11,8 +11,10 @@ private val WHITESPACE_REGEX = "\\s+".toRegex()
 
 /**
  * Standard-Jahr für Kontakte ohne hinterlegtes Geburtsjahr in Android.
+ * Muss ein valides Schaltjahr sein (z.B. Jahr 4), damit der 29. Februar als
+ * LocalDate ohne Exception repräsentiert werden kann.
  */
-const val NO_YEAR_MARKER = 1900
+const val NO_YEAR_MARKER = 4
 
 /**
  * Prüft, ob ein Datum ein gültiges Geburtsjahr enthält.

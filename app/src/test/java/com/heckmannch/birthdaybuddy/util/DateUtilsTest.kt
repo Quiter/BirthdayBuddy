@@ -62,8 +62,49 @@ class DateUtilsTest {
     }
 
     @Test
+    fun `hasYear returns false for NO_YEAR_MARKER on February 29`() {
+        val birthday = LocalDate.of(NO_YEAR_MARKER, 2, 29)
+        assertThat(birthday.hasYear).isFalse()
+    }
+
+    @Test
+    fun `toNextOccurrence handles February 29 without year in leap year`() {
+        val birthday = LocalDate.of(NO_YEAR_MARKER, 2, 29)
+        val today = LocalDate.of(2024, 1, 15) // 2024 is a leap year
+
+        val nextOccurrence = birthday.toNextOccurrence(today)
+
+        assertThat(nextOccurrence).isEqualTo(LocalDate.of(2024, 2, 29))
+    }
+
+    @Test
+    fun `toNextOccurrence handles February 29 without year in non-leap year`() {
+        val birthday = LocalDate.of(NO_YEAR_MARKER, 2, 29)
+        val today = LocalDate.of(2023, 1, 15) // 2023 is not a leap year
+
+        val nextOccurrence = birthday.toNextOccurrence(today)
+
+        // In non-leap years, February 29 falls back to February 28
+        assertThat(nextOccurrence).isEqualTo(LocalDate.of(2023, 2, 28))
+    }
+
+    @Test
+    fun `safeDaysUntilNext handles February 29 without year`() {
+        val birthday = LocalDate.of(NO_YEAR_MARKER, 2, 29)
+        val today = LocalDate.of(2024, 2, 28) // 2024 is a leap year, 1 day before Feb 29
+
+        assertThat(birthday.safeDaysUntilNext(today)).isEqualTo(1)
+    }
+
+    @Test
     fun `safeNextAge returns null for contacts without year`() {
         val birthday = LocalDate.of(NO_YEAR_MARKER, 5, 15)
+        assertThat(birthday.safeNextAge()).isNull()
+    }
+
+    @Test
+    fun `safeNextAge returns null for February 29 without year`() {
+        val birthday = LocalDate.of(NO_YEAR_MARKER, 2, 29)
         assertThat(birthday.safeNextAge()).isNull()
     }
 

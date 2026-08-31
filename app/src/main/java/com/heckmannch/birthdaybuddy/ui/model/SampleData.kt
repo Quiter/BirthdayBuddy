@@ -1,6 +1,7 @@
 package com.heckmannch.birthdaybuddy.ui.model
 
 import com.heckmannch.birthdaybuddy.domain.model.GiftIdea
+import com.heckmannch.birthdaybuddy.util.NO_YEAR_MARKER
 import java.time.LocalDate
 
 /**
@@ -27,7 +28,7 @@ object SampleData {
         hasSignal = false,
         labels = listOf("Freunde"),
         giftIdeas = listOf(giftIdea1),
-        birthday = LocalDate.of(1900, 5, 12),
+        birthday = LocalDate.of(NO_YEAR_MARKER, 5, 12),
         birthdayTier = BirthdayTier.MILESTONE_GOLD, // nextAge = 30 → % 10 == 0
     )
 

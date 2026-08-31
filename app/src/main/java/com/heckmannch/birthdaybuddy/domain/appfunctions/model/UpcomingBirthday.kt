@@ -17,8 +17,8 @@ data class UpcomingBirthday(
     val birthdayDay: Int,
     /**
      * Four-digit birth year, or null if the contact has no year stored.
-     * Contacts without a year have the sentinel value 1900 in the Android Contacts
-     * provider, which is normalised to null here.
+     * Contacts without a year (represented internally via NO_YEAR_MARKER) are
+     * normalised to null here.
      */
     val birthdayYear: Int?,
     /**
