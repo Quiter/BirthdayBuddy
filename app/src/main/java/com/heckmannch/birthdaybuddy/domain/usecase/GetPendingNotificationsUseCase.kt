@@ -7,7 +7,6 @@ import com.heckmannch.birthdaybuddy.domain.repository.NotificationRepository
 import com.heckmannch.birthdaybuddy.util.toYear
 import dagger.Reusable
 import kotlinx.coroutines.flow.first
-import java.time.Duration
 import java.time.LocalDateTime
 import java.time.LocalTime
 import javax.inject.Inject
@@ -15,7 +14,8 @@ import javax.inject.Inject
 /**
  * Evaluates active notification rules for the given time and returns the list of events
  * (birthdays, anniversaries, name days) that should be notified to the user.
- * It filters out already scheduled notifications to avoid duplicates.
+ * It considers any rules whose scheduled time has arrived today and filters out already
+ * scheduled notifications via the database to prevent duplicates even when execution is delayed.
  */
 @Reusable
 class GetPendingNotificationsUseCase @Inject constructor(
@@ -42,12 +42,12 @@ class GetPendingNotificationsUseCase @Inject constructor(
         val currentLocalTime = now.toLocalTime().withSecond(0).withNano(0)
         val today = now.toLocalDate()
 
-        // Find rules that are active/due in the last 45 minutes of the current time.
-        // A robust buffer against WorkManager delays.
+        // Find rules that are due today up to the current time.
+        // Tolerates arbitrary WorkManager / Doze mode wake-up delays without skipping
+        // notifications, relying on hasNotificationBeenScheduled below for deduplication.
         val currentRules = rules.filter { rule ->
             val ruleTime = LocalTime.of(rule.hour, rule.minute)
-            val diffMinutes = Duration.between(ruleTime, currentLocalTime).toMinutes()
-            diffMinutes in 0..44
+            ruleTime <= currentLocalTime
         }
 
         if (currentRules.isEmpty()) return emptyList()

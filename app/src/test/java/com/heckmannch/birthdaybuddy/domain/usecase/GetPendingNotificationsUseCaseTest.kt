@@ -70,7 +70,7 @@ class GetPendingNotificationsUseCaseTest {
     }
 
     @Test
-    fun `when rules are present but none are due in 45-minute window, returns empty list`() = runTest {
+    fun `when rules are present but in the future today, returns empty list`() = runTest {
         // Arrange
         val settings = AppSettings(notificationsEnabled = true)
         val rule = NotificationRule(id = 1, daysBefore = 0, hour = 10, minute = 0) // 10:00 (base is 9:00)
@@ -526,5 +526,132 @@ class GetPendingNotificationsUseCaseTest {
         val nameDayEvent = result.first { it.eventType == EventType.NAME_DAY }
         assertThat(nameDayEvent.contacts).containsExactly(leapDayContact)
         assertThat(nameDayEvent.dbKeys).containsExactly("nameday:leap_key")
+    }
+
+    @Test
+    fun `when worker execution is delayed by 50 minutes, rule is still evaluated and returns birthday event`() = runTest {
+        // Arrange: Rule set to 09:00, worker executed at 09:50 (50 min delay due to Doze Mode / battery saver)
+        val delayedTime = LocalDateTime.of(2024, 5, 15, 9, 50)
+        val settings = AppSettings(notificationsEnabled = true)
+        val rule = NotificationRule(id = 1, daysBefore = 0, hour = 9, minute = 0)
+        val contact = Contact(
+            contactId = "1",
+            lookupKey = "key1",
+            fullName = "John Doe",
+            birthday = LocalDate.of(1990, 5, 15)
+        )
+
+        whenever(notificationRepository.settings).thenReturn(flowOf(settings))
+        whenever(notificationRepository.getAllRulesImmediate()).thenReturn(listOf(rule))
+        whenever(contactRepository.allContacts).thenReturn(flowOf(listOf(contact)))
+        whenever(notificationRepository.hasNotificationBeenScheduled(eq(2024), eq(0), eq("key1")))
+            .thenReturn(false)
+
+        // Act
+        val result = useCase(delayedTime)
+
+        // Assert
+        assertThat(result).hasSize(1)
+        val event = result[0]
+        assertThat(event.eventType).isEqualTo(EventType.BIRTHDAY)
+        assertThat(event.contacts).containsExactly(contact)
+        assertThat(event.daysBefore).isEqualTo(0)
+        assertThat(event.dbKeys).containsExactly("key1")
+    }
+
+    @Test
+    fun `when worker execution is delayed by 2 hours, rule is still evaluated and returns birthday event`() = runTest {
+        // Arrange: Rule set to 09:00, worker executed at 11:00 (2 hours delay)
+        val delayedTime = LocalDateTime.of(2024, 5, 15, 11, 0)
+        val settings = AppSettings(notificationsEnabled = true)
+        val rule = NotificationRule(id = 1, daysBefore = 0, hour = 9, minute = 0)
+        val contact = Contact(
+            contactId = "1",
+            lookupKey = "key1",
+            fullName = "John Doe",
+            birthday = LocalDate.of(1990, 5, 15)
+        )
+
+        whenever(notificationRepository.settings).thenReturn(flowOf(settings))
+        whenever(notificationRepository.getAllRulesImmediate()).thenReturn(listOf(rule))
+        whenever(contactRepository.allContacts).thenReturn(flowOf(listOf(contact)))
+        whenever(notificationRepository.hasNotificationBeenScheduled(eq(2024), eq(0), eq("key1")))
+            .thenReturn(false)
+
+        // Act
+        val result = useCase(delayedTime)
+
+        // Assert
+        assertThat(result).hasSize(1)
+        val event = result[0]
+        assertThat(event.eventType).isEqualTo(EventType.BIRTHDAY)
+        assertThat(event.contacts).containsExactly(contact)
+        assertThat(event.daysBefore).isEqualTo(0)
+    }
+
+    @Test
+    fun `when worker execution is delayed but notification was already scheduled earlier today, returns empty list`() = runTest {
+        // Arrange: Rule set to 09:00, worker executed late at 14:00, but notification was already scheduled
+        val delayedTime = LocalDateTime.of(2024, 5, 15, 14, 0)
+        val settings = AppSettings(notificationsEnabled = true)
+        val rule = NotificationRule(id = 1, daysBefore = 0, hour = 9, minute = 0)
+        val contact = Contact(
+            contactId = "1",
+            lookupKey = "key1",
+            fullName = "John Doe",
+            birthday = LocalDate.of(1990, 5, 15)
+        )
+
+        whenever(notificationRepository.settings).thenReturn(flowOf(settings))
+        whenever(notificationRepository.getAllRulesImmediate()).thenReturn(listOf(rule))
+        whenever(contactRepository.allContacts).thenReturn(flowOf(listOf(contact)))
+        whenever(notificationRepository.hasNotificationBeenScheduled(eq(2024), eq(0), eq("key1")))
+            .thenReturn(true)
+
+        // Act
+        val result = useCase(delayedTime)
+
+        // Assert
+        assertThat(result).isEmpty()
+    }
+
+    @Test
+    fun `when multiple rules exist throughout the day, only rules whose scheduled time has arrived are evaluated`() = runTest {
+        // Arrange: Rule 1 at 09:00 (due), Rule 2 at 18:00 (future), executed at 11:30
+        val midDayTime = LocalDateTime.of(2024, 5, 15, 11, 30)
+        val settings = AppSettings(notificationsEnabled = true)
+        val ruleMorning = NotificationRule(id = 1, daysBefore = 0, hour = 9, minute = 0)
+        val ruleEvening = NotificationRule(id = 2, daysBefore = 1, hour = 18, minute = 0)
+        val contactToday = Contact(
+            contactId = "1",
+            lookupKey = "key_today",
+            fullName = "Today Birthday",
+            birthday = LocalDate.of(1990, 5, 15)
+        )
+        val contactTomorrow = Contact(
+            contactId = "2",
+            lookupKey = "key_tomorrow",
+            fullName = "Tomorrow Birthday",
+            birthday = LocalDate.of(1990, 5, 16)
+        )
+
+        whenever(notificationRepository.settings).thenReturn(flowOf(settings))
+        whenever(notificationRepository.getAllRulesImmediate()).thenReturn(listOf(ruleMorning, ruleEvening))
+        whenever(contactRepository.allContacts).thenReturn(flowOf(listOf(contactToday, contactTomorrow)))
+        whenever(notificationRepository.hasNotificationBeenScheduled(eq(2024), eq(0), eq("key_today")))
+            .thenReturn(false)
+        whenever(notificationRepository.hasNotificationBeenScheduled(eq(2024), eq(1), eq("key_tomorrow")))
+            .thenReturn(false)
+
+        // Act
+        val result = useCase(midDayTime)
+
+        // Assert: Only the morning rule (09:00 <= 11:30) is evaluated; evening rule (18:00 > 11:30) is skipped
+        assertThat(result).hasSize(1)
+        val event = result[0]
+        assertThat(event.eventType).isEqualTo(EventType.BIRTHDAY)
+        assertThat(event.contacts).containsExactly(contactToday)
+        assertThat(event.daysBefore).isEqualTo(0)
+        assertThat(event.dbKeys).containsExactly("key_today")
     }
 }
