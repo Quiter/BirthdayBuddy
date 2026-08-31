@@ -34,12 +34,13 @@ BirthdayBuddy was born out of pure frustration. It treats your **Android System 
 ---
 
 ## 🛠 Tech Stack & Architecture
-
-* **UI:** 100% Jetpack Compose (BOM 2026.05.01) with Material 3 Adaptive layout libraries.
-* **Build:** AGP 9.0 ready, Java 17 toolchain, and strict R-class hardening.
-* **Architecture:** Clean, MVI-refactored architecture with **6 specialized ViewModels** keeping presentation logic strictly decoupled from system APIs.
-* **Persistence:** Room v6 serving as a high-performance local cache.
-* **DI:** Hilt for clean dependency injection.
+ 
+* **UI:** 100% Jetpack Compose (Modern Compose BOM) with Material 3 Adaptive layout and Navigation 3 libraries.
+* **Build:** AGP 9.x+ ready, Java 17 toolchain, and strict R-class hardening.
+* **Architecture:** Clean, MVI-refactored architecture with feature-co-located ViewModels keeping presentation logic strictly decoupled from system APIs.
+* **Persistence:** Room serving as a high-performance local cache with schema-safe migrations.
+* **DI:** Hilt with KSP for clean dependency injection.
+* **Version Catalog:** Centralized, evergreen dependency management via `gradle/libs.versions.toml`.
 
 ---
 

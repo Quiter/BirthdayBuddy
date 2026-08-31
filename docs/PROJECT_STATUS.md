@@ -11,11 +11,13 @@
 6. **Padding-Regel:** Keine additiven vertikalen Paddings. Abstand via `bottom-padding` zur Vermeidung von Layout-Sprüngen bei `AnimatedVisibility`.
 7. **Tests:** Vor Releases: `./gradlew test connectedDebugAndroidTest`.
 
-## 🏗 Technischer Stack
-- **Build:** AGP 9.2.1, Java 17, Gradle 9.5, Strict R-Class Flags.
-- **UI:** Compose (BOM 2026.05.01), Material 3 Adaptive, Glance (Widget).
-- **Data:** Room (2.8.4), WorkManager (2.11), Hilt (2.59).
-- **Logic:** UDF / MVI Refactored ViewModels, @Immutable UI-Models.
+## 🏗 Technischer Stack (Evergreen via `libs.versions.toml`)
+- **Version Catalog:** Alle Abhängigkeiten werden über [`gradle/libs.versions.toml`](file:///c:/Users/chris/AndroidStudioProjects/BirthdayBuddy/gradle/libs.versions.toml) (SSOT) zentral und aktuell gehalten.
+- **Build:** AGP 9.x+, Java 17 (Toolchain), modernes Gradle, Strict R-Class Flags (`nonTransitiveRClass`, `nonFinalResIds`).
+- **UI:** 100% Jetpack Compose mit aktuellem BOM, Material 3 Adaptive Layouts, Navigation 3 (`NavDisplay`), Glance (Homescreen-Widget).
+- **Data & Background:** Room (mit KSP & Auto-Migrationen), WorkManager, Hilt DI.
+- **AI & Integrations:** Android AppFunctions (`domain/appfunctions/` für Android 16+).
+- **Testing:** JVM Unit-Tests, Roborazzi Screenshot-Tests, instrumentierte Room-Migrationstests.
 
 ## ✨ Kern-Features (Status Quo)
 - **Home:** Master-Detail Layout, Gmail-Style Suche, adaptive M3 Fade-Out Fast-Scrollbar, Konfetti-Effekt.

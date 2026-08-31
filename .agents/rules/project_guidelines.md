@@ -21,7 +21,10 @@ This file provides high-priority, machine-readable instructions, constraints, an
 - **Clean Architecture & Dependency Injection**:
   - Follow Feature-based Layering and Clean Architecture principles.
   - ViewModels MUST be decoupled from Android APIs. Use Hilt DI to supply dependencies.
-  - Implement specialized ViewModels per screen using Uni-Directional Data Flow (UDF) / MVI patterns (e.g., central `onIntent` handler).
+  - Implement specialized ViewModels per screen using Uni-Directional Data Flow (UDF) / MVI patterns (e.g., central `onIntent` handler). ViewModels are feature-co-located directly alongside their screens in `ui/screens/<feature>/`.
+- **Evergreen Dependencies & Version Catalog (SSOT)**:
+  - [`gradle/libs.versions.toml`](file:///c:/Users/chris/AndroidStudioProjects/BirthdayBuddy/gradle/libs.versions.toml) is the authoritative Single Source of Truth for all library, plugin, and SDK versions.
+  - DO NOT hardcode static library version numbers into rule files or architectural prompts. Always consult and maintain `libs.versions.toml` with current, compatible stable releases.
 - **Layout & Spacing Restrictions**:
   - DO NOT use additive vertical paddings. Spacings between elements MUST use bottom padding to avoid layout jumps inside `AnimatedVisibility` components.
   - All spacing, icon sizes, and transparency values MUST use standard tokens from `ui/theme/Dimensions.kt` (e.g., `SpacingNormal`, `IconSizeSmall`, `AlphaEmphasisNormal`). No magic/hardcoded values.
@@ -33,14 +36,15 @@ This file provides high-priority, machine-readable instructions, constraints, an
 ### 1.1 Directory Map (LLM Navigation Aid)
 For detailed human-readable descriptions, consult [PROJECT_STRUCTURE.md](file:///c:/Users/chris/AndroidStudioProjects/BirthdayBuddy/docs/PROJECT_STRUCTURE.md). Use this quick map for navigation:
 - **Dependency Injection**: `di/` (`AppModule.kt`, `HelperBindingsModule.kt`)
-- **Data Layer (Cache/DB)**: `data/local/` (Entities: `Contact`, `AppSettings`, `ContactUserData`, `LabelConfig`, `NotificationRule`, `PendingNotification`)
-- **Repositories**: `data/repository/` (Sync, Contacts, Backup, Notifications)
-- **UI Screens**: `ui/screens/`
-  - `home/`: Main list, top chips, top bar, detail pane, fast-scroll, confetti
-  - `onboarding/`: Onboarding pages
-  - `settings/`: App configuration (Backup, Labels, Notifications, Calendar)
-- **UI Commons**: `ui/model/` (UI State objects), `ui/components/` (shared dialogs, custom illustrations), `ui/theme/` (colors, typography, dimensions)
-- **ViewModels**: `viewmodel/` (HomeViewModel, ThemeViewModel, NotificationViewModel, etc.)
+- **Domain Layer**: `domain/` (`model/`, `usecase/`, `appfunctions/`, `permission/`)
+- **Data Layer (Cache/DB)**: `data/local/` (Entities: `Contact`, `AppSettings`, `ContactUserData`, `LabelConfig`, `NotificationRule`, `PendingNotification`), `data/repository/` (Sync, Contacts, Backup, Notifications), `data/mapper/`
+- **UI Screens & ViewModels**: `ui/screens/` (feature-co-located Screens, Contents, ViewModels, States, Actions)
+  - `home/`: Main list, top chips, top bar, detail pane, fast-scroll, confetti (`HomeViewModel.kt`)
+  - `onboarding/`: Onboarding flow and pages (`OnboardingViewModel.kt`)
+  - `settings/`: App configuration (Backup, Labels, Notifications, Calendar, Theme, Sync, About)
+- **UI Navigation**: `ui/navigation/` (`NavRoutes.kt` for serializable keys, `AppNavHost.kt` for NavDisplay and transitions)
+- **UI Commons**: `ui/model/` (UI State/Models), `ui/components/` (shared dialogs, responsive layout), `ui/illustrations/` (custom native animations), `ui/theme/` (colors, typography, dimensions)
+- **App-Level ViewModel**: `AppViewModel.kt` in root package (Activity-wide state)
 - **Widgets**: `widget/` (Glance-based homescreen widgets)
 
 ---
@@ -62,7 +66,7 @@ For detailed human-readable descriptions, consult [PROJECT_STRUCTURE.md](file://
 
 ### 2.3 Type-Safe Navigation (Navigation 3)
 - Both global and local navigation are managed via Jetpack Navigation 3 (`NavDisplay`).
-- **Destinations / Keys**: All routes/keys MUST be `@Serializable` Kotlin objects or data classes. Global routes are defined in `MainActivity.kt`, and local routes/keys (e.g. `HomeNavKey`, `SettingsNavKey`) are defined in their respective screen files.
+- **Destinations / Keys**: All routes/keys MUST be `@Serializable` Kotlin objects or data classes defined in [`NavRoutes.kt`](file:///c:/Users/chris/AndroidStudioProjects/BirthdayBuddy/app/src/main/java/com/heckmannch/birthdaybuddy/ui/navigation/NavRoutes.kt). Screen mapping and transitions are orchestrated in [`AppNavHost.kt`](file:///c:/Users/chris/AndroidStudioProjects/BirthdayBuddy/app/src/main/java/com/heckmannch/birthdaybuddy/ui/navigation/AppNavHost.kt).
 - **Back Stack**: The backstack is managed as an observable state list of keys (e.g. `rememberNavBackStack` or a custom backstack state). Programmatic navigation is achieved by mutating this backstack list (e.g., adding keys or popping keys).
 - **ViewModel Scoping**: ViewModels MUST be scoped to their respective `NavEntry` by passing `rememberViewModelStoreNavEntryDecorator()` inside the `entryDecorators` of `NavDisplay`. Use `hiltViewModel()` within the `entryProvider` to obtain these scoped ViewModels.
 - **ViewModel Arguments**: Since Navigation 3 does not use traditional String bundles, if a ViewModel requires navigation arguments (such as a detail screen contact ID), use **Hilt Assisted Injection** (with a factory and creation callback inside the `NavEntry` block) instead of `SavedStateHandle`.
