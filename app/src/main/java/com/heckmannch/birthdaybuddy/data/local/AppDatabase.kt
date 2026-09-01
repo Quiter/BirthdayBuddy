@@ -42,19 +42,90 @@ abstract class AppDatabase : RoomDatabase() {
 
 
         /**
-         * Hilfsfunktion zum sauberen Neuaufbau der 'contacts'-Tabelle auf das korrekte Schema.
-         * Da SQLite ALTER TABLE COLUMN NULLABILITY nicht nativ unterstützt,
-         * erstellen wir die Tabelle neu und übertragen die Daten.
-         * Siehe https://www.sqlite.org/lang_altertable.html#otheralter
+         * Hilfsfunktion zum sauberen Neuaufbau der 'contacts'-Tabelle auf das V6-Schema.
+         * In V6 ist birthday nullable und giftIdeas ist weiterhin nullable (TEXT).
          */
-        private fun recreateContactsTable(db: SupportSQLiteDatabase) {
+        private fun recreateContactsTableV6(db: SupportSQLiteDatabase) {
             // 1. Bestehende Tabelle umbenennen
             db.execSQL("ALTER TABLE contacts RENAME TO contacts_old")
 
-            // 2. Neue Tabelle mit V7-Schema erstellen (MIGRATION_5_6 / MIGRATION_6_7 Zwischenzustand)
+            // 2. Neue Tabelle mit V6-Schema erstellen
+            db.execSQL("CREATE TABLE IF NOT EXISTS `contacts` (`localId` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `contactId` TEXT NOT NULL, `lookupKey` TEXT NOT NULL, `fullName` TEXT NOT NULL, `birthday` TEXT, `imageUri` TEXT, `phoneNumber` TEXT, `hasWhatsApp` INTEGER NOT NULL DEFAULT 0, `hasSignal` INTEGER NOT NULL DEFAULT 0, `labels` TEXT NOT NULL, `giftIdeas` TEXT)")
+
+            // 3. Vorhandene Spalten ermitteln, um fehlende Spalten robust abzufangen
+            val columnsInOld = mutableSetOf<String>()
+            val columnCursor = db.query("PRAGMA table_info(contacts_old)")
+            while (columnCursor.moveToNext()) {
+                val nameIndex = columnCursor.getColumnIndex("name")
+                if (nameIndex != -1) {
+                    columnsInOld.add(columnCursor.getString(nameIndex))
+                }
+            }
+            columnCursor.close()
+
+            val selectColumns = mutableListOf<String>()
+            selectColumns.add("localId")
+            selectColumns.add("contactId")
+            selectColumns.add("lookupKey")
+            selectColumns.add("fullName")
+            selectColumns.add("birthday")
+            selectColumns.add("imageUri")
+
+            if (columnsInOld.contains("phoneNumber")) {
+                selectColumns.add("phoneNumber")
+            } else {
+                selectColumns.add("NULL AS phoneNumber")
+            }
+
+            if (columnsInOld.contains("hasWhatsApp")) {
+                selectColumns.add("COALESCE(hasWhatsApp, 0) AS hasWhatsApp")
+            } else {
+                selectColumns.add("0 AS hasWhatsApp")
+            }
+
+            if (columnsInOld.contains("hasSignal")) {
+                selectColumns.add("COALESCE(hasSignal, 0) AS hasSignal")
+            } else {
+                selectColumns.add("0 AS hasSignal")
+            }
+
+            if (columnsInOld.contains("labels")) {
+                selectColumns.add("COALESCE(labels, '[]') AS labels")
+            } else {
+                selectColumns.add("'[]' AS labels")
+            }
+
+            if (columnsInOld.contains("giftIdeas")) {
+                selectColumns.add("giftIdeas")
+            } else {
+                selectColumns.add("NULL AS giftIdeas")
+            }
+
+            val selectQuery = selectColumns.joinToString(", ")
+
+            // 4. Daten kopieren mit dynamic fallback
+            db.execSQL("INSERT INTO contacts (localId, contactId, lookupKey, fullName, birthday, imageUri, phoneNumber, hasWhatsApp, hasSignal, labels, giftIdeas) SELECT $selectQuery FROM contacts_old")
+
+            // 5. Alte Tabelle löschen
+            db.execSQL("DROP TABLE IF EXISTS contacts_old")
+
+            // 6. Indizes neu anlegen
+            db.execSQL("CREATE UNIQUE INDEX IF NOT EXISTS `index_contacts_lookupKey` ON `contacts` (`lookupKey`)")
+            db.execSQL("CREATE INDEX IF NOT EXISTS `index_contacts_birthday` ON `contacts` (`birthday`)")
+        }
+
+        /**
+         * Hilfsfunktion zum sauberen Neuaufbau der 'contacts'-Tabelle auf das V7-Schema.
+         * In V7 ist giftIdeas NOT NULL.
+         */
+        private fun recreateContactsTableV7(db: SupportSQLiteDatabase) {
+            // 1. Bestehende Tabelle umbenennen
+            db.execSQL("ALTER TABLE contacts RENAME TO contacts_old")
+
+            // 2. Neue Tabelle mit V7-Schema erstellen
             db.execSQL("CREATE TABLE IF NOT EXISTS `contacts` (`localId` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `contactId` TEXT NOT NULL, `lookupKey` TEXT NOT NULL, `fullName` TEXT NOT NULL, `birthday` TEXT, `imageUri` TEXT, `phoneNumber` TEXT, `hasWhatsApp` INTEGER NOT NULL DEFAULT 0, `hasSignal` INTEGER NOT NULL DEFAULT 0, `labels` TEXT NOT NULL, `giftIdeas` TEXT NOT NULL)")
 
-            // 3. Vorhandene Spalten ermitteln, um fehlende Spalten (falls vorherige Migrationen fehlschlugen) robust abzufangen
+            // 3. Vorhandene Spalten ermitteln
             val columnsInOld = mutableSetOf<String>()
             val columnCursor = db.query("PRAGMA table_info(contacts_old)")
             while (columnCursor.moveToNext()) {
@@ -119,7 +190,7 @@ abstract class AppDatabase : RoomDatabase() {
         /**
          * Migration from database version 5 to 6.
          *
-         * Recreates the 'contacts' table to apply the V7-compatible schema (nullable birthday,
+         * Recreates the 'contacts' table to apply the V6 schema (nullable birthday,
          * indexes, etc.) because SQLite does not support ALTER TABLE COLUMN NULLABILITY natively.
          *
          * Room executes migrations within an SQLite transaction by default. If an error occurs,
@@ -129,7 +200,7 @@ abstract class AppDatabase : RoomDatabase() {
         val MIGRATION_5_6 = object : Migration(5, 6) {
             override fun migrate(db: SupportSQLiteDatabase) {
                 try {
-                    recreateContactsTable(db)
+                    recreateContactsTableV6(db)
                 } catch (e: Exception) {
                     throw RuntimeException("Migration 5 to 6 failed: contacts table recreation error.", e)
                 }
@@ -140,7 +211,7 @@ abstract class AppDatabase : RoomDatabase() {
          * Migration from database version 6 to 7.
          *
          * Drops legacy tables (`label_configs`, `notification_rules`, `app_settings`) that were moved
-         * to SettingsDatabase, and ensures the 'contacts' table conforms to the V7-compatible schema
+         * to SettingsDatabase, and ensures the 'contacts' table conforms to the V7 schema
          * where `giftIdeas` is marked NOT NULL.
          *
          * Room executes migrations within an SQLite transaction by default. If an error occurs,
@@ -173,7 +244,7 @@ abstract class AppDatabase : RoomDatabase() {
                     columnCursor.close()
 
                     if (!isGiftIdeasNotNull) {
-                        recreateContactsTable(db)
+                        recreateContactsTableV7(db)
                     }
                 } catch (e: Exception) {
                     throw RuntimeException("Migration 6 to 7 failed: contacts table check or recreation error.", e)
