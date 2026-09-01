@@ -257,5 +257,60 @@ class SettingsMigrationTest {
 
         settingsCursor.close()
     }
+
+    @Test
+    @Throws(IOException::class)
+    fun migrate9To10() {
+        // 1. Create database in version 9
+        helper.createDatabase(testDb, 9).apply {
+            execSQL(
+                "INSERT INTO label_configs (name, isHiddenFromFilter, isIgnored, isSystem) " +
+                        "VALUES ('Family', 0, 0, 0)"
+            )
+            close()
+        }
+
+        // 2. Run migration to version 10 and validate
+        val migratedDb = helper.runMigrationsAndValidate(
+            testDb,
+            10,
+            true,
+            SettingsDatabase.MIGRATION_9_10
+        )
+
+        // 3. Verify columns and default values
+        val cursor = migratedDb.query("SELECT * FROM label_configs WHERE name = 'Family'")
+        assert(cursor.moveToFirst())
+
+        val notificationsEnabledIdx = cursor.getColumnIndex("notificationsEnabled")
+        val showInWidgetIdx = cursor.getColumnIndex("showInWidget")
+
+        assert(cursor.getInt(notificationsEnabledIdx) == 1)
+        assert(cursor.getInt(showInWidgetIdx) == 1)
+
+        cursor.close()
+    }
+
+    @Test
+    @Throws(IOException::class)
+    fun migrateAll() {
+        // 1. Create database in version 2
+        helper.createDatabase(testDb, 2).close()
+
+        // 2. Run all migrations to version 10 and validate
+        helper.runMigrationsAndValidate(
+            testDb,
+            10,
+            true,
+            SettingsDatabase.MIGRATION_2_3,
+            SettingsDatabase.MIGRATION_3_4,
+            SettingsDatabase.MIGRATION_4_5,
+            SettingsDatabase.MIGRATION_5_6,
+            SettingsDatabase.MIGRATION_6_7,
+            SettingsDatabase.MIGRATION_7_8,
+            SettingsDatabase.MIGRATION_8_9,
+            SettingsDatabase.MIGRATION_9_10
+        )
+    }
 }
 
