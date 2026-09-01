@@ -22,11 +22,9 @@ import com.heckmannch.birthdaybuddy.ui.screens.home.components.list.BirthdayDate
 import com.heckmannch.birthdaybuddy.ui.screens.home.components.list.getAvatarCacheKey
 import com.heckmannch.birthdaybuddy.ui.util.ContactActions
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.withContext
-import kotlin.time.Duration.Companion.milliseconds
 
 /**
  * [HomeScreen] is the orchestrator and state-coordinating controller for the main dashboard.
@@ -72,8 +70,7 @@ fun HomeScreen(
     // Ensures lambda captures the latest callback reference without triggering recompositions.
     val currentOnNavigateToSettings by rememberUpdatedState(onNavigateToSettings)
 
-    // Preloaded resource strings for search placeholder rotation.
-    val appPlaceholder = stringResource(R.string.home_placeholder_app)
+    // Preloaded resource string for search placeholder.
     val searchPlaceholder = stringResource(R.string.home_placeholder_search)
 
     // --- SECTION 1: Android Contact Permissions Handling ---
@@ -98,25 +95,24 @@ fun HomeScreen(
 
     /**
      * Placeholder Text Micro-Animation:
-     * Animates the search bar's hint/placeholder. Shows the application name first, then
-     * transitions to a friendly "Search..." prompt after a brief duration to guide user intent.
+     * Sets the search bar's hint/placeholder. Shows the friendly "Search..." prompt
+     * directly without artificial delay to ensure immediate UI readiness.
      */
-    LaunchedEffect(Unit) {
-        homeState.animatedPlaceholder = appPlaceholder
-        delay(2000.milliseconds)
+    LaunchedEffect(searchPlaceholder) {
         homeState.animatedPlaceholder = searchPlaceholder
     }
 
     /**
      * External Search Focus Request Handler:
      * Listens for search focus requests triggered programmatically by the ViewModel.
-     * Implements a slight delay to allow navigation transition/morphing animations to settle before
-     * requesting focus on the text field and revealing the soft keyboard.
+     * Robustly requests focus on the text field and reveals the soft keyboard before
+     * consuming the focus event.
      */
     LaunchedEffect(uiState.searchFocusRequested) {
         if (uiState.searchFocusRequested) {
-            delay(500.milliseconds) // Settle transition animation
-            homeState.searchFocusRequester.requestFocus()
+            runCatching {
+                homeState.searchFocusRequester.requestFocus()
+            }
             keyboardController?.show()
             onIntent(HomeIntent.ConsumeSearchFocus)
         }
@@ -124,12 +120,11 @@ fun HomeScreen(
 
     /**
      * Gift Idea Addition Focus Management:
-     * Listens for the addition of a new gift idea. Consumes the event after a short delay
-     * to ensure the text field focus adapts correctly to the newly inserted text input item.
+     * Listens for the addition of a new gift idea. Consumes the event directly
+     * to reset the state without blocking or artificial delays.
      */
     LaunchedEffect(uiState.newlyAddedIdeaId) {
         if (uiState.newlyAddedIdeaId != null) {
-            delay(100.milliseconds) // Settle keyboard input focus
             onIntent(HomeIntent.ConsumeNewlyAddedIdeaId)
         }
     }
@@ -288,7 +283,6 @@ fun HomeScreen(
             },
             onDateSelected = { date ->
                 onIntent(HomeIntent.UpdateBirthday(edit.contactId, date))
-                onIntent(HomeIntent.DismissBirthdayPicker)
             }
         )
     }
