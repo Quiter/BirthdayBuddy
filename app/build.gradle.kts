@@ -17,7 +17,7 @@ android {
         minSdk = 28
         targetSdk = 37
         versionCode = 45
-        versionName = "2.13.20"
+        versionName = "2.13.21"
 
         testInstrumentationRunner = "com.heckmannch.birthdaybuddy.HiltTestRunner"
     }
@@ -120,6 +120,7 @@ dependencies {
     testImplementation(libs.junit)
     testImplementation(libs.kotlinx.coroutines.test)
     testImplementation(libs.truth)
+    // Mocking: Mockito für Standard-Unit-Tests, MockK für statische Mocks (mockkStatic) & Object-Mocks
     testImplementation(libs.mockito.kotlin)
     testImplementation(libs.mockk)
     testImplementation(libs.json)
@@ -138,6 +139,7 @@ dependencies {
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.test.rules)
     androidTestImplementation(libs.androidx.room.testing)
+    // Instrumented Mocking auf ART (Dexmaker / ByteBuddy Android)
     androidTestImplementation(libs.mockito.android)
     androidTestImplementation(libs.mockito.kotlin)
     androidTestImplementation(libs.truth)
