@@ -13,8 +13,8 @@ import com.heckmannch.birthdaybuddy.util.hasYear
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import java.util.Calendar
-import java.util.TimeZone
+import java.time.LocalDate
+import java.time.ZoneOffset
 import javax.inject.Inject
 
 /**
@@ -228,16 +228,12 @@ class CalendarSyncRepositoryImpl @Inject constructor(
 
                 suspend fun addEvent(
                     calId: Long,
-                    date: java.time.LocalDate,
+                    date: LocalDate,
                     title: String,
                     description: String
                 ) {
                     val year = if (date.hasYear) date.year else 2000
-                    val startCal = Calendar.getInstance(TimeZone.getTimeZone("UTC")).apply {
-                        clear()
-                        set(year, date.monthValue - 1, date.dayOfMonth, 0, 0, 0)
-                    }
-                    val dtStart = startCal.timeInMillis
+                    val dtStart = date.withYear(year).atStartOfDay(ZoneOffset.UTC).toInstant().toEpochMilli()
 
                     val insertUri = CalendarContract.Events.CONTENT_URI.buildUpon()
                         .appendQueryParameter(CalendarContract.CALLER_IS_SYNCADAPTER, "true")
