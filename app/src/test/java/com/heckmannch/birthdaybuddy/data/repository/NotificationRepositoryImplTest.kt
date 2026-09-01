@@ -21,10 +21,12 @@ import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.slot
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.runTest
+import org.junit.Assert.assertThrows
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -203,6 +205,38 @@ class NotificationRepositoryImplTest {
         // Assert
         coVerify { notificationScheduler.cancelNotification() }
         coVerify(exactly = 0) { notificationScheduler.scheduleNext(any()) }
+    }
+
+    @Test
+    fun syncScheduling_catchesAndSuppressesSecurityException_whenSchedulingFails() = runTest {
+        // Arrange
+        coEvery { appSettingsDao.getSettingsImmediate() } returns AppSettingsEntity(notificationsEnabled = true)
+        coEvery { notificationRuleDao.getAllRulesImmediate() } returns listOf(
+            NotificationRuleEntity(id = 1, daysBefore = 0, hour = 9, minute = 0)
+        )
+        coEvery { notificationScheduler.scheduleNext(any()) } throws SecurityException("Exact alarm permission not granted")
+
+        // Act & Assert (Should not throw)
+        repository.syncScheduling()
+
+        coVerify { notificationScheduler.scheduleNext(any()) }
+    }
+
+    @Test
+    fun syncScheduling_rethrowsCancellationException_forStructuredConcurrency() = runTest {
+        // Arrange
+        coEvery { appSettingsDao.getSettingsImmediate() } returns AppSettingsEntity(notificationsEnabled = true)
+        coEvery { notificationRuleDao.getAllRulesImmediate() } returns listOf(
+            NotificationRuleEntity(id = 1, daysBefore = 0, hour = 9, minute = 0)
+        )
+        coEvery { notificationScheduler.scheduleNext(any()) } throws CancellationException("Coroutine was cancelled")
+
+        // Act & Assert
+        assertThrows(CancellationException::class.java) {
+            kotlinx.coroutines.runBlocking {
+                repository.syncScheduling()
+            }
+        }
     }
 
     @Test

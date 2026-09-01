@@ -1,5 +1,6 @@
 package com.heckmannch.birthdaybuddy.data.repository
 
+import android.util.Log
 import com.heckmannch.birthdaybuddy.data.local.AppSettingsDao
 import com.heckmannch.birthdaybuddy.data.local.AppSettingsEntity
 import com.heckmannch.birthdaybuddy.data.local.NotificationRuleDao
@@ -16,6 +17,7 @@ import com.heckmannch.birthdaybuddy.domain.model.ThemeAccent
 import com.heckmannch.birthdaybuddy.domain.model.ThemeMode
 import com.heckmannch.birthdaybuddy.domain.repository.NotificationRepository
 import com.heckmannch.birthdaybuddy.domain.repository.NotificationScheduler
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.distinctUntilChanged
@@ -57,13 +59,27 @@ class NotificationRepositoryImpl @Inject constructor(
         .flowOn(defaultDispatcher)
         .distinctUntilChanged()
 
-    override suspend fun syncScheduling() = withContext(ioDispatcher) {
-        val enabled = appSettingsDao.getSettingsImmediate()?.notificationsEnabled ?: false
-        val rules = notificationRuleDao.getAllRulesImmediate()
-        if (enabled && rules.isNotEmpty()) {
-            notificationScheduler.scheduleNext(rules.map { notificationRuleMapper.toDomain(it) })
-        } else {
-            notificationScheduler.cancelNotification()
+    /**
+     * Synchronizes notification alarm scheduling with the current database settings and rules.
+     *
+     * Catches and logs non-fatal exceptions (e.g. [SecurityException] on Android 12+ if alarm
+     * permissions are missing) defensively to prevent scheduling failures from propagating
+     * to callers after database mutations have already completed successfully.
+     * Re-throws [CancellationException] to adhere to structured concurrency.
+     */
+    override suspend fun syncScheduling(): Unit = withContext(ioDispatcher) {
+        try {
+            val enabled = appSettingsDao.getSettingsImmediate()?.notificationsEnabled ?: false
+            val rules = notificationRuleDao.getAllRulesImmediate()
+            if (enabled && rules.isNotEmpty()) {
+                notificationScheduler.scheduleNext(rules.map { notificationRuleMapper.toDomain(it) })
+            } else {
+                notificationScheduler.cancelNotification()
+            }
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: Exception) {
+            Log.e(TAG, "Failed to synchronize notification scheduling", e)
         }
     }
 
@@ -174,5 +190,9 @@ class NotificationRepositoryImpl @Inject constructor(
 
     override suspend fun deleteOldNotifications(currentYear: Int) {
         pendingNotificationDao.deleteOldNotifications(currentYear)
+    }
+
+    companion object {
+        private const val TAG = "NotificationRepo"
     }
 }
