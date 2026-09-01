@@ -26,6 +26,7 @@ import com.heckmannch.birthdaybuddy.domain.permission.PermissionChecker
 import com.heckmannch.birthdaybuddy.domain.repository.CalendarSyncRepository
 import com.heckmannch.birthdaybuddy.domain.repository.ContactRepository
 import com.heckmannch.birthdaybuddy.domain.repository.WidgetUpdater
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
@@ -104,7 +105,11 @@ class ContactRepositoryImpl @Inject constructor(
 
             coroutineScope {
                 // 1. Load data from all sources in parallel
-                val groupsDeferred = async { systemContactDataSource.fetchContactGroups() }
+                val systemDataDeferred = async {
+                    val groups = systemContactDataSource.fetchContactGroups()
+                    val contacts = systemContactDataSource.fetchContactsFromSystem(groups)
+                    groups to contacts
+                }
                 val dbContactsDeferred =
                     async { contactDao.getAllContactsImmediate().associateBy { it.lookupKey } }
                 val dbConfigsDeferred =
@@ -114,8 +119,7 @@ class ContactRepositoryImpl @Inject constructor(
                         contactUserDataDao.getAllUserDataImmediate().associateBy { it.lookupKey }
                     }
 
-                val groups = groupsDeferred.await()
-                val systemContacts = systemContactDataSource.fetchContactsFromSystem(groups)
+                val (groups, systemContacts) = systemDataDeferred.await()
                 val dbContacts = dbContactsDeferred.await()
                 val dbConfigs = dbConfigsDeferred.await()
                 val userDataMap = userDataDeferred.await()
@@ -153,6 +157,8 @@ class ContactRepositoryImpl @Inject constructor(
                 appSettingsDao.upsertSettings(currentSettings.copy(lastSyncTimestamp = System.currentTimeMillis()))
             }
             widgetUpdater.updateWidget()
+        } catch (e: CancellationException) {
+            throw e
         } catch (e: Exception) {
             Log.e("ContactRepository", "Error during contact sync: ${e.message}", e)
         }

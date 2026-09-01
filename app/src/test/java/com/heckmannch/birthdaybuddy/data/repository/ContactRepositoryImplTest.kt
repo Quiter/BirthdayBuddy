@@ -16,11 +16,13 @@ import com.heckmannch.birthdaybuddy.data.local.LabelConfigEntity
 import com.heckmannch.birthdaybuddy.data.local.SettingsDatabase
 import com.heckmannch.birthdaybuddy.data.mapper.ContactDbMapper
 import com.heckmannch.birthdaybuddy.data.mapper.LabelConfigMapper
+import com.heckmannch.birthdaybuddy.domain.model.Contact
 import com.heckmannch.birthdaybuddy.domain.model.GiftIdea
 import com.heckmannch.birthdaybuddy.domain.model.PotentialCouple
 import com.heckmannch.birthdaybuddy.domain.permission.PermissionChecker
 import com.heckmannch.birthdaybuddy.domain.repository.CalendarSyncRepository
 import com.heckmannch.birthdaybuddy.domain.repository.WidgetUpdater
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -29,6 +31,7 @@ import kotlinx.coroutines.test.runTest
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
+import org.mockito.kotlin.any
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.never
 import org.mockito.kotlin.verify
@@ -177,6 +180,72 @@ class ContactRepositoryImplTest {
         // Assert
         verify(systemContactDataSource, never()).fetchContactGroups()
         verify(contactDao, never()).getAllContactsImmediate()
+    }
+
+    @Test
+    fun syncContacts_syncsSuccessfully_whenPermissionIsGranted() = runTest {
+        // Arrange
+        whenever(permissionChecker.hasContactsPermission()).thenReturn(true)
+        val groups = mapOf(1L to GroupInfo("Friends", isSystem = false))
+        whenever(systemContactDataSource.fetchContactGroups()).thenReturn(groups)
+        val systemContact = Contact(
+            contactId = "c1",
+            lookupKey = "key1",
+            fullName = "Alice",
+            birthday = LocalDate.of(1990, 1, 1),
+            labels = listOf("Friends")
+        )
+        whenever(systemContactDataSource.fetchContactsFromSystem(groups)).thenReturn(listOf(systemContact))
+        whenever(contactDao.getAllContactsImmediate()).thenReturn(emptyList())
+        whenever(labelConfigDao.getAllConfigsImmediate()).thenReturn(emptyList())
+        whenever(contactUserDataDao.getAllUserDataImmediate()).thenReturn(emptyList())
+        whenever(appSettingsDao.getSettingsImmediate()).thenReturn(AppSettingsEntity(calendarSyncEnabled = true))
+
+        // Act
+        repository.syncContacts()
+
+        // Assert
+        verify(systemContactDataSource).fetchContactGroups()
+        verify(systemContactDataSource).fetchContactsFromSystem(groups)
+        verify(contactDao).getAllContactsImmediate()
+        verify(labelConfigDao).getAllConfigsImmediate()
+        verify(contactUserDataDao).getAllUserDataImmediate()
+        verify(contactDao).refreshContacts(any())
+        verify(calendarSyncRepository).syncBirthdays(any())
+        verify(appSettingsDao).upsertSettings(any())
+        verify(widgetUpdater).updateWidget()
+    }
+
+    @Test
+    fun syncContacts_rethrowsCancellationException() = runTest {
+        // Arrange
+        whenever(permissionChecker.hasContactsPermission()).thenReturn(true)
+        whenever(contactDao.getAllContactsImmediate()).thenReturn(emptyList())
+        whenever(labelConfigDao.getAllConfigsImmediate()).thenReturn(emptyList())
+        whenever(contactUserDataDao.getAllUserDataImmediate()).thenReturn(emptyList())
+        whenever(systemContactDataSource.fetchContactGroups()).thenThrow(CancellationException("Job was cancelled"))
+
+        // Act & Assert
+        var caught: Throwable? = null
+        try {
+            repository.syncContacts()
+        } catch (e: Throwable) {
+            caught = e
+        }
+        assertThat(caught).isInstanceOf(CancellationException::class.java)
+    }
+
+    @Test
+    fun syncContacts_catchesAndLogsGenericExceptionWithoutCrashing() = runTest {
+        // Arrange
+        whenever(permissionChecker.hasContactsPermission()).thenReturn(true)
+        whenever(systemContactDataSource.fetchContactGroups()).thenThrow(RuntimeException("Provider failed"))
+
+        // Act (should not throw)
+        repository.syncContacts()
+
+        // Assert
+        verify(widgetUpdater, never()).updateWidget()
     }
 
     @Test
