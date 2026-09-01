@@ -74,7 +74,9 @@ class NotificationRepositoryImplTest {
             notificationScheduler = notificationScheduler,
             appSettingsMapper = appSettingsMapper,
             notificationRuleMapper = notificationRuleMapper,
-            pendingNotificationMapper = pendingNotificationMapper
+            pendingNotificationMapper = pendingNotificationMapper,
+            ioDispatcher = mainDispatcherRule.testDispatcher,
+            defaultDispatcher = mainDispatcherRule.testDispatcher
         )
     }
 

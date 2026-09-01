@@ -45,7 +45,9 @@ class NotificationRepositoryTest {
             notificationScheduler = scheduler,
             appSettingsMapper = AppSettingsMapper(),
             notificationRuleMapper = NotificationRuleMapper(),
-            pendingNotificationMapper = PendingNotificationMapper()
+            pendingNotificationMapper = PendingNotificationMapper(),
+            ioDispatcher = kotlinx.coroutines.Dispatchers.IO,
+            defaultDispatcher = kotlinx.coroutines.Dispatchers.Default
         )
     }
 

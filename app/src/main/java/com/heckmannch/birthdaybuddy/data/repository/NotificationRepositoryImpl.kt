@@ -7,6 +7,8 @@ import com.heckmannch.birthdaybuddy.data.local.PendingNotificationDao
 import com.heckmannch.birthdaybuddy.data.mapper.AppSettingsMapper
 import com.heckmannch.birthdaybuddy.data.mapper.NotificationRuleMapper
 import com.heckmannch.birthdaybuddy.data.mapper.PendingNotificationMapper
+import com.heckmannch.birthdaybuddy.di.DefaultDispatcher
+import com.heckmannch.birthdaybuddy.di.IoDispatcher
 import com.heckmannch.birthdaybuddy.domain.model.AppSettings
 import com.heckmannch.birthdaybuddy.domain.model.NotificationRule
 import com.heckmannch.birthdaybuddy.domain.model.PendingNotification
@@ -14,7 +16,7 @@ import com.heckmannch.birthdaybuddy.domain.model.ThemeAccent
 import com.heckmannch.birthdaybuddy.domain.model.ThemeMode
 import com.heckmannch.birthdaybuddy.domain.repository.NotificationRepository
 import com.heckmannch.birthdaybuddy.domain.repository.NotificationScheduler
-import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flowOn
@@ -40,20 +42,22 @@ class NotificationRepositoryImpl @Inject constructor(
     private val appSettingsMapper: AppSettingsMapper,
     private val notificationRuleMapper: NotificationRuleMapper,
     private val pendingNotificationMapper: PendingNotificationMapper,
+    @IoDispatcher private val ioDispatcher: CoroutineDispatcher,
+    @DefaultDispatcher private val defaultDispatcher: CoroutineDispatcher,
 ) : NotificationRepository {
     private val settingsMutex = Mutex()
 
     override val allRules: Flow<List<NotificationRule>> = notificationRuleDao.getAllRules()
         .map { entities -> entities.map { notificationRuleMapper.toDomain(it) } }
-        .flowOn(Dispatchers.Default)
+        .flowOn(defaultDispatcher)
         .distinctUntilChanged()
 
     override val settings: Flow<AppSettings> = appSettingsDao.getSettings()
         .map { entity -> appSettingsMapper.toDomain(entity ?: AppSettingsEntity()) }
-        .flowOn(Dispatchers.Default)
+        .flowOn(defaultDispatcher)
         .distinctUntilChanged()
 
-    override suspend fun syncScheduling() = withContext(Dispatchers.IO) {
+    override suspend fun syncScheduling() = withContext(ioDispatcher) {
         val enabled = appSettingsDao.getSettingsImmediate()?.notificationsEnabled ?: false
         val rules = notificationRuleDao.getAllRulesImmediate()
         if (enabled && rules.isNotEmpty()) {
