@@ -10,8 +10,32 @@
 
 ---
 
-## 📝 Aktuelle Vorlage (v2.12.0)
+## 📝 Aktuelle Vorlage (v2.14.0)
 
+<!--suppress HtmlUnknownTag, HtmlUnknownTag -->
+<en-US>
+- Redesigned birthday card layout for a cleaner, modern look
+- Android Assistant integration: Add birthdays via voice or system shortcuts
+- Improved calendar sync speed and reliability
+- Smoother photo loading and enhanced home screen widgets
+- Fixed navigation when opening notification settings
+- General stability, edge-to-edge layout & performance polish
+</en-US>
+<!--suppress HtmlUnknownTag, HtmlUnknownTag -->
+<de-DE>
+- Neues, modernes Design für die Geburtstagskarten
+- Android Assistant Integration: Geburtstage direkt per Sprachbefehl hinzufügen
+- Schnellere und zuverlässigere Kalendersynchronisation
+- Optimiertes Laden von Kontaktbildern und Widgets
+- Fehlerbehebung bei der Navigation in die Benachrichtigungseinstellungen
+- Allgemeine Stabilitäts-, Layout- und Performance-Optimierungen
+</de-DE>
+
+---
+
+## 📜 Vorherige Versionen
+
+### v2.12.0
 <!--suppress HtmlUnknownTag, HtmlUnknownTag -->
 <en-US>
 - Granular label controls: Customize notifications & widget visibility per label
