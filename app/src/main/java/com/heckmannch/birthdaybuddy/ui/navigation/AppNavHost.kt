@@ -60,6 +60,12 @@ fun AppNavHost(
     intent: Intent? = null,
     onIntentHandled: () -> Unit = {},
 ) {
+    val onNavigateBack: () -> Unit = {
+        if (backStack.size > 1) {
+            backStack.removeAt(backStack.lastIndex)
+        }
+    }
+
     // Navigations-Intents behandeln (z.B. Benachrichtigungseinstellungen direkt öffnen oder zu Home wechseln)
     LaunchedEffect(intent) {
         if (intent == null) return@LaunchedEffect
@@ -87,11 +93,7 @@ fun AppNavHost(
     NavDisplay(
         backStack = backStack,
         modifier = modifier,
-        onBack = {
-            if (backStack.size > 1) {
-                backStack.removeAt(backStack.lastIndex)
-            }
-        },
+        onBack = onNavigateBack,
         entryDecorators = listOf(
             rememberSaveableStateHolderNavEntryDecorator(),
             rememberViewModelStoreNavEntryDecorator()
@@ -176,17 +178,13 @@ fun AppNavHost(
             }
 
             entry<Settings> {
-                SettingsScreen {
-                    if (backStack.size > 1) backStack.removeAt(backStack.lastIndex)
-                }
+                SettingsScreen(onNavigateBack = onNavigateBack)
             }
 
             entry<NotificationSettings> {
                 SettingsScreen(
                     initialTab = SettingsTab.NOTIFICATIONS,
-                    onNavigateBack = {
-                        if (backStack.size > 1) backStack.removeAt(backStack.lastIndex)
-                    }
+                    onNavigateBack = onNavigateBack
                 )
             }
         }
