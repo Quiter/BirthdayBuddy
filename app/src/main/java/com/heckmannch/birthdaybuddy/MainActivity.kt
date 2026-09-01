@@ -5,6 +5,7 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.viewModels
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -14,7 +15,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.Modifier
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
-import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation3.runtime.rememberNavBackStack
 import com.heckmannch.birthdaybuddy.ui.components.LocalWindowAdaptiveInfo
@@ -35,11 +35,18 @@ import dagger.hilt.android.AndroidEntryPoint
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
 
+    private val appViewModel: AppViewModel by viewModels()
     private val activityIntent = mutableStateOf<Intent?>(null)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         val splashScreen = installSplashScreen()
         super.onCreate(savedInstanceState)
+
+        // Splash Screen so lange anzeigen, bis der Initialzustand (Onboarding-Status) geladen ist
+        splashScreen.setKeepOnScreenCondition {
+            appViewModel.onboardingCompleted.value == null
+        }
+
         enableEdgeToEdge()
 
         activityIntent.value = intent
@@ -50,14 +57,8 @@ class MainActivity : ComponentActivity() {
         setContent {
             val windowAdaptiveInfo = currentWindowAdaptiveInfoV2()
             val windowSizeClass = windowAdaptiveInfo.windowSizeClass
-            val appViewModel: AppViewModel = hiltViewModel()
             val onboardingCompleted by appViewModel.onboardingCompleted.collectAsStateWithLifecycle()
             val appSettings by appViewModel.appSettings.collectAsStateWithLifecycle()
-
-            // Splash Screen so lange anzeigen, bis wir wissen, wo es hingeht
-            splashScreen.setKeepOnScreenCondition {
-                onboardingCompleted == null
-            }
 
             BirthdayBuddyTheme(
                 themeMode = appSettings.themeMode,
