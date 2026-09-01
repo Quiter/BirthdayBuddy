@@ -149,14 +149,14 @@ class HomeViewModel @Inject constructor(
         )
     }.flowOn(Dispatchers.Default)
 
-    val availableLabels: Flow<List<String>> = getAvailableLabelsUseCase(
+    private val availableLabels: Flow<List<String>> = getAvailableLabelsUseCase(
         contacts = contactRepository.allContacts,
         configs = contactRepository.labelConfigs,
         otherEventsEnabled = contactRepository.otherEventsEnabled,
         labelsEnabled = contactRepository.labelsEnabled,
     )
 
-    val coupleSuggestion: Flow<CoupleSuggestionUiModel?> = getCoupleSuggestionUseCase(
+    private val coupleSuggestion: Flow<CoupleSuggestionUiModel?> = getCoupleSuggestionUseCase(
         selectedLabel = _userUiState.map { it.selectedLabel }.distinctUntilChanged()
     ).map { suggestion ->
         suggestion?.let { coupleSuggestionUiMapper.toUiModel(it) }
