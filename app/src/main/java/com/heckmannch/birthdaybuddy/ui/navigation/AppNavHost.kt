@@ -13,6 +13,7 @@ import androidx.compose.animation.togetherWith
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.Modifier
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LifecycleEventEffect
@@ -48,12 +49,14 @@ import com.heckmannch.birthdaybuddy.util.safeGetStringExtra
  * an den Lifecycle des Eintrags gebunden.
  *
  * @param backStack Der gemeinsame Back-Stack, der von der Activity gehalten wird.
+ * @param modifier Der [Modifier], der auf das NavDisplay angewendet werden soll.
  * @param intent Der aktuelle Intent der Activity für Deep-Links und Intent-Aktionen.
  * @param onIntentHandled Callback zur Quittierung und Bereinigung verarbeiteter Intent-Aktionen.
  */
 @Composable
 fun AppNavHost(
     backStack: MutableList<NavKey>,
+    modifier: Modifier = Modifier,
     intent: Intent? = null,
     onIntentHandled: () -> Unit = {},
 ) {
@@ -83,6 +86,7 @@ fun AppNavHost(
 
     NavDisplay(
         backStack = backStack,
+        modifier = modifier,
         onBack = {
             if (backStack.size > 1) {
                 backStack.removeAt(backStack.lastIndex)
