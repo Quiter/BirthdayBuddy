@@ -1,18 +1,33 @@
 package com.heckmannch.birthdaybuddy.data.local
 
 import android.content.Context
+import androidx.room.AutoMigration
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
 import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
-import com.heckmannch.birthdaybuddy.data.local.AppDatabase.Companion.rollbackContactsTable
 
+/**
+ * Room-Datenbank für kontobezogene Entitäten ([ContactEntity], [PendingNotificationEntity]).
+ *
+ * Migrationen:
+ * - Version 5 -> 6: [MIGRATION_5_6] (Manuell via Tabellenrekonstruktion zur Bereinigung von Nullabilities und Indizes)
+ * - Version 6 -> 7: [MIGRATION_6_7] (Manuell, Bereinigung von Legacy-Tabellen und NOT NULL Constraint für giftIdeas)
+ * - Version 7 -> 8: [AutoMigration] (Hinzufügen der Spalten `anniversary` und `nameDay` in `contacts`)
+ * - Version 8 -> 9: [AutoMigration] (Hinzufügen der Spalte `spouseLookupKey` in `contacts`)
+ * - Version 9 -> 10: [AutoMigration] (Hinzufügen der Spalte `isFavorite` mit Default `0` in `contacts`)
+ */
 @Database(
     entities = [ContactEntity::class, PendingNotificationEntity::class],
     version = 10,
-    exportSchema = true
+    exportSchema = true,
+    autoMigrations = [
+        AutoMigration(from = 7, to = 8),
+        AutoMigration(from = 8, to = 9),
+        AutoMigration(from = 9, to = 10)
+    ]
 )
 @TypeConverters(Converters::class, GiftIdeaConverters::class)
 abstract class AppDatabase : RoomDatabase() {
@@ -182,71 +197,6 @@ abstract class AppDatabase : RoomDatabase() {
             }
         }
 
-        /**
-         * Migration von 7 auf 8.
-         * Fügt die Spalten 'anniversary' und 'nameDay' zur Tabelle 'contacts' hinzu.
-         */
-        val MIGRATION_7_8 = object : Migration(7, 8) {
-            override fun migrate(db: SupportSQLiteDatabase) {
-                val columnCursor = db.query("PRAGMA table_info(contacts)")
-                val columns = mutableSetOf<String>()
-                while (columnCursor.moveToNext()) {
-                    val nameIndex = columnCursor.getColumnIndex("name")
-                    if (nameIndex != -1) {
-                        columns.add(columnCursor.getString(nameIndex))
-                    }
-                }
-                columnCursor.close()
-
-                if (!columns.contains("anniversary")) {
-                    db.execSQL("ALTER TABLE contacts ADD COLUMN anniversary TEXT")
-                }
-                if (!columns.contains("nameDay")) {
-                    db.execSQL("ALTER TABLE contacts ADD COLUMN nameDay TEXT")
-                }
-            }
-        }
-
-        val MIGRATION_8_9 = object : Migration(8, 9) {
-            override fun migrate(db: SupportSQLiteDatabase) {
-                val columnCursor = db.query("PRAGMA table_info(contacts)")
-                val columns = mutableSetOf<String>()
-                while (columnCursor.moveToNext()) {
-                    val nameIndex = columnCursor.getColumnIndex("name")
-                    if (nameIndex != -1) {
-                        columns.add(columnCursor.getString(nameIndex))
-                    }
-                }
-                columnCursor.close()
-
-                if (!columns.contains("spouseLookupKey")) {
-                    db.execSQL("ALTER TABLE contacts ADD COLUMN spouseLookupKey TEXT")
-                }
-            }
-        }
-
-        /**
-         * Migration from database version 9 to 10.
-         * Adds the 'isFavorite' column to the 'contacts' table.
-         */
-        val MIGRATION_9_10 = object : Migration(9, 10) {
-            override fun migrate(db: SupportSQLiteDatabase) {
-                val columnCursor = db.query("PRAGMA table_info(contacts)")
-                val columns = mutableSetOf<String>()
-                while (columnCursor.moveToNext()) {
-                    val nameIndex = columnCursor.getColumnIndex("name")
-                    if (nameIndex != -1) {
-                        columns.add(columnCursor.getString(nameIndex))
-                    }
-                }
-                columnCursor.close()
-
-                if (!columns.contains("isFavorite")) {
-                    db.execSQL("ALTER TABLE contacts ADD COLUMN isFavorite INTEGER NOT NULL DEFAULT 0")
-                }
-            }
-        }
-
         private fun buildDatabase(context: Context): AppDatabase {
             return Room.databaseBuilder(
                 context.applicationContext,
@@ -255,10 +205,7 @@ abstract class AppDatabase : RoomDatabase() {
             )
                 .addMigrations(
                     MIGRATION_5_6,
-                    MIGRATION_6_7,
-                    MIGRATION_7_8,
-                    MIGRATION_8_9,
-                    MIGRATION_9_10
+                    MIGRATION_6_7
                 )
                 .build()
         }

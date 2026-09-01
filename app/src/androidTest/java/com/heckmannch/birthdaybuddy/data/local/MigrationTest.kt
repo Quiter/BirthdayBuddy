@@ -11,7 +11,7 @@ import org.junit.runner.RunWith
 import java.io.IOException
 
 /**
- * Testet die Datenbank-Migrationen.
+ * Testet die Datenbank-Migrationen für [AppDatabase].
  * WICHTIG: Erfordert die exportierten Schemas in app/schemas.
  */
 @RunWith(AndroidJUnit4::class)
@@ -38,16 +38,14 @@ class MigrationTest {
             close()
         }
 
-        // 2. Run migration through the chain (5 to 10) and validate
+        // 2. Run migration through the chain (5 to 10) and validate.
+        // MIGRATION_5_6 und MIGRATION_6_7 sind manuell, 7->8, 8->9 und 9->10 werden als AutoMigrations automatisch ausgeführt.
         val migratedDb = helper.runMigrationsAndValidate(
             testDb,
             10,
             true,
             AppDatabase.MIGRATION_5_6,
-            AppDatabase.MIGRATION_6_7,
-            AppDatabase.MIGRATION_7_8,
-            AppDatabase.MIGRATION_8_9,
-            AppDatabase.MIGRATION_9_10
+            AppDatabase.MIGRATION_6_7
         )
 
         // 3. Verify that the data is intact and new columns default to correct values
@@ -55,6 +53,37 @@ class MigrationTest {
         assert(cursor.moveToFirst())
         assert(cursor.getString(cursor.getColumnIndex("fullName")) == "Max Mustermann")
         assert(cursor.getString(cursor.getColumnIndex("birthday")) == "1990-01-01")
+        assert(cursor.isNull(cursor.getColumnIndex("anniversary")))
+        assert(cursor.isNull(cursor.getColumnIndex("nameDay")))
+        assert(cursor.isNull(cursor.getColumnIndex("spouseLookupKey")))
+        assert(cursor.getInt(cursor.getColumnIndex("isFavorite")) == 0)
+        cursor.close()
+    }
+
+    @Test
+    @Throws(IOException::class)
+    fun migrate7To10() {
+        // 1. Create database in version 7 with test data
+        helper.createDatabase(testDb, 7).apply {
+            execSQL(
+                "INSERT INTO contacts (contactId, lookupKey, fullName, birthday, labels, giftIdeas, hasWhatsApp, hasSignal) " +
+                        "VALUES ('4', 'key4', 'Hans Muster', '1985-05-05', '[]', '[]', 0, 0)"
+            )
+            close()
+        }
+
+        // 2. Run migration to version 10 and validate (AutoMigrations 7->8, 8->9 und 9->10)
+        val migratedDb = helper.runMigrationsAndValidate(
+            testDb,
+            10,
+            true
+        )
+
+        // 3. Verify that the data is intact and all auto-migrated columns have correct default values
+        val cursor = migratedDb.query("SELECT * FROM contacts WHERE lookupKey = 'key4'")
+        assert(cursor.moveToFirst())
+        assert(cursor.getString(cursor.getColumnIndex("fullName")) == "Hans Muster")
+        assert(cursor.getString(cursor.getColumnIndex("birthday")) == "1985-05-05")
         assert(cursor.isNull(cursor.getColumnIndex("anniversary")))
         assert(cursor.isNull(cursor.getColumnIndex("nameDay")))
         assert(cursor.isNull(cursor.getColumnIndex("spouseLookupKey")))
@@ -74,13 +103,11 @@ class MigrationTest {
             close()
         }
 
-        // 2. Run migration to version 10 and validate
+        // 2. Run migration to version 10 and validate (AutoMigrations 8->9 und 9->10)
         val migratedDb = helper.runMigrationsAndValidate(
             testDb,
             10,
-            true,
-            AppDatabase.MIGRATION_8_9,
-            AppDatabase.MIGRATION_9_10
+            true
         )
 
         // 3. Verify that the data is intact and spouseLookupKey is null and isFavorite is 0 by default
@@ -107,10 +134,7 @@ class MigrationTest {
             testDb
         ).addMigrations(
             AppDatabase.MIGRATION_5_6,
-            AppDatabase.MIGRATION_6_7,
-            AppDatabase.MIGRATION_7_8,
-            AppDatabase.MIGRATION_8_9,
-            AppDatabase.MIGRATION_9_10
+            AppDatabase.MIGRATION_6_7
         )
             .build().apply {
                 openHelper.writableDatabase.close()
