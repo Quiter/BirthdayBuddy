@@ -269,8 +269,6 @@ private fun SettingsContent(
                                 )
                             }
                         }
-
-                        SettingsFooter()
                     }
                 }
 
@@ -353,10 +351,6 @@ private fun SettingsContent(
     }
 }
 
-@Composable
-private fun SettingsFooter() {
-    // Optional footer placeholder (e.g., for version info or copyright).
-}
 
 /**
  * A menu item row inside the settings menu.
