@@ -24,9 +24,11 @@ import com.heckmannch.birthdaybuddy.ui.model.HomeUiState
 import com.heckmannch.birthdaybuddy.ui.screens.home.components.list.BirthdayDatePickerDialog
 import com.heckmannch.birthdaybuddy.ui.screens.home.components.list.getAvatarCacheKey
 import com.heckmannch.birthdaybuddy.ui.util.ContactActions
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.withContext
 import kotlin.time.Duration.Companion.milliseconds
 
 /**
@@ -168,24 +170,26 @@ fun HomeScreen(
     LaunchedEffect(uiState.contacts) {
         val contacts = uiState.contacts
         if (!contacts.isNullOrEmpty()) {
-            contacts.forEach { contact ->
-                contact.imageUri?.let { uri ->
-                    val cacheKey = getAvatarCacheKey(uri, contact.lookupKey)
-                    val request = ImageRequest.Builder(context)
-                        .data(uri)
-                        .memoryCacheKey(cacheKey)
-                        .diskCacheKey(cacheKey)
-                        .build()
-                    context.imageLoader.enqueue(request)
-                }
-                contact.secondImageUri?.let { secondUri ->
-                    val secondCacheKey = getAvatarCacheKey(secondUri, null)
-                    val request = ImageRequest.Builder(context)
-                        .data(secondUri)
-                        .memoryCacheKey(secondCacheKey)
-                        .diskCacheKey(secondCacheKey)
-                        .build()
-                    context.imageLoader.enqueue(request)
+            withContext(Dispatchers.IO) {
+                contacts.forEach { contact ->
+                    contact.imageUri?.let { uri ->
+                        val cacheKey = getAvatarCacheKey(uri, contact.lookupKey)
+                        val request = ImageRequest.Builder(context)
+                            .data(uri)
+                            .memoryCacheKey(cacheKey)
+                            .diskCacheKey(cacheKey)
+                            .build()
+                        context.imageLoader.enqueue(request)
+                    }
+                    contact.secondImageUri?.let { secondUri ->
+                        val secondCacheKey = getAvatarCacheKey(secondUri, null)
+                        val request = ImageRequest.Builder(context)
+                            .data(secondUri)
+                            .memoryCacheKey(secondCacheKey)
+                            .diskCacheKey(secondCacheKey)
+                            .build()
+                        context.imageLoader.enqueue(request)
+                    }
                 }
             }
         }
