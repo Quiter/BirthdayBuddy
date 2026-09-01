@@ -185,6 +185,23 @@ class HomeViewModel @Inject constructor(
         .flowOn(Dispatchers.Default)
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), HomeUiState())
 
+    private fun triggerScrollToTop() {
+        viewModelScope.launch {
+            _scrollToTopEvent.emit(Unit)
+        }
+    }
+
+    private fun resetFiltersInternal() {
+        _userUiState.update { state ->
+            if (state.searchQuery.isNotEmpty() || state.selectedLabel != null) {
+                state.copy(searchQuery = "", selectedLabel = null, isResettingFilter = true)
+            } else {
+                state
+            }
+        }
+        triggerScrollToTop()
+    }
+
     // --- MVI Intent Processing ---
     fun onIntent(intent: HomeIntent) {
         if (intent !is HomeIntent.AppResumed) {
@@ -194,7 +211,7 @@ class HomeViewModel @Inject constructor(
             is HomeIntent.AppResumed -> {
                 _userUiState.update { it.copy(hasContactPermission = checkContactPermission()) }
                 if ((clock.currentTimeMillis() - lastInteractionTime) > (5 * 60 * 1000)) {
-                    onIntent(HomeIntent.ResetFilters)
+                    resetFiltersInternal()
                 }
                 lastInteractionTime = clock.currentTimeMillis()
             }
@@ -216,7 +233,7 @@ class HomeViewModel @Inject constructor(
                         )
                     }
                 }
-                onIntent(HomeIntent.TriggerScrollToTop)
+                triggerScrollToTop()
             }
 
             is HomeIntent.LabelSelected -> {
@@ -225,18 +242,11 @@ class HomeViewModel @Inject constructor(
                     if (state.selectedLabel == newLabel) state
                     else state.copy(selectedLabel = newLabel, isResettingFilter = true)
                 }
-                onIntent(HomeIntent.TriggerScrollToTop)
+                triggerScrollToTop()
             }
 
             is HomeIntent.ResetFilters -> {
-                _userUiState.update { state ->
-                    if (state.searchQuery.isNotEmpty() || state.selectedLabel != null) {
-                        state.copy(searchQuery = "", selectedLabel = null, isResettingFilter = true)
-                    } else {
-                        state
-                    }
-                }
-                onIntent(HomeIntent.TriggerScrollToTop)
+                resetFiltersInternal()
             }
 
             is HomeIntent.AddGiftIdea -> {
@@ -300,9 +310,7 @@ class HomeViewModel @Inject constructor(
             }
 
             is HomeIntent.TriggerScrollToTop -> {
-                viewModelScope.launch {
-                    _scrollToTopEvent.emit(Unit)
-                }
+                triggerScrollToTop()
             }
 
             is HomeIntent.TriggerSearchFocus -> {
