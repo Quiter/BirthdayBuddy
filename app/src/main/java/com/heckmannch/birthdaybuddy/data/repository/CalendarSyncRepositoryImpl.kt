@@ -86,12 +86,12 @@ class CalendarSyncRepositoryImpl @Inject constructor(
 
             when (val name = calendar.name) {
                 // Lösche veraltete BirthdayBuddyCalendar (unter phone account)
-                "BirthdayBuddyCalendar" -> {
+                LEGACY_CALENDAR_NAME -> {
                     systemCalendarDataSource.deleteCalendarById(id, accountName, accountType)
                 }
 
                 in activeNames -> {
-                    if (accountName == "BirthdayBuddy" && accountType == CalendarContract.ACCOUNT_TYPE_LOCAL) {
+                    if (accountName == ACCOUNT_NAME && accountType == CalendarContract.ACCOUNT_TYPE_LOCAL) {
                         val existingId = seenActiveIds[name]
                         if (existingId == null) {
                             seenActiveIds[name] = id
@@ -119,7 +119,7 @@ class CalendarSyncRepositoryImpl @Inject constructor(
             systemCalendarDataSource.findCalendarIdByName(type.calendarName)?.let { id ->
                 systemCalendarDataSource.deleteCalendarById(
                     id,
-                    "BirthdayBuddy",
+                    ACCOUNT_NAME,
                     CalendarContract.ACCOUNT_TYPE_LOCAL
                 )
             }
@@ -164,7 +164,7 @@ class CalendarSyncRepositoryImpl @Inject constructor(
 
         var deletedAny = false
         val allTargetNames = setOf(
-            "BirthdayBuddyCalendar",
+            LEGACY_CALENDAR_NAME,
             LocalCalendarType.BIRTHDAY.calendarName,
             LocalCalendarType.ANNIVERSARY.calendarName,
             LocalCalendarType.NAMEDAY.calendarName
@@ -238,14 +238,14 @@ class CalendarSyncRepositoryImpl @Inject constructor(
                     title: String,
                     description: String
                 ) {
-                    val year = if (date.hasYear) date.year else 2000
+                    val year = if (date.hasYear) date.year else DEFAULT_EVENT_YEAR
                     val dtStart = date.withYear(year).atStartOfDay(ZoneOffset.UTC).toInstant().toEpochMilli()
 
                     val insertUri = CalendarContract.Events.CONTENT_URI.buildUpon()
                         .appendQueryParameter(CalendarContract.CALLER_IS_SYNCADAPTER, "true")
                         .appendQueryParameter(
                             CalendarContract.Calendars.ACCOUNT_NAME,
-                            "BirthdayBuddy"
+                            ACCOUNT_NAME
                         )
                         .appendQueryParameter(
                             CalendarContract.Calendars.ACCOUNT_TYPE,
@@ -270,7 +270,7 @@ class CalendarSyncRepositoryImpl @Inject constructor(
 
                     operations.add(op)
 
-                    if (operations.size >= 400) {
+                    if (operations.size >= BATCH_SIZE) {
                         systemCalendarDataSource.applyBatch(operations)
                         operations.clear()
                     }
@@ -361,5 +361,9 @@ class CalendarSyncRepositoryImpl @Inject constructor(
 
     companion object {
         private const val TAG = "CalendarSyncRepo"
+        private const val ACCOUNT_NAME = "BirthdayBuddy"
+        private const val LEGACY_CALENDAR_NAME = "BirthdayBuddyCalendar"
+        private const val BATCH_SIZE = 400
+        private const val DEFAULT_EVENT_YEAR = 2000
     }
 }

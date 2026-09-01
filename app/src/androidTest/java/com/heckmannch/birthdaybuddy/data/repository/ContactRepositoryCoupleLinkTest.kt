@@ -12,6 +12,7 @@ import com.heckmannch.birthdaybuddy.data.local.SettingsDatabase
 import com.heckmannch.birthdaybuddy.data.mapper.ContactDbMapper
 import com.heckmannch.birthdaybuddy.data.mapper.LabelConfigMapper
 import com.heckmannch.birthdaybuddy.domain.repository.ContactRepository
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.test.runTest
 import org.junit.After
 import org.junit.Before
@@ -53,7 +54,7 @@ class ContactRepositoryCoupleLinkTest {
             .build()
 
         repository = ContactRepositoryImpl(
-            context = context,
+            permissionChecker = mock(),
             contentResolver = context.contentResolver,
             contactDao = appDb.contactDao(),
             labelConfigDao = settingsDb.labelConfigDao(),
@@ -67,6 +68,8 @@ class ContactRepositoryCoupleLinkTest {
             settingsDatabase = settingsDb,
             contactDbMapper = ContactDbMapper(),
             labelConfigMapper = LabelConfigMapper(),
+            ioDispatcher = Dispatchers.IO,
+            defaultDispatcher = Dispatchers.Default,
         )
     }
 
