@@ -95,7 +95,9 @@ class ContactRepositoryImplTest {
             appDatabase = appDatabase,
             settingsDatabase = settingsDatabase,
             contactDbMapper = contactDbMapper,
-            labelConfigMapper = labelConfigMapper
+            labelConfigMapper = labelConfigMapper,
+            ioDispatcher = mainDispatcherRule.testDispatcher,
+            defaultDispatcher = mainDispatcherRule.testDispatcher,
         )
     }
 

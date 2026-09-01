@@ -16,6 +16,8 @@ import com.heckmannch.birthdaybuddy.data.local.LabelConfigEntity
 import com.heckmannch.birthdaybuddy.data.local.SettingsDatabase
 import com.heckmannch.birthdaybuddy.data.mapper.ContactDbMapper
 import com.heckmannch.birthdaybuddy.data.mapper.LabelConfigMapper
+import com.heckmannch.birthdaybuddy.di.DefaultDispatcher
+import com.heckmannch.birthdaybuddy.di.IoDispatcher
 import com.heckmannch.birthdaybuddy.domain.model.Contact
 import com.heckmannch.birthdaybuddy.domain.model.GiftIdea
 import com.heckmannch.birthdaybuddy.domain.model.LabelConfig
@@ -24,7 +26,7 @@ import com.heckmannch.birthdaybuddy.domain.permission.PermissionChecker
 import com.heckmannch.birthdaybuddy.domain.repository.CalendarSyncRepository
 import com.heckmannch.birthdaybuddy.domain.repository.ContactRepository
 import com.heckmannch.birthdaybuddy.domain.repository.WidgetUpdater
-import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.Flow
@@ -41,7 +43,7 @@ import javax.inject.Inject
  * It bridges the local Room database ([AppDatabase], [SettingsDatabase]) with the Android
  * system's contact provider ([SystemContactDataSource]). It handles contact synchronization,
  * updates home widgets, exports/imports gift ideas, and handles coroutine dispatching
- * offloading heavy mapping calculations to [Dispatchers.Default] or [Dispatchers.IO].
+ * offloading heavy mapping calculations to [DefaultDispatcher] or [IoDispatcher].
  */
 class ContactRepositoryImpl @Inject constructor(
     private val permissionChecker: PermissionChecker,
@@ -58,6 +60,8 @@ class ContactRepositoryImpl @Inject constructor(
     private val settingsDatabase: SettingsDatabase,
     private val contactDbMapper: ContactDbMapper,
     private val labelConfigMapper: LabelConfigMapper,
+    @IoDispatcher private val ioDispatcher: CoroutineDispatcher,
+    @DefaultDispatcher private val defaultDispatcher: CoroutineDispatcher,
 ) : ContactRepository {
 
     // The entity-to-domain mapping is O(n) CPU work and is therefore explicitly
@@ -66,7 +70,7 @@ class ContactRepositoryImpl @Inject constructor(
     // on whatever dispatcher the collector uses.
     override val allContacts: Flow<List<Contact>> = contactDao.getAllContacts()
         .map { entities -> entities.map { contactDbMapper.toDomain(it) } }
-        .flowOn(Dispatchers.Default)
+        .flowOn(defaultDispatcher)
         .distinctUntilChanged()
 
     override val potentialCouples: Flow<List<PotentialCouple>> = contactDao.getPotentialCouples()
@@ -75,7 +79,7 @@ class ContactRepositoryImpl @Inject constructor(
     // Same reasoning as allContacts: O(n) mapping offloaded to Dispatchers.Default.
     override val labelConfigs: Flow<List<LabelConfig>> = labelConfigDao.getAllConfigs()
         .map { entities -> entities.map { labelConfigMapper.toDomain(it) } }
-        .flowOn(Dispatchers.Default)
+        .flowOn(defaultDispatcher)
         .distinctUntilChanged()
 
     override val otherEventsEnabled: Flow<Boolean> = appSettingsDao.getSettings()
@@ -90,11 +94,11 @@ class ContactRepositoryImpl @Inject constructor(
         .map { it?.labelsEnabled ?: true }
         .distinctUntilChanged()
 
-    override suspend fun getAllContactsImmediate(): List<Contact> = withContext(Dispatchers.IO) {
+    override suspend fun getAllContactsImmediate(): List<Contact> = withContext(ioDispatcher) {
         contactDao.getAllContactsImmediate().map { contactDbMapper.toDomain(it) }
     }
 
-    override suspend fun syncContacts() = withContext(Dispatchers.IO) {
+    override suspend fun syncContacts() = withContext(ioDispatcher) {
         try {
             if (!permissionChecker.hasContactsPermission()) return@withContext
 
@@ -120,7 +124,7 @@ class ContactRepositoryImpl @Inject constructor(
                 syncLabelConfigs(systemContacts, dbConfigs, groups)
 
                 // 3. Diffing: Reconcile contacts (CPU-intensive operation offloaded to Dispatchers.Default)
-                val (finalContacts, finalEntities) = withContext(Dispatchers.Default) {
+                val (finalContacts, finalEntities) = withContext(defaultDispatcher) {
                     val contacts = systemContacts.map { systemContact ->
                         val lookupKey = systemContact.lookupKey
                         val existing = dbContacts[lookupKey]
@@ -201,7 +205,7 @@ class ContactRepositoryImpl @Inject constructor(
     }
 
     private suspend fun updateGiftIdeas(lookupKey: String, ideas: List<GiftIdea>) {
-        withContext(Dispatchers.IO) {
+        withContext(ioDispatcher) {
             // Save previous state for potential rollback
             val prevUserData = contactUserDataDao.getUserDataForContact(lookupKey)
 
@@ -257,14 +261,14 @@ class ContactRepositoryImpl @Inject constructor(
     }
 
     override suspend fun addGiftIdea(lookupKey: String, newIdea: GiftIdea) =
-        withContext(Dispatchers.IO) {
+        withContext(ioDispatcher) {
             val contact = contactDao.getContactByLookupKey(lookupKey) ?: return@withContext
             val updatedIdeas = GiftIdea.withNewIdea(contact.giftIdeas, newIdea)
             updateGiftIdeas(lookupKey, updatedIdeas)
         }
 
     override suspend fun toggleGiftIdea(lookupKey: String, idea: GiftIdea, isChecked: Boolean) =
-        withContext(Dispatchers.IO) {
+        withContext(ioDispatcher) {
             val (targetKey, targetContact) = resolveContactForGiftIdea(lookupKey, idea.id)
                 ?: return@withContext
             val updatedIdeas = GiftIdea.withToggledIdea(targetContact.giftIdeas, idea, isChecked)
@@ -272,7 +276,7 @@ class ContactRepositoryImpl @Inject constructor(
         }
 
     override suspend fun deleteGiftIdea(lookupKey: String, ideaId: String) =
-        withContext(Dispatchers.IO) {
+        withContext(ioDispatcher) {
             val (targetKey, targetContact) = resolveContactForGiftIdea(lookupKey, ideaId)
                 ?: return@withContext
             val updatedIdeas = targetContact.giftIdeas.filter { it.id != ideaId }
@@ -280,7 +284,7 @@ class ContactRepositoryImpl @Inject constructor(
         }
 
     override suspend fun updateGiftIdeaText(lookupKey: String, ideaId: String, newText: String) =
-        withContext(Dispatchers.IO) {
+        withContext(ioDispatcher) {
             val (targetKey, targetContact) = resolveContactForGiftIdea(lookupKey, ideaId)
                 ?: return@withContext
             val updatedIdeas = targetContact.giftIdeas.map {
@@ -317,7 +321,7 @@ class ContactRepositoryImpl @Inject constructor(
 
     override suspend fun exportGiftIdeas(uri: Uri) {
         val json = exportGiftIdeas()
-        withContext(Dispatchers.IO) {
+        withContext(ioDispatcher) {
             contentResolver.openOutputStream(uri)?.use { outputStream ->
                 outputStream.write(json.toByteArray())
             }
@@ -325,7 +329,7 @@ class ContactRepositoryImpl @Inject constructor(
     }
 
     override suspend fun importGiftIdeas(uri: Uri): Int {
-        val json = withContext(Dispatchers.IO) {
+        val json = withContext(ioDispatcher) {
             contentResolver.openInputStream(uri)?.use { inputStream ->
                 inputStream.bufferedReader().readText()
             }
@@ -334,7 +338,7 @@ class ContactRepositoryImpl @Inject constructor(
     }
 
     override suspend fun linkAsCouple(lookupKey1: String, lookupKey2: String) {
-        withContext(Dispatchers.IO) {
+        withContext(ioDispatcher) {
             // Read previous state for potential rollback
             val prevUserData1 = contactUserDataDao.getUserDataForContact(lookupKey1)
             val prevUserData2 = contactUserDataDao.getUserDataForContact(lookupKey2)
@@ -386,7 +390,7 @@ class ContactRepositoryImpl @Inject constructor(
     }
 
     override suspend fun unlinkCouple(lookupKey: String) {
-        withContext(Dispatchers.IO) {
+        withContext(ioDispatcher) {
             val contact = contactDao.getContactByLookupKey(lookupKey) ?: return@withContext
             val spouseKey = contact.spouseLookupKey ?: return@withContext
 
@@ -436,7 +440,7 @@ class ContactRepositoryImpl @Inject constructor(
     }
 
     override suspend fun ignoreCoupleSuggestion(lookupKey1: String, lookupKey2: String) {
-        withContext(Dispatchers.IO) {
+        withContext(ioDispatcher) {
             settingsDatabase.withTransaction {
                 val currentSettings = appSettingsDao.getSettingsImmediate() ?: AppSettingsEntity()
                 val pairKey =
@@ -450,7 +454,7 @@ class ContactRepositoryImpl @Inject constructor(
     }
 
     override suspend fun clearIgnoredCouplePairs() {
-        withContext(Dispatchers.IO) {
+        withContext(ioDispatcher) {
             settingsDatabase.withTransaction {
                 val currentSettings = appSettingsDao.getSettingsImmediate() ?: AppSettingsEntity()
                 appSettingsDao.upsertSettings(currentSettings.copy(ignoredCouplePairs = emptyList()))
@@ -458,7 +462,7 @@ class ContactRepositoryImpl @Inject constructor(
         }
     }
 
-    override suspend fun updateLabelsEnabled(enabled: Boolean) = withContext(Dispatchers.IO) {
+    override suspend fun updateLabelsEnabled(enabled: Boolean) = withContext(ioDispatcher) {
         settingsDatabase.withTransaction {
             val currentSettings = appSettingsDao.getSettingsImmediate() ?: AppSettingsEntity()
             appSettingsDao.upsertSettings(currentSettings.copy(labelsEnabled = enabled))
