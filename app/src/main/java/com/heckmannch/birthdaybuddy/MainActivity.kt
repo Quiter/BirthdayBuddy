@@ -12,7 +12,6 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.adaptive.currentWindowAdaptiveInfoV2
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.Modifier
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -29,13 +28,12 @@ import dagger.hilt.android.AndroidEntryPoint
  * Haupt-Activity von BirthdayBuddy.
  *
  * Reagiert auf eingehende Intents (z.B. App-Shortcuts, Widget-Klicks, Benachrichtigungen)
- * und reicht diese an [AppNavHost] zur sicheren, typen-geprüften Verarbeitung weiter.
+ * und reicht diese reaktiv über [AppViewModel] an [AppNavHost] zur sicheren, typen-geprüften Verarbeitung weiter.
  */
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
 
     private val appViewModel: AppViewModel by viewModels()
-    private val activityIntent = mutableStateOf<Intent?>(null)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         val splashScreen = installSplashScreen()
@@ -48,13 +46,17 @@ class MainActivity : ComponentActivity() {
 
         enableEdgeToEdge()
 
-        activityIntent.value = intent
+        // Nur beim Kaltstart / Initialaufruf an das ViewModel übergeben, um Re-Execution bei Recreations zu verhindern
+        if (savedInstanceState == null) {
+            appViewModel.handleIntent(intent)
+        }
 
         setContent {
             val windowAdaptiveInfo = currentWindowAdaptiveInfoV2()
             val windowSizeClass = windowAdaptiveInfo.windowSizeClass
             val onboardingCompleted by appViewModel.onboardingCompleted.collectAsStateWithLifecycle()
             val appSettings by appViewModel.appSettings.collectAsStateWithLifecycle()
+            val pendingIntent by appViewModel.pendingIntent.collectAsStateWithLifecycle()
 
             BirthdayBuddyTheme(
                 themeMode = appSettings.themeMode,
@@ -70,7 +72,6 @@ class MainActivity : ComponentActivity() {
                         val backStack = rememberNavBackStack(
                             if (onboardingCompleted == true) Home else Onboarding
                         )
-                        val currentIntent by activityIntent
 
                         Surface(
                             modifier = Modifier.fillMaxSize(),
@@ -78,7 +79,8 @@ class MainActivity : ComponentActivity() {
                         ) {
                             AppNavHost(
                                 backStack = backStack,
-                                intent = currentIntent
+                                intent = pendingIntent,
+                                onIntentHandled = appViewModel::consumeIntent
                             )
                         }
                     }
@@ -92,6 +94,6 @@ class MainActivity : ComponentActivity() {
         // Gemäß Android Intent Security Best Practices:
         // setIntent(intent) muss aufgerufen werden, um die Intent-Referenz der Activity zu aktualisieren.
         setIntent(intent)
-        activityIntent.value = intent
+        appViewModel.handleIntent(intent)
     }
 }

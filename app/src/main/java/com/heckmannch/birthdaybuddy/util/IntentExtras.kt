@@ -143,6 +143,62 @@ object IntentExtras {
     }
 
     /**
+     * Liest ein Boolean-Extra sicher aus einem [Intent] aus, ohne den Intent zu mutieren.
+     *
+     * Fängt jegliche Type-Mismatch- (z.B. [ClassCastException]) oder Unparceling-Fehler ab.
+     *
+     * @param intent Der zu verarbeitende Intent.
+     * @param key Der Schlüssel des auszulesenden Extras.
+     * @param defaultValue Der Standardwert, falls das Extra nicht vorhanden ist oder ein Fehler auftritt.
+     * @return Den ausgelesenen Boolean-Wert oder [defaultValue], falls nicht gefunden oder ungültig.
+     */
+    fun safeGetBooleanExtra(
+        intent: Intent?,
+        key: String,
+        defaultValue: Boolean = false
+    ): Boolean {
+        if (intent == null) return defaultValue
+        return try {
+            if (intent.hasExtra(key)) {
+                intent.getBooleanExtra(key, defaultValue)
+            } else {
+                defaultValue
+            }
+        } catch (e: Exception) {
+            Log.w(TAG, "Fehler beim sicheren Auslesen des Boolean-Extras '$key'", e)
+            defaultValue
+        }
+    }
+
+    /**
+     * Liest ein String-Extra sicher aus einem [Intent] aus, ohne den Intent zu mutieren.
+     *
+     * Fängt jegliche Type-Mismatch- (z.B. [ClassCastException]) oder Unparceling-Fehler ab.
+     *
+     * @param intent Der zu verarbeitende Intent.
+     * @param key Der Schlüssel des auszulesenden Extras.
+     * @param defaultValue Der Standardwert, falls das Extra nicht vorhanden ist oder ein Fehler auftritt.
+     * @return Den ausgelesenen String-Wert oder [defaultValue], falls nicht gefunden oder ungültig.
+     */
+    fun safeGetStringExtra(
+        intent: Intent?,
+        key: String,
+        defaultValue: String? = null
+    ): String? {
+        if (intent == null) return defaultValue
+        return try {
+            if (intent.hasExtra(key)) {
+                intent.getStringExtra(key) ?: defaultValue
+            } else {
+                defaultValue
+            }
+        } catch (e: Exception) {
+            Log.w(TAG, "Fehler beim sicheren Auslesen des String-Extras '$key'", e)
+            defaultValue
+        }
+    }
+
+    /**
      * Liest ein Int-Extra sicher aus einem [Intent] aus.
      *
      * Fängt Type-Mismatch- und Unparceling-Fehler ab.
@@ -187,6 +243,30 @@ object IntentExtras {
         }
     }
 }
+
+/**
+ * Extension-Funktion für [Intent?], um ein Boolean-Extra sicher auszulesen, ohne den Intent zu mutieren.
+ *
+ * @see IntentExtras.safeGetBooleanExtra
+ */
+fun Intent?.safeGetBooleanExtra(key: String, defaultValue: Boolean = false): Boolean =
+    IntentExtras.safeGetBooleanExtra(this, key, defaultValue)
+
+/**
+ * Extension-Funktion für [Intent?], um ein String-Extra sicher auszulesen, ohne den Intent zu mutieren.
+ *
+ * @see IntentExtras.safeGetStringExtra
+ */
+fun Intent?.safeGetStringExtra(key: String, defaultValue: String? = null): String? =
+    IntentExtras.safeGetStringExtra(this, key, defaultValue)
+
+/**
+ * Extension-Funktion für [Intent?], um ein Int-Extra sicher auszulesen, ohne den Intent zu mutieren.
+ *
+ * @see IntentExtras.safeGetIntExtra
+ */
+fun Intent?.safeGetIntExtra(key: String, defaultValue: Int = -1): Int =
+    IntentExtras.safeGetIntExtra(this, key, defaultValue)
 
 /**
  * Extension-Funktion für [Intent?], um ein Boolean-Extra sicher auszulesen und zwingend zu entfernen.

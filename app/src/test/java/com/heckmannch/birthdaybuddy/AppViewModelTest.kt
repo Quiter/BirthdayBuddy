@@ -1,6 +1,7 @@
 package com.heckmannch.birthdaybuddy
 
 import android.content.Context
+import android.content.Intent
 import com.google.common.truth.Truth.assertThat
 import com.heckmannch.birthdaybuddy.domain.model.AppSettings
 import com.heckmannch.birthdaybuddy.domain.model.ThemeAccent
@@ -85,5 +86,37 @@ class AppViewModelTest {
         val unconfiguredContext: Context = mock()
         val vm = AppViewModel(unconfiguredContext, notificationRepository)
         assertThat(vm.appSettings.value).isEqualTo(AppSettings())
+    }
+
+    @Test
+    fun `pendingIntent initial value is null`() = runTest {
+        assertThat(viewModel.pendingIntent.value).isNull()
+    }
+
+    @Test
+    fun `handleIntent updates pendingIntent StateFlow`() = runTest {
+        val mockIntent: Intent = mock()
+        viewModel.handleIntent(mockIntent)
+
+        assertThat(viewModel.pendingIntent.value).isEqualTo(mockIntent)
+    }
+
+    @Test
+    fun `handleIntent with null ignores value and does not overwrite existing intent`() = runTest {
+        val mockIntent: Intent = mock()
+        viewModel.handleIntent(mockIntent)
+        viewModel.handleIntent(null)
+
+        assertThat(viewModel.pendingIntent.value).isEqualTo(mockIntent)
+    }
+
+    @Test
+    fun `consumeIntent resets pendingIntent to null`() = runTest {
+        val mockIntent: Intent = mock()
+        viewModel.handleIntent(mockIntent)
+        assertThat(viewModel.pendingIntent.value).isEqualTo(mockIntent)
+
+        viewModel.consumeIntent()
+        assertThat(viewModel.pendingIntent.value).isNull()
     }
 }

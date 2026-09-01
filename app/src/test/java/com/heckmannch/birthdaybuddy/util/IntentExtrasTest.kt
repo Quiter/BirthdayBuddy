@@ -176,4 +176,53 @@ class IntentExtrasTest {
         val invalidResult = IntentExtras.safeGetStringArrayExtra(invalidIntent, "KEY_STRINGS")
         assertThat(invalidResult).isEmpty()
     }
+
+    @Test
+    fun `safeGetBooleanExtra extracts boolean value without removing extra from intent`() {
+        val intent = mockk<Intent>()
+        every { intent.hasExtra(IntentExtras.OPEN_SEARCH) } returns true
+        every { intent.getBooleanExtra(IntentExtras.OPEN_SEARCH, false) } returns true
+
+        val result = intent.safeGetBooleanExtra(IntentExtras.OPEN_SEARCH)
+
+        assertThat(result).isTrue()
+        verify(exactly = 0) { intent.removeExtra(any<String>()) }
+    }
+
+    @Test
+    fun `safeGetBooleanExtra handles type mismatch gracefully`() {
+        val intent = mockk<Intent>()
+        every { intent.hasExtra(IntentExtras.NAVIGATE_TO_NOTIFICATIONS) } returns true
+        every { intent.getBooleanExtra(IntentExtras.NAVIGATE_TO_NOTIFICATIONS, false) } throws ClassCastException()
+
+        val result = intent.safeGetBooleanExtra(IntentExtras.NAVIGATE_TO_NOTIFICATIONS)
+
+        assertThat(result).isFalse()
+        verify(exactly = 0) { intent.removeExtra(any<String>()) }
+    }
+
+    @Test
+    fun `safeGetStringExtra extracts string value without removing extra from intent`() {
+        val intent = mockk<Intent>()
+        every { intent.hasExtra(IntentExtras.APPFN_CONTACT_ID) } returns true
+        every { intent.getStringExtra(IntentExtras.APPFN_CONTACT_ID) } returns "contact_456"
+
+        val result = intent.safeGetStringExtra(IntentExtras.APPFN_CONTACT_ID)
+
+        assertThat(result).isEqualTo("contact_456")
+        verify(exactly = 0) { intent.removeExtra(any<String>()) }
+    }
+
+    @Test
+    fun `safeGetStringExtra handles type mismatch gracefully`() {
+        val intent = mockk<Intent>()
+        every { intent.hasExtra(IntentExtras.APPFN_CONTACT_ID) } returns true
+        every { intent.getStringExtra(IntentExtras.APPFN_CONTACT_ID) } throws ClassCastException()
+
+        val result = intent.safeGetStringExtra(IntentExtras.APPFN_CONTACT_ID, "fallback")
+
+        assertThat(result).isEqualTo("fallback")
+        verify(exactly = 0) { intent.removeExtra(any<String>()) }
+    }
 }
+
