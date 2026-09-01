@@ -288,4 +288,10 @@
     - **Clean Code & Dokumentation:** Bereinigung ungenutzter Hilfsmethoden (`isDebuggable()`) und Imports (`ApplicationInfo`). Ergänzung umfassender englischer KDocs auf Klassen- und Methodenebene (Dokumentation von Hilt-Root, WorkManager On-Demand Factory und Coil 3 Caching-Strategie).
     - **Verifikation:** Erfolgreiche Ausführung von `./gradlew test`.
 
+329. **Refactoring des `entryProvider` in `AppNavHost` auf Navigation 3 Type-Safe Builder-DSL (Architecture & Navigation):**
+    - **Typsichere Route-Definition:** Der `entryProvider` in [AppNavHost.kt](file:///c:/Users/chris/AndroidStudioProjects/BirthdayBuddy/app/src/main/java/com/heckmannch/birthdaybuddy/ui/navigation/AppNavHost.kt) wurde von einem manuellen Lambda mit `when (key)`-Verzweigung und `throw IllegalArgumentException` auf die typsichere Navigation 3 Builder-DSL (`entryProvider { entry<T> { ... } }`) umgestellt.
+    - **Vereinfachung & Konsistenz:** Vereinheitlichung mit den bestehenden Navigationsstrukturen in `HomeContent.kt` und `SettingsScreen.kt`.
+    - **Verifikation:** Erfolgreiche Kompilierung und Durchlauf aller Unit-Tests (`./gradlew testDebugUnitTest`).
+
+
 

@@ -18,8 +18,8 @@ import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.navigation3.rememberViewModelStoreNavEntryDecorator
-import androidx.navigation3.runtime.NavEntry
 import androidx.navigation3.runtime.NavKey
+import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
 import androidx.navigation3.ui.NavDisplay
 import com.heckmannch.birthdaybuddy.ui.components.ContactSyncEffect
@@ -127,108 +127,104 @@ fun AppNavHost(
                 targetContentZIndex = -1f
             }
         },
-        entryProvider = { key ->
-            when (key) {
-                is Onboarding -> NavEntry(key) {
-                    val onboardingViewModel: OnboardingViewModel = hiltViewModel()
-                    OnboardingScreen(
-                        viewModel = onboardingViewModel,
-                    ) {
-                        backStack.clear()
-                        backStack.add(Home)
+        entryProvider = entryProvider {
+            entry<Onboarding> {
+                val onboardingViewModel: OnboardingViewModel = hiltViewModel()
+                OnboardingScreen(
+                    viewModel = onboardingViewModel,
+                ) {
+                    backStack.clear()
+                    backStack.add(Home)
+                }
+            }
+
+            entry<Home> {
+                val homeViewModel: HomeViewModel = hiltViewModel()
+                val uiState by homeViewModel.uiState.collectAsStateWithLifecycle()
+
+                // Inaktivitäts-Check: Filter nach 5 Minuten bei Wiederaufnahme zurücksetzen
+                val lifecycleOwner = LocalLifecycleOwner.current
+                DisposableEffect(lifecycleOwner) {
+                    val observer = LifecycleEventObserver { _, event ->
+                        if (event == Lifecycle.Event.ON_RESUME) {
+                            homeViewModel.onIntent(HomeIntent.AppResumed)
+                        }
                     }
+                    lifecycleOwner.lifecycle.addObserver(observer)
+                    onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
                 }
 
-                is Home -> NavEntry(key) {
-                    val homeViewModel: HomeViewModel = hiltViewModel()
-                    val uiState by homeViewModel.uiState.collectAsStateWithLifecycle()
+                // Live-Sync bei Änderungen im System-Adressbuch
+                ContactSyncEffect(onSyncNeeded = { homeViewModel.onIntent(HomeIntent.SyncContacts()) })
 
-                    // Inaktivitäts-Check: Filter nach 5 Minuten bei Wiederaufnahme zurücksetzen
-                    val lifecycleOwner = LocalLifecycleOwner.current
-                    DisposableEffect(lifecycleOwner) {
-                        val observer = LifecycleEventObserver { _, event ->
-                            if (event == Lifecycle.Event.ON_RESUME) {
-                                homeViewModel.onIntent(HomeIntent.AppResumed)
-                            }
+                // Intent-Events für den Home-Screen verarbeiten (z.B. Widget / App Shortcuts / AppFunctions)
+                LaunchedEffect(intent) {
+                    if (intent == null) return@LaunchedEffect
+                    var handled = false
+                    if (intent.safeGetBooleanExtra(IntentExtras.SCROLL_TO_TOP)) {
+                        homeViewModel.onIntent(HomeIntent.TriggerScrollToTop)
+                        handled = true
+                    }
+                    if (intent.safeGetBooleanExtra(IntentExtras.OPEN_SEARCH)) {
+                        if (backStack.lastOrNull() != Home) {
+                            backStack.clear()
+                            backStack.add(Home)
                         }
-                        lifecycleOwner.lifecycle.addObserver(observer)
-                        onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
+                        homeViewModel.onIntent(HomeIntent.TriggerSearchFocus)
+                        handled = true
+                    }
+                    if (intent.safeGetBooleanExtra(IntentExtras.OPEN_ADD_CONTACT)) {
+                        homeViewModel.onIntent(HomeIntent.SyncContacts())
+                        handled = true
                     }
 
-                    // Live-Sync bei Änderungen im System-Adressbuch
-                    ContactSyncEffect(onSyncNeeded = { homeViewModel.onIntent(HomeIntent.SyncContacts()) })
+                    // AppFunctions Deep Link: addBirthdayToContact
+                    val appFnContactId = intent.safeGetStringExtra(IntentExtras.APPFN_CONTACT_ID)
+                    if (appFnContactId != null) {
+                        val yearExtra = intent.safeGetIntExtra(IntentExtras.APPFN_BIRTHDAY_YEAR, NO_YEAR_MARKER)
+                        val month = intent.safeGetIntExtra(IntentExtras.APPFN_BIRTHDAY_MONTH, -1)
+                        val day = intent.safeGetIntExtra(IntentExtras.APPFN_BIRTHDAY_DAY, -1)
 
-                    // Intent-Events für den Home-Screen verarbeiten (z.B. Widget / App Shortcuts / AppFunctions)
-                    LaunchedEffect(intent) {
-                        if (intent == null) return@LaunchedEffect
-                        var handled = false
-                        if (intent.safeGetBooleanExtra(IntentExtras.SCROLL_TO_TOP)) {
-                            homeViewModel.onIntent(HomeIntent.TriggerScrollToTop)
-                            handled = true
-                        }
-                        if (intent.safeGetBooleanExtra(IntentExtras.OPEN_SEARCH)) {
-                            if (backStack.lastOrNull() != Home) {
-                                backStack.clear()
-                                backStack.add(Home)
-                            }
-                            homeViewModel.onIntent(HomeIntent.TriggerSearchFocus)
-                            handled = true
-                        }
-                        if (intent.safeGetBooleanExtra(IntentExtras.OPEN_ADD_CONTACT)) {
-                            homeViewModel.onIntent(HomeIntent.SyncContacts())
-                            handled = true
-                        }
-
-                        // AppFunctions Deep Link: addBirthdayToContact
-                        val appFnContactId = intent.safeGetStringExtra(IntentExtras.APPFN_CONTACT_ID)
-                        if (appFnContactId != null) {
-                            val yearExtra = intent.safeGetIntExtra(IntentExtras.APPFN_BIRTHDAY_YEAR, NO_YEAR_MARKER)
-                            val month = intent.safeGetIntExtra(IntentExtras.APPFN_BIRTHDAY_MONTH, -1)
-                            val day = intent.safeGetIntExtra(IntentExtras.APPFN_BIRTHDAY_DAY, -1)
-
-                            val year = if (yearExtra > 0 && yearExtra != NO_YEAR_MARKER) yearExtra else null
-                            homeViewModel.onIntent(
-                                HomeIntent.OpenBirthdayPicker(
-                                    contactLookupKey = appFnContactId,
-                                    year = year,
-                                    month = month,
-                                    day = day,
-                                )
+                        val year = if (yearExtra > 0 && yearExtra != NO_YEAR_MARKER) yearExtra else null
+                        homeViewModel.onIntent(
+                            HomeIntent.OpenBirthdayPicker(
+                                contactLookupKey = appFnContactId,
+                                year = year,
+                                month = month,
+                                day = day,
                             )
-                            handled = true
-                        }
-
-                        if (handled) {
-                            onIntentHandled()
-                        }
+                        )
+                        handled = true
                     }
 
-                    HomeScreen(
-                        uiState = uiState,
-                        onIntent = homeViewModel::onIntent,
-                        scrollToTopEvent = homeViewModel.scrollToTopEvent,
-                        onNavigateToSettings = {
-                            backStack.add(Settings)
-                        }
-                    )
+                    if (handled) {
+                        onIntentHandled()
+                    }
                 }
 
-                is Settings -> NavEntry(key) {
-                    SettingsScreen {
+                HomeScreen(
+                    uiState = uiState,
+                    onIntent = homeViewModel::onIntent,
+                    scrollToTopEvent = homeViewModel.scrollToTopEvent,
+                    onNavigateToSettings = {
+                        backStack.add(Settings)
+                    }
+                )
+            }
+
+            entry<Settings> {
+                SettingsScreen {
+                    if (backStack.size > 1) backStack.removeAt(backStack.lastIndex)
+                }
+            }
+
+            entry<NotificationSettings> {
+                SettingsScreen(
+                    initialTab = SettingsTab.NOTIFICATIONS,
+                    onNavigateBack = {
                         if (backStack.size > 1) backStack.removeAt(backStack.lastIndex)
                     }
-                }
-
-                is NotificationSettings -> NavEntry(key) {
-                    SettingsScreen(
-                        initialTab = SettingsTab.NOTIFICATIONS,
-                        onNavigateBack = {
-                            if (backStack.size > 1) backStack.removeAt(backStack.lastIndex)
-                        }
-                    )
-                }
-
-                else -> throw IllegalArgumentException("Unknown key: $key")
+                )
             }
         }
     )
