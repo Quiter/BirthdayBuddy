@@ -17,18 +17,17 @@ android {
         minSdk = 28
         targetSdk = 37
         versionCode = 45
-        versionName = "2.13.21"
+        versionName = "2.13.22"
 
         testInstrumentationRunner = "com.heckmannch.birthdaybuddy.HiltTestRunner"
     }
 
     sourceSets {
-        getByName("main") {
-            res.directories.clear()
-            res.directories.addAll(listOf("src/main/res", "src/main/res-messenger"))
+        named("main") {
+            res.directories += listOf("src/main/res", "src/main/res-messenger")
         }
-        getByName("androidTest") {
-            assets.directories.add("schemas")
+        named("androidTest") {
+            assets.directories += "schemas"
         }
     }
 
