@@ -282,4 +282,10 @@
     - **Unit-Tests:** Neue Testfälle in [AppViewModelTest.kt](file:///c:/Users/chris/AndroidStudioProjects/BirthdayBuddy/app/src/test/java/com/heckmannch/birthdaybuddy/AppViewModelTest.kt) für `handleIntent` / `consumeIntent` sowie in [IntentExtrasTest.kt](file:///c:/Users/chris/AndroidStudioProjects/BirthdayBuddy/app/src/test/java/com/heckmannch/birthdaybuddy/util/IntentExtrasTest.kt) für die neuen nicht-mutierenden Getter.
     - **Verifikation:** Alle Unit-Tests via `./gradlew testDebugUnitTest` erfolgreich abgeschlossen.
 
+328. **Refactoring von `BirthdayBuddyApplication` (R8-Optimierung & Clean Code):**
+    - **R8 Dead-Code-Elimination:** Ersetzung der manuellen Laufzeitprüfung `applicationInfo.flags and ApplicationInfo.FLAG_DEBUGGABLE` durch die Compile-Time-Konstante `BuildConfig.DEBUG` bei der Konfiguration des WorkManager-Logging-Levels. Dadurch kann R8/ProGuard in Release-Builds Debug-Logging-Pfade und Dead Code vollständig entfernen.
+    - **Kontext-Referenzierung in Coil 3 ImageLoader:** Sicherstellung, dass in `newImageLoader(context: PlatformContext)` auf den übergebenen Parameter `context.cacheDir` statt des impliziten Application-`cacheDir` zugegriffen wird.
+    - **Clean Code & Dokumentation:** Bereinigung ungenutzter Hilfsmethoden (`isDebuggable()`) und Imports (`ApplicationInfo`). Ergänzung umfassender englischer KDocs auf Klassen- und Methodenebene (Dokumentation von Hilt-Root, WorkManager On-Demand Factory und Coil 3 Caching-Strategie).
+    - **Verifikation:** Erfolgreiche Ausführung von `./gradlew test`.
+
 
