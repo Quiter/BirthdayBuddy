@@ -169,39 +169,38 @@ class ContactRepositoryImpl @Inject constructor(
         existingConfigs: Map<String, LabelConfigEntity>,
         groups: Map<Long, GroupInfo>
     ) {
-        val redundant = SystemContactDataSource.redundantLabels.map { it.lowercase() }
-        labelConfigDao.deleteConfigsByNames(redundant)
+        labelConfigDao.deleteConfigsByNames(SystemContactDataSource.redundantLabels.toList())
 
         val allLabelsInSystem = systemContacts.asSequence().flatMap { it.labels }.toSet()
-        val configsToInsert = mutableListOf<LabelConfigEntity>()
-
-        // Process all system groups (excluding redundant ones)
-        groups.values.asSequence()
-            .filter { it.title.lowercase() !in SystemContactDataSource.redundantLabels }
-            .distinctBy { it.title }
-            .forEach { group ->
-                val existing = existingConfigs[group.title]
-                if ((existing == null) || (existing.isSystem != group.isSystem)) {
-                    configsToInsert.add(
-                        LabelConfigEntity(
-                            name = group.title,
-                            isHiddenFromFilter = existing?.isHiddenFromFilter ?: false,
-                            isIgnored = existing?.isIgnored ?: false,
-                            isSystem = group.isSystem,
-                            notificationsEnabled = existing?.notificationsEnabled ?: true,
-                            showInWidget = existing?.showInWidget ?: true
+        val configsToInsert = buildList {
+            // Process all system groups (excluding redundant ones)
+            groups.values.asSequence()
+                .filter { it.title.lowercase() !in SystemContactDataSource.redundantLabels }
+                .distinctBy { it.title }
+                .forEach { group ->
+                    val existing = existingConfigs[group.title]
+                    if ((existing == null) || (existing.isSystem != group.isSystem)) {
+                        add(
+                            LabelConfigEntity(
+                                name = group.title,
+                                isHiddenFromFilter = existing?.isHiddenFromFilter ?: false,
+                                isIgnored = existing?.isIgnored ?: false,
+                                isSystem = group.isSystem,
+                                notificationsEnabled = existing?.notificationsEnabled ?: true,
+                                showInWidget = existing?.showInWidget ?: true
+                            )
                         )
-                    )
+                    }
                 }
-            }
 
-        // Add missing labels (which might not have a system group)
-        allLabelsInSystem.forEach { label ->
-            if (label.lowercase() !in SystemContactDataSource.redundantLabels &&
-                !existingConfigs.containsKey(label) &&
-                groups.values.none { it.title == label }
-            ) {
-                configsToInsert.add(LabelConfigEntity(name = label))
+            // Add missing labels (which might not have a system group)
+            allLabelsInSystem.forEach { label ->
+                if (label.lowercase() !in SystemContactDataSource.redundantLabels &&
+                    !existingConfigs.containsKey(label) &&
+                    groups.values.none { it.title == label }
+                ) {
+                    add(LabelConfigEntity(name = label))
+                }
             }
         }
 
