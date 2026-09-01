@@ -1,8 +1,6 @@
 package com.heckmannch.birthdaybuddy.ui.screens.home
 
 import android.Manifest
-import android.content.pm.PackageManager
-import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.interaction.collectIsDraggedAsState
@@ -16,7 +14,6 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.stringResource
-import androidx.core.content.ContextCompat
 import coil3.imageLoader
 import coil3.request.ImageRequest
 import com.heckmannch.birthdaybuddy.R
@@ -80,40 +77,20 @@ fun HomeScreen(
     val searchPlaceholder = stringResource(R.string.home_placeholder_search)
 
     // --- SECTION 1: Android Contact Permissions Handling ---
-    // Permission requests must be handled in two phases to handle Android's granular security model:
+    // Permission requests handle Android's granular security model:
     // 1. READ_CONTACTS is requested to fetch the names and birthdates.
     // 2. WRITE_CONTACTS is requested optionally to support updates, link/unlink couples, etc.
 
     /**
-     * Silent launcher to request [Manifest.permission.WRITE_CONTACTS].
-     * Triggered if the user has already granted [Manifest.permission.READ_CONTACTS], so the app can
-     * perform syncs or edits directly.
-     */
-    val writePermissionLauncher =
-        rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted ->
-            if (isGranted) {
-                Log.d("HomeScreen", "WRITE_CONTACTS permission granted silently")
-                onIntent(HomeIntent.SyncContacts())
-            }
-        }
-
-    /**
-     * Primary launcher triggered when contact permissions are explicitly requested by user action.
-     * Requests [Manifest.permission.READ_CONTACTS] first. If successful, it checks if write permissions
-     * are still needed and launches the write permission request in sequence. Otherwise, initiates sync.
+     * Unified launcher to request contact permissions ([Manifest.permission.READ_CONTACTS] and
+     * [Manifest.permission.WRITE_CONTACTS]).
+     * Initiates contact synchronization once read permission is granted.
      */
     val permissionLauncher =
-        rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted ->
-            if (isGranted) {
-                if (ContextCompat.checkSelfPermission(
-                        context,
-                        Manifest.permission.WRITE_CONTACTS
-                    ) != PackageManager.PERMISSION_GRANTED
-                ) {
-                    writePermissionLauncher.launch(Manifest.permission.WRITE_CONTACTS)
-                } else {
-                    onIntent(HomeIntent.SyncContacts())
-                }
+        rememberLauncherForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { permissions ->
+            val readGranted = permissions[Manifest.permission.READ_CONTACTS] == true
+            if (readGranted) {
+                onIntent(HomeIntent.SyncContacts())
             }
         }
 
@@ -260,7 +237,7 @@ fun HomeScreen(
 
                 // Contact read/write permission requests flow coordination
                 onRequestPermission = {
-                    contactActions.requestContactPermission(
+                    contactActions.requestContactPermissions(
                         launcher = permissionLauncher,
                         hasAttemptedBefore = homeState.hasAttemptedContactPermission,
                     ) { homeState.hasAttemptedContactPermission = true }

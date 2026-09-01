@@ -145,10 +145,10 @@ class ContactActions(private val context: Context) {
     }
 
     /**
-     * Regelt die Permission-Abfrage inkl. Rationale-Handling.
+     * Regelt die Permission-Abfrage inkl. Rationale-Handling für multiple Permissions (READ_CONTACTS, WRITE_CONTACTS).
      */
-    fun requestContactPermission(
-        launcher: ActivityResultLauncher<String>,
+    fun requestContactPermissions(
+        launcher: ActivityResultLauncher<Array<String>>,
         hasAttemptedBefore: Boolean,
         onSetAttempted: () -> Unit
     ) {
@@ -161,7 +161,12 @@ class ContactActions(private val context: Context) {
         } ?: false
 
         if (shouldShowRationale || !hasAttemptedBefore) {
-            launcher.launch(Manifest.permission.READ_CONTACTS)
+            launcher.launch(
+                arrayOf(
+                    Manifest.permission.READ_CONTACTS,
+                    Manifest.permission.WRITE_CONTACTS
+                )
+            )
             onSetAttempted()
         } else {
             openAppSettings()
