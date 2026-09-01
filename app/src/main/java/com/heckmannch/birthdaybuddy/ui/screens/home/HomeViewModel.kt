@@ -88,6 +88,10 @@ class HomeViewModel @Inject constructor(
     )
 
     companion object {
+        private val SEARCH_DEBOUNCE_DURATION = 300.milliseconds
+        private val AUTO_RESET_INACTIVITY_TIMEOUT_MS = 5 * 60 * 1000L
+        private const val MIN_SYNC_SPINNER_DURATION_MS = 800L
+        private const val STOP_TIMEOUT_MILLIS = 5_000L
         private val WHITESPACE_REGEX = "\\s+".toRegex()
     }
 
@@ -124,7 +128,7 @@ class HomeViewModel @Inject constructor(
             if (query.isEmpty()) {
                 emit(query)
             } else {
-                delay(300.milliseconds)
+                delay(SEARCH_DEBOUNCE_DURATION)
                 emit(query)
             }
         }
@@ -189,7 +193,7 @@ class HomeViewModel @Inject constructor(
         )
     }
         .flowOn(Dispatchers.Default)
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), HomeUiState())
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(STOP_TIMEOUT_MILLIS), HomeUiState())
 
     private fun triggerScrollToTop() {
         viewModelScope.launch {
@@ -216,7 +220,7 @@ class HomeViewModel @Inject constructor(
         when (intent) {
             is HomeIntent.AppResumed -> {
                 _userUiState.update { it.copy(hasContactPermission = checkContactPermission()) }
-                if ((clock.currentTimeMillis() - lastInteractionTime) > (5 * 60 * 1000)) {
+                if ((clock.currentTimeMillis() - lastInteractionTime) > AUTO_RESET_INACTIVITY_TIMEOUT_MS) {
                     resetFiltersInternal()
                 }
                 lastInteractionTime = clock.currentTimeMillis()
@@ -306,8 +310,8 @@ class HomeViewModel @Inject constructor(
                     contactRepository.syncContacts()
                     if (intent.showLoading) {
                         val elapsedTime = clock.currentTimeMillis() - startTime
-                        if (elapsedTime < 800) {
-                            delay((800 - elapsedTime).milliseconds)
+                        if (elapsedTime < MIN_SYNC_SPINNER_DURATION_MS) {
+                            delay((MIN_SYNC_SPINNER_DURATION_MS - elapsedTime).milliseconds)
                         }
                         _userUiState.update { it.copy(isSyncing = false) }
                         _syncCompletedEvent.emit(Unit)
