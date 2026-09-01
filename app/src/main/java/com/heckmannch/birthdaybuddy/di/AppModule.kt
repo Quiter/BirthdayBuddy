@@ -45,6 +45,8 @@ annotation class ApplicationScope
 @InstallIn(SingletonComponent::class)
 object AppModule {
 
+    private const val TAG_APP_SCOPE = "ApplicationScope"
+
     /**
      * Provides a single instance of the application-wide room database for contact-related entities.
      *
@@ -164,7 +166,7 @@ object AppModule {
     @ApplicationScope
     fun provideApplicationScope(): CoroutineScope {
         val exceptionHandler = CoroutineExceptionHandler { _, throwable ->
-            Log.e("ApplicationScope", "Unhandled exception in applicationScope", throwable)
+            Log.e(TAG_APP_SCOPE, "Unhandled exception in applicationScope", throwable)
         }
         return CoroutineScope(SupervisorJob() + Dispatchers.Default + exceptionHandler)
     }
