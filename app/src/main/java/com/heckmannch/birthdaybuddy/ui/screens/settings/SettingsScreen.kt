@@ -94,14 +94,12 @@ enum class SettingsTab {
  * @property descRes String resource ID for the item's description.
  * @property icon The icon vector to be displayed next to the title.
  * @property tab The corresponding [SettingsTab] for this menu item.
- * @property onClick Action to trigger when the menu item is clicked.
  */
 private data class SettingsMenuItemData(
     val titleRes: Int,
     val descRes: Int,
     val icon: androidx.compose.ui.graphics.vector.ImageVector,
-    val tab: SettingsTab,
-    val onClick: () -> Unit
+    val tab: SettingsTab
 )
 
 /**
@@ -152,57 +150,49 @@ private fun SettingsContent(
                 titleRes = R.string.settings_notifications_title,
                 descRes = R.string.settings_notifications_desc,
                 icon = Icons.Default.Notifications,
-                tab = SettingsTab.NOTIFICATIONS,
-                onClick = {}
+                tab = SettingsTab.NOTIFICATIONS
             ),
             SettingsMenuItemData(
                 titleRes = R.string.settings_calendar_title,
                 descRes = R.string.settings_calendar_desc,
                 icon = Icons.Default.DateRange,
-                tab = SettingsTab.CALENDAR,
-                onClick = {}
+                tab = SettingsTab.CALENDAR
             ),
             SettingsMenuItemData(
                 titleRes = R.string.settings_labels_title,
                 descRes = R.string.settings_labels_desc,
                 icon = Icons.AutoMirrored.Filled.Label,
-                tab = SettingsTab.LABELS,
-                onClick = {}
+                tab = SettingsTab.LABELS
             ),
             SettingsMenuItemData(
                 titleRes = R.string.settings_backup_title,
                 descRes = R.string.settings_backup_desc,
                 icon = Icons.Default.Share,
-                tab = SettingsTab.BACKUP,
-                onClick = {}
+                tab = SettingsTab.BACKUP
             ),
             SettingsMenuItemData(
                 titleRes = R.string.settings_theme_title,
                 descRes = R.string.settings_theme_desc,
                 icon = Icons.Default.Palette,
-                tab = SettingsTab.THEME,
-                onClick = {}
+                tab = SettingsTab.THEME
             ),
             SettingsMenuItemData(
                 titleRes = R.string.settings_sync_title,
                 descRes = R.string.settings_sync_desc,
                 icon = Icons.Default.Refresh,
-                tab = SettingsTab.SYNC,
-                onClick = {}
+                tab = SettingsTab.SYNC
             ),
             SettingsMenuItemData(
                 titleRes = R.string.settings_other_events_title,
                 descRes = R.string.settings_other_events_desc,
                 icon = Icons.Default.Star,
-                tab = SettingsTab.OTHER_EVENTS,
-                onClick = {}
+                tab = SettingsTab.OTHER_EVENTS
             ),
             SettingsMenuItemData(
                 titleRes = R.string.settings_about_title,
                 descRes = R.string.settings_about_desc,
                 icon = Icons.Default.Info,
-                tab = SettingsTab.ABOUT,
-                onClick = {}
+                tab = SettingsTab.ABOUT
             )
         )
     }
@@ -426,32 +416,31 @@ private fun SettingsMenuItem(
             .clickable { onClick() }
     }
 
-    Box(modifier = itemModifier) {
-        ListItem(
-            headlineContent = {
-                Text(
-                    text = stringResource(titleRes),
-                    color = contentColor
-                )
-            },
-            supportingContent = {
-                Text(
-                    text = stringResource(descRes),
-                    color = supportingColor
-                )
-            },
-            leadingContent = {
-                Icon(
-                    imageVector = icon,
-                    contentDescription = null,
-                    tint = iconColor
-                )
-            },
-            colors = ListItemDefaults.colors(
-                containerColor = Color.Transparent
+    ListItem(
+        modifier = itemModifier,
+        headlineContent = {
+            Text(
+                text = stringResource(titleRes),
+                color = contentColor
             )
+        },
+        supportingContent = {
+            Text(
+                text = stringResource(descRes),
+                color = supportingColor
+            )
+        },
+        leadingContent = {
+            Icon(
+                imageVector = icon,
+                contentDescription = null,
+                tint = iconColor
+            )
+        },
+        colors = ListItemDefaults.colors(
+            containerColor = Color.Transparent
         )
-    }
+    )
 }
 
 @Preview(showBackground = true)
