@@ -57,7 +57,7 @@ fun AppNavHost(
     intent: Intent? = null,
     onIntentHandled: () -> Unit = {},
 ) {
-    // Navigations-Intents behandeln (z.B. Benachrichtigungseinstellungen direkt öffnen)
+    // Navigations-Intents behandeln (z.B. Benachrichtigungseinstellungen direkt öffnen oder zu Home wechseln)
     LaunchedEffect(intent) {
         if (intent == null) return@LaunchedEffect
         if (intent.safeGetBooleanExtra(IntentExtras.NAVIGATE_TO_NOTIFICATIONS)) {
@@ -65,15 +65,18 @@ fun AppNavHost(
                 backStack.add(NotificationSettings)
             }
             onIntentHandled()
-        } else if (intent.hasExtra(IntentExtras.APPFN_CONTACT_ID) || intent.safeGetBooleanExtra(IntentExtras.OPEN_SEARCH)) {
+        } else if (
+            intent.hasExtra(IntentExtras.APPFN_CONTACT_ID) ||
+            intent.safeGetBooleanExtra(IntentExtras.OPEN_SEARCH) ||
+            intent.safeGetBooleanExtra(IntentExtras.SCROLL_TO_TOP) ||
+            intent.safeGetBooleanExtra(IntentExtras.OPEN_ADD_CONTACT)
+        ) {
             if (backStack.lastOrNull() != Home) {
                 backStack.clear()
                 backStack.add(Home)
             }
-        } else if (!intent.safeGetBooleanExtra(IntentExtras.SCROLL_TO_TOP) &&
-            !intent.safeGetBooleanExtra(IntentExtras.OPEN_ADD_CONTACT)
-        ) {
-            // Unbekannter oder bereits leerer Intent ohne Home-Aktionen wird direkt quittiert
+        } else {
+            // Unbekannter oder bereits leerer Intent ohne relevante Aktionen wird direkt quittiert
             onIntentHandled()
         }
     }
@@ -126,10 +129,6 @@ fun AppNavHost(
                         handled = true
                     }
                     if (intent.safeGetBooleanExtra(IntentExtras.OPEN_SEARCH)) {
-                        if (backStack.lastOrNull() != Home) {
-                            backStack.clear()
-                            backStack.add(Home)
-                        }
                         homeViewModel.onIntent(HomeIntent.TriggerSearchFocus)
                         handled = true
                     }
