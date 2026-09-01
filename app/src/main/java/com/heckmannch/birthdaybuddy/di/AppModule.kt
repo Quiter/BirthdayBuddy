@@ -26,12 +26,19 @@ import javax.inject.Qualifier
 import javax.inject.Singleton
 
 @Qualifier
-@Retention(AnnotationRetention.BINARY)
+@Retention(AnnotationRetention.RUNTIME)
 annotation class IoDispatcher
 
+@Qualifier
+@Retention(AnnotationRetention.RUNTIME)
+annotation class DefaultDispatcher
 
 @Qualifier
-@Retention(AnnotationRetention.BINARY)
+@Retention(AnnotationRetention.RUNTIME)
+annotation class MainDispatcher
+
+@Qualifier
+@Retention(AnnotationRetention.RUNTIME)
 annotation class ApplicationScope
 
 @Module
@@ -169,6 +176,24 @@ object AppModule {
     @IoDispatcher
     fun provideIoDispatcher(): CoroutineDispatcher {
         return Dispatchers.IO
+    }
+
+    /**
+     * Provides the CoroutineDispatcher for CPU-intensive / default operations.
+     */
+    @Provides
+    @DefaultDispatcher
+    fun provideDefaultDispatcher(): CoroutineDispatcher {
+        return Dispatchers.Default
+    }
+
+    /**
+     * Provides the CoroutineDispatcher for UI / main-thread operations.
+     */
+    @Provides
+    @MainDispatcher
+    fun provideMainDispatcher(): CoroutineDispatcher {
+        return Dispatchers.Main
     }
 
     /**
