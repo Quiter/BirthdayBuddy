@@ -22,6 +22,7 @@ import com.heckmannch.birthdaybuddy.util.Clock
 import com.heckmannch.birthdaybuddy.util.NO_YEAR_MARKER
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
@@ -32,11 +33,11 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.transformLatest
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.time.LocalDate
@@ -45,7 +46,7 @@ import java.time.Year
 import javax.inject.Inject
 import kotlin.time.Duration.Companion.milliseconds
 
-@OptIn(FlowPreview::class)
+@OptIn(FlowPreview::class, ExperimentalCoroutinesApi::class)
 @HiltViewModel
 class HomeViewModel @Inject constructor(
     private val contactRepository: ContactRepository,
@@ -117,11 +118,16 @@ class HomeViewModel @Inject constructor(
     }
 
     private val searchKeywords = _userUiState
-        .map { it.searchQuery }
+        .map { it.searchQuery.trim() }
         .distinctUntilChanged()
-        .debounce(300.milliseconds)
-        .map { it.trim() }
-        .distinctUntilChanged()
+        .transformLatest { query ->
+            if (query.isEmpty()) {
+                emit(query)
+            } else {
+                delay(300.milliseconds)
+                emit(query)
+            }
+        }
         .map { if (it.isEmpty()) emptyList() else it.split(WHITESPACE_REGEX) }
         .flowOn(Dispatchers.Default)
 
