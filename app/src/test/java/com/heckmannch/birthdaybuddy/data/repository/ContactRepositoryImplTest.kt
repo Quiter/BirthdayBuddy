@@ -622,4 +622,161 @@ class ContactRepositoryImplTest {
         verify(giftIdeaBackupManager).importGiftIdeas(json)
         assertThat(result).isEqualTo(3)
     }
+
+    @Test
+    fun linkAsCouple_linksBothContactsAndUpdatesCache() = runTest(
+        createTransactionElement()
+    ) {
+        // Arrange
+        val c1 = ContactEntity(contactId = "c1", lookupKey = "k1", fullName = "Alice")
+        val c2 = ContactEntity(contactId = "c2", lookupKey = "k2", fullName = "Bob")
+        whenever(contactDao.getContactByLookupKey("k1")).thenReturn(c1)
+        whenever(contactDao.getContactByLookupKey("k2")).thenReturn(c2)
+        whenever(contactUserDataDao.getUserDataForContact("k1")).thenReturn(null)
+        whenever(contactUserDataDao.getUserDataForContact("k2")).thenReturn(null)
+        whenever(contactDao.getAllContactsImmediate()).thenReturn(listOf(c1, c2))
+        whenever(appSettingsDao.getSettingsImmediate()).thenReturn(AppSettingsEntity(calendarSyncEnabled = false))
+
+        // Act
+        repository.linkAsCouple("k1", "k2")
+
+        // Assert
+        verify(contactUserDataDao).upsertUserData(org.mockito.kotlin.check {
+            assertThat(it.lookupKey).isEqualTo("k1")
+            assertThat(it.spouseLookupKey).isEqualTo("k2")
+        })
+        verify(contactUserDataDao).upsertUserData(org.mockito.kotlin.check {
+            assertThat(it.lookupKey).isEqualTo("k2")
+            assertThat(it.spouseLookupKey).isEqualTo("k1")
+        })
+        verify(contactDao).upsertContact(org.mockito.kotlin.check {
+            assertThat(it.lookupKey).isEqualTo("k1")
+            assertThat(it.spouseLookupKey).isEqualTo("k2")
+        })
+        verify(contactDao).upsertContact(org.mockito.kotlin.check {
+            assertThat(it.lookupKey).isEqualTo("k2")
+            assertThat(it.spouseLookupKey).isEqualTo("k1")
+        })
+        verify(widgetUpdater).updateWidget()
+    }
+
+    @Test
+    fun linkAsCouple_rollsBackSettings_whenCacheUpdateFails() = runTest(
+        createTransactionElement()
+    ) {
+        // Arrange
+        val prev1 = ContactUserData(lookupKey = "k1", spouseLookupKey = null)
+        val prev2 = ContactUserData(lookupKey = "k2", spouseLookupKey = null)
+        whenever(contactUserDataDao.getUserDataForContact("k1")).thenReturn(prev1)
+        whenever(contactUserDataDao.getUserDataForContact("k2")).thenReturn(prev2)
+        whenever(contactDao.getContactByLookupKey("k1")).thenThrow(RuntimeException("AppDB error"))
+
+        // Act & Assert
+        var caught: Throwable? = null
+        try {
+            repository.linkAsCouple("k1", "k2")
+        } catch (e: Throwable) {
+            caught = e
+        }
+
+        assertThat(caught).isNotNull()
+        // Verify rollback was performed with previous data
+        verify(contactUserDataDao).upsertUserData(prev1)
+        verify(contactUserDataDao).upsertUserData(prev2)
+    }
+
+    @Test
+    fun unlinkCouple_unlinksBothContactsAndUpdatesCache() = runTest(
+        createTransactionElement()
+    ) {
+        // Arrange
+        val c1 = ContactEntity(contactId = "c1", lookupKey = "k1", fullName = "Alice", spouseLookupKey = "k2")
+        val c2 = ContactEntity(contactId = "c2", lookupKey = "k2", fullName = "Bob", spouseLookupKey = "k1")
+        whenever(contactDao.getContactByLookupKey("k1")).thenReturn(c1)
+        whenever(contactDao.getContactByLookupKey("k2")).thenReturn(c2)
+        val u1 = ContactUserData(lookupKey = "k1", spouseLookupKey = "k2")
+        val u2 = ContactUserData(lookupKey = "k2", spouseLookupKey = "k1")
+        whenever(contactUserDataDao.getUserDataForContact("k1")).thenReturn(u1)
+        whenever(contactUserDataDao.getUserDataForContact("k2")).thenReturn(u2)
+        whenever(contactDao.getAllContactsImmediate()).thenReturn(listOf(c1, c2))
+        whenever(appSettingsDao.getSettingsImmediate()).thenReturn(AppSettingsEntity(calendarSyncEnabled = false))
+
+        // Act
+        repository.unlinkCouple("k1")
+
+        // Assert
+        verify(contactUserDataDao).upsertUserData(org.mockito.kotlin.check {
+            assertThat(it.lookupKey).isEqualTo("k1")
+            assertThat(it.spouseLookupKey).isNull()
+        })
+        verify(contactUserDataDao).upsertUserData(org.mockito.kotlin.check {
+            assertThat(it.lookupKey).isEqualTo("k2")
+            assertThat(it.spouseLookupKey).isNull()
+        })
+        verify(contactDao).upsertContact(org.mockito.kotlin.check {
+            assertThat(it.lookupKey).isEqualTo("k1")
+            assertThat(it.spouseLookupKey).isNull()
+        })
+        verify(contactDao).upsertContact(org.mockito.kotlin.check {
+            assertThat(it.lookupKey).isEqualTo("k2")
+            assertThat(it.spouseLookupKey).isNull()
+        })
+        verify(widgetUpdater).updateWidget()
+    }
+
+    @Test
+    fun unlinkCouple_rollsBackSettings_whenCacheUpdateFails() = runTest(
+        createTransactionElement()
+    ) {
+        // Arrange
+        val c1 = ContactEntity(contactId = "c1", lookupKey = "k1", fullName = "Alice", spouseLookupKey = "k2")
+        whenever(contactDao.getContactByLookupKey("k1")).thenReturn(c1).thenThrow(RuntimeException("AppDB error"))
+        val u1 = ContactUserData(lookupKey = "k1", spouseLookupKey = "k2")
+        val u2 = ContactUserData(lookupKey = "k2", spouseLookupKey = "k1")
+        whenever(contactUserDataDao.getUserDataForContact("k1")).thenReturn(u1)
+        whenever(contactUserDataDao.getUserDataForContact("k2")).thenReturn(u2)
+
+        // Act & Assert
+        var caught: Throwable? = null
+        try {
+            repository.unlinkCouple("k1")
+        } catch (e: Throwable) {
+            caught = e
+        }
+
+        assertThat(caught).isNotNull()
+        // Verify rollback was performed with original previous state
+        verify(contactUserDataDao).upsertUserData(u1)
+        verify(contactUserDataDao).upsertUserData(u2)
+    }
+
+    @Test
+    fun addGiftIdea_rollsBackSettings_whenCacheUpdateFails() = runTest(
+        createTransactionElement()
+    ) {
+        // Arrange
+        val prevUserData = ContactUserData(lookupKey = "key1", giftIdeas = emptyList())
+        val contactEntity = ContactEntity(
+            contactId = "c1",
+            lookupKey = "key1",
+            fullName = "John Doe",
+            giftIdeas = emptyList()
+        )
+        // First getContactByLookupKey for addGiftIdea reads entity, second one in cache transaction throws
+        whenever(contactDao.getContactByLookupKey("key1")).thenReturn(contactEntity).thenThrow(RuntimeException("Cache error"))
+        whenever(contactUserDataDao.getUserDataForContact("key1")).thenReturn(prevUserData)
+
+        val newIdea = GiftIdea(id = "idea1", text = "Book")
+
+        // Act & Assert
+        var caught: Throwable? = null
+        try {
+            repository.addGiftIdea("key1", newIdea)
+        } catch (e: Throwable) {
+            caught = e
+        }
+
+        assertThat(caught).isNotNull()
+        verify(contactUserDataDao).upsertUserData(prevUserData)
+    }
 }

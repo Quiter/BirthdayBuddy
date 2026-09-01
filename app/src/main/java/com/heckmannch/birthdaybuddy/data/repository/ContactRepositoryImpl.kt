@@ -210,42 +210,64 @@ class ContactRepositoryImpl @Inject constructor(
         }
     }
 
+    /**
+     * Executes a 2-phase transactional update:
+     * 1. Reads previous state from SettingsDB / Room.
+     * 2. Writes updated data to SettingsDB (Source of Truth).
+     * 3. Updates AppDB cache. If this fails, rolls back the SettingsDB change and rethrows.
+     */
+    private suspend fun <T> executeWithSettingsRollback(
+        readPreviousState: suspend () -> T,
+        writeSettings: suspend (T) -> Unit,
+        rollbackSettings: suspend (T) -> Unit,
+        updateAppDbCache: suspend () -> Unit,
+        errorMessage: String
+    ) {
+        val previousState = readPreviousState()
+        settingsDatabase.withTransaction {
+            writeSettings(previousState)
+        }
+        try {
+            appDatabase.withTransaction {
+                updateAppDbCache()
+            }
+        } catch (e: Exception) {
+            if (e is CancellationException) throw e
+            Log.e("ContactRepository", "$errorMessage: ${e.message}", e)
+            settingsDatabase.withTransaction {
+                rollbackSettings(previousState)
+            }
+            throw e
+        }
+    }
+
     private suspend fun updateGiftIdeas(lookupKey: String, ideas: List<GiftIdea>) {
         withContext(ioDispatcher) {
-            // Save previous state for potential rollback
-            val prevUserData = contactUserDataDao.getUserDataForContact(lookupKey)
-
-            // 1. Write the source of truth first atomically (SettingsDB)
-            settingsDatabase.withTransaction {
-                contactUserDataDao.upsertUserData(
-                    ContactUserData(
-                        lookupKey = lookupKey,
-                        giftIdeas = ideas,
-                        spouseLookupKey = prevUserData?.spouseLookupKey
+            executeWithSettingsRollback(
+                readPreviousState = {
+                    contactUserDataDao.getUserDataForContact(lookupKey)
+                },
+                writeSettings = { prevUserData ->
+                    contactUserDataDao.upsertUserData(
+                        ContactUserData(
+                            lookupKey = lookupKey,
+                            giftIdeas = ideas,
+                            spouseLookupKey = prevUserData?.spouseLookupKey
+                        )
                     )
-                )
-            }
-
-            // 2. Update cache atomically (AppDB); rollback SettingsDB on failure
-            try {
-                appDatabase.withTransaction {
-                    contactDao.getContactByLookupKey(lookupKey)?.let { contact ->
-                        contactDao.upsertContact(contact.copy(giftIdeas = ideas))
-                    }
-                }
-            } catch (e: Exception) {
-                Log.e(
-                    "ContactRepository",
-                    "Failed to update gift idea cache, rolling back: ${e.message}",
-                    e
-                )
-                settingsDatabase.withTransaction {
+                },
+                rollbackSettings = { prevUserData ->
                     val rollbackData = prevUserData
                         ?: ContactUserData(lookupKey = lookupKey, giftIdeas = emptyList())
                     contactUserDataDao.upsertUserData(rollbackData)
-                }
-                throw e
-            }
+                },
+                updateAppDbCache = {
+                    contactDao.getContactByLookupKey(lookupKey)?.let { contact ->
+                        contactDao.upsertContact(contact.copy(giftIdeas = ideas))
+                    }
+                },
+                errorMessage = "Failed to update gift idea cache, rolling back"
+            )
         }
         widgetUpdater.updateWidget()
     }
@@ -345,35 +367,19 @@ class ContactRepositoryImpl @Inject constructor(
 
     override suspend fun linkAsCouple(lookupKey1: String, lookupKey2: String) {
         withContext(ioDispatcher) {
-            // Read previous state for potential rollback
-            val prevUserData1 = contactUserDataDao.getUserDataForContact(lookupKey1)
-            val prevUserData2 = contactUserDataDao.getUserDataForContact(lookupKey2)
-
-            // 1. Write the source of truth first atomically (SettingsDB)
-            settingsDatabase.withTransaction {
-                val userData1 = prevUserData1 ?: ContactUserData(lookupKey = lookupKey1)
-                val userData2 = prevUserData2 ?: ContactUserData(lookupKey = lookupKey2)
-                contactUserDataDao.upsertUserData(userData1.copy(spouseLookupKey = lookupKey2))
-                contactUserDataDao.upsertUserData(userData2.copy(spouseLookupKey = lookupKey1))
-            }
-
-            // 2. Update cache atomically (AppDB); rollback SettingsDB on failure
-            try {
-                appDatabase.withTransaction {
-                    contactDao.getContactByLookupKey(lookupKey1)?.let { contact ->
-                        contactDao.upsertContact(contact.copy(spouseLookupKey = lookupKey2))
-                    }
-                    contactDao.getContactByLookupKey(lookupKey2)?.let { contact ->
-                        contactDao.upsertContact(contact.copy(spouseLookupKey = lookupKey1))
-                    }
-                }
-            } catch (e: Exception) {
-                Log.e(
-                    "ContactRepository",
-                    "Cache update failed for linkAsCouple, rolling back settings: ${e.message}",
-                    e
-                )
-                settingsDatabase.withTransaction {
+            executeWithSettingsRollback(
+                readPreviousState = {
+                    val prevUserData1 = contactUserDataDao.getUserDataForContact(lookupKey1)
+                    val prevUserData2 = contactUserDataDao.getUserDataForContact(lookupKey2)
+                    prevUserData1 to prevUserData2
+                },
+                writeSettings = { (prevUserData1, prevUserData2) ->
+                    val userData1 = prevUserData1 ?: ContactUserData(lookupKey = lookupKey1)
+                    val userData2 = prevUserData2 ?: ContactUserData(lookupKey = lookupKey2)
+                    contactUserDataDao.upsertUserData(userData1.copy(spouseLookupKey = lookupKey2))
+                    contactUserDataDao.upsertUserData(userData2.copy(spouseLookupKey = lookupKey1))
+                },
+                rollbackSettings = { (prevUserData1, prevUserData2) ->
                     if (prevUserData1 != null) {
                         contactUserDataDao.upsertUserData(prevUserData1)
                     } else {
@@ -388,9 +394,17 @@ class ContactRepositoryImpl @Inject constructor(
                             contactUserDataDao.upsertUserData(it.copy(spouseLookupKey = null))
                         }
                     }
-                }
-                throw e
-            }
+                },
+                updateAppDbCache = {
+                    contactDao.getContactByLookupKey(lookupKey1)?.let { contact ->
+                        contactDao.upsertContact(contact.copy(spouseLookupKey = lookupKey2))
+                    }
+                    contactDao.getContactByLookupKey(lookupKey2)?.let { contact ->
+                        contactDao.upsertContact(contact.copy(spouseLookupKey = lookupKey1))
+                    }
+                },
+                errorMessage = "Cache update failed for linkAsCouple, rolling back settings"
+            )
         }
         updateWidgetAndSyncCalendar()
     }
@@ -400,38 +414,30 @@ class ContactRepositoryImpl @Inject constructor(
             val contact = contactDao.getContactByLookupKey(lookupKey) ?: return@withContext
             val spouseKey = contact.spouseLookupKey ?: return@withContext
 
-            // Read previous state for potential rollback
-            val prevUserData1 = contactUserDataDao.getUserDataForContact(lookupKey)
-            val prevUserData2 = contactUserDataDao.getUserDataForContact(spouseKey)
-
-            // 1. Update source of truth first atomically (SettingsDB)
-            settingsDatabase.withTransaction {
-                prevUserData1?.let { contactUserDataDao.upsertUserData(it.copy(spouseLookupKey = null)) }
-                prevUserData2?.let { contactUserDataDao.upsertUserData(it.copy(spouseLookupKey = null)) }
-            }
-
-            // 2. Update cache atomically (AppDB); rollback SettingsDB on failure
-            try {
-                appDatabase.withTransaction {
+            executeWithSettingsRollback(
+                readPreviousState = {
+                    val prevUserData1 = contactUserDataDao.getUserDataForContact(lookupKey)
+                    val prevUserData2 = contactUserDataDao.getUserDataForContact(spouseKey)
+                    prevUserData1 to prevUserData2
+                },
+                writeSettings = { (prevUserData1, prevUserData2) ->
+                    prevUserData1?.let { contactUserDataDao.upsertUserData(it.copy(spouseLookupKey = null)) }
+                    prevUserData2?.let { contactUserDataDao.upsertUserData(it.copy(spouseLookupKey = null)) }
+                },
+                rollbackSettings = { (prevUserData1, prevUserData2) ->
+                    prevUserData1?.let { contactUserDataDao.upsertUserData(it) }
+                    prevUserData2?.let { contactUserDataDao.upsertUserData(it) }
+                },
+                updateAppDbCache = {
                     contactDao.getContactByLookupKey(lookupKey)?.let {
                         contactDao.upsertContact(it.copy(spouseLookupKey = null))
                     }
                     contactDao.getContactByLookupKey(spouseKey)?.let {
                         contactDao.upsertContact(it.copy(spouseLookupKey = null))
                     }
-                }
-            } catch (e: Exception) {
-                Log.e(
-                    "ContactRepository",
-                    "Cache update failed for unlinkCouple, rolling back settings: ${e.message}",
-                    e
-                )
-                settingsDatabase.withTransaction {
-                    prevUserData1?.let { contactUserDataDao.upsertUserData(it) }
-                    prevUserData2?.let { contactUserDataDao.upsertUserData(it) }
-                }
-                throw e
-            }
+                },
+                errorMessage = "Cache update failed for unlinkCouple, rolling back settings"
+            )
         }
         updateWidgetAndSyncCalendar()
     }
