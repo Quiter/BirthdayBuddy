@@ -52,6 +52,7 @@ class NotificationActionReceiver : BroadcastReceiver() {
                     lookupKeys = lookupKeys.toList()
                 )
             }
+
             NotificationActions.ACTION_DONE -> {
                 // 1. Dismiss the current notification
                 val notificationManager =
@@ -70,6 +71,7 @@ class NotificationActionReceiver : BroadcastReceiver() {
                     }
                 }
             }
+
             NotificationActions.ACTION_DISMISSED -> {
                 // Wenn weggeschoben wurde, aber nicht erledigt/gesnoozed -> Sofort wieder anzeigen
                 // (Das erzwingt die Persistenz auch auf Android 14+)
@@ -80,7 +82,8 @@ class NotificationActionReceiver : BroadcastReceiver() {
                             // Zähler für Wisch-Versuche erhöhen
                             notificationRepository.incrementDismissCount(pendingId)
 
-                            val allContacts = notificationRepository.getActiveNotificationsImmediate()
+                            val allContacts =
+                                notificationRepository.getActiveNotificationsImmediate()
                             val isStillActive = allContacts.any { it.id == pendingId }
                             if (isStillActive) {
                                 // Wir brauchen den NotificationHelper. Da wir in einem Receiver sind,

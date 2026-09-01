@@ -47,7 +47,9 @@ class UnlinkCoupleUseCaseTest {
         // Arrange
         val lookupKey = "lookupKey"
         val exceptionMessage = "Failed to unlink couple"
-        coEvery { contactRepository.unlinkCouple(lookupKey) } throws RuntimeException(exceptionMessage)
+        coEvery { contactRepository.unlinkCouple(lookupKey) } throws RuntimeException(
+            exceptionMessage
+        )
 
         // Act & Assert
         try {

@@ -138,7 +138,7 @@ private fun SettingsContent(
 ) {
     val windowAdaptiveInfo = LocalWindowAdaptiveInfo.current
     val windowSizeClass = LocalWindowSizeClass.current
-    
+
     val directive = remember(windowAdaptiveInfo) {
         calculatePaneScaffoldDirective(windowAdaptiveInfo)
             .copy(horizontalPartitionSpacerSize = 0.dp)
@@ -284,7 +284,8 @@ private fun SettingsContent(
                                 .fillMaxWidth()
                         ) {
                             items(menuItems, key = { it.tab }) { item ->
-                                val isSelected = activeTab == item.tab || (activeTab == SettingsTab.PRIVACY_POLICY && item.tab == SettingsTab.ABOUT)
+                                val isSelected =
+                                    activeTab == item.tab || (activeTab == SettingsTab.PRIVACY_POLICY && item.tab == SettingsTab.ABOUT)
                                 SettingsMenuItem(
                                     titleRes = item.titleRes,
                                     descRes = item.descRes,
@@ -315,6 +316,7 @@ private fun SettingsContent(
                                     onNavigateBack = { backStack.removeLastOrNull() }
                                 )
                             }
+
                             SettingsTab.CALENDAR -> {
                                 CalendarSettingsScreen(
                                     viewModel = hiltViewModel(),
@@ -322,6 +324,7 @@ private fun SettingsContent(
                                     onNavigateBack = { backStack.removeLastOrNull() }
                                 )
                             }
+
                             SettingsTab.LABELS -> {
                                 LabelSettingsScreen(
                                     viewModel = hiltViewModel(),
@@ -329,6 +332,7 @@ private fun SettingsContent(
                                     onNavigateBack = { backStack.removeLastOrNull() }
                                 )
                             }
+
                             SettingsTab.BACKUP -> {
                                 BackupScreen(
                                     viewModel = hiltViewModel(),
@@ -336,6 +340,7 @@ private fun SettingsContent(
                                     onNavigateBack = { backStack.removeLastOrNull() }
                                 )
                             }
+
                             SettingsTab.THEME -> {
                                 ThemeSettingsScreen(
                                     viewModel = hiltViewModel(),
@@ -343,6 +348,7 @@ private fun SettingsContent(
                                     onNavigateBack = { backStack.removeLastOrNull() }
                                 )
                             }
+
                             SettingsTab.SYNC -> {
                                 SyncSettingsScreen(
                                     viewModel = hiltViewModel(),
@@ -350,6 +356,7 @@ private fun SettingsContent(
                                     onNavigateBack = { backStack.removeLastOrNull() }
                                 )
                             }
+
                             SettingsTab.OTHER_EVENTS -> {
                                 OtherEventsSettingsScreen(
                                     viewModel = hiltViewModel(),
@@ -357,6 +364,7 @@ private fun SettingsContent(
                                     onNavigateBack = { backStack.removeLastOrNull() }
                                 )
                             }
+
                             SettingsTab.ABOUT -> {
                                 AboutScreen(
                                     showBackButton = windowSizeClass.isWidthCompact,
@@ -366,6 +374,7 @@ private fun SettingsContent(
                                     }
                                 )
                             }
+
                             SettingsTab.PRIVACY_POLICY -> {
                                 PrivacyPolicyScreen(
                                     showBackButton = true,

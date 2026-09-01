@@ -146,11 +146,13 @@ fun AppNavHost(
                     // AppFunctions Deep Link: addBirthdayToContact
                     val appFnContactId = intent.safeGetStringExtra(IntentExtras.APPFN_CONTACT_ID)
                     if (appFnContactId != null) {
-                        val yearExtra = intent.safeGetIntExtra(IntentExtras.APPFN_BIRTHDAY_YEAR, NO_YEAR_MARKER)
+                        val yearExtra =
+                            intent.safeGetIntExtra(IntentExtras.APPFN_BIRTHDAY_YEAR, NO_YEAR_MARKER)
                         val month = intent.safeGetIntExtra(IntentExtras.APPFN_BIRTHDAY_MONTH, -1)
                         val day = intent.safeGetIntExtra(IntentExtras.APPFN_BIRTHDAY_DAY, -1)
 
-                        val year = if (yearExtra > 0 && yearExtra != NO_YEAR_MARKER) yearExtra else null
+                        val year =
+                            if (yearExtra > 0 && yearExtra != NO_YEAR_MARKER) yearExtra else null
                         homeViewModel.onIntent(
                             HomeIntent.OpenBirthdayPicker(
                                 contactLookupKey = appFnContactId,
@@ -205,34 +207,36 @@ private const val POP_TARGET_Z_INDEX = -1f
  * und überdeckt den alten Screen, während dieser leicht nach links verschoben (Parallax)
  * und ausgeblendet wird.
  */
-private fun forwardTransitionSpec(): AnimatedContentTransitionScope<Scene<NavKey>>.() -> ContentTransform = {
-    val enter = slideInHorizontally(
-        initialOffsetX = { it },
-        animationSpec = tween(TRANSITION_DURATION_MS, easing = FastOutSlowInEasing)
-    ) + fadeIn(animationSpec = tween(FADE_DURATION_MS))
-    val exit = slideOutHorizontally(
-        targetOffsetX = { -it / PARALLAX_FACTOR },
-        animationSpec = tween(TRANSITION_DURATION_MS, easing = FastOutSlowInEasing)
-    ) + fadeOut(animationSpec = tween(FADE_DURATION_MS))
-    enter togetherWith exit
-}
+private fun forwardTransitionSpec(): AnimatedContentTransitionScope<Scene<NavKey>>.() -> ContentTransform =
+    {
+        val enter = slideInHorizontally(
+            initialOffsetX = { it },
+            animationSpec = tween(TRANSITION_DURATION_MS, easing = FastOutSlowInEasing)
+        ) + fadeIn(animationSpec = tween(FADE_DURATION_MS))
+        val exit = slideOutHorizontally(
+            targetOffsetX = { -it / PARALLAX_FACTOR },
+            animationSpec = tween(TRANSITION_DURATION_MS, easing = FastOutSlowInEasing)
+        ) + fadeOut(animationSpec = tween(FADE_DURATION_MS))
+        enter togetherWith exit
+    }
 
 /**
  * Standard Pop- & Predictive-Back-Transition: Der aktuelle Screen gleitet nach rechts heraus,
  * während der darunterliegende Screen mit leichtem Parallax-Effekt von links hineingleitet
  * und eingeblendet wird.
  */
-private fun popTransitionSpec(): AnimatedContentTransitionScope<Scene<NavKey>>.() -> ContentTransform = {
-    val enter = slideInHorizontally(
-        initialOffsetX = { -it / PARALLAX_FACTOR },
-        animationSpec = tween(TRANSITION_DURATION_MS, easing = FastOutSlowInEasing)
-    ) + fadeIn(animationSpec = tween(FADE_DURATION_MS))
-    val exit = slideOutHorizontally(
-        targetOffsetX = { it },
-        animationSpec = tween(TRANSITION_DURATION_MS, easing = FastOutSlowInEasing)
-    ) + fadeOut(animationSpec = tween(FADE_DURATION_MS))
-    (enter togetherWith exit).apply {
-        targetContentZIndex = POP_TARGET_Z_INDEX
+private fun popTransitionSpec(): AnimatedContentTransitionScope<Scene<NavKey>>.() -> ContentTransform =
+    {
+        val enter = slideInHorizontally(
+            initialOffsetX = { -it / PARALLAX_FACTOR },
+            animationSpec = tween(TRANSITION_DURATION_MS, easing = FastOutSlowInEasing)
+        ) + fadeIn(animationSpec = tween(FADE_DURATION_MS))
+        val exit = slideOutHorizontally(
+            targetOffsetX = { it },
+            animationSpec = tween(TRANSITION_DURATION_MS, easing = FastOutSlowInEasing)
+        ) + fadeOut(animationSpec = tween(FADE_DURATION_MS))
+        (enter togetherWith exit).apply {
+            targetContentZIndex = POP_TARGET_Z_INDEX
+        }
     }
-}
 

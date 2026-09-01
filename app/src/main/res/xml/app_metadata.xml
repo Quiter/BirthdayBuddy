@@ -1,11 +1,9 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!--
+<?xml version="1.0" encoding="utf-8"?><!--
     App-level metadata consumed by the Android system and on-device AI agents.
     This file acts as a global operational guide describing how BirthdayBuddy's
     AppFunctions relate to each other and what constraints apply.
 -->
-<AppFunctionAppMetadata
-    xmlns:appfn="http://schemas.android.com/apk/androidx.appfunctions"
+<AppFunctionAppMetadata xmlns:appfn="http://schemas.android.com/apk/androidx.appfunctions"
     appfn:description="BirthdayBuddy manages birthday, anniversary, and name-day reminders for
     Android contacts. It provides functions to query upcoming events and initiate
     birthday messages or birthday edits.

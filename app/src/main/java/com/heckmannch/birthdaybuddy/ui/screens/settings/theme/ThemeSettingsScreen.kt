@@ -82,7 +82,14 @@ fun ThemeSettingsScreen(
         showBackButton = showBackButton,
         onThemeModeChange = { viewModel.onIntent(ThemeIntent.SetThemeMode(it)) },
         onThemeAmoledChange = { viewModel.onIntent(ThemeIntent.SetThemeAmoled(it)) },
-        onThemeAccentChange = { accent, customColor -> viewModel.onIntent(ThemeIntent.SetThemeAccent(accent, customColor)) },
+        onThemeAccentChange = { accent, customColor ->
+            viewModel.onIntent(
+                ThemeIntent.SetThemeAccent(
+                    accent,
+                    customColor
+                )
+            )
+        },
         onNavigateBack = onNavigateBack
     )
 }
@@ -110,58 +117,58 @@ private fun ThemeSettingsContent(
             modifier = Modifier.fillMaxSize(),
             contentPadding = paddingValues.withSettingsInsets()
         ) {
-             // --- Theme Mode ---
-             item {
-                 SettingsSection(title = stringResource(R.string.settings_theme_mode_header)) {
-                     SettingsClickableRow(
-                         title = stringResource(R.string.settings_theme_mode_system),
-                         description = stringResource(R.string.settings_theme_mode_system_desc),
-                         onClick = { onThemeModeChange(ThemeMode.SYSTEM) },
-                         trailingContent = {
-                             RadioButton(
-                                 selected = themeMode == ThemeMode.SYSTEM,
-                                 onClick = { onThemeModeChange(ThemeMode.SYSTEM) }
-                             )
-                         }
-                     )
-                     SettingsDivider()
-                     SettingsClickableRow(
-                         title = stringResource(R.string.settings_theme_mode_light),
-                         onClick = { onThemeModeChange(ThemeMode.LIGHT) },
-                         trailingContent = {
-                             RadioButton(
-                                 selected = themeMode == ThemeMode.LIGHT,
-                                 onClick = { onThemeModeChange(ThemeMode.LIGHT) }
-                             )
-                         }
-                     )
-                     SettingsDivider()
-                     SettingsClickableRow(
-                         title = stringResource(R.string.settings_theme_mode_dark),
-                         onClick = { onThemeModeChange(ThemeMode.DARK) },
-                         trailingContent = {
-                             RadioButton(
-                                 selected = themeMode == ThemeMode.DARK,
-                                 onClick = { onThemeModeChange(ThemeMode.DARK) }
-                             )
-                         }
-                     )
-                     SettingsDivider()
-                     val isDarkThemeActive =
-                         themeMode == ThemeMode.DARK || (themeMode == ThemeMode.SYSTEM && androidx.compose.foundation.isSystemInDarkTheme())
-                     SettingsSwitchRow(
-                         title = stringResource(R.string.settings_theme_amoled),
-                         description = if (isDarkThemeActive) {
-                             stringResource(R.string.settings_theme_amoled_desc)
-                         } else {
-                             stringResource(R.string.settings_theme_amoled_disabled_desc)
-                         },
-                         checked = themeAmoled,
-                         onCheckedChange = onThemeAmoledChange,
-                         enabled = isDarkThemeActive
-                     )
-                 }
-             }
+            // --- Theme Mode ---
+            item {
+                SettingsSection(title = stringResource(R.string.settings_theme_mode_header)) {
+                    SettingsClickableRow(
+                        title = stringResource(R.string.settings_theme_mode_system),
+                        description = stringResource(R.string.settings_theme_mode_system_desc),
+                        onClick = { onThemeModeChange(ThemeMode.SYSTEM) },
+                        trailingContent = {
+                            RadioButton(
+                                selected = themeMode == ThemeMode.SYSTEM,
+                                onClick = { onThemeModeChange(ThemeMode.SYSTEM) }
+                            )
+                        }
+                    )
+                    SettingsDivider()
+                    SettingsClickableRow(
+                        title = stringResource(R.string.settings_theme_mode_light),
+                        onClick = { onThemeModeChange(ThemeMode.LIGHT) },
+                        trailingContent = {
+                            RadioButton(
+                                selected = themeMode == ThemeMode.LIGHT,
+                                onClick = { onThemeModeChange(ThemeMode.LIGHT) }
+                            )
+                        }
+                    )
+                    SettingsDivider()
+                    SettingsClickableRow(
+                        title = stringResource(R.string.settings_theme_mode_dark),
+                        onClick = { onThemeModeChange(ThemeMode.DARK) },
+                        trailingContent = {
+                            RadioButton(
+                                selected = themeMode == ThemeMode.DARK,
+                                onClick = { onThemeModeChange(ThemeMode.DARK) }
+                            )
+                        }
+                    )
+                    SettingsDivider()
+                    val isDarkThemeActive =
+                        themeMode == ThemeMode.DARK || (themeMode == ThemeMode.SYSTEM && androidx.compose.foundation.isSystemInDarkTheme())
+                    SettingsSwitchRow(
+                        title = stringResource(R.string.settings_theme_amoled),
+                        description = if (isDarkThemeActive) {
+                            stringResource(R.string.settings_theme_amoled_desc)
+                        } else {
+                            stringResource(R.string.settings_theme_amoled_disabled_desc)
+                        },
+                        checked = themeAmoled,
+                        onCheckedChange = onThemeAmoledChange,
+                        enabled = isDarkThemeActive
+                    )
+                }
+            }
 
 
             // --- Accent Colors ---
@@ -205,7 +212,13 @@ private fun ThemeSettingsContent(
                         } else {
                             Color(0xFFE91E63)
                         }
-                        colors.add(AccentColorOption(ThemeAccent.CUSTOM, customColor, isCustom = true))
+                        colors.add(
+                            AccentColorOption(
+                                ThemeAccent.CUSTOM,
+                                customColor,
+                                isCustom = true
+                            )
+                        )
 
                         // Akzentfarben in Zeilen von je 4 Elementen rendern
                         colors.chunked(4).forEach { rowColors ->

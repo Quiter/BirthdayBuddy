@@ -14,7 +14,10 @@ class IntentExtrasTest {
     @Test
     fun `safeGetAndRemoveBooleanExtra returns default value when intent is null`() {
         val nullIntent: Intent? = null
-        val result = IntentExtras.safeGetAndRemoveBooleanExtra(nullIntent, IntentExtras.NAVIGATE_TO_NOTIFICATIONS)
+        val result = IntentExtras.safeGetAndRemoveBooleanExtra(
+            nullIntent,
+            IntentExtras.NAVIGATE_TO_NOTIFICATIONS
+        )
 
         assertThat(result).isFalse()
     }
@@ -46,7 +49,12 @@ class IntentExtrasTest {
     fun `safeGetAndRemoveBooleanExtra handles type mismatch gracefully without crashing`() {
         val intent = mockk<Intent>()
         every { intent.hasExtra(IntentExtras.NAVIGATE_TO_NOTIFICATIONS) } returns true
-        every { intent.getBooleanExtra(IntentExtras.NAVIGATE_TO_NOTIFICATIONS, false) } throws ClassCastException("String cannot be cast to Boolean")
+        every {
+            intent.getBooleanExtra(
+                IntentExtras.NAVIGATE_TO_NOTIFICATIONS,
+                false
+            )
+        } throws ClassCastException("String cannot be cast to Boolean")
         every { intent.removeExtra(IntentExtras.NAVIGATE_TO_NOTIFICATIONS) } just runs
 
         val result = intent.safeGetAndRemoveBooleanExtra(IntentExtras.NAVIGATE_TO_NOTIFICATIONS)
@@ -58,7 +66,8 @@ class IntentExtrasTest {
     @Test
     fun `safeGetAndRemoveStringExtra returns default value when intent is null`() {
         val nullIntent: Intent? = null
-        val result = IntentExtras.safeGetAndRemoveStringExtra(nullIntent, IntentExtras.APPFN_CONTACT_ID)
+        val result =
+            IntentExtras.safeGetAndRemoveStringExtra(nullIntent, IntentExtras.APPFN_CONTACT_ID)
 
         assertThat(result).isNull()
     }
@@ -102,7 +111,8 @@ class IntentExtrasTest {
     @Test
     fun `safeGetAndRemoveIntExtra returns default value when intent is null`() {
         val nullIntent: Intent? = null
-        val result = IntentExtras.safeGetAndRemoveIntExtra(nullIntent, IntentExtras.APPFN_BIRTHDAY_MONTH, -1)
+        val result =
+            IntentExtras.safeGetAndRemoveIntExtra(nullIntent, IntentExtras.APPFN_BIRTHDAY_MONTH, -1)
 
         assertThat(result).isEqualTo(-1)
     }
@@ -134,7 +144,12 @@ class IntentExtrasTest {
     fun `safeGetAndRemoveIntExtra handles type mismatch gracefully without crashing`() {
         val intent = mockk<Intent>()
         every { intent.hasExtra(IntentExtras.APPFN_BIRTHDAY_MONTH) } returns true
-        every { intent.getIntExtra(IntentExtras.APPFN_BIRTHDAY_MONTH, -1) } throws ClassCastException("String cannot be cast to Int")
+        every {
+            intent.getIntExtra(
+                IntentExtras.APPFN_BIRTHDAY_MONTH,
+                -1
+            )
+        } throws ClassCastException("String cannot be cast to Int")
         every { intent.removeExtra(IntentExtras.APPFN_BIRTHDAY_MONTH) } just runs
 
         val result = intent.safeGetAndRemoveIntExtra(IntentExtras.APPFN_BIRTHDAY_MONTH, -1)
@@ -193,7 +208,12 @@ class IntentExtrasTest {
     fun `safeGetBooleanExtra handles type mismatch gracefully`() {
         val intent = mockk<Intent>()
         every { intent.hasExtra(IntentExtras.NAVIGATE_TO_NOTIFICATIONS) } returns true
-        every { intent.getBooleanExtra(IntentExtras.NAVIGATE_TO_NOTIFICATIONS, false) } throws ClassCastException()
+        every {
+            intent.getBooleanExtra(
+                IntentExtras.NAVIGATE_TO_NOTIFICATIONS,
+                false
+            )
+        } throws ClassCastException()
 
         val result = intent.safeGetBooleanExtra(IntentExtras.NAVIGATE_TO_NOTIFICATIONS)
 

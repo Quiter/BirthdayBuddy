@@ -139,7 +139,8 @@ fun AppResponsiveScaffold(
     containerColor: Color = Color.Unspecified,
     floatingActionButtonPosition: FabPosition = FabPosition.End,
     contentColor: Color = contentColorFor(if (containerColor == Color.Unspecified) MaterialTheme.colorScheme.background else containerColor),
-    contentWindowInsets: WindowInsets = WindowInsets.statusBars.union(WindowInsets.navigationBars).union(WindowInsets.displayCutout),
+    contentWindowInsets: WindowInsets = WindowInsets.statusBars.union(WindowInsets.navigationBars)
+        .union(WindowInsets.displayCutout),
     consumePadding: Boolean = true,
     useAdaptiveWidth: Boolean = true,
     content: @Composable (PaddingValues) -> Unit

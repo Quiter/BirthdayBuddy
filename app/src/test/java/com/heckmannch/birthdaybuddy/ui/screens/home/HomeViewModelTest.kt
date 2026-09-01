@@ -59,6 +59,7 @@ class HomeViewModelTest {
     private class FakeClock(var time: Long = 0L) : Clock {
         override fun currentTimeMillis(): Long = time
     }
+
     private val timeRepository: TimeRepository = mock()
     private val getContactsUseCase = GetContactsUseCase()
     private val contactUiMapper = ContactUiMapper()
@@ -352,10 +353,10 @@ class HomeViewModelTest {
 
         // Mock current time using FakeClock
         clock.time = 1000000L
-        
+
         // Simulating the user interaction
         viewModel.onIntent(HomeIntent.SearchQueryChanged("test")) // this sets lastInteractionTime to clock.time
-        
+
         clock.time += 4 * 60 * 1000 // advance by 4 mins
 
         viewModel.onIntent(HomeIntent.AppResumed)
@@ -375,10 +376,10 @@ class HomeViewModelTest {
 
         // Mock current time using FakeClock
         clock.time = 1000000L
-        
+
         // Simulating the user interaction
         viewModel.onIntent(HomeIntent.SearchQueryChanged("test")) // this sets lastInteractionTime to clock.time
-        
+
         clock.time += 6 * 60 * 1000 // advance by 6 mins
 
         viewModel.onIntent(HomeIntent.AppResumed)
@@ -403,9 +404,9 @@ class HomeViewModelTest {
         }
         runCurrent()
         viewModel.onIntent(HomeIntent.SyncContacts(showLoading = true))
-        
+
         syncCompletedJob.join()
-        
+
         val duration = testScheduler.currentTime - startTime
         assertThat(duration).isEqualTo(600)
     }
@@ -425,9 +426,9 @@ class HomeViewModelTest {
         }
         runCurrent()
         viewModel.onIntent(HomeIntent.SyncContacts(showLoading = true))
-        
+
         syncCompletedJob.join()
-        
+
         val duration = testScheduler.currentTime - startTime
         assertThat(duration).isEqualTo(0)
     }

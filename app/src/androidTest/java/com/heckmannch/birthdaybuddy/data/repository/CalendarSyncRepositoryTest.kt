@@ -46,7 +46,11 @@ class CalendarSyncRepositoryTest {
 
         whenever(systemCalendarDataSource.hasCalendarPermissions()).thenReturn(true)
         whenever(systemCalendarDataSource.queryAllCalendars()).thenReturn(emptyList())
-        whenever(appSettingsDao.getSettingsImmediate()).thenReturn(AppSettingsEntity(otherEventsEnabled = false))
+        whenever(appSettingsDao.getSettingsImmediate()).thenReturn(
+            AppSettingsEntity(
+                otherEventsEnabled = false
+            )
+        )
         whenever(systemCalendarDataSource.getOrCreateCalendar(any(), any(), any())).thenReturn(123L)
         whenever(systemCalendarDataSource.clearCalendarEvents(123L)).thenReturn(true)
         whenever(systemCalendarDataSource.applyBatch(any())).thenReturn(true)
@@ -59,7 +63,7 @@ class CalendarSyncRepositoryTest {
 
         // Verify clearCalendarEvents and applyBatch were called on the datasource
         verify(systemCalendarDataSource).clearCalendarEvents(123L)
-        
+
         val captor = argumentCaptor<List<ContentProviderOperation>>()
         verify(systemCalendarDataSource).applyBatch(captor.capture())
 
@@ -71,6 +75,8 @@ class CalendarSyncRepositoryTest {
         assertThat(uri).isNotNull()
         assertThat(uri.getQueryParameter(CalendarContract.CALLER_IS_SYNCADAPTER)).isEqualTo("true")
         assertThat(uri.getQueryParameter(CalendarContract.Calendars.ACCOUNT_NAME)).isEqualTo("BirthdayBuddy")
-        assertThat(uri.getQueryParameter(CalendarContract.Calendars.ACCOUNT_TYPE)).isEqualTo(CalendarContract.ACCOUNT_TYPE_LOCAL)
+        assertThat(uri.getQueryParameter(CalendarContract.Calendars.ACCOUNT_TYPE)).isEqualTo(
+            CalendarContract.ACCOUNT_TYPE_LOCAL
+        )
     }
 }

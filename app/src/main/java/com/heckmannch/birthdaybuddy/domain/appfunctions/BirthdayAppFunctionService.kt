@@ -188,15 +188,19 @@ abstract class BirthdayAppFunctionService : AppFunctionService() {
                 data = "https://wa.me/${phone.filter { it.isDigit() }}".toUri()
                 setPackage("com.whatsapp")
             }
+
             "signal" -> Intent(Intent.ACTION_VIEW).apply {
                 data = "sgnl://send?phone=${Uri.encode(phone)}".toUri()
             }
+
             "telegram" -> Intent(Intent.ACTION_VIEW).apply {
                 data = "tg://msg?to=${Uri.encode(phone)}".toUri()
             }
+
             "sms" -> Intent(Intent.ACTION_VIEW).apply {
                 data = "sms:${phone.filter { it.isDigit() }}".toUri()
             }
+
             else -> throw AppFunctionInvalidArgumentException(
                 errorMessage = "Unsupported app '$app'. Valid values: whatsapp, signal, telegram, sms.",
             )
@@ -261,9 +265,11 @@ abstract class BirthdayAppFunctionService : AppFunctionService() {
 
         // Deep-link into MainActivity with the contact's ID so the edit screen opens.
         // MainActivity resolves APPFN_CONTACT_ID and APPFN_BIRTHDAY_* to pre-fill the picker.
-        val intent = Intent(this@BirthdayAppFunctionService, Class.forName(
-            "com.heckmannch.birthdaybuddy.MainActivity"
-        )).apply {
+        val intent = Intent(
+            this@BirthdayAppFunctionService, Class.forName(
+                "com.heckmannch.birthdaybuddy.MainActivity"
+            )
+        ).apply {
             action = Intent.ACTION_VIEW
             addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP)
             putExtra(IntentExtras.APPFN_CONTACT_ID, contactId)

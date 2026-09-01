@@ -65,8 +65,12 @@ class HomeViewModelGiftIdeaTest {
         every { contactRepository.labelsEnabled } returns MutableStateFlow(true)
 
         // Stub use case operator functions returning flows to prevent flow combine hangs
-        every { getContactsUseCase(any(), any(), any(), any(), any()) } returns MutableStateFlow(emptyList())
-        every { getAvailableLabelsUseCase(any(), any(), any(), any()) } returns MutableStateFlow(emptyList())
+        every { getContactsUseCase(any(), any(), any(), any(), any()) } returns MutableStateFlow(
+            emptyList()
+        )
+        every { getAvailableLabelsUseCase(any(), any(), any(), any()) } returns MutableStateFlow(
+            emptyList()
+        )
         every { getCoupleSuggestionUseCase(any()) } returns MutableStateFlow(null)
         every { permissionChecker.hasContactsPermission() } returns true
 
@@ -182,7 +186,7 @@ class HomeViewModelGiftIdeaTest {
     @Test
     fun consumeNewlyAddedIdeaId_clearsIdInUiState() = runTest {
         val lookupKey = "test_lookup_key"
-        
+
         // 1. Populate newlyAddedIdeaId using AddGiftIdea
         viewModel.onIntent(HomeIntent.AddGiftIdea(lookupKey))
         val stateWithId = viewModel.uiState.first { it.newlyAddedIdeaId != null }

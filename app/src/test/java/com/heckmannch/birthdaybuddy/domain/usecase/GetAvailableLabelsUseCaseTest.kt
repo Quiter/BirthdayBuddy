@@ -37,10 +37,20 @@ class GetAvailableLabelsUseCaseTest {
     fun whenLabelsDisabled_returnsEmptyList() = runTest {
         // Scenario 1: labelsEnabled = false -> empty list returned
         val contacts = listOf(
-            Contact(contactId = "1", lookupKey = "k1", fullName = "Alice", labels = listOf("Family"))
+            Contact(
+                contactId = "1",
+                lookupKey = "k1",
+                fullName = "Alice",
+                labels = listOf("Family")
+            )
         )
         val configs = listOf(
-            LabelConfig(name = "Family", isHiddenFromFilter = false, isIgnored = false, isSystem = false)
+            LabelConfig(
+                name = "Family",
+                isHiddenFromFilter = false,
+                isIgnored = false,
+                isSystem = false
+            )
         )
 
         val result = useCase(
@@ -57,7 +67,12 @@ class GetAvailableLabelsUseCaseTest {
     fun whenLabelsEnabled_noActiveLabelsOrEvents_returnsEmptyList() = runTest {
         // Verify that with active contacts but no labels, pseudo-labels, or other events, the list is empty
         val contacts = listOf(
-            Contact(contactId = "1", lookupKey = "k1", fullName = "Alice", birthday = LocalDate.of(1990, 5, 10))
+            Contact(
+                contactId = "1",
+                lookupKey = "k1",
+                fullName = "Alice",
+                birthday = LocalDate.of(1990, 5, 10)
+            )
         )
         val configs = emptyList<LabelConfig>()
 
@@ -84,8 +99,18 @@ class GetAvailableLabelsUseCaseTest {
             )
         )
         val configs = listOf(
-            LabelConfig(name = "Family", isHiddenFromFilter = false, isIgnored = true, isSystem = false),
-            LabelConfig(name = "Work", isHiddenFromFilter = false, isIgnored = true, isSystem = false)
+            LabelConfig(
+                name = "Family",
+                isHiddenFromFilter = false,
+                isIgnored = true,
+                isSystem = false
+            ),
+            LabelConfig(
+                name = "Work",
+                isHiddenFromFilter = false,
+                isIgnored = true,
+                isSystem = false
+            )
         )
 
         val result = useCase(
@@ -128,7 +153,12 @@ class GetAvailableLabelsUseCaseTest {
             Contact(contactId = "1", lookupKey = "k1", fullName = "Alice", birthday = null)
         )
         val configs = listOf(
-            LabelConfig(name = ContactLabels.LABEL_NO_BIRTHDAY, isHiddenFromFilter = false, isIgnored = false, isSystem = true)
+            LabelConfig(
+                name = ContactLabels.LABEL_NO_BIRTHDAY,
+                isHiddenFromFilter = false,
+                isIgnored = false,
+                isSystem = true
+            )
         )
 
         val result = useCase(
@@ -153,13 +183,31 @@ class GetAvailableLabelsUseCaseTest {
                 birthday = null, // triggers LABEL_NO_BIRTHDAY
                 anniversary = LocalDate.of(2020, 10, 10), // triggers LABEL_ANNIVERSARY
                 nameDay = LocalDate.of(2020, 10, 10), // triggers LABEL_NAME_DAY
-                labels = listOf("Work", "Family") // user labels (unsorted order to verify alphabetic sort)
+                labels = listOf(
+                    "Work",
+                    "Family"
+                ) // user labels (unsorted order to verify alphabetic sort)
             )
         )
         val configs = listOf(
-            LabelConfig(name = "Family", isHiddenFromFilter = false, isIgnored = false, isSystem = false),
-            LabelConfig(name = "Work", isHiddenFromFilter = false, isIgnored = false, isSystem = false),
-            LabelConfig(name = ContactLabels.LABEL_NO_BIRTHDAY, isHiddenFromFilter = false, isIgnored = false, isSystem = true)
+            LabelConfig(
+                name = "Family",
+                isHiddenFromFilter = false,
+                isIgnored = false,
+                isSystem = false
+            ),
+            LabelConfig(
+                name = "Work",
+                isHiddenFromFilter = false,
+                isIgnored = false,
+                isSystem = false
+            ),
+            LabelConfig(
+                name = ContactLabels.LABEL_NO_BIRTHDAY,
+                isHiddenFromFilter = false,
+                isIgnored = false,
+                isSystem = true
+            )
         )
 
         val result = useCase(

@@ -173,7 +173,8 @@ class HomeScreenTest {
                         uiState = uiState,
                         onIntent = { intent ->
                             if (intent is HomeIntent.LabelSelected) {
-                                val newLabel = if (uiState.selectedLabel == intent.label) null else intent.label
+                                val newLabel =
+                                    if (uiState.selectedLabel == intent.label) null else intent.label
                                 val allContacts = listOf(
                                     ContactUiModel(
                                         id = "1",
@@ -212,7 +213,10 @@ class HomeScreenTest {
                                         giftIdeas = emptyList()
                                     )
                                 )
-                                val filtered = if (newLabel == null) allContacts else allContacts.filter { it.labels.contains(newLabel) }
+                                val filtered =
+                                    if (newLabel == null) allContacts else allContacts.filter {
+                                        it.labels.contains(newLabel)
+                                    }
                                 uiState = uiState.copy(
                                     selectedLabel = newLabel,
                                     contacts = filtered
@@ -231,7 +235,8 @@ class HomeScreenTest {
         composeTestRule.onNodeWithText("Bob Clausen").assertIsDisplayed()
 
         // Filter-Chip "Familie" anklicken
-        composeTestRule.onNode(hasText("Familie") and hasAnyAncestor(hasTestTag("birthday_list"))).performClick()
+        composeTestRule.onNode(hasText("Familie") and hasAnyAncestor(hasTestTag("birthday_list")))
+            .performClick()
 
         // Überprüfen, dass nur Alice (mit Label "Familie") angezeigt wird und Bob ausgeblendet wird
         composeTestRule.onNodeWithText("Alice Becker").assertIsDisplayed()

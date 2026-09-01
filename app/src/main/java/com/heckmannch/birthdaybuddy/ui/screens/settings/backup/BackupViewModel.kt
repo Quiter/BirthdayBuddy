@@ -40,6 +40,7 @@ class BackupViewModel @Inject constructor(
                 onSuccess = intent.onSuccess,
                 onError = intent.onError
             )
+
             is BackupIntent.ImportBackup -> importGiftIdeas(
                 uri = intent.uri,
                 onSuccess = intent.onSuccess,

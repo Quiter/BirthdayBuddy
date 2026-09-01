@@ -268,7 +268,11 @@ fun ColorPickerDialog(
                                 .size(ContactImageSizeSmall)
                                 .clip(CircleShape)
                                 .background(selectedColor)
-                                .border(BorderWidthThin, MaterialTheme.colorScheme.outlineVariant, CircleShape)
+                                .border(
+                                    BorderWidthThin,
+                                    MaterialTheme.colorScheme.outlineVariant,
+                                    CircleShape
+                                )
                         )
                         Text(
                             text = stringResource(R.string.color_picker_preview),

@@ -105,18 +105,22 @@ class GetContactsUseCase @Inject constructor() {
                         // All contacts with a birthday, or during search, contacts with no events too
                         contact.birthday != null || isSearching
                     }
+
                     ContactLabels.LABEL_NO_BIRTHDAY -> {
                         // Contacts without birthday
                         contact.birthday == null
                     }
+
                     ContactLabels.LABEL_ANNIVERSARY -> {
                         // Contacts with anniversary
                         contact.anniversary != null
                     }
+
                     ContactLabels.LABEL_NAME_DAY -> {
                         // Contacts with name day
                         contact.nameDay != null
                     }
+
                     else -> {
                         // Contacts with specific label category and birthday (unless searching)
                         contact.labels.contains(label) && (contact.birthday != null || isSearching)

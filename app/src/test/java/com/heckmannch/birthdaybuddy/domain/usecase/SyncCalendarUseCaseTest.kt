@@ -89,7 +89,9 @@ class SyncCalendarUseCaseTest {
         val contacts = emptyList<Contact>()
         coEvery { contactRepository.getAllContactsImmediate() } returns contacts
         val exceptionMessage = "Sync failed"
-        coEvery { calendarSyncRepository.syncBirthdays(contacts) } throws RuntimeException(exceptionMessage)
+        coEvery { calendarSyncRepository.syncBirthdays(contacts) } throws RuntimeException(
+            exceptionMessage
+        )
 
         // Act & Assert
         try {
@@ -104,7 +106,11 @@ class SyncCalendarUseCaseTest {
     fun `when settings flow throws exception, propagates the exception`() = runTest {
         // Arrange
         val exceptionMessage = "Failed to load settings"
-        every { notificationRepository.settings } returns flow { throw RuntimeException(exceptionMessage) }
+        every { notificationRepository.settings } returns flow {
+            throw RuntimeException(
+                exceptionMessage
+            )
+        }
 
         // Act & Assert
         try {

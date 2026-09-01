@@ -65,7 +65,9 @@ class UpdateCalendarColorUseCaseTest {
         val type = CalendarSyncRepository.CalendarType.NAMEDAY
         val color = 0xFF0000FF.toInt()
         val exceptionMessage = "Failed to update calendar color"
-        coEvery { calendarSyncRepository.updateCalendarColor(type, color) } throws RuntimeException(exceptionMessage)
+        coEvery { calendarSyncRepository.updateCalendarColor(type, color) } throws RuntimeException(
+            exceptionMessage
+        )
 
         // Act & Assert
         try {

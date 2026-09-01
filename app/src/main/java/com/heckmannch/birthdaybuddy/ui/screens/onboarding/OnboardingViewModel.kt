@@ -55,12 +55,15 @@ class OnboardingViewModel @Inject constructor(
             is OnboardingIntent.RefreshPermissions -> {
                 _permissions.value = checkPermissions()
             }
+
             is OnboardingIntent.SetPersistentNotifications -> {
                 setPersistentNotifications(intent.enabled)
             }
+
             is OnboardingIntent.SetCurrentPage -> {
                 _currentPage.value = intent.page
             }
+
             is OnboardingIntent.CompleteOnboarding -> {
                 completeOnboarding(
                     notificationsEnabled = intent.notificationsEnabled,

@@ -33,7 +33,8 @@ class CalendarViewModel @Inject constructor(
         }
     }
 
-    private val _hasCalendarPermission = MutableStateFlow(calendarSyncRepository.hasCalendarPermissions())
+    private val _hasCalendarPermission =
+        MutableStateFlow(calendarSyncRepository.hasCalendarPermissions())
 
     val uiState: StateFlow<CalendarUiState> = combine(
         notificationRepository.settings,
@@ -58,9 +59,11 @@ class CalendarViewModel @Inject constructor(
             is CalendarIntent.UpdateCalendarColor -> {
                 updateCalendarColor(intent.type, intent.color)
             }
+
             is CalendarIntent.CheckPermissionStatus -> {
                 checkPermissionStatus()
             }
+
             is CalendarIntent.SetCalendarSyncEnabled -> {
                 setCalendarSyncEnabled(intent.enabled)
             }

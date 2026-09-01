@@ -175,7 +175,8 @@ fun BirthdayList(
         ),
     ) {
         if (showLabelFilter && availableLabels.isNotEmpty()) {
-            val hasCoupleSuggestion = selectedLabel == ContactLabels.LABEL_ANNIVERSARY && coupleSuggestion != null
+            val hasCoupleSuggestion =
+                selectedLabel == ContactLabels.LABEL_ANNIVERSARY && coupleSuggestion != null
             // IMPORTANT: LabelFilterBar is the first LazyColumn item (not a sticky overlay).
             // It scrolls away and reappears naturally. Do NOT move it outside the LazyColumn;
             // doing so would break the headerCount accounting in FastScrollbar.
@@ -418,7 +419,10 @@ fun CoupleSuggestionBanner(
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = AlphaOnboardingCalendarDisabled)
         ),
-        border = BorderStroke(BorderWidthThin, MaterialTheme.colorScheme.primary.copy(alpha = AlphaBorderSubtle)),
+        border = BorderStroke(
+            BorderWidthThin,
+            MaterialTheme.colorScheme.primary.copy(alpha = AlphaBorderSubtle)
+        ),
         shape = RoundedCornerShape(SpacingNormal)
     ) {
         Row(

@@ -97,7 +97,7 @@ class CalendarViewModelTest {
             setCalendarSyncEnabledUseCase,
             updateCalendarColorUseCase
         )
-        
+
         val collectJob = launch { viewModel.uiState.collect {} }
         runCurrent()
         assertThat(viewModel.uiState.value.hasCalendarPermission).isFalse()

@@ -34,9 +34,16 @@ class MigrationTest {
         FrameworkSQLiteOpenHelperFactory()
     )
 
-    private data class ColumnInfo(val name: String, val isNotNull: Boolean, val defaultValue: String?)
+    private data class ColumnInfo(
+        val name: String,
+        val isNotNull: Boolean,
+        val defaultValue: String?
+    )
 
-    private fun getColumnInfo(db: SupportSQLiteDatabase, tableName: String): Map<String, ColumnInfo> {
+    private fun getColumnInfo(
+        db: SupportSQLiteDatabase,
+        tableName: String
+    ): Map<String, ColumnInfo> {
         val map = mutableMapOf<String, ColumnInfo>()
         val cursor = db.query("PRAGMA table_info('$tableName')")
         while (cursor.moveToNext()) {
@@ -63,7 +70,10 @@ class MigrationTest {
     }
 
     private fun tableExists(db: SupportSQLiteDatabase, tableName: String): Boolean {
-        val cursor = db.query("SELECT count(*) FROM sqlite_master WHERE type='table' AND name = ?", arrayOf(tableName))
+        val cursor = db.query(
+            "SELECT count(*) FROM sqlite_master WHERE type='table' AND name = ?",
+            arrayOf(tableName)
+        )
         val exists = cursor.moveToFirst() && cursor.getInt(0) > 0
         cursor.close()
         return exists
@@ -178,7 +188,8 @@ class MigrationTest {
         assertEquals("[\"Buch\"]", cursor2.getString(cursor2.getColumnIndexOrThrow("giftIdeas")))
         cursor2.close()
 
-        val notifCursor = migratedDb.query("SELECT * FROM pending_notifications WHERE contactLookupKeys = '[\"key6_null_gift\"]'")
+        val notifCursor =
+            migratedDb.query("SELECT * FROM pending_notifications WHERE contactLookupKeys = '[\"key6_null_gift\"]'")
         assertTrue(notifCursor.moveToFirst())
         assertEquals(2026, notifCursor.getInt(notifCursor.getColumnIndexOrThrow("year")))
         notifCursor.close()
@@ -228,7 +239,10 @@ class MigrationTest {
         )
         val newCursor = migratedDb.query("SELECT * FROM contacts WHERE lookupKey = 'key8_new'")
         assertTrue(newCursor.moveToFirst())
-        assertEquals("2018-06-20", newCursor.getString(newCursor.getColumnIndexOrThrow("anniversary")))
+        assertEquals(
+            "2018-06-20",
+            newCursor.getString(newCursor.getColumnIndexOrThrow("anniversary"))
+        )
         assertEquals("2026-03-15", newCursor.getString(newCursor.getColumnIndexOrThrow("nameDay")))
         newCursor.close()
     }
@@ -275,7 +289,10 @@ class MigrationTest {
         )
         val newCursor = migratedDb.query("SELECT * FROM contacts WHERE lookupKey = 'key9_new'")
         assertTrue(newCursor.moveToFirst())
-        assertEquals("keySpouse", newCursor.getString(newCursor.getColumnIndexOrThrow("spouseLookupKey")))
+        assertEquals(
+            "keySpouse",
+            newCursor.getString(newCursor.getColumnIndexOrThrow("spouseLookupKey"))
+        )
         newCursor.close()
     }
 
@@ -305,7 +322,10 @@ class MigrationTest {
         assertEquals("1993-11-11", cursor.getString(cursor.getColumnIndexOrThrow("birthday")))
         assertEquals("2021-01-01", cursor.getString(cursor.getColumnIndexOrThrow("anniversary")))
         assertEquals("2026-07-13", cursor.getString(cursor.getColumnIndexOrThrow("nameDay")))
-        assertEquals("keySpouse9", cursor.getString(cursor.getColumnIndexOrThrow("spouseLookupKey")))
+        assertEquals(
+            "keySpouse9",
+            cursor.getString(cursor.getColumnIndexOrThrow("spouseLookupKey"))
+        )
         val isFavoriteIdx = cursor.getColumnIndexOrThrow("isFavorite")
         assertEquals(0, cursor.getInt(isFavoriteIdx))
         cursor.close()
@@ -353,18 +373,37 @@ class MigrationTest {
         // 3. Verify data integrity in contacts table
         val contactCursor = migratedDb.query("SELECT * FROM contacts WHERE lookupKey = 'key10'")
         assertTrue(contactCursor.moveToFirst())
-        assertEquals("Julia Test", contactCursor.getString(contactCursor.getColumnIndexOrThrow("fullName")))
-        assertEquals("1995-03-20", contactCursor.getString(contactCursor.getColumnIndexOrThrow("birthday")))
-        assertEquals("2020-08-15", contactCursor.getString(contactCursor.getColumnIndexOrThrow("anniversary")))
-        assertEquals("2020-04-12", contactCursor.getString(contactCursor.getColumnIndexOrThrow("nameDay")))
+        assertEquals(
+            "Julia Test",
+            contactCursor.getString(contactCursor.getColumnIndexOrThrow("fullName"))
+        )
+        assertEquals(
+            "1995-03-20",
+            contactCursor.getString(contactCursor.getColumnIndexOrThrow("birthday"))
+        )
+        assertEquals(
+            "2020-08-15",
+            contactCursor.getString(contactCursor.getColumnIndexOrThrow("anniversary"))
+        )
+        assertEquals(
+            "2020-04-12",
+            contactCursor.getString(contactCursor.getColumnIndexOrThrow("nameDay"))
+        )
         assertEquals(1, contactCursor.getInt(contactCursor.getColumnIndexOrThrow("isFavorite")))
-        assertEquals("keySpouse", contactCursor.getString(contactCursor.getColumnIndexOrThrow("spouseLookupKey")))
+        assertEquals(
+            "keySpouse",
+            contactCursor.getString(contactCursor.getColumnIndexOrThrow("spouseLookupKey"))
+        )
         contactCursor.close()
 
         // 4. Verify data integrity in pending_notifications table
-        val notifCursor = migratedDb.query("SELECT * FROM pending_notifications WHERE year = 2026 AND daysBefore = 3")
+        val notifCursor =
+            migratedDb.query("SELECT * FROM pending_notifications WHERE year = 2026 AND daysBefore = 3")
         assertTrue(notifCursor.moveToFirst())
-        assertEquals("[\"key10\"]", notifCursor.getString(notifCursor.getColumnIndexOrThrow("contactLookupKeys")))
+        assertEquals(
+            "[\"key10\"]",
+            notifCursor.getString(notifCursor.getColumnIndexOrThrow("contactLookupKeys"))
+        )
         assertEquals(0, notifCursor.getInt(notifCursor.getColumnIndexOrThrow("isDone")))
         assertEquals(1, notifCursor.getInt(notifCursor.getColumnIndexOrThrow("dismissCount")))
         notifCursor.close()

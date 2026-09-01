@@ -138,7 +138,8 @@ class NotificationHelperTest {
         val notification = pollActiveNotification(555)
 
         assertThat(notification).isNotNull()
-        val isOngoing = (notification?.notification?.flags?.and(android.app.Notification.FLAG_ONGOING_EVENT)) != 0
+        val isOngoing =
+            (notification?.notification?.flags?.and(android.app.Notification.FLAG_ONGOING_EVENT)) != 0
         assertThat(isOngoing).isTrue()
     }
 
@@ -164,7 +165,11 @@ class NotificationHelperTest {
         assertThat(notification?.notification?.channelId).isEqualTo(NotificationHelper.CHANNEL_ID)
     }
 
-    private fun pollActiveNotification(id: Int, maxAttempts: Int = 20, sleepMs: Long = 50): android.service.notification.StatusBarNotification? {
+    private fun pollActiveNotification(
+        id: Int,
+        maxAttempts: Int = 20,
+        sleepMs: Long = 50
+    ): android.service.notification.StatusBarNotification? {
         for (i in 1..maxAttempts) {
             val activeNotifications = notificationManager.activeNotifications
             val notification = activeNotifications.find { it.id == id }

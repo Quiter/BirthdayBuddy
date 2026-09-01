@@ -37,7 +37,8 @@ class GetCoupleSuggestionUseCaseTest {
     @Test
     fun `when selected label is not anniversary, returns null`() = runTest {
         // Arrange
-        val couple = PotentialCouple("key1", "Max Mustermann", null, "key2", "Erika Mustermann", null)
+        val couple =
+            PotentialCouple("key1", "Max Mustermann", null, "key2", "Erika Mustermann", null)
         potentialCouplesFlow.value = listOf(couple)
 
         // Act
@@ -62,7 +63,8 @@ class GetCoupleSuggestionUseCaseTest {
     @Test
     fun `when suggestion is in ignored list, returns null`() = runTest {
         // Arrange
-        val couple = PotentialCouple("key1", "Max Mustermann", null, "key2", "Erika Mustermann", null)
+        val couple =
+            PotentialCouple("key1", "Max Mustermann", null, "key2", "Erika Mustermann", null)
         potentialCouplesFlow.value = listOf(couple)
         ignoredCouplePairsFlow.value = listOf("key1:key2") // Ignored pair
 
@@ -76,7 +78,8 @@ class GetCoupleSuggestionUseCaseTest {
     @Test
     fun `when suggestion is not ignored, returns suggestion mapping`() = runTest {
         // Arrange
-        val couple = PotentialCouple("key1", "Max Mustermann", null, "key2", "Erika Mustermann", null)
+        val couple =
+            PotentialCouple("key1", "Max Mustermann", null, "key2", "Erika Mustermann", null)
         potentialCouplesFlow.value = listOf(couple)
         ignoredCouplePairsFlow.value = emptyList()
 
@@ -92,29 +95,30 @@ class GetCoupleSuggestionUseCaseTest {
     }
 
     @Test
-    fun `when potential couple has different last names, returns suggestion successfully`() = runTest {
-        // Arrange
-        val couple = PotentialCouple(
-            firstLookupKey = "key1",
-            firstName = "Max Schmidt",
-            firstImageUri = null,
-            secondLookupKey = "key2",
-            secondName = "Erika Müller",
-            secondImageUri = null
-        )
-        potentialCouplesFlow.value = listOf(couple)
-        ignoredCouplePairsFlow.value = emptyList()
+    fun `when potential couple has different last names, returns suggestion successfully`() =
+        runTest {
+            // Arrange
+            val couple = PotentialCouple(
+                firstLookupKey = "key1",
+                firstName = "Max Schmidt",
+                firstImageUri = null,
+                secondLookupKey = "key2",
+                secondName = "Erika Müller",
+                secondImageUri = null
+            )
+            potentialCouplesFlow.value = listOf(couple)
+            ignoredCouplePairsFlow.value = emptyList()
 
-        // Act
-        val result = useCase(MutableStateFlow(ContactLabels.LABEL_ANNIVERSARY)).first()
+            // Act
+            val result = useCase(MutableStateFlow(ContactLabels.LABEL_ANNIVERSARY)).first()
 
-        // Assert
-        assertThat(result).isNotNull()
-        assertThat(result!!.firstLookupKey).isEqualTo("key1")
-        assertThat(result.firstName).isEqualTo("Max Schmidt")
-        assertThat(result.secondLookupKey).isEqualTo("key2")
-        assertThat(result.secondName).isEqualTo("Erika Müller")
-        assertThat(result.firstInitials).isEqualTo("MS")
-        assertThat(result.secondInitials).isEqualTo("EM")
-    }
+            // Assert
+            assertThat(result).isNotNull()
+            assertThat(result!!.firstLookupKey).isEqualTo("key1")
+            assertThat(result.firstName).isEqualTo("Max Schmidt")
+            assertThat(result.secondLookupKey).isEqualTo("key2")
+            assertThat(result.secondName).isEqualTo("Erika Müller")
+            assertThat(result.firstInitials).isEqualTo("MS")
+            assertThat(result.secondInitials).isEqualTo("EM")
+        }
 }

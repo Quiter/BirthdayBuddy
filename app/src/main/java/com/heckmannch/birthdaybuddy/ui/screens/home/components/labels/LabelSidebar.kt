@@ -67,7 +67,10 @@ fun LabelSidebar(
                 text = stringResource(R.string.labels_title),
                 style = MaterialTheme.typography.titleMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier.padding(horizontal = SpacingMedium + SpacingSmall, vertical = SpacingSmall)
+                modifier = Modifier.padding(
+                    horizontal = SpacingMedium + SpacingSmall,
+                    vertical = SpacingSmall
+                )
             )
         } else {
             Spacer(modifier = Modifier.height(SidebarHeaderSpacerHeight)) // Vertical alignment placeholder

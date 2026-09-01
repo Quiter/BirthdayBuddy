@@ -11,7 +11,10 @@ import com.heckmannch.birthdaybuddy.domain.model.ContactLabels as DomainContactL
  */
 @Deprecated(
     message = "Use com.heckmannch.birthdaybuddy.domain.model.ContactLabels instead",
-    replaceWith = ReplaceWith("ContactLabels", "com.heckmannch.birthdaybuddy.domain.model.ContactLabels")
+    replaceWith = ReplaceWith(
+        "ContactLabels",
+        "com.heckmannch.birthdaybuddy.domain.model.ContactLabels"
+    )
 )
 @Suppress("unused")
 object ContactLabels {

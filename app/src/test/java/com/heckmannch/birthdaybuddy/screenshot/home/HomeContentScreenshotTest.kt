@@ -1,11 +1,11 @@
 package com.heckmannch.birthdaybuddy.screenshot.home
 
 import com.heckmannch.birthdaybuddy.screenshot.BaseScreenshotTest
+import com.heckmannch.birthdaybuddy.ui.model.HomeUiState
 import com.heckmannch.birthdaybuddy.ui.model.SampleData
 import com.heckmannch.birthdaybuddy.ui.screens.home.HomeActions
 import com.heckmannch.birthdaybuddy.ui.screens.home.HomeContent
 import com.heckmannch.birthdaybuddy.ui.screens.home.rememberHomeState
-import com.heckmannch.birthdaybuddy.ui.model.HomeUiState
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner

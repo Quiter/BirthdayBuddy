@@ -31,26 +31,27 @@ class SetCalendarSyncEnabledUseCaseTest {
     }
 
     @Test
-    fun `when enabled is true, updates settings and triggers calendar sync with contacts`() = runTest {
-        // Arrange
-        val contacts = listOf(
-            Contact(
-                contactId = "1",
-                lookupKey = "1",
-                fullName = "Max Mustermann",
-                birthday = null
+    fun `when enabled is true, updates settings and triggers calendar sync with contacts`() =
+        runTest {
+            // Arrange
+            val contacts = listOf(
+                Contact(
+                    contactId = "1",
+                    lookupKey = "1",
+                    fullName = "Max Mustermann",
+                    birthday = null
+                )
             )
-        )
-        whenever(contactRepository.getAllContactsImmediate()).thenReturn(contacts)
+            whenever(contactRepository.getAllContactsImmediate()).thenReturn(contacts)
 
-        // Act
-        useCase(true)
+            // Act
+            useCase(true)
 
-        // Assert
-        verify(notificationRepository).updateSettings(calendarSyncEnabled = true)
-        verify(contactRepository).getAllContactsImmediate()
-        verify(calendarSyncRepository).syncBirthdays(contacts)
-    }
+            // Assert
+            verify(notificationRepository).updateSettings(calendarSyncEnabled = true)
+            verify(contactRepository).getAllContactsImmediate()
+            verify(calendarSyncRepository).syncBirthdays(contacts)
+        }
 
     @Test
     fun `when enabled is false, updates settings and deletes calendar`() = runTest {

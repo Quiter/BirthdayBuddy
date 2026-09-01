@@ -49,7 +49,12 @@ class IgnoreCoupleSuggestionUseCaseTest {
         val lookupKey1 = "lookupKey1"
         val lookupKey2 = "lookupKey2"
         val exceptionMessage = "Failed to ignore suggestion"
-        coEvery { contactRepository.ignoreCoupleSuggestion(lookupKey1, lookupKey2) } throws RuntimeException(exceptionMessage)
+        coEvery {
+            contactRepository.ignoreCoupleSuggestion(
+                lookupKey1,
+                lookupKey2
+            )
+        } throws RuntimeException(exceptionMessage)
 
         // Act & Assert
         try {

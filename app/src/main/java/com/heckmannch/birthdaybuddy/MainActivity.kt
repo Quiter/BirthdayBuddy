@@ -70,7 +70,8 @@ class MainActivity : ComponentActivity() {
                     customAccentColorHex = appSettings.customAccentColor
                 ) {
                     if (onboardingCompleted != null) {
-                        val initialKey: NavKey = if (onboardingCompleted == true) Home else Onboarding
+                        val initialKey: NavKey =
+                            if (onboardingCompleted == true) Home else Onboarding
                         val backStack = rememberNavBackStack(initialKey)
 
                         Surface(

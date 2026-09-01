@@ -1,7 +1,7 @@
 package com.heckmannch.birthdaybuddy.ui.navigation
 
-import com.google.common.truth.Truth.assertThat
 import androidx.navigation3.runtime.NavKey
+import com.google.common.truth.Truth.assertThat
 import org.junit.Test
 
 class NavRoutesTest {

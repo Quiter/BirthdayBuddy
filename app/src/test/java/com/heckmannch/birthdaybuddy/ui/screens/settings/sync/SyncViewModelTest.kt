@@ -33,21 +33,22 @@ class SyncViewModelTest {
     }
 
     @Test
-    fun `syncContacts clears ignored couple pairs, calls sync, and emits syncCompletedEvent`() = runTest {
-        var eventEmitted = false
-        val job = backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) {
-            viewModel.syncCompletedEvent.collect {
-                eventEmitted = true
+    fun `syncContacts clears ignored couple pairs, calls sync, and emits syncCompletedEvent`() =
+        runTest {
+            var eventEmitted = false
+            val job = backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) {
+                viewModel.syncCompletedEvent.collect {
+                    eventEmitted = true
+                }
             }
+
+            viewModel.syncContacts()
+            testScheduler.advanceUntilIdle()
+
+            verify(contactRepository).clearIgnoredCouplePairs()
+            verify(contactRepository).syncContacts()
+            assertThat(eventEmitted).isTrue()
+
+            job.cancel()
         }
-
-        viewModel.syncContacts()
-        testScheduler.advanceUntilIdle()
-
-        verify(contactRepository).clearIgnoredCouplePairs()
-        verify(contactRepository).syncContacts()
-        assertThat(eventEmitted).isTrue()
-
-        job.cancel()
-    }
 }

@@ -8,6 +8,8 @@ import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
 import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
+import com.heckmannch.birthdaybuddy.data.local.AppDatabase.Companion.MIGRATION_5_6
+import com.heckmannch.birthdaybuddy.data.local.AppDatabase.Companion.MIGRATION_6_7
 
 /**
  * Room-Datenbank für kontobezogene Entitäten ([ContactEntity], [PendingNotificationEntity]).
@@ -202,7 +204,10 @@ abstract class AppDatabase : RoomDatabase() {
                 try {
                     recreateContactsTableV6(db)
                 } catch (e: Exception) {
-                    throw RuntimeException("Migration 5 to 6 failed: contacts table recreation error.", e)
+                    throw RuntimeException(
+                        "Migration 5 to 6 failed: contacts table recreation error.",
+                        e
+                    )
                 }
             }
         }
@@ -225,7 +230,10 @@ abstract class AppDatabase : RoomDatabase() {
                     db.execSQL("DROP TABLE IF EXISTS `notification_rules`")
                     db.execSQL("DROP TABLE IF EXISTS `app_settings`")
                 } catch (e: Exception) {
-                    throw RuntimeException("Migration 6 to 7 failed: dropping legacy tables failed.", e)
+                    throw RuntimeException(
+                        "Migration 6 to 7 failed: dropping legacy tables failed.",
+                        e
+                    )
                 }
 
                 try {
@@ -247,7 +255,10 @@ abstract class AppDatabase : RoomDatabase() {
                         recreateContactsTableV7(db)
                     }
                 } catch (e: Exception) {
-                    throw RuntimeException("Migration 6 to 7 failed: contacts table check or recreation error.", e)
+                    throw RuntimeException(
+                        "Migration 6 to 7 failed: contacts table check or recreation error.",
+                        e
+                    )
                 }
             }
         }

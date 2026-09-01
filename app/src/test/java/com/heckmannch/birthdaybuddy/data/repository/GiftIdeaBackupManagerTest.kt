@@ -31,7 +31,8 @@ class GiftIdeaBackupManagerTest {
         // Given
         val giftIdeas = listOf(GiftIdea(text = "Book"))
         val userData = listOf(ContactUserData(lookupKey = "key1", giftIdeas = giftIdeas))
-        val contacts = listOf(ContactEntity(contactId = "1", lookupKey = "key1", fullName = "John Doe"))
+        val contacts =
+            listOf(ContactEntity(contactId = "1", lookupKey = "key1", fullName = "John Doe"))
 
         whenever(contactUserDataDao.getAllUserDataImmediate()).thenReturn(userData)
         whenever(contactDao.getAllContactsImmediate()).thenReturn(contacts)
@@ -52,7 +53,8 @@ class GiftIdeaBackupManagerTest {
     fun `importGiftIdeas should delegate to repository and match by lookupKey`() = runTest {
         // Given
         val json = "[{\"lookupKey\": \"key1\", \"fullName\": \"John Doe\", \"giftIdeas\": \"[]\"}]"
-        val contacts = listOf(ContactEntity(contactId = "1", lookupKey = "key1", fullName = "John Doe"))
+        val contacts =
+            listOf(ContactEntity(contactId = "1", lookupKey = "key1", fullName = "John Doe"))
         whenever(contactDao.getAllContactsImmediate()).thenReturn(contacts)
 
         // When
@@ -86,8 +88,13 @@ class GiftIdeaBackupManagerTest {
     fun `importGiftIdeas should preserve existing spouseLookupKey`() = runTest {
         // Given
         val json = "[{\"lookupKey\": \"key1\", \"fullName\": \"John Doe\", \"giftIdeas\": \"[]\"}]"
-        val contacts = listOf(ContactEntity(contactId = "1", lookupKey = "key1", fullName = "John Doe"))
-        val existingUserData = ContactUserData(lookupKey = "key1", giftIdeas = emptyList(), spouseLookupKey = "spouse_key")
+        val contacts =
+            listOf(ContactEntity(contactId = "1", lookupKey = "key1", fullName = "John Doe"))
+        val existingUserData = ContactUserData(
+            lookupKey = "key1",
+            giftIdeas = emptyList(),
+            spouseLookupKey = "spouse_key"
+        )
         whenever(contactDao.getAllContactsImmediate()).thenReturn(contacts)
         whenever(contactUserDataDao.getUserDataForContact("key1")).thenReturn(existingUserData)
 

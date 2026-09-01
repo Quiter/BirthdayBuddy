@@ -111,7 +111,13 @@ class ContactUiMapper @Inject constructor() {
             val nameDays = if (otherEventsEnabled) {
                 contacts.asSequence()
                     .filter { it.nameDay != null }
-                    .map { toUiModelForEvent(it, today, EventType.NAME_DAY).copy(labels = emptyList()) }
+                    .map {
+                        toUiModelForEvent(
+                            it,
+                            today,
+                            EventType.NAME_DAY
+                        ).copy(labels = emptyList())
+                    }
                     .toList()
             } else emptyList()
 

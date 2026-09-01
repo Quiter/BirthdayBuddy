@@ -76,6 +76,7 @@ class LabelViewModel @Inject constructor(
                     intent.showInWidget
                 )
             }
+
             is LabelIntent.SetLabelsEnabled -> {
                 setLabelsEnabled(intent.enabled)
             }

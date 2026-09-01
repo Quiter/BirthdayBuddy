@@ -18,6 +18,7 @@ import com.heckmannch.birthdaybuddy.ui.model.ContactUiModel
 import com.heckmannch.birthdaybuddy.ui.model.CoupleSuggestionUiModel
 import com.heckmannch.birthdaybuddy.ui.model.HomeUiState
 import com.heckmannch.birthdaybuddy.ui.model.PendingBirthdayEdit
+import com.heckmannch.birthdaybuddy.ui.screens.home.HomeViewModel.Companion.SEARCH_DEBOUNCE_DURATION
 import com.heckmannch.birthdaybuddy.util.Clock
 import com.heckmannch.birthdaybuddy.util.NO_YEAR_MARKER
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -499,7 +500,8 @@ class HomeViewModel @Inject constructor(
                             .find { it.lookupKey == intent.contactLookupKey || it.contactId == intent.contactLookupKey }
                     }
                     if (contact != null) {
-                        val targetYear = if (intent.year != null && intent.year > 0 && intent.year != NO_YEAR_MARKER) intent.year else NO_YEAR_MARKER
+                        val targetYear =
+                            if (intent.year != null && intent.year > 0 && intent.year != NO_YEAR_MARKER) intent.year else NO_YEAR_MARKER
                         val safeMonth = intent.month.coerceIn(1, 12)
                         val maxDays = Month.of(safeMonth).length(Year.isLeap(targetYear.toLong()))
                         val safeDay = intent.day.coerceIn(1, maxDays)

@@ -42,7 +42,12 @@ class NotificationViewModel @Inject constructor(
             is NotificationIntent.SetEnabled -> setNotificationsEnabled(intent.enabled)
             is NotificationIntent.SetPersistent -> setPersistentNotifications(intent.persistent)
             is NotificationIntent.SetOtherEventsEnabled -> setOtherEventsEnabled(intent.enabled)
-            is NotificationIntent.AddRule -> addNotificationRule(intent.daysBefore, intent.hour, intent.minute)
+            is NotificationIntent.AddRule -> addNotificationRule(
+                intent.daysBefore,
+                intent.hour,
+                intent.minute
+            )
+
             is NotificationIntent.UpdateRule -> updateNotificationRule(intent.rule)
             is NotificationIntent.DeleteRule -> deleteNotificationRule(intent.rule)
         }
@@ -92,15 +97,16 @@ class NotificationViewModel @Inject constructor(
         }
     }
 
-    private fun addNotificationRule(daysBefore: Int, hour: Int, minute: Int) = viewModelScope.launch {
-        notificationRepository.insertRule(
-            NotificationRule(
-                daysBefore = daysBefore,
-                hour = hour,
-                minute = minute
+    private fun addNotificationRule(daysBefore: Int, hour: Int, minute: Int) =
+        viewModelScope.launch {
+            notificationRepository.insertRule(
+                NotificationRule(
+                    daysBefore = daysBefore,
+                    hour = hour,
+                    minute = minute
+                )
             )
-        )
-    }
+        }
 
     private fun updateNotificationRule(rule: NotificationRule) = viewModelScope.launch {
         notificationRepository.updateRule(rule)

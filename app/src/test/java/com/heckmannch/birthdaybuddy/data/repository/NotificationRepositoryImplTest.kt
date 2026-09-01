@@ -145,7 +145,9 @@ class NotificationRepositoryImplTest {
     @Test
     fun syncScheduling_schedulesNext_whenEnabledAndRulesNotEmpty() = runTest {
         // Arrange
-        coEvery { appSettingsDao.getSettingsImmediate() } returns AppSettingsEntity(notificationsEnabled = true)
+        coEvery { appSettingsDao.getSettingsImmediate() } returns AppSettingsEntity(
+            notificationsEnabled = true
+        )
         coEvery { notificationRuleDao.getAllRulesImmediate() } returns listOf(
             NotificationRuleEntity(id = 1, daysBefore = 0, hour = 9, minute = 0)
         )
@@ -164,7 +166,9 @@ class NotificationRepositoryImplTest {
     @Test
     fun syncScheduling_cancelsNotification_whenDisabled() = runTest {
         // Arrange
-        coEvery { appSettingsDao.getSettingsImmediate() } returns AppSettingsEntity(notificationsEnabled = false)
+        coEvery { appSettingsDao.getSettingsImmediate() } returns AppSettingsEntity(
+            notificationsEnabled = false
+        )
         coEvery { notificationRuleDao.getAllRulesImmediate() } returns listOf(
             NotificationRuleEntity(id = 1, daysBefore = 0, hour = 9, minute = 0)
         )
@@ -180,7 +184,9 @@ class NotificationRepositoryImplTest {
     @Test
     fun syncScheduling_cancelsNotification_whenRulesEmpty() = runTest {
         // Arrange
-        coEvery { appSettingsDao.getSettingsImmediate() } returns AppSettingsEntity(notificationsEnabled = true)
+        coEvery { appSettingsDao.getSettingsImmediate() } returns AppSettingsEntity(
+            notificationsEnabled = true
+        )
         coEvery { notificationRuleDao.getAllRulesImmediate() } returns emptyList()
 
         // Act
@@ -210,7 +216,9 @@ class NotificationRepositoryImplTest {
     @Test
     fun syncScheduling_catchesAndSuppressesSecurityException_whenSchedulingFails() = runTest {
         // Arrange
-        coEvery { appSettingsDao.getSettingsImmediate() } returns AppSettingsEntity(notificationsEnabled = true)
+        coEvery { appSettingsDao.getSettingsImmediate() } returns AppSettingsEntity(
+            notificationsEnabled = true
+        )
         coEvery { notificationRuleDao.getAllRulesImmediate() } returns listOf(
             NotificationRuleEntity(id = 1, daysBefore = 0, hour = 9, minute = 0)
         )
@@ -225,7 +233,9 @@ class NotificationRepositoryImplTest {
     @Test
     fun syncScheduling_rethrowsCancellationException_forStructuredConcurrency() = runTest {
         // Arrange
-        coEvery { appSettingsDao.getSettingsImmediate() } returns AppSettingsEntity(notificationsEnabled = true)
+        coEvery { appSettingsDao.getSettingsImmediate() } returns AppSettingsEntity(
+            notificationsEnabled = true
+        )
         coEvery { notificationRuleDao.getAllRulesImmediate() } returns listOf(
             NotificationRuleEntity(id = 1, daysBefore = 0, hour = 9, minute = 0)
         )
@@ -324,7 +334,9 @@ class NotificationRepositoryImplTest {
     fun insertRule_delegatesToDaoAndTriggersSync() = runTest {
         // Arrange
         val rule = NotificationRule(id = 5, daysBefore = 2, hour = 12, minute = 0)
-        coEvery { appSettingsDao.getSettingsImmediate() } returns AppSettingsEntity(notificationsEnabled = false)
+        coEvery { appSettingsDao.getSettingsImmediate() } returns AppSettingsEntity(
+            notificationsEnabled = false
+        )
         coEvery { notificationRuleDao.getAllRulesImmediate() } returns emptyList()
 
         // Act
@@ -344,7 +356,9 @@ class NotificationRepositoryImplTest {
     fun updateRule_delegatesToDaoAndTriggersSync() = runTest {
         // Arrange
         val rule = NotificationRule(id = 5, daysBefore = 2, hour = 12, minute = 0)
-        coEvery { appSettingsDao.getSettingsImmediate() } returns AppSettingsEntity(notificationsEnabled = false)
+        coEvery { appSettingsDao.getSettingsImmediate() } returns AppSettingsEntity(
+            notificationsEnabled = false
+        )
         coEvery { notificationRuleDao.getAllRulesImmediate() } returns emptyList()
 
         // Act
@@ -363,7 +377,9 @@ class NotificationRepositoryImplTest {
     fun deleteRule_delegatesToDaoAndTriggersSync() = runTest {
         // Arrange
         val rule = NotificationRule(id = 5, daysBefore = 2, hour = 12, minute = 0)
-        coEvery { appSettingsDao.getSettingsImmediate() } returns AppSettingsEntity(notificationsEnabled = false)
+        coEvery { appSettingsDao.getSettingsImmediate() } returns AppSettingsEntity(
+            notificationsEnabled = false
+        )
         coEvery { notificationRuleDao.getAllRulesImmediate() } returns emptyList()
 
         // Act
@@ -382,7 +398,14 @@ class NotificationRepositoryImplTest {
     fun getActiveNotificationsImmediate_returnsMappedNotifications() = runTest {
         // Arrange
         coEvery { pendingNotificationDao.getActiveNotificationsImmediate() } returns listOf(
-            PendingNotificationEntity(id = 1, contactLookupKeys = listOf("key1"), daysBefore = 0, year = 2024, isDone = false, dismissCount = 0)
+            PendingNotificationEntity(
+                id = 1,
+                contactLookupKeys = listOf("key1"),
+                daysBefore = 0,
+                year = 2024,
+                isDone = false,
+                dismissCount = 0
+            )
         )
 
         // Act
@@ -401,7 +424,14 @@ class NotificationRepositoryImplTest {
     @Test
     fun insertPendingNotification_delegatesToDaoAndReturnsId() = runTest {
         // Arrange
-        val notification = PendingNotification(id = 0, contactLookupKeys = listOf("key1"), daysBefore = 1, year = 2024, isDone = false, dismissCount = 2)
+        val notification = PendingNotification(
+            id = 0,
+            contactLookupKeys = listOf("key1"),
+            daysBefore = 1,
+            year = 2024,
+            isDone = false,
+            dismissCount = 2
+        )
         coEvery { pendingNotificationDao.upsert(any()) } returns 101L
 
         // Act
@@ -423,7 +453,12 @@ class NotificationRepositoryImplTest {
     fun getPendingNotificationById_returnsMappedNotification_whenExists() = runTest {
         // Arrange
         coEvery { pendingNotificationDao.getNotificationById(123) } returns PendingNotificationEntity(
-            id = 123, contactLookupKeys = listOf("key1"), daysBefore = 0, year = 2024, isDone = true, dismissCount = 1
+            id = 123,
+            contactLookupKeys = listOf("key1"),
+            daysBefore = 0,
+            year = 2024,
+            isDone = true,
+            dismissCount = 1
         )
 
         // Act
@@ -451,7 +486,13 @@ class NotificationRepositoryImplTest {
     @Test
     fun hasNotificationBeenScheduled_delegatesToDaoWithWildcardPattern() = runTest {
         // Arrange
-        coEvery { pendingNotificationDao.hasNotificationBeenScheduled(2024, 1, "%\"key\\_abc\"%") } returns true
+        coEvery {
+            pendingNotificationDao.hasNotificationBeenScheduled(
+                2024,
+                1,
+                "%\"key\\_abc\"%"
+            )
+        } returns true
 
         // Act
         val result = repository.hasNotificationBeenScheduled(2024, 1, "key_abc")
@@ -466,7 +507,13 @@ class NotificationRepositoryImplTest {
         // Arrange: lookupKey containing backslash, percent, and underscore
         val rawLookupKey = "user\\test%key_123"
         val expectedPattern = "%\"user\\\\test\\%key\\_123\"%"
-        coEvery { pendingNotificationDao.hasNotificationBeenScheduled(2024, 0, expectedPattern) } returns true
+        coEvery {
+            pendingNotificationDao.hasNotificationBeenScheduled(
+                2024,
+                0,
+                expectedPattern
+            )
+        } returns true
 
         // Act
         val result = repository.hasNotificationBeenScheduled(2024, 0, rawLookupKey)

@@ -93,7 +93,10 @@ internal fun ScrollbarBubble(
                         ) {
                             Text(
                                 text = label,
-                                modifier = Modifier.padding(horizontal = SpacingNormal, vertical = SpacingSmall),
+                                modifier = Modifier.padding(
+                                    horizontal = SpacingNormal,
+                                    vertical = SpacingSmall
+                                ),
                                 color = MaterialTheme.colorScheme.onPrimary,
                                 style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
                             )

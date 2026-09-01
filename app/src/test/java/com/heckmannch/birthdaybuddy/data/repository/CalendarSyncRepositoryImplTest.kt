@@ -77,16 +77,24 @@ class CalendarSyncRepositoryImplTest {
             theUnsafeField.isAccessible = true
             val unsafe = theUnsafeField.get(null)
 
-            val staticFieldBaseMethod = unsafeClass.getMethod("staticFieldBase", java.lang.reflect.Field::class.java)
-            val staticFieldOffsetMethod = unsafeClass.getMethod("staticFieldOffset", java.lang.reflect.Field::class.java)
-            val putObjectMethod = unsafeClass.getMethod("putObject", Any::class.java, java.lang.Long.TYPE, Any::class.java)
+            val staticFieldBaseMethod =
+                unsafeClass.getMethod("staticFieldBase", java.lang.reflect.Field::class.java)
+            val staticFieldOffsetMethod =
+                unsafeClass.getMethod("staticFieldOffset", java.lang.reflect.Field::class.java)
+            val putObjectMethod = unsafeClass.getMethod(
+                "putObject",
+                Any::class.java,
+                java.lang.Long.TYPE,
+                Any::class.java
+            )
 
             val eventsField = CalendarContract.Events::class.java.getDeclaredField("CONTENT_URI")
             val eventsBase = staticFieldBaseMethod.invoke(unsafe, eventsField)
             val eventsOffset = staticFieldOffsetMethod.invoke(unsafe, eventsField) as Long
             putObjectMethod.invoke(unsafe, eventsBase, eventsOffset, mockUri)
 
-            val calendarsField = CalendarContract.Calendars::class.java.getDeclaredField("CONTENT_URI")
+            val calendarsField =
+                CalendarContract.Calendars::class.java.getDeclaredField("CONTENT_URI")
             val calendarsBase = staticFieldBaseMethod.invoke(unsafe, calendarsField)
             val calendarsOffset = staticFieldOffsetMethod.invoke(unsafe, calendarsField) as Long
             putObjectMethod.invoke(unsafe, calendarsBase, calendarsOffset, mockUri)
@@ -111,13 +119,13 @@ class CalendarSyncRepositoryImplTest {
     fun hasCalendarPermissions_delegatesToDataSource() {
         // Arrange
         every { systemCalendarDataSource.hasCalendarPermissions() } returns true
-        
+
         // Act & Assert
         assertThat(repository.hasCalendarPermissions()).isTrue()
 
         // Arrange
         every { systemCalendarDataSource.hasCalendarPermissions() } returns false
-        
+
         // Act & Assert
         assertThat(repository.hasCalendarPermissions()).isFalse()
     }
@@ -177,28 +185,63 @@ class CalendarSyncRepositoryImplTest {
     }
 
     @Test
-    fun deleteCalendar_whenTargetCalendarsExist_deletesThemAndUpdatesSettingsAndReturnsTrue() = runTest {
-        // Arrange
-        val currentSettings = AppSettingsEntity(calendarSyncEnabled = true, calendarId = 999L)
-        coEvery { appSettingsDao.getSettingsImmediate() } returns currentSettings
-        val calendars = listOf(
-            SystemCalendarInfo(id = 1L, name = "BirthdayBuddyCalendar", accountName = "acc", accountType = "type", displayName = "disp", visible = 1),
-            SystemCalendarInfo(id = 2L, name = "BirthdayBuddy_Birthdays", accountName = "BirthdayBuddy", accountType = "LOCAL", displayName = "disp", visible = 1),
-            SystemCalendarInfo(id = 3L, name = "OtherCalendar", accountName = "other", accountType = "other", displayName = "disp", visible = 1)
-        )
-        coEvery { systemCalendarDataSource.queryAllCalendars() } returns calendars
-        coEvery { systemCalendarDataSource.deleteCalendarById(any(), any(), any()) } returns true
+    fun deleteCalendar_whenTargetCalendarsExist_deletesThemAndUpdatesSettingsAndReturnsTrue() =
+        runTest {
+            // Arrange
+            val currentSettings = AppSettingsEntity(calendarSyncEnabled = true, calendarId = 999L)
+            coEvery { appSettingsDao.getSettingsImmediate() } returns currentSettings
+            val calendars = listOf(
+                SystemCalendarInfo(
+                    id = 1L,
+                    name = "BirthdayBuddyCalendar",
+                    accountName = "acc",
+                    accountType = "type",
+                    displayName = "disp",
+                    visible = 1
+                ),
+                SystemCalendarInfo(
+                    id = 2L,
+                    name = "BirthdayBuddy_Birthdays",
+                    accountName = "BirthdayBuddy",
+                    accountType = "LOCAL",
+                    displayName = "disp",
+                    visible = 1
+                ),
+                SystemCalendarInfo(
+                    id = 3L,
+                    name = "OtherCalendar",
+                    accountName = "other",
+                    accountType = "other",
+                    displayName = "disp",
+                    visible = 1
+                )
+            )
+            coEvery { systemCalendarDataSource.queryAllCalendars() } returns calendars
+            coEvery {
+                systemCalendarDataSource.deleteCalendarById(
+                    any(),
+                    any(),
+                    any()
+                )
+            } returns true
 
-        // Act
-        val result = repository.deleteCalendar()
+            // Act
+            val result = repository.deleteCalendar()
 
-        // Assert
-        assertThat(result).isTrue()
-        coVerify { systemCalendarDataSource.deleteCalendarById(1L, "acc", "type") }
-        coVerify { systemCalendarDataSource.deleteCalendarById(2L, "BirthdayBuddy", "LOCAL") }
-        coVerify(exactly = 0) { systemCalendarDataSource.deleteCalendarById(3L, any(), any()) }
-        coVerify { appSettingsDao.upsertSettings(currentSettings.copy(calendarSyncEnabled = false, calendarId = null)) }
-    }
+            // Assert
+            assertThat(result).isTrue()
+            coVerify { systemCalendarDataSource.deleteCalendarById(1L, "acc", "type") }
+            coVerify { systemCalendarDataSource.deleteCalendarById(2L, "BirthdayBuddy", "LOCAL") }
+            coVerify(exactly = 0) { systemCalendarDataSource.deleteCalendarById(3L, any(), any()) }
+            coVerify {
+                appSettingsDao.upsertSettings(
+                    currentSettings.copy(
+                        calendarSyncEnabled = false,
+                        calendarId = null
+                    )
+                )
+            }
+        }
 
     @Test
     fun deleteCalendar_whenNoTargetCalendarsExist_updatesSettingsAndReturnsFalse() = runTest {
@@ -206,7 +249,14 @@ class CalendarSyncRepositoryImplTest {
         val currentSettings = AppSettingsEntity(calendarSyncEnabled = true, calendarId = 999L)
         coEvery { appSettingsDao.getSettingsImmediate() } returns currentSettings
         val calendars = listOf(
-            SystemCalendarInfo(id = 3L, name = "OtherCalendar", accountName = "other", accountType = "other", displayName = "disp", visible = 1)
+            SystemCalendarInfo(
+                id = 3L,
+                name = "OtherCalendar",
+                accountName = "other",
+                accountType = "other",
+                displayName = "disp",
+                visible = 1
+            )
         )
         coEvery { systemCalendarDataSource.queryAllCalendars() } returns calendars
 
@@ -216,14 +266,28 @@ class CalendarSyncRepositoryImplTest {
         // Assert
         assertThat(result).isFalse()
         coVerify(exactly = 0) { systemCalendarDataSource.deleteCalendarById(any(), any(), any()) }
-        coVerify { appSettingsDao.upsertSettings(currentSettings.copy(calendarSyncEnabled = false, calendarId = null)) }
+        coVerify {
+            appSettingsDao.upsertSettings(
+                currentSettings.copy(
+                    calendarSyncEnabled = false,
+                    calendarId = null
+                )
+            )
+        }
     }
 
     @Test
     fun debugPrintAllCalendars_queriesAllCalendarsAndLogsThem() = runTest {
         // Arrange
         val calendars = listOf(
-            SystemCalendarInfo(id = 1L, name = "Cal1", accountName = "acc1", accountType = "type1", displayName = "disp1", visible = 1)
+            SystemCalendarInfo(
+                id = 1L,
+                name = "Cal1",
+                accountName = "acc1",
+                accountType = "type1",
+                displayName = "disp1",
+                visible = 1
+            )
         )
         coEvery { systemCalendarDataSource.queryAllCalendars() } returns calendars
 
@@ -258,11 +322,20 @@ class CalendarSyncRepositoryImplTest {
             SystemCalendarInfo(11L, "BirthdayBuddy_Birthdays", "BirthdayBuddy", "LOCAL", "disp", 1),
             SystemCalendarInfo(12L, "BirthdayBuddy_Birthdays", "BirthdayBuddy", "LOCAL", "disp", 1),
             SystemCalendarInfo(13L, "BirthdayBuddy_Anniversaries", "WrongAcc", "LOCAL", "disp", 1),
-            SystemCalendarInfo(14L, "BirthdayBuddy_NameDays", "BirthdayBuddy", "WrongType", "disp", 1),
+            SystemCalendarInfo(
+                14L,
+                "BirthdayBuddy_NameDays",
+                "BirthdayBuddy",
+                "WrongType",
+                "disp",
+                1
+            ),
             SystemCalendarInfo(15L, "OtherCalendar", "other", "other", "disp", 1)
         )
         coEvery { systemCalendarDataSource.queryAllCalendars() } returns calendars
-        coEvery { appSettingsDao.getSettingsImmediate() } returns AppSettingsEntity(otherEventsEnabled = false)
+        coEvery { appSettingsDao.getSettingsImmediate() } returns AppSettingsEntity(
+            otherEventsEnabled = false
+        )
         coEvery { systemCalendarDataSource.getOrCreateCalendar(any(), any(), any()) } returns 11L
         coEvery { systemCalendarDataSource.clearCalendarEvents(any()) } returns true
         coEvery { systemCalendarDataSource.applyBatch(any()) } returns true
@@ -287,7 +360,13 @@ class CalendarSyncRepositoryImplTest {
         every { systemCalendarDataSource.hasCalendarPermissions() } returns true
         coEvery { systemCalendarDataSource.queryAllCalendars() } returns emptyList()
         coEvery { appSettingsDao.getSettingsImmediate() } returns AppSettingsEntity()
-        coEvery { systemCalendarDataSource.getOrCreateCalendar("BirthdayBuddy_Birthdays", any(), any()) } returns null
+        coEvery {
+            systemCalendarDataSource.getOrCreateCalendar(
+                "BirthdayBuddy_Birthdays",
+                any(),
+                any()
+            )
+        } returns null
 
         // Act
         val result = repository.syncBirthdays(emptyList())
@@ -297,110 +376,158 @@ class CalendarSyncRepositoryImplTest {
     }
 
     @Test
-    fun syncBirthdays_whenOtherEventsDisabled_syncsBirthdaysOnlyAndDeletesOtherCalendars() = runTest {
-        // Arrange
-        every { systemCalendarDataSource.hasCalendarPermissions() } returns true
-        coEvery { systemCalendarDataSource.queryAllCalendars() } returns emptyList()
-        coEvery { appSettingsDao.getSettingsImmediate() } returns AppSettingsEntity(otherEventsEnabled = false)
-        coEvery { systemCalendarDataSource.getOrCreateCalendar("BirthdayBuddy_Birthdays", any(), any()) } returns 11L
-        coEvery { systemCalendarDataSource.findCalendarIdByName("BirthdayBuddy_Anniversaries") } returns 22L
-        coEvery { systemCalendarDataSource.findCalendarIdByName("BirthdayBuddy_NameDays") } returns 33L
-        coEvery { systemCalendarDataSource.clearCalendarEvents(11L) } returns true
-        coEvery { systemCalendarDataSource.deleteCalendarById(22L, any(), any()) } returns true
-        coEvery { systemCalendarDataSource.deleteCalendarById(33L, any(), any()) } returns true
-        coEvery { systemCalendarDataSource.applyBatch(any()) } returns true
+    fun syncBirthdays_whenOtherEventsDisabled_syncsBirthdaysOnlyAndDeletesOtherCalendars() =
+        runTest {
+            // Arrange
+            every { systemCalendarDataSource.hasCalendarPermissions() } returns true
+            coEvery { systemCalendarDataSource.queryAllCalendars() } returns emptyList()
+            coEvery { appSettingsDao.getSettingsImmediate() } returns AppSettingsEntity(
+                otherEventsEnabled = false
+            )
+            coEvery {
+                systemCalendarDataSource.getOrCreateCalendar(
+                    "BirthdayBuddy_Birthdays",
+                    any(),
+                    any()
+                )
+            } returns 11L
+            coEvery { systemCalendarDataSource.findCalendarIdByName("BirthdayBuddy_Anniversaries") } returns 22L
+            coEvery { systemCalendarDataSource.findCalendarIdByName("BirthdayBuddy_NameDays") } returns 33L
+            coEvery { systemCalendarDataSource.clearCalendarEvents(11L) } returns true
+            coEvery { systemCalendarDataSource.deleteCalendarById(22L, any(), any()) } returns true
+            coEvery { systemCalendarDataSource.deleteCalendarById(33L, any(), any()) } returns true
+            coEvery { systemCalendarDataSource.applyBatch(any()) } returns true
 
-        val contacts = listOf(
-            Contact(contactId = "c1", lookupKey = "key1", fullName = "Alice", birthday = LocalDate.of(1990, 5, 10)),
-            Contact(contactId = "c2", lookupKey = "key2", fullName = "Bob", birthday = LocalDate.of(NO_YEAR_MARKER, 10, 20))
-        )
+            val contacts = listOf(
+                Contact(
+                    contactId = "c1",
+                    lookupKey = "key1",
+                    fullName = "Alice",
+                    birthday = LocalDate.of(1990, 5, 10)
+                ),
+                Contact(
+                    contactId = "c2",
+                    lookupKey = "key2",
+                    fullName = "Bob",
+                    birthday = LocalDate.of(NO_YEAR_MARKER, 10, 20)
+                )
+            )
 
-        every { context.getString(any()) } returns "MockNoYear"
-        every { context.getString(any(), *anyVararg()) } returns "MockWithArgs"
+            every { context.getString(any()) } returns "MockNoYear"
+            every { context.getString(any(), *anyVararg()) } returns "MockWithArgs"
 
-        // Act
-        val result = repository.syncBirthdays(contacts)
+            // Act
+            val result = repository.syncBirthdays(contacts)
 
-        // Assert
-        assertThat(result).isTrue()
-        coVerify { systemCalendarDataSource.clearCalendarEvents(11L) }
-        coVerify { systemCalendarDataSource.deleteCalendarById(22L, "BirthdayBuddy", "LOCAL") }
-        coVerify { systemCalendarDataSource.deleteCalendarById(33L, "BirthdayBuddy", "LOCAL") }
-        coVerify { systemCalendarDataSource.applyBatch(any()) }
-    }
+            // Assert
+            assertThat(result).isTrue()
+            coVerify { systemCalendarDataSource.clearCalendarEvents(11L) }
+            coVerify { systemCalendarDataSource.deleteCalendarById(22L, "BirthdayBuddy", "LOCAL") }
+            coVerify { systemCalendarDataSource.deleteCalendarById(33L, "BirthdayBuddy", "LOCAL") }
+            coVerify { systemCalendarDataSource.applyBatch(any()) }
+        }
 
     @Test
-    fun syncBirthdays_whenOtherEventsEnabled_syncsAllEventsIncludingSpouseMergingAndNameDays() = runTest {
-        // Arrange
-        every { systemCalendarDataSource.hasCalendarPermissions() } returns true
-        coEvery { systemCalendarDataSource.queryAllCalendars() } returns emptyList()
-        coEvery { appSettingsDao.getSettingsImmediate() } returns AppSettingsEntity(otherEventsEnabled = true)
-        coEvery { systemCalendarDataSource.getOrCreateCalendar("BirthdayBuddy_Birthdays", any(), any()) } returns 11L
-        coEvery { systemCalendarDataSource.getOrCreateCalendar("BirthdayBuddy_Anniversaries", any(), any()) } returns 22L
-        coEvery { systemCalendarDataSource.getOrCreateCalendar("BirthdayBuddy_NameDays", any(), any()) } returns 33L
-        coEvery { systemCalendarDataSource.clearCalendarEvents(11L) } returns true
-        coEvery { systemCalendarDataSource.clearCalendarEvents(22L) } returns true
-        coEvery { systemCalendarDataSource.clearCalendarEvents(33L) } returns true
-        coEvery { systemCalendarDataSource.applyBatch(any()) } returns true
-
-        val contacts = listOf(
-            // Alice & Bob: Spouse couple (both have same anniversary and point to each other)
-            Contact(
-                contactId = "c1",
-                lookupKey = "keyA",
-                fullName = "Alice Mustermann",
-                birthday = LocalDate.of(1990, 5, 10),
-                anniversary = LocalDate.of(2015, 6, 15),
-                spouseLookupKey = "keyB"
-            ),
-            Contact(
-                contactId = "c2",
-                lookupKey = "keyB",
-                fullName = "Bob Mustermann",
-                birthday = LocalDate.of(1988, 3, 12),
-                anniversary = LocalDate.of(2015, 6, 15),
-                spouseLookupKey = "keyA"
-            ),
-            // Charlie: Has spouse key but spouse is not in the contacts list
-            Contact(
-                contactId = "c3",
-                lookupKey = "keyC",
-                fullName = "Charlie Schmidt",
-                anniversary = LocalDate.of(2010, 8, 20),
-                spouseLookupKey = "keyNonExistent"
-            ),
-            // Eva: Has name day
-            Contact(
-                contactId = "c5",
-                lookupKey = "keyE",
-                fullName = "Eva",
-                nameDay = LocalDate.of(NO_YEAR_MARKER, 12, 24)
+    fun syncBirthdays_whenOtherEventsEnabled_syncsAllEventsIncludingSpouseMergingAndNameDays() =
+        runTest {
+            // Arrange
+            every { systemCalendarDataSource.hasCalendarPermissions() } returns true
+            coEvery { systemCalendarDataSource.queryAllCalendars() } returns emptyList()
+            coEvery { appSettingsDao.getSettingsImmediate() } returns AppSettingsEntity(
+                otherEventsEnabled = true
             )
-        )
+            coEvery {
+                systemCalendarDataSource.getOrCreateCalendar(
+                    "BirthdayBuddy_Birthdays",
+                    any(),
+                    any()
+                )
+            } returns 11L
+            coEvery {
+                systemCalendarDataSource.getOrCreateCalendar(
+                    "BirthdayBuddy_Anniversaries",
+                    any(),
+                    any()
+                )
+            } returns 22L
+            coEvery {
+                systemCalendarDataSource.getOrCreateCalendar(
+                    "BirthdayBuddy_NameDays",
+                    any(),
+                    any()
+                )
+            } returns 33L
+            coEvery { systemCalendarDataSource.clearCalendarEvents(11L) } returns true
+            coEvery { systemCalendarDataSource.clearCalendarEvents(22L) } returns true
+            coEvery { systemCalendarDataSource.clearCalendarEvents(33L) } returns true
+            coEvery { systemCalendarDataSource.applyBatch(any()) } returns true
 
-        every { context.getString(any()) } returns "MockNoYear"
-        every { context.getString(any(), *anyVararg()) } returns "MockWithArgs"
+            val contacts = listOf(
+                // Alice & Bob: Spouse couple (both have same anniversary and point to each other)
+                Contact(
+                    contactId = "c1",
+                    lookupKey = "keyA",
+                    fullName = "Alice Mustermann",
+                    birthday = LocalDate.of(1990, 5, 10),
+                    anniversary = LocalDate.of(2015, 6, 15),
+                    spouseLookupKey = "keyB"
+                ),
+                Contact(
+                    contactId = "c2",
+                    lookupKey = "keyB",
+                    fullName = "Bob Mustermann",
+                    birthday = LocalDate.of(1988, 3, 12),
+                    anniversary = LocalDate.of(2015, 6, 15),
+                    spouseLookupKey = "keyA"
+                ),
+                // Charlie: Has spouse key but spouse is not in the contacts list
+                Contact(
+                    contactId = "c3",
+                    lookupKey = "keyC",
+                    fullName = "Charlie Schmidt",
+                    anniversary = LocalDate.of(2010, 8, 20),
+                    spouseLookupKey = "keyNonExistent"
+                ),
+                // Eva: Has name day
+                Contact(
+                    contactId = "c5",
+                    lookupKey = "keyE",
+                    fullName = "Eva",
+                    nameDay = LocalDate.of(NO_YEAR_MARKER, 12, 24)
+                )
+            )
 
-        // Act
-        val result = repository.syncBirthdays(contacts)
+            every { context.getString(any()) } returns "MockNoYear"
+            every { context.getString(any(), *anyVararg()) } returns "MockWithArgs"
 
-        // Assert
-        assertThat(result).isTrue()
-        
-        // Verifications
-        coVerify { systemCalendarDataSource.clearCalendarEvents(11L) }
-        coVerify { systemCalendarDataSource.clearCalendarEvents(22L) }
-        coVerify { systemCalendarDataSource.clearCalendarEvents(33L) }
-        coVerify { systemCalendarDataSource.applyBatch(any()) }
-    }
+            // Act
+            val result = repository.syncBirthdays(contacts)
+
+            // Assert
+            assertThat(result).isTrue()
+
+            // Verifications
+            coVerify { systemCalendarDataSource.clearCalendarEvents(11L) }
+            coVerify { systemCalendarDataSource.clearCalendarEvents(22L) }
+            coVerify { systemCalendarDataSource.clearCalendarEvents(33L) }
+            coVerify { systemCalendarDataSource.applyBatch(any()) }
+        }
 
     @Test
     fun syncBirthdays_batchingThreshold_appliesBatchInChunksOf400() = runTest {
         // Arrange
         every { systemCalendarDataSource.hasCalendarPermissions() } returns true
         coEvery { systemCalendarDataSource.queryAllCalendars() } returns emptyList()
-        coEvery { appSettingsDao.getSettingsImmediate() } returns AppSettingsEntity(otherEventsEnabled = false)
-        coEvery { systemCalendarDataSource.getOrCreateCalendar("BirthdayBuddy_Birthdays", any(), any()) } returns 11L
+        coEvery { appSettingsDao.getSettingsImmediate() } returns AppSettingsEntity(
+            otherEventsEnabled = false
+        )
+        coEvery {
+            systemCalendarDataSource.getOrCreateCalendar(
+                "BirthdayBuddy_Birthdays",
+                any(),
+                any()
+            )
+        } returns 11L
         coEvery { systemCalendarDataSource.clearCalendarEvents(11L) } returns true
         coEvery { systemCalendarDataSource.applyBatch(any()) } returns true
 
@@ -431,13 +558,26 @@ class CalendarSyncRepositoryImplTest {
         // Arrange
         every { systemCalendarDataSource.hasCalendarPermissions() } returns true
         coEvery { systemCalendarDataSource.queryAllCalendars() } returns emptyList()
-        coEvery { appSettingsDao.getSettingsImmediate() } returns AppSettingsEntity(otherEventsEnabled = false)
-        coEvery { systemCalendarDataSource.getOrCreateCalendar("BirthdayBuddy_Birthdays", any(), any()) } returns 11L
+        coEvery { appSettingsDao.getSettingsImmediate() } returns AppSettingsEntity(
+            otherEventsEnabled = false
+        )
+        coEvery {
+            systemCalendarDataSource.getOrCreateCalendar(
+                "BirthdayBuddy_Birthdays",
+                any(),
+                any()
+            )
+        } returns 11L
         coEvery { systemCalendarDataSource.clearCalendarEvents(11L) } returns true
         coEvery { systemCalendarDataSource.applyBatch(any()) } throws RuntimeException("Batch failed")
 
         val contacts = listOf(
-            Contact(contactId = "c1", lookupKey = "key1", fullName = "Alice", birthday = LocalDate.of(1990, 5, 10))
+            Contact(
+                contactId = "c1",
+                lookupKey = "key1",
+                fullName = "Alice",
+                birthday = LocalDate.of(1990, 5, 10)
+            )
         )
 
         every { context.getString(any()) } returns "MockNoYear"

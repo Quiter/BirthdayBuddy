@@ -34,86 +34,87 @@ class PendingNotificationDaoTest {
     }
 
     @Test
-    fun deleteOldNotifications_deletesOnlyDoneNotificationsFromPreviousYearAndAllNotificationsOlderThanTwoYears() = runTest {
-        // Arrange
-        val currentYear = 2027
+    fun deleteOldNotifications_deletesOnlyDoneNotificationsFromPreviousYearAndAllNotificationsOlderThanTwoYears() =
+        runTest {
+            // Arrange
+            val currentYear = 2027
 
-        // 1. Older than 2 years (< 2026), not done -> Should be deleted (year < currentYear - 1)
-        val oldPendingId = dao.upsert(
-            PendingNotificationEntity(
-                id = 1,
-                contactLookupKeys = listOf("key_old_undone"),
-                daysBefore = 0,
-                year = 2025,
-                isDone = false
-            )
-        ).toInt()
+            // 1. Older than 2 years (< 2026), not done -> Should be deleted (year < currentYear - 1)
+            val oldPendingId = dao.upsert(
+                PendingNotificationEntity(
+                    id = 1,
+                    contactLookupKeys = listOf("key_old_undone"),
+                    daysBefore = 0,
+                    year = 2025,
+                    isDone = false
+                )
+            ).toInt()
 
-        // 2. Older than 2 years (< 2026), done -> Should be deleted
-        val oldDoneId = dao.upsert(
-            PendingNotificationEntity(
-                id = 2,
-                contactLookupKeys = listOf("key_old_done"),
-                daysBefore = 0,
-                year = 2025,
-                isDone = true
-            )
-        ).toInt()
+            // 2. Older than 2 years (< 2026), done -> Should be deleted
+            val oldDoneId = dao.upsert(
+                PendingNotificationEntity(
+                    id = 2,
+                    contactLookupKeys = listOf("key_old_done"),
+                    daysBefore = 0,
+                    year = 2025,
+                    isDone = true
+                )
+            ).toInt()
 
-        // 3. Previous year (2026), NOT done -> Should be KEPT (user hasn't handled notification yet)
-        val prevYearPendingId = dao.upsert(
-            PendingNotificationEntity(
-                id = 3,
-                contactLookupKeys = listOf("key_prev_undone"),
-                daysBefore = 7,
-                year = 2026,
-                isDone = false
-            )
-        ).toInt()
+            // 3. Previous year (2026), NOT done -> Should be KEPT (user hasn't handled notification yet)
+            val prevYearPendingId = dao.upsert(
+                PendingNotificationEntity(
+                    id = 3,
+                    contactLookupKeys = listOf("key_prev_undone"),
+                    daysBefore = 7,
+                    year = 2026,
+                    isDone = false
+                )
+            ).toInt()
 
-        // 4. Previous year (2026), DONE -> Should be DELETED (year < currentYear AND isDone = 1)
-        val prevYearDoneId = dao.upsert(
-            PendingNotificationEntity(
-                id = 4,
-                contactLookupKeys = listOf("key_prev_done"),
-                daysBefore = 0,
-                year = 2026,
-                isDone = true
-            )
-        ).toInt()
+            // 4. Previous year (2026), DONE -> Should be DELETED (year < currentYear AND isDone = 1)
+            val prevYearDoneId = dao.upsert(
+                PendingNotificationEntity(
+                    id = 4,
+                    contactLookupKeys = listOf("key_prev_done"),
+                    daysBefore = 0,
+                    year = 2026,
+                    isDone = true
+                )
+            ).toInt()
 
-        // 5. Current year (2027), NOT done -> Should be KEPT
-        val currentYearPendingId = dao.upsert(
-            PendingNotificationEntity(
-                id = 5,
-                contactLookupKeys = listOf("key_curr_undone"),
-                daysBefore = 0,
-                year = 2027,
-                isDone = false
-            )
-        ).toInt()
+            // 5. Current year (2027), NOT done -> Should be KEPT
+            val currentYearPendingId = dao.upsert(
+                PendingNotificationEntity(
+                    id = 5,
+                    contactLookupKeys = listOf("key_curr_undone"),
+                    daysBefore = 0,
+                    year = 2027,
+                    isDone = false
+                )
+            ).toInt()
 
-        // 6. Current year (2027), DONE -> Should be KEPT
-        val currentYearDoneId = dao.upsert(
-            PendingNotificationEntity(
-                id = 6,
-                contactLookupKeys = listOf("key_curr_done"),
-                daysBefore = 0,
-                year = 2027,
-                isDone = true
-            )
-        ).toInt()
+            // 6. Current year (2027), DONE -> Should be KEPT
+            val currentYearDoneId = dao.upsert(
+                PendingNotificationEntity(
+                    id = 6,
+                    contactLookupKeys = listOf("key_curr_done"),
+                    daysBefore = 0,
+                    year = 2027,
+                    isDone = true
+                )
+            ).toInt()
 
-        // Act
-        dao.deleteOldNotifications(currentYear)
+            // Act
+            dao.deleteOldNotifications(currentYear)
 
-        // Assert
-        assertThat(dao.getNotificationById(oldPendingId)).isNull()
-        assertThat(dao.getNotificationById(oldDoneId)).isNull()
-        assertThat(dao.getNotificationById(prevYearDoneId)).isNull()
+            // Assert
+            assertThat(dao.getNotificationById(oldPendingId)).isNull()
+            assertThat(dao.getNotificationById(oldDoneId)).isNull()
+            assertThat(dao.getNotificationById(prevYearDoneId)).isNull()
 
-        assertThat(dao.getNotificationById(prevYearPendingId)).isNotNull()
-        assertThat(dao.getNotificationById(currentYearPendingId)).isNotNull()
-        assertThat(dao.getNotificationById(currentYearDoneId)).isNotNull()
-    }
+            assertThat(dao.getNotificationById(prevYearPendingId)).isNotNull()
+            assertThat(dao.getNotificationById(currentYearPendingId)).isNotNull()
+            assertThat(dao.getNotificationById(currentYearDoneId)).isNotNull()
+        }
 }

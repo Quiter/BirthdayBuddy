@@ -27,7 +27,8 @@ import javax.inject.Inject
  *   jank-free, responsive scrolling across extensive contact lists.
  */
 @HiltAndroidApp
-class BirthdayBuddyApplication : Application(), Configuration.Provider, SingletonImageLoader.Factory {
+class BirthdayBuddyApplication : Application(), Configuration.Provider,
+    SingletonImageLoader.Factory {
 
     /**
      * Injected [HiltWorkerFactory] providing assisted-injection support for Hilt-managed background workers.

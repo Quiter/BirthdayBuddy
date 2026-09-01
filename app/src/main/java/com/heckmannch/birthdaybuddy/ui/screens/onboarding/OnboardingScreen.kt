@@ -115,7 +115,8 @@ fun OnboardingScreen(
     }
 
     val onRequestContactPermission: () -> Unit = {
-        val shouldShowRationale = permissionHelper?.shouldShowRationale(Manifest.permission.READ_CONTACTS) ?: false
+        val shouldShowRationale =
+            permissionHelper?.shouldShowRationale(Manifest.permission.READ_CONTACTS) ?: false
         if (shouldShowRationale || !uiState.hasContactPermission) {
             contactLauncher.launch(Manifest.permission.READ_CONTACTS)
         } else {
@@ -131,7 +132,9 @@ fun OnboardingScreen(
 
     val onRequestNotificationPermission: () -> Unit = {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            val shouldShowRationale = permissionHelper?.shouldShowRationale(Manifest.permission.POST_NOTIFICATIONS) ?: false
+            val shouldShowRationale =
+                permissionHelper?.shouldShowRationale(Manifest.permission.POST_NOTIFICATIONS)
+                    ?: false
             if (shouldShowRationale || !uiState.hasNotificationPermission) {
                 notifLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
             } else {
@@ -275,7 +278,13 @@ fun OnboardingContent(
                         enabled = notificationsEnabled,
                         onEnabledChange = { notificationsEnabled = it },
                         persistent = uiState.isPersistentNotificationEnabled,
-                        onPersistentChange = { onIntent(OnboardingIntent.SetPersistentNotifications(it)) },
+                        onPersistentChange = {
+                            onIntent(
+                                OnboardingIntent.SetPersistentNotifications(
+                                    it
+                                )
+                            )
+                        },
                         isGranted = uiState.hasNotificationPermission,
                         onGrant = onRequestNotificationPermission
                     )

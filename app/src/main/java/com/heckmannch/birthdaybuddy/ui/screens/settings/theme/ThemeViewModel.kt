@@ -58,5 +58,6 @@ class ThemeViewModel @Inject constructor(
 sealed interface ThemeIntent {
     data class SetThemeMode(val mode: ThemeMode) : ThemeIntent
     data class SetThemeAmoled(val enabled: Boolean) : ThemeIntent
-    data class SetThemeAccent(val accent: ThemeAccent, val customColor: String? = null) : ThemeIntent
+    data class SetThemeAccent(val accent: ThemeAccent, val customColor: String? = null) :
+        ThemeIntent
 }

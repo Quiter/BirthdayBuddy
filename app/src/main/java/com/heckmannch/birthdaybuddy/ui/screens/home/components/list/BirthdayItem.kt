@@ -204,19 +204,19 @@ fun BirthdayItem(
                             if (contact.isFavorite) {
                                 Spacer(modifier = Modifier.width(SpacingSmall))
                                 Icon(
-                                     imageVector = Icons.Default.Star,
-                                     contentDescription = stringResource(R.string.contact_favorite_desc),
-                                     modifier = Modifier.size(IconSizeSmall),
-                                     tint = birthdayGoldColor
+                                    imageVector = Icons.Default.Star,
+                                    contentDescription = stringResource(R.string.contact_favorite_desc),
+                                    modifier = Modifier.size(IconSizeSmall),
+                                    tint = birthdayGoldColor
                                 )
                             }
                             if (contact.hasGiftIdeas) {
                                 Spacer(modifier = Modifier.width(SpacingSmall))
                                 Icon(
-                                     Icons.Default.Edit,
-                                     contentDescription = null,
-                                     modifier = Modifier.size(IconSizeExtraSmall),
-                                     tint = birthdayKidAmberColor
+                                    Icons.Default.Edit,
+                                    contentDescription = null,
+                                    modifier = Modifier.size(IconSizeExtraSmall),
+                                    tint = birthdayKidAmberColor
                                 )
                             }
                         }
@@ -269,7 +269,7 @@ fun BirthdayItem(
                     enter = fadeIn(animationSpec = spring(stiffness = Spring.StiffnessMediumLow)) +
                             expandVertically(animationSpec = spring(stiffness = Spring.StiffnessMediumLow)),
                     exit = fadeOut(animationSpec = spring(stiffness = Spring.StiffnessMediumLow)) +
-                           shrinkVertically(animationSpec = spring(stiffness = Spring.StiffnessMediumLow))
+                            shrinkVertically(animationSpec = spring(stiffness = Spring.StiffnessMediumLow))
                 ) {
                     Column {
                         ContactActionRow(

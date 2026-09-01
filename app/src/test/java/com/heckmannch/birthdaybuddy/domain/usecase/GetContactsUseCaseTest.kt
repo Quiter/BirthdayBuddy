@@ -59,7 +59,12 @@ class GetContactsUseCaseTest {
     @Test
     fun search_singleKeyword_matchesPartialName() = runTest {
         val contacts = listOf(
-            Contact(contactId = "1", lookupKey = "k1", fullName = "Max Mustermann", birthday = today),
+            Contact(
+                contactId = "1",
+                lookupKey = "k1",
+                fullName = "Max Mustermann",
+                birthday = today
+            ),
             Contact(contactId = "2", lookupKey = "k2", fullName = "Erika Muster", birthday = today),
         )
 
@@ -72,8 +77,18 @@ class GetContactsUseCaseTest {
     @Test
     fun search_multipleKeywords_allMustMatch() = runTest {
         val contacts = listOf(
-            Contact(contactId = "1", lookupKey = "k1", fullName = "Max Mustermann", birthday = today),
-            Contact(contactId = "2", lookupKey = "k2", fullName = "Erika Mustermann", birthday = today),
+            Contact(
+                contactId = "1",
+                lookupKey = "k1",
+                fullName = "Max Mustermann",
+                birthday = today
+            ),
+            Contact(
+                contactId = "2",
+                lookupKey = "k2",
+                fullName = "Erika Mustermann",
+                birthday = today
+            ),
         )
 
         val result = invoke(contacts, keywords = listOf("Max", "Mustermann")).first()
@@ -85,7 +100,12 @@ class GetContactsUseCaseTest {
     @Test
     fun search_isCaseInsensitive() = runTest {
         val contacts = listOf(
-            Contact(contactId = "1", lookupKey = "k1", fullName = "Max Mustermann", birthday = today),
+            Contact(
+                contactId = "1",
+                lookupKey = "k1",
+                fullName = "Max Mustermann",
+                birthday = today
+            ),
         )
 
         val result = invoke(contacts, keywords = listOf("max")).first()
@@ -96,7 +116,11 @@ class GetContactsUseCaseTest {
     @Test
     fun search_contactWithNoDate_isIncludedWhenSearchingBirthdays() = runTest {
         val contacts = listOf(
-            Contact(contactId = "1", lookupKey = "k1", fullName = "No Date Person"),  // birthday = null
+            Contact(
+                contactId = "1",
+                lookupKey = "k1",
+                fullName = "No Date Person"
+            ),  // birthday = null
         )
 
         val result = invoke(contacts, keywords = listOf("No Date")).first()
@@ -108,7 +132,11 @@ class GetContactsUseCaseTest {
     @Test
     fun noSearch_contactWithNoDate_isHidden() = runTest {
         val contacts = listOf(
-            Contact(contactId = "1", lookupKey = "k1", fullName = "No Date Person"),  // birthday = null
+            Contact(
+                contactId = "1",
+                lookupKey = "k1",
+                fullName = "No Date Person"
+            ),  // birthday = null
             Contact(contactId = "2", lookupKey = "k2", fullName = "Has Date", birthday = today),
         )
 
@@ -125,8 +153,20 @@ class GetContactsUseCaseTest {
     @Test
     fun labelFilter_showsOnlyContactsWithMatchingLabel() = runTest {
         val contacts = listOf(
-            Contact(contactId = "1", lookupKey = "k1", fullName = "Friend", birthday = today, labels = listOf("Freunde")),
-            Contact(contactId = "2", lookupKey = "k2", fullName = "Family", birthday = today, labels = listOf("Familie")),
+            Contact(
+                contactId = "1",
+                lookupKey = "k1",
+                fullName = "Friend",
+                birthday = today,
+                labels = listOf("Freunde")
+            ),
+            Contact(
+                contactId = "2",
+                lookupKey = "k2",
+                fullName = "Family",
+                birthday = today,
+                labels = listOf("Familie")
+            ),
         )
 
         val result = invoke(contacts, selectedLabel = "Freunde").first()
@@ -138,8 +178,20 @@ class GetContactsUseCaseTest {
     @Test
     fun ignoredLabel_hidesContactWhenNotSearching() = runTest {
         val contacts = listOf(
-            Contact(contactId = "1", lookupKey = "k1", fullName = "Visible", birthday = today, labels = listOf("Normal")),
-            Contact(contactId = "2", lookupKey = "k2", fullName = "Hidden", birthday = today, labels = listOf("Ignored")),
+            Contact(
+                contactId = "1",
+                lookupKey = "k1",
+                fullName = "Visible",
+                birthday = today,
+                labels = listOf("Normal")
+            ),
+            Contact(
+                contactId = "2",
+                lookupKey = "k2",
+                fullName = "Hidden",
+                birthday = today,
+                labels = listOf("Ignored")
+            ),
         )
         val settings = defaultSettings.copy(ignoredLabels = setOf("Ignored"))
 
@@ -152,7 +204,13 @@ class GetContactsUseCaseTest {
     @Test
     fun ignoredLabel_doesNotHideContactDuringSearch() = runTest {
         val contacts = listOf(
-            Contact(contactId = "1", lookupKey = "k1", fullName = "Hidden But Searched", birthday = today, labels = listOf("Ignored")),
+            Contact(
+                contactId = "1",
+                lookupKey = "k1",
+                fullName = "Hidden But Searched",
+                birthday = today,
+                labels = listOf("Ignored")
+            ),
         )
         val settings = defaultSettings.copy(ignoredLabels = setOf("Ignored"))
 
@@ -166,7 +224,11 @@ class GetContactsUseCaseTest {
     fun labelFilter_noBirthday_showsOnlyContactsWithoutDate() = runTest {
         val contacts = listOf(
             Contact(contactId = "1", lookupKey = "k1", fullName = "Has Date", birthday = today),
-            Contact(contactId = "2", lookupKey = "k2", fullName = "No Date"),          // birthday = null
+            Contact(
+                contactId = "2",
+                lookupKey = "k2",
+                fullName = "No Date"
+            ),          // birthday = null
         )
 
         val result = invoke(contacts, selectedLabel = ContactLabels.LABEL_NO_BIRTHDAY).first()
@@ -210,9 +272,24 @@ class GetContactsUseCaseTest {
     @Test
     fun labelsDisabled_allEventTypesCombined() = runTest {
         val contacts = listOf(
-            Contact(contactId = "1", lookupKey = "k1", fullName = "Birthday Person", birthday = today.plusDays(1)),
-            Contact(contactId = "2", lookupKey = "k2", fullName = "NameDay Person", nameDay = today.plusDays(2)),
-            Contact(contactId = "3", lookupKey = "k3", fullName = "Anniversary Person", anniversary = today.plusDays(3)),
+            Contact(
+                contactId = "1",
+                lookupKey = "k1",
+                fullName = "Birthday Person",
+                birthday = today.plusDays(1)
+            ),
+            Contact(
+                contactId = "2",
+                lookupKey = "k2",
+                fullName = "NameDay Person",
+                nameDay = today.plusDays(2)
+            ),
+            Contact(
+                contactId = "3",
+                lookupKey = "k3",
+                fullName = "Anniversary Person",
+                anniversary = today.plusDays(3)
+            ),
         )
         val settings = GetContactsUseCase.LabelSettingsState(
             ignoredLabels = emptySet(),
@@ -230,9 +307,24 @@ class GetContactsUseCaseTest {
     @Test
     fun labelsDisabled_otherEventsDisabled_onlyBirthdaysShown() = runTest {
         val contacts = listOf(
-            Contact(contactId = "1", lookupKey = "k1", fullName = "Birthday Person", birthday = today.plusDays(1)),
-            Contact(contactId = "2", lookupKey = "k2", fullName = "NameDay Person", nameDay = today.plusDays(2)),
-            Contact(contactId = "3", lookupKey = "k3", fullName = "Anniversary Person", anniversary = today.plusDays(3)),
+            Contact(
+                contactId = "1",
+                lookupKey = "k1",
+                fullName = "Birthday Person",
+                birthday = today.plusDays(1)
+            ),
+            Contact(
+                contactId = "2",
+                lookupKey = "k2",
+                fullName = "NameDay Person",
+                nameDay = today.plusDays(2)
+            ),
+            Contact(
+                contactId = "3",
+                lookupKey = "k3",
+                fullName = "Anniversary Person",
+                anniversary = today.plusDays(3)
+            ),
         )
         val settings = GetContactsUseCase.LabelSettingsState(
             ignoredLabels = emptySet(),

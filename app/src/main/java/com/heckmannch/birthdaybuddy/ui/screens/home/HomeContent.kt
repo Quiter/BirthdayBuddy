@@ -84,7 +84,11 @@ fun HomeContent(
     actions: HomeActions,
 ) {
     val windowSizeClass = LocalWindowSizeClass.current
-    var isSidebarExpanded by rememberSaveable(windowSizeClass.isWidthExpanded) { mutableStateOf(windowSizeClass.isWidthExpanded) }
+    var isSidebarExpanded by rememberSaveable(windowSizeClass.isWidthExpanded) {
+        mutableStateOf(
+            windowSizeClass.isWidthExpanded
+        )
+    }
     val showSidebar = !windowSizeClass.isWidthCompact && !windowSizeClass.isHeightCompact
     val showFilterBarInTopBar = !uiState.contacts.isNullOrEmpty() &&
             !windowSizeClass.isWidthCompact &&
@@ -120,7 +124,9 @@ fun HomeContent(
                             focusRequester = homeState.searchFocusRequester,
                             navigationIcon = if (showSidebar) {
                                 {
-                                    IconButton(onClick = { isSidebarExpanded = !isSidebarExpanded }) {
+                                    IconButton(onClick = {
+                                        isSidebarExpanded = !isSidebarExpanded
+                                    }) {
                                         Icon(
                                             imageVector = Icons.Default.Menu,
                                             contentDescription = "Toggle Sidebar"
@@ -198,7 +204,8 @@ fun HomeContent(
                     rememberListDetailSceneStrategy<NavKey>(directive = directive)
 
                 val backStack = rememberNavBackStack(HomeNavKey.ContactList)
-                val selectedContactId = (backStack.lastOrNull() as? HomeNavKey.ContactDetail)?.contactId
+                val selectedContactId =
+                    (backStack.lastOrNull() as? HomeNavKey.ContactDetail)?.contactId
 
                 LaunchedEffect(contacts, selectedContactId) {
                     if (selectedContactId != null && contacts?.none { it.id == selectedContactId } == true) {

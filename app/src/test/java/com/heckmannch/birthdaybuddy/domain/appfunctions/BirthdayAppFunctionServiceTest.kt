@@ -153,7 +153,8 @@ class BirthdayAppFunctionServiceTest {
 
     @Test
     fun `getUpcomingBirthdays maps year to null when NO_YEAR_MARKER`() = runTest {
-        val noYearContact = contactWithBirthdayInDays("key_ny", "Heidi Lang", daysFromNow = 3, year = null)
+        val noYearContact =
+            contactWithBirthdayInDays("key_ny", "Heidi Lang", daysFromNow = 3, year = null)
         coEvery { contactRepository.getAllContactsImmediate() } returns listOf(noYearContact)
 
         val result = service.getUpcomingBirthdays(withinDays = 30)
@@ -256,14 +257,15 @@ class BirthdayAppFunctionServiceTest {
     }
 
     @Test
-    fun `getContactBirthday returns first alphabetical match when multiple contacts match`() = runTest {
-        val andreaM = contactWithBirthdayInDays("key_am", "Andrea Müller", daysFromNow = 3)
-        val andreaS = contactWithBirthdayInDays("key_as", "Andrea Schulz", daysFromNow = 10)
-        coEvery { contactRepository.getAllContactsImmediate() } returns listOf(andreaS, andreaM)
+    fun `getContactBirthday returns first alphabetical match when multiple contacts match`() =
+        runTest {
+            val andreaM = contactWithBirthdayInDays("key_am", "Andrea Müller", daysFromNow = 3)
+            val andreaS = contactWithBirthdayInDays("key_as", "Andrea Schulz", daysFromNow = 10)
+            coEvery { contactRepository.getAllContactsImmediate() } returns listOf(andreaS, andreaM)
 
-        val result = service.getContactBirthday("Andrea")
+            val result = service.getContactBirthday("Andrea")
 
-        // "Andrea Müller" < "Andrea Schulz" alphabetically
-        assertThat(result!!.fullName).isEqualTo("Andrea Müller")
-    }
+            // "Andrea Müller" < "Andrea Schulz" alphabetically
+            assertThat(result!!.fullName).isEqualTo("Andrea Müller")
+        }
 }

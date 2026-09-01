@@ -54,7 +54,11 @@ class BootReceiver : BroadcastReceiver() {
                 BootReceiverEntryPoint::class.java
             )
         } catch (e: Exception) {
-            Log.w("BootReceiver", "Hilt-Abhängigkeiten konnten nicht bezogen werden (z. B. während eines Testlaufs)", e)
+            Log.w(
+                "BootReceiver",
+                "Hilt-Abhängigkeiten konnten nicht bezogen werden (z. B. während eines Testlaufs)",
+                e
+            )
             return
         }
 

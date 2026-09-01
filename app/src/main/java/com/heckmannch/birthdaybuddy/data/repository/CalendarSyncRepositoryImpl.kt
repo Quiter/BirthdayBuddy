@@ -239,7 +239,8 @@ class CalendarSyncRepositoryImpl @Inject constructor(
                     description: String
                 ) {
                     val year = if (date.hasYear) date.year else DEFAULT_EVENT_YEAR
-                    val dtStart = date.withYear(year).atStartOfDay(ZoneOffset.UTC).toInstant().toEpochMilli()
+                    val dtStart =
+                        date.withYear(year).atStartOfDay(ZoneOffset.UTC).toInstant().toEpochMilli()
 
                     val insertUri = CalendarContract.Events.CONTENT_URI.buildUpon()
                         .appendQueryParameter(CalendarContract.CALLER_IS_SYNCADAPTER, "true")
@@ -299,7 +300,8 @@ class CalendarSyncRepositoryImpl @Inject constructor(
                             val spouseKey = contact.spouseLookupKey
                             if (spouseKey != null) {
                                 if (!processedAnniversaries.contains(contact.lookupKey)) {
-                                    val spouse = contactsByLookupKey[spouseKey]?.takeIf { it.anniversary != null }
+                                    val spouse =
+                                        contactsByLookupKey[spouseKey]?.takeIf { it.anniversary != null }
                                     if (spouse != null) {
                                         val mergedName = mergeNames(
                                             contact.fullName,

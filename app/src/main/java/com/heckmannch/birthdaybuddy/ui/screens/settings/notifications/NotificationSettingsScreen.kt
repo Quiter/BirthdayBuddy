@@ -134,7 +134,15 @@ fun NotificationSettingsScreen(
             }
         },
         onTogglePersistent = { viewModel.onIntent(NotificationIntent.SetPersistent(it)) },
-        onAddRule = { days, hour, minute -> viewModel.onIntent(NotificationIntent.AddRule(days, hour, minute)) },
+        onAddRule = { days, hour, minute ->
+            viewModel.onIntent(
+                NotificationIntent.AddRule(
+                    days,
+                    hour,
+                    minute
+                )
+            )
+        },
         onUpdateRule = { viewModel.onIntent(NotificationIntent.UpdateRule(it)) },
         onDeleteRule = { viewModel.onIntent(NotificationIntent.DeleteRule(it)) },
         onRequestPermission = {

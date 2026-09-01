@@ -49,7 +49,9 @@ class LinkAsCoupleUseCaseTest {
         val lookupKey1 = "lookupKey1"
         val lookupKey2 = "lookupKey2"
         val exceptionMessage = "Failed to link contacts"
-        coEvery { contactRepository.linkAsCouple(lookupKey1, lookupKey2) } throws RuntimeException(exceptionMessage)
+        coEvery { contactRepository.linkAsCouple(lookupKey1, lookupKey2) } throws RuntimeException(
+            exceptionMessage
+        )
 
         // Act & Assert
         try {

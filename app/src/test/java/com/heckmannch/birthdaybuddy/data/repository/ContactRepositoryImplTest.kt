@@ -195,11 +195,19 @@ class ContactRepositoryImplTest {
             birthday = LocalDate.of(1990, 1, 1),
             labels = listOf("Friends")
         )
-        whenever(systemContactDataSource.fetchContactsFromSystem(groups)).thenReturn(listOf(systemContact))
+        whenever(systemContactDataSource.fetchContactsFromSystem(groups)).thenReturn(
+            listOf(
+                systemContact
+            )
+        )
         whenever(contactDao.getAllContactsImmediate()).thenReturn(emptyList())
         whenever(labelConfigDao.getAllConfigsImmediate()).thenReturn(emptyList())
         whenever(contactUserDataDao.getAllUserDataImmediate()).thenReturn(emptyList())
-        whenever(appSettingsDao.getSettingsImmediate()).thenReturn(AppSettingsEntity(calendarSyncEnabled = true))
+        whenever(appSettingsDao.getSettingsImmediate()).thenReturn(
+            AppSettingsEntity(
+                calendarSyncEnabled = true
+            )
+        )
 
         // Act
         repository.syncContacts()
@@ -376,7 +384,11 @@ class ContactRepositoryImplTest {
         whenever(contactDao.getContactByLookupKey("key1")).thenReturn(contactEntity)
         whenever(contactDao.getContactByLookupKey("spouse_key")).thenReturn(spouseEntity)
         whenever(contactUserDataDao.getUserDataForContact("spouse_key")).thenReturn(
-            ContactUserData(lookupKey = "spouse_key", giftIdeas = listOf(spouseIdea), spouseLookupKey = "key1")
+            ContactUserData(
+                lookupKey = "spouse_key",
+                giftIdeas = listOf(spouseIdea),
+                spouseLookupKey = "key1"
+            )
         )
 
         // Act - Call toggle using primary contact key1
@@ -451,12 +463,16 @@ class ContactRepositoryImplTest {
         whenever(contactDao.getContactByLookupKey("key1")).thenReturn(contactEntity)
         whenever(contactDao.getContactByLookupKey("spouse_key")).thenReturn(spouseEntity)
         whenever(contactUserDataDao.getUserDataForContact("spouse_key")).thenReturn(
-            ContactUserData(lookupKey = "spouse_key", giftIdeas = listOf(spouseIdea), spouseLookupKey = "key1")
+            ContactUserData(
+                lookupKey = "spouse_key",
+                giftIdeas = listOf(spouseIdea),
+                spouseLookupKey = "key1"
+            )
         )
 
         // Act - Call delete using primary contact key1
         repository.deleteGiftIdea("key1", "idea_spouse")
-        
+
         // Assert - Deletion should happen on spouse_key
         verify(contactUserDataDao).upsertUserData(org.mockito.kotlin.check {
             assertThat(it.lookupKey).isEqualTo("spouse_key")
@@ -526,7 +542,11 @@ class ContactRepositoryImplTest {
         whenever(contactDao.getContactByLookupKey("key1")).thenReturn(contactEntity)
         whenever(contactDao.getContactByLookupKey("spouse_key")).thenReturn(spouseEntity)
         whenever(contactUserDataDao.getUserDataForContact("spouse_key")).thenReturn(
-            ContactUserData(lookupKey = "spouse_key", giftIdeas = listOf(spouseIdea), spouseLookupKey = "key1")
+            ContactUserData(
+                lookupKey = "spouse_key",
+                giftIdeas = listOf(spouseIdea),
+                spouseLookupKey = "key1"
+            )
         )
 
         // Act - Call update using primary contact key1
@@ -635,7 +655,11 @@ class ContactRepositoryImplTest {
         whenever(contactUserDataDao.getUserDataForContact("k1")).thenReturn(null)
         whenever(contactUserDataDao.getUserDataForContact("k2")).thenReturn(null)
         whenever(contactDao.getAllContactsImmediate()).thenReturn(listOf(c1, c2))
-        whenever(appSettingsDao.getSettingsImmediate()).thenReturn(AppSettingsEntity(calendarSyncEnabled = false))
+        whenever(appSettingsDao.getSettingsImmediate()).thenReturn(
+            AppSettingsEntity(
+                calendarSyncEnabled = false
+            )
+        )
 
         // Act
         repository.linkAsCouple("k1", "k2")
@@ -690,8 +714,18 @@ class ContactRepositoryImplTest {
         createTransactionElement()
     ) {
         // Arrange
-        val c1 = ContactEntity(contactId = "c1", lookupKey = "k1", fullName = "Alice", spouseLookupKey = "k2")
-        val c2 = ContactEntity(contactId = "c2", lookupKey = "k2", fullName = "Bob", spouseLookupKey = "k1")
+        val c1 = ContactEntity(
+            contactId = "c1",
+            lookupKey = "k1",
+            fullName = "Alice",
+            spouseLookupKey = "k2"
+        )
+        val c2 = ContactEntity(
+            contactId = "c2",
+            lookupKey = "k2",
+            fullName = "Bob",
+            spouseLookupKey = "k1"
+        )
         whenever(contactDao.getContactByLookupKey("k1")).thenReturn(c1)
         whenever(contactDao.getContactByLookupKey("k2")).thenReturn(c2)
         val u1 = ContactUserData(lookupKey = "k1", spouseLookupKey = "k2")
@@ -699,7 +733,11 @@ class ContactRepositoryImplTest {
         whenever(contactUserDataDao.getUserDataForContact("k1")).thenReturn(u1)
         whenever(contactUserDataDao.getUserDataForContact("k2")).thenReturn(u2)
         whenever(contactDao.getAllContactsImmediate()).thenReturn(listOf(c1, c2))
-        whenever(appSettingsDao.getSettingsImmediate()).thenReturn(AppSettingsEntity(calendarSyncEnabled = false))
+        whenever(appSettingsDao.getSettingsImmediate()).thenReturn(
+            AppSettingsEntity(
+                calendarSyncEnabled = false
+            )
+        )
 
         // Act
         repository.unlinkCouple("k1")
@@ -729,8 +767,14 @@ class ContactRepositoryImplTest {
         createTransactionElement()
     ) {
         // Arrange
-        val c1 = ContactEntity(contactId = "c1", lookupKey = "k1", fullName = "Alice", spouseLookupKey = "k2")
-        whenever(contactDao.getContactByLookupKey("k1")).thenReturn(c1).thenThrow(RuntimeException("AppDB error"))
+        val c1 = ContactEntity(
+            contactId = "c1",
+            lookupKey = "k1",
+            fullName = "Alice",
+            spouseLookupKey = "k2"
+        )
+        whenever(contactDao.getContactByLookupKey("k1")).thenReturn(c1)
+            .thenThrow(RuntimeException("AppDB error"))
         val u1 = ContactUserData(lookupKey = "k1", spouseLookupKey = "k2")
         val u2 = ContactUserData(lookupKey = "k2", spouseLookupKey = "k1")
         whenever(contactUserDataDao.getUserDataForContact("k1")).thenReturn(u1)
@@ -763,7 +807,8 @@ class ContactRepositoryImplTest {
             giftIdeas = emptyList()
         )
         // First getContactByLookupKey for addGiftIdea reads entity, second one in cache transaction throws
-        whenever(contactDao.getContactByLookupKey("key1")).thenReturn(contactEntity).thenThrow(RuntimeException("Cache error"))
+        whenever(contactDao.getContactByLookupKey("key1")).thenReturn(contactEntity)
+            .thenThrow(RuntimeException("Cache error"))
         whenever(contactUserDataDao.getUserDataForContact("key1")).thenReturn(prevUserData)
 
         val newIdea = GiftIdea(id = "idea1", text = "Book")

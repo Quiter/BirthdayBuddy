@@ -111,7 +111,11 @@ fun SearchBar(
                     targetState = placeholder,
                     transitionSpec = {
                         (slideInVertically { height -> height } + fadeIn(animationSpec = tween(300))) togetherWith
-                        (slideOutVertically { height -> -height } + fadeOut(animationSpec = tween(300)))
+                                (slideOutVertically { height -> -height } + fadeOut(
+                                    animationSpec = tween(
+                                        300
+                                    )
+                                ))
                     },
                     label = "SearchBarPlaceholderTransition"
                 ) { targetPlaceholder ->
