@@ -107,3 +107,53 @@ android-test = { id = "com.android.test", version.ref = "agp" }
 kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
 roborazzi = { id = "io.github.takahirom.roborazzi", version.ref = "roborazzi" }
 
+[bundles]
+compose-ui-core = [
+    "androidx-compose-ui",
+    "androidx-compose-ui-graphics",
+    "androidx-compose-ui-tooling-preview",
+    "androidx-compose-material3",
+    "androidx-compose-material-icons-core",
+    "androidx-compose-material-icons-extended"
+]
+compose-adaptive = [
+    "androidx-compose-material3-adaptive",
+    "androidx-compose-material3-adaptive-layout",
+    "androidx-compose-material3-adaptive-navigation",
+    "androidx-compose-material3-adaptive-navigation3"
+]
+navigation3 = [
+    "androidx-navigation3-runtime",
+    "androidx-navigation3-ui",
+    "androidx-lifecycle-viewmodel-navigation3"
+]
+lifecycle = [
+    "androidx-lifecycle-runtime-ktx",
+    "androidx-lifecycle-runtime-compose",
+    "androidx-lifecycle-viewmodel-compose"
+]
+room = [
+    "androidx-room-runtime",
+    "androidx-room-ktx"
+]
+coil = [
+    "coil-compose",
+    "coil-network-okhttp"
+]
+glance = [
+    "androidx-glance-appwidget",
+    "androidx-glance-material3"
+]
+testing-roborazzi = [
+    "roborazzi",
+    "roborazzi-compose",
+    "roborazzi-junit-rule",
+    "robolectric"
+]
+testing-unit = [
+    "junit",
+    "truth",
+    "kotlinx-coroutines-test",
+    "mockk",
+    "json"
+]
