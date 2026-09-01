@@ -198,6 +198,7 @@
     <string name="settings_about_desc">Informationen zu BirthdayBuddy</string>
     <string name="settings_version">Version %1$s</string>
     <string name="settings_made_with">Made with ❤️ in Dortmund</string>
+    <string name="settings_select_item_hint">Wähle eine Einstellung aus dem Menü</string>
 
     <!-- Label Settings Screen -->
     <string name="labels_title">Labels verwalten</string>
