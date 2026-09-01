@@ -1,9 +1,6 @@
 package com.heckmannch.birthdaybuddy.data.repository
 
-import android.Manifest
 import android.content.ContentResolver
-import android.content.Context
-import android.content.pm.PackageManager
 import android.net.Uri
 import com.google.common.truth.Truth.assertThat
 import com.heckmannch.birthdaybuddy.MainDispatcherRule
@@ -21,6 +18,7 @@ import com.heckmannch.birthdaybuddy.data.mapper.ContactDbMapper
 import com.heckmannch.birthdaybuddy.data.mapper.LabelConfigMapper
 import com.heckmannch.birthdaybuddy.domain.model.GiftIdea
 import com.heckmannch.birthdaybuddy.domain.model.PotentialCouple
+import com.heckmannch.birthdaybuddy.domain.permission.PermissionChecker
 import com.heckmannch.birthdaybuddy.domain.repository.CalendarSyncRepository
 import com.heckmannch.birthdaybuddy.domain.repository.WidgetUpdater
 import kotlinx.coroutines.Dispatchers
@@ -31,8 +29,6 @@ import kotlinx.coroutines.test.runTest
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
-import org.mockito.kotlin.any
-import org.mockito.kotlin.eq
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.never
 import org.mockito.kotlin.verify
@@ -47,7 +43,7 @@ class ContactRepositoryImplTest {
     @get:Rule
     val mainDispatcherRule = MainDispatcherRule()
 
-    private val context: Context = mock()
+    private val permissionChecker: PermissionChecker = mock()
     private val contentResolver: ContentResolver = mock()
     private val contactDao: ContactDao = mock()
     private val labelConfigDao: LabelConfigDao = mock()
@@ -86,7 +82,7 @@ class ContactRepositoryImplTest {
         whenever(settingsDatabase.queryExecutor).thenReturn(executor)
 
         repository = ContactRepositoryImpl(
-            context = context,
+            permissionChecker = permissionChecker,
             contentResolver = contentResolver,
             contactDao = contactDao,
             labelConfigDao = labelConfigDao,
@@ -171,8 +167,7 @@ class ContactRepositoryImplTest {
     @Test
     fun syncContacts_doesNotSync_whenPermissionIsNotGranted() = runTest {
         // Arrange
-        whenever(context.checkPermission(eq(Manifest.permission.READ_CONTACTS), any(), any()))
-            .thenReturn(PackageManager.PERMISSION_DENIED)
+        whenever(permissionChecker.hasContactsPermission()).thenReturn(false)
 
         // Act
         repository.syncContacts()
@@ -390,7 +385,7 @@ class ContactRepositoryImplTest {
 
         // Act - Call delete using primary contact key1
         repository.deleteGiftIdea("key1", "idea_spouse")
-
+        
         // Assert - Deletion should happen on spouse_key
         verify(contactUserDataDao).upsertUserData(org.mockito.kotlin.check {
             assertThat(it.lookupKey).isEqualTo("spouse_key")
@@ -546,8 +541,7 @@ class ContactRepositoryImplTest {
         whenever(giftIdeaBackupManager.importGiftIdeas(json)).thenReturn(3)
 
         // Stub syncContacts requirements
-        whenever(context.checkPermission(eq(Manifest.permission.READ_CONTACTS), any(), any()))
-            .thenReturn(PackageManager.PERMISSION_DENIED)
+        whenever(permissionChecker.hasContactsPermission()).thenReturn(false)
 
         // Act
         val result = repository.importGiftIdeas(uri)

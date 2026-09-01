@@ -1,12 +1,8 @@
 package com.heckmannch.birthdaybuddy.data.repository
 
-import android.Manifest
 import android.content.ContentResolver
-import android.content.Context
-import android.content.pm.PackageManager
 import android.net.Uri
 import android.util.Log
-import androidx.core.content.ContextCompat
 import androidx.room.withTransaction
 import com.heckmannch.birthdaybuddy.data.local.AppDatabase
 import com.heckmannch.birthdaybuddy.data.local.AppSettingsDao
@@ -24,10 +20,10 @@ import com.heckmannch.birthdaybuddy.domain.model.Contact
 import com.heckmannch.birthdaybuddy.domain.model.GiftIdea
 import com.heckmannch.birthdaybuddy.domain.model.LabelConfig
 import com.heckmannch.birthdaybuddy.domain.model.PotentialCouple
+import com.heckmannch.birthdaybuddy.domain.permission.PermissionChecker
 import com.heckmannch.birthdaybuddy.domain.repository.CalendarSyncRepository
 import com.heckmannch.birthdaybuddy.domain.repository.ContactRepository
 import com.heckmannch.birthdaybuddy.domain.repository.WidgetUpdater
-import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
@@ -48,7 +44,7 @@ import javax.inject.Inject
  * offloading heavy mapping calculations to [Dispatchers.Default] or [Dispatchers.IO].
  */
 class ContactRepositoryImpl @Inject constructor(
-    @param:ApplicationContext private val context: Context,
+    private val permissionChecker: PermissionChecker,
     private val contentResolver: ContentResolver,
     private val contactDao: ContactDao,
     private val labelConfigDao: LabelConfigDao,
@@ -100,9 +96,7 @@ class ContactRepositoryImpl @Inject constructor(
 
     override suspend fun syncContacts() = withContext(Dispatchers.IO) {
         try {
-            if (ContextCompat.checkSelfPermission(context, Manifest.permission.READ_CONTACTS)
-                != PackageManager.PERMISSION_GRANTED
-            ) return@withContext
+            if (!permissionChecker.hasContactsPermission()) return@withContext
 
             coroutineScope {
                 // 1. Load data from all sources in parallel

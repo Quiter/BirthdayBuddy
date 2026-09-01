@@ -57,7 +57,7 @@
         </DropdownSelection>
         <DialogSelection />
       </SelectionState>
-      <SelectionState runConfigName="fastScrollbar_appears_on_scroll()">
+      <SelectionState runConfigName="ColorPickerDialogTest">
         <option name="selectionMode" value="DROPDOWN" />
         <DropdownSelection timestamp="2026-06-16T07:13:31.426294300Z">
           <Target type="DEFAULT_BOOT">
