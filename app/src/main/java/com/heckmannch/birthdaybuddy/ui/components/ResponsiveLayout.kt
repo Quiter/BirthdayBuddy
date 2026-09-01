@@ -21,12 +21,12 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.adaptive.Posture
 import androidx.compose.material3.adaptive.WindowAdaptiveInfo
 import androidx.compose.material3.contentColorFor
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.compositionLocalOf
-import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -76,8 +76,8 @@ val LocalWindowSizeClass = compositionLocalOf<WindowSizeClass> {
  * CompositionLocal zur Bereitstellung der aktuellen WindowAdaptiveInfo.
  * Verhindert redundante Berechnungen und Parameter-Drilling.
  */
-val LocalWindowAdaptiveInfo = staticCompositionLocalOf<WindowAdaptiveInfo> {
-    error("No WindowAdaptiveInfo provided")
+val LocalWindowAdaptiveInfo = compositionLocalOf<WindowAdaptiveInfo> {
+    WindowAdaptiveInfo(WindowSizeClass(360, 640), Posture())
 }
 
 /**

@@ -28,7 +28,7 @@ class MigrationTest {
 
     @Test
     @Throws(IOException::class)
-    fun migrate5To9() {
+    fun migrate5To10() {
         // 1. Create database in version 5 with test data
         helper.createDatabase(testDb, 5).apply {
             execSQL(
@@ -38,15 +38,16 @@ class MigrationTest {
             close()
         }
 
-        // 2. Run migration through the chain (5 to 9) and validate
+        // 2. Run migration through the chain (5 to 10) and validate
         val migratedDb = helper.runMigrationsAndValidate(
             testDb,
-            9,
+            10,
             true,
             AppDatabase.MIGRATION_5_6,
             AppDatabase.MIGRATION_6_7,
             AppDatabase.MIGRATION_7_8,
-            AppDatabase.MIGRATION_8_9
+            AppDatabase.MIGRATION_8_9,
+            AppDatabase.MIGRATION_9_10
         )
 
         // 3. Verify that the data is intact and new columns default to correct values
@@ -57,12 +58,13 @@ class MigrationTest {
         assert(cursor.isNull(cursor.getColumnIndex("anniversary")))
         assert(cursor.isNull(cursor.getColumnIndex("nameDay")))
         assert(cursor.isNull(cursor.getColumnIndex("spouseLookupKey")))
+        assert(cursor.getInt(cursor.getColumnIndex("isFavorite")) == 0)
         cursor.close()
     }
 
     @Test
     @Throws(IOException::class)
-    fun migrate8To9() {
+    fun migrate8To10() {
         // 1. Create database in version 8 with test data
         helper.createDatabase(testDb, 8).apply {
             execSQL(
@@ -72,21 +74,24 @@ class MigrationTest {
             close()
         }
 
-        // 2. Run migration to version 9 and validate
+        // 2. Run migration to version 10 and validate
         val migratedDb = helper.runMigrationsAndValidate(
             testDb,
-            9,
+            10,
             true,
-            AppDatabase.MIGRATION_8_9
+            AppDatabase.MIGRATION_8_9,
+            AppDatabase.MIGRATION_9_10
         )
 
-        // 3. Verify that the data is intact and spouseLookupKey is null by default
+        // 3. Verify that the data is intact and spouseLookupKey is null and isFavorite is 0 by default
         val cursor = migratedDb.query("SELECT * FROM contacts WHERE lookupKey = 'key3'")
         assert(cursor.moveToFirst())
         assert(cursor.getString(cursor.getColumnIndex("fullName")) == "Erika Mustermann")
         assert(cursor.getString(cursor.getColumnIndex("birthday")) == "1992-02-02")
         val spouseLookupKeyIndex = cursor.getColumnIndex("spouseLookupKey")
         assert(cursor.isNull(spouseLookupKeyIndex))
+        val isFavoriteIndex = cursor.getColumnIndex("isFavorite")
+        assert(cursor.getInt(isFavoriteIndex) == 0)
         cursor.close()
     }
 
@@ -104,7 +109,8 @@ class MigrationTest {
             AppDatabase.MIGRATION_5_6,
             AppDatabase.MIGRATION_6_7,
             AppDatabase.MIGRATION_7_8,
-            AppDatabase.MIGRATION_8_9
+            AppDatabase.MIGRATION_8_9,
+            AppDatabase.MIGRATION_9_10
         )
             .build().apply {
                 openHelper.writableDatabase.close()

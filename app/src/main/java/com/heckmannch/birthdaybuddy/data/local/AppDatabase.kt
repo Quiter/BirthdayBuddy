@@ -34,8 +34,8 @@ abstract class AppDatabase : RoomDatabase() {
             // 1. Bestehende Tabelle umbenennen
             db.execSQL("ALTER TABLE contacts RENAME TO contacts_old")
 
-            // 2. Neue Tabelle mit korrektem V10-Schema erstellen
-            db.execSQL("CREATE TABLE IF NOT EXISTS `contacts` (`localId` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `contactId` TEXT NOT NULL, `lookupKey` TEXT NOT NULL, `fullName` TEXT NOT NULL, `birthday` TEXT, `imageUri` TEXT, `phoneNumber` TEXT, `isFavorite` INTEGER NOT NULL DEFAULT 0, `hasWhatsApp` INTEGER NOT NULL DEFAULT 0, `hasSignal` INTEGER NOT NULL DEFAULT 0, `labels` TEXT NOT NULL, `giftIdeas` TEXT NOT NULL, `anniversary` TEXT, `nameDay` TEXT, `spouseLookupKey` TEXT)")
+            // 2. Neue Tabelle mit V7-Schema erstellen (MIGRATION_5_6 / MIGRATION_6_7 Zwischenzustand)
+            db.execSQL("CREATE TABLE IF NOT EXISTS `contacts` (`localId` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `contactId` TEXT NOT NULL, `lookupKey` TEXT NOT NULL, `fullName` TEXT NOT NULL, `birthday` TEXT, `imageUri` TEXT, `phoneNumber` TEXT, `hasWhatsApp` INTEGER NOT NULL DEFAULT 0, `hasSignal` INTEGER NOT NULL DEFAULT 0, `labels` TEXT NOT NULL, `giftIdeas` TEXT NOT NULL)")
 
             // 3. Vorhandene Spalten ermitteln, um fehlende Spalten (falls vorherige Migrationen fehlschlugen) robust abzufangen
             val columnsInOld = mutableSetOf<String>()
@@ -62,12 +62,6 @@ abstract class AppDatabase : RoomDatabase() {
                 selectColumns.add("NULL AS phoneNumber")
             }
 
-            if (columnsInOld.contains("isFavorite")) {
-                selectColumns.add("COALESCE(isFavorite, 0) AS isFavorite")
-            } else {
-                selectColumns.add("0 AS isFavorite")
-            }
-
             if (columnsInOld.contains("hasWhatsApp")) {
                 selectColumns.add("COALESCE(hasWhatsApp, 0) AS hasWhatsApp")
             } else {
@@ -92,28 +86,10 @@ abstract class AppDatabase : RoomDatabase() {
                 selectColumns.add("'[]' AS giftIdeas")
             }
 
-            if (columnsInOld.contains("anniversary")) {
-                selectColumns.add("anniversary")
-            } else {
-                selectColumns.add("NULL AS anniversary")
-            }
-
-            if (columnsInOld.contains("nameDay")) {
-                selectColumns.add("nameDay")
-            } else {
-                selectColumns.add("NULL AS nameDay")
-            }
-
-            if (columnsInOld.contains("spouseLookupKey")) {
-                selectColumns.add("spouseLookupKey")
-            } else {
-                selectColumns.add("NULL AS spouseLookupKey")
-            }
-
             val selectQuery = selectColumns.joinToString(", ")
 
             // 4. Daten kopieren mit dynamic fallback
-            db.execSQL("INSERT INTO contacts (localId, contactId, lookupKey, fullName, birthday, imageUri, phoneNumber, isFavorite, hasWhatsApp, hasSignal, labels, giftIdeas, anniversary, nameDay, spouseLookupKey) SELECT $selectQuery FROM contacts_old")
+            db.execSQL("INSERT INTO contacts (localId, contactId, lookupKey, fullName, birthday, imageUri, phoneNumber, hasWhatsApp, hasSignal, labels, giftIdeas) SELECT $selectQuery FROM contacts_old")
 
             // 5. Alte Tabelle löschen
             db.execSQL("DROP TABLE IF EXISTS contacts_old")

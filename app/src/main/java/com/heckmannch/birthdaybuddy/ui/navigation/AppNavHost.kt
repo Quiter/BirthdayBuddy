@@ -1,6 +1,8 @@
 package com.heckmannch.birthdaybuddy.ui.navigation
 
 import android.content.Intent
+import androidx.compose.animation.AnimatedContentTransitionScope
+import androidx.compose.animation.ContentTransform
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
@@ -21,6 +23,7 @@ import androidx.lifecycle.viewmodel.navigation3.rememberViewModelStoreNavEntryDe
 import androidx.navigation3.runtime.NavKey
 import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
+import androidx.navigation3.scene.Scene
 import androidx.navigation3.ui.NavDisplay
 import com.heckmannch.birthdaybuddy.ui.components.ContactSyncEffect
 import com.heckmannch.birthdaybuddy.ui.screens.home.HomeIntent
@@ -88,45 +91,11 @@ fun AppNavHost(
             rememberSaveableStateHolderNavEntryDecorator(),
             rememberViewModelStoreNavEntryDecorator()
         ),
-        transitionSpec = {
-            val enter = slideInHorizontally(
-                initialOffsetX = { it },
-                animationSpec = tween(400, easing = FastOutSlowInEasing)
-            ) + fadeIn(animationSpec = tween(300))
-            val exit = slideOutHorizontally(
-                targetOffsetX = { -it / 4 },
-                animationSpec = tween(400, easing = FastOutSlowInEasing)
-            ) + fadeOut(animationSpec = tween(300))
-            enter togetherWith exit
-        },
-        popTransitionSpec = {
-            val enter = slideInHorizontally(
-                initialOffsetX = { -it / 4 },
-                animationSpec = tween(400, easing = FastOutSlowInEasing)
-            ) + fadeIn(animationSpec = tween(300))
-            val exit = slideOutHorizontally(
-                targetOffsetX = { it },
-                animationSpec = tween(400, easing = FastOutSlowInEasing)
-            ) + fadeOut(animationSpec = tween(300))
-            (enter togetherWith exit).apply {
-                targetContentZIndex = -1f
-            }
-        },
+        transitionSpec = forwardTransitionSpec(),
+        popTransitionSpec = popTransitionSpec(),
         // Override default predictive back gesture scale/fade animation to use the same
         // horizontal slide transition with parallax as standard back (pop) navigation.
-        predictivePopTransitionSpec = { _ ->
-            val enter = slideInHorizontally(
-                initialOffsetX = { -it / 4 },
-                animationSpec = tween(400, easing = FastOutSlowInEasing)
-            ) + fadeIn(animationSpec = tween(300))
-            val exit = slideOutHorizontally(
-                targetOffsetX = { it },
-                animationSpec = tween(400, easing = FastOutSlowInEasing)
-            ) + fadeOut(animationSpec = tween(300))
-            (enter togetherWith exit).apply {
-                targetContentZIndex = -1f
-            }
-        },
+        predictivePopTransitionSpec = { popTransitionSpec().invoke(this) },
         entryProvider = entryProvider {
             entry<Onboarding> {
                 val onboardingViewModel: OnboardingViewModel = hiltViewModel()
@@ -229,3 +198,49 @@ fun AppNavHost(
         }
     )
 }
+
+// ---------------------------------------------------------------------------
+// Screen Transitions & Animation Constants
+// ---------------------------------------------------------------------------
+
+private const val TRANSITION_DURATION_MS = 400
+private const val FADE_DURATION_MS = 300
+private const val PARALLAX_FACTOR = 4
+private const val POP_TARGET_Z_INDEX = -1f
+
+/**
+ * Standard Vorwärts-Transition: Der neue Screen schiebt sich von rechts herein
+ * und überdeckt den alten Screen, während dieser leicht nach links verschoben (Parallax)
+ * und ausgeblendet wird.
+ */
+private fun forwardTransitionSpec(): AnimatedContentTransitionScope<Scene<NavKey>>.() -> ContentTransform = {
+    val enter = slideInHorizontally(
+        initialOffsetX = { it },
+        animationSpec = tween(TRANSITION_DURATION_MS, easing = FastOutSlowInEasing)
+    ) + fadeIn(animationSpec = tween(FADE_DURATION_MS))
+    val exit = slideOutHorizontally(
+        targetOffsetX = { -it / PARALLAX_FACTOR },
+        animationSpec = tween(TRANSITION_DURATION_MS, easing = FastOutSlowInEasing)
+    ) + fadeOut(animationSpec = tween(FADE_DURATION_MS))
+    enter togetherWith exit
+}
+
+/**
+ * Standard Pop- & Predictive-Back-Transition: Der aktuelle Screen gleitet nach rechts heraus,
+ * während der darunterliegende Screen mit leichtem Parallax-Effekt von links hineingleitet
+ * und eingeblendet wird.
+ */
+private fun popTransitionSpec(): AnimatedContentTransitionScope<Scene<NavKey>>.() -> ContentTransform = {
+    val enter = slideInHorizontally(
+        initialOffsetX = { -it / PARALLAX_FACTOR },
+        animationSpec = tween(TRANSITION_DURATION_MS, easing = FastOutSlowInEasing)
+    ) + fadeIn(animationSpec = tween(FADE_DURATION_MS))
+    val exit = slideOutHorizontally(
+        targetOffsetX = { it },
+        animationSpec = tween(TRANSITION_DURATION_MS, easing = FastOutSlowInEasing)
+    ) + fadeOut(animationSpec = tween(FADE_DURATION_MS))
+    (enter togetherWith exit).apply {
+        targetContentZIndex = POP_TARGET_Z_INDEX
+    }
+}
+
