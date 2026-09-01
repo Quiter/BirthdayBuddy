@@ -1,5 +1,6 @@
 package com.heckmannch.birthdaybuddy
 
+import android.content.Context
 import com.google.common.truth.Truth.assertThat
 import com.heckmannch.birthdaybuddy.domain.model.AppSettings
 import com.heckmannch.birthdaybuddy.domain.model.ThemeAccent
@@ -22,6 +23,7 @@ class AppViewModelTest {
     @get:Rule
     val mainDispatcherRule = MainDispatcherRule()
 
+    private val context: Context = mock()
     private val notificationRepository: NotificationRepository = mock()
 
     private lateinit var viewModel: AppViewModel
@@ -29,7 +31,7 @@ class AppViewModelTest {
     @Before
     fun setup() {
         whenever(notificationRepository.settings).thenReturn(flowOf(AppSettings()))
-        viewModel = AppViewModel(notificationRepository)
+        viewModel = AppViewModel(context, notificationRepository)
     }
 
     @Test
@@ -49,7 +51,7 @@ class AppViewModelTest {
         whenever(notificationRepository.settings).thenReturn(flowOf(customSettings))
 
         // Re-initialize to collect from the new flow
-        val freshViewModel = AppViewModel(notificationRepository)
+        val freshViewModel = AppViewModel(context, notificationRepository)
         val result = freshViewModel.appSettings.first { it.themeMode == ThemeMode.DARK }
 
         assertThat(result.themeMode).isEqualTo(ThemeMode.DARK)
@@ -70,9 +72,18 @@ class AppViewModelTest {
         val completedSettings = AppSettings(onboardingCompleted = true)
         whenever(notificationRepository.settings).thenReturn(flowOf(completedSettings))
 
-        val freshViewModel = AppViewModel(notificationRepository)
+        val freshViewModel = AppViewModel(context, notificationRepository)
         val result = freshViewModel.onboardingCompleted.first { it != null }
 
         assertThat(result).isTrue()
+    }
+
+    @Test
+    fun `init completes safely and handles widget scheduling without crashing`() = runTest {
+        // AppViewModel init schedules widget update via BirthdayWidgetWorker.
+        // Even when Context is a mock and WorkManager cannot be initialized, it handles exceptions gracefully.
+        val unconfiguredContext: Context = mock()
+        val vm = AppViewModel(unconfiguredContext, notificationRepository)
+        assertThat(vm.appSettings.value).isEqualTo(AppSettings())
     }
 }

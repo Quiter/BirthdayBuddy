@@ -23,7 +23,6 @@ import com.heckmannch.birthdaybuddy.ui.navigation.AppNavHost
 import com.heckmannch.birthdaybuddy.ui.navigation.Home
 import com.heckmannch.birthdaybuddy.ui.navigation.Onboarding
 import com.heckmannch.birthdaybuddy.ui.theme.BirthdayBuddyTheme
-import com.heckmannch.birthdaybuddy.widget.BirthdayWidgetWorker
 import dagger.hilt.android.AndroidEntryPoint
 
 /**
@@ -50,9 +49,6 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
 
         activityIntent.value = intent
-
-        // Schedule next widget update
-        BirthdayWidgetWorker.enqueueNextUpdate(this)
 
         setContent {
             val windowAdaptiveInfo = currentWindowAdaptiveInfoV2()

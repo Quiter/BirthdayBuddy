@@ -1,10 +1,13 @@
 package com.heckmannch.birthdaybuddy
 
+import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.heckmannch.birthdaybuddy.domain.model.AppSettings
 import com.heckmannch.birthdaybuddy.domain.repository.NotificationRepository
+import com.heckmannch.birthdaybuddy.widget.BirthdayWidgetWorker
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.map
@@ -17,14 +20,16 @@ import javax.inject.Inject
  *
  * Verantwortlichkeiten:
  * - Hält den reaktiven [AppSettings]-State, der für das globale App-Theme benötigt wird.
- * - Triggert [NotificationRepository.syncScheduling] einmalig pro ViewModel-Lifetime
- *   (überlebt Konfigurationsänderungen wie Rotation, sodass kein redundanter
- *   syncScheduling-Aufruf bei jeder Activity-Recreation stattfindet).
+ * - Triggert [NotificationRepository.syncScheduling] sowie [BirthdayWidgetWorker.enqueueNextUpdate]
+ *   einmalig pro ViewModel-Lifetime (überlebt Konfigurationsänderungen wie Rotation,
+ *   sodass weder ein redundanter syncScheduling- noch ein redundanter Widget-Enqueueing-Aufruf
+ *   bei jeder Activity-Recreation stattfindet).
  *
- * Die Activity selbst darf **nicht** direkt auf den [NotificationRepository] zugreifen.
+ * Die Activity selbst darf **nicht** direkt auf Repositories oder Hintergrund-Worker zugreifen.
  */
 @HiltViewModel
 class AppViewModel @Inject constructor(
+    @ApplicationContext private val context: Context,
     private val notificationRepository: NotificationRepository,
 ) : ViewModel() {
 
@@ -61,6 +66,11 @@ class AppViewModel @Inject constructor(
             } catch (_: Exception) {
                 // Safeguard: Scheduler-Fehler dürfen den App-Start nicht blockieren.
             }
+        }
+        try {
+            BirthdayWidgetWorker.enqueueNextUpdate(context)
+        } catch (_: Exception) {
+            // Safeguard: Fehler beim Widget-Scheduling dürfen den App-Start nicht blockieren.
         }
     }
 }
