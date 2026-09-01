@@ -9,12 +9,19 @@ import java.time.LocalDate
 
 /**
  * Repräsentiert einen Kontakt mit Geburtstag in der Datenbank.
+ *
+ * Indizes:
+ * - `lookupKey` (unique): Eindeutige und schnelle Identifikation für Re-Sync und Verknüpfungen.
+ * - `birthday`: Beschleunigt die chronologische Sortierung und Filterung aller Kontakte nach Geburtsdatum.
+ * - `anniversary`: Optimiert die Ermittlung potenzieller Paare ([ContactDao.getPotentialCouples]) durch schnellen
+ *   Zugriff auf Jubiläums- und Hochzeitstagsdaten ohne Full-Table-Scan.
  */
 @Entity(
     tableName = "contacts",
     indices = [
         Index(value = ["lookupKey"], unique = true),
-        Index(value = ["birthday"])
+        Index(value = ["birthday"]),
+        Index(value = ["anniversary"])
     ]
 )
 data class ContactEntity(

@@ -18,15 +18,17 @@ import androidx.sqlite.db.SupportSQLiteDatabase
  * - Version 7 -> 8: [AutoMigration] (Hinzufügen der Spalten `anniversary` und `nameDay` in `contacts`)
  * - Version 8 -> 9: [AutoMigration] (Hinzufügen der Spalte `spouseLookupKey` in `contacts`)
  * - Version 9 -> 10: [AutoMigration] (Hinzufügen der Spalte `isFavorite` mit Default `0` in `contacts`)
+ * - Version 10 -> 11: [AutoMigration] (Hinzufügen von Indizes für `PendingNotificationEntity` (`isDone`, `year`/`daysBefore`) und `ContactEntity` (`anniversary`))
  */
 @Database(
     entities = [ContactEntity::class, PendingNotificationEntity::class],
-    version = 10,
+    version = 11,
     exportSchema = true,
     autoMigrations = [
         AutoMigration(from = 7, to = 8),
         AutoMigration(from = 8, to = 9),
-        AutoMigration(from = 9, to = 10)
+        AutoMigration(from = 9, to = 10),
+        AutoMigration(from = 10, to = 11)
     ]
 )
 @TypeConverters(Converters::class, GiftIdeaConverters::class)
@@ -40,7 +42,7 @@ abstract class AppDatabase : RoomDatabase() {
 
 
         /**
-         * Hilfsfunktion zum sauberen Neuaufbau der 'contacts'-Tabelle auf das korrekte Schema.
+          * Hilfsfunktion zum sauberen Neuaufbau der 'contacts'-Tabelle auf das korrekte Schema.
          * Da SQLite ALTER TABLE COLUMN NULLABILITY nicht nativ unterstützt,
          * erstellen wir die Tabelle neu und übertragen die Daten.
          * Siehe https://www.sqlite.org/lang_altertable.html#otheralter

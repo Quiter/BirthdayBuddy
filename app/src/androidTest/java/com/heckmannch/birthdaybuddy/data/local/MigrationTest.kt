@@ -124,6 +124,74 @@ class MigrationTest {
 
     @Test
     @Throws(IOException::class)
+    fun migrate10To11() {
+        // 1. Create database in version 10 with test data in both tables
+        helper.createDatabase(testDb, 10).apply {
+            execSQL(
+                "INSERT INTO contacts (contactId, lookupKey, fullName, birthday, anniversary, nameDay, imageUri, phoneNumber, isFavorite, hasWhatsApp, hasSignal, labels, giftIdeas, spouseLookupKey) " +
+                        "VALUES ('10', 'key10', 'Julia Test', '1995-03-20', '2020-08-15', '2020-04-12', 'content://test/img.jpg', '+4912345678', 1, 1, 0, '[]', '[]', 'keySpouse')"
+            )
+            execSQL(
+                "INSERT INTO pending_notifications (contactLookupKeys, daysBefore, year, isDone, dismissCount) " +
+                        "VALUES ('[\"key10\"]', 3, 2026, 0, 1)"
+            )
+            close()
+        }
+
+        // 2. Run migration to version 11 and validate schema & indices (AutoMigration 10->11)
+        val migratedDb = helper.runMigrationsAndValidate(
+            testDb,
+            11,
+            true
+        )
+
+        // 3. Verify data integrity in contacts table
+        val contactCursor = migratedDb.query("SELECT * FROM contacts WHERE lookupKey = 'key10'")
+        assert(contactCursor.moveToFirst())
+        assert(contactCursor.getString(contactCursor.getColumnIndex("fullName")) == "Julia Test")
+        assert(contactCursor.getString(contactCursor.getColumnIndex("birthday")) == "1995-03-20")
+        assert(contactCursor.getString(contactCursor.getColumnIndex("anniversary")) == "2020-08-15")
+        assert(contactCursor.getString(contactCursor.getColumnIndex("nameDay")) == "2020-04-12")
+        assert(contactCursor.getInt(contactCursor.getColumnIndex("isFavorite")) == 1)
+        assert(contactCursor.getString(contactCursor.getColumnIndex("spouseLookupKey")) == "keySpouse")
+        contactCursor.close()
+
+        // 4. Verify data integrity in pending_notifications table
+        val notifCursor = migratedDb.query("SELECT * FROM pending_notifications WHERE year = 2026 AND daysBefore = 3")
+        assert(notifCursor.moveToFirst())
+        assert(notifCursor.getString(notifCursor.getColumnIndex("contactLookupKeys")) == "[\"key10\"]")
+        assert(notifCursor.getInt(notifCursor.getColumnIndex("isDone")) == 0)
+        assert(notifCursor.getInt(notifCursor.getColumnIndex("dismissCount")) == 1)
+        notifCursor.close()
+
+        // 5. Verify index creation on contacts table
+        val contactIndices = mutableListOf<String>()
+        val contactIndexCursor = migratedDb.query("PRAGMA index_list('contacts')")
+        while (contactIndexCursor.moveToNext()) {
+            val nameIdx = contactIndexCursor.getColumnIndex("name")
+            if (nameIdx != -1) {
+                contactIndices.add(contactIndexCursor.getString(nameIdx))
+            }
+        }
+        contactIndexCursor.close()
+        assert(contactIndices.contains("index_contacts_anniversary"))
+
+        // 6. Verify index creation on pending_notifications table
+        val notifIndices = mutableListOf<String>()
+        val notifIndexCursor = migratedDb.query("PRAGMA index_list('pending_notifications')")
+        while (notifIndexCursor.moveToNext()) {
+            val nameIdx = notifIndexCursor.getColumnIndex("name")
+            if (nameIdx != -1) {
+                notifIndices.add(notifIndexCursor.getString(nameIdx))
+            }
+        }
+        notifIndexCursor.close()
+        assert(notifIndices.contains("index_pending_notifications_isDone"))
+        assert(notifIndices.contains("index_pending_notifications_year_daysBefore"))
+    }
+
+    @Test
+    @Throws(IOException::class)
     fun migrateAll() {
         // Erstellt die DB in V5 und migriert schrittweise auf die aktuelle Version
         helper.createDatabase(testDb, 5).close()
