@@ -7,11 +7,14 @@ import android.util.Log
 import com.heckmannch.birthdaybuddy.R
 import com.heckmannch.birthdaybuddy.data.local.AppSettingsDao
 import com.heckmannch.birthdaybuddy.data.local.AppSettingsEntity
+import com.heckmannch.birthdaybuddy.di.IoDispatcher
 import com.heckmannch.birthdaybuddy.domain.model.Contact
 import com.heckmannch.birthdaybuddy.domain.repository.CalendarSyncRepository
 import com.heckmannch.birthdaybuddy.util.hasYear
 import com.heckmannch.birthdaybuddy.util.mergeNames
 import dagger.hilt.android.qualifiers.ApplicationContext
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.time.LocalDate
@@ -30,6 +33,7 @@ class CalendarSyncRepositoryImpl @Inject constructor(
     @param:ApplicationContext private val context: Context,
     private val appSettingsDao: AppSettingsDao,
     private val systemCalendarDataSource: SystemCalendarDataSource,
+    @IoDispatcher private val ioDispatcher: CoroutineDispatcher = Dispatchers.IO,
 ) : CalendarSyncRepository {
 
     private enum class LocalCalendarType(val calendarName: String, val displayNameRes: Int) {
@@ -52,7 +56,7 @@ class CalendarSyncRepositoryImpl @Inject constructor(
     }
 
     private suspend fun getOrCreateCalendar(type: LocalCalendarType): Long? =
-        withContext(Dispatchers.IO) {
+        withContext(ioDispatcher) {
             val currentSettings = appSettingsDao.getSettingsImmediate() ?: AppSettingsEntity()
             val preferredColor = when (type) {
                 LocalCalendarType.BIRTHDAY -> currentSettings.birthdayCalendarColor
@@ -66,7 +70,7 @@ class CalendarSyncRepositoryImpl @Inject constructor(
             )
         }
 
-    private suspend fun cleanCalendars(): Unit = withContext(Dispatchers.IO) {
+    private suspend fun cleanCalendars(): Unit = withContext(ioDispatcher) {
         val activeNames = setOf(
             LocalCalendarType.BIRTHDAY.calendarName,
             LocalCalendarType.ANNIVERSARY.calendarName,
@@ -137,7 +141,7 @@ class CalendarSyncRepositoryImpl @Inject constructor(
         type: CalendarSyncRepository.CalendarType,
         newColor: Int
     ): Boolean =
-        withContext(Dispatchers.IO) {
+        withContext(ioDispatcher) {
             val currentSettings = appSettingsDao.getSettingsImmediate() ?: AppSettingsEntity()
             val localType = LocalCalendarType.fromDomain(type)
             val updatedSettings = when (localType) {
@@ -155,7 +159,7 @@ class CalendarSyncRepositoryImpl @Inject constructor(
             }
         }
 
-    override suspend fun deleteCalendar(): Boolean = withContext(Dispatchers.IO) {
+    override suspend fun deleteCalendar(): Boolean = withContext(ioDispatcher) {
         val currentSettings = appSettingsDao.getSettingsImmediate() ?: AppSettingsEntity()
 
         var deletedAny = false
@@ -189,19 +193,19 @@ class CalendarSyncRepositoryImpl @Inject constructor(
     }
 
     override suspend fun debugPrintAllCalendars() {
-        Log.d("CalendarSyncRepo", "=== START DEBUG PRINT ALL CALENDARS ===")
+        Log.d(TAG, "=== START DEBUG PRINT ALL CALENDARS ===")
         val calendars = systemCalendarDataSource.queryAllCalendars()
         for (calendar in calendars) {
             Log.d(
-                "CalendarSyncRepo",
+                TAG,
                 "Calendar ID: ${calendar.id} | AccName: ${calendar.accountName} | AccType: ${calendar.accountType} | Name: ${calendar.name} | DispName: ${calendar.displayName} | Visible: ${calendar.visible}"
             )
         }
-        Log.d("CalendarSyncRepo", "=== END DEBUG PRINT ALL CALENDARS ===")
+        Log.d(TAG, "=== END DEBUG PRINT ALL CALENDARS ===")
     }
 
     override suspend fun syncBirthdays(contacts: List<Contact>): Boolean =
-        withContext(Dispatchers.IO) {
+        withContext(ioDispatcher) {
             if (!hasCalendarPermissions()) return@withContext false
 
             // Aufräumen veralteter oder doppelter Kalender vor dem Sync
@@ -347,9 +351,15 @@ class CalendarSyncRepositoryImpl @Inject constructor(
                     systemCalendarDataSource.applyBatch(operations)
                 }
                 true
+            } catch (e: CancellationException) {
+                throw e
             } catch (e: Exception) {
-                Log.e("CalendarSyncRepo", "Error syncing events to calendars", e)
+                Log.e(TAG, "Error syncing events to calendars", e)
                 false
             }
         }
+
+    companion object {
+        private const val TAG = "CalendarSyncRepo"
+    }
 }
