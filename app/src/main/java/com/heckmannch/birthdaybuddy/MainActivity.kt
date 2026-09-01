@@ -15,6 +15,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.navigation3.runtime.NavKey
 import androidx.navigation3.runtime.rememberNavBackStack
 import com.heckmannch.birthdaybuddy.ui.components.LocalWindowAdaptiveInfo
 import com.heckmannch.birthdaybuddy.ui.components.LocalWindowSizeClass
@@ -58,20 +59,19 @@ class MainActivity : ComponentActivity() {
             val appSettings by appViewModel.appSettings.collectAsStateWithLifecycle()
             val pendingIntent by appViewModel.pendingIntent.collectAsStateWithLifecycle()
 
-            BirthdayBuddyTheme(
-                themeMode = appSettings.themeMode,
-                themeAmoled = appSettings.themeAmoled,
-                themeAccent = appSettings.themeAccent,
-                customAccentColorHex = appSettings.customAccentColor
+            CompositionLocalProvider(
+                LocalWindowSizeClass provides windowSizeClass,
+                LocalWindowAdaptiveInfo provides windowAdaptiveInfo
             ) {
-                if (onboardingCompleted != null) {
-                    CompositionLocalProvider(
-                        LocalWindowSizeClass provides windowSizeClass,
-                        LocalWindowAdaptiveInfo provides windowAdaptiveInfo
-                    ) {
-                        val backStack = rememberNavBackStack(
-                            if (onboardingCompleted == true) Home else Onboarding
-                        )
+                BirthdayBuddyTheme(
+                    themeMode = appSettings.themeMode,
+                    themeAmoled = appSettings.themeAmoled,
+                    themeAccent = appSettings.themeAccent,
+                    customAccentColorHex = appSettings.customAccentColor
+                ) {
+                    if (onboardingCompleted != null) {
+                        val initialKey: NavKey = if (onboardingCompleted == true) Home else Onboarding
+                        val backStack = rememberNavBackStack(initialKey)
 
                         Surface(
                             modifier = Modifier.fillMaxSize(),
