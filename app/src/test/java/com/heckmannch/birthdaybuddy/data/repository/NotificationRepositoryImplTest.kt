@@ -417,14 +417,29 @@ class NotificationRepositoryImplTest {
     @Test
     fun hasNotificationBeenScheduled_delegatesToDaoWithWildcardPattern() = runTest {
         // Arrange
-        coEvery { pendingNotificationDao.hasNotificationBeenScheduled(2024, 1, "%\"key_abc\"%") } returns true
+        coEvery { pendingNotificationDao.hasNotificationBeenScheduled(2024, 1, "%\"key\\_abc\"%") } returns true
 
         // Act
         val result = repository.hasNotificationBeenScheduled(2024, 1, "key_abc")
 
         // Assert
         assertThat(result).isTrue()
-        coVerify { pendingNotificationDao.hasNotificationBeenScheduled(2024, 1, "%\"key_abc\"%") }
+        coVerify { pendingNotificationDao.hasNotificationBeenScheduled(2024, 1, "%\"key\\_abc\"%") }
+    }
+
+    @Test
+    fun hasNotificationBeenScheduled_escapesSpecialCharactersInLookupKey() = runTest {
+        // Arrange: lookupKey containing backslash, percent, and underscore
+        val rawLookupKey = "user\\test%key_123"
+        val expectedPattern = "%\"user\\\\test\\%key\\_123\"%"
+        coEvery { pendingNotificationDao.hasNotificationBeenScheduled(2024, 0, expectedPattern) } returns true
+
+        // Act
+        val result = repository.hasNotificationBeenScheduled(2024, 0, rawLookupKey)
+
+        // Assert
+        assertThat(result).isTrue()
+        coVerify { pendingNotificationDao.hasNotificationBeenScheduled(2024, 0, expectedPattern) }
     }
 
     @Test

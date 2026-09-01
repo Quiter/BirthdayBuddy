@@ -149,8 +149,19 @@ class NotificationRepositoryImpl @Inject constructor(
         daysBefore: Int,
         lookupKey: String
     ): Boolean {
-        val pattern = "%\"$lookupKey\"%"
+        val escapedLookupKey = escapeLikePattern(lookupKey)
+        val pattern = "%\"$escapedLookupKey\"%"
         return pendingNotificationDao.hasNotificationBeenScheduled(year, daysBefore, pattern)
+    }
+
+    /**
+     * Escapes special characters (`\`, `%`, `_`) for SQLite `LIKE` queries.
+     */
+    private fun escapeLikePattern(input: String): String {
+        return input
+            .replace("\\", "\\\\")
+            .replace("%", "\\%")
+            .replace("_", "\\_")
     }
 
     override suspend fun incrementDismissCount(id: Int) {
