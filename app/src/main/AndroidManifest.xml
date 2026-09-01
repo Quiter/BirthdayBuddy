@@ -33,7 +33,7 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.BirthdayBuddy"
-        tools:targetApi="33">
+        tools:targetApi="36">
 
         <!-- AppFunctions: global app capability metadata for AI agents -->
         <property
@@ -55,6 +55,7 @@
         <activity
             android:name=".MainActivity"
             android:exported="true"
+            android:launchMode="singleTop"
             android:theme="@style/Theme.BirthdayBuddy"
             android:windowSoftInputMode="adjustResize">
             <intent-filter>
@@ -81,13 +82,7 @@
 
         <receiver
             android:name=".notification.NotificationActionReceiver"
-            android:exported="false">
-            <intent-filter>
-                <action android:name="com.heckmannch.birthdaybuddy.action.SNOOZE" />
-                <action android:name="com.heckmannch.birthdaybuddy.action.DONE" />
-                <action android:name="com.heckmannch.birthdaybuddy.action.DISMISSED" />
-            </intent-filter>
-        </receiver>
+            android:exported="false" />
 
         <receiver
             android:name=".BootReceiver"
