@@ -67,7 +67,7 @@ android {
 
 dependencies {
     // Baseline Profile
-    add("baselineProfile", project(":baselineprofile"))
+    baselineProfile(project(":baselineprofile"))
     implementation(libs.androidx.profileinstaller)
 
     implementation(platform(libs.androidx.compose.bom))
