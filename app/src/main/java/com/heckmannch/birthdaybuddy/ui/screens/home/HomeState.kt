@@ -56,9 +56,9 @@ class HomeState(
      * Führt einen robusten Scroll-Reset durch (nützlich bei Filteränderungen).
      */
     suspend fun performScrollReset(onComplete: () -> Unit) {
-        scrollToTop(animate = false)
+        listState.scrollToItem(0)
         delay(100.milliseconds)
-        scrollToTop(animate = false)
+        listState.scrollToItem(0)
         onComplete()
         resetScrollRequested = false
     }
