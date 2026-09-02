@@ -18,6 +18,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import com.heckmannch.birthdaybuddy.R
@@ -30,17 +31,32 @@ import com.heckmannch.birthdaybuddy.ui.theme.SpacingMedium
 import com.heckmannch.birthdaybuddy.ui.theme.SpacingNormal
 import com.heckmannch.birthdaybuddy.ui.theme.SpacingSmall
 
+/**
+ * Displays the birthday status of a person in a contact list item.
+ *
+ * Shows the upcoming age (if available) and the remaining time until the next birthday:
+ * - If [daysUntilNext] is `null` (no birthday date configured), displays an add button triggering [onEditBirthday].
+ * - If [isToday] is `true`, displays "Today" alongside a cake icon.
+ * - Otherwise, displays the remaining days until the next birthday.
+ *
+ * @param isToday `true` if the person's birthday is today, `false` otherwise.
+ * @param nextAge The upcoming age the person will turn on their next birthday, or `null` if the birth year is unknown.
+ * @param daysUntilNext The number of days remaining until the next birthday, or `null` if no birthday date is set.
+ * @param modifier The [Modifier] to be applied to the layout.
+ * @param onEditBirthday Callback invoked when the user taps the add/edit birthday button.
+ */
 @Composable
 fun BirthdayStatus(
     isToday: Boolean,
     nextAge: Int?,
     daysUntilNext: Long?,
+    modifier: Modifier = Modifier,
     onEditBirthday: () -> Unit,
 ) {
     if (daysUntilNext == null) {
         IconButton(
             onClick = onEditBirthday,
-            modifier = Modifier.padding(end = SpacingMedium)
+            modifier = modifier.padding(end = SpacingMedium)
         ) {
             Icon(
                 imageVector = Icons.Default.Add,
@@ -52,7 +68,9 @@ fun BirthdayStatus(
     } else {
         Column(
             horizontalAlignment = Alignment.End,
-            modifier = Modifier.padding(end = SpacingSmall)
+            modifier = modifier
+                .padding(end = SpacingSmall)
+                .semantics(mergeDescendants = true) {}
         ) {
             if (nextAge != null) {
                 Text(
@@ -97,10 +115,45 @@ fun BirthdayStatus(
 @Composable
 fun BirthdayStatusPreview() {
     BirthdayBuddyTheme {
-        Row(modifier = Modifier.padding(SpacingNormal)) {
-            BirthdayStatus(isToday = true, nextAge = 25, daysUntilNext = 0, onEditBirthday = {})
-            Spacer(modifier = Modifier.width(SpacingNormal))
-            BirthdayStatus(isToday = false, nextAge = 30, daysUntilNext = 5, onEditBirthday = {})
+        Column(
+            modifier = Modifier.padding(SpacingNormal),
+            horizontalAlignment = Alignment.End
+        ) {
+            // Missing Date / Action button
+            BirthdayStatus(
+                isToday = false,
+                nextAge = null,
+                daysUntilNext = null,
+                onEditBirthday = {}
+            )
+            Spacer(modifier = Modifier.padding(bottom = SpacingNormal))
+
+            // Birthday Today with age
+            BirthdayStatus(
+                isToday = true,
+                nextAge = 25,
+                daysUntilNext = 0,
+                onEditBirthday = {}
+            )
+            Spacer(modifier = Modifier.padding(bottom = SpacingNormal))
+
+            // Birthday Today without age
+            BirthdayStatus(
+                isToday = true,
+                nextAge = null,
+                daysUntilNext = 0,
+                onEditBirthday = {}
+            )
+            Spacer(modifier = Modifier.padding(bottom = SpacingNormal))
+
+            // Upcoming Birthday
+            BirthdayStatus(
+                isToday = false,
+                nextAge = 30,
+                daysUntilNext = 5,
+                onEditBirthday = {}
+            )
         }
     }
 }
+
