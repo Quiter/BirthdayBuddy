@@ -6,9 +6,16 @@ import androidx.lifecycle.viewModelScope
 import com.heckmannch.birthdaybuddy.di.IoDispatcher
 import com.heckmannch.birthdaybuddy.domain.usecase.ExportGiftIdeasUseCase
 import com.heckmannch.birthdaybuddy.domain.usecase.ImportGiftIdeasUseCase
+import com.heckmannch.birthdaybuddy.ui.model.BackupMessage
+import com.heckmannch.birthdaybuddy.ui.model.BackupUiState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 /**
@@ -18,15 +25,18 @@ import javax.inject.Inject
  *
  * Design:
  * - Decoupled from Android's ContentResolver APIs.
- * - Follows the Uni-Directional Data Flow (UDF) / MVI pattern via [onIntent].
+ * - Follows the Uni-Directional Data Flow (UDF) / MVI pattern via [onIntent] and [uiState].
  * - Injects the I/O dispatcher using the custom Hilt [@IoDispatcher] qualifier.
  */
 @HiltViewModel
 class BackupViewModel @Inject constructor(
     private val exportGiftIdeasUseCase: ExportGiftIdeasUseCase,
     private val importGiftIdeasUseCase: ImportGiftIdeasUseCase,
-    @param:IoDispatcher @Suppress("unused") private val ioDispatcher: CoroutineDispatcher,
+    @IoDispatcher private val ioDispatcher: CoroutineDispatcher,
 ) : ViewModel() {
+
+    private val _uiState = MutableStateFlow(BackupUiState())
+    val uiState: StateFlow<BackupUiState> = _uiState.asStateFlow()
 
     /**
      * Central entry point to process user intents/actions.
@@ -35,54 +45,68 @@ class BackupViewModel @Inject constructor(
      */
     fun onIntent(intent: BackupIntent) {
         when (intent) {
-            is BackupIntent.ExportBackup -> exportGiftIdeas(
-                uri = intent.uri,
-                onSuccess = intent.onSuccess,
-                onError = intent.onError
-            )
-
-            is BackupIntent.ImportBackup -> importGiftIdeas(
-                uri = intent.uri,
-                onSuccess = intent.onSuccess,
-                onInvalid = intent.onInvalid,
-                onError = intent.onError
-            )
+            is BackupIntent.ExportBackup -> exportGiftIdeas(intent.uri)
+            is BackupIntent.ImportBackup -> importGiftIdeas(intent.uri)
+            BackupIntent.ClearMessage -> clearMessage()
         }
     }
 
-    private fun exportGiftIdeas(
-        uri: Uri,
-        onSuccess: () -> Unit,
-        onError: (Exception) -> Unit
-    ) {
+    private fun exportGiftIdeas(uri: Uri) {
+        if (_uiState.value.isLoading) return
         viewModelScope.launch {
+            _uiState.update { it.copy(isLoading = true) }
             try {
-                exportGiftIdeasUseCase(uri.toString())
-                onSuccess()
-            } catch (e: Exception) {
-                onError(e)
-            }
-        }
-    }
-
-    private fun importGiftIdeas(
-        uri: Uri,
-        onSuccess: (Int) -> Unit,
-        onInvalid: () -> Unit,
-        onError: (Exception) -> Unit
-    ) {
-        viewModelScope.launch {
-            try {
-                val count = importGiftIdeasUseCase(uri.toString())
-                if (count >= 0) {
-                    onSuccess(count)
-                } else {
-                    onInvalid()
+                withContext(ioDispatcher) {
+                    exportGiftIdeasUseCase(uri.toString())
+                }
+                _uiState.update {
+                    it.copy(
+                        isLoading = false,
+                        message = BackupMessage.ExportSuccess
+                    )
                 }
             } catch (e: Exception) {
-                onError(e)
+                _uiState.update {
+                    it.copy(
+                        isLoading = false,
+                        message = BackupMessage.ExportError(e.message)
+                    )
+                }
             }
         }
+    }
+
+    private fun importGiftIdeas(uri: Uri) {
+        if (_uiState.value.isLoading) return
+        viewModelScope.launch {
+            _uiState.update { it.copy(isLoading = true) }
+            try {
+                val count = withContext(ioDispatcher) {
+                    importGiftIdeasUseCase(uri.toString())
+                }
+                _uiState.update {
+                    it.copy(
+                        isLoading = false,
+                        message = if (count >= 0) {
+                            BackupMessage.ImportSuccess(count)
+                        } else {
+                            BackupMessage.ImportInvalid
+                        }
+                    )
+                }
+            } catch (e: Exception) {
+                _uiState.update {
+                    it.copy(
+                        isLoading = false,
+                        message = BackupMessage.ImportError(e.message)
+                    )
+                }
+            }
+        }
+    }
+
+    private fun clearMessage() {
+        _uiState.update { it.copy(message = null) }
     }
 }
 
@@ -94,19 +118,15 @@ sealed interface BackupIntent {
     /**
      * Intent to export all gift ideas to the given destination [uri].
      */
-    data class ExportBackup(
-        val uri: Uri,
-        val onSuccess: () -> Unit,
-        val onError: (Exception) -> Unit
-    ) : BackupIntent
+    data class ExportBackup(val uri: Uri) : BackupIntent
 
     /**
      * Intent to import gift ideas from the given source [uri].
      */
-    data class ImportBackup(
-        val uri: Uri,
-        val onSuccess: (Int) -> Unit,
-        val onInvalid: () -> Unit,
-        val onError: (Exception) -> Unit
-    ) : BackupIntent
+    data class ImportBackup(val uri: Uri) : BackupIntent
+
+    /**
+     * Intent to clear the current status message after it has been displayed to the user.
+     */
+    data object ClearMessage : BackupIntent
 }

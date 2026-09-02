@@ -1,16 +1,17 @@
 package com.heckmannch.birthdaybuddy.ui.screens.settings.backup
 
 import android.net.Uri
+import com.google.common.truth.Truth.assertThat
 import com.heckmannch.birthdaybuddy.MainDispatcherRule
 import com.heckmannch.birthdaybuddy.domain.usecase.ExportGiftIdeasUseCase
 import com.heckmannch.birthdaybuddy.domain.usecase.ImportGiftIdeasUseCase
+import com.heckmannch.birthdaybuddy.ui.model.BackupMessage
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.runTest
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
-import org.mockito.kotlin.any
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
@@ -38,87 +39,99 @@ class BackupViewModelTest {
     }
 
     @Test
-    fun `ExportBackup intent should delegate call to usecase and call onSuccess`() =
-        runTest(testDispatcher) {
-            // Given
-            val onSuccess: () -> Unit = mock()
-            val onError: (Exception) -> Unit = mock()
+    fun `initial uiState should be default values`() {
+        val state = viewModel.uiState.value
+        assertThat(state.isLoading).isFalse()
+        assertThat(state.message).isNull()
+    }
 
+    @Test
+    fun `ExportBackup intent should delegate call to usecase and update state to ExportSuccess`() =
+        runTest(testDispatcher) {
             // When
-            viewModel.onIntent(BackupIntent.ExportBackup(uri, onSuccess, onError))
+            viewModel.onIntent(BackupIntent.ExportBackup(uri))
 
             // Then
             verify(exportGiftIdeasUseCase).invoke(uriString)
-            verify(onSuccess).invoke()
+            val state = viewModel.uiState.value
+            assertThat(state.isLoading).isFalse()
+            assertThat(state.message).isEqualTo(BackupMessage.ExportSuccess)
         }
 
     @Test
-    fun `ExportBackup intent should call onError when usecase throws exception`() =
+    fun `ExportBackup intent should update state to ExportError when usecase throws exception`() =
         runTest(testDispatcher) {
             // Given
             val exception = RuntimeException("Export failed")
             whenever(exportGiftIdeasUseCase(uriString)).thenThrow(exception)
 
-            val onSuccess: () -> Unit = mock()
-            val onError: (Exception) -> Unit = mock()
-
             // When
-            viewModel.onIntent(BackupIntent.ExportBackup(uri, onSuccess, onError))
+            viewModel.onIntent(BackupIntent.ExportBackup(uri))
 
             // Then
-            verify(onError).invoke(any())
+            val state = viewModel.uiState.value
+            assertThat(state.isLoading).isFalse()
+            assertThat(state.message).isEqualTo(BackupMessage.ExportError("Export failed"))
         }
 
     @Test
-    fun `ImportBackup intent should delegate to usecase and call onSuccess with count`() =
+    fun `ImportBackup intent should delegate to usecase and update state to ImportSuccess`() =
         runTest(testDispatcher) {
             // Given
             whenever(importGiftIdeasUseCase(uriString)).thenReturn(5)
 
-            val onSuccess: (Int) -> Unit = mock()
-            val onInvalid: () -> Unit = mock()
-            val onError: (Exception) -> Unit = mock()
-
             // When
-            viewModel.onIntent(BackupIntent.ImportBackup(uri, onSuccess, onInvalid, onError))
+            viewModel.onIntent(BackupIntent.ImportBackup(uri))
 
             // Then
             verify(importGiftIdeasUseCase).invoke(uriString)
-            verify(onSuccess).invoke(5)
+            val state = viewModel.uiState.value
+            assertThat(state.isLoading).isFalse()
+            assertThat(state.message).isEqualTo(BackupMessage.ImportSuccess(5))
         }
 
     @Test
-    fun `ImportBackup intent should call onInvalid when usecase returns negative count`() =
+    fun `ImportBackup intent should update state to ImportInvalid when usecase returns negative count`() =
         runTest(testDispatcher) {
             // Given
             whenever(importGiftIdeasUseCase(uriString)).thenReturn(-1)
 
-            val onSuccess: (Int) -> Unit = mock()
-            val onInvalid: () -> Unit = mock()
-            val onError: (Exception) -> Unit = mock()
-
             // When
-            viewModel.onIntent(BackupIntent.ImportBackup(uri, onSuccess, onInvalid, onError))
+            viewModel.onIntent(BackupIntent.ImportBackup(uri))
 
             // Then
-            verify(onInvalid).invoke()
+            val state = viewModel.uiState.value
+            assertThat(state.isLoading).isFalse()
+            assertThat(state.message).isEqualTo(BackupMessage.ImportInvalid)
         }
 
     @Test
-    fun `ImportBackup intent should call onError when usecase throws exception`() =
+    fun `ImportBackup intent should update state to ImportError when usecase throws exception`() =
         runTest(testDispatcher) {
             // Given
             val exception = RuntimeException("Import failed")
             whenever(importGiftIdeasUseCase(uriString)).thenThrow(exception)
 
-            val onSuccess: (Int) -> Unit = mock()
-            val onInvalid: () -> Unit = mock()
-            val onError: (Exception) -> Unit = mock()
-
             // When
-            viewModel.onIntent(BackupIntent.ImportBackup(uri, onSuccess, onInvalid, onError))
+            viewModel.onIntent(BackupIntent.ImportBackup(uri))
 
             // Then
-            verify(onError).invoke(any())
+            val state = viewModel.uiState.value
+            assertThat(state.isLoading).isFalse()
+            assertThat(state.message).isEqualTo(BackupMessage.ImportError("Import failed"))
+        }
+
+    @Test
+    fun `ClearMessage intent should clear the message in uiState`() =
+        runTest(testDispatcher) {
+            // Given
+            viewModel.onIntent(BackupIntent.ExportBackup(uri))
+            assertThat(viewModel.uiState.value.message).isEqualTo(BackupMessage.ExportSuccess)
+
+            // When
+            viewModel.onIntent(BackupIntent.ClearMessage)
+
+            // Then
+            assertThat(viewModel.uiState.value.message).isNull()
         }
 }

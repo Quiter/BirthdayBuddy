@@ -150,7 +150,7 @@
         - `calendar/CalendarSettingsScreen.kt`: Screen zur detaillierten Kalender-Sync-Konfiguration.
         - `calendar/CalendarViewModel.kt`: ViewModel für die Kalender-Einstellungen. Nutzt MVI-Intents und `onIntent()`. **Feature-co-located**.
         - `backup/BackupScreen.kt`: Screen für den Import/Export von Geschenkideen.
-        - `backup/BackupViewModel.kt`: Logik für den Import und Export von Geschenkideen. **Feature-co-located**.
+        - `backup/BackupViewModel.kt`: Logik für den Import und Export von Geschenkideen. Nutzt MVI-Intents, `onIntent()` und `uiState`. **Feature-co-located**.
         - `theme/ThemeSettingsScreen.kt`: Einstellungsbildschirm zur Design-Auswahl.
         - `theme/ThemeViewModel.kt`: Hält und aktualisiert den UI-Zustand für das App-Design. Nutzt MVI-Intents und `onIntent()`. **Feature-co-located**.
         - `otherevents/OtherEventsSettingsScreen.kt`: Screen zur Aktivierung des Features für weitere Ereignisse.
@@ -165,6 +165,7 @@
     - `CalendarUiState.kt`: Gebündelter State für den Kalender-Einstellungs-Screen.
     - `NotificationUiState.kt`: Gebündelter State für den Benachrichtigungs-Einstellungs-Screen.
     - `ThemeUiState.kt`: Gebündelter State für den Design-Einstellungs-Screen.
+    - `BackupUiState.kt`: Gebündelter State (`BackupUiState`) und One-Time Status-Events (`BackupMessage`) für den Backup-Screen.
     - `LabelManagementModel.kt`: Modell für die Label-Verwaltung.
     - `GiftIdea.kt`: Reines Domänenmodell für Geschenkideen (id, text, isChecked) mit Manipulations-Logik (Hinzufügen, Sortieren, Umschalten).
     - `CoupleSuggestionUiModel.kt`: Immutable UI-Modell für Paar-Vorschläge, entkoppelt die UI-Schicht von der Room-Entity.
