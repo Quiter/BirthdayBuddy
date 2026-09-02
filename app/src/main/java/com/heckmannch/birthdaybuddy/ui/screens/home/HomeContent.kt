@@ -38,7 +38,6 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -95,211 +94,6 @@ fun HomeContent(
             !windowSizeClass.isHeightCompact &&
             !showSidebar
 
-    val currentUiState by rememberUpdatedState(uiState)
-    val currentActions by rememberUpdatedState(actions)
-
-    val focusManager = LocalFocusManager.current
-    val keyboardController = LocalSoftwareKeyboardController.current
-
-    val mainContent = @Composable {
-        AppResponsiveScaffold(
-            windowSizeClass = windowSizeClass,
-            useAdaptiveWidth = false,
-            snackbarHost = { SnackbarHost(hostState = homeState.snackbarHostState) },
-            topBar = {
-                Surface(
-                    color = MaterialTheme.colorScheme.surface,
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    val topPadding = WindowInsets.statusBars.asPaddingValues().calculateTopPadding()
-                    Column(
-                        modifier = Modifier.padding(top = topPadding)
-                    ) {
-                        SearchBar(
-                            query = uiState.searchQuery,
-                            placeholder = homeState.animatedPlaceholder,
-                            onQueryChange = actions.onSearchQueryChange,
-                            onClearQuery = actions.onClearSearch,
-                            onSettingsClick = actions.onNavigateToSettings,
-                            focusRequester = homeState.searchFocusRequester,
-                            navigationIcon = if (showSidebar) {
-                                {
-                                    IconButton(onClick = {
-                                        isSidebarExpanded = !isSidebarExpanded
-                                    }) {
-                                        Icon(
-                                            imageVector = Icons.Default.Menu,
-                                            contentDescription = "Toggle Sidebar"
-                                        )
-                                    }
-                                }
-                            } else null,
-                            modifier = Modifier.padding(bottom = SpacingSmall),
-                        )
-                        if (showFilterBarInTopBar && uiState.availableLabels.isNotEmpty()) {
-                            LabelFilterBar(
-                                visible = true,
-                                labels = uiState.availableLabels,
-                                selectedLabel = uiState.selectedLabel,
-                                onLabelSelected = actions.onLabelSelected,
-                                modifier = Modifier.fillMaxWidth()
-                            )
-                        }
-                    }
-                }
-            },
-            floatingActionButton = {
-                AnimatedVisibility(
-                    visible = !homeState.isFastScrolling,
-                    enter = scaleIn() + fadeIn(),
-                    exit = scaleOut() + fadeOut()
-                ) {
-                    HomeFAB(
-                        showScrollUp = homeState.showScrollUp,
-                        actions = actions,
-                        onScrollToTop = {
-                            focusManager.clearFocus()
-                            homeState.scrollToTop()
-                        },
-                        modifier = Modifier.padding(SpacingSmall)
-                    )
-                }
-            }
-        ) { paddingValues ->
-            val pullToRefreshState = rememberPullToRefreshState()
-            PullToRefreshBox(
-                isRefreshing = uiState.isSyncing,
-                onRefresh = actions.onRefresh,
-                state = pullToRefreshState,
-                modifier = Modifier.fillMaxSize(),
-                indicator = {
-                    PullToRefreshDefaults.Indicator(
-                        state = pullToRefreshState,
-                        isRefreshing = uiState.isSyncing,
-                        modifier = Modifier
-                            .align(Alignment.TopCenter)
-                            .padding(top = paddingValues.calculateTopPadding())
-                    )
-                }
-            ) {
-                val contacts = uiState.contacts
-
-                val getScrollLabel: (ContactUiModel) -> String = remember(uiState.selectedLabel) {
-                    { contact ->
-                        if (uiState.selectedLabel == ContactLabels.LABEL_NO_BIRTHDAY) {
-                            contact.fullName.firstOrNull()?.uppercaseChar()?.toString() ?: ""
-                        } else {
-                            contact.monthName
-                        }
-                    }
-                }
-
-
-                val windowAdaptiveInfo = LocalWindowAdaptiveInfo.current
-                val directive = remember(windowAdaptiveInfo) {
-                    calculatePaneScaffoldDirective(windowAdaptiveInfo)
-                        .copy(horizontalPartitionSpacerSize = 0.dp)
-                }
-                val listDetailStrategy =
-                    rememberListDetailSceneStrategy<NavKey>(directive = directive)
-
-                val backStack = rememberNavBackStack(HomeNavKey.ContactList)
-                val selectedContactId =
-                    (backStack.lastOrNull() as? HomeNavKey.ContactDetail)?.contactId
-
-                LaunchedEffect(contacts, selectedContactId) {
-                    if (selectedContactId != null && contacts?.none { it.id == selectedContactId } == true) {
-                        backStack.removeLastOrNull()
-                    }
-                }
-
-                NavDisplay(
-                    backStack = backStack,
-                    onBack = { backStack.removeLastOrNull() },
-                    sceneStrategies = listOf(listDetailStrategy),
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(paddingValues),
-                    entryProvider = entryProvider {
-                        entry<HomeNavKey.ContactList>(
-                            metadata = ListDetailSceneStrategy.listPane(
-                                detailPlaceholder = {
-                                    BirthdayQuotePlaceholder(
-                                        modifier = Modifier.fillMaxSize()
-                                    )
-                                }
-                            )
-                        ) {
-                            Box(modifier = Modifier.fillMaxSize()) {
-                                BirthdayList(
-                                    contacts = contacts,
-                                    newlyAddedIdeaId = null, // Idee wird im rechten Paneel hinzugefügt
-                                    hasContactPermission = currentUiState.hasContactPermission,
-                                    listState = homeState.listState,
-                                    availableLabels = currentUiState.availableLabels,
-                                    selectedLabel = currentUiState.selectedLabel,
-                                    searchQuery = currentUiState.searchQuery,
-                                    actions = currentActions,
-                                    coupleSuggestion = currentUiState.coupleSuggestion,
-                                    selectedContactId = selectedContactId,
-                                    onContactSelected = { contact ->
-                                        // Remove any existing detail to prevent backstack growth
-                                        if (backStack.lastOrNull() is HomeNavKey.ContactDetail) {
-                                            backStack.removeLastOrNull()
-                                        }
-                                        backStack.add(HomeNavKey.ContactDetail(contact.id))
-                                    },
-                                    onInteraction = {
-                                        focusManager.clearFocus()
-                                        keyboardController?.hide()
-                                    },
-                                    showLabelFilter = !showFilterBarInTopBar
-                                )
-
-                                val currentShowLabelFilter =
-                                    currentUiState.availableLabels.isNotEmpty() && !showFilterBarInTopBar
-                                val currentShowCoupleSuggestion =
-                                    currentUiState.selectedLabel == ContactLabels.LABEL_ANNIVERSARY && currentUiState.coupleSuggestion != null
-                                val currentHeaderCount =
-                                    (if (currentShowLabelFilter) 1 else 0) + (if (currentShowCoupleSuggestion) 1 else 0)
-
-                                FastScrollbar(
-                                    listState = homeState.listState,
-                                    contacts = currentUiState.contacts ?: emptyList(),
-                                    getLabel = getScrollLabel,
-                                    headerCount = currentHeaderCount,
-                                    modifier = Modifier
-                                        .align(Alignment.CenterEnd)
-                                        .fillMaxHeight(),
-                                    onSetFastScrolling = { homeState.onSetFastScrolling(it) },
-                                )
-                            }
-                        }
-
-                        entry<HomeNavKey.ContactDetail>(
-                            metadata = ListDetailSceneStrategy.detailPane()
-                        ) { key ->
-                            val contact = remember(contacts, key.contactId) {
-                                contacts?.find { it.id == key.contactId }
-                            }
-                            if (contact != null) {
-                                BirthdayDetailPane(
-                                    contact = contact,
-                                    newlyAddedIdeaId = currentUiState.newlyAddedIdeaId,
-                                    actions = currentActions,
-                                    onClose = {
-                                        backStack.removeLastOrNull()
-                                    },
-                                    modifier = Modifier.fillMaxSize()
-                                )
-                            }
-                        }
-                    }
-                )
-            }
-        }
-    }
-
     if (showSidebar) {
         PermanentNavigationDrawer(
             drawerContent = {
@@ -316,10 +110,263 @@ fun HomeContent(
                 }
             }
         ) {
-            mainContent()
+            HomeMainContent(
+                uiState = uiState,
+                homeState = homeState,
+                actions = actions,
+                windowSizeClass = windowSizeClass,
+                showSidebar = showSidebar,
+                showFilterBarInTopBar = showFilterBarInTopBar,
+                isSidebarExpanded = isSidebarExpanded,
+                onToggleSidebar = { isSidebarExpanded = !isSidebarExpanded }
+            )
         }
     } else {
-        mainContent()
+        HomeMainContent(
+            uiState = uiState,
+            homeState = homeState,
+            actions = actions,
+            windowSizeClass = windowSizeClass,
+            showSidebar = showSidebar,
+            showFilterBarInTopBar = showFilterBarInTopBar,
+            isSidebarExpanded = isSidebarExpanded,
+            onToggleSidebar = { isSidebarExpanded = !isSidebarExpanded }
+        )
+    }
+}
+
+/**
+ * Main UI content layout for [HomeContent].
+ *
+ * Displays the search bar, filter options, list/detail navigation display,
+ * pull-to-refresh container, and floating action button.
+ *
+ * @param uiState Current UI state containing contact list, search query, and sync info.
+ * @param homeState Screen state holder managing scroll state, snackbar host, and focus.
+ * @param actions Callbacks for user interactions.
+ * @param windowSizeClass Current window size class for responsive layout adjustments.
+ * @param showSidebar Whether the navigation sidebar is displayed.
+ * @param showFilterBarInTopBar Whether the label filter bar should be rendered in the top bar.
+ * @param isSidebarExpanded Whether the navigation sidebar is currently expanded.
+ * @param onToggleSidebar Callback invoked when the user clicks the menu icon to toggle the sidebar.
+ * @param modifier Optional [Modifier] for the root container.
+ */
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3AdaptiveApi::class)
+@Composable
+private fun HomeMainContent(
+    uiState: HomeUiState,
+    homeState: HomeState,
+    actions: HomeActions,
+    windowSizeClass: WindowSizeClass,
+    showSidebar: Boolean,
+    showFilterBarInTopBar: Boolean,
+    isSidebarExpanded: Boolean,
+    onToggleSidebar: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    val focusManager = LocalFocusManager.current
+    val keyboardController = LocalSoftwareKeyboardController.current
+
+    AppResponsiveScaffold(
+        modifier = modifier,
+        windowSizeClass = windowSizeClass,
+        useAdaptiveWidth = false,
+        snackbarHost = { SnackbarHost(hostState = homeState.snackbarHostState) },
+        topBar = {
+            Surface(
+                color = MaterialTheme.colorScheme.surface,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                val topPadding = WindowInsets.statusBars.asPaddingValues().calculateTopPadding()
+                Column(
+                    modifier = Modifier.padding(top = topPadding)
+                ) {
+                    SearchBar(
+                        query = uiState.searchQuery,
+                        placeholder = homeState.animatedPlaceholder,
+                        onQueryChange = actions.onSearchQueryChange,
+                        onClearQuery = actions.onClearSearch,
+                        onSettingsClick = actions.onNavigateToSettings,
+                        focusRequester = homeState.searchFocusRequester,
+                        navigationIcon = if (showSidebar) {
+                            {
+                                IconButton(onClick = onToggleSidebar) {
+                                    Icon(
+                                        imageVector = Icons.Default.Menu,
+                                        contentDescription = "Toggle Sidebar"
+                                    )
+                                }
+                            }
+                        } else null,
+                        modifier = Modifier.padding(bottom = SpacingSmall),
+                    )
+                    if (showFilterBarInTopBar && uiState.availableLabels.isNotEmpty()) {
+                        LabelFilterBar(
+                            visible = true,
+                            labels = uiState.availableLabels,
+                            selectedLabel = uiState.selectedLabel,
+                            onLabelSelected = actions.onLabelSelected,
+                            modifier = Modifier.fillMaxWidth()
+                        )
+                    }
+                }
+            }
+        },
+        floatingActionButton = {
+            AnimatedVisibility(
+                visible = !homeState.isFastScrolling,
+                enter = scaleIn() + fadeIn(),
+                exit = scaleOut() + fadeOut()
+            ) {
+                HomeFAB(
+                    showScrollUp = homeState.showScrollUp,
+                    actions = actions,
+                    onScrollToTop = {
+                        focusManager.clearFocus()
+                        homeState.scrollToTop()
+                    },
+                    modifier = Modifier.padding(SpacingSmall)
+                )
+            }
+        }
+    ) { paddingValues ->
+        val pullToRefreshState = rememberPullToRefreshState()
+        PullToRefreshBox(
+            isRefreshing = uiState.isSyncing,
+            onRefresh = actions.onRefresh,
+            state = pullToRefreshState,
+            modifier = Modifier.fillMaxSize(),
+            indicator = {
+                PullToRefreshDefaults.Indicator(
+                    state = pullToRefreshState,
+                    isRefreshing = uiState.isSyncing,
+                    modifier = Modifier
+                        .align(Alignment.TopCenter)
+                        .padding(top = paddingValues.calculateTopPadding())
+                )
+            }
+        ) {
+            val contacts = uiState.contacts
+
+            val getScrollLabel: (ContactUiModel) -> String = remember(uiState.selectedLabel) {
+                { contact ->
+                    if (uiState.selectedLabel == ContactLabels.LABEL_NO_BIRTHDAY) {
+                        contact.fullName.firstOrNull()?.uppercaseChar()?.toString() ?: ""
+                    } else {
+                        contact.monthName
+                    }
+                }
+            }
+
+
+            val windowAdaptiveInfo = LocalWindowAdaptiveInfo.current
+            val directive = remember(windowAdaptiveInfo) {
+                calculatePaneScaffoldDirective(windowAdaptiveInfo)
+                    .copy(horizontalPartitionSpacerSize = 0.dp)
+            }
+            val listDetailStrategy =
+                rememberListDetailSceneStrategy<NavKey>(directive = directive)
+
+            val backStack = rememberNavBackStack(HomeNavKey.ContactList)
+            val selectedContactId =
+                (backStack.lastOrNull() as? HomeNavKey.ContactDetail)?.contactId
+
+            LaunchedEffect(contacts, selectedContactId) {
+                if (selectedContactId != null && contacts?.none { it.id == selectedContactId } == true) {
+                    backStack.removeLastOrNull()
+                }
+            }
+
+            NavDisplay(
+                backStack = backStack,
+                onBack = { backStack.removeLastOrNull() },
+                sceneStrategies = listOf(listDetailStrategy),
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(paddingValues),
+                entryProvider = entryProvider {
+                    entry<HomeNavKey.ContactList>(
+                        metadata = ListDetailSceneStrategy.listPane(
+                            detailPlaceholder = {
+                                BirthdayQuotePlaceholder(
+                                    modifier = Modifier.fillMaxSize()
+                                )
+                            }
+                        )
+                    ) {
+                        Box(modifier = Modifier.fillMaxSize()) {
+                            BirthdayList(
+                                contacts = contacts,
+                                newlyAddedIdeaId = null, // Idee wird im rechten Paneel hinzugefügt
+                                hasContactPermission = uiState.hasContactPermission,
+                                listState = homeState.listState,
+                                availableLabels = uiState.availableLabels,
+                                selectedLabel = uiState.selectedLabel,
+                                searchQuery = uiState.searchQuery,
+                                actions = actions,
+                                coupleSuggestion = uiState.coupleSuggestion,
+                                selectedContactId = selectedContactId,
+                                onContactSelected = { contact ->
+                                    // Remove any existing detail to prevent backstack growth
+                                    if (backStack.lastOrNull() is HomeNavKey.ContactDetail) {
+                                        backStack.removeLastOrNull()
+                                    }
+                                    backStack.add(HomeNavKey.ContactDetail(contact.id))
+                                },
+                                onInteraction = {
+                                    focusManager.clearFocus()
+                                    keyboardController?.hide()
+                                },
+                                showLabelFilter = !showFilterBarInTopBar
+                            )
+
+                            val currentHeaderCount = remember(
+                                uiState.availableLabels,
+                                showFilterBarInTopBar,
+                                uiState.selectedLabel,
+                                uiState.coupleSuggestion
+                            ) {
+                                val currentShowLabelFilter =
+                                    uiState.availableLabels.isNotEmpty() && !showFilterBarInTopBar
+                                val currentShowCoupleSuggestion =
+                                    uiState.selectedLabel == ContactLabels.LABEL_ANNIVERSARY && uiState.coupleSuggestion != null
+                                (if (currentShowLabelFilter) 1 else 0) + (if (currentShowCoupleSuggestion) 1 else 0)
+                            }
+
+                            FastScrollbar(
+                                listState = homeState.listState,
+                                contacts = uiState.contacts ?: emptyList(),
+                                getLabel = getScrollLabel,
+                                headerCount = currentHeaderCount,
+                                modifier = Modifier
+                                    .align(Alignment.CenterEnd)
+                                    .fillMaxHeight(),
+                                onSetFastScrolling = { homeState.onSetFastScrolling(it) },
+                            )
+                        }
+                    }
+
+                    entry<HomeNavKey.ContactDetail>(
+                        metadata = ListDetailSceneStrategy.detailPane()
+                    ) { key ->
+                        val contact = remember(contacts, key.contactId) {
+                            contacts?.find { it.id == key.contactId }
+                        }
+                        if (contact != null) {
+                            BirthdayDetailPane(
+                                contact = contact,
+                                newlyAddedIdeaId = uiState.newlyAddedIdeaId,
+                                actions = actions,
+                                onClose = {
+                                    backStack.removeLastOrNull()
+                                },
+                                modifier = Modifier.fillMaxSize()
+                            )
+                        }
+                    }
+                }
+            )
+        }
     }
 }
 
@@ -367,4 +414,3 @@ private sealed interface HomeNavKey : NavKey {
     @Serializable
     data class ContactDetail(val contactId: String) : HomeNavKey
 }
-
