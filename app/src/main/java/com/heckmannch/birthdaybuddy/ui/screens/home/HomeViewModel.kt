@@ -2,6 +2,7 @@ package com.heckmannch.birthdaybuddy.ui.screens.home
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.heckmannch.birthdaybuddy.domain.model.Contact
 import com.heckmannch.birthdaybuddy.domain.model.GiftIdea
 import com.heckmannch.birthdaybuddy.domain.permission.PermissionChecker
 import com.heckmannch.birthdaybuddy.domain.repository.ContactRepository
@@ -34,11 +35,12 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
-import kotlinx.coroutines.flow.transformLatest
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.time.LocalDate
@@ -58,6 +60,11 @@ import kotlin.time.Duration.Companion.milliseconds
  *   Combines multiple reactive streams (contact data from Room, label filters, search keyword transformations,
  *   couple suggestions, and transient user UI mutations encapsulated in internal [UserUiState]) into a unified
  *   [HomeUiState] using Kotlin Coroutines and Flows.
+ * - **Harmonized Event & Transient State Handling**:
+ *   Transient UI states requiring atomic consumption (e.g. search bar focus, newly created gift idea IDs,
+ *   active birthday picker dialogs, pull-to-refresh sync indicators) are modeled consistently within [HomeUiState]
+ *   and consumed via explicit `Consume*` / dismissal intents. Pure side-effects for list scrolling are dispatched
+ *   via [scrollToTopEvent].
  * - **Debouncing & Transformation Optimization**:
  *   Search inputs are debounced ([SEARCH_DEBOUNCE_DURATION]) and processed on [Dispatchers.Default] with
  *   `distinctUntilChanged` to avoid redundant database querying and contact filtering computations during fast typing.
@@ -165,17 +172,6 @@ class HomeViewModel @Inject constructor(
     val scrollToTopEvent: SharedFlow<Unit> = _scrollToTopEvent.asSharedFlow()
 
     /**
-     * Internal event channel notifying when manual contact synchronization has completed.
-     */
-    private val _syncCompletedEvent = MutableSharedFlow<Unit>(replay = 0)
-
-    /**
-     * Public stream of synchronization completion events.
-     */
-    val syncCompletedEvent: SharedFlow<Unit> = _syncCompletedEvent.asSharedFlow()
-
-
-    /**
      * Reactive stream combining label configurations and user preferences to determine ignored labels
      * and event filtering rules for contacts retrieval.
      */
@@ -194,11 +190,6 @@ class HomeViewModel @Inject constructor(
         .distinctUntilChanged()
         .flowOn(Dispatchers.Default)
 
-    init {
-        // Automatically trigger initial contact sync on ViewModel creation
-        onIntent(HomeIntent.SyncContacts())
-    }
-
     /**
      * Reactive stream of debounced search keyword lists derived from user input.
      * Emits immediately if the query is blank, or delays by [SEARCH_DEBOUNCE_DURATION] when typing.
@@ -206,13 +197,8 @@ class HomeViewModel @Inject constructor(
     private val searchKeywords = _userUiState
         .map { it.searchQuery.trim() }
         .distinctUntilChanged()
-        .transformLatest { query ->
-            if (query.isEmpty()) {
-                emit(query)
-            } else {
-                delay(SEARCH_DEBOUNCE_DURATION)
-                emit(query)
-            }
+        .debounce { query ->
+            if (query.isEmpty()) 0.milliseconds else SEARCH_DEBOUNCE_DURATION
         }
         .map { if (it.isEmpty()) emptyList() else it.split(WHITESPACE_REGEX) }
         .flowOn(Dispatchers.Default)
@@ -294,6 +280,22 @@ class HomeViewModel @Inject constructor(
         .flowOn(Dispatchers.Default)
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(STOP_TIMEOUT_MILLIS), HomeUiState())
 
+    init {
+        // Automatically trigger initial contact sync on ViewModel creation
+        onIntent(HomeIntent.SyncContacts())
+
+        viewModelScope.launch {
+            searchKeywords
+                .drop(1)
+                .distinctUntilChanged()
+                .collect { keywords ->
+                    if (keywords.isNotEmpty()) {
+                        triggerScrollToTop()
+                    }
+                }
+        }
+    }
+
     /**
      * Dispatches an asynchronous one-shot event notifying the UI to scroll the contact list to the top.
      */
@@ -343,11 +345,18 @@ class HomeViewModel @Inject constructor(
             // Updates the search query text, clears label selection if transitioning from blank to typed, and scrolls to top.
             is HomeIntent.SearchQueryChanged -> {
                 val newQuery = intent.query
+                var shouldTriggerScroll = false
                 _userUiState.update { state ->
                     if (state.searchQuery == newQuery) state
                     else {
+                        val isEnteringSearch = state.searchQuery.isEmpty() && newQuery.isNotEmpty()
+                        val isClearingSearch = state.searchQuery.isNotEmpty() && newQuery.isEmpty()
+                        val isTransition = isEnteringSearch || isClearingSearch
+                        if (isTransition) {
+                            shouldTriggerScroll = true
+                        }
                         val updatedLabel =
-                            if (newQuery.isNotEmpty() && state.searchQuery.isEmpty()) {
+                            if (isEnteringSearch) {
                                 null
                             } else {
                                 state.selectedLabel
@@ -355,11 +364,13 @@ class HomeViewModel @Inject constructor(
                         state.copy(
                             searchQuery = newQuery,
                             selectedLabel = updatedLabel,
-                            isResettingFilter = true
+                            isResettingFilter = if (isTransition) true else state.isResettingFilter
                         )
                     }
                 }
-                triggerScrollToTop()
+                if (shouldTriggerScroll) {
+                    triggerScrollToTop()
+                }
             }
 
             // Toggles or selects a category label filter chip and scrolls list to top.
@@ -445,7 +456,6 @@ class HomeViewModel @Inject constructor(
                                 delay((MIN_SYNC_SPINNER_DURATION_MS - elapsedTime).milliseconds)
                             }
                             _userUiState.update { it.copy(isSyncing = false) }
-                            _syncCompletedEvent.emit(Unit)
                         }
                     }
                 }
@@ -500,21 +510,13 @@ class HomeViewModel @Inject constructor(
             // Resolves the contact and safely normalizes leap day (Feb 29) & day bounds before opening the birthday picker dialog.
             is HomeIntent.OpenBirthdayPicker -> {
                 viewModelScope.launch {
-                    var contact = contactRepository.getAllContactsImmediate()
-                        .find { it.lookupKey == intent.contactLookupKey || it.contactId == intent.contactLookupKey }
-                    if (contact == null) {
-                        contactRepository.syncContacts()
-                        contact = contactRepository.getAllContactsImmediate()
-                            .find { it.lookupKey == intent.contactLookupKey || it.contactId == intent.contactLookupKey }
-                    }
+                    val contact = findContact(intent.contactLookupKey)
                     if (contact != null) {
-                        val targetYear =
-                            if (intent.year != null && intent.year > 0 && intent.year != NO_YEAR_MARKER) intent.year else NO_YEAR_MARKER
-                        val safeMonth = intent.month.coerceIn(1, 12)
-                        val maxDays = Month.of(safeMonth).length(Year.isLeap(targetYear.toLong()))
-                        val safeDay = intent.day.coerceIn(1, maxDays)
-                        val initialDate = LocalDate.of(targetYear, safeMonth, safeDay)
-
+                        val initialDate = sanitizeBirthdayDate(
+                            year = intent.year,
+                            month = intent.month,
+                            day = intent.day
+                        )
                         _userUiState.update {
                             it.copy(
                                 pendingBirthdayEdit = PendingBirthdayEdit(
@@ -532,6 +534,44 @@ class HomeViewModel @Inject constructor(
                 _userUiState.update { it.copy(pendingBirthdayEdit = null) }
             }
         }
+    }
+
+    /**
+     * Resolves a [Contact] by matching either its [Contact.lookupKey] or [Contact.contactId] against [contactLookupKey].
+     *
+     * If the contact is not found immediately in the cached contact list, triggers a background
+     * synchronization with the contacts provider and retries lookup before returning.
+     *
+     * @param contactLookupKey Unique lookup key or system contact ID.
+     * @return Resolved [Contact] instance, or `null` if not found.
+     */
+    private suspend fun findContact(contactLookupKey: String): Contact? {
+        val directMatch = contactRepository.getAllContactsImmediate()
+            .find { it.lookupKey == contactLookupKey || it.contactId == contactLookupKey }
+        if (directMatch != null) return directMatch
+
+        contactRepository.syncContacts()
+        return contactRepository.getAllContactsImmediate()
+            .find { it.lookupKey == contactLookupKey || it.contactId == contactLookupKey }
+    }
+
+    /**
+     * Validates and normalizes raw birthday date components into a safe [LocalDate] instance.
+     *
+     * Handles missing years by applying [NO_YEAR_MARKER] (a leap year representation preserving Feb 29),
+     * coerces month to valid range 1..12, and clamps day to the maximum days allowed for the given month/year.
+     *
+     * @param year Optional birth year (positive integer), or `null` / [NO_YEAR_MARKER] if unknown.
+     * @param month Month of birth (1..12).
+     * @param day Day of birth (1..31).
+     * @return Validated and clamped [LocalDate] instance.
+     */
+    private fun sanitizeBirthdayDate(year: Int?, month: Int, day: Int): LocalDate {
+        val targetYear = if (year != null && year > 0 && year != NO_YEAR_MARKER) year else NO_YEAR_MARKER
+        val safeMonth = month.coerceIn(1, 12)
+        val maxDays = Month.of(safeMonth).length(Year.isLeap(targetYear.toLong()))
+        val safeDay = day.coerceIn(1, maxDays)
+        return LocalDate.of(targetYear, safeMonth, safeDay)
     }
 
 

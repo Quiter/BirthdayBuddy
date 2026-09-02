@@ -21,6 +21,8 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest
 import org.junit.After
 import org.junit.Before
@@ -157,5 +159,86 @@ class HomeViewModelSearchTest {
 
         assertThat(state.contacts).hasSize(1)
         assertThat(state.contacts?.first()?.fullName).isEqualTo("Max Mustermann")
+    }
+
+    @Test
+    fun searchQueryChanged_onlySetsIsResettingFilterOnSearchTransitions() = runTest {
+        viewModel = HomeViewModel(
+            contactRepository = contactRepository,
+            getContactsUseCase = getContactsUseCase,
+            contactUiMapper = ContactUiMapper(),
+            coupleSuggestionUiMapper = CoupleSuggestionUiMapper(),
+            getAvailableLabelsUseCase = getAvailableLabelsUseCase,
+            getCoupleSuggestionUseCase = getCoupleSuggestionUseCase,
+            linkAsCoupleUseCase = linkAsCoupleUseCase,
+            unlinkCoupleUseCase = unlinkCoupleUseCase,
+            ignoreCoupleSuggestionUseCase = ignoreCoupleSuggestionUseCase,
+            timeRepository = timeRepository,
+            permissionChecker = permissionChecker,
+            clock = clock,
+        )
+
+        // 1. Initial State: searchQuery="", isResettingFilter=false
+        val initialState = viewModel.uiState.first()
+        assertThat(initialState.isResettingFilter).isFalse()
+
+        // 2. Entering Search (first character): isResettingFilter should become true
+        viewModel.onIntent(HomeIntent.SearchQueryChanged("M"))
+        val enteringState = viewModel.uiState.filter { it.searchQuery == "M" && it.isResettingFilter }.first()
+        assertThat(enteringState.isResettingFilter).isTrue()
+
+        // UI resets filter flag
+        viewModel.onIntent(HomeIntent.SetIsResettingFilter(false))
+        val resetState = viewModel.uiState.filter { !it.isResettingFilter }.first()
+        assertThat(resetState.isResettingFilter).isFalse()
+
+        // 3. Continuous typing: isResettingFilter should remain false
+        viewModel.onIntent(HomeIntent.SearchQueryChanged("Ma"))
+        val typingState = viewModel.uiState.filter { it.searchQuery == "Ma" }.first()
+        assertThat(typingState.isResettingFilter).isFalse()
+
+        // 4. Clearing search: isResettingFilter should become true again
+        viewModel.onIntent(HomeIntent.SearchQueryChanged(""))
+        val clearingState = viewModel.uiState.filter { it.searchQuery.isEmpty() && it.isResettingFilter }.first()
+        assertThat(clearingState.isResettingFilter).isTrue()
+    }
+
+    @Test
+    fun searchQueryChanged_doesNotEmitImmediateScrollOnContinuousTyping() = runTest {
+        viewModel = HomeViewModel(
+            contactRepository = contactRepository,
+            getContactsUseCase = getContactsUseCase,
+            contactUiMapper = ContactUiMapper(),
+            coupleSuggestionUiMapper = CoupleSuggestionUiMapper(),
+            getAvailableLabelsUseCase = getAvailableLabelsUseCase,
+            getCoupleSuggestionUseCase = getCoupleSuggestionUseCase,
+            linkAsCoupleUseCase = linkAsCoupleUseCase,
+            unlinkCoupleUseCase = unlinkCoupleUseCase,
+            ignoreCoupleSuggestionUseCase = ignoreCoupleSuggestionUseCase,
+            timeRepository = timeRepository,
+            permissionChecker = permissionChecker,
+            clock = clock,
+        )
+
+        var scrollCount = 0
+        val collectJob = launch {
+            viewModel.scrollToTopEvent.collect {
+                scrollCount++
+            }
+        }
+        runCurrent()
+
+        // Entering search triggers scroll
+        viewModel.onIntent(HomeIntent.SearchQueryChanged("M"))
+        runCurrent()
+        val countAfterFirstChar = scrollCount
+        assertThat(countAfterFirstChar).isAtLeast(1)
+
+        // Continuous typing within debounce does NOT trigger immediate scroll
+        viewModel.onIntent(HomeIntent.SearchQueryChanged("Ma"))
+        runCurrent()
+        assertThat(scrollCount).isEqualTo(countAfterFirstChar)
+
+        collectJob.cancel()
     }
 }

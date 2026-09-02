@@ -24,8 +24,7 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.test.runCurrent
+import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
 import org.junit.After
 import org.junit.Before
@@ -217,7 +216,8 @@ class HomeViewModelTest {
         val anniversaryState = viewModel.uiState.first { state ->
             state.selectedLabel == ContactLabels.LABEL_ANNIVERSARY &&
                     state.contacts?.size == 1 &&
-                    state.contacts.first().fullName == "Anniversary Person"
+                    state.contacts.first().fullName == "Anniversary Person" &&
+                    state.contacts.first().daysUntilNext == 5L
         }
         assertThat(anniversaryState.contacts?.first()?.daysUntilNext).isEqualTo(5)
     }
@@ -399,16 +399,12 @@ class HomeViewModelTest {
         viewModel = createViewModel()
 
         val startTime = testScheduler.currentTime
-        val syncCompletedJob = launch {
-            viewModel.syncCompletedEvent.first()
-        }
-        runCurrent()
         viewModel.onIntent(HomeIntent.SyncContacts(showLoading = true))
-
-        syncCompletedJob.join()
+        advanceUntilIdle()
 
         val duration = testScheduler.currentTime - startTime
         assertThat(duration).isEqualTo(600)
+        assertThat(viewModel.uiState.value.isSyncing).isFalse()
     }
 
     @Test
@@ -421,16 +417,12 @@ class HomeViewModelTest {
         viewModel = createViewModel()
 
         val startTime = testScheduler.currentTime
-        val syncCompletedJob = launch {
-            viewModel.syncCompletedEvent.first()
-        }
-        runCurrent()
         viewModel.onIntent(HomeIntent.SyncContacts(showLoading = true))
-
-        syncCompletedJob.join()
+        advanceUntilIdle()
 
         val duration = testScheduler.currentTime - startTime
         assertThat(duration).isEqualTo(0)
+        assertThat(viewModel.uiState.value.isSyncing).isFalse()
     }
 
     @Test
