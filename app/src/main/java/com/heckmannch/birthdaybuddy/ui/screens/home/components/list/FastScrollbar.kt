@@ -25,12 +25,15 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.Stable
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -41,9 +44,10 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.unit.Density
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.heckmannch.birthdaybuddy.ui.model.ContactUiModel
-import com.heckmannch.birthdaybuddy.ui.theme.AlphaOnboardingCard
 import com.heckmannch.birthdaybuddy.ui.theme.CardCornerRadiusLarge
 import com.heckmannch.birthdaybuddy.ui.theme.IconSizeExtraLarge
 import com.heckmannch.birthdaybuddy.ui.theme.ScrollbarArrowSize
@@ -62,6 +66,10 @@ internal object ScrollbarDefaults {
     val BarWidth = ScrollbarTouchTargetWidth
     val ThumbSize = IconSizeExtraLarge
     const val BUBBLE_DELAY = 500L
+    const val FADE_OUT_DELAY_MS = 1500L
+    val EstimatedHeaderHeight = 56.dp
+    val EstimatedContactHeight = 80.dp
+    const val AlphaThumb = 0.9f
     val ThumbWidth = ScrollbarThumbWidth
     val ThumbHeight = ScrollbarThumbHeight
     val BubbleOffsetY = SpacingExtraSmall
@@ -78,6 +86,213 @@ data class ScrollSection(
     val startIndex: Int,
     val count: Int
 )
+
+/**
+ * Internal state holder and calculation engine for [FastScrollbar].
+ * Encapsulates forward/inverse scroll mapping, section geometry, and gesture state.
+ */
+@Stable
+internal class FastScrollState(
+    val listState: LazyListState,
+    var density: Density,
+) {
+    var isDragging by mutableStateOf(false)
+    var dragOffsetPx by mutableFloatStateOf(0f)
+    var hasUserScrolled by mutableStateOf(false)
+    var isVisible by mutableStateOf(false)
+    var showBubble by mutableStateOf(false)
+
+    /**
+     * Estimated header height in pixels using the current density.
+     */
+    val headerHeightPx: Float
+        get() = with(density) { ScrollbarDefaults.EstimatedHeaderHeight.toPx() }
+
+    /**
+     * Estimated contact item height in pixels using the current density.
+     */
+    val contactHeightPx: Float
+        get() = with(density) { ScrollbarDefaults.EstimatedContactHeight.toPx() }
+
+    /**
+     * Total expected height of the list content in pixels.
+     */
+    fun calculateTotalHeight(totalItems: Int, headerCount: Int): Float {
+        return (headerCount * headerHeightPx) + (totalItems * contactHeightPx)
+    }
+
+    /**
+     * Cumulative prefix height up to [index] using the linear height model.
+     */
+    fun cumulativeHeight(index: Int, headerCount: Int): Float {
+        return if (index <= headerCount) {
+            index * headerHeightPx
+        } else {
+            (headerCount * headerHeightPx) + ((index - headerCount) * contactHeightPx)
+        }
+    }
+
+    /**
+     * Returns the expected item height in pixels for the item at [index].
+     */
+    fun getItemHeightPx(index: Int, headerCount: Int): Float {
+        return if (index < headerCount) headerHeightPx else contactHeightPx
+    }
+
+    /**
+     * Groups contacts into scrollable sections based on the caller-provided [getLabel] mapper.
+     */
+    fun buildSections(
+        contacts: List<ContactUiModel>,
+        getLabel: (ContactUiModel) -> String,
+        headerCount: Int,
+    ): List<ScrollSection> {
+        if (contacts.isEmpty()) return emptyList()
+        val list = mutableListOf<ScrollSection>()
+
+        var currentLabel = getLabel(contacts.first())
+        var startIndex = headerCount
+        var count = 1
+
+        for (i in 1 until contacts.size) {
+            val label = getLabel(contacts[i])
+            if (label == currentLabel) {
+                count++
+            } else {
+                list.add(ScrollSection(currentLabel, startIndex, count))
+                currentLabel = label
+                startIndex = headerCount + i
+                count = 1
+            }
+        }
+        list.add(ScrollSection(currentLabel, startIndex, count))
+        return list
+    }
+
+    /**
+     * FORWARD MAPPING: List position → Thumb position (LINEAR)
+     *
+     * scrollPercent = scrolledPx / maxScrollPx
+     *   scrolledPx  = cumulativeHeights[firstIndex] + firstVisibleScrollOffset
+     *   maxScrollPx = totalHeight - viewportHeight + afterContentPadding
+     *
+     * Purely linear based on stable expected item heights, avoiding jumpiness.
+     */
+    fun calculateScrollPercent(
+        totalHeight: Float,
+        totalItems: Int,
+        headerCount: Int,
+    ): Float {
+        val viewportHeight = listState.layoutInfo.viewportSize.height.toFloat()
+        if (viewportHeight <= 0f) return 0f
+
+        val afterPad = listState.layoutInfo.afterContentPadding.toFloat()
+        val maxScrollPx = totalHeight - viewportHeight + afterPad
+        if (maxScrollPx <= 0f) return 0f
+
+        val firstIndex = listState.firstVisibleItemIndex
+            .coerceIn(0, (totalItems + headerCount - 1).coerceAtLeast(0))
+        val firstOffset = listState.firstVisibleItemScrollOffset.toFloat()
+
+        val scrolledPx = cumulativeHeight(firstIndex, headerCount) + firstOffset
+        return (scrolledPx / maxScrollPx).coerceIn(0f, 1f)
+    }
+
+    /**
+     * Computes the vertical thumb offset in Dp.
+     */
+    fun calculateThumbOffset(
+        trackHeight: Dp,
+        scrollPercent: Float,
+    ): Dp {
+        return if (isDragging) {
+            with(density) { dragOffsetPx.toDp() }.coerceIn(0.dp, trackHeight)
+        } else {
+            trackHeight * scrollPercent
+        }
+    }
+
+    /**
+     * INVERSE MAPPING: Thumb drag position → List position (SECTION-BASED)
+     *
+     * Slices the track into equal proportions per section so that each section is
+     * easily accessible during drag.
+     */
+    fun updateScrollPosition(
+        y: Float,
+        trackHeightPx: Float,
+        sections: List<ScrollSection>,
+        totalItems: Int,
+        headerCount: Int,
+    ) {
+        if (sections.isEmpty()) return
+        val percent = (y / trackHeightPx).coerceIn(0f, 1f)
+
+        // Special case: thumb at the very top → scroll to index 0 so that all
+        // header items (e.g. LabelFilterBar at index 0) become visible again.
+        // Without this, the section-based mapping would resolve to
+        // section.startIndex = headerCount (≥ 1) and skip the header entirely.
+        if (percent == 0f) {
+            listState.requestScrollToItem(0, 0)
+            return
+        }
+
+        val sectionFloat = percent * sections.size.toFloat()
+        val sectionIndex = sectionFloat.toInt().coerceIn(0, sections.size - 1)
+        val sectionProgress = (sectionFloat - sectionIndex).coerceIn(0f, 1f)
+        val section = sections[sectionIndex]
+
+        val targetFloatIndex =
+            section.startIndex.toFloat() + sectionProgress * section.count.toFloat()
+        val targetIndex = targetFloatIndex.toInt()
+            .coerceIn(0, (totalItems + headerCount - 1).coerceAtLeast(0))
+        val fractional = (targetFloatIndex - targetIndex).coerceIn(0f, 1f)
+        val itemSizePx = getItemHeightPx(targetIndex, headerCount)
+        val offsetPx = (fractional * itemSizePx).toInt()
+
+        listState.requestScrollToItem(targetIndex, offsetPx)
+    }
+
+    /**
+     * Resolves the active section label for the bubble based on the current thumb offset.
+     */
+    fun calculateCurrentLabel(
+        thumbOffset: Dp,
+        trackHeight: Dp,
+        sections: List<ScrollSection>,
+    ): String {
+        if (sections.isEmpty()) return ""
+        val percent = if (trackHeight > 0.dp) {
+            (thumbOffset / trackHeight).coerceIn(0f, 1f)
+        } else 0f
+        val sectionIndex = (percent * sections.size).toInt()
+            .coerceIn(0, sections.size - 1)
+        return sections.getOrNull(sectionIndex)?.label ?: ""
+    }
+
+    /**
+     * Resets scroll flags on list/filter updates.
+     */
+    fun resetOnContactsChange() {
+        hasUserScrolled = false
+        dragOffsetPx = 0f
+    }
+}
+
+/**
+ * Creates and remembers a [FastScrollState] instance for [FastScrollbar].
+ */
+@Composable
+internal fun rememberFastScrollState(
+    listState: LazyListState,
+    density: Density,
+): FastScrollState {
+    val state = remember(listState) {
+        FastScrollState(listState = listState, density = density)
+    }
+    state.density = density
+    return state
+}
 
 /**
  * FastScrollbar displays a custom, draggable scroll bar overlay on a list.
@@ -156,11 +371,23 @@ fun FastScrollbar(
 ) {
     val density = LocalDensity.current
     val haptic = LocalHapticFeedback.current
+    val currentOnSetFastScrolling by rememberUpdatedState(onSetFastScrolling)
 
     val totalItems = contacts.size
+    val state = rememberFastScrollState(listState = listState, density = density)
+
+    // Ensure onSetFastScrolling(false) is called when leaving composition during an active drag
+    DisposableEffect(state) {
+        onDispose {
+            if (state.isDragging) {
+                state.isDragging = false
+                currentOnSetFastScrolling(false)
+            }
+        }
+    }
 
     // Dynamic visibility threshold: list must be longer than the viewport + 2 items
-    val isNeeded by remember {
+    val isNeeded by remember(listState) {
         derivedStateOf {
             val layoutInfo = listState.layoutInfo
             val visibleCount = layoutInfo.visibleItemsInfo.size
@@ -173,71 +400,28 @@ fun FastScrollbar(
 
     // Group contacts into scrollable sections based on label (Month or Letter)
     val sections = remember(contacts, getLabel, headerCount) {
-        val list = mutableListOf<ScrollSection>()
-        if (contacts.isEmpty()) return@remember list
-
-        var currentLabel = getLabel(contacts.first())
-        var startIndex = headerCount
-        var count = 1
-
-        for (i in 1 until contacts.size) {
-            val label = getLabel(contacts[i])
-            if (label == currentLabel) {
-                count++
-            } else {
-                list.add(ScrollSection(currentLabel, startIndex, count))
-                currentLabel = label
-                startIndex = headerCount + i
-                count = 1
-            }
-        }
-        list.add(ScrollSection(currentLabel, startIndex, count))
-        list
+        state.buildSections(contacts, getLabel, headerCount)
     }
 
-    // Stable expected height model: header ~56dp, contact ~80dp
-    val expectedItemHeights = remember(contacts.size, headerCount) {
-        val heights = FloatArray(contacts.size + headerCount)
-        val dp = density.density
-        if (headerCount > 0) {
-            repeat(headerCount) { i -> heights[i] = 56f * dp }
-        }
-        for (i in headerCount until heights.size) heights[i] = 80f * dp
-        heights
-    }
-
-    // Prefix-sum array for O(1) cumulative height lookup.
-    // cumulativeHeights[i] = total height of items 0..i-1
-    val cumulativeHeights = remember(expectedItemHeights) {
-        FloatArray(expectedItemHeights.size + 1).also { cum ->
-            cum[0] = 0f
-            for (i in expectedItemHeights.indices) {
-                cum[i + 1] = cum[i] + expectedItemHeights[i]
-            }
-        }
-    }
-
-    val totalHeight = remember(cumulativeHeights) { cumulativeHeights.last() }
-
-    var isDragging by remember { mutableStateOf(false) }
-    var dragOffsetPx by remember { mutableFloatStateOf(0f) }
+    // Stable expected height model: header ~56dp, contact ~80dp (O(1) time & space)
+    val totalHeight = state.calculateTotalHeight(totalItems, headerCount)
 
     // Visibility: Show only after the user has manually scrolled the list (ignoring pull-to-refresh)
-    var hasUserScrolled by remember { mutableStateOf(false) }
     val isListDragged by listState.interactionSource.collectIsDraggedAsState()
 
-    val firstVisibleIndex = remember { derivedStateOf { listState.firstVisibleItemIndex } }
-    val firstVisibleOffset = remember { derivedStateOf { listState.firstVisibleItemScrollOffset } }
+    val isAtTop by remember(listState) {
+        derivedStateOf { listState.firstVisibleItemIndex == 0 && listState.firstVisibleItemScrollOffset == 0 }
+    }
 
-    LaunchedEffect(isListDragged, firstVisibleIndex.value, firstVisibleOffset.value) {
-        if (isListDragged && (firstVisibleIndex.value > 0 || firstVisibleOffset.value > 0)) {
-            hasUserScrolled = true
+    LaunchedEffect(isListDragged, isAtTop, listState.isScrollInProgress) {
+        if (isListDragged && !isAtTop) {
+            state.hasUserScrolled = true
         }
         // Hide the scrollbar (and reset the user-scrolled flag) as soon as the list
         // is back at the very top. This makes the LabelFilterBar and other top items
         // fully visible again, and restores the pull-to-refresh exclusion guard.
-        if (!listState.isScrollInProgress && firstVisibleIndex.value == 0 && firstVisibleOffset.value == 0) {
-            hasUserScrolled = false
+        if (!listState.isScrollInProgress && isAtTop) {
+            state.hasUserScrolled = false
         }
     }
 
@@ -246,39 +430,40 @@ fun FastScrollbar(
     // list reset — without this, the thumb would remain at the old position the first time
     // the user drags again (because onDragStart re-anchors to the touch point, not the thumb).
     LaunchedEffect(contacts) {
-        hasUserScrolled = false
-        dragOffsetPx = 0f
+        if (state.isDragging) {
+            state.isDragging = false
+            currentOnSetFastScrolling(false)
+        }
+        state.resetOnContactsChange()
     }
 
     // NOTE: hasUserScrolled = true for thumb drags is set directly in onDragStart
     // (no LaunchedEffect needed; the gesture callback is synchronous).
 
-    var isVisible by remember { mutableStateOf(false) }
-    LaunchedEffect(listState.isScrollInProgress, isDragging, hasUserScrolled) {
-        if (hasUserScrolled && (listState.isScrollInProgress || isDragging)) {
-            isVisible = true
+    LaunchedEffect(listState.isScrollInProgress, state.isDragging, state.hasUserScrolled) {
+        if (state.hasUserScrolled && (listState.isScrollInProgress || state.isDragging)) {
+            state.isVisible = true
         } else {
-            if (isVisible) {
-                delay(1500.milliseconds)
-                isVisible = false
+            if (state.isVisible) {
+                delay(ScrollbarDefaults.FADE_OUT_DELAY_MS.milliseconds)
+                state.isVisible = false
             }
         }
     }
 
     val animatedVisibilityAlpha by animateFloatAsState(
-        targetValue = if (isVisible) 1f else 0f,
+        targetValue = if (state.isVisible) 1f else 0f,
         animationSpec = tween(durationMillis = 300),
         label = "Scrollbar Alpha"
     )
 
     // Bubble visibility logic
-    var showBubble by remember { mutableStateOf(false) }
-    LaunchedEffect(isDragging) {
-        if (isDragging) {
-            showBubble = true
+    LaunchedEffect(state.isDragging) {
+        if (state.isDragging) {
+            state.showBubble = true
         } else {
             delay(ScrollbarDefaults.BUBBLE_DELAY.milliseconds)
-            showBubble = false
+            state.showBubble = false
         }
     }
 
@@ -305,40 +490,16 @@ fun FastScrollbar(
         // This is purely based on the stable expectedItemHeights model and is
         // therefore independent of visible items or section boundaries. No jumping.
         // ─────────────────────────────────────────────────────────────────────
-        val scrollPercent by remember(totalHeight, cumulativeHeights) {
+        val scrollPercent by remember(totalHeight, totalItems, headerCount) {
             derivedStateOf {
-                val viewportHeight = listState.layoutInfo.viewportSize.height.toFloat()
-                if (viewportHeight <= 0f) return@derivedStateOf 0f
-
-                val afterPad = listState.layoutInfo.afterContentPadding.toFloat()
-                val maxScrollPx = totalHeight - viewportHeight + afterPad
-                if (maxScrollPx <= 0f) return@derivedStateOf 0f
-
-                val firstIndex = listState.firstVisibleItemIndex
-                    .coerceIn(0, (expectedItemHeights.size - 1).coerceAtLeast(0))
-                val firstOffset = listState.firstVisibleItemScrollOffset.toFloat()
-
-                val scrolledPx = cumulativeHeights[firstIndex] + firstOffset
-                (scrolledPx / maxScrollPx).coerceIn(0f, 1f)
+                state.calculateScrollPercent(totalHeight, totalItems, headerCount)
             }
         }
 
         // Thumb offset: use dragOffsetPx during drag, derive from scrollPercent otherwise
-        val thumbOffset by remember(trackHeight) {
+        val thumbOffset by remember(trackHeight, scrollPercent) {
             derivedStateOf {
-                if (isDragging) {
-                    with(density) { dragOffsetPx.toDp() }.coerceIn(0.dp, trackHeight)
-                } else {
-                    trackHeight * scrollPercent
-                }
-            }
-        }
-
-        // Keep dragOffsetPx in sync while the user scrolls manually,
-        // so that a subsequent drag always starts from the correct thumb position.
-        LaunchedEffect(thumbOffset, isDragging) {
-            if (!isDragging) {
-                dragOffsetPx = with(density) { thumbOffset.toPx() }
+                state.calculateThumbOffset(trackHeight, scrollPercent)
             }
         }
 
@@ -349,59 +510,23 @@ fun FastScrollbar(
         // every section (month / letter) is reachable with the same drag distance
         // regardless of how many contacts it contains.
         // ─────────────────────────────────────────────────────────────────────
-        fun updateScrollPosition(y: Float) {
-            if (sections.isEmpty()) return
-            val percent = (y / trackHeightPx).coerceIn(0f, 1f)
-
-            // Special case: thumb at the very top → scroll to index 0 so that all
-            // header items (e.g. LabelFilterBar at index 0) become visible again.
-            // Without this, the section-based mapping would resolve to
-            // section.startIndex = headerCount (≥ 1) and skip the header entirely.
-            if (percent == 0f) {
-                listState.requestScrollToItem(0, 0)
-                return
-            }
-
-            val sectionFloat = percent * sections.size.toFloat()
-            val sectionIndex = sectionFloat.toInt().coerceIn(0, sections.size - 1)
-            val sectionProgress = (sectionFloat - sectionIndex).coerceIn(0f, 1f)
-            val section = sections[sectionIndex]
-
-            val targetFloatIndex =
-                section.startIndex.toFloat() + sectionProgress * section.count.toFloat()
-            val targetIndex = targetFloatIndex.toInt()
-                .coerceIn(0, (totalItems + headerCount - 1).coerceAtLeast(0))
-            val fractional = (targetFloatIndex - targetIndex).coerceIn(0f, 1f)
-            val itemSizePx = expectedItemHeights.getOrNull(targetIndex) ?: (80f * density.density)
-            val offsetPx = (fractional * itemSizePx).toInt()
-
-            listState.requestScrollToItem(targetIndex, offsetPx)
-        }
-
-        // Active section label for the bubble — derived from thumb position via section mapping
-        val currentLabel by remember(sections) {
+        val currentLabel by remember(sections, trackHeight) {
             derivedStateOf {
-                if (sections.isEmpty()) return@derivedStateOf ""
-                val percent = if (trackHeight > 0.dp) {
-                    (thumbOffset / trackHeight).coerceIn(0f, 1f)
-                } else 0f
-                val sectionIndex = (percent * sections.size).toInt()
-                    .coerceIn(0, sections.size - 1)
-                sections.getOrNull(sectionIndex)?.label ?: ""
+                state.calculateCurrentLabel(thumbOffset, trackHeight, sections)
             }
         }
 
         // Haptic feedback when crossing a section boundary during drag
         var lastLabelForHaptic by remember { mutableStateOf("") }
         LaunchedEffect(currentLabel) {
-            if (isDragging && currentLabel.isNotEmpty() && currentLabel != lastLabelForHaptic) {
+            if (state.isDragging && currentLabel.isNotEmpty() && currentLabel != lastLabelForHaptic) {
                 haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                 lastLabelForHaptic = currentLabel
             }
         }
 
         ScrollbarBubble(
-            visible = showBubble && currentLabel.isNotEmpty(),
+            visible = state.showBubble && currentLabel.isNotEmpty(),
             label = currentLabel,
             thumbOffset = { thumbOffset }
         )
@@ -414,21 +539,39 @@ fun FastScrollbar(
                 .fillMaxHeight()
                 .navigationBarsPadding()
                 .graphicsLayer { alpha = animatedVisibilityAlpha }
-                .pointerInput(trackHeightPx, sections, headerCount) {
+                .pointerInput(trackHeightPx, sections, headerCount, totalItems) {
                     detectVerticalDragGestures(
                         onDragStart = { offset ->
-                            isDragging = true
-                            hasUserScrolled = true
-                            onSetFastScrolling(true)
-                            dragOffsetPx =
+                            state.isDragging = true
+                            state.hasUserScrolled = true
+                            currentOnSetFastScrolling(true)
+                            state.dragOffsetPx =
                                 (offset.y - thumbHeightPx / 2f).coerceIn(0f, trackHeightPx)
-                            updateScrollPosition(dragOffsetPx)
+                            state.updateScrollPosition(
+                                state.dragOffsetPx,
+                                trackHeightPx,
+                                sections,
+                                totalItems,
+                                headerCount
+                            )
                         },
-                        onDragEnd = { isDragging = false; onSetFastScrolling(false) },
-                        onDragCancel = { isDragging = false; onSetFastScrolling(false) },
+                        onDragEnd = {
+                            state.isDragging = false
+                            currentOnSetFastScrolling(false)
+                        },
+                        onDragCancel = {
+                            state.isDragging = false
+                            currentOnSetFastScrolling(false)
+                        },
                     ) { change, dragAmount ->
-                        dragOffsetPx = (dragOffsetPx + dragAmount).coerceIn(0f, trackHeightPx)
-                        updateScrollPosition(dragOffsetPx)
+                        state.dragOffsetPx = (state.dragOffsetPx + dragAmount).coerceIn(0f, trackHeightPx)
+                        state.updateScrollPosition(
+                            state.dragOffsetPx,
+                            trackHeightPx,
+                            sections,
+                            totalItems,
+                            headerCount
+                        )
                         change.consume()
                     }
                 }
@@ -443,7 +586,7 @@ fun FastScrollbar(
                     .graphicsLayer { translationY = thumbOffset.toPx() }
                     .semantics { contentDescription = "Scrollbar" },
                 shape = RoundedCornerShape(WidgetCornerRadius),
-                color = MaterialTheme.colorScheme.primary.copy(alpha = AlphaOnboardingCard),
+                color = MaterialTheme.colorScheme.primary.copy(alpha = ScrollbarDefaults.AlphaThumb),
                 tonalElevation = SearchBarFocusedElevation
             ) {
                 Column(
