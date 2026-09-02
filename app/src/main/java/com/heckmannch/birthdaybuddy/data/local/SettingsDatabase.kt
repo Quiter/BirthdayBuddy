@@ -7,14 +7,6 @@ import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
 import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
-import com.heckmannch.birthdaybuddy.data.local.SettingsDatabase.Companion.MIGRATION_2_3
-import com.heckmannch.birthdaybuddy.data.local.SettingsDatabase.Companion.MIGRATION_3_4
-import com.heckmannch.birthdaybuddy.data.local.SettingsDatabase.Companion.MIGRATION_4_5
-import com.heckmannch.birthdaybuddy.data.local.SettingsDatabase.Companion.MIGRATION_5_6
-import com.heckmannch.birthdaybuddy.data.local.SettingsDatabase.Companion.MIGRATION_6_7
-import com.heckmannch.birthdaybuddy.data.local.SettingsDatabase.Companion.MIGRATION_7_8
-import com.heckmannch.birthdaybuddy.data.local.SettingsDatabase.Companion.MIGRATION_8_9
-import com.heckmannch.birthdaybuddy.data.local.SettingsDatabase.Companion.MIGRATION_9_10
 
 /**
  * Room-Datenbank für persistente Einstellungen und nutzerspezifische Konfigurationen.

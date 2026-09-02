@@ -8,8 +8,6 @@ import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
 import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
-import com.heckmannch.birthdaybuddy.data.local.AppDatabase.Companion.MIGRATION_5_6
-import com.heckmannch.birthdaybuddy.data.local.AppDatabase.Companion.MIGRATION_6_7
 
 /**
  * Room-Datenbank für kontobezogene Entitäten ([ContactEntity], [PendingNotificationEntity]).
@@ -44,15 +42,18 @@ abstract class AppDatabase : RoomDatabase() {
 
 
         /**
-         * Hilfsfunktion zum sauberen Neuaufbau der 'contacts'-Tabelle auf das V6-Schema.
-         * In V6 ist birthday nullable und giftIdeas ist weiterhin nullable (TEXT).
+         * Hilfsfunktion zum sauberen Neuaufbau der 'contacts'-Tabelle.
+         *
+         * @param db Die SQLite-Datenbankinstanz.
+         * @param giftIdeasNotNull Gibt an, ob die Spalte `giftIdeas` als NOT NULL definiert und mit '[]' statt NULL befüllt werden soll (Schema V7+) oder als nullable TEXT (Schema V6).
          */
-        private fun recreateContactsTableV6(db: SupportSQLiteDatabase) {
+        private fun recreateContactsTable(db: SupportSQLiteDatabase, giftIdeasNotNull: Boolean) {
             // 1. Bestehende Tabelle umbenennen
             db.execSQL("ALTER TABLE contacts RENAME TO contacts_old")
 
-            // 2. Neue Tabelle mit V6-Schema erstellen
-            db.execSQL("CREATE TABLE IF NOT EXISTS `contacts` (`localId` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `contactId` TEXT NOT NULL, `lookupKey` TEXT NOT NULL, `fullName` TEXT NOT NULL, `birthday` TEXT, `imageUri` TEXT, `phoneNumber` TEXT, `hasWhatsApp` INTEGER NOT NULL DEFAULT 0, `hasSignal` INTEGER NOT NULL DEFAULT 0, `labels` TEXT NOT NULL, `giftIdeas` TEXT)")
+            // 2. Neue Tabelle erstellen (Schema abhängig von giftIdeasNotNull)
+            val giftIdeasColumnDef = if (giftIdeasNotNull) "`giftIdeas` TEXT NOT NULL" else "`giftIdeas` TEXT"
+            db.execSQL("CREATE TABLE IF NOT EXISTS `contacts` (`localId` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `contactId` TEXT NOT NULL, `lookupKey` TEXT NOT NULL, `fullName` TEXT NOT NULL, `birthday` TEXT, `imageUri` TEXT, `phoneNumber` TEXT, `hasWhatsApp` INTEGER NOT NULL DEFAULT 0, `hasSignal` INTEGER NOT NULL DEFAULT 0, `labels` TEXT NOT NULL, $giftIdeasColumnDef)")
 
             // 3. Vorhandene Spalten ermitteln, um fehlende Spalten robust abzufangen
             val columnsInOld = mutableSetOf<String>()
@@ -97,83 +98,18 @@ abstract class AppDatabase : RoomDatabase() {
                 selectColumns.add("'[]' AS labels")
             }
 
-            if (columnsInOld.contains("giftIdeas")) {
-                selectColumns.add("giftIdeas")
-            } else {
-                selectColumns.add("NULL AS giftIdeas")
-            }
-
-            val selectQuery = selectColumns.joinToString(", ")
-
-            // 4. Daten kopieren mit dynamic fallback
-            db.execSQL("INSERT INTO contacts (localId, contactId, lookupKey, fullName, birthday, imageUri, phoneNumber, hasWhatsApp, hasSignal, labels, giftIdeas) SELECT $selectQuery FROM contacts_old")
-
-            // 5. Alte Tabelle löschen
-            db.execSQL("DROP TABLE IF EXISTS contacts_old")
-
-            // 6. Indizes neu anlegen
-            db.execSQL("CREATE UNIQUE INDEX IF NOT EXISTS `index_contacts_lookupKey` ON `contacts` (`lookupKey`)")
-            db.execSQL("CREATE INDEX IF NOT EXISTS `index_contacts_birthday` ON `contacts` (`birthday`)")
-        }
-
-        /**
-         * Hilfsfunktion zum sauberen Neuaufbau der 'contacts'-Tabelle auf das V7-Schema.
-         * In V7 ist giftIdeas NOT NULL.
-         */
-        private fun recreateContactsTableV7(db: SupportSQLiteDatabase) {
-            // 1. Bestehende Tabelle umbenennen
-            db.execSQL("ALTER TABLE contacts RENAME TO contacts_old")
-
-            // 2. Neue Tabelle mit V7-Schema erstellen
-            db.execSQL("CREATE TABLE IF NOT EXISTS `contacts` (`localId` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `contactId` TEXT NOT NULL, `lookupKey` TEXT NOT NULL, `fullName` TEXT NOT NULL, `birthday` TEXT, `imageUri` TEXT, `phoneNumber` TEXT, `hasWhatsApp` INTEGER NOT NULL DEFAULT 0, `hasSignal` INTEGER NOT NULL DEFAULT 0, `labels` TEXT NOT NULL, `giftIdeas` TEXT NOT NULL)")
-
-            // 3. Vorhandene Spalten ermitteln
-            val columnsInOld = mutableSetOf<String>()
-            val columnCursor = db.query("PRAGMA table_info(contacts_old)")
-            while (columnCursor.moveToNext()) {
-                val nameIndex = columnCursor.getColumnIndex("name")
-                if (nameIndex != -1) {
-                    columnsInOld.add(columnCursor.getString(nameIndex))
+            if (giftIdeasNotNull) {
+                if (columnsInOld.contains("giftIdeas")) {
+                    selectColumns.add("COALESCE(giftIdeas, '[]') AS giftIdeas")
+                } else {
+                    selectColumns.add("'[]' AS giftIdeas")
                 }
-            }
-            columnCursor.close()
-
-            val selectColumns = mutableListOf<String>()
-            selectColumns.add("localId")
-            selectColumns.add("contactId")
-            selectColumns.add("lookupKey")
-            selectColumns.add("fullName")
-            selectColumns.add("birthday")
-            selectColumns.add("imageUri")
-
-            if (columnsInOld.contains("phoneNumber")) {
-                selectColumns.add("phoneNumber")
             } else {
-                selectColumns.add("NULL AS phoneNumber")
-            }
-
-            if (columnsInOld.contains("hasWhatsApp")) {
-                selectColumns.add("COALESCE(hasWhatsApp, 0) AS hasWhatsApp")
-            } else {
-                selectColumns.add("0 AS hasWhatsApp")
-            }
-
-            if (columnsInOld.contains("hasSignal")) {
-                selectColumns.add("COALESCE(hasSignal, 0) AS hasSignal")
-            } else {
-                selectColumns.add("0 AS hasSignal")
-            }
-
-            if (columnsInOld.contains("labels")) {
-                selectColumns.add("COALESCE(labels, '[]') AS labels")
-            } else {
-                selectColumns.add("'[]' AS labels")
-            }
-
-            if (columnsInOld.contains("giftIdeas")) {
-                selectColumns.add("COALESCE(giftIdeas, '[]') AS giftIdeas")
-            } else {
-                selectColumns.add("'[]' AS giftIdeas")
+                if (columnsInOld.contains("giftIdeas")) {
+                    selectColumns.add("giftIdeas")
+                } else {
+                    selectColumns.add("NULL AS giftIdeas")
+                }
             }
 
             val selectQuery = selectColumns.joinToString(", ")
@@ -202,7 +138,7 @@ abstract class AppDatabase : RoomDatabase() {
         val MIGRATION_5_6 = object : Migration(5, 6) {
             override fun migrate(db: SupportSQLiteDatabase) {
                 try {
-                    recreateContactsTableV6(db)
+                    recreateContactsTable(db, giftIdeasNotNull = false)
                 } catch (e: Exception) {
                     throw RuntimeException(
                         "Migration 5 to 6 failed: contacts table recreation error.",
@@ -252,7 +188,7 @@ abstract class AppDatabase : RoomDatabase() {
                     columnCursor.close()
 
                     if (!isGiftIdeasNotNull) {
-                        recreateContactsTableV7(db)
+                        recreateContactsTable(db, giftIdeasNotNull = true)
                     }
                 } catch (e: Exception) {
                     throw RuntimeException(

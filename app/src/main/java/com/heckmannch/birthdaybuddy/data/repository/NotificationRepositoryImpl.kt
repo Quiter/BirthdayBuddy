@@ -182,7 +182,7 @@ class NotificationRepositoryImpl @Inject constructor(
      * @param rule The [NotificationRule] with updated values.
      */
     override suspend fun updateRule(rule: NotificationRule) {
-        notificationRuleDao.updateRule(notificationRuleMapper.toEntity(rule))
+        notificationRuleDao.upsertRule(notificationRuleMapper.toEntity(rule))
         syncScheduling()
     }
 

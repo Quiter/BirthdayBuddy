@@ -3,7 +3,6 @@ package com.heckmannch.birthdaybuddy.data.local
 import androidx.room.Dao
 import androidx.room.Delete
 import androidx.room.Query
-import androidx.room.Update
 import androidx.room.Upsert
 import kotlinx.coroutines.flow.Flow
 
@@ -17,9 +16,6 @@ interface NotificationRuleDao {
 
     @Upsert
     suspend fun upsertRule(rule: NotificationRuleEntity)
-
-    @Update
-    suspend fun updateRule(rule: NotificationRuleEntity)
 
     @Delete
     suspend fun deleteRule(rule: NotificationRuleEntity)

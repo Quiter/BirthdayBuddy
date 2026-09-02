@@ -366,7 +366,7 @@ class NotificationRepositoryImplTest {
 
         // Assert
         val capturedRuleEntity = slot<NotificationRuleEntity>()
-        coVerify { notificationRuleDao.updateRule(capture(capturedRuleEntity)) }
+        coVerify { notificationRuleDao.upsertRule(capture(capturedRuleEntity)) }
         assertThat(capturedRuleEntity.captured.id).isEqualTo(5)
 
         // Verify sync scheduling is triggered
