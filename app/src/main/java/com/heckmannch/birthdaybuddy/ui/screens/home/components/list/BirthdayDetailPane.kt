@@ -1,6 +1,6 @@
 package com.heckmannch.birthdaybuddy.ui.screens.home.components.list
 
-
+import android.content.res.Configuration
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -12,7 +12,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CardGiftcard
@@ -27,21 +26,28 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Devices
+import androidx.compose.ui.tooling.preview.Preview
 import com.heckmannch.birthdaybuddy.R
+import com.heckmannch.birthdaybuddy.domain.model.GiftIdea
+import com.heckmannch.birthdaybuddy.ui.model.BirthdayTier
 import com.heckmannch.birthdaybuddy.ui.model.ContactUiModel
 import com.heckmannch.birthdaybuddy.ui.screens.home.HomeActions
 import com.heckmannch.birthdaybuddy.ui.screens.home.components.actions.ContactActionRow
 import com.heckmannch.birthdaybuddy.ui.theme.AlphaContainerSubtle
 import com.heckmannch.birthdaybuddy.ui.theme.AlphaEmphasisLow
 import com.heckmannch.birthdaybuddy.ui.theme.AlphaEmphasisMedium
+import com.heckmannch.birthdaybuddy.ui.theme.BirthdayBuddyTheme
 import com.heckmannch.birthdaybuddy.ui.theme.ContactImageSizeLarge
 import com.heckmannch.birthdaybuddy.ui.theme.IconSizeMedium
 import com.heckmannch.birthdaybuddy.ui.theme.IconSizeSmall
@@ -51,9 +57,16 @@ import com.heckmannch.birthdaybuddy.ui.theme.SpacingMedium
 import com.heckmannch.birthdaybuddy.ui.theme.SpacingNormal
 import com.heckmannch.birthdaybuddy.ui.theme.SpacingSmall
 import com.heckmannch.birthdaybuddy.ui.theme.birthdayGoldColor
+import java.time.LocalDate
 
 /**
  * Ein Detail-Paneel zur Anzeige aller Informationen eines Kontakts auf Tablets.
+ *
+ * @param contact Das [ContactUiModel] mit den anzuzeigenden Kontaktdaten (Name, Bild, Geburtstag, Labels, Geschenkideen etc.).
+ * @param newlyAddedIdeaId Die ID einer neu hinzugefügten Geschenkidee zur automatischen Fokussierung, oder `null`.
+ * @param actions Die gebündelten [HomeActions]-Callbacks für Nutzeraktionen (z. B. Geschenke bearbeiten, Geburtstag anpassen, Anrufen).
+ * @param onClose Callback-Funktion, die aufgerufen wird, wenn das Detail-Paneel geschlossen werden soll.
+ * @param modifier Der auf das umgebende Card-Layout anzuwendende [Modifier].
  */
 @Composable
 fun BirthdayDetailPane(
@@ -64,12 +77,12 @@ fun BirthdayDetailPane(
     modifier: Modifier = Modifier,
 ) {
     val focusManager = LocalFocusManager.current
-    val showDatePicker = remember { mutableStateOf(false) }
+    var showDatePicker by remember { mutableStateOf(false) }
 
-    if (showDatePicker.value) {
+    if (showDatePicker) {
         BirthdayDatePickerDialog(
             initialDate = contact.birthday,
-            onDismissRequest = { showDatePicker.value = false },
+            onDismissRequest = { showDatePicker = false },
             onDateSelected = { date ->
                 actions.onUpdateBirthday(contact.contactId, date)
             }
@@ -142,7 +155,7 @@ fun BirthdayDetailPane(
                     nextAge = contact.nextAge,
                     daysUntilNext = contact.daysUntilNext
                 ) {
-                    showDatePicker.value = true
+                    showDatePicker = true
                 }
 
                 // Labels / Gruppen
@@ -156,7 +169,6 @@ fun BirthdayDetailPane(
                 }
 
                 HorizontalDivider(
-                    modifier = Modifier.padding(vertical = SpacingSmall),
                     color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = AlphaEmphasisLow)
                 )
 
@@ -166,13 +178,12 @@ fun BirthdayDetailPane(
                     lookupKey = contact.lookupKey,
                     phoneNumber = contact.phoneNumber,
                     hasBirthday = contact.daysUntilNext != null,
-                    onAddBirthday = { showDatePicker.value = true },
+                    onAddBirthday = { showDatePicker = true },
                     actions = actions,
                     isCouple = contact.isCouple
                 )
 
                 HorizontalDivider(
-                    modifier = Modifier.padding(vertical = SpacingSmall),
                     color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = AlphaEmphasisLow)
                 )
 
@@ -184,7 +195,7 @@ fun BirthdayDetailPane(
                 ) {
                     Surface(
                         modifier = Modifier.size(SpacingExtraLarge),
-                        shape = RoundedCornerShape(SpacingSmall),
+                        shape = MaterialTheme.shapes.small,
                         color = MaterialTheme.colorScheme.primary.copy(alpha = AlphaContainerSubtle),
                         contentColor = MaterialTheme.colorScheme.primary
                     ) {
@@ -217,14 +228,15 @@ fun BirthdayDetailPane(
                     },
                     onDelete = { idea ->
                         actions.onDeleteGiftIdea(contact.lookupKey, idea.id)
+                    },
+                    onDone = { idea ->
+                        if (idea.text.isNotBlank()) {
+                            actions.onAddGiftIdea(contact.lookupKey)
+                        } else {
+                            focusManager.clearFocus()
+                        }
                     }
-                ) {
-                    if (it.text.isNotBlank()) {
-                        actions.onAddGiftIdea(contact.lookupKey)
-                    } else {
-                        focusManager.clearFocus()
-                    }
-                }
+                )
             }
 
             IconButton(
@@ -239,6 +251,57 @@ fun BirthdayDetailPane(
                     contentDescription = stringResource(R.string.detail_close_desc)
                 )
             }
+        }
+    }
+}
+
+@Preview(
+    name = "Light Theme - Tablet",
+    showBackground = true,
+    device = Devices.TABLET
+)
+@Preview(
+    name = "Dark Theme - Tablet",
+    showBackground = true,
+    device = Devices.TABLET,
+    uiMode = Configuration.UI_MODE_NIGHT_YES
+)
+@Composable
+private fun BirthdayDetailPanePreview() {
+    val sampleContact = ContactUiModel(
+        id = "1",
+        contactId = "1",
+        lookupKey = "k1",
+        fullName = "Max Mustermann",
+        dateText = "15. August (in 12 Tagen)",
+        monthName = "August",
+        imageUri = null,
+        phoneNumber = "+49 123 4567890",
+        initials = "MM",
+        nextAge = 35,
+        daysUntilNext = 12,
+        isToday = false,
+        isFavorite = true,
+        hasWhatsApp = true,
+        hasSignal = true,
+        labels = listOf("Familie", "Freunde"),
+        giftIdeas = listOf(
+            GiftIdea(id = "1", text = "Leder-Geldbörse", isChecked = false),
+            GiftIdea(id = "2", text = "Konzertkarte", isChecked = true),
+            GiftIdea(id = "3", text = "Espressobohnen", isChecked = false)
+        ),
+        birthday = LocalDate.of(1991, 8, 15),
+        birthdayTier = BirthdayTier.REGULAR
+    )
+
+    BirthdayBuddyTheme {
+        Surface(color = MaterialTheme.colorScheme.background) {
+            BirthdayDetailPane(
+                contact = sampleContact,
+                newlyAddedIdeaId = null,
+                actions = HomeActions.previewDefaults(),
+                onClose = {}
+            )
         }
     }
 }
