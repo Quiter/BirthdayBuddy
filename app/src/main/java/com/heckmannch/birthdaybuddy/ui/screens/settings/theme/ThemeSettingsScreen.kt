@@ -5,6 +5,7 @@ import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -61,6 +62,15 @@ import com.heckmannch.birthdaybuddy.ui.theme.SelectedBorderWidthThick
 import com.heckmannch.birthdaybuddy.ui.theme.SpacingExtraSmall
 import com.heckmannch.birthdaybuddy.ui.theme.SpacingNormal
 import com.heckmannch.birthdaybuddy.ui.theme.SpacingSmall
+
+private val LIGHT_ICON_ACCENTS = setOf(
+    ThemeAccent.SYSTEM,
+    ThemeAccent.BLUE,
+    ThemeAccent.GREEN,
+    ThemeAccent.PURPLE,
+    ThemeAccent.RED,
+    ThemeAccent.PINK
+)
 
 @Composable
 fun ThemeSettingsScreen(
@@ -155,7 +165,7 @@ private fun ThemeSettingsContent(
                     )
                     SettingsDivider()
                     val isDarkThemeActive =
-                        themeMode == ThemeMode.DARK || (themeMode == ThemeMode.SYSTEM && androidx.compose.foundation.isSystemInDarkTheme())
+                        themeMode == ThemeMode.DARK || (themeMode == ThemeMode.SYSTEM && isSystemInDarkTheme())
                     SettingsSwitchRow(
                         title = stringResource(R.string.settings_theme_amoled),
                         description = if (isDarkThemeActive) {
@@ -179,49 +189,53 @@ private fun ThemeSettingsContent(
                             .fillMaxWidth()
                             .padding(horizontal = SpacingNormal, vertical = SpacingNormal)
                     ) {
-                        val colors = mutableListOf<AccentColorOption>()
+                        val chunkedColors = remember(customAccentColor, themeAccent) {
+                            val colors = mutableListOf<AccentColorOption>()
 
-                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-                            colors.add(
-                                AccentColorOption(
-                                    ThemeAccent.SYSTEM,
-                                    Color.Transparent,
-                                    isSystem = true
+                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                                colors.add(
+                                    AccentColorOption(
+                                        ThemeAccent.SYSTEM,
+                                        Color.Transparent,
+                                        isSystem = true
+                                    )
+                                )
+                            }
+
+                            colors.addAll(
+                                listOf(
+                                    AccentColorOption(ThemeAccent.PURPLE, AccentPresetColors[5]),
+                                    AccentColorOption(ThemeAccent.BLUE, AccentPresetColors[0]),
+                                    AccentColorOption(ThemeAccent.GREEN, AccentPresetColors[1]),
+                                    AccentColorOption(ThemeAccent.RED, AccentPresetColors[2]),
+                                    AccentColorOption(ThemeAccent.ORANGE, AccentPresetColors[3]),
+                                    AccentColorOption(ThemeAccent.PINK, AccentPresetColors[4])
                                 )
                             )
-                        }
 
-                        colors.addAll(
-                            listOf(
-                                AccentColorOption(ThemeAccent.PURPLE, AccentPresetColors[5]),
-                                AccentColorOption(ThemeAccent.BLUE, AccentPresetColors[0]),
-                                AccentColorOption(ThemeAccent.GREEN, AccentPresetColors[1]),
-                                AccentColorOption(ThemeAccent.RED, AccentPresetColors[2]),
-                                AccentColorOption(ThemeAccent.ORANGE, AccentPresetColors[3]),
-                                AccentColorOption(ThemeAccent.PINK, AccentPresetColors[4])
-                            )
-                        )
-
-                        val isCustomAccent = themeAccent == ThemeAccent.CUSTOM
-                        val customColor = if (isCustomAccent && customAccentColor != null) {
-                            try {
-                                Color(customAccentColor.toColorInt())
-                            } catch (_: Exception) {
+                            val isCustomAccent = themeAccent == ThemeAccent.CUSTOM
+                            val customColor = if (isCustomAccent && customAccentColor != null) {
+                                try {
+                                    Color(customAccentColor.toColorInt())
+                                } catch (_: Exception) {
+                                    Color(0xFFE91E63)
+                                }
+                            } else {
                                 Color(0xFFE91E63)
                             }
-                        } else {
-                            Color(0xFFE91E63)
-                        }
-                        colors.add(
-                            AccentColorOption(
-                                ThemeAccent.CUSTOM,
-                                customColor,
-                                isCustom = true
+                            colors.add(
+                                AccentColorOption(
+                                    ThemeAccent.CUSTOM,
+                                    customColor,
+                                    isCustom = true
+                                )
                             )
-                        )
+
+                            colors.chunked(4)
+                        }
 
                         // Akzentfarben in Zeilen von je 4 Elementen rendern
-                        colors.chunked(4).forEach { rowColors ->
+                        chunkedColors.forEach { rowColors ->
                             Row(
                                 modifier = Modifier
                                     .fillMaxWidth()
@@ -372,15 +386,7 @@ private fun ColorItem(
                     contentDescription = null,
                     tint = if (option.isSystem) Color.White else if (option.isCustom) {
                         if (option.color.luminance() > 0.5f) Color.Black else Color.White
-                    } else if (option.id in listOf(
-                            ThemeAccent.SYSTEM,
-                            ThemeAccent.BLUE,
-                            ThemeAccent.GREEN,
-                            ThemeAccent.PURPLE,
-                            ThemeAccent.RED,
-                            ThemeAccent.PINK
-                        )
-                    ) {
+                    } else if (option.id in LIGHT_ICON_ACCENTS) {
                         Color.White
                     } else {
                         Color.Black

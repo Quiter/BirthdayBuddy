@@ -37,6 +37,7 @@ import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -196,7 +197,7 @@ private fun LabelConfigCard(
 ) {
     var expanded by rememberSaveable { mutableStateOf(false) }
 
-    androidx.compose.runtime.LaunchedEffect(label.isIgnored) {
+    LaunchedEffect(label.isIgnored) {
         if (label.isIgnored) {
             expanded = false
         }

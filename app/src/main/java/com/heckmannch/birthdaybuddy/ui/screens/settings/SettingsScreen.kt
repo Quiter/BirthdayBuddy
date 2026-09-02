@@ -45,6 +45,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
@@ -107,7 +108,7 @@ enum class SettingsTab {
 private data class SettingsMenuItemData(
     val titleRes: Int,
     val descRes: Int,
-    val icon: androidx.compose.ui.graphics.vector.ImageVector,
+    val icon: ImageVector,
     val tab: SettingsTab
 )
 
@@ -404,7 +405,7 @@ private fun SettingsContent(
 private fun SettingsMenuItem(
     titleRes: Int,
     descRes: Int,
-    icon: androidx.compose.ui.graphics.vector.ImageVector,
+    icon: ImageVector,
     isSelected: Boolean = false,
     useTabletStyle: Boolean = false,
     onClick: () -> Unit
