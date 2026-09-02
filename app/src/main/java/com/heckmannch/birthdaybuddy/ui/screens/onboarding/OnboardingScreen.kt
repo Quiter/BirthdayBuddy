@@ -1,10 +1,7 @@
 package com.heckmannch.birthdaybuddy.ui.screens.onboarding
 
 import android.Manifest
-import android.content.Intent
-import android.net.Uri
 import android.os.Build
-import android.provider.Settings
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.animateColorAsState
@@ -22,7 +19,6 @@ import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -34,9 +30,7 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.LifecycleEventObserver
-import androidx.lifecycle.compose.LocalLifecycleOwner
+import androidx.lifecycle.compose.LifecycleResumeEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.heckmannch.birthdaybuddy.ui.components.AppResponsiveScaffold
 import com.heckmannch.birthdaybuddy.ui.model.OnboardingUiState
@@ -53,8 +47,47 @@ import com.heckmannch.birthdaybuddy.ui.theme.AnimDurationMedium
 import com.heckmannch.birthdaybuddy.ui.theme.BirthdayBuddyTheme
 import com.heckmannch.birthdaybuddy.util.PermissionHelper
 import com.heckmannch.birthdaybuddy.util.findActivity
+import com.heckmannch.birthdaybuddy.util.openAppSettings
 import kotlinx.coroutines.launch
 import kotlin.time.Duration.Companion.milliseconds
+
+/**
+ * Represents the distinct steps/pages in the multi-step onboarding flow.
+ *
+ * Provides a type-safe abstraction over onboarding page indices to avoid error-prone
+ * hardcoded page numbers when conditionally displaying optional pages such as [CALENDAR_GUIDE].
+ */
+enum class OnboardingStep {
+    WELCOME,
+    CONTACTS,
+    NOTIFICATIONS,
+    CALENDAR,
+    CALENDAR_GUIDE,
+    READY;
+
+    companion object {
+        /**
+         * Resolves the ordered sequence of active onboarding steps based on whether the calendar guide
+         * should be displayed.
+         *
+         * @param showCalendarGuide `true` if the user enabled calendar sync and granted calendar permissions,
+         *                          inserting the [CALENDAR_GUIDE] step before [READY].
+         * @return An immutable [List] of [OnboardingStep] representing the configured navigation flow.
+         */
+        fun getSteps(showCalendarGuide: Boolean): List<OnboardingStep> {
+            return buildList {
+                add(WELCOME)
+                add(CONTACTS)
+                add(NOTIFICATIONS)
+                add(CALENDAR)
+                if (showCalendarGuide) {
+                    add(CALENDAR_GUIDE)
+                }
+                add(READY)
+            }
+        }
+    }
+}
 
 @Composable
 fun OnboardingScreen(
@@ -65,27 +98,30 @@ fun OnboardingScreen(
     val context = LocalContext.current
     val activity = context.findActivity()
     val scope = rememberCoroutineScope()
-    val lifecycleOwner = LocalLifecycleOwner.current
+
+    val onPermissionGrantedSuccess: () -> Unit = {
+        viewModel.onIntent(OnboardingIntent.RefreshPermissions)
+        scope.launch {
+            kotlinx.coroutines.delay(AnimDelayPermission.milliseconds)
+            viewModel.onIntent(OnboardingIntent.SetCurrentPage(uiState.currentPage + 1))
+        }
+    }
 
     val contactLauncher =
         rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted ->
-            viewModel.onIntent(OnboardingIntent.RefreshPermissions)
             if (isGranted) {
-                scope.launch {
-                    kotlinx.coroutines.delay(AnimDelayPermission.milliseconds)
-                    viewModel.onIntent(OnboardingIntent.SetCurrentPage(uiState.currentPage + 1))
-                }
+                onPermissionGrantedSuccess()
+            } else {
+                viewModel.onIntent(OnboardingIntent.RefreshPermissions)
             }
         }
 
     val notifLauncher =
         rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted ->
-            viewModel.onIntent(OnboardingIntent.RefreshPermissions)
             if (isGranted) {
-                scope.launch {
-                    kotlinx.coroutines.delay(AnimDelayPermission.milliseconds)
-                    viewModel.onIntent(OnboardingIntent.SetCurrentPage(uiState.currentPage + 1))
-                }
+                onPermissionGrantedSuccess()
+            } else {
+                viewModel.onIntent(OnboardingIntent.RefreshPermissions)
             }
         }
 
@@ -93,25 +129,18 @@ fun OnboardingScreen(
         rememberLauncherForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { permissions ->
             val granted = permissions[Manifest.permission.READ_CALENDAR] == true &&
                     permissions[Manifest.permission.WRITE_CALENDAR] == true
-            viewModel.onIntent(OnboardingIntent.RefreshPermissions)
             if (granted) {
-                scope.launch {
-                    kotlinx.coroutines.delay(AnimDelayPermission.milliseconds)
-                    viewModel.onIntent(OnboardingIntent.SetCurrentPage(uiState.currentPage + 1))
-                }
+                onPermissionGrantedSuccess()
+            } else {
+                viewModel.onIntent(OnboardingIntent.RefreshPermissions)
             }
         }
 
     val permissionHelper = remember(activity) { activity?.let { PermissionHelper(it) } }
 
-    DisposableEffect(lifecycleOwner) {
-        val observer = LifecycleEventObserver { _, event ->
-            if (event == Lifecycle.Event.ON_RESUME) {
-                viewModel.onIntent(OnboardingIntent.RefreshPermissions)
-            }
-        }
-        lifecycleOwner.lifecycle.addObserver(observer)
-        onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
+    LifecycleResumeEffect(Unit) {
+        viewModel.onIntent(OnboardingIntent.RefreshPermissions)
+        onPauseOrDispose { }
     }
 
     val onRequestContactPermission: () -> Unit = {
@@ -120,13 +149,7 @@ fun OnboardingScreen(
         if (shouldShowRationale || !uiState.hasContactPermission) {
             contactLauncher.launch(Manifest.permission.READ_CONTACTS)
         } else {
-            try {
-                val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
-                    data = Uri.fromParts("package", context.packageName, null)
-                }
-                context.startActivity(intent)
-            } catch (_: Exception) {
-            }
+            context.openAppSettings()
         }
     }
 
@@ -138,20 +161,10 @@ fun OnboardingScreen(
             if (shouldShowRationale || !uiState.hasNotificationPermission) {
                 notifLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
             } else {
-                try {
-                    val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
-                        data = Uri.fromParts("package", context.packageName, null)
-                    }
-                    context.startActivity(intent)
-                } catch (_: Exception) {
-                }
+                context.openAppSettings()
             }
         } else {
-            viewModel.onIntent(OnboardingIntent.RefreshPermissions)
-            scope.launch {
-                kotlinx.coroutines.delay(AnimDelayPermission.milliseconds)
-                viewModel.onIntent(OnboardingIntent.SetCurrentPage(uiState.currentPage + 1))
-            }
+            onPermissionGrantedSuccess()
         }
     }
 
@@ -196,25 +209,25 @@ fun OnboardingContent(
     var calendarEnabled by remember { mutableStateOf(value = true) }
 
     val showCalendarGuide = calendarEnabled && uiState.hasCalendarPermission
-    val pagerState = rememberPagerState { if (showCalendarGuide) 6 else 5 }
+    val steps = remember(showCalendarGuide) { OnboardingStep.getSteps(showCalendarGuide) }
+    val pagerState = rememberPagerState { steps.size }
 
-    LaunchedEffect(uiState.currentPage) {
+    LaunchedEffect(uiState.currentPage, pagerState.pageCount) {
         if (uiState.currentPage != pagerState.currentPage && uiState.currentPage in 0 until pagerState.pageCount) {
             pagerState.animateScrollToPage(uiState.currentPage)
         }
     }
 
-    val actualPage =
-        if (!showCalendarGuide && pagerState.currentPage >= 4) pagerState.currentPage + 1 else pagerState.currentPage
+    val currentStep = steps.getOrElse(pagerState.currentPage) { OnboardingStep.WELCOME }
 
     val ambientColor by animateColorAsState(
-        targetValue = when (actualPage) {
-            0 -> MaterialTheme.colorScheme.primaryContainer.copy(alpha = AlphaContainerSubtle)
-            1 -> MaterialTheme.colorScheme.secondaryContainer.copy(alpha = AlphaContainerSubtle)
-            2 -> MaterialTheme.colorScheme.tertiaryContainer.copy(alpha = AlphaContainerSubtle)
-            3 -> MaterialTheme.colorScheme.primaryContainer.copy(alpha = AlphaContainerSubtle)
-            4 -> MaterialTheme.colorScheme.secondaryContainer.copy(alpha = AlphaContainerSubtle)
-            else -> MaterialTheme.colorScheme.tertiaryContainer.copy(alpha = AlphaContainerSubtle)
+        targetValue = when (currentStep) {
+            OnboardingStep.WELCOME -> MaterialTheme.colorScheme.primaryContainer.copy(alpha = AlphaContainerSubtle)
+            OnboardingStep.CONTACTS -> MaterialTheme.colorScheme.secondaryContainer.copy(alpha = AlphaContainerSubtle)
+            OnboardingStep.NOTIFICATIONS -> MaterialTheme.colorScheme.tertiaryContainer.copy(alpha = AlphaContainerSubtle)
+            OnboardingStep.CALENDAR -> MaterialTheme.colorScheme.primaryContainer.copy(alpha = AlphaContainerSubtle)
+            OnboardingStep.CALENDAR_GUIDE -> MaterialTheme.colorScheme.secondaryContainer.copy(alpha = AlphaContainerSubtle)
+            OnboardingStep.READY -> MaterialTheme.colorScheme.tertiaryContainer.copy(alpha = AlphaContainerSubtle)
         },
         animationSpec = tween(durationMillis = AnimDurationMedium),
         label = "ambient_color"
@@ -241,12 +254,13 @@ fun OnboardingContent(
                 OnboardingFooter(
                     currentPage = pagerState.currentPage,
                     pageCount = pagerState.pageCount,
-                    isNextEnabled = when (pagerState.currentPage) {
-                        0 -> true
-                        1 -> !contactsEnabled || uiState.hasContactPermission
-                        2 -> !notificationsEnabled || uiState.hasNotificationPermission
-                        3 -> !calendarEnabled || uiState.hasCalendarPermission
-                        else -> true
+                    isNextEnabled = when (currentStep) {
+                        OnboardingStep.WELCOME -> true
+                        OnboardingStep.CONTACTS -> !contactsEnabled || uiState.hasContactPermission
+                        OnboardingStep.NOTIFICATIONS -> !notificationsEnabled || uiState.hasNotificationPermission
+                        OnboardingStep.CALENDAR -> !calendarEnabled || uiState.hasCalendarPermission
+                        OnboardingStep.CALENDAR_GUIDE,
+                        OnboardingStep.READY -> true
                     },
                     onBack = {
                         onIntent(OnboardingIntent.SetCurrentPage(pagerState.currentPage - 1))
@@ -264,17 +278,16 @@ fun OnboardingContent(
                     .padding(paddingValues),
                 userScrollEnabled = false
             ) { page ->
-                val actualPage = if (!showCalendarGuide && page >= 4) page + 1 else page
-                when (actualPage) {
-                    0 -> WelcomePage()
-                    1 -> ContactsPage(
+                when (steps[page]) {
+                    OnboardingStep.WELCOME -> WelcomePage()
+                    OnboardingStep.CONTACTS -> ContactsPage(
                         enabled = contactsEnabled,
                         onEnabledChange = { contactsEnabled = it },
                         isGranted = uiState.hasContactPermission,
                         onGrant = onRequestContactPermission
                     )
 
-                    2 -> NotificationsPage(
+                    OnboardingStep.NOTIFICATIONS -> NotificationsPage(
                         enabled = notificationsEnabled,
                         onEnabledChange = { notificationsEnabled = it },
                         persistent = uiState.isPersistentNotificationEnabled,
@@ -289,16 +302,16 @@ fun OnboardingContent(
                         onGrant = onRequestNotificationPermission
                     )
 
-                    3 -> CalendarPage(
+                    OnboardingStep.CALENDAR -> CalendarPage(
                         enabled = calendarEnabled,
                         onEnabledChange = { calendarEnabled = it },
                         isGranted = uiState.hasCalendarPermission,
                         onGrant = onRequestCalendarPermission
                     )
 
-                    4 -> CalendarGuidePage()
+                    OnboardingStep.CALENDAR_GUIDE -> CalendarGuidePage()
 
-                    5 -> ReadyPage(
+                    OnboardingStep.READY -> ReadyPage(
                         hasContactPermission = contactsEnabled && uiState.hasContactPermission,
                         notificationsEnabled = notificationsEnabled && uiState.hasNotificationPermission,
                         calendarSyncEnabled = calendarEnabled && uiState.hasCalendarPermission
