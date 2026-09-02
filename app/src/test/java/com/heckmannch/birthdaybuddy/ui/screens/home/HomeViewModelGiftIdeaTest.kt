@@ -65,7 +65,7 @@ class HomeViewModelGiftIdeaTest {
         every { contactRepository.labelsEnabled } returns MutableStateFlow(true)
 
         // Stub use case operator functions returning flows to prevent flow combine hangs
-        every { getContactsUseCase(any(), any(), any(), any(), any()) } returns MutableStateFlow(
+        every { getContactsUseCase(any(), any(), any(), any()) } returns MutableStateFlow(
             emptyList()
         )
         every { getAvailableLabelsUseCase(any(), any(), any(), any()) } returns MutableStateFlow(

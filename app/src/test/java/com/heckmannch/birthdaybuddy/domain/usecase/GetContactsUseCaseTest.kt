@@ -46,7 +46,6 @@ class GetContactsUseCaseTest {
         settings: GetContactsUseCase.LabelSettingsState = defaultSettings,
     ) = useCase(
         contacts = MutableStateFlow(contacts),
-        currentDate = MutableStateFlow(today),
         searchKeywords = MutableStateFlow(keywords),
         selectedLabel = MutableStateFlow(selectedLabel),
         labelSettings = MutableStateFlow(settings),

@@ -205,7 +205,6 @@ class HomeViewModel @Inject constructor(
      */
     private val filteredContacts = getContactsUseCase(
         contacts = contactRepository.allContacts,
-        currentDate = timeRepository.currentDate,
         searchKeywords = searchKeywords,
         selectedLabel = _userUiState.map { it.selectedLabel }.distinctUntilChanged(),
         labelSettings = labelSettingsState,

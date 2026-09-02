@@ -7,7 +7,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flowOn
-import java.time.LocalDate
 import javax.inject.Inject
 
 /**
@@ -41,17 +40,15 @@ class GetContactsUseCase @Inject constructor() {
      */
     operator fun invoke(
         contacts: Flow<List<Contact>>,
-        currentDate: Flow<LocalDate>,
         searchKeywords: Flow<List<String>>,
         selectedLabel: Flow<String?>,
         labelSettings: Flow<LabelSettingsState>,
     ): Flow<List<Contact>> = combine(
         contacts,
-        currentDate,
         searchKeywords,
         selectedLabel,
         labelSettings,
-    ) { rawContacts, _, keywords, label, settingsState ->
+    ) { rawContacts, keywords, label, settingsState ->
         buildContactList(rawContacts, keywords, label, settingsState)
     }.flowOn(Dispatchers.Default)
 

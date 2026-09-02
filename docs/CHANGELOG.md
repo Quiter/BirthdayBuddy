@@ -360,4 +360,7 @@
         - `ScrollbarFadeDurationMs` (300ms), `ScrollbarBubbleDelayMs` (500ms) und `ScrollbarFadeOutDelayMs` (1500ms) für standardisierte Animations- und Verzögerungszeiten.
     - **ScrollbarDefaults:** [`ScrollbarDefaults`](file:///c:/Users/chris/AndroidStudioProjects/BirthdayBuddy/app/src/main/java/com/heckmannch/birthdaybuddy/ui/screens/home/components/list/FastScrollbar.kt) und die Scrollbar-Composables beziehen nun ausnahmslos alle Maße, Alphas, Radien und Elevations aus `com.heckmannch.birthdaybuddy.ui.theme`.
 
-
+342. **Entfernung des ungenutzten Flow-Parameters `currentDate` aus `GetContactsUseCase` (Architecture & Performance):**
+    - **`GetContactsUseCase.kt`:** Der ungenutzte Parameter `currentDate: Flow<LocalDate>` wurde aus der `invoke`-Funktion und dem internen `combine`-Operator entfernt. Dadurch werden unnötige Re-Trigger und Filter-Neuberechnungen des Kontakt-Flows bei reinem Datumswechsel vermieden (die Datumsberechnung für die UI findet erst im `ContactUiMapper` / `uiContacts`-Stream statt).
+    - **`HomeViewModel.kt`:** Aufrufstelle von `getContactsUseCase(...)` bereinigt und `currentDate` entfernt.
+    - **Unit Tests:** `GetContactsUseCaseTest.kt`, `HomeViewModelGiftIdeaTest.kt` und alle abhängigen Tests entsprechend aktualisiert.
