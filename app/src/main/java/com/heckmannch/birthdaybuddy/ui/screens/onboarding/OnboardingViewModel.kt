@@ -4,7 +4,6 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.heckmannch.birthdaybuddy.di.IoDispatcher
-import com.heckmannch.birthdaybuddy.domain.model.AppSettings
 import com.heckmannch.birthdaybuddy.domain.model.NotificationRule
 import com.heckmannch.birthdaybuddy.domain.permission.PermissionChecker
 import com.heckmannch.birthdaybuddy.domain.repository.ContactRepository
@@ -18,7 +17,6 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -61,13 +59,6 @@ class OnboardingViewModel @Inject constructor(
         started = SharingStarted.WhileSubscribed(5000),
         initialValue = OnboardingUiState()
     )
-
-    /**
-     * Emits whether onboarding has been completed, mapped from [AppSettings].
-     */
-    val onboardingCompleted: StateFlow<Boolean?> = notificationRepository.settings
-        .map<AppSettings, Boolean?> { it.onboardingCompleted }
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), null)
 
     /**
      * Dispatches user intents to appropriate handler methods.

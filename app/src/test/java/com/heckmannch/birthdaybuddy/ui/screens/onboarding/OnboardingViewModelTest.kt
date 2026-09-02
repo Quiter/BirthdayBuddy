@@ -7,7 +7,6 @@ import com.heckmannch.birthdaybuddy.domain.permission.PermissionChecker
 import com.heckmannch.birthdaybuddy.domain.repository.ContactRepository
 import com.heckmannch.birthdaybuddy.domain.repository.NotificationRepository
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.runCurrent
@@ -48,12 +47,6 @@ class OnboardingViewModelTest {
                 permissionChecker,
                 mainDispatcherRule.testDispatcher
             )
-    }
-
-    @Test
-    fun `onboardingCompleted should reflect settings from repository`() = runTest {
-        val completed = viewModel.onboardingCompleted.first { it == false }
-        assertThat(completed).isFalse()
     }
 
     @Test
