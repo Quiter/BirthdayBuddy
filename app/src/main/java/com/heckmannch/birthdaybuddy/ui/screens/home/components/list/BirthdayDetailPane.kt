@@ -26,10 +26,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalFocusManager
@@ -57,6 +53,7 @@ import com.heckmannch.birthdaybuddy.ui.theme.SpacingMedium
 import com.heckmannch.birthdaybuddy.ui.theme.SpacingNormal
 import com.heckmannch.birthdaybuddy.ui.theme.SpacingSmall
 import com.heckmannch.birthdaybuddy.ui.theme.birthdayGoldColor
+import com.heckmannch.birthdaybuddy.util.hasYear
 import java.time.LocalDate
 
 /**
@@ -77,15 +74,14 @@ fun BirthdayDetailPane(
     modifier: Modifier = Modifier,
 ) {
     val focusManager = LocalFocusManager.current
-    var showDatePicker by remember { mutableStateOf(false) }
 
-    if (showDatePicker) {
-        BirthdayDatePickerDialog(
-            initialDate = contact.birthday,
-            onDismissRequest = { showDatePicker = false },
-            onDateSelected = { date ->
-                actions.onUpdateBirthday(contact.contactId, date)
-            }
+    val onOpenDatePicker = {
+        val initialDate = contact.birthday ?: LocalDate.now()
+        actions.onOpenBirthdayPicker(
+            contact.lookupKey,
+            contact.birthday?.let { if (it.hasYear) it.year else null },
+            initialDate.monthValue,
+            initialDate.dayOfMonth,
         )
     }
 
@@ -153,10 +149,9 @@ fun BirthdayDetailPane(
                 BirthdayStatus(
                     isToday = contact.isToday,
                     nextAge = contact.nextAge,
-                    daysUntilNext = contact.daysUntilNext
-                ) {
-                    showDatePicker = true
-                }
+                    daysUntilNext = contact.daysUntilNext,
+                    onEditBirthday = onOpenDatePicker,
+                )
 
                 // Labels / Gruppen
                 if (contact.labels.isNotEmpty()) {
@@ -178,7 +173,7 @@ fun BirthdayDetailPane(
                     lookupKey = contact.lookupKey,
                     phoneNumber = contact.phoneNumber,
                     hasBirthday = contact.daysUntilNext != null,
-                    onAddBirthday = { showDatePicker = true },
+                    onAddBirthday = onOpenDatePicker,
                     actions = actions,
                     isCouple = contact.isCouple
                 )

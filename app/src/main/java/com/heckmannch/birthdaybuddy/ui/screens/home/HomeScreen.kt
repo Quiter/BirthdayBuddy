@@ -252,6 +252,9 @@ fun HomeScreen(
                 onUpdateBirthday = { contactId, birthday ->
                     onIntent(HomeIntent.UpdateBirthday(contactId, birthday))
                 },
+                onOpenBirthdayPicker = { key, year, month, day ->
+                    onIntent(HomeIntent.OpenBirthdayPicker(key, year, month, day))
+                },
 
                 // Launching external dialers, messenger, and device contacts editor
                 onOpenContact = contactActions::openContact,

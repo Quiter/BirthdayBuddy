@@ -82,6 +82,8 @@ import com.heckmannch.birthdaybuddy.ui.theme.SpacingNormal
 import com.heckmannch.birthdaybuddy.ui.theme.SpacingSmall
 import com.heckmannch.birthdaybuddy.ui.theme.birthdayGoldColor
 import com.heckmannch.birthdaybuddy.ui.theme.birthdayKidAmberColor
+import com.heckmannch.birthdaybuddy.util.hasYear
+import java.time.LocalDate
 import kotlinx.coroutines.delay
 import kotlin.time.Duration.Companion.milliseconds
 
@@ -98,15 +100,13 @@ fun BirthdayItem(
 ) {
     val haptic = LocalHapticFeedback.current
 
-    val showDatePicker = remember { mutableStateOf(value = false) }
-
-    if (showDatePicker.value) {
-        BirthdayDatePickerDialog(
-            initialDate = contact.birthday,
-            onDismissRequest = { showDatePicker.value = false },
-            onDateSelected = { date ->
-                actions.onUpdateBirthday(contact.contactId, date)
-            }
+    val onOpenDatePicker = {
+        val initialDate = contact.birthday ?: LocalDate.now()
+        actions.onOpenBirthdayPicker(
+            contact.lookupKey,
+            contact.birthday?.let { if (it.hasYear) it.year else null },
+            initialDate.monthValue,
+            initialDate.dayOfMonth,
         )
     }
 
@@ -256,10 +256,9 @@ fun BirthdayItem(
                         BirthdayStatus(
                             isToday = contact.isToday,
                             nextAge = contact.nextAge,
-                            daysUntilNext = contact.daysUntilNext
-                        ) {
-                            showDatePicker.value = true
-                        }
+                            daysUntilNext = contact.daysUntilNext,
+                            onEditBirthday = onOpenDatePicker,
+                        )
                     },
                     colors = ListItemDefaults.colors(containerColor = Color.Transparent)
                 )
@@ -277,7 +276,7 @@ fun BirthdayItem(
                             lookupKey = contact.lookupKey,
                             phoneNumber = contact.phoneNumber,
                             hasBirthday = contact.daysUntilNext != null,
-                            onAddBirthday = { showDatePicker.value = true },
+                            onAddBirthday = onOpenDatePicker,
                             actions = actions,
                             isCouple = contact.isCouple
                         )
@@ -401,6 +400,7 @@ fun BirthdayItemPreview() {
         onUpdateGiftIdeaText = { _, _, _ -> },
         onDeleteGiftIdea = { _, _ -> },
         onUpdateBirthday = { _, _ -> },
+        onOpenBirthdayPicker = { _, _, _, _ -> },
         onOpenContact = { _, _ -> },
         onDial = {},
         onSendSms = {},
