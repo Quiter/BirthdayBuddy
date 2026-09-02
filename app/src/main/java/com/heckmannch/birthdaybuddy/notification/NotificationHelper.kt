@@ -11,6 +11,7 @@ import com.heckmannch.birthdaybuddy.R
 import com.heckmannch.birthdaybuddy.domain.model.Contact
 import com.heckmannch.birthdaybuddy.domain.model.EventType
 import com.heckmannch.birthdaybuddy.domain.repository.NotificationRepository
+import com.heckmannch.birthdaybuddy.domain.util.NotificationKeyUtils
 import com.heckmannch.birthdaybuddy.util.IntentExtras
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.first
@@ -78,11 +79,7 @@ class NotificationHelper @Inject constructor(
         )
 
         val dbKeys = contacts.map { contact ->
-            when (eventType) {
-                EventType.ANNIVERSARY -> "anniversary:${contact.lookupKey}"
-                EventType.NAME_DAY -> "nameday:${contact.lookupKey}"
-                else -> contact.lookupKey
-            }
+            NotificationKeyUtils.encodeKey(contact.lookupKey, eventType)
         }.toTypedArray()
 
         // Action-Intent: Später erinnern (Snooze)

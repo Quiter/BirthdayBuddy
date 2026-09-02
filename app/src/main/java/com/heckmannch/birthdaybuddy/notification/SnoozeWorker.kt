@@ -6,6 +6,7 @@ import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
 import com.heckmannch.birthdaybuddy.domain.model.EventType
 import com.heckmannch.birthdaybuddy.domain.repository.ContactRepository
+import com.heckmannch.birthdaybuddy.domain.util.NotificationKeyUtils
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
 import kotlinx.coroutines.flow.first
@@ -23,7 +24,7 @@ class SnoozeWorker @AssistedInject constructor(
         val pendingId = inputData.getInt(NotificationActions.EXTRA_PENDING_ID, -1)
         val lookupKeys = inputData.getStringArray(NotificationActions.EXTRA_LOOKUP_KEYS) ?: return Result.failure()
 
-        val rawKeys = lookupKeys.map { it.substringAfter(":") }.toSet()
+        val rawKeys = lookupKeys.map { NotificationKeyUtils.extractRawKey(it) }.toSet()
         val allContacts = contactRepository.allContacts.first()
         val targetContacts = allContacts.filter { it.lookupKey in rawKeys }
 
@@ -37,11 +38,7 @@ class SnoozeWorker @AssistedInject constructor(
                 }
             } else {
                 val firstKey = lookupKeys.firstOrNull() ?: ""
-                when {
-                    firstKey.startsWith("anniversary:") -> EventType.ANNIVERSARY
-                    firstKey.startsWith("nameday:") -> EventType.NAME_DAY
-                    else -> EventType.BIRTHDAY
-                }
+                NotificationKeyUtils.extractEventType(firstKey)
             }
             notificationHelper.showBirthdayNotification(
                 targetContacts,

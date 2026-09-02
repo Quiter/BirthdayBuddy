@@ -7,6 +7,7 @@ import androidx.work.WorkManager
 import com.heckmannch.birthdaybuddy.domain.model.EventType
 import com.heckmannch.birthdaybuddy.domain.model.NotificationRule
 import com.heckmannch.birthdaybuddy.domain.repository.NotificationScheduler
+import com.heckmannch.birthdaybuddy.domain.util.NotificationKeyUtils
 import com.heckmannch.birthdaybuddy.notification.NotificationActions
 import com.heckmannch.birthdaybuddy.notification.NotificationWorker
 import com.heckmannch.birthdaybuddy.notification.SnoozeWorker
@@ -27,11 +28,7 @@ class NotificationSchedulerImpl @Inject constructor(
 
     override fun snoozeNotification(pendingId: Int, daysBefore: Int, lookupKeys: List<String>) {
         val firstKey = lookupKeys.firstOrNull() ?: ""
-        val eventType = when {
-            firstKey.startsWith("anniversary:") -> EventType.ANNIVERSARY
-            firstKey.startsWith("nameday:") -> EventType.NAME_DAY
-            else -> EventType.BIRTHDAY
-        }
+        val eventType = NotificationKeyUtils.extractEventType(firstKey)
         val data = Data.Builder()
             .putInt(NotificationActions.EXTRA_DAYS_BEFORE, daysBefore)
             .putInt(NotificationActions.EXTRA_PENDING_ID, pendingId)

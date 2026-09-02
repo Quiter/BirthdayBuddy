@@ -5,6 +5,7 @@ import com.heckmannch.birthdaybuddy.domain.model.EventType
 import com.heckmannch.birthdaybuddy.domain.repository.ContactRepository
 import com.heckmannch.birthdaybuddy.domain.repository.NotificationRepository
 import com.heckmannch.birthdaybuddy.domain.util.ContactFilterLogic
+import com.heckmannch.birthdaybuddy.domain.util.NotificationKeyUtils
 import com.heckmannch.birthdaybuddy.util.toYear
 import dagger.Reusable
 import kotlinx.coroutines.flow.first
@@ -76,7 +77,7 @@ class GetPendingNotificationsUseCase @Inject constructor(
                 } ?: false
             }
             for (contact in birthdays) {
-                val dbKey = contact.lookupKey
+                val dbKey = NotificationKeyUtils.encodeKey(contact.lookupKey, EventType.BIRTHDAY)
                 if (!scheduledKeys.contains(dbKey)) {
                     pendingEvents.add(
                         PendingNotificationEvent(
@@ -107,8 +108,8 @@ class GetPendingNotificationsUseCase @Inject constructor(
 
                     if (spouse != null) {
                         val dbKeys = listOf(
-                            "anniversary:${contact.lookupKey}",
-                            "anniversary:${spouse.lookupKey}"
+                            NotificationKeyUtils.encodeKey(contact.lookupKey, EventType.ANNIVERSARY),
+                            NotificationKeyUtils.encodeKey(spouse.lookupKey, EventType.ANNIVERSARY)
                         )
                         val anyScheduled = dbKeys.any { dbKey -> scheduledKeys.contains(dbKey) }
                         if (!anyScheduled) {
@@ -124,7 +125,7 @@ class GetPendingNotificationsUseCase @Inject constructor(
                         processedAnniversaries.add(contact.lookupKey)
                         processedAnniversaries.add(spouse.lookupKey)
                     } else {
-                        val dbKey = "anniversary:${contact.lookupKey}"
+                        val dbKey = NotificationKeyUtils.encodeKey(contact.lookupKey, EventType.ANNIVERSARY)
                         if (!scheduledKeys.contains(dbKey)) {
                             pendingEvents.add(
                                 PendingNotificationEvent(
@@ -146,7 +147,7 @@ class GetPendingNotificationsUseCase @Inject constructor(
                     } ?: false
                 }
                 for (contact in nameDays) {
-                    val dbKey = "nameday:${contact.lookupKey}"
+                    val dbKey = NotificationKeyUtils.encodeKey(contact.lookupKey, EventType.NAME_DAY)
                     if (!scheduledKeys.contains(dbKey)) {
                         pendingEvents.add(
                             PendingNotificationEvent(
