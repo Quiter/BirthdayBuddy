@@ -10,6 +10,7 @@ import com.heckmannch.birthdaybuddy.data.local.SettingsDatabase
 import com.heckmannch.birthdaybuddy.data.mapper.AppSettingsMapper
 import com.heckmannch.birthdaybuddy.data.mapper.NotificationRuleMapper
 import com.heckmannch.birthdaybuddy.data.mapper.PendingNotificationMapper
+import com.heckmannch.birthdaybuddy.domain.model.EventType
 import com.heckmannch.birthdaybuddy.domain.model.NotificationRule
 import com.heckmannch.birthdaybuddy.domain.repository.NotificationRepository
 import com.heckmannch.birthdaybuddy.domain.repository.NotificationScheduler
@@ -40,6 +41,15 @@ class NotificationRepositoryTest {
                 pendingId: Int,
                 daysBefore: Int,
                 lookupKeys: List<String>
+            ) {
+            }
+
+            override fun reshowNotification(
+                pendingId: Int,
+                daysBefore: Int,
+                lookupKeys: List<String>,
+                eventType: EventType,
+                delayMillis: Long
             ) {
             }
         }

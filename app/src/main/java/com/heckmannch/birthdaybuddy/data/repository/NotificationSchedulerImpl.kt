@@ -47,4 +47,26 @@ class NotificationSchedulerImpl @Inject constructor(
 
         WorkManager.getInstance(context).enqueue(snoozeRequest)
     }
+
+    override fun reshowNotification(
+        pendingId: Int,
+        daysBefore: Int,
+        lookupKeys: List<String>,
+        eventType: EventType,
+        delayMillis: Long
+    ) {
+        val data = Data.Builder()
+            .putInt(NotificationActions.EXTRA_DAYS_BEFORE, daysBefore)
+            .putInt(NotificationActions.EXTRA_PENDING_ID, pendingId)
+            .putStringArray(NotificationActions.EXTRA_LOOKUP_KEYS, lookupKeys.toTypedArray())
+            .putString(NotificationActions.EXTRA_EVENT_TYPE, eventType.name)
+            .build()
+
+        val reShowRequest = OneTimeWorkRequestBuilder<SnoozeWorker>()
+            .setInitialDelay(delayMillis, TimeUnit.MILLISECONDS)
+            .setInputData(data)
+            .build()
+
+        WorkManager.getInstance(context).enqueue(reShowRequest)
+    }
 }
