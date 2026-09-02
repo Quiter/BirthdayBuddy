@@ -42,7 +42,12 @@ class OnboardingViewModelTest {
         whenever(permissionChecker.hasNotificationPermission()).thenReturn(false)
         whenever(permissionChecker.hasCalendarPermission()).thenReturn(false)
         viewModel =
-            OnboardingViewModel(notificationRepository, contactRepository, permissionChecker)
+            OnboardingViewModel(
+                notificationRepository,
+                contactRepository,
+                permissionChecker,
+                mainDispatcherRule.testDispatcher
+            )
     }
 
     @Test
@@ -58,7 +63,12 @@ class OnboardingViewModelTest {
         whenever(permissionChecker.hasCalendarPermission()).thenReturn(false)
 
         val localViewModel =
-            OnboardingViewModel(notificationRepository, contactRepository, permissionChecker)
+            OnboardingViewModel(
+                notificationRepository,
+                contactRepository,
+                permissionChecker,
+                mainDispatcherRule.testDispatcher
+            )
         val collectJob = launch { localViewModel.uiState.collect {} }
         runCurrent()
 
