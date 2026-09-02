@@ -12,6 +12,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.rotate
 import androidx.compose.ui.util.lerp
@@ -20,7 +21,7 @@ import kotlin.random.Random
 private data class Particle(
     val x: Float,
     val y: Float,
-    val size: Float,
+    val size: Size,
     val color: Color,
     val velocityX: Float,
     val velocityY: Float,
@@ -47,10 +48,11 @@ fun ConfettiEffect(
 
     val particles = remember(colors) {
         List(particleCount) {
+            val particleSize = Random.nextFloat() * 10f + 5f
             Particle(
                 x = Random.nextFloat(),
                 y = Random.nextFloat() * -1f,
-                size = Random.nextFloat() * 10f + 5f,
+                size = Size(particleSize, particleSize),
                 color = colors.random(),
                 velocityX = (Random.nextFloat() - 0.5f) * 0.2f,
                 velocityY = Random.nextFloat() * 0.5f + 0.5f,
@@ -70,7 +72,7 @@ fun ConfettiEffect(
                 drawRect(
                     color = particle.color,
                     topLeft = Offset(currentX, currentY),
-                    size = androidx.compose.ui.geometry.Size(particle.size, particle.size)
+                    size = particle.size
                 )
             }
         }

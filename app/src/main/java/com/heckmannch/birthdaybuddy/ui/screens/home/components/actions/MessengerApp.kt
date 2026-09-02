@@ -68,7 +68,16 @@ enum class MessengerApp(
     companion object {
         private var cachedInstalled: List<MessengerApp>? = null
 
-        fun getInstalledMessengers(context: Context): List<MessengerApp> {
+        fun clearCache() {
+            synchronized(this) {
+                cachedInstalled = null
+            }
+        }
+
+        fun getInstalledMessengers(context: Context, forceRefresh: Boolean = false): List<MessengerApp> {
+            if (forceRefresh) {
+                clearCache()
+            }
             return cachedInstalled ?: synchronized(this) {
                 cachedInstalled ?: run {
                     val pm = context.packageManager

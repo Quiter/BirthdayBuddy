@@ -48,7 +48,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalHapticFeedback
@@ -169,8 +168,7 @@ fun BirthdayItem(
         modifier = modifier
             .fillMaxWidth()
             .padding(horizontal = SpacingNormal)
-            .padding(bottom = SpacingSmall)
-            .graphicsLayer(),
+            .padding(bottom = SpacingSmall),
         colors = CardDefaults.cardColors(
             containerColor = containerColor,
         ),

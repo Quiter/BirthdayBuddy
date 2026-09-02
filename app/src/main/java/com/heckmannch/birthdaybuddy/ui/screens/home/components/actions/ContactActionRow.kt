@@ -56,7 +56,7 @@ fun ContactActionRow(
     val context = LocalContext.current
     val installedMessengers = remember(context) {
         MessengerApp.getInstalledMessengers(context)
-            .sortedBy { it.name }
+            .sortedBy { context.getString(it.labelResId) }
     }
 
     Row(

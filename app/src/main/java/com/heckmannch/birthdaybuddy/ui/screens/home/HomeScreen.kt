@@ -141,11 +141,13 @@ fun HomeScreen(
         val contacts = uiState.contacts
         if (!contacts.isNullOrEmpty()) {
             withContext(Dispatchers.IO) {
-                contacts.forEach { contact ->
+                // Limit prefetching to the top most relevant entries to prevent I/O pool starvation and memory cache bloat
+                contacts.take(40).forEach { contact ->
                     contact.imageUri?.let { uri ->
                         val cacheKey = getAvatarCacheKey(uri, contact.lookupKey)
                         val request = ImageRequest.Builder(context)
                             .data(uri)
+                            .size(coil3.size.Size(256, 256))
                             .memoryCacheKey(cacheKey)
                             .diskCacheKey(cacheKey)
                             .build()
@@ -155,6 +157,7 @@ fun HomeScreen(
                         val secondCacheKey = getAvatarCacheKey(secondUri, null)
                         val request = ImageRequest.Builder(context)
                             .data(secondUri)
+                            .size(coil3.size.Size(256, 256))
                             .memoryCacheKey(secondCacheKey)
                             .diskCacheKey(secondCacheKey)
                             .build()

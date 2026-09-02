@@ -156,8 +156,9 @@ fun BirthdayDatePickerDialog(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     // Tag-Walze
+                    val dayItems = remember(maxDays) { (1..maxDays).map { "%02d".format(it) } }
                     WheelPicker(
-                        items = (1..maxDays).map { "%02d".format(it) },
+                        items = dayItems,
                         selectedIndex = (selectedDay - 1).coerceIn(0, maxDays - 1),
                         onIndexSelected = { selectedDay = it + 1 },
                         modifier = Modifier.weight(1f)
