@@ -4,6 +4,7 @@ import com.heckmannch.birthdaybuddy.domain.model.Contact
 import com.heckmannch.birthdaybuddy.domain.model.EventType
 import com.heckmannch.birthdaybuddy.domain.repository.ContactRepository
 import com.heckmannch.birthdaybuddy.domain.repository.NotificationRepository
+import com.heckmannch.birthdaybuddy.domain.util.ContactFilterLogic
 import com.heckmannch.birthdaybuddy.util.toYear
 import dagger.Reusable
 import kotlinx.coroutines.flow.first
@@ -53,16 +54,12 @@ class GetPendingNotificationsUseCase @Inject constructor(
         if (currentRules.isEmpty()) return emptyList()
 
         val labelsEnabled = contactRepository.labelsEnabled.first()
-        val disabledNotificationLabels =
-            if (!labelsEnabled) emptySet() else contactRepository.labelConfigs.first()
-                .asSequence()
-                .filter { it.isIgnored || !it.notificationsEnabled }
-                .map { it.name }
-                .toSet()
-
-        val allContacts = contactRepository.allContacts.first().filter { contact ->
-            !labelsEnabled || contact.labels.none { it in disabledNotificationLabels }
-        }
+        val labelConfigs = if (!labelsEnabled) emptyList() else contactRepository.labelConfigs.first()
+        val allContacts = ContactFilterLogic.filterForNotifications(
+            contacts = contactRepository.allContacts.first(),
+            labelsEnabled = labelsEnabled,
+            configs = labelConfigs
+        )
         val pendingEvents = mutableListOf<PendingNotificationEvent>()
 
         for (rule in currentRules) {

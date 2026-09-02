@@ -324,3 +324,11 @@
     - **Refactoring:** Die Methoden `updateGiftIdeas`, `linkAsCouple` und `unlinkCouple` wurden refaktoriert, um `executeWithSettingsRollback` zu nutzen und redundanten Transaktions- und Rollback-Code zu eliminieren.
     - **Testing:** Ergänzung von Unit-Tests in [`ContactRepositoryImplTest.kt`](file:///c:/Users/chris/AndroidStudioProjects/BirthdayBuddy/app/src/test/java/com/heckmannch/birthdaybuddy/data/repository/ContactRepositoryImplTest.kt) zur Verifikation von `linkAsCouple`, `unlinkCouple` und der Rollback-Mechanismen bei Cache-Fehlern.
 
+336. **Korrektur & Zentralisierung der Multi-Label-Filterlogik für Benachrichtigungen & Widget (Bugfix & Domain):**
+    - **Problem:** Wenn ein Kontakt mehreren Labels zugeordnet war und mindestens eines davon verborgen war, wurde der Kontakt fälschlicherweise komplett von Benachrichtigungen und dem Widget ausgeschlossen, selbst wenn er weiteren aktiven Labels zugeordnet war.
+    - **ContactFilterLogic in `domain.util`:** Erstellung der zentralen Geschäftslogik-Klasse [`ContactFilterLogic.kt`](file:///c:/Users/chris/AndroidStudioProjects/BirthdayBuddy/app/src/main/java/com/heckmannch/birthdaybuddy/domain/util/ContactFilterLogic.kt) zur Single-Source-of-Truth-Berechnung von ignorier- und verbergensbasierten Kontaktfiltern (frei von UI- und Android-Framework-Abhängigkeiten).
+    - **GetPendingNotificationsUseCase & BirthdayWidget:** Beide Komponenten delegieren nun an `ContactFilterLogic.filterForNotifications` und `ContactFilterLogic.filterForWidget`.
+    - **Testing:** Ergänzung von Unit-Tests in [`ContactFilterLogicTest.kt`](file:///c:/Users/chris/AndroidStudioProjects/BirthdayBuddy/app/src/test/java/com/heckmannch/birthdaybuddy/domain/util/ContactFilterLogicTest.kt) und [`GetPendingNotificationsUseCaseTest.kt`](file:///c:/Users/chris/AndroidStudioProjects/BirthdayBuddy/app/src/test/java/com/heckmannch/birthdaybuddy/domain/usecase/GetPendingNotificationsUseCaseTest.kt) zur Validierung aller Multi-Label-Kombinationen.
+
+
+

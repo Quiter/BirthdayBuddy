@@ -777,4 +777,100 @@ class GetPendingNotificationsUseCaseTest {
             assertThat(event.daysBefore).isEqualTo(0)
             assertThat(event.dbKeys).containsExactly("key_today")
         }
+
+    @Test
+    fun `when contact has multiple labels and at least one is ignored, contact is ignored`() = runTest {
+        // Arrange
+        val settings = AppSettings(notificationsEnabled = true)
+        val rule = NotificationRule(id = 1, daysBefore = 0, hour = 9, minute = 0)
+        val contact = Contact(
+            contactId = "1",
+            lookupKey = "key1",
+            fullName = "Multi Label Contact",
+            birthday = LocalDate.of(1990, 5, 15),
+            labels = listOf("Family", "Ex-Colleagues")
+        )
+        val labelConfigs = listOf(
+            LabelConfig(name = "Family", isIgnored = false, notificationsEnabled = true),
+            LabelConfig(name = "Ex-Colleagues", isIgnored = true, notificationsEnabled = true)
+        )
+
+        whenever(notificationRepository.settings).thenReturn(flowOf(settings))
+        whenever(notificationRepository.getAllRulesImmediate()).thenReturn(listOf(rule))
+        whenever(contactRepository.allContacts).thenReturn(flowOf(listOf(contact)))
+        whenever(contactRepository.labelsEnabled).thenReturn(flowOf(true))
+        whenever(contactRepository.labelConfigs).thenReturn(flowOf(labelConfigs))
+        whenever(notificationRepository.hasNotificationBeenScheduled(any(), any(), any())).thenReturn(false)
+
+        // Act
+        val result = useCase(baseTime)
+
+        // Assert
+        assertThat(result).isEmpty()
+    }
+
+    @Test
+    fun `when contact has both hidden and non-hidden labels and none are ignored, returns notification`() = runTest {
+        // Arrange
+        val settings = AppSettings(notificationsEnabled = true)
+        val rule = NotificationRule(id = 1, daysBefore = 0, hour = 9, minute = 0)
+        val contact = Contact(
+            contactId = "1",
+            lookupKey = "key1",
+            fullName = "Multi Label Contact",
+            birthday = LocalDate.of(1990, 5, 15),
+            labels = listOf("Friends", "Work")
+        )
+        val labelConfigs = listOf(
+            LabelConfig(name = "Friends", isIgnored = false, notificationsEnabled = true),
+            LabelConfig(name = "Work", isIgnored = false, notificationsEnabled = false)
+        )
+
+        whenever(notificationRepository.settings).thenReturn(flowOf(settings))
+        whenever(notificationRepository.getAllRulesImmediate()).thenReturn(listOf(rule))
+        whenever(contactRepository.allContacts).thenReturn(flowOf(listOf(contact)))
+        whenever(contactRepository.labelsEnabled).thenReturn(flowOf(true))
+        whenever(contactRepository.labelConfigs).thenReturn(flowOf(labelConfigs))
+        whenever(notificationRepository.hasNotificationBeenScheduled(eq(2024), eq(0), eq("key1"))).thenReturn(false)
+
+        // Act
+        val result = useCase(baseTime)
+
+        // Assert
+        assertThat(result).hasSize(1)
+        val event = result[0]
+        assertThat(event.eventType).isEqualTo(EventType.BIRTHDAY)
+        assertThat(event.contacts).containsExactly(contact)
+    }
+
+    @Test
+    fun `when contact has exclusively hidden labels, skips notification`() = runTest {
+        // Arrange
+        val settings = AppSettings(notificationsEnabled = true)
+        val rule = NotificationRule(id = 1, daysBefore = 0, hour = 9, minute = 0)
+        val contact = Contact(
+            contactId = "1",
+            lookupKey = "key1",
+            fullName = "Hidden Labels Contact",
+            birthday = LocalDate.of(1990, 5, 15),
+            labels = listOf("Work", "Gym")
+        )
+        val labelConfigs = listOf(
+            LabelConfig(name = "Work", isIgnored = false, notificationsEnabled = false),
+            LabelConfig(name = "Gym", isIgnored = false, notificationsEnabled = false)
+        )
+
+        whenever(notificationRepository.settings).thenReturn(flowOf(settings))
+        whenever(notificationRepository.getAllRulesImmediate()).thenReturn(listOf(rule))
+        whenever(contactRepository.allContacts).thenReturn(flowOf(listOf(contact)))
+        whenever(contactRepository.labelsEnabled).thenReturn(flowOf(true))
+        whenever(contactRepository.labelConfigs).thenReturn(flowOf(labelConfigs))
+        whenever(notificationRepository.hasNotificationBeenScheduled(any(), any(), any())).thenReturn(false)
+
+        // Act
+        val result = useCase(baseTime)
+
+        // Assert
+        assertThat(result).isEmpty()
+    }
 }

@@ -38,6 +38,7 @@ import com.heckmannch.birthdaybuddy.MainActivity
 import com.heckmannch.birthdaybuddy.R
 import com.heckmannch.birthdaybuddy.domain.model.Contact
 import com.heckmannch.birthdaybuddy.domain.repository.ContactRepository
+import com.heckmannch.birthdaybuddy.domain.util.ContactFilterLogic
 import com.heckmannch.birthdaybuddy.ui.theme.SpacingExtraSmall
 import com.heckmannch.birthdaybuddy.ui.theme.SpacingMedium
 import com.heckmannch.birthdaybuddy.ui.theme.SpacingSmall
@@ -78,16 +79,11 @@ class BirthdayWidget : GlanceAppWidget() {
                     repository.labelConfigs,
                     repository.labelsEnabled,
                 ) { list, configs, labelsEnabled ->
-                    val disabledLabels = if (!labelsEnabled) emptySet() else configs.asSequence()
-                        .filter { it.isIgnored || !it.showInWidget }
-                        .map { it.name }
-                        .toSet()
-                    list.asSequence()
-                        .filter { contact ->
-                            (contact.birthday != null) && contact.labels.none { it in disabledLabels }
-                        }
-                        .sortedBy { it.birthday!!.safeDaysUntilNext() }
-                        .toList()
+                    ContactFilterLogic.filterForWidget(
+                        contacts = list,
+                        labelsEnabled = labelsEnabled,
+                        configs = configs
+                    ).sortedBy { it.birthday!!.safeDaysUntilNext() }
                 }.collect { value = it }
             }
 

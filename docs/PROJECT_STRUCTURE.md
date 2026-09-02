@@ -73,6 +73,8 @@
     - `SyncCalendarUseCase.kt`: Synchronisiert Geburtstage, Hochzeitstage und Namenstage in den Systemkalender, sofern aktiviert.
     - `SetCalendarSyncEnabledUseCase.kt`: Konfiguriert die Kalendersynchronisation und führt Initialisierungs- oder Löschaktionen durch.
     - `UpdateCalendarColorUseCase.kt`: Aktualisiert die Systemkalenderfarbe für einen bestimmten Ereignistyp.
+- ### 📁 Utilities (`domain.util`)
+    - `ContactFilterLogic.kt`: Reines Domänen-Hilfsobjekt zur Kapselung der Multi-Label-Filterregeln (Ignorieren und Verbergen) für Benachrichtigungen und Widgets.
 - ### 📁 AppFunctions (`domain.appfunctions`) — *Android 16+ / AI-Agent Integration*
     - `BirthdayAppFunctionService.kt`: Abstrakte `AppFunctionService`-Unterklasse (alpha10-API), annotiert mit `@AppFunctionServiceEntryPoint` und `@AndroidEntryPoint`. Stellt vier `@AppFunction`-Methoden bereit, die das Android-System und KI-Agenten (Google Assistant, Gemini) aufrufen können, ohne die App-UI zu öffnen. KSP generiert zur Compile-Zeit die konkrete Unterklasse `BirthdayBuddyGeneratedAppFunctionService` sowie das Assets-XML. Abhängigkeiten (`ContactRepository`, `IoDispatcher`) werden per Hilt field-injiziert.
     - `model/UpcomingBirthday.kt`: `@AppFunctionSerializable` Datenklasse für einen Geburtstags-Treffer (Rückgabe von `getUpcomingBirthdays`).
