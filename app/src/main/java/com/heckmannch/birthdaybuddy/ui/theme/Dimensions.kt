@@ -47,8 +47,11 @@ val ContactItemSkeletonHeight = 72.dp
 val ScrollbarTouchTargetWidth = 150.dp
 val ScrollbarThumbWidth = 26.dp
 val ScrollbarThumbHeight = 44.dp
+val ScrollbarThumbElevation = 4.dp
 val ScrollbarBubbleElevation = 8.dp
 val ScrollbarArrowSize = 14.dp
+val ScrollbarEstimatedHeaderHeight = 56.dp
+val ScrollbarEstimatedContactHeight = 80.dp
 val WheelPickerItemHeight = 48.dp
 
 /**
@@ -59,6 +62,7 @@ const val AlphaEmphasisMedium = 0.7f
 const val AlphaEmphasisLow = 0.5f
 const val AlphaEmphasisSubtle = 0.3f
 const val AlphaEmphasisDisabled = 0.38f
+const val AlphaScrollbarThumb = 0.9f
 const val AlphaContainerSubtle = 0.15f
 const val AlphaContainerLow = 0.1f
 const val AlphaContainerMuted = 0.08f
@@ -67,8 +71,12 @@ const val AlphaSurfaceContainerLow = 0.5f
 const val AlphaSurfaceContainerHigh = 0.6f
 const val AlphaBorderSubtle = 0.2f
 val ColorPickerHandleInnerRadius = 6.dp
+const val AnimDurationShort = 300   // Short animation duration in ms
 const val AnimDurationMedium = 500  // Medium animation duration in ms
 const val AnimDelayPermission = 300 // Delay before requesting permissions after navigation (ms)
+const val ScrollbarFadeDurationMs = 300
+const val ScrollbarBubbleDelayMs = 500L
+const val ScrollbarFadeOutDelayMs = 1500L
 
 /**
  * Onboarding Layout & Illustration Specific tokens.
@@ -107,6 +115,7 @@ val BorderWidthThin = 1.dp
 val BorderWidthThick = 2.dp
 val ChipPaddingHorizontal = 6.dp // Horizontal padding inside chips
 val ChipPaddingVertical = 2.dp   // Vertical padding inside chips
+val CardCornerRadiusSmall = 4.dp
 val CardCornerRadiusNormal = 16.dp
 val CardCornerRadiusLarge = 24.dp
 val WidgetCornerRadius = 12.dp

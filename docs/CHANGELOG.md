@@ -351,4 +351,13 @@
     - **Android 16+ AppFunctions:** Vollständige Dokumentation der vier on-device KI-Schnittstellen (`getUpcomingBirthdays`, `getContactBirthday`, `sendBirthdayMessage`, `addBirthdayToContact`).
     - **Evergreen Stack & Testing:** Übersichtstabelle der Bibliotheken gemäß Version Catalog (`libs.versions.toml`) sowie detaillierte Gliederung der Teststrategie (325+ JVM Unit-Tests, Roborazzi Screenshot-Tests, instrumentierte Room-Migrationen V5->V10).
 
+341. **Zentralisierung der Scrollbar-Design-Tokens in `Dimensions.kt` (Theme & Clean Code):**
+    - **Extraktion von Design-Tokens:** Beseitigung aller hardcodierten Werte in [`FastScrollbar.kt`](file:///c:/Users/chris/AndroidStudioProjects/BirthdayBuddy/app/src/main/java/com/heckmannch/birthdaybuddy/ui/screens/home/components/list/FastScrollbar.kt) und zentrale Definition in [`Dimensions.kt`](file:///c:/Users/chris/AndroidStudioProjects/BirthdayBuddy/app/src/main/java/com/heckmannch/birthdaybuddy/ui/theme/Dimensions.kt):
+        - `ScrollbarEstimatedHeaderHeight` (56.dp) & `ScrollbarEstimatedContactHeight` (80.dp) für das lineare Höhengeometriemodell.
+        - `ScrollbarThumbElevation` (4.dp), wodurch die versehentliche Verwendung von `SearchBarFocusedElevation` abgelöst wurde.
+        - `CardCornerRadiusSmall` (4.dp) für die Abrundungen des Scrollbar-Bubbles.
+        - `AlphaScrollbarThumb` (0.9f) für die Daumentransparenz.
+        - `ScrollbarFadeDurationMs` (300ms), `ScrollbarBubbleDelayMs` (500ms) und `ScrollbarFadeOutDelayMs` (1500ms) für standardisierte Animations- und Verzögerungszeiten.
+    - **ScrollbarDefaults:** [`ScrollbarDefaults`](file:///c:/Users/chris/AndroidStudioProjects/BirthdayBuddy/app/src/main/java/com/heckmannch/birthdaybuddy/ui/screens/home/components/list/FastScrollbar.kt) und die Scrollbar-Composables beziehen nun ausnahmslos alle Maße, Alphas, Radien und Elevations aus `com.heckmannch.birthdaybuddy.ui.theme`.
+
 

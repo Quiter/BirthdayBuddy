@@ -48,14 +48,21 @@ import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.heckmannch.birthdaybuddy.ui.model.ContactUiModel
+import com.heckmannch.birthdaybuddy.ui.theme.AlphaScrollbarThumb
 import com.heckmannch.birthdaybuddy.ui.theme.CardCornerRadiusLarge
+import com.heckmannch.birthdaybuddy.ui.theme.CardCornerRadiusSmall
 import com.heckmannch.birthdaybuddy.ui.theme.IconSizeExtraLarge
 import com.heckmannch.birthdaybuddy.ui.theme.ScrollbarArrowSize
+import com.heckmannch.birthdaybuddy.ui.theme.ScrollbarBubbleDelayMs
 import com.heckmannch.birthdaybuddy.ui.theme.ScrollbarBubbleElevation
+import com.heckmannch.birthdaybuddy.ui.theme.ScrollbarEstimatedContactHeight
+import com.heckmannch.birthdaybuddy.ui.theme.ScrollbarEstimatedHeaderHeight
+import com.heckmannch.birthdaybuddy.ui.theme.ScrollbarFadeDurationMs
+import com.heckmannch.birthdaybuddy.ui.theme.ScrollbarFadeOutDelayMs
+import com.heckmannch.birthdaybuddy.ui.theme.ScrollbarThumbElevation
 import com.heckmannch.birthdaybuddy.ui.theme.ScrollbarThumbHeight
 import com.heckmannch.birthdaybuddy.ui.theme.ScrollbarThumbWidth
 import com.heckmannch.birthdaybuddy.ui.theme.ScrollbarTouchTargetWidth
-import com.heckmannch.birthdaybuddy.ui.theme.SearchBarFocusedElevation
 import com.heckmannch.birthdaybuddy.ui.theme.SpacingExtraSmall
 import com.heckmannch.birthdaybuddy.ui.theme.SpacingTiny
 import com.heckmannch.birthdaybuddy.ui.theme.WidgetCornerRadius
@@ -65,17 +72,19 @@ import kotlin.time.Duration.Companion.milliseconds
 internal object ScrollbarDefaults {
     val BarWidth = ScrollbarTouchTargetWidth
     val ThumbSize = IconSizeExtraLarge
-    const val BUBBLE_DELAY = 500L
-    const val FADE_OUT_DELAY_MS = 1500L
-    val EstimatedHeaderHeight = 56.dp
-    val EstimatedContactHeight = 80.dp
-    const val AlphaThumb = 0.9f
+    const val BUBBLE_DELAY = ScrollbarBubbleDelayMs
+    const val FADE_OUT_DELAY_MS = ScrollbarFadeOutDelayMs
+    val EstimatedHeaderHeight = ScrollbarEstimatedHeaderHeight
+    val EstimatedContactHeight = ScrollbarEstimatedContactHeight
+    const val AlphaThumb = AlphaScrollbarThumb
     val ThumbWidth = ScrollbarThumbWidth
     val ThumbHeight = ScrollbarThumbHeight
     val BubbleOffsetY = SpacingExtraSmall
     val BubbleCornerLarge = CardCornerRadiusLarge
-    val BubbleCornerSmall = SpacingExtraSmall
+    val BubbleCornerSmall = CardCornerRadiusSmall
     val BubbleElevation = ScrollbarBubbleElevation
+    val ThumbElevation = ScrollbarThumbElevation
+    const val FadeDurationMs = ScrollbarFadeDurationMs
 }
 
 /**
@@ -453,7 +462,7 @@ fun FastScrollbar(
 
     val animatedVisibilityAlpha by animateFloatAsState(
         targetValue = if (state.isVisible) 1f else 0f,
-        animationSpec = tween(durationMillis = 300),
+        animationSpec = tween(durationMillis = ScrollbarDefaults.FadeDurationMs),
         label = "Scrollbar Alpha"
     )
 
@@ -587,7 +596,7 @@ fun FastScrollbar(
                     .semantics { contentDescription = "Scrollbar" },
                 shape = RoundedCornerShape(WidgetCornerRadius),
                 color = MaterialTheme.colorScheme.primary.copy(alpha = ScrollbarDefaults.AlphaThumb),
-                tonalElevation = SearchBarFocusedElevation
+                tonalElevation = ScrollbarDefaults.ThumbElevation
             ) {
                 Column(
                     horizontalAlignment = Alignment.CenterHorizontally,
