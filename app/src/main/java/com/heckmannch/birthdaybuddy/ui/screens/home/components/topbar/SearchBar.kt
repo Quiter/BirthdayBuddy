@@ -57,6 +57,19 @@ import com.heckmannch.birthdaybuddy.ui.theme.SearchBarHeight
 import com.heckmannch.birthdaybuddy.ui.theme.SpacingExtraSmall
 import com.heckmannch.birthdaybuddy.ui.theme.SpacingNormal
 
+/**
+ * A custom search bar composable that supports animated placeholder transitions,
+ * dynamic styling based on focus state, query clearing, settings navigation, and optional navigation icons.
+ *
+ * @param query The current text entered into the search field.
+ * @param placeholder The animated placeholder text displayed when the search query is empty.
+ * @param onQueryChange Callback invoked when the search query changes.
+ * @param onClearQuery Callback invoked when the user clicks the clear query icon button.
+ * @param onSettingsClick Callback invoked when the user clicks the settings icon button.
+ * @param focusRequester The [FocusRequester] used to request focus on the underlying text field.
+ * @param modifier The modifier to be applied to the search bar layout.
+ * @param navigationIcon Optional composable to display as the leading icon in place of the default search icon.
+ */
 @Composable
 fun SearchBar(
     query: String,
@@ -111,11 +124,7 @@ fun SearchBar(
                     targetState = placeholder,
                     transitionSpec = {
                         (slideInVertically { height -> height } + fadeIn(animationSpec = tween(300))) togetherWith
-                                (slideOutVertically { height -> -height } + fadeOut(
-                                    animationSpec = tween(
-                                        300
-                                    )
-                                ))
+                                (slideOutVertically { height -> -height } + fadeOut(animationSpec = tween(300)))
                     },
                     label = "SearchBarPlaceholderTransition"
                 ) { targetPlaceholder ->
