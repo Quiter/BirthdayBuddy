@@ -64,10 +64,6 @@ fun HomeContent(
         mutableStateOf(windowSizeClass.isWidthExpanded)
     }
     val showSidebar = !windowSizeClass.isWidthCompact && !windowSizeClass.isHeightCompact
-    val showFilterBarInTopBar = !uiState.contacts.isNullOrEmpty() &&
-            !windowSizeClass.isWidthCompact &&
-            !windowSizeClass.isHeightCompact &&
-            !showSidebar
 
     val mainContent = @Composable {
         HomeMainContent(
@@ -76,7 +72,6 @@ fun HomeContent(
             actions = actions,
             windowSizeClass = windowSizeClass,
             showSidebar = showSidebar,
-            showFilterBarInTopBar = showFilterBarInTopBar,
             onToggleSidebar = { isSidebarExpanded = !isSidebarExpanded }
         )
     }
@@ -114,7 +109,6 @@ fun HomeContent(
  * @param actions Callbacks for user interactions.
  * @param windowSizeClass Current window size class for responsive layout adjustments.
  * @param showSidebar Whether the navigation sidebar toggle icon is displayed.
- * @param showFilterBarInTopBar Whether the label filter bar should be rendered in the top bar.
  * @param onToggleSidebar Callback invoked when the user clicks the menu icon to toggle the sidebar.
  * @param modifier Optional [Modifier] for the root container.
  */
@@ -126,7 +120,6 @@ private fun HomeMainContent(
     actions: HomeActions,
     windowSizeClass: WindowSizeClass,
     showSidebar: Boolean,
-    showFilterBarInTopBar: Boolean,
     onToggleSidebar: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -141,10 +134,7 @@ private fun HomeMainContent(
             HomeTopBar(
                 searchQuery = uiState.searchQuery,
                 placeholder = homeState.animatedPlaceholder,
-                availableLabels = uiState.availableLabels,
-                selectedLabel = uiState.selectedLabel,
                 showSidebar = showSidebar,
-                showFilterBar = showFilterBarInTopBar,
                 focusRequester = homeState.searchFocusRequester,
                 actions = actions,
                 onToggleSidebar = onToggleSidebar,
@@ -188,7 +178,7 @@ private fun HomeMainContent(
                 uiState = uiState,
                 homeState = homeState,
                 actions = actions,
-                showFilterBarInTopBar = showFilterBarInTopBar,
+                showLabelFilter = !showSidebar,
                 modifier = Modifier.padding(paddingValues),
             )
         }

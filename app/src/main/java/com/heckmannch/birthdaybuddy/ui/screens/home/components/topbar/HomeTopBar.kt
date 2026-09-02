@@ -16,21 +16,16 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import com.heckmannch.birthdaybuddy.ui.screens.home.HomeActions
-import com.heckmannch.birthdaybuddy.ui.screens.home.components.labels.LabelFilterBar
 import com.heckmannch.birthdaybuddy.ui.theme.SpacingSmall
 
 /**
  * Top bar composable for the home screen dashboard.
  *
- * Encapsulates the status bar insets handling, the search bar, optional sidebar toggle button,
- * and the contextual label filter bar when displayed at the top.
+ * Encapsulates the status bar insets handling, the search bar, and optional sidebar toggle button.
  *
  * @param searchQuery Current search text query.
  * @param placeholder Dynamic animated placeholder hint for the search bar.
- * @param availableLabels List of selectable label filters.
- * @param selectedLabel Currently active label filter, if any.
  * @param showSidebar Whether the navigation sidebar toggle icon should be rendered.
- * @param showFilterBar Whether the label filter chip row should be rendered below the search bar.
  * @param focusRequester Focus requester tied to the search text field.
  * @param actions User interaction callbacks.
  * @param onToggleSidebar Callback invoked when the user toggles the navigation sidebar.
@@ -40,10 +35,7 @@ import com.heckmannch.birthdaybuddy.ui.theme.SpacingSmall
 fun HomeTopBar(
     searchQuery: String,
     placeholder: String,
-    availableLabels: List<String>,
-    selectedLabel: String?,
     showSidebar: Boolean,
-    showFilterBar: Boolean,
     focusRequester: FocusRequester,
     actions: HomeActions,
     onToggleSidebar: () -> Unit,
@@ -76,15 +68,6 @@ fun HomeTopBar(
                 } else null,
                 modifier = Modifier.padding(bottom = SpacingSmall),
             )
-            if (showFilterBar && availableLabels.isNotEmpty()) {
-                LabelFilterBar(
-                    visible = true,
-                    labels = availableLabels,
-                    selectedLabel = selectedLabel,
-                    onLabelSelected = actions.onLabelSelected,
-                    modifier = Modifier.fillMaxWidth()
-                )
-            }
         }
     }
 }

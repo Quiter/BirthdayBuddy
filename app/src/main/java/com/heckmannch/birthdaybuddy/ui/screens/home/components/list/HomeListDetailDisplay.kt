@@ -37,7 +37,7 @@ import com.heckmannch.birthdaybuddy.ui.screens.home.navigateToContactDetail
  * @param uiState Current UI state containing contact list, search query, labels, and sync status.
  * @param homeState State holder managing scroll state, search focus, and animations.
  * @param actions User interaction callbacks.
- * @param showFilterBarInTopBar Whether the label filter bar is displayed in the top bar (disabling it inside the list).
+ * @param showLabelFilter Whether the label filter bar should be displayed in the contact list.
  * @param modifier Optional [Modifier] for the container layout.
  */
 @OptIn(ExperimentalMaterial3AdaptiveApi::class)
@@ -46,7 +46,7 @@ fun HomeListDetailDisplay(
     uiState: HomeUiState,
     homeState: HomeState,
     actions: HomeActions,
-    showFilterBarInTopBar: Boolean,
+    showLabelFilter: Boolean,
     modifier: Modifier = Modifier,
 ) {
     val focusManager = LocalFocusManager.current
@@ -113,17 +113,17 @@ fun HomeListDetailDisplay(
                             focusManager.clearFocus()
                             keyboardController?.hide()
                         },
-                        showLabelFilter = !showFilterBarInTopBar
+                        showLabelFilter = showLabelFilter
                     )
 
                     val currentHeaderCount = remember(
                         uiState.availableLabels,
-                        showFilterBarInTopBar,
+                        showLabelFilter,
                         uiState.selectedLabel,
                         uiState.coupleSuggestion
                     ) {
                         val currentShowLabelFilter =
-                            uiState.availableLabels.isNotEmpty() && !showFilterBarInTopBar
+                            uiState.availableLabels.isNotEmpty() && showLabelFilter
                         val currentShowCoupleSuggestion =
                             uiState.selectedLabel == ContactLabels.LABEL_ANNIVERSARY && uiState.coupleSuggestion != null
                         (if (currentShowLabelFilter) 1 else 0) + (if (currentShowCoupleSuggestion) 1 else 0)
