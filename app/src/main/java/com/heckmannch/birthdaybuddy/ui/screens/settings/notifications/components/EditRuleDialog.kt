@@ -21,9 +21,12 @@ import androidx.compose.material3.TextButton
 import androidx.compose.material3.TimePicker
 import androidx.compose.material3.rememberTimePickerState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableIntState
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.Saver
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.pluralStringResource
@@ -40,6 +43,16 @@ import com.heckmannch.birthdaybuddy.ui.theme.SpacingSmall
 private enum class RuleUnit {
     DAYS, WEEKS
 }
+
+private val RuleUnitSaver = Saver<RuleUnit, String>(
+    save = { it.name },
+    restore = { RuleUnit.valueOf(it) }
+)
+
+private val MutableIntStateSaver = Saver<MutableIntState, Int>(
+    save = { it.intValue },
+    restore = { mutableIntStateOf(it) }
+)
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -67,13 +80,28 @@ fun EditRuleDialog(
         }
     }
 
-    val numberStringState = remember { mutableStateOf(initialNumber) }
-    val selectedUnitState = remember { mutableStateOf(initialUnit) }
+    val numberStringState = rememberSaveable(inputs = arrayOf(rule)) { mutableStateOf(initialNumber) }
+    val selectedUnitState = rememberSaveable(
+        inputs = arrayOf(rule),
+        stateSaver = RuleUnitSaver
+    ) {
+        mutableStateOf(initialUnit)
+    }
 
-    val hourState = remember { mutableIntStateOf(rule?.hour ?: 9) }
-    val minuteState = remember { mutableIntStateOf(rule?.minute ?: 0) }
+    val hourState = rememberSaveable(
+        inputs = arrayOf(rule),
+        saver = MutableIntStateSaver
+    ) {
+        mutableIntStateOf(rule?.hour ?: 9)
+    }
+    val minuteState = rememberSaveable(
+        inputs = arrayOf(rule),
+        saver = MutableIntStateSaver
+    ) {
+        mutableIntStateOf(rule?.minute ?: 0)
+    }
 
-    val showTimePickerState = remember { mutableStateOf(false) }
+    val showTimePickerState = rememberSaveable { mutableStateOf(false) }
 
     val isInputValid =
         numberStringState.value.isNotBlank() && numberStringState.value.toIntOrNull() != null

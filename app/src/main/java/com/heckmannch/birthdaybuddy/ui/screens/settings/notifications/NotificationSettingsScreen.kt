@@ -35,6 +35,9 @@ import androidx.compose.runtime.Stable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.Saver
+import androidx.compose.runtime.saveable.mapSaver
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -78,7 +81,7 @@ fun NotificationSettingsScreen(
     val persistentNotifications = uiState.persistentNotifications
     val rules = uiState.notificationRules
 
-    var hasAttemptedPermission by remember { mutableStateOf(false) }
+    var hasAttemptedPermission by rememberSaveable { mutableStateOf(false) }
 
     var hasSystemPermission by remember {
         mutableStateOf(
@@ -179,9 +182,12 @@ fun NotificationSettingsScreen(
  * Kapselt die Sichtbarkeit der Dialoge.
  */
 @Stable
-class NotificationSettingsState {
-    var ruleToEdit by mutableStateOf<NotificationRule?>(null)
-    var showAddDialog by mutableStateOf(value = false)
+class NotificationSettingsState(
+    initialShowAddDialog: Boolean = false,
+    initialRuleToEdit: NotificationRule? = null,
+) {
+    var ruleToEdit by mutableStateOf<NotificationRule?>(initialRuleToEdit)
+    var showAddDialog by mutableStateOf(value = initialShowAddDialog)
 
     fun openAddDialog() {
         showAddDialog = true
@@ -198,11 +204,56 @@ class NotificationSettingsState {
     fun closeEditDialog() {
         ruleToEdit = null
     }
+
+    companion object {
+        private const val KEY_SHOW_ADD_DIALOG = "show_add_dialog"
+        private const val KEY_RULE_ID = "rule_id"
+        private const val KEY_RULE_DAYS_BEFORE = "rule_days_before"
+        private const val KEY_RULE_HOUR = "rule_hour"
+        private const val KEY_RULE_MINUTE = "rule_minute"
+
+        /**
+         * [Saver] implementation for [NotificationSettingsState] to persist dialog state
+         * across configuration changes.
+         */
+        val Saver: Saver<NotificationSettingsState, *> = mapSaver(
+            save = { state ->
+                buildMap {
+                    put(KEY_SHOW_ADD_DIALOG, state.showAddDialog)
+                    state.ruleToEdit?.let { rule ->
+                        put(KEY_RULE_ID, rule.id)
+                        put(KEY_RULE_DAYS_BEFORE, rule.daysBefore)
+                        put(KEY_RULE_HOUR, rule.hour)
+                        put(KEY_RULE_MINUTE, rule.minute)
+                    }
+                }
+            },
+            restore = { saved ->
+                val showAddDialog = saved[KEY_SHOW_ADD_DIALOG] as? Boolean ?: false
+                val rule = if (saved.containsKey(KEY_RULE_ID)) {
+                    NotificationRule(
+                        id = saved[KEY_RULE_ID] as Int,
+                        daysBefore = saved[KEY_RULE_DAYS_BEFORE] as Int,
+                        hour = saved[KEY_RULE_HOUR] as Int,
+                        minute = saved[KEY_RULE_MINUTE] as Int,
+                    )
+                } else {
+                    null
+                }
+                NotificationSettingsState(
+                    initialShowAddDialog = showAddDialog,
+                    initialRuleToEdit = rule,
+                )
+            }
+        )
+    }
 }
 
 @Composable
 fun rememberNotificationSettingsState(): NotificationSettingsState {
-    return remember { NotificationSettingsState() }
+    return rememberSaveable(saver = NotificationSettingsState.Saver) {
+        NotificationSettingsState()
+    }
 }
 
 @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
