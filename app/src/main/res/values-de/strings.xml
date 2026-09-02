@@ -3,7 +3,6 @@
     <string name="bullet_point">"• "</string>
 
     <!-- HomeScreen & General -->
-    <string name="home_placeholder_app">BirthdayBuddy</string>
     <string name="home_placeholder_search">Kontakt suchen</string>
     <string name="home_search_clear">Suche löschen</string>
     <string name="home_settings">Einstellungen</string>
@@ -182,7 +181,9 @@
 
     <!-- App Shortcuts -->
     <string name="shortcut_add_contact">Kontakt hinzufügen</string>
+    <string name="shortcut_add_contact_long">Neuen Kontakt hinzufügen</string>
     <string name="shortcut_search">Suche</string>
+    <string name="shortcut_search_long">Kontakte durchsuchen</string>
 
     <!-- Settings Screen -->
     <string name="settings_title">Einstellungen</string>
@@ -252,7 +253,7 @@
     <string name="onboarding_calendar_enable">In Kalender eintragen</string>
     <string name="onboarding_calendar_btn">Berechtigung erteilen</string>
     <string name="settings_calendar_title">Kalender-Synchronisierung</string>
-    <string name="settings_calendar_desc">Geburtstage in den standard Kalender eintragen</string>
+    <string name="settings_calendar_desc">Geburtstage in den Standardkalender eintragen</string>
     <string name="calendar_settings_header">Kalender-Integration</string>
     <string name="calendar_settings_desc">Trage Geburtstage vollautomatisch als ganztägige Serientermine in einen eigenen Kalender ein. Deine Benachrichtigungen bleiben wie gewohnt in der App.</string>
     <string name="calendar_settings_enable">In Kalender-App eintragen</string>
@@ -295,7 +296,7 @@
     <!-- Weitere Ereignisse -->
     <string name="other_events_enable">Weitere Ereignisse aktivieren</string>
     <string name="other_events_desc">Zeige Namenstage und Hochzeitstage aus deinen System-Kontakten an.</string>
-    <string name="other_events_info_title">Verstecktes Feature</string>
+    <string name="other_events_info_title">Experimentelles Feature</string>
     <string name="other_events_info_desc">Dieses Feature lädt Hochzeitstage und Namenstage deiner Kontakte und integriert sie als filterbare Tabs auf der Startseite sowie in das Benachrichtigungssystem.</string>
     <string name="settings_other_events_title">Weitere Ereignisse</string>
     <string name="settings_other_events_desc">Hochzeitstage und Namenstage verwalten</string>

@@ -4,6 +4,7 @@
         android:enabled="true"
         android:icon="@drawable/ic_shortcut_add"
         android:shortcutId="add_contact"
+        android:shortcutLongLabel="@string/shortcut_add_contact_long"
         android:shortcutShortLabel="@string/shortcut_add_contact">
         <intent
             android:action="android.intent.action.VIEW"
@@ -16,12 +17,12 @@
         <intent
             android:action="android.intent.action.INSERT"
             android:data="content://com.android.contacts/contacts" />
-        <categories android:name="android.shortcut.conversation" />
     </shortcut>
     <shortcut
         android:enabled="true"
         android:icon="@drawable/ic_shortcut_search"
         android:shortcutId="search_contact"
+        android:shortcutLongLabel="@string/shortcut_search_long"
         android:shortcutShortLabel="@string/shortcut_search">
         <intent
             android:action="android.intent.action.VIEW"

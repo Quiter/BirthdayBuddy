@@ -3,7 +3,6 @@
     <string name="bullet_point">"• "</string>
 
     <!-- HomeScreen & General -->
-    <string name="home_placeholder_app">BirthdayBuddy</string>
     <string name="home_placeholder_search">Search contact</string>
     <string name="home_search_clear">Clear search</string>
     <string name="home_settings">Settings</string>
@@ -182,7 +181,9 @@
 
     <!-- App Shortcuts -->
     <string name="shortcut_add_contact">Add contact</string>
+    <string name="shortcut_add_contact_long">Add new contact</string>
     <string name="shortcut_search">Search</string>
+    <string name="shortcut_search_long">Search contacts</string>
 
     <!-- Settings Screen -->
     <string name="settings_title">Settings</string>
@@ -303,18 +304,18 @@
     <string name="home_filter_name_day">Name Day</string>
 
     <!-- Anniversary Notifications -->
-    <string name="notif_title_today_anniversary_age">Today is %1$s\'s %2$d. wedding anniversary!</string>
+    <string name="notif_title_today_anniversary_age">%1$s\'s wedding anniversary (%2$d years) is today!</string>
     <string name="notif_title_today_anniversary">Today is %1$s\'s wedding anniversary!</string>
     <string name="notif_title_today_anniversary_couple">Today is %1$s\'s wedding anniversary!</string>
-    <string name="notif_title_tomorrow_anniversary_age">Tomorrow is %1$s\'s %2$d. wedding anniversary!</string>
+    <string name="notif_title_tomorrow_anniversary_age">%1$s\'s wedding anniversary (%2$d years) is tomorrow!</string>
     <string name="notif_title_tomorrow_anniversary">Tomorrow is %1$s\'s wedding anniversary!</string>
     <string name="notif_title_tomorrow_anniversary_couple">Tomorrow is %1$s\'s wedding anniversary!</string>
-    <string name="notif_title_week_anniversary_age">In one week is %1$s\'s %2$d. wedding anniversary!</string>
+    <string name="notif_title_week_anniversary_age">%1$s\'s wedding anniversary (%2$d years) is in one week!</string>
     <string name="notif_title_week_anniversary">In one week is %1$s\'s wedding anniversary!</string>
     <string name="notif_title_week_anniversary_couple">In one week is %1$s\'s wedding anniversary!</string>
     <plurals name="notif_title_days_anniversary_age">
-        <item quantity="one">In one day is %2$s\'s %3$d. wedding anniversary!</item>
-        <item quantity="other">In %1$d days is %2$s\'s %3$d. wedding anniversary!</item>
+        <item quantity="one">%2$s\'s wedding anniversary (%3$d years) is in one day!</item>
+        <item quantity="other">%2$s\'s wedding anniversary (%3$d years) is in %1$d days!</item>
     </plurals>
     <plurals name="notif_title_days_anniversary">
         <item quantity="one">In one day is %2$s\'s wedding anniversary!</item>
@@ -327,19 +328,19 @@
 
     <plurals name="notif_title_today_anniversary_plural">
         <item quantity="one">Today is one wedding anniversary!</item>
-        <item quantity="other">Today are %d wedding anniversaries!</item>
+        <item quantity="other">There are %d wedding anniversaries today!</item>
     </plurals>
     <plurals name="notif_title_tomorrow_anniversary_plural">
         <item quantity="one">Tomorrow is one wedding anniversary!</item>
-        <item quantity="other">Tomorrow are %d wedding anniversaries!</item>
+        <item quantity="other">There are %d wedding anniversaries tomorrow!</item>
     </plurals>
     <plurals name="notif_title_week_anniversary_plural">
         <item quantity="one">In one week is one wedding anniversary!</item>
-        <item quantity="other">In one week are %d wedding anniversaries!</item>
+        <item quantity="other">There are %d wedding anniversaries in one week!</item>
     </plurals>
     <plurals name="notif_title_days_anniversary_plural">
         <item quantity="one">In one day are %2$d wedding anniversaries!</item>
-        <item quantity="other">In %1$d days are %2$d wedding anniversaries!</item>
+        <item quantity="other">There are %2$d wedding anniversaries in %1$d days!</item>
     </plurals>
 
     <!-- Name Day Notifications -->
@@ -353,19 +354,19 @@
 
     <plurals name="notif_title_today_nameday_plural">
         <item quantity="one">Today is one name day!</item>
-        <item quantity="other">Today are %d name days!</item>
+        <item quantity="other">There are %d name days today!</item>
     </plurals>
     <plurals name="notif_title_tomorrow_nameday_plural">
         <item quantity="one">Tomorrow is one name day!</item>
-        <item quantity="other">Tomorrow are %d name days!</item>
+        <item quantity="other">There are %d name days tomorrow!</item>
     </plurals>
     <plurals name="notif_title_week_nameday_plural">
         <item quantity="one">In one week is one name day!</item>
-        <item quantity="other">In one week are %d name days!</item>
+        <item quantity="other">There are %d name days in one week!</item>
     </plurals>
     <plurals name="notif_title_days_nameday_plural">
         <item quantity="one">In one day are %2$d name days!</item>
-        <item quantity="other">In %1$d days are %2$d name days!</item>
+        <item quantity="other">There are %2$d name days in %1$d days!</item>
     </plurals>
 
     <string name="notif_desc_anniversary">Happy wedding anniversary!</string>
