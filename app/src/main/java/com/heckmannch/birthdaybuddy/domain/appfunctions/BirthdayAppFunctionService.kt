@@ -10,6 +10,7 @@ import androidx.appfunctions.AppFunctionInvalidArgumentException
 import androidx.appfunctions.AppFunctionService
 import androidx.appfunctions.AppFunctionServiceEntryPoint
 import androidx.core.net.toUri
+import com.heckmannch.birthdaybuddy.MainActivity
 import com.heckmannch.birthdaybuddy.di.IoDispatcher
 import com.heckmannch.birthdaybuddy.domain.appfunctions.model.ContactBirthday
 import com.heckmannch.birthdaybuddy.domain.appfunctions.model.UpcomingBirthday
@@ -22,7 +23,9 @@ import com.heckmannch.birthdaybuddy.util.safeNextAge
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.withContext
+import java.time.DateTimeException
 import java.time.LocalDate
+import java.time.Month
 import javax.inject.Inject
 
 /**
@@ -245,14 +248,22 @@ abstract class BirthdayAppFunctionService : AppFunctionService() {
         month: Int,
         day: Int,
     ): PendingIntent = withContext(ioDispatcher) {
-        if (month !in 1..12) {
+        val parsedMonth = try {
+            Month.of(month)
+        } catch (e: DateTimeException) {
             throw AppFunctionInvalidArgumentException(
-                errorMessage = "month must be between 1 and 12, got $month.",
+                errorMessage = "Invalid month $month: ${e.message}",
             )
         }
-        if (day !in 1..31) {
+
+        try {
+            // If year is provided, validate with the specific year (handles leap years),
+            // otherwise use a leap year (e.g. 2000 / 2024) so Feb 29 remains a valid birthday date.
+            val validationYear = year ?: 2024
+            LocalDate.of(validationYear, parsedMonth, day)
+        } catch (e: DateTimeException) {
             throw AppFunctionInvalidArgumentException(
-                errorMessage = "day must be between 1 and 31, got $day.",
+                errorMessage = "Invalid birthday date ($day.$month${year?.let { ".$it" } ?: ""}): ${e.message}",
             )
         }
 
@@ -265,11 +276,7 @@ abstract class BirthdayAppFunctionService : AppFunctionService() {
 
         // Deep-link into MainActivity with the contact's ID so the edit screen opens.
         // MainActivity resolves APPFN_CONTACT_ID and APPFN_BIRTHDAY_* to pre-fill the picker.
-        val intent = Intent(
-            this@BirthdayAppFunctionService, Class.forName(
-                "com.heckmannch.birthdaybuddy.MainActivity"
-            )
-        ).apply {
+        val intent = Intent(this@BirthdayAppFunctionService, MainActivity::class.java).apply {
             action = Intent.ACTION_VIEW
             addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP)
             putExtra(IntentExtras.APPFN_CONTACT_ID, contactId)
