@@ -75,6 +75,16 @@ import com.heckmannch.birthdaybuddy.ui.theme.SidebarWidthExpanded
 import com.heckmannch.birthdaybuddy.ui.theme.SpacingSmall
 import kotlinx.serialization.Serializable
 
+/**
+ * Root UI content composable for the home dashboard.
+ *
+ * Handles adaptive layouts across different screen size classes, rendering either a permanent
+ * navigation drawer with a [LabelSidebar] on larger screens or hosting [HomeMainContent] directly.
+ *
+ * @param uiState Current UI state containing contact list, search query, labels, and sync status.
+ * @param homeState State holder managing scroll state, snackbar host, search focus, and UI animations.
+ * @param actions Callbacks for handling user actions and events.
+ */
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3AdaptiveApi::class)
 @Composable
 fun HomeContent(
@@ -297,7 +307,7 @@ private fun HomeMainContent(
                         Box(modifier = Modifier.fillMaxSize()) {
                             BirthdayList(
                                 contacts = contacts,
-                                newlyAddedIdeaId = null, // Idee wird im rechten Paneel hinzugefügt
+                                newlyAddedIdeaId = null, // Gift idea is added in the right detail pane
                                 hasContactPermission = uiState.hasContactPermission,
                                 listState = homeState.listState,
                                 availableLabels = uiState.availableLabels,
@@ -307,11 +317,7 @@ private fun HomeMainContent(
                                 coupleSuggestion = uiState.coupleSuggestion,
                                 selectedContactId = selectedContactId,
                                 onContactSelected = { contact ->
-                                    // Remove any existing detail to prevent backstack growth
-                                    if (backStack.lastOrNull() is HomeNavKey.ContactDetail) {
-                                        backStack.removeLastOrNull()
-                                    }
-                                    backStack.add(HomeNavKey.ContactDetail(contact.id))
+                                    backStack.navigateToContactDetail(contact.id)
                                 },
                                 onInteraction = {
                                     focusManager.clearFocus()
@@ -370,29 +376,21 @@ private fun HomeMainContent(
     }
 }
 
+/**
+ * Safely updates the backstack with the selected contact detail pane,
+ * replacing any existing detail entry to prevent backstack growth.
+ */
+private fun MutableList<NavKey>.navigateToContactDetail(contactId: String) {
+    if (lastOrNull() is HomeNavKey.ContactDetail) {
+        removeLastOrNull()
+    }
+    add(HomeNavKey.ContactDetail(contactId))
+}
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Preview(showBackground = true)
 @Composable
 fun HomePreview() {
-    val actions = HomeActions(
-        onSearchQueryChange = {},
-        onLabelSelected = {},
-        onClearSearch = {},
-        onNavigateToSettings = {},
-        onAddContact = {},
-        onRequestPermission = {},
-        onAddGiftIdea = {},
-        onToggleGiftIdea = { _, _, _ -> },
-        onUpdateGiftIdeaText = { _, _, _ -> },
-        onDeleteGiftIdea = { _, _ -> },
-        onUpdateBirthday = { _, _ -> },
-        onOpenContact = { _, _ -> },
-        onDial = {},
-        onSendSms = {},
-        onOpenMessengerApp = { _, _ -> },
-        onRefresh = {},
-    )
-
     BirthdayBuddyTheme {
         CompositionLocalProvider(
             LocalWindowSizeClass provides WindowSizeClass(360, 640)
@@ -400,17 +398,28 @@ fun HomePreview() {
             HomeContent(
                 uiState = SampleData.homeUiState,
                 homeState = rememberHomeState(),
-                actions = actions,
+                actions = SampleData.homeActions,
             )
         }
     }
 }
 
+/**
+ * Navigation keys for list-detail adaptive navigation in the home screen.
+ */
 @Serializable
 private sealed interface HomeNavKey : NavKey {
+    /**
+     * Represents the primary contact list pane.
+     */
     @Serializable
     data object ContactList : HomeNavKey
 
+    /**
+     * Represents the contact detail pane for a specific contact.
+     *
+     * @property contactId Unique identifier of the selected contact.
+     */
     @Serializable
     data class ContactDetail(val contactId: String) : HomeNavKey
 }

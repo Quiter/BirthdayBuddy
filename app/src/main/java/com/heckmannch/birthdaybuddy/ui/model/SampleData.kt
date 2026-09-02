@@ -1,6 +1,7 @@
 package com.heckmannch.birthdaybuddy.ui.model
 
 import com.heckmannch.birthdaybuddy.domain.model.GiftIdea
+import com.heckmannch.birthdaybuddy.ui.screens.home.HomeActions
 import com.heckmannch.birthdaybuddy.util.NO_YEAR_MARKER
 import java.time.LocalDate
 
@@ -81,4 +82,7 @@ object SampleData {
         availableLabels = listOf("Familie", "Freunde", "Arbeit"),
         hasContactPermission = true,
     )
+
+    val homeActions = HomeActions.previewDefaults()
 }
+
