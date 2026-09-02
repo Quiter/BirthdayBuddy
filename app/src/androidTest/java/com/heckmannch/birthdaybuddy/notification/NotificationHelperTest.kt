@@ -57,7 +57,8 @@ class NotificationHelperTest {
         whenever(notificationRepository.settings).doReturn(settingsFlow)
         whenever(notificationRepository.getPendingNotificationById(any())).doReturn(null)
 
-        notificationHelper = NotificationHelper(context, notificationRepository)
+        val textFormatter = NotificationTextFormatter(context)
+        notificationHelper = NotificationHelper(context, notificationRepository, textFormatter)
     }
 
     @After

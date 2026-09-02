@@ -193,6 +193,7 @@
 - `SnoozeWorker.kt`: Hintergrund-Prozess für die "Später"-Funktion.
 - `NotificationActionReceiver.kt`: Verarbeitet Klicks auf Benachrichtigungs-Buttons (Snooze, Erledigt, Dismissed). Im `AndroidManifest.xml` als Receiver registriert.
 - `NotificationHelper.kt`: Hilfsklasse für den System-Notification-Manager (Erstellen und Anzeigen von Benachrichtigungen).
+- `NotificationTextFormatter.kt`: Kapselt die Generierung von Benachrichtigungstiteln und -texten (Geburtstage, Hochzeitstage, Namenstage, Einzelpersonen, Paare und Gruppen).
 
 > [!NOTE]
 > Dieses Package enthält **keine UI-Komponenten**. Die UI-seitigen Elemente (`EditRuleDialog.kt`, `NotificationRuleItem.kt`) verbleiben in `ui/screens/settings/notifications/components/`.
@@ -242,6 +243,7 @@ Diese Tests laufen ohne Emulator/Gerät direkt auf dem Entwicklungsrechner und s
 - `domain/usecase/GetContactsUseCaseTest.kt`: JVM Unit-Tests für `GetContactsUseCase` zur Absicherung der Filter- und Pairing-Logik.
 - `domain/usecase/GetPendingNotificationsUseCaseTest.kt`: JVM Unit-Tests zur Überprüfung der Benachrichtigungsregeln und Fälligkeits-Kalkulation.
 - `domain/usecase/SnoozeNotificationUseCaseTest.kt`: JVM Unit-Tests zur Überprüfung der Schlummer-Delegation.
+- `notification/NotificationTextFormatterTest.kt`: JVM Unit-Tests für `NotificationTextFormatter` (vollständige Abdeckung aller EventType-Pfade, Tage-Offsets, Einzelpersonen, Paare und Gruppen).
 - `domain/usecase/GetCoupleSuggestionUseCaseTest.kt`: JVM Unit-Tests zur Überprüfung der Ehepartner-Vorschlagsermittlung (inkl. ungleicher Nachnamen).
 - `domain/usecase/ExportGiftIdeasUseCaseTest.kt`: JVM Unit-Tests zum Geschenkideen-Export.
 - `domain/usecase/ImportGiftIdeasUseCaseTest.kt`: JVM Unit-Tests zum Geschenkideen-Import.

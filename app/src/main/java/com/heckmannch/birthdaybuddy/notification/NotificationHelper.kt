@@ -12,18 +12,16 @@ import com.heckmannch.birthdaybuddy.domain.model.Contact
 import com.heckmannch.birthdaybuddy.domain.model.EventType
 import com.heckmannch.birthdaybuddy.domain.repository.NotificationRepository
 import com.heckmannch.birthdaybuddy.util.IntentExtras
-import com.heckmannch.birthdaybuddy.util.hasYear
-import com.heckmannch.birthdaybuddy.util.safeNextAge
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.first
-import java.time.LocalDate
 import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
 class NotificationHelper @Inject constructor(
     @param:ApplicationContext private val context: Context,
-    private val notificationRepository: NotificationRepository
+    private val notificationRepository: NotificationRepository,
+    private val notificationTextFormatter: NotificationTextFormatter
 ) {
 
     companion object {
@@ -123,256 +121,17 @@ class NotificationHelper @Inject constructor(
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
 
-        val isCoupleAnniversary = eventType == EventType.ANNIVERSARY && contacts.size == 2 &&
-                contacts[0].spouseLookupKey == contacts[1].lookupKey &&
-                contacts[1].spouseLookupKey == contacts[0].lookupKey
+        val title = notificationTextFormatter.buildTitle(
+            contacts = contacts,
+            daysBefore = daysBefore,
+            eventType = eventType
+        )
 
-        val title = if (contacts.size == 1 || isCoupleAnniversary) {
-            val name = if (isCoupleAnniversary) {
-                com.heckmannch.birthdaybuddy.util.mergeNames(
-                    contacts[0].fullName,
-                    contacts[1].fullName
-                )
-            } else {
-                contacts.first().fullName
-            }
-            val contact = contacts.first()
-
-            when (eventType) {
-                EventType.ANNIVERSARY -> {
-                    val anniversary = contact.anniversary
-                    val hasYear = anniversary?.hasYear ?: false
-                    val nextYears = anniversary?.safeNextAge(LocalDate.now()) ?: -1
-
-                    when (daysBefore) {
-                        0 -> if (hasYear) context.getString(
-                            R.string.notif_title_today_anniversary_age,
-                            name,
-                            nextYears
-                        )
-                        else {
-                            val resId = if (isCoupleAnniversary) {
-                                R.string.notif_title_today_anniversary_couple
-                            } else {
-                                R.string.notif_title_today_anniversary
-                            }
-                            context.getString(resId, name)
-                        }
-
-                        1 -> if (hasYear) context.getString(
-                            R.string.notif_title_tomorrow_anniversary_age,
-                            name,
-                            nextYears
-                        )
-                        else {
-                            val resId = if (isCoupleAnniversary) {
-                                R.string.notif_title_tomorrow_anniversary_couple
-                            } else {
-                                R.string.notif_title_tomorrow_anniversary
-                            }
-                            context.getString(resId, name)
-                        }
-
-                        7 -> if (hasYear) context.getString(
-                            R.string.notif_title_week_anniversary_age,
-                            name,
-                            nextYears
-                        )
-                        else {
-                            val resId = if (isCoupleAnniversary) {
-                                R.string.notif_title_week_anniversary_couple
-                            } else {
-                                R.string.notif_title_week_anniversary
-                            }
-                            context.getString(resId, name)
-                        }
-
-                        else -> if (hasYear) context.resources.getQuantityString(
-                            R.plurals.notif_title_days_anniversary_age,
-                            daysBefore,
-                            daysBefore,
-                            name,
-                            nextYears
-                        )
-                        else {
-                            val pluralsId = if (isCoupleAnniversary) {
-                                R.plurals.notif_title_days_anniversary_couple
-                            } else {
-                                R.plurals.notif_title_days_anniversary
-                            }
-                            context.resources.getQuantityString(
-                                pluralsId,
-                                daysBefore,
-                                daysBefore,
-                                name
-                            )
-                        }
-                    }
-                }
-
-                EventType.NAME_DAY -> {
-                    when (daysBefore) {
-                        0 -> context.getString(R.string.notif_title_today_nameday, name)
-                        1 -> context.getString(R.string.notif_title_tomorrow_nameday, name)
-                        7 -> context.getString(R.string.notif_title_week_nameday, name)
-                        else -> context.resources.getQuantityString(
-                            R.plurals.notif_title_days_nameday,
-                            daysBefore,
-                            daysBefore,
-                            name
-                        )
-                    }
-                }
-
-                else -> {
-                    val birthday = contact.birthday
-                    val hasYear = birthday?.hasYear ?: false
-                    val nextAge = birthday?.safeNextAge(LocalDate.now()) ?: -1
-
-                    when (daysBefore) {
-                        0 -> if (hasYear) context.resources.getQuantityString(
-                            R.plurals.notif_title_today_age,
-                            nextAge,
-                            name,
-                            nextAge
-                        )
-                        else context.getString(R.string.notif_title_today_named, name)
-
-                        1 -> if (hasYear) context.resources.getQuantityString(
-                            R.plurals.notif_title_tomorrow_age,
-                            nextAge,
-                            name,
-                            nextAge
-                        )
-                        else context.getString(R.string.notif_title_tomorrow_named, name)
-
-                        7 -> if (hasYear) context.getString(
-                            R.string.notif_title_week_age,
-                            name,
-                            nextAge
-                        )
-                        else context.getString(R.string.notif_title_week_named, name)
-
-                        else -> if (hasYear) context.resources.getQuantityString(
-                            R.plurals.notif_title_days_age,
-                            daysBefore,
-                            daysBefore,
-                            name,
-                            nextAge
-                        )
-                        else context.resources.getQuantityString(
-                            R.plurals.notif_title_days_named,
-                            daysBefore,
-                            daysBefore,
-                            name
-                        )
-                    }
-                }
-            }
-        } else {
-            when (eventType) {
-                EventType.ANNIVERSARY -> {
-                    when (daysBefore) {
-                        0 -> context.resources.getQuantityString(
-                            R.plurals.notif_title_today_anniversary_plural,
-                            contacts.size,
-                            contacts.size
-                        )
-
-                        1 -> context.resources.getQuantityString(
-                            R.plurals.notif_title_tomorrow_anniversary_plural,
-                            contacts.size,
-                            contacts.size
-                        )
-
-                        7 -> context.resources.getQuantityString(
-                            R.plurals.notif_title_week_anniversary_plural,
-                            contacts.size,
-                            contacts.size
-                        )
-
-                        else -> context.resources.getQuantityString(
-                            R.plurals.notif_title_days_anniversary_plural,
-                            daysBefore,
-                            daysBefore,
-                            contacts.size
-                        )
-                    }
-                }
-
-                EventType.NAME_DAY -> {
-                    when (daysBefore) {
-                        0 -> context.resources.getQuantityString(
-                            R.plurals.notif_title_today_nameday_plural,
-                            contacts.size,
-                            contacts.size
-                        )
-
-                        1 -> context.resources.getQuantityString(
-                            R.plurals.notif_title_tomorrow_nameday_plural,
-                            contacts.size,
-                            contacts.size
-                        )
-
-                        7 -> context.resources.getQuantityString(
-                            R.plurals.notif_title_week_nameday_plural,
-                            contacts.size,
-                            contacts.size
-                        )
-
-                        else -> context.resources.getQuantityString(
-                            R.plurals.notif_title_days_nameday_plural,
-                            daysBefore,
-                            daysBefore,
-                            contacts.size
-                        )
-                    }
-                }
-
-                else -> {
-                    when (daysBefore) {
-                        0 -> context.resources.getQuantityString(
-                            R.plurals.notif_title_today_plural,
-                            contacts.size,
-                            contacts.size
-                        )
-
-                        1 -> context.resources.getQuantityString(
-                            R.plurals.notif_title_tomorrow_plural,
-                            contacts.size,
-                            contacts.size
-                        )
-
-                        7 -> context.resources.getQuantityString(
-                            R.plurals.notif_title_week_plural,
-                            contacts.size,
-                            contacts.size
-                        )
-
-                        else -> context.resources.getQuantityString(
-                            R.plurals.notif_title_days_plural,
-                            daysBefore,
-                            daysBefore,
-                            contacts.size
-                        )
-                    }
-                }
-            }
-        }
-
-        val contentText = if (contacts.size == 1 || isCoupleAnniversary) {
-            val defaultDesc = when (eventType) {
-                EventType.ANNIVERSARY -> context.getString(R.string.notif_desc_anniversary)
-                EventType.NAME_DAY -> context.getString(R.string.notif_desc_nameday)
-                else -> context.getString(R.string.notif_desc_named)
-            }
-            if (showHint) context.getString(R.string.notif_hint_persistent)
-            else defaultDesc
-        } else {
-            val list = contacts.joinToString(", ") { it.fullName }
-            if (showHint) "${context.getString(R.string.notif_hint_persistent)} ($list)"
-            else list
-        }
+        val contentText = notificationTextFormatter.buildContentText(
+            contacts = contacts,
+            eventType = eventType,
+            showHint = showHint
+        )
 
         val notification = NotificationCompat.Builder(context, CHANNEL_ID)
             .setSmallIcon(R.drawable.ic_notification)
