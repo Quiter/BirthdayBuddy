@@ -474,6 +474,34 @@ class NotificationRepositoryImplTest {
     }
 
     @Test
+    fun getScheduledContactLookupKeys_delegatesToDaoAndFlattensToSet() = runTest {
+        // Arrange
+        coEvery {
+            pendingNotificationDao.getScheduledNotifications(2024, 0)
+        } returns listOf(
+            PendingNotificationEntity(
+                id = 1,
+                contactLookupKeys = listOf("key1", "anniversary:key2"),
+                daysBefore = 0,
+                year = 2024
+            ),
+            PendingNotificationEntity(
+                id = 2,
+                contactLookupKeys = listOf("nameday:key3"),
+                daysBefore = 0,
+                year = 2024
+            )
+        )
+
+        // Act
+        val result = repository.getScheduledContactLookupKeys(2024, 0)
+
+        // Assert
+        assertThat(result).containsExactly("key1", "anniversary:key2", "nameday:key3")
+        coVerify { pendingNotificationDao.getScheduledNotifications(2024, 0) }
+    }
+
+    @Test
     fun hasNotificationBeenScheduled_delegatesToDaoWithWildcardPattern() = runTest {
         // Arrange
         coEvery {

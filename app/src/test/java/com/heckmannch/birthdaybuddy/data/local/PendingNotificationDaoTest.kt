@@ -117,4 +117,53 @@ class PendingNotificationDaoTest {
             assertThat(dao.getNotificationById(currentYearPendingId)).isNotNull()
             assertThat(dao.getNotificationById(currentYearDoneId)).isNotNull()
         }
+
+    @Test
+    fun getScheduledNotifications_returnsCorrectEntitiesForYearAndDaysBefore() =
+        runTest {
+            // Arrange
+            dao.upsert(
+                PendingNotificationEntity(
+                    id = 1,
+                    contactLookupKeys = listOf("key1", "anniversary:key2"),
+                    daysBefore = 0,
+                    year = 2026,
+                    isDone = false
+                )
+            )
+            dao.upsert(
+                PendingNotificationEntity(
+                    id = 2,
+                    contactLookupKeys = listOf("nameday:key3"),
+                    daysBefore = 0,
+                    year = 2026,
+                    isDone = true
+                )
+            )
+            dao.upsert(
+                PendingNotificationEntity(
+                    id = 3,
+                    contactLookupKeys = listOf("key4"),
+                    daysBefore = 1, // Different daysBefore
+                    year = 2026,
+                    isDone = false
+                )
+            )
+            dao.upsert(
+                PendingNotificationEntity(
+                    id = 4,
+                    contactLookupKeys = listOf("key5"),
+                    daysBefore = 0,
+                    year = 2025, // Different year
+                    isDone = false
+                )
+            )
+
+            // Act
+            val result = dao.getScheduledNotifications(2026, 0)
+
+            // Assert
+            assertThat(result).hasSize(2)
+            assertThat(result.flatMap { it.contactLookupKeys }).containsExactly("key1", "anniversary:key2", "nameday:key3")
+        }
 }

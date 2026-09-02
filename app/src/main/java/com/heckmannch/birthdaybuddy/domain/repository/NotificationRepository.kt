@@ -31,6 +31,17 @@ interface NotificationRepository {
     suspend fun getActiveNotificationsImmediate(): List<PendingNotification>
     suspend fun insertPendingNotification(notification: PendingNotification): Long
     suspend fun getPendingNotificationById(id: Int): PendingNotification?
+
+    /**
+     * Retrieves all contact lookup keys (including prefixed keys such as "anniversary:..." or "nameday:...")
+     * for notifications that have already been scheduled for the specified year and days-before lead time.
+     *
+     * @param year The calendar year of the notification event.
+     * @param daysBefore The lead time in days.
+     * @return A set of already scheduled contact lookup keys for fast in-memory lookups.
+     */
+    suspend fun getScheduledContactLookupKeys(year: Int, daysBefore: Int): Set<String>
+
     suspend fun hasNotificationBeenScheduled(
         year: Int,
         daysBefore: Int,

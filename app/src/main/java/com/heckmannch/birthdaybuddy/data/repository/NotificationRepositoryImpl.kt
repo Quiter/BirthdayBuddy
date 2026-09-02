@@ -177,6 +177,21 @@ class NotificationRepositoryImpl @Inject constructor(
             ?.let { pendingNotificationMapper.toDomain(it) }
 
     /**
+     * Retrieves all contact lookup keys for notifications that have already been scheduled
+     * for the specified year and days-before lead time in a single batch query.
+     *
+     * @param year The calendar year of the notification event.
+     * @param daysBefore The number of days before the event when the notification is triggered.
+     * @return A [Set] of scheduled contact lookup keys for fast O(1) deduplication.
+     */
+    override suspend fun getScheduledContactLookupKeys(year: Int, daysBefore: Int): Set<String> =
+        withContext(ioDispatcher) {
+            pendingNotificationDao.getScheduledNotifications(year, daysBefore)
+                .flatMap { it.contactLookupKeys }
+                .toSet()
+        }
+
+    /**
      * Checks whether a notification for the specified year, days-before lead time, and contact lookup key
      * has already been scheduled or created.
      *

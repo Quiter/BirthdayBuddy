@@ -45,7 +45,7 @@ class GetPendingNotificationsUseCase @Inject constructor(
 
         // Find rules that are due today up to the current time.
         // Tolerates arbitrary WorkManager / Doze mode wake-up delays without skipping
-        // notifications, relying on hasNotificationBeenScheduled below for deduplication.
+        // notifications, relying on scheduledKeys below for deduplication.
         val currentRules = rules.filter { rule ->
             val ruleTime = LocalTime.of(rule.hour, rule.minute)
             ruleTime <= currentLocalTime
@@ -64,6 +64,10 @@ class GetPendingNotificationsUseCase @Inject constructor(
 
         for (rule in currentRules) {
             val targetDate = today.plusDays(rule.daysBefore.toLong())
+            val scheduledKeys = notificationRepository.getScheduledContactLookupKeys(
+                today.year,
+                rule.daysBefore
+            )
 
             // 1. Birthdays
             val birthdays = allContacts.filter { contact ->
@@ -73,10 +77,7 @@ class GetPendingNotificationsUseCase @Inject constructor(
             }
             for (contact in birthdays) {
                 val dbKey = contact.lookupKey
-                val alreadyScheduled = notificationRepository.hasNotificationBeenScheduled(
-                    today.year, rule.daysBefore, dbKey
-                )
-                if (!alreadyScheduled) {
+                if (!scheduledKeys.contains(dbKey)) {
                     pendingEvents.add(
                         PendingNotificationEvent(
                             contacts = listOf(contact),
@@ -109,11 +110,7 @@ class GetPendingNotificationsUseCase @Inject constructor(
                             "anniversary:${contact.lookupKey}",
                             "anniversary:${spouse.lookupKey}"
                         )
-                        val anyScheduled = dbKeys.any { dbKey ->
-                            notificationRepository.hasNotificationBeenScheduled(
-                                today.year, rule.daysBefore, dbKey
-                            )
-                        }
+                        val anyScheduled = dbKeys.any { dbKey -> scheduledKeys.contains(dbKey) }
                         if (!anyScheduled) {
                             pendingEvents.add(
                                 PendingNotificationEvent(
@@ -128,10 +125,7 @@ class GetPendingNotificationsUseCase @Inject constructor(
                         processedAnniversaries.add(spouse.lookupKey)
                     } else {
                         val dbKey = "anniversary:${contact.lookupKey}"
-                        val alreadyScheduled = notificationRepository.hasNotificationBeenScheduled(
-                            today.year, rule.daysBefore, dbKey
-                        )
-                        if (!alreadyScheduled) {
+                        if (!scheduledKeys.contains(dbKey)) {
                             pendingEvents.add(
                                 PendingNotificationEvent(
                                     contacts = listOf(contact),
@@ -153,10 +147,7 @@ class GetPendingNotificationsUseCase @Inject constructor(
                 }
                 for (contact in nameDays) {
                     val dbKey = "nameday:${contact.lookupKey}"
-                    val alreadyScheduled = notificationRepository.hasNotificationBeenScheduled(
-                        today.year, rule.daysBefore, dbKey
-                    )
-                    if (!alreadyScheduled) {
+                    if (!scheduledKeys.contains(dbKey)) {
                         pendingEvents.add(
                             PendingNotificationEvent(
                                 contacts = listOf(contact),
