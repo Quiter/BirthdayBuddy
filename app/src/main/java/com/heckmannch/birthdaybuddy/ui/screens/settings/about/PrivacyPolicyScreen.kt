@@ -19,6 +19,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.AnnotatedString
@@ -29,7 +30,6 @@ import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.withStyle
-import androidx.core.net.toUri
 import com.heckmannch.birthdaybuddy.R
 import com.heckmannch.birthdaybuddy.ui.components.SettingsDetailScaffold
 import com.heckmannch.birthdaybuddy.ui.theme.SpacingExtraLarge
@@ -39,23 +39,30 @@ import com.heckmannch.birthdaybuddy.ui.theme.SpacingSmall
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
+/**
+ * Vorkompilierter regulärer Ausdruck zum Parsen von Markdown-Links ([Link-Text](URL)).
+ * Auf Dateiebene deklariert, um wiederholte Allokationen und Kompilierungen während des Renderings zu vermeiden.
+ */
+private val LINK_REGEX = Regex("\\[([^]]+)]\\(([^)]+)\\)")
+
 @Composable
 fun PrivacyPolicyScreen(
     showBackButton: Boolean = true,
     onNavigateBack: () -> Unit
 ) {
-    val context = LocalContext.current
+    val resources = LocalContext.current.resources
+    val configuration = LocalConfiguration.current
+    val errorMessage = stringResource(R.string.settings_privacy_load_error)
     var policyText by remember { mutableStateOf("") }
 
-    LaunchedEffect(Unit) {
-        val uri = "android.resource://${context.packageName}/${R.raw.privacy_policy}".toUri()
+    LaunchedEffect(configuration) {
         withContext(Dispatchers.IO) {
-            try {
-                context.contentResolver.openInputStream(uri)?.bufferedReader()?.use {
-                    policyText = it.readText()
+            policyText = try {
+                resources.openRawResource(R.raw.privacy_policy).bufferedReader().use {
+                    it.readText()
                 }
             } catch (_: Exception) {
-                policyText = "Error loading privacy policy."
+                errorMessage
             }
         }
     }
@@ -149,12 +156,10 @@ private fun parseMarkdownInline(
     text: String,
     linkColor: androidx.compose.ui.graphics.Color
 ): AnnotatedString {
-    val linkRegex = Regex("\\[([^]]+)]\\(([^)]+)\\)")
-
     return buildAnnotatedString {
         var currentIndex = 0
 
-        linkRegex.findAll(text).forEach { match ->
+        LINK_REGEX.findAll(text).forEach { match ->
             // Text vor dem Link verarbeiten (Fett-Check)
             appendBoldText(text.substring(currentIndex, match.range.first))
 
