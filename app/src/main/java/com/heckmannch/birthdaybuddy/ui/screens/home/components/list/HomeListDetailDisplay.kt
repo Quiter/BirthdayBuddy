@@ -1,6 +1,7 @@
 package com.heckmannch.birthdaybuddy.ui.screens.home.components.list
 
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.adaptive.ExperimentalMaterial3AdaptiveApi
@@ -39,6 +40,7 @@ import com.heckmannch.birthdaybuddy.ui.screens.home.navigateToContactDetail
  * @param actions User interaction callbacks.
  * @param showLabelFilter Whether the label filter bar should be displayed in the contact list.
  * @param modifier Optional [Modifier] for the container layout.
+ * @param contentPadding Scaffold and system bar insets for inner list scrolling.
  */
 @OptIn(ExperimentalMaterial3AdaptiveApi::class)
 @Composable
@@ -48,6 +50,7 @@ fun HomeListDetailDisplay(
     actions: HomeActions,
     showLabelFilter: Boolean,
     modifier: Modifier = Modifier,
+    contentPadding: PaddingValues = PaddingValues(0.dp),
 ) {
     val focusManager = LocalFocusManager.current
     val keyboardController = LocalSoftwareKeyboardController.current
@@ -113,6 +116,7 @@ fun HomeListDetailDisplay(
                             focusManager.clearFocus()
                             keyboardController?.hide()
                         },
+                        contentPadding = contentPadding,
                         showLabelFilter = showLabelFilter
                     )
 

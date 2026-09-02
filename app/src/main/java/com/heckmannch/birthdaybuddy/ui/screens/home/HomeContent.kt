@@ -179,7 +179,7 @@ private fun HomeMainContent(
                 homeState = homeState,
                 actions = actions,
                 showLabelFilter = !showSidebar,
-                modifier = Modifier.padding(paddingValues),
+                contentPadding = paddingValues,
             )
         }
     }

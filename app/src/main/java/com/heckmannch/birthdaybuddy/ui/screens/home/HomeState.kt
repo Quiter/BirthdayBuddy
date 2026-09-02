@@ -13,9 +13,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.focus.FocusRequester
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import kotlin.time.Duration.Companion.milliseconds
 
 /**
  * Plain State Holder für die UI-Logik des HomeScreens.
@@ -56,8 +54,6 @@ class HomeState(
      * Führt einen robusten Scroll-Reset durch (nützlich bei Filteränderungen).
      */
     suspend fun performScrollReset(onComplete: () -> Unit) {
-        listState.scrollToItem(0)
-        delay(100.milliseconds)
         listState.scrollToItem(0)
         onComplete()
         resetScrollRequested = false

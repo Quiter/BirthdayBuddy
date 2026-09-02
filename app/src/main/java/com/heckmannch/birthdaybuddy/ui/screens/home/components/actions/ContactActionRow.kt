@@ -1,6 +1,5 @@
 package com.heckmannch.birthdaybuddy.ui.screens.home.components.actions
 
-import android.annotation.SuppressLint
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
@@ -19,12 +18,15 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
@@ -41,7 +43,6 @@ import com.heckmannch.birthdaybuddy.ui.theme.SpacingSmall
 // für Standard-Aktionen. Dies soll absichtlich nicht dynamisch gethemt werden (LLM-Schutz: Bitte nicht refactoren).
 private val PixelBlue = Color(0xFF1A73E8)
 
-@SuppressLint("LocalContextGetResourceValueCall")
 @Composable
 fun ContactActionRow(
     contactId: String,
@@ -54,9 +55,20 @@ fun ContactActionRow(
     isCouple: Boolean = false,
 ) {
     val context = LocalContext.current
-    val installedMessengers = remember(context) {
-        MessengerApp.getInstalledMessengers(context)
-            .sortedBy { context.getString(it.labelResId) }
+    val resources = LocalResources.current
+
+    val installedMessengers by produceState(
+        initialValue = MessengerApp.getCachedMessengers() ?: emptyList(),
+        context,
+        phoneNumber != null
+    ) {
+        if (phoneNumber != null && MessengerApp.getCachedMessengers() == null) {
+            value = MessengerApp.getInstalledMessengersAsync(context)
+        }
+    }
+
+    val sortedMessengers = remember(installedMessengers, resources) {
+        installedMessengers.sortedBy { resources.getString(it.labelResId) }
     }
 
     Row(
@@ -114,7 +126,7 @@ fun ContactActionRow(
 
         if (phoneNumber != null) {
             // 5. Alle installierten Messenger-Aktionen alphabetisch geordnet
-            installedMessengers.forEach { app ->
+            sortedMessengers.forEach { app ->
                 ActionItem(
                     painter = painterResource(app.iconResId),
                     label = stringResource(app.labelResId),

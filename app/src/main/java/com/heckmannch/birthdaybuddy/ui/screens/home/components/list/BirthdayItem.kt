@@ -6,10 +6,8 @@ import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.spring
-import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
-import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -83,8 +81,6 @@ import com.heckmannch.birthdaybuddy.ui.theme.birthdayGoldColor
 import com.heckmannch.birthdaybuddy.ui.theme.birthdayKidAmberColor
 import com.heckmannch.birthdaybuddy.util.hasYear
 import java.time.LocalDate
-import kotlinx.coroutines.delay
-import kotlin.time.Duration.Companion.milliseconds
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -138,7 +134,7 @@ fun BirthdayItem(
     LaunchedEffect(isExpanded) {
         if (isExpanded && contact.isToday) {
             showConfetti = true
-            delay(3000.milliseconds)
+        } else {
             showConfetti = false
         }
     }
@@ -263,10 +259,8 @@ fun BirthdayItem(
 
                 AnimatedVisibility(
                     visible = isExpanded,
-                    enter = fadeIn(animationSpec = spring(stiffness = Spring.StiffnessMediumLow)) +
-                            expandVertically(animationSpec = spring(stiffness = Spring.StiffnessMediumLow)),
-                    exit = fadeOut(animationSpec = spring(stiffness = Spring.StiffnessMediumLow)) +
-                            shrinkVertically(animationSpec = spring(stiffness = Spring.StiffnessMediumLow))
+                    enter = fadeIn(animationSpec = spring(stiffness = Spring.StiffnessMediumLow)),
+                    exit = fadeOut(animationSpec = spring(stiffness = Spring.StiffnessMediumLow))
                 ) {
                     Column {
                         ContactActionRow(
@@ -297,7 +291,8 @@ fun BirthdayItem(
             if (showConfetti) {
                 ConfettiEffect(
                     colors = confettiColors,
-                    modifier = Modifier.matchParentSize()
+                    modifier = Modifier.matchParentSize(),
+                    onAnimationEnd = { showConfetti = false }
                 )
             }
         }

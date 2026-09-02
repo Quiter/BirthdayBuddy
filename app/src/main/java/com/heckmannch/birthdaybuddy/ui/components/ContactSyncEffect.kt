@@ -6,7 +6,8 @@ import android.os.Looper
 import android.provider.ContactsContract
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.platform.LocalContext
 
 /**
@@ -16,18 +17,25 @@ import androidx.compose.ui.platform.LocalContext
  *
  * Erfordert die Berechtigung [android.Manifest.permission.READ_CONTACTS].
  * Fehlt die Berechtigung, wird die Registrierung stillschweigend ignoriert.
+ *
+ * Architektur-Hinweis:
+ * Für eine noch sauberere Entkopplung von der UI-Ebene kann dieser Observer künftig
+ * in den Repository-Layer (z. B. `ContactRepository`) migriert werden. Dort kann er
+ * über einen Coroutine-[kotlinx.coroutines.flow.callbackFlow] implementiert werden, der
+ * System-Events bei Änderungen emittiert, mit `debounce(1000L)` entprellt und die
+ * Registrierung bzw. Deregistrierung im `awaitClose`-Block lecksicher verwaltet.
  */
 @Composable
 fun ContactSyncEffect(onSyncNeeded: () -> Unit) {
     val context = LocalContext.current
     // onSyncNeeded in eine stabile Referenz einwickeln, damit DisposableEffect
     // nicht bei jeder Rekomposition neu ausgelöst wird.
-    val stableCallback = remember { onSyncNeeded }
+    val currentCallback by rememberUpdatedState(onSyncNeeded)
 
     DisposableEffect(context) {
         val contentResolver = context.contentResolver
         val mainHandler = Handler(Looper.getMainLooper())
-        val syncRunnable = Runnable { stableCallback() }
+        val syncRunnable = Runnable { currentCallback() }
         val observer = object : ContentObserver(mainHandler) {
             override fun onChange(selfChange: Boolean) {
                 super.onChange(selfChange)

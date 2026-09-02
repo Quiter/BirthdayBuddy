@@ -12,7 +12,6 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -546,7 +545,6 @@ fun FastScrollbar(
                 .align(Alignment.CenterEnd)
                 .width(ScrollbarDefaults.ThumbSize)
                 .fillMaxHeight()
-                .navigationBarsPadding()
                 .graphicsLayer { alpha = animatedVisibilityAlpha }
                 .pointerInput(trackHeightPx, sections, headerCount, totalItems) {
                     detectVerticalDragGestures(

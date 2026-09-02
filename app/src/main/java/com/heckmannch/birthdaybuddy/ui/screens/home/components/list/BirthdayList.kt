@@ -18,6 +18,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -43,6 +44,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -87,8 +89,6 @@ import com.heckmannch.birthdaybuddy.ui.theme.SpacingLarge
 import com.heckmannch.birthdaybuddy.ui.theme.SpacingMedium
 import com.heckmannch.birthdaybuddy.ui.theme.SpacingNormal
 import com.heckmannch.birthdaybuddy.ui.theme.SpacingSmall
-import kotlinx.coroutines.delay
-import kotlin.time.Duration.Companion.milliseconds
 
 /**
  * Verwaltet die Liste der Geburtstage.
@@ -132,10 +132,12 @@ fun BirthdayList(
     // WICHTIG: Wenn contacts null ist, zeigen wir einen Shimmer-Loader
     if (contacts == null) {
         LazyColumn(
-            modifier = modifier.fillMaxSize(),
+            modifier = modifier
+                .fillMaxSize()
+                .consumeWindowInsets(contentPadding),
             contentPadding = PaddingValues(
                 top = contentPadding.calculateTopPadding(),
-                bottom = FabBottomSpacing
+                bottom = contentPadding.calculateBottomPadding() + FabBottomSpacing
             ),
             userScrollEnabled = false,
         ) {
@@ -150,28 +152,27 @@ fun BirthdayList(
 
     var previousLabel by remember { mutableStateOf(selectedLabel) }
     var previousQuery by remember { mutableStateOf(searchQuery) }
-    var skipPlacementAnimation by remember { mutableStateOf(false) }
+    val skipPlacementAnimation = selectedLabel != previousLabel || searchQuery != previousQuery
+
+    SideEffect {
+        previousLabel = selectedLabel
+        previousQuery = searchQuery
+    }
 
     // Schließen und Animationen anpassen, wenn sich Filter oder Suche ändern
     LaunchedEffect(selectedLabel, searchQuery) {
         expandedContactId = null
-        if (selectedLabel != previousLabel || searchQuery != previousQuery) {
-            skipPlacementAnimation = true
-            previousLabel = selectedLabel
-            previousQuery = searchQuery
-            delay(150.milliseconds)
-            skipPlacementAnimation = false
-        }
     }
 
     LazyColumn(
         state = listState,
         modifier = modifier
             .fillMaxSize()
+            .consumeWindowInsets(contentPadding)
             .testTag("birthday_list"),
         contentPadding = PaddingValues(
             top = contentPadding.calculateTopPadding(),
-            bottom = FabBottomSpacing
+            bottom = contentPadding.calculateBottomPadding() + FabBottomSpacing
         ),
     ) {
         if (showLabelFilter && availableLabels.isNotEmpty()) {

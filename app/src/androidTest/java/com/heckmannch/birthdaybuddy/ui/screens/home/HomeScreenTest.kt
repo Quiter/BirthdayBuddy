@@ -7,9 +7,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.test.assertIsDisplayed
-import androidx.compose.ui.test.hasAnyAncestor
-import androidx.compose.ui.test.hasTestTag
-import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.junit4.v2.createComposeRule
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.onRoot
@@ -235,7 +232,7 @@ class HomeScreenTest {
         composeTestRule.onNodeWithText("Bob Clausen").assertIsDisplayed()
 
         // Filter-Chip "Familie" anklicken
-        composeTestRule.onNode(hasText("Familie") and hasAnyAncestor(hasTestTag("birthday_list")))
+        composeTestRule.onNodeWithText("Familie")
             .performClick()
 
         // Überprüfen, dass nur Alice (mit Label "Familie") angezeigt wird und Bob ausgeblendet wird
