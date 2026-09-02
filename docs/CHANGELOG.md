@@ -345,3 +345,10 @@
     - **Unveränderte Edge-Case-Regeln:** Vollständige und exakte Beibehaltung des Pull-to-Refresh Guards, des Top-Header-Visibility Guards (LabelFilterBar), des linearen Vorwärtsmodells mit Bottom Content-Padding und des haptischen Feedbacks beim Sektionswechsel.
     - **Testing:** Hinzufügen von Unit-Tests in [`FastScrollStateTest.kt`](file:///c:/Users/chris/AndroidStudioProjects/BirthdayBuddy/app/src/test/java/com/heckmannch/birthdaybuddy/ui/screens/home/components/list/FastScrollStateTest.kt) zur Validierung der Berechnungslogik, Sektions-Partitionierung und State-Resets.
 
+340. **Überarbeitung der technischen Dokumentation in der `README.md` (Documentation & Architecture):**
+    - **Erhalt des satirischen Tons:** Beibehaltung und Vertiefung des humorvoll-sarkastischen Prologs über Googles unzuverlässiges Benachrichtigungs-Ökosystem und der Single-Source-of-Truth-Philosophie (Android Contacts Provider).
+    - **Detaillierte Architektur-Dokumentation:** Einführung eines ASCII-Architekturdiagramms (Presentation, Domain, Data Layer) und tiefgehender Erklärungen zu Navigation 3 (`NavDisplay`, `@Serializable` Routen, Scoped ViewModels), 2-Datenbanken-Room-Konzept (`AppDatabase` vs. `SettingsDatabase` mit 2-Phasen-Transaktionen), robuster Hintergrund-Synchronisation (Doze- und Zeitzonen-Resilienz via `goAsync()`), Schaltjahres-Sicherheit (Februar 29) und Coil 3 Caching/Prefetching.
+    - **Android 16+ AppFunctions:** Vollständige Dokumentation der vier on-device KI-Schnittstellen (`getUpcomingBirthdays`, `getContactBirthday`, `sendBirthdayMessage`, `addBirthdayToContact`).
+    - **Evergreen Stack & Testing:** Übersichtstabelle der Bibliotheken gemäß Version Catalog (`libs.versions.toml`) sowie detaillierte Gliederung der Teststrategie (325+ JVM Unit-Tests, Roborazzi Screenshot-Tests, instrumentierte Room-Migrationen V5->V10).
+
+
