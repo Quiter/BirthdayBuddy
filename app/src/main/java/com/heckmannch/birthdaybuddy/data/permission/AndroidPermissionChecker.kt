@@ -3,7 +3,7 @@ package com.heckmannch.birthdaybuddy.data.permission
 import android.Manifest
 import android.content.Context
 import android.content.pm.PackageManager
-import android.os.Build
+import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.ContextCompat
 import com.heckmannch.birthdaybuddy.domain.permission.PermissionChecker
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -23,35 +23,19 @@ class AndroidPermissionChecker @Inject constructor(
     @param:ApplicationContext private val context: Context
 ) : PermissionChecker {
 
-    override fun hasContactsPermission(): Boolean {
-        return ContextCompat.checkSelfPermission(
+    override fun hasContactsPermission(): Boolean =
+        isGranted(Manifest.permission.READ_CONTACTS)
+
+    override fun hasNotificationPermission(): Boolean =
+        NotificationManagerCompat.from(context).areNotificationsEnabled()
+
+    override fun hasCalendarPermission(): Boolean =
+        isGranted(Manifest.permission.READ_CALENDAR) &&
+            isGranted(Manifest.permission.WRITE_CALENDAR)
+
+    private fun isGranted(permission: String): Boolean =
+        ContextCompat.checkSelfPermission(
             context,
-            Manifest.permission.READ_CONTACTS
+            permission
         ) == PackageManager.PERMISSION_GRANTED
-    }
-
-    override fun hasNotificationPermission(): Boolean {
-        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            ContextCompat.checkSelfPermission(
-                context,
-                Manifest.permission.POST_NOTIFICATIONS
-            ) == PackageManager.PERMISSION_GRANTED
-        } else {
-            true
-        }
-    }
-
-    override fun hasCalendarPermission(): Boolean {
-        val hasReadCalendar = ContextCompat.checkSelfPermission(
-            context,
-            Manifest.permission.READ_CALENDAR
-        ) == PackageManager.PERMISSION_GRANTED
-
-        val hasWriteCalendar = ContextCompat.checkSelfPermission(
-            context,
-            Manifest.permission.WRITE_CALENDAR
-        ) == PackageManager.PERMISSION_GRANTED
-
-        return hasReadCalendar && hasWriteCalendar
-    }
 }
