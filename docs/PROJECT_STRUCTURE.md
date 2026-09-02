@@ -206,6 +206,7 @@
 
 ## 📁 Utilities (`util`)
 - `DateUtils.kt`: Robuste Erweiterungsfunktionen für LocalDate.
+- `StringUtils.kt`: Hilfsfunktionen für Namens- und String-Operationen (`mergeNames`, `getInitials`).
 - `ContextExtensions.kt`: Hilfsfunktionen für die sichere Navigation im Android-Context.
 - `IntentExtras.kt`: Zentrales `object` mit allen `const val`-Schlüsseln für Intent-Extras (`SCROLL_TO_TOP`, `NAVIGATE_TO_NOTIFICATIONS`, `OPEN_SEARCH`, `OPEN_ADD_CONTACT`) sowie sicheren, typgeprüften Extraktions- und Bereinigungsfunktionen (`safeGetAndRemoveBooleanExtra`, `safeGetIntExtra`, `safeGetStringArrayExtra`).
 - `WidgetUpdater.kt` & `BirthdayWidgetUpdater.kt`: Hilfsklassen zur Glance-unabhängigen Aktualisierung des App-Widgets.
@@ -241,6 +242,7 @@ Diese Tests laufen ohne Emulator/Gerät direkt auf dem Entwicklungsrechner und s
 - `data/repository/ContactRepositoryImplTest.kt`: JVM Unit-Tests für `ContactRepositoryImpl` (Abdeckung von allContacts, labelsEnabled, syncContacts, addGiftIdea, und labelConfigs).
 - `data/repository/SystemContactDataSourceTest.kt`: JVM Unit-Tests für `SystemContactDataSource` (Parsing von Datumsformaten inkl. Schaltjahren wie 29. Februar ohne Jahr).
 - `util/DateUtilsTest.kt`: Logiktests für Datumsberechnungen (Alter, Tage bis Geburtstag, etc.).
+- `util/StringUtilsTest.kt`: Logiktests für String- und Namens-Hilfsfunktionen (`mergeNames`, `getInitials`).
 - `domain/usecase/GetContactsUseCaseTest.kt`: JVM Unit-Tests für `GetContactsUseCase` zur Absicherung der Filter- und Pairing-Logik.
 - `domain/util/NotificationKeyUtilsTest.kt`: JVM Unit-Tests für `NotificationKeyUtils` (Enkodierung, Dekodierung und EventType-Erkennung inklusive Sonderzeichen & Doppelpunkten im LookupKey).
 - `domain/usecase/GetPendingNotificationsUseCaseTest.kt`: JVM Unit-Tests zur Überprüfung der Benachrichtigungsregeln und Fälligkeits-Kalkulation.

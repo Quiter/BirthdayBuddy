@@ -45,9 +45,9 @@ import com.heckmannch.birthdaybuddy.ui.theme.AlphaContainerSubtle
 import com.heckmannch.birthdaybuddy.ui.theme.AnimDelayPermission
 import com.heckmannch.birthdaybuddy.ui.theme.AnimDurationMedium
 import com.heckmannch.birthdaybuddy.ui.theme.BirthdayBuddyTheme
-import com.heckmannch.birthdaybuddy.util.PermissionHelper
 import com.heckmannch.birthdaybuddy.util.findActivity
 import com.heckmannch.birthdaybuddy.util.openAppSettings
+import com.heckmannch.birthdaybuddy.util.shouldShowRationale
 import kotlinx.coroutines.launch
 import kotlin.time.Duration.Companion.milliseconds
 
@@ -136,8 +136,6 @@ fun OnboardingScreen(
             }
         }
 
-    val permissionHelper = remember(activity) { activity?.let { PermissionHelper(it) } }
-
     LifecycleResumeEffect(Unit) {
         viewModel.onIntent(OnboardingIntent.RefreshPermissions)
         onPauseOrDispose { }
@@ -145,7 +143,7 @@ fun OnboardingScreen(
 
     val onRequestContactPermission: () -> Unit = {
         val shouldShowRationale =
-            permissionHelper?.shouldShowRationale(Manifest.permission.READ_CONTACTS) ?: false
+            activity?.shouldShowRationale(Manifest.permission.READ_CONTACTS) ?: false
         if (shouldShowRationale || !uiState.hasContactPermission) {
             contactLauncher.launch(Manifest.permission.READ_CONTACTS)
         } else {
@@ -156,7 +154,7 @@ fun OnboardingScreen(
     val onRequestNotificationPermission: () -> Unit = {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             val shouldShowRationale =
-                permissionHelper?.shouldShowRationale(Manifest.permission.POST_NOTIFICATIONS)
+                activity?.shouldShowRationale(Manifest.permission.POST_NOTIFICATIONS)
                     ?: false
             if (shouldShowRationale || !uiState.hasNotificationPermission) {
                 notifLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)

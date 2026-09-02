@@ -33,27 +33,41 @@ object IntentExtras {
     const val APPFN_BIRTHDAY_DAY = "APPFN_BIRTHDAY_DAY"
 
     /**
-     * Liest ein Boolean-Extra sicher aus einem [Intent] aus und entfernt es anschließend zwingend aus dem Intent.
-     *
-     * Fängt jegliche Type-Mismatch- (z.B. [ClassCastException]) oder Unparceling-Fehler (z.B. RuntimeExceptions)
-     * ab, die durch externe, manipulierte oder inkompatible Intent-Payloads entstehen können.
-     * Bereinigt den Intent zwingend mittels [Intent.removeExtra], damit das Extra bei Konfigurationsänderungen
-     * (z.B. Bildschirm-Rotation) nicht versehentlich erneut verarbeitet wird.
-     *
-     * @param intent Der zu verarbeitende Intent.
-     * @param key Der Schlüssel des auszulesenden Extras.
-     * @param defaultValue Der Standardwert, falls das Extra nicht vorhanden ist oder ein Fehler auftritt.
-     * @return Den ausgelesenen Boolean-Wert oder [defaultValue], falls nicht gefunden oder ungültig.
+     * Liest ein Extra sicher aus einem [Intent] aus, fängt Exceptions ab und gibt bei Fehlern oder Fehlen den [defaultValue] zurück.
      */
-    fun safeGetAndRemoveBooleanExtra(
+    private inline fun <T> safeGet(
         intent: Intent?,
         key: String,
-        defaultValue: Boolean = false
-    ): Boolean {
+        defaultValue: T,
+        extract: Intent.(String) -> T
+    ): T {
         if (intent == null) return defaultValue
         return try {
             if (intent.hasExtra(key)) {
-                val value = intent.getBooleanExtra(key, defaultValue)
+                intent.extract(key)
+            } else {
+                defaultValue
+            }
+        } catch (e: Exception) {
+            Log.w(TAG, "Fehler beim sicheren Auslesen des Intent-Extras '$key'", e)
+            defaultValue
+        }
+    }
+
+    /**
+     * Liest ein Extra sicher aus einem [Intent] aus und entfernt es anschließend zwingend aus dem Intent.
+     * Fängt Exceptions ab, führt im Fehlerfall ein Fallback-removeExtra durch und gibt [defaultValue] zurück.
+     */
+    private inline fun <T> safeGetAndRemove(
+        intent: Intent?,
+        key: String,
+        defaultValue: T,
+        extract: Intent.(String) -> T
+    ): T {
+        if (intent == null) return defaultValue
+        return try {
+            if (intent.hasExtra(key)) {
+                val value = intent.extract(key)
                 intent.removeExtra(key)
                 value
             } else {
@@ -71,6 +85,27 @@ object IntentExtras {
     }
 
     /**
+     * Liest ein Boolean-Extra sicher aus einem [Intent] aus und entfernt es anschließend zwingend aus dem Intent.
+     *
+     * Fängt jegliche Type-Mismatch- (z.B. [ClassCastException]) oder Unparceling-Fehler (z.B. RuntimeExceptions)
+     * ab, die durch externe, manipulierte oder inkompatible Intent-Payloads entstehen können.
+     * Bereinigt den Intent zwingend mittels [Intent.removeExtra], damit das Extra bei Konfigurationsänderungen
+     * (z.B. Bildschirm-Rotation) nicht versehentlich erneut verarbeitet wird.
+     *
+     * @param intent Der zu verarbeitende Intent.
+     * @param key Der Schlüssel des auszulesenden Extras.
+     * @param defaultValue Der Standardwert, falls das Extra nicht vorhanden ist oder ein Fehler auftritt.
+     * @return Den ausgelesenen Boolean-Wert oder [defaultValue], falls nicht gefunden oder ungültig.
+     */
+    fun safeGetAndRemoveBooleanExtra(
+        intent: Intent?,
+        key: String,
+        defaultValue: Boolean = false
+    ): Boolean = safeGetAndRemove(intent, key, defaultValue) { k ->
+        getBooleanExtra(k, defaultValue)
+    }
+
+    /**
      * Liest ein String-Extra sicher aus einem [Intent] aus und entfernt es anschließend zwingend aus dem Intent.
      *
      * Fängt jegliche Type-Mismatch- (z.B. [ClassCastException]) oder Unparceling-Fehler ab.
@@ -85,25 +120,8 @@ object IntentExtras {
         intent: Intent?,
         key: String,
         defaultValue: String? = null
-    ): String? {
-        if (intent == null) return defaultValue
-        return try {
-            if (intent.hasExtra(key)) {
-                val value = intent.getStringExtra(key) ?: defaultValue
-                intent.removeExtra(key)
-                value
-            } else {
-                defaultValue
-            }
-        } catch (e: Exception) {
-            Log.w(TAG, "Fehler beim sicheren Auslesen/Entfernen des String-Extras '$key'", e)
-            try {
-                intent.removeExtra(key)
-            } catch (cleanupException: Exception) {
-                Log.w(TAG, "Bereinigung des Intent-Extras '$key' fehlgeschlagen", cleanupException)
-            }
-            defaultValue
-        }
+    ): String? = safeGetAndRemove(intent, key, defaultValue) { k ->
+        getStringExtra(k) ?: defaultValue
     }
 
     /**
@@ -121,25 +139,8 @@ object IntentExtras {
         intent: Intent?,
         key: String,
         defaultValue: Int = -1
-    ): Int {
-        if (intent == null) return defaultValue
-        return try {
-            if (intent.hasExtra(key)) {
-                val value = intent.getIntExtra(key, defaultValue)
-                intent.removeExtra(key)
-                value
-            } else {
-                defaultValue
-            }
-        } catch (e: Exception) {
-            Log.w(TAG, "Fehler beim sicheren Auslesen/Entfernen des Int-Extras '$key'", e)
-            try {
-                intent.removeExtra(key)
-            } catch (cleanupException: Exception) {
-                Log.w(TAG, "Bereinigung des Intent-Extras '$key' fehlgeschlagen", cleanupException)
-            }
-            defaultValue
-        }
+    ): Int = safeGetAndRemove(intent, key, defaultValue) { k ->
+        getIntExtra(k, defaultValue)
     }
 
     /**
@@ -156,18 +157,8 @@ object IntentExtras {
         intent: Intent?,
         key: String,
         defaultValue: Boolean = false
-    ): Boolean {
-        if (intent == null) return defaultValue
-        return try {
-            if (intent.hasExtra(key)) {
-                intent.getBooleanExtra(key, defaultValue)
-            } else {
-                defaultValue
-            }
-        } catch (e: Exception) {
-            Log.w(TAG, "Fehler beim sicheren Auslesen des Boolean-Extras '$key'", e)
-            defaultValue
-        }
+    ): Boolean = safeGet(intent, key, defaultValue) { k ->
+        getBooleanExtra(k, defaultValue)
     }
 
     /**
@@ -184,18 +175,8 @@ object IntentExtras {
         intent: Intent?,
         key: String,
         defaultValue: String? = null
-    ): String? {
-        if (intent == null) return defaultValue
-        return try {
-            if (intent.hasExtra(key)) {
-                intent.getStringExtra(key) ?: defaultValue
-            } else {
-                defaultValue
-            }
-        } catch (e: Exception) {
-            Log.w(TAG, "Fehler beim sicheren Auslesen des String-Extras '$key'", e)
-            defaultValue
-        }
+    ): String? = safeGet(intent, key, defaultValue) { k ->
+        getStringExtra(k) ?: defaultValue
     }
 
     /**
@@ -207,18 +188,8 @@ object IntentExtras {
         intent: Intent?,
         key: String,
         defaultValue: Int = -1
-    ): Int {
-        if (intent == null) return defaultValue
-        return try {
-            if (intent.hasExtra(key)) {
-                intent.getIntExtra(key, defaultValue)
-            } else {
-                defaultValue
-            }
-        } catch (e: Exception) {
-            Log.w(TAG, "Fehler beim sicheren Auslesen des Int-Extras '$key'", e)
-            defaultValue
-        }
+    ): Int = safeGet(intent, key, defaultValue) { k ->
+        getIntExtra(k, defaultValue)
     }
 
     /**
@@ -229,18 +200,8 @@ object IntentExtras {
     fun safeGetStringArrayExtra(
         intent: Intent?,
         key: String
-    ): Array<String> {
-        if (intent == null) return emptyArray()
-        return try {
-            if (intent.hasExtra(key)) {
-                intent.getStringArrayExtra(key) ?: emptyArray()
-            } else {
-                emptyArray()
-            }
-        } catch (e: Exception) {
-            Log.w(TAG, "Fehler beim sicheren Auslesen des StringArray-Extras '$key'", e)
-            emptyArray()
-        }
+    ): Array<String> = safeGet(intent, key, emptyArray()) { k ->
+        getStringArrayExtra(k) ?: emptyArray()
     }
 }
 
@@ -291,5 +252,3 @@ fun Intent?.safeGetAndRemoveStringExtra(key: String, defaultValue: String? = nul
  */
 fun Intent?.safeGetAndRemoveIntExtra(key: String, defaultValue: Int = -1): Int =
     IntentExtras.safeGetAndRemoveIntExtra(this, key, defaultValue)
-
-

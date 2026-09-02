@@ -108,21 +108,100 @@ class DateUtilsTest {
         assertThat(birthday.safeNextAge()).isNull()
     }
 
+    // --- sanitizeBirthdayDate Tests ---
+
     @Test
-    fun `mergeNames combines names with matching last names correctly`() {
-        val merged = mergeNames("Max Mustermann", "Erika Mustermann")
-        assertThat(merged).isEqualTo("Max & Erika Mustermann")
+    fun `sanitizeBirthdayDate with normal valid date returns exact LocalDate`() {
+        val result = sanitizeBirthdayDate(1992, 7, 24)
+        assertThat(result).isEqualTo(LocalDate.of(1992, 7, 24))
     }
 
     @Test
-    fun `mergeNames combines names with different last names correctly`() {
-        val merged = mergeNames("Max Schmidt", "Erika Mustermann")
-        assertThat(merged).isEqualTo("Max Schmidt & Erika Mustermann")
+    fun `sanitizeBirthdayDate clamps month smaller than 1 to January`() {
+        val resultZero = sanitizeBirthdayDate(1990, 0, 15)
+        assertThat(resultZero).isEqualTo(LocalDate.of(1990, 1, 15))
+
+        val resultNegative = sanitizeBirthdayDate(1990, -5, 15)
+        assertThat(resultNegative).isEqualTo(LocalDate.of(1990, 1, 15))
     }
 
     @Test
-    fun `mergeNames combines single names correctly`() {
-        val merged = mergeNames("Max", "Erika")
-        assertThat(merged).isEqualTo("Max & Erika")
+    fun `sanitizeBirthdayDate clamps month greater than 12 to December`() {
+        val resultThirteen = sanitizeBirthdayDate(1990, 13, 25)
+        assertThat(resultThirteen).isEqualTo(LocalDate.of(1990, 12, 25))
+
+        val resultLargeMonth = sanitizeBirthdayDate(1990, 99, 25)
+        assertThat(resultLargeMonth).isEqualTo(LocalDate.of(1990, 12, 25))
+    }
+
+    @Test
+    fun `sanitizeBirthdayDate clamps day smaller than 1 to first day of month`() {
+        val resultZero = sanitizeBirthdayDate(1995, 6, 0)
+        assertThat(resultZero).isEqualTo(LocalDate.of(1995, 6, 1))
+
+        val resultNegative = sanitizeBirthdayDate(1995, 6, -10)
+        assertThat(resultNegative).isEqualTo(LocalDate.of(1995, 6, 1))
+    }
+
+    @Test
+    fun `sanitizeBirthdayDate clamps day greater than 31 in 31-day month to 31`() {
+        val result = sanitizeBirthdayDate(2000, 1, 35)
+        assertThat(result).isEqualTo(LocalDate.of(2000, 1, 31))
+    }
+
+    @Test
+    fun `sanitizeBirthdayDate clamps day greater than 30 in 30-day month to 30`() {
+        val resultApril = sanitizeBirthdayDate(2001, 4, 31)
+        assertThat(resultApril).isEqualTo(LocalDate.of(2001, 4, 30))
+
+        val resultNov = sanitizeBirthdayDate(2001, 11, 40)
+        assertThat(resultNov).isEqualTo(LocalDate.of(2001, 11, 30))
+    }
+
+    @Test
+    fun `sanitizeBirthdayDate clamps day greater than 28 in non-leap year February to 28`() {
+        val result29 = sanitizeBirthdayDate(2023, 2, 29)
+        assertThat(result29).isEqualTo(LocalDate.of(2023, 2, 28))
+
+        val result30 = sanitizeBirthdayDate(2023, 2, 30)
+        assertThat(result30).isEqualTo(LocalDate.of(2023, 2, 28))
+    }
+
+    @Test
+    fun `sanitizeBirthdayDate allows February 29 in leap year`() {
+        val resultLeap = sanitizeBirthdayDate(2024, 2, 29)
+        assertThat(resultLeap).isEqualTo(LocalDate.of(2024, 2, 29))
+    }
+
+    @Test
+    fun `sanitizeBirthdayDate clamps day greater than 29 in leap year February to 29`() {
+        val resultLeap30 = sanitizeBirthdayDate(2024, 2, 30)
+        assertThat(resultLeap30).isEqualTo(LocalDate.of(2024, 2, 29))
+    }
+
+    @Test
+    fun `sanitizeBirthdayDate with null year sets targetYear to NO_YEAR_MARKER`() {
+        val result = sanitizeBirthdayDate(null, 8, 18)
+        assertThat(result).isEqualTo(LocalDate.of(NO_YEAR_MARKER, 8, 18))
+        assertThat(result.hasYear).isFalse()
+    }
+
+    @Test
+    fun `sanitizeBirthdayDate with NO_YEAR_MARKER preserves NO_YEAR_MARKER and supports February 29`() {
+        val result = sanitizeBirthdayDate(NO_YEAR_MARKER, 2, 29)
+        assertThat(result).isEqualTo(LocalDate.of(NO_YEAR_MARKER, 2, 29))
+        assertThat(result.hasYear).isFalse()
+
+        val resultOverflow = sanitizeBirthdayDate(NO_YEAR_MARKER, 2, 31)
+        assertThat(resultOverflow).isEqualTo(LocalDate.of(NO_YEAR_MARKER, 2, 29))
+    }
+
+    @Test
+    fun `sanitizeBirthdayDate with non-positive year falls back to NO_YEAR_MARKER`() {
+        val resultZeroYear = sanitizeBirthdayDate(0, 3, 10)
+        assertThat(resultZeroYear).isEqualTo(LocalDate.of(NO_YEAR_MARKER, 3, 10))
+
+        val resultNegativeYear = sanitizeBirthdayDate(-1990, 3, 10)
+        assertThat(resultNegativeYear).isEqualTo(LocalDate.of(NO_YEAR_MARKER, 3, 10))
     }
 }
