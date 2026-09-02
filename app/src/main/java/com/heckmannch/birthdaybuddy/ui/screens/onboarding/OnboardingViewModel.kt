@@ -23,10 +23,22 @@ import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 /**
- * ViewModel managing the onboarding setup flow for BirthdayBuddy.
+ * ViewModel managing the onboarding setup flow for BirthdayBuddy following MVI / UDF architecture.
  *
- * Coordinates permissions checks, initial user preferences (such as persistent notifications,
- * reminder schedules, and calendar sync), and persists initial settings atomically when onboarding completes.
+ * **Responsibilities & Purpose**:
+ * - Manages the onboarding multi-step setup flow, including welcome, permission requests, notification settings, and calendar sync configuration.
+ * - Coordinates runtime permission verification across contacts, notifications, and calendar.
+ * - Aggregates multiple asynchronous streams (repository settings, page state, permissions) into a single unified [uiState].
+ * - Persists onboarding preferences atomically and triggers initial contact synchronization upon completion.
+ *
+ * **MVI & Flow Aggregation**:
+ * - **Intent Handling**: Receives unidirectional intents via [onIntent] to drive state transitions or trigger side effects.
+ * - **State Aggregation**: Uses [combine] to merge [NotificationRepository.settings], internal page state, and permissions into a reactive [StateFlow] of [OnboardingUiState], scoped to [viewModelScope] with [SharingStarted.WhileSubscribed].
+ *
+ * @param notificationRepository Repository for retrieving and persisting notification settings and rules.
+ * @param contactRepository Repository for managing contacts and executing initial contact synchronization.
+ * @param permissionChecker Utility for verifying Android runtime permissions.
+ * @param ioDispatcher Coroutine dispatcher dedicated to I/O and persistence operations.
  */
 @HiltViewModel
 class OnboardingViewModel @Inject constructor(
@@ -41,6 +53,7 @@ class OnboardingViewModel @Inject constructor(
 
     /**
      * UI state combining current page, permission statuses, and notification settings.
+     * Emits updates to subscribers while the UI is active.
      */
     val uiState: StateFlow<OnboardingUiState> = combine(
         notificationRepository.settings,
@@ -56,7 +69,7 @@ class OnboardingViewModel @Inject constructor(
         )
     }.stateIn(
         scope = viewModelScope,
-        started = SharingStarted.WhileSubscribed(5000),
+        started = SharingStarted.WhileSubscribed(STOP_TIMEOUT_MILLIS),
         initialValue = OnboardingUiState()
     )
 
@@ -88,6 +101,11 @@ class OnboardingViewModel @Inject constructor(
         }
     }
 
+    /**
+     * Asynchronously updates the persistent notification preference in [NotificationRepository].
+     *
+     * @param persistent `true` if a persistent notification should be displayed, `false` otherwise.
+     */
     private fun setPersistentNotifications(persistent: Boolean) = viewModelScope.launch {
         notificationRepository.updateSettings(persistentNotifications = persistent)
     }
@@ -115,9 +133,9 @@ class OnboardingViewModel @Inject constructor(
                     if (rules.isEmpty()) {
                         notificationRepository.insertRule(
                             NotificationRule(
-                                daysBefore = 0,
-                                hour = 9,
-                                minute = 0
+                                daysBefore = DEFAULT_RULE_DAYS_BEFORE,
+                                hour = DEFAULT_RULE_HOUR,
+                                minute = DEFAULT_RULE_MINUTE
                             )
                         )
                     }
@@ -137,6 +155,12 @@ class OnboardingViewModel @Inject constructor(
         }
     }
 
+    /**
+     * Queries [PermissionChecker] for contacts, notification, and calendar runtime permissions
+     * and packages the results into an [OnboardingPermissions] snapshot.
+     *
+     * @return [OnboardingPermissions] containing the current grant status of each required permission.
+     */
     private fun checkPermissions(): OnboardingPermissions {
         val hasContact = permissionChecker.hasContactsPermission()
         val hasNotif = permissionChecker.hasNotificationPermission()
@@ -145,6 +169,13 @@ class OnboardingViewModel @Inject constructor(
         return OnboardingPermissions(hasContact, hasNotif, hasCalendar)
     }
 
+    /**
+     * Internal data structure representing a snapshot of runtime permission states.
+     *
+     * @property hasContact Whether READ_CONTACTS permission is granted.
+     * @property hasNotification Whether POST_NOTIFICATIONS permission is granted.
+     * @property hasCalendar Whether READ_CALENDAR/WRITE_CALENDAR permission is granted.
+     */
     private data class OnboardingPermissions(
         val hasContact: Boolean,
         val hasNotification: Boolean,
@@ -153,30 +184,43 @@ class OnboardingViewModel @Inject constructor(
 
     companion object {
         private const val TAG = "OnboardingViewModel"
+        private const val STOP_TIMEOUT_MILLIS = 5_000L
+        private const val DEFAULT_RULE_DAYS_BEFORE = 0
+        private const val DEFAULT_RULE_HOUR = 9
+        private const val DEFAULT_RULE_MINUTE = 0
     }
 }
 
 /**
- * UI intents representing user actions within the onboarding flow.
+ * UI intents representing user actions and events within the onboarding MVI flow.
  */
 sealed interface OnboardingIntent {
     /**
-     * Refreshes runtime permission states.
+     * Intent to re-check and refresh the status of all relevant runtime permissions
+     * (contacts, notifications, calendar).
      */
     data object RefreshPermissions : OnboardingIntent
 
     /**
-     * Updates the persistent notification preference.
+     * Intent to update the persistent status-bar notification setting.
+     *
+     * @property enabled `true` to enable persistent notifications, `false` to disable.
      */
     data class SetPersistentNotifications(val enabled: Boolean) : OnboardingIntent
 
     /**
-     * Updates the active onboarding page index.
+     * Intent to update the active page index in the onboarding pager.
+     *
+     * @property page The 0-based page index to navigate to.
      */
     data class SetCurrentPage(val page: Int) : OnboardingIntent
 
     /**
-     * Finalizes onboarding with chosen notification and calendar sync configurations.
+     * Intent to finalize the onboarding process, persisting configuration, creating default
+     * reminder rules if necessary, and triggering initial contact synchronization.
+     *
+     * @property notificationsEnabled Whether birthday notifications should be enabled.
+     * @property calendarSyncEnabled Whether calendar synchronization should be enabled.
      */
     data class CompleteOnboarding(
         val notificationsEnabled: Boolean,
