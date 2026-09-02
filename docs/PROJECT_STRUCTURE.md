@@ -216,7 +216,7 @@
 - `ContactActions.kt`: Zentraler Handler für externe System-Aktionen (Intents, Permissions).
 
 ## 📁 Widget (`widget`)
-- `BirthdayWidget.kt`, `BirthdayWidgetReceiver.kt`, `BirthdayWidgetWorker.kt`: Glance-basierte Widget-Komponenten.
+- `BirthdayWidget.kt`, `BirthdayWidgetReceiver.kt`, `BirthdayWidgetWorker.kt`, `WidgetLayoutHelper.kt`: Glance-basierte Widget-Komponenten und reine Kotlin-Layout-Berechnungen.
 
 ## 🌍 Internationalisierung (I18n)
 - `res/values/strings.xml`: Standard-Sprachressourcen (**Englisch**).
@@ -263,6 +263,8 @@ Diese Tests laufen ohne Emulator/Gerät direkt auf dem Entwicklungsrechner und s
 - `viewmodel/CalendarViewModelTest.kt`: Tests für `CalendarViewModel` zur Absicherung der Kalendereinstellungs- und Synchronisationssteuerung.
 - `viewmodel/LabelViewModelTest.kt`: Tests für `LabelViewModel` zur Absicherung der dynamischen Labels-Filterungslogik.
 - `viewmodel/ThemeViewModelTest.kt`: Tests für `ThemeViewModel` zur Absicherung der Design-Einstellungen.
+- `widget/WidgetLayoutHelperTest.kt`: JVM Unit-Tests für `WidgetLayoutHelper` (Standard-Widget-Größen, kleine Höhen, leere vs. große Kontaktlisten, gleichmäßige Höhenaufteilung).
+- `widget/BirthdayWidgetWorkerTest.kt`: JVM Unit-Tests für `BirthdayWidgetWorker` (Scheduling, Worker-Ausführung, Fehler-Handling).
 
 
 ### 📁 Instrumentierte Integrationstests (`app/src/androidTest`)

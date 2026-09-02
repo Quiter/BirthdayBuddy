@@ -8,8 +8,9 @@ import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.Dp
-import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.sp
+import androidx.core.os.ConfigurationCompat
 import androidx.glance.GlanceId
 import androidx.glance.GlanceModifier
 import androidx.glance.GlanceTheme
@@ -44,7 +45,6 @@ import com.heckmannch.birthdaybuddy.ui.theme.SpacingMedium
 import com.heckmannch.birthdaybuddy.ui.theme.SpacingSmall
 import com.heckmannch.birthdaybuddy.ui.theme.SpacingTiny
 import com.heckmannch.birthdaybuddy.ui.theme.WidgetCornerRadius
-import com.heckmannch.birthdaybuddy.ui.theme.WidgetItemMinHeight
 import com.heckmannch.birthdaybuddy.util.IntentExtras
 import com.heckmannch.birthdaybuddy.util.hasYear
 import com.heckmannch.birthdaybuddy.util.safeDaysUntilNext
@@ -56,13 +56,47 @@ import dagger.hilt.components.SingletonComponent
 import kotlinx.coroutines.flow.combine
 import java.time.format.DateTimeFormatter
 import java.time.format.FormatStyle
+import java.util.Locale
 
+/**
+ * Reusable ColorProvider for the item background (~80% opacity)
+ * to avoid repeated allocations on every recomposition.
+ */
+private val WidgetItemBackground = ColorProvider(
+    day = Color(0xCCFFFFFF), // ~80% opaque white (Light Theme)
+    night = Color(0xCC1E1E1E), // ~80% opaque dark gray (Dark Theme)
+)
+
+// Font size constants to avoid magic values
+private val WidgetNameFontSize: TextUnit = 14.sp
+private val WidgetDateFontSize: TextUnit = 12.sp
+private val WidgetAgeFontSize: TextUnit = 12.sp
+private val WidgetDaysLeftFontSize: TextUnit = 11.sp
+
+/**
+ * Hilt EntryPoint interface for Glance widget instances.
+ *
+ * Provides access to [ContactRepository] in the Glance lifecycle without standard field injection,
+ * as widgets are instantiated by the Android system outside of standard Android/Hilt lifecycles.
+ */
 @EntryPoint
 @InstallIn(SingletonComponent::class)
 interface WidgetEntryPoint {
     fun contactRepository(): ContactRepository
 }
 
+/**
+ * Glance-based AppWidget displaying upcoming birthdays on the user's home screen.
+ *
+ * Highlights & architectural details:
+ * - **Glance Architecture**: Built with Jetpack Glance, bridging Compose-like declarative UI to RemoteViews.
+ * - **Exact SizeMode**: Utilizes [SizeMode.Exact] to obtain the precise widget dimensions ([LocalSize])
+ *   and adaptively tailor the number of displayed items.
+ * - **Dynamic Height Scaling**: Employs [WidgetLayoutHelper] to dynamically distribute available height
+ *   across rows, avoiding layout clipping and scroll lag.
+ * - **M3 Translucent Design**: Displays cards with ~80% opacity on a transparent widget container
+ *   in accordance with Material 3 styling and project conventions.
+ */
 class BirthdayWidget : GlanceAppWidget() {
     override val sizeMode: SizeMode = SizeMode.Exact
 
@@ -83,21 +117,21 @@ class BirthdayWidget : GlanceAppWidget() {
                         contacts = list,
                         labelsEnabled = labelsEnabled,
                         configs = configs
-                    ).sortedBy { it.birthday!!.safeDaysUntilNext() }
+                    ).sortedBy { it.birthday?.safeDaysUntilNext() ?: Long.MAX_VALUE }
                 }.collect { value = it }
             }
 
+            val locale = ConfigurationCompat.getLocales(context.resources.configuration)[0] ?: Locale.getDefault()
             GlanceTheme {
-                WidgetContent(contactsState.value)
+                WidgetContent(contacts = contactsState.value, locale = locale)
             }
         }
     }
 
     @Composable
-    private fun WidgetContent(contacts: List<Contact>) {
+    private fun WidgetContent(contacts: List<Contact>, locale: Locale) {
         val size = LocalSize.current
         val context = LocalContext.current
-        val locale = context.resources.configuration.locales[0]
         val dateFormatter = remember {
             DateTimeFormatter.ofLocalizedDate(FormatStyle.MEDIUM)
         }
@@ -108,22 +142,12 @@ class BirthdayWidget : GlanceAppWidget() {
             )
         }
 
-        // Subtract outer Column padding (top=SpacingExtraSmall, bottom=SpacingExtraSmall -> 2 * SpacingExtraSmall)
-        val outerVerticalPadding = SpacingExtraSmall.value * 2
-        val availableHeight = (size.height.value - outerVerticalPadding).coerceAtLeast(0f)
-        val minItemBlockHeight = WidgetItemMinHeight
-
-        // 1. Calculate the maximum number of items that fit into the available height
-        val maxItems = (availableHeight / minItemBlockHeight.value).toInt().coerceIn(1, 10)
-        val displayContacts = contacts.take(maxItems)
-        val count = displayContacts.size
-
-        // 2. Distribute the total available height evenly among all items to be displayed
-        val dynamicBlockHeight = if (count > 0) {
-            (availableHeight / count).dp
-        } else {
-            minItemBlockHeight
-        }
+        // Calculate layout subset and dynamic block height using the stateless helper
+        val (displayContacts, dynamicBlockHeight) = WidgetLayoutHelper.calculateLayout(
+            totalHeight = size.height,
+            contacts = contacts,
+            verticalPadding = SpacingExtraSmall * 2,
+        )
 
         Column(
             modifier = GlanceModifier
@@ -189,11 +213,6 @@ class BirthdayWidget : GlanceAppWidget() {
             )
         }
 
-        val itemBgColor = ColorProvider(
-            day = Color(0xCCFFFFFF), // ~80% opaque white (Light Theme)
-            night = Color(0xCC1E1E1E) // ~80% opaque dark gray (Dark Theme)
-        )
-
         Box(
             modifier = GlanceModifier
                 .height(blockHeight)
@@ -204,7 +223,7 @@ class BirthdayWidget : GlanceAppWidget() {
             Box(
                 modifier = GlanceModifier
                     .fillMaxSize()
-                    .background(itemBgColor)
+                    .background(WidgetItemBackground)
                     .cornerRadius(WidgetCornerRadius)
                     .padding(horizontal = SpacingMedium, vertical = SpacingExtraSmall),
                 contentAlignment = Alignment.Center,
@@ -220,14 +239,14 @@ class BirthdayWidget : GlanceAppWidget() {
                             style = TextStyle(
                                 color = GlanceTheme.colors.onSurface,
                                 fontWeight = FontWeight.Medium,
-                                fontSize = 14.sp,
+                                fontSize = WidgetNameFontSize,
                             ),
                         )
                         Text(
                             text = dateText,
                             style = TextStyle(
                                 color = GlanceTheme.colors.onSurfaceVariant,
-                                fontSize = 12.sp,
+                                fontSize = WidgetDateFontSize,
                             ),
                         )
                     }
@@ -239,7 +258,7 @@ class BirthdayWidget : GlanceAppWidget() {
                                 style = TextStyle(
                                     color = GlanceTheme.colors.primary,
                                     fontWeight = FontWeight.Bold,
-                                    fontSize = 12.sp,
+                                    fontSize = WidgetAgeFontSize,
                                 ),
                             )
                         }
@@ -252,7 +271,7 @@ class BirthdayWidget : GlanceAppWidget() {
                                     GlanceTheme.colors.onSurfaceVariant
                                 },
                                 fontWeight = if (daysLeft == 0L) FontWeight.Bold else FontWeight.Normal,
-                                fontSize = 11.sp,
+                                fontSize = WidgetDaysLeftFontSize,
                             ),
                         )
                     }
