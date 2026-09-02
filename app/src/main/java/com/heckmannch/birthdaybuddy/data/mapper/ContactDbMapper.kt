@@ -31,6 +31,8 @@ class ContactDbMapper @Inject constructor() {
         )
     }
 
+    fun toDomainList(entities: List<ContactEntity>): List<Contact> = entities.map(::toDomain)
+
     fun toEntity(domain: Contact): ContactEntity {
         return ContactEntity(
             localId = domain.localId,
@@ -50,4 +52,6 @@ class ContactDbMapper @Inject constructor() {
             spouseLookupKey = domain.spouseLookupKey
         )
     }
+
+    fun toEntityList(domains: List<Contact>): List<ContactEntity> = domains.map(::toEntity)
 }

@@ -101,7 +101,7 @@ Dieses Dokument dient als systemischer Kontext für die Entwicklung von Features
 - **`data/`**:
   - **`local/`**: Room-Datenbanken (`AppDatabase`, `SettingsDatabase`), Entitäten (`Contact`, `AppSettings`, `NotificationRule`, `PendingNotification`) und DAOs.
   - **`repository/`**: Orchestriert den Datenfluss (`ContactRepository`, `CalendarSyncRepository`, `NotificationRepository`).
-  - **`mapper/`**: Mappings von DB-Entitäten zu Domain-Modellen (`ContactMapper`).
+  - **`mapper/`**: Mappings von DB-Entitäten zu Domain-Modellen (`ContactDbMapper`).
   - **`permission/`**: Plattformspezifische Implementierung (`AndroidPermissionChecker.kt`).
 - **`ui/`**:
   - **`screens/`**: Feature-basierte Verzeichnisse (`home/`, `onboarding/`, `settings/`). Jedes Feature beherbergt Screen, Content, ViewModel, State, Actions und Sub-Komponenten (feature-co-located).

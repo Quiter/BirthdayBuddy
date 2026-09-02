@@ -20,6 +20,8 @@ class NotificationRuleMapper @Inject constructor() {
         )
     }
 
+    fun toDomainList(entities: List<NotificationRuleEntity>): List<NotificationRule> = entities.map(::toDomain)
+
     fun toEntity(domain: NotificationRule): NotificationRuleEntity {
         return NotificationRuleEntity(
             id = domain.id,
@@ -28,4 +30,6 @@ class NotificationRuleMapper @Inject constructor() {
             minute = domain.minute
         )
     }
+
+    fun toEntityList(domains: List<NotificationRule>): List<NotificationRuleEntity> = domains.map(::toEntity)
 }

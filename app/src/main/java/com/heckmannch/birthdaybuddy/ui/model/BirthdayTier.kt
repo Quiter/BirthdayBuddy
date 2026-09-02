@@ -3,7 +3,7 @@ package com.heckmannch.birthdaybuddy.ui.model
 /**
  * Klassifiziert das visuelle Tier eines Kontakts für seinen Geburtstag.
  *
- * Die Berechnung erfolgt einmalig im [com.heckmannch.birthdaybuddy.data.mapper.ContactMapper]
+ * Die Berechnung erfolgt einmalig im [com.heckmannch.birthdaybuddy.ui.mapper.ContactUiMapper]
  * und wird über [com.heckmannch.birthdaybuddy.ui.model.ContactUiModel.birthdayTier] an die UI
  * weitergegeben. Dadurch wird die doppelte Inline-Logik in BirthdayItem.kt vermieden.
  *

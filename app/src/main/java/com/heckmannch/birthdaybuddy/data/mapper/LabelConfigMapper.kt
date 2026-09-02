@@ -22,6 +22,8 @@ class LabelConfigMapper @Inject constructor() {
         )
     }
 
+    fun toDomainList(entities: List<LabelConfigEntity>): List<LabelConfig> = entities.map(::toDomain)
+
     fun toEntity(domain: LabelConfig): LabelConfigEntity {
         return LabelConfigEntity(
             name = domain.name,
@@ -32,4 +34,6 @@ class LabelConfigMapper @Inject constructor() {
             showInWidget = domain.showInWidget
         )
     }
+
+    fun toEntityList(domains: List<LabelConfig>): List<LabelConfigEntity> = domains.map(::toEntity)
 }

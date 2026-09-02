@@ -22,6 +22,8 @@ class PendingNotificationMapper @Inject constructor() {
         )
     }
 
+    fun toDomainList(entities: List<PendingNotificationEntity>): List<PendingNotification> = entities.map(::toDomain)
+
     fun toEntity(domain: PendingNotification): PendingNotificationEntity {
         return PendingNotificationEntity(
             id = domain.id,
@@ -32,4 +34,6 @@ class PendingNotificationMapper @Inject constructor() {
             dismissCount = domain.dismissCount
         )
     }
+
+    fun toEntityList(domains: List<PendingNotification>): List<PendingNotificationEntity> = domains.map(::toEntity)
 }

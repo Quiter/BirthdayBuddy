@@ -47,7 +47,7 @@
     - `SystemContactDataSource.kt`: Kapselt den Low-Level Zugriff auf den Android ContentResolver (Kontakte, Gruppen, Events).
     - `TimeRepository.kt`: Reaktive Zeitquelle, die bei Datumswechseln (Mitternacht) automatische UI-Updates triggert.
 - ### 📁 Mapper (`data.mapper`)
-    - `ContactMapper.kt`: Reine Logik-Komponente zur Transformation von Datenbank-Entitäten in Domain-Modelle (`ContactEntity` -> `Contact`) (mittels `@Reusable` für effiziente DI-Instanziierung optimiert).
+    - `ContactDbMapper.kt`: Reine Logik-Komponente zur bidirektionalen Transformation zwischen Datenbank-Entitäten und Domain-Modellen (`ContactEntity` <-> `Contact`) (mittels `@Reusable` für effiziente DI-Instanziierung optimiert).
 - ### 📁 Permission (`data.permission`)
     - `AndroidPermissionChecker.kt`: Konkrete plattformspezifische Implementierung des `PermissionChecker` Interfaces unter Verwendung von ContextCompat APIs und App-Kontext.
 
@@ -235,8 +235,7 @@ Diese Tests laufen ohne Emulator/Gerät direkt auf dem Entwicklungsrechner und s
 - `MainDispatcherRule.kt`: Coroutine-Rule zur Steuerung des Haupt-Dispatchers in Tests.
 - `data/local/ConvertersTest.kt`: Tests für die TypeConverter (LocalDate, Listen).
 - `data/local/GiftIdeaConvertersTest.kt`: Tests für Geschenkideen-TypeConverter.
-- `data/mapper/ContactMapperTest.kt`: Tests für die Transformation von Datenbank-Entitäten in UI-Modelle (mit JVM-Safe Fallback für die Formatierung).
-- `data/mapper/ContactMapperTierTest.kt`: Tests für die `BirthdayTier`-Logik und deren Integration mit `ContactMapper`.
+- `data/mapper/ContactDbMapperTest.kt`: Tests für die bidirektionale Transformation zwischen Datenbank-Entitäten und Domain-Modellen (`toDomain` & `toEntity`).
 - `data/repository/ContactRepositoryImplTest.kt`: JVM Unit-Tests für `ContactRepositoryImpl` (Abdeckung von allContacts, labelsEnabled, syncContacts, addGiftIdea, und labelConfigs).
 - `data/repository/SystemContactDataSourceTest.kt`: JVM Unit-Tests für `SystemContactDataSource` (Parsing von Datumsformaten inkl. Schaltjahren wie 29. Februar ohne Jahr).
 - `util/DateUtilsTest.kt`: Logiktests für Datumsberechnungen (Alter, Tage bis Geburtstag, etc.).
