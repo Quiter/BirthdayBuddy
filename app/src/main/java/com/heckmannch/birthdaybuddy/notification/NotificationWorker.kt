@@ -91,19 +91,21 @@ class NotificationWorker @AssistedInject constructor(
          * @param forceReplace Wenn true, wird ein bereits geplanter Worker ersetzt (REPLACE).
          *   Nutze true nach Settings-Änderungen. Nutze false nach einem Worker-Run, damit
          *   kein noch laufender Worker durch die Selbst-Neu-Planung abgebrochen wird.
+         * @param now Der aktuelle Zeitpunkt für die Berechnung (standardmäßig [LocalDateTime.now]).
          */
         @JvmStatic
+        @JvmOverloads
         fun scheduleNext(
             context: Context,
             rules: List<NotificationRule>,
-            forceReplace: Boolean = true
+            forceReplace: Boolean = true,
+            now: LocalDateTime = LocalDateTime.now()
         ) {
             if (rules.isEmpty()) {
                 cancelNotification(context)
                 return
             }
 
-            val now = LocalDateTime.now()
             val uniqueTimes = rules.asSequence()
                 .map { LocalTime.of(it.hour, it.minute) }
                 .distinct()

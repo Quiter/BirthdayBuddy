@@ -8,7 +8,6 @@ import com.google.common.truth.Truth.assertThat
 import com.heckmannch.birthdaybuddy.domain.model.NotificationRule
 import io.mockk.every
 import io.mockk.mockk
-import io.mockk.mockkStatic
 import io.mockk.slot
 import io.mockk.unmockkAll
 import io.mockk.verify
@@ -44,9 +43,7 @@ class NotificationWorkerTest {
 
     @Test
     fun `scheduleNext - rule in future today - schedules correct delay`() {
-        // Arrange: mock LocalDateTime.now() to 12:00:00
-        mockkStatic(LocalDateTime::class)
-        every { LocalDateTime.now() } returns LocalDateTime.of(2026, 7, 9, 12, 0, 0)
+        val testNow = LocalDateTime.of(2026, 7, 9, 12, 0, 0)
 
         val rules = listOf(
             NotificationRule(id = 1, daysBefore = 0, hour = 15, minute = 0), // 3 hours in future
@@ -56,7 +53,7 @@ class NotificationWorkerTest {
         val requestSlot = slot<OneTimeWorkRequest>()
 
         // Act
-        NotificationWorker.scheduleNext(context, rules, forceReplace = true)
+        NotificationWorker.scheduleNext(context, rules, forceReplace = true, now = testNow)
 
         // Assert
         verify {
@@ -75,9 +72,7 @@ class NotificationWorkerTest {
 
     @Test
     fun `scheduleNext - all rules in past today - schedules first rule for tomorrow`() {
-        // Arrange: mock LocalDateTime.now() to 12:00:00
-        mockkStatic(LocalDateTime::class)
-        every { LocalDateTime.now() } returns LocalDateTime.of(2026, 7, 9, 12, 0, 0)
+        val testNow = LocalDateTime.of(2026, 7, 9, 12, 0, 0)
 
         val rules = listOf(
             NotificationRule(id = 1, daysBefore = 0, hour = 10, minute = 0), // past
@@ -87,7 +82,7 @@ class NotificationWorkerTest {
         val requestSlot = slot<OneTimeWorkRequest>()
 
         // Act
-        NotificationWorker.scheduleNext(context, rules, forceReplace = false)
+        NotificationWorker.scheduleNext(context, rules, forceReplace = false, now = testNow)
 
         // Assert
         verify {

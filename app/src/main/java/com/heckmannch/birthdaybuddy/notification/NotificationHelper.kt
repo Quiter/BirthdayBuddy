@@ -27,6 +27,11 @@ class NotificationHelper @Inject constructor(
 
     companion object {
         const val CHANNEL_ID = NotificationActions.CHANNEL_ID
+        const val OFFSET_SNOOZE = 1
+        const val OFFSET_DONE = 2
+        const val OFFSET_DISMISSED = 3
+        const val OFFSET_SETTINGS = 4
+        const val FALLBACK_NOTIFICATION_ID_BASE = 200
     }
 
     suspend fun showBirthdayNotification(
@@ -60,7 +65,7 @@ class NotificationHelper @Inject constructor(
 
         // Wir nutzen die Datenbank-ID (pendingId) als eindeutige System-Notification-ID
         // Falls keine pendingId da ist (Snooze-Fallback), nutzen wir den Standard-Algorithmus
-        val notificationId = if (pendingId != -1) pendingId else (200 + daysBefore)
+        val notificationId = if (pendingId != -1) pendingId else (FALLBACK_NOTIFICATION_ID_BASE + daysBefore)
 
         val pendingIntent = PendingIntent.getActivity(
             context, notificationId, intent,
@@ -74,7 +79,7 @@ class NotificationHelper @Inject constructor(
             putExtra(NotificationActions.EXTRA_PENDING_ID, pendingId)
         }
         val donePendingIntent = PendingIntent.getBroadcast(
-            context, notificationId * 10 + 2, doneIntent,
+            context, notificationId * 10 + OFFSET_DONE, doneIntent,
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
 
@@ -91,7 +96,7 @@ class NotificationHelper @Inject constructor(
             putExtra(NotificationActions.EXTRA_LOOKUP_KEYS, dbKeys)
         }
         val snoozePendingIntent = PendingIntent.getBroadcast(
-            context, notificationId * 10 + 1, snoozeIntent,
+            context, notificationId * 10 + OFFSET_SNOOZE, snoozeIntent,
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
 
@@ -101,7 +106,7 @@ class NotificationHelper @Inject constructor(
             flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
         }
         val settingsPendingIntent = PendingIntent.getActivity(
-            context, notificationId * 10 + 4, settingsIntent,
+            context, notificationId * 10 + OFFSET_SETTINGS, settingsIntent,
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
 
@@ -114,7 +119,7 @@ class NotificationHelper @Inject constructor(
             putExtra(NotificationActions.EXTRA_LOOKUP_KEYS, dbKeys)
         }
         val deletePendingIntent = PendingIntent.getBroadcast(
-            context, notificationId * 10 + 3, deleteIntent,
+            context, notificationId * 10 + OFFSET_DISMISSED, deleteIntent,
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
 
