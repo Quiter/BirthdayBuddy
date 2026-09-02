@@ -426,19 +426,27 @@ class HomeViewModel @Inject constructor(
             is HomeIntent.SyncContacts -> {
                 _userUiState.update { it.copy(hasContactPermission = checkContactPermission()) }
                 viewModelScope.launch {
+                    val startTime = clock.currentTimeMillis()
                     if (intent.showLoading) {
                         _userUiState.update { it.copy(isSyncing = true) }
                         contactRepository.clearIgnoredCouplePairs()
                     }
-                    val startTime = clock.currentTimeMillis()
-                    contactRepository.syncContacts()
-                    if (intent.showLoading) {
-                        val elapsedTime = clock.currentTimeMillis() - startTime
-                        if (elapsedTime < MIN_SYNC_SPINNER_DURATION_MS) {
-                            delay((MIN_SYNC_SPINNER_DURATION_MS - elapsedTime).milliseconds)
+                    try {
+                        contactRepository.syncContacts()
+                    } catch (e: kotlinx.coroutines.CancellationException) {
+                        // Re-throw CancellationException to ensure proper coroutine cancellation mechanics
+                        throw e
+                    } catch (e: Exception) {
+                        // Prevent UI freezing/crashing on sync errors; further error handling/logging can be attached here
+                    } finally {
+                        if (intent.showLoading) {
+                            val elapsedTime = clock.currentTimeMillis() - startTime
+                            if (elapsedTime < MIN_SYNC_SPINNER_DURATION_MS) {
+                                delay((MIN_SYNC_SPINNER_DURATION_MS - elapsedTime).milliseconds)
+                            }
+                            _userUiState.update { it.copy(isSyncing = false) }
+                            _syncCompletedEvent.emit(Unit)
                         }
-                        _userUiState.update { it.copy(isSyncing = false) }
-                        _syncCompletedEvent.emit(Unit)
                     }
                 }
             }
