@@ -3,7 +3,6 @@ package com.heckmannch.birthdaybuddy.domain.usecase
 import com.heckmannch.birthdaybuddy.domain.model.ContactLabels
 import com.heckmannch.birthdaybuddy.domain.model.CoupleSuggestion
 import com.heckmannch.birthdaybuddy.domain.repository.ContactRepository
-import com.heckmannch.birthdaybuddy.util.getInitials
 import dagger.Reusable
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
@@ -40,11 +39,9 @@ class GetCoupleSuggestionUseCase @Inject constructor(
                 firstLookupKey = couple.firstLookupKey,
                 firstName = couple.firstName,
                 firstImageUri = couple.firstImageUri,
-                firstInitials = couple.firstName.getInitials(),
                 secondLookupKey = couple.secondLookupKey,
                 secondName = couple.secondName,
-                secondImageUri = couple.secondImageUri,
-                secondInitials = couple.secondName.getInitials()
+                secondImageUri = couple.secondImageUri
             )
         }
     }

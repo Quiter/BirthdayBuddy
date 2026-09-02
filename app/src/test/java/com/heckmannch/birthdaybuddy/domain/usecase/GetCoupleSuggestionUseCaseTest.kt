@@ -118,7 +118,5 @@ class GetCoupleSuggestionUseCaseTest {
             assertThat(result.firstName).isEqualTo("Max Schmidt")
             assertThat(result.secondLookupKey).isEqualTo("key2")
             assertThat(result.secondName).isEqualTo("Erika Müller")
-            assertThat(result.firstInitials).isEqualTo("MS")
-            assertThat(result.secondInitials).isEqualTo("EM")
         }
 }

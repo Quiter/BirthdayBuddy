@@ -2,13 +2,14 @@ package com.heckmannch.birthdaybuddy.ui.mapper
 
 import com.heckmannch.birthdaybuddy.domain.model.CoupleSuggestion
 import com.heckmannch.birthdaybuddy.ui.model.CoupleSuggestionUiModel
+import com.heckmannch.birthdaybuddy.util.getInitials
 import dagger.Reusable
 import javax.inject.Inject
 
 /**
  * Mapper for converting domain [CoupleSuggestion] models to [CoupleSuggestionUiModel]s.
  * Decouples domain logic from presentation/Compose-specific immutability annotations
- * to support Clean Architecture guidelines.
+ * and handles UI-specific presentation formatting like avatar initials to support Clean Architecture guidelines.
  */
 @Reusable
 class CoupleSuggestionUiMapper @Inject constructor() {
@@ -23,11 +24,11 @@ class CoupleSuggestionUiMapper @Inject constructor() {
             firstLookupKey = domain.firstLookupKey,
             firstName = domain.firstName,
             firstImageUri = domain.firstImageUri,
-            firstInitials = domain.firstInitials,
+            firstInitials = domain.firstName.getInitials(),
             secondLookupKey = domain.secondLookupKey,
             secondName = domain.secondName,
             secondImageUri = domain.secondImageUri,
-            secondInitials = domain.secondInitials
+            secondInitials = domain.secondName.getInitials()
         )
     }
 }
