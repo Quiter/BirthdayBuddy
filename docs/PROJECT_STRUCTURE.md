@@ -98,7 +98,8 @@
 - ### 📁 Screens (`ui.screens`)
     - #### 📁 Home (`home`)
         - `HomeScreen.kt`: Einstiegspunkt und koordinierende Komponente des Hauptbildschirms.
-        - `HomeContent.kt`: Reine UI-Layout Komponente für den Homescreen.
+        - `HomeContent.kt`: Schlanke UI-Layout-Komponente für den Homescreen (~180 Zeilen), die Scaffold, Navigation-Drawer, TopBar, FAB und List-Detail-Container zusammenführt.
+        - `HomeNavKey.kt`: Sealed Interface `HomeNavKey` für Navigation 3 List-Detail-Szenen (`ContactList`, `ContactDetail`) und Hilfsfunktionen zur Backstack-Navigation.
         - `HomeState.kt`: Plain State Holder für die UI-Logik (Scroll-Zustand, Fokus).
         - `HomeActions.kt`: Wrapper für Benutzeraktionen zur Reduzierung von Prop-Drilling.
         - `HomeIntent.kt`: Sealed Interface `HomeIntent` und MVI-Intent-Klassen für den Home-Screen.
@@ -116,10 +117,12 @@
                 - `FastScrollbar.kt`: Hochperformante Scrollbar mit Sub-Pixel-Präzision (unterstützt einen `headerCount`-Offset für Kopfzeilen). Enthält die öffentliche API (`FastScrollbar()`, `ScrollSection`), alle State-Variablen, Geometrie-Berechnungen, Drag-Gesture-Handler und die Thumb-UI. Nutzt `ScrollbarBubble.kt` (selbes Package) für die animierte Label-Bubble.
                 - `ScrollbarBubble.kt`: Isoliertes, animiertes Label-Bubble-Composable (`internal fun ScrollbarBubble`), das während des Scrollens neben dem Thumb erscheint. Wird aus `FastScrollbar.kt` heraus aufgerufen. Nutzt die `Popup`-API für korrekte Z-Order und kein Clipping.
                 - `GiftIdeaList.kt`: Spezialisierte Komponente für die Inline-Verwaltung von Geschenkideen.
+                - `HomeListDetailDisplay.kt`: Adaptive Navigation 3 List-Detail-Containerkomponente (`NavDisplay`, Backstack-Management, automatische Pane-Auswahl, FastScrollbar-Anbindung).
             - ###### 📁 Labels (`home.components.labels`)
                 - `LabelFilterBar.kt`: Chip-Leiste zur Filterung nach Labels (nun als scrollbarer Listen-Header in die BirthdayList integriert).
                 - `LabelSidebar.kt`: Vertikale Sidebar zur Filterung nach Labels auf Tablets/Wide-Screens (unterstützt Expanded/Collapsed-Modi, Tooltips und Marquee-Text-Effekte).
             - ###### 📁 TopBar (`home.components.topbar`)
+                - `HomeTopBar.kt`: Top-Bar Komponente für den Home-Screen mit Status-Bar Insets, `SearchBar` und bedarfsweiser `LabelFilterBar`.
                 - `SearchBar.kt`: M3 SearchBar-Integration (unterstützt optionales leading navigationIcon).
             - ###### 📁 Actions (`home.components.actions`)
                 - `ContactActionRow.kt`: Reihe mit Messenger- und Kontakt-Aktionen.
