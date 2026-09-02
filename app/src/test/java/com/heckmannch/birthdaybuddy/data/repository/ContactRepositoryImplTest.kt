@@ -1,6 +1,7 @@
 package com.heckmannch.birthdaybuddy.data.repository
 
 import android.content.ContentResolver
+import android.net.Uri
 import com.google.common.truth.Truth.assertThat
 import com.heckmannch.birthdaybuddy.MainDispatcherRule
 import com.heckmannch.birthdaybuddy.data.local.AppDatabase
@@ -30,8 +31,8 @@ import kotlinx.coroutines.test.runTest
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
+import org.mockito.Mockito.mockStatic
 import org.mockito.kotlin.any
-import org.mockito.kotlin.anyOrNull
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.never
 import org.mockito.kotlin.verify
@@ -608,39 +609,49 @@ class ContactRepositoryImplTest {
     fun exportGiftIdeas_writesBackupToOutputStream() = runTest {
         // Arrange
         val uriString = "content://test_uri"
-        val json = "{\"ideas\": []}"
-        whenever(giftIdeaBackupManager.exportGiftIdeas()).thenReturn(json)
-        val outputStream = ByteArrayOutputStream()
-        whenever(contentResolver.openOutputStream(anyOrNull())).thenReturn(outputStream)
+        val mockUri: Uri = mock()
+        mockStatic(Uri::class.java).use { mockedStatic ->
+            mockedStatic.`when`<Uri> { Uri.parse(uriString) }.thenReturn(mockUri)
 
-        // Act
-        repository.exportGiftIdeas(uriString)
+            val json = "{\"ideas\": []}"
+            whenever(giftIdeaBackupManager.exportGiftIdeas()).thenReturn(json)
+            val outputStream = ByteArrayOutputStream()
+            whenever(contentResolver.openOutputStream(mockUri)).thenReturn(outputStream)
 
-        // Assert
-        verify(giftIdeaBackupManager).exportGiftIdeas()
-        verify(contentResolver).openOutputStream(anyOrNull())
-        assertThat(outputStream.toString()).isEqualTo(json)
+            // Act
+            repository.exportGiftIdeas(uriString)
+
+            // Assert
+            verify(giftIdeaBackupManager).exportGiftIdeas()
+            verify(contentResolver).openOutputStream(mockUri)
+            assertThat(outputStream.toString()).isEqualTo(json)
+        }
     }
 
     @Test
     fun importGiftIdeas_readsBackupFromInputStreamAndTriggersSync() = runTest {
         // Arrange
         val uriString = "content://test_uri"
-        val json = "{\"ideas\": []}"
-        val inputStream = ByteArrayInputStream(json.toByteArray())
-        whenever(contentResolver.openInputStream(anyOrNull())).thenReturn(inputStream)
-        whenever(giftIdeaBackupManager.importGiftIdeas(json)).thenReturn(3)
+        val mockUri: Uri = mock()
+        mockStatic(Uri::class.java).use { mockedStatic ->
+            mockedStatic.`when`<Uri> { Uri.parse(uriString) }.thenReturn(mockUri)
 
-        // Stub syncContacts requirements
-        whenever(permissionChecker.hasContactsPermission()).thenReturn(false)
+            val json = "{\"ideas\": []}"
+            val inputStream = ByteArrayInputStream(json.toByteArray())
+            whenever(contentResolver.openInputStream(mockUri)).thenReturn(inputStream)
+            whenever(giftIdeaBackupManager.importGiftIdeas(json)).thenReturn(3)
 
-        // Act
-        val result = repository.importGiftIdeas(uriString)
+            // Stub syncContacts requirements
+            whenever(permissionChecker.hasContactsPermission()).thenReturn(false)
 
-        // Assert
-        verify(contentResolver).openInputStream(anyOrNull())
-        verify(giftIdeaBackupManager).importGiftIdeas(json)
-        assertThat(result).isEqualTo(3)
+            // Act
+            val result = repository.importGiftIdeas(uriString)
+
+            // Assert
+            verify(contentResolver).openInputStream(mockUri)
+            verify(giftIdeaBackupManager).importGiftIdeas(json)
+            assertThat(result).isEqualTo(3)
+        }
     }
 
     @Test
