@@ -57,9 +57,8 @@ object AppModule {
      */
     @Provides
     @Singleton
-    fun provideAppDatabase(@ApplicationContext context: Context): AppDatabase {
-        return AppDatabase.getDatabase(context)
-    }
+    fun provideAppDatabase(@ApplicationContext context: Context): AppDatabase =
+        AppDatabase.getDatabase(context)
 
     /**
      * Provides a single instance of the settings database storing local app configs and styling preferences.
@@ -71,9 +70,8 @@ object AppModule {
      */
     @Provides
     @Singleton
-    fun provideSettingsDatabase(@ApplicationContext context: Context): SettingsDatabase {
-        return SettingsDatabase.getDatabase(context)
-    }
+    fun provideSettingsDatabase(@ApplicationContext context: Context): SettingsDatabase =
+        SettingsDatabase.getDatabase(context)
 
     /**
      * Provides the Data Access Object (DAO) for contacts.
@@ -85,9 +83,7 @@ object AppModule {
      */
     @Provides
     @Reusable
-    fun provideContactDao(database: AppDatabase): ContactDao {
-        return database.contactDao()
-    }
+    fun provideContactDao(database: AppDatabase): ContactDao = database.contactDao()
 
     /**
      * Provides the Data Access Object (DAO) for managing pending/scheduled notifications.
@@ -99,9 +95,8 @@ object AppModule {
      */
     @Provides
     @Reusable
-    fun providePendingNotificationDao(database: AppDatabase): PendingNotificationDao {
-        return database.pendingNotificationDao()
-    }
+    fun providePendingNotificationDao(database: AppDatabase): PendingNotificationDao =
+        database.pendingNotificationDao()
 
     /**
      * Provides the Data Access Object (DAO) for contact label settings and visibility configs.
@@ -113,9 +108,8 @@ object AppModule {
      */
     @Provides
     @Reusable
-    fun provideLabelConfigDao(database: SettingsDatabase): LabelConfigDao {
-        return database.labelConfigDao()
-    }
+    fun provideLabelConfigDao(database: SettingsDatabase): LabelConfigDao =
+        database.labelConfigDao()
 
     /**
      * Provides the Data Access Object (DAO) for customized notification schedule rules.
@@ -125,9 +119,8 @@ object AppModule {
      */
     @Provides
     @Reusable
-    fun provideNotificationRuleDao(database: SettingsDatabase): NotificationRuleDao {
-        return database.notificationRuleDao()
-    }
+    fun provideNotificationRuleDao(database: SettingsDatabase): NotificationRuleDao =
+        database.notificationRuleDao()
 
     /**
      * Provides the Data Access Object (DAO) for reading/writing global application settings.
@@ -137,9 +130,8 @@ object AppModule {
      */
     @Provides
     @Reusable
-    fun provideAppSettingsDao(database: SettingsDatabase): AppSettingsDao {
-        return database.appSettingsDao()
-    }
+    fun provideAppSettingsDao(database: SettingsDatabase): AppSettingsDao =
+        database.appSettingsDao()
 
     /**
      * Provides the Data Access Object (DAO) for custom user data annotated on specific contacts.
@@ -149,9 +141,8 @@ object AppModule {
      */
     @Provides
     @Reusable
-    fun provideContactUserDataDao(database: SettingsDatabase): ContactUserDataDao {
-        return database.contactUserDataDao()
-    }
+    fun provideContactUserDataDao(database: SettingsDatabase): ContactUserDataDao =
+        database.contactUserDataDao()
 
     /**
      * Provides the application-scoped CoroutineScope.
@@ -159,16 +150,19 @@ object AppModule {
      * Design: Runs on [Dispatchers.Default] with a [SupervisorJob], and catches all unhandled exceptions
      * to log them safely, preventing application crashes.
      *
+     * @param defaultDispatcher The [CoroutineDispatcher] for default operations.
      * @return The [CoroutineScope] mapped to the application lifecycle.
      */
     @Provides
     @Singleton
     @ApplicationScope
-    fun provideApplicationScope(): CoroutineScope {
+    fun provideApplicationScope(
+        @DefaultDispatcher defaultDispatcher: CoroutineDispatcher
+    ): CoroutineScope {
         val exceptionHandler = CoroutineExceptionHandler { _, throwable ->
             Log.e(TAG_APP_SCOPE, "Unhandled exception in applicationScope", throwable)
         }
-        return CoroutineScope(SupervisorJob() + Dispatchers.Default + exceptionHandler)
+        return CoroutineScope(SupervisorJob() + defaultDispatcher + exceptionHandler)
     }
 
     /**
@@ -176,33 +170,27 @@ object AppModule {
      */
     @Provides
     @IoDispatcher
-    fun provideIoDispatcher(): CoroutineDispatcher {
-        return Dispatchers.IO
-    }
+    fun provideIoDispatcher(): CoroutineDispatcher = Dispatchers.IO
 
     /**
      * Provides the CoroutineDispatcher for CPU-intensive / default operations.
      */
     @Provides
     @DefaultDispatcher
-    fun provideDefaultDispatcher(): CoroutineDispatcher {
-        return Dispatchers.Default
-    }
+    fun provideDefaultDispatcher(): CoroutineDispatcher = Dispatchers.Default
 
     /**
      * Provides the CoroutineDispatcher for UI / main-thread operations.
      */
     @Provides
     @MainDispatcher
-    fun provideMainDispatcher(): CoroutineDispatcher {
-        return Dispatchers.Main
-    }
+    fun provideMainDispatcher(): CoroutineDispatcher = Dispatchers.Main
 
     /**
      * Provides the Android ContentResolver for file operations.
      */
     @Provides
-    fun provideContentResolver(@ApplicationContext context: Context): ContentResolver {
-        return context.contentResolver
-    }
+    @Reusable
+    fun provideContentResolver(@ApplicationContext context: Context): ContentResolver =
+        context.contentResolver
 }

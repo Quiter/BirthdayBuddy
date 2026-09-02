@@ -6,6 +6,8 @@ import com.heckmannch.birthdaybuddy.data.repository.CalendarSyncRepositoryImpl
 import com.heckmannch.birthdaybuddy.data.repository.ContactRepositoryImpl
 import com.heckmannch.birthdaybuddy.data.repository.NotificationRepositoryImpl
 import com.heckmannch.birthdaybuddy.data.repository.NotificationSchedulerImpl
+import com.heckmannch.birthdaybuddy.data.repository.SystemCalendarDataSource
+import com.heckmannch.birthdaybuddy.data.repository.SystemCalendarDataSourceImpl
 import com.heckmannch.birthdaybuddy.data.repository.TimeRepositoryImpl
 import com.heckmannch.birthdaybuddy.domain.permission.PermissionChecker
 import com.heckmannch.birthdaybuddy.domain.repository.CalendarSyncRepository
@@ -60,12 +62,12 @@ interface HelperBindingsModule {
     /**
      * Binds the system calendar data source abstraction to its implementation.
      *
-     * @param dataSource The [com.heckmannch.birthdaybuddy.data.repository.SystemCalendarDataSourceImpl] implementation.
-     * @return The bound [com.heckmannch.birthdaybuddy.data.repository.SystemCalendarDataSource] interface.
+     * @param dataSource The [SystemCalendarDataSourceImpl] implementation.
+     * @return The bound [SystemCalendarDataSource] interface.
      */
     @Binds
     @Singleton
-    fun bindCalendarDataSource(dataSource: com.heckmannch.birthdaybuddy.data.repository.SystemCalendarDataSourceImpl): com.heckmannch.birthdaybuddy.data.repository.SystemCalendarDataSource
+    fun bindCalendarDataSource(dataSource: SystemCalendarDataSourceImpl): SystemCalendarDataSource
 
     /**
      * Binds the contact repository interface to its implementation.
