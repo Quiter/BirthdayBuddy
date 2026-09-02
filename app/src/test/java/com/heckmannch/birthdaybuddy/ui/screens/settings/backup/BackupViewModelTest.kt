@@ -27,10 +27,13 @@ class BackupViewModelTest {
     private val importGiftIdeasUseCase: ImportGiftIdeasUseCase = mock()
     private val uri: Uri = mock()
 
+    private val uriString = "content://test_uri"
+
     private lateinit var viewModel: BackupViewModel
 
     @Before
     fun setup() {
+        whenever(uri.toString()).thenReturn(uriString)
         viewModel = BackupViewModel(exportGiftIdeasUseCase, importGiftIdeasUseCase, testDispatcher)
     }
 
@@ -45,7 +48,7 @@ class BackupViewModelTest {
             viewModel.onIntent(BackupIntent.ExportBackup(uri, onSuccess, onError))
 
             // Then
-            verify(exportGiftIdeasUseCase).invoke(uri)
+            verify(exportGiftIdeasUseCase).invoke(uriString)
             verify(onSuccess).invoke()
         }
 
@@ -54,7 +57,7 @@ class BackupViewModelTest {
         runTest(testDispatcher) {
             // Given
             val exception = RuntimeException("Export failed")
-            whenever(exportGiftIdeasUseCase(uri)).thenThrow(exception)
+            whenever(exportGiftIdeasUseCase(uriString)).thenThrow(exception)
 
             val onSuccess: () -> Unit = mock()
             val onError: (Exception) -> Unit = mock()
@@ -70,7 +73,7 @@ class BackupViewModelTest {
     fun `ImportBackup intent should delegate to usecase and call onSuccess with count`() =
         runTest(testDispatcher) {
             // Given
-            whenever(importGiftIdeasUseCase(uri)).thenReturn(5)
+            whenever(importGiftIdeasUseCase(uriString)).thenReturn(5)
 
             val onSuccess: (Int) -> Unit = mock()
             val onInvalid: () -> Unit = mock()
@@ -80,7 +83,7 @@ class BackupViewModelTest {
             viewModel.onIntent(BackupIntent.ImportBackup(uri, onSuccess, onInvalid, onError))
 
             // Then
-            verify(importGiftIdeasUseCase).invoke(uri)
+            verify(importGiftIdeasUseCase).invoke(uriString)
             verify(onSuccess).invoke(5)
         }
 
@@ -88,7 +91,7 @@ class BackupViewModelTest {
     fun `ImportBackup intent should call onInvalid when usecase returns negative count`() =
         runTest(testDispatcher) {
             // Given
-            whenever(importGiftIdeasUseCase(uri)).thenReturn(-1)
+            whenever(importGiftIdeasUseCase(uriString)).thenReturn(-1)
 
             val onSuccess: (Int) -> Unit = mock()
             val onInvalid: () -> Unit = mock()
@@ -106,7 +109,7 @@ class BackupViewModelTest {
         runTest(testDispatcher) {
             // Given
             val exception = RuntimeException("Import failed")
-            whenever(importGiftIdeasUseCase(uri)).thenThrow(exception)
+            whenever(importGiftIdeasUseCase(uriString)).thenThrow(exception)
 
             val onSuccess: (Int) -> Unit = mock()
             val onInvalid: () -> Unit = mock()

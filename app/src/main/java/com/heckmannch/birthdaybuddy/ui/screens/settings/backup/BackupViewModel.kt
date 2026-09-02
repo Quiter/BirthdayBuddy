@@ -57,7 +57,7 @@ class BackupViewModel @Inject constructor(
     ) {
         viewModelScope.launch {
             try {
-                exportGiftIdeasUseCase(uri)
+                exportGiftIdeasUseCase(uri.toString())
                 onSuccess()
             } catch (e: Exception) {
                 onError(e)
@@ -73,7 +73,7 @@ class BackupViewModel @Inject constructor(
     ) {
         viewModelScope.launch {
             try {
-                val count = importGiftIdeasUseCase(uri)
+                val count = importGiftIdeasUseCase(uri.toString())
                 if (count >= 0) {
                     onSuccess(count)
                 } else {

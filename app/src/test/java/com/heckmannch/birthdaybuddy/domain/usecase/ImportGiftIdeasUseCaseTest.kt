@@ -1,6 +1,5 @@
 package com.heckmannch.birthdaybuddy.domain.usecase
 
-import android.net.Uri
 import com.google.common.truth.Truth.assertThat
 import com.heckmannch.birthdaybuddy.domain.repository.ContactRepository
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -15,7 +14,7 @@ import org.mockito.kotlin.whenever
 class ImportGiftIdeasUseCaseTest {
 
     private val contactRepository: ContactRepository = mock()
-    private val uri: Uri = mock()
+    private val uriString: String = "content://com.android.providers.downloads.documents/document/123"
     private lateinit var useCase: ImportGiftIdeasUseCase
 
     @Before
@@ -26,13 +25,13 @@ class ImportGiftIdeasUseCaseTest {
     @Test
     fun `invoke should delegate import call to repository`() = runTest {
         // Arrange
-        whenever(contactRepository.importGiftIdeas(uri)).thenReturn(5)
+        whenever(contactRepository.importGiftIdeas(uriString)).thenReturn(5)
 
         // Act
-        val result = useCase(uri)
+        val result = useCase(uriString)
 
         // Assert
-        verify(contactRepository).importGiftIdeas(uri)
+        verify(contactRepository).importGiftIdeas(uriString)
         assertThat(result).isEqualTo(5)
     }
 }

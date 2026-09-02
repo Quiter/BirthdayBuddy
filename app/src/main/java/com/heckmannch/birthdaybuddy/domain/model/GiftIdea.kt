@@ -1,13 +1,11 @@
 package com.heckmannch.birthdaybuddy.domain.model
 
-import androidx.compose.runtime.Immutable
 import kotlinx.serialization.Serializable
 import java.util.UUID
 
 /**
  * Modell für eine Geschenkidee.
  */
-@Immutable
 @Serializable
 data class GiftIdea(
     val id: String = UUID.randomUUID().toString(),

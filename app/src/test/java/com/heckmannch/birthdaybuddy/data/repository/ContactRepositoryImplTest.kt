@@ -1,7 +1,6 @@
 package com.heckmannch.birthdaybuddy.data.repository
 
 import android.content.ContentResolver
-import android.net.Uri
 import com.google.common.truth.Truth.assertThat
 import com.heckmannch.birthdaybuddy.MainDispatcherRule
 import com.heckmannch.birthdaybuddy.data.local.AppDatabase
@@ -32,6 +31,7 @@ import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.mockito.kotlin.any
+import org.mockito.kotlin.anyOrNull
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.never
 import org.mockito.kotlin.verify
@@ -607,38 +607,38 @@ class ContactRepositoryImplTest {
     @Test
     fun exportGiftIdeas_writesBackupToOutputStream() = runTest {
         // Arrange
-        val uri: Uri = mock()
+        val uriString = "content://test_uri"
         val json = "{\"ideas\": []}"
         whenever(giftIdeaBackupManager.exportGiftIdeas()).thenReturn(json)
         val outputStream = ByteArrayOutputStream()
-        whenever(contentResolver.openOutputStream(uri)).thenReturn(outputStream)
+        whenever(contentResolver.openOutputStream(anyOrNull())).thenReturn(outputStream)
 
         // Act
-        repository.exportGiftIdeas(uri)
+        repository.exportGiftIdeas(uriString)
 
         // Assert
         verify(giftIdeaBackupManager).exportGiftIdeas()
-        verify(contentResolver).openOutputStream(uri)
+        verify(contentResolver).openOutputStream(anyOrNull())
         assertThat(outputStream.toString()).isEqualTo(json)
     }
 
     @Test
     fun importGiftIdeas_readsBackupFromInputStreamAndTriggersSync() = runTest {
         // Arrange
-        val uri: Uri = mock()
+        val uriString = "content://test_uri"
         val json = "{\"ideas\": []}"
         val inputStream = ByteArrayInputStream(json.toByteArray())
-        whenever(contentResolver.openInputStream(uri)).thenReturn(inputStream)
+        whenever(contentResolver.openInputStream(anyOrNull())).thenReturn(inputStream)
         whenever(giftIdeaBackupManager.importGiftIdeas(json)).thenReturn(3)
 
         // Stub syncContacts requirements
         whenever(permissionChecker.hasContactsPermission()).thenReturn(false)
 
         // Act
-        val result = repository.importGiftIdeas(uri)
+        val result = repository.importGiftIdeas(uriString)
 
         // Assert
-        verify(contentResolver).openInputStream(uri)
+        verify(contentResolver).openInputStream(anyOrNull())
         verify(giftIdeaBackupManager).importGiftIdeas(json)
         assertThat(result).isEqualTo(3)
     }

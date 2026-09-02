@@ -1,6 +1,5 @@
 package com.heckmannch.birthdaybuddy.domain.repository
 
-import android.net.Uri
 import com.heckmannch.birthdaybuddy.domain.model.Contact
 import com.heckmannch.birthdaybuddy.domain.model.GiftIdea
 import com.heckmannch.birthdaybuddy.domain.model.LabelConfig
@@ -27,8 +26,8 @@ interface ContactRepository {
     suspend fun updateGiftIdeaText(lookupKey: String, ideaId: String, newText: String)
     suspend fun updateLabelConfig(config: LabelConfig)
     suspend fun updateContactBirthday(contactId: String, birthday: LocalDate): Boolean
-    suspend fun exportGiftIdeas(uri: Uri)
-    suspend fun importGiftIdeas(uri: Uri): Int
+    suspend fun exportGiftIdeas(uriString: String)
+    suspend fun importGiftIdeas(uriString: String): Int
     suspend fun linkAsCouple(lookupKey1: String, lookupKey2: String)
     suspend fun unlinkCouple(lookupKey: String)
     suspend fun ignoreCoupleSuggestion(lookupKey1: String, lookupKey2: String)

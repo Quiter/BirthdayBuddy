@@ -1,8 +1,8 @@
 package com.heckmannch.birthdaybuddy.data.repository
 
 import android.content.ContentResolver
-import android.net.Uri
 import android.util.Log
+import androidx.core.net.toUri
 import androidx.room.withTransaction
 import com.heckmannch.birthdaybuddy.data.local.AppDatabase
 import com.heckmannch.birthdaybuddy.data.local.AppSettingsDao
@@ -336,9 +336,9 @@ class ContactRepositoryImpl @Inject constructor(
         return success
     }
 
-    private suspend fun exportGiftIdeas(): String = giftIdeaBackupManager.exportGiftIdeas()
+    private suspend fun exportGiftIdeasToJson(): String = giftIdeaBackupManager.exportGiftIdeas()
 
-    private suspend fun importGiftIdeas(jsonString: String): Int {
+    private suspend fun importGiftIdeasFromJson(jsonString: String): Int {
         val count = giftIdeaBackupManager.importGiftIdeas(jsonString)
         if (count > 0) {
             syncContacts() // Update cache
@@ -346,8 +346,9 @@ class ContactRepositoryImpl @Inject constructor(
         return count
     }
 
-    override suspend fun exportGiftIdeas(uri: Uri) {
-        val json = exportGiftIdeas()
+    override suspend fun exportGiftIdeas(uriString: String) {
+        val json = exportGiftIdeasToJson()
+        val uri = uriString.toUri()
         withContext(ioDispatcher) {
             contentResolver.openOutputStream(uri)?.use { outputStream ->
                 outputStream.write(json.toByteArray())
@@ -355,13 +356,14 @@ class ContactRepositoryImpl @Inject constructor(
         }
     }
 
-    override suspend fun importGiftIdeas(uri: Uri): Int {
+    override suspend fun importGiftIdeas(uriString: String): Int {
+        val uri = uriString.toUri()
         val json = withContext(ioDispatcher) {
             contentResolver.openInputStream(uri)?.use { inputStream ->
                 inputStream.bufferedReader().readText()
             }
         } ?: return -1
-        return importGiftIdeas(json)
+        return importGiftIdeasFromJson(json)
     }
 
     override suspend fun linkAsCouple(lookupKey1: String, lookupKey2: String) {

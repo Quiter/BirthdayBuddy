@@ -1,6 +1,5 @@
 package com.heckmannch.birthdaybuddy.domain.usecase
 
-import android.util.Log
 import com.heckmannch.birthdaybuddy.domain.model.Contact
 import com.heckmannch.birthdaybuddy.domain.model.ContactLabels
 import dagger.Reusable
@@ -53,17 +52,7 @@ class GetContactsUseCase @Inject constructor() {
         selectedLabel,
         labelSettings,
     ) { rawContacts, _, keywords, label, settingsState ->
-        val startTime = System.currentTimeMillis()
-        val result = buildContactList(rawContacts, keywords, label, settingsState)
-
-        if (rawContacts.size > 1000) {
-            Log.d(
-                TAG,
-                "Filtering ${rawContacts.size} -> ${result.size} contacts took " +
-                        "${System.currentTimeMillis() - startTime}ms",
-            )
-        }
-        result
+        buildContactList(rawContacts, keywords, label, settingsState)
     }.flowOn(Dispatchers.Default)
 
     private fun buildContactList(
@@ -128,9 +117,5 @@ class GetContactsUseCase @Inject constructor() {
                 }
             }
         }
-    }
-
-    private companion object {
-        private const val TAG = "GetContactsUseCase"
     }
 }
