@@ -107,7 +107,7 @@ class OnboardingViewModel @Inject constructor(
      * @param persistent `true` if a persistent notification should be displayed, `false` otherwise.
      */
     private fun setPersistentNotifications(persistent: Boolean) = viewModelScope.launch {
-        notificationRepository.updateSettings(persistentNotifications = persistent)
+        notificationRepository.updateSettings { it.copy(persistentNotifications = persistent) }
     }
 
     /**
@@ -141,11 +141,13 @@ class OnboardingViewModel @Inject constructor(
                     }
                 }
 
-                notificationRepository.updateSettings(
-                    notificationsEnabled = notificationsEnabled,
-                    calendarSyncEnabled = calendarSyncEnabled,
-                    onboardingCompleted = true,
-                )
+                notificationRepository.updateSettings {
+                    it.copy(
+                        notificationsEnabled = notificationsEnabled,
+                        calendarSyncEnabled = calendarSyncEnabled,
+                        onboardingCompleted = true
+                    )
+                }
 
                 // Trigger initial background sync of contacts
                 contactRepository.syncContacts()

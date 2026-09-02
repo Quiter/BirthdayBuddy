@@ -15,7 +15,7 @@ import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.mockito.kotlin.any
-import org.mockito.kotlin.eq
+import org.mockito.kotlin.argumentCaptor
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.never
 import org.mockito.kotlin.verify
@@ -109,23 +109,10 @@ class OnboardingViewModelTest {
     fun `SetPersistentNotifications intent should delegate to repository`() = runTest {
         viewModel.onIntent(OnboardingIntent.SetPersistentNotifications(true))
 
-        verify(notificationRepository).updateSettings(
-            notificationsEnabled = eq(null),
-            persistentNotifications = eq(true),
-            onboardingCompleted = eq(null),
-            lastSyncTimestamp = eq(null),
-            calendarSyncEnabled = eq(null),
-            calendarId = eq(null),
-            clearCalendarId = eq(false),
-            otherEventsEnabled = eq(null),
-            birthdayCalendarColor = eq(null),
-            anniversaryCalendarColor = eq(null),
-            nameDayCalendarColor = eq(null),
-            themeMode = eq(null),
-            themeAmoled = eq(null),
-            themeAccent = eq(null),
-            customAccentColor = eq(null)
-        )
+        val captor = argumentCaptor<(AppSettings) -> AppSettings>()
+        verify(notificationRepository).updateSettings(captor.capture())
+        val updated = captor.firstValue(AppSettings(persistentNotifications = false))
+        assertThat(updated.persistentNotifications).isTrue()
     }
 
     @Test
@@ -139,23 +126,18 @@ class OnboardingViewModelTest {
             )
         )
 
-        verify(notificationRepository).updateSettings(
-            notificationsEnabled = eq(true),
-            persistentNotifications = eq(null),
-            onboardingCompleted = eq(true),
-            lastSyncTimestamp = eq(null),
-            calendarSyncEnabled = eq(true),
-            calendarId = eq(null),
-            clearCalendarId = eq(false),
-            otherEventsEnabled = eq(null),
-            birthdayCalendarColor = eq(null),
-            anniversaryCalendarColor = eq(null),
-            nameDayCalendarColor = eq(null),
-            themeMode = eq(null),
-            themeAmoled = eq(null),
-            themeAccent = eq(null),
-            customAccentColor = eq(null)
+        val captor = argumentCaptor<(AppSettings) -> AppSettings>()
+        verify(notificationRepository).updateSettings(captor.capture())
+        val updated = captor.firstValue(
+            AppSettings(
+                notificationsEnabled = false,
+                calendarSyncEnabled = false,
+                onboardingCompleted = false
+            )
         )
+        assertThat(updated.notificationsEnabled).isTrue()
+        assertThat(updated.calendarSyncEnabled).isTrue()
+        assertThat(updated.onboardingCompleted).isTrue()
         verify(contactRepository).syncContacts()
     }
 

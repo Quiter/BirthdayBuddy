@@ -5,18 +5,39 @@ import com.heckmannch.birthdaybuddy.data.local.ContactDao
 import com.heckmannch.birthdaybuddy.data.local.ContactUserData
 import com.heckmannch.birthdaybuddy.data.local.ContactUserDataDao
 import com.heckmannch.birthdaybuddy.data.local.GiftIdeaConverters
+import com.heckmannch.birthdaybuddy.domain.model.GiftIdea
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import org.json.JSONArray
-import org.json.JSONObject
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonArray
+import kotlinx.serialization.json.JsonElement
+import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.contentOrNull
+import kotlinx.serialization.json.decodeFromJsonElement
+import kotlinx.serialization.json.jsonPrimitive
 import javax.inject.Inject
 import javax.inject.Singleton
+
+@Serializable
+data class GiftIdeaBackupEntry(
+    val lookupKey: String,
+    val fullName: String,
+    val giftIdeas: List<GiftIdea>,
+)
 
 @Singleton
 class GiftIdeaBackupManager @Inject constructor(
     private val contactDao: ContactDao,
     private val contactUserDataDao: ContactUserDataDao,
 ) {
+    private val json = Json {
+        ignoreUnknownKeys = true
+        prettyPrint = true
+        encodeDefaults = true
+    }
+
     /**
      * Exportiert alle Kontakte mit Geschenkideen als JSON-String.
      * Nutzt nun die ContactUserData-Tabelle als Primärquelle.
@@ -25,19 +46,17 @@ class GiftIdeaBackupManager @Inject constructor(
         val userDataList =
             contactUserDataDao.getAllUserDataImmediate().filter { it.giftIdeas.isNotEmpty() }
         val dbContacts = contactDao.getAllContactsImmediate().associateBy { it.lookupKey }
-        val converters = GiftIdeaConverters()
 
-        val root = JSONArray()
-        userDataList.forEach { userData ->
+        val entries = userDataList.map { userData ->
             val contact = dbContacts[userData.lookupKey]
-            val obj = JSONObject().apply {
-                put("lookupKey", userData.lookupKey)
-                put("fullName", contact?.fullName ?: "")
-                put("giftIdeas", converters.fromGiftIdeaList(userData.giftIdeas))
-            }
-            root.put(obj)
+            GiftIdeaBackupEntry(
+                lookupKey = userData.lookupKey,
+                fullName = contact?.fullName ?: "",
+                giftIdeas = userData.giftIdeas
+            )
         }
-        root.toString(2)
+
+        json.encodeToString(entries)
     }
 
     /**
@@ -46,8 +65,8 @@ class GiftIdeaBackupManager @Inject constructor(
      */
     suspend fun importGiftIdeas(jsonString: String): Int = withContext(Dispatchers.IO) {
         try {
-            val root = JSONArray(jsonString)
-            if (root.length() == 0) return@withContext 0
+            val rootElement = json.parseToJsonElement(jsonString)
+            if (rootElement !is JsonArray || rootElement.isEmpty()) return@withContext 0
 
             val dbContacts = contactDao.getAllContactsImmediate()
             val contactsByLookup = dbContacts.associateBy { it.lookupKey }
@@ -55,20 +74,39 @@ class GiftIdeaBackupManager @Inject constructor(
             val converters = GiftIdeaConverters()
             var count = 0
 
-            for (i in 0 until root.length()) {
-                val obj = root.getJSONObject(i)
-                val lookupKey = obj.optString("lookupKey")
-                val giftIdeasStr = obj.optString("giftIdeas")
-                val fullName = obj.optString("fullName")
+            for (element in rootElement) {
+                if (element !is JsonObject) continue
 
-                if (giftIdeasStr.isNullOrBlank()) continue
+                val lookupKey = element["lookupKey"]?.jsonPrimitive?.contentOrNull ?: ""
+                val fullName = element["fullName"]?.jsonPrimitive?.contentOrNull ?: ""
+                val giftIdeasElement = element["giftIdeas"]
+
+                val giftIdeas: List<GiftIdea> = when (giftIdeasElement) {
+                    is JsonArray -> {
+                        try {
+                            json.decodeFromJsonElement<List<GiftIdea>>(giftIdeasElement)
+                        } catch (_: Exception) {
+                            emptyList()
+                        }
+                    }
+                    is JsonElement -> {
+                        val str = giftIdeasElement.jsonPrimitive.contentOrNull
+                        if (!str.isNullOrBlank()) {
+                            converters.toGiftIdeaList(str)
+                        } else {
+                            emptyList()
+                        }
+                    }
+                    null -> emptyList()
+                }
+
+                if (giftIdeas.isEmpty()) continue
 
                 // Match via LookupKey (Best) oder Name (Fallback)
                 val targetLookupKey = contactsByLookup[lookupKey]?.lookupKey
                     ?: contactsByName[fullName]?.lookupKey
 
                 if (targetLookupKey != null) {
-                    val giftIdeas = converters.toGiftIdeaList(giftIdeasStr)
                     val existingUserData = contactUserDataDao.getUserDataForContact(targetLookupKey)
                     contactUserDataDao.upsertUserData(
                         ContactUserData(
@@ -81,6 +119,8 @@ class GiftIdeaBackupManager @Inject constructor(
                 }
             }
             count
+        } catch (e: CancellationException) {
+            throw e
         } catch (e: Exception) {
             Log.e("GiftIdeaBackupManager", "Import fehlgeschlagen", e)
             -1

@@ -18,7 +18,7 @@ class SetCalendarSyncEnabledUseCase @Inject constructor(
     private val contactRepository: ContactRepository
 ) {
     suspend operator fun invoke(enabled: Boolean) {
-        notificationRepository.updateSettings(calendarSyncEnabled = enabled)
+        notificationRepository.updateSettings { it.copy(calendarSyncEnabled = enabled) }
         if (enabled) {
             val contacts = contactRepository.getAllContactsImmediate()
             calendarSyncRepository.syncBirthdays(contacts)

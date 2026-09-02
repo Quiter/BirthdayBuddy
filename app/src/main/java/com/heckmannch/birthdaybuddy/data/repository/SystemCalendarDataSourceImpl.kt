@@ -9,6 +9,7 @@ import android.provider.CalendarContract
 import android.util.Log
 import androidx.core.content.ContextCompat
 import dagger.hilt.android.qualifiers.ApplicationContext
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.util.TimeZone
@@ -35,7 +36,11 @@ class SystemCalendarDataSourceImpl @Inject constructor(
             val selection =
                 "${CalendarContract.Calendars.NAME} = ? AND ${CalendarContract.Calendars.ACCOUNT_NAME} = ? AND ${CalendarContract.Calendars.ACCOUNT_TYPE} = ?"
             val selectionArgs =
-                arrayOf(calendarName, "BirthdayBuddy", CalendarContract.ACCOUNT_TYPE_LOCAL)
+                arrayOf(
+                    calendarName,
+                    SystemCalendarDataSource.ACCOUNT_NAME,
+                    CalendarContract.ACCOUNT_TYPE_LOCAL
+                )
             try {
                 context.contentResolver.query(
                     CalendarContract.Calendars.CONTENT_URI,
@@ -48,6 +53,8 @@ class SystemCalendarDataSourceImpl @Inject constructor(
                         return@withContext cursor.getLong(0)
                     }
                 }
+            } catch (e: CancellationException) {
+                throw e
             } catch (e: Exception) {
                 Log.e("SystemCalendarDS", "Error finding calendar by name: $calendarName", e)
             }
@@ -61,7 +68,10 @@ class SystemCalendarDataSourceImpl @Inject constructor(
     ): Long? = withContext(Dispatchers.IO) {
         val builder = CalendarContract.Calendars.CONTENT_URI.buildUpon()
         builder.appendQueryParameter(CalendarContract.CALLER_IS_SYNCADAPTER, "true")
-        builder.appendQueryParameter(CalendarContract.Calendars.ACCOUNT_NAME, "BirthdayBuddy")
+        builder.appendQueryParameter(
+            CalendarContract.Calendars.ACCOUNT_NAME,
+            SystemCalendarDataSource.ACCOUNT_NAME
+        )
         builder.appendQueryParameter(
             CalendarContract.Calendars.ACCOUNT_TYPE,
             CalendarContract.ACCOUNT_TYPE_LOCAL
@@ -69,7 +79,7 @@ class SystemCalendarDataSourceImpl @Inject constructor(
         val uri = builder.build()
 
         val values = ContentValues().apply {
-            put(CalendarContract.Calendars.ACCOUNT_NAME, "BirthdayBuddy")
+            put(CalendarContract.Calendars.ACCOUNT_NAME, SystemCalendarDataSource.ACCOUNT_NAME)
             put(CalendarContract.Calendars.ACCOUNT_TYPE, CalendarContract.ACCOUNT_TYPE_LOCAL)
             put(CalendarContract.Calendars.NAME, calendarName)
             put(CalendarContract.Calendars.CALENDAR_DISPLAY_NAME, displayName)
@@ -78,7 +88,10 @@ class SystemCalendarDataSourceImpl @Inject constructor(
                 CalendarContract.Calendars.CALENDAR_ACCESS_LEVEL,
                 CalendarContract.Calendars.CAL_ACCESS_OWNER
             )
-            put(CalendarContract.Calendars.OWNER_ACCOUNT, "birthdaybuddy@local")
+            put(
+                CalendarContract.Calendars.OWNER_ACCOUNT,
+                SystemCalendarDataSource.OWNER_ACCOUNT
+            )
             put(CalendarContract.Calendars.CALENDAR_TIME_ZONE, TimeZone.getDefault().id)
             put(CalendarContract.Calendars.CAN_ORGANIZER_RESPOND, 1)
             put(CalendarContract.Calendars.CAN_MODIFY_TIME_ZONE, 1)
@@ -94,6 +107,8 @@ class SystemCalendarDataSourceImpl @Inject constructor(
                 "Successfully created local calendar $calendarName with ID: $insertedId"
             )
             return@withContext insertedId
+        } catch (e: CancellationException) {
+            throw e
         } catch (e: Exception) {
             Log.e("SystemCalendarDS", "Failed to create local calendar $calendarName", e)
         }
@@ -133,6 +148,8 @@ class SystemCalendarDataSourceImpl @Inject constructor(
                 "Successfully deleted calendar ID: $calendarId ($accountName, $accountType)"
             )
             return@withContext deletedRows > 0
+        } catch (e: CancellationException) {
+            throw e
         } catch (e: Exception) {
             Log.e(
                 "SystemCalendarDS",
@@ -147,7 +164,10 @@ class SystemCalendarDataSourceImpl @Inject constructor(
         withContext(Dispatchers.IO) {
             val uri = CalendarContract.Calendars.CONTENT_URI.buildUpon()
                 .appendQueryParameter(CalendarContract.CALLER_IS_SYNCADAPTER, "true")
-                .appendQueryParameter(CalendarContract.Calendars.ACCOUNT_NAME, "BirthdayBuddy")
+                .appendQueryParameter(
+                    CalendarContract.Calendars.ACCOUNT_NAME,
+                    SystemCalendarDataSource.ACCOUNT_NAME
+                )
                 .appendQueryParameter(
                     CalendarContract.Calendars.ACCOUNT_TYPE,
                     CalendarContract.ACCOUNT_TYPE_LOCAL
@@ -166,6 +186,8 @@ class SystemCalendarDataSourceImpl @Inject constructor(
                     arrayOf(calendarId.toString())
                 )
                 return@withContext updatedRows > 0
+            } catch (e: CancellationException) {
+                throw e
             } catch (e: Exception) {
                 Log.e("SystemCalendarDS", "Error updating color for calendar: $calendarId", e)
                 false
@@ -218,6 +240,8 @@ class SystemCalendarDataSourceImpl @Inject constructor(
                         )
                     }
                 }
+            } catch (e: CancellationException) {
+                throw e
             } catch (e: Exception) {
                 Log.e("SystemCalendarDS", "Failed to query calendars", e)
             }
@@ -228,7 +252,10 @@ class SystemCalendarDataSourceImpl @Inject constructor(
         withContext(Dispatchers.IO) {
             val deleteUri = CalendarContract.Events.CONTENT_URI.buildUpon()
                 .appendQueryParameter(CalendarContract.CALLER_IS_SYNCADAPTER, "true")
-                .appendQueryParameter(CalendarContract.Calendars.ACCOUNT_NAME, "BirthdayBuddy")
+                .appendQueryParameter(
+                    CalendarContract.Calendars.ACCOUNT_NAME,
+                    SystemCalendarDataSource.ACCOUNT_NAME
+                )
                 .appendQueryParameter(
                     CalendarContract.Calendars.ACCOUNT_TYPE,
                     CalendarContract.ACCOUNT_TYPE_LOCAL
@@ -241,6 +268,8 @@ class SystemCalendarDataSourceImpl @Inject constructor(
                     arrayOf(calendarId.toString())
                 )
                 return@withContext deletedRows >= 0
+            } catch (e: CancellationException) {
+                throw e
             } catch (e: Exception) {
                 Log.e("SystemCalendarDS", "Error clearing events for calendar: $calendarId", e)
                 false
@@ -254,6 +283,8 @@ class SystemCalendarDataSourceImpl @Inject constructor(
                 val arrayList = ArrayList<ContentProviderOperation>(operations)
                 context.contentResolver.applyBatch(CalendarContract.AUTHORITY, arrayList)
                 true
+            } catch (e: CancellationException) {
+                throw e
             } catch (e: Exception) {
                 Log.e("SystemCalendarDS", "Error applying batch operations", e)
                 false

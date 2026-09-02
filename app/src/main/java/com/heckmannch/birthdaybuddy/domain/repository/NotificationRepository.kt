@@ -3,8 +3,6 @@ package com.heckmannch.birthdaybuddy.domain.repository
 import com.heckmannch.birthdaybuddy.domain.model.AppSettings
 import com.heckmannch.birthdaybuddy.domain.model.NotificationRule
 import com.heckmannch.birthdaybuddy.domain.model.PendingNotification
-import com.heckmannch.birthdaybuddy.domain.model.ThemeAccent
-import com.heckmannch.birthdaybuddy.domain.model.ThemeMode
 import kotlinx.coroutines.flow.Flow
 
 /**
@@ -16,23 +14,13 @@ interface NotificationRepository {
 
     suspend fun syncScheduling()
 
-    suspend fun updateSettings(
-        notificationsEnabled: Boolean? = null,
-        persistentNotifications: Boolean? = null,
-        onboardingCompleted: Boolean? = null,
-        lastSyncTimestamp: Long? = null,
-        calendarSyncEnabled: Boolean? = null,
-        calendarId: Long? = null,
-        clearCalendarId: Boolean = false,
-        otherEventsEnabled: Boolean? = null,
-        birthdayCalendarColor: Int? = null,
-        anniversaryCalendarColor: Int? = null,
-        nameDayCalendarColor: Int? = null,
-        themeMode: ThemeMode? = null,
-        themeAmoled: Boolean? = null,
-        themeAccent: ThemeAccent? = null,
-        customAccentColor: String? = null
-    )
+    /**
+     * Updates application settings by applying the given transformation function [transform]
+     * to the current settings state.
+     *
+     * @param transform Function to apply modifications to the current [AppSettings].
+     */
+    suspend fun updateSettings(transform: (AppSettings) -> AppSettings)
 
     suspend fun getAllRulesImmediate(): List<NotificationRule>
     suspend fun insertRule(rule: NotificationRule)

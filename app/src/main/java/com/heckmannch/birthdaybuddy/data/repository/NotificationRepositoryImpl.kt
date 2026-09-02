@@ -13,8 +13,6 @@ import com.heckmannch.birthdaybuddy.di.IoDispatcher
 import com.heckmannch.birthdaybuddy.domain.model.AppSettings
 import com.heckmannch.birthdaybuddy.domain.model.NotificationRule
 import com.heckmannch.birthdaybuddy.domain.model.PendingNotification
-import com.heckmannch.birthdaybuddy.domain.model.ThemeAccent
-import com.heckmannch.birthdaybuddy.domain.model.ThemeMode
 import com.heckmannch.birthdaybuddy.domain.repository.NotificationRepository
 import com.heckmannch.birthdaybuddy.domain.repository.NotificationScheduler
 import kotlinx.coroutines.CancellationException
@@ -84,72 +82,22 @@ class NotificationRepositoryImpl @Inject constructor(
     }
 
     /**
-     * Updates application settings with the provided non-null values.
+     * Updates application settings by applying the provided [transform] function.
      *
      * Thread safety is guaranteed via an internal mutex lock.
      *
      * **Side effect:** Triggers [syncScheduling] after updating settings to ensure
      * alarms reflect any changes in configuration (e.g., enabling/disabling notifications).
      *
-     * @param notificationsEnabled Whether notifications are enabled globally.
-     * @param persistentNotifications Whether notifications should be persistent (ongoing).
-     * @param onboardingCompleted Whether the user has completed the onboarding flow.
-     * @param lastSyncTimestamp Timestamp (in milliseconds) of the last contact synchronization.
-     * @param calendarSyncEnabled Whether calendar synchronization is active.
-     * @param calendarId The ID of the target calendar for synchronization.
-     * @param clearCalendarId When `true`, explicitly clears the existing calendar ID to `null`.
-     * @param otherEventsEnabled Whether non-birthday events (anniversaries, etc.) are enabled.
-     * @param birthdayCalendarColor Color code used for birthday events in the calendar.
-     * @param anniversaryCalendarColor Color code used for anniversary events in the calendar.
-     * @param nameDayCalendarColor Color code used for name day events in the calendar.
-     * @param themeMode The selected UI theme mode ([ThemeMode]).
-     * @param themeAmoled Whether pure black AMOLED theme mode is active.
-     * @param themeAccent The selected accent color preset ([ThemeAccent]).
-     * @param customAccentColor Hex string representation when using a custom accent color.
+     * @param transform A lambda that receives the current [AppSettings] snapshot and returns the updated [AppSettings].
      */
-    override suspend fun updateSettings(
-        notificationsEnabled: Boolean?,
-        persistentNotifications: Boolean?,
-        onboardingCompleted: Boolean?,
-        lastSyncTimestamp: Long?,
-        calendarSyncEnabled: Boolean?,
-        calendarId: Long?,
-        clearCalendarId: Boolean,
-        otherEventsEnabled: Boolean?,
-        birthdayCalendarColor: Int?,
-        anniversaryCalendarColor: Int?,
-        nameDayCalendarColor: Int?,
-        themeMode: ThemeMode?,
-        themeAmoled: Boolean?,
-        themeAccent: ThemeAccent?,
-        customAccentColor: String?
-    ) {
+    override suspend fun updateSettings(transform: (AppSettings) -> AppSettings) {
         settingsMutex.withLock {
-            val current = appSettingsDao.getSettingsImmediate() ?: AppSettingsEntity()
-            val newThemeAccent = when (themeAccent) {
-                ThemeAccent.CUSTOM -> customAccentColor ?: current.themeAccent
-                null -> current.themeAccent
-                else -> themeAccent.name
-            }
-            appSettingsDao.upsertSettings(
-                current.copy(
-                    notificationsEnabled = notificationsEnabled ?: current.notificationsEnabled,
-                    persistentNotifications = persistentNotifications
-                        ?: current.persistentNotifications,
-                    onboardingCompleted = onboardingCompleted ?: current.onboardingCompleted,
-                    lastSyncTimestamp = lastSyncTimestamp ?: current.lastSyncTimestamp,
-                    calendarSyncEnabled = calendarSyncEnabled ?: current.calendarSyncEnabled,
-                    calendarId = if (clearCalendarId) null else (calendarId ?: current.calendarId),
-                    otherEventsEnabled = otherEventsEnabled ?: current.otherEventsEnabled,
-                    birthdayCalendarColor = birthdayCalendarColor ?: current.birthdayCalendarColor,
-                    anniversaryCalendarColor = anniversaryCalendarColor
-                        ?: current.anniversaryCalendarColor,
-                    nameDayCalendarColor = nameDayCalendarColor ?: current.nameDayCalendarColor,
-                    themeMode = themeMode ?: current.themeMode,
-                    themeAmoled = themeAmoled ?: current.themeAmoled,
-                    themeAccent = newThemeAccent
-                )
-            )
+            val currentEntity = appSettingsDao.getSettingsImmediate() ?: AppSettingsEntity()
+            val currentDomain = appSettingsMapper.toDomain(currentEntity)
+            val updatedDomain = transform(currentDomain)
+            val updatedEntity = appSettingsMapper.toEntity(updatedDomain)
+            appSettingsDao.upsertSettings(updatedEntity)
         }
         syncScheduling()
     }

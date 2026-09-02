@@ -262,22 +262,13 @@ class NotificationRepositoryImplTest {
         coEvery { notificationRuleDao.getAllRulesImmediate() } returns emptyList()
 
         // Act
-        repository.updateSettings(
-            notificationsEnabled = true,
-            persistentNotifications = null,
-            onboardingCompleted = null,
-            lastSyncTimestamp = null,
-            calendarSyncEnabled = null,
-            calendarId = 42L,
-            clearCalendarId = false,
-            otherEventsEnabled = null,
-            birthdayCalendarColor = null,
-            anniversaryCalendarColor = null,
-            nameDayCalendarColor = null,
-            themeMode = ThemeMode.DARK,
-            themeAmoled = null,
-            themeAccent = null
-        )
+        repository.updateSettings {
+            it.copy(
+                notificationsEnabled = true,
+                calendarId = 42L,
+                themeMode = ThemeMode.DARK
+            )
+        }
 
         // Assert
         val capturedEntity = slot<AppSettingsEntity>()
@@ -294,7 +285,7 @@ class NotificationRepositoryImplTest {
     }
 
     @Test
-    fun updateSettings_clearsCalendarId_whenClearCalendarIdIsTrue() = runTest {
+    fun updateSettings_clearsCalendarId_whenSetToNull() = runTest {
         // Arrange
         val currentSettings = AppSettingsEntity(
             id = 0,
@@ -304,10 +295,9 @@ class NotificationRepositoryImplTest {
         coEvery { notificationRuleDao.getAllRulesImmediate() } returns emptyList()
 
         // Act
-        repository.updateSettings(
-            calendarId = null,
-            clearCalendarId = true
-        )
+        repository.updateSettings {
+            it.copy(calendarId = null)
+        }
 
         // Assert
         val capturedEntity = slot<AppSettingsEntity>()

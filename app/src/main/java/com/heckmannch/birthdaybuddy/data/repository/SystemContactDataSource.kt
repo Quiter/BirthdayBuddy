@@ -8,7 +8,10 @@ import com.heckmannch.birthdaybuddy.domain.model.Contact
 import com.heckmannch.birthdaybuddy.util.NO_YEAR_MARKER
 import com.heckmannch.birthdaybuddy.util.hasYear
 import dagger.hilt.android.qualifiers.ApplicationContext
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.withContext
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
@@ -113,6 +116,8 @@ class SystemContactDataSource @Inject constructor(
 
                 context.contentResolver.applyBatch(ContactsContract.AUTHORITY, ops)
                 true
+            } catch (e: CancellationException) {
+                throw e
             } catch (e: Exception) {
                 Log.e("SystemContactDataSource", "Failed to update contact birthday", e)
                 false
@@ -301,9 +306,12 @@ class SystemContactDataSource @Inject constructor(
             if (contactsMap.isEmpty()) return@withContext emptyList()
 
             val contactIds = contactsMap.keys
-            val labelsMap = fetchLabelsForContacts(contactIds, groups)
-            val phonesMap = fetchPhoneNumbersForContacts(contactIds)
-            val messengerMap = fetchMessengerAvailabilityForContacts(contactIds)
+            val (labelsMap, phonesMap, messengerMap) = coroutineScope {
+                val labelsDeferred = async { fetchLabelsForContacts(contactIds, groups) }
+                val phonesDeferred = async { fetchPhoneNumbersForContacts(contactIds) }
+                val messengerDeferred = async { fetchMessengerAvailabilityForContacts(contactIds) }
+                Triple(labelsDeferred.await(), phonesDeferred.await(), messengerDeferred.await())
+            }
 
             return@withContext contactsMap.values.map {
                 it.copy(

@@ -43,15 +43,20 @@ class ThemeViewModel @Inject constructor(
     }
 
     private fun setThemeMode(mode: ThemeMode) = viewModelScope.launch {
-        notificationRepository.updateSettings(themeMode = mode)
+        notificationRepository.updateSettings { it.copy(themeMode = mode) }
     }
 
     private fun setThemeAmoled(enabled: Boolean) = viewModelScope.launch {
-        notificationRepository.updateSettings(themeAmoled = enabled)
+        notificationRepository.updateSettings { it.copy(themeAmoled = enabled) }
     }
 
     private fun setThemeAccent(accent: ThemeAccent, customColor: String?) = viewModelScope.launch {
-        notificationRepository.updateSettings(themeAccent = accent, customAccentColor = customColor)
+        notificationRepository.updateSettings {
+            it.copy(
+                themeAccent = accent,
+                customAccentColor = customColor
+            )
+        }
     }
 }
 

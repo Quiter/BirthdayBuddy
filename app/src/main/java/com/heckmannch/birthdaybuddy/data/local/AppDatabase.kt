@@ -8,6 +8,8 @@ import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
 import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
+import com.heckmannch.birthdaybuddy.data.local.AppDatabase.Companion.MIGRATION_5_6
+import com.heckmannch.birthdaybuddy.data.local.AppDatabase.Companion.MIGRATION_6_7
 
 /**
  * Room-Datenbank für kontobezogene Entitäten ([ContactEntity], [PendingNotificationEntity]).

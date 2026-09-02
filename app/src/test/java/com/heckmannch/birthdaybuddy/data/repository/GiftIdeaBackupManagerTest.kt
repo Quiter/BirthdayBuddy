@@ -46,13 +46,15 @@ class GiftIdeaBackupManagerTest {
         val obj = root.getJSONObject(0)
         assertThat(obj.getString("lookupKey")).isEqualTo("key1")
         assertThat(obj.getString("fullName")).isEqualTo("John Doe")
-        assertThat(obj.getString("giftIdeas")).contains("Book")
+        val ideasArray = obj.getJSONArray("giftIdeas")
+        assertThat(ideasArray.length()).isEqualTo(1)
+        assertThat(ideasArray.getJSONObject(0).getString("text")).isEqualTo("Book")
     }
 
     @Test
     fun `importGiftIdeas should delegate to repository and match by lookupKey`() = runTest {
         // Given
-        val json = "[{\"lookupKey\": \"key1\", \"fullName\": \"John Doe\", \"giftIdeas\": \"[]\"}]"
+        val json = "[{\"lookupKey\": \"key1\", \"fullName\": \"John Doe\", \"giftIdeas\": [{\"text\": \"Book\"}]}]"
         val contacts =
             listOf(ContactEntity(contactId = "1", lookupKey = "key1", fullName = "John Doe"))
         whenever(contactDao.getAllContactsImmediate()).thenReturn(contacts)
@@ -66,10 +68,29 @@ class GiftIdeaBackupManagerTest {
     }
 
     @Test
+    fun `importGiftIdeas should support legacy string giftIdeas format`() = runTest {
+        // Given
+        val json = "[{\"lookupKey\": \"key1\", \"fullName\": \"John Doe\", \"giftIdeas\": \"0|Legacy Book\"}]"
+        val contacts =
+            listOf(ContactEntity(contactId = "1", lookupKey = "key1", fullName = "John Doe"))
+        whenever(contactDao.getAllContactsImmediate()).thenReturn(contacts)
+
+        // When
+        val count = manager.importGiftIdeas(json)
+
+        // Then
+        assertThat(count).isEqualTo(1)
+        verify(contactUserDataDao).upsertUserData(org.mockito.kotlin.check {
+            assertThat(it.giftIdeas).hasSize(1)
+            assertThat(it.giftIdeas[0].text).isEqualTo("Legacy Book")
+        })
+    }
+
+    @Test
     fun `importGiftIdeas should match by name as fallback`() = runTest {
         // Given
         val json =
-            "[{\"lookupKey\": \"wrong_key\", \"fullName\": \"John Doe\", \"giftIdeas\": \"[]\"}]"
+            "[{\"lookupKey\": \"wrong_key\", \"fullName\": \"John Doe\", \"giftIdeas\": [{\"text\": \"Book\"}]}]"
         val contacts =
             listOf(ContactEntity(contactId = "1", lookupKey = "correct_key", fullName = "John Doe"))
         whenever(contactDao.getAllContactsImmediate()).thenReturn(contacts)
@@ -87,7 +108,7 @@ class GiftIdeaBackupManagerTest {
     @Test
     fun `importGiftIdeas should preserve existing spouseLookupKey`() = runTest {
         // Given
-        val json = "[{\"lookupKey\": \"key1\", \"fullName\": \"John Doe\", \"giftIdeas\": \"[]\"}]"
+        val json = "[{\"lookupKey\": \"key1\", \"fullName\": \"John Doe\", \"giftIdeas\": [{\"text\": \"Book\"}]}]"
         val contacts =
             listOf(ContactEntity(contactId = "1", lookupKey = "key1", fullName = "John Doe"))
         val existingUserData = ContactUserData(

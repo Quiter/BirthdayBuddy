@@ -13,7 +13,7 @@ import kotlinx.coroutines.test.runTest
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
-import org.mockito.kotlin.eq
+import org.mockito.kotlin.argumentCaptor
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
@@ -58,68 +58,30 @@ class ThemeViewModelTest {
     fun `setThemeMode should delegate to repository`() = runTest {
         viewModel.onIntent(ThemeIntent.SetThemeMode(ThemeMode.LIGHT))
 
-        verify(notificationRepository).updateSettings(
-            notificationsEnabled = eq(null),
-            persistentNotifications = eq(null),
-            onboardingCompleted = eq(null),
-            lastSyncTimestamp = eq(null),
-            calendarSyncEnabled = eq(null),
-            calendarId = eq(null),
-            clearCalendarId = eq(false),
-            otherEventsEnabled = eq(null),
-            birthdayCalendarColor = eq(null),
-            anniversaryCalendarColor = eq(null),
-            nameDayCalendarColor = eq(null),
-            themeMode = eq(ThemeMode.LIGHT),
-            themeAmoled = eq(null),
-            themeAccent = eq(null),
-            customAccentColor = eq(null)
-        )
+        val captor = argumentCaptor<(AppSettings) -> AppSettings>()
+        verify(notificationRepository).updateSettings(captor.capture())
+        val updated = captor.firstValue(AppSettings(themeMode = ThemeMode.DARK))
+        assertThat(updated.themeMode).isEqualTo(ThemeMode.LIGHT)
     }
 
     @Test
     fun `setThemeAmoled should delegate to repository`() = runTest {
         viewModel.onIntent(ThemeIntent.SetThemeAmoled(true))
 
-        verify(notificationRepository).updateSettings(
-            notificationsEnabled = eq(null),
-            persistentNotifications = eq(null),
-            onboardingCompleted = eq(null),
-            lastSyncTimestamp = eq(null),
-            calendarSyncEnabled = eq(null),
-            calendarId = eq(null),
-            clearCalendarId = eq(false),
-            otherEventsEnabled = eq(null),
-            birthdayCalendarColor = eq(null),
-            anniversaryCalendarColor = eq(null),
-            nameDayCalendarColor = eq(null),
-            themeMode = eq(null),
-            themeAmoled = eq(true),
-            themeAccent = eq(null),
-            customAccentColor = eq(null)
-        )
+        val captor = argumentCaptor<(AppSettings) -> AppSettings>()
+        verify(notificationRepository).updateSettings(captor.capture())
+        val updated = captor.firstValue(AppSettings(themeAmoled = false))
+        assertThat(updated.themeAmoled).isTrue()
     }
 
     @Test
     fun `setThemeAccent should delegate to repository`() = runTest {
         viewModel.onIntent(ThemeIntent.SetThemeAccent(ThemeAccent.CUSTOM, "#00FF00"))
 
-        verify(notificationRepository).updateSettings(
-            notificationsEnabled = eq(null),
-            persistentNotifications = eq(null),
-            onboardingCompleted = eq(null),
-            lastSyncTimestamp = eq(null),
-            calendarSyncEnabled = eq(null),
-            calendarId = eq(null),
-            clearCalendarId = eq(false),
-            otherEventsEnabled = eq(null),
-            birthdayCalendarColor = eq(null),
-            anniversaryCalendarColor = eq(null),
-            nameDayCalendarColor = eq(null),
-            themeMode = eq(null),
-            themeAmoled = eq(null),
-            themeAccent = eq(ThemeAccent.CUSTOM),
-            customAccentColor = eq("#00FF00")
-        )
+        val captor = argumentCaptor<(AppSettings) -> AppSettings>()
+        verify(notificationRepository).updateSettings(captor.capture())
+        val updated = captor.firstValue(AppSettings(themeAccent = ThemeAccent.SYSTEM, customAccentColor = null))
+        assertThat(updated.themeAccent).isEqualTo(ThemeAccent.CUSTOM)
+        assertThat(updated.customAccentColor).isEqualTo("#00FF00")
     }
 }

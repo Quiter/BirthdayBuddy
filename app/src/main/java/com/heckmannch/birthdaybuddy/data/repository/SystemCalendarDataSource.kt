@@ -55,4 +55,10 @@ interface SystemCalendarDataSource {
      * Wendet Batch-Operationen (z. B. Massen-Termin-Inserts) atomar an.
      */
     suspend fun applyBatch(operations: List<ContentProviderOperation>): Boolean
+
+    companion object {
+        const val ACCOUNT_NAME = "BirthdayBuddy"
+        const val OWNER_ACCOUNT = "birthdaybuddy@local"
+        const val LEGACY_CALENDAR_NAME = "BirthdayBuddyCalendar"
+    }
 }

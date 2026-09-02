@@ -1,5 +1,7 @@
 package com.heckmannch.birthdaybuddy.domain.usecase
 
+import com.google.common.truth.Truth.assertThat
+import com.heckmannch.birthdaybuddy.domain.model.AppSettings
 import com.heckmannch.birthdaybuddy.domain.model.Contact
 import com.heckmannch.birthdaybuddy.domain.repository.CalendarSyncRepository
 import com.heckmannch.birthdaybuddy.domain.repository.ContactRepository
@@ -8,6 +10,7 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runTest
 import org.junit.Before
 import org.junit.Test
+import org.mockito.kotlin.argumentCaptor
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
@@ -48,7 +51,11 @@ class SetCalendarSyncEnabledUseCaseTest {
             useCase(true)
 
             // Assert
-            verify(notificationRepository).updateSettings(calendarSyncEnabled = true)
+            val captor = argumentCaptor<(AppSettings) -> AppSettings>()
+            verify(notificationRepository).updateSettings(captor.capture())
+            val updated = captor.firstValue(AppSettings(calendarSyncEnabled = false))
+            assertThat(updated.calendarSyncEnabled).isTrue()
+
             verify(contactRepository).getAllContactsImmediate()
             verify(calendarSyncRepository).syncBirthdays(contacts)
         }
@@ -59,7 +66,11 @@ class SetCalendarSyncEnabledUseCaseTest {
         useCase(false)
 
         // Assert
-        verify(notificationRepository).updateSettings(calendarSyncEnabled = false)
+        val captor = argumentCaptor<(AppSettings) -> AppSettings>()
+        verify(notificationRepository).updateSettings(captor.capture())
+        val updated = captor.firstValue(AppSettings(calendarSyncEnabled = true))
+        assertThat(updated.calendarSyncEnabled).isFalse()
+
         verify(calendarSyncRepository).deleteCalendar()
     }
 }

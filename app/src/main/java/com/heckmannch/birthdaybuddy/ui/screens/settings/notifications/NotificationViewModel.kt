@@ -68,7 +68,7 @@ class NotificationViewModel @Inject constructor(
                 addNotificationRule(daysBefore = 0, hour = 9, minute = 0)
             }
         }
-        notificationRepository.updateSettings(notificationsEnabled = enabled)
+        notificationRepository.updateSettings { it.copy(notificationsEnabled = enabled) }
     }
 
     /**
@@ -79,7 +79,7 @@ class NotificationViewModel @Inject constructor(
      * @param persistent True to make notifications persistent, false otherwise.
      */
     private fun setPersistentNotifications(persistent: Boolean) = viewModelScope.launch {
-        notificationRepository.updateSettings(persistentNotifications = persistent)
+        notificationRepository.updateSettings { it.copy(persistentNotifications = persistent) }
     }
 
     /**
@@ -91,7 +91,7 @@ class NotificationViewModel @Inject constructor(
      * @param enabled True to enable other events, false to disable.
      */
     private fun setOtherEventsEnabled(enabled: Boolean) = viewModelScope.launch {
-        notificationRepository.updateSettings(otherEventsEnabled = enabled)
+        notificationRepository.updateSettings { it.copy(otherEventsEnabled = enabled) }
         if (enabled) {
             contactRepository.syncContacts()
         }

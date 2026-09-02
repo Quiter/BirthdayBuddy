@@ -65,13 +65,15 @@ class NotificationRepositoryTest {
     @Test
     fun updateSettings_consecutiveUpdates_areConsistent() = runTest {
         // Initial state
-        repository.updateSettings(notificationsEnabled = false, onboardingCompleted = false)
+        repository.updateSettings {
+            it.copy(notificationsEnabled = false, onboardingCompleted = false)
+        }
 
         // Simulating the race condition: Two updates fired "at the same time"
         // Without Mutex, one could read the old state before the other writes,
         // resulting in one setting being lost.
-        val job1 = async { repository.updateSettings(notificationsEnabled = true) }
-        val job2 = async { repository.updateSettings(onboardingCompleted = true) }
+        val job1 = async { repository.updateSettings { it.copy(notificationsEnabled = true) } }
+        val job2 = async { repository.updateSettings { it.copy(onboardingCompleted = true) } }
 
         job1.await()
         job2.await()
@@ -86,10 +88,10 @@ class NotificationRepositoryTest {
     @Test
     fun updateSettings_partialUpdates_doNotOverwriteOthers() = runTest {
         // Set something first
-        repository.updateSettings(persistentNotifications = false)
+        repository.updateSettings { it.copy(persistentNotifications = false) }
 
         // Update something else
-        repository.updateSettings(notificationsEnabled = true)
+        repository.updateSettings { it.copy(notificationsEnabled = true) }
 
         val finalSettings = repository.settings.first()
 
