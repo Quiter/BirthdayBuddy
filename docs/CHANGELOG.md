@@ -330,5 +330,11 @@
     - **GetPendingNotificationsUseCase & BirthdayWidget:** Beide Komponenten delegieren nun an `ContactFilterLogic.filterForNotifications` und `ContactFilterLogic.filterForWidget`.
     - **Testing:** Ergänzung von Unit-Tests in [`ContactFilterLogicTest.kt`](file:///c:/Users/chris/AndroidStudioProjects/BirthdayBuddy/app/src/test/java/com/heckmannch/birthdaybuddy/domain/util/ContactFilterLogicTest.kt) und [`GetPendingNotificationsUseCaseTest.kt`](file:///c:/Users/chris/AndroidStudioProjects/BirthdayBuddy/app/src/test/java/com/heckmannch/birthdaybuddy/domain/usecase/GetPendingNotificationsUseCaseTest.kt) zur Validierung aller Multi-Label-Kombinationen.
 
+337. **Refactoring von `HomeViewModel.kt` & Auslagerung von `HomeIntent` (Architecture & Clean Code):**
+    - **Entkopplung von `HomeIntent`:** Das `sealed interface HomeIntent` und alle dazugehörigen Intent Data Classes/Objects wurden aus [`HomeViewModel.kt`](file:///c:/Users/chris/AndroidStudioProjects/BirthdayBuddy/app/src/main/java/com/heckmannch/birthdaybuddy/ui/screens/home/HomeViewModel.kt) in eine eigene Datei [`HomeIntent.kt`](file:///c:/Users/chris/AndroidStudioProjects/BirthdayBuddy/app/src/main/java/com/heckmannch/birthdaybuddy/ui/screens/home/HomeIntent.kt) ausgelagert (~155 Zeilen).
+    - **Verschiebung von `sanitizeBirthdayDate`:** Die private Datums-Bereinigungs- und Schaltjahr-Normalisierungsfunktion `sanitizeBirthdayDate` wurde nach [`DateUtils.kt`](file:///c:/Users/chris/AndroidStudioProjects/BirthdayBuddy/app/src/main/java/com/heckmannch/birthdaybuddy/util/DateUtils.kt) als Top-Level-Funktion verschoben.
+    - **Code-Reduktion:** [`HomeViewModel.kt`](file:///c:/Users/chris/AndroidStudioProjects/BirthdayBuddy/app/src/main/java/com/heckmannch/birthdaybuddy/ui/screens/home/HomeViewModel.kt) wurde von 733 Zeilen auf 558 Zeilen reduziert und in seiner Struktur geschärft.
+
+
 
 

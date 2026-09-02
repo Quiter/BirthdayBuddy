@@ -96,3 +96,24 @@ fun String.getInitials(): String {
         else -> "${parts.first().take(1)}${parts.last().take(1)}".uppercase()
     }
 }
+
+/**
+ * Validiert und normalisiert rohe Datumsbestandteile eines Geburtstages in ein sicheres [LocalDate].
+ *
+ * Behandelt fehlende Jahre durch Anwenden von [NO_YEAR_MARKER] (Schaltjahr-Repräsentation für 29. Feb),
+ * beschränkt den Monat auf den Bereich 1..12 und begrenzt den Tag auf die maximale Anzahl von Tagen
+ * für den angegebenen Monat und das jeweilige Jahr.
+ *
+ * @param year Optionales Geburtsjahr oder `null` / [NO_YEAR_MARKER] falls unbekannt.
+ * @param month Geburtsmonat (1..12).
+ * @param day Geburtstag (1..31).
+ * @return Validierte und angepasste [LocalDate]-Instanz.
+ */
+fun sanitizeBirthdayDate(year: Int?, month: Int, day: Int): LocalDate {
+    val targetYear = if (year != null && year > 0 && year != NO_YEAR_MARKER) year else NO_YEAR_MARKER
+    val safeMonth = month.coerceIn(1, 12)
+    val maxDays = Month.of(safeMonth).length(Year.isLeap(targetYear.toLong()))
+    val safeDay = day.coerceIn(1, maxDays)
+    return LocalDate.of(targetYear, safeMonth, safeDay)
+}
+
