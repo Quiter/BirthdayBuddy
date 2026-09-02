@@ -10,7 +10,7 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.animation.togetherWith
-import androidx.compose.foundation.border
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -35,6 +35,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
@@ -91,10 +92,10 @@ fun SearchBar(
         modifier = modifier
             .fillMaxWidth()
             .padding(horizontal = SpacingNormal)
-            .height(SearchBarHeight)
-            .border(width = borderWidth, color = borderColor, shape = CircleShape),
+            .height(SearchBarHeight),
         shape = CircleShape,
         color = containerColor,
+        border = BorderStroke(borderWidth, borderColor),
         tonalElevation = if (isFocused) SearchBarFocusedElevation else 0.dp
     ) {
         TextField(
@@ -137,7 +138,10 @@ fun SearchBar(
                 }
             },
             trailingIcon = {
-                Row(modifier = Modifier.padding(end = SpacingExtraSmall)) {
+                Row(
+                    modifier = Modifier.padding(end = SpacingExtraSmall),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
                     AnimatedVisibility(
                         visible = query.isNotEmpty(),
                         enter = fadeIn(),
