@@ -19,16 +19,16 @@ class SnoozeWorker @AssistedInject constructor(
 ) : CoroutineWorker(context, workerParameters) {
 
     override suspend fun doWork(): Result {
-        val daysBefore = inputData.getInt("DAYS_BEFORE", 0)
-        val pendingId = inputData.getInt("PENDING_ID", -1)
-        val lookupKeys = inputData.getStringArray("LOOKUP_KEYS") ?: return Result.failure()
+        val daysBefore = inputData.getInt(NotificationActions.EXTRA_DAYS_BEFORE, 0)
+        val pendingId = inputData.getInt(NotificationActions.EXTRA_PENDING_ID, -1)
+        val lookupKeys = inputData.getStringArray(NotificationActions.EXTRA_LOOKUP_KEYS) ?: return Result.failure()
 
         val rawKeys = lookupKeys.map { it.substringAfter(":") }.toSet()
         val allContacts = contactRepository.allContacts.first()
         val targetContacts = allContacts.filter { it.lookupKey in rawKeys }
 
         if (targetContacts.isNotEmpty()) {
-            val eventTypeStr = inputData.getString("EVENT_TYPE")
+            val eventTypeStr = inputData.getString(NotificationActions.EXTRA_EVENT_TYPE)
             val eventType = if (eventTypeStr != null) {
                 try {
                     EventType.valueOf(eventTypeStr)

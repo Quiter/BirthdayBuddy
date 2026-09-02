@@ -33,10 +33,10 @@ class NotificationActionReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context?, intent: Intent?) {
         if (context == null || intent == null) return
 
-        val notificationId = intent.getIntExtra("NOTIFICATION_ID", -1)
-        val pendingId = intent.getIntExtra("PENDING_ID", -1)
-        val daysBefore = intent.getIntExtra("DAYS_BEFORE", 0)
-        val lookupKeys = intent.getStringArrayExtra("LOOKUP_KEYS") ?: emptyArray()
+        val notificationId = intent.getIntExtra(NotificationActions.EXTRA_NOTIFICATION_ID, -1)
+        val pendingId = intent.getIntExtra(NotificationActions.EXTRA_PENDING_ID, -1)
+        val daysBefore = intent.getIntExtra(NotificationActions.EXTRA_DAYS_BEFORE, 0)
+        val lookupKeys = intent.getStringArrayExtra(NotificationActions.EXTRA_LOOKUP_KEYS) ?: emptyArray()
 
         when (intent.action) {
             NotificationActions.ACTION_SNOOZE -> {
@@ -96,10 +96,10 @@ class NotificationActionReceiver : BroadcastReceiver() {
                                     else -> EventType.BIRTHDAY
                                 }
                                 val data = Data.Builder()
-                                    .putInt("DAYS_BEFORE", daysBefore)
-                                    .putInt("PENDING_ID", pendingId)
-                                    .putStringArray("LOOKUP_KEYS", lookupKeys)
-                                    .putString("EVENT_TYPE", eventType.name)
+                                    .putInt(NotificationActions.EXTRA_DAYS_BEFORE, daysBefore)
+                                    .putInt(NotificationActions.EXTRA_PENDING_ID, pendingId)
+                                    .putStringArray(NotificationActions.EXTRA_LOOKUP_KEYS, lookupKeys)
+                                    .putString(NotificationActions.EXTRA_EVENT_TYPE, eventType.name)
                                     .build()
 
                                 val reShowRequest = OneTimeWorkRequestBuilder<SnoozeWorker>()

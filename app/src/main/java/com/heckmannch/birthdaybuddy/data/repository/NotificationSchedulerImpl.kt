@@ -7,6 +7,7 @@ import androidx.work.WorkManager
 import com.heckmannch.birthdaybuddy.domain.model.EventType
 import com.heckmannch.birthdaybuddy.domain.model.NotificationRule
 import com.heckmannch.birthdaybuddy.domain.repository.NotificationScheduler
+import com.heckmannch.birthdaybuddy.notification.NotificationActions
 import com.heckmannch.birthdaybuddy.notification.NotificationWorker
 import com.heckmannch.birthdaybuddy.notification.SnoozeWorker
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -32,16 +33,16 @@ class NotificationSchedulerImpl @Inject constructor(
             else -> EventType.BIRTHDAY
         }
         val data = Data.Builder()
-            .putInt("DAYS_BEFORE", daysBefore)
-            .putInt("PENDING_ID", pendingId)
-            .putStringArray("LOOKUP_KEYS", lookupKeys.toTypedArray())
-            .putString("EVENT_TYPE", eventType.name)
+            .putInt(NotificationActions.EXTRA_DAYS_BEFORE, daysBefore)
+            .putInt(NotificationActions.EXTRA_PENDING_ID, pendingId)
+            .putStringArray(NotificationActions.EXTRA_LOOKUP_KEYS, lookupKeys.toTypedArray())
+            .putString(NotificationActions.EXTRA_EVENT_TYPE, eventType.name)
             .build()
 
         val snoozeRequest = OneTimeWorkRequestBuilder<SnoozeWorker>()
             .setInitialDelay(2, TimeUnit.HOURS)
             .setInputData(data)
-            .addTag("notification_snooze")
+            .addTag(NotificationActions.WORK_TAG_SNOOZE)
             .build()
 
         WorkManager.getInstance(context).enqueue(snoozeRequest)

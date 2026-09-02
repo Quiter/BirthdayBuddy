@@ -83,7 +83,7 @@ class NotificationWorker @AssistedInject constructor(
     }
 
     companion object {
-        private const val WORK_NAME = "FlexibleNotificationUpdate"
+        private const val WORK_NAME = NotificationActions.WORK_NAME_NOTIFICATION_UPDATE
 
         /**
          * Plant den nächsten fälligen Zeitpunkt basierend auf allen Regeln.
@@ -123,7 +123,7 @@ class NotificationWorker @AssistedInject constructor(
 
             val request = OneTimeWorkRequestBuilder<NotificationWorker>()
                 .setInitialDelay(delay, TimeUnit.MILLISECONDS)
-                .addTag("birthday_notification")
+                .addTag(NotificationActions.WORK_TAG_NOTIFICATION)
                 .build()
 
             val policy = if (forceReplace) ExistingWorkPolicy.REPLACE else ExistingWorkPolicy.KEEP

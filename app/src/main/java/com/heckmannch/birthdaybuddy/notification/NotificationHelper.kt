@@ -27,7 +27,7 @@ class NotificationHelper @Inject constructor(
 ) {
 
     companion object {
-        const val CHANNEL_ID = "birthday_reminders_v2"
+        const val CHANNEL_ID = NotificationActions.CHANNEL_ID
     }
 
     suspend fun showBirthdayNotification(
@@ -71,8 +71,8 @@ class NotificationHelper @Inject constructor(
         // Action-Intent: Erledigt
         val doneIntent = Intent(context, NotificationActionReceiver::class.java).apply {
             action = NotificationActions.ACTION_DONE
-            putExtra("NOTIFICATION_ID", notificationId)
-            putExtra("PENDING_ID", pendingId)
+            putExtra(NotificationActions.EXTRA_NOTIFICATION_ID, notificationId)
+            putExtra(NotificationActions.EXTRA_PENDING_ID, pendingId)
         }
         val donePendingIntent = PendingIntent.getBroadcast(
             context, notificationId * 10 + 2, doneIntent,
@@ -90,10 +90,10 @@ class NotificationHelper @Inject constructor(
         // Action-Intent: Später erinnern (Snooze)
         val snoozeIntent = Intent(context, NotificationActionReceiver::class.java).apply {
             action = NotificationActions.ACTION_SNOOZE
-            putExtra("NOTIFICATION_ID", notificationId)
-            putExtra("PENDING_ID", pendingId)
-            putExtra("DAYS_BEFORE", daysBefore)
-            putExtra("LOOKUP_KEYS", dbKeys)
+            putExtra(NotificationActions.EXTRA_NOTIFICATION_ID, notificationId)
+            putExtra(NotificationActions.EXTRA_PENDING_ID, pendingId)
+            putExtra(NotificationActions.EXTRA_DAYS_BEFORE, daysBefore)
+            putExtra(NotificationActions.EXTRA_LOOKUP_KEYS, dbKeys)
         }
         val snoozePendingIntent = PendingIntent.getBroadcast(
             context, notificationId * 10 + 1, snoozeIntent,
@@ -113,10 +113,10 @@ class NotificationHelper @Inject constructor(
         // Delete-Intent: Falls weggeschoben wird -> Re-post (für echte Persistenz)
         val deleteIntent = Intent(context, NotificationActionReceiver::class.java).apply {
             action = NotificationActions.ACTION_DISMISSED
-            putExtra("NOTIFICATION_ID", notificationId)
-            putExtra("PENDING_ID", pendingId)
-            putExtra("DAYS_BEFORE", daysBefore)
-            putExtra("LOOKUP_KEYS", dbKeys)
+            putExtra(NotificationActions.EXTRA_NOTIFICATION_ID, notificationId)
+            putExtra(NotificationActions.EXTRA_PENDING_ID, pendingId)
+            putExtra(NotificationActions.EXTRA_DAYS_BEFORE, daysBefore)
+            putExtra(NotificationActions.EXTRA_LOOKUP_KEYS, dbKeys)
         }
         val deletePendingIntent = PendingIntent.getBroadcast(
             context, notificationId * 10 + 3, deleteIntent,
