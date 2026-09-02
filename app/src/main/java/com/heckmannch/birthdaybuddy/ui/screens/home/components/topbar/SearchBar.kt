@@ -23,7 +23,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Settings
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -35,6 +34,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
@@ -56,7 +56,6 @@ import com.heckmannch.birthdaybuddy.ui.theme.SearchBarHeight
 import com.heckmannch.birthdaybuddy.ui.theme.SpacingExtraSmall
 import com.heckmannch.birthdaybuddy.ui.theme.SpacingNormal
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SearchBar(
     query: String,
@@ -69,22 +68,22 @@ fun SearchBar(
     navigationIcon: @Composable (() -> Unit)? = null,
 ) {
     val focusManager = LocalFocusManager.current
-    val isFocused = remember { mutableStateOf(false) }
+    var isFocused by remember { mutableStateOf(false) }
 
     val containerColor by animateColorAsState(
-        targetValue = if (isFocused.value) MaterialTheme.colorScheme.surface
+        targetValue = if (isFocused) MaterialTheme.colorScheme.surface
         else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = AlphaEmphasisLow),
         label = "SearchBarContainerColor"
     )
 
     val borderColor by animateColorAsState(
-        targetValue = if (isFocused.value) MaterialTheme.colorScheme.primary.copy(alpha = AlphaEmphasisLow)
+        targetValue = if (isFocused) MaterialTheme.colorScheme.primary.copy(alpha = AlphaEmphasisLow)
         else Color.Transparent,
         label = "SearchBarBorderColor"
     )
 
     val borderWidth by animateDpAsState(
-        targetValue = if (isFocused.value) SearchBarBorderWidth else 0.dp,
+        targetValue = if (isFocused) SearchBarBorderWidth else 0.dp,
         label = "SearchBarBorderWidth"
     )
 
@@ -96,7 +95,7 @@ fun SearchBar(
             .border(width = borderWidth, color = borderColor, shape = CircleShape),
         shape = CircleShape,
         color = containerColor,
-        tonalElevation = if (isFocused.value) SearchBarFocusedElevation else 0.dp
+        tonalElevation = if (isFocused) SearchBarFocusedElevation else 0.dp
     ) {
         TextField(
             value = query,
@@ -105,7 +104,7 @@ fun SearchBar(
                 .fillMaxSize()
                 .testTag("search_field")
                 .focusRequester(focusRequester)
-                .onFocusChanged { isFocused.value = it.isFocused },
+                .onFocusChanged { isFocused = it.isFocused },
             placeholder = {
                 AnimatedContent(
                     targetState = placeholder,
