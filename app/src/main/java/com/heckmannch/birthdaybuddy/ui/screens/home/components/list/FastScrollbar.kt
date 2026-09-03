@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
@@ -41,6 +42,7 @@ import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalHapticFeedback
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.Density
@@ -367,6 +369,9 @@ internal fun rememberFastScrollState(
  *         the contact items (80 dp each), so the linear height model stays accurate.
  *      d) Do NOT move [LabelFilterBar] back to a top-of-screen sticky overlay — that would
  *         break the [headerCount] accounting and cause the scrollbar thumb to jump.
+ *
+ * @param contentPadding Scaffold or container padding values to constrain the scrollbar
+ *                      within the visible list area (e.g. below top app bar and above navigation bar).
  */
 @Composable
 fun FastScrollbar(
@@ -374,6 +379,7 @@ fun FastScrollbar(
     contacts: List<ContactUiModel>,
     getLabel: (ContactUiModel) -> String,
     modifier: Modifier = Modifier,
+    contentPadding: PaddingValues = PaddingValues(0.dp),
     headerCount: Int = 0,
     onSetFastScrolling: (Boolean) -> Unit = {},
 ) {
@@ -476,7 +482,13 @@ fun FastScrollbar(
     }
 
     BoxWithConstraints(
-        modifier = modifier.width(ScrollbarDefaults.BarWidth)
+        modifier = modifier
+            .width(ScrollbarDefaults.BarWidth)
+            .padding(
+                top = contentPadding.calculateTopPadding(),
+                bottom = contentPadding.calculateBottomPadding()
+            )
+            .testTag("fast_scrollbar")
     ) {
         val viewHeight = maxHeight
         val trackHeight = viewHeight - ScrollbarDefaults.ThumbHeight
@@ -591,7 +603,8 @@ fun FastScrollbar(
                     .width(ScrollbarDefaults.ThumbWidth)
                     .height(ScrollbarDefaults.ThumbHeight)
                     .graphicsLayer { translationY = thumbOffset.toPx() }
-                    .semantics { contentDescription = "Scrollbar" },
+                    .semantics { contentDescription = "Scrollbar" }
+                    .testTag("fast_scrollbar_thumb"),
                 shape = RoundedCornerShape(WidgetCornerRadius),
                 color = MaterialTheme.colorScheme.primary.copy(alpha = ScrollbarDefaults.AlphaThumb),
                 tonalElevation = ScrollbarDefaults.ThumbElevation

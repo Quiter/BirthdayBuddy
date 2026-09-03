@@ -138,6 +138,7 @@ fun HomeListDetailDisplay(
                         contacts = uiState.contacts ?: emptyList(),
                         getLabel = getScrollLabel,
                         headerCount = currentHeaderCount,
+                        contentPadding = contentPadding,
                         modifier = Modifier
                             .align(Alignment.CenterEnd)
                             .fillMaxHeight(),
