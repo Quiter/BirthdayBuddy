@@ -4,6 +4,7 @@ import android.content.res.Configuration
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -13,6 +14,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.ui.unit.dp
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CardGiftcard
 import androidx.compose.material.icons.filled.Close
@@ -64,6 +66,7 @@ import java.time.LocalDate
  * @param actions Die gebündelten [HomeActions]-Callbacks für Nutzeraktionen (z. B. Geschenke bearbeiten, Geburtstag anpassen, Anrufen).
  * @param onClose Callback-Funktion, die aufgerufen wird, wenn das Detail-Paneel geschlossen werden soll.
  * @param modifier Der auf das umgebende Card-Layout anzuwendende [Modifier].
+ * @param contentPadding Scaffold- oder Container-Padding zur Begrenzung des Paneels unterhalb der Top-Bar und oberhalb der Navigationsleiste.
  */
 @Composable
 fun BirthdayDetailPane(
@@ -72,6 +75,7 @@ fun BirthdayDetailPane(
     actions: HomeActions,
     onClose: () -> Unit,
     modifier: Modifier = Modifier,
+    contentPadding: PaddingValues = PaddingValues(0.dp),
 ) {
     val focusManager = LocalFocusManager.current
 
@@ -88,6 +92,7 @@ fun BirthdayDetailPane(
     Card(
         modifier = modifier
             .fillMaxSize()
+            .padding(contentPadding)
             .padding(SpacingNormal)
             .testTag("birthday_detail_pane"),
         colors = CardDefaults.cardColors(

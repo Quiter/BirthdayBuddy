@@ -16,6 +16,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalHapticFeedback
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -40,7 +41,7 @@ fun LabelFilterBar(
             visible = visible,
             enter = expandVertically() + fadeIn(),
             exit = shrinkVertically() + fadeOut(),
-            modifier = modifier,
+            modifier = modifier.testTag("label_filter_bar"),
         ) {
             LazyRow(
                 contentPadding = PaddingValues(

@@ -4,6 +4,7 @@ import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -12,6 +13,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.unit.dp
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Cake
 import androidx.compose.material3.Card
@@ -41,14 +44,23 @@ import com.heckmannch.birthdaybuddy.ui.theme.SpacingExtraLarge
 import com.heckmannch.birthdaybuddy.ui.theme.SpacingLarge
 import com.heckmannch.birthdaybuddy.ui.theme.SpacingNormal
 
+/**
+ * Platzhalter-Karte für den Detail-Bereich auf Tablets, wenn kein Kontakt ausgewählt ist.
+ *
+ * @param modifier Der auf die Karte anzuwendende [Modifier].
+ * @param contentPadding Scaffold- oder Container-Padding zur Begrenzung unterhalb der Top-Bar und oberhalb der Navigationsleiste.
+ */
 @Composable
 fun BirthdayQuotePlaceholder(
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    contentPadding: PaddingValues = PaddingValues(0.dp),
 ) {
     Card(
         modifier = modifier
             .fillMaxSize()
-            .padding(SpacingNormal),
+            .padding(contentPadding)
+            .padding(SpacingNormal)
+            .testTag("birthday_quote_placeholder"),
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.surfaceContainerHigh
         ),

@@ -15,6 +15,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.platform.testTag
 import com.heckmannch.birthdaybuddy.ui.screens.home.HomeActions
 import com.heckmannch.birthdaybuddy.ui.theme.SpacingSmall
 
@@ -43,7 +44,9 @@ fun HomeTopBar(
 ) {
     Surface(
         color = MaterialTheme.colorScheme.surface,
-        modifier = modifier.fillMaxWidth()
+        modifier = modifier
+            .fillMaxWidth()
+            .testTag("home_top_bar")
     ) {
         val topPadding = WindowInsets.statusBars.asPaddingValues().calculateTopPadding()
         Column(

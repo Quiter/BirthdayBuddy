@@ -92,6 +92,7 @@ fun HomeListDetailDisplay(
                 metadata = ListDetailSceneStrategy.listPane(
                     detailPlaceholder = {
                         BirthdayQuotePlaceholder(
+                            contentPadding = contentPadding,
                             modifier = Modifier.fillMaxSize()
                         )
                     }
@@ -161,6 +162,7 @@ fun HomeListDetailDisplay(
                         onClose = {
                             backStack.removeLastOrNull()
                         },
+                        contentPadding = contentPadding,
                         modifier = Modifier.fillMaxSize()
                     )
                 }
