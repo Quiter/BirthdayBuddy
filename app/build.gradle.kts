@@ -1,3 +1,5 @@
+import java.time.Duration
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.compose)
@@ -17,7 +19,7 @@ android {
         minSdk = 28
         targetSdk = 37
         versionCode = 46
-        versionName = "2.14.27"
+        versionName = "2.14.28"
 
         testInstrumentationRunner = "com.heckmannch.birthdaybuddy.HiltTestRunner"
     }
@@ -30,6 +32,7 @@ android {
             assets.directories += "schemas"
         }
     }
+
 
     @Suppress("UnstableApiUsage")
     androidResources {
@@ -61,6 +64,16 @@ android {
     testOptions {
         unitTests.isReturnDefaultValues = true
         unitTests.isIncludeAndroidResources = true
+    }
+}
+
+tasks.withType<Test>().configureEach {
+    timeout.set(Duration.ofMinutes(3))
+    maxHeapSize = "2048m"
+    testLogging {
+        events("started", "passed", "skipped", "failed")
+        showStandardStreams = true
+        exceptionFormat = org.gradle.api.tasks.testing.logging.TestExceptionFormat.FULL
     }
 }
 

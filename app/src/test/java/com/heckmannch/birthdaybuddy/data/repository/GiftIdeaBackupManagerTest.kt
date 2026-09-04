@@ -1,16 +1,22 @@
 package com.heckmannch.birthdaybuddy.data.repository
 
+import androidx.room.withTransaction
 import com.google.common.truth.Truth.assertThat
 import com.heckmannch.birthdaybuddy.data.local.ContactDao
 import com.heckmannch.birthdaybuddy.data.local.ContactEntity
 import com.heckmannch.birthdaybuddy.data.local.ContactUserData
 import com.heckmannch.birthdaybuddy.data.local.ContactUserDataDao
-import com.heckmannch.birthdaybuddy.domain.model.GiftIdea
 import com.heckmannch.birthdaybuddy.data.local.SettingsDatabase
+import com.heckmannch.birthdaybuddy.domain.model.GiftIdea
+import io.mockk.coEvery
+import io.mockk.mockkStatic
+import io.mockk.unmockkAll
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.runTest
 import org.json.JSONArray
+import org.junit.After
 import org.junit.Before
 import org.junit.Test
 import org.mockito.kotlin.any
@@ -28,9 +34,14 @@ class GiftIdeaBackupManagerTest {
 
     @Before
     fun setup() {
-        val executor = java.util.concurrent.Executor { it.run() }
-        whenever(settingsDatabase.transactionExecutor).thenReturn(executor)
-        whenever(settingsDatabase.queryExecutor).thenReturn(executor)
+        mockkStatic("androidx.room.RoomDatabaseKt")
+        coEvery { settingsDatabase.withTransaction<Any?>(any()) } coAnswers {
+            val block = secondArg<suspend () -> Any?>()
+            block()
+        }
+        runBlocking {
+            whenever(contactUserDataDao.getAllUserDataImmediate()).thenReturn(emptyList())
+        }
 
         manager = GiftIdeaBackupManager(
             contactDao = contactDao,
@@ -38,6 +49,11 @@ class GiftIdeaBackupManagerTest {
             settingsDatabase = settingsDatabase,
             ioDispatcher = UnconfinedTestDispatcher()
         )
+    }
+
+    @After
+    fun tearDown() {
+        unmockkAll()
     }
 
     @Test
