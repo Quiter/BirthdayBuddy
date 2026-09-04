@@ -52,6 +52,9 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.foundation.layout.calculateEndPadding
+import androidx.compose.foundation.layout.calculateStartPadding
+import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
@@ -129,6 +132,8 @@ fun BirthdayList(
     showLabelFilter: Boolean = true,
 ) {
 
+    val layoutDirection = LocalLayoutDirection.current
+
     // WICHTIG: Wenn contacts null ist, zeigen wir einen Shimmer-Loader
     if (contacts == null) {
         LazyColumn(
@@ -136,7 +141,9 @@ fun BirthdayList(
                 .fillMaxSize()
                 .consumeWindowInsets(contentPadding),
             contentPadding = PaddingValues(
+                start = contentPadding.calculateStartPadding(layoutDirection),
                 top = contentPadding.calculateTopPadding(),
+                end = contentPadding.calculateEndPadding(layoutDirection),
                 bottom = contentPadding.calculateBottomPadding() + FabBottomSpacing
             ),
             userScrollEnabled = false,
@@ -171,7 +178,9 @@ fun BirthdayList(
             .consumeWindowInsets(contentPadding)
             .testTag("birthday_list"),
         contentPadding = PaddingValues(
+            start = contentPadding.calculateStartPadding(layoutDirection),
             top = contentPadding.calculateTopPadding(),
+            end = contentPadding.calculateEndPadding(layoutDirection),
             bottom = contentPadding.calculateBottomPadding() + FabBottomSpacing
         ),
     ) {
