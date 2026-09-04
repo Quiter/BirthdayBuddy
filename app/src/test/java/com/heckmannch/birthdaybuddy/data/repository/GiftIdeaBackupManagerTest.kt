@@ -6,6 +6,7 @@ import com.heckmannch.birthdaybuddy.data.local.ContactEntity
 import com.heckmannch.birthdaybuddy.data.local.ContactUserData
 import com.heckmannch.birthdaybuddy.data.local.ContactUserDataDao
 import com.heckmannch.birthdaybuddy.domain.model.GiftIdea
+import com.heckmannch.birthdaybuddy.data.local.SettingsDatabase
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.runTest
@@ -22,11 +23,21 @@ class GiftIdeaBackupManagerTest {
 
     private val contactDao: ContactDao = mock()
     private val contactUserDataDao: ContactUserDataDao = mock()
+    private val settingsDatabase: SettingsDatabase = mock()
     private lateinit var manager: GiftIdeaBackupManager
 
     @Before
     fun setup() {
-        manager = GiftIdeaBackupManager(contactDao, contactUserDataDao, UnconfinedTestDispatcher())
+        val executor = java.util.concurrent.Executor { it.run() }
+        whenever(settingsDatabase.transactionExecutor).thenReturn(executor)
+        whenever(settingsDatabase.queryExecutor).thenReturn(executor)
+
+        manager = GiftIdeaBackupManager(
+            contactDao = contactDao,
+            contactUserDataDao = contactUserDataDao,
+            settingsDatabase = settingsDatabase,
+            ioDispatcher = UnconfinedTestDispatcher()
+        )
     }
 
     @Test
@@ -67,7 +78,7 @@ class GiftIdeaBackupManagerTest {
 
         // Then
         assertThat(count).isEqualTo(1)
-        verify(contactUserDataDao).upsertUserData(any())
+        verify(contactUserDataDao).upsertUserDataList(any())
     }
 
     @Test
@@ -83,9 +94,10 @@ class GiftIdeaBackupManagerTest {
 
         // Then
         assertThat(count).isEqualTo(1)
-        verify(contactUserDataDao).upsertUserData(org.mockito.kotlin.check {
-            assertThat(it.giftIdeas).hasSize(1)
-            assertThat(it.giftIdeas[0].text).isEqualTo("Legacy Book")
+        verify(contactUserDataDao).upsertUserDataList(org.mockito.kotlin.check { list ->
+            assertThat(list).hasSize(1)
+            assertThat(list[0].giftIdeas).hasSize(1)
+            assertThat(list[0].giftIdeas[0].text).isEqualTo("Legacy Book")
         })
     }
 
@@ -103,8 +115,9 @@ class GiftIdeaBackupManagerTest {
 
         // Then
         assertThat(count).isEqualTo(1)
-        verify(contactUserDataDao).upsertUserData(org.mockito.kotlin.check {
-            assertThat(it.lookupKey).isEqualTo("correct_key")
+        verify(contactUserDataDao).upsertUserDataList(org.mockito.kotlin.check { list ->
+            assertThat(list).hasSize(1)
+            assertThat(list[0].lookupKey).isEqualTo("correct_key")
         })
     }
 
@@ -120,16 +133,17 @@ class GiftIdeaBackupManagerTest {
             spouseLookupKey = "spouse_key"
         )
         whenever(contactDao.getAllContactsImmediate()).thenReturn(contacts)
-        whenever(contactUserDataDao.getUserDataForContact("key1")).thenReturn(existingUserData)
+        whenever(contactUserDataDao.getAllUserDataImmediate()).thenReturn(listOf(existingUserData))
 
         // When
         val count = manager.importGiftIdeas(json)
 
         // Then
         assertThat(count).isEqualTo(1)
-        verify(contactUserDataDao).upsertUserData(org.mockito.kotlin.check {
-            assertThat(it.lookupKey).isEqualTo("key1")
-            assertThat(it.spouseLookupKey).isEqualTo("spouse_key")
+        verify(contactUserDataDao).upsertUserDataList(org.mockito.kotlin.check { list ->
+            assertThat(list).hasSize(1)
+            assertThat(list[0].lookupKey).isEqualTo("key1")
+            assertThat(list[0].spouseLookupKey).isEqualTo("spouse_key")
         })
     }
 
