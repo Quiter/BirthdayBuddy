@@ -3,6 +3,7 @@ package com.heckmannch.birthdaybuddy.ui.screens.onboarding
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.heckmannch.birthdaybuddy.di.ApplicationScope
 import com.heckmannch.birthdaybuddy.di.IoDispatcher
 import com.heckmannch.birthdaybuddy.domain.model.NotificationRule
 import com.heckmannch.birthdaybuddy.domain.permission.PermissionChecker
@@ -11,15 +12,14 @@ import com.heckmannch.birthdaybuddy.domain.repository.NotificationRepository
 import com.heckmannch.birthdaybuddy.ui.model.OnboardingUiState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 /**
@@ -38,6 +38,7 @@ import javax.inject.Inject
  * @param notificationRepository Repository for retrieving and persisting notification settings and rules.
  * @param contactRepository Repository for managing contacts and executing initial contact synchronization.
  * @param permissionChecker Utility for verifying Android runtime permissions.
+ * @param applicationScope Application-level coroutine scope surviving ViewModel and NavEntry lifecycles.
  * @param ioDispatcher Coroutine dispatcher dedicated to I/O and persistence operations.
  */
 @HiltViewModel
@@ -45,6 +46,7 @@ class OnboardingViewModel @Inject constructor(
     private val notificationRepository: NotificationRepository,
     private val contactRepository: ContactRepository,
     private val permissionChecker: PermissionChecker,
+    @ApplicationScope private val applicationScope: CoroutineScope,
     @param:IoDispatcher private val ioDispatcher: CoroutineDispatcher = Dispatchers.IO,
 ) : ViewModel() {
 
@@ -115,9 +117,16 @@ class OnboardingViewModel @Inject constructor(
      * notification rule if enabled and none exist, updating global settings, and triggering
      * the initial contact synchronization.
      *
-     * Design: Uses [NonCancellable] combined with [Dispatchers.IO] to guarantee that all persistence
-     * operations complete atomically without being cancelled when navigation occurs and the
-     * [OnboardingViewModel] is cleared.
+     * Motivation (Überleben des NavEntry- und ViewModel-Lifecycles):
+     * Executed via [applicationScope.launch(ioDispatcher)] instead of [viewModelScope].
+     * When the user taps "Fertigstellen" in the UI, [AppNavHost] immediately runs `backStack.clear()`
+     * and `backStack.add(Home)`, immediately destroying the onboarding NavEntry and the associated
+     * [OnboardingViewModel] along with its [viewModelScope].
+     * Even if using `withContext(NonCancellable)`, cancellation before the coroutine is dispatched
+     * would prevent the job from ever starting, or could lead to an aborted initial contact sync.
+     * By delegating these essential, uninterrupted completion tasks to [applicationScope] with [ioDispatcher],
+     * we guarantee that inserting default notification rules, updating application settings, and performing
+     * the initial contact synchronization reliably run to completion independent of the UI and ViewModel lifecycle.
      *
      * @param notificationsEnabled Whether birthday notifications should be enabled.
      * @param calendarSyncEnabled Whether calendar synchronization should be enabled.
@@ -125,35 +134,33 @@ class OnboardingViewModel @Inject constructor(
     private fun completeOnboarding(
         notificationsEnabled: Boolean,
         calendarSyncEnabled: Boolean,
-    ) = viewModelScope.launch {
-        withContext(NonCancellable + ioDispatcher) {
-            try {
-                if (notificationsEnabled) {
-                    val rules = notificationRepository.getAllRulesImmediate()
-                    if (rules.isEmpty()) {
-                        notificationRepository.insertRule(
-                            NotificationRule(
-                                daysBefore = DEFAULT_RULE_DAYS_BEFORE,
-                                hour = DEFAULT_RULE_HOUR,
-                                minute = DEFAULT_RULE_MINUTE
-                            )
+    ) = applicationScope.launch(ioDispatcher) {
+        try {
+            if (notificationsEnabled) {
+                val rules = notificationRepository.getAllRulesImmediate()
+                if (rules.isEmpty()) {
+                    notificationRepository.insertRule(
+                        NotificationRule(
+                            daysBefore = DEFAULT_RULE_DAYS_BEFORE,
+                            hour = DEFAULT_RULE_HOUR,
+                            minute = DEFAULT_RULE_MINUTE
                         )
-                    }
-                }
-
-                notificationRepository.updateSettings {
-                    it.copy(
-                        notificationsEnabled = notificationsEnabled,
-                        calendarSyncEnabled = calendarSyncEnabled,
-                        onboardingCompleted = true
                     )
                 }
-
-                // Trigger initial background sync of contacts
-                contactRepository.syncContacts()
-            } catch (e: Exception) {
-                Log.e(TAG, "Error completing onboarding: ${e.message}", e)
             }
+
+            notificationRepository.updateSettings {
+                it.copy(
+                    notificationsEnabled = notificationsEnabled,
+                    calendarSyncEnabled = calendarSyncEnabled,
+                    onboardingCompleted = true
+                )
+            }
+
+            // Trigger initial background sync of contacts
+            contactRepository.syncContacts()
+        } catch (e: Exception) {
+            Log.e(TAG, "Error completing onboarding: ${e.message}", e)
         }
     }
 

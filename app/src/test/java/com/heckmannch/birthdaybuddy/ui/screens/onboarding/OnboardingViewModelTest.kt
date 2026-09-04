@@ -6,6 +6,7 @@ import com.heckmannch.birthdaybuddy.domain.model.AppSettings
 import com.heckmannch.birthdaybuddy.domain.permission.PermissionChecker
 import com.heckmannch.birthdaybuddy.domain.repository.ContactRepository
 import com.heckmannch.birthdaybuddy.domain.repository.NotificationRepository
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.launch
@@ -45,6 +46,7 @@ class OnboardingViewModelTest {
                 notificationRepository,
                 contactRepository,
                 permissionChecker,
+                CoroutineScope(mainDispatcherRule.testDispatcher),
                 mainDispatcherRule.testDispatcher
             )
     }
@@ -60,6 +62,7 @@ class OnboardingViewModelTest {
                 notificationRepository,
                 contactRepository,
                 permissionChecker,
+                CoroutineScope(mainDispatcherRule.testDispatcher),
                 mainDispatcherRule.testDispatcher
             )
         val collectJob = launch { localViewModel.uiState.collect {} }
