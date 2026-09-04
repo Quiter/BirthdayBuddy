@@ -7,6 +7,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.dynamicDarkColorScheme
 import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
@@ -118,6 +119,7 @@ fun BirthdayBuddyTheme(
     themeAmoled: Boolean = false,
     themeAccent: ThemeAccent = ThemeAccent.SYSTEM,
     customAccentColorHex: String? = null,
+    customColorScheme: ColorScheme? = null,
     content: @Composable () -> Unit
 ) {
     val darkTheme = when (themeMode) {
@@ -130,21 +132,25 @@ fun BirthdayBuddyTheme(
     val dynamicColor =
         !isPreview && themeAccent == ThemeAccent.SYSTEM && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S
 
-    val colorScheme = when {
-        dynamicColor -> {
-            val context = LocalContext.current
-            val baseScheme =
-                if (darkTheme) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
-            if (darkTheme && themeAmoled) baseScheme.amoled else baseScheme
-        }
-
-        else -> {
-            getCustomColorScheme(
-                accent = themeAccent,
-                customAccentColorHex = customAccentColorHex,
-                darkTheme = darkTheme,
-                amoled = themeAmoled
-            )
+    val context = LocalContext.current
+    val colorScheme = remember(dynamicColor, darkTheme, themeAmoled, customColorScheme, themeAccent, customAccentColorHex) {
+        when {
+            customColorScheme != null -> {
+                if (darkTheme && themeAmoled) customColorScheme.amoled else customColorScheme
+            }
+            dynamicColor -> {
+                val baseScheme =
+                    if (darkTheme) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
+                if (darkTheme && themeAmoled) baseScheme.amoled else baseScheme
+            }
+            else -> {
+                getCustomColorScheme(
+                    accent = themeAccent,
+                    customAccentColorHex = customAccentColorHex,
+                    darkTheme = darkTheme,
+                    amoled = themeAmoled
+                )
+            }
         }
     }
 
