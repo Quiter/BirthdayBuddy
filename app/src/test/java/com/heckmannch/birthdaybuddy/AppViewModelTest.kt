@@ -1,12 +1,12 @@
 package com.heckmannch.birthdaybuddy
 
-import android.content.Context
-import android.content.Intent
 import com.google.common.truth.Truth.assertThat
 import com.heckmannch.birthdaybuddy.domain.model.AppSettings
 import com.heckmannch.birthdaybuddy.domain.model.ThemeAccent
 import com.heckmannch.birthdaybuddy.domain.model.ThemeMode
 import com.heckmannch.birthdaybuddy.domain.repository.NotificationRepository
+import com.heckmannch.birthdaybuddy.domain.repository.WidgetUpdater
+import com.heckmannch.birthdaybuddy.ui.navigation.AppAction
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flowOf
@@ -24,15 +24,15 @@ class AppViewModelTest {
     @get:Rule
     val mainDispatcherRule = MainDispatcherRule()
 
-    private val context: Context = mock()
     private val notificationRepository: NotificationRepository = mock()
+    private val widgetUpdater: WidgetUpdater = mock()
 
     private lateinit var viewModel: AppViewModel
 
     @Before
     fun setup() {
         whenever(notificationRepository.settings).thenReturn(flowOf(AppSettings()))
-        viewModel = AppViewModel(context, notificationRepository)
+        viewModel = AppViewModel(notificationRepository, widgetUpdater)
     }
 
     @Test
@@ -52,7 +52,7 @@ class AppViewModelTest {
         whenever(notificationRepository.settings).thenReturn(flowOf(customSettings))
 
         // Re-initialize to collect from the new flow
-        val freshViewModel = AppViewModel(context, notificationRepository)
+        val freshViewModel = AppViewModel(notificationRepository, widgetUpdater)
         val result = freshViewModel.appSettings.first { it.themeMode == ThemeMode.DARK }
 
         assertThat(result.themeMode).isEqualTo(ThemeMode.DARK)
@@ -69,54 +69,61 @@ class AppViewModelTest {
     }
 
     @Test
+    fun `scheduleDailyUpdate is called once on init`() = runTest {
+        // scheduleDailyUpdate() is triggered in init {} of AppViewModel.
+        // The viewModel is already created in @Before – verify the call occurred.
+        verify(widgetUpdater).scheduleDailyUpdate()
+    }
+
+    @Test
     fun `onboardingCompleted emits value from repository settings`() = runTest {
         val completedSettings = AppSettings(onboardingCompleted = true)
         whenever(notificationRepository.settings).thenReturn(flowOf(completedSettings))
 
-        val freshViewModel = AppViewModel(context, notificationRepository)
+        val freshViewModel = AppViewModel(notificationRepository, widgetUpdater)
         val result = freshViewModel.onboardingCompleted.first { it != null }
 
         assertThat(result).isTrue()
     }
 
     @Test
-    fun `init completes safely and handles widget scheduling without crashing`() = runTest {
-        // AppViewModel init schedules widget update via BirthdayWidgetWorker.
-        // Even when Context is a mock and WorkManager cannot be initialized, it handles exceptions gracefully.
-        val unconfiguredContext: Context = mock()
-        val vm = AppViewModel(unconfiguredContext, notificationRepository)
+    fun `init completes safely and handles widget scheduling exception without crashing`() = runTest {
+        val failingWidgetUpdater: WidgetUpdater = mock()
+        whenever(failingWidgetUpdater.scheduleDailyUpdate()).thenThrow(RuntimeException("Scheduling failed"))
+
+        val vm = AppViewModel(notificationRepository, failingWidgetUpdater)
         assertThat(vm.appSettings.value).isEqualTo(AppSettings())
     }
 
     @Test
-    fun `pendingIntent initial value is null`() = runTest {
-        assertThat(viewModel.pendingIntent.value).isNull()
+    fun `pendingAction initial value is null`() = runTest {
+        assertThat(viewModel.pendingAction.value).isNull()
     }
 
     @Test
-    fun `handleIntent updates pendingIntent StateFlow`() = runTest {
-        val mockIntent: Intent = mock()
-        viewModel.handleIntent(mockIntent)
+    fun `handleAction updates pendingAction StateFlow`() = runTest {
+        val action = AppAction.ScrollToTop
+        viewModel.handleAction(action)
 
-        assertThat(viewModel.pendingIntent.value).isEqualTo(mockIntent)
+        assertThat(viewModel.pendingAction.value).isEqualTo(action)
     }
 
     @Test
-    fun `handleIntent with null ignores value and does not overwrite existing intent`() = runTest {
-        val mockIntent: Intent = mock()
-        viewModel.handleIntent(mockIntent)
-        viewModel.handleIntent(null)
+    fun `handleAction with null ignores value and does not overwrite existing action`() = runTest {
+        val action = AppAction.OpenSearch
+        viewModel.handleAction(action)
+        viewModel.handleAction(null)
 
-        assertThat(viewModel.pendingIntent.value).isEqualTo(mockIntent)
+        assertThat(viewModel.pendingAction.value).isEqualTo(action)
     }
 
     @Test
-    fun `consumeIntent resets pendingIntent to null`() = runTest {
-        val mockIntent: Intent = mock()
-        viewModel.handleIntent(mockIntent)
-        assertThat(viewModel.pendingIntent.value).isEqualTo(mockIntent)
+    fun `consumeAction resets pendingAction to null`() = runTest {
+        val action = AppAction.OpenBirthdayPicker("lookup_1", 1990, 5, 20)
+        viewModel.handleAction(action)
+        assertThat(viewModel.pendingAction.value).isEqualTo(action)
 
-        viewModel.consumeIntent()
-        assertThat(viewModel.pendingIntent.value).isNull()
+        viewModel.consumeAction()
+        assertThat(viewModel.pendingAction.value).isNull()
     }
 }

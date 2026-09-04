@@ -15,7 +15,6 @@ import com.heckmannch.birthdaybuddy.util.mergeNames
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineDispatcher
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.time.LocalDate
 import java.time.ZoneOffset
@@ -33,7 +32,7 @@ class CalendarSyncRepositoryImpl @Inject constructor(
     @param:ApplicationContext private val context: Context,
     private val appSettingsDao: AppSettingsDao,
     private val systemCalendarDataSource: SystemCalendarDataSource,
-    @IoDispatcher private val ioDispatcher: CoroutineDispatcher = Dispatchers.IO,
+    @IoDispatcher private val ioDispatcher: CoroutineDispatcher,
 ) : CalendarSyncRepository {
 
     private enum class LocalCalendarType(val calendarName: String, val displayNameRes: Int) {

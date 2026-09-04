@@ -5,9 +5,10 @@ import com.heckmannch.birthdaybuddy.data.local.ContactDao
 import com.heckmannch.birthdaybuddy.data.local.ContactUserData
 import com.heckmannch.birthdaybuddy.data.local.ContactUserDataDao
 import com.heckmannch.birthdaybuddy.data.local.GiftIdeaConverters
+import com.heckmannch.birthdaybuddy.di.IoDispatcher
 import com.heckmannch.birthdaybuddy.domain.model.GiftIdea
 import kotlinx.coroutines.CancellationException
-import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
@@ -31,6 +32,7 @@ data class GiftIdeaBackupEntry(
 class GiftIdeaBackupManager @Inject constructor(
     private val contactDao: ContactDao,
     private val contactUserDataDao: ContactUserDataDao,
+    @IoDispatcher private val ioDispatcher: CoroutineDispatcher,
 ) {
     private val json = Json {
         ignoreUnknownKeys = true
@@ -42,7 +44,7 @@ class GiftIdeaBackupManager @Inject constructor(
      * Exportiert alle Kontakte mit Geschenkideen als JSON-String.
      * Nutzt nun die ContactUserData-Tabelle als Primärquelle.
      */
-    suspend fun exportGiftIdeas(): String = withContext(Dispatchers.IO) {
+    suspend fun exportGiftIdeas(): String = withContext(ioDispatcher) {
         val userDataList =
             contactUserDataDao.getAllUserDataImmediate().filter { it.giftIdeas.isNotEmpty() }
         val dbContacts = contactDao.getAllContactsImmediate().associateBy { it.lookupKey }
@@ -63,7 +65,7 @@ class GiftIdeaBackupManager @Inject constructor(
      * Importiert Geschenkideen aus einem JSON-String.
      * Schreibt die Daten in die persistente UserData-Tabelle.
      */
-    suspend fun importGiftIdeas(jsonString: String): Int = withContext(Dispatchers.IO) {
+    suspend fun importGiftIdeas(jsonString: String): Int = withContext(ioDispatcher) {
         try {
             val rootElement = json.parseToJsonElement(jsonString)
             if (rootElement !is JsonArray || rootElement.isEmpty()) return@withContext 0

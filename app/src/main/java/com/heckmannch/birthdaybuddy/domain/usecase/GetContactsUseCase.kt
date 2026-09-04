@@ -1,9 +1,10 @@
 package com.heckmannch.birthdaybuddy.domain.usecase
 
+import com.heckmannch.birthdaybuddy.di.DefaultDispatcher
 import com.heckmannch.birthdaybuddy.domain.model.Contact
 import com.heckmannch.birthdaybuddy.domain.model.ContactLabels
 import dagger.Reusable
-import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flowOn
@@ -18,7 +19,9 @@ import javax.inject.Inject
  * without any Android framework dependencies.
  */
 @Reusable
-class GetContactsUseCase @Inject constructor() {
+class GetContactsUseCase @Inject constructor(
+    @DefaultDispatcher private val defaultDispatcher: CoroutineDispatcher,
+) {
 
     /**
      * Settings snapshot derived from label & event configuration flows.
@@ -50,7 +53,7 @@ class GetContactsUseCase @Inject constructor() {
         labelSettings,
     ) { rawContacts, keywords, label, settingsState ->
         buildContactList(rawContacts, keywords, label, settingsState)
-    }.flowOn(Dispatchers.Default)
+    }.flowOn(defaultDispatcher)
 
     private fun buildContactList(
         rawContacts: List<Contact>,

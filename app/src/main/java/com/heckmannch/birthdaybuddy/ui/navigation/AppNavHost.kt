@@ -1,6 +1,5 @@
 package com.heckmannch.birthdaybuddy.ui.navigation
 
-import android.content.Intent
 import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.ContentTransform
 import androidx.compose.animation.core.FastOutSlowInEasing
@@ -32,11 +31,6 @@ import com.heckmannch.birthdaybuddy.ui.screens.onboarding.OnboardingScreen
 import com.heckmannch.birthdaybuddy.ui.screens.onboarding.OnboardingViewModel
 import com.heckmannch.birthdaybuddy.ui.screens.settings.SettingsScreen
 import com.heckmannch.birthdaybuddy.ui.screens.settings.SettingsTab
-import com.heckmannch.birthdaybuddy.util.IntentExtras
-import com.heckmannch.birthdaybuddy.util.NO_YEAR_MARKER
-import com.heckmannch.birthdaybuddy.util.safeGetBooleanExtra
-import com.heckmannch.birthdaybuddy.util.safeGetIntExtra
-import com.heckmannch.birthdaybuddy.util.safeGetStringExtra
 
 /**
  * Zentrale Navigations-Komponente der App.
@@ -50,15 +44,15 @@ import com.heckmannch.birthdaybuddy.util.safeGetStringExtra
  *
  * @param backStack Der gemeinsame Back-Stack, der von der Activity gehalten wird.
  * @param modifier Der [Modifier], der auf das NavDisplay angewendet werden soll.
- * @param intent Der aktuelle Intent der Activity für Deep-Links und Intent-Aktionen.
- * @param onIntentHandled Callback zur Quittierung und Bereinigung verarbeiteter Intent-Aktionen.
+ * @param action Die aktuelle [AppAction] für Deep-Links und Steuerungs-Aktionen.
+ * @param onActionHandled Callback zur Quittierung und Bereinigung verarbeiteter Aktionen.
  */
 @Composable
 fun AppNavHost(
     backStack: MutableList<NavKey>,
     modifier: Modifier = Modifier,
-    intent: Intent? = null,
-    onIntentHandled: () -> Unit = {},
+    action: AppAction? = null,
+    onActionHandled: () -> Unit = {},
 ) {
     val onNavigateBack: () -> Unit = {
         if (backStack.size > 1) {
@@ -66,27 +60,25 @@ fun AppNavHost(
         }
     }
 
-    // Navigations-Intents behandeln (z.B. Benachrichtigungseinstellungen direkt öffnen oder zu Home wechseln)
-    LaunchedEffect(intent) {
-        if (intent == null) return@LaunchedEffect
-        if (intent.safeGetBooleanExtra(IntentExtras.NAVIGATE_TO_NOTIFICATIONS)) {
-            if (!backStack.contains(NotificationSettings)) {
-                backStack.add(NotificationSettings)
+    // Globale Navigations-Aktionen behandeln (z.B. Benachrichtigungseinstellungen direkt öffnen oder zu Home wechseln)
+    LaunchedEffect(action) {
+        when (action) {
+            null -> return@LaunchedEffect
+            AppAction.NavigateToNotifications -> {
+                if (!backStack.contains(NotificationSettings)) {
+                    backStack.add(NotificationSettings)
+                }
+                onActionHandled()
             }
-            onIntentHandled()
-        } else if (
-            intent.hasExtra(IntentExtras.APPFN_CONTACT_ID) ||
-            intent.safeGetBooleanExtra(IntentExtras.OPEN_SEARCH) ||
-            intent.safeGetBooleanExtra(IntentExtras.SCROLL_TO_TOP) ||
-            intent.safeGetBooleanExtra(IntentExtras.OPEN_ADD_CONTACT)
-        ) {
-            if (backStack.lastOrNull() != Home) {
-                backStack.clear()
-                backStack.add(Home)
+            AppAction.OpenSearch,
+            AppAction.ScrollToTop,
+            AppAction.OpenAddContact,
+            is AppAction.OpenBirthdayPicker -> {
+                if (backStack.lastOrNull() != Home) {
+                    backStack.clear()
+                    backStack.add(Home)
+                }
             }
-        } else {
-            // Unbekannter oder bereits leerer Intent ohne relevante Aktionen wird direkt quittiert
-            onIntentHandled()
         }
     }
 
@@ -126,46 +118,36 @@ fun AppNavHost(
                 // Live-Sync bei Änderungen im System-Adressbuch
                 ContactSyncEffect(onSyncNeeded = { homeViewModel.onIntent(HomeIntent.SyncContacts()) })
 
-                // Intent-Events für den Home-Screen verarbeiten (z.B. Widget / App Shortcuts / AppFunctions)
-                LaunchedEffect(intent) {
-                    if (intent == null) return@LaunchedEffect
-                    var handled = false
-                    if (intent.safeGetBooleanExtra(IntentExtras.SCROLL_TO_TOP)) {
-                        homeViewModel.onIntent(HomeIntent.TriggerScrollToTop)
-                        handled = true
-                    }
-                    if (intent.safeGetBooleanExtra(IntentExtras.OPEN_SEARCH)) {
-                        homeViewModel.onIntent(HomeIntent.TriggerSearchFocus)
-                        handled = true
-                    }
-                    if (intent.safeGetBooleanExtra(IntentExtras.OPEN_ADD_CONTACT)) {
-                        homeViewModel.onIntent(HomeIntent.SyncContacts())
-                        handled = true
-                    }
-
-                    // AppFunctions Deep Link: addBirthdayToContact
-                    val appFnContactId = intent.safeGetStringExtra(IntentExtras.APPFN_CONTACT_ID)
-                    if (appFnContactId != null) {
-                        val yearExtra =
-                            intent.safeGetIntExtra(IntentExtras.APPFN_BIRTHDAY_YEAR, NO_YEAR_MARKER)
-                        val month = intent.safeGetIntExtra(IntentExtras.APPFN_BIRTHDAY_MONTH, -1)
-                        val day = intent.safeGetIntExtra(IntentExtras.APPFN_BIRTHDAY_DAY, -1)
-
-                        val year =
-                            if (yearExtra > 0 && yearExtra != NO_YEAR_MARKER) yearExtra else null
-                        homeViewModel.onIntent(
-                            HomeIntent.OpenBirthdayPicker(
-                                contactLookupKey = appFnContactId,
-                                year = year,
-                                month = month,
-                                day = day,
+                // Aktionen für den Home-Screen verarbeiten (z.B. Widget / App Shortcuts / AppFunctions)
+                LaunchedEffect(action) {
+                    when (action) {
+                        null -> return@LaunchedEffect
+                        AppAction.ScrollToTop -> {
+                            homeViewModel.onIntent(HomeIntent.TriggerScrollToTop)
+                            onActionHandled()
+                        }
+                        AppAction.OpenSearch -> {
+                            homeViewModel.onIntent(HomeIntent.TriggerSearchFocus)
+                            onActionHandled()
+                        }
+                        AppAction.OpenAddContact -> {
+                            homeViewModel.onIntent(HomeIntent.SyncContacts())
+                            onActionHandled()
+                        }
+                        is AppAction.OpenBirthdayPicker -> {
+                            homeViewModel.onIntent(
+                                HomeIntent.OpenBirthdayPicker(
+                                    contactLookupKey = action.contactLookupKey,
+                                    year = action.year,
+                                    month = action.month,
+                                    day = action.day,
+                                )
                             )
-                        )
-                        handled = true
-                    }
-
-                    if (handled) {
-                        onIntentHandled()
+                            onActionHandled()
+                        }
+                        AppAction.NavigateToNotifications -> {
+                            // Bereits auf globaler Navigationsebene behandelt
+                        }
                     }
                 }
 

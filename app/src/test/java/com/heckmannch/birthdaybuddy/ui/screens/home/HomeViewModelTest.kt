@@ -60,10 +60,10 @@ class HomeViewModelTest {
     }
 
     private val timeRepository: TimeRepository = mock()
-    private val getContactsUseCase = GetContactsUseCase()
+    private val getContactsUseCase = GetContactsUseCase(mainDispatcherRule.testDispatcher)
     private val contactUiMapper = ContactUiMapper()
     private val coupleSuggestionUiMapper = CoupleSuggestionUiMapper()
-    private val getAvailableLabelsUseCase = GetAvailableLabelsUseCase()
+    private val getAvailableLabelsUseCase = GetAvailableLabelsUseCase(mainDispatcherRule.testDispatcher)
     private val getCoupleSuggestionUseCase = GetCoupleSuggestionUseCase(contactRepository)
     private val linkAsCoupleUseCase = LinkAsCoupleUseCase(contactRepository)
     private val unlinkCoupleUseCase = UnlinkCoupleUseCase(contactRepository)

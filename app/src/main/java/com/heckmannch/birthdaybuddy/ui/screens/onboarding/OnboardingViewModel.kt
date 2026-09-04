@@ -13,7 +13,6 @@ import com.heckmannch.birthdaybuddy.ui.model.OnboardingUiState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -47,7 +46,7 @@ class OnboardingViewModel @Inject constructor(
     private val contactRepository: ContactRepository,
     private val permissionChecker: PermissionChecker,
     @ApplicationScope private val applicationScope: CoroutineScope,
-    @param:IoDispatcher private val ioDispatcher: CoroutineDispatcher = Dispatchers.IO,
+    @IoDispatcher private val ioDispatcher: CoroutineDispatcher,
 ) : ViewModel() {
 
     private val _currentPage = MutableStateFlow(0)

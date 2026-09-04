@@ -23,13 +23,15 @@ import com.heckmannch.birthdaybuddy.ui.navigation.AppNavHost
 import com.heckmannch.birthdaybuddy.ui.navigation.Home
 import com.heckmannch.birthdaybuddy.ui.navigation.Onboarding
 import com.heckmannch.birthdaybuddy.ui.theme.BirthdayBuddyTheme
+import com.heckmannch.birthdaybuddy.util.IntentParser
 import dagger.hilt.android.AndroidEntryPoint
 
 /**
  * Haupt-Activity von BirthdayBuddy.
  *
- * Reagiert auf eingehende Intents (z.B. App-Shortcuts, Widget-Klicks, Benachrichtigungen)
- * und reicht diese reaktiv über [AppViewModel] an [AppNavHost] zur sicheren, typen-geprüften Verarbeitung weiter.
+ * Reagiert auf eingehende Intents (z.B. App-Shortcuts, Widget-Klicks, Benachrichtigungen),
+ * parst diese über [IntentParser] in typsichere [AppAction]-Instanzen und reicht diese reaktiv
+ * über [AppViewModel] an [AppNavHost] zur sicheren Verarbeitung weiter.
  */
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
@@ -49,7 +51,7 @@ class MainActivity : ComponentActivity() {
 
         // Nur beim Kaltstart / Initialaufruf an das ViewModel übergeben, um Re-Execution bei Recreations zu verhindern
         if (savedInstanceState == null) {
-            appViewModel.handleIntent(intent)
+            appViewModel.handleAction(IntentParser.parse(intent))
         }
 
         setContent {
@@ -57,7 +59,7 @@ class MainActivity : ComponentActivity() {
             val windowSizeClass = windowAdaptiveInfo.windowSizeClass
             val onboardingCompleted by appViewModel.onboardingCompleted.collectAsStateWithLifecycle()
             val appSettings by appViewModel.appSettings.collectAsStateWithLifecycle()
-            val pendingIntent by appViewModel.pendingIntent.collectAsStateWithLifecycle()
+            val pendingAction by appViewModel.pendingAction.collectAsStateWithLifecycle()
 
             CompositionLocalProvider(
                 LocalWindowSizeClass provides windowSizeClass,
@@ -80,8 +82,8 @@ class MainActivity : ComponentActivity() {
                         ) {
                             AppNavHost(
                                 backStack = backStack,
-                                intent = pendingIntent,
-                                onIntentHandled = appViewModel::consumeIntent
+                                action = pendingAction,
+                                onActionHandled = appViewModel::consumeAction
                             )
                         }
                     }
@@ -95,6 +97,6 @@ class MainActivity : ComponentActivity() {
         // Gemäß Android Intent Security Best Practices:
         // setIntent(intent) muss aufgerufen werden, um die Intent-Referenz der Activity zu aktualisieren.
         setIntent(intent)
-        appViewModel.handleIntent(intent)
+        appViewModel.handleAction(IntentParser.parse(intent))
     }
 }

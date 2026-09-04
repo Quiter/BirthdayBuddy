@@ -4,12 +4,13 @@ import android.content.ContentProviderOperation
 import android.content.Context
 import android.provider.ContactsContract
 import android.util.Log
+import com.heckmannch.birthdaybuddy.di.IoDispatcher
 import com.heckmannch.birthdaybuddy.domain.model.Contact
 import com.heckmannch.birthdaybuddy.util.NO_YEAR_MARKER
 import com.heckmannch.birthdaybuddy.util.hasYear
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CancellationException
-import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.withContext
@@ -23,6 +24,7 @@ data class GroupInfo(val title: String, val isSystem: Boolean)
 @Singleton
 class SystemContactDataSource @Inject constructor(
     @param:ApplicationContext private val context: Context,
+    @IoDispatcher private val ioDispatcher: CoroutineDispatcher,
 ) {
     private val dateFormats = listOf(
         DateTimeFormatter.ISO_LOCAL_DATE,
@@ -51,7 +53,7 @@ class SystemContactDataSource @Inject constructor(
 
 
     suspend fun updateContactBirthday(contactId: String, birthday: LocalDate): Boolean =
-        withContext(Dispatchers.IO) {
+        withContext(ioDispatcher) {
             try {
                 val dateStr = if (birthday.hasYear) {
                     birthday.format(DateTimeFormatter.ISO_LOCAL_DATE)
@@ -178,7 +180,7 @@ class SystemContactDataSource @Inject constructor(
         return bestContact?.first
     }
 
-    suspend fun fetchContactGroups(): Map<Long, GroupInfo> = withContext(Dispatchers.IO) {
+    suspend fun fetchContactGroups(): Map<Long, GroupInfo> = withContext(ioDispatcher) {
         val groups = mutableMapOf<Long, GroupInfo>()
         val projection = arrayOf(
             ContactsContract.Groups._ID,
@@ -212,7 +214,7 @@ class SystemContactDataSource @Inject constructor(
     }
 
     suspend fun fetchContactsFromSystem(groups: Map<Long, GroupInfo>): List<Contact> =
-        withContext(Dispatchers.IO) {
+        withContext(ioDispatcher) {
             val contactsMap = mutableMapOf<String, Contact>()
 
             // 1. Alle Kontakte mit Namen laden
@@ -324,7 +326,7 @@ class SystemContactDataSource @Inject constructor(
         }
 
     private suspend fun fetchMessengerAvailabilityForContacts(contactIds: Set<String>): Map<String, Pair<Boolean, Boolean>> =
-        withContext(Dispatchers.IO) {
+        withContext(ioDispatcher) {
             val result =
                 mutableMapOf<String, Pair<Boolean, Boolean>>() // contactId -> (hasWhatsApp, hasSignal)
 
@@ -369,7 +371,7 @@ class SystemContactDataSource @Inject constructor(
         }
 
     private suspend fun fetchPhoneNumbersForContacts(contactIds: Set<String>): Map<String, String> =
-        withContext(Dispatchers.IO) {
+        withContext(ioDispatcher) {
             val result = mutableMapOf<String, String>()
             val projection = arrayOf(
                 ContactsContract.CommonDataKinds.Phone.CONTACT_ID,
@@ -411,7 +413,7 @@ class SystemContactDataSource @Inject constructor(
     private suspend fun fetchLabelsForContacts(
         contactIds: Set<String>,
         groups: Map<Long, GroupInfo>
-    ): Map<String, List<String>> = withContext(Dispatchers.IO) {
+    ): Map<String, List<String>> = withContext(ioDispatcher) {
         val result = mutableMapOf<String, MutableSet<String>>()
         val projection = arrayOf(
             ContactsContract.CommonDataKinds.GroupMembership.CONTACT_ID,

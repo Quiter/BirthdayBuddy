@@ -620,3 +620,22 @@
     - **`HomeTopBar.kt` & `LabelFilterBar.kt`:** Ergänzung von `testTag("home_top_bar")` und `testTag("label_filter_bar")`.
     - **Automatisierte Inset-Regressionstestsuite:** Erstellung von [`HomeScreenInsetsTest.kt`](file:///c:/Users/chris/AndroidStudioProjects/BirthdayBuddy/app/src/test/java/com/heckmannch/birthdaybuddy/ui/screens/home/HomeScreenInsetsTest.kt) mit Robolectric, die den gesamten `HomeContent`-Bildschirmbaum auf Tablets und Smartphones rendert und verifiziert, dass **kein einziges Bildschirmelement** (`BirthdayDetailPane`, `detail_close_button`, `BirthdayQuotePlaceholder`, `fast_scrollbar`, erstes Listenelement) jemals hinter der `HomeTopBar` verschwindet.
     - **Verifikation:** Erfolgreicher Durchlauf aller Tests (`./gradlew testDebugUnitTest`).
+
+353. **Vollständige Entkopplung von `AppViewModel` von Android-Framework-APIs (Architecture & Clean Code):**
+    - **Architektur-Konformität (§1):** Beseitigung der Framework-Abhängigkeiten (`@ApplicationContext Context`, `Intent`) in `AppViewModel`. ViewModels im gesamten Projekt sind nun 100% frei von Android-Framework-APIs.
+    - **Einführung von `AppAction` & `IntentParser`:**
+      - [`AppAction.kt`](file:///c:/Users/chris/AndroidStudioProjects/BirthdayBuddy/app/src/main/java/com/heckmannch/birthdaybuddy/ui/navigation/AppAction.kt): Definition eines versiegelten Typs (`NavigateToNotifications`, `OpenSearch`, `ScrollToTop`, `OpenAddContact`, `OpenBirthdayPicker`) zur typsicheren Repräsentation von Steuerungs- und Navigationsaktionen.
+      - [`IntentParser.kt`](file:///c:/Users/chris/AndroidStudioProjects/BirthdayBuddy/app/src/main/java/com/heckmannch/birthdaybuddy/util/IntentParser.kt): Kapselung des Auslesens von Android-Intents in typsichere `AppAction`-Instanzen.
+    - **Erweiterung von `WidgetUpdater`:**
+      - Hinzufügen von `scheduleDailyUpdate()` im Interface [`WidgetUpdater.kt`](file:///c:/Users/chris/AndroidStudioProjects/BirthdayBuddy/app/src/main/java/com/heckmannch/birthdaybuddy/domain/repository/WidgetUpdater.kt) und Implementierung in [`BirthdayWidgetUpdater.kt`](file:///c:/Users/chris/AndroidStudioProjects/BirthdayBuddy/app/src/main/java/com/heckmannch/birthdaybuddy/data/repository/BirthdayWidgetUpdater.kt) mit `BirthdayWidgetWorker.enqueueNextUpdate(context)`, sodass `AppViewModel` keinen `Context` mehr für das Enqueueing des täglichen Worker-Updates benötigt.
+    - **Refaktorisierung von `AppViewModel`:**
+      - Entfernung aller `Context`- und `Intent`-Imports. Injizieren von `WidgetUpdater` und `NotificationRepository`.
+      - Verwaltung von `_pendingAction: MutableStateFlow<AppAction?>` mit `handleAction(action: AppAction?)` und `consumeAction()`.
+    - **Anpassung von `MainActivity` & `AppNavHost`:**
+      - [`MainActivity.kt`](file:///c:/Users/chris/AndroidStudioProjects/BirthdayBuddy/app/src/main/java/com/heckmannch/birthdaybuddy/MainActivity.kt) parst Intents beim Start (`onCreate`) und bei Wiederaufnahme (`onNewIntent`) via `IntentParser.parse(intent)` und leitet die resultierende `AppAction` an `AppViewModel` weiter.
+      - [`AppNavHost.kt`](file:///c:/Users/chris/AndroidStudioProjects/BirthdayBuddy/app/src/main/java/com/heckmannch/birthdaybuddy/ui/navigation/AppNavHost.kt) nutzt typsicheres Pattern-Matching (`when (action)`) für Navigation und `HomeIntent`-Weiterleitung; alle `Intent`- und `IntentExtras`-Imports wurden eliminiert.
+    - **Unit Tests:**
+      - Aktualisierung von [`AppViewModelTest.kt`](file:///c:/Users/chris/AndroidStudioProjects/BirthdayBuddy/app/src/test/java/com/heckmannch/birthdaybuddy/AppViewModelTest.kt) (Verifikation von `scheduleDailyUpdate()`, `pendingAction`, `handleAction`, `consumeAction`).
+      - Erstellung von [`IntentParserTest.kt`](file:///c:/Users/chris/AndroidStudioProjects/BirthdayBuddy/app/src/test/java/com/heckmannch/birthdaybuddy/util/IntentParserTest.kt) zur Absicherung aller Parsing-Pfade.
+    - **Verifikation:** Erfolgreicher Durchlauf aller Unit-Tests (`./gradlew testDebugUnitTest`).
+

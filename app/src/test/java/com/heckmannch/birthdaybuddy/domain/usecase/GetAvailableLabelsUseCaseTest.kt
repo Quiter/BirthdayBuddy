@@ -30,7 +30,7 @@ class GetAvailableLabelsUseCaseTest {
 
     @Before
     fun setUp() {
-        useCase = GetAvailableLabelsUseCase()
+        useCase = GetAvailableLabelsUseCase(mainDispatcherRule.testDispatcher)
     }
 
     @Test

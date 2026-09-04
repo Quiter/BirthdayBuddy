@@ -1,14 +1,12 @@
 package com.heckmannch.birthdaybuddy
 
-import android.content.Context
-import android.content.Intent
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.heckmannch.birthdaybuddy.domain.model.AppSettings
 import com.heckmannch.birthdaybuddy.domain.repository.NotificationRepository
-import com.heckmannch.birthdaybuddy.widget.BirthdayWidgetWorker
+import com.heckmannch.birthdaybuddy.domain.repository.WidgetUpdater
+import com.heckmannch.birthdaybuddy.ui.navigation.AppAction
 import dagger.hilt.android.lifecycle.HiltViewModel
-import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -23,47 +21,48 @@ import javax.inject.Inject
  *
  * Verantwortlichkeiten:
  * - Hält den reaktiven [AppSettings]-State, der für das globale App-Theme benötigt wird.
- * - Triggert [NotificationRepository.syncScheduling] sowie [BirthdayWidgetWorker.enqueueNextUpdate]
+ * - Triggert [NotificationRepository.syncScheduling] sowie [WidgetUpdater.scheduleDailyUpdate]
  *   einmalig pro ViewModel-Lifetime (überlebt Konfigurationsänderungen wie Rotation,
  *   sodass weder ein redundanter syncScheduling- noch ein redundanter Widget-Enqueueing-Aufruf
  *   bei jeder Activity-Recreation stattfindet).
- * - Verwaltet eingehende Intents ([pendingIntent]) in einem reaktiven StateFlow für Navigation
- *   und Deep-Links (z.B. Shortcuts, Widgets, AppFunctions) ohne Vermischung mit Activity-Lifecycle.
+ * - Verwaltet eingehende Aktionen ([pendingAction]) in einem reaktiven StateFlow für Navigation
+ *   und Deep-Links (z.B. Shortcuts, Widgets, AppFunctions) ohne Vermischung mit Activity-Lifecycle
+ *   oder Abhängigkeit zu Android-Framework-APIs wie [android.content.Intent].
  *
  * Die Activity selbst darf **nicht** direkt auf Repositories oder Hintergrund-Worker zugreifen.
  */
 @HiltViewModel
 class AppViewModel @Inject constructor(
-    @ApplicationContext private val context: Context,
     private val notificationRepository: NotificationRepository,
+    widgetUpdater: WidgetUpdater,
 ) : ViewModel() {
 
-    private val _pendingIntent = MutableStateFlow<Intent?>(null)
+    private val _pendingAction = MutableStateFlow<AppAction?>(null)
 
     /**
-     * Eingehender Intent für Navigation und Aktionen (z.B. Shortcuts, Widgets, AppFunctions).
-     * Wird nach erfolgreicher Verarbeitung über [consumeIntent] auf null zurückgesetzt.
+     * Eingehende Aktion für Navigation und Steuerung (z.B. Shortcuts, Widgets, AppFunctions).
+     * Wird nach erfolgreicher Verarbeitung über [consumeAction] auf null zurückgesetzt.
      */
-    val pendingIntent: StateFlow<Intent?> = _pendingIntent.asStateFlow()
+    val pendingAction: StateFlow<AppAction?> = _pendingAction.asStateFlow()
 
     /**
-     * Übergibt einen eingehenden Intent (aus [MainActivity.onCreate] oder [MainActivity.onNewIntent])
+     * Übergibt eine geparste Aktion (aus [MainActivity.onCreate] oder [MainActivity.onNewIntent])
      * zur asynchronen, sicheren Verarbeitung an die Compose-Navigationsebene.
      *
-     * @param intent Der zu verarbeitende Intent.
+     * @param action Die zu verarbeitende [AppAction].
      */
-    fun handleIntent(intent: Intent?) {
-        if (intent != null) {
-            _pendingIntent.value = intent
+    fun handleAction(action: AppAction?) {
+        if (action != null) {
+            _pendingAction.value = action
         }
     }
 
     /**
-     * Quittiert die Verarbeitung des aktuellen Intents und setzt den State zurück,
+     * Quittiert die Verarbeitung der aktuellen Aktion und setzt den State zurück,
      * um eine doppelte Verarbeitung bei Recompositions oder Recreations zu verhindern.
      */
-    fun consumeIntent() {
-        _pendingIntent.value = null
+    fun consumeAction() {
+        _pendingAction.value = null
     }
 
     /**
@@ -101,7 +100,7 @@ class AppViewModel @Inject constructor(
             }
         }
         try {
-            BirthdayWidgetWorker.enqueueNextUpdate(context)
+            widgetUpdater.scheduleDailyUpdate()
         } catch (_: Exception) {
             // Safeguard: Fehler beim Widget-Scheduling dürfen den App-Start nicht blockieren.
         }

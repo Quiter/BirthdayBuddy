@@ -1,10 +1,11 @@
 package com.heckmannch.birthdaybuddy.domain.usecase
 
+import com.heckmannch.birthdaybuddy.di.DefaultDispatcher
 import com.heckmannch.birthdaybuddy.domain.model.Contact
 import com.heckmannch.birthdaybuddy.domain.model.ContactLabels
 import com.heckmannch.birthdaybuddy.domain.model.LabelConfig
 import dagger.Reusable
-import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flowOn
@@ -18,7 +19,9 @@ import javax.inject.Inject
  * label configurations, and app settings.
  */
 @Reusable
-class GetAvailableLabelsUseCase @Inject constructor() {
+class GetAvailableLabelsUseCase @Inject constructor(
+    @DefaultDispatcher private val defaultDispatcher: CoroutineDispatcher,
+) {
 
     /**
      * Calculates the list of currently available labels.
@@ -89,5 +92,5 @@ class GetAvailableLabelsUseCase @Inject constructor() {
         }
 
         labels
-    }.flowOn(Dispatchers.Default)
+    }.flowOn(defaultDispatcher)
 }

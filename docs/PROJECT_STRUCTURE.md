@@ -1,9 +1,9 @@
 # Project Structure: BirthdayBuddy
 
 ## 📁 Root
-- `MainActivity.kt`: Schlanker Einstiegspunkt der App (~164 Zeilen). Verantwortlich für: Splash-Screen, Edge-to-Edge, Theme-Bereitstellung, globales Intent-Handling (z.B. Widget-Klicks) via `activityIntent`-State und Inaktivitäts-Reset über `LifecycleEventObserver`. Die Navigationslogik liegt in `AppNavHost.kt`, der ContentObserver in `ContactSyncEffect.kt`, die Routen in `NavRoutes.kt`.
+- `MainActivity.kt`: Schlanker Einstiegspunkt der App. Verantwortlich für: Splash-Screen, Edge-to-Edge, Theme-Bereitstellung, Intent-Parsing via `IntentParser` in typsichere `AppAction`-Events, Weiterleitung an `AppViewModel` und Bereitstellung des UI-Trees. Die Navigationslogik liegt in `AppNavHost.kt`.
 - `BirthdayBuddyApplication.kt`: Hilt-Application Klasse zur Initialisierung der Dependency Injection und Konfiguration des WorkManagers.
-- `AppViewModel.kt`: App-weites `@HiltViewModel`, das auf Activity-Ebene gehalten wird (Root-Package, da Activity-weit gültig).
+- `AppViewModel.kt`: App-weites `@HiltViewModel`, das auf Activity-Ebene gehalten wird (Root-Package, da Activity-weit gültig). Vollständig entkoppelt von Android-Framework-APIs; verwaltet reaktive `AppSettings`, triggert `syncScheduling()` & `WidgetUpdater.scheduleDailyUpdate()` und puffert `AppAction`-Events.
 - `BootReceiver.kt`: BroadcastReceiver für Geräteneustart (`BOOT_COMPLETED`), App-Updates (`MY_PACKAGE_REPLACED`) sowie Zeitzonen- und Uhrzeitanpassungen (`TIMEZONE_CHANGED`, `TIME_SET`, `DATE_CHANGED`) zur automatischen Neuplanung von Benachrichtigungen via `syncScheduling()`.
 - `AppViewModelTest.kt`: Tests für `AppViewModel`.
 - `PROJECT_STATUS.md`: Dokumentation des aktuellen Entwicklungsstands, der Architektur-Constraints und Meilensteine.
@@ -172,7 +172,8 @@
     - `SampleData.kt`: Zentraler Ort für Testdaten für Previews und Tests.
 - ### 📁 Navigation (`ui.navigation`)
     - `NavRoutes.kt`: Alle 12 typsicheren, serialisierbaren `NavKey`-Routenobjekte (`Home`, `Settings`, `LabelSettings`, `NotificationSettings`, etc.). Zentrale Quelle der Navigationsstruktur.
-    - `AppNavHost.kt`: Zentrales Navigations-Composable. Verwaltet den `NavDisplay` (Navigation 3) inklusive Screen-zu-Screen-Transitions (Push/Pop/PredictiveBack mit Parallax-Effekt) und das vollständige Route-zu-Screen-Mapping mit ViewModel-Verknüpfungen.
+    - `AppAction.kt`: Sealed Interface `AppAction` für typsichere globale App- und Navigations-Aktionen (z.B. `NavigateToNotifications`, `OpenSearch`, `ScrollToTop`, `OpenAddContact`, `OpenBirthdayPicker`), vollständig entkoppelt von Android-Intents.
+    - `AppNavHost.kt`: Zentrales Navigations-Composable. Verwaltet den `NavDisplay` (Navigation 3) inklusive Screen-zu-Screen-Transitions (Push/Pop/PredictiveBack mit Parallax-Effekt), das vollständige Route-zu-Screen-Mapping mit ViewModel-Verknüpfungen und die Ausführung von `AppAction`-Events.
 - ### 📁 UI Components (`ui.components`)
     - `ColorPickerDialog.kt`: Wiederverwendbare, premium Farbauswahl-Komponente mit HSV-Farbraum-Koordinaten (Sättigung/Helligkeit), Hue-Slider, HEX-Texteingabe und Live-Vorschau.
     - `ContactSyncEffect.kt`: Composable Effect, der Änderungen im System-Adressbuch beobachtet und `onSyncNeeded` mit einem 1-Sekunde-Debounce aufruft. Kapselt den `ContentObserver` und deregistriert ihn automatisch mit dem Compose-Lifecycle.
@@ -210,7 +211,8 @@
 - `StringUtils.kt`: Hilfsfunktionen für Namens- und String-Operationen (`mergeNames`, `getInitials`).
 - `ContextExtensions.kt`: Hilfsfunktionen für die sichere Navigation im Android-Context.
 - `IntentExtras.kt`: Zentrales `object` mit allen `const val`-Schlüsseln für Intent-Extras (`SCROLL_TO_TOP`, `NAVIGATE_TO_NOTIFICATIONS`, `OPEN_SEARCH`, `OPEN_ADD_CONTACT`) sowie sicheren, typgeprüften Extraktions- und Bereinigungsfunktionen (`safeGetAndRemoveBooleanExtra`, `safeGetIntExtra`, `safeGetStringArrayExtra`).
-- `WidgetUpdater.kt` & `BirthdayWidgetUpdater.kt`: Hilfsklassen zur Glance-unabhängigen Aktualisierung des App-Widgets.
+- `IntentParser.kt`: Zentraler Parser zur sicheren Umwandlung von Android-`Intent`s in typsichere `AppAction`-Instanzen.
+- `WidgetUpdater.kt` & `BirthdayWidgetUpdater.kt`: Abstraktion und Implementierung zur Glance-unabhängigen Aktualisierung und WorkManager-Planung (`scheduleDailyUpdate()`) des App-Widgets.
 - `NotificationScheduler.kt` & `NotificationSchedulerImpl.kt`: Hilfsklassen zur WorkManager-unabhängigen Steuerung von Hintergrund-Workern.
 
 ## 📁 UI Utilities (`ui.util`)
@@ -244,6 +246,7 @@ Diese Tests laufen ohne Emulator/Gerät direkt auf dem Entwicklungsrechner und s
 - `data/repository/SystemContactDataSourceTest.kt`: JVM Unit-Tests für `SystemContactDataSource` (Parsing von Datumsformaten inkl. Schaltjahren wie 29. Februar ohne Jahr).
 - `util/DateUtilsTest.kt`: Logiktests für Datumsberechnungen (Alter, Tage bis Geburtstag, etc.).
 - `util/StringUtilsTest.kt`: Logiktests für String- und Namens-Hilfsfunktionen (`mergeNames`, `getInitials`).
+- `util/IntentParserTest.kt`: JVM Unit-Tests für `IntentParser` zur Absicherung der Extraktion aller `AppAction`-Typen aus Android-`Intent`s.
 - `domain/usecase/GetContactsUseCaseTest.kt`: JVM Unit-Tests für `GetContactsUseCase` zur Absicherung der Filter- und Pairing-Logik.
 - `domain/util/NotificationKeyUtilsTest.kt`: JVM Unit-Tests für `NotificationKeyUtils` (Enkodierung, Dekodierung und EventType-Erkennung inklusive Sonderzeichen & Doppelpunkten im LookupKey).
 - `domain/usecase/GetPendingNotificationsUseCaseTest.kt`: JVM Unit-Tests zur Überprüfung der Benachrichtigungsregeln und Fälligkeits-Kalkulation.
@@ -254,7 +257,7 @@ Diese Tests laufen ohne Emulator/Gerät direkt auf dem Entwicklungsrechner und s
 - `domain/usecase/ImportGiftIdeasUseCaseTest.kt`: JVM Unit-Tests zum Geschenkideen-Import.
 - `domain/usecase/SetCalendarSyncEnabledUseCaseTest.kt`: JVM Unit-Tests zur Aktivierung/Deaktivierung der Kalendersynchronisation.
 - `domain/appfunctions/BirthdayAppFunctionServiceTest.kt`: JVM Unit-Tests für `BirthdayAppFunctionService`: Überprüfung der Filter-/Mapping-Logik von `getUpcomingBirthdays` (Fensterfilterung, Sortierung, Jahr-Mapping) und `getContactBirthday` (Teil-Match, Null-Handling, Blanknamen-Fehler, alphabetische Erstauflösung).
-- `AppViewModelTest.kt`: Tests für `AppViewModel`: Verifikation der initialen `AppSettings`-Emission, reaktiver Settings-Propagation und einmaligem `syncScheduling()`-Aufruf im `init`.
+- `AppViewModelTest.kt`: Tests für `AppViewModel`: Verifikation der initialen `AppSettings`-Emission, reaktiver Settings-Propagation, `scheduleDailyUpdate()`, `pendingAction`, `handleAction` und `consumeAction` ohne Android-Framework-Abhängigkeiten.
 - `BootReceiverTest.kt`: JVM Unit-Tests für `BootReceiver`: Absicherung aller Broadcast-Aktionen (`BOOT_COMPLETED`, `MY_PACKAGE_REPLACED`, `TIMEZONE_CHANGED`, `TIME_SET`, `DATE_CHANGED`), Ignorieren unpassender Aktionen und Exception-Handling.
 - `ui/screens/home/HomeViewModelGiftIdeaTest.kt`: Tests für Geschenkideen- und Geburtstags-Intents im `HomeViewModel`. **Feature-co-located** neben `HomeViewModel.kt`.
 - `ui/screens/home/HomeViewModelSearchTest.kt`: Tests der Such- und Filterlogik im `HomeViewModel`. **Feature-co-located** neben `HomeViewModel.kt`.

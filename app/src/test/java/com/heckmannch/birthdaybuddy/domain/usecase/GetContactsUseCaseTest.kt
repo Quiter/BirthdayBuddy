@@ -36,7 +36,7 @@ class GetContactsUseCaseTest {
 
     @Before
     fun setUp() {
-        useCase = GetContactsUseCase()
+        useCase = GetContactsUseCase(mainDispatcherRule.testDispatcher)
     }
 
     private fun invoke(

@@ -106,7 +106,8 @@ class CalendarSyncRepositoryImplTest {
         repository = CalendarSyncRepositoryImpl(
             context = context,
             appSettingsDao = appSettingsDao,
-            systemCalendarDataSource = systemCalendarDataSource
+            systemCalendarDataSource = systemCalendarDataSource,
+            ioDispatcher = mainDispatcherRule.testDispatcher,
         )
     }
 

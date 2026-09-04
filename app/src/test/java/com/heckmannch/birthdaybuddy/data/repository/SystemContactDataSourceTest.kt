@@ -5,10 +5,13 @@ import com.google.common.truth.Truth.assertThat
 import com.heckmannch.birthdaybuddy.util.NO_YEAR_MARKER
 import com.heckmannch.birthdaybuddy.util.hasYear
 import io.mockk.mockk
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import org.junit.Before
 import org.junit.Test
 import java.time.LocalDate
 
+@OptIn(ExperimentalCoroutinesApi::class)
 class SystemContactDataSourceTest {
 
     private val context: Context = mockk(relaxed = true)
@@ -16,7 +19,7 @@ class SystemContactDataSourceTest {
 
     @Before
     fun setUp() {
-        dataSource = SystemContactDataSource(context)
+        dataSource = SystemContactDataSource(context, UnconfinedTestDispatcher())
     }
 
     @Test
