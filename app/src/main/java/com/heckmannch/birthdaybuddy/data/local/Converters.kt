@@ -6,9 +6,11 @@ import kotlinx.serialization.json.Json
 import java.time.LocalDate
 
 class Converters {
-    private val json = Json {
-        ignoreUnknownKeys = true
-        encodeDefaults = true
+    companion object {
+        private val json = Json {
+            ignoreUnknownKeys = true
+            encodeDefaults = true
+        }
     }
 
     @TypeConverter

@@ -5,9 +5,11 @@ import com.heckmannch.birthdaybuddy.domain.model.GiftIdea
 import kotlinx.serialization.json.Json
 
 class GiftIdeaConverters {
-    private val json = Json {
-        ignoreUnknownKeys = true
-        encodeDefaults = true
+    companion object {
+        private val json = Json {
+            ignoreUnknownKeys = true
+            encodeDefaults = true
+        }
     }
 
     @TypeConverter
