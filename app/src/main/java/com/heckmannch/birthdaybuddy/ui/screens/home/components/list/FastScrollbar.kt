@@ -551,39 +551,17 @@ fun FastScrollbar(
             thumbOffset = { thumbOffset }
         )
 
-        // Interactive touch track
-        Box(
-            modifier = Modifier
-                .align(Alignment.CenterEnd)
-                .width(ScrollbarDefaults.ThumbSize)
-                .fillMaxHeight()
-                .graphicsLayer { alpha = animatedVisibilityAlpha }
-                .pointerInput(trackHeightPx, sections, headerCount, totalItems) {
-                    detectVerticalDragGestures(
-                        onDragStart = { offset ->
-                            state.isDragging = true
-                            state.hasUserScrolled = true
-                            currentOnSetFastScrolling(true)
-                            state.dragOffsetPx =
-                                (offset.y - thumbHeightPx / 2f).coerceIn(0f, trackHeightPx)
-                            state.updateScrollPosition(
-                                state.dragOffsetPx,
-                                trackHeightPx,
-                                sections,
-                                totalItems,
-                                headerCount
-                            )
-                        },
-                        onDragEnd = {
-                            state.isDragging = false
-                            currentOnSetFastScrolling(false)
-                        },
-                        onDragCancel = {
-                            state.isDragging = false
-                            currentOnSetFastScrolling(false)
-                        },
-                    ) { change, dragAmount ->
-                        state.dragOffsetPx = (state.dragOffsetPx + dragAmount).coerceIn(0f, trackHeightPx)
+        // Interactive touch track: only attach pointerInput when visible to prevent ghost touches
+        val dragModifier = if (state.isVisible) {
+            Modifier.pointerInput(trackHeightPx, sections, headerCount, totalItems) {
+                detectVerticalDragGestures(
+                    onDragStart = { offset ->
+                        if (!state.isVisible) return@detectVerticalDragGestures
+                        state.isDragging = true
+                        state.hasUserScrolled = true
+                        currentOnSetFastScrolling(true)
+                        state.dragOffsetPx =
+                            (offset.y - thumbHeightPx / 2f).coerceIn(0f, trackHeightPx)
                         state.updateScrollPosition(
                             state.dragOffsetPx,
                             trackHeightPx,
@@ -591,9 +569,39 @@ fun FastScrollbar(
                             totalItems,
                             headerCount
                         )
-                        change.consume()
-                    }
+                    },
+                    onDragEnd = {
+                        state.isDragging = false
+                        currentOnSetFastScrolling(false)
+                    },
+                    onDragCancel = {
+                        state.isDragging = false
+                        currentOnSetFastScrolling(false)
+                    },
+                ) { change, dragAmount ->
+                    if (!state.isDragging) return@detectVerticalDragGestures
+                    state.dragOffsetPx = (state.dragOffsetPx + dragAmount).coerceIn(0f, trackHeightPx)
+                    state.updateScrollPosition(
+                        state.dragOffsetPx,
+                        trackHeightPx,
+                        sections,
+                        totalItems,
+                        headerCount
+                    )
+                    change.consume()
                 }
+            }
+        } else {
+            Modifier
+        }
+
+        Box(
+            modifier = Modifier
+                .align(Alignment.CenterEnd)
+                .width(ScrollbarDefaults.ThumbSize)
+                .fillMaxHeight()
+                .graphicsLayer { alpha = animatedVisibilityAlpha }
+                .then(dragModifier)
         ) {
             // Visual scrollbar thumb
             Surface(

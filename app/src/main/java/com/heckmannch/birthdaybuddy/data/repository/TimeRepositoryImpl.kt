@@ -56,11 +56,17 @@ class TimeRepositoryImpl @Inject constructor(
             addAction(Intent.ACTION_TIME_CHANGED)
         }
 
+        // Hinweis zu Android 14+ (API 34+):
+        // Receiver, die geschützte System-Broadcasts (wie ACTION_DATE_CHANGED, ACTION_TIMEZONE_CHANGED,
+        // ACTION_TIME_CHANGED) empfangen, müssen explizit mit RECEIVER_EXPORTED registriert werden,
+        // da System-Broadcasts vom system_server (UID 1000) gesendet werden und bei RECEIVER_NOT_EXPORTED
+        // vom Betriebssystem blockiert werden. Da diese Aktionen vom Android-System geschützt sind,
+        // können Drittanbieter-Apps diese Broadcasts nicht vortäuschen (Spoofing-Schutz ist durch das OS gewährleistet).
         ContextCompat.registerReceiver(
             context,
             receiver,
             intentFilter,
-            ContextCompat.RECEIVER_NOT_EXPORTED,
+            ContextCompat.RECEIVER_EXPORTED,
         )
 
         // Parallele Coroutine-Schleife, die gezielt zu Mitternacht aufwacht
