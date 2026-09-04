@@ -1,6 +1,5 @@
 package com.heckmannch.birthdaybuddy.ui.screens.settings.backup
 
-import android.net.Uri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.heckmannch.birthdaybuddy.di.IoDispatcher
@@ -45,19 +44,19 @@ class BackupViewModel @Inject constructor(
      */
     fun onIntent(intent: BackupIntent) {
         when (intent) {
-            is BackupIntent.ExportBackup -> exportGiftIdeas(intent.uri)
-            is BackupIntent.ImportBackup -> importGiftIdeas(intent.uri)
+            is BackupIntent.ExportGiftIdeas -> exportGiftIdeas(intent.uriString)
+            is BackupIntent.ImportGiftIdeas -> importGiftIdeas(intent.uriString)
             BackupIntent.ClearMessage -> clearMessage()
         }
     }
 
-    private fun exportGiftIdeas(uri: Uri) {
+    private fun exportGiftIdeas(uriString: String) {
         if (_uiState.value.isLoading) return
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true) }
             try {
                 withContext(ioDispatcher) {
-                    exportGiftIdeasUseCase(uri.toString())
+                    exportGiftIdeasUseCase(uriString)
                 }
                 _uiState.update {
                     it.copy(
@@ -76,13 +75,13 @@ class BackupViewModel @Inject constructor(
         }
     }
 
-    private fun importGiftIdeas(uri: Uri) {
+    private fun importGiftIdeas(uriString: String) {
         if (_uiState.value.isLoading) return
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true) }
             try {
                 val count = withContext(ioDispatcher) {
-                    importGiftIdeasUseCase(uri.toString())
+                    importGiftIdeasUseCase(uriString)
                 }
                 _uiState.update {
                     it.copy(
@@ -108,25 +107,4 @@ class BackupViewModel @Inject constructor(
     private fun clearMessage() {
         _uiState.update { it.copy(message = null) }
     }
-}
-
-/**
- * Sealed interface representing all MVI intents (actions) that can be sent
- * from the view/composable to the [BackupViewModel].
- */
-sealed interface BackupIntent {
-    /**
-     * Intent to export all gift ideas to the given destination [uri].
-     */
-    data class ExportBackup(val uri: Uri) : BackupIntent
-
-    /**
-     * Intent to import gift ideas from the given source [uri].
-     */
-    data class ImportBackup(val uri: Uri) : BackupIntent
-
-    /**
-     * Intent to clear the current status message after it has been displayed to the user.
-     */
-    data object ClearMessage : BackupIntent
 }

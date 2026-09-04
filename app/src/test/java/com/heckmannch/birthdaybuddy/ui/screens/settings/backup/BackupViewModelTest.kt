@@ -1,6 +1,5 @@
 package com.heckmannch.birthdaybuddy.ui.screens.settings.backup
 
-import android.net.Uri
 import com.google.common.truth.Truth.assertThat
 import com.heckmannch.birthdaybuddy.MainDispatcherRule
 import com.heckmannch.birthdaybuddy.domain.usecase.ExportGiftIdeasUseCase
@@ -26,15 +25,13 @@ class BackupViewModelTest {
 
     private val exportGiftIdeasUseCase: ExportGiftIdeasUseCase = mock()
     private val importGiftIdeasUseCase: ImportGiftIdeasUseCase = mock()
-    private val uri: Uri = mock()
 
-    private val uriString = "content://test_uri"
+    private val uriString = "content://dummy/path"
 
     private lateinit var viewModel: BackupViewModel
 
     @Before
     fun setup() {
-        whenever(uri.toString()).thenReturn(uriString)
         viewModel = BackupViewModel(exportGiftIdeasUseCase, importGiftIdeasUseCase, testDispatcher)
     }
 
@@ -46,10 +43,10 @@ class BackupViewModelTest {
     }
 
     @Test
-    fun `ExportBackup intent should delegate call to usecase and update state to ExportSuccess`() =
+    fun `ExportGiftIdeas intent should delegate call to usecase and update state to ExportSuccess`() =
         runTest(testDispatcher) {
             // When
-            viewModel.onIntent(BackupIntent.ExportBackup(uri))
+            viewModel.onIntent(BackupIntent.ExportGiftIdeas(uriString))
 
             // Then
             verify(exportGiftIdeasUseCase).invoke(uriString)
@@ -59,14 +56,14 @@ class BackupViewModelTest {
         }
 
     @Test
-    fun `ExportBackup intent should update state to ExportError when usecase throws exception`() =
+    fun `ExportGiftIdeas intent should update state to ExportError when usecase throws exception`() =
         runTest(testDispatcher) {
             // Given
             val exception = RuntimeException("Export failed")
             whenever(exportGiftIdeasUseCase(uriString)).thenThrow(exception)
 
             // When
-            viewModel.onIntent(BackupIntent.ExportBackup(uri))
+            viewModel.onIntent(BackupIntent.ExportGiftIdeas(uriString))
 
             // Then
             val state = viewModel.uiState.value
@@ -75,13 +72,13 @@ class BackupViewModelTest {
         }
 
     @Test
-    fun `ImportBackup intent should delegate to usecase and update state to ImportSuccess`() =
+    fun `ImportGiftIdeas intent should delegate to usecase and update state to ImportSuccess`() =
         runTest(testDispatcher) {
             // Given
             whenever(importGiftIdeasUseCase(uriString)).thenReturn(5)
 
             // When
-            viewModel.onIntent(BackupIntent.ImportBackup(uri))
+            viewModel.onIntent(BackupIntent.ImportGiftIdeas(uriString))
 
             // Then
             verify(importGiftIdeasUseCase).invoke(uriString)
@@ -91,13 +88,13 @@ class BackupViewModelTest {
         }
 
     @Test
-    fun `ImportBackup intent should update state to ImportInvalid when usecase returns negative count`() =
+    fun `ImportGiftIdeas intent should update state to ImportInvalid when usecase returns negative count`() =
         runTest(testDispatcher) {
             // Given
             whenever(importGiftIdeasUseCase(uriString)).thenReturn(-1)
 
             // When
-            viewModel.onIntent(BackupIntent.ImportBackup(uri))
+            viewModel.onIntent(BackupIntent.ImportGiftIdeas(uriString))
 
             // Then
             val state = viewModel.uiState.value
@@ -106,14 +103,14 @@ class BackupViewModelTest {
         }
 
     @Test
-    fun `ImportBackup intent should update state to ImportError when usecase throws exception`() =
+    fun `ImportGiftIdeas intent should update state to ImportError when usecase throws exception`() =
         runTest(testDispatcher) {
             // Given
             val exception = RuntimeException("Import failed")
             whenever(importGiftIdeasUseCase(uriString)).thenThrow(exception)
 
             // When
-            viewModel.onIntent(BackupIntent.ImportBackup(uri))
+            viewModel.onIntent(BackupIntent.ImportGiftIdeas(uriString))
 
             // Then
             val state = viewModel.uiState.value
@@ -125,7 +122,7 @@ class BackupViewModelTest {
     fun `ClearMessage intent should clear the message in uiState`() =
         runTest(testDispatcher) {
             // Given
-            viewModel.onIntent(BackupIntent.ExportBackup(uri))
+            viewModel.onIntent(BackupIntent.ExportGiftIdeas(uriString))
             assertThat(viewModel.uiState.value.message).isEqualTo(BackupMessage.ExportSuccess)
 
             // When

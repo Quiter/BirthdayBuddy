@@ -77,7 +77,7 @@ fun BackupScreen(
         ActivityResultContracts.CreateDocument("application/json")
     ) { uri: Uri? ->
         if (uri != null) {
-            viewModel.onIntent(BackupIntent.ExportBackup(uri))
+            viewModel.onIntent(BackupIntent.ExportGiftIdeas(uri.toString()))
         }
     }
 
@@ -85,7 +85,7 @@ fun BackupScreen(
         ActivityResultContracts.OpenDocument()
     ) { uri: Uri? ->
         if (uri != null) {
-            viewModel.onIntent(BackupIntent.ImportBackup(uri))
+            viewModel.onIntent(BackupIntent.ImportGiftIdeas(uri.toString()))
         }
     }
 
