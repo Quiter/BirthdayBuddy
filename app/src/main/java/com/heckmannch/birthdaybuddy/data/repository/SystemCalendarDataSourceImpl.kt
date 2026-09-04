@@ -8,15 +8,17 @@ import android.content.pm.PackageManager
 import android.provider.CalendarContract
 import android.util.Log
 import androidx.core.content.ContextCompat
+import com.heckmannch.birthdaybuddy.di.IoDispatcher
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CancellationException
-import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.withContext
 import java.util.TimeZone
 import javax.inject.Inject
 
 class SystemCalendarDataSourceImpl @Inject constructor(
     @param:ApplicationContext private val context: Context,
+    @IoDispatcher private val ioDispatcher: CoroutineDispatcher,
 ) : SystemCalendarDataSource {
 
     override fun hasCalendarPermissions(): Boolean {
@@ -31,7 +33,7 @@ class SystemCalendarDataSourceImpl @Inject constructor(
     }
 
     override suspend fun findCalendarIdByName(calendarName: String): Long? =
-        withContext(Dispatchers.IO) {
+        withContext(ioDispatcher) {
             val projection = arrayOf(CalendarContract.Calendars._ID)
             val selection =
                 "${CalendarContract.Calendars.NAME} = ? AND ${CalendarContract.Calendars.ACCOUNT_NAME} = ? AND ${CalendarContract.Calendars.ACCOUNT_TYPE} = ?"
@@ -65,7 +67,7 @@ class SystemCalendarDataSourceImpl @Inject constructor(
         calendarName: String,
         displayName: String,
         color: Int
-    ): Long? = withContext(Dispatchers.IO) {
+    ): Long? = withContext(ioDispatcher) {
         val builder = CalendarContract.Calendars.CONTENT_URI.buildUpon()
         builder.appendQueryParameter(CalendarContract.CALLER_IS_SYNCADAPTER, "true")
         builder.appendQueryParameter(
@@ -131,7 +133,7 @@ class SystemCalendarDataSourceImpl @Inject constructor(
         calendarId: Long,
         accountName: String,
         accountType: String
-    ): Boolean = withContext(Dispatchers.IO) {
+    ): Boolean = withContext(ioDispatcher) {
         val builder = CalendarContract.Calendars.CONTENT_URI.buildUpon()
         builder.appendQueryParameter(CalendarContract.CALLER_IS_SYNCADAPTER, "true")
         builder.appendQueryParameter(CalendarContract.Calendars.ACCOUNT_NAME, accountName)
@@ -161,7 +163,7 @@ class SystemCalendarDataSourceImpl @Inject constructor(
     }
 
     override suspend fun updateCalendarColor(calendarId: Long, newColor: Int): Boolean =
-        withContext(Dispatchers.IO) {
+        withContext(ioDispatcher) {
             val uri = CalendarContract.Calendars.CONTENT_URI.buildUpon()
                 .appendQueryParameter(CalendarContract.CALLER_IS_SYNCADAPTER, "true")
                 .appendQueryParameter(
@@ -195,7 +197,7 @@ class SystemCalendarDataSourceImpl @Inject constructor(
         }
 
     override suspend fun queryAllCalendars(): List<SystemCalendarInfo> =
-        withContext(Dispatchers.IO) {
+        withContext(ioDispatcher) {
             val projection = arrayOf(
                 CalendarContract.Calendars._ID,
                 CalendarContract.Calendars.ACCOUNT_NAME,
@@ -249,7 +251,7 @@ class SystemCalendarDataSourceImpl @Inject constructor(
         }
 
     override suspend fun clearCalendarEvents(calendarId: Long): Boolean =
-        withContext(Dispatchers.IO) {
+        withContext(ioDispatcher) {
             val deleteUri = CalendarContract.Events.CONTENT_URI.buildUpon()
                 .appendQueryParameter(CalendarContract.CALLER_IS_SYNCADAPTER, "true")
                 .appendQueryParameter(
@@ -277,7 +279,7 @@ class SystemCalendarDataSourceImpl @Inject constructor(
         }
 
     override suspend fun applyBatch(operations: List<ContentProviderOperation>): Boolean =
-        withContext(Dispatchers.IO) {
+        withContext(ioDispatcher) {
             if (operations.isEmpty()) return@withContext true
             try {
                 val arrayList = ArrayList<ContentProviderOperation>(operations)
