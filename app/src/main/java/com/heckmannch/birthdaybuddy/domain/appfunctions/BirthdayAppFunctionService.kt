@@ -200,8 +200,15 @@ abstract class BirthdayAppFunctionService : AppFunctionService() {
                 data = "tg://msg?to=${Uri.encode(phone)}".toUri()
             }
 
-            "sms" -> Intent(Intent.ACTION_VIEW).apply {
-                data = "sms:${phone.filter { it.isDigit() }}".toUri()
+            "sms" -> {
+                val cleanPhone = if (phone.startsWith("+")) {
+                    "+" + phone.drop(1).filter { it.isDigit() }
+                } else {
+                    phone.filter { it.isDigit() }
+                }
+                Intent(Intent.ACTION_SENDTO).apply {
+                    data = "smsto:$cleanPhone".toUri()
+                }
             }
 
             else -> throw AppFunctionInvalidArgumentException(
