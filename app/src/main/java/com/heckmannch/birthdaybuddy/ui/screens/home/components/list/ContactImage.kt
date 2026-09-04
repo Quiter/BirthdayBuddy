@@ -29,7 +29,6 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.coerceAtLeast
 import coil3.compose.AsyncImage
 import coil3.request.ImageRequest
-import coil3.request.crossfade
 import com.heckmannch.birthdaybuddy.R
 import com.heckmannch.birthdaybuddy.ui.theme.BirthdayBuddyTheme
 import com.heckmannch.birthdaybuddy.ui.theme.ContactAvatarHeaderSize
@@ -174,13 +173,16 @@ private fun SingleAvatar(
     contentColor: Color,
 ) {
     if (imageUri != null) {
-        AsyncImage(
-            model = ImageRequest.Builder(LocalContext.current)
+        val context = LocalContext.current
+        val request = remember(imageUri, cacheKey, context) {
+            ImageRequest.Builder(context)
                 .data(imageUri)
-                .crossfade(true)
                 .memoryCacheKey(cacheKey)
                 .diskCacheKey(cacheKey)
-                .build(),
+                .build()
+        }
+        AsyncImage(
+            model = request,
             contentDescription = stringResource(R.string.item_image_desc, fullName),
             modifier = modifier.clip(shape),
             contentScale = ContentScale.Crop

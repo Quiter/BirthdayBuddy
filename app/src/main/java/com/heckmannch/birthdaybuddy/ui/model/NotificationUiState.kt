@@ -10,5 +10,6 @@ data class NotificationUiState(
     val otherEventsEnabled: Boolean = false,
     // List ist ein instabiler Typ für den Compose-Compiler. @Immutable ist dennoch sicher,
     // da diese Data Class schreibgeschützt (read-only) ist und Änderungen nur per Kopie (copy) erfolgen.
-    val notificationRules: List<NotificationRule> = emptyList()
+    val notificationRules: List<NotificationRule> = emptyList(),
+    val hasSystemNotificationPermission: Boolean = true
 )

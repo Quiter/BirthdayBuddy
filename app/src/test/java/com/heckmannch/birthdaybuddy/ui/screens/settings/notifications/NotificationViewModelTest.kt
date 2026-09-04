@@ -4,11 +4,14 @@ import com.google.common.truth.Truth.assertThat
 import com.heckmannch.birthdaybuddy.MainDispatcherRule
 import com.heckmannch.birthdaybuddy.domain.model.AppSettings
 import com.heckmannch.birthdaybuddy.domain.model.NotificationRule
+import com.heckmannch.birthdaybuddy.domain.permission.PermissionChecker
 import com.heckmannch.birthdaybuddy.domain.repository.ContactRepository
 import com.heckmannch.birthdaybuddy.domain.repository.NotificationRepository
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest
 import org.junit.Before
 import org.junit.Rule
@@ -27,6 +30,7 @@ class NotificationViewModelTest {
 
     private val notificationRepository: NotificationRepository = mock()
     private val contactRepository: ContactRepository = mock()
+    private val permissionChecker: PermissionChecker = mock()
 
     private lateinit var viewModel: NotificationViewModel
 
@@ -45,8 +49,9 @@ class NotificationViewModelTest {
     fun setup() {
         whenever(notificationRepository.settings).thenReturn(flowOf(testSettings))
         whenever(notificationRepository.allRules).thenReturn(flowOf(testRules))
+        whenever(permissionChecker.hasNotificationPermission()).thenReturn(true)
 
-        viewModel = NotificationViewModel(notificationRepository, contactRepository)
+        viewModel = NotificationViewModel(notificationRepository, contactRepository, permissionChecker)
     }
 
     @Test
@@ -57,6 +62,28 @@ class NotificationViewModelTest {
         assertThat(uiState.persistentNotifications).isFalse()
         assertThat(uiState.otherEventsEnabled).isFalse()
         assertThat(uiState.notificationRules).isEqualTo(testRules)
+        assertThat(uiState.hasSystemNotificationPermission).isTrue()
+    }
+
+    @Test
+    fun `refreshPermissionStatus should update uiState hasSystemNotificationPermission`() = runTest {
+        whenever(permissionChecker.hasNotificationPermission()).thenReturn(false)
+        val viewModel = NotificationViewModel(
+            notificationRepository,
+            contactRepository,
+            permissionChecker
+        )
+
+        val collectJob = launch { viewModel.uiState.collect {} }
+        runCurrent()
+        assertThat(viewModel.uiState.value.hasSystemNotificationPermission).isFalse()
+
+        whenever(permissionChecker.hasNotificationPermission()).thenReturn(true)
+        viewModel.onIntent(NotificationIntent.RefreshPermissionStatus)
+        runCurrent()
+
+        assertThat(viewModel.uiState.value.hasSystemNotificationPermission).isTrue()
+        collectJob.cancel()
     }
 
     @Test

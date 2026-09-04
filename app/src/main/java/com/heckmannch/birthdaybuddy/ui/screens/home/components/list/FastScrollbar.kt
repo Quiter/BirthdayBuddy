@@ -465,7 +465,7 @@ fun FastScrollbar(
         }
     }
 
-    val animatedVisibilityAlpha by animateFloatAsState(
+    val alphaState = animateFloatAsState(
         targetValue = if (state.isVisible) 1f else 0f,
         animationSpec = tween(durationMillis = ScrollbarDefaults.FadeDurationMs),
         label = "Scrollbar Alpha"
@@ -600,7 +600,7 @@ fun FastScrollbar(
                 .align(Alignment.CenterEnd)
                 .width(ScrollbarDefaults.ThumbSize)
                 .fillMaxHeight()
-                .graphicsLayer { alpha = animatedVisibilityAlpha }
+                .graphicsLayer { alpha = alphaState.value }
                 .then(dragModifier)
         ) {
             // Visual scrollbar thumb

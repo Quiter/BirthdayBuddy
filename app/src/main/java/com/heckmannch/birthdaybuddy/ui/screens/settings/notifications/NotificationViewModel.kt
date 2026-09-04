@@ -3,10 +3,12 @@ package com.heckmannch.birthdaybuddy.ui.screens.settings.notifications
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.heckmannch.birthdaybuddy.domain.model.NotificationRule
+import com.heckmannch.birthdaybuddy.domain.permission.PermissionChecker
 import com.heckmannch.birthdaybuddy.domain.repository.ContactRepository
 import com.heckmannch.birthdaybuddy.domain.repository.NotificationRepository
 import com.heckmannch.birthdaybuddy.ui.model.NotificationUiState
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
@@ -18,22 +20,30 @@ import javax.inject.Inject
 class NotificationViewModel @Inject constructor(
     private val notificationRepository: NotificationRepository,
     private val contactRepository: ContactRepository,
+    private val permissionChecker: PermissionChecker,
 ) : ViewModel() {
+
+    private val _hasNotificationPermission =
+        MutableStateFlow(permissionChecker.hasNotificationPermission())
 
     val uiState: StateFlow<NotificationUiState> = combine(
         notificationRepository.settings,
-        notificationRepository.allRules
-    ) { settings, rules ->
+        notificationRepository.allRules,
+        _hasNotificationPermission
+    ) { settings, rules, hasPermission ->
         NotificationUiState(
             notificationsEnabled = settings.notificationsEnabled,
             persistentNotifications = settings.persistentNotifications,
             otherEventsEnabled = settings.otherEventsEnabled,
-            notificationRules = rules
+            notificationRules = rules,
+            hasSystemNotificationPermission = hasPermission
         )
     }.stateIn(
         scope = viewModelScope,
         started = SharingStarted.WhileSubscribed(5000),
-        initialValue = NotificationUiState()
+        initialValue = NotificationUiState(
+            hasSystemNotificationPermission = permissionChecker.hasNotificationPermission()
+        )
     )
 
 
@@ -50,6 +60,7 @@ class NotificationViewModel @Inject constructor(
 
             is NotificationIntent.UpdateRule -> updateNotificationRule(intent.rule)
             is NotificationIntent.DeleteRule -> deleteNotificationRule(intent.rule)
+            is NotificationIntent.RefreshPermissionStatus -> refreshPermissionStatus()
         }
     }
 
@@ -115,6 +126,10 @@ class NotificationViewModel @Inject constructor(
     private fun deleteNotificationRule(rule: NotificationRule) = viewModelScope.launch {
         notificationRepository.deleteRule(rule)
     }
+
+    private fun refreshPermissionStatus() {
+        _hasNotificationPermission.value = permissionChecker.hasNotificationPermission()
+    }
 }
 
 sealed interface NotificationIntent {
@@ -124,4 +139,5 @@ sealed interface NotificationIntent {
     data class AddRule(val daysBefore: Int, val hour: Int, val minute: Int) : NotificationIntent
     data class UpdateRule(val rule: NotificationRule) : NotificationIntent
     data class DeleteRule(val rule: NotificationRule) : NotificationIntent
+    data object RefreshPermissionStatus : NotificationIntent
 }

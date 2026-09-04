@@ -2,7 +2,6 @@ package com.heckmannch.birthdaybuddy.ui.screens.settings.calendar
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.heckmannch.birthdaybuddy.BuildConfig
 import com.heckmannch.birthdaybuddy.domain.repository.CalendarSyncRepository
 import com.heckmannch.birthdaybuddy.domain.repository.NotificationRepository
 import com.heckmannch.birthdaybuddy.domain.usecase.SetCalendarSyncEnabledUseCase
@@ -24,14 +23,6 @@ class CalendarViewModel @Inject constructor(
     private val setCalendarSyncEnabledUseCase: SetCalendarSyncEnabledUseCase,
     private val updateCalendarColorUseCase: UpdateCalendarColorUseCase,
 ) : ViewModel() {
-
-    init {
-        if (BuildConfig.DEBUG) {
-            viewModelScope.launch {
-                calendarSyncRepository.debugPrintAllCalendars()
-            }
-        }
-    }
 
     private val _hasCalendarPermission =
         MutableStateFlow(calendarSyncRepository.hasCalendarPermissions())

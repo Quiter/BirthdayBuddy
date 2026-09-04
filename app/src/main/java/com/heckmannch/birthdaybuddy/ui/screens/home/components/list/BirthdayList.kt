@@ -136,6 +136,17 @@ fun BirthdayList(
 
     // WICHTIG: Wenn contacts null ist, zeigen wir einen Shimmer-Loader
     if (contacts == null) {
+        val transition = rememberInfiniteTransition(label = "shimmer")
+        val shimmerAlpha by transition.animateFloat(
+            initialValue = AlphaEmphasisSubtle,
+            targetValue = AlphaEmphasisMedium,
+            animationSpec = infiniteRepeatable(
+                animation = tween(1000, easing = LinearEasing),
+                repeatMode = RepeatMode.Reverse
+            ),
+            label = "alpha"
+        )
+
         LazyColumn(
             modifier = modifier
                 .fillMaxSize()
@@ -149,7 +160,7 @@ fun BirthdayList(
             userScrollEnabled = false,
         ) {
             items(10, key = { it }) {
-                BirthdayItemSkeleton()
+                BirthdayItemSkeleton(alpha = shimmerAlpha)
             }
         }
         return
@@ -262,18 +273,7 @@ fun BirthdayList(
 }
 
 @Composable
-private fun BirthdayItemSkeleton() {
-    val transition = rememberInfiniteTransition(label = "shimmer")
-    val alpha by transition.animateFloat(
-        initialValue = AlphaEmphasisSubtle,
-        targetValue = AlphaEmphasisMedium,
-        animationSpec = infiniteRepeatable(
-            animation = tween(1000, easing = LinearEasing),
-            repeatMode = RepeatMode.Reverse
-        ),
-        label = "alpha"
-    )
-
+private fun BirthdayItemSkeleton(alpha: Float) {
     Surface(
         modifier = Modifier
             .fillMaxWidth()

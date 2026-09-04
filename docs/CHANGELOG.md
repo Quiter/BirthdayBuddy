@@ -639,3 +639,9 @@
       - Erstellung von [`IntentParserTest.kt`](file:///c:/Users/chris/AndroidStudioProjects/BirthdayBuddy/app/src/test/java/com/heckmannch/birthdaybuddy/util/IntentParserTest.kt) zur Absicherung aller Parsing-Pfade.
     - **Verifikation:** Erfolgreicher Durchlauf aller Unit-Tests (`./gradlew testDebugUnitTest`).
 
+354. **Performance-Optimierung für Recomposition & Allokation in `ContactImage`, `BirthdayList` und `FastScrollbar` (Performance & Architecture):**
+    - **`ContactImage.kt` (`SingleAvatar`):** Kapselung des `ImageRequest.Builder(context)...build()` in `remember(imageUri, cacheKey, context)` zur Vermeidung unnötiger Builder- und Request-Allokationen auf jedem Recomposition-Frame. Entfernung des redundanten `.crossfade(true)`, da dieses bereits global in `BirthdayBuddyApplication` für Coil konfiguriert ist.
+    - **`BirthdayList.kt` (`BirthdayItemSkeleton`):** Hebung der Shimmer-`rememberInfiniteTransition` über die `LazyColumn`. Erzeugung eines einzelnen `shimmerAlpha`-Float-States und Übergabe als Parameter `alpha: Float` an `BirthdayItemSkeleton(alpha = shimmerAlpha)`, wodurch 10 redundante, konkurrierende `rememberInfiniteTransition`-Instanzen eliminiert werden.
+    - **`FastScrollbar.kt`:** Umstellung der State-Deklaration von `by animateFloatAsState(...)` auf `val alphaState = animateFloatAsState(...)` und Verschiebung des State-Reads direkt in `Modifier.graphicsLayer { alpha = alphaState.value }`. Dadurch wird der Alpha-Wert rein während der Draw-Phase abgefragt und der gesamte `FastScrollbar`-Composable-Baum rekomponiert während der Ein-/Ausblendanimationen nicht mehr frame-weise.
+    - **Verifikation:** Erfolgreiche Kompilierung (`./gradlew compileDebugKotlin`).
+

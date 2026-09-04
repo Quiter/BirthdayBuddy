@@ -3,7 +3,6 @@ package com.heckmannch.birthdaybuddy.ui.screens.settings.notifications
 import android.Manifest
 import android.app.Activity
 import android.content.Intent
-import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Build
 import android.provider.Settings
@@ -34,7 +33,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.Saver
 import androidx.compose.runtime.saveable.mapSaver
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -46,7 +44,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.core.app.ActivityCompat
-import androidx.core.content.ContextCompat
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LifecycleEventEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -80,27 +77,12 @@ fun NotificationSettingsScreen(
     val notificationsEnabled = uiState.notificationsEnabled
     val persistentNotifications = uiState.persistentNotifications
     val rules = uiState.notificationRules
+    val hasSystemPermission = uiState.hasSystemNotificationPermission
 
     var hasAttemptedPermission by rememberSaveable { mutableStateOf(false) }
 
-    var hasSystemPermission by remember {
-        mutableStateOf(
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                ContextCompat.checkSelfPermission(
-                    context,
-                    Manifest.permission.POST_NOTIFICATIONS
-                ) == PackageManager.PERMISSION_GRANTED
-            } else true
-        )
-    }
-
     LifecycleEventEffect(Lifecycle.Event.ON_RESUME) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            hasSystemPermission = ContextCompat.checkSelfPermission(
-                context,
-                Manifest.permission.POST_NOTIFICATIONS
-            ) == PackageManager.PERMISSION_GRANTED
-        }
+        viewModel.onIntent(NotificationIntent.RefreshPermissionStatus)
     }
 
     val state = rememberNotificationSettingsState()
@@ -108,10 +90,10 @@ fun NotificationSettingsScreen(
         ActivityResultContracts.RequestPermission()
     ) { isGranted ->
         hasAttemptedPermission = true
-        hasSystemPermission = isGranted
         if (isGranted) {
             viewModel.onIntent(NotificationIntent.SetEnabled(true))
         }
+        viewModel.onIntent(NotificationIntent.RefreshPermissionStatus)
     }
 
     NotificationSettingsContent(

@@ -191,7 +191,7 @@ class CalendarSyncRepositoryImpl @Inject constructor(
         deletedAny
     }
 
-    override suspend fun debugPrintAllCalendars() {
+    internal suspend fun debugPrintAllCalendars() {
         Log.d(TAG, "=== START DEBUG PRINT ALL CALENDARS ===")
         val calendars = systemCalendarDataSource.queryAllCalendars()
         for (calendar in calendars) {
