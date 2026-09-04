@@ -76,6 +76,7 @@
 - ### 📁 Utilities (`domain.util`)
     - `ContactFilterLogic.kt`: Reines Domänen-Hilfsobjekt zur Kapselung der Multi-Label-Filterregeln (Ignorieren und Verbergen) für Benachrichtigungen und Widgets.
     - `NotificationKeyUtils.kt`: Zentrales Utility-Objekt zum sicheren Enkodieren, Dekodieren und Extrahieren des `EventType` für Benachrichtigungs-Lookup-Keys (verhindert Fragilität bei Doppelpunkten im LookupKey).
+    - `PhoneNumberNormalizer.kt`: Reines Kotlin-Domänen-Hilfsobjekt zur E.164-konformen Bereinigung von Telefonnummern (inkl. Handhabung von Inlandsvorwahlen mit führender 0, `+` und `00`, redundanten `(0)`-Klammern, fehlerhaften `+0...`-Präfixen und Ziffern-Only-Aufbereitung für WhatsApp URLs).
 - ### 📁 AppFunctions (`domain.appfunctions`) — *Android 16+ / AI-Agent Integration*
     - `BirthdayAppFunctionService.kt`: Abstrakte `AppFunctionService`-Unterklasse (alpha10-API), annotiert mit `@AppFunctionServiceEntryPoint` und `@AndroidEntryPoint`. Stellt vier `@AppFunction`-Methoden bereit, die das Android-System und KI-Agenten (Google Assistant, Gemini) aufrufen können, ohne die App-UI zu öffnen. KSP generiert zur Compile-Zeit die konkrete Unterklasse `BirthdayBuddyGeneratedAppFunctionService` sowie das Assets-XML. Abhängigkeiten (`ContactRepository`, `IoDispatcher`) werden per Hilt field-injiziert.
     - `model/UpcomingBirthday.kt`: `@AppFunctionSerializable` Datenklasse für einen Geburtstags-Treffer (Rückgabe von `getUpcomingBirthdays`).
@@ -249,6 +250,7 @@ Diese Tests laufen ohne Emulator/Gerät direkt auf dem Entwicklungsrechner und s
 - `util/IntentParserTest.kt`: JVM Unit-Tests für `IntentParser` zur Absicherung der Extraktion aller `AppAction`-Typen aus Android-`Intent`s.
 - `domain/usecase/GetContactsUseCaseTest.kt`: JVM Unit-Tests für `GetContactsUseCase` zur Absicherung der Filter- und Pairing-Logik.
 - `domain/util/NotificationKeyUtilsTest.kt`: JVM Unit-Tests für `NotificationKeyUtils` (Enkodierung, Dekodierung und EventType-Erkennung inklusive Sonderzeichen & Doppelpunkten im LookupKey).
+- `domain/util/PhoneNumberNormalizerTest.kt`: JVM Unit-Tests für `PhoneNumberNormalizer` (vollständige E.164-Testabdeckung für nationale, internationale, klammerbasierte Formate, fehlerhafte Präfixe und länderspezifische Regeln).
 - `domain/usecase/GetPendingNotificationsUseCaseTest.kt`: JVM Unit-Tests zur Überprüfung der Benachrichtigungsregeln und Fälligkeits-Kalkulation.
 - `domain/usecase/SnoozeNotificationUseCaseTest.kt`: JVM Unit-Tests zur Überprüfung der Schlummer-Delegation.
 - `notification/NotificationTextFormatterTest.kt`: JVM Unit-Tests für `NotificationTextFormatter` (vollständige Abdeckung aller EventType-Pfade, Tage-Offsets, Einzelpersonen, Paare und Gruppen).

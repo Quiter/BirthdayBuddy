@@ -22,6 +22,8 @@ interface NotificationRepository {
      */
     suspend fun updateSettings(transform: (AppSettings) -> AppSettings)
 
+    suspend fun getSettingsImmediate(): AppSettings
+
     suspend fun getAllRulesImmediate(): List<NotificationRule>
     suspend fun insertRule(rule: NotificationRule)
     suspend fun updateRule(rule: NotificationRule)

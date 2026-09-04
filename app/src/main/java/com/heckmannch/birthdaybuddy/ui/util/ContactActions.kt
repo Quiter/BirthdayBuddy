@@ -9,6 +9,7 @@ import android.provider.Settings
 import androidx.activity.result.ActivityResultLauncher
 import androidx.core.app.ActivityCompat
 import androidx.core.net.toUri
+import com.heckmannch.birthdaybuddy.domain.util.PhoneNumberNormalizer
 import com.heckmannch.birthdaybuddy.ui.screens.home.components.actions.MessengerApp
 import com.heckmannch.birthdaybuddy.util.findActivity
 
@@ -23,7 +24,8 @@ class ContactActions(private val context: Context) {
      */
     fun dialNumber(phoneNumber: String) {
         try {
-            val intent = Intent(Intent.ACTION_DIAL, "tel:$phoneNumber".toUri())
+            val normalized = PhoneNumberNormalizer.normalize(phoneNumber).ifEmpty { phoneNumber.trim() }
+            val intent = Intent(Intent.ACTION_DIAL, "tel:$normalized".toUri())
             context.startActivity(intent)
         } catch (_: Exception) {
         }
@@ -34,7 +36,8 @@ class ContactActions(private val context: Context) {
      */
     fun sendSms(phoneNumber: String) {
         try {
-            val intent = Intent(Intent.ACTION_SENDTO, "smsto:$phoneNumber".toUri())
+            val normalized = PhoneNumberNormalizer.normalize(phoneNumber).ifEmpty { phoneNumber.trim() }
+            val intent = Intent(Intent.ACTION_SENDTO, "smsto:$normalized".toUri())
             context.startActivity(intent)
         } catch (_: Exception) {
         }
@@ -45,12 +48,8 @@ class ContactActions(private val context: Context) {
      */
     fun openMessengerApp(app: MessengerApp, phoneNumber: String) {
         try {
-            val digitsOnly = phoneNumber.replace(WHITESPACE_REGEX, "").replace("+", "")
-            val cleanNumberWithPlus = if (phoneNumber.startsWith("+")) {
-                phoneNumber.replace(WHITESPACE_REGEX, "")
-            } else {
-                "+" + phoneNumber.replace(WHITESPACE_REGEX, "")
-            }
+            val cleanNumberWithPlus = PhoneNumberNormalizer.normalize(phoneNumber)
+            val digitsOnly = PhoneNumberNormalizer.normalizeToDigitsOnly(phoneNumber)
 
             val intent = when (app) {
                 MessengerApp.WHATSAPP -> {
@@ -171,9 +170,5 @@ class ContactActions(private val context: Context) {
         } else {
             openAppSettings()
         }
-    }
-
-    companion object {
-        private val WHITESPACE_REGEX = "\\s+".toRegex()
     }
 }

@@ -15,6 +15,7 @@ import com.heckmannch.birthdaybuddy.di.IoDispatcher
 import com.heckmannch.birthdaybuddy.domain.appfunctions.model.ContactBirthday
 import com.heckmannch.birthdaybuddy.domain.appfunctions.model.UpcomingBirthday
 import com.heckmannch.birthdaybuddy.domain.repository.ContactRepository
+import com.heckmannch.birthdaybuddy.domain.util.PhoneNumberNormalizer
 import com.heckmannch.birthdaybuddy.util.IntentExtras
 import com.heckmannch.birthdaybuddy.util.NO_YEAR_MARKER
 import com.heckmannch.birthdaybuddy.util.hasYear
@@ -188,26 +189,25 @@ abstract class BirthdayAppFunctionService : AppFunctionService() {
 
         val intent: Intent = when (app.lowercase()) {
             "whatsapp" -> Intent(Intent.ACTION_VIEW).apply {
-                data = "https://wa.me/${phone.filter { it.isDigit() }}".toUri()
+                val digitsOnly = PhoneNumberNormalizer.normalizeToDigitsOnly(phone)
+                data = "https://wa.me/$digitsOnly".toUri()
                 setPackage("com.whatsapp")
             }
 
             "signal" -> Intent(Intent.ACTION_VIEW).apply {
-                data = "sgnl://send?phone=${Uri.encode(phone)}".toUri()
+                val normalized = PhoneNumberNormalizer.normalize(phone)
+                data = "sgnl://send?phone=${Uri.encode(normalized)}".toUri()
             }
 
             "telegram" -> Intent(Intent.ACTION_VIEW).apply {
-                data = "tg://msg?to=${Uri.encode(phone)}".toUri()
+                val normalized = PhoneNumberNormalizer.normalize(phone)
+                data = "tg://msg?to=${Uri.encode(normalized)}".toUri()
             }
 
             "sms" -> {
-                val cleanPhone = if (phone.startsWith("+")) {
-                    "+" + phone.drop(1).filter { it.isDigit() }
-                } else {
-                    phone.filter { it.isDigit() }
-                }
+                val normalized = PhoneNumberNormalizer.normalize(phone)
                 Intent(Intent.ACTION_SENDTO).apply {
-                    data = "smsto:$cleanPhone".toUri()
+                    data = "smsto:$normalized".toUri()
                 }
             }
 

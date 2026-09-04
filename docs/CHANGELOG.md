@@ -654,4 +654,28 @@
       - Hinzufügen von `syncContacts_releasesMutexOnException_allowingSubsequentSync` zur Verifikation der sauberen Freigabe des Mutex bei Ausnahmefehlern.
     - **Verifikation:** Erfolgreicher Durchlauf aller Unit- und Screenshot-Tests (`./gradlew testDebugUnitTest`).
 
+356. **Einführung von `PhoneNumberNormalizer` im Domain-Layer & E.164-Intent-Standardisierung (Telecommunications & Clean Code):**
+    - **Motivation & Problemstellung:** Bisher wurden Telefonnummern in `ContactActions.kt` und `BirthdayAppFunctionService.kt` über manuelle String-Ersetzungen formatiert. Dies führte bei nationalen Rufnummern mit führender Null (z. B. `0170 1234567` oder `(0170) 123-456`) zu fehlerhaften E.164-Repräsentationen wie `+01701234567` oder zu fehlenden Ländervorwahlen in WhatsApp- und Signal-Intents.
+    - **`PhoneNumberNormalizer.kt` (`domain/util`):**
+      - Robuste, reine Kotlin-Hilfsklasse (`object`) im Domain-Layer ohne Abhängigkeiten zum Android SDK (`android.telephony.*`), wodurch vollständige Entkopplung und blitzschnelle JVM-Unit-Tests gewährleistet sind.
+      - `normalize(phoneNumber: String, defaultCountryIso: String = Locale.getDefault().country): String`: Wandelt Telefonnummern deterministisch in den E.164-Standard (`+<CountryCode><SubscriberNumber>`) um.
+      - Behebt zuverlässig Edge Cases wie:
+        - Führende Nullen bei lokalen Nummern anhand des Standard- bzw. System-Ländercodes (z. B. `0170 1234567` -> `+491701234567`).
+        - Redundante Inlands-Vorwahlen in Klammern nach Ländervorwahlen (`+49 (0) 170 1234567` -> `+491701234567`).
+        - Ersetzung von internationalem `00`-Präfix durch `+` (`0049 170...` -> `+49170...`).
+        - Bereinigung von fehlerhaften Legacy-`+0...`-Präfixen (`+0170...` -> `+49170...`).
+        - Spezifische internationale Nummerierungspläne (z. B. Beibehaltung der führenden Null im italienischen Festnetz unter `IT` / `+39`).
+        - Schutz von Sonderrufnummern und Notrufen (`110`, `112`, `911`).
+      - `normalizeToDigitsOnly(phoneNumber: String, defaultCountryIso: String)`: Bereitstellung von ziffernreinem E.164-Format für WhatsApp APIs (`https://wa.me/...` bzw. `https://api.whatsapp.com/send?phone=...`).
+    - **Integration in `ContactActions.kt`:**
+      - `openMessengerApp`: WhatsApp nutzt nun `normalizeToDigitsOnly`, während Signal, Telegram, Skype und Viber `normalize` nutzen.
+      - `dialNumber` & `sendSms`: Bereinigung via `PhoneNumberNormalizer.normalize`.
+      - Entfernung des obsoleten `WHITESPACE_REGEX`.
+    - **Integration in `BirthdayAppFunctionService.kt`:**
+      - `sendBirthdayMessage`: Nutzung von `PhoneNumberNormalizer` für WhatsApp, Signal, Telegram und SMS zur fehlerfreien Kommunikation via On-Device AI und System-Shortcuts.
+    - **Unit Tests (`PhoneNumberNormalizerTest.kt`):**
+      - 28 umfassende Unit-Tests mit Google Truth decken alle gängigen internationalen, nationalen, klammerbasierten, fehlerhaften und länderspezifischen Formate ab.
+    - **Verifikation:** Alle Tests und Builds laufen fehlerfrei durch (`./gradlew test`).
+
+
 

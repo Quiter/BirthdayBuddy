@@ -103,6 +103,16 @@ class NotificationRepositoryImpl @Inject constructor(
     }
 
     /**
+     * Retrieves a one-time snapshot of the current application settings directly from the database.
+     *
+     * @return The current [AppSettings].
+     */
+    override suspend fun getSettingsImmediate(): AppSettings = withContext(ioDispatcher) {
+        val currentEntity = appSettingsDao.getSettingsImmediate() ?: AppSettingsEntity()
+        appSettingsMapper.toDomain(currentEntity)
+    }
+
+    /**
      * Retrieves a one-time snapshot list of all configured notification rules directly from the database.
      *
      * @return List of all [NotificationRule] objects currently stored.

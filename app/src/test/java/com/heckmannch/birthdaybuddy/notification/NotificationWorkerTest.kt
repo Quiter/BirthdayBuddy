@@ -7,6 +7,7 @@ import androidx.work.OneTimeWorkRequest
 import androidx.work.WorkManager
 import androidx.work.WorkerParameters
 import com.google.common.truth.Truth.assertThat
+import com.heckmannch.birthdaybuddy.domain.model.AppSettings
 import com.heckmannch.birthdaybuddy.domain.model.NotificationRule
 import com.heckmannch.birthdaybuddy.domain.repository.ContactRepository
 import com.heckmannch.birthdaybuddy.domain.repository.NotificationRepository
@@ -148,6 +149,7 @@ class NotificationWorkerTest {
         val rules = listOf(
             NotificationRule(id = 1, daysBefore = 0, hour = 9, minute = 0)
         )
+        coEvery { notificationRepository.getSettingsImmediate() } returns AppSettings(notificationsEnabled = true)
         coEvery { notificationRepository.getAllRulesImmediate() } returns rules
         coEvery { getPendingNotificationsUseCase(any()) } returns emptyList()
 
@@ -169,6 +171,33 @@ class NotificationWorkerTest {
             workManager.enqueueUniqueWork(
                 "FlexibleNotificationUpdate",
                 ExistingWorkPolicy.APPEND_OR_REPLACE,
+                any<OneTimeWorkRequest>()
+            )
+        }
+    }
+
+    @Test
+    fun `doWork - notifications disabled - cancels unique work and does not schedule next`() = runTest {
+        coEvery { notificationRepository.getSettingsImmediate() } returns AppSettings(notificationsEnabled = false)
+        coEvery { getPendingNotificationsUseCase(any()) } returns emptyList()
+
+        val worker = NotificationWorker(
+            context = context,
+            workerParameters = workerParameters,
+            contactRepository = contactRepository,
+            notificationRepository = notificationRepository,
+            notificationHelper = notificationHelper,
+            getPendingNotificationsUseCase = getPendingNotificationsUseCase
+        )
+
+        val result = worker.doWork()
+
+        assertThat(result).isEqualTo(ListenableWorker.Result.success())
+        verify(exactly = 1) { workManager.cancelUniqueWork("FlexibleNotificationUpdate") }
+        verify(exactly = 0) {
+            workManager.enqueueUniqueWork(
+                any(),
+                any(),
                 any<OneTimeWorkRequest>()
             )
         }

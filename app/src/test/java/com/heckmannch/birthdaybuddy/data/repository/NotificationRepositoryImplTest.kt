@@ -306,6 +306,35 @@ class NotificationRepositoryImplTest {
     }
 
     @Test
+    fun getSettingsImmediate_returnsMappedSettings() = runTest {
+        // Arrange
+        coEvery { appSettingsDao.getSettingsImmediate() } returns AppSettingsEntity(
+            notificationsEnabled = true,
+            persistentNotifications = false
+        )
+
+        // Act
+        val result = repository.getSettingsImmediate()
+
+        // Assert
+        assertThat(result.notificationsEnabled).isTrue()
+        assertThat(result.persistentNotifications).isFalse()
+    }
+
+    @Test
+    fun getSettingsImmediate_whenDaoReturnsNull_returnsDefaultSettings() = runTest {
+        // Arrange
+        coEvery { appSettingsDao.getSettingsImmediate() } returns null
+
+        // Act
+        val result = repository.getSettingsImmediate()
+
+        // Assert
+        assertThat(result.notificationsEnabled).isFalse()
+        assertThat(result.persistentNotifications).isTrue()
+    }
+
+    @Test
     fun getAllRulesImmediate_returnsMappedRules() = runTest {
         // Arrange
         coEvery { notificationRuleDao.getAllRulesImmediate() } returns listOf(

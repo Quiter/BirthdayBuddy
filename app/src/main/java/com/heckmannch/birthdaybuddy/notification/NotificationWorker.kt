@@ -66,8 +66,14 @@ class NotificationWorker @AssistedInject constructor(
         // Dadurch verkettet WorkManager die nächste Ausführung, ohne den aktuell laufenden Worker
         // abzubrechen oder auf einen in-memory Delay im applicationScope angewiesen zu sein,
         // der bei einem Prozess-Kill verloren gehen könnte.
+        val settings = notificationRepository.getSettingsImmediate()
+        if (!settings.notificationsEnabled) {
+            WorkManager.getInstance(applicationContext).cancelUniqueWork(WORK_NAME)
+            return Result.success()
+        }
+
         val rules = notificationRepository.getAllRulesImmediate()
-        scheduleNext(context, rules, existingWorkPolicy = ExistingWorkPolicy.APPEND_OR_REPLACE)
+        scheduleNext(applicationContext, rules, ExistingWorkPolicy.APPEND_OR_REPLACE)
 
         return Result.success()
     }
