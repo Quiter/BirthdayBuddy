@@ -5,6 +5,7 @@ import android.content.pm.PackageManager
 import android.os.Build
 import androidx.compose.ui.graphics.Color
 import com.heckmannch.birthdaybuddy.R
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
@@ -121,8 +122,9 @@ enum class MessengerApp(
          */
         suspend fun getInstalledMessengersAsync(
             context: Context,
-            forceRefresh: Boolean = false
-        ): List<MessengerApp> = withContext(Dispatchers.IO) {
+            forceRefresh: Boolean = false,
+            ioDispatcher: CoroutineDispatcher = Dispatchers.IO,
+        ): List<MessengerApp> = withContext(ioDispatcher) {
             getInstalledMessengers(context, forceRefresh)
         }
 

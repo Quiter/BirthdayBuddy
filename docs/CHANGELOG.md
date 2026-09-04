@@ -677,5 +677,18 @@
       - 28 umfassende Unit-Tests mit Google Truth decken alle gängigen internationalen, nationalen, klammerbasierten, fehlerhaften und länderspezifischen Formate ab.
     - **Verifikation:** Alle Tests und Builds laufen fehlerfrei durch (`./gradlew test`).
 
-
-
+357. **Harmonisierung der Coroutine-Dispatcher gemäß Google Architecture Guidelines (Architecture & Code Quality):**
+    - **Audit:** Vollständige Überprüfung aller Schichten (`data`, `domain`, `ui`) auf Einhaltung der offiziellen Google Android Architecture Guidelines ("Inject Dispatchers", Main-Safety).
+    - **Status Quo:** Alle Repositories (`ContactRepositoryImpl`, `NotificationRepositoryImpl`, `CalendarSyncRepositoryImpl`), Use Cases (`GetContactsUseCase`, `GetAvailableLabelsUseCase`), Datenquellen (`SystemContactDataSource`, `SystemCalendarDataSourceImpl`) und System-Services (`BirthdayAppFunctionService`) halten die Vorgaben bereits ein und injizieren `@IoDispatcher` bzw. `@DefaultDispatcher`.
+    - **Harmonisierung in `HomeViewModel.kt`:**
+      - Injektion von `@DefaultDispatcher private val defaultDispatcher: CoroutineDispatcher = Dispatchers.Default` im Konstruktor.
+      - Ersetzung aller 5 hardcodierten `flowOn(Dispatchers.Default)`-Aufrufe durch `flowOn(defaultDispatcher)` (für `labelSettingsState`, `searchKeywords`, `uiContacts`, `coupleSuggestion` und `uiState`).
+    - **Harmonisierung in `LabelViewModel.kt`:**
+      - Injektion von `@DefaultDispatcher private val defaultDispatcher: CoroutineDispatcher = Dispatchers.Default`.
+      - Ergänzung von `.flowOn(defaultDispatcher)` auf dem `labelManagementList`-Flow vor `.stateIn(...)`, um das O(n)-Mapping und Sortieren der Labels vom Main-Thread zu entkoppeln.
+    - **Harmonisierung in `MessengerApp.kt`:**
+      - `getInstalledMessengersAsync` akzeptiert nun optional einen konfigurierbaren `ioDispatcher: CoroutineDispatcher = Dispatchers.IO`, um testbar und entkoppelt zu sein.
+    - **Dokumentations-Update:**
+      - Aufnahme von Abschnitt §6 (*Coroutines & Dispatcher-Richtlinie*) in [SKILL.md](file:///c:/Users/chris/AndroidStudioProjects/BirthdayBuddy/.agents/skills/projekt-kontext/SKILL.md).
+      - Erweiterung des DI-Bereichs in [PROJECT_STRUCTURE.md](file:///c:/Users/chris/AndroidStudioProjects/BirthdayBuddy/docs/PROJECT_STRUCTURE.md).
+    - **Verifikation:** Sämtliche Unit-Tests (`./gradlew testDebugUnitTest`) laufen fehlerfrei durch.

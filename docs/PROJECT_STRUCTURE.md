@@ -13,7 +13,12 @@
 - `.agents/`: Enthält agentenspezifische Konfigurationen, darunter Projekt-Richtlinien (`rules/project_guidelines.md`), lokale Workspace-Skills (`skills/`) und per Git-Submodule verlinkte Community-Skills (`external/`).
 
 ## 📁 DI (`di`)
-- `AppModule.kt`: Hilt-Modul zur Bereitstellung von Singleton-Instanzen und performanten, leichtgewichtigen `@Reusable` DAO-Bindings zur Steigerung der DI-Performanz.
+- `AppModule.kt`: Hilt-Modul zur Bereitstellung von Singleton-Instanzen, performanten leichtgewichtigen `@Reusable` DAO-Bindings sowie den **Coroutine-Dispatchern**:
+  - `@IoDispatcher`: Bereitstellung von `Dispatchers.IO` für Datei-, Datenbank-, Netzwerk- und ContentResolver-Operationen.
+  - `@DefaultDispatcher`: Bereitstellung von `Dispatchers.Default` für rechenintensive CPU-Operationen (Diffing, Filterung, O(n)-Transformationen).
+  - `@MainDispatcher`: Bereitstellung von `Dispatchers.Main` für UI- und Main-Thread-Operationen.
+  - `@ApplicationScope`: Bereitstellung eines prozessweiten CoroutineScopes mit SupervisorJob und Unhandled Exception Handler.
+  - **Dispatcher-Injektions-Regel (Google Best Practice)**: Klassen (Repositories, DataSources, ViewModels) dürfen Dispatcher **nicht hardcoden** (`withContext(Dispatchers.IO)` ist verboten). Stattdessen wird `@IoDispatcher private val ioDispatcher: CoroutineDispatcher` per Konstruktor injiziert, um 100% deterministische Unit-Tests (via `TestDispatcher`) zu ermöglichen.
 - `HelperBindingsModule.kt`: Hilt-Modul zur Bereitstellung der Singleton-Bindings für Hilfsklassen (WidgetUpdater, NotificationScheduler).
 
 ## 📁 Data Layer (`data`)

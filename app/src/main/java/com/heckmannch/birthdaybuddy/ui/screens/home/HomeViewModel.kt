@@ -17,12 +17,14 @@ import com.heckmannch.birthdaybuddy.ui.mapper.ContactUiMapper
 import com.heckmannch.birthdaybuddy.ui.mapper.CoupleSuggestionUiMapper
 import com.heckmannch.birthdaybuddy.ui.model.ContactUiModel
 import com.heckmannch.birthdaybuddy.ui.model.CoupleSuggestionUiModel
+import com.heckmannch.birthdaybuddy.di.DefaultDispatcher
 import com.heckmannch.birthdaybuddy.ui.model.HomeUiState
 import com.heckmannch.birthdaybuddy.ui.model.PendingBirthdayEdit
 import com.heckmannch.birthdaybuddy.ui.screens.home.HomeViewModel.Companion.SEARCH_DEBOUNCE_DURATION
 import com.heckmannch.birthdaybuddy.util.Clock
 import com.heckmannch.birthdaybuddy.util.sanitizeBirthdayDate
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
@@ -77,6 +79,7 @@ import kotlin.time.Duration.Companion.milliseconds
  * @property ignoreCoupleSuggestionUseCase Use case marking a suggested couple pairing as ignored/dismissed.
  * @property permissionChecker Interface verifying system-level contact permissions.
  * @property clock Abstraction for system time facilitating deterministic testing and time manipulation.
+ * @property defaultDispatcher Coroutine dispatcher for offloading CPU-intensive stream transformations and mappings.
  */
 @OptIn(FlowPreview::class, ExperimentalCoroutinesApi::class)
 @HiltViewModel
@@ -93,6 +96,7 @@ class HomeViewModel @Inject constructor(
     timeRepository: TimeRepository,
     private val permissionChecker: PermissionChecker,
     private val clock: Clock,
+    @DefaultDispatcher private val defaultDispatcher: CoroutineDispatcher = Dispatchers.Default,
 ) : ViewModel() {
 
     /**
@@ -185,7 +189,7 @@ class HomeViewModel @Inject constructor(
         GetContactsUseCase.LabelSettingsState(ignored, labelsEnabled, otherEventsEnabled)
     }
         .distinctUntilChanged()
-        .flowOn(Dispatchers.Default)
+        .flowOn(defaultDispatcher)
 
     /**
      * Reactive stream of debounced search keyword lists derived from user input.
@@ -198,7 +202,7 @@ class HomeViewModel @Inject constructor(
             if (query.isEmpty()) 0.milliseconds else SEARCH_DEBOUNCE_DURATION
         }
         .map { if (it.isEmpty()) emptyList() else it.split(WHITESPACE_REGEX) }
-        .flowOn(Dispatchers.Default)
+        .flowOn(defaultDispatcher)
 
     /**
      * Reactive domain stream of filtered contact entities matching current search, label, and event settings.
@@ -228,7 +232,7 @@ class HomeViewModel @Inject constructor(
             labelsEnabled = labelsEnabled,
             otherEventsEnabled = otherEventsEnabled
         )
-    }.flowOn(Dispatchers.Default)
+    }.flowOn(defaultDispatcher)
 
     /**
      * Reactive stream of available label names for filter chip presentation.
@@ -247,7 +251,7 @@ class HomeViewModel @Inject constructor(
         selectedLabel = _userUiState.map { it.selectedLabel }.distinctUntilChanged()
     ).map { suggestion ->
         suggestion?.let { coupleSuggestionUiMapper.toUiModel(it) }
-    }.flowOn(Dispatchers.Default)
+    }.flowOn(defaultDispatcher)
 
     /**
      * The consolidated read-only [HomeUiState] stream consumed by the UI layer.
@@ -273,7 +277,7 @@ class HomeViewModel @Inject constructor(
             pendingBirthdayEdit = userState.pendingBirthdayEdit,
         )
     }
-        .flowOn(Dispatchers.Default)
+        .flowOn(defaultDispatcher)
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(STOP_TIMEOUT_MILLIS), HomeUiState())
 
     init {

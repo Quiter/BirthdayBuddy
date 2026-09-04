@@ -81,6 +81,20 @@ Dieses Dokument dient als systemischer Kontext für die Entwicklung von Features
 - **Screenshot Tests**: JVM-basierte Roborazzi Screenshot-Tests in `src/test/java/.../screenshot/` zur Verifikation von UI-Layouts und Dark/Light-Theming.
 - **Pre-Release Check**: Vor jedem Release müssen die Tests via `./gradlew test` (sowie instrumentierte Tests bei DB-/ContentProvider-Änderungen) erfolgreich durchgelaufen sein.
 
+### 6. Coroutines & Dispatcher-Richtlinie (Threading, Hilt & Main-Safety)
+- **Keine hardcodierten Dispatcher (Google Best Practice)**:
+  - Niemals `Dispatchers.IO` oder `Dispatchers.Default` direkt im Code instanziieren / aufrufen (`withContext(Dispatchers.IO)` ist verboten).
+  - Dispatcher müssen stets per Hilt-Konstruktorinjektion mit den Qualifiers aus `com.heckmannch.birthdaybuddy.di` injiziert werden:
+    - `@IoDispatcher private val ioDispatcher: CoroutineDispatcher` für I/O, Datenbank-, Datei- und ContentResolver-Operationen.
+    - `@DefaultDispatcher private val defaultDispatcher: CoroutineDispatcher` für rechenintensive CPU-Operationen (Diffing, Filterung, O(n)-Transformationen).
+    - `@MainDispatcher private val mainDispatcher: CoroutineDispatcher` für UI- und Main-Thread-Operationen.
+- **Main-Safety**:
+  - Jede `suspend`-Funktion in Repositories und DataSources MUSS "main-safe" sein (sie wechselt selbst intern via `withContext(ioDispatcher)` bzw. `withContext(defaultDispatcher)` und blockiert niemals den Aufrufer).
+- **Import-Konvention**:
+  - `@IoDispatcher` / `@DefaultDispatcher` / `@MainDispatcher`: `com.heckmannch.birthdaybuddy.di.*` (Hilt Qualifier).
+  - `CoroutineDispatcher`: `kotlinx.coroutines.CoroutineDispatcher` (Typ für Parameter & Felder).
+  - `Dispatchers`: `kotlinx.coroutines.Dispatchers` (darf **ausschließlich** im Hilt-Modul `AppModule.kt` oder in Test-Setups / Default-Parametern referenziert werden).
+
 ---
 
 ## 📁 Projekt-Struktur & Namenskonventionen
