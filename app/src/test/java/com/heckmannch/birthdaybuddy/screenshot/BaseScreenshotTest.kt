@@ -68,22 +68,28 @@ abstract class BaseScreenshotTest {
      * Sets the Compose content with theme + window size class overrides.
      * Mirrors the existing @Preview patterns in the app.
      *
-     * Uses [ThemeMode.LIGHT] or [ThemeMode.DARK] to force a theme, bypassing the
-     * system setting (which is not available in Robolectric tests).
+     * Uses [ThemeMode.LIGHT] or [ThemeMode.DARK] by default based on [darkTheme],
+     * but allows passing an explicit [themeMode] and [themeAmoled].
      *
      * @param windowSizeClass The simulated window size. Defaults to [phoneSize].
-     * @param darkTheme If true, uses [ThemeMode.DARK]; otherwise [ThemeMode.LIGHT].
+     * @param darkTheme If true, defaults to [ThemeMode.DARK]; otherwise [ThemeMode.LIGHT].
+     * @param themeMode Explicit [ThemeMode] override. Defaults to [ThemeMode.DARK] if [darkTheme] is true, else [ThemeMode.LIGHT].
+     * @param themeAmoled If true, enables AMOLED black background for dark themes.
      * @param content The composable to render.
      */
     fun setScreenshotContent(
         windowSizeClass: WindowSizeClass = phoneSize,
         darkTheme: Boolean = false,
+        themeMode: ThemeMode = if (darkTheme) ThemeMode.DARK else ThemeMode.LIGHT,
+        themeAmoled: Boolean = false,
         content: @Composable () -> Unit,
     ) {
         val adaptiveInfo = adaptiveInfoFor(windowSizeClass)
-        val themeMode = if (darkTheme) ThemeMode.DARK else ThemeMode.LIGHT
         composeRule.setContent {
-            BirthdayBuddyTheme(themeMode = themeMode) {
+            BirthdayBuddyTheme(
+                themeMode = themeMode,
+                themeAmoled = themeAmoled,
+            ) {
                 CompositionLocalProvider(
                     LocalWindowSizeClass provides windowSizeClass,
                     LocalWindowAdaptiveInfo provides adaptiveInfo,

@@ -1,6 +1,7 @@
 package com.heckmannch.birthdaybuddy.ui.navigation
 
 import androidx.navigation3.runtime.NavKey
+import com.heckmannch.birthdaybuddy.ui.screens.settings.SettingsTab
 import kotlinx.serialization.Serializable
 
 /**
@@ -14,7 +15,4 @@ data object Home : NavKey
 data object Onboarding : NavKey
 
 @Serializable
-data object Settings : NavKey
-
-@Serializable
-data object NotificationSettings : NavKey
+data class Settings(val initialTab: SettingsTab? = null) : NavKey

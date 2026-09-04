@@ -5,6 +5,7 @@ import android.content.Context
 import android.content.Intent
 import android.provider.CalendarContract
 import android.util.Log
+import androidx.annotation.VisibleForTesting
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
@@ -120,7 +121,7 @@ fun CalendarSettingsScreen(
         }
     }
 
-    CalendarSettingsContent(
+    CalendarSettingsScreenContent(
         calendarSyncEnabled = calendarSyncEnabled && hasPermission,
         hasPermission = hasPermission,
         otherEventsEnabled = otherEventsEnabled,
@@ -159,19 +160,20 @@ fun CalendarSettingsScreen(
     }
 }
 
+@VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
 @Composable
-private fun CalendarSettingsContent(
+internal fun CalendarSettingsScreenContent(
     calendarSyncEnabled: Boolean,
     hasPermission: Boolean,
     otherEventsEnabled: Boolean,
     birthdayColor: Int,
     anniversaryColor: Int,
     nameDayColor: Int,
-    showBackButton: Boolean,
-    onToggleChange: (Boolean) -> Unit,
-    onColorRowClick: (CalendarSyncRepository.CalendarType, Color) -> Unit,
-    onRequestPermission: () -> Unit,
-    onNavigateBack: () -> Unit,
+    showBackButton: Boolean = true,
+    onToggleChange: (Boolean) -> Unit = {},
+    onColorRowClick: (CalendarSyncRepository.CalendarType, Color) -> Unit = { _, _ -> },
+    onRequestPermission: () -> Unit = {},
+    onNavigateBack: () -> Unit = {},
 ) {
     SettingsDetailScaffold(
         title = stringResource(R.string.settings_calendar_title),
@@ -329,8 +331,7 @@ private fun SetupStepsCard(
                 actionButton = if (!hasPermission) {
                     {
                         Button(
-                            onClick = onRequestPermission,
-                            modifier = Modifier.padding(top = SpacingSmall)
+                            onClick = onRequestPermission
                         ) {
                             Text(stringResource(R.string.calendar_settings_permission_btn))
                         }
@@ -408,7 +409,7 @@ private fun openDefaultCalendarApp(context: Context) {
 @Composable
 private fun CalendarSettingsPreview() {
     MaterialTheme {
-        CalendarSettingsContent(
+        CalendarSettingsScreenContent(
             calendarSyncEnabled = true,
             hasPermission = true,
             otherEventsEnabled = true,

@@ -1,5 +1,6 @@
 package com.heckmannch.birthdaybuddy.ui.screens.settings
 
+import androidx.annotation.VisibleForTesting
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -85,6 +86,7 @@ import kotlinx.serialization.Serializable
 /**
  * Represents the available settings sections (tabs/screens) in the app.
  */
+@Serializable
 enum class SettingsTab {
     NOTIFICATIONS,
     CALENDAR,
@@ -131,11 +133,12 @@ fun SettingsScreen(
  * Displays the actual settings content, switching dynamically between a single-column layout
  * for compact screens (phones) and a side-by-side split-pane layout for wider screens (tablets/foldables).
  */
+@VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3AdaptiveApi::class)
 @Composable
-private fun SettingsContent(
+internal fun SettingsContent(
     initialTab: SettingsTab? = null,
-    onNavigateBack: () -> Unit,
+    onNavigateBack: () -> Unit = {},
 ) {
     val windowAdaptiveInfo = LocalWindowAdaptiveInfo.current
     val windowSizeClass = LocalWindowSizeClass.current

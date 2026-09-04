@@ -330,7 +330,7 @@ class ContactRepositoryImpl @Inject constructor(
             updateGiftIdeas(targetKey, updatedIdeas)
         }
 
-    override suspend fun updateLabelConfig(config: LabelConfig) {
+    override suspend fun updateLabelConfig(config: LabelConfig): Unit = withContext(ioDispatcher) {
         labelConfigDao.upsertConfig(labelConfigMapper.toEntity(config))
         widgetUpdater.updateWidget()
     }
@@ -356,13 +356,11 @@ class ContactRepositoryImpl @Inject constructor(
         return count
     }
 
-    override suspend fun exportGiftIdeas(uriString: String) {
+    override suspend fun exportGiftIdeas(uriString: String): Unit = withContext(ioDispatcher) {
         val json = exportGiftIdeasToJson()
         val uri = uriString.toUri()
-        withContext(ioDispatcher) {
-            contentResolver.openOutputStream(uri)?.use { outputStream ->
-                outputStream.write(json.toByteArray())
-            }
+        contentResolver.openOutputStream(uri)?.use { outputStream ->
+            outputStream.write(json.toByteArray())
         }
     }
 
@@ -453,7 +451,7 @@ class ContactRepositoryImpl @Inject constructor(
         updateWidgetAndSyncCalendar()
     }
 
-    private suspend fun updateWidgetAndSyncCalendar() {
+    private suspend fun updateWidgetAndSyncCalendar(): Unit = withContext(ioDispatcher) {
         widgetUpdater.updateWidget()
         val allContactsImmediate = getAllContactsImmediate()
         val currentSettings = appSettingsDao.getSettingsImmediate() ?: AppSettingsEntity()

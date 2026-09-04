@@ -1,6 +1,7 @@
 package com.heckmannch.birthdaybuddy.ui.screens.settings.theme
 
 import android.os.Build
+import androidx.annotation.VisibleForTesting
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -84,7 +85,7 @@ fun ThemeSettingsScreen(
     val themeAccent = uiState.themeAccent
     val customAccentColor = uiState.customAccentColor
 
-    ThemeSettingsContent(
+    ThemeSettingsScreenContent(
         themeMode = themeMode,
         themeAmoled = themeAmoled,
         themeAccent = themeAccent,
@@ -104,17 +105,18 @@ fun ThemeSettingsScreen(
     )
 }
 
+@VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
 @Composable
-private fun ThemeSettingsContent(
+internal fun ThemeSettingsScreenContent(
     themeMode: ThemeMode,
     themeAmoled: Boolean,
-    themeAccent: ThemeAccent,
-    customAccentColor: String?,
-    showBackButton: Boolean,
-    onThemeModeChange: (ThemeMode) -> Unit,
-    onThemeAmoledChange: (Boolean) -> Unit,
-    onThemeAccentChange: (ThemeAccent, String?) -> Unit,
-    onNavigateBack: () -> Unit
+    themeAccent: ThemeAccent = ThemeAccent.PURPLE,
+    customAccentColor: String? = null,
+    showBackButton: Boolean = true,
+    onThemeModeChange: (ThemeMode) -> Unit = {},
+    onThemeAmoledChange: (Boolean) -> Unit = {},
+    onThemeAccentChange: (ThemeAccent, String?) -> Unit = { _, _ -> },
+    onNavigateBack: () -> Unit = {}
 ) {
     var showColorPickerDialog by remember { mutableStateOf(false) }
 
@@ -313,7 +315,7 @@ private fun ThemeSettingsContent(
 @Composable
 private fun ThemeSettingsPreview() {
     MaterialTheme {
-        ThemeSettingsContent(
+        ThemeSettingsScreenContent(
             themeMode = ThemeMode.SYSTEM,
             themeAmoled = false,
             themeAccent = ThemeAccent.PURPLE,

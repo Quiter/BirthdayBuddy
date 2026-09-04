@@ -692,3 +692,88 @@
       - Aufnahme von Abschnitt §6 (*Coroutines & Dispatcher-Richtlinie*) in [SKILL.md](file:///c:/Users/chris/AndroidStudioProjects/BirthdayBuddy/.agents/skills/projekt-kontext/SKILL.md).
       - Erweiterung des DI-Bereichs in [PROJECT_STRUCTURE.md](file:///c:/Users/chris/AndroidStudioProjects/BirthdayBuddy/docs/PROJECT_STRUCTURE.md).
     - **Verifikation:** Sämtliche Unit-Tests (`./gradlew testDebugUnitTest`) laufen fehlerfrei durch.
+
+358. **Absicherung strikter Main-Safety in `NotificationRepositoryImpl` und `ContactRepositoryImpl` (Architecture & Concurrency):**
+    - **NotificationRepositoryImpl.kt:**
+      - Kapselung von `updateSettings` inklusive `settingsMutex.withLock`, Room DAO-Calls und nachgelagertem `syncScheduling()` innerhalb von `withContext(ioDispatcher)`.
+      - Absicherung aller direkten Room-DAO-Zugriffe via `withContext(ioDispatcher)` für: `getAllRulesImmediate()`, `insertRule()`, `updateRule()`, `deleteRule()`, `getActiveNotificationsImmediate()`, `insertPendingNotification()`, `getPendingNotificationById()`, `hasNotificationBeenScheduled()`, `incrementDismissCount()`, `markAsDone()` und `deleteOldNotifications()`.
+    - **ContactRepositoryImpl.kt:**
+      - Umschließen des Rumpfes von `updateLabelConfig` in `withContext(ioDispatcher)`.
+      - Vollständige Ausführung von `updateWidgetAndSyncCalendar()` auf dem injizierten `ioDispatcher` via `withContext(ioDispatcher)`.
+      - Verschiebung des Aufrufs von `exportGiftIdeasToJson()` in `exportGiftIdeas` innerhalb des `withContext(ioDispatcher)`-Blocks.
+    - **Verifikation:** Sämtliche Unit-Tests (`./gradlew testDebugUnitTest --tests "com.heckmannch.birthdaybuddy.data.repository.*"`) laufen fehlerfrei durch.
+
+359. **Entfernung von `Dispatchers.IO` und asynchroner Blockaden aus Composable-Funktionen (Clean Architecture & UI Declarativity):**
+    - **HomeScreen.kt:**
+      - Entfernung von `withContext(Dispatchers.IO)` aus `LaunchedEffect(uiState.contacts)`.
+      - Auslagerung der Avatar-Prefetch-Logik in die dedizierte Hilfsfunktion `prefetchAvatarImages(...)`.
+      - Coils `ImageLoader.enqueue` arbeitet intern asynchron und nicht-blockierend auf seinen eigenen Dispatchern, wodurch jegliche hardcodierte Threading-Steuerung aus dem Composable entfernt werden konnte.
+    - **PrivacyPolicyScreen.kt:**
+      - Umstellung des Ladens der Datenschutzerklärung von einem asynchronen `LaunchedEffect` mit `withContext(Dispatchers.IO)` auf eine rein deklarative, zustandsbewahrende `rememberSaveable(configuration)`-Konstruktion mit der Hilfsfunktion `loadPrivacyPolicyText(...)`.
+      - Verhindert Flackern/verzögertes Rendering beim Screen-Start, stellt die sofortige Verfügbarkeit sicher und überdauert Konfigurationsänderungen ohne redundante I/O-Zugriffe.
+    - **MessengerApp.kt & MessengerUtils.kt:**
+      - Auslagerung der asynchronen Hilfsfunktion `getInstalledMessengersAsync` aus `MessengerApp.kt` in `MessengerUtils.kt` im Package `com.heckmannch.birthdaybuddy.util`.
+      - Damit ist das gesamte UI-Paket (`com.heckmannch.birthdaybuddy.ui`) vollständig frei von hardcodierten `Dispatchers.IO`-Referenzen.
+360. **Explizite R8/ProGuard-Absicherung für Room (Code-Shrinking & Daten-Integrität):**
+    - **proguard-rules.pro:** Ergänzung expliziter `-keep`-Regeln für alle mit `@androidx.room.Entity`, `@androidx.room.Dao` und `@androidx.room.Database` annotierten Klassen und Interfaces sowie für alle Subklassen von `androidx.room.RoomDatabase`.
+    - **Hintergrund:** Gemäß Projekt-Richtlinie §2.2 verhindert dieser explizite Schutz, dass R8/ProGuard in Release-Builds durch Aggressive Optimization oder Member Inlining Entitäts-Konstruktoren, Dao-Methoden oder Reflection-Pfade von Room manipuliert oder entfernt.
+    - **Validierung:** Erfolgreicher Durchlauf von `./gradlew assembleRelease` (inklusive `minifyReleaseWithR8` und `lintVitalRelease`).
+361. **Refaktorisierung vertikaler Paddings gemäß BirthdayBuddy UI-Richtlinie §3 (UI & Layout):**
+    - **StepItem.kt:**
+      - Verlagerung des oberen Column-Paddings (`top = SpacingExtraSmall`) als expliziter Abstandshalter (`Spacer(modifier = Modifier.height(SpacingExtraSmall))`) an den Anfang der Spalte.
+      - Bereitstellung des Abstands vor dem `actionButton` mittels `Spacer(modifier = Modifier.height(SpacingSmall))` innerhalb von `StepItem`.
+      - Entfernung des redundanten `top = SpacingSmall`-Paddings am Button im Preview.
+    - **CalendarSettingsScreen.kt:**
+      - Entfernung des additiven `top = SpacingSmall`-Paddings am Berechtigungs-Button (`actionButton`), da der Abstand nun sauber und deklarativ durch das vorangehende Element in `StepItem` gesteuert wird.
+    - **PrivacyPolicyScreen.kt:**
+      - Umstellung der Überschriften-Abstände von `top`-Padding auf `bottom`-Padding (`bottom = SpacingSmall` für H1 und `bottom = SpacingMedium` für H2), um additive vertikale Abstände innerhalb der scrollenden Spalte zu unterbinden.
+    - **EditRuleDialog.kt:**
+      - Eliminierung aller additiven vertikalen Paddings (`vertical = Spacing...` an Radio-Rows, Dividers und Time-Row).
+      - Strukturierung der RadioButton-Optionen über `verticalArrangement = Arrangement.spacedBy(SpacingSmall)`.
+      - Entfernung vertikaler Paddings an `HorizontalDivider`.
+      - Absicherung der Klick- und Touch-Target-Größe der Zeit-Auswahlzeile über `heightIn(min = WheelPickerItemHeight)`.
+    - **BirthdayItem.kt:**
+      - Umstellung des Toggle-Bereichs für Geschenkideen von `vertical = SpacingMedium` auf `bottom = SpacingMedium` am vorangehenden `HorizontalDivider` und am Toggle-`Row` (`bottom = SpacingMedium`), wodurch Layout-Sprünge innerhalb von `AnimatedVisibility` verhindert werden und Klickflächen sowie Pixel-Perfektion erhalten bleiben.
+    - **Validierung:** Erfolgreiche Ausführung sämtlicher Roborazzi Screenshot-Tests (`./gradlew testDebugUnitTest --tests "*ScreenshotTest*"`) ohne visuelle Regressionen sowie aller Unit-Tests.
+
+362. **UDF/MVI-Harmonisierung (`LabelViewModel`, `LabelUiState`) & Entkopplung (`OnboardingViewModel`) (Architecture & Clean Code):**
+    - **LabelUiState.kt:**
+      - Einführung des neuen, mit `@Immutable` annotierten Datenmodells `LabelUiState(labelsEnabled: Boolean, labels: List<LabelManagementModel>)` in `com.heckmannch.birthdaybuddy.ui.model`.
+    - **LabelViewModel.kt:**
+      - Konsolidierung der beiden getrennten Flows (`labelsEnabled` und `labelManagementList`) in einen einzigen, zusammenhängenden `val uiState: StateFlow<LabelUiState>`.
+      - Reaktiv kombiniert aus `contactRepository.labelsEnabled`, `contactRepository.labelConfigs` und `contactRepository.allContacts` via `combine` mit Main-Safety über `.flowOn(defaultDispatcher)`.
+      - Vollständige Einhaltung der BirthdayBuddy ViewModel-Richtlinie §1 (Einziger `@Immutable` StateFlow pro Screen, keine Android-Framework-Imports).
+    - **LabelSettingsScreen.kt:**
+      - Beobachtung des konsolidierten `uiState` via `val uiState by viewModel.uiState.collectAsStateWithLifecycle()`.
+      - Übergabe von `uiState.labels` und `uiState.labelsEnabled` an `LabelSettingsScreenContent`.
+    - **OnboardingViewModel.kt:**
+      - Entfernung des ungenutzten Android-Framework-Imports `import android.util.Log` und Bereinigung des `Log.e`-Aufrufs sowie des `TAG`-Felds.
+      - Vollständige Entkopplung von `android.*`-APIs im ViewModel.
+    - **LabelViewModelTest.kt:**
+      - Aktualisierung der Unittests zur Verifikation von `viewModel.uiState` (Kombination von Configs, Contacts und `labelsEnabled` sowie Test für `labelsEnabled = false`).
+
+363. **Schließen der Lücken in der Screenshot-Test-Suite mit Roborazzi (Testing & Qualitätssicherung gemäß Richtlinie §5):**
+    - **BaseScreenshotTest.kt:**
+      - Erweiterung von `setScreenshotContent()` um explizite `themeMode`-, `themeAmoled`- und `themeAccent`-Parameter zur flexiblen Unterstützung aller Theme-Modi (System, Hell, Dunkel, AMOLED).
+    - **OnboardingScreen.kt & OnboardingScreenshotTest.kt:**
+      - Bereitstellung von `OnboardingScreenContent` und Initialisierung des `rememberPagerState` mit `initialPage` zur verlässlichen Direktansteuerung einzelner Seiten.
+      - Erstellung von `OnboardingScreenshotTest.kt` zur Abdeckung von Seite 0 (Welcome), Seite 1 (Permissions) und Seite 2 (Settings) jeweils im Light- und Dark-Theme.
+    - **CalendarSettingsScreen.kt & CalendarSettingsScreenshotTest.kt:**
+      - Freigabe von `CalendarSettingsScreenContent` als `internal` mit `@VisibleForTesting`.
+      - Erstellung von `CalendarSettingsScreenshotTest.kt` für synchronisierten Kalender mit benutzerdefinierten Farben (Light + Dark), deaktivierten Zustand, Berechtigungsanfrage-Zustand sowie Tablet-Layout.
+    - **ThemeSettingsScreen.kt & ThemeSettingsScreenshotTest.kt:**
+      - Freigabe von `ThemeSettingsScreenContent` als `internal` mit `@VisibleForTesting`.
+      - Erstellung von `ThemeSettingsScreenshotTest.kt` mit Tests für System-, Hell-, Dunkel- und AMOLED-Modus sowie Tablet-Darstellung.
+    - **BackupContent.kt & BackupScreenshotTest.kt:**
+      - Erweiterung von `BackupContent` / `BackupScreenContent` um `message: BackupMessage?` und reaktive `SnackbarHost`-Verdrahtung.
+      - Erstellung von `BackupScreenshotTest.kt` für Normalzustand (Light + Dark), Erfolgsmeldung (`ExportSuccess`), Ladezustand und Tablet-Layout.
+    - **SyncSettingsScreen.kt & SyncSettingsScreenshotTest.kt:**
+      - Freigabe von `SyncSettingsScreenContent` als `internal` mit `@VisibleForTesting`.
+      - Erstellung von `SyncSettingsScreenshotTest.kt` für Ruhezustand (Light + Dark), Synchronisationszustand (`isSyncing = true`) und Tablet-Layout.
+    - **SettingsScreen.kt & SettingsOverviewScreenshotTest.kt:**
+      - Freigabe von `SettingsContent` als `internal` mit `@VisibleForTesting`.
+      - Erstellung von `SettingsOverviewScreenshotTest.kt` zur Verifikation des Menüs im kompakten Phone-Modus sowie im Split-Pane-Modus auf Tablets mit Detail-Platzhalter.
+    - **Validierung:** Erfolgreiche Ausführung von `./gradlew recordRoborazziDebug` und `./gradlew verifyRoborazziDebug`.
+
+
+

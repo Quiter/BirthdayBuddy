@@ -1,6 +1,7 @@
 package com.heckmannch.birthdaybuddy.ui.screens.home
 
 import android.Manifest
+import android.content.Context
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.interaction.collectIsDraggedAsState
@@ -13,17 +14,17 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.stringResource
+import coil3.ImageLoader
 import coil3.imageLoader
 import coil3.request.ImageRequest
 import com.heckmannch.birthdaybuddy.R
+import com.heckmannch.birthdaybuddy.ui.model.ContactUiModel
 import com.heckmannch.birthdaybuddy.ui.model.HomeUiState
 import com.heckmannch.birthdaybuddy.ui.screens.home.components.list.BirthdayDatePickerDialog
 import com.heckmannch.birthdaybuddy.ui.screens.home.components.list.getAvatarCacheKey
 import com.heckmannch.birthdaybuddy.ui.util.ContactActions
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.collectLatest
-import kotlinx.coroutines.withContext
 
 /**
  * [HomeScreen] is the orchestrator and state-coordinating controller for the main dashboard.
@@ -138,34 +139,7 @@ fun HomeScreen(
      * retrieval from memory without redundant reads/decodes or disk/provider queries.
      */
     LaunchedEffect(uiState.contacts) {
-        val contacts = uiState.contacts
-        if (!contacts.isNullOrEmpty()) {
-            withContext(Dispatchers.IO) {
-                // Limit prefetching to the top most relevant entries to prevent I/O pool starvation and memory cache bloat
-                contacts.take(40).forEach { contact ->
-                    contact.imageUri?.let { uri ->
-                        val cacheKey = getAvatarCacheKey(uri, contact.lookupKey)
-                        val request = ImageRequest.Builder(context)
-                            .data(uri)
-                            .size(coil3.size.Size(256, 256))
-                            .memoryCacheKey(cacheKey)
-                            .diskCacheKey(cacheKey)
-                            .build()
-                        context.imageLoader.enqueue(request)
-                    }
-                    contact.secondImageUri?.let { secondUri ->
-                        val secondCacheKey = getAvatarCacheKey(secondUri, null)
-                        val request = ImageRequest.Builder(context)
-                            .data(secondUri)
-                            .size(coil3.size.Size(256, 256))
-                            .memoryCacheKey(secondCacheKey)
-                            .diskCacheKey(secondCacheKey)
-                            .build()
-                        context.imageLoader.enqueue(request)
-                    }
-                }
-            }
-        }
+        prefetchAvatarImages(context, uiState.contacts)
     }
 
     // --- SECTION 4: Scroll & Soft-Keyboard Interaction Coordination ---
@@ -299,3 +273,41 @@ fun HomeScreen(
         actions = actions,
     )
 }
+
+/**
+ * Asynchronously enqueues avatar prefetch requests into Coil's [ImageLoader].
+ *
+ * Coil's [ImageLoader.enqueue] is non-blocking and automatically delegates image decoding and
+ * caching to its own configured coroutine dispatchers, avoiding main-thread stutter during fast scrolling.
+ */
+private fun prefetchAvatarImages(
+    context: Context,
+    contacts: List<ContactUiModel>?,
+    limit: Int = 40,
+) {
+    if (contacts.isNullOrEmpty()) return
+    // Limit prefetching to the top most relevant entries to prevent I/O pool starvation and memory cache bloat
+    contacts.take(limit).forEach { contact ->
+        contact.imageUri?.let { uri ->
+            val cacheKey = getAvatarCacheKey(uri, contact.lookupKey)
+            val request = ImageRequest.Builder(context)
+                .data(uri)
+                .size(coil3.size.Size(256, 256))
+                .memoryCacheKey(cacheKey)
+                .diskCacheKey(cacheKey)
+                .build()
+            context.imageLoader.enqueue(request)
+        }
+        contact.secondImageUri?.let { secondUri ->
+            val secondCacheKey = getAvatarCacheKey(secondUri, null)
+            val request = ImageRequest.Builder(context)
+                .data(secondUri)
+                .size(coil3.size.Size(256, 256))
+                .memoryCacheKey(secondCacheKey)
+                .diskCacheKey(secondCacheKey)
+                .build()
+            context.imageLoader.enqueue(request)
+        }
+    }
+}
+

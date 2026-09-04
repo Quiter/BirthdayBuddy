@@ -65,8 +65,9 @@ fun AppNavHost(
         when (action) {
             null -> return@LaunchedEffect
             AppAction.NavigateToNotifications -> {
-                if (!backStack.contains(NotificationSettings)) {
-                    backStack.add(NotificationSettings)
+                val targetKey = Settings(initialTab = SettingsTab.NOTIFICATIONS)
+                if (!backStack.contains(targetKey)) {
+                    backStack.add(targetKey)
                 }
                 onActionHandled()
             }
@@ -156,18 +157,14 @@ fun AppNavHost(
                     onIntent = homeViewModel::onIntent,
                     scrollToTopEvent = homeViewModel.scrollToTopEvent,
                     onNavigateToSettings = {
-                        backStack.add(Settings)
+                        backStack.add(Settings())
                     }
                 )
             }
 
-            entry<Settings> {
-                SettingsScreen(onNavigateBack = onNavigateBack)
-            }
-
-            entry<NotificationSettings> {
+            entry<Settings> { key ->
                 SettingsScreen(
-                    initialTab = SettingsTab.NOTIFICATIONS,
+                    initialTab = key.initialTab,
                     onNavigateBack = onNavigateBack
                 )
             }

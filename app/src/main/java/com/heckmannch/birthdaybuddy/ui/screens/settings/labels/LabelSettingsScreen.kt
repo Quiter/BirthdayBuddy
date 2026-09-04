@@ -74,12 +74,11 @@ fun LabelSettingsScreen(
     showBackButton: Boolean = true,
     onNavigateBack: () -> Unit,
 ) {
-    val labels by viewModel.labelManagementList.collectAsStateWithLifecycle()
-    val labelsEnabled by viewModel.labelsEnabled.collectAsStateWithLifecycle()
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
     LabelSettingsScreenContent(
-        labels = labels,
-        labelsEnabled = labelsEnabled,
+        labels = uiState.labels,
+        labelsEnabled = uiState.labelsEnabled,
         showBackButton = showBackButton,
         onNavigateBack = onNavigateBack,
         onLabelsEnabledChanged = { viewModel.onIntent(LabelIntent.SetLabelsEnabled(it)) }

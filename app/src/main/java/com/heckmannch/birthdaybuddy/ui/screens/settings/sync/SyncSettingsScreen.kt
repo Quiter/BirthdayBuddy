@@ -2,6 +2,7 @@ package com.heckmannch.birthdaybuddy.ui.screens.settings.sync
 
 import android.Manifest
 import android.content.pm.PackageManager
+import androidx.annotation.VisibleForTesting
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
@@ -81,7 +82,7 @@ fun SyncSettingsScreen(
         }
     }
 
-    SyncSettingsContent(
+    SyncSettingsScreenContent(
         uiState = uiState,
         snackbarHostState = snackbarHostState,
         onSyncClick = onSyncClick,
@@ -90,13 +91,14 @@ fun SyncSettingsScreen(
     )
 }
 
+@VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
 @Composable
-private fun SyncSettingsContent(
+internal fun SyncSettingsScreenContent(
     uiState: SyncUiState,
-    snackbarHostState: SnackbarHostState,
-    onSyncClick: () -> Unit,
-    showBackButton: Boolean,
-    onNavigateBack: () -> Unit,
+    snackbarHostState: SnackbarHostState = remember { SnackbarHostState() },
+    onSyncClick: () -> Unit = {},
+    showBackButton: Boolean = true,
+    onNavigateBack: () -> Unit = {},
 ) {
     SettingsDetailScaffold(
         title = stringResource(R.string.settings_sync_title),
@@ -145,7 +147,7 @@ private fun SyncSettingsContent(
 @Composable
 private fun SyncSettingsPreview() {
     MaterialTheme {
-        SyncSettingsContent(
+        SyncSettingsScreenContent(
             uiState = SyncUiState(),
             snackbarHostState = remember { SnackbarHostState() },
             onSyncClick = {},

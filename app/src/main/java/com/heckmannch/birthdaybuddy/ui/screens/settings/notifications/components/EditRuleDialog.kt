@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.text.KeyboardOptions
@@ -36,9 +37,9 @@ import androidx.compose.ui.text.input.KeyboardType
 import com.heckmannch.birthdaybuddy.R
 import com.heckmannch.birthdaybuddy.domain.model.NotificationRule
 import com.heckmannch.birthdaybuddy.ui.theme.AlphaBorderSubtle
-import com.heckmannch.birthdaybuddy.ui.theme.SpacingExtraSmall
 import com.heckmannch.birthdaybuddy.ui.theme.SpacingMedium
 import com.heckmannch.birthdaybuddy.ui.theme.SpacingSmall
+import com.heckmannch.birthdaybuddy.ui.theme.WheelPickerItemHeight
 
 private enum class RuleUnit {
     DAYS, WEEKS
@@ -139,13 +140,15 @@ fun EditRuleDialog(
 
                 val displayNum = numberStringState.value.toIntOrNull() ?: 1
 
-                Column(modifier = Modifier.fillMaxWidth()) {
+                Column(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalArrangement = Arrangement.spacedBy(SpacingSmall)
+                ) {
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
                         modifier = Modifier
                             .fillMaxWidth()
                             .clickable { selectedUnitState.value = RuleUnit.DAYS }
-                            .padding(vertical = SpacingExtraSmall)
                     ) {
                         RadioButton(
                             selected = selectedUnitState.value == RuleUnit.DAYS,
@@ -167,7 +170,6 @@ fun EditRuleDialog(
                         modifier = Modifier
                             .fillMaxWidth()
                             .clickable { selectedUnitState.value = RuleUnit.WEEKS }
-                            .padding(vertical = SpacingExtraSmall)
                     ) {
                         RadioButton(
                             selected = selectedUnitState.value == RuleUnit.WEEKS,
@@ -186,7 +188,6 @@ fun EditRuleDialog(
                 }
 
                 HorizontalDivider(
-                    modifier = Modifier.padding(vertical = SpacingSmall),
                     color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = AlphaBorderSubtle)
                 )
 
@@ -194,8 +195,8 @@ fun EditRuleDialog(
                     verticalAlignment = Alignment.CenterVertically,
                     modifier = Modifier
                         .fillMaxWidth()
+                        .heightIn(min = WheelPickerItemHeight)
                         .clickable { showTimePickerState.value = true }
-                        .padding(vertical = SpacingMedium)
                 ) {
                     Text(
                         text = stringResource(
@@ -209,7 +210,6 @@ fun EditRuleDialog(
                 }
 
                 HorizontalDivider(
-                    modifier = Modifier.padding(vertical = SpacingSmall),
                     color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = AlphaBorderSubtle)
                 )
             }

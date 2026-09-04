@@ -8,8 +8,11 @@
 -renamesourcefileattribute SourceFile
 
 # --- Room Database ---
-# Room Entities and DAOs are covered by Room's bundled consumer rules.
-# TypeConverters are preserved to safeguard custom type conversions.
+# Safeguard Room Entities, DAOs, Database classes, and TypeConverters from code shrinking and reflection issues (Project Guidelines §2.2).
+-keep @androidx.room.Entity class * { *; }
+-keep @androidx.room.Dao interface * { *; }
+-keep @androidx.room.Database class * { *; }
+-keep class * extends androidx.room.RoomDatabase { *; }
 -keep class com.heckmannch.birthdaybuddy.data.local.*Converters { *; }
 -keep class * {
     @androidx.room.TypeConverter <methods>;

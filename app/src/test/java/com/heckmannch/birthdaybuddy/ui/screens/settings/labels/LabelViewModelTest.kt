@@ -26,7 +26,7 @@ class LabelViewModelTest {
     private val contactRepository: ContactRepository = mock()
 
     @Test
-    fun `labelManagementList should combine configs and contacts correctly`() = runTest {
+    fun `uiState should combine configs, contacts, and labelsEnabled correctly`() = runTest {
         // Given
         val configs = listOf(
             LabelConfig("Family", isHiddenFromFilter = false, isIgnored = false),
@@ -52,17 +52,31 @@ class LabelViewModelTest {
         whenever(contactRepository.allContacts).thenReturn(flowOf(contacts))
         whenever(contactRepository.labelsEnabled).thenReturn(flowOf(true))
 
-        val viewModel = LabelViewModel(contactRepository)
+        val viewModel = LabelViewModel(contactRepository, mainDispatcherRule.testDispatcher)
 
         // When
-        val list = viewModel.labelManagementList.first { it.size == 3 }
+        val state = viewModel.uiState.first { it.labels.size == 3 }
 
         // Then
-        assertThat(list).hasSize(3)
-        assertThat(list[0].name).isEqualTo("Family")
-        assertThat(list[1].name).isEqualTo("Friends")
-        assertThat(list[2].name).isEqualTo(ContactLabels.LABEL_NO_BIRTHDAY)
-        assertThat(list[2].isIgnored).isTrue()
+        assertThat(state.labelsEnabled).isTrue()
+        assertThat(state.labels).hasSize(3)
+        assertThat(state.labels[0].name).isEqualTo("Family")
+        assertThat(state.labels[1].name).isEqualTo("Friends")
+        assertThat(state.labels[2].name).isEqualTo(ContactLabels.LABEL_NO_BIRTHDAY)
+        assertThat(state.labels[2].isIgnored).isTrue()
+    }
+
+    @Test
+    fun `uiState should reflect labelsEnabled false`() = runTest {
+        whenever(contactRepository.labelConfigs).thenReturn(flowOf(emptyList()))
+        whenever(contactRepository.allContacts).thenReturn(flowOf(emptyList()))
+        whenever(contactRepository.labelsEnabled).thenReturn(flowOf(false))
+
+        val viewModel = LabelViewModel(contactRepository, mainDispatcherRule.testDispatcher)
+
+        val state = viewModel.uiState.first { !it.labelsEnabled }
+        assertThat(state.labelsEnabled).isFalse()
+        assertThat(state.labels).isEmpty()
     }
 
     @Test

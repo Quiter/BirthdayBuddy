@@ -12,12 +12,9 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import android.content.res.Resources
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
@@ -36,8 +33,6 @@ import com.heckmannch.birthdaybuddy.ui.theme.SpacingExtraLarge
 import com.heckmannch.birthdaybuddy.ui.theme.SpacingMedium
 import com.heckmannch.birthdaybuddy.ui.theme.SpacingNormal
 import com.heckmannch.birthdaybuddy.ui.theme.SpacingSmall
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
 
 /**
  * Vorkompilierter regulärer Ausdruck zum Parsen von Markdown-Links ([Link-Text](URL)).
@@ -53,18 +48,8 @@ fun PrivacyPolicyScreen(
     val resources = LocalContext.current.resources
     val configuration = LocalConfiguration.current
     val errorMessage = stringResource(R.string.settings_privacy_load_error)
-    var policyText by remember { mutableStateOf("") }
-
-    LaunchedEffect(configuration) {
-        withContext(Dispatchers.IO) {
-            policyText = try {
-                resources.openRawResource(R.raw.privacy_policy).bufferedReader().use {
-                    it.readText()
-                }
-            } catch (_: Exception) {
-                errorMessage
-            }
-        }
+    val policyText = rememberSaveable(configuration) {
+        loadPrivacyPolicyText(resources, errorMessage)
     }
 
     SettingsDetailScaffold(
@@ -107,7 +92,7 @@ private fun MarkdownContent(text: String) {
                     style = MaterialTheme.typography.headlineMedium,
                     color = MaterialTheme.colorScheme.primary,
                     fontWeight = FontWeight.Bold,
-                    modifier = Modifier.padding(top = SpacingSmall)
+                    modifier = Modifier.padding(bottom = SpacingSmall)
                 )
             }
 
@@ -117,7 +102,7 @@ private fun MarkdownContent(text: String) {
                     style = MaterialTheme.typography.titleLarge,
                     color = MaterialTheme.colorScheme.secondary,
                     fontWeight = FontWeight.Bold,
-                    modifier = Modifier.padding(top = SpacingMedium)
+                    modifier = Modifier.padding(bottom = SpacingMedium)
                 )
             }
 
@@ -205,6 +190,20 @@ private fun AnnotatedString.Builder.appendBoldText(text: String) {
         } else {
             append(part)
         }
+    }
+}
+
+/**
+ * Liest den Inhalt der Datenschutzerklärung synchron aus den Raw-Ressourcen ein.
+ * Gekapselt als Hilfsfunktion zur Trennung von deklarativer UI und Ressourcen-Extraktion.
+ */
+internal fun loadPrivacyPolicyText(resources: Resources, errorMessage: String): String {
+    return try {
+        resources.openRawResource(R.raw.privacy_policy).bufferedReader().use {
+            it.readText()
+        }
+    } catch (_: Exception) {
+        errorMessage
     }
 }
 

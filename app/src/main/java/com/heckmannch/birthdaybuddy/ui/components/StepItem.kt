@@ -108,10 +108,9 @@ fun StepItem(
         Spacer(modifier = Modifier.width(SpacingMedium))
 
         Column(
-            modifier = Modifier
-                .weight(1f)
-                .padding(top = SpacingExtraSmall)
+            modifier = Modifier.weight(1f)
         ) {
+            Spacer(modifier = Modifier.height(SpacingExtraSmall))
             Text(
                 text = title,
                 style = MaterialTheme.typography.bodyMedium,
@@ -125,6 +124,7 @@ fun StepItem(
                 color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = contentAlpha)
             )
             if (actionButton != null && !isLocked) {
+                Spacer(modifier = Modifier.height(SpacingSmall))
                 actionButton()
             }
         }
@@ -199,7 +199,7 @@ private fun StepItemWithButtonPreview() {
                 title = "Aktion erforderlich",
                 description = "Bitte gewähre der App Zugriff auf den Kalender.",
                 actionButton = {
-                    Button(onClick = {}, modifier = Modifier.padding(top = SpacingSmall)) {
+                    Button(onClick = {}) {
                         Text("Berechtigung erteilen")
                     }
                 }

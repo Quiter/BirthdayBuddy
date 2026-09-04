@@ -150,7 +150,7 @@
     - #### 📁 Settings (`settings`)
         - `SettingsScreen.kt`: Haupteinstellungsmenü.
         - `labels/LabelSettingsScreen.kt`: Verwaltung der Label-Sichtbarkeit.
-        - `labels/LabelViewModel.kt`: Logik für die Label-Verwaltung und Konfiguration. Nutzt MVI-Intents und `onIntent()`. **Feature-co-located**.
+        - `labels/LabelViewModel.kt`: Logik für die Label-Verwaltung und Konfiguration. Nutzt MVI-Intents, `onIntent()` und konsistenten `uiState: StateFlow<LabelUiState>`. **Feature-co-located**.
         - `notifications/NotificationSettingsScreen.kt`: Konfiguration des Erinnerungssystems.
         - `notifications/NotificationViewModel.kt`: Verwaltung der Benachrichtigungsregeln und deren Synchronisation mit dem WorkManager. **Feature-co-located**.
         - `calendar/CalendarSettingsScreen.kt`: Screen zur detaillierten Kalender-Sync-Konfiguration.
@@ -172,6 +172,7 @@
     - `NotificationUiState.kt`: Gebündelter State für den Benachrichtigungs-Einstellungs-Screen.
     - `ThemeUiState.kt`: Gebündelter State für den Design-Einstellungs-Screen.
     - `BackupUiState.kt`: Gebündelter State (`BackupUiState`) und One-Time Status-Events (`BackupMessage`) für den Backup-Screen.
+    - `LabelUiState.kt`: Gebündelter State für den Label-Einstellungs-Screen (`labelsEnabled`, `labels`).
     - `LabelManagementModel.kt`: Modell für die Label-Verwaltung.
     - `GiftIdea.kt`: Reines Domänenmodell für Geschenkideen (id, text, isChecked) mit Manipulations-Logik (Hinzufügen, Sortieren, Umschalten).
     - `CoupleSuggestionUiModel.kt`: Immutable UI-Modell für Paar-Vorschläge, entkoppelt die UI-Schicht von der Room-Entity.
@@ -218,6 +219,7 @@
 - `ContextExtensions.kt`: Hilfsfunktionen für die sichere Navigation im Android-Context.
 - `IntentExtras.kt`: Zentrales `object` mit allen `const val`-Schlüsseln für Intent-Extras (`SCROLL_TO_TOP`, `NAVIGATE_TO_NOTIFICATIONS`, `OPEN_SEARCH`, `OPEN_ADD_CONTACT`) sowie sicheren, typgeprüften Extraktions- und Bereinigungsfunktionen (`safeGetAndRemoveBooleanExtra`, `safeGetIntExtra`, `safeGetStringArrayExtra`).
 - `IntentParser.kt`: Zentraler Parser zur sicheren Umwandlung von Android-`Intent`s in typsichere `AppAction`-Instanzen.
+- `MessengerUtils.kt`: Asynchrone, nicht-blockierende Hilfsfunktion `getInstalledMessengersAsync` zur Abfrage installierter Messenger-Apps ohne Thread-Blockierung im UI-Layer.
 - `WidgetUpdater.kt` & `BirthdayWidgetUpdater.kt`: Abstraktion und Implementierung zur Glance-unabhängigen Aktualisierung und WorkManager-Planung (`scheduleDailyUpdate()`) des App-Widgets.
 - `NotificationScheduler.kt` & `NotificationSchedulerImpl.kt`: Hilfsklassen zur WorkManager-unabhängigen Steuerung von Hintergrund-Workern.
 
@@ -301,9 +303,16 @@ screenshot/
 │   ├── HomeContentScreenshotTest.kt   # HomeContent (Phone/Tablet, Light/Dark, leer, loading)
 │   ├── BirthdayListScreenshotTest.kt  # BirthdayList (mit/ohne Kontakte, Shimmer, Labels)
 │   └── BirthdayItemScreenshotTest.kt  # BirthdayItem (REGULAR, GOLD, SILVER, CHILD, expanded)
+├── onboarding/
+│   └── OnboardingScreenshotTest.kt    # OnboardingScreenContent (Welcome, Permissions, Settings, Light/Dark)
 └── settings/
-    ├── LabelSettingsScreenshotTest.kt         # LabelSettingsScreenContent (an/aus, leer, Tablet)
-    └── NotificationSettingsScreenshotTest.kt  # NotificationSettingsContent (Regeln, kein Permission)
+    ├── BackupScreenshotTest.kt            # BackupScreenContent (Idle, ExportSuccess, Loading, Tablet)
+    ├── CalendarSettingsScreenshotTest.kt  # CalendarSettingsScreenContent (Synced, Custom Colors, Tablet)
+    ├── LabelSettingsScreenshotTest.kt     # LabelSettingsScreenContent (an/aus, leer, Tablet)
+    ├── NotificationSettingsScreenshotTest.kt # NotificationSettingsContent (Regeln, kein Permission)
+    ├── SettingsOverviewScreenshotTest.kt  # SettingsScreen Menu (Compact Phone vs. Split-Pane Tablet)
+    ├── SyncSettingsScreenshotTest.kt      # SyncSettingsScreenContent (Idle, Syncing, Tablet)
+    └── ThemeSettingsScreenshotTest.kt     # ThemeSettingsScreenContent (System, Light, Dark, AMOLED)
 ```
 
 #### Golden-Images

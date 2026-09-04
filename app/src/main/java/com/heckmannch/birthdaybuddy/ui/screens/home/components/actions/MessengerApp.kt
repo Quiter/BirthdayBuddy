@@ -5,9 +5,7 @@ import android.content.pm.PackageManager
 import android.os.Build
 import androidx.compose.ui.graphics.Color
 import com.heckmannch.birthdaybuddy.R
-import kotlinx.coroutines.CoroutineDispatcher
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
+
 
 /**
  * Unterstützte Messenger-Apps für Direktaktionen aus der Geburtstagskarte.
@@ -116,17 +114,6 @@ enum class MessengerApp(
             }
         }
 
-        /**
-         * Asynchrone, nicht-blockierende Variante von [getInstalledMessengers], die
-         * die Binder-IPC-Aufrufe an den [PackageManager] auf den IO-Dispatcher auslagert.
-         */
-        suspend fun getInstalledMessengersAsync(
-            context: Context,
-            forceRefresh: Boolean = false,
-            ioDispatcher: CoroutineDispatcher = Dispatchers.IO,
-        ): List<MessengerApp> = withContext(ioDispatcher) {
-            getInstalledMessengers(context, forceRefresh)
-        }
 
         /**
          * Prüft abwärtskompatibel, ob ein Paket auf dem Gerät installiert ist.

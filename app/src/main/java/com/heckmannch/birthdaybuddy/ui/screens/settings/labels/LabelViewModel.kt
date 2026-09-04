@@ -7,6 +7,7 @@ import com.heckmannch.birthdaybuddy.domain.model.ContactLabels
 import com.heckmannch.birthdaybuddy.domain.model.LabelConfig
 import com.heckmannch.birthdaybuddy.domain.repository.ContactRepository
 import com.heckmannch.birthdaybuddy.ui.model.LabelManagementModel
+import com.heckmannch.birthdaybuddy.ui.model.LabelUiState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
@@ -25,15 +26,13 @@ class LabelViewModel @Inject constructor(
 ) : ViewModel() {
 
     /**
-     * StateFlow indicating whether label management is enabled by the user.
+     * Unified UI state combining label enablement status and configured labels.
      */
-    val labelsEnabled: StateFlow<Boolean> = contactRepository.labelsEnabled
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), true)
-
-    val labelManagementList: StateFlow<List<LabelManagementModel>> = combine(
+    val uiState: StateFlow<LabelUiState> = combine(
+        contactRepository.labelsEnabled,
         contactRepository.labelConfigs,
         contactRepository.allContacts,
-    ) { configs, contacts ->
+    ) { labelsEnabled, configs, contacts ->
         val labelsInUse = contacts.asSequence().flatMap { it.labels }.toSet()
         val configMap = configs.associateBy { it.name }
 
@@ -53,7 +52,7 @@ class LabelViewModel @Inject constructor(
 
         // Pseudo-Label "Ohne Datum" am Ende anhängen, falls Kontakte ohne Geburtstag da sind
         val hasMissingBirthdays = contacts.any { it.birthday == null }
-        if (hasMissingBirthdays) {
+        val labelList = if (hasMissingBirthdays) {
             val pseudoConfig = configMap[ContactLabels.LABEL_NO_BIRTHDAY]
                 ?: LabelConfig(ContactLabels.LABEL_NO_BIRTHDAY)
             standardList + LabelManagementModel(
@@ -67,9 +66,18 @@ class LabelViewModel @Inject constructor(
         } else {
             standardList
         }
+
+        LabelUiState(
+            labelsEnabled = labelsEnabled,
+            labels = labelList,
+        )
     }
         .flowOn(defaultDispatcher)
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = LabelUiState()
+        )
 
     fun onIntent(intent: LabelIntent) {
         when (intent) {

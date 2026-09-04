@@ -2,6 +2,7 @@ package com.heckmannch.birthdaybuddy.ui.screens.onboarding
 
 import android.Manifest
 import android.os.Build
+import androidx.annotation.VisibleForTesting
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.animateColorAsState
@@ -208,7 +209,9 @@ fun OnboardingContent(
 
     val showCalendarGuide = calendarEnabled && uiState.hasCalendarPermission
     val steps = remember(showCalendarGuide) { OnboardingStep.getSteps(showCalendarGuide) }
-    val pagerState = rememberPagerState { steps.size }
+    val pagerState = rememberPagerState(
+        initialPage = uiState.currentPage.coerceIn(0, (steps.size - 1).coerceAtLeast(0))
+    ) { steps.size }
 
     LaunchedEffect(uiState.currentPage, pagerState.pageCount) {
         if (uiState.currentPage != pagerState.currentPage && uiState.currentPage in 0 until pagerState.pageCount) {
@@ -324,6 +327,29 @@ fun OnboardingContent(
             }
         }
     }
+}
+
+/**
+ * Test-accessible entry point for Onboarding content.
+ */
+@VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
+@Composable
+fun OnboardingScreenContent(
+    uiState: OnboardingUiState,
+    onIntent: (OnboardingIntent) -> Unit = {},
+    onRequestContactPermission: () -> Unit = {},
+    onRequestNotificationPermission: () -> Unit = {},
+    onRequestCalendarPermission: () -> Unit = {},
+    onFinish: (contactsEnabled: Boolean, notificationsEnabled: Boolean, calendarEnabled: Boolean) -> Unit = { _, _, _ -> },
+) {
+    OnboardingContent(
+        uiState = uiState,
+        onIntent = onIntent,
+        onRequestContactPermission = onRequestContactPermission,
+        onRequestNotificationPermission = onRequestNotificationPermission,
+        onRequestCalendarPermission = onRequestCalendarPermission,
+        onFinish = onFinish,
+    )
 }
 
 @Preview(showSystemUi = true)

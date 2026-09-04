@@ -276,7 +276,7 @@ fun BirthdayItem(
                         )
 
                         HorizontalDivider(
-                            modifier = Modifier.padding(horizontal = SpacingNormal),
+                            modifier = Modifier.padding(start = SpacingNormal, end = SpacingNormal, bottom = SpacingMedium),
                             color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = AlphaEmphasisLow)
                         )
 
@@ -325,7 +325,7 @@ private fun BirthdayItemGiftIdeaSection(
             modifier = Modifier
                 .fillMaxWidth()
                 .clickable { giftIdeasExpanded = !giftIdeasExpanded }
-                .padding(horizontal = SpacingNormal, vertical = SpacingMedium)
+                .padding(start = SpacingNormal, end = SpacingNormal, bottom = SpacingMedium)
                 .testTag("gift_ideas_toggle"),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(SpacingMedium)

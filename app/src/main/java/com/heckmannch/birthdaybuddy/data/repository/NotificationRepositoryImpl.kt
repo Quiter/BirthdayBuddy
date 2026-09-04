@@ -91,16 +91,17 @@ class NotificationRepositoryImpl @Inject constructor(
      *
      * @param transform A lambda that receives the current [AppSettings] snapshot and returns the updated [AppSettings].
      */
-    override suspend fun updateSettings(transform: (AppSettings) -> AppSettings) {
-        settingsMutex.withLock {
-            val currentEntity = appSettingsDao.getSettingsImmediate() ?: AppSettingsEntity()
-            val currentDomain = appSettingsMapper.toDomain(currentEntity)
-            val updatedDomain = transform(currentDomain)
-            val updatedEntity = appSettingsMapper.toEntity(updatedDomain)
-            appSettingsDao.upsertSettings(updatedEntity)
+    override suspend fun updateSettings(transform: (AppSettings) -> AppSettings): Unit =
+        withContext(ioDispatcher) {
+            settingsMutex.withLock {
+                val currentEntity = appSettingsDao.getSettingsImmediate() ?: AppSettingsEntity()
+                val currentDomain = appSettingsMapper.toDomain(currentEntity)
+                val updatedDomain = transform(currentDomain)
+                val updatedEntity = appSettingsMapper.toEntity(updatedDomain)
+                appSettingsDao.upsertSettings(updatedEntity)
+            }
+            syncScheduling()
         }
-        syncScheduling()
-    }
 
     /**
      * Retrieves a one-time snapshot of the current application settings directly from the database.
@@ -118,7 +119,9 @@ class NotificationRepositoryImpl @Inject constructor(
      * @return List of all [NotificationRule] objects currently stored.
      */
     override suspend fun getAllRulesImmediate(): List<NotificationRule> =
-        notificationRuleDao.getAllRulesImmediate().map { notificationRuleMapper.toDomain(it) }
+        withContext(ioDispatcher) {
+            notificationRuleDao.getAllRulesImmediate().map { notificationRuleMapper.toDomain(it) }
+        }
 
     /**
      * Inserts or updates a notification rule in the database.
@@ -127,7 +130,7 @@ class NotificationRepositoryImpl @Inject constructor(
      *
      * @param rule The [NotificationRule] to insert or update.
      */
-    override suspend fun insertRule(rule: NotificationRule) {
+    override suspend fun insertRule(rule: NotificationRule): Unit = withContext(ioDispatcher) {
         notificationRuleDao.upsertRule(notificationRuleMapper.toEntity(rule))
         syncScheduling()
     }
@@ -139,7 +142,7 @@ class NotificationRepositoryImpl @Inject constructor(
      *
      * @param rule The [NotificationRule] with updated values.
      */
-    override suspend fun updateRule(rule: NotificationRule) {
+    override suspend fun updateRule(rule: NotificationRule): Unit = withContext(ioDispatcher) {
         notificationRuleDao.upsertRule(notificationRuleMapper.toEntity(rule))
         syncScheduling()
     }
@@ -151,7 +154,7 @@ class NotificationRepositoryImpl @Inject constructor(
      *
      * @param rule The [NotificationRule] to delete.
      */
-    override suspend fun deleteRule(rule: NotificationRule) {
+    override suspend fun deleteRule(rule: NotificationRule): Unit = withContext(ioDispatcher) {
         notificationRuleDao.deleteRule(notificationRuleMapper.toEntity(rule))
         syncScheduling()
     }
@@ -164,8 +167,10 @@ class NotificationRepositoryImpl @Inject constructor(
      * @return List of active [PendingNotification] instances.
      */
     override suspend fun getActiveNotificationsImmediate(): List<PendingNotification> =
-        pendingNotificationDao.getActiveNotificationsImmediate()
-            .map { pendingNotificationMapper.toDomain(it) }
+        withContext(ioDispatcher) {
+            pendingNotificationDao.getActiveNotificationsImmediate()
+                .map { pendingNotificationMapper.toDomain(it) }
+        }
 
     /**
      * Inserts or updates a pending notification entry in the database.
@@ -174,7 +179,9 @@ class NotificationRepositoryImpl @Inject constructor(
      * @return The row ID of the inserted or updated pending notification record.
      */
     override suspend fun insertPendingNotification(notification: PendingNotification): Long =
-        pendingNotificationDao.upsert(pendingNotificationMapper.toEntity(notification))
+        withContext(ioDispatcher) {
+            pendingNotificationDao.upsert(pendingNotificationMapper.toEntity(notification))
+        }
 
     /**
      * Retrieves a pending notification record by its unique database identifier.
@@ -183,8 +190,10 @@ class NotificationRepositoryImpl @Inject constructor(
      * @return The matching [PendingNotification] if found, or `null` otherwise.
      */
     override suspend fun getPendingNotificationById(id: Int): PendingNotification? =
-        pendingNotificationDao.getNotificationById(id)
-            ?.let { pendingNotificationMapper.toDomain(it) }
+        withContext(ioDispatcher) {
+            pendingNotificationDao.getNotificationById(id)
+                ?.let { pendingNotificationMapper.toDomain(it) }
+        }
 
     /**
      * Retrieves all contact lookup keys for notifications that have already been scheduled
@@ -214,10 +223,10 @@ class NotificationRepositoryImpl @Inject constructor(
         year: Int,
         daysBefore: Int,
         lookupKey: String
-    ): Boolean {
+    ): Boolean = withContext(ioDispatcher) {
         val escapedLookupKey = escapeLikePattern(lookupKey)
         val pattern = "%\"$escapedLookupKey\"%"
-        return pendingNotificationDao.hasNotificationBeenScheduled(year, daysBefore, pattern)
+        pendingNotificationDao.hasNotificationBeenScheduled(year, daysBefore, pattern)
     }
 
     /**
@@ -235,7 +244,7 @@ class NotificationRepositoryImpl @Inject constructor(
      *
      * @param id The unique integer ID of the pending notification.
      */
-    override suspend fun incrementDismissCount(id: Int) {
+    override suspend fun incrementDismissCount(id: Int): Unit = withContext(ioDispatcher) {
         pendingNotificationDao.incrementDismissCount(id)
     }
 
@@ -244,7 +253,7 @@ class NotificationRepositoryImpl @Inject constructor(
      *
      * @param id The unique integer ID of the pending notification to complete.
      */
-    override suspend fun markAsDone(id: Int) {
+    override suspend fun markAsDone(id: Int): Unit = withContext(ioDispatcher) {
         pendingNotificationDao.markAsDone(id)
     }
 
@@ -253,7 +262,7 @@ class NotificationRepositoryImpl @Inject constructor(
      *
      * @param currentYear The current calendar year threshold; records prior to this year will be deleted.
      */
-    override suspend fun deleteOldNotifications(currentYear: Int) {
+    override suspend fun deleteOldNotifications(currentYear: Int): Unit = withContext(ioDispatcher) {
         pendingNotificationDao.deleteOldNotifications(currentYear)
     }
 
