@@ -52,7 +52,7 @@ class TimeRepositoryImplTest {
                 context,
                 capture(receiverSlot),
                 capture(filterSlot),
-                ContextCompat.RECEIVER_NOT_EXPORTED,
+                ContextCompat.RECEIVER_EXPORTED,
             )
         } returns null
 
@@ -65,7 +65,7 @@ class TimeRepositoryImplTest {
                 context,
                 receiverSlot.captured,
                 filterSlot.captured,
-                ContextCompat.RECEIVER_NOT_EXPORTED,
+                ContextCompat.RECEIVER_EXPORTED,
             )
         }
         assertThat(receiverSlot.isCaptured).isTrue()
@@ -81,7 +81,7 @@ class TimeRepositoryImplTest {
                 context,
                 capture(receiverSlot),
                 any(),
-                ContextCompat.RECEIVER_NOT_EXPORTED,
+                ContextCompat.RECEIVER_EXPORTED,
             )
         } returns null
 
@@ -95,7 +95,7 @@ class TimeRepositoryImplTest {
                 context,
                 receiverSlot.captured,
                 any(),
-                ContextCompat.RECEIVER_NOT_EXPORTED,
+                ContextCompat.RECEIVER_EXPORTED,
             )
         }
         job.cancel()
@@ -112,7 +112,7 @@ class TimeRepositoryImplTest {
                 context,
                 capture(receiverSlot),
                 any(),
-                ContextCompat.RECEIVER_NOT_EXPORTED,
+                ContextCompat.RECEIVER_EXPORTED,
             )
         } returns null
 
@@ -128,7 +128,7 @@ class TimeRepositoryImplTest {
                 context,
                 receiverSlot.captured,
                 any(),
-                ContextCompat.RECEIVER_NOT_EXPORTED,
+                ContextCompat.RECEIVER_EXPORTED,
             )
         }
         val receiver = receiverSlot.captured
