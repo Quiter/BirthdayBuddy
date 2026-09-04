@@ -95,14 +95,16 @@ fun BirthdayItem(
 ) {
     val haptic = LocalHapticFeedback.current
 
-    val onOpenDatePicker = {
-        val initialDate = contact.birthday ?: LocalDate.now()
-        actions.onOpenBirthdayPicker(
-            contact.lookupKey,
-            contact.birthday?.let { if (it.hasYear) it.year else null },
-            initialDate.monthValue,
-            initialDate.dayOfMonth,
-        )
+    val onOpenDatePicker = remember(contact.lookupKey, contact.birthday, actions) {
+        {
+            val initialDate = contact.birthday ?: LocalDate.now()
+            actions.onOpenBirthdayPicker(
+                contact.lookupKey,
+                contact.birthday?.let { if (it.hasYear) it.year else null },
+                initialDate.monthValue,
+                initialDate.dayOfMonth,
+            )
+        }
     }
 
     val borderStroke = remember(contact.isToday, contact.birthdayTier) {
