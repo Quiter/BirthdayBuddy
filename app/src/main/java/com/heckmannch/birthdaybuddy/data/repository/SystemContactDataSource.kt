@@ -457,9 +457,10 @@ class SystemContactDataSource @Inject constructor(
 
     internal fun parseDate(dateStr: String?): LocalDate? {
         if (dateStr == null) return null
+        val trimmed = dateStr.trim()
         return try {
-            if (dateStr.startsWith("--")) {
-                val clean = dateStr.removePrefix("--")
+            if (trimmed.startsWith("--")) {
+                val clean = trimmed.removePrefix("--")
                 val parts = clean.split("-")
                 if (parts.size == 2) {
                     val month = parts[0].toIntOrNull()
@@ -475,14 +476,31 @@ class SystemContactDataSource @Inject constructor(
                     } else null
                 } else {
                     runCatching {
-                        val monthDay = java.time.MonthDay.parse(dateStr)
+                        val monthDay = java.time.MonthDay.parse(trimmed)
                         monthDay.atYear(NO_YEAR_MARKER)
                     }.getOrNull()
                 }
             } else {
-                dateFormats.firstNotNullOfOrNull { format ->
-                    runCatching { LocalDate.parse(dateStr, format) }.getOrNull()
+                // Falls ein Zeitstempel enthalten ist (z. B. "1990-05-15T00:00:00.000Z"),
+                // schneiden wir auf die ersten 10 Zeichen ("yyyy-MM-dd") ab, wenn das Muster passt.
+                val normalizedStr = if (trimmed.length > 10 &&
+                    trimmed[4] == '-' &&
+                    trimmed[7] == '-' &&
+                    (trimmed[10] == 'T' || trimmed[10] == ' ')
+                ) {
+                    trimmed.substring(0, 10)
+                } else {
+                    trimmed
                 }
+
+                dateFormats.firstNotNullOfOrNull { format ->
+                    runCatching { LocalDate.parse(normalizedStr, format) }.getOrNull()
+                } ?: runCatching {
+                    // Fallback für sonstige ISO-Datums-/Zeit-Formate (z. B. mit Zeitzone oder Offset)
+                    java.time.OffsetDateTime.parse(trimmed).toLocalDate()
+                }.getOrNull() ?: runCatching {
+                    java.time.Instant.parse(trimmed).atZone(java.time.ZoneId.systemDefault()).toLocalDate()
+                }.getOrNull()
             }
         } catch (_: Exception) {
             null

@@ -4,8 +4,11 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.util.Log
+import androidx.work.ExistingWorkPolicy
 import com.heckmannch.birthdaybuddy.di.ApplicationScope
 import com.heckmannch.birthdaybuddy.domain.repository.NotificationRepository
+import com.heckmannch.birthdaybuddy.domain.repository.WidgetUpdater
+import com.heckmannch.birthdaybuddy.widget.BirthdayWidgetWorker
 import dagger.hilt.EntryPoint
 import dagger.hilt.InstallIn
 import dagger.hilt.android.EntryPointAccessors
@@ -35,6 +38,7 @@ class BootReceiver : BroadcastReceiver() {
         @ApplicationScope
         fun applicationScope(): CoroutineScope
         fun notificationRepository(): NotificationRepository
+        fun widgetUpdater(): WidgetUpdater
     }
 
     override fun onReceive(context: Context?, intent: Intent?) {
@@ -65,9 +69,18 @@ class BootReceiver : BroadcastReceiver() {
         val pendingResult = goAsync()
         entryPoint.applicationScope().launch {
             try {
-                entryPoint.notificationRepository().syncScheduling()
-            } catch (_: Exception) {
-                // Safeguard: Scheduler-Fehler dürfen den Boot-Prozess nicht blockieren.
+                try {
+                    entryPoint.notificationRepository().syncScheduling()
+                } catch (_: Exception) {
+                    // Safeguard: Scheduler-Fehler dürfen den Boot-Prozess nicht blockieren.
+                }
+
+                try {
+                    entryPoint.widgetUpdater().updateWidget()
+                    BirthdayWidgetWorker.enqueueNextUpdate(context, ExistingWorkPolicy.REPLACE)
+                } catch (_: Exception) {
+                    // Safeguard: Fehler beim Widget-Update dürfen die Benachrichtigungsplanung und den Boot-Prozess nicht blockieren.
+                }
             } finally {
                 pendingResult.finish()
             }

@@ -74,6 +74,22 @@ class SystemContactDataSourceTest {
     }
 
     @Test
+    fun `parseDate parses ISO date with timestamp correctly`() {
+        val resultUtc = dataSource.parseDate("1990-05-15T00:00:00.000Z")
+        assertThat(resultUtc).isNotNull()
+        assertThat(resultUtc).isEqualTo(LocalDate.of(1990, 5, 15))
+        assertThat(resultUtc!!.hasYear).isTrue()
+
+        val resultSpace = dataSource.parseDate("1990-05-15 12:30:00")
+        assertThat(resultSpace).isNotNull()
+        assertThat(resultSpace).isEqualTo(LocalDate.of(1990, 5, 15))
+
+        val resultOffset = dataSource.parseDate("1990-05-15T15:30:00+02:00")
+        assertThat(resultOffset).isNotNull()
+        assertThat(resultOffset).isEqualTo(LocalDate.of(1990, 5, 15))
+    }
+
+    @Test
     fun `parseDate returns null for invalid date strings`() {
         assertThat(dataSource.parseDate(null)).isNull()
         assertThat(dataSource.parseDate("")).isNull()

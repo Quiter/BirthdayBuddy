@@ -3,12 +3,16 @@ package com.heckmannch.birthdaybuddy
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
+import androidx.work.ExistingWorkPolicy
 import com.heckmannch.birthdaybuddy.domain.repository.NotificationRepository
+import com.heckmannch.birthdaybuddy.domain.repository.WidgetUpdater
+import com.heckmannch.birthdaybuddy.widget.BirthdayWidgetWorker
 import dagger.hilt.android.EntryPointAccessors
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk
+import io.mockk.mockkObject
 import io.mockk.mockkStatic
 import io.mockk.spyk
 import io.mockk.unmockkAll
@@ -29,6 +33,7 @@ class BootReceiverTest {
     private val appContext = mockk<Context>(relaxed = true)
     private val entryPoint = mockk<BootReceiver.BootReceiverEntryPoint>()
     private val notificationRepository = mockk<NotificationRepository>(relaxed = true)
+    private val widgetUpdater = mockk<WidgetUpdater>(relaxed = true)
     private val pendingResult = mockk<BroadcastReceiver.PendingResult>(relaxed = true)
     private val testScope = CoroutineScope(kotlinx.coroutines.Dispatchers.Unconfined)
 
@@ -40,6 +45,9 @@ class BootReceiverTest {
         every { receiver.goAsync() } returns pendingResult
         every { context.applicationContext } returns appContext
 
+        mockkObject(BirthdayWidgetWorker.Companion)
+        every { BirthdayWidgetWorker.enqueueNextUpdate(any(), any()) } returns Unit
+
         mockkStatic(EntryPointAccessors::class)
         every {
             EntryPointAccessors.fromApplication(
@@ -50,6 +58,7 @@ class BootReceiverTest {
 
         every { entryPoint.applicationScope() } returns testScope
         every { entryPoint.notificationRepository() } returns notificationRepository
+        every { entryPoint.widgetUpdater() } returns widgetUpdater
     }
 
     @After
@@ -64,62 +73,74 @@ class BootReceiverTest {
     }
 
     @Test
-    fun `onReceive with BOOT_COMPLETED syncs scheduling and finishes pending result`() {
+    fun `onReceive with BOOT_COMPLETED syncs scheduling, updates widget, and finishes pending result`() {
         val intent = createIntent(Intent.ACTION_BOOT_COMPLETED)
 
         receiver.onReceive(context, intent)
 
         coVerify(exactly = 1) { notificationRepository.syncScheduling() }
+        coVerify(exactly = 1) { widgetUpdater.updateWidget() }
+        verify(exactly = 1) { BirthdayWidgetWorker.enqueueNextUpdate(context, ExistingWorkPolicy.REPLACE) }
         verify(exactly = 1) { pendingResult.finish() }
     }
 
     @Test
-    fun `onReceive with MY_PACKAGE_REPLACED syncs scheduling and finishes pending result`() {
+    fun `onReceive with MY_PACKAGE_REPLACED syncs scheduling, updates widget, and finishes pending result`() {
         val intent = createIntent(Intent.ACTION_MY_PACKAGE_REPLACED)
 
         receiver.onReceive(context, intent)
 
         coVerify(exactly = 1) { notificationRepository.syncScheduling() }
+        coVerify(exactly = 1) { widgetUpdater.updateWidget() }
+        verify(exactly = 1) { BirthdayWidgetWorker.enqueueNextUpdate(context, ExistingWorkPolicy.REPLACE) }
         verify(exactly = 1) { pendingResult.finish() }
     }
 
     @Test
-    fun `onReceive with TIMEZONE_CHANGED syncs scheduling and finishes pending result`() {
+    fun `onReceive with TIMEZONE_CHANGED syncs scheduling, updates widget, and finishes pending result`() {
         val intent = createIntent(Intent.ACTION_TIMEZONE_CHANGED)
 
         receiver.onReceive(context, intent)
 
         coVerify(exactly = 1) { notificationRepository.syncScheduling() }
+        coVerify(exactly = 1) { widgetUpdater.updateWidget() }
+        verify(exactly = 1) { BirthdayWidgetWorker.enqueueNextUpdate(context, ExistingWorkPolicy.REPLACE) }
         verify(exactly = 1) { pendingResult.finish() }
     }
 
     @Test
-    fun `onReceive with TIME_SET syncs scheduling and finishes pending result`() {
+    fun `onReceive with TIME_SET syncs scheduling, updates widget, and finishes pending result`() {
         val intent = createIntent(Intent.ACTION_TIME_CHANGED)
 
         receiver.onReceive(context, intent)
 
         coVerify(exactly = 1) { notificationRepository.syncScheduling() }
+        coVerify(exactly = 1) { widgetUpdater.updateWidget() }
+        verify(exactly = 1) { BirthdayWidgetWorker.enqueueNextUpdate(context, ExistingWorkPolicy.REPLACE) }
         verify(exactly = 1) { pendingResult.finish() }
     }
 
     @Test
-    fun `onReceive with DATE_CHANGED syncs scheduling and finishes pending result`() {
+    fun `onReceive with DATE_CHANGED syncs scheduling, updates widget, and finishes pending result`() {
         val intent = createIntent(Intent.ACTION_DATE_CHANGED)
 
         receiver.onReceive(context, intent)
 
         coVerify(exactly = 1) { notificationRepository.syncScheduling() }
+        coVerify(exactly = 1) { widgetUpdater.updateWidget() }
+        verify(exactly = 1) { BirthdayWidgetWorker.enqueueNextUpdate(context, ExistingWorkPolicy.REPLACE) }
         verify(exactly = 1) { pendingResult.finish() }
     }
 
     @Test
-    fun `onReceive with unsupported action ignores broadcast and does not sync scheduling`() {
+    fun `onReceive with unsupported action ignores broadcast and does not sync scheduling or update widget`() {
         val intent = createIntent(Intent.ACTION_AIRPLANE_MODE_CHANGED)
 
         receiver.onReceive(context, intent)
 
         coVerify(exactly = 0) { notificationRepository.syncScheduling() }
+        coVerify(exactly = 0) { widgetUpdater.updateWidget() }
+        verify(exactly = 0) { BirthdayWidgetWorker.enqueueNextUpdate(any(), any()) }
         verify(exactly = 0) { receiver.goAsync() }
     }
 
@@ -130,6 +151,8 @@ class BootReceiverTest {
         receiver.onReceive(context, createIntent(null))
 
         coVerify(exactly = 0) { notificationRepository.syncScheduling() }
+        coVerify(exactly = 0) { widgetUpdater.updateWidget() }
+        verify(exactly = 0) { BirthdayWidgetWorker.enqueueNextUpdate(any(), any()) }
         verify(exactly = 0) { receiver.goAsync() }
     }
 
@@ -146,17 +169,33 @@ class BootReceiverTest {
         receiver.onReceive(context, intent)
 
         coVerify(exactly = 0) { notificationRepository.syncScheduling() }
+        coVerify(exactly = 0) { widgetUpdater.updateWidget() }
+        verify(exactly = 0) { BirthdayWidgetWorker.enqueueNextUpdate(any(), any()) }
         verify(exactly = 0) { receiver.goAsync() }
     }
 
     @Test
-    fun `onReceive handles syncScheduling exception gracefully and finishes pending result`() {
+    fun `onReceive handles syncScheduling exception gracefully and still updates widget and finishes pending result`() {
         coEvery { notificationRepository.syncScheduling() } throws RuntimeException("Scheduler error")
 
         val intent = createIntent(Intent.ACTION_TIME_CHANGED)
         receiver.onReceive(context, intent)
 
         coVerify(exactly = 1) { notificationRepository.syncScheduling() }
+        coVerify(exactly = 1) { widgetUpdater.updateWidget() }
+        verify(exactly = 1) { BirthdayWidgetWorker.enqueueNextUpdate(context, ExistingWorkPolicy.REPLACE) }
+        verify(exactly = 1) { pendingResult.finish() }
+    }
+
+    @Test
+    fun `onReceive handles widget update exception gracefully and still syncs scheduling and finishes pending result`() {
+        coEvery { widgetUpdater.updateWidget() } throws RuntimeException("Widget update error")
+
+        val intent = createIntent(Intent.ACTION_BOOT_COMPLETED)
+        receiver.onReceive(context, intent)
+
+        coVerify(exactly = 1) { notificationRepository.syncScheduling() }
+        coVerify(exactly = 1) { widgetUpdater.updateWidget() }
         verify(exactly = 1) { pendingResult.finish() }
     }
 }
