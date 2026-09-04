@@ -60,7 +60,7 @@ class NotificationHelper @Inject constructor(
         notificationManager.createNotificationChannel(channel)
 
         val intent = Intent(context, MainActivity::class.java).apply {
-            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_SINGLE_TOP
         }
 
         // Wir nutzen die Datenbank-ID (pendingId) als eindeutige System-Notification-ID
@@ -103,7 +103,7 @@ class NotificationHelper @Inject constructor(
         // Action-Intent: Einstellungen öffnen
         val settingsIntent = Intent(context, MainActivity::class.java).apply {
             putExtra(IntentExtras.NAVIGATE_TO_NOTIFICATIONS, true)
-            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_SINGLE_TOP
         }
         val settingsPendingIntent = PendingIntent.getActivity(
             context, notificationId * 10 + OFFSET_SETTINGS, settingsIntent,
