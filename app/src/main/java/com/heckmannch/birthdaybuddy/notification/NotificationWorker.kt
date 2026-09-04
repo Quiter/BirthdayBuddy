@@ -7,7 +7,6 @@ import androidx.work.ExistingWorkPolicy
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
 import androidx.work.WorkerParameters
-import com.heckmannch.birthdaybuddy.di.ApplicationScope
 import com.heckmannch.birthdaybuddy.domain.model.NotificationRule
 import com.heckmannch.birthdaybuddy.domain.model.PendingNotification
 import com.heckmannch.birthdaybuddy.domain.repository.ContactRepository
@@ -15,22 +14,14 @@ import com.heckmannch.birthdaybuddy.domain.repository.NotificationRepository
 import com.heckmannch.birthdaybuddy.domain.usecase.GetPendingNotificationsUseCase
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
 import java.time.Duration
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
 import java.util.concurrent.TimeUnit
-import kotlin.time.Duration.Companion.milliseconds
 
 /**
  * Worker to evaluate rules and post notifications for upcoming birthdays.
- *
- * @property applicationScope Application-scoped coroutine scope for post-work scheduling.
- *   Intentionally outlives the Worker to schedule the next run after WorkManager finishes this
- *   execution, ensuring the next run is scheduled without being cancelled by the worker termination.
  */
 @HiltWorker
 class NotificationWorker @AssistedInject constructor(
@@ -40,7 +31,6 @@ class NotificationWorker @AssistedInject constructor(
     private val notificationRepository: NotificationRepository,
     private val notificationHelper: NotificationHelper,
     private val getPendingNotificationsUseCase: GetPendingNotificationsUseCase,
-    @param:ApplicationScope private val applicationScope: CoroutineScope,
 ) : CoroutineWorker(context, workerParameters) {
 
     override suspend fun doWork(): Result {
@@ -72,12 +62,12 @@ class NotificationWorker @AssistedInject constructor(
             )
         }
 
-        // Plane den nächsten Lauf sauber mit einer kurzen Verzögerung nach Beendigung dieser Ausführung.
+        // Plane den nächsten Lauf sauber und deterministisch über APPEND_OR_REPLACE.
+        // Dadurch verkettet WorkManager die nächste Ausführung, ohne den aktuell laufenden Worker
+        // abzubrechen oder auf einen in-memory Delay im applicationScope angewiesen zu sein,
+        // der bei einem Prozess-Kill verloren gehen könnte.
         val rules = notificationRepository.getAllRulesImmediate()
-        applicationScope.launch {
-            delay(1000.milliseconds)
-            scheduleNext(context, rules, forceReplace = false)
-        }
+        scheduleNext(context, rules, existingWorkPolicy = ExistingWorkPolicy.APPEND_OR_REPLACE)
 
         return Result.success()
     }
@@ -88,9 +78,11 @@ class NotificationWorker @AssistedInject constructor(
         /**
          * Plant den nächsten fälligen Zeitpunkt basierend auf allen Regeln.
          *
-         * @param forceReplace Wenn true, wird ein bereits geplanter Worker ersetzt (REPLACE).
-         *   Nutze true nach Settings-Änderungen. Nutze false nach einem Worker-Run, damit
-         *   kein noch laufender Worker durch die Selbst-Neu-Planung abgebrochen wird.
+         * @param existingWorkPolicy Richtlinie für die Behandlung von Arbeitskonflikten (standardmäßig [ExistingWorkPolicy.REPLACE]).
+         *   Nutze [ExistingWorkPolicy.REPLACE] nach Settings-Änderungen.
+         *   Nutze [ExistingWorkPolicy.APPEND_OR_REPLACE] für die Folgeplanung aus dem laufenden Worker,
+         *   damit die nächste Ausführung verkettet wird, ohne den aktuellen Worker abzubrechen oder
+         *   ignoriert zu werden.
          * @param now Der aktuelle Zeitpunkt für die Berechnung (standardmäßig [LocalDateTime.now]).
          */
         @JvmStatic
@@ -98,7 +90,7 @@ class NotificationWorker @AssistedInject constructor(
         fun scheduleNext(
             context: Context,
             rules: List<NotificationRule>,
-            forceReplace: Boolean = true,
+            existingWorkPolicy: ExistingWorkPolicy = ExistingWorkPolicy.REPLACE,
             now: LocalDateTime = LocalDateTime.now()
         ) {
             if (rules.isEmpty()) {
@@ -128,11 +120,9 @@ class NotificationWorker @AssistedInject constructor(
                 .addTag(NotificationActions.WORK_TAG_NOTIFICATION)
                 .build()
 
-            val policy = if (forceReplace) ExistingWorkPolicy.REPLACE else ExistingWorkPolicy.KEEP
-
             WorkManager.getInstance(context).enqueueUniqueWork(
                 WORK_NAME,
-                policy,
+                existingWorkPolicy,
                 request,
             )
         }
