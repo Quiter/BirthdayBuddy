@@ -34,6 +34,8 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
@@ -64,6 +66,12 @@ class ContactRepositoryImpl @Inject constructor(
     @IoDispatcher private val ioDispatcher: CoroutineDispatcher,
     @DefaultDispatcher private val defaultDispatcher: CoroutineDispatcher,
 ) : ContactRepository {
+
+    /**
+     * Mutex ensuring mutual exclusion for [syncContacts] so that concurrent synchronization
+     * requests execute sequentially and do not cause race conditions on database and calendar caches.
+     */
+    private val syncMutex = Mutex()
 
     // The entity-to-domain mapping is O(n) CPU work and is therefore explicitly
     // offloaded to Dispatchers.Default (project guideline §2.7). flowOn is placed
@@ -100,67 +108,69 @@ class ContactRepositoryImpl @Inject constructor(
     }
 
     override suspend fun syncContacts() = withContext(ioDispatcher) {
-        try {
-            if (!permissionChecker.hasContactsPermission()) return@withContext
+        syncMutex.withLock {
+            try {
+                if (!permissionChecker.hasContactsPermission()) return@withLock
 
-            coroutineScope {
-                // 1. Load data from all sources in parallel
-                val systemDataDeferred = async {
-                    val groups = systemContactDataSource.fetchContactGroups()
-                    val contacts = systemContactDataSource.fetchContactsFromSystem(groups)
-                    groups to contacts
-                }
-                val dbContactsDeferred =
-                    async { contactDao.getAllContactsImmediate().associateBy { it.lookupKey } }
-                val dbConfigsDeferred =
-                    async { labelConfigDao.getAllConfigsImmediate().associateBy { it.name } }
-                val userDataDeferred =
-                    async {
-                        contactUserDataDao.getAllUserDataImmediate().associateBy { it.lookupKey }
+                coroutineScope {
+                    // 1. Load data from all sources in parallel
+                    val systemDataDeferred = async {
+                        val groups = systemContactDataSource.fetchContactGroups()
+                        val contacts = systemContactDataSource.fetchContactsFromSystem(groups)
+                        groups to contacts
+                    }
+                    val dbContactsDeferred =
+                        async { contactDao.getAllContactsImmediate().associateBy { it.lookupKey } }
+                    val dbConfigsDeferred =
+                        async { labelConfigDao.getAllConfigsImmediate().associateBy { it.name } }
+                    val userDataDeferred =
+                        async {
+                            contactUserDataDao.getAllUserDataImmediate().associateBy { it.lookupKey }
+                        }
+
+                    val (groups, systemContacts) = systemDataDeferred.await()
+                    val dbContacts = dbContactsDeferred.await()
+                    val dbConfigs = dbConfigsDeferred.await()
+                    val userDataMap = userDataDeferred.await()
+
+                    // 2. Synchronize labels
+                    syncLabelConfigs(systemContacts, dbConfigs, groups)
+
+                    // 3. Diffing: Reconcile contacts (CPU-intensive operation offloaded to Dispatchers.Default)
+                    val (finalContacts, finalEntities) = withContext(defaultDispatcher) {
+                        val contacts = systemContacts.map { systemContact ->
+                            val lookupKey = systemContact.lookupKey
+                            val existing = dbContacts[lookupKey]
+                            val userData = userDataMap[lookupKey]
+
+                            systemContact.copy(
+                                localId = existing?.localId ?: 0,
+                                giftIdeas = userData?.giftIdeas ?: existing?.giftIdeas ?: emptyList(),
+                                spouseLookupKey = userData?.spouseLookupKey
+                            )
+                        }
+                        val entities = contacts.map { contactDbMapper.toEntity(it) }
+                        contacts to entities
                     }
 
-                val (groups, systemContacts) = systemDataDeferred.await()
-                val dbContacts = dbContactsDeferred.await()
-                val dbConfigs = dbConfigsDeferred.await()
-                val userDataMap = userDataDeferred.await()
+                    // 4. Batch update via transaction
+                    contactDao.refreshContacts(finalEntities)
 
-                // 2. Synchronize labels
-                syncLabelConfigs(systemContacts, dbConfigs, groups)
-
-                // 3. Diffing: Reconcile contacts (CPU-intensive operation offloaded to Dispatchers.Default)
-                val (finalContacts, finalEntities) = withContext(defaultDispatcher) {
-                    val contacts = systemContacts.map { systemContact ->
-                        val lookupKey = systemContact.lookupKey
-                        val existing = dbContacts[lookupKey]
-                        val userData = userDataMap[lookupKey]
-
-                        systemContact.copy(
-                            localId = existing?.localId ?: 0,
-                            giftIdeas = userData?.giftIdeas ?: existing?.giftIdeas ?: emptyList(),
-                            spouseLookupKey = userData?.spouseLookupKey
-                        )
+                    // 5. Synchronize calendar if enabled
+                    val currentSettings = appSettingsDao.getSettingsImmediate() ?: AppSettingsEntity()
+                    if (currentSettings.calendarSyncEnabled) {
+                        calendarSyncRepository.syncBirthdays(finalContacts)
                     }
-                    val entities = contacts.map { contactDbMapper.toEntity(it) }
-                    contacts to entities
+
+                    // 6. Update timestamp
+                    appSettingsDao.upsertSettings(currentSettings.copy(lastSyncTimestamp = System.currentTimeMillis()))
                 }
-
-                // 4. Batch update via transaction
-                contactDao.refreshContacts(finalEntities)
-
-                // 5. Synchronize calendar if enabled
-                val currentSettings = appSettingsDao.getSettingsImmediate() ?: AppSettingsEntity()
-                if (currentSettings.calendarSyncEnabled) {
-                    calendarSyncRepository.syncBirthdays(finalContacts)
-                }
-
-                // 6. Update timestamp
-                appSettingsDao.upsertSettings(currentSettings.copy(lastSyncTimestamp = System.currentTimeMillis()))
+                widgetUpdater.updateWidget()
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                Log.e("ContactRepository", "Error during contact sync: ${e.message}", e)
             }
-            widgetUpdater.updateWidget()
-        } catch (e: CancellationException) {
-            throw e
-        } catch (e: Exception) {
-            Log.e("ContactRepository", "Error during contact sync: ${e.message}", e)
         }
     }
 

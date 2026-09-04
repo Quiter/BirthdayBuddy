@@ -25,8 +25,10 @@ import com.heckmannch.birthdaybuddy.domain.repository.WidgetUpdater
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.runTest
 import org.junit.Before
 import org.junit.Rule
@@ -35,11 +37,14 @@ import org.mockito.Mockito.mockStatic
 import org.mockito.kotlin.any
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.never
+import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
 import java.time.LocalDate
+import java.util.concurrent.atomic.AtomicInteger
+import kotlin.time.Duration.Companion.milliseconds
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class ContactRepositoryImplTest {
@@ -255,6 +260,95 @@ class ContactRepositoryImplTest {
 
         // Assert
         verify(widgetUpdater, never()).updateWidget()
+    }
+
+    @Test
+    fun syncContacts_concurrentCalls_executeSequentiallyWithoutRaceCondition() = runTest {
+        // Arrange
+        whenever(permissionChecker.hasContactsPermission()).thenReturn(true)
+        val groups = mapOf(1L to GroupInfo("Friends", isSystem = false))
+        whenever(systemContactDataSource.fetchContactGroups()).thenReturn(groups)
+        whenever(systemContactDataSource.fetchContactsFromSystem(groups)).thenReturn(emptyList())
+        whenever(contactDao.getAllContactsImmediate()).thenReturn(emptyList())
+        whenever(labelConfigDao.getAllConfigsImmediate()).thenReturn(emptyList())
+        whenever(contactUserDataDao.getAllUserDataImmediate()).thenReturn(emptyList())
+        whenever(appSettingsDao.getSettingsImmediate()).thenReturn(AppSettingsEntity(calendarSyncEnabled = false))
+
+        val executingSyncCount = AtomicInteger(0)
+        val maxConcurrentSyncs = AtomicInteger(0)
+        val executionOrder = java.util.Collections.synchronizedList(mutableListOf<String>())
+
+        val testContactDao = object : ContactDao by contactDao {
+            override suspend fun refreshContacts(contacts: List<ContactEntity>) {
+                val current = executingSyncCount.incrementAndGet()
+                maxConcurrentSyncs.updateAndGet { maxOf(it, current) }
+                executionOrder.add("start_refresh")
+                delay(50.milliseconds)
+                executionOrder.add("end_refresh")
+                executingSyncCount.decrementAndGet()
+            }
+        }
+
+        val testRepository = ContactRepositoryImpl(
+            permissionChecker = permissionChecker,
+            contentResolver = contentResolver,
+            contactDao = testContactDao,
+            labelConfigDao = labelConfigDao,
+            appSettingsDao = appSettingsDao,
+            contactUserDataDao = contactUserDataDao,
+            systemContactDataSource = systemContactDataSource,
+            giftIdeaBackupManager = giftIdeaBackupManager,
+            calendarSyncRepository = calendarSyncRepository,
+            widgetUpdater = widgetUpdater,
+            appDatabase = appDatabase,
+            settingsDatabase = settingsDatabase,
+            contactDbMapper = contactDbMapper,
+            labelConfigMapper = labelConfigMapper,
+            ioDispatcher = mainDispatcherRule.testDispatcher,
+            defaultDispatcher = mainDispatcherRule.testDispatcher,
+        )
+
+        // Act - Launch two concurrent sync calls
+        val job1 = launch { testRepository.syncContacts() }
+        val job2 = launch { testRepository.syncContacts() }
+
+        job1.join()
+        job2.join()
+
+        // Assert - Mutex ensured strictly sequential execution without race conditions
+        assertThat(maxConcurrentSyncs.get()).isEqualTo(1)
+        assertThat(executionOrder).containsExactly(
+            "start_refresh",
+            "end_refresh",
+            "start_refresh",
+            "end_refresh"
+        ).inOrder()
+        verify(widgetUpdater, times(2)).updateWidget()
+    }
+
+    @Test
+    fun syncContacts_releasesMutexOnException_allowingSubsequentSync() = runTest {
+        // Arrange
+        whenever(permissionChecker.hasContactsPermission()).thenReturn(true)
+        val groups = mapOf(1L to GroupInfo("Friends", isSystem = false))
+        whenever(systemContactDataSource.fetchContactGroups())
+            .thenThrow(RuntimeException("Transient system error"))
+            .thenReturn(groups)
+        whenever(systemContactDataSource.fetchContactsFromSystem(groups)).thenReturn(emptyList())
+        whenever(contactDao.getAllContactsImmediate()).thenReturn(emptyList())
+        whenever(labelConfigDao.getAllConfigsImmediate()).thenReturn(emptyList())
+        whenever(contactUserDataDao.getAllUserDataImmediate()).thenReturn(emptyList())
+        whenever(appSettingsDao.getSettingsImmediate()).thenReturn(AppSettingsEntity(calendarSyncEnabled = false))
+
+        // Act 1 - First sync fails due to exception
+        repository.syncContacts()
+
+        // Act 2 - Second sync should execute successfully because Mutex was cleanly unlocked
+        repository.syncContacts()
+
+        // Assert
+        verify(contactDao).refreshContacts(any())
+        verify(widgetUpdater, times(1)).updateWidget()
     }
 
     @Test

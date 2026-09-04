@@ -645,3 +645,13 @@
     - **`FastScrollbar.kt`:** Umstellung der State-Deklaration von `by animateFloatAsState(...)` auf `val alphaState = animateFloatAsState(...)` und Verschiebung des State-Reads direkt in `Modifier.graphicsLayer { alpha = alphaState.value }`. Dadurch wird der Alpha-Wert rein während der Draw-Phase abgefragt und der gesamte `FastScrollbar`-Composable-Baum rekomponiert während der Ein-/Ausblendanimationen nicht mehr frame-weise.
     - **Verifikation:** Erfolgreiche Kompilierung (`./gradlew compileDebugKotlin`).
 
+355. **Thread-Sicherheit & Race-Condition-Schutz via `Mutex` in `ContactRepositoryImpl.syncContacts()` (Concurrency & Architecture):**
+    - **Motivation & Problemstellung:** Zeitgleiche oder parallele Aufrufe von `syncContacts()` (z.B. durch parallele Hintergrund-Worker, System-Broadcasts oder mehrfaches Triggern in der Benutzeroberfläche) konnten bisher zu Race Conditions beim Überschreiben des Room-Datenbankcaches und des System-Kalenders führen.
+    - **`ContactRepositoryImpl.kt`:** Einführung eines `private val syncMutex = Mutex()` und Kapselung der gesamten Synchronisationslogik innerhalb von `withContext(ioDispatcher)` in `syncMutex.withLock { ... }`. Dadurch werden parallele Synchronisationsaufrufe serialisiert und sequentiell abgearbeitet.
+    - **Exception-Safety:** Durch `Mutex.withLock` wird der Mutex auch beim Auftreten von Exceptions oder `CancellationException` garantiert über den internen `finally`-Block freigegeben, sodass Folge-Synchronisationen niemals blockiert werden.
+    - **Unit Tests (`ContactRepositoryImplTest.kt`):**
+      - Hinzufügen von `syncContacts_concurrentCalls_executeSequentiallyWithoutRaceCondition` zur Absicherung, dass zwei gleichzeitig gestartete Sync-Aufrufe strikt sequentiell ohne Überlappung (`maxConcurrentSyncs == 1`) und ohne Race Conditions ausgeführt werden.
+      - Hinzufügen von `syncContacts_releasesMutexOnException_allowingSubsequentSync` zur Verifikation der sauberen Freigabe des Mutex bei Ausnahmefehlern.
+    - **Verifikation:** Erfolgreicher Durchlauf aller Unit- und Screenshot-Tests (`./gradlew testDebugUnitTest`).
+
+
