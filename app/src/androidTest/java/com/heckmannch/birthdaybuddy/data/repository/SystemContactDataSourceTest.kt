@@ -6,6 +6,7 @@ import android.database.Cursor
 import android.provider.ContactsContract
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.google.common.truth.Truth.assertThat
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runTest
 import org.junit.Before
@@ -33,7 +34,7 @@ class SystemContactDataSourceTest {
     @Before
     fun setUp() {
         whenever(context.contentResolver).doReturn(contentResolver)
-        dataSource = SystemContactDataSource(context)
+        dataSource = SystemContactDataSource(context, Dispatchers.IO)
     }
 
     @Test

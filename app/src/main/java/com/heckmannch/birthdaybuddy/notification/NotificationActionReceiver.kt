@@ -7,10 +7,10 @@ import android.content.Intent
 import android.util.Log
 import androidx.core.content.getSystemService
 import com.heckmannch.birthdaybuddy.di.ApplicationScope
-import com.heckmannch.birthdaybuddy.domain.model.EventType
 import com.heckmannch.birthdaybuddy.domain.repository.NotificationRepository
 import com.heckmannch.birthdaybuddy.domain.usecase.ReshowNotificationUseCase
 import com.heckmannch.birthdaybuddy.domain.usecase.SnoozeNotificationUseCase
+import com.heckmannch.birthdaybuddy.domain.util.NotificationKeyUtils
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
@@ -106,11 +106,7 @@ class NotificationActionReceiver : BroadcastReceiver() {
                                 // nutzen wir am besten den Worker oder wir triggern einen schnellen Re-show.
                                 // Einfachster Weg: Snooze mit 1 Sekunde Delay oder direkter Aufruf.
                                 val firstKey = lookupKeys.firstOrNull() ?: ""
-                                val eventType = when {
-                                    firstKey.startsWith("anniversary:") -> EventType.ANNIVERSARY
-                                    firstKey.startsWith("nameday:") -> EventType.NAME_DAY
-                                    else -> EventType.BIRTHDAY
-                                }
+                                val eventType = NotificationKeyUtils.extractEventType(firstKey)
                                 reshowNotificationUseCase(
                                     pendingId = pendingId,
                                     daysBefore = daysBefore,

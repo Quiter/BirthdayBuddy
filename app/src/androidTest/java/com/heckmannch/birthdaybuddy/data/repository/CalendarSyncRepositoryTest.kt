@@ -9,6 +9,7 @@ import com.heckmannch.birthdaybuddy.data.local.AppSettingsDao
 import com.heckmannch.birthdaybuddy.data.local.AppSettingsEntity
 import com.heckmannch.birthdaybuddy.domain.model.Contact
 import com.heckmannch.birthdaybuddy.domain.repository.CalendarSyncRepository
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.test.runTest
 import org.junit.Before
 import org.junit.Test
@@ -30,7 +31,12 @@ class CalendarSyncRepositoryTest {
     @Before
     fun setUp() {
         val context = InstrumentationRegistry.getInstrumentation().targetContext
-        repository = CalendarSyncRepositoryImpl(context, appSettingsDao, systemCalendarDataSource)
+        repository = CalendarSyncRepositoryImpl(
+            context = context,
+            appSettingsDao = appSettingsDao,
+            systemCalendarDataSource = systemCalendarDataSource,
+            ioDispatcher = Dispatchers.IO,
+        )
     }
 
     @Test
