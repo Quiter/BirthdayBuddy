@@ -18,7 +18,7 @@ import java.io.IOException
  * Testet die Datenbank-Migrationen für [AppDatabase].
  *
  * Beinhaltet modulare, isolierte Tests für jeden Migrationsschritt (5->6, 6->7, 7->8, 8->9, 9->10, 10->11)
- * sowie End-to-End Migrationstests über mehrere Versionen hinweg.
+ * sowie End-to-End Migrationstests über mehrere Versionen hinweg (5->10, 5->11, 7->10, 7->11, 8->10, 8->11, 10->11).
  *
  * WICHTIG: Erfordert die exportierten Schemas in app/schemas.
  */
@@ -41,11 +41,10 @@ class MigrationTest {
     )
 
     private fun getColumnInfo(
-        db: SupportSQLiteDatabase,
-        tableName: String
+        db: SupportSQLiteDatabase
     ): Map<String, ColumnInfo> {
         val map = mutableMapOf<String, ColumnInfo>()
-        val cursor = db.query("PRAGMA table_info('$tableName')")
+        val cursor = db.query("PRAGMA table_info('contacts')")
         while (cursor.moveToNext()) {
             val name = cursor.getString(cursor.getColumnIndexOrThrow("name"))
             val notNull = cursor.getInt(cursor.getColumnIndexOrThrow("notnull")) == 1
@@ -77,6 +76,50 @@ class MigrationTest {
         val exists = cursor.moveToFirst() && cursor.getInt(0) > 0
         cursor.close()
         return exists
+    }
+
+    private fun getIndexColumns(db: SupportSQLiteDatabase, indexName: String): List<String> {
+        val columns = mutableListOf<String>()
+        val cursor = db.query("PRAGMA index_info('$indexName')")
+        val nameIdx = cursor.getColumnIndex("name")
+        while (cursor.moveToNext()) {
+            if (nameIdx != -1) {
+                cursor.getString(nameIdx)?.let { columns.add(it) }
+            }
+        }
+        cursor.close()
+        return columns
+    }
+
+    private fun assertVersion11Indices(db: SupportSQLiteDatabase) {
+        val contactIndices = getIndices(db, "contacts")
+        assertTrue(
+            "contacts table missing index_contacts_anniversary",
+            contactIndices.contains("index_contacts_anniversary")
+        )
+        assertEquals(
+            listOf("anniversary"),
+            getIndexColumns(db, "index_contacts_anniversary")
+        )
+
+        val notifIndices = getIndices(db, "pending_notifications")
+        assertTrue(
+            "pending_notifications table missing index_pending_notifications_isDone",
+            notifIndices.contains("index_pending_notifications_isDone")
+        )
+        assertEquals(
+            listOf("isDone"),
+            getIndexColumns(db, "index_pending_notifications_isDone")
+        )
+
+        assertTrue(
+            "pending_notifications table missing index_pending_notifications_year_daysBefore",
+            notifIndices.contains("index_pending_notifications_year_daysBefore")
+        )
+        assertEquals(
+            listOf("year", "daysBefore"),
+            getIndexColumns(db, "index_pending_notifications_year_daysBefore")
+        )
     }
 
     // ==========================================
@@ -111,7 +154,7 @@ class MigrationTest {
         cursor.close()
 
         // 4. Verify birthday and giftIdeas column nullability (notNull == false)
-        val columns = getColumnInfo(migratedDb, "contacts")
+        val columns = getColumnInfo(migratedDb)
         assertTrue(columns.containsKey("birthday"))
         assertFalse(columns["birthday"]!!.isNotNull)
         assertTrue(columns.containsKey("giftIdeas"))
@@ -171,7 +214,7 @@ class MigrationTest {
         assertTrue(tableExists(migratedDb, "pending_notifications"))
 
         // 5. Verify giftIdeas is NOT NULL
-        val columns = getColumnInfo(migratedDb, "contacts")
+        val columns = getColumnInfo(migratedDb)
         assertTrue(columns.containsKey("giftIdeas"))
         assertTrue(columns["giftIdeas"]!!.isNotNull)
 
@@ -226,7 +269,7 @@ class MigrationTest {
         cursor.close()
 
         // 4. Verify columns anniversary and nameDay are nullable
-        val columns = getColumnInfo(migratedDb, "contacts")
+        val columns = getColumnInfo(migratedDb)
         assertTrue(columns.containsKey("anniversary"))
         assertFalse(columns["anniversary"]!!.isNotNull)
         assertTrue(columns.containsKey("nameDay"))
@@ -278,7 +321,7 @@ class MigrationTest {
         cursor.close()
 
         // 4. Verify spouseLookupKey is nullable
-        val columns = getColumnInfo(migratedDb, "contacts")
+        val columns = getColumnInfo(migratedDb)
         assertTrue(columns.containsKey("spouseLookupKey"))
         assertFalse(columns["spouseLookupKey"]!!.isNotNull)
 
@@ -331,7 +374,7 @@ class MigrationTest {
         cursor.close()
 
         // 4. Verify isFavorite column is NOT NULL with default value '0'
-        val columns = getColumnInfo(migratedDb, "contacts")
+        val columns = getColumnInfo(migratedDb)
         assertTrue(columns.containsKey("isFavorite"))
         assertTrue(columns["isFavorite"]!!.isNotNull)
         assertEquals("0", columns["isFavorite"]!!.defaultValue)
@@ -408,14 +451,8 @@ class MigrationTest {
         assertEquals(1, notifCursor.getInt(notifCursor.getColumnIndexOrThrow("dismissCount")))
         notifCursor.close()
 
-        // 5. Verify index creation on contacts table
-        val contactIndices = getIndices(migratedDb, "contacts")
-        assertTrue(contactIndices.contains("index_contacts_anniversary"))
-
-        // 6. Verify index creation on pending_notifications table
-        val notifIndices = getIndices(migratedDb, "pending_notifications")
-        assertTrue(notifIndices.contains("index_pending_notifications_isDone"))
-        assertTrue(notifIndices.contains("index_pending_notifications_year_daysBefore"))
+        // 5. Verify index creation on contacts and pending_notifications tables including column composition
+        assertVersion11Indices(migratedDb)
     }
 
     // ==========================================
@@ -458,6 +495,54 @@ class MigrationTest {
 
     @Test
     @Throws(IOException::class)
+    fun migrate5To11() {
+        // 1. Create database in version 5 with test data in both contacts and pending_notifications
+        helper.createDatabase(testDb, 5).apply {
+            execSQL(
+                "INSERT INTO contacts (contactId, lookupKey, fullName, birthday, labels, giftIdeas, hasWhatsApp, hasSignal) " +
+                        "VALUES ('5', 'key5_e2e_11', 'Max Mustermann', '1990-01-01', '[]', '[]', 0, 0)"
+            )
+            execSQL(
+                "INSERT INTO pending_notifications (contactLookupKeys, daysBefore, year, isDone, dismissCount) " +
+                        "VALUES ('[\"key5_e2e_11\"]', 1, 2026, 0, 0)"
+            )
+            close()
+        }
+
+        // 2. Run migration through the entire chain (5 to 11) and validate against V11 schema
+        val migratedDb = helper.runMigrationsAndValidate(
+            testDb,
+            11,
+            true,
+            AppDatabase.MIGRATION_5_6,
+            AppDatabase.MIGRATION_6_7
+        )
+
+        // 3. Verify data integrity in contacts table
+        val cursor = migratedDb.query("SELECT * FROM contacts WHERE lookupKey = 'key5_e2e_11'")
+        assertTrue(cursor.moveToFirst())
+        assertEquals("Max Mustermann", cursor.getString(cursor.getColumnIndexOrThrow("fullName")))
+        assertEquals("1990-01-01", cursor.getString(cursor.getColumnIndexOrThrow("birthday")))
+        assertTrue(cursor.isNull(cursor.getColumnIndexOrThrow("anniversary")))
+        assertTrue(cursor.isNull(cursor.getColumnIndexOrThrow("nameDay")))
+        assertTrue(cursor.isNull(cursor.getColumnIndexOrThrow("spouseLookupKey")))
+        assertEquals(0, cursor.getInt(cursor.getColumnIndexOrThrow("isFavorite")))
+        cursor.close()
+
+        // 4. Verify data integrity in pending_notifications table
+        val notifCursor = migratedDb.query("SELECT * FROM pending_notifications WHERE year = 2026 AND daysBefore = 1")
+        assertTrue(notifCursor.moveToFirst())
+        assertEquals("[\"key5_e2e_11\"]", notifCursor.getString(notifCursor.getColumnIndexOrThrow("contactLookupKeys")))
+        assertEquals(0, notifCursor.getInt(notifCursor.getColumnIndexOrThrow("isDone")))
+        assertEquals(0, notifCursor.getInt(notifCursor.getColumnIndexOrThrow("dismissCount")))
+        notifCursor.close()
+
+        // 5. Verify all version 11 indices
+        assertVersion11Indices(migratedDb)
+    }
+
+    @Test
+    @Throws(IOException::class)
     fun migrate7To10() {
         // 1. Create database in version 7 with test data
         helper.createDatabase(testDb, 7).apply {
@@ -485,6 +570,51 @@ class MigrationTest {
         assertTrue(cursor.isNull(cursor.getColumnIndexOrThrow("spouseLookupKey")))
         assertEquals(0, cursor.getInt(cursor.getColumnIndexOrThrow("isFavorite")))
         cursor.close()
+    }
+
+    @Test
+    @Throws(IOException::class)
+    fun migrate7To11() {
+        // 1. Create database in version 7 with test data in both tables
+        helper.createDatabase(testDb, 7).apply {
+            execSQL(
+                "INSERT INTO contacts (contactId, lookupKey, fullName, birthday, labels, giftIdeas, hasWhatsApp, hasSignal) " +
+                        "VALUES ('4', 'key4_e2e_11', 'Hans Muster', '1985-05-05', '[]', '[]', 0, 0)"
+            )
+            execSQL(
+                "INSERT INTO pending_notifications (contactLookupKeys, daysBefore, year, isDone, dismissCount) " +
+                        "VALUES ('[\"key4_e2e_11\"]', 2, 2026, 0, 0)"
+            )
+            close()
+        }
+
+        // 2. Run migration to version 11 and validate (AutoMigrations 7->8, 8->9, 9->10 und 10->11)
+        val migratedDb = helper.runMigrationsAndValidate(
+            testDb,
+            11,
+            true
+        )
+
+        // 3. Verify data integrity in contacts table
+        val cursor = migratedDb.query("SELECT * FROM contacts WHERE lookupKey = 'key4_e2e_11'")
+        assertTrue(cursor.moveToFirst())
+        assertEquals("Hans Muster", cursor.getString(cursor.getColumnIndexOrThrow("fullName")))
+        assertEquals("1985-05-05", cursor.getString(cursor.getColumnIndexOrThrow("birthday")))
+        assertTrue(cursor.isNull(cursor.getColumnIndexOrThrow("anniversary")))
+        assertTrue(cursor.isNull(cursor.getColumnIndexOrThrow("nameDay")))
+        assertTrue(cursor.isNull(cursor.getColumnIndexOrThrow("spouseLookupKey")))
+        assertEquals(0, cursor.getInt(cursor.getColumnIndexOrThrow("isFavorite")))
+        cursor.close()
+
+        // 4. Verify data integrity in pending_notifications table
+        val notifCursor = migratedDb.query("SELECT * FROM pending_notifications WHERE year = 2026 AND daysBefore = 2")
+        assertTrue(notifCursor.moveToFirst())
+        assertEquals("[\"key4_e2e_11\"]", notifCursor.getString(notifCursor.getColumnIndexOrThrow("contactLookupKeys")))
+        assertEquals(0, notifCursor.getInt(notifCursor.getColumnIndexOrThrow("isDone")))
+        notifCursor.close()
+
+        // 5. Verify all version 11 indices
+        assertVersion11Indices(migratedDb)
     }
 
     @Test
@@ -520,8 +650,95 @@ class MigrationTest {
 
     @Test
     @Throws(IOException::class)
+    fun migrate8To11() {
+        // 1. Create database in version 8 with test data in both tables
+        helper.createDatabase(testDb, 8).apply {
+            execSQL(
+                "INSERT INTO contacts (contactId, lookupKey, fullName, birthday, anniversary, nameDay, labels, giftIdeas, hasWhatsApp, hasSignal) " +
+                        "VALUES ('3', 'key3_e2e_11', 'Erika Mustermann', '1992-02-02', '2015-05-20', '2026-08-10', '[]', '[]', 0, 0)"
+            )
+            execSQL(
+                "INSERT INTO pending_notifications (contactLookupKeys, daysBefore, year, isDone, dismissCount) " +
+                        "VALUES ('[\"key3_e2e_11\"]', 0, 2026, 1, 0)"
+            )
+            close()
+        }
+
+        // 2. Run migration to version 11 and validate (AutoMigrations 8->9, 9->10 und 10->11)
+        val migratedDb = helper.runMigrationsAndValidate(
+            testDb,
+            11,
+            true
+        )
+
+        // 3. Verify data integrity and new column defaults
+        val cursor = migratedDb.query("SELECT * FROM contacts WHERE lookupKey = 'key3_e2e_11'")
+        assertTrue(cursor.moveToFirst())
+        assertEquals("Erika Mustermann", cursor.getString(cursor.getColumnIndexOrThrow("fullName")))
+        assertEquals("1992-02-02", cursor.getString(cursor.getColumnIndexOrThrow("birthday")))
+        assertEquals("2015-05-20", cursor.getString(cursor.getColumnIndexOrThrow("anniversary")))
+        assertEquals("2026-08-10", cursor.getString(cursor.getColumnIndexOrThrow("nameDay")))
+        val spouseLookupKeyIndex = cursor.getColumnIndexOrThrow("spouseLookupKey")
+        assertTrue(cursor.isNull(spouseLookupKeyIndex))
+        val isFavoriteIndex = cursor.getColumnIndexOrThrow("isFavorite")
+        assertEquals(0, cursor.getInt(isFavoriteIndex))
+        cursor.close()
+
+        // 4. Verify pending_notifications data
+        val notifCursor = migratedDb.query("SELECT * FROM pending_notifications WHERE year = 2026 AND daysBefore = 0")
+        assertTrue(notifCursor.moveToFirst())
+        assertEquals("[\"key3_e2e_11\"]", notifCursor.getString(notifCursor.getColumnIndexOrThrow("contactLookupKeys")))
+        assertEquals(1, notifCursor.getInt(notifCursor.getColumnIndexOrThrow("isDone")))
+        notifCursor.close()
+
+        // 5. Verify all version 11 indices
+        assertVersion11Indices(migratedDb)
+    }
+
+    @Test
+    @Throws(IOException::class)
     fun migrate10To11() {
-        testMigration10To11()
+        // 1. Create database in version 10 with test data in both tables
+        helper.createDatabase(testDb, 10).apply {
+            execSQL(
+                "INSERT INTO contacts (contactId, lookupKey, fullName, birthday, anniversary, nameDay, imageUri, phoneNumber, isFavorite, hasWhatsApp, hasSignal, labels, giftIdeas, spouseLookupKey) " +
+                        "VALUES ('10', 'key10_e2e_11', 'Julia Test', '1995-03-20', '2020-08-15', '2020-04-12', 'content://test/img.jpg', '+4912345678', 1, 1, 0, '[]', '[]', 'keySpouse')"
+            )
+            execSQL(
+                "INSERT INTO pending_notifications (contactLookupKeys, daysBefore, year, isDone, dismissCount) " +
+                        "VALUES ('[\"key10_e2e_11\"]', 3, 2026, 0, 1)"
+            )
+            close()
+        }
+
+        // 2. Run auto migration 10 -> 11 and validate schema
+        val migratedDb = helper.runMigrationsAndValidate(
+            testDb,
+            11,
+            true
+        )
+
+        // 3. Verify data integrity in contacts table
+        val contactCursor = migratedDb.query("SELECT * FROM contacts WHERE lookupKey = 'key10_e2e_11'")
+        assertTrue(contactCursor.moveToFirst())
+        assertEquals("Julia Test", contactCursor.getString(contactCursor.getColumnIndexOrThrow("fullName")))
+        assertEquals("1995-03-20", contactCursor.getString(contactCursor.getColumnIndexOrThrow("birthday")))
+        assertEquals("2020-08-15", contactCursor.getString(contactCursor.getColumnIndexOrThrow("anniversary")))
+        assertEquals("2020-04-12", contactCursor.getString(contactCursor.getColumnIndexOrThrow("nameDay")))
+        assertEquals(1, contactCursor.getInt(contactCursor.getColumnIndexOrThrow("isFavorite")))
+        assertEquals("keySpouse", contactCursor.getString(contactCursor.getColumnIndexOrThrow("spouseLookupKey")))
+        contactCursor.close()
+
+        // 4. Verify data integrity in pending_notifications table
+        val notifCursor = migratedDb.query("SELECT * FROM pending_notifications WHERE year = 2026 AND daysBefore = 3")
+        assertTrue(notifCursor.moveToFirst())
+        assertEquals("[\"key10_e2e_11\"]", notifCursor.getString(notifCursor.getColumnIndexOrThrow("contactLookupKeys")))
+        assertEquals(0, notifCursor.getInt(notifCursor.getColumnIndexOrThrow("isDone")))
+        assertEquals(1, notifCursor.getInt(notifCursor.getColumnIndexOrThrow("dismissCount")))
+        notifCursor.close()
+
+        // 5. Verify the newly added version 11 indices
+        assertVersion11Indices(migratedDb)
     }
 
     @Test
@@ -530,16 +747,27 @@ class MigrationTest {
         // Erstellt die DB in V5 und migriert schrittweise auf die aktuelle Version
         helper.createDatabase(testDb, 5).close()
 
-        Room.databaseBuilder(
+        val db = Room.databaseBuilder(
             InstrumentationRegistry.getInstrumentation().targetContext,
             AppDatabase::class.java,
             testDb
         ).addMigrations(
             AppDatabase.MIGRATION_5_6,
             AppDatabase.MIGRATION_6_7
-        )
-            .build().apply {
-                openHelper.writableDatabase.close()
-            }
+        ).build()
+
+        val sqliteDb = db.openHelper.writableDatabase
+
+        // Indizes auf contacts validieren
+        val contactIndices = getIndices(sqliteDb, "contacts")
+        assertTrue(contactIndices.contains("index_contacts_lookupKey"))
+        assertTrue(contactIndices.contains("index_contacts_birthday"))
+        assertTrue(contactIndices.contains("index_contacts_anniversary"))
+
+        // Version 11 Indizes validieren
+        assertVersion11Indices(sqliteDb)
+
+        sqliteDb.close()
+        db.close()
     }
 }

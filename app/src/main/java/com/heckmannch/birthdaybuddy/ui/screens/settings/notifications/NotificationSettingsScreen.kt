@@ -351,6 +351,7 @@ internal fun NotificationSettingsContent(
 
     if (state.showAddDialog) {
         EditRuleDialog(
+            existingDaysBefore = rules.map { it.daysBefore }.toSet(),
             onDismiss = { state.closeAddDialog() },
             onConfirm = { days, hour, minute ->
                 onAddRule(days, hour, minute)
@@ -362,6 +363,7 @@ internal fun NotificationSettingsContent(
     state.ruleToEdit?.let { rule ->
         EditRuleDialog(
             rule = rule,
+            existingDaysBefore = rules.filter { it.id != rule.id }.map { it.daysBefore }.toSet(),
             onDismiss = { state.closeEditDialog() },
             onConfirm = { days, hour, minute ->
                 onUpdateRule(rule.copy(daysBefore = days, hour = hour, minute = minute))

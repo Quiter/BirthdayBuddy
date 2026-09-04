@@ -88,6 +88,7 @@
 
     <string name="dialog_save">Speichern</string>
     <string name="dialog_time_title">Uhrzeit wählen</string>
+    <string name="dialog_rule_duplicate_error">Eine Erinnerung für diese Vorlaufzeit existiert bereits</string>
 
     <plurals name="dialog_rule_unit_days">
         <item quantity="one">Tag vorher</item>

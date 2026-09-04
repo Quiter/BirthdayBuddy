@@ -110,6 +110,10 @@ class NotificationViewModel @Inject constructor(
 
     private fun addNotificationRule(daysBefore: Int, hour: Int, minute: Int) =
         viewModelScope.launch {
+            val existingRules = notificationRepository.getAllRulesImmediate()
+            if (existingRules.any { it.daysBefore == daysBefore }) {
+                return@launch
+            }
             notificationRepository.insertRule(
                 NotificationRule(
                     daysBefore = daysBefore,
@@ -120,6 +124,10 @@ class NotificationViewModel @Inject constructor(
         }
 
     private fun updateNotificationRule(rule: NotificationRule) = viewModelScope.launch {
+        val existingRules = notificationRepository.getAllRulesImmediate()
+        if (existingRules.any { it.id != rule.id && it.daysBefore == rule.daysBefore }) {
+            return@launch
+        }
         notificationRepository.updateRule(rule)
     }
 

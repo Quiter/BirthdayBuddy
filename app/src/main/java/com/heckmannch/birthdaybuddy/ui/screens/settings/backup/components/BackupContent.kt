@@ -46,6 +46,7 @@ fun BackupContent(
     onExportClick: () -> Unit = {},
     onImportClick: () -> Unit = {},
     onNavigateBack: () -> Unit = {},
+    onDismissMessage: () -> Unit = {},
     snackbarHostState: SnackbarHostState = remember { SnackbarHostState() },
 ) {
     val exportSuccessMsg = stringResource(R.string.backup_export_success)
@@ -70,6 +71,7 @@ fun BackupContent(
             is BackupMessage.ImportInvalid -> snackbarHostState.showSnackbar(importInvalidMsg)
             is BackupMessage.ImportError -> snackbarHostState.showSnackbar(importFailedMsg.format(msg.errorMessage ?: ""))
         }
+        onDismissMessage()
     }
 
     SettingsDetailScaffold(
@@ -141,6 +143,7 @@ fun BackupScreenContent(
     onExportClick: () -> Unit = {},
     onImportClick: () -> Unit = {},
     onNavigateBack: () -> Unit = {},
+    onDismissMessage: () -> Unit = {},
     snackbarHostState: SnackbarHostState = remember { SnackbarHostState() },
 ) {
     BackupContent(
@@ -150,6 +153,7 @@ fun BackupScreenContent(
         onExportClick = onExportClick,
         onImportClick = onImportClick,
         onNavigateBack = onNavigateBack,
+        onDismissMessage = onDismissMessage,
         snackbarHostState = snackbarHostState,
     )
 }

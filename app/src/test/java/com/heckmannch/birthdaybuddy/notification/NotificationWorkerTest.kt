@@ -17,11 +17,14 @@ import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.mockkObject
+import io.mockk.mockkStatic
 import io.mockk.slot
 import io.mockk.unmockkAll
 import io.mockk.verify
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.test.runTest
 import org.junit.After
+import org.junit.Assert.assertThrows
 import org.junit.Before
 import org.junit.Test
 import java.time.LocalDateTime
@@ -40,6 +43,8 @@ class NotificationWorkerTest {
     fun setUp() {
         mockkObject(WorkManager.Companion)
         every { WorkManager.getInstance(any()) } returns workManager
+        mockkStatic(android.util.Log::class)
+        every { android.util.Log.e(any(), any(), any()) } returns 0
     }
 
     @After
@@ -201,5 +206,133 @@ class NotificationWorkerTest {
                 any<OneTimeWorkRequest>()
             )
         }
+    }
+
+    @Test
+    fun `doWork - cancellation exception - rethrows CancellationException`() = runTest {
+        coEvery { contactRepository.syncContacts() } throws CancellationException("Sync cancelled")
+        val worker = NotificationWorker(
+            context = context,
+            workerParameters = workerParameters,
+            contactRepository = contactRepository,
+            notificationRepository = notificationRepository,
+            notificationHelper = notificationHelper,
+            getPendingNotificationsUseCase = getPendingNotificationsUseCase
+        )
+
+        assertThrows(CancellationException::class.java) {
+            kotlinx.coroutines.runBlocking {
+                worker.doWork()
+            }
+        }
+    }
+
+    @Test
+    fun `doWork - exception in syncContacts - schedules next run and returns retry`() = runTest {
+        val rules = listOf(
+            NotificationRule(id = 1, daysBefore = 0, hour = 9, minute = 0)
+        )
+        coEvery { notificationRepository.getSettingsImmediate() } returns AppSettings(notificationsEnabled = true)
+        coEvery { notificationRepository.getAllRulesImmediate() } returns rules
+        coEvery { contactRepository.syncContacts() } throws RuntimeException("Network/DB error during contact sync")
+
+        val worker = NotificationWorker(
+            context = context,
+            workerParameters = workerParameters,
+            contactRepository = contactRepository,
+            notificationRepository = notificationRepository,
+            notificationHelper = notificationHelper,
+            getPendingNotificationsUseCase = getPendingNotificationsUseCase
+        )
+
+        val result = worker.doWork()
+
+        assertThat(result).isEqualTo(ListenableWorker.Result.retry())
+        verify(exactly = 1) {
+            workManager.enqueueUniqueWork(
+                "FlexibleNotificationUpdate",
+                ExistingWorkPolicy.APPEND_OR_REPLACE,
+                any<OneTimeWorkRequest>()
+            )
+        }
+    }
+
+    @Test
+    fun `doWork - exception in deleteOldNotifications - schedules next run and returns retry`() = runTest {
+        val rules = listOf(
+            NotificationRule(id = 1, daysBefore = 0, hour = 9, minute = 0)
+        )
+        coEvery { notificationRepository.getSettingsImmediate() } returns AppSettings(notificationsEnabled = true)
+        coEvery { notificationRepository.getAllRulesImmediate() } returns rules
+        coEvery { notificationRepository.deleteOldNotifications(any()) } throws RuntimeException("Database error")
+
+        val worker = NotificationWorker(
+            context = context,
+            workerParameters = workerParameters,
+            contactRepository = contactRepository,
+            notificationRepository = notificationRepository,
+            notificationHelper = notificationHelper,
+            getPendingNotificationsUseCase = getPendingNotificationsUseCase
+        )
+
+        val result = worker.doWork()
+
+        assertThat(result).isEqualTo(ListenableWorker.Result.retry())
+        verify(exactly = 1) {
+            workManager.enqueueUniqueWork(
+                "FlexibleNotificationUpdate",
+                ExistingWorkPolicy.APPEND_OR_REPLACE,
+                any<OneTimeWorkRequest>()
+            )
+        }
+    }
+
+    @Test
+    fun `doWork - exception in getPendingNotificationsUseCase - schedules next run and returns retry`() = runTest {
+        val rules = listOf(
+            NotificationRule(id = 1, daysBefore = 0, hour = 9, minute = 0)
+        )
+        coEvery { notificationRepository.getSettingsImmediate() } returns AppSettings(notificationsEnabled = true)
+        coEvery { notificationRepository.getAllRulesImmediate() } returns rules
+        coEvery { getPendingNotificationsUseCase(any()) } throws RuntimeException("UseCase error")
+
+        val worker = NotificationWorker(
+            context = context,
+            workerParameters = workerParameters,
+            contactRepository = contactRepository,
+            notificationRepository = notificationRepository,
+            notificationHelper = notificationHelper,
+            getPendingNotificationsUseCase = getPendingNotificationsUseCase
+        )
+
+        val result = worker.doWork()
+
+        assertThat(result).isEqualTo(ListenableWorker.Result.retry())
+        verify(exactly = 1) {
+            workManager.enqueueUniqueWork(
+                "FlexibleNotificationUpdate",
+                ExistingWorkPolicy.APPEND_OR_REPLACE,
+                any<OneTimeWorkRequest>()
+            )
+        }
+    }
+
+    @Test
+    fun `doWork - exception and rescheduling fails - returns retry without throwing`() = runTest {
+        coEvery { contactRepository.syncContacts() } throws RuntimeException("Initial failure")
+        coEvery { notificationRepository.getSettingsImmediate() } throws RuntimeException("DB offline")
+
+        val worker = NotificationWorker(
+            context = context,
+            workerParameters = workerParameters,
+            contactRepository = contactRepository,
+            notificationRepository = notificationRepository,
+            notificationHelper = notificationHelper,
+            getPendingNotificationsUseCase = getPendingNotificationsUseCase
+        )
+
+        val result = worker.doWork()
+
+        assertThat(result).isEqualTo(ListenableWorker.Result.retry())
     }
 }

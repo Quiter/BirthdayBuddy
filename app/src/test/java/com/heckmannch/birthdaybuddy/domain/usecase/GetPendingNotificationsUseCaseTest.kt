@@ -781,4 +781,31 @@ class GetPendingNotificationsUseCaseTest {
         org.mockito.kotlin.verify(notificationRepository, org.mockito.kotlin.times(1))
             .getScheduledContactLookupKeys(2024, 0)
     }
+
+    @Test
+    fun `when multiple rules have the same daysBefore in the same run, deduplicates events and queries repository once`() = runTest {
+        // Arrange
+        val settings = AppSettings(notificationsEnabled = true)
+        val ruleMorning = NotificationRule(id = 1, daysBefore = 0, hour = 8, minute = 0)
+        val ruleEvening = NotificationRule(id = 2, daysBefore = 0, hour = 9, minute = 0)
+        val contact = Contact(
+            contactId = "1",
+            lookupKey = "key1",
+            fullName = "John Doe",
+            birthday = LocalDate.of(1990, 5, 15)
+        )
+
+        whenever(notificationRepository.settings).thenReturn(flowOf(settings))
+        whenever(notificationRepository.getAllRulesImmediate()).thenReturn(listOf(ruleMorning, ruleEvening))
+        whenever(contactRepository.allContacts).thenReturn(flowOf(listOf(contact)))
+
+        // Act
+        val result = useCase(baseTime) // 09:00, so both rules are due
+
+        // Assert
+        assertThat(result).hasSize(1)
+        assertThat(result[0].contacts).containsExactly(contact)
+        org.mockito.kotlin.verify(notificationRepository, org.mockito.kotlin.times(1))
+            .getScheduledContactLookupKeys(2024, 0)
+    }
 }

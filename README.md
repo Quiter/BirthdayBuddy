@@ -141,7 +141,7 @@ app/src/
 │   ├── java/.../screenshot/       # Roborazzi Golden-Image visual regression tests
 │   └── snapshots/images/          # Version-controlled screenshot golden images
 └── androidTest/                   # Instrumented Android Tests (Run on real device or AVD)
-    ├── java/.../data/local/       # Room Database migration tests (V5 -> V10)
+    ├── java/.../data/local/       # Room Database migration tests (V5 -> V11)
     ├── java/.../data/repository/  # Live ContentResolver and Room repository tests
     └── java/.../ui/               # Compose UI interaction and integration tests
 ```

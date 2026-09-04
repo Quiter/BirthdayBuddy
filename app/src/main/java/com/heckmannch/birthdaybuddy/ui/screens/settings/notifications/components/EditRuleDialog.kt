@@ -59,17 +59,23 @@ private val MutableIntStateSaver = Saver<MutableIntState, Int>(
 @Composable
 fun EditRuleDialog(
     rule: NotificationRule? = null,
+    existingDaysBefore: Set<Int> = emptySet(),
     onDismiss: () -> Unit,
     onConfirm: (Int, Int, Int) -> Unit,
 ) {
-    val initialUnit = remember(rule) {
-        if (rule != null && rule.daysBefore % 7 == 0 && rule.daysBefore > 0) {
-            RuleUnit.WEEKS
+    val initialUnit = remember(rule, existingDaysBefore) {
+        if (rule != null) {
+            if (rule.daysBefore % 7 == 0 && rule.daysBefore > 0) {
+                RuleUnit.WEEKS
+            } else {
+                RuleUnit.DAYS
+            }
         } else {
-            RuleUnit.DAYS
+            val candidate = listOf(1, 0, 2, 3, 7).firstOrNull { it !in existingDaysBefore } ?: 1
+            if (candidate % 7 == 0 && candidate > 0) RuleUnit.WEEKS else RuleUnit.DAYS
         }
     }
-    val initialNumber = remember(rule) {
+    val initialNumber = remember(rule, existingDaysBefore) {
         if (rule != null) {
             if (rule.daysBefore % 7 == 0 && rule.daysBefore > 0) {
                 (rule.daysBefore / 7).toString()
@@ -77,7 +83,8 @@ fun EditRuleDialog(
                 rule.daysBefore.toString()
             }
         } else {
-            "1"
+            val candidate = listOf(1, 0, 2, 3, 7).firstOrNull { it !in existingDaysBefore } ?: 1
+            if (candidate % 7 == 0 && candidate > 0) (candidate / 7).toString() else candidate.toString()
         }
     }
 
@@ -104,8 +111,13 @@ fun EditRuleDialog(
 
     val showTimePickerState = rememberSaveable { mutableStateOf(false) }
 
+    val parsedNum = numberStringState.value.toIntOrNull()
     val isInputValid =
-        numberStringState.value.isNotBlank() && numberStringState.value.toIntOrNull() != null
+        numberStringState.value.isNotBlank() && parsedNum != null
+    val currentDaysBefore = if (parsedNum != null) {
+        if (selectedUnitState.value == RuleUnit.WEEKS) parsedNum * 7 else parsedNum
+    } else null
+    val isDuplicate = currentDaysBefore != null && currentDaysBefore in existingDaysBefore
 
     AlertDialog(
         onDismissRequest = onDismiss,
@@ -128,6 +140,15 @@ fun EditRuleDialog(
                             numberStringState.value = newValue
                         }
                     },
+                    isError = isDuplicate,
+                    supportingText = if (isDuplicate) {
+                        {
+                            Text(
+                                text = stringResource(R.string.dialog_rule_duplicate_error),
+                                color = MaterialTheme.colorScheme.error
+                            )
+                        }
+                    } else null,
                     keyboardOptions = KeyboardOptions(
                         keyboardType = KeyboardType.Number,
                         imeAction = ImeAction.Done
@@ -216,7 +237,7 @@ fun EditRuleDialog(
         },
         confirmButton = {
             TextButton(
-                enabled = isInputValid,
+                enabled = isInputValid && !isDuplicate,
                 onClick = {
                     val num = numberStringState.value.toIntOrNull() ?: 0
                     val daysBefore = if (selectedUnitState.value == RuleUnit.WEEKS) num * 7 else num

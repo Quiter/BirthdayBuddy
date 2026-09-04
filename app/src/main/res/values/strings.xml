@@ -88,6 +88,7 @@
 
     <string name="dialog_save">Save</string>
     <string name="dialog_time_title">Select time</string>
+    <string name="dialog_rule_duplicate_error">A reminder for this lead time already exists</string>
 
     <plurals name="dialog_rule_unit_days">
         <item quantity="one">Day before</item>

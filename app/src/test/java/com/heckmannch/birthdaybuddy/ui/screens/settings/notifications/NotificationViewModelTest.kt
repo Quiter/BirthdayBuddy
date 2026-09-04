@@ -19,6 +19,7 @@ import org.junit.Test
 import org.mockito.kotlin.any
 import org.mockito.kotlin.argumentCaptor
 import org.mockito.kotlin.mock
+import org.mockito.kotlin.never
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 
@@ -46,9 +47,10 @@ class NotificationViewModelTest {
     )
 
     @Before
-    fun setup() {
+    fun setup() = runTest {
         whenever(notificationRepository.settings).thenReturn(flowOf(testSettings))
         whenever(notificationRepository.allRules).thenReturn(flowOf(testRules))
+        whenever(notificationRepository.getAllRulesImmediate()).thenReturn(testRules)
         whenever(permissionChecker.hasNotificationPermission()).thenReturn(true)
 
         viewModel = NotificationViewModel(notificationRepository, contactRepository, permissionChecker)
@@ -127,10 +129,28 @@ class NotificationViewModelTest {
     }
 
     @Test
+    fun `addNotificationRule with duplicate daysBefore should not insert rule into repository`() = runTest {
+        // daysBefore = 0 already exists in testRules
+        viewModel.onIntent(NotificationIntent.AddRule(daysBefore = 0, hour = 18, minute = 0))
+
+        verify(notificationRepository, never()).insertRule(any())
+    }
+
+    @Test
     fun `updateNotificationRule should delegate to repository`() = runTest {
         val rule = testRules[0]
         viewModel.onIntent(NotificationIntent.UpdateRule(rule))
         verify(notificationRepository).updateRule(rule)
+    }
+
+    @Test
+    fun `updateNotificationRule with duplicate daysBefore from another rule should not update rule in repository`() = runTest {
+        // testRules[0] has daysBefore = 0, testRules[1] has daysBefore = 1.
+        // Trying to update testRules[1] (id=2) to daysBefore = 0 conflicts with testRules[0] (id=1).
+        val conflictingRule = testRules[1].copy(daysBefore = 0)
+        viewModel.onIntent(NotificationIntent.UpdateRule(conflictingRule))
+
+        verify(notificationRepository, never()).updateRule(any())
     }
 
     @Test
