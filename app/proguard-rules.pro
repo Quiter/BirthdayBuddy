@@ -61,3 +61,11 @@
     <fields>;
 }
 
+# ==============================================================================
+# 5. Jetpack Glance Session & Broadcast Receivers
+# ==============================================================================
+# Prevent R8 from merging Glance background session lambdas into Activity/UI lambdas,
+# which causes Play Console static call-graph analyzers to falsely attribute Activity window calls
+# to IdleEventBroadcastReceiver.onReceive.
+-keep class androidx.glance.session.IdleEventBroadcastReceiver { *; }
+

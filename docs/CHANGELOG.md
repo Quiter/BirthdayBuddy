@@ -637,3 +637,15 @@ ecreateContactsTableV7 (mit giftIdeas TEXT NOT NULL, COALESCE(giftIdeas, '[]')) 
       - Neuer Unit-Test in `GetPendingNotificationsUseCaseTest` zur Verifikation der sauberen Entprellung bei mehreren zeitgleich fälligen Regeln mit gleichem `daysBefore`.
       - Neue Compose-UI-Tests in `EditRuleDialogTest` zur Absicherung der Fehleranzeige und der Button-Aktivierung bei doppelten und eindeutigen Vorlaufzeiten.
       - Alle 605 Unit-Tests (`./gradlew testDebugUnitTest`) erfolgreich ausgeführt.
+
+368. **Google Play Console Edge-to-Edge Migration & R8-Glance-Entflechtung (Play Store Compliance & Android 15):**
+    - **Problem & Play Console Warnung:** Google Play Console meldete die Verwendung veralteter Edge-to-Edge APIs (`setStatusBarColor`, `setNavigationBarColor`) unter Android 15 (Target SDK 35/37) mit fälschlicher Lokalisierung bei `androidx.glance.session.IdleEventBroadcastReceiver.onReceive`.
+    - **Ursachenanalyse:**
+      1. R8 im Full Mode mergte anonyme Lambdas der Glance-Hintergrundsession mit UI- und Activity-Lambdas in eine gemeinsame synthetische Dispatcher-Klasse. Der statische Call-Graph-Scanner der Console deobfuskierte den Erreichbarkeitspfad daher fälschlich ab dem BroadcastReceiver-Einstiegspunkt.
+      2. Die veralteten Window-Methodenaufrufe stammten aus `androidx.activity.EdgeToEdge` (`EdgeToEdgeApi35`), welches intern in `enableEdgeToEdge()` noch Transparenz-Farben (`0`) setzte, die unter Android 15 als deprecated gelten.
+    - **Architektur & Behebung:**
+      - **R8-Isolierung (`app/proguard-rules.pro`):** Neue ProGuard-Regel `-keep class androidx.glance.session.** { *; }`, um Glance-Session-Callbacks strikt von UI-Lambdas zu trennen und fehlerhafte statische Analyzer-Zuordnungen dauerhaft zu verhindern.
+      - **Native Edge-to-Edge Aktivierung (`MainActivity.kt`):** Ersetzung des veralteten `enableEdgeToEdge()` durch `WindowCompat.setDecorFitsSystemWindows(window, false)` und `window.isNavigationBarContrastEnforced = false` (ab API 29). Dadurch entfällt `EdgeToEdgeApi35` vollständig aus dem Bytecode.
+      - **Dynamischer Systemleisten-Icon-Kontrast (`Theme.kt`):** Implementierung der modernen, standardkonformen Icon-Kontraststeuerung via `WindowCompat.getInsetsController(window, view)` mit defensiver `ContextWrapper`-Unrolling-Logik. Status- und Navigationsleisten-Icons passen sich nun unter allen Android-Versionen dynamisch an Hell-, Dunkel- und AMOLED-Themes an, ohne jemals deprecated Color-APIs aufzurufen.
+      - **Version-Bump:** `versionCode = 47`, `versionName = "2.14.34"` in `app/build.gradle.kts`.
+
