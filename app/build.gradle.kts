@@ -19,8 +19,7 @@ android {
         minSdk = 28
         targetSdk = 37
         versionCode = 46
-        versionName = "2.14.32" +
-                ""
+        versionName = "2.14.33"
 
         testInstrumentationRunner = "com.heckmannch.birthdaybuddy.HiltTestRunner"
     }
@@ -38,6 +37,17 @@ android {
     @Suppress("UnstableApiUsage")
     androidResources {
         localeFilters += listOf("en", "de")
+    }
+    packaging {
+        resources {
+            excludes += "/META-INF/{AL2.0,LGPL2.1}"
+            excludes += "META-INF/*.kotlin_module"
+            excludes += "/META-INF/*.kotlin_module"
+            excludes += "**/*.kotlin_module"
+            excludes += "META-INF/io.coil-kt.coil3:coil-network-core.kotlin_module"
+            excludes += "/META-INF/io.coil-kt.coil3:coil-network-core.kotlin_module"
+            excludes += "**/io.coil-kt.coil3*"
+        }
     }
 
     buildTypes {
