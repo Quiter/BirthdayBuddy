@@ -123,6 +123,8 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Download Unsigned APK
         uses: actions/download-artifact@v4
@@ -153,6 +155,77 @@ jobs:
             --key-pass pass:"${{ secrets.KEY_PASSWORD }}" \
             --out "${{ needs.check-version.outputs.apk_name }}" "$unsigned_apk"
 
+      - name: Generate Changelog for Master Release
+        id: generate_changelog
+        run: |
+          # Standardmäßig leere Datei erzeugen (für Nicht-Master-Branches / Prereleases)
+          touch release_notes.md
+          
+          if [ "${{ github.ref_name }}" = "master" ]; then
+            git fetch --tags --force
+            CURRENT_TAG="${{ needs.check-version.outputs.tag_name }}"
+            
+            # Suche vorherigen stabilen Release-Tag auf master (Format vX.Y.Z, ignoriert -development Suffixe)
+            PREV_TAG=""
+            for tag in $(git tag --merged HEAD --sort=-creatordate | grep -E "^v[0-9]+\.[0-9]+(\.[0-9]+)?$"); do
+              if [ "$tag" != "$CURRENT_TAG" ]; then
+                count=$(git rev-list --count "${tag}..HEAD" 2>/dev/null || echo "0")
+                if [ "$count" -gt 0 ]; then
+                  PREV_TAG="$tag"
+                  break
+                fi
+              fi
+            done
+            
+            echo "Current Tag: $CURRENT_TAG"
+            echo "Previous Tag: $PREV_TAG"
+            
+            {
+              echo "## 🚀 What's Changed in ${CURRENT_TAG}"
+              echo ""
+              if [ -n "$PREV_TAG" ]; then
+                RANGE="${PREV_TAG}..HEAD"
+                
+                FEAT=$(git log "$RANGE" --grep="^feat" --pretty=format:"* %s (%h)" --no-merges)
+                FIX=$(git log "$RANGE" --grep="^fix" --pretty=format:"* %s (%h)" --no-merges)
+                REFACTOR=$(git log "$RANGE" --grep="^refactor" --pretty=format:"* %s (%h)" --no-merges)
+                PERF=$(git log "$RANGE" -E --grep="^perf|optimization" --pretty=format:"* %s (%h)" --no-merges)
+                OTHER=$(git log "$RANGE" --invert-grep --grep="^feat" --grep="^fix" --grep="^refactor" --grep="^perf" -E --grep="optimization" --pretty=format:"* %s (%h)" --no-merges)
+                
+                if [ -n "$FEAT" ]; then
+                  echo "### ✨ Features"
+                  echo "$FEAT"
+                  echo ""
+                fi
+                if [ -n "$FIX" ]; then
+                  echo "### 🐛 Bug Fixes"
+                  echo "$FIX"
+                  echo ""
+                fi
+                if [ -n "$REFACTOR" ]; then
+                  echo "### 🛠️ Architecture & Refactoring"
+                  echo "$REFACTOR"
+                  echo ""
+                fi
+                if [ -n "$PERF" ]; then
+                  echo "### ⚡ Performance & Optimization"
+                  echo "$PERF"
+                  echo ""
+                fi
+                if [ -n "$OTHER" ]; then
+                  echo "### 📝 Other Changes"
+                  echo "$OTHER"
+                  echo ""
+                fi
+                
+                echo "**Full Changelog**: https://github.com/${{ github.repository }}/compare/${PREV_TAG}...${CURRENT_TAG}"
+              else
+                echo "### 📝 Commits"
+                git log -n 30 --pretty=format:"* %s (%h)" --no-merges
+              fi
+            } > release_notes.md
+          fi
+
       - name: Create Release and Upload
         uses: softprops/action-gh-release@v2
         with:
@@ -160,5 +233,6 @@ jobs:
           name: ${{ needs.check-version.outputs.release_name }}
           files: ${{ needs.check-version.outputs.apk_name }}
           prerelease: ${{ needs.check-version.outputs.prerelease == 'true' }}
+          body_path: release_notes.md
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
