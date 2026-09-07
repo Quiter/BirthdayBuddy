@@ -7,11 +7,6 @@ android {
     namespace = "com.heckmannch.birthdaybuddy.baselineprofile"
     compileSdk = 37
 
-    compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_17
-        targetCompatibility = JavaVersion.VERSION_17
-    }
-
     defaultConfig {
         minSdk = 28
         targetSdk = 37
