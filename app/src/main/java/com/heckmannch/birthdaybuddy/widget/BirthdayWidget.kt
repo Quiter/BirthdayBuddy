@@ -6,7 +6,6 @@ import android.text.format.DateFormat
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.sp
@@ -23,7 +22,6 @@ import androidx.glance.appwidget.action.actionStartActivity
 import androidx.glance.appwidget.cornerRadius
 import androidx.glance.appwidget.provideContent
 import androidx.glance.background
-import androidx.glance.color.ColorProvider
 import androidx.glance.layout.Alignment
 import androidx.glance.layout.Box
 import androidx.glance.layout.Column
@@ -40,6 +38,7 @@ import com.heckmannch.birthdaybuddy.R
 import com.heckmannch.birthdaybuddy.domain.model.Contact
 import com.heckmannch.birthdaybuddy.domain.repository.ContactRepository
 import com.heckmannch.birthdaybuddy.domain.util.ContactFilterLogic
+import com.heckmannch.birthdaybuddy.ui.theme.AlphaWidgetCard
 import com.heckmannch.birthdaybuddy.ui.theme.SpacingExtraSmall
 import com.heckmannch.birthdaybuddy.ui.theme.SpacingMedium
 import com.heckmannch.birthdaybuddy.ui.theme.SpacingSmall
@@ -57,15 +56,6 @@ import kotlinx.coroutines.flow.combine
 import java.time.format.DateTimeFormatter
 import java.time.format.FormatStyle
 import java.util.Locale
-
-/**
- * Reusable ColorProvider for the item background (~80% opacity)
- * to avoid repeated allocations on every recomposition.
- */
-private val WidgetItemBackground = ColorProvider(
-    day = Color(0xCCFFFFFF), // ~80% opaque white (Light Theme)
-    night = Color(0xCC1E1E1E), // ~80% opaque dark gray (Dark Theme)
-)
 
 // Font size constants to avoid magic values
 private val WidgetNameFontSize: TextUnit = 14.sp
@@ -106,6 +96,8 @@ class BirthdayWidget : GlanceAppWidget() {
             WidgetEntryPoint::class.java,
         ).contactRepository()
 
+        val locale = ConfigurationCompat.getLocales(context.resources.configuration)[0] ?: Locale.getDefault()
+
         provideContent {
             val contactsState = produceState(initialValue = emptyList()) {
                 combine(
@@ -121,7 +113,6 @@ class BirthdayWidget : GlanceAppWidget() {
                 }.collect { value = it }
             }
 
-            val locale = ConfigurationCompat.getLocales(context.resources.configuration)[0] ?: Locale.getDefault()
             GlanceTheme {
                 WidgetContent(contacts = contactsState.value, locale = locale)
             }
@@ -132,8 +123,8 @@ class BirthdayWidget : GlanceAppWidget() {
     private fun WidgetContent(contacts: List<Contact>, locale: Locale) {
         val size = LocalSize.current
         val context = LocalContext.current
-        val dateFormatter = remember {
-            DateTimeFormatter.ofLocalizedDate(FormatStyle.MEDIUM)
+        val dateFormatter = remember(locale) {
+            DateTimeFormatter.ofLocalizedDate(FormatStyle.MEDIUM).withLocale(locale)
         }
         val dayMonthFormatter = remember(locale) {
             DateTimeFormatter.ofPattern(
@@ -213,6 +204,8 @@ class BirthdayWidget : GlanceAppWidget() {
             )
         }
 
+        val itemBackgroundColor = GlanceTheme.colors.surfaceVariant.getColor(context).copy(alpha = AlphaWidgetCard)
+
         Box(
             modifier = GlanceModifier
                 .height(blockHeight)
@@ -223,7 +216,7 @@ class BirthdayWidget : GlanceAppWidget() {
             Box(
                 modifier = GlanceModifier
                     .fillMaxSize()
-                    .background(WidgetItemBackground)
+                    .background(itemBackgroundColor)
                     .cornerRadius(WidgetCornerRadius)
                     .padding(horizontal = SpacingMedium, vertical = SpacingExtraSmall),
                 contentAlignment = Alignment.Center,

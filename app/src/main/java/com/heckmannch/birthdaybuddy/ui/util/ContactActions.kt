@@ -1,11 +1,13 @@
 package com.heckmannch.birthdaybuddy.ui.util
 
 import android.Manifest
+import android.content.ActivityNotFoundException
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.provider.ContactsContract
 import android.provider.Settings
+import android.util.Log
 import androidx.activity.result.ActivityResultLauncher
 import androidx.core.app.ActivityCompat
 import androidx.core.net.toUri
@@ -27,7 +29,10 @@ class ContactActions(private val context: Context) {
             val normalized = PhoneNumberNormalizer.normalize(phoneNumber).ifEmpty { phoneNumber.trim() }
             val intent = Intent(Intent.ACTION_DIAL, "tel:$normalized".toUri())
             context.startActivity(intent)
-        } catch (_: Exception) {
+        } catch (_: ActivityNotFoundException) {
+            Log.w(TAG, "Keine passende App zum Wählen der Rufnummer gefunden.")
+        } catch (e: SecurityException) {
+            Log.e(TAG, "Sicherheitsfehler beim Starten des Wählvorgangs.", e)
         }
     }
 
@@ -39,7 +44,10 @@ class ContactActions(private val context: Context) {
             val normalized = PhoneNumberNormalizer.normalize(phoneNumber).ifEmpty { phoneNumber.trim() }
             val intent = Intent(Intent.ACTION_SENDTO, "smsto:$normalized".toUri())
             context.startActivity(intent)
-        } catch (_: Exception) {
+        } catch (_: ActivityNotFoundException) {
+            Log.w(TAG, "Keine passende SMS-App gefunden.")
+        } catch (e: SecurityException) {
+            Log.e(TAG, "Sicherheitsfehler beim Senden der SMS.", e)
         }
     }
 
@@ -100,7 +108,10 @@ class ContactActions(private val context: Context) {
             intent?.let {
                 context.startActivity(it)
             }
-        } catch (_: Exception) {
+        } catch (_: ActivityNotFoundException) {
+            Log.w(TAG, "Messenger-App (${app.name}) konnte nicht geöffnet werden: Keine passende App installiert.")
+        } catch (e: SecurityException) {
+            Log.e(TAG, "Sicherheitsfehler beim Öffnen der Messenger-App (${app.name}).", e)
         }
     }
 
@@ -113,7 +124,10 @@ class ContactActions(private val context: Context) {
                 val lookupUri = ContactsContract.Contacts.getLookupUri(numericId, lookupKey)
                 context.startActivity(Intent(Intent.ACTION_VIEW, lookupUri))
             }
-        } catch (_: Exception) {
+        } catch (_: ActivityNotFoundException) {
+            Log.w(TAG, "Keine Kontakte-App zum Anzeigen des Kontakts gefunden.")
+        } catch (e: SecurityException) {
+            Log.e(TAG, "Sicherheitsfehler beim Anzeigen des Kontakts.", e)
         }
     }
 
@@ -126,7 +140,10 @@ class ContactActions(private val context: Context) {
                 type = ContactsContract.Contacts.CONTENT_TYPE
             }
             context.startActivity(intent)
-        } catch (_: Exception) {
+        } catch (_: ActivityNotFoundException) {
+            Log.w(TAG, "Keine passende App zum Erstellen von Kontakten gefunden.")
+        } catch (e: SecurityException) {
+            Log.e(TAG, "Sicherheitsfehler beim Öffnen des 'Kontakt hinzufügen'-Dialogs.", e)
         }
     }
 
@@ -139,7 +156,10 @@ class ContactActions(private val context: Context) {
                 data = Uri.fromParts("package", context.packageName, null)
             }
             context.startActivity(intent)
-        } catch (_: Exception) {
+        } catch (_: ActivityNotFoundException) {
+            Log.w(TAG, "Keine Einstellungs-App gefunden.")
+        } catch (e: SecurityException) {
+            Log.e(TAG, "Sicherheitsfehler beim Öffnen der App-Einstellungen.", e)
         }
     }
 
@@ -170,5 +190,9 @@ class ContactActions(private val context: Context) {
         } else {
             openAppSettings()
         }
+    }
+
+    companion object {
+        private const val TAG = "ContactActions"
     }
 }

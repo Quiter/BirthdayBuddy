@@ -1,10 +1,10 @@
 package com.heckmannch.birthdaybuddy
 
 import android.content.Intent
-import android.os.Build
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
@@ -14,7 +14,6 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
-import androidx.core.view.WindowCompat
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation3.runtime.NavKey
 import androidx.navigation3.runtime.rememberNavBackStack
@@ -41,19 +40,15 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         val splashScreen = installSplashScreen()
+        // Edge-to-Edge Konfiguration gemäß Android 15 & edge-to-edge Skill:
+        // Android 15 (API 35+) erzwingt Edge-to-Edge nativ. Veraltete Methoden (setStatusBarColor /
+        // setNavigationBarColor) werden vermieden.
+        enableEdgeToEdge()
         super.onCreate(savedInstanceState)
 
         // Splash Screen so lange anzeigen, bis der Initialzustand (Onboarding-Status) geladen ist
         splashScreen.setKeepOnScreenCondition {
             appViewModel.onboardingCompleted.value == null
-        }
-
-        // Edge-to-Edge Konfiguration gemäß Android 15 & edge-to-edge Skill:
-        // Android 15 (API 35+) erzwingt Edge-to-Edge nativ. Veraltete Methoden (setStatusBarColor /
-        // setNavigationBarColor) werden vermieden.
-        WindowCompat.setDecorFitsSystemWindows(window, false)
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-            window.isNavigationBarContrastEnforced = false
         }
 
         // Nur beim Kaltstart / Initialaufruf an das ViewModel übergeben, um Re-Execution bei Recreations zu verhindern

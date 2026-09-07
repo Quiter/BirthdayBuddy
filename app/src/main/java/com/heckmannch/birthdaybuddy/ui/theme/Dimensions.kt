@@ -132,6 +132,7 @@ const val AlphaOnboardingCard = 0.9f
 const val AlphaOnboardingCalendarDisabled = 0.4f
 const val AlphaOnboardingCalendarInactive = 0.05f
 const val OnboardingCalendarEventAlpha = 0.8f
+const val AlphaWidgetCard = 0.8f
 
 
 
