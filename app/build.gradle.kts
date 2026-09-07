@@ -8,6 +8,7 @@ plugins {
     alias(libs.plugins.kotlin.serialization)
     alias(libs.plugins.androidx.baselineprofile)
     alias(libs.plugins.roborazzi)
+    alias(libs.plugins.room)
 }
 
 android {
@@ -71,6 +72,10 @@ android {
         unitTests.isReturnDefaultValues = true
         unitTests.isIncludeAndroidResources = true
     }
+}
+
+room {
+    schemaDirectory("$projectDir/schemas")
 }
 
 tasks.withType<Test>().configureEach {
@@ -152,7 +157,6 @@ dependencies {
 
 
 ksp {
-    arg("room.schemaLocation", "$projectDir/schemas")
     arg("appfunctions:aggregateAppFunctions", "true")
 }
 

@@ -10,6 +10,7 @@ import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
 import androidx.work.WorkerParameters
 import com.heckmannch.birthdaybuddy.domain.repository.WidgetUpdater
+import com.heckmannch.birthdaybuddy.util.AlarmScheduler
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
 import kotlinx.coroutines.CancellationException
@@ -22,21 +23,22 @@ import java.util.concurrent.TimeUnit
  * Worker to trigger updating the app widget.
  *
  * @property widgetUpdater Abstraction for updating the application widget.
+ * @property alarmScheduler Scheduler for setting exact alarms.
  */
 @HiltWorker
 class BirthdayWidgetWorker @AssistedInject constructor(
     @Assisted private val context: Context,
     @Assisted workerParameters: WorkerParameters,
     private val widgetUpdater: WidgetUpdater,
+    private val alarmScheduler: AlarmScheduler,
 ) : CoroutineWorker(context, workerParameters) {
 
     override suspend fun doWork(): Result {
         return try {
             widgetUpdater.updateWidget()
-            // Schedule the next run for tomorrow midnight cleanly and deterministically.
-            // Using APPEND_OR_REPLACE chains the next execution without canceling the currently
-            // running worker or relying on an in-memory delayed coroutine susceptible to process kills.
-            enqueueNextUpdate(context, ExistingWorkPolicy.APPEND_OR_REPLACE)
+            // Schedule the next run for tomorrow midnight cleanly and deterministically via AlarmScheduler.
+            // Uses AlarmManager exact alarm to wake up even in Doze Mode.
+            alarmScheduler.scheduleNextWidgetUpdateAlarm()
             Result.success()
         } catch (e: CancellationException) {
             throw e
@@ -50,6 +52,22 @@ class BirthdayWidgetWorker @AssistedInject constructor(
         private const val TAG = "BirthdayWidgetWorker"
         private const val WORK_NAME = "DailyWidgetUpdateSingle"
         private const val WORK_TAG = "daily_widget_update"
+
+        /**
+         * Enqueues the widget worker immediately to update Glance widgets (called by [WidgetUpdateAlarmReceiver]).
+         */
+        @JvmStatic
+        fun enqueueImmediateWork(context: Context) {
+            val request = OneTimeWorkRequestBuilder<BirthdayWidgetWorker>()
+                .addTag(WORK_TAG)
+                .build()
+
+            WorkManager.getInstance(context).enqueueUniqueWork(
+                WORK_NAME,
+                ExistingWorkPolicy.REPLACE,
+                request,
+            )
+        }
 
         /**
          * Enqueues the next daily widget update worker.

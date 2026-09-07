@@ -9,21 +9,22 @@ import com.heckmannch.birthdaybuddy.domain.model.NotificationRule
 import com.heckmannch.birthdaybuddy.domain.repository.NotificationScheduler
 import com.heckmannch.birthdaybuddy.domain.util.NotificationKeyUtils
 import com.heckmannch.birthdaybuddy.notification.NotificationActions
-import com.heckmannch.birthdaybuddy.notification.NotificationWorker
 import com.heckmannch.birthdaybuddy.notification.SnoozeWorker
+import com.heckmannch.birthdaybuddy.util.AlarmScheduler
 import dagger.hilt.android.qualifiers.ApplicationContext
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 
 class NotificationSchedulerImpl @Inject constructor(
     @param:ApplicationContext private val context: Context,
+    private val alarmScheduler: AlarmScheduler,
 ) : NotificationScheduler {
     override fun scheduleNext(rules: List<NotificationRule>) {
-        NotificationWorker.scheduleNext(context, rules)
+        alarmScheduler.scheduleNextNotificationAlarm(rules)
     }
 
     override fun cancelNotification() {
-        NotificationWorker.cancelNotification(context)
+        alarmScheduler.cancelNotificationAlarm()
     }
 
     override fun snoozeNotification(pendingId: Int, daysBefore: Int, lookupKeys: List<String>) {

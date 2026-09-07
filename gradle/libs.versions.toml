@@ -182,6 +182,7 @@ kotlin-compose = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "ko
 # Data Persistence & Storage (Room, Serialization)
 # ==============================================================================
 kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
+room = { id = "androidx.room", version.ref = "room" }
 
 # ==============================================================================
 # Dependency Injection & Async (Hilt, Coroutines, WorkManager)

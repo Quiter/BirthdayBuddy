@@ -12,6 +12,7 @@ import com.heckmannch.birthdaybuddy.domain.model.NotificationRule
 import com.heckmannch.birthdaybuddy.domain.repository.ContactRepository
 import com.heckmannch.birthdaybuddy.domain.repository.NotificationRepository
 import com.heckmannch.birthdaybuddy.domain.usecase.GetPendingNotificationsUseCase
+import com.heckmannch.birthdaybuddy.util.AlarmScheduler
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
@@ -37,6 +38,7 @@ class NotificationWorkerTest {
     private val notificationRepository = mockk<NotificationRepository>(relaxed = true)
     private val notificationHelper = mockk<NotificationHelper>(relaxed = true)
     private val getPendingNotificationsUseCase = mockk<GetPendingNotificationsUseCase>(relaxed = true)
+    private val alarmScheduler = mockk<AlarmScheduler>(relaxed = true)
     private val workManager = mockk<WorkManager>(relaxed = true)
 
     @Before
@@ -164,7 +166,8 @@ class NotificationWorkerTest {
             contactRepository = contactRepository,
             notificationRepository = notificationRepository,
             notificationHelper = notificationHelper,
-            getPendingNotificationsUseCase = getPendingNotificationsUseCase
+            getPendingNotificationsUseCase = getPendingNotificationsUseCase,
+            alarmScheduler = alarmScheduler,
         )
 
         val result = worker.doWork()
@@ -172,13 +175,7 @@ class NotificationWorkerTest {
         assertThat(result).isEqualTo(ListenableWorker.Result.success())
         coVerify(exactly = 1) { notificationRepository.deleteOldNotifications(any()) }
         coVerify(exactly = 1) { contactRepository.syncContacts() }
-        verify(exactly = 1) {
-            workManager.enqueueUniqueWork(
-                "FlexibleNotificationUpdate",
-                ExistingWorkPolicy.APPEND_OR_REPLACE,
-                any<OneTimeWorkRequest>()
-            )
-        }
+        verify(exactly = 1) { alarmScheduler.scheduleNextNotificationAlarm(rules) }
     }
 
     @Test
@@ -192,13 +189,15 @@ class NotificationWorkerTest {
             contactRepository = contactRepository,
             notificationRepository = notificationRepository,
             notificationHelper = notificationHelper,
-            getPendingNotificationsUseCase = getPendingNotificationsUseCase
+            getPendingNotificationsUseCase = getPendingNotificationsUseCase,
+            alarmScheduler = alarmScheduler,
         )
 
         val result = worker.doWork()
 
         assertThat(result).isEqualTo(ListenableWorker.Result.success())
         verify(exactly = 1) { workManager.cancelUniqueWork("FlexibleNotificationUpdate") }
+        verify(exactly = 1) { alarmScheduler.cancelNotificationAlarm() }
         verify(exactly = 0) {
             workManager.enqueueUniqueWork(
                 any(),
@@ -217,7 +216,8 @@ class NotificationWorkerTest {
             contactRepository = contactRepository,
             notificationRepository = notificationRepository,
             notificationHelper = notificationHelper,
-            getPendingNotificationsUseCase = getPendingNotificationsUseCase
+            getPendingNotificationsUseCase = getPendingNotificationsUseCase,
+            alarmScheduler = alarmScheduler,
         )
 
         assertThrows(CancellationException::class.java) {
@@ -242,19 +242,14 @@ class NotificationWorkerTest {
             contactRepository = contactRepository,
             notificationRepository = notificationRepository,
             notificationHelper = notificationHelper,
-            getPendingNotificationsUseCase = getPendingNotificationsUseCase
+            getPendingNotificationsUseCase = getPendingNotificationsUseCase,
+            alarmScheduler = alarmScheduler,
         )
 
         val result = worker.doWork()
 
         assertThat(result).isEqualTo(ListenableWorker.Result.retry())
-        verify(exactly = 1) {
-            workManager.enqueueUniqueWork(
-                "FlexibleNotificationUpdate",
-                ExistingWorkPolicy.APPEND_OR_REPLACE,
-                any<OneTimeWorkRequest>()
-            )
-        }
+        verify(exactly = 1) { alarmScheduler.scheduleNextNotificationAlarm(rules) }
     }
 
     @Test
@@ -272,19 +267,14 @@ class NotificationWorkerTest {
             contactRepository = contactRepository,
             notificationRepository = notificationRepository,
             notificationHelper = notificationHelper,
-            getPendingNotificationsUseCase = getPendingNotificationsUseCase
+            getPendingNotificationsUseCase = getPendingNotificationsUseCase,
+            alarmScheduler = alarmScheduler,
         )
 
         val result = worker.doWork()
 
         assertThat(result).isEqualTo(ListenableWorker.Result.retry())
-        verify(exactly = 1) {
-            workManager.enqueueUniqueWork(
-                "FlexibleNotificationUpdate",
-                ExistingWorkPolicy.APPEND_OR_REPLACE,
-                any<OneTimeWorkRequest>()
-            )
-        }
+        verify(exactly = 1) { alarmScheduler.scheduleNextNotificationAlarm(rules) }
     }
 
     @Test
@@ -302,19 +292,14 @@ class NotificationWorkerTest {
             contactRepository = contactRepository,
             notificationRepository = notificationRepository,
             notificationHelper = notificationHelper,
-            getPendingNotificationsUseCase = getPendingNotificationsUseCase
+            getPendingNotificationsUseCase = getPendingNotificationsUseCase,
+            alarmScheduler = alarmScheduler,
         )
 
         val result = worker.doWork()
 
         assertThat(result).isEqualTo(ListenableWorker.Result.retry())
-        verify(exactly = 1) {
-            workManager.enqueueUniqueWork(
-                "FlexibleNotificationUpdate",
-                ExistingWorkPolicy.APPEND_OR_REPLACE,
-                any<OneTimeWorkRequest>()
-            )
-        }
+        verify(exactly = 1) { alarmScheduler.scheduleNextNotificationAlarm(rules) }
     }
 
     @Test
@@ -328,7 +313,8 @@ class NotificationWorkerTest {
             contactRepository = contactRepository,
             notificationRepository = notificationRepository,
             notificationHelper = notificationHelper,
-            getPendingNotificationsUseCase = getPendingNotificationsUseCase
+            getPendingNotificationsUseCase = getPendingNotificationsUseCase,
+            alarmScheduler = alarmScheduler,
         )
 
         val result = worker.doWork()

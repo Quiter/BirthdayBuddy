@@ -8,6 +8,7 @@ import androidx.work.ExistingWorkPolicy
 import com.heckmannch.birthdaybuddy.di.ApplicationScope
 import com.heckmannch.birthdaybuddy.domain.repository.NotificationRepository
 import com.heckmannch.birthdaybuddy.domain.repository.WidgetUpdater
+import com.heckmannch.birthdaybuddy.util.AlarmScheduler
 import com.heckmannch.birthdaybuddy.widget.BirthdayWidgetWorker
 import dagger.hilt.EntryPoint
 import dagger.hilt.InstallIn
@@ -39,6 +40,7 @@ class BootReceiver : BroadcastReceiver() {
         fun applicationScope(): CoroutineScope
         fun notificationRepository(): NotificationRepository
         fun widgetUpdater(): WidgetUpdater
+        fun alarmScheduler(): AlarmScheduler
     }
 
     override fun onReceive(context: Context?, intent: Intent?) {
@@ -77,6 +79,7 @@ class BootReceiver : BroadcastReceiver() {
 
                 try {
                     entryPoint.widgetUpdater().updateWidget()
+                    entryPoint.alarmScheduler().scheduleNextWidgetUpdateAlarm()
                     BirthdayWidgetWorker.enqueueNextUpdate(context, ExistingWorkPolicy.REPLACE)
                 } catch (_: Exception) {
                     // Safeguard: Fehler beim Widget-Update dürfen die Benachrichtigungsplanung und den Boot-Prozess nicht blockieren.

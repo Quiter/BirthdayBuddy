@@ -222,6 +222,7 @@ Enthält Android-Framework-spezifische Klassen, die nicht in den Domain-Layer ge
 
 ## 📁 Notification-Infrastruktur (`notification`)
 - `NotificationWorker.kt`: Hintergrund-Prozess für die Benachrichtigungs-Logik (`@AssistedInject` Hilt-Worker).
+- `NotificationAlarmReceiver.kt`: BroadcastReceiver für exakte Alarm-Trigger via `AlarmManager`, der `NotificationWorker` sofort zur Ausführung einreiht und die nächste Erinnerung via `AlarmScheduler` plant.
 - `SnoozeWorker.kt`: Hintergrund-Prozess für die "Später"-Funktion.
 - `NotificationActionReceiver.kt`: Verarbeitet Klicks auf Benachrichtigungs-Buttons (Snooze, Erledigt, Dismissed). Im `AndroidManifest.xml` als Receiver registriert.
 - `NotificationHelper.kt`: Hilfsklasse für den System-Notification-Manager (Erstellen und Anzeigen von Benachrichtigungen).
@@ -236,6 +237,7 @@ Enthält Android-Framework-spezifische Klassen, die nicht in den Domain-Layer ge
 > Alle anderen ViewModels befinden sich in ihrem jeweiligen Feature-Package unter `ui/screens/`.
 
 ## 📁 Utilities (`util`)
+- `AlarmScheduler.kt`: Zentraler Singleton-Scheduler für zeitkritische Hintergrund-Alarme mittels `AlarmManager.setExactAndAllowWhileIdle` (mit Fallback auf `setAndAllowWhileIdle` und Permission-Check für `canScheduleExactAlarms`), um Doze Mode Verzögerungen bei Benachrichtigungen und Widget-Updates zu eliminieren.
 - `JsonUtils.kt`: Zentrales Singleton-Objekt für standardmäßig vorkonfigurierte `kotlinx.serialization.json.Json`-Instanzen (`defaultJson` mit `ignoreUnknownKeys = true`, `encodeDefaults = true` sowie `prettyJson`). Dient als SSOT für JSON-Serialisierung in der gesamten App (Converters, BackupManager).
 - `DateUtils.kt`: Robuste Erweiterungsfunktionen für LocalDate.
 - `StringUtils.kt`: Hilfsfunktionen für Namens- und String-Operationen (`mergeNames`, `getInitials`).
@@ -251,6 +253,7 @@ Enthält Android-Framework-spezifische Klassen, die nicht in den Domain-Layer ge
 
 ## 📁 Widget (`widget`)
 - `BirthdayWidget.kt`, `BirthdayWidgetReceiver.kt`, `BirthdayWidgetWorker.kt`, `WidgetLayoutHelper.kt`: Glance-basierte Widget-Komponenten und reine Kotlin-Layout-Berechnungen.
+- `WidgetUpdateAlarmReceiver.kt`: BroadcastReceiver für exakte Mitternachts-Alarme (00:01 Uhr) via `AlarmManager`, der `BirthdayWidgetWorker` via WorkManager zur sofortigen Aktualisierung startet und den nächsten Mitternachtsalarm plant.
 
 ## 🌍 Internationalisierung (I18n)
 - `res/values/strings.xml`: Standard-Sprachressourcen (**Englisch**).
@@ -279,6 +282,8 @@ Diese Tests laufen ohne Emulator/Gerät direkt auf dem Entwicklungsrechner und s
 - `util/JsonUtilsTest.kt`: Tests für die zentralen `Json`-Instanzen (`defaultJson` und `prettyJson`).
 - `util/StringUtilsTest.kt`: Logiktests für String- und Namens-Hilfsfunktionen (`mergeNames`, `getInitials`).
 - `util/IntentParserTest.kt`: JVM Unit-Tests für `IntentParser` zur Absicherung der Extraktion aller `AppAction`-Typen aus Android-`Intent`s.
+- `util/AlarmSchedulerTest.kt`: JVM Unit-Tests für `AlarmScheduler` (Berechnung von Alarmzeiten, exakte Alarme, Permission-Checks, Fallback auf ungenaue Alarme und Rescheduling).
+- `notification/NotificationAlarmReceiverTest.kt`: JVM Unit-Tests für `NotificationAlarmReceiver` (sofortiges Einreihen des NotificationWorkers via WorkManager und Folgealarm-Planung).
 - `domain/usecase/GetContactsUseCaseTest.kt`: JVM Unit-Tests für `GetContactsUseCase` zur Absicherung der Filter- und Pairing-Logik.
 - `domain/util/NotificationKeyUtilsTest.kt`: JVM Unit-Tests für `NotificationKeyUtils` (Enkodierung, Dekodierung und EventType-Erkennung inklusive Sonderzeichen & Doppelpunkten im LookupKey).
 - `domain/util/PhoneNumberNormalizerTest.kt`: JVM Unit-Tests für `PhoneNumberNormalizer` (vollständige E.164-Testabdeckung für nationale, internationale, klammerbasierte Formate, fehlerhafte Präfixe und länderspezifische Regeln).
@@ -302,6 +307,7 @@ Diese Tests laufen ohne Emulator/Gerät direkt auf dem Entwicklungsrechner und s
 - `viewmodel/ThemeViewModelTest.kt`: Tests für `ThemeViewModel` zur Absicherung der Design-Einstellungen.
 - `widget/WidgetLayoutHelperTest.kt`: JVM Unit-Tests für `WidgetLayoutHelper` (Standard-Widget-Größen, kleine Höhen, leere vs. große Kontaktlisten, gleichmäßige Höhenaufteilung).
 - `widget/BirthdayWidgetWorkerTest.kt`: JVM Unit-Tests für `BirthdayWidgetWorker` (Scheduling, Worker-Ausführung, Fehler-Handling).
+- `widget/WidgetUpdateAlarmReceiverTest.kt`: JVM Unit-Tests für `WidgetUpdateAlarmReceiver` (sofortiges Einreihen des BirthdayWidgetWorkers via WorkManager und Mitternachtsalarm-Rescheduling).
 
 
 ### 📁 Instrumentierte Integrationstests (`app/src/androidTest`)

@@ -4,14 +4,15 @@ import android.content.Context
 import android.util.Log
 import androidx.glance.appwidget.updateAll
 import com.heckmannch.birthdaybuddy.domain.repository.WidgetUpdater
+import com.heckmannch.birthdaybuddy.util.AlarmScheduler
 import com.heckmannch.birthdaybuddy.widget.BirthdayWidget
-import com.heckmannch.birthdaybuddy.widget.BirthdayWidgetWorker
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CancellationException
 import javax.inject.Inject
 
 class BirthdayWidgetUpdater @Inject constructor(
     @param:ApplicationContext private val context: Context,
+    private val alarmScheduler: AlarmScheduler,
 ) : WidgetUpdater {
     override suspend fun updateWidget() {
         try {
@@ -25,7 +26,7 @@ class BirthdayWidgetUpdater @Inject constructor(
 
     override fun scheduleDailyUpdate() {
         try {
-            BirthdayWidgetWorker.enqueueNextUpdate(context)
+            alarmScheduler.scheduleNextWidgetUpdateAlarm()
         } catch (e: Exception) {
             Log.e("BirthdayWidgetUpdater", "Widget scheduling failed", e)
         }

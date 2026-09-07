@@ -698,3 +698,31 @@ ecreateContactsTableV7 (mit giftIdeas TEXT NOT NULL, COALESCE(giftIdeas, '[]')) 
       - Neue Unit-Tests in `OnboardingViewModelTest`: Absicherung von negativem Paging-Clamping sowie sofortige Bereitstellung des echten Berechtigungszustands im StateFlow ohne asynchrone Collection.
       - Erfolgreiche Verifikation im Emulator (`Pixel_10_Pro_17.0`): Durchlauf des gesamten Onboardings (Willkommen -> Kontakte -> Benachrichtigungen -> Kalender -> Fertig -> "Los geht's") ohne Crash; nahtloser Wechsel zu `HomeScreen` mit vollständig synchronisierten Kontakten und Geburtstagen.
       - Kompletter Durchlauf der Test-Suite (`./gradlew test`): Alle Tests erfolgreich bestanden.
+
+373. **Migration zeitkritischer Notification- und Widget-Update-Trigger von WorkManager auf AlarmManager mit exakten Alarmen (Background Processing & Zuverlässigkeit):**
+    - **Motivation & Problemstellung:** Bislang nutzten `NotificationWorker` und `BirthdayWidgetWorker` WorkManager mit `setInitialDelay` für tägliche Erinnerungen und Mitternachts-Widget-Updates. Unter Androids Doze Mode (Energiesparmodus) unterliegt WorkManager strengen Ausführungsbeschränkungen und Warteschlangenverzögerungen, wodurch Geburtstagsbenachrichtigungen oft um Stunden verzögert eintrafen und Widgets nicht pünktlich um Mitternacht auf den neuen Tag umsprangen.
+    - **Architektur & Neuer Trigger-Mechanismus:**
+      - **Entkopplung von Trigger und Ausführung:** Exakte Weckzeitpunkte werden nun deterministisch per `AlarmManager.setExactAndAllowWhileIdle()` mit `RTC_WAKEUP` getriggert. Die eigentliche Hintergrundverarbeitung (Kontaktsynchronisation, Datenbankabfragen, Notification-Rendering und Glance-Widget-Updates) verbleibt sauber im `WorkManager` via sofort eingereihtem `OneTimeWorkRequest` mit `ExistingWorkPolicy.REPLACE`.
+      - **Zentraler `AlarmScheduler` ([AlarmScheduler.kt](file:///c:/Users/chris/AndroidStudioProjects/BirthdayBuddy/app/src/main/java/com/heckmannch/birthdaybuddy/util/AlarmScheduler.kt)):** Neuer Hilt-Singleton für die präzise Zeitberechnung und Alarm-Planung:
+        - Unterstützt `SCHEDULE_EXACT_ALARM` auf Android 12+ (API 31+) mit Laufzeit-Prüfung via `AlarmManager.canScheduleExactAlarms()`.
+        - Automatischer, sicherer Fallback auf `setAndAllowWhileIdle()` bei verweigerten oder entzogenen Berechtigungen (`SecurityException`-Handling).
+        - Main-safe Rescheduling-Methoden (`rescheduleNotificationAlarm()`, `rescheduleAllAlarms()`) unter Verwendung des `@IoDispatcher`.
+        - Vermeidung von Hilt-Zyklen durch `Provider<NotificationRepository>`.
+      - **`NotificationAlarmReceiver` ([NotificationAlarmReceiver.kt](file:///c:/Users/chris/AndroidStudioProjects/BirthdayBuddy/app/src/main/java/com/heckmannch/birthdaybuddy/notification/NotificationAlarmReceiver.kt)):**
+        - Empfängt den exakten Alarm-Trigger `ACTION_TRIGGER_NOTIFICATION_ALARM`.
+        - Startet sofort den `NotificationWorker` via `enqueueImmediateWork()`.
+        - Plant asynchron über `goAsync()` und `AlarmScheduler` den nächsten fälligen Alarm.
+      - **`WidgetUpdateAlarmReceiver` ([WidgetUpdateAlarmReceiver.kt](file:///c:/Users/chris/AndroidStudioProjects/BirthdayBuddy/app/src/main/java/com/heckmannch/birthdaybuddy/widget/WidgetUpdateAlarmReceiver.kt)):**
+        - Empfängt den exakten Mitternachtstrigger `ACTION_TRIGGER_WIDGET_UPDATE_ALARM` um 00:01 Uhr.
+        - Startet `BirthdayWidgetWorker` via `enqueueImmediateWork()`.
+        - Plant asynchron den nächsten Mitternachtsalarm für den folgenden Tag.
+      - **Manifest & Berechtigungen ([AndroidManifest.xml](file:///c:/Users/chris/AndroidStudioProjects/BirthdayBuddy/app/src/main/AndroidManifest.xml)):**
+        - Deklaration der Berechtigung `<uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />` (konform mit Google Play Richtlinien für Kalender- & Erinnerungs-Apps).
+        - Registrierung beider Receiver mit `android:exported="false"`.
+      - **System-Events & Boot-Wiederherstellung ([BootReceiver.kt](file:///c:/Users/chris/AndroidStudioProjects/BirthdayBuddy/app/src/main/java/com/heckmannch/birthdaybuddy/BootReceiver.kt)):**
+        - Automatische Wiederherstellung und Neuausrichtung aller Alarme bei Geräteneustart (`BOOT_COMPLETED`), App-Updates (`MY_PACKAGE_REPLACED`), Zeitzonenänderungen (`TIMEZONE_CHANGED`) sowie manuellen Uhrzeit-/Datumsanpassungen (`TIME_SET`, `DATE_CHANGED`).
+    - **Testing & QA:**
+      - Neue JVM Unit-Tests für alle neuen Komponenten: [AlarmSchedulerTest.kt](file:///c:/Users/chris/AndroidStudioProjects/BirthdayBuddy/app/src/test/java/com/heckmannch/birthdaybuddy/util/AlarmSchedulerTest.kt), [NotificationAlarmReceiverTest.kt](file:///c:/Users/chris/AndroidStudioProjects/BirthdayBuddy/app/src/test/java/com/heckmannch/birthdaybuddy/notification/NotificationAlarmReceiverTest.kt) und [WidgetUpdateAlarmReceiverTest.kt](file:///c:/Users/chris/AndroidStudioProjects/BirthdayBuddy/app/src/test/java/com/heckmannch/birthdaybuddy/widget/WidgetUpdateAlarmReceiverTest.kt).
+      - Aktualisierung existierender Unit-Tests in `BootReceiverTest`, `NotificationWorkerTest`, `BirthdayWidgetWorkerTest` und `NotificationActionReceiverTest`.
+      - Vollständiger Durchlauf aller 665 Unit-Tests (`./gradlew testDebugUnitTest`): 100% Erfolgsquote (BUILD SUCCESSFUL).
+

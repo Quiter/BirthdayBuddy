@@ -13,6 +13,7 @@ import com.heckmannch.birthdaybuddy.domain.model.PendingNotification
 import com.heckmannch.birthdaybuddy.domain.repository.ContactRepository
 import com.heckmannch.birthdaybuddy.domain.repository.NotificationRepository
 import com.heckmannch.birthdaybuddy.domain.usecase.GetPendingNotificationsUseCase
+import com.heckmannch.birthdaybuddy.util.AlarmScheduler
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
 import kotlinx.coroutines.CancellationException
@@ -33,6 +34,7 @@ class NotificationWorker @AssistedInject constructor(
     private val notificationRepository: NotificationRepository,
     private val notificationHelper: NotificationHelper,
     private val getPendingNotificationsUseCase: GetPendingNotificationsUseCase,
+    private val alarmScheduler: AlarmScheduler,
 ) : CoroutineWorker(context, workerParameters) {
 
     override suspend fun doWork(): Result {
@@ -89,16 +91,33 @@ class NotificationWorker @AssistedInject constructor(
         val settings = notificationRepository.getSettingsImmediate()
         if (!settings.notificationsEnabled) {
             WorkManager.getInstance(applicationContext).cancelUniqueWork(WORK_NAME)
+            alarmScheduler.cancelNotificationAlarm()
             return
         }
 
         val rules = notificationRepository.getAllRulesImmediate()
-        scheduleNext(applicationContext, rules, ExistingWorkPolicy.APPEND_OR_REPLACE)
+        alarmScheduler.scheduleNextNotificationAlarm(rules)
     }
 
     companion object {
         private const val TAG = "NotificationWorker"
         private const val WORK_NAME = NotificationActions.WORK_NAME_NOTIFICATION_UPDATE
+
+        /**
+         * Reiht den Worker sofort zur Ausführung ein (wird vom [NotificationAlarmReceiver] aufgerufen).
+         */
+        @JvmStatic
+        fun enqueueImmediateWork(context: Context) {
+            val request = OneTimeWorkRequestBuilder<NotificationWorker>()
+                .addTag(NotificationActions.WORK_TAG_NOTIFICATION)
+                .build()
+
+            WorkManager.getInstance(context).enqueueUniqueWork(
+                WORK_NAME,
+                ExistingWorkPolicy.REPLACE,
+                request,
+            )
+        }
 
         /**
          * Plant den nächsten fälligen Zeitpunkt basierend auf allen Regeln.

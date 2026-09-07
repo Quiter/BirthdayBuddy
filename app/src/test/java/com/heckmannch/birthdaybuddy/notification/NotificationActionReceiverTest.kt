@@ -169,7 +169,7 @@ class NotificationActionReceiverTest {
         mockkObject(WorkManager.Companion)
         every { WorkManager.getInstance(any()) } returns workManager
 
-        val realScheduler = NotificationSchedulerImpl(context)
+        val realScheduler = NotificationSchedulerImpl(context, mockk(relaxed = true))
         receiver.snoozeNotificationUseCase = SnoozeNotificationUseCase(realScheduler)
 
         val workRequestSlot = slot<OneTimeWorkRequest>()
