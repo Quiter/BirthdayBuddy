@@ -2,7 +2,7 @@ package com.heckmannch.birthdaybuddy.domain.usecase
 
 import com.google.common.truth.Truth.assertThat
 import com.heckmannch.birthdaybuddy.MainDispatcherRule
-import com.heckmannch.birthdaybuddy.domain.repository.ContactRepository
+import com.heckmannch.birthdaybuddy.domain.repository.CoupleRepository
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.mockk
@@ -21,12 +21,12 @@ class LinkAsCoupleUseCaseTest {
     @get:Rule
     val mainDispatcherRule = MainDispatcherRule()
 
-    private val contactRepository: ContactRepository = mockk()
+    private val coupleRepository: CoupleRepository = mockk()
     private lateinit var useCase: LinkAsCoupleUseCase
 
     @Before
     fun setUp() {
-        useCase = LinkAsCoupleUseCase(contactRepository)
+        useCase = LinkAsCoupleUseCase(coupleRepository)
     }
 
     @Test
@@ -34,13 +34,13 @@ class LinkAsCoupleUseCaseTest {
         // Arrange
         val lookupKey1 = "lookupKey1"
         val lookupKey2 = "lookupKey2"
-        coEvery { contactRepository.linkAsCouple(lookupKey1, lookupKey2) } returns Unit
+        coEvery { coupleRepository.linkAsCouple(lookupKey1, lookupKey2) } returns Unit
 
         // Act
         useCase(lookupKey1, lookupKey2)
 
         // Assert
-        coVerify(exactly = 1) { contactRepository.linkAsCouple(lookupKey1, lookupKey2) }
+        coVerify(exactly = 1) { coupleRepository.linkAsCouple(lookupKey1, lookupKey2) }
     }
 
     @Test
@@ -49,7 +49,7 @@ class LinkAsCoupleUseCaseTest {
         val lookupKey1 = "lookupKey1"
         val lookupKey2 = "lookupKey2"
         val exceptionMessage = "Failed to link contacts"
-        coEvery { contactRepository.linkAsCouple(lookupKey1, lookupKey2) } throws RuntimeException(
+        coEvery { coupleRepository.linkAsCouple(lookupKey1, lookupKey2) } throws RuntimeException(
             exceptionMessage
         )
 

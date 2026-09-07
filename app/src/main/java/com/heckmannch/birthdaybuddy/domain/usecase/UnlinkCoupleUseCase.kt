@@ -1,6 +1,6 @@
 package com.heckmannch.birthdaybuddy.domain.usecase
 
-import com.heckmannch.birthdaybuddy.domain.repository.ContactRepository
+import com.heckmannch.birthdaybuddy.domain.repository.CoupleRepository
 import dagger.Reusable
 import javax.inject.Inject
 
@@ -9,9 +9,9 @@ import javax.inject.Inject
  */
 @Reusable
 class UnlinkCoupleUseCase @Inject constructor(
-    private val contactRepository: ContactRepository
+    private val coupleRepository: CoupleRepository
 ) {
     suspend operator fun invoke(lookupKey: String) {
-        contactRepository.unlinkCouple(lookupKey)
+        coupleRepository.unlinkCouple(lookupKey)
     }
 }

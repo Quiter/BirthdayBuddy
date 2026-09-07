@@ -19,7 +19,7 @@
   - `@MainDispatcher`: Bereitstellung von `Dispatchers.Main` für UI- und Main-Thread-Operationen.
   - `@ApplicationScope`: Bereitstellung eines prozessweiten CoroutineScopes mit SupervisorJob und Unhandled Exception Handler.
   - **Dispatcher-Injektions-Regel (Google Best Practice)**: Klassen (Repositories, DataSources, ViewModels) dürfen Dispatcher **nicht hardcoden** (`withContext(Dispatchers.IO)` ist verboten). Stattdessen wird `@IoDispatcher private val ioDispatcher: CoroutineDispatcher` per Konstruktor injiziert, um 100% deterministische Unit-Tests (via `TestDispatcher`) zu ermöglichen.
-- `HelperBindingsModule.kt`: Hilt-Modul zur Bereitstellung der Singleton-Bindings für Hilfsklassen (WidgetUpdater, NotificationScheduler).
+- `HelperBindingsModule.kt`: Hilt-Modul zur Bereitstellung der Singleton-Bindings für Hilfsklassen und Repositories (`ContactRepository`, `GiftIdeaRepository`, `CoupleRepository`, `SettingsRepository`, `NotificationRepository`, `CalendarSyncRepository`, `TimeRepository`, `WidgetUpdater`, `NotificationScheduler`).
 
 ## 📁 Data Layer (`data`)
 - ### 📁 Local (`data.local`)
@@ -41,21 +41,37 @@
     - `PendingNotificationDao.kt`: DAO für die Verwaltung noch nicht quittierter Erinnerungen.
     - `ContactLabels.kt` (Veraltet): Hält aus Gründen der Rückwärtskompatibilität eine deprecated Delegation der Pseudo-Label-Identifier, die nun in der Domain-Schicht liegen.
 - ### 📁 Repository (`data.repository`)
-    - `CalendarSyncRepository.kt`: Orchestriert die Synchronisation von Geburtstagen, Namenstagen und Hochzeitstagen mit dem System-Kalender unter Verwendung von `SystemCalendarDataSource`.
-    - `ContactRepository.kt`: Orchestriert den Datenfluss zwischen Room-DB und der System-Kontaktquelle; implementiert die Sync-Logik, reaktive Widget-Updates und Geschäftslogik für Geschenkideen.
+    - `ContactRepositoryImpl.kt`: Schlanke, SRP-konforme Implementierung des `ContactRepository` (8 funktionale Abhängigkeiten); orchestriert den Datenfluss zwischen Room-DB (`ContactDao`, `LabelConfigDao`, `ContactUserDataDao`) und der System-Kontaktquelle (`SystemContactDataSource`), Kontaktsynchronisation, Caching und Label-Management.
+    - `GiftIdeaRepositoryImpl.kt`: Implementierung des `GiftIdeaRepository` für Geschenkideen-CRUD, atomaren 2-Phasen-Commit/Rollback über `AppDatabase` und `SettingsDatabase`, JSON-Im-/Export via `GiftIdeaBackupManager` und Widget-Updates.
+    - `CoupleRepositoryImpl.kt`: Implementierung des `CoupleRepository` für Paar-Verknüpfung und -Aufhebung mit atomarem 2-Phasen-Commit/Rollback über `AppDatabase` und `SettingsDatabase`, reaktivem Stream für `potentialCouples` und Ignorierlisten-Verwaltung über `SettingsRepository`.
+    - `SettingsRepositoryImpl.kt`: Thread-sichere Implementierung des `SettingsRepository` mittels `Mutex` zur Verwaltung und Mutation von `AppSettings` via `AppSettingsDao` und `AppSettingsMapper`.
+    - `NotificationRepositoryImpl.kt`: Verwaltet Benachrichtigungsregeln (`NotificationRuleDao`), delegiert AppSettings-Operationen an `SettingsRepository`.
+    - `CalendarSyncRepositoryImpl.kt`: Orchestriert die Synchronisation von Geburtstagen, Namenstagen und Hochzeitstagen mit dem System-Kalender unter Verwendung von `SystemCalendarDataSource`.
     - `GiftIdeaBackupManager.kt`: Spezialisierte Klasse für den JSON-basierten Im- und Export von Geschenkideen.
-    - `NotificationRepository.kt`: Zentraler Zugriff auf Benachrichtigungsregeln und persistente App-Einstellungen.
+    - `BirthdayWidgetUpdater.kt`: Implementierung von `WidgetUpdater` zur Aktualisierung der Android-Widgets.
+    - `NotificationSchedulerImpl.kt`: Implementierung von `NotificationScheduler` zur Planung von Worker-Benachrichtigungen.
     - `SystemCalendarInfo.kt`: Datenklasse zur Kapselung von Kalender-Metadaten (z. B. ID, Name, Account-Typ, Farbe) zur Entkopplung der Datenquellen von Android-Datenbankcursorn.
     - `SystemCalendarDataSource.kt`: Interface für den Zugriff auf den Kalender-Provider (CRUD-Operationen auf Kalender- und Event-Tabellen).
     - `SystemCalendarDataSourceImpl.kt`: Konkrete Android-Implementierung von `SystemCalendarDataSource`, die den `ContentResolver` nutzt, um Kalender und Events im System zu verwalten.
     - `SystemContactDataSource.kt`: Kapselt den Low-Level Zugriff auf den Android ContentResolver (Kontakte, Gruppen, Events).
-    - `TimeRepository.kt`: Reaktive Zeitquelle, die bei Datumswechseln (Mitternacht) automatische UI-Updates triggert.
+    - `TimeRepositoryImpl.kt`: Reaktive Zeitquelle, die bei Datumswechseln (Mitternacht) automatische UI-Updates triggert.
 - ### 📁 Mapper (`data.mapper`)
     - `ContactDbMapper.kt`: Reine Logik-Komponente zur bidirektionalen Transformation zwischen Datenbank-Entitäten und Domain-Modellen (`ContactEntity` <-> `Contact`) (mittels `@Reusable` für effiziente DI-Instanziierung optimiert).
+    - `AppSettingsMapper.kt`: Reine Logik-Komponente zur Transformation zwischen `AppSettingsEntity` und Domain `AppSettings`.
 - ### 📁 Permission (`data.permission`)
     - `AndroidPermissionChecker.kt`: Konkrete plattformspezifische Implementierung des `PermissionChecker` Interfaces unter Verwendung von ContextCompat APIs und App-Kontext.
 
 ## 📁 Domain Layer (`domain`)
+- ### 📁 Repositories (`domain.repository`)
+    - `ContactRepository.kt`: Domänen-Interface für Kontaktsynchronisation mit dem System-Provider, Caching und Label-Management.
+    - `GiftIdeaRepository.kt`: Domänen-Interface für Geschenkideen-CRUD, Status-Toggling und JSON-Backup (Export/Import).
+    - `CoupleRepository.kt`: Domänen-Interface für Paar-Kopplungsvorschläge (`potentialCouples`), Verknüpfung (`linkAsCouple`), Aufhebung (`unlinkCouple`) und Ignorierlisten-Verwaltung.
+    - `SettingsRepository.kt`: Domänen-Interface für anwendungsweite Einstellungen (`AppSettings`), inklusive reaktivem Stream (`settings: Flow<AppSettings>`) und Mutation (`updateSettings`).
+    - `NotificationRepository.kt`: Domänen-Interface für Benachrichtigungsregeln (erweitert `SettingsRepository` für Rückwärtskompatibilität).
+    - `CalendarSyncRepository.kt`: Domänen-Interface für die Kalendersynchronisation.
+    - `TimeRepository.kt`: Domänen-Interface für reaktive Zeitquellen (Mitternachts-Ticker).
+    - `NotificationScheduler.kt`: Domänen-Interface zur Planung und Stornierung von Alarmen und Benachrichtigungen.
+    - `WidgetUpdater.kt`: Domänen-Interface zur Invalidierung und Aktualisierung der Home-Screen-Widgets.
 - ### 📁 Permission (`domain.permission`)
     - `PermissionChecker.kt`: Domänen-Interface zur Definition von Methoden für Berechtigungsabfragen, entkoppelt ViewModels vollständig von Android Platform-APIs.
 - ### 📁 Models (`domain.model`)

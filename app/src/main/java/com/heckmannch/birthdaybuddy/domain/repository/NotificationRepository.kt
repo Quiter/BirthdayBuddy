@@ -1,6 +1,5 @@
 package com.heckmannch.birthdaybuddy.domain.repository
 
-import com.heckmannch.birthdaybuddy.domain.model.AppSettings
 import com.heckmannch.birthdaybuddy.domain.model.NotificationRule
 import com.heckmannch.birthdaybuddy.domain.model.PendingNotification
 import kotlinx.coroutines.flow.Flow
@@ -8,21 +7,10 @@ import kotlinx.coroutines.flow.Flow
 /**
  * Domain repository interface for managing notifications, schedules, and app settings.
  */
-interface NotificationRepository {
+interface NotificationRepository : SettingsRepository {
     val allRules: Flow<List<NotificationRule>>
-    val settings: Flow<AppSettings>
 
     suspend fun syncScheduling()
-
-    /**
-     * Updates application settings by applying the given transformation function [transform]
-     * to the current settings state.
-     *
-     * @param transform Function to apply modifications to the current [AppSettings].
-     */
-    suspend fun updateSettings(transform: (AppSettings) -> AppSettings)
-
-    suspend fun getSettingsImmediate(): AppSettings
 
     suspend fun getAllRulesImmediate(): List<NotificationRule>
     suspend fun insertRule(rule: NotificationRule)

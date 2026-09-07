@@ -8,6 +8,8 @@ import com.heckmannch.birthdaybuddy.domain.model.ContactLabels
 import com.heckmannch.birthdaybuddy.domain.model.LabelConfig
 import com.heckmannch.birthdaybuddy.domain.permission.PermissionChecker
 import com.heckmannch.birthdaybuddy.domain.repository.ContactRepository
+import com.heckmannch.birthdaybuddy.domain.repository.CoupleRepository
+import com.heckmannch.birthdaybuddy.domain.repository.GiftIdeaRepository
 import com.heckmannch.birthdaybuddy.domain.repository.TimeRepository
 import com.heckmannch.birthdaybuddy.domain.usecase.GetAvailableLabelsUseCase
 import com.heckmannch.birthdaybuddy.domain.usecase.GetContactsUseCase
@@ -53,6 +55,8 @@ class HomeViewModelTest {
     val mainDispatcherRule = MainDispatcherRule()
 
     private val contactRepository: ContactRepository = mock()
+    private val giftIdeaRepository: GiftIdeaRepository = mock()
+    private val coupleRepository: CoupleRepository = mock()
     private val clock = FakeClock()
 
     private class FakeClock(var time: Long = 0L) : Clock {
@@ -64,10 +68,10 @@ class HomeViewModelTest {
     private val contactUiMapper = ContactUiMapper()
     private val coupleSuggestionUiMapper = CoupleSuggestionUiMapper()
     private val getAvailableLabelsUseCase = GetAvailableLabelsUseCase(mainDispatcherRule.testDispatcher)
-    private val getCoupleSuggestionUseCase = GetCoupleSuggestionUseCase(contactRepository)
-    private val linkAsCoupleUseCase = LinkAsCoupleUseCase(contactRepository)
-    private val unlinkCoupleUseCase = UnlinkCoupleUseCase(contactRepository)
-    private val ignoreCoupleSuggestionUseCase = IgnoreCoupleSuggestionUseCase(contactRepository)
+    private val getCoupleSuggestionUseCase = GetCoupleSuggestionUseCase(coupleRepository)
+    private val linkAsCoupleUseCase = LinkAsCoupleUseCase(coupleRepository)
+    private val unlinkCoupleUseCase = UnlinkCoupleUseCase(coupleRepository)
+    private val ignoreCoupleSuggestionUseCase = IgnoreCoupleSuggestionUseCase(coupleRepository)
     private val today = LocalDate.of(2024, 5, 15)
     private val permissionChecker: PermissionChecker = mock()
 
@@ -76,16 +80,19 @@ class HomeViewModelTest {
         whenever(timeRepository.currentDate).doReturn(MutableStateFlow(today))
         whenever(contactRepository.labelConfigs).doReturn(MutableStateFlow(emptyList()))
         whenever(contactRepository.allContacts).doReturn(MutableStateFlow(emptyList()))
-        whenever(contactRepository.potentialCouples).doReturn(MutableStateFlow(emptyList()))
         whenever(contactRepository.otherEventsEnabled).doReturn(MutableStateFlow(false))
-        whenever(contactRepository.ignoredCouplePairs).doReturn(MutableStateFlow(emptyList()))
         whenever(contactRepository.labelsEnabled).doReturn(MutableStateFlow(true))
+        whenever(coupleRepository.potentialCouples).doReturn(MutableStateFlow(emptyList()))
+        whenever(coupleRepository.ignoredCouples).doReturn(MutableStateFlow(emptyList()))
+        whenever(coupleRepository.ignoredCouplePairs).doReturn(MutableStateFlow(emptyList()))
         whenever(permissionChecker.hasContactsPermission()).doReturn(true)
     }
 
     private fun createViewModel(): HomeViewModel {
         return HomeViewModel(
             contactRepository = contactRepository,
+            giftIdeaRepository = giftIdeaRepository,
+            coupleRepository = coupleRepository,
             getContactsUseCase = getContactsUseCase,
             contactUiMapper = contactUiMapper,
             coupleSuggestionUiMapper = coupleSuggestionUiMapper,

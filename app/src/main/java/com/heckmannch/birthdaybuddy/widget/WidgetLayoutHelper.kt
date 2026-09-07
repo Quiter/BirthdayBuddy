@@ -4,6 +4,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.heckmannch.birthdaybuddy.ui.theme.SpacingExtraSmall
 import com.heckmannch.birthdaybuddy.ui.theme.WidgetItemMinHeight
+import com.heckmannch.birthdaybuddy.widget.WidgetLayoutHelper.MIN_ITEMS_DEFAULT
 
 /**
  * Result data class holding the computed layout metrics for the widget item list.

@@ -56,6 +56,7 @@ import com.heckmannch.birthdaybuddy.ui.components.SettingsDivider
 import com.heckmannch.birthdaybuddy.ui.components.SettingsSection
 import com.heckmannch.birthdaybuddy.ui.components.SettingsSwitchRow
 import com.heckmannch.birthdaybuddy.ui.components.withSettingsInsets
+import com.heckmannch.birthdaybuddy.ui.screens.settings.notifications.NotificationSettingsState.Companion.Saver
 import com.heckmannch.birthdaybuddy.ui.screens.settings.notifications.components.EditRuleDialog
 import com.heckmannch.birthdaybuddy.ui.screens.settings.notifications.components.NotificationRuleItem
 import com.heckmannch.birthdaybuddy.ui.theme.AlphaSurfaceContainerHigh
@@ -233,7 +234,7 @@ class NotificationSettingsState(
 
 @Composable
 fun rememberNotificationSettingsState(): NotificationSettingsState {
-    return rememberSaveable(saver = NotificationSettingsState.Saver) {
+    return rememberSaveable(saver = Saver) {
         NotificationSettingsState()
     }
 }

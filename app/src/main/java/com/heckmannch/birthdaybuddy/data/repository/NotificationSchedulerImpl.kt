@@ -29,12 +29,7 @@ class NotificationSchedulerImpl @Inject constructor(
     override fun snoozeNotification(pendingId: Int, daysBefore: Int, lookupKeys: List<String>) {
         val firstKey = lookupKeys.firstOrNull() ?: ""
         val eventType = NotificationKeyUtils.extractEventType(firstKey)
-        val data = Data.Builder()
-            .putInt(NotificationActions.EXTRA_DAYS_BEFORE, daysBefore)
-            .putInt(NotificationActions.EXTRA_PENDING_ID, pendingId)
-            .putStringArray(NotificationActions.EXTRA_LOOKUP_KEYS, lookupKeys.toTypedArray())
-            .putString(NotificationActions.EXTRA_EVENT_TYPE, eventType.name)
-            .build()
+        val data = createSnoozeWorkData(pendingId, daysBefore, lookupKeys, eventType)
 
         val snoozeRequest = OneTimeWorkRequestBuilder<SnoozeWorker>()
             .setInitialDelay(2, TimeUnit.HOURS)
@@ -52,12 +47,7 @@ class NotificationSchedulerImpl @Inject constructor(
         eventType: EventType,
         delayMillis: Long
     ) {
-        val data = Data.Builder()
-            .putInt(NotificationActions.EXTRA_DAYS_BEFORE, daysBefore)
-            .putInt(NotificationActions.EXTRA_PENDING_ID, pendingId)
-            .putStringArray(NotificationActions.EXTRA_LOOKUP_KEYS, lookupKeys.toTypedArray())
-            .putString(NotificationActions.EXTRA_EVENT_TYPE, eventType.name)
-            .build()
+        val data = createSnoozeWorkData(pendingId, daysBefore, lookupKeys, eventType)
 
         val reShowRequest = OneTimeWorkRequestBuilder<SnoozeWorker>()
             .setInitialDelay(delayMillis, TimeUnit.MILLISECONDS)
@@ -66,4 +56,16 @@ class NotificationSchedulerImpl @Inject constructor(
 
         WorkManager.getInstance(context).enqueue(reShowRequest)
     }
+
+    private fun createSnoozeWorkData(
+        pendingId: Int,
+        daysBefore: Int,
+        lookupKeys: List<String>,
+        eventType: EventType
+    ): Data = Data.Builder()
+        .putInt(NotificationActions.EXTRA_DAYS_BEFORE, daysBefore)
+        .putInt(NotificationActions.EXTRA_PENDING_ID, pendingId)
+        .putStringArray(NotificationActions.EXTRA_LOOKUP_KEYS, lookupKeys.toTypedArray())
+        .putString(NotificationActions.EXTRA_EVENT_TYPE, eventType.name)
+        .build()
 }

@@ -4,16 +4,22 @@ import com.heckmannch.birthdaybuddy.data.permission.AndroidPermissionChecker
 import com.heckmannch.birthdaybuddy.data.repository.BirthdayWidgetUpdater
 import com.heckmannch.birthdaybuddy.data.repository.CalendarSyncRepositoryImpl
 import com.heckmannch.birthdaybuddy.data.repository.ContactRepositoryImpl
+import com.heckmannch.birthdaybuddy.data.repository.CoupleRepositoryImpl
+import com.heckmannch.birthdaybuddy.data.repository.GiftIdeaRepositoryImpl
 import com.heckmannch.birthdaybuddy.data.repository.NotificationRepositoryImpl
 import com.heckmannch.birthdaybuddy.data.repository.NotificationSchedulerImpl
+import com.heckmannch.birthdaybuddy.data.repository.SettingsRepositoryImpl
 import com.heckmannch.birthdaybuddy.data.repository.SystemCalendarDataSource
 import com.heckmannch.birthdaybuddy.data.repository.SystemCalendarDataSourceImpl
 import com.heckmannch.birthdaybuddy.data.repository.TimeRepositoryImpl
 import com.heckmannch.birthdaybuddy.domain.permission.PermissionChecker
 import com.heckmannch.birthdaybuddy.domain.repository.CalendarSyncRepository
 import com.heckmannch.birthdaybuddy.domain.repository.ContactRepository
+import com.heckmannch.birthdaybuddy.domain.repository.CoupleRepository
+import com.heckmannch.birthdaybuddy.domain.repository.GiftIdeaRepository
 import com.heckmannch.birthdaybuddy.domain.repository.NotificationRepository
 import com.heckmannch.birthdaybuddy.domain.repository.NotificationScheduler
+import com.heckmannch.birthdaybuddy.domain.repository.SettingsRepository
 import com.heckmannch.birthdaybuddy.domain.repository.TimeRepository
 import com.heckmannch.birthdaybuddy.domain.repository.WidgetUpdater
 import com.heckmannch.birthdaybuddy.util.Clock
@@ -118,4 +124,34 @@ interface HelperBindingsModule {
     @Binds
     @Singleton
     fun bindPermissionChecker(checker: AndroidPermissionChecker): PermissionChecker
+
+    /**
+     * Binds the gift idea repository interface to its implementation.
+     *
+     * @param repository The [GiftIdeaRepositoryImpl] implementation.
+     * @return The bound [GiftIdeaRepository] interface.
+     */
+    @Binds
+    @Singleton
+    fun bindGiftIdeaRepository(repository: GiftIdeaRepositoryImpl): GiftIdeaRepository
+
+    /**
+     * Binds the couple repository interface to its implementation.
+     *
+     * @param repository The [CoupleRepositoryImpl] implementation.
+     * @return The bound [CoupleRepository] interface.
+     */
+    @Binds
+    @Singleton
+    fun bindCoupleRepository(repository: CoupleRepositoryImpl): CoupleRepository
+
+    /**
+     * Binds the settings repository interface to its implementation.
+     *
+     * @param repository The [SettingsRepositoryImpl] implementation.
+     * @return The bound [SettingsRepository] interface.
+     */
+    @Binds
+    @Singleton
+    fun bindSettingsRepository(repository: SettingsRepositoryImpl): SettingsRepository
 }

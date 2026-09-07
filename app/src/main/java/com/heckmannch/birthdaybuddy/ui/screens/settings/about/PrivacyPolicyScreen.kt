@@ -1,5 +1,6 @@
 package com.heckmannch.birthdaybuddy.ui.screens.settings.about
 
+import android.content.res.Resources
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -12,12 +13,11 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import android.content.res.Resources
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalConfiguration
-import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.LinkAnnotation
@@ -45,7 +45,7 @@ fun PrivacyPolicyScreen(
     showBackButton: Boolean = true,
     onNavigateBack: () -> Unit
 ) {
-    val resources = LocalContext.current.resources
+    val resources = LocalResources.current
     val configuration = LocalConfiguration.current
     val errorMessage = stringResource(R.string.settings_privacy_load_error)
     val policyText = rememberSaveable(configuration) {

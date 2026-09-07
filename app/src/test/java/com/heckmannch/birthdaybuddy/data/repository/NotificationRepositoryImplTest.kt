@@ -2,13 +2,10 @@ package com.heckmannch.birthdaybuddy.data.repository
 
 import com.google.common.truth.Truth.assertThat
 import com.heckmannch.birthdaybuddy.MainDispatcherRule
-import com.heckmannch.birthdaybuddy.data.local.AppSettingsDao
-import com.heckmannch.birthdaybuddy.data.local.AppSettingsEntity
 import com.heckmannch.birthdaybuddy.data.local.NotificationRuleDao
 import com.heckmannch.birthdaybuddy.data.local.NotificationRuleEntity
 import com.heckmannch.birthdaybuddy.data.local.PendingNotificationDao
 import com.heckmannch.birthdaybuddy.data.local.PendingNotificationEntity
-import com.heckmannch.birthdaybuddy.data.mapper.AppSettingsMapper
 import com.heckmannch.birthdaybuddy.data.mapper.NotificationRuleMapper
 import com.heckmannch.birthdaybuddy.data.mapper.PendingNotificationMapper
 import com.heckmannch.birthdaybuddy.domain.model.AppSettings
@@ -16,6 +13,7 @@ import com.heckmannch.birthdaybuddy.domain.model.NotificationRule
 import com.heckmannch.birthdaybuddy.domain.model.PendingNotification
 import com.heckmannch.birthdaybuddy.domain.model.ThemeMode
 import com.heckmannch.birthdaybuddy.domain.repository.NotificationScheduler
+import com.heckmannch.birthdaybuddy.domain.repository.SettingsRepository
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
@@ -49,17 +47,16 @@ class NotificationRepositoryImplTest {
     // Mock dependencies with mockk(relaxed = true)
     private val notificationRuleDao: NotificationRuleDao = mockk(relaxed = true)
     private val pendingNotificationDao: PendingNotificationDao = mockk(relaxed = true)
-    private val appSettingsDao: AppSettingsDao = mockk(relaxed = true)
+    private val settingsRepository: SettingsRepository = mockk(relaxed = true)
     private val notificationScheduler: NotificationScheduler = mockk(relaxed = true)
 
     // Concrete mapper dependencies
-    private val appSettingsMapper = AppSettingsMapper()
     private val notificationRuleMapper = NotificationRuleMapper()
     private val pendingNotificationMapper = PendingNotificationMapper()
 
     // State flows to back DAO mocks
     private val allRulesFlow = MutableStateFlow<List<NotificationRuleEntity>>(emptyList())
-    private val settingsFlow = MutableStateFlow<AppSettingsEntity?>(null)
+    private val settingsFlow = MutableStateFlow(AppSettings())
 
     private lateinit var repository: NotificationRepositoryImpl
 
@@ -67,14 +64,13 @@ class NotificationRepositoryImplTest {
     fun setUp() {
         // Stub flows accessed during initialization
         every { notificationRuleDao.getAllRules() } returns allRulesFlow
-        every { appSettingsDao.getSettings() } returns settingsFlow
+        every { settingsRepository.settings } returns settingsFlow
 
         repository = NotificationRepositoryImpl(
             notificationRuleDao = notificationRuleDao,
             pendingNotificationDao = pendingNotificationDao,
-            appSettingsDao = appSettingsDao,
+            settingsRepository = settingsRepository,
             notificationScheduler = notificationScheduler,
-            appSettingsMapper = appSettingsMapper,
             notificationRuleMapper = notificationRuleMapper,
             pendingNotificationMapper = pendingNotificationMapper,
             ioDispatcher = mainDispatcherRule.testDispatcher,
@@ -110,14 +106,14 @@ class NotificationRepositoryImplTest {
     @Test
     fun settings_emitsCorrectlyMappedDomainObjects() = runTest {
         // Arrange
-        val settingsEntity = AppSettingsEntity(
+        val settings = AppSettings(
             id = 0,
             notificationsEnabled = true,
             persistentNotifications = false,
             onboardingCompleted = true,
             themeMode = ThemeMode.DARK
         )
-        settingsFlow.value = settingsEntity
+        settingsFlow.value = settings
 
         // Act
         val result = repository.settings.first()
@@ -133,7 +129,7 @@ class NotificationRepositoryImplTest {
     @Test
     fun settings_emitsDefaultAppSettings_whenEntityIsNull() = runTest {
         // Arrange
-        settingsFlow.value = null
+        settingsFlow.value = AppSettings()
 
         // Act
         val result = repository.settings.first()
@@ -145,7 +141,7 @@ class NotificationRepositoryImplTest {
     @Test
     fun syncScheduling_schedulesNext_whenEnabledAndRulesNotEmpty() = runTest {
         // Arrange
-        coEvery { appSettingsDao.getSettingsImmediate() } returns AppSettingsEntity(
+        coEvery { settingsRepository.getSettingsImmediate() } returns AppSettings(
             notificationsEnabled = true
         )
         coEvery { notificationRuleDao.getAllRulesImmediate() } returns listOf(
@@ -166,7 +162,7 @@ class NotificationRepositoryImplTest {
     @Test
     fun syncScheduling_cancelsNotification_whenDisabled() = runTest {
         // Arrange
-        coEvery { appSettingsDao.getSettingsImmediate() } returns AppSettingsEntity(
+        coEvery { settingsRepository.getSettingsImmediate() } returns AppSettings(
             notificationsEnabled = false
         )
         coEvery { notificationRuleDao.getAllRulesImmediate() } returns listOf(
@@ -184,7 +180,7 @@ class NotificationRepositoryImplTest {
     @Test
     fun syncScheduling_cancelsNotification_whenRulesEmpty() = runTest {
         // Arrange
-        coEvery { appSettingsDao.getSettingsImmediate() } returns AppSettingsEntity(
+        coEvery { settingsRepository.getSettingsImmediate() } returns AppSettings(
             notificationsEnabled = true
         )
         coEvery { notificationRuleDao.getAllRulesImmediate() } returns emptyList()
@@ -198,25 +194,9 @@ class NotificationRepositoryImplTest {
     }
 
     @Test
-    fun syncScheduling_cancelsNotification_whenSettingsNull() = runTest {
-        // Arrange
-        coEvery { appSettingsDao.getSettingsImmediate() } returns null
-        coEvery { notificationRuleDao.getAllRulesImmediate() } returns listOf(
-            NotificationRuleEntity(id = 1, daysBefore = 0, hour = 9, minute = 0)
-        )
-
-        // Act
-        repository.syncScheduling()
-
-        // Assert
-        coVerify { notificationScheduler.cancelNotification() }
-        coVerify(exactly = 0) { notificationScheduler.scheduleNext(any()) }
-    }
-
-    @Test
     fun syncScheduling_catchesAndSuppressesSecurityException_whenSchedulingFails() = runTest {
         // Arrange
-        coEvery { appSettingsDao.getSettingsImmediate() } returns AppSettingsEntity(
+        coEvery { settingsRepository.getSettingsImmediate() } returns AppSettings(
             notificationsEnabled = true
         )
         coEvery { notificationRuleDao.getAllRulesImmediate() } returns listOf(
@@ -233,7 +213,7 @@ class NotificationRepositoryImplTest {
     @Test
     fun syncScheduling_rethrowsCancellationException_forStructuredConcurrency() = runTest {
         // Arrange
-        coEvery { appSettingsDao.getSettingsImmediate() } returns AppSettingsEntity(
+        coEvery { settingsRepository.getSettingsImmediate() } returns AppSettings(
             notificationsEnabled = true
         )
         coEvery { notificationRuleDao.getAllRulesImmediate() } returns listOf(
@@ -250,15 +230,11 @@ class NotificationRepositoryImplTest {
     }
 
     @Test
-    fun updateSettings_upsertsCorrectSettingsAndTriggersSync() = runTest {
+    fun updateSettings_delegatesToSettingsRepositoryAndTriggersSync() = runTest {
         // Arrange
-        val currentSettings = AppSettingsEntity(
-            id = 0,
-            notificationsEnabled = false,
-            persistentNotifications = true,
-            themeMode = ThemeMode.LIGHT
+        coEvery { settingsRepository.getSettingsImmediate() } returns AppSettings(
+            notificationsEnabled = false
         )
-        coEvery { appSettingsDao.getSettingsImmediate() } returns currentSettings
         coEvery { notificationRuleDao.getAllRulesImmediate() } returns emptyList()
 
         // Act
@@ -271,44 +247,17 @@ class NotificationRepositoryImplTest {
         }
 
         // Assert
-        val capturedEntity = slot<AppSettingsEntity>()
-        coVerify { appSettingsDao.upsertSettings(capture(capturedEntity)) }
-        val saved = capturedEntity.captured
-        assertThat(saved.notificationsEnabled).isTrue()
-        assertThat(saved.persistentNotifications).isTrue()
-        assertThat(saved.calendarId).isEqualTo(42L)
-        assertThat(saved.themeMode).isEqualTo(ThemeMode.DARK)
+        coVerify { settingsRepository.updateSettings(any()) }
 
         // Verify sync scheduling is triggered
-        coVerify { appSettingsDao.getSettingsImmediate() }
+        coVerify { settingsRepository.getSettingsImmediate() }
         coVerify { notificationScheduler.cancelNotification() }
-    }
-
-    @Test
-    fun updateSettings_clearsCalendarId_whenSetToNull() = runTest {
-        // Arrange
-        val currentSettings = AppSettingsEntity(
-            id = 0,
-            calendarId = 42L
-        )
-        coEvery { appSettingsDao.getSettingsImmediate() } returns currentSettings
-        coEvery { notificationRuleDao.getAllRulesImmediate() } returns emptyList()
-
-        // Act
-        repository.updateSettings {
-            it.copy(calendarId = null)
-        }
-
-        // Assert
-        val capturedEntity = slot<AppSettingsEntity>()
-        coVerify { appSettingsDao.upsertSettings(capture(capturedEntity)) }
-        assertThat(capturedEntity.captured.calendarId).isNull()
     }
 
     @Test
     fun getSettingsImmediate_returnsMappedSettings() = runTest {
         // Arrange
-        coEvery { appSettingsDao.getSettingsImmediate() } returns AppSettingsEntity(
+        coEvery { settingsRepository.getSettingsImmediate() } returns AppSettings(
             notificationsEnabled = true,
             persistentNotifications = false
         )
@@ -319,19 +268,6 @@ class NotificationRepositoryImplTest {
         // Assert
         assertThat(result.notificationsEnabled).isTrue()
         assertThat(result.persistentNotifications).isFalse()
-    }
-
-    @Test
-    fun getSettingsImmediate_whenDaoReturnsNull_returnsDefaultSettings() = runTest {
-        // Arrange
-        coEvery { appSettingsDao.getSettingsImmediate() } returns null
-
-        // Act
-        val result = repository.getSettingsImmediate()
-
-        // Assert
-        assertThat(result.notificationsEnabled).isFalse()
-        assertThat(result.persistentNotifications).isTrue()
     }
 
     @Test
@@ -353,7 +289,7 @@ class NotificationRepositoryImplTest {
     fun insertRule_delegatesToDaoAndTriggersSync() = runTest {
         // Arrange
         val rule = NotificationRule(id = 5, daysBefore = 2, hour = 12, minute = 0)
-        coEvery { appSettingsDao.getSettingsImmediate() } returns AppSettingsEntity(
+        coEvery { settingsRepository.getSettingsImmediate() } returns AppSettings(
             notificationsEnabled = false
         )
         coEvery { notificationRuleDao.getAllRulesImmediate() } returns emptyList()
@@ -375,7 +311,7 @@ class NotificationRepositoryImplTest {
     fun updateRule_delegatesToDaoAndTriggersSync() = runTest {
         // Arrange
         val rule = NotificationRule(id = 5, daysBefore = 2, hour = 12, minute = 0)
-        coEvery { appSettingsDao.getSettingsImmediate() } returns AppSettingsEntity(
+        coEvery { settingsRepository.getSettingsImmediate() } returns AppSettings(
             notificationsEnabled = false
         )
         coEvery { notificationRuleDao.getAllRulesImmediate() } returns emptyList()
@@ -396,7 +332,7 @@ class NotificationRepositoryImplTest {
     fun deleteRule_delegatesToDaoAndTriggersSync() = runTest {
         // Arrange
         val rule = NotificationRule(id = 5, daysBefore = 2, hour = 12, minute = 0)
-        coEvery { appSettingsDao.getSettingsImmediate() } returns AppSettingsEntity(
+        coEvery { settingsRepository.getSettingsImmediate() } returns AppSettings(
             notificationsEnabled = false
         )
         coEvery { notificationRuleDao.getAllRulesImmediate() } returns emptyList()

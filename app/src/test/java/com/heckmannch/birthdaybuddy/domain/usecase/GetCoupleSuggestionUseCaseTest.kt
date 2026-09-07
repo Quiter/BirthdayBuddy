@@ -4,7 +4,7 @@ import com.google.common.truth.Truth.assertThat
 import com.heckmannch.birthdaybuddy.MainDispatcherRule
 import com.heckmannch.birthdaybuddy.domain.model.ContactLabels
 import com.heckmannch.birthdaybuddy.domain.model.CoupleSuggestion
-import com.heckmannch.birthdaybuddy.domain.repository.ContactRepository
+import com.heckmannch.birthdaybuddy.domain.repository.CoupleRepository
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.first
@@ -21,7 +21,7 @@ class GetCoupleSuggestionUseCaseTest {
     @get:Rule
     val mainDispatcherRule = MainDispatcherRule()
 
-    private val contactRepository: ContactRepository = mock()
+    private val coupleRepository: CoupleRepository = mock()
     private lateinit var useCase: GetCoupleSuggestionUseCase
 
     private val potentialCouplesFlow = MutableStateFlow<List<CoupleSuggestion>>(emptyList())
@@ -29,9 +29,10 @@ class GetCoupleSuggestionUseCaseTest {
 
     @Before
     fun setUp() {
-        whenever(contactRepository.potentialCouples).thenReturn(potentialCouplesFlow)
-        whenever(contactRepository.ignoredCouplePairs).thenReturn(ignoredCouplePairsFlow)
-        useCase = GetCoupleSuggestionUseCase(contactRepository)
+        whenever(coupleRepository.potentialCouples).thenReturn(potentialCouplesFlow)
+        whenever(coupleRepository.ignoredCouples).thenReturn(ignoredCouplePairsFlow)
+        whenever(coupleRepository.ignoredCouplePairs).thenReturn(ignoredCouplePairsFlow)
+        useCase = GetCoupleSuggestionUseCase(coupleRepository)
     }
 
     @Test

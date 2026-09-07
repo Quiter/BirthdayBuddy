@@ -9,10 +9,8 @@ import com.heckmannch.birthdaybuddy.data.local.AppDatabase
 import com.heckmannch.birthdaybuddy.data.local.ContactEntity
 import com.heckmannch.birthdaybuddy.data.local.ContactUserData
 import com.heckmannch.birthdaybuddy.data.local.SettingsDatabase
-import com.heckmannch.birthdaybuddy.data.mapper.ContactDbMapper
-import com.heckmannch.birthdaybuddy.data.mapper.LabelConfigMapper
 import com.heckmannch.birthdaybuddy.domain.model.GiftIdea
-import com.heckmannch.birthdaybuddy.domain.repository.ContactRepository
+import com.heckmannch.birthdaybuddy.domain.repository.GiftIdeaRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.test.runTest
 import org.junit.After
@@ -22,12 +20,11 @@ import org.junit.runner.RunWith
 import org.mockito.kotlin.mock
 
 /**
- * Instrumentierte Tests für die Gift-Idea-Operationen in [ContactRepository].
+ * Instrumentierte Tests für die Gift-Idea-Operationen in [GiftIdeaRepository].
  *
  * Strategie: Beide Room-Datenbanken werden als In-Memory-Instanzen erstellt.
- * Nicht-DB-Abhängigkeiten (SystemContactDataSource, CalendarSyncRepository,
- * GiftIdeaBackupManager, WidgetUpdater) werden als leere Mocks bereitgestellt,
- * da sie in den zu testenden Codepfaden nicht aufgerufen werden.
+ * Nicht-DB-Abhängigkeiten (ContentResolver, GiftIdeaBackupManager, WidgetUpdater)
+ * werden als leere Mocks bereitgestellt, da sie in den zu testenden Codepfaden nicht aufgerufen werden.
  *
  * Verifiziertes Muster: Alle vier Gift-Idea-Operationen delegieren an die
  * private Hilfsmethode updateGiftIdeas(), die das Best-Effort-Rollback-Muster
@@ -40,7 +37,7 @@ class ContactRepositoryGiftIdeaTest {
 
     private lateinit var appDb: AppDatabase
     private lateinit var settingsDb: SettingsDatabase
-    private lateinit var repository: ContactRepository
+    private lateinit var repository: GiftIdeaRepository
 
     private fun makeContact(lookupKey: String, name: String) = ContactEntity(
         contactId = lookupKey,
@@ -63,23 +60,16 @@ class ContactRepositoryGiftIdeaTest {
             .allowMainThreadQueries()
             .build()
 
-        repository = ContactRepositoryImpl(
-            permissionChecker = mock(),
+        repository = GiftIdeaRepositoryImpl(
             contentResolver = context.contentResolver,
             contactDao = appDb.contactDao(),
-            labelConfigDao = settingsDb.labelConfigDao(),
-            appSettingsDao = settingsDb.appSettingsDao(),
             contactUserDataDao = settingsDb.contactUserDataDao(),
-            systemContactDataSource = mock(),
             giftIdeaBackupManager = mock(),
-            calendarSyncRepository = mock(),
-            widgetUpdater = mock(),
+            contactRepository = mock(),
             appDatabase = appDb,
             settingsDatabase = settingsDb,
-            contactDbMapper = ContactDbMapper(),
-            labelConfigMapper = LabelConfigMapper(),
+            widgetUpdater = mock(),
             ioDispatcher = Dispatchers.IO,
-            defaultDispatcher = Dispatchers.Default,
         )
     }
 

@@ -1,5 +1,6 @@
 package com.heckmannch.birthdaybuddy.domain.util
 
+import com.heckmannch.birthdaybuddy.domain.util.PhoneNumberNormalizer.normalizeToDigitsOnly
 import java.util.Locale
 
 /**

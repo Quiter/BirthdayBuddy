@@ -2,9 +2,9 @@ package com.heckmannch.birthdaybuddy.ui.screens.settings.sync
 
 import android.Manifest
 import android.content.pm.PackageManager
-import androidx.annotation.VisibleForTesting
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.annotation.VisibleForTesting
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth

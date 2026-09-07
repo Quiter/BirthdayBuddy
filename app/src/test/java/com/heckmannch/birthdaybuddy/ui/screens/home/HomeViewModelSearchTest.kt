@@ -6,6 +6,8 @@ import com.heckmannch.birthdaybuddy.MainDispatcherRule
 import com.heckmannch.birthdaybuddy.domain.model.Contact
 import com.heckmannch.birthdaybuddy.domain.permission.PermissionChecker
 import com.heckmannch.birthdaybuddy.domain.repository.ContactRepository
+import com.heckmannch.birthdaybuddy.domain.repository.CoupleRepository
+import com.heckmannch.birthdaybuddy.domain.repository.GiftIdeaRepository
 import com.heckmannch.birthdaybuddy.domain.repository.TimeRepository
 import com.heckmannch.birthdaybuddy.domain.usecase.GetAvailableLabelsUseCase
 import com.heckmannch.birthdaybuddy.domain.usecase.GetContactsUseCase
@@ -47,18 +49,19 @@ class HomeViewModelSearchTest {
         }
     }
 
-
     @get:Rule
     val mainDispatcherRule = MainDispatcherRule()
 
     private val contactRepository: ContactRepository = mock()
+    private val giftIdeaRepository: GiftIdeaRepository = mock()
+    private val coupleRepository: CoupleRepository = mock()
     private val timeRepository: TimeRepository = mock()
     private val getContactsUseCase = GetContactsUseCase(mainDispatcherRule.testDispatcher)
     private val getAvailableLabelsUseCase = GetAvailableLabelsUseCase(mainDispatcherRule.testDispatcher)
-    private val getCoupleSuggestionUseCase = GetCoupleSuggestionUseCase(contactRepository)
-    private val linkAsCoupleUseCase = LinkAsCoupleUseCase(contactRepository)
-    private val unlinkCoupleUseCase = UnlinkCoupleUseCase(contactRepository)
-    private val ignoreCoupleSuggestionUseCase = IgnoreCoupleSuggestionUseCase(contactRepository)
+    private val getCoupleSuggestionUseCase = GetCoupleSuggestionUseCase(coupleRepository)
+    private val linkAsCoupleUseCase = LinkAsCoupleUseCase(coupleRepository)
+    private val unlinkCoupleUseCase = UnlinkCoupleUseCase(coupleRepository)
+    private val ignoreCoupleSuggestionUseCase = IgnoreCoupleSuggestionUseCase(coupleRepository)
     private val permissionChecker: PermissionChecker = mock()
     private val clock = TestClock()
 
@@ -66,15 +69,33 @@ class HomeViewModelSearchTest {
         override fun currentTimeMillis(): Long = time
     }
 
+    private fun createViewModel() = HomeViewModel(
+        contactRepository = contactRepository,
+        giftIdeaRepository = giftIdeaRepository,
+        coupleRepository = coupleRepository,
+        getContactsUseCase = getContactsUseCase,
+        contactUiMapper = ContactUiMapper(),
+        coupleSuggestionUiMapper = CoupleSuggestionUiMapper(),
+        getAvailableLabelsUseCase = getAvailableLabelsUseCase,
+        getCoupleSuggestionUseCase = getCoupleSuggestionUseCase,
+        linkAsCoupleUseCase = linkAsCoupleUseCase,
+        unlinkCoupleUseCase = unlinkCoupleUseCase,
+        ignoreCoupleSuggestionUseCase = ignoreCoupleSuggestionUseCase,
+        timeRepository = timeRepository,
+        permissionChecker = permissionChecker,
+        clock = clock,
+    )
+
     @Before
     fun setup() {
         // Basiskonfiguration für die Mocks
         whenever(contactRepository.allContacts).doReturn(MutableStateFlow(emptyList()))
-        whenever(contactRepository.potentialCouples).doReturn(MutableStateFlow(emptyList()))
         whenever(contactRepository.labelConfigs).doReturn(MutableStateFlow(emptyList()))
         whenever(contactRepository.otherEventsEnabled).doReturn(MutableStateFlow(false))
-        whenever(contactRepository.ignoredCouplePairs).doReturn(MutableStateFlow(emptyList()))
         whenever(contactRepository.labelsEnabled).doReturn(MutableStateFlow(true))
+        whenever(coupleRepository.potentialCouples).doReturn(MutableStateFlow(emptyList()))
+        whenever(coupleRepository.ignoredCouples).doReturn(MutableStateFlow(emptyList()))
+        whenever(coupleRepository.ignoredCouplePairs).doReturn(MutableStateFlow(emptyList()))
         whenever(timeRepository.currentDate).doReturn(MutableStateFlow(LocalDate.of(2024, 5, 15)))
         whenever(permissionChecker.hasContactsPermission()).doReturn(true)
     }
@@ -97,20 +118,7 @@ class HomeViewModelSearchTest {
         )
         whenever(contactRepository.allContacts).thenReturn(MutableStateFlow(contacts))
 
-        viewModel = HomeViewModel(
-            contactRepository = contactRepository,
-            getContactsUseCase = getContactsUseCase,
-            contactUiMapper = ContactUiMapper(),
-            coupleSuggestionUiMapper = CoupleSuggestionUiMapper(),
-            getAvailableLabelsUseCase = getAvailableLabelsUseCase,
-            getCoupleSuggestionUseCase = getCoupleSuggestionUseCase,
-            linkAsCoupleUseCase = linkAsCoupleUseCase,
-            unlinkCoupleUseCase = unlinkCoupleUseCase,
-            ignoreCoupleSuggestionUseCase = ignoreCoupleSuggestionUseCase,
-            timeRepository = timeRepository,
-            permissionChecker = permissionChecker,
-            clock = clock,
-        )
+        viewModel = createViewModel()
 
         // Suche nach "Mustermann Max"
         viewModel.onIntent(HomeIntent.SearchQueryChanged("Mustermann Max"))
@@ -136,20 +144,7 @@ class HomeViewModelSearchTest {
         )
         whenever(contactRepository.allContacts).thenReturn(MutableStateFlow(contacts))
 
-        viewModel = HomeViewModel(
-            contactRepository = contactRepository,
-            getContactsUseCase = getContactsUseCase,
-            contactUiMapper = ContactUiMapper(),
-            coupleSuggestionUiMapper = CoupleSuggestionUiMapper(),
-            getAvailableLabelsUseCase = getAvailableLabelsUseCase,
-            getCoupleSuggestionUseCase = getCoupleSuggestionUseCase,
-            linkAsCoupleUseCase = linkAsCoupleUseCase,
-            unlinkCoupleUseCase = unlinkCoupleUseCase,
-            ignoreCoupleSuggestionUseCase = ignoreCoupleSuggestionUseCase,
-            timeRepository = timeRepository,
-            permissionChecker = permissionChecker,
-            clock = clock,
-        )
+        viewModel = createViewModel()
 
         viewModel.onIntent(HomeIntent.SearchQueryChanged("  Max  "))
 
@@ -163,20 +158,7 @@ class HomeViewModelSearchTest {
 
     @Test
     fun searchQueryChanged_onlySetsIsResettingFilterOnSearchTransitions() = runTest {
-        viewModel = HomeViewModel(
-            contactRepository = contactRepository,
-            getContactsUseCase = getContactsUseCase,
-            contactUiMapper = ContactUiMapper(),
-            coupleSuggestionUiMapper = CoupleSuggestionUiMapper(),
-            getAvailableLabelsUseCase = getAvailableLabelsUseCase,
-            getCoupleSuggestionUseCase = getCoupleSuggestionUseCase,
-            linkAsCoupleUseCase = linkAsCoupleUseCase,
-            unlinkCoupleUseCase = unlinkCoupleUseCase,
-            ignoreCoupleSuggestionUseCase = ignoreCoupleSuggestionUseCase,
-            timeRepository = timeRepository,
-            permissionChecker = permissionChecker,
-            clock = clock,
-        )
+        viewModel = createViewModel()
 
         // 1. Initial State: searchQuery="", isResettingFilter=false
         val initialState = viewModel.uiState.first()
@@ -205,20 +187,7 @@ class HomeViewModelSearchTest {
 
     @Test
     fun searchQueryChanged_doesNotEmitImmediateScrollOnContinuousTyping() = runTest {
-        viewModel = HomeViewModel(
-            contactRepository = contactRepository,
-            getContactsUseCase = getContactsUseCase,
-            contactUiMapper = ContactUiMapper(),
-            coupleSuggestionUiMapper = CoupleSuggestionUiMapper(),
-            getAvailableLabelsUseCase = getAvailableLabelsUseCase,
-            getCoupleSuggestionUseCase = getCoupleSuggestionUseCase,
-            linkAsCoupleUseCase = linkAsCoupleUseCase,
-            unlinkCoupleUseCase = unlinkCoupleUseCase,
-            ignoreCoupleSuggestionUseCase = ignoreCoupleSuggestionUseCase,
-            timeRepository = timeRepository,
-            permissionChecker = permissionChecker,
-            clock = clock,
-        )
+        viewModel = createViewModel()
 
         var scrollCount = 0
         val collectJob = launch {

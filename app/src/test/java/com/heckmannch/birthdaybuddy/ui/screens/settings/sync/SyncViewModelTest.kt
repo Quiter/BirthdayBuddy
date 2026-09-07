@@ -3,6 +3,7 @@ package com.heckmannch.birthdaybuddy.ui.screens.settings.sync
 import com.google.common.truth.Truth.assertThat
 import com.heckmannch.birthdaybuddy.MainDispatcherRule
 import com.heckmannch.birthdaybuddy.domain.repository.ContactRepository
+import com.heckmannch.birthdaybuddy.domain.repository.CoupleRepository
 import com.heckmannch.birthdaybuddy.util.Clock
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.launch
@@ -24,6 +25,7 @@ class SyncViewModelTest {
     val mainDispatcherRule = MainDispatcherRule()
 
     private val contactRepository: ContactRepository = mock()
+    private val coupleRepository: CoupleRepository = mock()
     private val clock: Clock = mock()
 
     private lateinit var viewModel: SyncViewModel
@@ -31,7 +33,7 @@ class SyncViewModelTest {
     @Before
     fun setup() {
         whenever(clock.currentTimeMillis()).thenReturn(1000L)
-        viewModel = SyncViewModel(contactRepository, clock)
+        viewModel = SyncViewModel(contactRepository, coupleRepository, clock)
     }
 
     @Test
@@ -54,7 +56,7 @@ class SyncViewModelTest {
             viewModel.syncContacts()
             testScheduler.advanceUntilIdle()
 
-            verify(contactRepository).clearIgnoredCouplePairs()
+            verify(coupleRepository).clearIgnoredCouplePairs()
             verify(contactRepository).syncContacts()
             assertThat(legacyEventEmitted).isTrue()
             assertThat(event).isEqualTo(SyncEvent.Success)

@@ -2,10 +2,13 @@ package com.heckmannch.birthdaybuddy.ui.screens.home
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.heckmannch.birthdaybuddy.di.DefaultDispatcher
 import com.heckmannch.birthdaybuddy.domain.model.Contact
 import com.heckmannch.birthdaybuddy.domain.model.GiftIdea
 import com.heckmannch.birthdaybuddy.domain.permission.PermissionChecker
 import com.heckmannch.birthdaybuddy.domain.repository.ContactRepository
+import com.heckmannch.birthdaybuddy.domain.repository.CoupleRepository
+import com.heckmannch.birthdaybuddy.domain.repository.GiftIdeaRepository
 import com.heckmannch.birthdaybuddy.domain.repository.TimeRepository
 import com.heckmannch.birthdaybuddy.domain.usecase.GetAvailableLabelsUseCase
 import com.heckmannch.birthdaybuddy.domain.usecase.GetContactsUseCase
@@ -17,7 +20,6 @@ import com.heckmannch.birthdaybuddy.ui.mapper.ContactUiMapper
 import com.heckmannch.birthdaybuddy.ui.mapper.CoupleSuggestionUiMapper
 import com.heckmannch.birthdaybuddy.ui.model.ContactUiModel
 import com.heckmannch.birthdaybuddy.ui.model.CoupleSuggestionUiModel
-import com.heckmannch.birthdaybuddy.di.DefaultDispatcher
 import com.heckmannch.birthdaybuddy.ui.model.HomeUiState
 import com.heckmannch.birthdaybuddy.ui.model.PendingBirthdayEdit
 import com.heckmannch.birthdaybuddy.ui.screens.home.HomeViewModel.Companion.SEARCH_DEBOUNCE_DURATION
@@ -71,7 +73,9 @@ import kotlin.time.Duration.Companion.milliseconds
  *   Exposes state via `stateIn` with `SharingStarted.WhileSubscribed(STOP_TIMEOUT_MILLIS)`, preventing
  *   unnecessary background processing and memory retention when UI subscriptions cease.
  *
- * @property contactRepository Repository managing contact persistence, labels, synchronization, and gift ideas.
+ * @property contactRepository Repository managing contact persistence, labels, and synchronization.
+ * @property giftIdeaRepository Repository managing gift idea persistence and mutations.
+ * @property coupleRepository Repository managing couple links and suggestions.
  * @property contactUiMapper Mapper converting domain contact entities to presentation-ready [ContactUiModel]s.
  * @property coupleSuggestionUiMapper Mapper transforming domain couple suggestions to [CoupleSuggestionUiModel]s.
  * @property linkAsCoupleUseCase Use case linking two independent contacts into a single couple entity.
@@ -85,6 +89,8 @@ import kotlin.time.Duration.Companion.milliseconds
 @HiltViewModel
 class HomeViewModel @Inject constructor(
     private val contactRepository: ContactRepository,
+    private val giftIdeaRepository: GiftIdeaRepository,
+    private val coupleRepository: CoupleRepository,
     getContactsUseCase: GetContactsUseCase,
     private val contactUiMapper: ContactUiMapper,
     private val coupleSuggestionUiMapper: CoupleSuggestionUiMapper,
@@ -393,14 +399,14 @@ class HomeViewModel @Inject constructor(
                 val newIdea = GiftIdea(text = "")
                 _userUiState.update { it.copy(newlyAddedIdeaId = newIdea.id) }
                 viewModelScope.launch {
-                    contactRepository.addGiftIdea(intent.lookupKey, newIdea)
+                    giftIdeaRepository.addGiftIdea(intent.lookupKey, newIdea)
                 }
             }
 
             // Toggles the checked/purchased status of an existing gift idea item.
             is HomeIntent.ToggleGiftIdea -> {
                 viewModelScope.launch {
-                    contactRepository.toggleGiftIdea(
+                    giftIdeaRepository.toggleGiftIdea(
                         intent.lookupKey,
                         intent.idea,
                         intent.isChecked
@@ -411,14 +417,14 @@ class HomeViewModel @Inject constructor(
             // Deletes a gift idea item by its unique ID.
             is HomeIntent.DeleteGiftIdea -> {
                 viewModelScope.launch {
-                    contactRepository.deleteGiftIdea(intent.lookupKey, intent.ideaId)
+                    giftIdeaRepository.deleteGiftIdea(intent.lookupKey, intent.ideaId)
                 }
             }
 
             // Updates the description text of an existing gift idea item.
             is HomeIntent.UpdateGiftIdeaText -> {
                 viewModelScope.launch {
-                    contactRepository.updateGiftIdeaText(
+                    giftIdeaRepository.updateGiftIdeaText(
                         intent.lookupKey,
                         intent.ideaId,
                         intent.newText
@@ -440,7 +446,7 @@ class HomeViewModel @Inject constructor(
                     val startTime = clock.currentTimeMillis()
                     if (intent.showLoading) {
                         _userUiState.update { it.copy(isSyncing = true) }
-                        contactRepository.clearIgnoredCouplePairs()
+                        coupleRepository.clearIgnoredCouplePairs()
                     }
                     try {
                         contactRepository.syncContacts()

@@ -53,12 +53,17 @@ class NotificationRepositoryTest {
             ) {
             }
         }
+        val settingsRepository = SettingsRepositoryImpl(
+            appSettingsDao = settingsDb.appSettingsDao(),
+            appSettingsMapper = AppSettingsMapper(),
+            ioDispatcher = kotlinx.coroutines.Dispatchers.IO,
+            defaultDispatcher = kotlinx.coroutines.Dispatchers.Default
+        )
         repository = NotificationRepositoryImpl(
             notificationRuleDao = settingsDb.notificationRuleDao(),
             pendingNotificationDao = db.pendingNotificationDao(),
-            appSettingsDao = settingsDb.appSettingsDao(),
+            settingsRepository = settingsRepository,
             notificationScheduler = scheduler,
-            appSettingsMapper = AppSettingsMapper(),
             notificationRuleMapper = NotificationRuleMapper(),
             pendingNotificationMapper = PendingNotificationMapper(),
             ioDispatcher = kotlinx.coroutines.Dispatchers.IO,

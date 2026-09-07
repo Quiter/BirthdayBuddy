@@ -2,7 +2,7 @@ package com.heckmannch.birthdaybuddy.domain.usecase
 
 import com.heckmannch.birthdaybuddy.domain.model.ContactLabels
 import com.heckmannch.birthdaybuddy.domain.model.CoupleSuggestion
-import com.heckmannch.birthdaybuddy.domain.repository.ContactRepository
+import com.heckmannch.birthdaybuddy.domain.repository.CoupleRepository
 import dagger.Reusable
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
@@ -18,11 +18,11 @@ import javax.inject.Inject
  */
 @Reusable
 class GetCoupleSuggestionUseCase @Inject constructor(
-    private val contactRepository: ContactRepository
+    private val coupleRepository: CoupleRepository
 ) {
     operator fun invoke(selectedLabel: Flow<String?>): Flow<CoupleSuggestion?> = combine(
-        contactRepository.potentialCouples,
-        contactRepository.ignoredCouplePairs,
+        coupleRepository.potentialCouples,
+        coupleRepository.ignoredCouples,
         selectedLabel
     ) { potentials, ignoredPairs, label ->
         if (label != ContactLabels.LABEL_ANNIVERSARY || potentials.isEmpty()) return@combine null

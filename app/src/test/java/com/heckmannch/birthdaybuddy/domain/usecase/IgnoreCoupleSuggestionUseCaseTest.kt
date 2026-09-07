@@ -2,7 +2,7 @@ package com.heckmannch.birthdaybuddy.domain.usecase
 
 import com.google.common.truth.Truth.assertThat
 import com.heckmannch.birthdaybuddy.MainDispatcherRule
-import com.heckmannch.birthdaybuddy.domain.repository.ContactRepository
+import com.heckmannch.birthdaybuddy.domain.repository.CoupleRepository
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.mockk
@@ -21,12 +21,12 @@ class IgnoreCoupleSuggestionUseCaseTest {
     @get:Rule
     val mainDispatcherRule = MainDispatcherRule()
 
-    private val contactRepository: ContactRepository = mockk()
+    private val coupleRepository: CoupleRepository = mockk()
     private lateinit var useCase: IgnoreCoupleSuggestionUseCase
 
     @Before
     fun setUp() {
-        useCase = IgnoreCoupleSuggestionUseCase(contactRepository)
+        useCase = IgnoreCoupleSuggestionUseCase(coupleRepository)
     }
 
     @Test
@@ -34,13 +34,13 @@ class IgnoreCoupleSuggestionUseCaseTest {
         // Arrange
         val lookupKey1 = "lookupKey1"
         val lookupKey2 = "lookupKey2"
-        coEvery { contactRepository.ignoreCoupleSuggestion(lookupKey1, lookupKey2) } returns Unit
+        coEvery { coupleRepository.ignoreCoupleSuggestion(lookupKey1, lookupKey2) } returns Unit
 
         // Act
         useCase(lookupKey1, lookupKey2)
 
         // Assert
-        coVerify(exactly = 1) { contactRepository.ignoreCoupleSuggestion(lookupKey1, lookupKey2) }
+        coVerify(exactly = 1) { coupleRepository.ignoreCoupleSuggestion(lookupKey1, lookupKey2) }
     }
 
     @Test
@@ -50,7 +50,7 @@ class IgnoreCoupleSuggestionUseCaseTest {
         val lookupKey2 = "lookupKey2"
         val exceptionMessage = "Failed to ignore suggestion"
         coEvery {
-            contactRepository.ignoreCoupleSuggestion(
+            coupleRepository.ignoreCoupleSuggestion(
                 lookupKey1,
                 lookupKey2
             )

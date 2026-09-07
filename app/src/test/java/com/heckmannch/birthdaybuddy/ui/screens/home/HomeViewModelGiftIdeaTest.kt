@@ -6,6 +6,8 @@ import com.heckmannch.birthdaybuddy.MainDispatcherRule
 import com.heckmannch.birthdaybuddy.domain.model.GiftIdea
 import com.heckmannch.birthdaybuddy.domain.permission.PermissionChecker
 import com.heckmannch.birthdaybuddy.domain.repository.ContactRepository
+import com.heckmannch.birthdaybuddy.domain.repository.CoupleRepository
+import com.heckmannch.birthdaybuddy.domain.repository.GiftIdeaRepository
 import com.heckmannch.birthdaybuddy.domain.repository.TimeRepository
 import com.heckmannch.birthdaybuddy.domain.usecase.GetAvailableLabelsUseCase
 import com.heckmannch.birthdaybuddy.domain.usecase.GetContactsUseCase
@@ -41,6 +43,8 @@ class HomeViewModelGiftIdeaTest {
 
     // Mock dependencies with mockk(relaxed = true)
     private val contactRepository: ContactRepository = mockk(relaxed = true)
+    private val giftIdeaRepository: GiftIdeaRepository = mockk(relaxed = true)
+    private val coupleRepository: CoupleRepository = mockk(relaxed = true)
     private val getContactsUseCase: GetContactsUseCase = mockk(relaxed = true)
     private val getAvailableLabelsUseCase: GetAvailableLabelsUseCase = mockk(relaxed = true)
     private val getCoupleSuggestionUseCase: GetCoupleSuggestionUseCase = mockk(relaxed = true)
@@ -59,9 +63,7 @@ class HomeViewModelGiftIdeaTest {
         every { timeRepository.currentDate } returns MutableStateFlow(today)
         every { contactRepository.labelConfigs } returns MutableStateFlow(emptyList())
         every { contactRepository.allContacts } returns MutableStateFlow(emptyList())
-        every { contactRepository.potentialCouples } returns MutableStateFlow(emptyList())
         every { contactRepository.otherEventsEnabled } returns MutableStateFlow(false)
-        every { contactRepository.ignoredCouplePairs } returns MutableStateFlow(emptyList())
         every { contactRepository.labelsEnabled } returns MutableStateFlow(true)
 
         // Stub use case operator functions returning flows to prevent flow combine hangs
@@ -76,6 +78,8 @@ class HomeViewModelGiftIdeaTest {
 
         viewModel = HomeViewModel(
             contactRepository = contactRepository,
+            giftIdeaRepository = giftIdeaRepository,
+            coupleRepository = coupleRepository,
             getContactsUseCase = getContactsUseCase,
             contactUiMapper = ContactUiMapper(),
             coupleSuggestionUiMapper = CoupleSuggestionUiMapper(),
@@ -112,9 +116,9 @@ class HomeViewModelGiftIdeaTest {
         // Dispatch AddGiftIdea intent
         viewModel.onIntent(HomeIntent.AddGiftIdea(lookupKey))
 
-        // Verify delegation to contactRepository with a new empty GiftIdea
+        // Verify delegation to giftIdeaRepository with a new empty GiftIdea
         coVerify {
-            contactRepository.addGiftIdea(eq(lookupKey), capture(giftIdeaSlot))
+            giftIdeaRepository.addGiftIdea(eq(lookupKey), capture(giftIdeaSlot))
         }
 
         val capturedIdea = giftIdeaSlot.captured
@@ -134,9 +138,9 @@ class HomeViewModelGiftIdeaTest {
         // Dispatch ToggleGiftIdea intent
         viewModel.onIntent(HomeIntent.ToggleGiftIdea(lookupKey, giftIdea, isChecked))
 
-        // Verify delegation to contactRepository
+        // Verify delegation to giftIdeaRepository
         coVerify {
-            contactRepository.toggleGiftIdea(eq(lookupKey), eq(giftIdea), eq(isChecked))
+            giftIdeaRepository.toggleGiftIdea(eq(lookupKey), eq(giftIdea), eq(isChecked))
         }
     }
 
@@ -148,9 +152,9 @@ class HomeViewModelGiftIdeaTest {
         // Dispatch DeleteGiftIdea intent
         viewModel.onIntent(HomeIntent.DeleteGiftIdea(lookupKey, ideaId))
 
-        // Verify delegation to contactRepository
+        // Verify delegation to giftIdeaRepository
         coVerify {
-            contactRepository.deleteGiftIdea(eq(lookupKey), eq(ideaId))
+            giftIdeaRepository.deleteGiftIdea(eq(lookupKey), eq(ideaId))
         }
     }
 
@@ -163,9 +167,9 @@ class HomeViewModelGiftIdeaTest {
         // Dispatch UpdateGiftIdeaText intent
         viewModel.onIntent(HomeIntent.UpdateGiftIdeaText(lookupKey, ideaId, newText))
 
-        // Verify delegation to contactRepository
+        // Verify delegation to giftIdeaRepository
         coVerify {
-            contactRepository.updateGiftIdeaText(eq(lookupKey), eq(ideaId), eq(newText))
+            giftIdeaRepository.updateGiftIdeaText(eq(lookupKey), eq(ideaId), eq(newText))
         }
     }
 

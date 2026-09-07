@@ -2,7 +2,7 @@ package com.heckmannch.birthdaybuddy.domain.usecase
 
 import com.google.common.truth.Truth.assertThat
 import com.heckmannch.birthdaybuddy.MainDispatcherRule
-import com.heckmannch.birthdaybuddy.domain.repository.ContactRepository
+import com.heckmannch.birthdaybuddy.domain.repository.CoupleRepository
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.mockk
@@ -21,25 +21,25 @@ class UnlinkCoupleUseCaseTest {
     @get:Rule
     val mainDispatcherRule = MainDispatcherRule()
 
-    private val contactRepository: ContactRepository = mockk()
+    private val coupleRepository: CoupleRepository = mockk()
     private lateinit var useCase: UnlinkCoupleUseCase
 
     @Before
     fun setUp() {
-        useCase = UnlinkCoupleUseCase(contactRepository)
+        useCase = UnlinkCoupleUseCase(coupleRepository)
     }
 
     @Test
     fun `when invoked, unlinks couple in repository`() = runTest {
         // Arrange
         val lookupKey = "lookupKey"
-        coEvery { contactRepository.unlinkCouple(lookupKey) } returns Unit
+        coEvery { coupleRepository.unlinkCouple(lookupKey) } returns Unit
 
         // Act
         useCase(lookupKey)
 
         // Assert
-        coVerify(exactly = 1) { contactRepository.unlinkCouple(lookupKey) }
+        coVerify(exactly = 1) { coupleRepository.unlinkCouple(lookupKey) }
     }
 
     @Test
@@ -47,7 +47,7 @@ class UnlinkCoupleUseCaseTest {
         // Arrange
         val lookupKey = "lookupKey"
         val exceptionMessage = "Failed to unlink couple"
-        coEvery { contactRepository.unlinkCouple(lookupKey) } throws RuntimeException(
+        coEvery { coupleRepository.unlinkCouple(lookupKey) } throws RuntimeException(
             exceptionMessage
         )
 

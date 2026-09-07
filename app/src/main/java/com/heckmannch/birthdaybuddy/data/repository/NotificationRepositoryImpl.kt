@@ -1,11 +1,8 @@
 package com.heckmannch.birthdaybuddy.data.repository
 
 import android.util.Log
-import com.heckmannch.birthdaybuddy.data.local.AppSettingsDao
-import com.heckmannch.birthdaybuddy.data.local.AppSettingsEntity
 import com.heckmannch.birthdaybuddy.data.local.NotificationRuleDao
 import com.heckmannch.birthdaybuddy.data.local.PendingNotificationDao
-import com.heckmannch.birthdaybuddy.data.mapper.AppSettingsMapper
 import com.heckmannch.birthdaybuddy.data.mapper.NotificationRuleMapper
 import com.heckmannch.birthdaybuddy.data.mapper.PendingNotificationMapper
 import com.heckmannch.birthdaybuddy.di.DefaultDispatcher
@@ -15,14 +12,13 @@ import com.heckmannch.birthdaybuddy.domain.model.NotificationRule
 import com.heckmannch.birthdaybuddy.domain.model.PendingNotification
 import com.heckmannch.birthdaybuddy.domain.repository.NotificationRepository
 import com.heckmannch.birthdaybuddy.domain.repository.NotificationScheduler
+import com.heckmannch.birthdaybuddy.domain.repository.SettingsRepository
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.sync.Mutex
-import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
@@ -32,30 +28,25 @@ import javax.inject.Inject
  *
  * This repository coordinates data storage through local DAOs and manages scheduling
  * by delegating to [NotificationScheduler]. Thread safety during settings updates
- * is ensured using a coroutine [Mutex].
+ * is ensured using [SettingsRepository].
  */
 class NotificationRepositoryImpl @Inject constructor(
     private val notificationRuleDao: NotificationRuleDao,
     private val pendingNotificationDao: PendingNotificationDao,
-    private val appSettingsDao: AppSettingsDao,
+    private val settingsRepository: SettingsRepository,
     private val notificationScheduler: NotificationScheduler,
-    private val appSettingsMapper: AppSettingsMapper,
     private val notificationRuleMapper: NotificationRuleMapper,
     private val pendingNotificationMapper: PendingNotificationMapper,
     @IoDispatcher private val ioDispatcher: CoroutineDispatcher,
     @DefaultDispatcher private val defaultDispatcher: CoroutineDispatcher,
 ) : NotificationRepository {
-    private val settingsMutex = Mutex()
 
     override val allRules: Flow<List<NotificationRule>> = notificationRuleDao.getAllRules()
         .map { entities -> entities.map { notificationRuleMapper.toDomain(it) } }
         .flowOn(defaultDispatcher)
         .distinctUntilChanged()
 
-    override val settings: Flow<AppSettings> = appSettingsDao.getSettings()
-        .map { entity -> appSettingsMapper.toDomain(entity ?: AppSettingsEntity()) }
-        .flowOn(defaultDispatcher)
-        .distinctUntilChanged()
+    override val settings: Flow<AppSettings> = settingsRepository.settings
 
     /**
      * Synchronizes notification alarm scheduling with the current database settings and rules.
@@ -67,7 +58,7 @@ class NotificationRepositoryImpl @Inject constructor(
      */
     override suspend fun syncScheduling(): Unit = withContext(ioDispatcher) {
         try {
-            val enabled = appSettingsDao.getSettingsImmediate()?.notificationsEnabled ?: false
+            val enabled = settingsRepository.getSettingsImmediate().notificationsEnabled
             val rules = notificationRuleDao.getAllRulesImmediate()
             if (enabled && rules.isNotEmpty()) {
                 notificationScheduler.scheduleNext(rules.map { notificationRuleMapper.toDomain(it) })
@@ -84,34 +75,23 @@ class NotificationRepositoryImpl @Inject constructor(
     /**
      * Updates application settings by applying the provided [transform] function.
      *
-     * Thread safety is guaranteed via an internal mutex lock.
-     *
      * **Side effect:** Triggers [syncScheduling] after updating settings to ensure
      * alarms reflect any changes in configuration (e.g., enabling/disabling notifications).
      *
      * @param transform A lambda that receives the current [AppSettings] snapshot and returns the updated [AppSettings].
      */
-    override suspend fun updateSettings(transform: (AppSettings) -> AppSettings): Unit =
-        withContext(ioDispatcher) {
-            settingsMutex.withLock {
-                val currentEntity = appSettingsDao.getSettingsImmediate() ?: AppSettingsEntity()
-                val currentDomain = appSettingsMapper.toDomain(currentEntity)
-                val updatedDomain = transform(currentDomain)
-                val updatedEntity = appSettingsMapper.toEntity(updatedDomain)
-                appSettingsDao.upsertSettings(updatedEntity)
-            }
-            syncScheduling()
-        }
+    override suspend fun updateSettings(transform: (AppSettings) -> AppSettings) {
+        settingsRepository.updateSettings(transform)
+        syncScheduling()
+    }
 
     /**
      * Retrieves a one-time snapshot of the current application settings directly from the database.
      *
      * @return The current [AppSettings].
      */
-    override suspend fun getSettingsImmediate(): AppSettings = withContext(ioDispatcher) {
-        val currentEntity = appSettingsDao.getSettingsImmediate() ?: AppSettingsEntity()
-        appSettingsMapper.toDomain(currentEntity)
-    }
+    override suspend fun getSettingsImmediate(): AppSettings =
+        settingsRepository.getSettingsImmediate()
 
     /**
      * Retrieves a one-time snapshot list of all configured notification rules directly from the database.

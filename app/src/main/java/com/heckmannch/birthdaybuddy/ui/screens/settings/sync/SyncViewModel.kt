@@ -4,6 +4,7 @@ import androidx.compose.runtime.Immutable
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.heckmannch.birthdaybuddy.domain.repository.ContactRepository
+import com.heckmannch.birthdaybuddy.domain.repository.CoupleRepository
 import com.heckmannch.birthdaybuddy.util.Clock
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CancellationException
@@ -44,6 +45,7 @@ sealed interface SyncEvent {
 @HiltViewModel
 class SyncViewModel @Inject constructor(
     private val contactRepository: ContactRepository,
+    private val coupleRepository: CoupleRepository,
     private val clock: Clock,
 ) : ViewModel() {
 
@@ -72,7 +74,7 @@ class SyncViewModel @Inject constructor(
             _uiState.update { it.copy(isSyncing = true) }
             val startTime = clock.currentTimeMillis()
             try {
-                contactRepository.clearIgnoredCouplePairs()
+                coupleRepository.clearIgnoredCouplePairs()
                 contactRepository.syncContacts()
 
                 val elapsedTime = clock.currentTimeMillis() - startTime

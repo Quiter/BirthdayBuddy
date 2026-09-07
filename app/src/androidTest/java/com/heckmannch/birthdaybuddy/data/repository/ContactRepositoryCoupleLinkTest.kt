@@ -9,9 +9,9 @@ import com.heckmannch.birthdaybuddy.data.local.AppDatabase
 import com.heckmannch.birthdaybuddy.data.local.ContactEntity
 import com.heckmannch.birthdaybuddy.data.local.ContactUserData
 import com.heckmannch.birthdaybuddy.data.local.SettingsDatabase
+import com.heckmannch.birthdaybuddy.data.mapper.AppSettingsMapper
 import com.heckmannch.birthdaybuddy.data.mapper.ContactDbMapper
-import com.heckmannch.birthdaybuddy.data.mapper.LabelConfigMapper
-import com.heckmannch.birthdaybuddy.domain.repository.ContactRepository
+import com.heckmannch.birthdaybuddy.domain.repository.CoupleRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.test.runTest
 import org.junit.After
@@ -21,19 +21,18 @@ import org.junit.runner.RunWith
 import org.mockito.kotlin.mock
 
 /**
- * Instrumentierte Tests für die Couple-Operationen in [ContactRepository].
+ * Instrumentierte Tests für die Couple-Operationen in [CoupleRepository].
  *
  * Strategie: Beide Room-Datenbanken werden als In-Memory-Instanzen erstellt.
- * Nicht-DB-Abhängigkeiten (SystemContactDataSource, CalendarSyncRepository,
- * GiftIdeaBackupManager, WidgetUpdater) werden als leere Mocks bereitgestellt,
- * da sie in den zu testenden Codepfaden nicht aufgerufen werden.
+ * Nicht-DB-Abhängigkeiten (CalendarSyncRepository, WidgetUpdater) werden als leere Mocks bereitgestellt,
+ * da sie in den zu testenden Codepfaden keine Logik ausführen müssen.
  */
 @RunWith(AndroidJUnit4::class)
 class ContactRepositoryCoupleLinkTest {
 
     private lateinit var appDb: AppDatabase
     private lateinit var settingsDb: SettingsDatabase
-    private lateinit var repository: ContactRepository
+    private lateinit var repository: CoupleRepository
 
     private fun makeContact(lookupKey: String, name: String) = ContactEntity(
         contactId = lookupKey,
@@ -53,23 +52,23 @@ class ContactRepositoryCoupleLinkTest {
             .allowMainThreadQueries()
             .build()
 
-        repository = ContactRepositoryImpl(
-            permissionChecker = mock(),
-            contentResolver = context.contentResolver,
-            contactDao = appDb.contactDao(),
-            labelConfigDao = settingsDb.labelConfigDao(),
+        val settingsRepository = SettingsRepositoryImpl(
             appSettingsDao = settingsDb.appSettingsDao(),
+            appSettingsMapper = AppSettingsMapper(),
+            ioDispatcher = Dispatchers.IO,
+            defaultDispatcher = Dispatchers.Default,
+        )
+
+        repository = CoupleRepositoryImpl(
+            contactDao = appDb.contactDao(),
             contactUserDataDao = settingsDb.contactUserDataDao(),
-            systemContactDataSource = mock(),
-            giftIdeaBackupManager = mock(),
+            settingsRepository = settingsRepository,
             calendarSyncRepository = mock(),
             widgetUpdater = mock(),
             appDatabase = appDb,
             settingsDatabase = settingsDb,
             contactDbMapper = ContactDbMapper(),
-            labelConfigMapper = LabelConfigMapper(),
             ioDispatcher = Dispatchers.IO,
-            defaultDispatcher = Dispatchers.Default,
         )
     }
 
