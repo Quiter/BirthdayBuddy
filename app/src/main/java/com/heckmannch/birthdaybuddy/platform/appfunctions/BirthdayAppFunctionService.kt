@@ -17,9 +17,11 @@ package com.heckmannch.birthdaybuddy.platform.appfunctions
 
 import android.app.PendingIntent
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Build
 import androidx.annotation.RequiresApi
+import androidx.annotation.VisibleForTesting
 import androidx.appfunctions.AppFunction
 import androidx.appfunctions.AppFunctionInvalidArgumentException
 import androidx.appfunctions.AppFunctionService
@@ -202,11 +204,35 @@ abstract class BirthdayAppFunctionService : AppFunctionService() {
                 errorMessage = "Contact '${contact.fullName}' has no phone number stored.",
             )
 
-        val intent: Intent = when (app.lowercase()) {
+        val intent: Intent = buildSendBirthdayMessageIntent(app = app, phone = phone)
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+
+        PendingIntent.getActivity(
+            this@BirthdayAppFunctionService,
+            contactId.hashCode(),
+            intent,
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
+        )
+    }
+
+    /**
+     * Erstellt den Basis-Intent für den Versand einer Geburtstagsnachricht an die angegebene
+     * Rufnummer über die ausgewählte Messenger-App.
+     *
+     * Für WhatsApp wird dynamisch geprüft, ob das Standard-Paket (`com.whatsapp`) oder
+     * WhatsApp Business (`com.whatsapp.w4b`) installiert ist. Falls eines installiert ist, wird
+     * dieses explizit gesetzt. Andernfalls wird auf die universelle `https://wa.me/{phoneNumber}`
+     * URI ohne Paket-Einschränkung zurückgegriffen (Web/App-Chooser).
+     */
+    @VisibleForTesting
+    internal fun buildSendBirthdayMessageIntent(app: String, phone: String): Intent {
+        return when (app.lowercase()) {
             "whatsapp" -> Intent(Intent.ACTION_VIEW).apply {
                 val digitsOnly = PhoneNumberNormalizer.normalizeToDigitsOnly(phone)
                 data = "https://wa.me/$digitsOnly".toUri()
-                setPackage("com.whatsapp")
+                resolveWhatsAppPackage()?.let { packageName ->
+                    setPackage(packageName)
+                }
             }
 
             "signal" -> Intent(Intent.ACTION_VIEW).apply {
@@ -230,14 +256,18 @@ abstract class BirthdayAppFunctionService : AppFunctionService() {
                 errorMessage = "Unsupported app '$app'. Valid values: whatsapp, signal, telegram, sms.",
             )
         }
-        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+    }
 
-        PendingIntent.getActivity(
-            this@BirthdayAppFunctionService,
-            contactId.hashCode(),
-            intent,
-            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
-        )
+    /**
+     * Ermittelt das installierte WhatsApp-Paket (`com.whatsapp` oder `com.whatsapp.w4b`).
+     * Gibt null zurück, wenn keines der beiden Pakete über den [PackageManager] gefunden werden kann.
+     */
+    @VisibleForTesting
+    internal open fun resolveWhatsAppPackage(): String? {
+        val pm = runCatching { packageManager }.getOrNull() ?: return null
+        return WHATSAPP_PACKAGES.firstOrNull { pkg ->
+            isPackageInstalled(pm, pkg)
+        }
     }
 
     // -----------------------------------------------------------------------------------------
@@ -313,6 +343,33 @@ abstract class BirthdayAppFunctionService : AppFunctionService() {
             contactId.hashCode() xor 0xFF,
             intent,
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
+        )
+    }
+
+    /**
+     * Prüft, ob ein Paket auf dem Gerät installiert ist.
+     * Nutzt die typsichere [PackageManager.PackageInfoFlags]-API.
+     */
+    @VisibleForTesting
+    internal open fun isPackageInstalled(pm: PackageManager, packageName: String): Boolean {
+        return try {
+            pm.getPackageInfo(packageName, PackageManager.PackageInfoFlags.of(0L))
+            true
+        } catch (_: PackageManager.NameNotFoundException) {
+            false
+        } catch (_: Exception) {
+            false
+        }
+    }
+
+    companion object {
+        /**
+         * Unterstützte WhatsApp-Paketnamen in Prioritätsreihenfolge:
+         * Standard WhatsApp (`com.whatsapp`), gefolgt von WhatsApp Business (`com.whatsapp.w4b`).
+         */
+        val WHATSAPP_PACKAGES = listOf(
+            "com.whatsapp",
+            "com.whatsapp.w4b",
         )
     }
 }

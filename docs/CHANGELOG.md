@@ -726,3 +726,15 @@ ecreateContactsTableV7 (mit giftIdeas TEXT NOT NULL, COALESCE(giftIdeas, '[]')) 
       - Aktualisierung existierender Unit-Tests in `BootReceiverTest`, `NotificationWorkerTest`, `BirthdayWidgetWorkerTest` und `NotificationActionReceiverTest`.
       - Vollständiger Durchlauf aller 665 Unit-Tests (`./gradlew testDebugUnitTest`): 100% Erfolgsquote (BUILD SUCCESSFUL).
 
+374. **Flexibilisierung der WhatsApp-Package-Referenz in AppFunctions (Intent Security & Interoperabilität):**
+    - **Problem:** In [BirthdayAppFunctionService.kt](file:///c:/Users/chris/AndroidStudioProjects/BirthdayBuddy/app/src/main/java/com/heckmannch/birthdaybuddy/platform/appfunctions/BirthdayAppFunctionService.kt) war `setPackage("com.whatsapp")` strikt hardcodiert. Geräte, auf denen ausschließlich WhatsApp Business (`com.whatsapp.w4b`) installiert ist, konnten den Geburtstagsnachrichten-Intent nicht öffnen. Zudem fehlte `com.whatsapp.w4b` in den `<queries>`-Deklarationen des Manifests.
+    - **Dynamische Auflösung & Universeller Fallback:**
+      - [AndroidManifest.xml](file:///c:/Users/chris/AndroidStudioProjects/BirthdayBuddy/app/src/main/AndroidManifest.xml): `<package android:name="com.whatsapp.w4b" />` in den `<queries>`-Block aufgenommen, um die Paketsichtbarkeit unter Android 11+ (API 30+) sicherzustellen.
+      - [BirthdayAppFunctionService.kt](file:///c:/Users/chris/AndroidStudioProjects/BirthdayBuddy/app/src/main/java/com/heckmannch/birthdaybuddy/platform/appfunctions/BirthdayAppFunctionService.kt):
+        - `WHATSAPP_PACKAGES` Konstante definiert (`com.whatsapp`, gefolgt von `com.whatsapp.w4b`).
+        - `resolveWhatsAppPackage()` prüft dynamisch via `PackageManager`, welches Paket installiert ist.
+        - `buildSendBirthdayMessageIntent()` setzt das gefundene Paket explizit. Falls keines installiert ist (oder keine direkte Paketzuordnung vorliegt), wird kein Paket vorgegeben (`setPackage` unterbleibt), wodurch die universelle HTTPS-URI `https://wa.me/{phoneNumber}` vom System-Chooser oder Webbrowser sauber aufgelöst werden kann.
+    - **Testing & QA:**
+      - [BirthdayAppFunctionServiceTest.kt](file:///c:/Users/chris/AndroidStudioProjects/BirthdayBuddy/app/src/test/java/com/heckmannch/birthdaybuddy/platform/appfunctions/BirthdayAppFunctionServiceTest.kt): Umfassende Unit-Tests hinzugefügt für Standard-WhatsApp (`com.whatsapp`), WhatsApp Business (`com.whatsapp.w4b`), Prioritätsordnung bei beiden Installationen sowie Fallback auf universelle Links bei keinem installierten Paket.
+      - Vollständiger Testdurchlauf (`./gradlew testDebugUnitTest`): Alle Tests bestanden.
+

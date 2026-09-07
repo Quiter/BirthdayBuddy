@@ -13,6 +13,7 @@ import com.heckmannch.birthdaybuddy.domain.repository.ContactRepository
 import com.heckmannch.birthdaybuddy.domain.repository.NotificationRepository
 import com.heckmannch.birthdaybuddy.domain.usecase.GetPendingNotificationsUseCase
 import com.heckmannch.birthdaybuddy.util.AlarmScheduler
+import com.heckmannch.birthdaybuddy.util.Clock
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
@@ -39,6 +40,7 @@ class NotificationWorkerTest {
     private val notificationHelper = mockk<NotificationHelper>(relaxed = true)
     private val getPendingNotificationsUseCase = mockk<GetPendingNotificationsUseCase>(relaxed = true)
     private val alarmScheduler = mockk<AlarmScheduler>(relaxed = true)
+    private val clock = mockk<Clock>(relaxed = true)
     private val workManager = mockk<WorkManager>(relaxed = true)
 
     @Before
@@ -168,6 +170,7 @@ class NotificationWorkerTest {
             notificationHelper = notificationHelper,
             getPendingNotificationsUseCase = getPendingNotificationsUseCase,
             alarmScheduler = alarmScheduler,
+            clock = clock,
         )
 
         val result = worker.doWork()
@@ -191,6 +194,7 @@ class NotificationWorkerTest {
             notificationHelper = notificationHelper,
             getPendingNotificationsUseCase = getPendingNotificationsUseCase,
             alarmScheduler = alarmScheduler,
+            clock = clock,
         )
 
         val result = worker.doWork()
@@ -218,6 +222,7 @@ class NotificationWorkerTest {
             notificationHelper = notificationHelper,
             getPendingNotificationsUseCase = getPendingNotificationsUseCase,
             alarmScheduler = alarmScheduler,
+            clock = clock,
         )
 
         assertThrows(CancellationException::class.java) {
@@ -244,6 +249,7 @@ class NotificationWorkerTest {
             notificationHelper = notificationHelper,
             getPendingNotificationsUseCase = getPendingNotificationsUseCase,
             alarmScheduler = alarmScheduler,
+            clock = clock,
         )
 
         val result = worker.doWork()
@@ -269,6 +275,7 @@ class NotificationWorkerTest {
             notificationHelper = notificationHelper,
             getPendingNotificationsUseCase = getPendingNotificationsUseCase,
             alarmScheduler = alarmScheduler,
+            clock = clock,
         )
 
         val result = worker.doWork()
@@ -294,6 +301,7 @@ class NotificationWorkerTest {
             notificationHelper = notificationHelper,
             getPendingNotificationsUseCase = getPendingNotificationsUseCase,
             alarmScheduler = alarmScheduler,
+            clock = clock,
         )
 
         val result = worker.doWork()
@@ -315,6 +323,7 @@ class NotificationWorkerTest {
             notificationHelper = notificationHelper,
             getPendingNotificationsUseCase = getPendingNotificationsUseCase,
             alarmScheduler = alarmScheduler,
+            clock = clock,
         )
 
         val result = worker.doWork()

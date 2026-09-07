@@ -15,21 +15,20 @@ import kotlinx.coroutines.test.runTest
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
+import org.junit.runner.RunWith
+import org.robolectric.RobolectricTestRunner
+import org.robolectric.annotation.Config
 import java.time.LocalDate
 import java.util.function.Consumer
 
 /**
- * Unit tests for [BirthdayAppFunctionService] query functions.
+ * Unit tests for [BirthdayAppFunctionService] query functions and intent creation.
  *
  * These tests verify the pure data-transformation logic (filtering, mapping, error handling)
- * without requiring a real [ContactRepository] or Android system services.
- *
- * Note: Only the two query functions ([BirthdayAppFunctionService.getUpcomingBirthdays] and
- * [BirthdayAppFunctionService.getContactBirthday]) are unit-testable in isolation because
- * [BirthdayAppFunctionService.sendBirthdayMessage] and [BirthdayAppFunctionService.addBirthdayToContact]
- * depend on [android.app.PendingIntent] and [android.content.Context], which require an
- * Android environment. Those functions are covered by integration / instrumented tests.
+ * and messenger intent resolution (including dynamic WhatsApp and WhatsApp Business package detection).
  */
+@RunWith(RobolectricTestRunner::class)
+@Config(sdk = [35])
 class BirthdayAppFunctionServiceTest {
 
     @get:Rule
@@ -43,9 +42,19 @@ class BirthdayAppFunctionServiceTest {
      * bypassing the Hilt injection that is not available in JVM unit tests.
      */
     private inner class TestBirthdayAppFunctionService : BirthdayAppFunctionService() {
+        val installedPackages = mutableSetOf<String>()
+
         init {
             contactRepository = this@BirthdayAppFunctionServiceTest.contactRepository
             ioDispatcher = mainDispatcherRule.testDispatcher
+        }
+
+        override fun isPackageInstalled(pm: android.content.pm.PackageManager, packageName: String): Boolean {
+            return installedPackages.contains(packageName)
+        }
+
+        override fun resolveWhatsAppPackage(): String? {
+            return WHATSAPP_PACKAGES.firstOrNull { installedPackages.contains(it) }
         }
 
         override fun onExecuteFunction(
@@ -268,4 +277,73 @@ class BirthdayAppFunctionServiceTest {
             // "Andrea Müller" < "Andrea Schulz" alphabetically
             assertThat(result!!.fullName).isEqualTo("Andrea Müller")
         }
+
+    // ---- buildSendBirthdayMessageIntent ----------------------------------------------------
+
+    @Test
+    fun `buildSendBirthdayMessageIntent with whatsapp sets package to com_whatsapp when installed`() {
+        service.installedPackages.add("com.whatsapp")
+
+        val intent = service.buildSendBirthdayMessageIntent(app = "whatsapp", phone = "+49 170 1234567")
+
+        assertThat(intent.action).isEqualTo(android.content.Intent.ACTION_VIEW)
+        assertThat(intent.data.toString()).isEqualTo("https://wa.me/491701234567")
+        assertThat(intent.`package`).isEqualTo("com.whatsapp")
+    }
+
+    @Test
+    fun `buildSendBirthdayMessageIntent with whatsapp sets package to com_whatsapp_w4b when only business installed`() {
+        service.installedPackages.add("com.whatsapp.w4b")
+
+        val intent = service.buildSendBirthdayMessageIntent(app = "whatsapp", phone = "+49 170 1234567")
+
+        assertThat(intent.action).isEqualTo(android.content.Intent.ACTION_VIEW)
+        assertThat(intent.data.toString()).isEqualTo("https://wa.me/491701234567")
+        assertThat(intent.`package`).isEqualTo("com.whatsapp.w4b")
+    }
+
+    @Test
+    fun `buildSendBirthdayMessageIntent with whatsapp prefers standard over business when both installed`() {
+        service.installedPackages.add("com.whatsapp")
+        service.installedPackages.add("com.whatsapp.w4b")
+
+        val intent = service.buildSendBirthdayMessageIntent(app = "whatsapp", phone = "+49 170 1234567")
+
+        assertThat(intent.`package`).isEqualTo("com.whatsapp")
+    }
+
+    @Test
+    fun `buildSendBirthdayMessageIntent with whatsapp leaves package null for universal link fallback when none installed`() {
+        service.installedPackages.clear()
+
+        val intent = service.buildSendBirthdayMessageIntent(app = "whatsapp", phone = "+49 170 1234567")
+
+        assertThat(intent.action).isEqualTo(android.content.Intent.ACTION_VIEW)
+        assertThat(intent.data.toString()).isEqualTo("https://wa.me/491701234567")
+        assertThat(intent.`package`).isNull()
+    }
+
+    @Test
+    fun `buildSendBirthdayMessageIntent with signal generates valid uri`() {
+        val intent = service.buildSendBirthdayMessageIntent(app = "signal", phone = "+49 170 1234567")
+
+        assertThat(intent.action).isEqualTo(android.content.Intent.ACTION_VIEW)
+        assertThat(intent.data.toString()).isEqualTo("sgnl://send?phone=%2B491701234567")
+    }
+
+    @Test
+    fun `buildSendBirthdayMessageIntent with telegram generates valid uri`() {
+        val intent = service.buildSendBirthdayMessageIntent(app = "telegram", phone = "+49 170 1234567")
+
+        assertThat(intent.action).isEqualTo(android.content.Intent.ACTION_VIEW)
+        assertThat(intent.data.toString()).isEqualTo("tg://msg?to=%2B491701234567")
+    }
+
+    @Test
+    fun `buildSendBirthdayMessageIntent with sms generates valid smsto uri`() {
+        val intent = service.buildSendBirthdayMessageIntent(app = "sms", phone = "+49 170 1234567")
+
+        assertThat(intent.action).isEqualTo(android.content.Intent.ACTION_SENDTO)
+        assertThat(intent.data.toString()).isEqualTo("smsto:+491701234567")
+    }
 }

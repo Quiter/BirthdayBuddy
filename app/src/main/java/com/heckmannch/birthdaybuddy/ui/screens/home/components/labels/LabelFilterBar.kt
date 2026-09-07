@@ -19,9 +19,9 @@ import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
 import com.heckmannch.birthdaybuddy.R
 import com.heckmannch.birthdaybuddy.ui.theme.BirthdayBuddyTheme
+import com.heckmannch.birthdaybuddy.ui.theme.SpacingNone
 import com.heckmannch.birthdaybuddy.ui.theme.SpacingNormal
 import com.heckmannch.birthdaybuddy.ui.theme.SpacingSmall
 
@@ -47,7 +47,7 @@ fun LabelFilterBar(
                 contentPadding = PaddingValues(
                     start = SpacingNormal,
                     end = SpacingNormal,
-                    top = 0.dp,
+                    top = SpacingNone,
                     bottom = SpacingSmall
                 ),
                 horizontalArrangement = Arrangement.spacedBy(SpacingSmall),

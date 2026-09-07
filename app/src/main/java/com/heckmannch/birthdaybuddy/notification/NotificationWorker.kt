@@ -14,11 +14,11 @@ import com.heckmannch.birthdaybuddy.domain.repository.ContactRepository
 import com.heckmannch.birthdaybuddy.domain.repository.NotificationRepository
 import com.heckmannch.birthdaybuddy.domain.usecase.GetPendingNotificationsUseCase
 import com.heckmannch.birthdaybuddy.util.AlarmScheduler
+import com.heckmannch.birthdaybuddy.util.Clock
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
 import kotlinx.coroutines.CancellationException
 import java.time.Duration
-import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
 import java.util.concurrent.TimeUnit
@@ -35,20 +35,21 @@ class NotificationWorker @AssistedInject constructor(
     private val notificationHelper: NotificationHelper,
     private val getPendingNotificationsUseCase: GetPendingNotificationsUseCase,
     private val alarmScheduler: AlarmScheduler,
+    private val clock: Clock,
 ) : CoroutineWorker(context, workerParameters) {
 
     override suspend fun doWork(): Result {
         return try {
             // Vorjahres-Einträge bereinigen, damit die pendingId nicht unbegrenzt wächst
             // und PendingIntent-Request-Code-Kollisionen verhindert werden.
-            val currentYear = LocalDate.now().year
+            val currentYear = clock.nowLocalDate().year
             notificationRepository.deleteOldNotifications(currentYear)
 
             // Sync contacts before evaluating rules to make sure we work with the latest data
             contactRepository.syncContacts()
 
             // Evaluieren der fälligen Benachrichtigungen via Use Case
-            val pendingEvents = getPendingNotificationsUseCase(LocalDateTime.now())
+            val pendingEvents = getPendingNotificationsUseCase(clock.nowLocalDateTime())
 
             // Für jedes fällige Event eine PendingNotification einfügen und anzeigen
             pendingEvents.forEach { event ->
