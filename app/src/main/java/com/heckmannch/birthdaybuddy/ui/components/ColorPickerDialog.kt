@@ -4,8 +4,9 @@ import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.gestures.detectDragGestures
-import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.foundation.gestures.awaitEachGesture
+import androidx.compose.foundation.gestures.awaitFirstDown
+import androidx.compose.foundation.gestures.drag
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -35,6 +36,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -312,6 +314,8 @@ private fun SaturationValueBox(
     onSaturationValueChange: (saturation: Float, value: Float) -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val currentOnSaturationValueChange by rememberUpdatedState(onSaturationValueChange)
+
     Box(
         modifier = modifier
             .aspectRatio(1f) // Maintain a perfect square
@@ -331,31 +335,23 @@ private fun SaturationValueBox(
                     )
                 )
                 .pointerInput(Unit) {
-                    detectDragGestures(
-                        onDrag = { change, _ ->
-                            change.consume()
-                            val x = change.position.x.coerceIn(0f, size.width.toFloat())
-                            val y = change.position.y.coerceIn(0f, size.height.toFloat())
-                            val sat = x / size.width
-                            val valVal = 1f - (y / size.height)
-                            onSaturationValueChange(sat, valVal)
-                        },
-                        onDragStart = { offset ->
-                            val x = offset.x.coerceIn(0f, size.width.toFloat())
-                            val y = offset.y.coerceIn(0f, size.height.toFloat())
-                            val sat = x / size.width
-                            val valVal = 1f - (y / size.height)
-                            onSaturationValueChange(sat, valVal)
+                    awaitEachGesture {
+                        val down = awaitFirstDown(requireUnconsumed = false)
+                        down.consume()
+                        val updatePosition = { offset: Offset ->
+                            if (size.width > 0 && size.height > 0) {
+                                val x = offset.x.coerceIn(0f, size.width.toFloat())
+                                val y = offset.y.coerceIn(0f, size.height.toFloat())
+                                val sat = x / size.width
+                                val valVal = 1f - (y / size.height)
+                                currentOnSaturationValueChange(sat, valVal)
+                            }
                         }
-                    )
-                }
-                .pointerInput(Unit) {
-                    detectTapGestures { offset ->
-                        val x = offset.x.coerceIn(0f, size.width.toFloat())
-                        val y = offset.y.coerceIn(0f, size.height.toFloat())
-                        val sat = x / size.width
-                        val valVal = 1f - (y / size.height)
-                        onSaturationValueChange(sat, valVal)
+                        updatePosition(down.position)
+                        drag(down.id) { change ->
+                            change.consume()
+                            updatePosition(change.position)
+                        }
                     }
                 }
         )
@@ -384,6 +380,7 @@ private fun HueSlider(
     onHueChange: (Float) -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val currentOnHueChange by rememberUpdatedState(onHueChange)
     val hueColors = remember {
         listOf(
             Color.Red,
@@ -403,22 +400,20 @@ private fun HueSlider(
             .clip(MaterialTheme.shapes.small)
             .background(brush = Brush.horizontalGradient(hueColors))
             .pointerInput(Unit) {
-                detectDragGestures(
-                    onDrag = { change, _ ->
-                        change.consume()
-                        val x = change.position.x.coerceIn(0f, size.width.toFloat())
-                        onHueChange((x / size.width) * 360f)
-                    },
-                    onDragStart = { offset ->
-                        val x = offset.x.coerceIn(0f, size.width.toFloat())
-                        onHueChange((x / size.width) * 360f)
+                awaitEachGesture {
+                    val down = awaitFirstDown(requireUnconsumed = false)
+                    down.consume()
+                    val updateHue = { offset: Offset ->
+                        if (size.width > 0) {
+                            val x = offset.x.coerceIn(0f, size.width.toFloat())
+                            currentOnHueChange((x / size.width) * 360f)
+                        }
                     }
-                )
-            }
-            .pointerInput(Unit) {
-                detectTapGestures { offset ->
-                    val x = offset.x.coerceIn(0f, size.width.toFloat())
-                    onHueChange((x / size.width) * 360f)
+                    updateHue(down.position)
+                    drag(down.id) { change ->
+                        change.consume()
+                        updateHue(change.position)
+                    }
                 }
             }
     ) {

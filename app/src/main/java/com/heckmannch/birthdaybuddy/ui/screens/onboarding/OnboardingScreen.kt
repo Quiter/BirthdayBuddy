@@ -25,6 +25,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
@@ -203,9 +204,9 @@ fun OnboardingContent(
     onRequestCalendarPermission: () -> Unit,
     onFinish: (contactsEnabled: Boolean, notificationsEnabled: Boolean, calendarEnabled: Boolean) -> Unit,
 ) {
-    var contactsEnabled by remember { mutableStateOf(value = true) }
-    var notificationsEnabled by remember { mutableStateOf(value = true) }
-    var calendarEnabled by remember { mutableStateOf(value = true) }
+    var contactsEnabled by rememberSaveable { mutableStateOf(value = true) }
+    var notificationsEnabled by rememberSaveable { mutableStateOf(value = true) }
+    var calendarEnabled by rememberSaveable { mutableStateOf(value = true) }
 
     val showCalendarGuide = calendarEnabled && uiState.hasCalendarPermission
     val steps = remember(showCalendarGuide) { OnboardingStep.getSteps(showCalendarGuide) }

@@ -3,7 +3,7 @@ package com.heckmannch.birthdaybuddy.domain.usecase
 import com.google.common.truth.Truth.assertThat
 import com.heckmannch.birthdaybuddy.MainDispatcherRule
 import com.heckmannch.birthdaybuddy.domain.model.ContactLabels
-import com.heckmannch.birthdaybuddy.domain.model.PotentialCouple
+import com.heckmannch.birthdaybuddy.domain.model.CoupleSuggestion
 import com.heckmannch.birthdaybuddy.domain.repository.ContactRepository
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -24,7 +24,7 @@ class GetCoupleSuggestionUseCaseTest {
     private val contactRepository: ContactRepository = mock()
     private lateinit var useCase: GetCoupleSuggestionUseCase
 
-    private val potentialCouplesFlow = MutableStateFlow<List<PotentialCouple>>(emptyList())
+    private val potentialCouplesFlow = MutableStateFlow<List<CoupleSuggestion>>(emptyList())
     private val ignoredCouplePairsFlow = MutableStateFlow<List<String>>(emptyList())
 
     @Before
@@ -38,7 +38,7 @@ class GetCoupleSuggestionUseCaseTest {
     fun `when selected label is not anniversary, returns null`() = runTest {
         // Arrange
         val couple =
-            PotentialCouple("key1", "Max Mustermann", null, "key2", "Erika Mustermann", null)
+            CoupleSuggestion("key1", "Max Mustermann", null, "key2", "Erika Mustermann", null)
         potentialCouplesFlow.value = listOf(couple)
 
         // Act
@@ -64,7 +64,7 @@ class GetCoupleSuggestionUseCaseTest {
     fun `when suggestion is in ignored list, returns null`() = runTest {
         // Arrange
         val couple =
-            PotentialCouple("key1", "Max Mustermann", null, "key2", "Erika Mustermann", null)
+            CoupleSuggestion("key1", "Max Mustermann", null, "key2", "Erika Mustermann", null)
         potentialCouplesFlow.value = listOf(couple)
         ignoredCouplePairsFlow.value = listOf("key1:key2") // Ignored pair
 
@@ -79,7 +79,7 @@ class GetCoupleSuggestionUseCaseTest {
     fun `when suggestion is not ignored, returns suggestion mapping`() = runTest {
         // Arrange
         val couple =
-            PotentialCouple("key1", "Max Mustermann", null, "key2", "Erika Mustermann", null)
+            CoupleSuggestion("key1", "Max Mustermann", null, "key2", "Erika Mustermann", null)
         potentialCouplesFlow.value = listOf(couple)
         ignoredCouplePairsFlow.value = emptyList()
 
@@ -98,7 +98,7 @@ class GetCoupleSuggestionUseCaseTest {
     fun `when potential couple has different last names, returns suggestion successfully`() =
         runTest {
             // Arrange
-            val couple = PotentialCouple(
+            val couple = CoupleSuggestion(
                 firstLookupKey = "key1",
                 firstName = "Max Schmidt",
                 firstImageUri = null,

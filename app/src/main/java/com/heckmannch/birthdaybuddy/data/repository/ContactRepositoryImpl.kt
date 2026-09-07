@@ -21,7 +21,7 @@ import com.heckmannch.birthdaybuddy.di.IoDispatcher
 import com.heckmannch.birthdaybuddy.domain.model.Contact
 import com.heckmannch.birthdaybuddy.domain.model.GiftIdea
 import com.heckmannch.birthdaybuddy.domain.model.LabelConfig
-import com.heckmannch.birthdaybuddy.domain.model.PotentialCouple
+import com.heckmannch.birthdaybuddy.domain.model.CoupleSuggestion
 import com.heckmannch.birthdaybuddy.domain.permission.PermissionChecker
 import com.heckmannch.birthdaybuddy.domain.repository.CalendarSyncRepository
 import com.heckmannch.birthdaybuddy.domain.repository.ContactRepository
@@ -82,7 +82,7 @@ class ContactRepositoryImpl @Inject constructor(
         .flowOn(defaultDispatcher)
         .distinctUntilChanged()
 
-    override val potentialCouples: Flow<List<PotentialCouple>> = contactDao.getPotentialCouples()
+    override val potentialCouples: Flow<List<CoupleSuggestion>> = contactDao.getPotentialCouples()
         .distinctUntilChanged()
 
     // Same reasoning as allContacts: O(n) mapping offloaded to Dispatchers.Default.

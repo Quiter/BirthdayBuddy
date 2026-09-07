@@ -39,7 +39,6 @@
     - `NotificationRuleDao.kt`: DAO für die Verwaltung der Erinnerungsregeln.
     - `PendingNotification.kt`: Entity zur Nachverfolgung aktiver System-Benachrichtigungen.
     - `PendingNotificationDao.kt`: DAO für die Verwaltung noch nicht quittierter Erinnerungen.
-    - `PotentialCouple.kt`: Datenklasse zur Repräsentation eines potenziellen Ehepaars, das denselben Hochzeitstag teilt.
     - `ContactLabels.kt` (Veraltet): Hält aus Gründen der Rückwärtskompatibilität eine deprecated Delegation der Pseudo-Label-Identifier, die nun in der Domain-Schicht liegen.
 - ### 📁 Repository (`data.repository`)
     - `CalendarSyncRepository.kt`: Orchestriert die Synchronisation von Geburtstagen, Namenstagen und Hochzeitstagen mit dem System-Kalender unter Verwendung von `SystemCalendarDataSource`.

@@ -8,6 +8,7 @@ import com.heckmannch.birthdaybuddy.domain.usecase.ImportGiftIdeasUseCase
 import com.heckmannch.birthdaybuddy.ui.model.BackupMessage
 import com.heckmannch.birthdaybuddy.ui.model.BackupUiState
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -64,6 +65,8 @@ class BackupViewModel @Inject constructor(
                         message = BackupMessage.ExportSuccess
                     )
                 }
+            } catch (e: CancellationException) {
+                throw e
             } catch (e: Exception) {
                 _uiState.update {
                     it.copy(
@@ -93,6 +96,8 @@ class BackupViewModel @Inject constructor(
                         }
                     )
                 }
+            } catch (e: CancellationException) {
+                throw e
             } catch (e: Exception) {
                 _uiState.update {
                     it.copy(

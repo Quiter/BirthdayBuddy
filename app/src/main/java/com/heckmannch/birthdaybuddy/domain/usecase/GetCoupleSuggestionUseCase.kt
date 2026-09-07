@@ -34,15 +34,6 @@ class GetCoupleSuggestionUseCase @Inject constructor(
                 "${couple.secondLookupKey}:${couple.firstLookupKey}"
             }
             !ignoredPairs.contains(pairKey)
-        }?.let { couple ->
-            CoupleSuggestion(
-                firstLookupKey = couple.firstLookupKey,
-                firstName = couple.firstName,
-                firstImageUri = couple.firstImageUri,
-                secondLookupKey = couple.secondLookupKey,
-                secondName = couple.secondName,
-                secondImageUri = couple.secondImageUri
-            )
         }
     }
 }

@@ -18,7 +18,7 @@ import com.heckmannch.birthdaybuddy.data.mapper.ContactDbMapper
 import com.heckmannch.birthdaybuddy.data.mapper.LabelConfigMapper
 import com.heckmannch.birthdaybuddy.domain.model.Contact
 import com.heckmannch.birthdaybuddy.domain.model.GiftIdea
-import com.heckmannch.birthdaybuddy.domain.model.PotentialCouple
+import com.heckmannch.birthdaybuddy.domain.model.CoupleSuggestion
 import com.heckmannch.birthdaybuddy.domain.permission.PermissionChecker
 import com.heckmannch.birthdaybuddy.domain.repository.CalendarSyncRepository
 import com.heckmannch.birthdaybuddy.domain.repository.WidgetUpdater
@@ -69,7 +69,7 @@ class ContactRepositoryImplTest {
 
     // State flows to back our DAO mocks, defined and stubbed before repository initialization
     private val allContactsFlow = MutableStateFlow<List<ContactEntity>>(emptyList())
-    private val potentialCouplesFlow = MutableStateFlow<List<PotentialCouple>>(emptyList())
+    private val potentialCouplesFlow = MutableStateFlow<List<CoupleSuggestion>>(emptyList())
     private val labelConfigsFlow = MutableStateFlow<List<LabelConfigEntity>>(emptyList())
     private val settingsFlow = MutableStateFlow<AppSettingsEntity?>(null)
 

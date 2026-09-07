@@ -4,7 +4,7 @@ import androidx.room.Dao
 import androidx.room.Query
 import androidx.room.Transaction
 import androidx.room.Upsert
-import com.heckmannch.birthdaybuddy.domain.model.PotentialCouple
+import com.heckmannch.birthdaybuddy.domain.model.CoupleSuggestion
 import kotlinx.coroutines.flow.Flow
 
 private const val SQLITE_BIND_CHUNK_SIZE = 500
@@ -76,6 +76,6 @@ interface ContactDao {
           AND c2.anniversary IS NOT NULL AND c2.spouseLookupKey IS NULL
     """
     )
-    fun getPotentialCouples(): Flow<List<PotentialCouple>>
+    fun getPotentialCouples(): Flow<List<CoupleSuggestion>>
 }
 

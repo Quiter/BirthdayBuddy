@@ -3,7 +3,7 @@ package com.heckmannch.birthdaybuddy.domain.repository
 import com.heckmannch.birthdaybuddy.domain.model.Contact
 import com.heckmannch.birthdaybuddy.domain.model.GiftIdea
 import com.heckmannch.birthdaybuddy.domain.model.LabelConfig
-import com.heckmannch.birthdaybuddy.domain.model.PotentialCouple
+import com.heckmannch.birthdaybuddy.domain.model.CoupleSuggestion
 import kotlinx.coroutines.flow.Flow
 import java.time.LocalDate
 
@@ -12,7 +12,7 @@ import java.time.LocalDate
  */
 interface ContactRepository {
     val allContacts: Flow<List<Contact>>
-    val potentialCouples: Flow<List<PotentialCouple>>
+    val potentialCouples: Flow<List<CoupleSuggestion>>
     val labelConfigs: Flow<List<LabelConfig>>
     val otherEventsEnabled: Flow<Boolean>
     val ignoredCouplePairs: Flow<List<String>>
