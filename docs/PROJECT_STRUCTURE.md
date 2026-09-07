@@ -97,10 +97,11 @@
     - `ContactFilterLogic.kt`: Reines Domänen-Hilfsobjekt zur Kapselung der Multi-Label-Filterregeln (Ignorieren und Verbergen) für Benachrichtigungen und Widgets.
     - `NotificationKeyUtils.kt`: Zentrales Utility-Objekt zum sicheren Enkodieren, Dekodieren und Extrahieren des `EventType` für Benachrichtigungs-Lookup-Keys (verhindert Fragilität bei Doppelpunkten im LookupKey).
     - `PhoneNumberNormalizer.kt`: Reines Kotlin-Domänen-Hilfsobjekt zur E.164-konformen Bereinigung von Telefonnummern (inkl. Handhabung von Inlandsvorwahlen mit führender 0, `+` und `00`, redundanten `(0)`-Klammern, fehlerhaften `+0...`-Präfixen und Ziffern-Only-Aufbereitung für WhatsApp URLs).
-- ### 📁 AppFunctions (`domain.appfunctions`) — *Android 16+ / AI-Agent Integration*
-    - `BirthdayAppFunctionService.kt`: Abstrakte `AppFunctionService`-Unterklasse (alpha10-API), annotiert mit `@AppFunctionServiceEntryPoint` und `@AndroidEntryPoint`. Stellt vier `@AppFunction`-Methoden bereit, die das Android-System und KI-Agenten (Google Assistant, Gemini) aufrufen können, ohne die App-UI zu öffnen. KSP generiert zur Compile-Zeit die konkrete Unterklasse `BirthdayBuddyGeneratedAppFunctionService` sowie das Assets-XML. Abhängigkeiten (`ContactRepository`, `IoDispatcher`) werden per Hilt field-injiziert.
+- ### 📁 AppFunctions-Modelle (`domain.appfunctions.model`) — *Android 16+ / AI-Agent Integration*
     - `model/UpcomingBirthday.kt`: `@AppFunctionSerializable` Datenklasse für einen Geburtstags-Treffer (Rückgabe von `getUpcomingBirthdays`).
     - `model/ContactBirthday.kt`: `@AppFunctionSerializable` Datenklasse für die Geburtstagsdetails eines einzelnen Kontakts (Rückgabe von `getContactBirthday`).
+
+    > **Architekturentscheidung:** Die Modelle verbleiben im Domain-Layer, da `@AppFunctionSerializable` eine reine Serialisierungsannotation ohne Android-Laufzeitabhängigkeiten ist. Die Klassen repräsentieren fachliche DTOs. `BirthdayAppFunctionService` selbst liegt im `platform/`-Layer (siehe unten).
 
     **Bereitgestellte AppFunctions:**
 
@@ -110,6 +111,12 @@
     | `getContactBirthday` | `contactName: String` | `ContactBirthday?` | Sucht einen Kontakt per (Teil-)Name (case-insensitive); gibt null zurück, wenn kein Treffer. |
     | `sendBirthdayMessage` | `contactId, app` | `PendingIntent` | Öffnet eine Messaging-App für die Telefonnummer des Kontakts (WhatsApp, Signal, Telegram, SMS). |
     | `addBirthdayToContact` | `contactId, year?, month, day` | `PendingIntent` | Öffnet den In-App-Editierscreen per Deep-Link (kein Direktschreiben — User-Bestätigung erforderlich). |
+## 📁 Platform Layer (`platform`)
+
+Enthält Android-Framework-spezifische Klassen, die nicht in den Domain-Layer gehören (z.B. Klassen mit `PendingIntent`, `Intent`, `Context`, `AppFunctionService`-Abhängigkeiten). Abhängigkeitsrichtung: `platform` → `domain` (erlaubt), `domain` → `platform` (verboten).
+
+- ### 📁 AppFunctions (`platform.appfunctions`) — *Android 16+ / AI-Agent Integration*
+    - `BirthdayAppFunctionService.kt`: Abstrakte `AppFunctionService`-Unterklasse (alpha10-API), annotiert mit `@AppFunctionServiceEntryPoint` und `@AndroidEntryPoint`. Stellt vier `@AppFunction`-Methoden bereit, die das Android-System und KI-Agenten (Google Assistant, Gemini) aufrufen können, ohne die App-UI zu öffnen. KSP generiert zur Compile-Zeit die konkrete Unterklasse `BirthdayBuddyGeneratedAppFunctionService` sowie das Assets-XML. Abhängigkeiten (`ContactRepository`, `IoDispatcher`) werden per Hilt field-injiziert. Liegt im `platform/`-Layer, da es `PendingIntent`, `Intent` und `MainActivity` importiert – Framework-Abhängigkeiten, die im Domain-Layer verboten sind.
 
 ## 📁 UI Layer (`ui`)
 
@@ -282,7 +289,7 @@ Diese Tests laufen ohne Emulator/Gerät direkt auf dem Entwicklungsrechner und s
 - `domain/usecase/ExportGiftIdeasUseCaseTest.kt`: JVM Unit-Tests zum Geschenkideen-Export.
 - `domain/usecase/ImportGiftIdeasUseCaseTest.kt`: JVM Unit-Tests zum Geschenkideen-Import.
 - `domain/usecase/SetCalendarSyncEnabledUseCaseTest.kt`: JVM Unit-Tests zur Aktivierung/Deaktivierung der Kalendersynchronisation.
-- `domain/appfunctions/BirthdayAppFunctionServiceTest.kt`: JVM Unit-Tests für `BirthdayAppFunctionService`: Überprüfung der Filter-/Mapping-Logik von `getUpcomingBirthdays` (Fensterfilterung, Sortierung, Jahr-Mapping) und `getContactBirthday` (Teil-Match, Null-Handling, Blanknamen-Fehler, alphabetische Erstauflösung).
+- `platform/appfunctions/BirthdayAppFunctionServiceTest.kt`: JVM Unit-Tests für `BirthdayAppFunctionService`: Überprüfung der Filter-/Mapping-Logik von `getUpcomingBirthdays` (Fensterfilterung, Sortierung, Jahr-Mapping) und `getContactBirthday` (Teil-Match, Null-Handling, Blanknamen-Fehler, alphabetische Erstauflösung).
 - `AppViewModelTest.kt`: Tests für `AppViewModel`: Verifikation der initialen `AppSettings`-Emission, reaktiver Settings-Propagation, `scheduleDailyUpdate()`, `pendingAction`, `handleAction` und `consumeAction` ohne Android-Framework-Abhängigkeiten.
 - `BootReceiverTest.kt`: JVM Unit-Tests für `BootReceiver`: Absicherung aller Broadcast-Aktionen (`BOOT_COMPLETED`, `MY_PACKAGE_REPLACED`, `TIMEZONE_CHANGED`, `TIME_SET`, `DATE_CHANGED`), Ignorieren unpassender Aktionen und Exception-Handling.
 - `ui/screens/home/HomeViewModelGiftIdeaTest.kt`: Tests für Geschenkideen- und Geburtstags-Intents im `HomeViewModel`. **Feature-co-located** neben `HomeViewModel.kt`.

@@ -32,7 +32,7 @@ Dieses Dokument dient als systemischer Kontext für die Entwicklung von Features
   - **Datenbank & Caching**: Room mit KSP-Compiler für robustes Caching & persistente Einstellungen.
   - **Hintergrund-Tasks**: WorkManager mit Hilt-Worker-Integration (`@AssistedInject`).
   - **Dependency Injection**: Hilt mit KSP-Unterstützung.
-  - **On-Device AI / System-Shortcuts**: Android AppFunctions (`domain/appfunctions/`, API 36+).
+  - **On-Device AI / System-Shortcuts**: Android AppFunctions (`platform/appfunctions/`, API 36+).
   - **Architektur-Pattern**: Clean Architecture (Feature-based Layering) & MVI/UDF (Uni-Directional Data Flow) mit `@Immutable` UI-Modellen und Screen-spezifischen ViewModels.
 
 ---
@@ -110,8 +110,10 @@ Dieses Dokument dient als systemischer Kontext für die Entwicklung von Features
 - **`domain/`**:
   - **`model/`**: Reine Kotlin-Geschäftsmodelle (z.B. `Contact`, `GiftIdea`, `EventType`).
   - **`usecase/`**: Fachliche Anwendungsfälle / Use Cases (z.B. `GetContactsUseCase`, `GetPendingNotificationsUseCase`).
-  - **`appfunctions/`**: Android AppFunctions für KI- und System-Integrationen (`BirthdayAppFunctionService.kt`).
+  - **`appfunctions/model/`**: AppFunction-DTOs ohne Framework-Abhängigkeiten (`UpcomingBirthday.kt`, `ContactBirthday.kt`). Der Service selbst liegt in `platform/appfunctions/`.
   - **`permission/`**: Plattformunabhängige Schnittstellen für Berechtigungsprüfungen (`PermissionChecker.kt`).
+- **`platform/`**:
+  - **`appfunctions/`**: Android-Framework-spezifischer `BirthdayAppFunctionService` (verwendet `PendingIntent`, `Intent`, `AppFunctionService`). Liegt hier, da der Domain-Layer frei von Framework-Abhängigkeiten bleiben muss.
 - **`data/`**:
   - **`local/`**: Room-Datenbanken (`AppDatabase`, `SettingsDatabase`), Entitäten (`Contact`, `AppSettings`, `NotificationRule`, `PendingNotification`) und DAOs.
   - **`repository/`**: Orchestriert den Datenfluss (`ContactRepository`, `CalendarSyncRepository`, `NotificationRepository`).

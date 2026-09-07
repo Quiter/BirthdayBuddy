@@ -1,4 +1,4 @@
-package com.heckmannch.birthdaybuddy.domain.appfunctions
+package com.heckmannch.birthdaybuddy.platform.appfunctions
 
 import android.os.CancellationSignal
 import androidx.appfunctions.ExecuteAppFunctionRequest

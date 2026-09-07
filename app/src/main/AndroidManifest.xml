@@ -103,7 +103,7 @@
             Requires API 36 (Android 16 / "Baklava") or higher at runtime.
         -->
         <service
-            android:name=".domain.appfunctions.BirthdayBuddyGeneratedAppFunctionService"
+            android:name=".platform.appfunctions.BirthdayBuddyGeneratedAppFunctionService"
             android:exported="true"
             android:permission="android.permission.BIND_APP_FUNCTION_SERVICE"
             tools:ignore="MissingClass"

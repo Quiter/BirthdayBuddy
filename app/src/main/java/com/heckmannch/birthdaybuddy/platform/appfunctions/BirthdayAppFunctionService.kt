@@ -1,4 +1,19 @@
-package com.heckmannch.birthdaybuddy.domain.appfunctions
+/**
+ * # Package: platform.appfunctions
+ *
+ * **Architekturentscheidung:** Dieser Service liegt bewusst im `platform`-Layer und nicht in
+ * `domain`. Er implementiert die Android-spezifische `AppFunctionService`-Klasse und verwendet
+ * Framework-APIs (`PendingIntent`, `Intent`, `MainActivity`), die im Domain-Layer verboten sind.
+ *
+ * **Abhängigkeitsrichtung:** `platform` → `domain` (erlaubt). Der Service operiert auf
+ * Domain-Interfaces (`ContactRepository`) und Domain-DTOs (`UpcomingBirthday`, `ContactBirthday`),
+ * ohne diese zu besitzen.
+ *
+ * **Modelle:** Die `@AppFunctionSerializable`-Datenklassen (`UpcomingBirthday`, `ContactBirthday`)
+ * verbleiben in `domain.appfunctions.model`, da sie fachliche DTOs ohne Framework-Abhängigkeiten
+ * sind und das Dependency-Inversion-Prinzip wahren.
+ */
+package com.heckmannch.birthdaybuddy.platform.appfunctions
 
 import android.app.PendingIntent
 import android.content.Intent

@@ -53,7 +53,7 @@
 # 4. AppFunctions (Android AI agent integration, API 36+)
 # ==============================================================================
 # Keep the generated AppFunctionService entry point without locking its internal members.
--keepnames class com.heckmannch.birthdaybuddy.domain.appfunctions.BirthdayBuddyGeneratedAppFunctionService
+-keepnames class com.heckmannch.birthdaybuddy.platform.appfunctions.BirthdayBuddyGeneratedAppFunctionService
 
 # Protect fields and constructors of @AppFunctionSerializable data models for IPC schema resolution.
 -keepclassmembers @androidx.appfunctions.AppFunctionSerializable class * {
