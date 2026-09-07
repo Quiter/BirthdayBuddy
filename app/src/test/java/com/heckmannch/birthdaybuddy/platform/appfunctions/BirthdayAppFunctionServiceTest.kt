@@ -8,6 +8,7 @@ import com.google.common.truth.Truth.assertThat
 import com.heckmannch.birthdaybuddy.MainDispatcherRule
 import com.heckmannch.birthdaybuddy.domain.model.Contact
 import com.heckmannch.birthdaybuddy.domain.repository.ContactRepository
+import com.heckmannch.birthdaybuddy.domain.util.DeviceRegionProvider
 import com.heckmannch.birthdaybuddy.util.NO_YEAR_MARKER
 import io.mockk.coEvery
 import io.mockk.mockk
@@ -47,6 +48,9 @@ class BirthdayAppFunctionServiceTest {
         init {
             contactRepository = this@BirthdayAppFunctionServiceTest.contactRepository
             ioDispatcher = mainDispatcherRule.testDispatcher
+            deviceRegionProvider = object : DeviceRegionProvider {
+                override fun getCountryIso(): String = "DE"
+            }
         }
 
         override fun isPackageInstalled(pm: android.content.pm.PackageManager, packageName: String): Boolean {

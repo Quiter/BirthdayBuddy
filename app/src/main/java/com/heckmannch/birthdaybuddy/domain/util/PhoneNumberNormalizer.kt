@@ -1,7 +1,6 @@
 package com.heckmannch.birthdaybuddy.domain.util
 
 import com.heckmannch.birthdaybuddy.domain.util.PhoneNumberNormalizer.normalizeToDigitsOnly
-import java.util.Locale
 
 /**
  * Pure domain utility for normalizing phone numbers to the E.164 standard.
@@ -118,12 +117,11 @@ object PhoneNumberNormalizer {
      *
      * @param phoneNumber The raw input phone number string.
      * @param defaultCountryIso The 2-letter ISO country code used for resolving national numbers.
-     *   Defaults to the system's default country ([Locale.getDefault].country).
      * @return The cleaned and standardized E.164 phone number, or an empty string if invalid/empty.
      */
     fun normalize(
         phoneNumber: String,
-        defaultCountryIso: String = Locale.getDefault().country
+        defaultCountryIso: String
     ): String {
         if (phoneNumber.isBlank()) return ""
 
@@ -219,6 +217,6 @@ object PhoneNumberNormalizer {
      */
     fun normalizeToDigitsOnly(
         phoneNumber: String,
-        defaultCountryIso: String = Locale.getDefault().country
+        defaultCountryIso: String
     ): String = normalize(phoneNumber, defaultCountryIso).removePrefix("+")
 }

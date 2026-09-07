@@ -11,26 +11,34 @@ import org.junit.Test
  */
 class PhoneNumberNormalizerTest {
 
+    private val testRegionProvider = object : DeviceRegionProvider {
+        override fun getCountryIso(): String = "DE"
+    }
+    private val defaultCountryIso = testRegionProvider.getCountryIso()
+
     // -------------------------------------------------------------------------
     // International formats with '+'
     // -------------------------------------------------------------------------
 
     @Test
     fun `normalize handles international number with leading plus and whitespace`() {
-        val result = PhoneNumberNormalizer.normalize("+49 170 1234567")
+        val result = PhoneNumberNormalizer.normalize("+49 170 1234567", defaultCountryIso = defaultCountryIso)
         assertThat(result).isEqualTo("+491701234567")
     }
 
     @Test
     fun `normalize handles international number with dashes, dots, and slashes`() {
-        assertThat(PhoneNumberNormalizer.normalize("+49-170-1234567")).isEqualTo("+491701234567")
-        assertThat(PhoneNumberNormalizer.normalize("+49.170.1234567")).isEqualTo("+491701234567")
-        assertThat(PhoneNumberNormalizer.normalize("+49/170/1234567")).isEqualTo("+491701234567")
+        assertThat(PhoneNumberNormalizer.normalize("+49-170-1234567", defaultCountryIso = defaultCountryIso))
+            .isEqualTo("+491701234567")
+        assertThat(PhoneNumberNormalizer.normalize("+49.170.1234567", defaultCountryIso = defaultCountryIso))
+            .isEqualTo("+491701234567")
+        assertThat(PhoneNumberNormalizer.normalize("+49/170/1234567", defaultCountryIso = defaultCountryIso))
+            .isEqualTo("+491701234567")
     }
 
     @Test
     fun `normalize handles parenthesized country code like (+49)`() {
-        val result = PhoneNumberNormalizer.normalize("(+49) 170 1234567")
+        val result = PhoneNumberNormalizer.normalize("(+49) 170 1234567", defaultCountryIso = defaultCountryIso)
         assertThat(result).isEqualTo("+491701234567")
     }
 
@@ -40,13 +48,13 @@ class PhoneNumberNormalizerTest {
 
     @Test
     fun `normalize handles international number with leading 00`() {
-        val result = PhoneNumberNormalizer.normalize("0049 170 1234567")
+        val result = PhoneNumberNormalizer.normalize("0049 170 1234567", defaultCountryIso = defaultCountryIso)
         assertThat(result).isEqualTo("+491701234567")
     }
 
     @Test
     fun `normalize handles international number with spaces between 00 and country code`() {
-        val result = PhoneNumberNormalizer.normalize("00 49 170 1234567")
+        val result = PhoneNumberNormalizer.normalize("00 49 170 1234567", defaultCountryIso = defaultCountryIso)
         assertThat(result).isEqualTo("+491701234567")
     }
 
@@ -80,25 +88,25 @@ class PhoneNumberNormalizerTest {
 
     @Test
     fun `normalize removes redundant trunk zero in parentheses after plus prefix`() {
-        val result = PhoneNumberNormalizer.normalize("+49 (0) 170 1234567")
+        val result = PhoneNumberNormalizer.normalize("+49 (0) 170 1234567", defaultCountryIso = defaultCountryIso)
         assertThat(result).isEqualTo("+491701234567")
     }
 
     @Test
     fun `normalize removes redundant trunk zero in brackets after plus prefix`() {
-        val result = PhoneNumberNormalizer.normalize("+49 [0] 170 1234567")
+        val result = PhoneNumberNormalizer.normalize("+49 [0] 170 1234567", defaultCountryIso = defaultCountryIso)
         assertThat(result).isEqualTo("+491701234567")
     }
 
     @Test
     fun `normalize removes redundant trunk zero in parentheses without spaces`() {
-        val result = PhoneNumberNormalizer.normalize("+49(0)1701234567")
+        val result = PhoneNumberNormalizer.normalize("+49(0)1701234567", defaultCountryIso = defaultCountryIso)
         assertThat(result).isEqualTo("+491701234567")
     }
 
     @Test
     fun `normalize removes redundant trunk zero in parentheses after 00 prefix`() {
-        val result = PhoneNumberNormalizer.normalize("0049 (0) 170 1234567")
+        val result = PhoneNumberNormalizer.normalize("0049 (0) 170 1234567", defaultCountryIso = defaultCountryIso)
         assertThat(result).isEqualTo("+491701234567")
     }
 
@@ -114,7 +122,7 @@ class PhoneNumberNormalizerTest {
 
     @Test
     fun `normalize fixes erroneous plus-zero-zero prefix`() {
-        val result = PhoneNumberNormalizer.normalize("+0049 170 1234567")
+        val result = PhoneNumberNormalizer.normalize("+0049 170 1234567", defaultCountryIso = defaultCountryIso)
         assertThat(result).isEqualTo("+491701234567")
     }
 
@@ -180,22 +188,22 @@ class PhoneNumberNormalizerTest {
 
     @Test
     fun `normalize returns empty string for blank or empty inputs`() {
-        assertThat(PhoneNumberNormalizer.normalize("")).isEmpty()
-        assertThat(PhoneNumberNormalizer.normalize("   ")).isEmpty()
-        assertThat(PhoneNumberNormalizer.normalize(" \t\n ")).isEmpty()
+        assertThat(PhoneNumberNormalizer.normalize("", defaultCountryIso = defaultCountryIso)).isEmpty()
+        assertThat(PhoneNumberNormalizer.normalize("   ", defaultCountryIso = defaultCountryIso)).isEmpty()
+        assertThat(PhoneNumberNormalizer.normalize(" \t\n ", defaultCountryIso = defaultCountryIso)).isEmpty()
     }
 
     @Test
     fun `normalize returns empty string when input has no digits`() {
-        assertThat(PhoneNumberNormalizer.normalize("abc")).isEmpty()
-        assertThat(PhoneNumberNormalizer.normalize("(-/.)")).isEmpty()
+        assertThat(PhoneNumberNormalizer.normalize("abc", defaultCountryIso = defaultCountryIso)).isEmpty()
+        assertThat(PhoneNumberNormalizer.normalize("(-/.)", defaultCountryIso = defaultCountryIso)).isEmpty()
     }
 
     @Test
     fun `normalize preserves short emergency numbers without prepending country code`() {
-        assertThat(PhoneNumberNormalizer.normalize("112")).isEqualTo("112")
-        assertThat(PhoneNumberNormalizer.normalize("110")).isEqualTo("110")
-        assertThat(PhoneNumberNormalizer.normalize("911")).isEqualTo("911")
+        assertThat(PhoneNumberNormalizer.normalize("112", defaultCountryIso = defaultCountryIso)).isEqualTo("112")
+        assertThat(PhoneNumberNormalizer.normalize("110", defaultCountryIso = defaultCountryIso)).isEqualTo("110")
+        assertThat(PhoneNumberNormalizer.normalize("911", defaultCountryIso = defaultCountryIso)).isEqualTo("911")
     }
 
     // -------------------------------------------------------------------------
@@ -204,13 +212,13 @@ class PhoneNumberNormalizerTest {
 
     @Test
     fun `normalizeToDigitsOnly strips leading plus for WhatsApp API compatibility`() {
-        assertThat(PhoneNumberNormalizer.normalizeToDigitsOnly("+49 170 1234567"))
+        assertThat(PhoneNumberNormalizer.normalizeToDigitsOnly("+49 170 1234567", defaultCountryIso = defaultCountryIso))
             .isEqualTo("491701234567")
         assertThat(PhoneNumberNormalizer.normalizeToDigitsOnly("0170 1234567", defaultCountryIso = "DE"))
             .isEqualTo("491701234567")
         assertThat(PhoneNumberNormalizer.normalizeToDigitsOnly("(0170) 123-456", defaultCountryIso = "DE"))
             .isEqualTo("49170123456")
-        assertThat(PhoneNumberNormalizer.normalizeToDigitsOnly("")).isEmpty()
+        assertThat(PhoneNumberNormalizer.normalizeToDigitsOnly("", defaultCountryIso = defaultCountryIso)).isEmpty()
     }
 
     // -------------------------------------------------------------------------
@@ -238,4 +246,27 @@ class PhoneNumberNormalizerTest {
         assertThat(PhoneNumberNormalizer.getCountryCallingCode("+49")).isEqualTo("49")
         assertThat(PhoneNumberNormalizer.getCountryCallingCode("+1")).isEqualTo("1")
     }
+
+    // -------------------------------------------------------------------------
+    // DeviceRegionProvider determinism
+    // -------------------------------------------------------------------------
+
+    @Test
+    fun `normalize behaves deterministically with custom DeviceRegionProvider implementations`() {
+        val usProvider = object : DeviceRegionProvider {
+            override fun getCountryIso(): String = "US"
+        }
+        val atProvider = object : DeviceRegionProvider {
+            override fun getCountryIso(): String = "AT"
+        }
+
+        val deResult = PhoneNumberNormalizer.normalize("0170 1234567", testRegionProvider.getCountryIso())
+        val atResult = PhoneNumberNormalizer.normalize("0664 1234567", atProvider.getCountryIso())
+        val usResult = PhoneNumberNormalizer.normalize("5552345678", usProvider.getCountryIso())
+
+        assertThat(deResult).isEqualTo("+491701234567")
+        assertThat(atResult).isEqualTo("+436641234567")
+        assertThat(usResult).isEqualTo("+15552345678")
+    }
 }
+

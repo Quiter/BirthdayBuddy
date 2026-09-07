@@ -12,8 +12,10 @@ import com.heckmannch.birthdaybuddy.data.repository.SettingsRepositoryImpl
 import com.heckmannch.birthdaybuddy.data.repository.SystemCalendarDataSource
 import com.heckmannch.birthdaybuddy.data.repository.SystemCalendarDataSourceImpl
 import com.heckmannch.birthdaybuddy.data.repository.TimeRepositoryImpl
+import com.heckmannch.birthdaybuddy.data.util.AndroidDeviceRegionProvider
 import com.heckmannch.birthdaybuddy.domain.permission.PermissionChecker
 import com.heckmannch.birthdaybuddy.domain.repository.CalendarSyncRepository
+import com.heckmannch.birthdaybuddy.domain.util.DeviceRegionProvider
 import com.heckmannch.birthdaybuddy.domain.repository.ContactRepository
 import com.heckmannch.birthdaybuddy.domain.repository.CoupleRepository
 import com.heckmannch.birthdaybuddy.domain.repository.GiftIdeaRepository
@@ -154,4 +156,14 @@ interface HelperBindingsModule {
     @Binds
     @Singleton
     fun bindSettingsRepository(repository: SettingsRepositoryImpl): SettingsRepository
+
+    /**
+     * Binds the device region provider abstraction to its Android implementation.
+     *
+     * @param provider The [AndroidDeviceRegionProvider] implementation.
+     * @return The bound [DeviceRegionProvider] interface.
+     */
+    @Binds
+    @Singleton
+    fun bindDeviceRegionProvider(provider: AndroidDeviceRegionProvider): DeviceRegionProvider
 }

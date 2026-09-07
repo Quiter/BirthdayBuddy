@@ -738,3 +738,22 @@ ecreateContactsTableV7 (mit giftIdeas TEXT NOT NULL, COALESCE(giftIdeas, '[]')) 
       - [BirthdayAppFunctionServiceTest.kt](file:///c:/Users/chris/AndroidStudioProjects/BirthdayBuddy/app/src/test/java/com/heckmannch/birthdaybuddy/platform/appfunctions/BirthdayAppFunctionServiceTest.kt): Umfassende Unit-Tests hinzugefügt für Standard-WhatsApp (`com.whatsapp`), WhatsApp Business (`com.whatsapp.w4b`), Prioritätsordnung bei beiden Installationen sowie Fallback auf universelle Links bei keinem installierten Paket.
       - Vollständiger Testdurchlauf (`./gradlew testDebugUnitTest`): Alle Tests bestanden.
 
+375. **Entkopplung des `PhoneNumberNormalizer` von globalem JVM-State via `DeviceRegionProvider` (Clean Architecture & Determinismus):**
+    - **Problem:** In [PhoneNumberNormalizer.kt](file:///c:/Users/chris/AndroidStudioProjects/BirthdayBuddy/app/src/main/java/com/heckmannch/birthdaybuddy/domain/util/PhoneNumberNormalizer.kt) war `Locale.getDefault().country` als Default-Parameter definiert. Dieser globale JVM-Zustand verletzte die Clean-Architecture-Grenzen im Domain-Layer, brach den Determinismus und führte zu fragilen Tests je nach Ausführungsumgebung (z.B. CI vs. lokale Entwicklung).
+    - **Domain-Abstraktion ([DeviceRegionProvider.kt](file:///c:/Users/chris/AndroidStudioProjects/BirthdayBuddy/app/src/main/java/com/heckmannch/birthdaybuddy/domain/util/DeviceRegionProvider.kt)):**
+      - Neues reines Kotlin-Interface im Domain-Layer (`fun getCountryIso(): String`) zur deterministischen Abfrage des Ländercodes ohne Android- oder globale JVM-Zustands-Abhängigkeiten.
+      - Bereitstellung eines Typealias in `com.heckmannch.birthdaybuddy.domain.DeviceRegionProvider`.
+      - Bereinigung von `PhoneNumberNormalizer.kt`: Entfernung von `import java.util.Locale` und Streichung der Default-Parameter in `normalize` und `normalizeToDigitsOnly`.
+    - **Data-Implementierung & DI ([AndroidDeviceRegionProvider.kt](file:///c:/Users/chris/AndroidStudioProjects/BirthdayBuddy/app/src/main/java/com/heckmannch/birthdaybuddy/data/util/AndroidDeviceRegionProvider.kt)):**
+      - Konkrete Android-Implementierung unter `data/util/`, die `Locale.getDefault().country` kapselt.
+      - Bereitstellung im Singleton-Scope via Hilt `@Binds` in [HelperBindingsModule.kt](file:///c:/Users/chris/AndroidStudioProjects/BirthdayBuddy/app/src/main/java/com/heckmannch/birthdaybuddy/di/HelperBindingsModule.kt).
+    - **Caller-Refactoring & Injection:**
+      - [BirthdayAppFunctionService.kt](file:///c:/Users/chris/AndroidStudioProjects/BirthdayBuddy/app/src/main/java/com/heckmannch/birthdaybuddy/platform/appfunctions/BirthdayAppFunctionService.kt): Konstruktor- bzw. Field-Injection von `DeviceRegionProvider` und Übergabe des Ländercodes an `PhoneNumberNormalizer`.
+      - [ContactActions.kt](file:///c:/Users/chris/AndroidStudioProjects/BirthdayBuddy/app/src/main/java/com/heckmannch/birthdaybuddy/ui/util/ContactActions.kt): Injektion via `@Inject constructor` und Bereitstellung eines `ContactActionsEntryPoint` für Composable-Aufrufer mit sicherem Fallback.
+    - **Testing & QA:**
+      - [PhoneNumberNormalizerTest.kt](file:///c:/Users/chris/AndroidStudioProjects/BirthdayBuddy/app/src/test/java/com/heckmannch/birthdaybuddy/domain/util/PhoneNumberNormalizerTest.kt): Vollständige Entkopplung von JVM-Locale durch feste Test-Implementierung des `DeviceRegionProvider` und neue Determinismus-Tests.
+      - [BirthdayAppFunctionServiceTest.kt](file:///c:/Users/chris/AndroidStudioProjects/BirthdayBuddy/app/src/test/java/com/heckmannch/birthdaybuddy/platform/appfunctions/BirthdayAppFunctionServiceTest.kt): Injektion des Test-`DeviceRegionProvider`.
+      - [AndroidDeviceRegionProviderTest.kt](file:///c:/Users/chris/AndroidStudioProjects/BirthdayBuddy/app/src/test/java/com/heckmannch/birthdaybuddy/data/util/AndroidDeviceRegionProviderTest.kt): Neuer Unit-Test für die Android-Implementierung.
+      - [ContactActionsTest.kt](file:///c:/Users/chris/AndroidStudioProjects/BirthdayBuddy/app/src/test/java/com/heckmannch/birthdaybuddy/ui/util/ContactActionsTest.kt): Neue Robolectric Unit-Tests für Intent-Erstellung mit `DeviceRegionProvider`.
+      - Alle 680 Unit-Tests erfolgreich ausgeführt (`./gradlew testDebugUnitTest`).
+

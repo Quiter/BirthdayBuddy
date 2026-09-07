@@ -32,6 +32,7 @@ import com.heckmannch.birthdaybuddy.di.IoDispatcher
 import com.heckmannch.birthdaybuddy.domain.appfunctions.model.ContactBirthday
 import com.heckmannch.birthdaybuddy.domain.appfunctions.model.UpcomingBirthday
 import com.heckmannch.birthdaybuddy.domain.repository.ContactRepository
+import com.heckmannch.birthdaybuddy.domain.util.DeviceRegionProvider
 import com.heckmannch.birthdaybuddy.domain.util.PhoneNumberNormalizer
 import com.heckmannch.birthdaybuddy.util.IntentExtras
 import com.heckmannch.birthdaybuddy.util.NO_YEAR_MARKER
@@ -80,6 +81,9 @@ abstract class BirthdayAppFunctionService : AppFunctionService() {
     @Inject
     @IoDispatcher
     internal lateinit var ioDispatcher: CoroutineDispatcher
+
+    @Inject
+    internal lateinit var deviceRegionProvider: DeviceRegionProvider
 
     // -----------------------------------------------------------------------------------------
     // getUpcomingBirthdays
@@ -226,9 +230,10 @@ abstract class BirthdayAppFunctionService : AppFunctionService() {
      */
     @VisibleForTesting
     internal fun buildSendBirthdayMessageIntent(app: String, phone: String): Intent {
+        val region = deviceRegionProvider.getCountryIso()
         return when (app.lowercase()) {
             "whatsapp" -> Intent(Intent.ACTION_VIEW).apply {
-                val digitsOnly = PhoneNumberNormalizer.normalizeToDigitsOnly(phone)
+                val digitsOnly = PhoneNumberNormalizer.normalizeToDigitsOnly(phone, defaultCountryIso = region)
                 data = "https://wa.me/$digitsOnly".toUri()
                 resolveWhatsAppPackage()?.let { packageName ->
                     setPackage(packageName)
@@ -236,17 +241,17 @@ abstract class BirthdayAppFunctionService : AppFunctionService() {
             }
 
             "signal" -> Intent(Intent.ACTION_VIEW).apply {
-                val normalized = PhoneNumberNormalizer.normalize(phone)
+                val normalized = PhoneNumberNormalizer.normalize(phone, defaultCountryIso = region)
                 data = "sgnl://send?phone=${Uri.encode(normalized)}".toUri()
             }
 
             "telegram" -> Intent(Intent.ACTION_VIEW).apply {
-                val normalized = PhoneNumberNormalizer.normalize(phone)
+                val normalized = PhoneNumberNormalizer.normalize(phone, defaultCountryIso = region)
                 data = "tg://msg?to=${Uri.encode(normalized)}".toUri()
             }
 
             "sms" -> {
-                val normalized = PhoneNumberNormalizer.normalize(phone)
+                val normalized = PhoneNumberNormalizer.normalize(phone, defaultCountryIso = region)
                 Intent(Intent.ACTION_SENDTO).apply {
                     data = "smsto:$normalized".toUri()
                 }
