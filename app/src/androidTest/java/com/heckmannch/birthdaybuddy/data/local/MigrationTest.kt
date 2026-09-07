@@ -143,7 +143,7 @@ class MigrationTest {
             testDb,
             6,
             true,
-            AppDatabase.MIGRATION_5_6
+            APP_MIGRATION_5_6
         )
 
         // 3. Verify data integrity
@@ -201,7 +201,7 @@ class MigrationTest {
             testDb,
             7,
             true,
-            AppDatabase.MIGRATION_6_7
+            APP_MIGRATION_6_7
         )
 
         // 3. Verify legacy tables are dropped
@@ -477,8 +477,8 @@ class MigrationTest {
             testDb,
             10,
             true,
-            AppDatabase.MIGRATION_5_6,
-            AppDatabase.MIGRATION_6_7
+            APP_MIGRATION_5_6,
+            APP_MIGRATION_6_7
         )
 
         // 3. Verify that the data is intact and new columns default to correct values
@@ -514,8 +514,8 @@ class MigrationTest {
             testDb,
             11,
             true,
-            AppDatabase.MIGRATION_5_6,
-            AppDatabase.MIGRATION_6_7
+            APP_MIGRATION_5_6,
+            APP_MIGRATION_6_7
         )
 
         // 3. Verify data integrity in contacts table
@@ -752,8 +752,8 @@ class MigrationTest {
             AppDatabase::class.java,
             testDb
         ).addMigrations(
-            AppDatabase.MIGRATION_5_6,
-            AppDatabase.MIGRATION_6_7
+            APP_MIGRATION_5_6,
+            APP_MIGRATION_6_7
         ).build()
 
         val sqliteDb = db.openHelper.writableDatabase

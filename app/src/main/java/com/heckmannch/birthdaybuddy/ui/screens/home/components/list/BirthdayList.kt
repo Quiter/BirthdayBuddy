@@ -54,6 +54,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
@@ -160,7 +161,7 @@ fun BirthdayList(
             userScrollEnabled = false,
         ) {
             items(10, key = { it }) {
-                BirthdayItemSkeleton(alpha = shimmerAlpha)
+                BirthdayItemSkeleton(shimmerAlpha = { shimmerAlpha })
             }
         }
         return
@@ -273,15 +274,19 @@ fun BirthdayList(
 }
 
 @Composable
-private fun BirthdayItemSkeleton(alpha: Float) {
+private fun BirthdayItemSkeleton(shimmerAlpha: () -> Float) {
     Surface(
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = SpacingNormal)
             .padding(bottom = SpacingSmall)
-            .height(ContactItemSkeletonHeight),
+            .height(ContactItemSkeletonHeight)
+            // graphicsLayer liest shimmerAlpha erst in der Draw-Phase aus;
+            // dadurch wird bei jedem Animations-Frame eine Recomposition der gesamten Surface
+            // und ihrer Kind-Elemente vermieden.
+            .graphicsLayer { alpha = shimmerAlpha() },
         shape = MaterialTheme.shapes.medium,
-        color = MaterialTheme.colorScheme.surfaceContainerLow.copy(alpha = alpha)
+        color = MaterialTheme.colorScheme.surfaceContainerLow
     ) {
         Row(
             modifier = Modifier.padding(SpacingNormal),

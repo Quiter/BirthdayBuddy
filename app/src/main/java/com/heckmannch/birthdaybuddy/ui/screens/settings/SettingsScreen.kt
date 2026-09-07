@@ -49,6 +49,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
@@ -445,11 +446,11 @@ private fun SettingsMenuItem(
             .padding(horizontal = SpacingMedium, vertical = SpacingTiny)
             .clip(RoundedCornerShape(SpacingNormal))
             .background(containerColor)
-            .clickable { onClick() }
+            .clickable(role = Role.Button) { onClick() }
     } else {
         Modifier
             .fillMaxWidth()
-            .clickable { onClick() }
+            .clickable(role = Role.Button) { onClick() }
     }
 
     ListItem(

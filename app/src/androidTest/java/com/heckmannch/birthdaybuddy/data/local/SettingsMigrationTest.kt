@@ -38,7 +38,7 @@ class SettingsMigrationTest {
             testDb,
             3,
             true,
-            SettingsDatabase.MIGRATION_2_3
+            SETTINGS_MIGRATION_2_3
         )
 
         // 3. Verify that data is intact and new column has the default value 0 (false)
@@ -75,7 +75,7 @@ class SettingsMigrationTest {
             testDb,
             4,
             true,
-            SettingsDatabase.MIGRATION_3_4
+            SETTINGS_MIGRATION_3_4
         )
 
         // 3. Verify columns and default values
@@ -110,7 +110,7 @@ class SettingsMigrationTest {
             testDb,
             5,
             true,
-            SettingsDatabase.MIGRATION_4_5
+            SETTINGS_MIGRATION_4_5
         )
 
         // 3. Verify columns and default values
@@ -145,7 +145,7 @@ class SettingsMigrationTest {
             testDb,
             6,
             true,
-            SettingsDatabase.MIGRATION_5_6
+            SETTINGS_MIGRATION_5_6
         )
 
         // 3. Verify columns and default values
@@ -180,7 +180,7 @@ class SettingsMigrationTest {
             testDb,
             7,
             true,
-            SettingsDatabase.MIGRATION_6_7
+            SETTINGS_MIGRATION_6_7
         )
 
         // 3. Verify columns and default values
@@ -210,7 +210,7 @@ class SettingsMigrationTest {
             testDb,
             8,
             true,
-            SettingsDatabase.MIGRATION_7_8
+            SETTINGS_MIGRATION_7_8
         )
 
         // 3. Verify columns and default values
@@ -240,7 +240,7 @@ class SettingsMigrationTest {
             testDb,
             9,
             true,
-            SettingsDatabase.MIGRATION_8_9
+            SETTINGS_MIGRATION_8_9
         )
 
         // 3. Verify columns and default values
@@ -275,7 +275,7 @@ class SettingsMigrationTest {
             testDb,
             10,
             true,
-            SettingsDatabase.MIGRATION_9_10
+            SETTINGS_MIGRATION_9_10
         )
 
         // 3. Verify columns and default values
@@ -302,14 +302,14 @@ class SettingsMigrationTest {
             testDb,
             10,
             true,
-            SettingsDatabase.MIGRATION_2_3,
-            SettingsDatabase.MIGRATION_3_4,
-            SettingsDatabase.MIGRATION_4_5,
-            SettingsDatabase.MIGRATION_5_6,
-            SettingsDatabase.MIGRATION_6_7,
-            SettingsDatabase.MIGRATION_7_8,
-            SettingsDatabase.MIGRATION_8_9,
-            SettingsDatabase.MIGRATION_9_10
+            SETTINGS_MIGRATION_2_3,
+            SETTINGS_MIGRATION_3_4,
+            SETTINGS_MIGRATION_4_5,
+            SETTINGS_MIGRATION_5_6,
+            SETTINGS_MIGRATION_6_7,
+            SETTINGS_MIGRATION_7_8,
+            SETTINGS_MIGRATION_8_9,
+            SETTINGS_MIGRATION_9_10
         )
     }
 }

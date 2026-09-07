@@ -4,10 +4,12 @@ import android.content.Context
 import android.util.Log
 import androidx.annotation.VisibleForTesting
 import androidx.hilt.work.HiltWorker
+import androidx.work.BackoffPolicy
 import androidx.work.CoroutineWorker
 import androidx.work.ExistingWorkPolicy
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
+import androidx.work.WorkRequest
 import androidx.work.WorkerParameters
 import com.heckmannch.birthdaybuddy.domain.repository.WidgetUpdater
 import com.heckmannch.birthdaybuddy.util.AlarmScheduler
@@ -62,6 +64,8 @@ class BirthdayWidgetWorker @AssistedInject constructor(
         @JvmStatic
         fun enqueueImmediateWork(context: Context) {
             val request = OneTimeWorkRequestBuilder<BirthdayWidgetWorker>()
+                // Linearer Backoff (10s), um zeitkritische Widget-Aktualisierungen bei temporären Fehlern rasch zu wiederholen
+                .setBackoffCriteria(BackoffPolicy.LINEAR, WorkRequest.MIN_BACKOFF_MILLIS, TimeUnit.MILLISECONDS)
                 .addTag(WORK_TAG)
                 .build()
 
@@ -86,6 +90,8 @@ class BirthdayWidgetWorker @AssistedInject constructor(
         ) {
             val request = OneTimeWorkRequestBuilder<BirthdayWidgetWorker>()
                 .setInitialDelay(calculateDelayUntilMidnight(), TimeUnit.MILLISECONDS)
+                // Linearer Backoff (10s), um zeitkritische Widget-Aktualisierungen bei temporären Fehlern rasch zu wiederholen
+                .setBackoffCriteria(BackoffPolicy.LINEAR, WorkRequest.MIN_BACKOFF_MILLIS, TimeUnit.MILLISECONDS)
                 .addTag(WORK_TAG)
                 .build()
 

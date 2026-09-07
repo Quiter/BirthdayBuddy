@@ -3,10 +3,12 @@ package com.heckmannch.birthdaybuddy.notification
 import android.content.Context
 import android.util.Log
 import androidx.hilt.work.HiltWorker
+import androidx.work.BackoffPolicy
 import androidx.work.CoroutineWorker
 import androidx.work.ExistingWorkPolicy
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
+import androidx.work.WorkRequest
 import androidx.work.WorkerParameters
 import com.heckmannch.birthdaybuddy.domain.model.NotificationRule
 import com.heckmannch.birthdaybuddy.domain.model.PendingNotification
@@ -110,6 +112,8 @@ class NotificationWorker @AssistedInject constructor(
         @JvmStatic
         fun enqueueImmediateWork(context: Context) {
             val request = OneTimeWorkRequestBuilder<NotificationWorker>()
+                // Linearer Backoff (10s), um zeitkritische Benachrichtigungen bei temporären Fehlern rasch zu wiederholen
+                .setBackoffCriteria(BackoffPolicy.LINEAR, WorkRequest.MIN_BACKOFF_MILLIS, TimeUnit.MILLISECONDS)
                 .addTag(NotificationActions.WORK_TAG_NOTIFICATION)
                 .build()
 
@@ -162,6 +166,8 @@ class NotificationWorker @AssistedInject constructor(
 
             val request = OneTimeWorkRequestBuilder<NotificationWorker>()
                 .setInitialDelay(delay, TimeUnit.MILLISECONDS)
+                // Linearer Backoff (10s), um zeitkritische Benachrichtigungen bei temporären Fehlern rasch zu wiederholen
+                .setBackoffCriteria(BackoffPolicy.LINEAR, WorkRequest.MIN_BACKOFF_MILLIS, TimeUnit.MILLISECONDS)
                 .addTag(NotificationActions.WORK_TAG_NOTIFICATION)
                 .build()
 

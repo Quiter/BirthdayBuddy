@@ -11,6 +11,8 @@ import com.heckmannch.birthdaybuddy.data.local.LabelConfigDao
 import com.heckmannch.birthdaybuddy.data.local.NotificationRuleDao
 import com.heckmannch.birthdaybuddy.data.local.PendingNotificationDao
 import com.heckmannch.birthdaybuddy.data.local.SettingsDatabase
+import com.heckmannch.birthdaybuddy.data.local.buildAppDatabase
+import com.heckmannch.birthdaybuddy.data.local.buildSettingsDatabase
 import dagger.Module
 import dagger.Provides
 import dagger.Reusable
@@ -58,7 +60,7 @@ object AppModule {
     @Provides
     @Singleton
     fun provideAppDatabase(@ApplicationContext context: Context): AppDatabase =
-        AppDatabase.getDatabase(context)
+        buildAppDatabase(context)
 
     /**
      * Provides a single instance of the settings database storing local app configs and styling preferences.
@@ -71,7 +73,7 @@ object AppModule {
     @Provides
     @Singleton
     fun provideSettingsDatabase(@ApplicationContext context: Context): SettingsDatabase =
-        SettingsDatabase.getDatabase(context)
+        buildSettingsDatabase(context)
 
     /**
      * Provides the Data Access Object (DAO) for contacts.

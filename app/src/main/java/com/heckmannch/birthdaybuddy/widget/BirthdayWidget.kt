@@ -4,7 +4,6 @@ import android.content.Context
 import android.content.Intent
 import android.text.format.DateFormat
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.TextUnit
@@ -53,6 +52,7 @@ import dagger.hilt.InstallIn
 import dagger.hilt.android.EntryPointAccessors
 import dagger.hilt.components.SingletonComponent
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.first
 import java.time.format.DateTimeFormatter
 import java.time.format.FormatStyle
 import java.util.Locale
@@ -98,23 +98,21 @@ class BirthdayWidget : GlanceAppWidget() {
 
         val locale = ConfigurationCompat.getLocales(context.resources.configuration)[0] ?: Locale.getDefault()
 
-        provideContent {
-            val contactsState = produceState(initialValue = emptyList()) {
-                combine(
-                    repository.allContacts,
-                    repository.labelConfigs,
-                    repository.labelsEnabled,
-                ) { list, configs, labelsEnabled ->
-                    ContactFilterLogic.filterForWidget(
-                        contacts = list,
-                        labelsEnabled = labelsEnabled,
-                        configs = configs
-                    ).sortedBy { it.birthday?.safeDaysUntilNext() ?: Long.MAX_VALUE }
-                }.collect { value = it }
-            }
+        val contacts = combine(
+            repository.allContacts,
+            repository.labelConfigs,
+            repository.labelsEnabled,
+        ) { list, configs, labelsEnabled ->
+            ContactFilterLogic.filterForWidget(
+                contacts = list,
+                labelsEnabled = labelsEnabled,
+                configs = configs,
+            ).sortedBy { it.birthday?.safeDaysUntilNext() ?: Long.MAX_VALUE }
+        }.first()
 
+        provideContent {
             GlanceTheme {
-                WidgetContent(contacts = contactsState.value, locale = locale)
+                WidgetContent(contacts = contacts, locale = locale)
             }
         }
     }
