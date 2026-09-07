@@ -38,8 +38,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
+import com.heckmannch.birthdaybuddy.R
 import androidx.compose.ui.unit.dp
 import com.heckmannch.birthdaybuddy.ui.theme.AlphaContainerMuted
 import com.heckmannch.birthdaybuddy.ui.theme.AlphaEmphasisMedium
@@ -157,7 +159,7 @@ fun NotificationsIllustration(
                         )
                         Spacer(modifier = Modifier.width(SpacingExtraSmall))
                         Text(
-                            text = "• jetzt",
+                            text = stringResource(R.string.illustration_now),
                             style = MaterialTheme.typography.labelSmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = AlphaEmphasisMedium)
                         )
@@ -177,13 +179,13 @@ fun NotificationsIllustration(
 
                 // Content
                 Text(
-                    text = "🎉 Erika hat heute Geb.!",
+                    text = stringResource(R.string.illustration_birthday_title),
                     style = MaterialTheme.typography.labelLarge,
                     fontWeight = FontWeight.Bold
                 )
                 Spacer(modifier = Modifier.height(SpacingExtraSmall))
                 Text(
-                    text = "Sie wird heute 30 Jahre alt.",
+                    text = stringResource(R.string.illustration_birthday_body),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )

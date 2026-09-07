@@ -10,6 +10,7 @@
     <string name="home_filter_no_birthday">No Birthday</string>
     <string name="home_scroll_to_top">Scroll to top</string>
     <string name="home_add_contact">Add contact</string>
+    <string name="cd_toggle_sidebar">Toggle Sidebar</string>
 
     <!-- Birthday List -->
     <string name="empty_permission_desc">To see your birthdays, BirthdayBuddy needs access to your contacts.</string>
@@ -101,6 +102,7 @@
 
     <!-- Notification Helper -->
     <string name="notif_channel_name">Birthday Reminders</string>
+    <string name="notif_channel_desc">Notifications for upcoming and today\'s birthdays and events.</string>
     <string name="notif_action_snooze">Later</string>
     <string name="notif_action_done">Done</string>
     <string name="notif_action_settings">Settings</string>
@@ -179,6 +181,16 @@
     <string name="onboarding_ready_btn">Get Started</string>
     <string name="onboarding_next">Next</string>
     <string name="onboarding_back">Back</string>
+ 
+    <!-- Onboarding Illustrations -->
+    <string name="illustration_my_calendars">My Calendars</string>
+    <string name="illustration_events">Events</string>
+    <string name="illustration_holidays">Holidays</string>
+    <string name="illustration_now">"• now"</string>
+    <string name="illustration_birthday_title">🎉 Erika\'s birthday today!</string>
+    <string name="illustration_birthday_body">She turns 30 years old today.</string>
+    <string name="illustration_sample_name">Erika Mustermann</string>
+    <string name="illustration_sample_countdown">30th Birthday • in 2 days</string>
 
     <!-- App Shortcuts -->
     <string name="shortcut_add_contact">Add contact</string>

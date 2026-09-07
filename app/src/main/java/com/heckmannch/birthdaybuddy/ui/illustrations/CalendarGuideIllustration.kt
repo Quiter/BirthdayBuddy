@@ -31,8 +31,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
+import com.heckmannch.birthdaybuddy.R
 import com.heckmannch.birthdaybuddy.ui.theme.AlphaContainerMuted
 import com.heckmannch.birthdaybuddy.ui.theme.AlphaContainerSubtle
 import com.heckmannch.birthdaybuddy.ui.theme.AlphaOnboardingCard
@@ -97,7 +99,7 @@ fun CalendarGuideIllustration(
         ) {
             Column(modifier = Modifier.padding(SpacingMedium)) {
                 Text(
-                    text = "Meine Kalender",
+                    text = stringResource(R.string.illustration_my_calendars),
                     style = MaterialTheme.typography.labelMedium,
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
@@ -128,7 +130,7 @@ fun CalendarGuideIllustration(
                     }
                     Spacer(modifier = Modifier.width(SpacingSmall))
                     Text(
-                        text = "Termine",
+                        text = stringResource(R.string.illustration_events),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = OnboardingCalendarEventAlpha)
                     )
@@ -197,7 +199,7 @@ fun CalendarGuideIllustration(
                     }
                     Spacer(modifier = Modifier.width(SpacingSmall))
                     Text(
-                        text = "Feiertage",
+                        text = stringResource(R.string.illustration_holidays),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = OnboardingCalendarEventAlpha)
                     )

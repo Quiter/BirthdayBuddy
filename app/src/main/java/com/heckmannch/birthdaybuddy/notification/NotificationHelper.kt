@@ -6,6 +6,8 @@ import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
 import androidx.core.app.NotificationCompat
+import androidx.core.app.NotificationManagerCompat
+import androidx.core.content.getSystemService
 import com.heckmannch.birthdaybuddy.MainActivity
 import com.heckmannch.birthdaybuddy.R
 import com.heckmannch.birthdaybuddy.domain.model.Contact
@@ -50,13 +52,15 @@ class NotificationHelper @Inject constructor(
         val showHint = isPersistent && dismissCount >= 3
 
         val notificationManager =
-            context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+            context.getSystemService<NotificationManager>() ?: return
 
         val channel = NotificationChannel(
             CHANNEL_ID,
             context.getString(R.string.notif_channel_name),
             NotificationManager.IMPORTANCE_HIGH // Höhere Wichtigkeit für persistente Erinnnerungen
-        )
+        ).apply {
+            description = context.getString(R.string.notif_channel_desc)
+        }
         notificationManager.createNotificationChannel(channel)
 
         val intent = Intent(context, MainActivity::class.java).apply {
@@ -159,6 +163,7 @@ class NotificationHelper @Inject constructor(
             .setAutoCancel(!isPersistent)
             .build()
 
+        if (!NotificationManagerCompat.from(context).areNotificationsEnabled()) return
         notificationManager.notify(notificationId, notification)
     }
 }

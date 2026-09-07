@@ -11,6 +11,7 @@ import com.heckmannch.birthdaybuddy.domain.repository.NotificationRepository
 import com.heckmannch.birthdaybuddy.domain.usecase.ReshowNotificationUseCase
 import com.heckmannch.birthdaybuddy.domain.usecase.SnoozeNotificationUseCase
 import com.heckmannch.birthdaybuddy.domain.util.NotificationKeyUtils
+import com.heckmannch.birthdaybuddy.util.IntentExtras
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
@@ -40,10 +41,10 @@ class NotificationActionReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context?, intent: Intent?) {
         if (context == null || intent == null) return
 
-        val notificationId = intent.getIntExtra(NotificationActions.EXTRA_NOTIFICATION_ID, -1)
-        val pendingId = intent.getIntExtra(NotificationActions.EXTRA_PENDING_ID, -1)
-        val daysBefore = intent.getIntExtra(NotificationActions.EXTRA_DAYS_BEFORE, 0)
-        val lookupKeys = intent.getStringArrayExtra(NotificationActions.EXTRA_LOOKUP_KEYS) ?: emptyArray()
+        val notificationId = IntentExtras.safeGetIntExtra(intent, NotificationActions.EXTRA_NOTIFICATION_ID, -1)
+        val pendingId = IntentExtras.safeGetIntExtra(intent, NotificationActions.EXTRA_PENDING_ID, -1)
+        val daysBefore = IntentExtras.safeGetIntExtra(intent, NotificationActions.EXTRA_DAYS_BEFORE, 0)
+        val lookupKeys = IntentExtras.safeGetStringArrayExtra(intent, NotificationActions.EXTRA_LOOKUP_KEYS)
 
         when (intent.action) {
             NotificationActions.ACTION_SNOOZE -> {

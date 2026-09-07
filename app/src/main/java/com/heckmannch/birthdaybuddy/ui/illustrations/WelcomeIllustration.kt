@@ -25,9 +25,11 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
+import com.heckmannch.birthdaybuddy.R
 import com.heckmannch.birthdaybuddy.ui.theme.AlphaContainerMuted
 import com.heckmannch.birthdaybuddy.ui.theme.AlphaOnboardingCard
 import com.heckmannch.birthdaybuddy.ui.theme.BirthdayBuddyTheme
@@ -91,7 +93,7 @@ fun WelcomeIllustration(
             ) {
                 Column {
                     Text(
-                        text = "Erika Mustermann",
+                        text = stringResource(R.string.illustration_sample_name),
                         style = MaterialTheme.typography.titleSmall,
                         fontWeight = FontWeight.Bold,
                         maxLines = 1,
@@ -99,7 +101,7 @@ fun WelcomeIllustration(
                     )
                     Spacer(modifier = Modifier.height(SpacingExtraSmall))
                     Text(
-                        text = "30. Geb. • in 2 Tagen",
+                        text = stringResource(R.string.illustration_sample_countdown),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )

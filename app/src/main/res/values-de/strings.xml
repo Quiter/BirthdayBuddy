@@ -10,6 +10,7 @@
     <string name="home_filter_no_birthday">Ohne Datum</string>
     <string name="home_scroll_to_top">Nach oben scrollen</string>
     <string name="home_add_contact">Kontakt hinzufügen</string>
+    <string name="cd_toggle_sidebar">Seitenleiste umschalten</string>
 
     <!-- Birthday List -->
     <string name="empty_permission_desc">Um deine Geburtstage zu sehen, benötigt BirthdayBuddy Zugriff auf deine Kontakte.</string>
@@ -101,6 +102,7 @@
 
     <!-- Notification Helper -->
     <string name="notif_channel_name">Geburtstags-Erinnerungen</string>
+    <string name="notif_channel_desc">Benachrichtigungen für bevorstehende und heutige Geburtstage sowie Ereignisse.</string>
     <string name="notif_action_snooze">Später</string>
     <string name="notif_action_done">Erledigt</string>
     <string name="notif_action_settings">Einstellungen</string>
@@ -179,6 +181,16 @@
     <string name="onboarding_ready_btn">Los geht\'s</string>
     <string name="onboarding_next">Weiter</string>
     <string name="onboarding_back">Zurück</string>
+ 
+    <!-- Onboarding Illustrations -->
+    <string name="illustration_my_calendars">Meine Kalender</string>
+    <string name="illustration_events">Termine</string>
+    <string name="illustration_holidays">Feiertage</string>
+    <string name="illustration_now">"• jetzt"</string>
+    <string name="illustration_birthday_title">🎉 Erika hat heute Geb.!</string>
+    <string name="illustration_birthday_body">Sie wird heute 30 Jahre alt.</string>
+    <string name="illustration_sample_name">Erika Mustermann</string>
+    <string name="illustration_sample_countdown">30. Geb. • in 2 Tagen</string>
 
     <!-- App Shortcuts -->
     <string name="shortcut_add_contact">Kontakt hinzufügen</string>
