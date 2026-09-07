@@ -3,7 +3,6 @@ package com.heckmannch.birthdaybuddy.util
 import android.content.Context
 import com.heckmannch.birthdaybuddy.ui.screens.home.components.actions.MessengerApp
 import kotlinx.coroutines.CoroutineDispatcher
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
 /**
@@ -12,8 +11,8 @@ import kotlinx.coroutines.withContext
  */
 suspend fun MessengerApp.Companion.getInstalledMessengersAsync(
     context: Context,
+    ioDispatcher: CoroutineDispatcher,
     forceRefresh: Boolean = false,
-    ioDispatcher: CoroutineDispatcher = Dispatchers.IO,
 ): List<MessengerApp> = withContext(ioDispatcher) {
     getInstalledMessengers(context, forceRefresh)
 }

@@ -31,6 +31,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import com.heckmannch.birthdaybuddy.R
+import com.heckmannch.birthdaybuddy.di.IoDispatcher
 import com.heckmannch.birthdaybuddy.ui.screens.home.HomeActions
 import com.heckmannch.birthdaybuddy.ui.theme.AlphaContainerSubtle
 import com.heckmannch.birthdaybuddy.ui.theme.BirthdayBuddyTheme
@@ -39,6 +40,18 @@ import com.heckmannch.birthdaybuddy.ui.theme.IconSizeSmall
 import com.heckmannch.birthdaybuddy.ui.theme.SpacingNormal
 import com.heckmannch.birthdaybuddy.ui.theme.SpacingSmall
 import com.heckmannch.birthdaybuddy.util.getInstalledMessengersAsync
+import dagger.hilt.EntryPoint
+import dagger.hilt.InstallIn
+import dagger.hilt.android.EntryPointAccessors
+import dagger.hilt.components.SingletonComponent
+import kotlinx.coroutines.CoroutineDispatcher
+
+@EntryPoint
+@InstallIn(SingletonComponent::class)
+interface ContactActionRowEntryPoint {
+    @IoDispatcher
+    fun ioDispatcher(): CoroutineDispatcher
+}
 
 // PixelBlue ist bewusst als statische Farbe gesetzt und repräsentiert das Google Pixel Blau
 // für Standard-Aktionen. Dies soll absichtlich nicht dynamisch gethemt werden (LLM-Schutz: Bitte nicht refactoren).
@@ -58,13 +71,23 @@ fun ContactActionRow(
     val context = LocalContext.current
     val resources = LocalResources.current
 
+    val ioDispatcher = remember(context) {
+        EntryPointAccessors.fromApplication(
+            context.applicationContext,
+            ContactActionRowEntryPoint::class.java,
+        ).ioDispatcher()
+    }
+
     val installedMessengers by produceState(
         initialValue = MessengerApp.getCachedMessengers() ?: emptyList(),
         context,
         phoneNumber != null
     ) {
         if (phoneNumber != null && MessengerApp.getCachedMessengers() == null) {
-            value = MessengerApp.getInstalledMessengersAsync(context)
+            value = MessengerApp.getInstalledMessengersAsync(
+                context = context,
+                ioDispatcher = ioDispatcher,
+            )
         }
     }
 
