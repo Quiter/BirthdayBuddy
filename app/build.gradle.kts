@@ -19,7 +19,7 @@ android {
         minSdk = 28
         targetSdk = 37
         versionCode = 47
-        versionName = "2.15.0"
+        versionName = "2.15.1"
 
         testInstrumentationRunner = "com.heckmannch.birthdaybuddy.HiltTestRunner"
     }
@@ -41,12 +41,7 @@ android {
     packaging {
         resources {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
-            excludes += "META-INF/*.kotlin_module"
-            excludes += "/META-INF/*.kotlin_module"
             excludes += "**/*.kotlin_module"
-            excludes += "META-INF/io.coil-kt.coil3:coil-network-core.kotlin_module"
-            excludes += "/META-INF/io.coil-kt.coil3:coil-network-core.kotlin_module"
-            excludes += "**/io.coil-kt.coil3*"
         }
     }
 

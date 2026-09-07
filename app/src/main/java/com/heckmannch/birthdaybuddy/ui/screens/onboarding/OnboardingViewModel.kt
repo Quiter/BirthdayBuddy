@@ -48,8 +48,9 @@ class OnboardingViewModel @Inject constructor(
     @IoDispatcher private val ioDispatcher: CoroutineDispatcher,
 ) : ViewModel() {
 
+    private val initialPermissions = checkPermissions()
     private val _currentPage = MutableStateFlow(0)
-    private val _permissions = MutableStateFlow(checkPermissions())
+    private val _permissions = MutableStateFlow(initialPermissions)
 
     /**
      * UI state combining current page, permission statuses, and notification settings.
@@ -70,7 +71,11 @@ class OnboardingViewModel @Inject constructor(
     }.stateIn(
         scope = viewModelScope,
         started = SharingStarted.WhileSubscribed(STOP_TIMEOUT_MILLIS),
-        initialValue = OnboardingUiState()
+        initialValue = OnboardingUiState(
+            hasContactPermission = initialPermissions.hasContact,
+            hasNotificationPermission = initialPermissions.hasNotification,
+            hasCalendarPermission = initialPermissions.hasCalendar,
+        )
     )
 
     /**
@@ -89,7 +94,7 @@ class OnboardingViewModel @Inject constructor(
             }
 
             is OnboardingIntent.SetCurrentPage -> {
-                _currentPage.value = intent.page
+                _currentPage.value = intent.page.coerceAtLeast(0)
             }
 
             is OnboardingIntent.CompleteOnboarding -> {

@@ -214,9 +214,16 @@ fun OnboardingContent(
         initialPage = uiState.currentPage.coerceIn(0, (steps.size - 1).coerceAtLeast(0))
     ) { steps.size }
 
-    LaunchedEffect(uiState.currentPage, pagerState.pageCount) {
-        if (uiState.currentPage != pagerState.currentPage && uiState.currentPage in 0 until pagerState.pageCount) {
-            pagerState.animateScrollToPage(uiState.currentPage)
+    LaunchedEffect(steps.size) {
+        if (pagerState.currentPage >= steps.size && steps.isNotEmpty()) {
+            pagerState.scrollToPage(steps.size - 1)
+        }
+    }
+
+    LaunchedEffect(uiState.currentPage, steps.size) {
+        val targetPage = uiState.currentPage.coerceIn(0, (steps.size - 1).coerceAtLeast(0))
+        if (targetPage != pagerState.currentPage && targetPage in 0 until steps.size) {
+            pagerState.animateScrollToPage(targetPage)
         }
     }
 
@@ -254,8 +261,8 @@ fun OnboardingContent(
                 .union(WindowInsets.displayCutout),
             bottomBar = {
                 OnboardingFooter(
-                    currentPage = pagerState.currentPage,
-                    pageCount = pagerState.pageCount,
+                    currentPage = pagerState.currentPage.coerceIn(0, (steps.size - 1).coerceAtLeast(0)),
+                    pageCount = steps.size,
                     isNextEnabled = when (currentStep) {
                         OnboardingStep.WELCOME -> true
                         OnboardingStep.CONTACTS -> !contactsEnabled || uiState.hasContactPermission
@@ -265,10 +272,10 @@ fun OnboardingContent(
                         OnboardingStep.READY -> true
                     },
                     onBack = {
-                        onIntent(OnboardingIntent.SetCurrentPage(pagerState.currentPage - 1))
+                        onIntent(OnboardingIntent.SetCurrentPage((pagerState.currentPage - 1).coerceAtLeast(0)))
                     },
                     onNext = {
-                        onIntent(OnboardingIntent.SetCurrentPage(pagerState.currentPage + 1))
+                        onIntent(OnboardingIntent.SetCurrentPage((pagerState.currentPage + 1).coerceAtMost(steps.size - 1)))
                     }
                 )
             }
@@ -279,9 +286,12 @@ fun OnboardingContent(
                     .fillMaxSize()
                     .padding(paddingValues),
                 userScrollEnabled = false,
-                key = { steps[it].name }
+                key = { pageIndex ->
+                    steps.getOrNull(pageIndex)?.name ?: pageIndex.toString()
+                }
             ) { page ->
-                when (steps[page]) {
+                val step = steps.getOrNull(page) ?: return@HorizontalPager
+                when (step) {
                     OnboardingStep.WELCOME -> WelcomePage()
                     OnboardingStep.CONTACTS -> ContactsPage(
                         enabled = contactsEnabled,

@@ -105,7 +105,32 @@ class OnboardingViewModelTest {
         runCurrent()
 
         assertThat(viewModel.uiState.value.currentPage).isEqualTo(3)
+
+        viewModel.onIntent(OnboardingIntent.SetCurrentPage(-1))
+        runCurrent()
+
+        assertThat(viewModel.uiState.value.currentPage).isEqualTo(0)
         collectJob.cancel()
+    }
+
+    @Test
+    fun `uiState initial value should reflect permissions immediately without collection`() {
+        whenever(permissionChecker.hasContactsPermission()).thenReturn(true)
+        whenever(permissionChecker.hasNotificationPermission()).thenReturn(false)
+        whenever(permissionChecker.hasCalendarPermission()).thenReturn(true)
+
+        val vm = OnboardingViewModel(
+            notificationRepository,
+            contactRepository,
+            permissionChecker,
+            CoroutineScope(mainDispatcherRule.testDispatcher),
+            mainDispatcherRule.testDispatcher
+        )
+
+        // Verify initial value BEFORE any collection
+        assertThat(vm.uiState.value.hasContactPermission).isTrue()
+        assertThat(vm.uiState.value.hasNotificationPermission).isFalse()
+        assertThat(vm.uiState.value.hasCalendarPermission).isTrue()
     }
 
     @Test

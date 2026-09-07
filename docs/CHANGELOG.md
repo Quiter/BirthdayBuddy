@@ -685,5 +685,16 @@ ecreateContactsTableV7 (mit giftIdeas TEXT NOT NULL, COALESCE(giftIdeas, '[]')) 
       - Anpassung aller betroffenen UseCase-, ViewModel- und AndroidTest-Suites (`UnlinkCoupleUseCaseTest`, `IgnoreCoupleSuggestionUseCaseTest`, `GetCoupleSuggestionUseCaseTest`, `NotificationRepositoryImplTest`, `HomeViewModelTest`, `HomeViewModelGiftIdeaTest`, `HomeViewModelSearchTest`, `SyncViewModelTest`, `ContactRepositoryCoupleLinkTest`, `ContactRepositoryGiftIdeaTest`).
       - Erfolgreicher Durchlauf aller Unit-Tests (`./gradlew testDebugUnitTest`).
 
-
-
+372. **Absicherung des dynamischen Onboarding-Pagers gegen `IndexOutOfBoundsException` & Crash nach Abschluss (Bugfix & Stabilität):**
+    - **Problem & Ursachenanalyse:** Nach Abschluss des Onboardings (Klick auf "Los geht's" auf der letzten Seite) oder beim Wiederherstellen des Zustands stürzte die App mit `java.lang.IndexOutOfBoundsException: index: 5, size: 5` in Compose's `NearestRangeKeyIndexMap` und `HorizontalPager` ab. Die Kontaktliste auf dem `HomeScreen` konnte nicht geladen werden, da der Navigationsübergang durch den Absturz unterbrochen wurde.
+      1. Der dynamische Seitenkatalog (`steps` in `OnboardingScreen.kt`) variiert je nach Kalenderberechtigung / Kalender-Sync zwischen 5 (ohne Kalender-Guide) und 6 (mit Kalender-Guide) Elementen.
+      2. Bei Erreichen der Abschlussseite (Index 5) triggerte `CompleteOnboarding` asynchrone DB-Updates (`onboardingCompleted = true`, `calendarSyncEnabled`), was zur Rekomposition führte. Wenn die Liste der Schritte dabei auf 5 schrumpfte, griff `HorizontalPager`'s Key-Provider (`key = { steps[it].name }`) und Inhalts-Resolver (`when (steps[page])`) mit Index 5 auf die geschrumpfte 5-Elemente-Liste zu.
+      3. Zudem initialisierte `OnboardingViewModel` den StateFlow via `initialValue = OnboardingUiState()` zunächst mit `hasCalendarPermission = false`. Bei State-Restoration (`rememberPagerState` restauriert Seite 5) führte dieser temporäre Initialzustand zum sofortigen Crash beim Starten der Activity.
+    - **Architektur & Behebung:**
+      - **Bounds-Safe Key- & Content-Provider (`OnboardingScreen.kt`):** Der Key-Provider verwendet nun `steps.getOrNull(pageIndex)?.name ?: pageIndex.toString()`, und das Seiten-Composable guardet mit `steps.getOrNull(page) ?: return@HorizontalPager`.
+      - **Automatisches Clamping bei Größenänderung (`OnboardingScreen.kt`):** Einführung eines `LaunchedEffect(steps.size)`, der den Pager bei Schrumpfen der Liste sofort sicher auf `steps.size - 1` zurückscrollt. Zusätzlich Absicherung der Seitennavigation in `OnboardingFooter` via `coerceAtLeast(0)` und `coerceAtMost(steps.size - 1)`.
+      - **Initiale Berechtigungsprüfung im StateFlow (`OnboardingViewModel.kt`):** `uiState` erhält als `initialValue` im `stateIn(...)` direkt den echten Snapshot aus `checkPermissions()`, wodurch Flapping zwischen Initial- und Emissionswert eliminiert wird. `SetCurrentPage` clampet Werte defensiv mit `.coerceAtLeast(0)`.
+    - **Testing & QA:**
+      - Neue Unit-Tests in `OnboardingViewModelTest`: Absicherung von negativem Paging-Clamping sowie sofortige Bereitstellung des echten Berechtigungszustands im StateFlow ohne asynchrone Collection.
+      - Erfolgreiche Verifikation im Emulator (`Pixel_10_Pro_17.0`): Durchlauf des gesamten Onboardings (Willkommen -> Kontakte -> Benachrichtigungen -> Kalender -> Fertig -> "Los geht's") ohne Crash; nahtloser Wechsel zu `HomeScreen` mit vollständig synchronisierten Kontakten und Geburtstagen.
+      - Kompletter Durchlauf der Test-Suite (`./gradlew test`): Alle Tests erfolgreich bestanden.
