@@ -2,15 +2,12 @@ package com.heckmannch.birthdaybuddy.data.local
 
 import androidx.room.TypeConverter
 import com.heckmannch.birthdaybuddy.domain.model.ThemeMode
-import kotlinx.serialization.json.Json
+import com.heckmannch.birthdaybuddy.util.JsonUtils
 import java.time.LocalDate
 
 class Converters {
     companion object {
-        private val json = Json {
-            ignoreUnknownKeys = true
-            encodeDefaults = true
-        }
+        private val json = JsonUtils.defaultJson
     }
 
     @TypeConverter

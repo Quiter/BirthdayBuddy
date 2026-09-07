@@ -213,6 +213,7 @@
 > Alle anderen ViewModels befinden sich in ihrem jeweiligen Feature-Package unter `ui/screens/`.
 
 ## 📁 Utilities (`util`)
+- `JsonUtils.kt`: Zentrales Singleton-Objekt für standardmäßig vorkonfigurierte `kotlinx.serialization.json.Json`-Instanzen (`defaultJson` mit `ignoreUnknownKeys = true`, `encodeDefaults = true` sowie `prettyJson`). Dient als SSOT für JSON-Serialisierung in der gesamten App (Converters, BackupManager).
 - `DateUtils.kt`: Robuste Erweiterungsfunktionen für LocalDate.
 - `StringUtils.kt`: Hilfsfunktionen für Namens- und String-Operationen (`mergeNames`, `getInitials`).
 - `ContextExtensions.kt`: Hilfsfunktionen für die sichere Navigation im Android-Context.
@@ -252,6 +253,7 @@ Diese Tests laufen ohne Emulator/Gerät direkt auf dem Entwicklungsrechner und s
 - `data/repository/ContactRepositoryImplTest.kt`: JVM Unit-Tests für `ContactRepositoryImpl` (Abdeckung von allContacts, labelsEnabled, syncContacts, addGiftIdea, und labelConfigs).
 - `data/repository/SystemContactDataSourceTest.kt`: JVM Unit-Tests für `SystemContactDataSource` (Parsing von Datumsformaten inkl. Schaltjahren wie 29. Februar ohne Jahr).
 - `util/DateUtilsTest.kt`: Logiktests für Datumsberechnungen (Alter, Tage bis Geburtstag, etc.).
+- `util/JsonUtilsTest.kt`: Tests für die zentralen `Json`-Instanzen (`defaultJson` und `prettyJson`).
 - `util/StringUtilsTest.kt`: Logiktests für String- und Namens-Hilfsfunktionen (`mergeNames`, `getInitials`).
 - `util/IntentParserTest.kt`: JVM Unit-Tests für `IntentParser` zur Absicherung der Extraktion aller `AppAction`-Typen aus Android-`Intent`s.
 - `domain/usecase/GetContactsUseCaseTest.kt`: JVM Unit-Tests für `GetContactsUseCase` zur Absicherung der Filter- und Pairing-Logik.

@@ -9,11 +9,11 @@ import com.heckmannch.birthdaybuddy.data.local.GiftIdeaConverters
 import com.heckmannch.birthdaybuddy.data.local.SettingsDatabase
 import com.heckmannch.birthdaybuddy.di.IoDispatcher
 import com.heckmannch.birthdaybuddy.domain.model.GiftIdea
+import com.heckmannch.birthdaybuddy.util.JsonUtils
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonObject
@@ -37,11 +37,7 @@ class GiftIdeaBackupManager @Inject constructor(
     private val settingsDatabase: SettingsDatabase,
     @IoDispatcher private val ioDispatcher: CoroutineDispatcher,
 ) {
-    private val json = Json {
-        ignoreUnknownKeys = true
-        prettyPrint = true
-        encodeDefaults = true
-    }
+    private val json = JsonUtils.prettyJson
 
     /**
      * Exportiert alle Kontakte mit Geschenkideen als JSON-String.
