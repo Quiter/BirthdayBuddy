@@ -42,8 +42,8 @@ class NotificationViewModelTest {
     )
 
     private val testRules = listOf(
-        NotificationRule(id = 1, daysBefore = 0, hour = 9, minute = 0),
-        NotificationRule(id = 2, daysBefore = 1, hour = 18, minute = 0)
+        NotificationRule(daysBefore = 0, hour = 9, minute = 0),
+        NotificationRule(daysBefore = 1, hour = 18, minute = 0)
     )
 
     @Before
@@ -141,16 +141,6 @@ class NotificationViewModelTest {
         val rule = testRules[0]
         viewModel.onIntent(NotificationIntent.UpdateRule(rule))
         verify(notificationRepository).updateRule(rule)
-    }
-
-    @Test
-    fun `updateNotificationRule with duplicate daysBefore from another rule should not update rule in repository`() = runTest {
-        // testRules[0] has daysBefore = 0, testRules[1] has daysBefore = 1.
-        // Trying to update testRules[1] (id=2) to daysBefore = 0 conflicts with testRules[0] (id=1).
-        val conflictingRule = testRules[1].copy(daysBefore = 0)
-        viewModel.onIntent(NotificationIntent.UpdateRule(conflictingRule))
-
-        verify(notificationRepository, never()).updateRule(any())
     }
 
     @Test

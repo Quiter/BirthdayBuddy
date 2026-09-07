@@ -34,7 +34,7 @@ class NotificationSettingsStateTest {
     @Test
     fun `saver preserves ruleToEdit state`() {
         val original = NotificationSettingsState()
-        val rule = NotificationRule(id = 12, daysBefore = 3, hour = 18, minute = 45)
+        val rule = NotificationRule(daysBefore = 3, hour = 18, minute = 45)
         original.openEditDialog(rule)
         assertThat(original.showAddDialog).isFalse()
         assertThat(original.ruleToEdit).isEqualTo(rule)

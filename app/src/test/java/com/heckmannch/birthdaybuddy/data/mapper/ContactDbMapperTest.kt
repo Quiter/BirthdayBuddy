@@ -15,7 +15,7 @@ class ContactDbMapperTest {
     private val mapper = ContactDbMapper()
 
     @Test
-    fun toDomain_mapsAll15FieldsCorrectly() {
+    fun toDomain_mapsAll14FieldsCorrectly() {
         val entity = ContactEntity(
             localId = 42L,
             contactId = "123",
@@ -39,7 +39,6 @@ class ContactDbMapperTest {
 
         val domain = mapper.toDomain(entity)
 
-        assertThat(domain.localId).isEqualTo(42L)
         assertThat(domain.contactId).isEqualTo("123")
         assertThat(domain.lookupKey).isEqualTo("lookup_abc")
         assertThat(domain.fullName).isEqualTo("Max Mustermann")
@@ -84,7 +83,6 @@ class ContactDbMapperTest {
 
         val domain = mapper.toDomain(entity)
 
-        assertThat(domain.localId).isEqualTo(1L)
         assertThat(domain.contactId).isEqualTo("c1")
         assertThat(domain.lookupKey).isEqualTo("k1")
         assertThat(domain.fullName).isEqualTo("Erika Musterfrau")
@@ -104,7 +102,6 @@ class ContactDbMapperTest {
     @Test
     fun toEntity_mapsAll15FieldsCorrectly() {
         val domain = Contact(
-            localId = 42L,
             contactId = "123",
             lookupKey = "lookup_abc",
             fullName = "Max Mustermann",
@@ -124,7 +121,7 @@ class ContactDbMapperTest {
             spouseLookupKey = "spouse_lookup_xyz"
         )
 
-        val entity = mapper.toEntity(domain)
+        val entity = mapper.toEntity(domain, localId = 42L)
 
         assertThat(entity.localId).isEqualTo(42L)
         assertThat(entity.contactId).isEqualTo("123")
@@ -152,7 +149,6 @@ class ContactDbMapperTest {
     @Test
     fun toEntity_handlesNullAndDefaultFieldsCorrectly() {
         val domain = Contact(
-            localId = 1L,
             contactId = "c1",
             lookupKey = "k1",
             fullName = "Erika Musterfrau",
@@ -171,7 +167,7 @@ class ContactDbMapperTest {
 
         val entity = mapper.toEntity(domain)
 
-        assertThat(entity.localId).isEqualTo(1L)
+        assertThat(entity.localId).isEqualTo(0L)
         assertThat(entity.contactId).isEqualTo("c1")
         assertThat(entity.lookupKey).isEqualTo("k1")
         assertThat(entity.fullName).isEqualTo("Erika Musterfrau")
@@ -212,8 +208,8 @@ class ContactDbMapperTest {
     @Test
     fun toEntityList_mapsListOfDomainsCorrectly() {
         val domains = listOf(
-            Contact(localId = 1L, contactId = "c1", lookupKey = "k1", fullName = "Contact 1"),
-            Contact(localId = 2L, contactId = "c2", lookupKey = "k2", fullName = "Contact 2")
+            Contact(contactId = "c1", lookupKey = "k1", fullName = "Contact 1"),
+            Contact(contactId = "c2", lookupKey = "k2", fullName = "Contact 2")
         )
 
         val result = mapper.toEntityList(domains)

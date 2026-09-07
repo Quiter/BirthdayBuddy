@@ -13,7 +13,6 @@ class PendingNotificationMapper @Inject constructor() {
 
     fun toDomain(entity: PendingNotificationEntity): PendingNotification {
         return PendingNotification(
-            id = entity.id,
             contactLookupKeys = entity.contactLookupKeys,
             daysBefore = entity.daysBefore,
             year = entity.year,
@@ -24,9 +23,9 @@ class PendingNotificationMapper @Inject constructor() {
 
     fun toDomainList(entities: List<PendingNotificationEntity>): List<PendingNotification> = entities.map(::toDomain)
 
-    fun toEntity(domain: PendingNotification): PendingNotificationEntity {
+    fun toEntity(domain: PendingNotification, id: Int = 0): PendingNotificationEntity {
         return PendingNotificationEntity(
-            id = domain.id,
+            id = id,
             contactLookupKeys = domain.contactLookupKeys,
             daysBefore = domain.daysBefore,
             year = domain.year,
@@ -35,5 +34,5 @@ class PendingNotificationMapper @Inject constructor() {
         )
     }
 
-    fun toEntityList(domains: List<PendingNotification>): List<PendingNotificationEntity> = domains.map(::toEntity)
+    fun toEntityList(domains: List<PendingNotification>): List<PendingNotificationEntity> = domains.map { toEntity(it) }
 }

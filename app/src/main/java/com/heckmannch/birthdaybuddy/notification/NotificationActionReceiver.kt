@@ -98,9 +98,9 @@ class NotificationActionReceiver : BroadcastReceiver() {
                             // Zähler für Wisch-Versuche erhöhen
                             notificationRepository.incrementDismissCount(pendingId)
 
-                            val allContacts =
-                                notificationRepository.getActiveNotificationsImmediate()
-                            val isStillActive = allContacts.any { it.id == pendingId }
+                            val pendingNotification =
+                                notificationRepository.getPendingNotificationById(pendingId)
+                            val isStillActive = pendingNotification != null && !pendingNotification.isDone
                             if (isStillActive) {
                                 // Wir brauchen den NotificationHelper. Da wir in einem Receiver sind,
                                 // nutzen wir am besten den Worker oder wir triggern einen schnellen Re-show.

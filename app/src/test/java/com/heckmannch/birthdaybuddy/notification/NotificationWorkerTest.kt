@@ -65,7 +65,7 @@ class NotificationWorkerTest {
     fun `scheduleNext - default policy - enqueues with REPLACE`() {
         val testNow = LocalDateTime.of(2026, 7, 9, 12, 0, 0)
         val rules = listOf(
-            NotificationRule(id = 1, daysBefore = 0, hour = 15, minute = 0)
+            NotificationRule(daysBefore = 0, hour = 15, minute = 0)
         )
 
         NotificationWorker.scheduleNext(context, rules, now = testNow)
@@ -84,8 +84,8 @@ class NotificationWorkerTest {
         val testNow = LocalDateTime.of(2026, 7, 9, 12, 0, 0)
 
         val rules = listOf(
-            NotificationRule(id = 1, daysBefore = 0, hour = 15, minute = 0), // 3 hours in future
-            NotificationRule(id = 2, daysBefore = 0, hour = 8, minute = 0)   // in the past today
+            NotificationRule(daysBefore = 0, hour = 15, minute = 0), // 3 hours in future
+            NotificationRule(daysBefore = 0, hour = 8, minute = 0)   // in the past today
         )
 
         val requestSlot = slot<OneTimeWorkRequest>()
@@ -118,8 +118,8 @@ class NotificationWorkerTest {
         val testNow = LocalDateTime.of(2026, 7, 9, 12, 0, 0)
 
         val rules = listOf(
-            NotificationRule(id = 1, daysBefore = 0, hour = 10, minute = 0), // past
-            NotificationRule(id = 2, daysBefore = 0, hour = 8, minute = 0)   // past
+            NotificationRule(daysBefore = 0, hour = 10, minute = 0), // past
+            NotificationRule(daysBefore = 0, hour = 8, minute = 0)   // past
         )
 
         val requestSlot = slot<OneTimeWorkRequest>()
@@ -152,7 +152,7 @@ class NotificationWorkerTest {
     @Test
     fun `doWork - success - cleans up, syncs, shows notifications, and enqueues next with APPEND_OR_REPLACE`() = runTest {
         val rules = listOf(
-            NotificationRule(id = 1, daysBefore = 0, hour = 9, minute = 0)
+            NotificationRule(daysBefore = 0, hour = 9, minute = 0)
         )
         coEvery { notificationRepository.getSettingsImmediate() } returns AppSettings(notificationsEnabled = true)
         coEvery { notificationRepository.getAllRulesImmediate() } returns rules
@@ -230,7 +230,7 @@ class NotificationWorkerTest {
     @Test
     fun `doWork - exception in syncContacts - schedules next run and returns retry`() = runTest {
         val rules = listOf(
-            NotificationRule(id = 1, daysBefore = 0, hour = 9, minute = 0)
+            NotificationRule(daysBefore = 0, hour = 9, minute = 0)
         )
         coEvery { notificationRepository.getSettingsImmediate() } returns AppSettings(notificationsEnabled = true)
         coEvery { notificationRepository.getAllRulesImmediate() } returns rules
@@ -260,7 +260,7 @@ class NotificationWorkerTest {
     @Test
     fun `doWork - exception in deleteOldNotifications - schedules next run and returns retry`() = runTest {
         val rules = listOf(
-            NotificationRule(id = 1, daysBefore = 0, hour = 9, minute = 0)
+            NotificationRule(daysBefore = 0, hour = 9, minute = 0)
         )
         coEvery { notificationRepository.getSettingsImmediate() } returns AppSettings(notificationsEnabled = true)
         coEvery { notificationRepository.getAllRulesImmediate() } returns rules
@@ -290,7 +290,7 @@ class NotificationWorkerTest {
     @Test
     fun `doWork - exception in getPendingNotificationsUseCase - schedules next run and returns retry`() = runTest {
         val rules = listOf(
-            NotificationRule(id = 1, daysBefore = 0, hour = 9, minute = 0)
+            NotificationRule(daysBefore = 0, hour = 9, minute = 0)
         )
         coEvery { notificationRepository.getSettingsImmediate() } returns AppSettings(notificationsEnabled = true)
         coEvery { notificationRepository.getAllRulesImmediate() } returns rules

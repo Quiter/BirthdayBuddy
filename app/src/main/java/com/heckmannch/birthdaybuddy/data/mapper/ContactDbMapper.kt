@@ -13,7 +13,6 @@ class ContactDbMapper @Inject constructor() {
 
     fun toDomain(entity: ContactEntity): Contact {
         return Contact(
-            localId = entity.localId,
             contactId = entity.contactId,
             lookupKey = entity.lookupKey,
             fullName = entity.fullName,
@@ -33,9 +32,9 @@ class ContactDbMapper @Inject constructor() {
 
     fun toDomainList(entities: List<ContactEntity>): List<Contact> = entities.map(::toDomain)
 
-    fun toEntity(domain: Contact): ContactEntity {
+    fun toEntity(domain: Contact, localId: Long = 0): ContactEntity {
         return ContactEntity(
-            localId = domain.localId,
+            localId = localId,
             contactId = domain.contactId,
             lookupKey = domain.lookupKey,
             fullName = domain.fullName,
@@ -53,5 +52,5 @@ class ContactDbMapper @Inject constructor() {
         )
     }
 
-    fun toEntityList(domains: List<Contact>): List<ContactEntity> = domains.map(::toEntity)
+    fun toEntityList(domains: List<Contact>): List<ContactEntity> = domains.map { toEntity(it) }
 }

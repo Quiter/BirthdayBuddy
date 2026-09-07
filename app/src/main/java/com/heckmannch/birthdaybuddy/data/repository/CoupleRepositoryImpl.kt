@@ -42,6 +42,18 @@ class CoupleRepositoryImpl @Inject constructor(
 ) : CoupleRepository {
 
     override val potentialCouples: Flow<List<CoupleSuggestion>> = contactDao.getPotentialCouples()
+        .map { list ->
+            list.map { projection ->
+                CoupleSuggestion(
+                    firstLookupKey = projection.firstLookupKey,
+                    firstName = projection.firstName,
+                    firstImageUri = projection.firstImageUri,
+                    secondLookupKey = projection.secondLookupKey,
+                    secondName = projection.secondName,
+                    secondImageUri = projection.secondImageUri
+                )
+            }
+        }
         .distinctUntilChanged()
 
     override val ignoredCouples: Flow<List<String>> = settingsRepository.settings

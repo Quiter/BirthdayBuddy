@@ -190,7 +190,6 @@ class NotificationSettingsState(
 
     companion object {
         private const val KEY_SHOW_ADD_DIALOG = "show_add_dialog"
-        private const val KEY_RULE_ID = "rule_id"
         private const val KEY_RULE_DAYS_BEFORE = "rule_days_before"
         private const val KEY_RULE_HOUR = "rule_hour"
         private const val KEY_RULE_MINUTE = "rule_minute"
@@ -204,7 +203,6 @@ class NotificationSettingsState(
                 buildMap {
                     put(KEY_SHOW_ADD_DIALOG, state.showAddDialog)
                     state.ruleToEdit?.let { rule ->
-                        put(KEY_RULE_ID, rule.id)
                         put(KEY_RULE_DAYS_BEFORE, rule.daysBefore)
                         put(KEY_RULE_HOUR, rule.hour)
                         put(KEY_RULE_MINUTE, rule.minute)
@@ -213,9 +211,8 @@ class NotificationSettingsState(
             },
             restore = { saved ->
                 val showAddDialog = saved[KEY_SHOW_ADD_DIALOG] as? Boolean ?: false
-                val rule = if (saved.containsKey(KEY_RULE_ID)) {
+                val rule = if (saved.containsKey(KEY_RULE_DAYS_BEFORE)) {
                     NotificationRule(
-                        id = saved[KEY_RULE_ID] as Int,
                         daysBefore = saved[KEY_RULE_DAYS_BEFORE] as Int,
                         hour = saved[KEY_RULE_HOUR] as Int,
                         minute = saved[KEY_RULE_MINUTE] as Int,
@@ -364,10 +361,15 @@ internal fun NotificationSettingsContent(
     state.ruleToEdit?.let { rule ->
         EditRuleDialog(
             rule = rule,
-            existingDaysBefore = rules.filter { it.id != rule.id }.map { it.daysBefore }.toSet(),
+            existingDaysBefore = rules.filter { it.daysBefore != rule.daysBefore }.map { it.daysBefore }.toSet(),
             onDismiss = { state.closeEditDialog() },
             onConfirm = { days, hour, minute ->
-                onUpdateRule(rule.copy(daysBefore = days, hour = hour, minute = minute))
+                if (days != rule.daysBefore) {
+                    onDeleteRule(rule)
+                    onAddRule(days, hour, minute)
+                } else {
+                    onUpdateRule(rule.copy(hour = hour, minute = minute))
+                }
                 state.closeEditDialog()
             },
         )
@@ -413,8 +415,8 @@ private fun NotificationSettingsPreview() {
             notificationsEnabled = true,
             persistentNotifications = true,
             rules = listOf(
-                NotificationRule(1, 0, 9, 0),
-                NotificationRule(2, 1, 18, 0),
+                NotificationRule(daysBefore = 0, hour = 9, minute = 0),
+                NotificationRule(daysBefore = 1, hour = 18, minute = 0),
             ),
             hasSystemPermission = true,
             state = rememberNotificationSettingsState(),

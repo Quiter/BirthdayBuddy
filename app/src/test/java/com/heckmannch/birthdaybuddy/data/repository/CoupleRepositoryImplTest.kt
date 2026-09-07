@@ -7,6 +7,7 @@ import com.heckmannch.birthdaybuddy.data.local.ContactDao
 import com.heckmannch.birthdaybuddy.data.local.ContactEntity
 import com.heckmannch.birthdaybuddy.data.local.ContactUserData
 import com.heckmannch.birthdaybuddy.data.local.ContactUserDataDao
+import com.heckmannch.birthdaybuddy.data.local.CoupleProjection
 import com.heckmannch.birthdaybuddy.data.local.SettingsDatabase
 import com.heckmannch.birthdaybuddy.data.mapper.ContactDbMapper
 import com.heckmannch.birthdaybuddy.domain.model.AppSettings
@@ -46,7 +47,7 @@ class CoupleRepositoryImplTest {
     private val settingsDatabase: SettingsDatabase = mock()
     private val contactDbMapper = ContactDbMapper()
 
-    private val potentialCouplesFlow = MutableStateFlow<List<CoupleSuggestion>>(emptyList())
+    private val potentialCouplesFlow = MutableStateFlow<List<CoupleProjection>>(emptyList())
     private val settingsFlow = MutableStateFlow(AppSettings())
 
     private lateinit var repository: CoupleRepositoryImpl
@@ -83,13 +84,16 @@ class CoupleRepositoryImplTest {
 
     @Test
     fun potentialCouples_emitsFromContactDao() = runTest {
-        val list = listOf(
+        val projections = listOf(
+            CoupleProjection("k1", "Alice", null, "k2", "Bob", null)
+        )
+        potentialCouplesFlow.value = projections
+
+        val expected = listOf(
             CoupleSuggestion("k1", "Alice", null, "k2", "Bob", null)
         )
-        potentialCouplesFlow.value = list
-
         val result = repository.potentialCouples.first()
-        assertThat(result).isEqualTo(list)
+        assertThat(result).isEqualTo(expected)
     }
 
     @Test

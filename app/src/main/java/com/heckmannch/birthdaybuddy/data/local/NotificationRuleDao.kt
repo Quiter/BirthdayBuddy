@@ -14,6 +14,12 @@ interface NotificationRuleDao {
     @Query("SELECT * FROM notification_rules ORDER BY daysBefore ASC, hour ASC, minute ASC")
     suspend fun getAllRulesImmediate(): List<NotificationRuleEntity>
 
+    @Query("SELECT * FROM notification_rules WHERE daysBefore = :daysBefore LIMIT 1")
+    suspend fun getRuleByDaysBefore(daysBefore: Int): NotificationRuleEntity?
+
+    @Query("DELETE FROM notification_rules WHERE daysBefore = :daysBefore")
+    suspend fun deleteRuleByDaysBefore(daysBefore: Int)
+
     @Upsert
     suspend fun upsertRule(rule: NotificationRuleEntity)
 

@@ -5,7 +5,6 @@ package com.heckmannch.birthdaybuddy.domain.model
  * Decoupled from any database-specific attributes.
  */
 data class PendingNotification(
-    val id: Int = 0,
     val contactLookupKeys: List<String>,
     val daysBefore: Int,
     val year: Int,

@@ -7,7 +7,6 @@ import java.time.LocalDate
  * Vollständig entkoppelt von der Datenbank-Implementierung.
  */
 data class Contact(
-    val localId: Long = 0,
     val contactId: String,
     val lookupKey: String,
     val fullName: String,

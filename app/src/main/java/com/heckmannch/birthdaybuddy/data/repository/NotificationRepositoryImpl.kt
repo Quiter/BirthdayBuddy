@@ -111,7 +111,8 @@ class NotificationRepositoryImpl @Inject constructor(
      * @param rule The [NotificationRule] to insert or update.
      */
     override suspend fun insertRule(rule: NotificationRule): Unit = withContext(ioDispatcher) {
-        notificationRuleDao.upsertRule(notificationRuleMapper.toEntity(rule))
+        val existing = notificationRuleDao.getRuleByDaysBefore(rule.daysBefore)
+        notificationRuleDao.upsertRule(notificationRuleMapper.toEntity(rule, id = existing?.id ?: 0))
         syncScheduling()
     }
 
@@ -123,7 +124,8 @@ class NotificationRepositoryImpl @Inject constructor(
      * @param rule The [NotificationRule] with updated values.
      */
     override suspend fun updateRule(rule: NotificationRule): Unit = withContext(ioDispatcher) {
-        notificationRuleDao.upsertRule(notificationRuleMapper.toEntity(rule))
+        val existing = notificationRuleDao.getRuleByDaysBefore(rule.daysBefore)
+        notificationRuleDao.upsertRule(notificationRuleMapper.toEntity(rule, id = existing?.id ?: 0))
         syncScheduling()
     }
 
@@ -135,7 +137,7 @@ class NotificationRepositoryImpl @Inject constructor(
      * @param rule The [NotificationRule] to delete.
      */
     override suspend fun deleteRule(rule: NotificationRule): Unit = withContext(ioDispatcher) {
-        notificationRuleDao.deleteRule(notificationRuleMapper.toEntity(rule))
+        notificationRuleDao.deleteRuleByDaysBefore(rule.daysBefore)
         syncScheduling()
     }
 

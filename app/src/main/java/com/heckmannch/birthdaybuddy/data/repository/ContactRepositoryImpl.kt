@@ -120,11 +120,10 @@ class ContactRepositoryImpl @Inject constructor(
                             val userData = userDataMap[lookupKey]
 
                             val contact = systemContact.copy(
-                                localId = existing?.localId ?: 0,
                                 giftIdeas = userData?.giftIdeas ?: existing?.giftIdeas ?: emptyList(),
                                 spouseLookupKey = userData?.spouseLookupKey
                             )
-                            contactDbMapper.toEntity(contact)
+                            contactDbMapper.toEntity(contact, localId = existing?.localId ?: 0)
                         }
                     }
 

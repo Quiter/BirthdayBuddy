@@ -26,9 +26,9 @@ import org.robolectric.annotation.GraphicsMode
 class NotificationSettingsScreenshotTest : BaseScreenshotTest() {
 
     private val sampleRules = listOf(
-        NotificationRule(id = 1, daysBefore = 0, hour = 8, minute = 0),
-        NotificationRule(id = 2, daysBefore = 1, hour = 9, minute = 30),
-        NotificationRule(id = 3, daysBefore = 7, hour = 10, minute = 0),
+        NotificationRule(daysBefore = 0, hour = 8, minute = 0),
+        NotificationRule(daysBefore = 1, hour = 9, minute = 30),
+        NotificationRule(daysBefore = 7, hour = 10, minute = 0),
     )
 
     private fun defaultState() = NotificationSettingsState()

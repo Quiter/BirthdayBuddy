@@ -99,7 +99,6 @@ class ContactRepositoryImplTest {
         // Assert
         assertThat(result).hasSize(1)
         val contact = result.first()
-        assertThat(contact.localId).isEqualTo(1L)
         assertThat(contact.contactId).isEqualTo("c1")
         assertThat(contact.lookupKey).isEqualTo("key1")
         assertThat(contact.fullName).isEqualTo("Alice")

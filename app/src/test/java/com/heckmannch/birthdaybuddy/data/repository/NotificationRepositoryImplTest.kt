@@ -92,12 +92,10 @@ class NotificationRepositoryImplTest {
 
         // Assert
         assertThat(result).hasSize(2)
-        assertThat(result[0].id).isEqualTo(1)
         assertThat(result[0].daysBefore).isEqualTo(0)
         assertThat(result[0].hour).isEqualTo(9)
         assertThat(result[0].minute).isEqualTo(0)
 
-        assertThat(result[1].id).isEqualTo(2)
         assertThat(result[1].daysBefore).isEqualTo(1)
         assertThat(result[1].hour).isEqualTo(18)
         assertThat(result[1].minute).isEqualTo(30)
@@ -155,7 +153,7 @@ class NotificationRepositoryImplTest {
         val capturedRules = slot<List<NotificationRule>>()
         coVerify { notificationScheduler.scheduleNext(capture(capturedRules)) }
         assertThat(capturedRules.captured).hasSize(1)
-        assertThat(capturedRules.captured[0].id).isEqualTo(1)
+        assertThat(capturedRules.captured[0].daysBefore).isEqualTo(0)
         coVerify(exactly = 0) { notificationScheduler.cancelNotification() }
     }
 
@@ -282,13 +280,16 @@ class NotificationRepositoryImplTest {
 
         // Assert
         assertThat(result).hasSize(1)
-        assertThat(result[0].id).isEqualTo(1)
+        assertThat(result[0].daysBefore).isEqualTo(0)
+        assertThat(result[0].hour).isEqualTo(9)
+        assertThat(result[0].minute).isEqualTo(0)
     }
 
     @Test
     fun insertRule_delegatesToDaoAndTriggersSync() = runTest {
         // Arrange
-        val rule = NotificationRule(id = 5, daysBefore = 2, hour = 12, minute = 0)
+        val rule = NotificationRule(daysBefore = 2, hour = 12, minute = 0)
+        coEvery { notificationRuleDao.getRuleByDaysBefore(2) } returns NotificationRuleEntity(id = 5, daysBefore = 2, hour = 10, minute = 0)
         coEvery { settingsRepository.getSettingsImmediate() } returns AppSettings(
             notificationsEnabled = false
         )
@@ -310,7 +311,8 @@ class NotificationRepositoryImplTest {
     @Test
     fun updateRule_delegatesToDaoAndTriggersSync() = runTest {
         // Arrange
-        val rule = NotificationRule(id = 5, daysBefore = 2, hour = 12, minute = 0)
+        val rule = NotificationRule(daysBefore = 2, hour = 12, minute = 0)
+        coEvery { notificationRuleDao.getRuleByDaysBefore(2) } returns NotificationRuleEntity(id = 5, daysBefore = 2, hour = 10, minute = 0)
         coEvery { settingsRepository.getSettingsImmediate() } returns AppSettings(
             notificationsEnabled = false
         )
@@ -331,7 +333,8 @@ class NotificationRepositoryImplTest {
     @Test
     fun deleteRule_delegatesToDaoAndTriggersSync() = runTest {
         // Arrange
-        val rule = NotificationRule(id = 5, daysBefore = 2, hour = 12, minute = 0)
+        val rule = NotificationRule(daysBefore = 2, hour = 12, minute = 0)
+        coEvery { notificationRuleDao.deleteRuleByDaysBefore(2) } returns Unit
         coEvery { settingsRepository.getSettingsImmediate() } returns AppSettings(
             notificationsEnabled = false
         )
@@ -341,9 +344,7 @@ class NotificationRepositoryImplTest {
         repository.deleteRule(rule)
 
         // Assert
-        val capturedRuleEntity = slot<NotificationRuleEntity>()
-        coVerify { notificationRuleDao.deleteRule(capture(capturedRuleEntity)) }
-        assertThat(capturedRuleEntity.captured.id).isEqualTo(5)
+        coVerify { notificationRuleDao.deleteRuleByDaysBefore(2) }
 
         // Verify sync scheduling is triggered
         coVerify { notificationScheduler.cancelNotification() }
@@ -368,7 +369,6 @@ class NotificationRepositoryImplTest {
 
         // Assert
         assertThat(result).hasSize(1)
-        assertThat(result[0].id).isEqualTo(1)
         assertThat(result[0].contactLookupKeys).containsExactly("key1")
         assertThat(result[0].daysBefore).isEqualTo(0)
         assertThat(result[0].year).isEqualTo(2024)
@@ -380,7 +380,6 @@ class NotificationRepositoryImplTest {
     fun insertPendingNotification_delegatesToDaoAndReturnsId() = runTest {
         // Arrange
         val notification = PendingNotification(
-            id = 0,
             contactLookupKeys = listOf("key1"),
             daysBefore = 1,
             year = 2024,
@@ -421,7 +420,9 @@ class NotificationRepositoryImplTest {
 
         // Assert
         assertThat(result).isNotNull()
-        assertThat(result!!.id).isEqualTo(123)
+        assertThat(result!!.contactLookupKeys).containsExactly("key1")
+        assertThat(result.daysBefore).isEqualTo(0)
+        assertThat(result.year).isEqualTo(2024)
         assertThat(result.isDone).isTrue()
         assertThat(result.dismissCount).isEqualTo(1)
     }

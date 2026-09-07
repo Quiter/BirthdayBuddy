@@ -75,7 +75,7 @@ class GetPendingNotificationsUseCaseTest {
         // Arrange
         val settings = AppSettings(notificationsEnabled = true)
         val rule =
-            NotificationRule(id = 1, daysBefore = 0, hour = 10, minute = 0) // 10:00 (base is 9:00)
+            NotificationRule(daysBefore = 0, hour = 10, minute = 0) // 10:00 (base is 9:00)
         whenever(notificationRepository.settings).thenReturn(flowOf(settings))
         whenever(notificationRepository.getAllRulesImmediate()).thenReturn(listOf(rule))
 
@@ -92,7 +92,7 @@ class GetPendingNotificationsUseCaseTest {
             // Arrange
             val settings = AppSettings(notificationsEnabled = true)
             val rule =
-                NotificationRule(id = 1, daysBefore = 0, hour = 9, minute = 0) // 09:00 (active)
+                NotificationRule(daysBefore = 0, hour = 9, minute = 0) // 09:00 (active)
             val contacts = listOf(
                 Contact(
                     contactId = "1",
@@ -117,7 +117,6 @@ class GetPendingNotificationsUseCaseTest {
         // Arrange
         val settings = AppSettings(notificationsEnabled = true)
         val rule = NotificationRule(
-            id = 1,
             daysBefore = 1,
             hour = 9,
             minute = 0
@@ -150,7 +149,7 @@ class GetPendingNotificationsUseCaseTest {
     fun `when birthday was already scheduled, returns empty list`() = runTest {
         // Arrange
         val settings = AppSettings(notificationsEnabled = true)
-        val rule = NotificationRule(id = 1, daysBefore = 1, hour = 9, minute = 0)
+        val rule = NotificationRule(daysBefore = 1, hour = 9, minute = 0)
         val contacts = listOf(
             Contact(
                 contactId = "1",
@@ -176,7 +175,7 @@ class GetPendingNotificationsUseCaseTest {
     fun `when other events are disabled, skips name days and anniversaries`() = runTest {
         // Arrange
         val settings = AppSettings(notificationsEnabled = true, otherEventsEnabled = false)
-        val rule = NotificationRule(id = 1, daysBefore = 0, hour = 9, minute = 0)
+        val rule = NotificationRule(daysBefore = 0, hour = 9, minute = 0)
         val contacts = listOf(
             Contact(
                 contactId = "1",
@@ -201,7 +200,7 @@ class GetPendingNotificationsUseCaseTest {
     fun `when other events are enabled, returns name day event`() = runTest {
         // Arrange
         val settings = AppSettings(notificationsEnabled = true, otherEventsEnabled = true)
-        val rule = NotificationRule(id = 1, daysBefore = 0, hour = 9, minute = 0)
+        val rule = NotificationRule(daysBefore = 0, hour = 9, minute = 0)
         val contacts = listOf(
             Contact(
                 contactId = "1",
@@ -229,7 +228,7 @@ class GetPendingNotificationsUseCaseTest {
         runTest {
             // Arrange
             val settings = AppSettings(notificationsEnabled = true, otherEventsEnabled = true)
-            val rule = NotificationRule(id = 1, daysBefore = 0, hour = 9, minute = 0)
+            val rule = NotificationRule(daysBefore = 0, hour = 9, minute = 0)
             val contacts = listOf(
                 Contact(
                     contactId = "1",
@@ -266,7 +265,7 @@ class GetPendingNotificationsUseCaseTest {
         runTest {
             // Arrange
             val settings = AppSettings(notificationsEnabled = true, otherEventsEnabled = true)
-            val rule = NotificationRule(id = 1, daysBefore = 0, hour = 9, minute = 0)
+            val rule = NotificationRule(daysBefore = 0, hour = 9, minute = 0)
             val contacts = listOf(
                 Contact(
                     contactId = "1",
@@ -301,7 +300,7 @@ class GetPendingNotificationsUseCaseTest {
     fun `when label notifications are disabled, skips contacts with that label`() = runTest {
         // Arrange
         val settings = AppSettings(notificationsEnabled = true)
-        val rule = NotificationRule(id = 1, daysBefore = 0, hour = 9, minute = 0)
+        val rule = NotificationRule(daysBefore = 0, hour = 9, minute = 0)
         val contactWithDisabledLabel = Contact(
             contactId = "1",
             lookupKey = "key1",
@@ -332,7 +331,7 @@ class GetPendingNotificationsUseCaseTest {
             // Arrange
             val leapYearTime = LocalDateTime.of(2028, 2, 29, 9, 0)
             val settings = AppSettings(notificationsEnabled = true)
-            val rule = NotificationRule(id = 1, daysBefore = 0, hour = 9, minute = 0)
+            val rule = NotificationRule(daysBefore = 0, hour = 9, minute = 0)
             val leapDayContact = Contact(
                 contactId = "1",
                 lookupKey = "leap_key",
@@ -361,7 +360,7 @@ class GetPendingNotificationsUseCaseTest {
             // Arrange
             val leapYearEve = LocalDateTime.of(2028, 2, 28, 9, 0)
             val settings = AppSettings(notificationsEnabled = true)
-            val rule = NotificationRule(id = 1, daysBefore = 0, hour = 9, minute = 0)
+            val rule = NotificationRule(daysBefore = 0, hour = 9, minute = 0)
             val leapDayContact = Contact(
                 contactId = "1",
                 lookupKey = "leap_key",
@@ -386,7 +385,7 @@ class GetPendingNotificationsUseCaseTest {
             // Arrange
             val leapYearEve = LocalDateTime.of(2028, 2, 28, 9, 0)
             val settings = AppSettings(notificationsEnabled = true)
-            val rule = NotificationRule(id = 1, daysBefore = 1, hour = 9, minute = 0)
+            val rule = NotificationRule(daysBefore = 1, hour = 9, minute = 0)
             val leapDayContact = Contact(
                 contactId = "1",
                 lookupKey = "leap_key",
@@ -415,7 +414,7 @@ class GetPendingNotificationsUseCaseTest {
             // Arrange
             val nonLeapYearDate = LocalDateTime.of(2027, 2, 28, 9, 0)
             val settings = AppSettings(notificationsEnabled = true)
-            val rule = NotificationRule(id = 1, daysBefore = 0, hour = 9, minute = 0)
+            val rule = NotificationRule(daysBefore = 0, hour = 9, minute = 0)
             val leapDayContact = Contact(
                 contactId = "1",
                 lookupKey = "leap_key",
@@ -444,7 +443,7 @@ class GetPendingNotificationsUseCaseTest {
             // Arrange
             val nonLeapYearEve = LocalDateTime.of(2027, 2, 27, 9, 0)
             val settings = AppSettings(notificationsEnabled = true)
-            val rule = NotificationRule(id = 1, daysBefore = 1, hour = 9, minute = 0)
+            val rule = NotificationRule(daysBefore = 1, hour = 9, minute = 0)
             val leapDayContact = Contact(
                 contactId = "1",
                 lookupKey = "leap_key",
@@ -473,7 +472,7 @@ class GetPendingNotificationsUseCaseTest {
             // Arrange
             val nonLeapYearEve = LocalDateTime.of(2027, 2, 27, 9, 0)
             val settings = AppSettings(notificationsEnabled = true)
-            val rule = NotificationRule(id = 1, daysBefore = 0, hour = 9, minute = 0)
+            val rule = NotificationRule(daysBefore = 0, hour = 9, minute = 0)
             val leapDayContact = Contact(
                 contactId = "1",
                 lookupKey = "leap_key",
@@ -498,7 +497,7 @@ class GetPendingNotificationsUseCaseTest {
             // Arrange
             val nonLeapYearDate = LocalDateTime.of(2027, 2, 28, 9, 0)
             val settings = AppSettings(notificationsEnabled = true, otherEventsEnabled = true)
-            val rule = NotificationRule(id = 1, daysBefore = 0, hour = 9, minute = 0)
+            val rule = NotificationRule(daysBefore = 0, hour = 9, minute = 0)
             val leapDayContact = Contact(
                 contactId = "1",
                 lookupKey = "leap_key",
@@ -531,7 +530,7 @@ class GetPendingNotificationsUseCaseTest {
             // Arrange: Rule set to 09:00, worker executed at 09:50 (50 min delay due to Doze Mode / battery saver)
             val delayedTime = LocalDateTime.of(2024, 5, 15, 9, 50)
             val settings = AppSettings(notificationsEnabled = true)
-            val rule = NotificationRule(id = 1, daysBefore = 0, hour = 9, minute = 0)
+            val rule = NotificationRule(daysBefore = 0, hour = 9, minute = 0)
             val contact = Contact(
                 contactId = "1",
                 lookupKey = "key1",
@@ -561,7 +560,7 @@ class GetPendingNotificationsUseCaseTest {
             // Arrange: Rule set to 09:00, worker executed at 11:00 (2 hours delay)
             val delayedTime = LocalDateTime.of(2024, 5, 15, 11, 0)
             val settings = AppSettings(notificationsEnabled = true)
-            val rule = NotificationRule(id = 1, daysBefore = 0, hour = 9, minute = 0)
+            val rule = NotificationRule(daysBefore = 0, hour = 9, minute = 0)
             val contact = Contact(
                 contactId = "1",
                 lookupKey = "key1",
@@ -590,7 +589,7 @@ class GetPendingNotificationsUseCaseTest {
             // Arrange: Rule set to 09:00, worker executed late at 14:00, but notification was already scheduled
             val delayedTime = LocalDateTime.of(2024, 5, 15, 14, 0)
             val settings = AppSettings(notificationsEnabled = true)
-            val rule = NotificationRule(id = 1, daysBefore = 0, hour = 9, minute = 0)
+            val rule = NotificationRule(daysBefore = 0, hour = 9, minute = 0)
             val contact = Contact(
                 contactId = "1",
                 lookupKey = "key1",
@@ -617,8 +616,8 @@ class GetPendingNotificationsUseCaseTest {
             // Arrange: Rule 1 at 09:00 (due), Rule 2 at 18:00 (future), executed at 11:30
             val midDayTime = LocalDateTime.of(2024, 5, 15, 11, 30)
             val settings = AppSettings(notificationsEnabled = true)
-            val ruleMorning = NotificationRule(id = 1, daysBefore = 0, hour = 9, minute = 0)
-            val ruleEvening = NotificationRule(id = 2, daysBefore = 1, hour = 18, minute = 0)
+            val ruleMorning = NotificationRule(daysBefore = 0, hour = 9, minute = 0)
+            val ruleEvening = NotificationRule(daysBefore = 1, hour = 18, minute = 0)
             val contactToday = Contact(
                 contactId = "1",
                 lookupKey = "key_today",
@@ -664,7 +663,7 @@ class GetPendingNotificationsUseCaseTest {
     fun `when contact has multiple labels and at least one is ignored, contact is ignored`() = runTest {
         // Arrange
         val settings = AppSettings(notificationsEnabled = true)
-        val rule = NotificationRule(id = 1, daysBefore = 0, hour = 9, minute = 0)
+        val rule = NotificationRule(daysBefore = 0, hour = 9, minute = 0)
         val contact = Contact(
             contactId = "1",
             lookupKey = "key1",
@@ -694,7 +693,7 @@ class GetPendingNotificationsUseCaseTest {
     fun `when contact has both hidden and non-hidden labels and none are ignored, returns notification`() = runTest {
         // Arrange
         val settings = AppSettings(notificationsEnabled = true)
-        val rule = NotificationRule(id = 1, daysBefore = 0, hour = 9, minute = 0)
+        val rule = NotificationRule(daysBefore = 0, hour = 9, minute = 0)
         val contact = Contact(
             contactId = "1",
             lookupKey = "key1",
@@ -727,7 +726,7 @@ class GetPendingNotificationsUseCaseTest {
     fun `when contact has exclusively hidden labels, skips notification`() = runTest {
         // Arrange
         val settings = AppSettings(notificationsEnabled = true)
-        val rule = NotificationRule(id = 1, daysBefore = 0, hour = 9, minute = 0)
+        val rule = NotificationRule(daysBefore = 0, hour = 9, minute = 0)
         val contact = Contact(
             contactId = "1",
             lookupKey = "key1",
@@ -757,7 +756,7 @@ class GetPendingNotificationsUseCaseTest {
     fun `when multiple contacts match, queries repository only once per rule for scheduled keys`() = runTest {
         // Arrange
         val settings = AppSettings(notificationsEnabled = true, otherEventsEnabled = true)
-        val rule = NotificationRule(id = 1, daysBefore = 0, hour = 9, minute = 0)
+        val rule = NotificationRule(daysBefore = 0, hour = 9, minute = 0)
         val contacts = (1..10).map { i ->
             Contact(
                 contactId = "$i",
@@ -786,8 +785,8 @@ class GetPendingNotificationsUseCaseTest {
     fun `when multiple rules have the same daysBefore in the same run, deduplicates events and queries repository once`() = runTest {
         // Arrange
         val settings = AppSettings(notificationsEnabled = true)
-        val ruleMorning = NotificationRule(id = 1, daysBefore = 0, hour = 8, minute = 0)
-        val ruleEvening = NotificationRule(id = 2, daysBefore = 0, hour = 9, minute = 0)
+        val ruleMorning = NotificationRule(daysBefore = 0, hour = 8, minute = 0)
+        val ruleEvening = NotificationRule(daysBefore = 0, hour = 9, minute = 0)
         val contact = Contact(
             contactId = "1",
             lookupKey = "key1",

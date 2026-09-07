@@ -25,7 +25,6 @@ class PendingNotificationMapperTest {
 
         val domain = mapper.toDomain(entity)
 
-        assertThat(domain.id).isEqualTo(10)
         assertThat(domain.contactLookupKeys).containsExactly("key_1", "key_2").inOrder()
         assertThat(domain.daysBefore).isEqualTo(1)
         assertThat(domain.year).isEqualTo(2026)
@@ -36,7 +35,6 @@ class PendingNotificationMapperTest {
     @Test
     fun toEntity_mapsAllFieldsCorrectly() {
         val domain = PendingNotification(
-            id = 20,
             contactLookupKeys = listOf("key_a", "key_b", "key_c"),
             daysBefore = 0,
             year = 2025,
@@ -44,7 +42,7 @@ class PendingNotificationMapperTest {
             dismissCount = 0
         )
 
-        val entity = mapper.toEntity(domain)
+        val entity = mapper.toEntity(domain, id = 20)
 
         assertThat(entity.id).isEqualTo(20)
         assertThat(entity.contactLookupKeys).containsExactly("key_a", "key_b", "key_c").inOrder()
@@ -78,14 +76,12 @@ class PendingNotificationMapperTest {
         val domainList = mapper.toDomainList(entities)
 
         assertThat(domainList).hasSize(2)
-        assertThat(domainList[0].id).isEqualTo(1)
         assertThat(domainList[0].contactLookupKeys).containsExactly("k1")
         assertThat(domainList[0].daysBefore).isEqualTo(0)
         assertThat(domainList[0].year).isEqualTo(2026)
         assertThat(domainList[0].isDone).isFalse()
         assertThat(domainList[0].dismissCount).isEqualTo(0)
 
-        assertThat(domainList[1].id).isEqualTo(2)
         assertThat(domainList[1].contactLookupKeys).containsExactly("k2", "k3").inOrder()
         assertThat(domainList[1].daysBefore).isEqualTo(7)
         assertThat(domainList[1].year).isEqualTo(2026)
@@ -104,7 +100,6 @@ class PendingNotificationMapperTest {
     fun toEntityList_mapsListOfDomainsCorrectly() {
         val domains = listOf(
             PendingNotification(
-                id = 1,
                 contactLookupKeys = listOf("k1"),
                 daysBefore = 0,
                 year = 2026,
@@ -112,7 +107,6 @@ class PendingNotificationMapperTest {
                 dismissCount = 0
             ),
             PendingNotification(
-                id = 2,
                 contactLookupKeys = listOf("k2", "k3"),
                 daysBefore = 7,
                 year = 2026,
@@ -124,14 +118,14 @@ class PendingNotificationMapperTest {
         val entityList = mapper.toEntityList(domains)
 
         assertThat(entityList).hasSize(2)
-        assertThat(entityList[0].id).isEqualTo(1)
+        assertThat(entityList[0].id).isEqualTo(0)
         assertThat(entityList[0].contactLookupKeys).containsExactly("k1")
         assertThat(entityList[0].daysBefore).isEqualTo(0)
         assertThat(entityList[0].year).isEqualTo(2026)
         assertThat(entityList[0].isDone).isFalse()
         assertThat(entityList[0].dismissCount).isEqualTo(0)
 
-        assertThat(entityList[1].id).isEqualTo(2)
+        assertThat(entityList[1].id).isEqualTo(0)
         assertThat(entityList[1].contactLookupKeys).containsExactly("k2", "k3").inOrder()
         assertThat(entityList[1].daysBefore).isEqualTo(7)
         assertThat(entityList[1].year).isEqualTo(2026)

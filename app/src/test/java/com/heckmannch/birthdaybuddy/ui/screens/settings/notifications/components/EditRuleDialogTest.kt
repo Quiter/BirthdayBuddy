@@ -85,7 +85,7 @@ class EditRuleDialogTest {
 
     @Test
     fun editingExistingRule_withSameDaysBefore_allowsSaving() {
-        val existingRule = NotificationRule(id = 1, daysBefore = 1, hour = 9, minute = 0)
+        val existingRule = NotificationRule(daysBefore = 1, hour = 9, minute = 0)
 
         // When editing existingRule, existingDaysBefore excludes id=1 (only has id=2 with daysBefore=0)
         composeRule.setContent {

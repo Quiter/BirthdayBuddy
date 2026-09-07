@@ -23,7 +23,6 @@ class NotificationRuleMapperTest {
 
         val domain = mapper.toDomain(entity)
 
-        assertThat(domain.id).isEqualTo(1)
         assertThat(domain.daysBefore).isEqualTo(3)
         assertThat(domain.hour).isEqualTo(9)
         assertThat(domain.minute).isEqualTo(30)
@@ -32,13 +31,12 @@ class NotificationRuleMapperTest {
     @Test
     fun toEntity_mapsAllFieldsCorrectly() {
         val domain = NotificationRule(
-            id = 2,
             daysBefore = 0,
             hour = 10,
             minute = 0
         )
 
-        val entity = mapper.toEntity(domain)
+        val entity = mapper.toEntity(domain, id = 2)
 
         assertThat(entity.id).isEqualTo(2)
         assertThat(entity.daysBefore).isEqualTo(0)
@@ -56,11 +54,9 @@ class NotificationRuleMapperTest {
         val domainList = mapper.toDomainList(entities)
 
         assertThat(domainList).hasSize(2)
-        assertThat(domainList[0].id).isEqualTo(1)
         assertThat(domainList[0].daysBefore).isEqualTo(0)
         assertThat(domainList[0].hour).isEqualTo(9)
         assertThat(domainList[0].minute).isEqualTo(0)
-        assertThat(domainList[1].id).isEqualTo(2)
         assertThat(domainList[1].daysBefore).isEqualTo(1)
         assertThat(domainList[1].hour).isEqualTo(18)
         assertThat(domainList[1].minute).isEqualTo(30)
@@ -76,18 +72,18 @@ class NotificationRuleMapperTest {
     @Test
     fun toEntityList_mapsListOfDomainsCorrectly() {
         val domains = listOf(
-            NotificationRule(id = 1, daysBefore = 0, hour = 9, minute = 0),
-            NotificationRule(id = 2, daysBefore = 1, hour = 18, minute = 30)
+            NotificationRule(daysBefore = 0, hour = 9, minute = 0),
+            NotificationRule(daysBefore = 1, hour = 18, minute = 30)
         )
 
         val entityList = mapper.toEntityList(domains)
 
         assertThat(entityList).hasSize(2)
-        assertThat(entityList[0].id).isEqualTo(1)
+        assertThat(entityList[0].id).isEqualTo(0)
         assertThat(entityList[0].daysBefore).isEqualTo(0)
         assertThat(entityList[0].hour).isEqualTo(9)
         assertThat(entityList[0].minute).isEqualTo(0)
-        assertThat(entityList[1].id).isEqualTo(2)
+        assertThat(entityList[1].id).isEqualTo(0)
         assertThat(entityList[1].daysBefore).isEqualTo(1)
         assertThat(entityList[1].hour).isEqualTo(18)
         assertThat(entityList[1].minute).isEqualTo(30)

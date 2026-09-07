@@ -124,10 +124,6 @@ class NotificationViewModel @Inject constructor(
         }
 
     private fun updateNotificationRule(rule: NotificationRule) = viewModelScope.launch {
-        val existingRules = notificationRepository.getAllRulesImmediate()
-        if (existingRules.any { it.id != rule.id && it.daysBefore == rule.daysBefore }) {
-            return@launch
-        }
         notificationRepository.updateRule(rule)
     }
 

@@ -18,7 +18,6 @@ class WidgetLayoutHelperTest {
 
     private fun createDummyDomainContact(id: Long, name: String): Contact {
         return Contact(
-            localId = id,
             contactId = id.toString(),
             lookupKey = "key_$id",
             fullName = name,

@@ -13,7 +13,6 @@ class NotificationRuleMapper @Inject constructor() {
 
     fun toDomain(entity: NotificationRuleEntity): NotificationRule {
         return NotificationRule(
-            id = entity.id,
             daysBefore = entity.daysBefore,
             hour = entity.hour,
             minute = entity.minute
@@ -22,14 +21,14 @@ class NotificationRuleMapper @Inject constructor() {
 
     fun toDomainList(entities: List<NotificationRuleEntity>): List<NotificationRule> = entities.map(::toDomain)
 
-    fun toEntity(domain: NotificationRule): NotificationRuleEntity {
+    fun toEntity(domain: NotificationRule, id: Int = 0): NotificationRuleEntity {
         return NotificationRuleEntity(
-            id = domain.id,
+            id = id,
             daysBefore = domain.daysBefore,
             hour = domain.hour,
             minute = domain.minute
         )
     }
 
-    fun toEntityList(domains: List<NotificationRule>): List<NotificationRuleEntity> = domains.map(::toEntity)
+    fun toEntityList(domains: List<NotificationRule>): List<NotificationRuleEntity> = domains.map { toEntity(it) }
 }
