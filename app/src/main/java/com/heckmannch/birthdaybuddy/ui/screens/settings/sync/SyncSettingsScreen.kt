@@ -13,7 +13,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LinearProgressIndicator
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
@@ -33,6 +32,7 @@ import com.heckmannch.birthdaybuddy.ui.components.SettingsCard
 import com.heckmannch.birthdaybuddy.ui.components.SettingsClickableRow
 import com.heckmannch.birthdaybuddy.ui.components.SettingsDetailScaffold
 import com.heckmannch.birthdaybuddy.ui.components.withSettingsInsets
+import com.heckmannch.birthdaybuddy.ui.theme.BirthdayBuddyTheme
 import com.heckmannch.birthdaybuddy.ui.theme.SpacingNormal
 
 @Composable
@@ -146,7 +146,7 @@ internal fun SyncSettingsScreenContent(
 @Preview(showBackground = true)
 @Composable
 private fun SyncSettingsPreview() {
-    MaterialTheme {
+    BirthdayBuddyTheme {
         SyncSettingsScreenContent(
             uiState = SyncUiState(),
             snackbarHostState = remember { SnackbarHostState() },

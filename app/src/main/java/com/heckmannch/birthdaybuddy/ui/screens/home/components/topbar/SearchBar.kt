@@ -46,7 +46,6 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
 import com.heckmannch.birthdaybuddy.R
 import com.heckmannch.birthdaybuddy.ui.theme.AlphaEmphasisLow
 import com.heckmannch.birthdaybuddy.ui.theme.AlphaEmphasisMedium
@@ -55,6 +54,7 @@ import com.heckmannch.birthdaybuddy.ui.theme.SearchBarBorderWidth
 import com.heckmannch.birthdaybuddy.ui.theme.SearchBarFocusedElevation
 import com.heckmannch.birthdaybuddy.ui.theme.SearchBarHeight
 import com.heckmannch.birthdaybuddy.ui.theme.SpacingExtraSmall
+import com.heckmannch.birthdaybuddy.ui.theme.SpacingNone
 import com.heckmannch.birthdaybuddy.ui.theme.SpacingNormal
 
 /**
@@ -97,7 +97,7 @@ fun SearchBar(
     )
 
     val borderWidth by animateDpAsState(
-        targetValue = if (isFocused) SearchBarBorderWidth else 0.dp,
+        targetValue = if (isFocused) SearchBarBorderWidth else SpacingNone,
         label = "SearchBarBorderWidth"
     )
 
@@ -109,7 +109,7 @@ fun SearchBar(
         shape = CircleShape,
         color = containerColor,
         border = BorderStroke(borderWidth, borderColor),
-        tonalElevation = if (isFocused) SearchBarFocusedElevation else 0.dp
+        tonalElevation = if (isFocused) SearchBarFocusedElevation else SpacingNone
     ) {
         TextField(
             value = query,

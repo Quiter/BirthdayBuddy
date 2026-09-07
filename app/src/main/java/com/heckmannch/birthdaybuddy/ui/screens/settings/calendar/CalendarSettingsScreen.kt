@@ -59,6 +59,7 @@ import com.heckmannch.birthdaybuddy.ui.components.SettingsSwitchRow
 import com.heckmannch.birthdaybuddy.ui.components.StepItem
 import com.heckmannch.birthdaybuddy.ui.components.withSettingsInsets
 import com.heckmannch.birthdaybuddy.ui.theme.AlphaContainerMedium
+import com.heckmannch.birthdaybuddy.ui.theme.BirthdayBuddyTheme
 import com.heckmannch.birthdaybuddy.ui.theme.CalendarPresetColors
 import com.heckmannch.birthdaybuddy.ui.theme.IconSizeLarge
 import com.heckmannch.birthdaybuddy.ui.theme.IconSizeMedium
@@ -71,7 +72,6 @@ fun CalendarSettingsScreen(
     showBackButton: Boolean = true,
     onNavigateBack: () -> Unit,
 ) {
-    LocalContext.current
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val calendarSyncEnabled = uiState.calendarSyncEnabled
     val otherEventsEnabled = uiState.otherEventsEnabled
@@ -408,7 +408,7 @@ private fun openDefaultCalendarApp(context: Context) {
 @Preview(showBackground = true)
 @Composable
 private fun CalendarSettingsPreview() {
-    MaterialTheme {
+    BirthdayBuddyTheme {
         CalendarSettingsScreenContent(
             calendarSyncEnabled = true,
             hasPermission = true,

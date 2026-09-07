@@ -4,13 +4,17 @@ import androidx.room.Entity
 import androidx.room.PrimaryKey
 import com.heckmannch.birthdaybuddy.domain.model.ThemeMode
 
+/**
+ * Room entity representing global application settings and user preferences.
+ * Only a single record with [id] = 0 is maintained in the database.
+ */
 @Entity(tableName = "app_settings")
 data class AppSettingsEntity(
-    @PrimaryKey val id: Int = 0, // Es gibt nur einen Datensatz mit ID 0
+    @PrimaryKey val id: Int = 0, // Single record with ID 0
     val notificationsEnabled: Boolean = false,
-    val persistentNotifications: Boolean = true, // NEU: Benachrichtigungen müssen aktiv quittiert werden
-    val onboardingCompleted: Boolean = false, // NEU: Flag für den Erststart
-    val lastSyncTimestamp: Long = 0L, // Zeitstempel des letzten erfolgreichen Syncs
+    val persistentNotifications: Boolean = true, // Notifications must be explicitly dismissed/acknowledged
+    val onboardingCompleted: Boolean = false, // Flag indicating whether initial onboarding has been completed
+    val lastSyncTimestamp: Long = 0L, // Timestamp of the last successful synchronization
     val calendarSyncEnabled: Boolean = false,
     val calendarId: Long? = null,
     val otherEventsEnabled: Boolean = false,

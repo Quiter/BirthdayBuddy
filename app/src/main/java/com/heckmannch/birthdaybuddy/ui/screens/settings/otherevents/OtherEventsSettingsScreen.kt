@@ -6,7 +6,6 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
@@ -21,6 +20,7 @@ import com.heckmannch.birthdaybuddy.ui.components.SettingsSwitchRow
 import com.heckmannch.birthdaybuddy.ui.components.withSettingsInsets
 import com.heckmannch.birthdaybuddy.ui.screens.settings.notifications.NotificationIntent
 import com.heckmannch.birthdaybuddy.ui.screens.settings.notifications.NotificationViewModel
+import com.heckmannch.birthdaybuddy.ui.theme.BirthdayBuddyTheme
 import com.heckmannch.birthdaybuddy.ui.theme.SpacingNormal
 
 @Composable
@@ -87,7 +87,7 @@ private fun OtherEventsSettingsContent(
 @Preview(showBackground = true)
 @Composable
 private fun OtherEventsSettingsPreview() {
-    MaterialTheme {
+    BirthdayBuddyTheme {
         OtherEventsSettingsContent(
             otherEventsEnabled = true,
             onToggleChange = {},

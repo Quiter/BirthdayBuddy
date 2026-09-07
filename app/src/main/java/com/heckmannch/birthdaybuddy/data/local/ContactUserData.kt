@@ -5,8 +5,8 @@ import androidx.room.PrimaryKey
 import com.heckmannch.birthdaybuddy.domain.model.GiftIdea
 
 /**
- * Speichert benutzerdefinierte Daten zu einem Kontakt, die unabhängig vom System-Cache sind.
- * Diese Tabelle wird in der SettingsDatabase gespeichert und somit in der Cloud gesichert.
+ * Stores custom user data for a contact independent of the system contacts cache.
+ * This table is stored in SettingsDatabase and is thus backed up to cloud backups.
  */
 @Entity(tableName = "contact_user_data")
 data class ContactUserData(

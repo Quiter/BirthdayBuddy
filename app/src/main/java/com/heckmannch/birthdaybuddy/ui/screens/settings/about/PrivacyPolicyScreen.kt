@@ -29,6 +29,7 @@ import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.withStyle
 import com.heckmannch.birthdaybuddy.R
 import com.heckmannch.birthdaybuddy.ui.components.SettingsDetailScaffold
+import com.heckmannch.birthdaybuddy.ui.theme.BirthdayBuddyTheme
 import com.heckmannch.birthdaybuddy.ui.theme.SpacingExtraLarge
 import com.heckmannch.birthdaybuddy.ui.theme.SpacingMedium
 import com.heckmannch.birthdaybuddy.ui.theme.SpacingNormal
@@ -210,7 +211,7 @@ internal fun loadPrivacyPolicyText(resources: Resources, errorMessage: String): 
 @Composable
 @androidx.compose.ui.tooling.preview.Preview(showBackground = true)
 fun PrivacyPolicyScreenPreview() {
-    MaterialTheme {
+    BirthdayBuddyTheme {
         PrivacyPolicyScreen(
             onNavigateBack = {}
         )

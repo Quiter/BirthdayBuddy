@@ -8,29 +8,56 @@ import kotlinx.coroutines.flow.Flow
 
 private const val SQLITE_BIND_CHUNK_SIZE = 500
 
+/**
+ * Data Access Object for managing cached contacts and potential couple matches in the database.
+ */
 @Dao
 interface ContactDao {
+    /**
+     * Observes all cached contacts ordered chronologically by birthday.
+     */
     @Query("SELECT * FROM contacts ORDER BY birthday ASC")
     fun getAllContacts(): Flow<List<ContactEntity>>
 
+    /**
+     * Retrieves all cached contacts immediately.
+     */
     @Query("SELECT * FROM contacts")
     suspend fun getAllContactsImmediate(): List<ContactEntity>
 
+    /**
+     * Retrieves all contact lookup keys currently stored in the database.
+     */
     @Query("SELECT lookupKey FROM contacts")
     suspend fun getAllLookupKeys(): List<String>
 
+    /**
+     * Inserts or updates a list of contacts.
+     */
     @Upsert
     suspend fun upsertContacts(contacts: List<ContactEntity>)
 
+    /**
+     * Inserts or updates a single contact.
+     */
     @Upsert
     suspend fun upsertContact(contact: ContactEntity)
 
+    /**
+     * Retrieves a single contact by its unique [lookupKey], or null if not found.
+     */
     @Query("SELECT * FROM contacts WHERE lookupKey = :lookupKey")
     suspend fun getContactByLookupKey(lookupKey: String): ContactEntity?
 
+    /**
+     * Deletes all contacts from the database.
+     */
     @Query("DELETE FROM contacts")
     suspend fun deleteAllContacts()
 
+    /**
+     * Deletes contacts matching the provided list of [keys].
+     */
     @Query("DELETE FROM contacts WHERE lookupKey IN (:keys)")
     suspend fun deleteContactsByLookupKeys(keys: List<String>)
 
@@ -60,6 +87,9 @@ interface ContactDao {
         }
     }
 
+    /**
+     * Observes potential couples sharing the same anniversary date who are not yet explicitly paired.
+     */
     @Query(
         """
         SELECT 
@@ -77,4 +107,3 @@ interface ContactDao {
     )
     fun getPotentialCouples(): Flow<List<CoupleProjection>>
 }
-

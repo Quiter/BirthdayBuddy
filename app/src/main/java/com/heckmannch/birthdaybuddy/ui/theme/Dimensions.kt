@@ -5,6 +5,7 @@ import androidx.compose.ui.unit.dp
 /**
  * Standardized spacing and padding tokens.
  */
+val SpacingNone = 0.dp
 val SpacingExtraSmall = 4.dp
 val SpacingSmall = 8.dp
 val SpacingMedium = 12.dp

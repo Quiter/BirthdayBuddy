@@ -35,10 +35,10 @@ import com.heckmannch.birthdaybuddy.ui.theme.ElevationDefault
 import com.heckmannch.birthdaybuddy.ui.theme.ElevationHigh
 import com.heckmannch.birthdaybuddy.ui.theme.IconSizeExtraLarge
 import com.heckmannch.birthdaybuddy.ui.theme.IconSizeExtraSmall
+import com.heckmannch.birthdaybuddy.ui.theme.IconSizeLarge
 import com.heckmannch.birthdaybuddy.ui.theme.IllustrationCardContainerSize
 import com.heckmannch.birthdaybuddy.ui.theme.IllustrationPreviewSize
 import com.heckmannch.birthdaybuddy.ui.theme.OnboardingCalendarEventIconSize
-import com.heckmannch.birthdaybuddy.ui.theme.SidebarHeaderSpacerHeight
 import com.heckmannch.birthdaybuddy.ui.theme.SpacingLarge
 import com.heckmannch.birthdaybuddy.ui.theme.SpacingMedium
 import com.heckmannch.birthdaybuddy.ui.theme.SpacingNormal
@@ -181,7 +181,7 @@ fun ContactsIllustration(
                     Icon(
                         imageVector = Icons.Default.Person,
                         contentDescription = null,
-                        modifier = Modifier.size(SidebarHeaderSpacerHeight),
+                        modifier = Modifier.size(IconSizeLarge),
                         tint = MaterialTheme.colorScheme.onPrimary
                     )
                 }

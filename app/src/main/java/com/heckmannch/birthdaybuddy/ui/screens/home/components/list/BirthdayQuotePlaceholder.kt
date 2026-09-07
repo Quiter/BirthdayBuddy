@@ -28,12 +28,13 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.unit.dp
+import androidx.compose.ui.tooling.preview.Preview
 import com.heckmannch.birthdaybuddy.R
 import com.heckmannch.birthdaybuddy.ui.theme.AlphaBorderSubtle
 import com.heckmannch.birthdaybuddy.ui.theme.AlphaEmphasisLow
 import com.heckmannch.birthdaybuddy.ui.theme.AlphaEmphasisMedium
 import com.heckmannch.birthdaybuddy.ui.theme.AlphaOnboardingCalendarDisabled
+import com.heckmannch.birthdaybuddy.ui.theme.BirthdayBuddyTheme
 import com.heckmannch.birthdaybuddy.ui.theme.BirthdayQuoteIconContainerSize
 import com.heckmannch.birthdaybuddy.ui.theme.BorderWidthThick
 import com.heckmannch.birthdaybuddy.ui.theme.BorderWidthThin
@@ -42,6 +43,7 @@ import com.heckmannch.birthdaybuddy.ui.theme.CardCornerRadiusNormal
 import com.heckmannch.birthdaybuddy.ui.theme.ContactImageSizeNormal
 import com.heckmannch.birthdaybuddy.ui.theme.SpacingExtraLarge
 import com.heckmannch.birthdaybuddy.ui.theme.SpacingLarge
+import com.heckmannch.birthdaybuddy.ui.theme.SpacingNone
 import com.heckmannch.birthdaybuddy.ui.theme.SpacingNormal
 
 /**
@@ -53,7 +55,7 @@ import com.heckmannch.birthdaybuddy.ui.theme.SpacingNormal
 @Composable
 fun BirthdayQuotePlaceholder(
     modifier: Modifier = Modifier,
-    contentPadding: PaddingValues = PaddingValues(0.dp),
+    contentPadding: PaddingValues = PaddingValues(SpacingNone),
 ) {
     Card(
         modifier = modifier
@@ -134,5 +136,13 @@ fun BirthdayQuotePlaceholder(
                 textAlign = TextAlign.Center
             )
         }
+    }
+}
+
+@Preview
+@Composable
+private fun BirthdayQuotePlaceholderPreview() {
+    BirthdayBuddyTheme {
+        BirthdayQuotePlaceholder()
     }
 }

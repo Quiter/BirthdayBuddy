@@ -15,9 +15,15 @@
 .cxx
 local.properties
 
-# Local SQLite database files
-/birthday_database*
-/settings_database*
+# Temporary Python scripts
+*.py
+!scripts/setup_*.py
+
+# Pulled database dumps
+*_database*
+*.db
+
+# Aider
 .aider*
 
 # Antigravity/Gemini agent external/copied skills

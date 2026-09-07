@@ -54,6 +54,7 @@ import com.heckmannch.birthdaybuddy.ui.components.SettingsSection
 import com.heckmannch.birthdaybuddy.ui.components.SettingsSwitchRow
 import com.heckmannch.birthdaybuddy.ui.components.withSettingsInsets
 import com.heckmannch.birthdaybuddy.ui.theme.AccentPresetColors
+import com.heckmannch.birthdaybuddy.ui.theme.BirthdayBuddyTheme
 import com.heckmannch.birthdaybuddy.ui.theme.BirthdayKidGreen
 import com.heckmannch.birthdaybuddy.ui.theme.BorderWidthThin
 import com.heckmannch.birthdaybuddy.ui.theme.IconSizeExtraLarge
@@ -314,7 +315,7 @@ internal fun ThemeSettingsScreenContent(
 @Preview(showBackground = true)
 @Composable
 private fun ThemeSettingsPreview() {
-    MaterialTheme {
+    BirthdayBuddyTheme {
         ThemeSettingsScreenContent(
             themeMode = ThemeMode.SYSTEM,
             themeAmoled = false,

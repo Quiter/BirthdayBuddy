@@ -42,7 +42,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import com.heckmannch.birthdaybuddy.R
-import androidx.compose.ui.unit.dp
 import com.heckmannch.birthdaybuddy.ui.theme.AlphaContainerMuted
 import com.heckmannch.birthdaybuddy.ui.theme.AlphaEmphasisMedium
 import com.heckmannch.birthdaybuddy.ui.theme.AlphaOnboardingCalendarDisabled
@@ -60,6 +59,7 @@ import com.heckmannch.birthdaybuddy.ui.theme.OnboardingCardNotifWidth
 import com.heckmannch.birthdaybuddy.ui.theme.OnboardingIllustrationCircleSize
 import com.heckmannch.birthdaybuddy.ui.theme.SpacingExtraSmall
 import com.heckmannch.birthdaybuddy.ui.theme.SpacingMedium
+import com.heckmannch.birthdaybuddy.ui.theme.SpacingNone
 import com.heckmannch.birthdaybuddy.ui.theme.SpacingNormal
 import com.heckmannch.birthdaybuddy.ui.theme.SpacingSmall
 
@@ -81,7 +81,7 @@ fun NotificationsIllustration(
     )
 
     val borderWidth by animateDpAsState(
-        targetValue = if (enabled && persistent) OnboardingCardBorderWidth else 0.dp,
+        targetValue = if (enabled && persistent) OnboardingCardBorderWidth else SpacingNone,
         label = "border_width"
     )
     val borderColor by animateColorAsState(

@@ -38,9 +38,11 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.window.Dialog
 import com.heckmannch.birthdaybuddy.R
+import com.heckmannch.birthdaybuddy.ui.theme.BirthdayBuddyTheme
 import com.heckmannch.birthdaybuddy.ui.components.AppSwitch
 import com.heckmannch.birthdaybuddy.ui.theme.AlphaOnboardingCalendarDisabled
 import com.heckmannch.birthdaybuddy.ui.theme.AlphaSurfaceContainerHigh
@@ -303,7 +305,7 @@ private fun WheelPicker(
             modifier = Modifier.fillMaxSize(),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            itemsIndexed(items) { index, item ->
+            itemsIndexed(items, key = { index, _ -> index }) { index, item ->
                 val isSelected = index == currentSelection
                 // Visuelle Zylinder-Optik durch Größen- und Opazitätsverlauf
                 val scale = if (isSelected) 1.15f else 0.85f
@@ -330,5 +332,17 @@ private fun WheelPicker(
                 }
             }
         }
+    }
+}
+
+@Preview
+@Composable
+private fun BirthdayDatePickerDialogPreview() {
+    BirthdayBuddyTheme {
+        BirthdayDatePickerDialog(
+            initialDate = LocalDate.of(1990, 5, 15),
+            onDismissRequest = {},
+            onDateSelected = {}
+        )
     }
 }

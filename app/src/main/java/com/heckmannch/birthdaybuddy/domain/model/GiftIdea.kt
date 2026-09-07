@@ -4,7 +4,7 @@ import kotlinx.serialization.Serializable
 import java.util.UUID
 
 /**
- * Modell für eine Geschenkidee.
+ * Domain model representing a gift idea for a contact.
  */
 @Serializable
 data class GiftIdea(
@@ -14,7 +14,7 @@ data class GiftIdea(
 ) {
     companion object {
         /**
-         * Fügt eine neue Idee hinzu und sortiert sie vor die bereits erledigten.
+         * Adds a new idea and sorts it before any already completed items.
          */
         fun withNewIdea(currentIdeas: List<GiftIdea>, newIdea: GiftIdea): List<GiftIdea> {
             val ideas = currentIdeas.toMutableList()
@@ -25,7 +25,7 @@ data class GiftIdea(
         }
 
         /**
-         * Ändert den Status einer Idee und sortiert sie entsprechend um.
+         * Toggles the checked status of an idea and updates its sorting accordingly.
          */
         fun withToggledIdea(
             currentIdeas: List<GiftIdea>,
@@ -39,7 +39,7 @@ data class GiftIdea(
             ideas.removeAt(idx)
             val newItem = idea.copy(isChecked = isChecked)
             if (isChecked) {
-                ideas.add(newItem) // Erledigt kommt ans Ende
+                ideas.add(newItem) // Completed items move to the end
             } else {
                 val firstCheckedIndex = ideas.indexOfFirst { it.isChecked }
                 if (firstCheckedIndex != -1) ideas.add(firstCheckedIndex, newItem)

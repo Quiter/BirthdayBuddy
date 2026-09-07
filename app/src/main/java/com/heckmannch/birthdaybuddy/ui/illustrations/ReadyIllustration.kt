@@ -45,11 +45,10 @@ fun ReadyIllustration(
         label = "checkScale"
     )
 
-    val confettiColors = listOf(
-        MaterialTheme.colorScheme.primary,
-        MaterialTheme.colorScheme.secondary,
-        MaterialTheme.colorScheme.tertiary
-    )
+    val colorScheme = MaterialTheme.colorScheme
+    val confettiColors = remember(colorScheme) {
+        listOf(colorScheme.primary, colorScheme.secondary, colorScheme.tertiary)
+    }
 
     Box(
         modifier = modifier.fillMaxSize(),

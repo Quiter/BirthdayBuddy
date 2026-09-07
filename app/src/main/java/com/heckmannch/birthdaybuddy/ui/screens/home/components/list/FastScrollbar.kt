@@ -17,6 +17,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyListState
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.KeyboardArrowDown
@@ -45,10 +46,13 @@ import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.heckmannch.birthdaybuddy.ui.model.ContactUiModel
+import com.heckmannch.birthdaybuddy.ui.model.SampleData
+import com.heckmannch.birthdaybuddy.ui.theme.BirthdayBuddyTheme
 import com.heckmannch.birthdaybuddy.ui.theme.AlphaScrollbarThumb
 import com.heckmannch.birthdaybuddy.ui.theme.CardCornerRadiusLarge
 import com.heckmannch.birthdaybuddy.ui.theme.CardCornerRadiusSmall
@@ -638,6 +642,18 @@ fun FastScrollbar(
                 }
             }
         }
+    }
+}
+
+@Preview
+@Composable
+private fun FastScrollbarPreview() {
+    BirthdayBuddyTheme {
+        FastScrollbar(
+            listState = rememberLazyListState(),
+            contacts = SampleData.sampleContacts,
+            getLabel = { it.monthName },
+        )
     }
 }
 

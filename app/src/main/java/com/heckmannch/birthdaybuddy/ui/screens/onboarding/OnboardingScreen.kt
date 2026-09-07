@@ -278,7 +278,8 @@ fun OnboardingContent(
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(paddingValues),
-                userScrollEnabled = false
+                userScrollEnabled = false,
+                key = { steps[it].name }
             ) { page ->
                 when (steps[page]) {
                     OnboardingStep.WELCOME -> WelcomePage()

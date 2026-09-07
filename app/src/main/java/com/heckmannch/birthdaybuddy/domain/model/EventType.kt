@@ -1,18 +1,18 @@
 package com.heckmannch.birthdaybuddy.domain.model
 
 /**
- * Typsicherer Diskriminator für den aktuell angezeigten Ereignistyp.
+ * Type-safe discriminator for the currently displayed event type.
  *
- * Ersetzt den zuvor verwendeten [String]-basierten Ansatz ("birthday", "anniversary", "name_day"),
- * um Tippfehler und stilles Fehlverhalten in der Filter- und Mapping-Logik zu verhindern.
+ * Replaces the previously used [String]-based approach ("birthday", "anniversary", "name_day")
+ * to prevent typos and silent failures in filtering and mapping logic.
  */
 enum class EventType {
-    /** Geburtstag – Standard-Ereignistyp */
+    /** Birthday – default event type */
     BIRTHDAY,
 
-    /** Hochzeitstag – nur aktiv wenn "Weitere Ereignisse" aktiviert ist */
+    /** Anniversary / Wedding day – active only when "Other events" is enabled */
     ANNIVERSARY,
 
-    /** Namenstag – nur aktiv wenn "Weitere Ereignisse" aktiviert ist */
+    /** Name day – active only when "Other events" is enabled */
     NAME_DAY,
 }

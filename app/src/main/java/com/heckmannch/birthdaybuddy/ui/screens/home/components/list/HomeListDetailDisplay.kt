@@ -15,7 +15,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
-import androidx.compose.ui.unit.dp
+import androidx.compose.ui.tooling.preview.Devices
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.navigation3.runtime.NavKey
 import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.runtime.rememberNavBackStack
@@ -24,10 +25,14 @@ import com.heckmannch.birthdaybuddy.domain.model.ContactLabels
 import com.heckmannch.birthdaybuddy.ui.components.LocalWindowAdaptiveInfo
 import com.heckmannch.birthdaybuddy.ui.model.ContactUiModel
 import com.heckmannch.birthdaybuddy.ui.model.HomeUiState
+import com.heckmannch.birthdaybuddy.ui.model.SampleData
 import com.heckmannch.birthdaybuddy.ui.screens.home.HomeActions
 import com.heckmannch.birthdaybuddy.ui.screens.home.HomeNavKey
 import com.heckmannch.birthdaybuddy.ui.screens.home.HomeState
 import com.heckmannch.birthdaybuddy.ui.screens.home.navigateToContactDetail
+import com.heckmannch.birthdaybuddy.ui.screens.home.rememberHomeState
+import com.heckmannch.birthdaybuddy.ui.theme.BirthdayBuddyTheme
+import com.heckmannch.birthdaybuddy.ui.theme.SpacingNone
 
 /**
  * Adaptive list-detail display composable for the home screen using Navigation 3.
@@ -50,7 +55,7 @@ fun HomeListDetailDisplay(
     actions: HomeActions,
     showLabelFilter: Boolean,
     modifier: Modifier = Modifier,
-    contentPadding: PaddingValues = PaddingValues(0.dp),
+    contentPadding: PaddingValues = PaddingValues(SpacingNone),
 ) {
     val focusManager = LocalFocusManager.current
     val keyboardController = LocalSoftwareKeyboardController.current
@@ -69,7 +74,7 @@ fun HomeListDetailDisplay(
     val windowAdaptiveInfo = LocalWindowAdaptiveInfo.current
     val directive = remember(windowAdaptiveInfo) {
         calculatePaneScaffoldDirective(windowAdaptiveInfo)
-            .copy(horizontalPartitionSpacerSize = 0.dp)
+            .copy(horizontalPartitionSpacerSize = SpacingNone)
     }
     val listDetailStrategy = rememberListDetailSceneStrategy<NavKey>(directive = directive)
 
@@ -169,4 +174,17 @@ fun HomeListDetailDisplay(
             }
         }
     )
+}
+
+@Preview(device = Devices.PHONE)
+@Composable
+private fun HomeListDetailDisplayPreview() {
+    BirthdayBuddyTheme {
+        HomeListDetailDisplay(
+            uiState = SampleData.homeUiState,
+            homeState = rememberHomeState(),
+            actions = SampleData.homeActions,
+            showLabelFilter = true,
+        )
+    }
 }

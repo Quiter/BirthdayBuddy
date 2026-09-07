@@ -34,8 +34,10 @@ import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.tooling.preview.Preview
 import com.heckmannch.birthdaybuddy.R
 import com.heckmannch.birthdaybuddy.domain.model.NotificationRule
+import com.heckmannch.birthdaybuddy.ui.theme.BirthdayBuddyTheme
 import com.heckmannch.birthdaybuddy.ui.theme.AlphaBorderSubtle
 import com.heckmannch.birthdaybuddy.ui.theme.SpacingMedium
 import com.heckmannch.birthdaybuddy.ui.theme.SpacingSmall
@@ -288,6 +290,23 @@ fun EditRuleDialog(
                     Text(stringResource(R.string.dialog_cancel))
                 }
             }
+        )
+    }
+}
+
+@Preview
+@Composable
+private fun EditRuleDialogPreview() {
+    BirthdayBuddyTheme {
+        EditRuleDialog(
+            rule = NotificationRule(
+                daysBefore = 1,
+                hour = 9,
+                minute = 0
+            ),
+            existingDaysBefore = emptySet(),
+            onDismiss = {},
+            onConfirm = { _, _, _ -> }
         )
     }
 }

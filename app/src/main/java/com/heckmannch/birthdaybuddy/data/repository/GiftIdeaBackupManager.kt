@@ -23,6 +23,9 @@ import kotlinx.serialization.json.jsonPrimitive
 import javax.inject.Inject
 import javax.inject.Singleton
 
+/**
+ * Data transfer object representing a single backup entry for contact gift ideas.
+ */
 @Serializable
 data class GiftIdeaBackupEntry(
     val lookupKey: String,
@@ -30,6 +33,10 @@ data class GiftIdeaBackupEntry(
     val giftIdeas: List<GiftIdea>,
 )
 
+/**
+ * Manages the export and import of gift ideas to and from JSON format,
+ * persisting imported entries to the persistent [ContactUserData] database table.
+ */
 @Singleton
 class GiftIdeaBackupManager @Inject constructor(
     private val contactDao: ContactDao,
@@ -40,8 +47,8 @@ class GiftIdeaBackupManager @Inject constructor(
     private val json = JsonUtils.prettyJson
 
     /**
-     * Exportiert alle Kontakte mit Geschenkideen als JSON-String.
-     * Nutzt nun die ContactUserData-Tabelle als Primärquelle.
+     * Exports all contacts with gift ideas as a JSON string.
+     * Uses the [ContactUserData] table as the primary source.
      */
     suspend fun exportGiftIdeas(): String = withContext(ioDispatcher) {
         val userDataList =
@@ -61,8 +68,8 @@ class GiftIdeaBackupManager @Inject constructor(
     }
 
     /**
-     * Importiert Geschenkideen aus einem JSON-String.
-     * Schreibt die Daten in die persistente UserData-Tabelle.
+     * Imports gift ideas from a JSON string.
+     * Writes the imported data into the persistent [ContactUserData] table.
      */
     suspend fun importGiftIdeas(jsonString: String): Int = withContext(ioDispatcher) {
         try {
@@ -107,7 +114,7 @@ class GiftIdeaBackupManager @Inject constructor(
 
                     if (giftIdeas.isEmpty()) continue
 
-                    // Match via LookupKey (Best) oder Name (Fallback)
+                    // Match via LookupKey (best) or name (fallback)
                     val targetLookupKey = contactsByLookup[lookupKey]?.lookupKey
                         ?: contactsByName[fullName]?.lookupKey
 
@@ -131,7 +138,7 @@ class GiftIdeaBackupManager @Inject constructor(
         } catch (e: CancellationException) {
             throw e
         } catch (e: Exception) {
-            Log.e("GiftIdeaBackupManager", "Import fehlgeschlagen", e)
+            Log.e("GiftIdeaBackupManager", "Import failed", e)
             -1
         }
     }

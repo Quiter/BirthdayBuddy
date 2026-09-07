@@ -6,13 +6,13 @@ import androidx.room.Index
 import androidx.room.PrimaryKey
 
 /**
- * Repräsentiert eine ausstehende Benachrichtigung für anstehende Geburtstage/Ereignisse.
+ * Represents a pending notification for upcoming birthdays/events.
  *
- * Indizes:
- * - `isDone`: Beschleunigt Abfragen nach aktiven Benachrichtigungen (`WHERE isDone = 0`)
- *   in [PendingNotificationDao.getActiveNotifications] und [PendingNotificationDao.getActiveNotificationsImmediate].
- * - `year`, `daysBefore`: Optimiert die Duplikatsprüfung in [PendingNotificationDao.hasNotificationBeenScheduled]
- *   sowie Löschabfragen in [PendingNotificationDao.deleteOldNotifications], um Full-Table-Scans zu vermeiden.
+ * Indices:
+ * - `isDone`: Accelerates queries for active notifications (`WHERE isDone = 0`)
+ *   in [PendingNotificationDao.getActiveNotifications] and [PendingNotificationDao.getActiveNotificationsImmediate].
+ * - `year`, `daysBefore`: Optimizes duplicate checks in [PendingNotificationDao.hasNotificationBeenScheduled]
+ *   and cleanup queries in [PendingNotificationDao.deleteOldNotifications] to prevent full-table scans.
  */
 @Entity(
     tableName = "pending_notifications",
@@ -23,9 +23,9 @@ import androidx.room.PrimaryKey
 )
 data class PendingNotificationEntity(
     @PrimaryKey(autoGenerate = true) val id: Int = 0,
-    val contactLookupKeys: List<String>, // Liste der LookupKeys der betroffenen Kontakte
+    val contactLookupKeys: List<String>, // List of lookup keys of the affected contacts
     val daysBefore: Int,
     val year: Int,
     val isDone: Boolean = false,
-    @ColumnInfo(defaultValue = "0") val dismissCount: Int = 0 // NEU: Zähler für Wisch-Versuche
+    @ColumnInfo(defaultValue = "0") val dismissCount: Int = 0 // Counter for swipe/dismiss attempts
 )

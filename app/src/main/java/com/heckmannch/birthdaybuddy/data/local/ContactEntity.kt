@@ -8,13 +8,13 @@ import com.heckmannch.birthdaybuddy.domain.model.GiftIdea
 import java.time.LocalDate
 
 /**
- * Repräsentiert einen Kontakt mit Geburtstag in der Datenbank.
+ * Represents a contact with birthday and event details in the database.
  *
- * Indizes:
- * - `lookupKey` (unique): Eindeutige und schnelle Identifikation für Re-Sync und Verknüpfungen.
- * - `birthday`: Beschleunigt die chronologische Sortierung und Filterung aller Kontakte nach Geburtsdatum.
- * - `anniversary`: Optimiert die Ermittlung potenzieller Paare ([ContactDao.getPotentialCouples]) durch schnellen
- *   Zugriff auf Jubiläums- und Hochzeitstagsdaten ohne Full-Table-Scan.
+ * Indices:
+ * - `lookupKey` (unique): Unique and fast identification for re-sync and associations.
+ * - `birthday`: Accelerates chronological sorting and filtering of all contacts by birth date.
+ * - `anniversary`: Optimizes retrieval of potential couples ([ContactDao.getPotentialCouples]) through fast
+ *   access to anniversary and wedding dates without performing a full-table scan.
  */
 @Entity(
     tableName = "contacts",
@@ -26,9 +26,9 @@ import java.time.LocalDate
 )
 data class ContactEntity(
     @PrimaryKey(autoGenerate = true)
-    val localId: Long = 0,      // Interner Key für Room-Relationen
-    val contactId: String,       // Aktuelle _ID vom Android-System (für schnellen Zugriff)
-    val lookupKey: String,       // Stabiler Key vom Android-System (für Re-Sync)
+    val localId: Long = 0,      // Internal key for Room relations
+    val contactId: String,       // Current _ID from Android system (for fast access)
+    val lookupKey: String,       // Stable key from Android system (for re-sync)
     val fullName: String,
     val birthday: LocalDate? = null,
     val anniversary: LocalDate? = null,

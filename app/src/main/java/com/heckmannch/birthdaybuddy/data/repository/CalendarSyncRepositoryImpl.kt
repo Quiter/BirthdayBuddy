@@ -84,7 +84,7 @@ class CalendarSyncRepositoryImpl @Inject constructor(
             val accountType = calendar.accountType
 
             when (val name = calendar.name) {
-                // Lösche veraltete BirthdayBuddyCalendar (unter phone account)
+                // Delete legacy BirthdayBuddyCalendar (under phone account)
                 SystemCalendarDataSource.LEGACY_CALENDAR_NAME -> {
                     systemCalendarDataSource.deleteCalendarById(id, accountName, accountType)
                 }
@@ -95,7 +95,7 @@ class CalendarSyncRepositoryImpl @Inject constructor(
                         if (existingId == null) {
                             seenActiveIds[name] = id
                         } else {
-                            // Duplikat löschen
+                            // Delete duplicate
                             systemCalendarDataSource.deleteCalendarById(
                                 id,
                                 accountName,
@@ -103,7 +103,7 @@ class CalendarSyncRepositoryImpl @Inject constructor(
                             )
                         }
                     } else {
-                        // Falscher Account-Name/Typ - löschen
+                        // Incorrect account name/type - delete
                         systemCalendarDataSource.deleteCalendarById(id, accountName, accountType)
                     }
                 }
@@ -207,13 +207,13 @@ class CalendarSyncRepositoryImpl @Inject constructor(
         withContext(ioDispatcher) {
             if (!hasCalendarPermissions()) return@withContext false
 
-            // Aufräumen veralteter oder doppelter Kalender vor dem Sync
+            // Clean up outdated or duplicate calendars prior to syncing
             cleanCalendars()
 
             val currentSettings = appSettingsDao.getSettingsImmediate() ?: AppSettingsEntity()
             val otherEventsEnabled = currentSettings.otherEventsEnabled
 
-            // IDs für alle aktiven Kalender abrufen oder erstellen
+            // Retrieve or create IDs for all active calendars
             val birthdayCalId =
                 getOrCreateCalendar(LocalCalendarType.BIRTHDAY) ?: return@withContext false
             val anniversaryCalId =
@@ -222,10 +222,10 @@ class CalendarSyncRepositoryImpl @Inject constructor(
                 if (otherEventsEnabled) getOrCreateCalendar(LocalCalendarType.NAMEDAY) else null
 
             try {
-                // Geburtstage leeren
+                // Clear birthdays
                 systemCalendarDataSource.clearCalendarEvents(birthdayCalId)
 
-                // Hochzeitstage und Namenstage leeren oder Kalender löschen, falls deaktiviert
+                // Clear anniversaries and name days, or delete calendar if disabled
                 prepareOptionalCalendar(anniversaryCalId, LocalCalendarType.ANNIVERSARY)
                 prepareOptionalCalendar(nameDayCalId, LocalCalendarType.NAMEDAY)
 
@@ -280,7 +280,7 @@ class CalendarSyncRepositoryImpl @Inject constructor(
                 val processedAnniversaries = HashSet<String>()
 
                 for (contact in contacts) {
-                    // 1. Geburtstage in den Geburtstags-Kalender eintragen
+                    // 1. Insert birthdays into the birthday calendar
                     contact.birthday?.let { birthday ->
                         val title =
                             context.getString(R.string.calendar_event_title, contact.fullName)
@@ -292,7 +292,7 @@ class CalendarSyncRepositoryImpl @Inject constructor(
                         addEvent(birthdayCalId, birthday, title, description)
                     }
 
-                    // 2. Hochzeitstage in den Hochzeits-Kalender eintragen (falls aktiviert)
+                    // 2. Insert anniversaries into the anniversary calendar (if enabled)
                     if (otherEventsEnabled && anniversaryCalId != null) {
                         contact.anniversary?.let { anniversary ->
                             val description = formatAnniversaryDescription(anniversary)
@@ -332,7 +332,7 @@ class CalendarSyncRepositoryImpl @Inject constructor(
                         }
                     }
 
-                    // 3. Namenstage in den Namenstags-Kalender eintragen (falls aktiviert)
+                    // 3. Insert name days into the name day calendar (if enabled)
                     if (otherEventsEnabled && nameDayCalId != null) {
                         contact.nameDay?.let { nameDay ->
                             val title = context.getString(

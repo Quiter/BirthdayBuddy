@@ -36,8 +36,11 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardCapitalization
+import androidx.compose.ui.tooling.preview.Preview
 import com.heckmannch.birthdaybuddy.R
 import com.heckmannch.birthdaybuddy.domain.model.GiftIdea
+import com.heckmannch.birthdaybuddy.ui.model.SampleData
+import com.heckmannch.birthdaybuddy.ui.theme.BirthdayBuddyTheme
 import com.heckmannch.birthdaybuddy.ui.theme.AlphaEmphasisMedium
 import com.heckmannch.birthdaybuddy.ui.theme.IconSizeMedium
 import com.heckmannch.birthdaybuddy.ui.theme.IconSizeSmall
@@ -168,5 +171,21 @@ private fun GiftIdeaItem(
                 modifier = Modifier.size(IconSizeMedium)
             )
         }
+    }
+}
+
+@Preview
+@Composable
+private fun GiftIdeaListPreview() {
+    BirthdayBuddyTheme {
+        GiftIdeaList(
+            giftIdeas = listOf(SampleData.giftIdea1, SampleData.giftIdea2),
+            newlyAddedId = null,
+            onAddNewIdea = {},
+            onCheckedChange = { _, _ -> },
+            onTextChange = { _, _ -> },
+            onDelete = {},
+            onDone = {},
+        )
     }
 }

@@ -3,8 +3,8 @@ package com.heckmannch.birthdaybuddy.domain.model
 import java.time.LocalDate
 
 /**
- * Repräsentiert einen Kontakt mit Geburtstag im Domain-Layer.
- * Vollständig entkoppelt von der Datenbank-Implementierung.
+ * Represents a contact with birthday and event details in the domain layer.
+ * Completely decoupled from database implementation details.
  */
 data class Contact(
     val contactId: String,

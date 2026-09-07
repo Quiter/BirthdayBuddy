@@ -61,8 +61,8 @@ import com.heckmannch.birthdaybuddy.ui.screens.settings.notifications.components
 import com.heckmannch.birthdaybuddy.ui.screens.settings.notifications.components.NotificationRuleItem
 import com.heckmannch.birthdaybuddy.ui.theme.AlphaSurfaceContainerHigh
 import com.heckmannch.birthdaybuddy.ui.theme.BirthdayBuddyTheme
-import com.heckmannch.birthdaybuddy.ui.theme.ContactImageSizeNormal
 import com.heckmannch.birthdaybuddy.ui.theme.GridColumnMinWidth
+import com.heckmannch.birthdaybuddy.ui.theme.IconSizeExtraLarge
 import com.heckmannch.birthdaybuddy.ui.theme.SpacingExtraLarge
 import com.heckmannch.birthdaybuddy.ui.theme.SpacingLarge
 import com.heckmannch.birthdaybuddy.ui.theme.SpacingNormal
@@ -391,7 +391,7 @@ private fun PermissionRequestState(
         Icon(
             imageVector = Icons.Default.NotificationsOff,
             contentDescription = null,
-            modifier = Modifier.size(ContactImageSizeNormal),
+            modifier = Modifier.size(IconSizeExtraLarge),
             tint = MaterialTheme.colorScheme.primary.copy(alpha = AlphaSurfaceContainerHigh),
         )
         Spacer(modifier = Modifier.height(SpacingNormal))

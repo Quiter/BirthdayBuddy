@@ -6,11 +6,14 @@ import dagger.Reusable
 import javax.inject.Inject
 
 /**
- * Mapper zur Konvertierung zwischen der Datenbank-Entität [ContactEntity] und dem Domain-Modell [Contact].
+ * Mapper for converting between database entity [ContactEntity] and domain model [Contact].
  */
 @Reusable
 class ContactDbMapper @Inject constructor() {
 
+    /**
+     * Converts a database [ContactEntity] into a domain [Contact] model.
+     */
     fun toDomain(entity: ContactEntity): Contact {
         return Contact(
             contactId = entity.contactId,
@@ -30,8 +33,14 @@ class ContactDbMapper @Inject constructor() {
         )
     }
 
+    /**
+     * Converts a list of database [ContactEntity] objects into domain [Contact] models.
+     */
     fun toDomainList(entities: List<ContactEntity>): List<Contact> = entities.map(::toDomain)
 
+    /**
+     * Converts a domain [Contact] model into a database [ContactEntity].
+     */
     fun toEntity(domain: Contact, localId: Long = 0): ContactEntity {
         return ContactEntity(
             localId = localId,
@@ -52,5 +61,8 @@ class ContactDbMapper @Inject constructor() {
         )
     }
 
+    /**
+     * Converts a list of domain [Contact] models into database [ContactEntity] objects.
+     */
     fun toEntityList(domains: List<Contact>): List<ContactEntity> = domains.map { toEntity(it) }
 }

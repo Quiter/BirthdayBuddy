@@ -13,12 +13,16 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.tooling.preview.Preview
 import com.heckmannch.birthdaybuddy.R
+import com.heckmannch.birthdaybuddy.ui.model.SampleData
 import com.heckmannch.birthdaybuddy.ui.screens.home.HomeActions
+import com.heckmannch.birthdaybuddy.ui.theme.BirthdayBuddyTheme
 import com.heckmannch.birthdaybuddy.ui.theme.SpacingSmall
 
 /**
@@ -74,5 +78,20 @@ fun HomeTopBar(
                 modifier = Modifier.padding(bottom = SpacingSmall),
             )
         }
+    }
+}
+
+@Preview
+@Composable
+private fun HomeTopBarPreview() {
+    BirthdayBuddyTheme {
+        HomeTopBar(
+            searchQuery = "",
+            placeholder = "Geburtstage durchsuchen...",
+            showSidebar = false,
+            focusRequester = remember { FocusRequester() },
+            actions = SampleData.homeActions,
+            onToggleSidebar = {},
+        )
     }
 }

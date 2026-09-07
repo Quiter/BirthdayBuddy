@@ -137,10 +137,10 @@ fun OnboardingPageTemplate(
             modifier = modifier
                 .fillMaxSize()
                 .padding(
-                    horizontal = IconSizeExtraLarge,
+                    horizontal = SpacingExtraLarge,
                     vertical = if (isShortScreen) SpacingNormal else SpacingExtraLarge
                 ),
-            horizontalArrangement = Arrangement.spacedBy(IconSizeExtraLarge),
+            horizontalArrangement = Arrangement.spacedBy(SpacingExtraLarge),
             verticalAlignment = Alignment.CenterVertically
         ) {
             // Linke Spalte: Illustration/Animation
