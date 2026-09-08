@@ -5,7 +5,7 @@ import com.heckmannch.birthdaybuddy.domain.model.AppSettings
 import com.heckmannch.birthdaybuddy.domain.model.Contact
 import com.heckmannch.birthdaybuddy.domain.repository.CalendarSyncRepository
 import com.heckmannch.birthdaybuddy.domain.repository.ContactRepository
-import com.heckmannch.birthdaybuddy.domain.repository.NotificationRepository
+import com.heckmannch.birthdaybuddy.domain.repository.SettingsRepository
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runTest
 import org.junit.Before
@@ -18,7 +18,7 @@ import org.mockito.kotlin.whenever
 @OptIn(ExperimentalCoroutinesApi::class)
 class SetCalendarSyncEnabledUseCaseTest {
 
-    private val notificationRepository: NotificationRepository = mock()
+    private val settingsRepository: SettingsRepository = mock()
     private val calendarSyncRepository: CalendarSyncRepository = mock()
     private val contactRepository: ContactRepository = mock()
 
@@ -27,7 +27,7 @@ class SetCalendarSyncEnabledUseCaseTest {
     @Before
     fun setUp() {
         useCase = SetCalendarSyncEnabledUseCase(
-            notificationRepository,
+            settingsRepository,
             calendarSyncRepository,
             contactRepository
         )
@@ -52,7 +52,7 @@ class SetCalendarSyncEnabledUseCaseTest {
 
             // Assert
             val captor = argumentCaptor<(AppSettings) -> AppSettings>()
-            verify(notificationRepository).updateSettings(captor.capture())
+            verify(settingsRepository).updateSettings(captor.capture())
             val updated = captor.firstValue(AppSettings(calendarSyncEnabled = false))
             assertThat(updated.calendarSyncEnabled).isTrue()
 
@@ -67,7 +67,7 @@ class SetCalendarSyncEnabledUseCaseTest {
 
         // Assert
         val captor = argumentCaptor<(AppSettings) -> AppSettings>()
-        verify(notificationRepository).updateSettings(captor.capture())
+        verify(settingsRepository).updateSettings(captor.capture())
         val updated = captor.firstValue(AppSettings(calendarSyncEnabled = true))
         assertThat(updated.calendarSyncEnabled).isFalse()
 

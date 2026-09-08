@@ -7,6 +7,7 @@ import com.google.common.truth.Truth.assertThat
 import com.heckmannch.birthdaybuddy.domain.model.AppSettings
 import com.heckmannch.birthdaybuddy.domain.model.NotificationRule
 import com.heckmannch.birthdaybuddy.domain.repository.NotificationRepository
+import com.heckmannch.birthdaybuddy.domain.repository.SettingsRepository
 import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.mockk
@@ -28,7 +29,9 @@ class AlarmSchedulerTest {
     private val context = mockk<Context>(relaxed = true)
     private val alarmManager = mockk<AlarmManager>(relaxed = true)
     private val notificationRepository = mockk<NotificationRepository>(relaxed = true)
+    private val settingsRepository = mockk<SettingsRepository>(relaxed = true)
     private val repositoryProvider = Provider { notificationRepository }
+    private val settingsRepositoryProvider = Provider { settingsRepository }
     private val testDispatcher: CoroutineDispatcher = Dispatchers.Unconfined
 
     private lateinit var scheduler: AlarmScheduler
@@ -57,6 +60,7 @@ class AlarmSchedulerTest {
         scheduler = AlarmScheduler(
             context = context,
             notificationRepositoryProvider = repositoryProvider,
+            settingsRepositoryProvider = settingsRepositoryProvider,
             ioDispatcher = testDispatcher,
         )
     }
@@ -243,7 +247,7 @@ class AlarmSchedulerTest {
     @Test
     fun `rescheduleNotificationAlarm - notifications enabled with rules - schedules next alarm`() = runTest {
         val rules = listOf(NotificationRule(daysBefore = 0, hour = 9, minute = 0))
-        coEvery { notificationRepository.getSettingsImmediate() } returns AppSettings(notificationsEnabled = true)
+        coEvery { settingsRepository.getSettingsImmediate() } returns AppSettings(notificationsEnabled = true)
         coEvery { notificationRepository.getAllRulesImmediate() } returns rules
 
         scheduler.rescheduleNotificationAlarm()
@@ -259,7 +263,7 @@ class AlarmSchedulerTest {
 
     @Test
     fun `rescheduleNotificationAlarm - notifications disabled - cancels alarm`() = runTest {
-        coEvery { notificationRepository.getSettingsImmediate() } returns AppSettings(notificationsEnabled = false)
+        coEvery { settingsRepository.getSettingsImmediate() } returns AppSettings(notificationsEnabled = false)
 
         scheduler.rescheduleNotificationAlarm()
 
@@ -268,7 +272,7 @@ class AlarmSchedulerTest {
 
     @Test
     fun `rescheduleNotificationAlarm - empty rules - cancels alarm`() = runTest {
-        coEvery { notificationRepository.getSettingsImmediate() } returns AppSettings(notificationsEnabled = true)
+        coEvery { settingsRepository.getSettingsImmediate() } returns AppSettings(notificationsEnabled = true)
         coEvery { notificationRepository.getAllRulesImmediate() } returns emptyList()
 
         scheduler.rescheduleNotificationAlarm()
@@ -279,7 +283,7 @@ class AlarmSchedulerTest {
     @Test
     fun `rescheduleAllAlarms - reschedules both notification and widget update alarms`() = runTest {
         val rules = listOf(NotificationRule(daysBefore = 0, hour = 9, minute = 0))
-        coEvery { notificationRepository.getSettingsImmediate() } returns AppSettings(notificationsEnabled = true)
+        coEvery { settingsRepository.getSettingsImmediate() } returns AppSettings(notificationsEnabled = true)
         coEvery { notificationRepository.getAllRulesImmediate() } returns rules
 
         scheduler.rescheduleAllAlarms()

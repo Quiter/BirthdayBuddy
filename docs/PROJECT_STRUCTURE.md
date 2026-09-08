@@ -19,7 +19,7 @@
   - `@MainDispatcher`: Bereitstellung von `Dispatchers.Main` für UI- und Main-Thread-Operationen.
   - `@ApplicationScope`: Bereitstellung eines prozessweiten CoroutineScopes mit SupervisorJob und Unhandled Exception Handler.
   - **Dispatcher-Injektions-Regel (Google Best Practice)**: Klassen (Repositories, DataSources, ViewModels) dürfen Dispatcher **nicht hardcoden** (`withContext(Dispatchers.IO)` ist verboten). Stattdessen wird `@IoDispatcher private val ioDispatcher: CoroutineDispatcher` per Konstruktor injiziert, um 100% deterministische Unit-Tests (via `TestDispatcher`) zu ermöglichen.
-- `HelperBindingsModule.kt`: Hilt-Modul zur Bereitstellung der Singleton-Bindings für Hilfsklassen und Repositories (`ContactRepository`, `GiftIdeaRepository`, `CoupleRepository`, `SettingsRepository`, `NotificationRepository`, `CalendarSyncRepository`, `TimeRepository`, `WidgetUpdater`, `NotificationScheduler`).
+- `HelperBindingsModule.kt`: Hilt-Modul zur Bereitstellung der Singleton-Bindings für Hilfsklassen und Repositories (`ContactRepository`, `GiftIdeaRepository`, `CoupleRepository`, `SettingsRepository`, `NotificationRepository`, `CalendarSyncRepository`, `TimeRepository`, `WidgetUpdater`, `NotificationScheduler`, `DeviceRegionProvider`, `CalendarStringProvider`).
 
 ## 📁 Data Layer (`data`)
 - ### 📁 Local (`data.local`)
@@ -60,6 +60,9 @@
     - `AppSettingsMapper.kt`: Reine Logik-Komponente zur Transformation zwischen `AppSettingsEntity` und Domain `AppSettings`.
 - ### 📁 Permission (`data.permission`)
     - `AndroidPermissionChecker.kt`: Konkrete plattformspezifische Implementierung des `PermissionChecker` Interfaces unter Verwendung von ContextCompat APIs und App-Kontext.
+- ### 📁 Utilities (`data.util`)
+    - `AndroidCalendarStringProvider.kt`: Android-Implementierung von `CalendarStringProvider` zur Auflösung lokalisierter Kalender-Strings über den `@ApplicationContext Context`.
+    - `AndroidDeviceRegionProvider.kt`: Android-Implementierung von `DeviceRegionProvider` zur Ermittlung des ISO-Ländercodes via `Locale.getDefault()`.
 
 ## 📁 Domain Layer (`domain`)
 - ### 📁 Repositories (`domain.repository`)
@@ -94,6 +97,7 @@
     - `SetCalendarSyncEnabledUseCase.kt`: Konfiguriert die Kalendersynchronisation und führt Initialisierungs- oder Löschaktionen durch.
     - `UpdateCalendarColorUseCase.kt`: Aktualisiert die Systemkalenderfarbe für einen bestimmten Ereignistyp.
 - ### 📁 Utilities (`domain.util`)
+    - `CalendarStringProvider.kt`: Plattformunabhängiges Interface zur Bereitstellung lokalisierter Strings für die Kalendersynchronisation (Namen, Titel, Beschreibungen), entkoppelt Repositories von Android-Ressourcen und ermöglicht pure JVM-Unit-Tests.
     - `ContactFilterLogic.kt`: Reines Domänen-Hilfsobjekt zur Kapselung der Multi-Label-Filterregeln (Ignorieren und Verbergen) für Benachrichtigungen und Widgets.
     - `DeviceRegionProvider.kt`: Plattformunabhängiges Interface zur deterministischen Ermittlung des ISO-Ländercodes der Geräteregion (entkoppelt den Domain-Layer von globalem JVM-State).
     - `NotificationKeyUtils.kt`: Zentrales Utility-Objekt zum sicheren Enkodieren, Dekodieren und Extrahieren des `EventType` für Benachrichtigungs-Lookup-Keys (verhindert Fragilität bei Doppelpunkten im LookupKey).
@@ -289,6 +293,7 @@ Diese Tests laufen ohne Emulator/Gerät direkt auf dem Entwicklungsrechner und s
 - `domain/util/NotificationKeyUtilsTest.kt`: JVM Unit-Tests für `NotificationKeyUtils` (Enkodierung, Dekodierung und EventType-Erkennung inklusive Sonderzeichen & Doppelpunkten im LookupKey).
 - `domain/util/PhoneNumberNormalizerTest.kt`: JVM Unit-Tests für `PhoneNumberNormalizer` (vollständige E.164-Testabdeckung für nationale, internationale, klammerbasierte Formate, fehlerhafte Präfixe, länderspezifische Regeln und Determinismus mit `DeviceRegionProvider`).
 - `data/util/AndroidDeviceRegionProviderTest.kt`: JVM Unit-Tests für `AndroidDeviceRegionProvider` zur Verifikation der Ländercode-Ermittlung über das System-Locale.
+- `data/util/AndroidCalendarStringProviderTest.kt`: JVM Unit-Tests für `AndroidCalendarStringProvider` zur Verifikation der String-Ressourcen-Auflösung.
 - `ui/util/ContactActionsTest.kt`: JVM Robolectric-Tests für `ContactActions` zur Verifikation von Rufnummern-Wahl-, SMS- und Messenger-Intents unter Verwendung von `DeviceRegionProvider`.
 - `domain/usecase/GetPendingNotificationsUseCaseTest.kt`: JVM Unit-Tests zur Überprüfung der Benachrichtigungsregeln und Fälligkeits-Kalkulation.
 - `domain/usecase/SnoozeNotificationUseCaseTest.kt`: JVM Unit-Tests zur Überprüfung der Schlummer-Delegation.

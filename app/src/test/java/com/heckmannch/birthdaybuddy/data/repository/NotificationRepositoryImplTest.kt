@@ -11,7 +11,6 @@ import com.heckmannch.birthdaybuddy.data.mapper.PendingNotificationMapper
 import com.heckmannch.birthdaybuddy.domain.model.AppSettings
 import com.heckmannch.birthdaybuddy.domain.model.NotificationRule
 import com.heckmannch.birthdaybuddy.domain.model.PendingNotification
-import com.heckmannch.birthdaybuddy.domain.model.ThemeMode
 import com.heckmannch.birthdaybuddy.domain.repository.NotificationScheduler
 import com.heckmannch.birthdaybuddy.domain.repository.SettingsRepository
 import io.mockk.coEvery
@@ -56,7 +55,6 @@ class NotificationRepositoryImplTest {
 
     // State flows to back DAO mocks
     private val allRulesFlow = MutableStateFlow<List<NotificationRuleEntity>>(emptyList())
-    private val settingsFlow = MutableStateFlow(AppSettings())
 
     private lateinit var repository: NotificationRepositoryImpl
 
@@ -64,7 +62,6 @@ class NotificationRepositoryImplTest {
     fun setUp() {
         // Stub flows accessed during initialization
         every { notificationRuleDao.getAllRules() } returns allRulesFlow
-        every { settingsRepository.settings } returns settingsFlow
 
         repository = NotificationRepositoryImpl(
             notificationRuleDao = notificationRuleDao,
@@ -101,40 +98,6 @@ class NotificationRepositoryImplTest {
         assertThat(result[1].minute).isEqualTo(30)
     }
 
-    @Test
-    fun settings_emitsCorrectlyMappedDomainObjects() = runTest {
-        // Arrange
-        val settings = AppSettings(
-            id = 0,
-            notificationsEnabled = true,
-            persistentNotifications = false,
-            onboardingCompleted = true,
-            themeMode = ThemeMode.DARK
-        )
-        settingsFlow.value = settings
-
-        // Act
-        val result = repository.settings.first()
-
-        // Assert
-        assertThat(result.id).isEqualTo(0)
-        assertThat(result.notificationsEnabled).isTrue()
-        assertThat(result.persistentNotifications).isFalse()
-        assertThat(result.onboardingCompleted).isTrue()
-        assertThat(result.themeMode).isEqualTo(ThemeMode.DARK)
-    }
-
-    @Test
-    fun settings_emitsDefaultAppSettings_whenEntityIsNull() = runTest {
-        // Arrange
-        settingsFlow.value = AppSettings()
-
-        // Act
-        val result = repository.settings.first()
-
-        // Assert
-        assertThat(result).isEqualTo(AppSettings())
-    }
 
     @Test
     fun syncScheduling_schedulesNext_whenEnabledAndRulesNotEmpty() = runTest {
@@ -227,46 +190,6 @@ class NotificationRepositoryImplTest {
         }
     }
 
-    @Test
-    fun updateSettings_delegatesToSettingsRepositoryAndTriggersSync() = runTest {
-        // Arrange
-        coEvery { settingsRepository.getSettingsImmediate() } returns AppSettings(
-            notificationsEnabled = false
-        )
-        coEvery { notificationRuleDao.getAllRulesImmediate() } returns emptyList()
-
-        // Act
-        repository.updateSettings {
-            it.copy(
-                notificationsEnabled = true,
-                calendarId = 42L,
-                themeMode = ThemeMode.DARK
-            )
-        }
-
-        // Assert
-        coVerify { settingsRepository.updateSettings(any()) }
-
-        // Verify sync scheduling is triggered
-        coVerify { settingsRepository.getSettingsImmediate() }
-        coVerify { notificationScheduler.cancelNotification() }
-    }
-
-    @Test
-    fun getSettingsImmediate_returnsMappedSettings() = runTest {
-        // Arrange
-        coEvery { settingsRepository.getSettingsImmediate() } returns AppSettings(
-            notificationsEnabled = true,
-            persistentNotifications = false
-        )
-
-        // Act
-        val result = repository.getSettingsImmediate()
-
-        // Assert
-        assertThat(result.notificationsEnabled).isTrue()
-        assertThat(result.persistentNotifications).isFalse()
-    }
 
     @Test
     fun getAllRulesImmediate_returnsMappedRules() = runTest {

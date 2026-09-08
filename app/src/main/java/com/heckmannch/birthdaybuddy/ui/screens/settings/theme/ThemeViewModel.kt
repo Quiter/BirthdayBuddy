@@ -4,7 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.heckmannch.birthdaybuddy.domain.model.ThemeAccent
 import com.heckmannch.birthdaybuddy.domain.model.ThemeMode
-import com.heckmannch.birthdaybuddy.domain.repository.NotificationRepository
+import com.heckmannch.birthdaybuddy.domain.repository.SettingsRepository
 import com.heckmannch.birthdaybuddy.ui.model.ThemeUiState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.SharingStarted
@@ -16,10 +16,10 @@ import javax.inject.Inject
 
 @HiltViewModel
 class ThemeViewModel @Inject constructor(
-    private val notificationRepository: NotificationRepository,
+    private val settingsRepository: SettingsRepository,
 ) : ViewModel() {
 
-    val uiState: StateFlow<ThemeUiState> = notificationRepository.settings
+    val uiState: StateFlow<ThemeUiState> = settingsRepository.settings
         .map { settings ->
             ThemeUiState(
                 themeMode = settings.themeMode,
@@ -43,15 +43,15 @@ class ThemeViewModel @Inject constructor(
     }
 
     private fun setThemeMode(mode: ThemeMode) = viewModelScope.launch {
-        notificationRepository.updateSettings { it.copy(themeMode = mode) }
+        settingsRepository.updateSettings { it.copy(themeMode = mode) }
     }
 
     private fun setThemeAmoled(enabled: Boolean) = viewModelScope.launch {
-        notificationRepository.updateSettings { it.copy(themeAmoled = enabled) }
+        settingsRepository.updateSettings { it.copy(themeAmoled = enabled) }
     }
 
     private fun setThemeAccent(accent: ThemeAccent, customColor: String?) = viewModelScope.launch {
-        notificationRepository.updateSettings {
+        settingsRepository.updateSettings {
             it.copy(
                 themeAccent = accent,
                 customAccentColor = customColor

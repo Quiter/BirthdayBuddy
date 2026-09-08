@@ -17,15 +17,22 @@ import androidx.sqlite.db.SupportSQLiteDatabase
  * - [NotificationRuleEntity]: Globale und label-spezifische Benachrichtigungsregeln.
  * - [ContactUserData]: Nutzerspezifische, in der Cloud gesicherte Kontaktdaten (z. B. Notizen, Geschenkideen, Beziehungsstatus).
  *
+ * Konfiguration & Sicherheit:
+ * - `exportSchema = true`: Ermöglicht versionierte Schemata-Exporte nach `app/schemas` für automatisierte
+ *   Migrationstests mittels `MigrationTestHelper`.
+ * - Destructive Migration (`fallbackToDestructiveMigration`): Bewusst nicht im Builder konfiguriert (Projekt-Richtlinie),
+ *   um Datenverlust bei Schema-Upgrades strikt zu verhindern und fehlende Migrationen transparent aufzudecken.
+ *
  * Migrationen:
- * - Version 2 -> 3: [MIGRATION_2_3] (Hinzufügen von `otherEventsEnabled` in `app_settings`)
- * - Version 3 -> 4: [MIGRATION_3_4] (Hinzufügen von `spouseLookupKey` in `contact_user_data` und `ignoredCouplePairs` in `app_settings`)
- * - Version 4 -> 5: [MIGRATION_4_5] (Hinzufügen der Kalender-Farben `birthdayCalendarColor`, `anniversaryCalendarColor`, `nameDayCalendarColor` in `app_settings`)
- * - Version 5 -> 6: [MIGRATION_5_6] (Hinzufügen von Theme-Einstellungen `themeMode`, `themeAmoled`, `themeAccent` in `app_settings`)
- * - Version 6 -> 7: [MIGRATION_6_7] (Hinzufügen von `themeContrast` in `app_settings`)
- * - Version 7 -> 8: [MIGRATION_7_8] (Hinzufügen von `labelsEnabled` in `app_settings`)
- * - Version 8 -> 9: [MIGRATION_8_9] (Tabellenrekonstruktion von `app_settings` zur Entfernung von `themeContrast`)
- * - Version 9 -> 10: [MIGRATION_9_10] (Hinzufügen von `notificationsEnabled` und `showInWidget` in `label_configs`)
+ * - Version 1 -> 2: [SETTINGS_MIGRATION_1_2] (Hinzufügen von `calendarSyncEnabled` und `calendarId` in `app_settings`)
+ * - Version 2 -> 3: [SETTINGS_MIGRATION_2_3] (Hinzufügen von `otherEventsEnabled` in `app_settings`)
+ * - Version 3 -> 4: [SETTINGS_MIGRATION_3_4] (Hinzufügen von `spouseLookupKey` in `contact_user_data` und `ignoredCouplePairs` in `app_settings`)
+ * - Version 4 -> 5: [SETTINGS_MIGRATION_4_5] (Hinzufügen der Kalender-Farben `birthdayCalendarColor`, `anniversaryCalendarColor`, `nameDayCalendarColor` in `app_settings`)
+ * - Version 5 -> 6: [SETTINGS_MIGRATION_5_6] (Hinzufügen von Theme-Einstellungen `themeMode`, `themeAmoled`, `themeAccent` in `app_settings`)
+ * - Version 6 -> 7: [SETTINGS_MIGRATION_6_7] (Hinzufügen von `themeContrast` in `app_settings`)
+ * - Version 7 -> 8: [SETTINGS_MIGRATION_7_8] (Hinzufügen von `labelsEnabled` in `app_settings`)
+ * - Version 8 -> 9: [SETTINGS_MIGRATION_8_9] (Tabellenrekonstruktion von `app_settings` zur Entfernung von `themeContrast`)
+ * - Version 9 -> 10: [SETTINGS_MIGRATION_9_10] (Hinzufügen von `notificationsEnabled` und `showInWidget` in `label_configs`)
  */
 @Database(
     entities = [LabelConfigEntity::class, NotificationRuleEntity::class, AppSettingsEntity::class, ContactUserData::class],
@@ -41,6 +48,18 @@ abstract class SettingsDatabase : RoomDatabase() {
 }
 
 private const val DATABASE_NAME = "settings_database"
+
+/**
+ * Migration von Version 1 auf 2.
+ *
+ * Fügt die Spalten `calendarSyncEnabled` und `calendarId` zur Tabelle `app_settings` hinzu.
+ */
+internal val SETTINGS_MIGRATION_1_2 = object : Migration(1, 2) {
+    override fun migrate(db: SupportSQLiteDatabase) {
+        db.execSQL("ALTER TABLE app_settings ADD COLUMN calendarSyncEnabled INTEGER NOT NULL DEFAULT 0")
+        db.execSQL("ALTER TABLE app_settings ADD COLUMN calendarId INTEGER")
+    }
+}
 
 /**
  * Migration von Version 2 auf 3.
@@ -197,6 +216,10 @@ internal val SETTINGS_MIGRATION_9_10 = object : Migration(9, 10) {
 /**
  * Erstellt und konfiguriert die [SettingsDatabase]-Instanz.
  *
+ * Gemäß Projekt-Richtlinie wird [RoomDatabase.Builder.fallbackToDestructiveMigration] bewusst nicht aufgerufen,
+ * um unbeabsichtigten Datenverlust bei Schema-Änderungen zu verhindern und eine lückenlose Migrationshistorie
+ * zu erzwingen.
+ *
  * @param context Der Anwendungskontext.
  * @return Die gebaute [SettingsDatabase]-Instanz.
  */
@@ -207,6 +230,7 @@ internal fun buildSettingsDatabase(context: Context): SettingsDatabase {
         DATABASE_NAME,
     )
         .addMigrations(
+            SETTINGS_MIGRATION_1_2,
             SETTINGS_MIGRATION_2_3,
             SETTINGS_MIGRATION_3_4,
             SETTINGS_MIGRATION_4_5,

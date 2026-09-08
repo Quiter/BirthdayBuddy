@@ -14,6 +14,7 @@ import com.heckmannch.birthdaybuddy.domain.model.EventType
 import com.heckmannch.birthdaybuddy.domain.model.NotificationRule
 import com.heckmannch.birthdaybuddy.domain.repository.NotificationRepository
 import com.heckmannch.birthdaybuddy.domain.repository.NotificationScheduler
+import com.heckmannch.birthdaybuddy.domain.repository.SettingsRepository
 import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.runTest
@@ -27,6 +28,7 @@ class NotificationRepositoryTest {
 
     private lateinit var db: AppDatabase
     private lateinit var settingsDb: SettingsDatabase
+    private lateinit var settingsRepository: SettingsRepository
     private lateinit var repository: NotificationRepository
 
     @Before
@@ -53,7 +55,7 @@ class NotificationRepositoryTest {
             ) {
             }
         }
-        val settingsRepository = SettingsRepositoryImpl(
+        settingsRepository = SettingsRepositoryImpl(
             appSettingsDao = settingsDb.appSettingsDao(),
             appSettingsMapper = AppSettingsMapper(),
             ioDispatcher = kotlinx.coroutines.Dispatchers.IO,
@@ -80,20 +82,20 @@ class NotificationRepositoryTest {
     @Test
     fun updateSettings_consecutiveUpdates_areConsistent() = runTest {
         // Initial state
-        repository.updateSettings {
+        settingsRepository.updateSettings {
             it.copy(notificationsEnabled = false, onboardingCompleted = false)
         }
 
         // Simulating the race condition: Two updates fired "at the same time"
         // Without Mutex, one could read the old state before the other writes,
         // resulting in one setting being lost.
-        val job1 = async { repository.updateSettings { it.copy(notificationsEnabled = true) } }
-        val job2 = async { repository.updateSettings { it.copy(onboardingCompleted = true) } }
+        val job1 = async { settingsRepository.updateSettings { it.copy(notificationsEnabled = true) } }
+        val job2 = async { settingsRepository.updateSettings { it.copy(onboardingCompleted = true) } }
 
         job1.await()
         job2.await()
 
-        val finalSettings = repository.settings.first()
+        val finalSettings = settingsRepository.settings.first()
 
         // Both should be true
         assertThat(finalSettings.notificationsEnabled).isTrue()
@@ -103,12 +105,12 @@ class NotificationRepositoryTest {
     @Test
     fun updateSettings_partialUpdates_doNotOverwriteOthers() = runTest {
         // Set something first
-        repository.updateSettings { it.copy(persistentNotifications = false) }
+        settingsRepository.updateSettings { it.copy(persistentNotifications = false) }
 
         // Update something else
-        repository.updateSettings { it.copy(notificationsEnabled = true) }
+        settingsRepository.updateSettings { it.copy(notificationsEnabled = true) }
 
-        val finalSettings = repository.settings.first()
+        val finalSettings = settingsRepository.settings.first()
 
         // Check both
         assertThat(finalSettings.persistentNotifications).isFalse()

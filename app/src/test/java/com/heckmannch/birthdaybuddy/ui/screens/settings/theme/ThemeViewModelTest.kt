@@ -5,7 +5,7 @@ import com.heckmannch.birthdaybuddy.MainDispatcherRule
 import com.heckmannch.birthdaybuddy.domain.model.AppSettings
 import com.heckmannch.birthdaybuddy.domain.model.ThemeAccent
 import com.heckmannch.birthdaybuddy.domain.model.ThemeMode
-import com.heckmannch.birthdaybuddy.domain.repository.NotificationRepository
+import com.heckmannch.birthdaybuddy.domain.repository.SettingsRepository
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flowOf
@@ -24,14 +24,14 @@ class ThemeViewModelTest {
     @get:Rule
     val mainDispatcherRule = MainDispatcherRule()
 
-    private val notificationRepository: NotificationRepository = mock()
+    private val settingsRepository: SettingsRepository = mock()
 
     private lateinit var viewModel: ThemeViewModel
 
     @Before
     fun setup() {
-        whenever(notificationRepository.settings).thenReturn(flowOf(AppSettings()))
-        viewModel = ThemeViewModel(notificationRepository)
+        whenever(settingsRepository.settings).thenReturn(flowOf(AppSettings()))
+        viewModel = ThemeViewModel(settingsRepository)
     }
 
     @Test
@@ -42,10 +42,10 @@ class ThemeViewModelTest {
             themeAccent = ThemeAccent.CUSTOM,
             customAccentColor = "#FF0000"
         )
-        whenever(notificationRepository.settings).thenReturn(flowOf(testSettings))
+        whenever(settingsRepository.settings).thenReturn(flowOf(testSettings))
 
         // Re-initialize to collect from new flow
-        val viewModel = ThemeViewModel(notificationRepository)
+        val viewModel = ThemeViewModel(settingsRepository)
         val uiState = viewModel.uiState.first { it.themeMode == ThemeMode.DARK }
 
         assertThat(uiState.themeMode).isEqualTo(ThemeMode.DARK)
@@ -59,7 +59,7 @@ class ThemeViewModelTest {
         viewModel.onIntent(ThemeIntent.SetThemeMode(ThemeMode.LIGHT))
 
         val captor = argumentCaptor<(AppSettings) -> AppSettings>()
-        verify(notificationRepository).updateSettings(captor.capture())
+        verify(settingsRepository).updateSettings(captor.capture())
         val updated = captor.firstValue(AppSettings(themeMode = ThemeMode.DARK))
         assertThat(updated.themeMode).isEqualTo(ThemeMode.LIGHT)
     }
@@ -69,7 +69,7 @@ class ThemeViewModelTest {
         viewModel.onIntent(ThemeIntent.SetThemeAmoled(true))
 
         val captor = argumentCaptor<(AppSettings) -> AppSettings>()
-        verify(notificationRepository).updateSettings(captor.capture())
+        verify(settingsRepository).updateSettings(captor.capture())
         val updated = captor.firstValue(AppSettings(themeAmoled = false))
         assertThat(updated.themeAmoled).isTrue()
     }
@@ -79,7 +79,7 @@ class ThemeViewModelTest {
         viewModel.onIntent(ThemeIntent.SetThemeAccent(ThemeAccent.CUSTOM, "#00FF00"))
 
         val captor = argumentCaptor<(AppSettings) -> AppSettings>()
-        verify(notificationRepository).updateSettings(captor.capture())
+        verify(settingsRepository).updateSettings(captor.capture())
         val updated = captor.firstValue(AppSettings(themeAccent = ThemeAccent.SYSTEM, customAccentColor = null))
         assertThat(updated.themeAccent).isEqualTo(ThemeAccent.CUSTOM)
         assertThat(updated.customAccentColor).isEqualTo("#00FF00")

@@ -1,7 +1,6 @@
 package com.heckmannch.birthdaybuddy.data.repository
 
 import android.content.ContentProviderOperation
-import android.content.Context
 import android.net.Uri
 import android.provider.CalendarContract
 import android.util.Log
@@ -11,6 +10,7 @@ import com.heckmannch.birthdaybuddy.data.local.AppSettingsDao
 import com.heckmannch.birthdaybuddy.data.local.AppSettingsEntity
 import com.heckmannch.birthdaybuddy.domain.model.Contact
 import com.heckmannch.birthdaybuddy.domain.repository.CalendarSyncRepository
+import com.heckmannch.birthdaybuddy.domain.util.CalendarStringProvider
 import com.heckmannch.birthdaybuddy.util.NO_YEAR_MARKER
 import io.mockk.coEvery
 import io.mockk.coVerify
@@ -33,9 +33,9 @@ class CalendarSyncRepositoryImplTest {
     @get:Rule
     val mainDispatcherRule = MainDispatcherRule()
 
-    private val context: Context = mockk(relaxed = true)
     private val appSettingsDao: AppSettingsDao = mockk(relaxed = true)
     private val systemCalendarDataSource: SystemCalendarDataSource = mockk(relaxed = true)
+    private val calendarStringProvider: CalendarStringProvider = mockk(relaxed = true)
 
     private lateinit var repository: CalendarSyncRepositoryImpl
 
@@ -104,9 +104,9 @@ class CalendarSyncRepositoryImplTest {
         }
 
         repository = CalendarSyncRepositoryImpl(
-            context = context,
             appSettingsDao = appSettingsDao,
             systemCalendarDataSource = systemCalendarDataSource,
+            calendarStringProvider = calendarStringProvider,
             ioDispatcher = mainDispatcherRule.testDispatcher,
         )
     }
@@ -414,8 +414,9 @@ class CalendarSyncRepositoryImplTest {
                 )
             )
 
-            every { context.getString(any()) } returns "MockNoYear"
-            every { context.getString(any(), *anyVararg()) } returns "MockWithArgs"
+            every { calendarStringProvider.calendarEventNoYear() } returns "MockNoYear"
+            every { calendarStringProvider.calendarEventBirthYear(any()) } returns "MockWithArgs"
+            every { calendarStringProvider.calendarEventTitle(any()) } returns "MockWithArgs"
 
             // Act
             val result = repository.syncBirthdays(contacts)
@@ -498,8 +499,9 @@ class CalendarSyncRepositoryImplTest {
                 )
             )
 
-            every { context.getString(any()) } returns "MockNoYear"
-            every { context.getString(any(), *anyVararg()) } returns "MockWithArgs"
+            every { calendarStringProvider.calendarEventNoYear() } returns "MockNoYear"
+            every { calendarStringProvider.calendarEventBirthYear(any()) } returns "MockWithArgs"
+            every { calendarStringProvider.calendarEventTitle(any()) } returns "MockWithArgs"
 
             // Act
             val result = repository.syncBirthdays(contacts)
@@ -542,8 +544,9 @@ class CalendarSyncRepositoryImplTest {
             )
         }
 
-        every { context.getString(any()) } returns "MockNoYear"
-        every { context.getString(any(), *anyVararg()) } returns "MockWithArgs"
+        every { calendarStringProvider.calendarEventNoYear() } returns "MockNoYear"
+        every { calendarStringProvider.calendarEventBirthYear(any()) } returns "MockWithArgs"
+        every { calendarStringProvider.calendarEventTitle(any()) } returns "MockWithArgs"
 
         // Act
         val result = repository.syncBirthdays(contacts)
@@ -581,8 +584,9 @@ class CalendarSyncRepositoryImplTest {
             )
         )
 
-        every { context.getString(any()) } returns "MockNoYear"
-        every { context.getString(any(), *anyVararg()) } returns "MockWithArgs"
+        every { calendarStringProvider.calendarEventNoYear() } returns "MockNoYear"
+        every { calendarStringProvider.calendarEventBirthYear(any()) } returns "MockWithArgs"
+        every { calendarStringProvider.calendarEventTitle(any()) } returns "MockWithArgs"
 
         // Act
         val result = repository.syncBirthdays(contacts)

@@ -5,6 +5,7 @@ import com.heckmannch.birthdaybuddy.domain.model.AppSettings
 import com.heckmannch.birthdaybuddy.domain.model.ThemeAccent
 import com.heckmannch.birthdaybuddy.domain.model.ThemeMode
 import com.heckmannch.birthdaybuddy.domain.repository.NotificationRepository
+import com.heckmannch.birthdaybuddy.domain.repository.SettingsRepository
 import com.heckmannch.birthdaybuddy.domain.repository.WidgetUpdater
 import com.heckmannch.birthdaybuddy.ui.navigation.AppAction
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -25,14 +26,15 @@ class AppViewModelTest {
     val mainDispatcherRule = MainDispatcherRule()
 
     private val notificationRepository: NotificationRepository = mock()
+    private val settingsRepository: SettingsRepository = mock()
     private val widgetUpdater: WidgetUpdater = mock()
 
     private lateinit var viewModel: AppViewModel
 
     @Before
     fun setup() {
-        whenever(notificationRepository.settings).thenReturn(flowOf(AppSettings()))
-        viewModel = AppViewModel(notificationRepository, widgetUpdater)
+        whenever(settingsRepository.settings).thenReturn(flowOf(AppSettings()))
+        viewModel = AppViewModel(notificationRepository, settingsRepository, widgetUpdater)
     }
 
     @Test
@@ -49,10 +51,10 @@ class AppViewModelTest {
             themeAccent = ThemeAccent.CUSTOM,
             customAccentColor = "#FF0000"
         )
-        whenever(notificationRepository.settings).thenReturn(flowOf(customSettings))
+        whenever(settingsRepository.settings).thenReturn(flowOf(customSettings))
 
         // Re-initialize to collect from the new flow
-        val freshViewModel = AppViewModel(notificationRepository, widgetUpdater)
+        val freshViewModel = AppViewModel(notificationRepository, settingsRepository, widgetUpdater)
         val result = freshViewModel.appSettings.first { it.themeMode == ThemeMode.DARK }
 
         assertThat(result.themeMode).isEqualTo(ThemeMode.DARK)
@@ -78,9 +80,9 @@ class AppViewModelTest {
     @Test
     fun `onboardingCompleted emits value from repository settings`() = runTest {
         val completedSettings = AppSettings(onboardingCompleted = true)
-        whenever(notificationRepository.settings).thenReturn(flowOf(completedSettings))
+        whenever(settingsRepository.settings).thenReturn(flowOf(completedSettings))
 
-        val freshViewModel = AppViewModel(notificationRepository, widgetUpdater)
+        val freshViewModel = AppViewModel(notificationRepository, settingsRepository, widgetUpdater)
         val result = freshViewModel.onboardingCompleted.first { it != null }
 
         assertThat(result).isTrue()
@@ -91,7 +93,7 @@ class AppViewModelTest {
         val failingWidgetUpdater: WidgetUpdater = mock()
         whenever(failingWidgetUpdater.scheduleDailyUpdate()).thenThrow(RuntimeException("Scheduling failed"))
 
-        val vm = AppViewModel(notificationRepository, failingWidgetUpdater)
+        val vm = AppViewModel(notificationRepository, settingsRepository, failingWidgetUpdater)
         assertThat(vm.appSettings.value).isEqualTo(AppSettings())
     }
 

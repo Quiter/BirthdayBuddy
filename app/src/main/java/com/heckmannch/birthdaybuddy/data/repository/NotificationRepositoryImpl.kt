@@ -7,7 +7,6 @@ import com.heckmannch.birthdaybuddy.data.mapper.NotificationRuleMapper
 import com.heckmannch.birthdaybuddy.data.mapper.PendingNotificationMapper
 import com.heckmannch.birthdaybuddy.di.DefaultDispatcher
 import com.heckmannch.birthdaybuddy.di.IoDispatcher
-import com.heckmannch.birthdaybuddy.domain.model.AppSettings
 import com.heckmannch.birthdaybuddy.domain.model.NotificationRule
 import com.heckmannch.birthdaybuddy.domain.model.PendingNotification
 import com.heckmannch.birthdaybuddy.domain.repository.NotificationRepository
@@ -24,11 +23,11 @@ import javax.inject.Inject
 
 /**
  * Implementation of [NotificationRepository] that coordinates notification rules,
- * pending notification states, and application settings.
+ * pending notification states, and scheduling.
  *
  * This repository coordinates data storage through local DAOs and manages scheduling
- * by delegating to [NotificationScheduler]. Thread safety during settings updates
- * is ensured using [SettingsRepository].
+ * by delegating to [NotificationScheduler]. Notification configuration state is observed
+ * via [SettingsRepository] to synchronize alarms.
  */
 class NotificationRepositoryImpl @Inject constructor(
     private val notificationRuleDao: NotificationRuleDao,
@@ -45,8 +44,6 @@ class NotificationRepositoryImpl @Inject constructor(
         .map { entities -> entities.map { notificationRuleMapper.toDomain(it) } }
         .flowOn(defaultDispatcher)
         .distinctUntilChanged()
-
-    override val settings: Flow<AppSettings> = settingsRepository.settings
 
     /**
      * Synchronizes notification alarm scheduling with the current database settings and rules.
@@ -72,26 +69,6 @@ class NotificationRepositoryImpl @Inject constructor(
         }
     }
 
-    /**
-     * Updates application settings by applying the provided [transform] function.
-     *
-     * **Side effect:** Triggers [syncScheduling] after updating settings to ensure
-     * alarms reflect any changes in configuration (e.g., enabling/disabling notifications).
-     *
-     * @param transform A lambda that receives the current [AppSettings] snapshot and returns the updated [AppSettings].
-     */
-    override suspend fun updateSettings(transform: (AppSettings) -> AppSettings) {
-        settingsRepository.updateSettings(transform)
-        syncScheduling()
-    }
-
-    /**
-     * Retrieves a one-time snapshot of the current application settings directly from the database.
-     *
-     * @return The current [AppSettings].
-     */
-    override suspend fun getSettingsImmediate(): AppSettings =
-        settingsRepository.getSettingsImmediate()
 
     /**
      * Retrieves a one-time snapshot list of all configured notification rules directly from the database.

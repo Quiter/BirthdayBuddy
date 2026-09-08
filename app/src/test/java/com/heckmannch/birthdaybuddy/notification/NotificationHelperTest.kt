@@ -16,6 +16,7 @@ import com.heckmannch.birthdaybuddy.domain.model.Contact
 import com.heckmannch.birthdaybuddy.domain.model.EventType
 import com.heckmannch.birthdaybuddy.domain.model.PendingNotification
 import com.heckmannch.birthdaybuddy.domain.repository.NotificationRepository
+import com.heckmannch.birthdaybuddy.domain.repository.SettingsRepository
 import com.heckmannch.birthdaybuddy.util.IntentExtras
 import io.mockk.coEvery
 import io.mockk.every
@@ -56,6 +57,7 @@ class NotificationHelperTest {
     private lateinit var context: Context
     private val notificationManager = mockk<NotificationManager>(relaxed = true)
     private val notificationRepository = mockk<NotificationRepository>(relaxed = true)
+    private val settingsRepository = mockk<SettingsRepository>(relaxed = true)
     private val notificationTextFormatter = mockk<NotificationTextFormatter>(relaxed = true)
     private val notificationManagerCompat = mockk<NotificationManagerCompat>()
 
@@ -80,7 +82,7 @@ class NotificationHelperTest {
         every { NotificationManagerCompat.from(any()) } returns notificationManagerCompat
         every { notificationManagerCompat.areNotificationsEnabled() } returns true
 
-        every { notificationRepository.settings } returns settingsFlow
+        every { settingsRepository.settings } returns settingsFlow
         coEvery { notificationRepository.getPendingNotificationById(any()) } returns null
 
         every {
@@ -90,7 +92,7 @@ class NotificationHelperTest {
             notificationTextFormatter.buildContentText(any(), any(), any())
         } returns "Test Birthday Content"
 
-        helper = NotificationHelper(context, notificationRepository, notificationTextFormatter)
+        helper = NotificationHelper(context, notificationRepository, settingsRepository, notificationTextFormatter)
     }
 
     @After

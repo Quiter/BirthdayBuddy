@@ -6,6 +6,7 @@ import com.heckmannch.birthdaybuddy.domain.model.AppSettings
 import com.heckmannch.birthdaybuddy.domain.permission.PermissionChecker
 import com.heckmannch.birthdaybuddy.domain.repository.ContactRepository
 import com.heckmannch.birthdaybuddy.domain.repository.NotificationRepository
+import com.heckmannch.birthdaybuddy.domain.repository.SettingsRepository
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.flowOf
@@ -29,6 +30,7 @@ class OnboardingViewModelTest {
     val mainDispatcherRule = MainDispatcherRule()
 
     private val notificationRepository: NotificationRepository = mock()
+    private val settingsRepository: SettingsRepository = mock()
     private val contactRepository: ContactRepository = mock()
     private val permissionChecker: PermissionChecker = mock()
 
@@ -36,7 +38,7 @@ class OnboardingViewModelTest {
 
     @Before
     fun setup() {
-        whenever(notificationRepository.settings).thenReturn(flowOf(AppSettings(onboardingCompleted = false)))
+        whenever(settingsRepository.settings).thenReturn(flowOf(AppSettings(onboardingCompleted = false)))
         // Default permission mock values to false
         whenever(permissionChecker.hasContactsPermission()).thenReturn(false)
         whenever(permissionChecker.hasNotificationPermission()).thenReturn(false)
@@ -44,6 +46,7 @@ class OnboardingViewModelTest {
         viewModel =
             OnboardingViewModel(
                 notificationRepository,
+                settingsRepository,
                 contactRepository,
                 permissionChecker,
                 CoroutineScope(mainDispatcherRule.testDispatcher),
@@ -60,6 +63,7 @@ class OnboardingViewModelTest {
         val localViewModel =
             OnboardingViewModel(
                 notificationRepository,
+                settingsRepository,
                 contactRepository,
                 permissionChecker,
                 CoroutineScope(mainDispatcherRule.testDispatcher),
@@ -121,6 +125,7 @@ class OnboardingViewModelTest {
 
         val vm = OnboardingViewModel(
             notificationRepository,
+            settingsRepository,
             contactRepository,
             permissionChecker,
             CoroutineScope(mainDispatcherRule.testDispatcher),
@@ -138,7 +143,7 @@ class OnboardingViewModelTest {
         viewModel.onIntent(OnboardingIntent.SetPersistentNotifications(true))
 
         val captor = argumentCaptor<(AppSettings) -> AppSettings>()
-        verify(notificationRepository).updateSettings(captor.capture())
+        verify(settingsRepository).updateSettings(captor.capture())
         val updated = captor.firstValue(AppSettings(persistentNotifications = false))
         assertThat(updated.persistentNotifications).isTrue()
     }
@@ -155,7 +160,7 @@ class OnboardingViewModelTest {
         )
 
         val captor = argumentCaptor<(AppSettings) -> AppSettings>()
-        verify(notificationRepository).updateSettings(captor.capture())
+        verify(settingsRepository).updateSettings(captor.capture())
         val updated = captor.firstValue(
             AppSettings(
                 notificationsEnabled = false,
@@ -166,6 +171,7 @@ class OnboardingViewModelTest {
         assertThat(updated.notificationsEnabled).isTrue()
         assertThat(updated.calendarSyncEnabled).isTrue()
         assertThat(updated.onboardingCompleted).isTrue()
+        verify(notificationRepository).syncScheduling()
         verify(contactRepository).syncContacts()
     }
 

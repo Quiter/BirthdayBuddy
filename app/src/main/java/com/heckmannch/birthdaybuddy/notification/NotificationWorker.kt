@@ -14,6 +14,7 @@ import com.heckmannch.birthdaybuddy.domain.model.NotificationRule
 import com.heckmannch.birthdaybuddy.domain.model.PendingNotification
 import com.heckmannch.birthdaybuddy.domain.repository.ContactRepository
 import com.heckmannch.birthdaybuddy.domain.repository.NotificationRepository
+import com.heckmannch.birthdaybuddy.domain.repository.SettingsRepository
 import com.heckmannch.birthdaybuddy.domain.usecase.GetPendingNotificationsUseCase
 import com.heckmannch.birthdaybuddy.util.AlarmScheduler
 import com.heckmannch.birthdaybuddy.util.Clock
@@ -34,6 +35,7 @@ class NotificationWorker @AssistedInject constructor(
     @Assisted workerParameters: WorkerParameters,
     private val contactRepository: ContactRepository,
     private val notificationRepository: NotificationRepository,
+    private val settingsRepository: SettingsRepository,
     private val notificationHelper: NotificationHelper,
     private val getPendingNotificationsUseCase: GetPendingNotificationsUseCase,
     private val alarmScheduler: AlarmScheduler,
@@ -91,7 +93,7 @@ class NotificationWorker @AssistedInject constructor(
     }
 
     private suspend fun scheduleNextRun() {
-        val settings = notificationRepository.getSettingsImmediate()
+        val settings = settingsRepository.getSettingsImmediate()
         if (!settings.notificationsEnabled) {
             WorkManager.getInstance(applicationContext).cancelUniqueWork(WORK_NAME)
             alarmScheduler.cancelNotificationAlarm()

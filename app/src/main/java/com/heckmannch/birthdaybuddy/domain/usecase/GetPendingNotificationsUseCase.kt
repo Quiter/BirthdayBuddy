@@ -4,6 +4,7 @@ import com.heckmannch.birthdaybuddy.domain.model.Contact
 import com.heckmannch.birthdaybuddy.domain.model.EventType
 import com.heckmannch.birthdaybuddy.domain.repository.ContactRepository
 import com.heckmannch.birthdaybuddy.domain.repository.NotificationRepository
+import com.heckmannch.birthdaybuddy.domain.repository.SettingsRepository
 import com.heckmannch.birthdaybuddy.domain.util.ContactFilterLogic
 import com.heckmannch.birthdaybuddy.domain.util.NotificationKeyUtils
 import com.heckmannch.birthdaybuddy.util.toYear
@@ -23,6 +24,7 @@ import javax.inject.Inject
 class GetPendingNotificationsUseCase @Inject constructor(
     private val contactRepository: ContactRepository,
     private val notificationRepository: NotificationRepository,
+    private val settingsRepository: SettingsRepository,
 ) {
     /**
      * Represents a single notification event that should be scheduled/shown.
@@ -35,7 +37,7 @@ class GetPendingNotificationsUseCase @Inject constructor(
     )
 
     suspend operator fun invoke(now: LocalDateTime): List<PendingNotificationEvent> {
-        val settings = notificationRepository.settings.first()
+        val settings = settingsRepository.settings.first()
         if (!settings.notificationsEnabled) return emptyList()
 
         val rules = notificationRepository.getAllRulesImmediate()
@@ -56,8 +58,11 @@ class GetPendingNotificationsUseCase @Inject constructor(
 
         val labelsEnabled = contactRepository.labelsEnabled.first()
         val labelConfigs = if (!labelsEnabled) emptyList() else contactRepository.labelConfigs.first()
+        // Optimization: Use getAllContactsImmediate() directly instead of collecting from allContacts.first()
+        // to avoid unnecessary Flow collector overhead during one-shot notification evaluations.
+        val contactList = contactRepository.getAllContactsImmediate()
         val allContacts = ContactFilterLogic.filterForNotifications(
-            contacts = contactRepository.allContacts.first(),
+            contacts = contactList,
             labelsEnabled = labelsEnabled,
             configs = labelConfigs
         )

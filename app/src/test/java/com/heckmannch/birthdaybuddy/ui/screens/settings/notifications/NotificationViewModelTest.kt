@@ -7,6 +7,7 @@ import com.heckmannch.birthdaybuddy.domain.model.NotificationRule
 import com.heckmannch.birthdaybuddy.domain.permission.PermissionChecker
 import com.heckmannch.birthdaybuddy.domain.repository.ContactRepository
 import com.heckmannch.birthdaybuddy.domain.repository.NotificationRepository
+import com.heckmannch.birthdaybuddy.domain.repository.SettingsRepository
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flowOf
@@ -30,6 +31,7 @@ class NotificationViewModelTest {
     val mainDispatcherRule = MainDispatcherRule()
 
     private val notificationRepository: NotificationRepository = mock()
+    private val settingsRepository: SettingsRepository = mock()
     private val contactRepository: ContactRepository = mock()
     private val permissionChecker: PermissionChecker = mock()
 
@@ -48,12 +50,12 @@ class NotificationViewModelTest {
 
     @Before
     fun setup() = runTest {
-        whenever(notificationRepository.settings).thenReturn(flowOf(testSettings))
+        whenever(settingsRepository.settings).thenReturn(flowOf(testSettings))
         whenever(notificationRepository.allRules).thenReturn(flowOf(testRules))
         whenever(notificationRepository.getAllRulesImmediate()).thenReturn(testRules)
         whenever(permissionChecker.hasNotificationPermission()).thenReturn(true)
 
-        viewModel = NotificationViewModel(notificationRepository, contactRepository, permissionChecker)
+        viewModel = NotificationViewModel(notificationRepository, settingsRepository, contactRepository, permissionChecker)
     }
 
     @Test
@@ -72,6 +74,7 @@ class NotificationViewModelTest {
         whenever(permissionChecker.hasNotificationPermission()).thenReturn(false)
         val viewModel = NotificationViewModel(
             notificationRepository,
+            settingsRepository,
             contactRepository,
             permissionChecker
         )
@@ -95,9 +98,10 @@ class NotificationViewModelTest {
         viewModel.onIntent(NotificationIntent.SetEnabled(false))
 
         val captor = argumentCaptor<(AppSettings) -> AppSettings>()
-        verify(notificationRepository).updateSettings(captor.capture())
+        verify(settingsRepository).updateSettings(captor.capture())
         val updated = captor.firstValue(AppSettings(notificationsEnabled = true))
         assertThat(updated.notificationsEnabled).isFalse()
+        verify(notificationRepository).syncScheduling()
     }
 
     @Test
@@ -105,7 +109,7 @@ class NotificationViewModelTest {
         viewModel.onIntent(NotificationIntent.SetPersistent(true))
 
         val captor = argumentCaptor<(AppSettings) -> AppSettings>()
-        verify(notificationRepository).updateSettings(captor.capture())
+        verify(settingsRepository).updateSettings(captor.capture())
         val updated = captor.firstValue(AppSettings(persistentNotifications = false))
         assertThat(updated.persistentNotifications).isTrue()
     }
@@ -115,7 +119,7 @@ class NotificationViewModelTest {
         viewModel.onIntent(NotificationIntent.SetOtherEventsEnabled(true))
 
         val captor = argumentCaptor<(AppSettings) -> AppSettings>()
-        verify(notificationRepository).updateSettings(captor.capture())
+        verify(settingsRepository).updateSettings(captor.capture())
         val updated = captor.firstValue(AppSettings(otherEventsEnabled = false))
         assertThat(updated.otherEventsEnabled).isTrue()
         verify(contactRepository).syncContacts()

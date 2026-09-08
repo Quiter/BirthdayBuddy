@@ -21,6 +21,8 @@ import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 import java.time.LocalDate
 
+import com.heckmannch.birthdaybuddy.data.util.AndroidCalendarStringProvider
+
 @RunWith(AndroidJUnit4::class)
 class CalendarSyncRepositoryTest {
 
@@ -31,10 +33,11 @@ class CalendarSyncRepositoryTest {
     @Before
     fun setUp() {
         val context = InstrumentationRegistry.getInstrumentation().targetContext
+        val calendarStringProvider = AndroidCalendarStringProvider(context)
         repository = CalendarSyncRepositoryImpl(
-            context = context,
             appSettingsDao = appSettingsDao,
             systemCalendarDataSource = systemCalendarDataSource,
+            calendarStringProvider = calendarStringProvider,
             ioDispatcher = Dispatchers.IO,
         )
     }

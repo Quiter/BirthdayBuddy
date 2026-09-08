@@ -6,6 +6,7 @@ import com.heckmannch.birthdaybuddy.domain.model.NotificationRule
 import com.heckmannch.birthdaybuddy.domain.permission.PermissionChecker
 import com.heckmannch.birthdaybuddy.domain.repository.ContactRepository
 import com.heckmannch.birthdaybuddy.domain.repository.NotificationRepository
+import com.heckmannch.birthdaybuddy.domain.repository.SettingsRepository
 import com.heckmannch.birthdaybuddy.ui.model.NotificationUiState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -19,6 +20,7 @@ import javax.inject.Inject
 @HiltViewModel
 class NotificationViewModel @Inject constructor(
     private val notificationRepository: NotificationRepository,
+    private val settingsRepository: SettingsRepository,
     private val contactRepository: ContactRepository,
     private val permissionChecker: PermissionChecker,
 ) : ViewModel() {
@@ -27,7 +29,7 @@ class NotificationViewModel @Inject constructor(
         MutableStateFlow(permissionChecker.hasNotificationPermission())
 
     val uiState: StateFlow<NotificationUiState> = combine(
-        notificationRepository.settings,
+        settingsRepository.settings,
         notificationRepository.allRules,
         _hasNotificationPermission
     ) { settings, rules, hasPermission ->
@@ -79,7 +81,8 @@ class NotificationViewModel @Inject constructor(
                 addNotificationRule(daysBefore = 0, hour = 9, minute = 0)
             }
         }
-        notificationRepository.updateSettings { it.copy(notificationsEnabled = enabled) }
+        settingsRepository.updateSettings { it.copy(notificationsEnabled = enabled) }
+        notificationRepository.syncScheduling()
     }
 
     /**
@@ -90,7 +93,7 @@ class NotificationViewModel @Inject constructor(
      * @param persistent True to make notifications persistent, false otherwise.
      */
     private fun setPersistentNotifications(persistent: Boolean) = viewModelScope.launch {
-        notificationRepository.updateSettings { it.copy(persistentNotifications = persistent) }
+        settingsRepository.updateSettings { it.copy(persistentNotifications = persistent) }
     }
 
     /**
@@ -102,7 +105,7 @@ class NotificationViewModel @Inject constructor(
      * @param enabled True to enable other events, false to disable.
      */
     private fun setOtherEventsEnabled(enabled: Boolean) = viewModelScope.launch {
-        notificationRepository.updateSettings { it.copy(otherEventsEnabled = enabled) }
+        settingsRepository.updateSettings { it.copy(otherEventsEnabled = enabled) }
         if (enabled) {
             contactRepository.syncContacts()
         }

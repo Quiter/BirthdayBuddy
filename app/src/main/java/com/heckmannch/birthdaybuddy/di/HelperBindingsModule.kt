@@ -12,9 +12,11 @@ import com.heckmannch.birthdaybuddy.data.repository.SettingsRepositoryImpl
 import com.heckmannch.birthdaybuddy.data.repository.SystemCalendarDataSource
 import com.heckmannch.birthdaybuddy.data.repository.SystemCalendarDataSourceImpl
 import com.heckmannch.birthdaybuddy.data.repository.TimeRepositoryImpl
+import com.heckmannch.birthdaybuddy.data.util.AndroidCalendarStringProvider
 import com.heckmannch.birthdaybuddy.data.util.AndroidDeviceRegionProvider
 import com.heckmannch.birthdaybuddy.domain.permission.PermissionChecker
 import com.heckmannch.birthdaybuddy.domain.repository.CalendarSyncRepository
+import com.heckmannch.birthdaybuddy.domain.util.CalendarStringProvider
 import com.heckmannch.birthdaybuddy.domain.util.DeviceRegionProvider
 import com.heckmannch.birthdaybuddy.domain.repository.ContactRepository
 import com.heckmannch.birthdaybuddy.domain.repository.CoupleRepository
@@ -166,4 +168,14 @@ interface HelperBindingsModule {
     @Binds
     @Singleton
     fun bindDeviceRegionProvider(provider: AndroidDeviceRegionProvider): DeviceRegionProvider
+
+    /**
+     * Binds the calendar string provider abstraction to its Android implementation.
+     *
+     * @param provider The [AndroidCalendarStringProvider] implementation.
+     * @return The bound [CalendarStringProvider] interface.
+     */
+    @Binds
+    @Singleton
+    fun bindCalendarStringProvider(provider: AndroidCalendarStringProvider): CalendarStringProvider
 }

@@ -8,6 +8,7 @@ import com.heckmannch.birthdaybuddy.domain.model.NotificationRule
 import com.heckmannch.birthdaybuddy.domain.permission.PermissionChecker
 import com.heckmannch.birthdaybuddy.domain.repository.ContactRepository
 import com.heckmannch.birthdaybuddy.domain.repository.NotificationRepository
+import com.heckmannch.birthdaybuddy.domain.repository.SettingsRepository
 import com.heckmannch.birthdaybuddy.ui.model.OnboardingUiState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineDispatcher
@@ -31,9 +32,10 @@ import javax.inject.Inject
  *
  * **MVI & Flow Aggregation**:
  * - **Intent Handling**: Receives unidirectional intents via [onIntent] to drive state transitions or trigger side effects.
- * - **State Aggregation**: Uses [combine] to merge [NotificationRepository.settings], internal page state, and permissions into a reactive [StateFlow] of [OnboardingUiState], scoped to [viewModelScope] with [SharingStarted.WhileSubscribed].
+ * - **State Aggregation**: Uses [combine] to merge [SettingsRepository.settings], internal page state, and permissions into a reactive [StateFlow] of [OnboardingUiState], scoped to [viewModelScope] with [SharingStarted.WhileSubscribed].
  *
- * @param notificationRepository Repository for retrieving and persisting notification settings and rules.
+ * @param notificationRepository Repository for retrieving and persisting notification rules.
+ * @param settingsRepository Repository for retrieving and persisting application settings.
  * @param contactRepository Repository for managing contacts and executing initial contact synchronization.
  * @param permissionChecker Utility for verifying Android runtime permissions.
  * @param applicationScope Application-level coroutine scope surviving ViewModel and NavEntry lifecycles.
@@ -42,6 +44,7 @@ import javax.inject.Inject
 @HiltViewModel
 class OnboardingViewModel @Inject constructor(
     private val notificationRepository: NotificationRepository,
+    private val settingsRepository: SettingsRepository,
     private val contactRepository: ContactRepository,
     private val permissionChecker: PermissionChecker,
     @ApplicationScope private val applicationScope: CoroutineScope,
@@ -57,7 +60,7 @@ class OnboardingViewModel @Inject constructor(
      * Emits updates to subscribers while the UI is active.
      */
     val uiState: StateFlow<OnboardingUiState> = combine(
-        notificationRepository.settings,
+        settingsRepository.settings,
         _currentPage,
         _permissions
     ) { settings, currentPage, permissions ->
@@ -107,12 +110,12 @@ class OnboardingViewModel @Inject constructor(
     }
 
     /**
-     * Asynchronously updates the persistent notification preference in [NotificationRepository].
+     * Asynchronously updates the persistent notification preference in [SettingsRepository].
      *
      * @param persistent `true` if a persistent notification should be displayed, `false` otherwise.
      */
     private fun setPersistentNotifications(persistent: Boolean) = viewModelScope.launch {
-        notificationRepository.updateSettings { it.copy(persistentNotifications = persistent) }
+        settingsRepository.updateSettings { it.copy(persistentNotifications = persistent) }
     }
 
     /**
@@ -152,13 +155,14 @@ class OnboardingViewModel @Inject constructor(
                 }
             }
 
-            notificationRepository.updateSettings {
+            settingsRepository.updateSettings {
                 it.copy(
                     notificationsEnabled = notificationsEnabled,
                     calendarSyncEnabled = calendarSyncEnabled,
                     onboardingCompleted = true
                 )
             }
+            notificationRepository.syncScheduling()
 
             // Trigger initial background sync of contacts
             contactRepository.syncContacts()

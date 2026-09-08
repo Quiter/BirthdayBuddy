@@ -13,6 +13,7 @@ import com.heckmannch.birthdaybuddy.R
 import com.heckmannch.birthdaybuddy.domain.model.Contact
 import com.heckmannch.birthdaybuddy.domain.model.EventType
 import com.heckmannch.birthdaybuddy.domain.repository.NotificationRepository
+import com.heckmannch.birthdaybuddy.domain.repository.SettingsRepository
 import com.heckmannch.birthdaybuddy.domain.util.NotificationKeyUtils
 import com.heckmannch.birthdaybuddy.util.IntentExtras
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -24,6 +25,7 @@ import javax.inject.Singleton
 class NotificationHelper @Inject constructor(
     @param:ApplicationContext private val context: Context,
     private val notificationRepository: NotificationRepository,
+    private val settingsRepository: SettingsRepository,
     private val notificationTextFormatter: NotificationTextFormatter
 ) {
 
@@ -42,7 +44,7 @@ class NotificationHelper @Inject constructor(
         pendingId: Int = -1,
         eventType: EventType = EventType.BIRTHDAY
     ) {
-        val settings = notificationRepository.settings.first()
+        val settings = settingsRepository.settings.first()
         val isPersistent = settings.persistentNotifications
 
         // Wisch-Zähler prüfen für Hilfetext

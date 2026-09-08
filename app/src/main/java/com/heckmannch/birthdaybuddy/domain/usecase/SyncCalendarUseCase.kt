@@ -2,7 +2,7 @@ package com.heckmannch.birthdaybuddy.domain.usecase
 
 import com.heckmannch.birthdaybuddy.domain.repository.CalendarSyncRepository
 import com.heckmannch.birthdaybuddy.domain.repository.ContactRepository
-import com.heckmannch.birthdaybuddy.domain.repository.NotificationRepository
+import com.heckmannch.birthdaybuddy.domain.repository.SettingsRepository
 import dagger.Reusable
 import kotlinx.coroutines.flow.first
 import javax.inject.Inject
@@ -15,10 +15,10 @@ import javax.inject.Inject
 class SyncCalendarUseCase @Inject constructor(
     private val contactRepository: ContactRepository,
     private val calendarSyncRepository: CalendarSyncRepository,
-    private val notificationRepository: NotificationRepository
+    private val settingsRepository: SettingsRepository
 ) {
     suspend operator fun invoke() {
-        val settings = notificationRepository.settings.first()
+        val settings = settingsRepository.settings.first()
         if (settings.calendarSyncEnabled) {
             val contacts = contactRepository.getAllContactsImmediate()
             calendarSyncRepository.syncBirthdays(contacts)

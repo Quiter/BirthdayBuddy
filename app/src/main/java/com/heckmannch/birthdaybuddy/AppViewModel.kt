@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.heckmannch.birthdaybuddy.domain.model.AppSettings
 import com.heckmannch.birthdaybuddy.domain.repository.NotificationRepository
+import com.heckmannch.birthdaybuddy.domain.repository.SettingsRepository
 import com.heckmannch.birthdaybuddy.domain.repository.WidgetUpdater
 import com.heckmannch.birthdaybuddy.ui.navigation.AppAction
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -20,7 +21,7 @@ import javax.inject.Inject
  * App-weites ViewModel, das auf Activity-Ebene gehalten wird.
  *
  * Verantwortlichkeiten:
- * - Hält den reaktiven [AppSettings]-State, der für das globale App-Theme benötigt wird.
+ * - Hält den reaktiven [AppSettings]-State (bezogen aus [SettingsRepository]), der für das globale App-Theme benötigt wird.
  * - Triggert [NotificationRepository.syncScheduling] sowie [WidgetUpdater.scheduleDailyUpdate]
  *   einmalig pro ViewModel-Lifetime (überlebt Konfigurationsänderungen wie Rotation,
  *   sodass weder ein redundanter syncScheduling- noch ein redundanter Widget-Enqueueing-Aufruf
@@ -34,6 +35,7 @@ import javax.inject.Inject
 @HiltViewModel
 class AppViewModel @Inject constructor(
     private val notificationRepository: NotificationRepository,
+    settingsRepository: SettingsRepository,
     widgetUpdater: WidgetUpdater,
 ) : ViewModel() {
 
@@ -71,7 +73,7 @@ class AppViewModel @Inject constructor(
      * Settings sofort beim App-Start verfügbar sind, ohne auf den ersten Collector
      * warten zu müssen – verhindert ein kurzes Theme-Flackern beim Kaltstart.
      */
-    val appSettings: StateFlow<AppSettings> = notificationRepository.settings
+    val appSettings: StateFlow<AppSettings> = settingsRepository.settings
         .stateIn(
             scope = viewModelScope,
             started = SharingStarted.Eagerly,
@@ -82,7 +84,7 @@ class AppViewModel @Inject constructor(
      * Exposes whether onboarding is completed for splash screen handling
      * and initial navigation key selection.
      */
-    val onboardingCompleted: StateFlow<Boolean?> = notificationRepository.settings
+    val onboardingCompleted: StateFlow<Boolean?> = settingsRepository.settings
         .map<AppSettings, Boolean?> { it.onboardingCompleted }
         .stateIn(
             scope = viewModelScope,

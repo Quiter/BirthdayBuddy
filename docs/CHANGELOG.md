@@ -741,8 +741,7 @@ ecreateContactsTableV7 (mit giftIdeas TEXT NOT NULL, COALESCE(giftIdeas, '[]')) 
 375. **Entkopplung des `PhoneNumberNormalizer` von globalem JVM-State via `DeviceRegionProvider` (Clean Architecture & Determinismus):**
     - **Problem:** In [PhoneNumberNormalizer.kt](file:///c:/Users/chris/AndroidStudioProjects/BirthdayBuddy/app/src/main/java/com/heckmannch/birthdaybuddy/domain/util/PhoneNumberNormalizer.kt) war `Locale.getDefault().country` als Default-Parameter definiert. Dieser globale JVM-Zustand verletzte die Clean-Architecture-Grenzen im Domain-Layer, brach den Determinismus und führte zu fragilen Tests je nach Ausführungsumgebung (z.B. CI vs. lokale Entwicklung).
     - **Domain-Abstraktion ([DeviceRegionProvider.kt](file:///c:/Users/chris/AndroidStudioProjects/BirthdayBuddy/app/src/main/java/com/heckmannch/birthdaybuddy/domain/util/DeviceRegionProvider.kt)):**
-      - Neues reines Kotlin-Interface im Domain-Layer (`fun getCountryIso(): String`) zur deterministischen Abfrage des Ländercodes ohne Android- oder globale JVM-Zustands-Abhängigkeiten.
-      - Bereitstellung eines Typealias in `com.heckmannch.birthdaybuddy.domain.DeviceRegionProvider`.
+      - Neues reines Kotlin-Interface im Domain-Layer (`domain.util`, `fun getCountryIso(): String`) zur deterministischen Abfrage des Ländercodes ohne Android- oder globale JVM-Zustands-Abhängigkeiten.
       - Bereinigung von `PhoneNumberNormalizer.kt`: Entfernung von `import java.util.Locale` und Streichung der Default-Parameter in `normalize` und `normalizeToDigitsOnly`.
     - **Data-Implementierung & DI ([AndroidDeviceRegionProvider.kt](file:///c:/Users/chris/AndroidStudioProjects/BirthdayBuddy/app/src/main/java/com/heckmannch/birthdaybuddy/data/util/AndroidDeviceRegionProvider.kt)):**
       - Konkrete Android-Implementierung unter `data/util/`, die `Locale.getDefault().country` kapselt.
@@ -756,4 +755,21 @@ ecreateContactsTableV7 (mit giftIdeas TEXT NOT NULL, COALESCE(giftIdeas, '[]')) 
       - [AndroidDeviceRegionProviderTest.kt](file:///c:/Users/chris/AndroidStudioProjects/BirthdayBuddy/app/src/test/java/com/heckmannch/birthdaybuddy/data/util/AndroidDeviceRegionProviderTest.kt): Neuer Unit-Test für die Android-Implementierung.
       - [ContactActionsTest.kt](file:///c:/Users/chris/AndroidStudioProjects/BirthdayBuddy/app/src/test/java/com/heckmannch/birthdaybuddy/ui/util/ContactActionsTest.kt): Neue Robolectric Unit-Tests für Intent-Erstellung mit `DeviceRegionProvider`.
       - Alle 680 Unit-Tests erfolgreich ausgeführt (`./gradlew testDebugUnitTest`).
+
+376. **Entkopplung des `CalendarSyncRepositoryImpl` von Android-Ressourcen via `CalendarStringProvider` (Clean Architecture & Testbarkeit):**
+    - **Problem:** `CalendarSyncRepositoryImpl` verwendete `context.getString(R.string.*)` direkt für Kalendertitel, Kalendernamen und Eventbeschreibungen. Dies koppelte den Data-Layer an Android-Ressourcen und verhinderte reine JVM-Unit-Tests ohne Android-Runtime/Context-Mocking.
+    - **Domain-Abstraktion ([CalendarStringProvider.kt](file:///c:/Users/chris/AndroidStudioProjects/BirthdayBuddy/app/src/main/java/com/heckmannch/birthdaybuddy/domain/util/CalendarStringProvider.kt)):**
+      - Neues Interface im Domain-Layer (`domain.util`) zur Kapselung aller kalenderbezogenen String-Ressourcen (Kalendernamen, Geburtstagstitel/-beschreibungen, Hochzeitstage, Namenstage).
+    - **Data-Implementierung & DI ([AndroidCalendarStringProvider.kt](file:///c:/Users/chris/AndroidStudioProjects/BirthdayBuddy/app/src/main/java/com/heckmannch/birthdaybuddy/data/util/AndroidCalendarStringProvider.kt)):**
+      - Konkrete Android-Implementierung unter `data/util/`, die `@ApplicationContext context: Context` injiziert und alle `R.string.*`-Ressourcen auflöst.
+      - Bereitstellung im Singleton-Scope via Hilt `@Binds` in [HelperBindingsModule.kt](file:///c:/Users/chris/AndroidStudioProjects/BirthdayBuddy/app/src/main/java/com/heckmannch/birthdaybuddy/di/HelperBindingsModule.kt).
+    - **Repository-Bereinigung ([CalendarSyncRepositoryImpl.kt](file:///c:/Users/chris/AndroidStudioProjects/BirthdayBuddy/app/src/main/java/com/heckmannch/birthdaybuddy/data/repository/CalendarSyncRepositoryImpl.kt)):**
+      - `@ApplicationContext context: Context` und alle `R.string.*`-Importe vollständig aus der Repository-Klasse und dem Konstruktor entfernt.
+      - Injektion von `CalendarStringProvider` und Ersetzung aller `context.getString(...)`-Aufrufe.
+      - Alle bestehenden KDoc- und Inline-Kommentare vollständig beibehalten.
+    - **Testing & QA:**
+      - [CalendarSyncRepositoryImplTest.kt](file:///c:/Users/chris/AndroidStudioProjects/BirthdayBuddy/app/src/test/java/com/heckmannch/birthdaybuddy/data/repository/CalendarSyncRepositoryImplTest.kt): Refactoring zur Nutzung von `CalendarStringProvider` anstelle von Android-`Context`.
+      - [CalendarSyncRepositoryTest.kt](file:///c:/Users/chris/AndroidStudioProjects/BirthdayBuddy/app/src/androidTest/java/com/heckmannch/birthdaybuddy/data/repository/CalendarSyncRepositoryTest.kt): Aktualisierung des Repository-Konstruktors im Instrumentierungstest.
+      - [AndroidCalendarStringProviderTest.kt](file:///c:/Users/chris/AndroidStudioProjects/BirthdayBuddy/app/src/test/java/com/heckmannch/birthdaybuddy/data/util/AndroidCalendarStringProviderTest.kt): Dedizierte Unit-Tests für `AndroidCalendarStringProvider`.
+      - Vollständiger Unit-Test-Durchlauf (`./gradlew testDebugUnitTest`) erfolgreich abgeschlossen.
 

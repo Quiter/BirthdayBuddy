@@ -10,6 +10,7 @@ import androidx.core.content.getSystemService
 import com.heckmannch.birthdaybuddy.di.IoDispatcher
 import com.heckmannch.birthdaybuddy.domain.model.NotificationRule
 import com.heckmannch.birthdaybuddy.domain.repository.NotificationRepository
+import com.heckmannch.birthdaybuddy.domain.repository.SettingsRepository
 import com.heckmannch.birthdaybuddy.notification.NotificationAlarmReceiver
 import com.heckmannch.birthdaybuddy.widget.WidgetUpdateAlarmReceiver
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -33,12 +34,14 @@ import javax.inject.Singleton
  *
  * @property context The application context.
  * @property notificationRepositoryProvider Lazy provider for [NotificationRepository] to prevent cyclic Hilt dependencies.
+ * @property settingsRepositoryProvider Lazy provider for [SettingsRepository] to access application settings.
  * @property ioDispatcher Injected dispatcher for background I/O operations.
  */
 @Singleton
 class AlarmScheduler @Inject constructor(
     @param:ApplicationContext private val context: Context,
     private val notificationRepositoryProvider: Provider<NotificationRepository>,
+    private val settingsRepositoryProvider: Provider<SettingsRepository>,
     @IoDispatcher private val ioDispatcher: CoroutineDispatcher,
 ) {
 
@@ -180,13 +183,13 @@ class AlarmScheduler @Inject constructor(
      */
     suspend fun rescheduleNotificationAlarm(): Unit = withContext(ioDispatcher) {
         try {
-            val repository = notificationRepositoryProvider.get()
-            val settings = repository.getSettingsImmediate()
+            val settings = settingsRepositoryProvider.get().getSettingsImmediate()
             if (!settings.notificationsEnabled) {
                 cancelNotificationAlarm()
                 return@withContext
             }
 
+            val repository = notificationRepositoryProvider.get()
             val rules = repository.getAllRulesImmediate()
             if (rules.isEmpty()) {
                 cancelNotificationAlarm()

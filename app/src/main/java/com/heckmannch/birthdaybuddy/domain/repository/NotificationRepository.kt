@@ -5,9 +5,9 @@ import com.heckmannch.birthdaybuddy.domain.model.PendingNotification
 import kotlinx.coroutines.flow.Flow
 
 /**
- * Domain repository interface for managing notifications, schedules, and app settings.
+ * Domain repository interface for managing notifications, rules, and schedules.
  */
-interface NotificationRepository : SettingsRepository {
+interface NotificationRepository {
     val allRules: Flow<List<NotificationRule>>
 
     suspend fun syncScheduling()

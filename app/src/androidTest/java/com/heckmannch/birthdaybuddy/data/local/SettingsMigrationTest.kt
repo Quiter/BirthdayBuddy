@@ -23,6 +23,39 @@ class SettingsMigrationTest {
 
     @Test
     @Throws(IOException::class)
+    fun migrate1To2() {
+        // 1. Create database in version 1
+        helper.createDatabase(testDb, 1).apply {
+            execSQL(
+                "INSERT INTO app_settings (id, notificationsEnabled, persistentNotifications, onboardingCompleted, lastSyncTimestamp) " +
+                        "VALUES (0, 1, 1, 1, 123456789)"
+            )
+            close()
+        }
+
+        // 2. Run migration to version 2 and validate
+        val migratedDb = helper.runMigrationsAndValidate(
+            testDb,
+            2,
+            true,
+            SETTINGS_MIGRATION_1_2
+        )
+
+        // 3. Verify that columns exist and defaults are applied
+        val cursor = migratedDb.query("SELECT * FROM app_settings WHERE id = 0")
+        assert(cursor.moveToFirst())
+
+        val calendarSyncEnabledIdx = cursor.getColumnIndex("calendarSyncEnabled")
+        val calendarIdIdx = cursor.getColumnIndex("calendarId")
+
+        assert(cursor.getInt(calendarSyncEnabledIdx) == 0)
+        assert(cursor.isNull(calendarIdIdx))
+
+        cursor.close()
+    }
+
+    @Test
+    @Throws(IOException::class)
     fun migrate2To3() {
         // 1. Create database in version 2
         helper.createDatabase(testDb, 2).apply {
@@ -294,14 +327,15 @@ class SettingsMigrationTest {
     @Test
     @Throws(IOException::class)
     fun migrateAll() {
-        // 1. Create database in version 2
-        helper.createDatabase(testDb, 2).close()
+        // 1. Create database in version 1
+        helper.createDatabase(testDb, 1).close()
 
         // 2. Run all migrations to version 10 and validate
         helper.runMigrationsAndValidate(
             testDb,
             10,
             true,
+            SETTINGS_MIGRATION_1_2,
             SETTINGS_MIGRATION_2_3,
             SETTINGS_MIGRATION_3_4,
             SETTINGS_MIGRATION_4_5,

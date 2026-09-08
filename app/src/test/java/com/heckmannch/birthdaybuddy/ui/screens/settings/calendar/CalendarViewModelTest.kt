@@ -4,7 +4,7 @@ import com.google.common.truth.Truth.assertThat
 import com.heckmannch.birthdaybuddy.MainDispatcherRule
 import com.heckmannch.birthdaybuddy.domain.model.AppSettings
 import com.heckmannch.birthdaybuddy.domain.repository.CalendarSyncRepository
-import com.heckmannch.birthdaybuddy.domain.repository.NotificationRepository
+import com.heckmannch.birthdaybuddy.domain.repository.SettingsRepository
 import com.heckmannch.birthdaybuddy.domain.usecase.SetCalendarSyncEnabledUseCase
 import com.heckmannch.birthdaybuddy.domain.usecase.UpdateCalendarColorUseCase
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -26,7 +26,7 @@ class CalendarViewModelTest {
     @get:Rule
     val mainDispatcherRule = MainDispatcherRule()
 
-    private val notificationRepository: NotificationRepository = mock()
+    private val settingsRepository: SettingsRepository = mock()
     private val calendarSyncRepository: CalendarSyncRepository = mock()
     private val setCalendarSyncEnabledUseCase: SetCalendarSyncEnabledUseCase = mock()
     private val updateCalendarColorUseCase: UpdateCalendarColorUseCase = mock()
@@ -35,10 +35,10 @@ class CalendarViewModelTest {
 
     @Before
     fun setup() {
-        whenever(notificationRepository.settings).thenReturn(flowOf(AppSettings()))
+        whenever(settingsRepository.settings).thenReturn(flowOf(AppSettings()))
         whenever(calendarSyncRepository.hasCalendarPermissions()).thenReturn(false)
         viewModel = CalendarViewModel(
-            notificationRepository,
+            settingsRepository,
             calendarSyncRepository,
             setCalendarSyncEnabledUseCase,
             updateCalendarColorUseCase
@@ -54,11 +54,11 @@ class CalendarViewModelTest {
             anniversaryCalendarColor = 456,
             nameDayCalendarColor = 789
         )
-        whenever(notificationRepository.settings).thenReturn(flowOf(testSettings))
+        whenever(settingsRepository.settings).thenReturn(flowOf(testSettings))
         whenever(calendarSyncRepository.hasCalendarPermissions()).thenReturn(true)
 
         val viewModel = CalendarViewModel(
-            notificationRepository,
+            settingsRepository,
             calendarSyncRepository,
             setCalendarSyncEnabledUseCase,
             updateCalendarColorUseCase
@@ -77,7 +77,7 @@ class CalendarViewModelTest {
     fun `uiState should reflect calendar permission`() = runTest {
         whenever(calendarSyncRepository.hasCalendarPermissions()).thenReturn(true)
         val viewModel = CalendarViewModel(
-            notificationRepository,
+            settingsRepository,
             calendarSyncRepository,
             setCalendarSyncEnabledUseCase,
             updateCalendarColorUseCase
@@ -92,7 +92,7 @@ class CalendarViewModelTest {
     fun `checkPermissionStatus should update uiState hasCalendarPermission`() = runTest {
         whenever(calendarSyncRepository.hasCalendarPermissions()).thenReturn(false)
         val viewModel = CalendarViewModel(
-            notificationRepository,
+            settingsRepository,
             calendarSyncRepository,
             setCalendarSyncEnabledUseCase,
             updateCalendarColorUseCase

@@ -10,6 +10,7 @@ import com.heckmannch.birthdaybuddy.domain.model.AppSettings
 import com.heckmannch.birthdaybuddy.domain.model.Contact
 import com.heckmannch.birthdaybuddy.domain.model.EventType
 import com.heckmannch.birthdaybuddy.domain.repository.NotificationRepository
+import com.heckmannch.birthdaybuddy.domain.repository.SettingsRepository
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.test.runTest
@@ -35,6 +36,7 @@ class NotificationHelperTest {
 
     private lateinit var context: Context
     private val notificationRepository: NotificationRepository = mock()
+    private val settingsRepository: SettingsRepository = mock()
     private lateinit var notificationHelper: NotificationHelper
     private lateinit var notificationManager: NotificationManager
 
@@ -54,11 +56,11 @@ class NotificationHelperTest {
         // Clear any active notifications first
         notificationManager.cancelAll()
 
-        whenever(notificationRepository.settings).doReturn(settingsFlow)
+        whenever(settingsRepository.settings).doReturn(settingsFlow)
         whenever(notificationRepository.getPendingNotificationById(any())).doReturn(null)
 
         val textFormatter = NotificationTextFormatter(context)
-        notificationHelper = NotificationHelper(context, notificationRepository, textFormatter)
+        notificationHelper = NotificationHelper(context, notificationRepository, settingsRepository, textFormatter)
     }
 
     @After

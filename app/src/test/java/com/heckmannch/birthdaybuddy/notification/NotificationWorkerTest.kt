@@ -11,6 +11,7 @@ import com.heckmannch.birthdaybuddy.domain.model.AppSettings
 import com.heckmannch.birthdaybuddy.domain.model.NotificationRule
 import com.heckmannch.birthdaybuddy.domain.repository.ContactRepository
 import com.heckmannch.birthdaybuddy.domain.repository.NotificationRepository
+import com.heckmannch.birthdaybuddy.domain.repository.SettingsRepository
 import com.heckmannch.birthdaybuddy.domain.usecase.GetPendingNotificationsUseCase
 import com.heckmannch.birthdaybuddy.util.AlarmScheduler
 import com.heckmannch.birthdaybuddy.util.Clock
@@ -37,6 +38,7 @@ class NotificationWorkerTest {
     private val workerParameters = mockk<WorkerParameters>(relaxed = true)
     private val contactRepository = mockk<ContactRepository>(relaxed = true)
     private val notificationRepository = mockk<NotificationRepository>(relaxed = true)
+    private val settingsRepository = mockk<SettingsRepository>(relaxed = true)
     private val notificationHelper = mockk<NotificationHelper>(relaxed = true)
     private val getPendingNotificationsUseCase = mockk<GetPendingNotificationsUseCase>(relaxed = true)
     private val alarmScheduler = mockk<AlarmScheduler>(relaxed = true)
@@ -158,7 +160,7 @@ class NotificationWorkerTest {
         val rules = listOf(
             NotificationRule(daysBefore = 0, hour = 9, minute = 0)
         )
-        coEvery { notificationRepository.getSettingsImmediate() } returns AppSettings(notificationsEnabled = true)
+        coEvery { settingsRepository.getSettingsImmediate() } returns AppSettings(notificationsEnabled = true)
         coEvery { notificationRepository.getAllRulesImmediate() } returns rules
         coEvery { getPendingNotificationsUseCase(any()) } returns emptyList()
 
@@ -167,6 +169,7 @@ class NotificationWorkerTest {
             workerParameters = workerParameters,
             contactRepository = contactRepository,
             notificationRepository = notificationRepository,
+            settingsRepository = settingsRepository,
             notificationHelper = notificationHelper,
             getPendingNotificationsUseCase = getPendingNotificationsUseCase,
             alarmScheduler = alarmScheduler,
@@ -183,7 +186,7 @@ class NotificationWorkerTest {
 
     @Test
     fun `doWork - notifications disabled - cancels unique work and does not schedule next`() = runTest {
-        coEvery { notificationRepository.getSettingsImmediate() } returns AppSettings(notificationsEnabled = false)
+        coEvery { settingsRepository.getSettingsImmediate() } returns AppSettings(notificationsEnabled = false)
         coEvery { getPendingNotificationsUseCase(any()) } returns emptyList()
 
         val worker = NotificationWorker(
@@ -191,6 +194,7 @@ class NotificationWorkerTest {
             workerParameters = workerParameters,
             contactRepository = contactRepository,
             notificationRepository = notificationRepository,
+            settingsRepository = settingsRepository,
             notificationHelper = notificationHelper,
             getPendingNotificationsUseCase = getPendingNotificationsUseCase,
             alarmScheduler = alarmScheduler,
@@ -219,6 +223,7 @@ class NotificationWorkerTest {
             workerParameters = workerParameters,
             contactRepository = contactRepository,
             notificationRepository = notificationRepository,
+            settingsRepository = settingsRepository,
             notificationHelper = notificationHelper,
             getPendingNotificationsUseCase = getPendingNotificationsUseCase,
             alarmScheduler = alarmScheduler,
@@ -237,7 +242,7 @@ class NotificationWorkerTest {
         val rules = listOf(
             NotificationRule(daysBefore = 0, hour = 9, minute = 0)
         )
-        coEvery { notificationRepository.getSettingsImmediate() } returns AppSettings(notificationsEnabled = true)
+        coEvery { settingsRepository.getSettingsImmediate() } returns AppSettings(notificationsEnabled = true)
         coEvery { notificationRepository.getAllRulesImmediate() } returns rules
         coEvery { contactRepository.syncContacts() } throws RuntimeException("Network/DB error during contact sync")
 
@@ -246,6 +251,7 @@ class NotificationWorkerTest {
             workerParameters = workerParameters,
             contactRepository = contactRepository,
             notificationRepository = notificationRepository,
+            settingsRepository = settingsRepository,
             notificationHelper = notificationHelper,
             getPendingNotificationsUseCase = getPendingNotificationsUseCase,
             alarmScheduler = alarmScheduler,
@@ -263,7 +269,7 @@ class NotificationWorkerTest {
         val rules = listOf(
             NotificationRule(daysBefore = 0, hour = 9, minute = 0)
         )
-        coEvery { notificationRepository.getSettingsImmediate() } returns AppSettings(notificationsEnabled = true)
+        coEvery { settingsRepository.getSettingsImmediate() } returns AppSettings(notificationsEnabled = true)
         coEvery { notificationRepository.getAllRulesImmediate() } returns rules
         coEvery { notificationRepository.deleteOldNotifications(any()) } throws RuntimeException("Database error")
 
@@ -272,6 +278,7 @@ class NotificationWorkerTest {
             workerParameters = workerParameters,
             contactRepository = contactRepository,
             notificationRepository = notificationRepository,
+            settingsRepository = settingsRepository,
             notificationHelper = notificationHelper,
             getPendingNotificationsUseCase = getPendingNotificationsUseCase,
             alarmScheduler = alarmScheduler,
@@ -289,7 +296,7 @@ class NotificationWorkerTest {
         val rules = listOf(
             NotificationRule(daysBefore = 0, hour = 9, minute = 0)
         )
-        coEvery { notificationRepository.getSettingsImmediate() } returns AppSettings(notificationsEnabled = true)
+        coEvery { settingsRepository.getSettingsImmediate() } returns AppSettings(notificationsEnabled = true)
         coEvery { notificationRepository.getAllRulesImmediate() } returns rules
         coEvery { getPendingNotificationsUseCase(any()) } throws RuntimeException("UseCase error")
 
@@ -298,6 +305,7 @@ class NotificationWorkerTest {
             workerParameters = workerParameters,
             contactRepository = contactRepository,
             notificationRepository = notificationRepository,
+            settingsRepository = settingsRepository,
             notificationHelper = notificationHelper,
             getPendingNotificationsUseCase = getPendingNotificationsUseCase,
             alarmScheduler = alarmScheduler,
@@ -313,13 +321,14 @@ class NotificationWorkerTest {
     @Test
     fun `doWork - exception and rescheduling fails - returns retry without throwing`() = runTest {
         coEvery { contactRepository.syncContacts() } throws RuntimeException("Initial failure")
-        coEvery { notificationRepository.getSettingsImmediate() } throws RuntimeException("DB offline")
+        coEvery { settingsRepository.getSettingsImmediate() } throws RuntimeException("DB offline")
 
         val worker = NotificationWorker(
             context = context,
             workerParameters = workerParameters,
             contactRepository = contactRepository,
             notificationRepository = notificationRepository,
+            settingsRepository = settingsRepository,
             notificationHelper = notificationHelper,
             getPendingNotificationsUseCase = getPendingNotificationsUseCase,
             alarmScheduler = alarmScheduler,

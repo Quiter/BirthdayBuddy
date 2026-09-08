@@ -6,7 +6,7 @@ import com.heckmannch.birthdaybuddy.domain.model.AppSettings
 import com.heckmannch.birthdaybuddy.domain.model.Contact
 import com.heckmannch.birthdaybuddy.domain.repository.CalendarSyncRepository
 import com.heckmannch.birthdaybuddy.domain.repository.ContactRepository
-import com.heckmannch.birthdaybuddy.domain.repository.NotificationRepository
+import com.heckmannch.birthdaybuddy.domain.repository.SettingsRepository
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
@@ -30,7 +30,7 @@ class SyncCalendarUseCaseTest {
 
     private val contactRepository: ContactRepository = mockk()
     private val calendarSyncRepository: CalendarSyncRepository = mockk()
-    private val notificationRepository: NotificationRepository = mockk()
+    private val settingsRepository: SettingsRepository = mockk()
 
     private lateinit var useCase: SyncCalendarUseCase
 
@@ -38,11 +38,11 @@ class SyncCalendarUseCaseTest {
 
     @Before
     fun setUp() {
-        every { notificationRepository.settings } returns settingsFlow
+        every { settingsRepository.settings } returns settingsFlow
         useCase = SyncCalendarUseCase(
             contactRepository = contactRepository,
             calendarSyncRepository = calendarSyncRepository,
-            notificationRepository = notificationRepository
+            settingsRepository = settingsRepository
         )
     }
 
@@ -106,7 +106,7 @@ class SyncCalendarUseCaseTest {
     fun `when settings flow throws exception, propagates the exception`() = runTest {
         // Arrange
         val exceptionMessage = "Failed to load settings"
-        every { notificationRepository.settings } returns flow {
+        every { settingsRepository.settings } returns flow {
             throw RuntimeException(
                 exceptionMessage
             )

@@ -9,6 +9,7 @@ import com.heckmannch.birthdaybuddy.domain.model.LabelConfig
 import com.heckmannch.birthdaybuddy.domain.model.NotificationRule
 import com.heckmannch.birthdaybuddy.domain.repository.ContactRepository
 import com.heckmannch.birthdaybuddy.domain.repository.NotificationRepository
+import com.heckmannch.birthdaybuddy.domain.repository.SettingsRepository
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.runTest
@@ -30,6 +31,7 @@ class GetPendingNotificationsUseCaseTest {
 
     private val contactRepository: ContactRepository = mock()
     private val notificationRepository: NotificationRepository = mock()
+    private val settingsRepository: SettingsRepository = mock()
 
     private lateinit var useCase: GetPendingNotificationsUseCase
 
@@ -40,14 +42,14 @@ class GetPendingNotificationsUseCaseTest {
         whenever(contactRepository.labelsEnabled).thenReturn(flowOf(false))
         whenever(contactRepository.labelConfigs).thenReturn(flowOf(emptyList()))
         whenever(notificationRepository.getScheduledContactLookupKeys(any(), any())).thenReturn(emptySet())
-        useCase = GetPendingNotificationsUseCase(contactRepository, notificationRepository)
+        useCase = GetPendingNotificationsUseCase(contactRepository, notificationRepository, settingsRepository)
     }
 
     @Test
     fun `when notifications are disabled, returns empty list`() = runTest {
         // Arrange
         val settings = AppSettings(notificationsEnabled = false)
-        whenever(notificationRepository.settings).thenReturn(flowOf(settings))
+        whenever(settingsRepository.settings).thenReturn(flowOf(settings))
 
         // Act
         val result = useCase(baseTime)
@@ -60,7 +62,7 @@ class GetPendingNotificationsUseCaseTest {
     fun `when rules are empty, returns empty list`() = runTest {
         // Arrange
         val settings = AppSettings(notificationsEnabled = true)
-        whenever(notificationRepository.settings).thenReturn(flowOf(settings))
+        whenever(settingsRepository.settings).thenReturn(flowOf(settings))
         whenever(notificationRepository.getAllRulesImmediate()).thenReturn(emptyList())
 
         // Act
@@ -76,7 +78,7 @@ class GetPendingNotificationsUseCaseTest {
         val settings = AppSettings(notificationsEnabled = true)
         val rule =
             NotificationRule(daysBefore = 0, hour = 10, minute = 0) // 10:00 (base is 9:00)
-        whenever(notificationRepository.settings).thenReturn(flowOf(settings))
+        whenever(settingsRepository.settings).thenReturn(flowOf(settings))
         whenever(notificationRepository.getAllRulesImmediate()).thenReturn(listOf(rule))
 
         // Act
@@ -101,9 +103,9 @@ class GetPendingNotificationsUseCaseTest {
                     birthday = LocalDate.of(1990, 6, 20) // Different date
                 )
             )
-            whenever(notificationRepository.settings).thenReturn(flowOf(settings))
+            whenever(settingsRepository.settings).thenReturn(flowOf(settings))
             whenever(notificationRepository.getAllRulesImmediate()).thenReturn(listOf(rule))
-            whenever(contactRepository.allContacts).thenReturn(flowOf(contacts))
+            whenever(contactRepository.getAllContactsImmediate()).thenReturn(contacts)
 
             // Act
             val result = useCase(baseTime)
@@ -129,9 +131,9 @@ class GetPendingNotificationsUseCaseTest {
                 birthday = LocalDate.of(1990, 5, 16) // May 16 (tomorrow)
             )
         )
-        whenever(notificationRepository.settings).thenReturn(flowOf(settings))
+        whenever(settingsRepository.settings).thenReturn(flowOf(settings))
         whenever(notificationRepository.getAllRulesImmediate()).thenReturn(listOf(rule))
-        whenever(contactRepository.allContacts).thenReturn(flowOf(contacts))
+        whenever(contactRepository.getAllContactsImmediate()).thenReturn(contacts)
 
         // Act
         val result = useCase(baseTime)
@@ -158,9 +160,9 @@ class GetPendingNotificationsUseCaseTest {
                 birthday = LocalDate.of(1990, 5, 16)
             )
         )
-        whenever(notificationRepository.settings).thenReturn(flowOf(settings))
+        whenever(settingsRepository.settings).thenReturn(flowOf(settings))
         whenever(notificationRepository.getAllRulesImmediate()).thenReturn(listOf(rule))
-        whenever(contactRepository.allContacts).thenReturn(flowOf(contacts))
+        whenever(contactRepository.getAllContactsImmediate()).thenReturn(contacts)
         whenever(notificationRepository.getScheduledContactLookupKeys(eq(2024), eq(1)))
             .thenReturn(setOf("key1"))
 
@@ -185,9 +187,9 @@ class GetPendingNotificationsUseCaseTest {
                 nameDay = LocalDate.of(2000, 5, 15)
             )
         )
-        whenever(notificationRepository.settings).thenReturn(flowOf(settings))
+        whenever(settingsRepository.settings).thenReturn(flowOf(settings))
         whenever(notificationRepository.getAllRulesImmediate()).thenReturn(listOf(rule))
-        whenever(contactRepository.allContacts).thenReturn(flowOf(contacts))
+        whenever(contactRepository.getAllContactsImmediate()).thenReturn(contacts)
 
         // Act
         val result = useCase(baseTime)
@@ -209,9 +211,9 @@ class GetPendingNotificationsUseCaseTest {
                 nameDay = LocalDate.of(2000, 5, 15)
             )
         )
-        whenever(notificationRepository.settings).thenReturn(flowOf(settings))
+        whenever(settingsRepository.settings).thenReturn(flowOf(settings))
         whenever(notificationRepository.getAllRulesImmediate()).thenReturn(listOf(rule))
-        whenever(contactRepository.allContacts).thenReturn(flowOf(contacts))
+        whenever(contactRepository.getAllContactsImmediate()).thenReturn(contacts)
 
         // Act
         val result = useCase(baseTime)
@@ -245,9 +247,9 @@ class GetPendingNotificationsUseCaseTest {
                     spouseLookupKey = "key1"
                 )
             )
-            whenever(notificationRepository.settings).thenReturn(flowOf(settings))
+            whenever(settingsRepository.settings).thenReturn(flowOf(settings))
             whenever(notificationRepository.getAllRulesImmediate()).thenReturn(listOf(rule))
-            whenever(contactRepository.allContacts).thenReturn(flowOf(contacts))
+            whenever(contactRepository.getAllContactsImmediate()).thenReturn(contacts)
 
             // Act
             val result = useCase(baseTime)
@@ -282,9 +284,9 @@ class GetPendingNotificationsUseCaseTest {
                     spouseLookupKey = "key1"
                 )
             )
-            whenever(notificationRepository.settings).thenReturn(flowOf(settings))
+            whenever(settingsRepository.settings).thenReturn(flowOf(settings))
             whenever(notificationRepository.getAllRulesImmediate()).thenReturn(listOf(rule))
-            whenever(contactRepository.allContacts).thenReturn(flowOf(contacts))
+            whenever(contactRepository.getAllContactsImmediate()).thenReturn(contacts)
             // Simulate that one of the spouses' anniversaries was already scheduled
             whenever(notificationRepository.getScheduledContactLookupKeys(eq(2024), eq(0)))
                 .thenReturn(setOf("anniversary:key1"))
@@ -312,9 +314,9 @@ class GetPendingNotificationsUseCaseTest {
             LabelConfig(name = "Work", notificationsEnabled = false)
         )
 
-        whenever(notificationRepository.settings).thenReturn(flowOf(settings))
+        whenever(settingsRepository.settings).thenReturn(flowOf(settings))
         whenever(notificationRepository.getAllRulesImmediate()).thenReturn(listOf(rule))
-        whenever(contactRepository.allContacts).thenReturn(flowOf(listOf(contactWithDisabledLabel)))
+        whenever(contactRepository.getAllContactsImmediate()).thenReturn(listOf(contactWithDisabledLabel))
         whenever(contactRepository.labelsEnabled).thenReturn(flowOf(true))
         whenever(contactRepository.labelConfigs).thenReturn(flowOf(labelConfigs))
 
@@ -339,9 +341,9 @@ class GetPendingNotificationsUseCaseTest {
                 birthday = LocalDate.of(2000, 2, 29)
             )
 
-            whenever(notificationRepository.settings).thenReturn(flowOf(settings))
+            whenever(settingsRepository.settings).thenReturn(flowOf(settings))
             whenever(notificationRepository.getAllRulesImmediate()).thenReturn(listOf(rule))
-            whenever(contactRepository.allContacts).thenReturn(flowOf(listOf(leapDayContact)))
+            whenever(contactRepository.getAllContactsImmediate()).thenReturn(listOf(leapDayContact))
 
             // Act
             val result = useCase(leapYearTime)
@@ -368,9 +370,9 @@ class GetPendingNotificationsUseCaseTest {
                 birthday = LocalDate.of(2000, 2, 29)
             )
 
-            whenever(notificationRepository.settings).thenReturn(flowOf(settings))
+            whenever(settingsRepository.settings).thenReturn(flowOf(settings))
             whenever(notificationRepository.getAllRulesImmediate()).thenReturn(listOf(rule))
-            whenever(contactRepository.allContacts).thenReturn(flowOf(listOf(leapDayContact)))
+            whenever(contactRepository.getAllContactsImmediate()).thenReturn(listOf(leapDayContact))
 
             // Act
             val result = useCase(leapYearEve)
@@ -393,9 +395,9 @@ class GetPendingNotificationsUseCaseTest {
                 birthday = LocalDate.of(2000, 2, 29)
             )
 
-            whenever(notificationRepository.settings).thenReturn(flowOf(settings))
+            whenever(settingsRepository.settings).thenReturn(flowOf(settings))
             whenever(notificationRepository.getAllRulesImmediate()).thenReturn(listOf(rule))
-            whenever(contactRepository.allContacts).thenReturn(flowOf(listOf(leapDayContact)))
+            whenever(contactRepository.getAllContactsImmediate()).thenReturn(listOf(leapDayContact))
 
             // Act
             val result = useCase(leapYearEve)
@@ -422,9 +424,9 @@ class GetPendingNotificationsUseCaseTest {
                 birthday = LocalDate.of(2000, 2, 29)
             )
 
-            whenever(notificationRepository.settings).thenReturn(flowOf(settings))
+            whenever(settingsRepository.settings).thenReturn(flowOf(settings))
             whenever(notificationRepository.getAllRulesImmediate()).thenReturn(listOf(rule))
-            whenever(contactRepository.allContacts).thenReturn(flowOf(listOf(leapDayContact)))
+            whenever(contactRepository.getAllContactsImmediate()).thenReturn(listOf(leapDayContact))
 
             // Act
             val result = useCase(nonLeapYearDate)
@@ -451,9 +453,9 @@ class GetPendingNotificationsUseCaseTest {
                 birthday = LocalDate.of(2000, 2, 29)
             )
 
-            whenever(notificationRepository.settings).thenReturn(flowOf(settings))
+            whenever(settingsRepository.settings).thenReturn(flowOf(settings))
             whenever(notificationRepository.getAllRulesImmediate()).thenReturn(listOf(rule))
-            whenever(contactRepository.allContacts).thenReturn(flowOf(listOf(leapDayContact)))
+            whenever(contactRepository.getAllContactsImmediate()).thenReturn(listOf(leapDayContact))
 
             // Act
             val result = useCase(nonLeapYearEve)
@@ -480,9 +482,9 @@ class GetPendingNotificationsUseCaseTest {
                 birthday = LocalDate.of(2000, 2, 29)
             )
 
-            whenever(notificationRepository.settings).thenReturn(flowOf(settings))
+            whenever(settingsRepository.settings).thenReturn(flowOf(settings))
             whenever(notificationRepository.getAllRulesImmediate()).thenReturn(listOf(rule))
-            whenever(contactRepository.allContacts).thenReturn(flowOf(listOf(leapDayContact)))
+            whenever(contactRepository.getAllContactsImmediate()).thenReturn(listOf(leapDayContact))
 
             // Act
             val result = useCase(nonLeapYearEve)
@@ -506,9 +508,9 @@ class GetPendingNotificationsUseCaseTest {
                 nameDay = LocalDate.of(2004, 2, 29)
             )
 
-            whenever(notificationRepository.settings).thenReturn(flowOf(settings))
+            whenever(settingsRepository.settings).thenReturn(flowOf(settings))
             whenever(notificationRepository.getAllRulesImmediate()).thenReturn(listOf(rule))
-            whenever(contactRepository.allContacts).thenReturn(flowOf(listOf(leapDayContact)))
+            whenever(contactRepository.getAllContactsImmediate()).thenReturn(listOf(leapDayContact))
 
             // Act
             val result = useCase(nonLeapYearDate)
@@ -538,9 +540,9 @@ class GetPendingNotificationsUseCaseTest {
                 birthday = LocalDate.of(1990, 5, 15)
             )
 
-            whenever(notificationRepository.settings).thenReturn(flowOf(settings))
+            whenever(settingsRepository.settings).thenReturn(flowOf(settings))
             whenever(notificationRepository.getAllRulesImmediate()).thenReturn(listOf(rule))
-            whenever(contactRepository.allContacts).thenReturn(flowOf(listOf(contact)))
+            whenever(contactRepository.getAllContactsImmediate()).thenReturn(listOf(contact))
 
             // Act
             val result = useCase(delayedTime)
@@ -568,9 +570,9 @@ class GetPendingNotificationsUseCaseTest {
                 birthday = LocalDate.of(1990, 5, 15)
             )
 
-            whenever(notificationRepository.settings).thenReturn(flowOf(settings))
+            whenever(settingsRepository.settings).thenReturn(flowOf(settings))
             whenever(notificationRepository.getAllRulesImmediate()).thenReturn(listOf(rule))
-            whenever(contactRepository.allContacts).thenReturn(flowOf(listOf(contact)))
+            whenever(contactRepository.getAllContactsImmediate()).thenReturn(listOf(contact))
 
             // Act
             val result = useCase(delayedTime)
@@ -597,9 +599,9 @@ class GetPendingNotificationsUseCaseTest {
                 birthday = LocalDate.of(1990, 5, 15)
             )
 
-            whenever(notificationRepository.settings).thenReturn(flowOf(settings))
+            whenever(settingsRepository.settings).thenReturn(flowOf(settings))
             whenever(notificationRepository.getAllRulesImmediate()).thenReturn(listOf(rule))
-            whenever(contactRepository.allContacts).thenReturn(flowOf(listOf(contact)))
+            whenever(contactRepository.getAllContactsImmediate()).thenReturn(listOf(contact))
             whenever(notificationRepository.getScheduledContactLookupKeys(eq(2024), eq(0)))
                 .thenReturn(setOf("key1"))
 
@@ -631,19 +633,17 @@ class GetPendingNotificationsUseCaseTest {
                 birthday = LocalDate.of(1990, 5, 16)
             )
 
-            whenever(notificationRepository.settings).thenReturn(flowOf(settings))
+            whenever(settingsRepository.settings).thenReturn(flowOf(settings))
             whenever(notificationRepository.getAllRulesImmediate()).thenReturn(
                 listOf(
                     ruleMorning,
                     ruleEvening
                 )
             )
-            whenever(contactRepository.allContacts).thenReturn(
-                flowOf(
-                    listOf(
-                        contactToday,
-                        contactTomorrow
-                    )
+            whenever(contactRepository.getAllContactsImmediate()).thenReturn(
+                listOf(
+                    contactToday,
+                    contactTomorrow
                 )
             )
 
@@ -676,9 +676,9 @@ class GetPendingNotificationsUseCaseTest {
             LabelConfig(name = "Ex-Colleagues", isIgnored = true, notificationsEnabled = true)
         )
 
-        whenever(notificationRepository.settings).thenReturn(flowOf(settings))
+        whenever(settingsRepository.settings).thenReturn(flowOf(settings))
         whenever(notificationRepository.getAllRulesImmediate()).thenReturn(listOf(rule))
-        whenever(contactRepository.allContacts).thenReturn(flowOf(listOf(contact)))
+        whenever(contactRepository.getAllContactsImmediate()).thenReturn(listOf(contact))
         whenever(contactRepository.labelsEnabled).thenReturn(flowOf(true))
         whenever(contactRepository.labelConfigs).thenReturn(flowOf(labelConfigs))
 
@@ -706,9 +706,9 @@ class GetPendingNotificationsUseCaseTest {
             LabelConfig(name = "Work", isIgnored = false, notificationsEnabled = false)
         )
 
-        whenever(notificationRepository.settings).thenReturn(flowOf(settings))
+        whenever(settingsRepository.settings).thenReturn(flowOf(settings))
         whenever(notificationRepository.getAllRulesImmediate()).thenReturn(listOf(rule))
-        whenever(contactRepository.allContacts).thenReturn(flowOf(listOf(contact)))
+        whenever(contactRepository.getAllContactsImmediate()).thenReturn(listOf(contact))
         whenever(contactRepository.labelsEnabled).thenReturn(flowOf(true))
         whenever(contactRepository.labelConfigs).thenReturn(flowOf(labelConfigs))
 
@@ -739,9 +739,9 @@ class GetPendingNotificationsUseCaseTest {
             LabelConfig(name = "Gym", isIgnored = false, notificationsEnabled = false)
         )
 
-        whenever(notificationRepository.settings).thenReturn(flowOf(settings))
+        whenever(settingsRepository.settings).thenReturn(flowOf(settings))
         whenever(notificationRepository.getAllRulesImmediate()).thenReturn(listOf(rule))
-        whenever(contactRepository.allContacts).thenReturn(flowOf(listOf(contact)))
+        whenever(contactRepository.getAllContactsImmediate()).thenReturn(listOf(contact))
         whenever(contactRepository.labelsEnabled).thenReturn(flowOf(true))
         whenever(contactRepository.labelConfigs).thenReturn(flowOf(labelConfigs))
 
@@ -766,9 +766,9 @@ class GetPendingNotificationsUseCaseTest {
             )
         }
 
-        whenever(notificationRepository.settings).thenReturn(flowOf(settings))
+        whenever(settingsRepository.settings).thenReturn(flowOf(settings))
         whenever(notificationRepository.getAllRulesImmediate()).thenReturn(listOf(rule))
-        whenever(contactRepository.allContacts).thenReturn(flowOf(contacts))
+        whenever(contactRepository.getAllContactsImmediate()).thenReturn(contacts)
         whenever(notificationRepository.getScheduledContactLookupKeys(eq(2024), eq(0)))
             .thenReturn(setOf("key2", "key4"))
 
@@ -794,9 +794,9 @@ class GetPendingNotificationsUseCaseTest {
             birthday = LocalDate.of(1990, 5, 15)
         )
 
-        whenever(notificationRepository.settings).thenReturn(flowOf(settings))
+        whenever(settingsRepository.settings).thenReturn(flowOf(settings))
         whenever(notificationRepository.getAllRulesImmediate()).thenReturn(listOf(ruleMorning, ruleEvening))
-        whenever(contactRepository.allContacts).thenReturn(flowOf(listOf(contact)))
+        whenever(contactRepository.getAllContactsImmediate()).thenReturn(listOf(contact))
 
         // Act
         val result = useCase(baseTime) // 09:00, so both rules are due

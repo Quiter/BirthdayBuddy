@@ -1,18 +1,16 @@
 package com.heckmannch.birthdaybuddy.data.repository
 
 import android.content.ContentProviderOperation
-import android.content.Context
 import android.provider.CalendarContract
 import android.util.Log
-import com.heckmannch.birthdaybuddy.R
 import com.heckmannch.birthdaybuddy.data.local.AppSettingsDao
 import com.heckmannch.birthdaybuddy.data.local.AppSettingsEntity
 import com.heckmannch.birthdaybuddy.di.IoDispatcher
 import com.heckmannch.birthdaybuddy.domain.model.Contact
 import com.heckmannch.birthdaybuddy.domain.repository.CalendarSyncRepository
+import com.heckmannch.birthdaybuddy.domain.util.CalendarStringProvider
 import com.heckmannch.birthdaybuddy.util.hasYear
 import com.heckmannch.birthdaybuddy.util.mergeNames
-import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.withContext
@@ -26,19 +24,19 @@ import javax.inject.Inject
  *
  * It uses content providers to manage custom application-specific calendars ("BirthdayBuddy")
  * and schedules recurring sync operations. Design decisions include offloading the heavy ContentProvider
- * batch operations to [Dispatchers.IO] to keep UI threads responsive.
+ * batch operations to [kotlinx.coroutines.Dispatchers.IO] to keep UI threads responsive.
  */
 class CalendarSyncRepositoryImpl @Inject constructor(
-    @param:ApplicationContext private val context: Context,
     private val appSettingsDao: AppSettingsDao,
     private val systemCalendarDataSource: SystemCalendarDataSource,
+    private val calendarStringProvider: CalendarStringProvider,
     @IoDispatcher private val ioDispatcher: CoroutineDispatcher,
 ) : CalendarSyncRepository {
 
-    private enum class LocalCalendarType(val calendarName: String, val displayNameRes: Int) {
-        BIRTHDAY("BirthdayBuddy_Birthdays", R.string.calendar_name_birthdays),
-        ANNIVERSARY("BirthdayBuddy_Anniversaries", R.string.calendar_name_anniversaries),
-        NAMEDAY("BirthdayBuddy_NameDays", R.string.calendar_name_namedays);
+    private enum class LocalCalendarType(val calendarName: String) {
+        BIRTHDAY("BirthdayBuddy_Birthdays"),
+        ANNIVERSARY("BirthdayBuddy_Anniversaries"),
+        NAMEDAY("BirthdayBuddy_NameDays");
 
         companion object {
             fun fromDomain(type: CalendarSyncRepository.CalendarType): LocalCalendarType =
@@ -62,9 +60,14 @@ class CalendarSyncRepositoryImpl @Inject constructor(
                 LocalCalendarType.ANNIVERSARY -> currentSettings.anniversaryCalendarColor
                 LocalCalendarType.NAMEDAY -> currentSettings.nameDayCalendarColor
             }
+            val displayName = when (type) {
+                LocalCalendarType.BIRTHDAY -> calendarStringProvider.calendarNameBirthdays()
+                LocalCalendarType.ANNIVERSARY -> calendarStringProvider.calendarNameAnniversaries()
+                LocalCalendarType.NAMEDAY -> calendarStringProvider.calendarNameNameDays()
+            }
             systemCalendarDataSource.getOrCreateCalendar(
                 type.calendarName,
-                context.getString(type.displayNameRes),
+                displayName,
                 preferredColor
             )
         }
@@ -127,12 +130,9 @@ class CalendarSyncRepositoryImpl @Inject constructor(
 
     private fun formatAnniversaryDescription(anniversary: LocalDate): String {
         return if (anniversary.hasYear) {
-            context.getString(
-                R.string.calendar_event_anniversary_year,
-                anniversary.year
-            )
+            calendarStringProvider.calendarEventAnniversaryYear(anniversary.year)
         } else {
-            context.getString(R.string.calendar_event_anniversary_no_year)
+            calendarStringProvider.calendarEventAnniversaryNoYear()
         }
     }
 
@@ -283,11 +283,11 @@ class CalendarSyncRepositoryImpl @Inject constructor(
                     // 1. Insert birthdays into the birthday calendar
                     contact.birthday?.let { birthday ->
                         val title =
-                            context.getString(R.string.calendar_event_title, contact.fullName)
+                            calendarStringProvider.calendarEventTitle(contact.fullName)
                         val description = if (birthday.hasYear) {
-                            context.getString(R.string.calendar_event_birth_year, birthday.year)
+                            calendarStringProvider.calendarEventBirthYear(birthday.year)
                         } else {
-                            context.getString(R.string.calendar_event_no_year)
+                            calendarStringProvider.calendarEventNoYear()
                         }
                         addEvent(birthdayCalId, birthday, title, description)
                     }
@@ -306,16 +306,14 @@ class CalendarSyncRepositoryImpl @Inject constructor(
                                             contact.fullName,
                                             spouse.fullName
                                         )
-                                        val title = context.getString(
-                                            R.string.calendar_event_anniversary_title_couple,
+                                        val title = calendarStringProvider.calendarEventAnniversaryTitleCouple(
                                             mergedName
                                         )
                                         addEvent(anniversaryCalId, anniversary, title, description)
                                         processedAnniversaries.add(contact.lookupKey)
                                         processedAnniversaries.add(spouse.lookupKey)
                                     } else {
-                                        val title = context.getString(
-                                            R.string.calendar_event_anniversary_title,
+                                        val title = calendarStringProvider.calendarEventAnniversaryTitle(
                                             contact.fullName
                                         )
                                         addEvent(anniversaryCalId, anniversary, title, description)
@@ -323,8 +321,7 @@ class CalendarSyncRepositoryImpl @Inject constructor(
                                     }
                                 }
                             } else {
-                                val title = context.getString(
-                                    R.string.calendar_event_anniversary_title,
+                                val title = calendarStringProvider.calendarEventAnniversaryTitle(
                                     contact.fullName
                                 )
                                 addEvent(anniversaryCalId, anniversary, title, description)
@@ -335,12 +332,10 @@ class CalendarSyncRepositoryImpl @Inject constructor(
                     // 3. Insert name days into the name day calendar (if enabled)
                     if (otherEventsEnabled && nameDayCalId != null) {
                         contact.nameDay?.let { nameDay ->
-                            val title = context.getString(
-                                R.string.calendar_event_nameday_title,
+                            val title = calendarStringProvider.calendarEventNameDayTitle(
                                 contact.fullName
                             )
-                            val description = context.getString(
-                                R.string.calendar_event_nameday_description,
+                            val description = calendarStringProvider.calendarEventNameDayDescription(
                                 contact.fullName
                             )
                             addEvent(nameDayCalId, nameDay, title, description)
