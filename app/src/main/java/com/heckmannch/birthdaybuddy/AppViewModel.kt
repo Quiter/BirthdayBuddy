@@ -105,12 +105,12 @@ class AppViewModel @Inject constructor(
                 // Safeguard: Scheduler-Fehler dürfen den App-Start nicht blockieren.
                 Log.w(TAG, "Fehler bei der Synchronisierung der Benachrichtigungsplanung beim App-Start", e)
             }
-        }
-        try {
-            widgetUpdater.scheduleDailyUpdate()
-        } catch (e: Exception) {
-            // Safeguard: Fehler beim Widget-Scheduling dürfen den App-Start nicht blockieren.
-            Log.w(TAG, "Fehler beim Planen der täglichen Widget-Aktualisierung beim App-Start", e)
+            try {
+                widgetUpdater.scheduleDailyUpdate()
+            } catch (e: Exception) {
+                // Safeguard: Fehler beim Widget-Scheduling dürfen den App-Start nicht blockieren.
+                Log.w(TAG, "Fehler beim Planen der täglichen Widget-Aktualisierung beim App-Start", e)
+            }
         }
     }
 
