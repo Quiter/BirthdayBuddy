@@ -3,6 +3,7 @@ package com.heckmannch.birthdaybuddy.ui.screens.home.components.actions
 import android.content.Context
 import android.content.pm.PackageManager
 import android.os.Build
+import android.util.Log
 import androidx.compose.ui.graphics.Color
 import com.heckmannch.birthdaybuddy.R
 
@@ -74,6 +75,8 @@ enum class MessengerApp(
     );
 
     companion object {
+        private const val TAG = "MessengerApp"
+
         @Volatile
         private var cachedInstalled: List<MessengerApp>? = null
 
@@ -130,7 +133,8 @@ enum class MessengerApp(
                 true
             } catch (_: PackageManager.NameNotFoundException) {
                 false
-            } catch (_: Exception) {
+            } catch (e: Exception) {
+                Log.w(TAG, "Unerwarteter Fehler beim Prüfen der Installation von Paket: $packageName", e)
                 false
             }
         }

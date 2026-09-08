@@ -119,7 +119,8 @@ private fun openDefaultCalendarApp(context: Context) {
             addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
         }
         context.startActivity(intent)
-    } catch (_: Exception) {
+    } catch (e: Exception) {
+        Log.w(TAG, "Standard-Kalenderansicht konnte nicht geöffnet werden, versuche Fallback-Kategorie", e)
         try {
             val intent = Intent(Intent.ACTION_MAIN).apply {
                 addCategory(Intent.CATEGORY_APP_CALENDAR)
@@ -127,10 +128,12 @@ private fun openDefaultCalendarApp(context: Context) {
             }
             context.startActivity(intent)
         } catch (e2: Exception) {
-            Log.e("CalendarSyncRepo", "Could not open calendar app", e2)
+            Log.e(TAG, "Could not open calendar app", e2)
         }
     }
 }
+
+private const val TAG = "CalendarGuidePage"
 
 @Preview(showSystemUi = true)
 @Composable

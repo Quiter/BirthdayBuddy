@@ -1,5 +1,6 @@
 package com.heckmannch.birthdaybuddy.data.local
 
+import android.util.Log
 import androidx.room.TypeConverter
 import com.heckmannch.birthdaybuddy.domain.model.ThemeMode
 import com.heckmannch.birthdaybuddy.util.JsonUtils
@@ -11,6 +12,7 @@ import java.time.LocalDate
  */
 class Converters {
     companion object {
+        private const val TAG = "Converters"
         private val json = JsonUtils.defaultJson
     }
 
@@ -40,7 +42,8 @@ class Converters {
     fun fromString(value: String?): LocalDate? = value?.let {
         try {
             LocalDate.parse(it)
-        } catch (_: Exception) {
+        } catch (e: Exception) {
+            Log.w(TAG, "Fehler beim Parsen des Datums: $it", e)
             null
         }
     }
@@ -68,7 +71,8 @@ class Converters {
         if (data.isNullOrBlank()) return emptyList()
         return try {
             json.decodeFromString<List<String>>(data)
-        } catch (_: Exception) {
+        } catch (e: Exception) {
+            Log.w(TAG, "Fehler beim Deserialisieren der String-Liste als JSON, nutze Pipe-Fallback", e)
             // Fallback for legacy data (pipe-separated)
             data.split("|").filter { it.isNotBlank() }
         }

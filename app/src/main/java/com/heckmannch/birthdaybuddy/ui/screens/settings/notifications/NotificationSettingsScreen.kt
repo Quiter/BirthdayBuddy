@@ -6,6 +6,7 @@ import android.content.Intent
 import android.net.Uri
 import android.os.Build
 import android.provider.Settings
+import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.VisibleForTesting
@@ -66,6 +67,8 @@ import com.heckmannch.birthdaybuddy.ui.theme.IconSizeExtraLarge
 import com.heckmannch.birthdaybuddy.ui.theme.SpacingExtraLarge
 import com.heckmannch.birthdaybuddy.ui.theme.SpacingLarge
 import com.heckmannch.birthdaybuddy.ui.theme.SpacingNormal
+
+private const val TAG = "NotificationSettingsScreen"
 
 @Composable
 fun NotificationSettingsScreen(
@@ -151,7 +154,8 @@ fun NotificationSettingsScreen(
                             data = Uri.fromParts("package", context.packageName, null)
                         }
                         context.startActivity(intent)
-                    } catch (_: Exception) {
+                    } catch (e: Exception) {
+                        Log.w(TAG, "App-Details-Einstellungen konnten nicht geöffnet werden", e)
                     }
                 }
             }

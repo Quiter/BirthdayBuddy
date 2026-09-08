@@ -1,6 +1,7 @@
 package com.heckmannch.birthdaybuddy.ui.screens.settings.about
 
 import android.content.res.Resources
+import android.util.Log
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -194,6 +195,8 @@ private fun AnnotatedString.Builder.appendBoldText(text: String) {
     }
 }
 
+private const val TAG = "PrivacyPolicyScreen"
+
 /**
  * Liest den Inhalt der Datenschutzerklärung synchron aus den Raw-Ressourcen ein.
  * Gekapselt als Hilfsfunktion zur Trennung von deklarativer UI und Ressourcen-Extraktion.
@@ -203,7 +206,8 @@ internal fun loadPrivacyPolicyText(resources: Resources, errorMessage: String): 
         resources.openRawResource(R.raw.privacy_policy).bufferedReader().use {
             it.readText()
         }
-    } catch (_: Exception) {
+    } catch (e: Exception) {
+        Log.w(TAG, "Fehler beim Laden der Datenschutzerklärung aus raw-Ressourcen", e)
         errorMessage
     }
 }

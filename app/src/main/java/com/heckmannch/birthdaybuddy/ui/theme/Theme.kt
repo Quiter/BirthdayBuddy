@@ -3,6 +3,7 @@ package com.heckmannch.birthdaybuddy.ui.theme
 import android.app.Activity
 import android.content.ContextWrapper
 import android.os.Build
+import android.util.Log
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.ColorScheme
 import androidx.compose.material3.MaterialTheme
@@ -92,6 +93,8 @@ private fun createHctColorScheme(seedColor: Color, isDark: Boolean): ColorScheme
     )
 }
 
+private const val TAG = "Theme"
+
 private fun getCustomColorScheme(
     accent: ThemeAccent,
     customAccentColorHex: String?,
@@ -101,7 +104,8 @@ private fun getCustomColorScheme(
     val seedColor = if (accent == ThemeAccent.CUSTOM && customAccentColorHex != null) {
         try {
             Color(customAccentColorHex.toColorInt())
-        } catch (_: Exception) {
+        } catch (e: Exception) {
+            Log.w(TAG, "Fehler beim Parsen der benutzerdefinierten Akzentfarbe: $customAccentColorHex", e)
             Color(0xFF6750A4) // Fallback
         }
     } else {

@@ -32,6 +32,8 @@ class SystemContactDataSource @Inject constructor(
     )
 
     companion object {
+        private const val TAG = "SystemContactDataSource"
+
         val redundantLabels = setOf(
             "my contacts",
             "contacts",
@@ -504,7 +506,8 @@ class SystemContactDataSource @Inject constructor(
                     java.time.Instant.parse(trimmed).atZone(java.time.ZoneId.systemDefault()).toLocalDate()
                 }.getOrNull()
             }
-        } catch (_: Exception) {
+        } catch (e: Exception) {
+            Log.w(TAG, "Fehler beim Parsen der Datumszeichenkette: $dateStr", e)
             null
         }
     }

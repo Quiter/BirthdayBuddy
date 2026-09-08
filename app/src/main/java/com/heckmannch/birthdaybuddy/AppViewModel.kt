@@ -1,5 +1,6 @@
 package com.heckmannch.birthdaybuddy
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.heckmannch.birthdaybuddy.domain.model.AppSettings
@@ -97,14 +98,20 @@ class AppViewModel @Inject constructor(
         viewModelScope.launch {
             try {
                 notificationRepository.syncScheduling()
-            } catch (_: Exception) {
+            } catch (e: Exception) {
                 // Safeguard: Scheduler-Fehler dürfen den App-Start nicht blockieren.
+                Log.w(TAG, "Fehler bei der Synchronisierung der Benachrichtigungsplanung beim App-Start", e)
             }
         }
         try {
             widgetUpdater.scheduleDailyUpdate()
-        } catch (_: Exception) {
+        } catch (e: Exception) {
             // Safeguard: Fehler beim Widget-Scheduling dürfen den App-Start nicht blockieren.
+            Log.w(TAG, "Fehler beim Planen der täglichen Widget-Aktualisierung beim App-Start", e)
         }
+    }
+
+    companion object {
+        private const val TAG = "AppViewModel"
     }
 }

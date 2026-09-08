@@ -31,5 +31,6 @@ fun Context.openAppSettings() {
         }
         startActivity(intent)
     } catch (_: ActivityNotFoundException) {
+        // Expected: no handler installed for this intent
     }
 }

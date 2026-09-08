@@ -1,6 +1,7 @@
 package com.heckmannch.birthdaybuddy.ui.screens.settings.theme
 
 import android.os.Build
+import android.util.Log
 import androidx.annotation.VisibleForTesting
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.background
@@ -64,6 +65,8 @@ import com.heckmannch.birthdaybuddy.ui.theme.SelectedBorderWidthThick
 import com.heckmannch.birthdaybuddy.ui.theme.SpacingExtraSmall
 import com.heckmannch.birthdaybuddy.ui.theme.SpacingNormal
 import com.heckmannch.birthdaybuddy.ui.theme.SpacingSmall
+
+private const val TAG = "ThemeSettingsScreen"
 
 private val LIGHT_ICON_ACCENTS = setOf(
     ThemeAccent.SYSTEM,
@@ -220,7 +223,8 @@ internal fun ThemeSettingsScreenContent(
                             val customColor = if (isCustomAccent && customAccentColor != null) {
                                 try {
                                     Color(customAccentColor.toColorInt())
-                                } catch (_: Exception) {
+                                } catch (e: Exception) {
+                                    Log.w(TAG, "Fehler beim Parsen der Akzentfarbe: $customAccentColor", e)
                                     Color(0xFFE91E63)
                                 }
                             } else {
@@ -276,7 +280,8 @@ internal fun ThemeSettingsScreenContent(
                         if (customAccentColor != null && customAccentColor.startsWith("#")) {
                             try {
                                 Color(customAccentColor.toColorInt())
-                            } catch (_: Exception) {
+                            } catch (e: Exception) {
+                                Log.w(TAG, "Fehler beim Parsen des Farb-Picker Initialwerts: $customAccentColor", e)
                                 Color(0xFFE91E63)
                             }
                         } else {

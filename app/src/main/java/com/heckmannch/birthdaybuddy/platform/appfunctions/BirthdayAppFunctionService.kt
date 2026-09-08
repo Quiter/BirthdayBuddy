@@ -20,6 +20,7 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Build
+import android.util.Log
 import androidx.annotation.RequiresApi
 import androidx.annotation.VisibleForTesting
 import androidx.appfunctions.AppFunction
@@ -362,12 +363,15 @@ abstract class BirthdayAppFunctionService : AppFunctionService() {
             true
         } catch (_: PackageManager.NameNotFoundException) {
             false
-        } catch (_: Exception) {
+        } catch (e: Exception) {
+            Log.w(TAG, "Unerwarteter Fehler beim Prüfen der Paket-Installation: $packageName", e)
             false
         }
     }
 
     companion object {
+        private const val TAG = "BirthdayAppFunctionService"
+
         /**
          * Unterstützte WhatsApp-Paketnamen in Prioritätsreihenfolge:
          * Standard WhatsApp (`com.whatsapp`), gefolgt von WhatsApp Business (`com.whatsapp.w4b`).

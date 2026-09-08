@@ -65,6 +65,7 @@ class ContactActions @Inject constructor(
             val intent = Intent(Intent.ACTION_DIAL, "tel:$normalized".toUri())
             startActivitySafely(intent)
         } catch (_: ActivityNotFoundException) {
+            // Expected: no handler installed for this intent
             Log.w(TAG, "Keine passende App zum Wählen der Rufnummer gefunden.")
         } catch (e: SecurityException) {
             Log.e(TAG, "Sicherheitsfehler beim Starten des Wählvorgangs.", e)
@@ -81,6 +82,7 @@ class ContactActions @Inject constructor(
             val intent = Intent(Intent.ACTION_SENDTO, "smsto:$normalized".toUri())
             startActivitySafely(intent)
         } catch (_: ActivityNotFoundException) {
+            // Expected: no handler installed for this intent
             Log.w(TAG, "Keine passende SMS-App gefunden.")
         } catch (e: SecurityException) {
             Log.e(TAG, "Sicherheitsfehler beim Senden der SMS.", e)
@@ -146,6 +148,7 @@ class ContactActions @Inject constructor(
                 startActivitySafely(it)
             }
         } catch (_: ActivityNotFoundException) {
+            // Expected: no handler installed for this intent
             Log.w(TAG, "Messenger-App (${app.name}) konnte nicht geöffnet werden: Keine passende App installiert.")
         } catch (e: SecurityException) {
             Log.e(TAG, "Sicherheitsfehler beim Öffnen der Messenger-App (${app.name}).", e)
@@ -162,6 +165,7 @@ class ContactActions @Inject constructor(
                 startActivitySafely(Intent(Intent.ACTION_VIEW, lookupUri))
             }
         } catch (_: ActivityNotFoundException) {
+            // Expected: no handler installed for this intent
             Log.w(TAG, "Keine Kontakte-App zum Anzeigen des Kontakts gefunden.")
         } catch (e: SecurityException) {
             Log.e(TAG, "Sicherheitsfehler beim Anzeigen des Kontakts.", e)
@@ -178,6 +182,7 @@ class ContactActions @Inject constructor(
             }
             startActivitySafely(intent)
         } catch (_: ActivityNotFoundException) {
+            // Expected: no handler installed for this intent
             Log.w(TAG, "Keine passende App zum Erstellen von Kontakten gefunden.")
         } catch (e: SecurityException) {
             Log.e(TAG, "Sicherheitsfehler beim Öffnen des 'Kontakt hinzufügen'-Dialogs.", e)
@@ -194,6 +199,7 @@ class ContactActions @Inject constructor(
             }
             startActivitySafely(intent)
         } catch (_: ActivityNotFoundException) {
+            // Expected: no handler installed for this intent
             Log.w(TAG, "Keine Einstellungs-App gefunden.")
         } catch (e: SecurityException) {
             Log.e(TAG, "Sicherheitsfehler beim Öffnen der App-Einstellungen.", e)

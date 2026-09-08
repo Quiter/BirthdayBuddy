@@ -1,5 +1,6 @@
 package com.heckmannch.birthdaybuddy.ui.components
 
+import android.util.Log
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -64,6 +65,8 @@ import com.heckmannch.birthdaybuddy.ui.theme.SpacingMedium
 import com.heckmannch.birthdaybuddy.ui.theme.SpacingNormal
 import com.heckmannch.birthdaybuddy.ui.theme.SpacingSmall
 
+private const val TAG = "ColorPickerDialog"
+
 @Composable
 fun ColorPickerDialog(
     initialColor: Color,
@@ -98,7 +101,8 @@ fun ColorPickerDialog(
     val selectedColor = if (isValid) {
         try {
             Color("#$hexInput".toColorInt())
-        } catch (_: Exception) {
+        } catch (e: Exception) {
+            Log.w(TAG, "Fehler beim Parsen der Hex-Farbeingabe: #$hexInput", e)
             Color.Transparent
         }
     } else {
@@ -235,7 +239,8 @@ fun ColorPickerDialog(
                                     hue = hsv[0]
                                     saturation = hsv[1]
                                     value = hsv[2]
-                                } catch (_: Exception) {
+                                } catch (e: Exception) {
+                                    Log.w(TAG, "Fehler beim Aktualisieren der HSV-Werte für Hex-Eingabe: #$cleanInput", e)
                                 }
                             }
                         }

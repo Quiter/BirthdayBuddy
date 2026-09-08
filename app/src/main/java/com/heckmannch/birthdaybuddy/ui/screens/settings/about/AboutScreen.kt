@@ -3,6 +3,7 @@ package com.heckmannch.birthdaybuddy.ui.screens.settings.about
 import android.content.pm.PackageInfo
 import android.content.pm.PackageManager
 import android.os.Build
+import android.util.Log
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -37,6 +38,8 @@ import com.heckmannch.birthdaybuddy.ui.theme.SpacingExtraLarge
 import com.heckmannch.birthdaybuddy.ui.theme.SpacingLarge
 import com.heckmannch.birthdaybuddy.ui.theme.SpacingNormal
 
+private const val TAG = "AboutScreen"
+
 @Composable
 fun AboutScreen(
     showBackButton: Boolean = true,
@@ -57,7 +60,8 @@ fun AboutScreen(
                     context.packageManager.getPackageInfo(context.packageName, 0)
                 }
             packageInfo.versionName ?: "2.1.0"
-        } catch (_: Exception) {
+        } catch (e: Exception) {
+            Log.w(TAG, "Fehler beim Auslesen der Versionsbezeichnung via PackageManager", e)
             "2.1.0"
         }
     }

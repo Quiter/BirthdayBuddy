@@ -1,5 +1,6 @@
 package com.heckmannch.birthdaybuddy.ui.screens.onboarding
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.heckmannch.birthdaybuddy.di.ApplicationScope
@@ -166,8 +167,9 @@ class OnboardingViewModel @Inject constructor(
 
             // Trigger initial background sync of contacts
             contactRepository.syncContacts()
-        } catch (_: Exception) {
+        } catch (e: Exception) {
             // Prevent crashing on onboarding completion error
+            Log.w(TAG, "Fehler beim Abschließen des Onboardings", e)
         }
     }
 
@@ -199,6 +201,7 @@ class OnboardingViewModel @Inject constructor(
     )
 
     companion object {
+        private const val TAG = "OnboardingViewModel"
         private const val STOP_TIMEOUT_MILLIS = 5_000L
         private const val DEFAULT_RULE_DAYS_BEFORE = 0
         private const val DEFAULT_RULE_HOUR = 9

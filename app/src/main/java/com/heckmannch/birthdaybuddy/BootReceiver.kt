@@ -73,20 +73,26 @@ class BootReceiver : BroadcastReceiver() {
             try {
                 try {
                     entryPoint.notificationRepository().syncScheduling()
-                } catch (_: Exception) {
+                } catch (e: Exception) {
                     // Safeguard: Scheduler-Fehler dürfen den Boot-Prozess nicht blockieren.
+                    Log.w(TAG, "Fehler bei der Benachrichtigungsplanung nach Boot/Zeitänderung", e)
                 }
 
                 try {
                     entryPoint.widgetUpdater().updateWidget()
                     entryPoint.alarmScheduler().scheduleNextWidgetUpdateAlarm()
                     BirthdayWidgetWorker.enqueueNextUpdate(context, ExistingWorkPolicy.REPLACE)
-                } catch (_: Exception) {
+                } catch (e: Exception) {
                     // Safeguard: Fehler beim Widget-Update dürfen die Benachrichtigungsplanung und den Boot-Prozess nicht blockieren.
+                    Log.w(TAG, "Fehler beim Widget-Update nach Boot/Zeitänderung", e)
                 }
             } finally {
                 pendingResult.finish()
             }
         }
+    }
+
+    companion object {
+        private const val TAG = "BootReceiver"
     }
 }

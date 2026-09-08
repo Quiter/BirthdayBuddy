@@ -97,7 +97,8 @@ class GiftIdeaBackupManager @Inject constructor(
                         is JsonArray -> {
                             try {
                                 json.decodeFromJsonElement<List<GiftIdea>>(giftIdeasElement)
-                            } catch (_: Exception) {
+                            } catch (e: Exception) {
+                                Log.w(TAG, "Fehler beim Dekodieren der Geschenkideen aus JSON-Array", e)
                                 emptyList()
                             }
                         }
@@ -138,8 +139,12 @@ class GiftIdeaBackupManager @Inject constructor(
         } catch (e: CancellationException) {
             throw e
         } catch (e: Exception) {
-            Log.e("GiftIdeaBackupManager", "Import failed", e)
+            Log.e(TAG, "Import failed", e)
             -1
         }
+    }
+
+    companion object {
+        private const val TAG = "GiftIdeaBackupManager"
     }
 }

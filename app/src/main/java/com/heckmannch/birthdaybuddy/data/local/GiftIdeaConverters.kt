@@ -1,5 +1,6 @@
 package com.heckmannch.birthdaybuddy.data.local
 
+import android.util.Log
 import androidx.room.TypeConverter
 import com.heckmannch.birthdaybuddy.domain.model.GiftIdea
 import com.heckmannch.birthdaybuddy.util.JsonUtils
@@ -9,6 +10,7 @@ import com.heckmannch.birthdaybuddy.util.JsonUtils
  */
 class GiftIdeaConverters {
     companion object {
+        private const val TAG = "GiftIdeaConverters"
         private val json = JsonUtils.defaultJson
     }
 
@@ -30,7 +32,8 @@ class GiftIdeaConverters {
 
         return try {
             json.decodeFromString<List<GiftIdea>>(data)
-        } catch (_: Exception) {
+        } catch (e: Exception) {
+            Log.w(TAG, "Fehler beim Deserialisieren der Geschenkideen als JSON, nutze Fallback-Format", e)
             // Fallback for legacy format (separated by ';;' and '|')
             data.split(";;").mapNotNull {
                 val parts = it.split("|", limit = 3)
