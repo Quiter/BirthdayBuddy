@@ -25,6 +25,14 @@ import java.util.concurrent.TimeUnit
 /**
  * Worker to trigger updating the app widget.
  *
+ * Widget-Update-Strategie (Single-Path):
+ * - Ausführung & Retry-Mechanismus: [BirthdayWidgetWorker] wird asynchron durch [WidgetUpdateAlarmReceiver.enqueueImmediateWork]
+ *   angestoßen, sobald der exakte Mitternachts-Alarm feuert. Bei temporären Ausfällen oder Ressourcenengpässen
+ *   liefert [doWork] [Result.retry] zurück, sodass WorkManager das Update mit linearem Backoff zuverlässig wiederholt.
+ * - Deterministisches Scheduling: Das tägliche Scheduling für Mitternacht erfolgt primär über [AlarmScheduler]
+ *   mittels [android.app.AlarmManager.setExactAndAllowWhileIdle]. WorkManager wird NICHT für verzögerte 24h-Dauerläufe
+ *   genutzt, um Doze-Mode-Verzögerungen zu vermeiden.
+ *
  * @property widgetUpdater Abstraction for updating the application widget.
  * @property alarmScheduler Scheduler for setting exact alarms.
  * @property clock Abstraction for system time.
@@ -79,11 +87,19 @@ class BirthdayWidgetWorker @AssistedInject constructor(
         /**
          * Enqueues the next daily widget update worker.
          *
+         * @deprecated Abgelöst durch das deterministische AlarmManager-Scheduling via [AlarmScheduler.scheduleNextWidgetUpdateAlarm].
+         * WorkManager wird in der Single-Path-Architektur nur noch für unmittelbare Ausführung ([enqueueImmediateWork])
+         * und automatische Retries bei Fehlschlägen eingesetzt.
+         *
          * @param context Application or component context.
          * @param existingWorkPolicy Policy for handling conflicts with existing work.
          *   Defaults to [ExistingWorkPolicy.KEEP] when scheduled externally (e.g. on app launch)
          *   to preserve any already scheduled update.
          */
+        @Deprecated(
+            message = "Use AlarmScheduler.scheduleNextWidgetUpdateAlarm() for deterministic Doze-safe midnight triggers. WorkManager is only used for immediate execution and retries.",
+            replaceWith = ReplaceWith("AlarmScheduler.scheduleNextWidgetUpdateAlarm()")
+        )
         fun enqueueNextUpdate(
             context: Context,
             existingWorkPolicy: ExistingWorkPolicy = ExistingWorkPolicy.KEEP,

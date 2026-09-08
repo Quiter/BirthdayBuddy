@@ -3,17 +3,14 @@ package com.heckmannch.birthdaybuddy
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
-import androidx.work.ExistingWorkPolicy
 import com.heckmannch.birthdaybuddy.domain.repository.NotificationRepository
 import com.heckmannch.birthdaybuddy.domain.repository.WidgetUpdater
 import com.heckmannch.birthdaybuddy.util.AlarmScheduler
-import com.heckmannch.birthdaybuddy.widget.BirthdayWidgetWorker
 import dagger.hilt.android.EntryPointAccessors
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk
-import io.mockk.mockkObject
 import io.mockk.mockkStatic
 import io.mockk.spyk
 import io.mockk.unmockkAll
@@ -46,9 +43,6 @@ class BootReceiverTest {
         receiver = spyk(BootReceiver())
         every { receiver.goAsync() } returns pendingResult
         every { context.applicationContext } returns appContext
-
-        mockkObject(BirthdayWidgetWorker.Companion)
-        every { BirthdayWidgetWorker.enqueueNextUpdate(any(), any()) } returns Unit
 
         mockkStatic(EntryPointAccessors::class)
         every {
@@ -84,7 +78,6 @@ class BootReceiverTest {
         coVerify(exactly = 1) { notificationRepository.syncScheduling() }
         coVerify(exactly = 1) { widgetUpdater.updateWidget() }
         verify(exactly = 1) { alarmScheduler.scheduleNextWidgetUpdateAlarm() }
-        verify(exactly = 1) { BirthdayWidgetWorker.enqueueNextUpdate(context, ExistingWorkPolicy.REPLACE) }
         verify(exactly = 1) { pendingResult.finish() }
     }
 
@@ -97,7 +90,6 @@ class BootReceiverTest {
         coVerify(exactly = 1) { notificationRepository.syncScheduling() }
         coVerify(exactly = 1) { widgetUpdater.updateWidget() }
         verify(exactly = 1) { alarmScheduler.scheduleNextWidgetUpdateAlarm() }
-        verify(exactly = 1) { BirthdayWidgetWorker.enqueueNextUpdate(context, ExistingWorkPolicy.REPLACE) }
         verify(exactly = 1) { pendingResult.finish() }
     }
 
@@ -110,7 +102,6 @@ class BootReceiverTest {
         coVerify(exactly = 1) { notificationRepository.syncScheduling() }
         coVerify(exactly = 1) { widgetUpdater.updateWidget() }
         verify(exactly = 1) { alarmScheduler.scheduleNextWidgetUpdateAlarm() }
-        verify(exactly = 1) { BirthdayWidgetWorker.enqueueNextUpdate(context, ExistingWorkPolicy.REPLACE) }
         verify(exactly = 1) { pendingResult.finish() }
     }
 
@@ -123,7 +114,6 @@ class BootReceiverTest {
         coVerify(exactly = 1) { notificationRepository.syncScheduling() }
         coVerify(exactly = 1) { widgetUpdater.updateWidget() }
         verify(exactly = 1) { alarmScheduler.scheduleNextWidgetUpdateAlarm() }
-        verify(exactly = 1) { BirthdayWidgetWorker.enqueueNextUpdate(context, ExistingWorkPolicy.REPLACE) }
         verify(exactly = 1) { pendingResult.finish() }
     }
 
@@ -136,7 +126,6 @@ class BootReceiverTest {
         coVerify(exactly = 1) { notificationRepository.syncScheduling() }
         coVerify(exactly = 1) { widgetUpdater.updateWidget() }
         verify(exactly = 1) { alarmScheduler.scheduleNextWidgetUpdateAlarm() }
-        verify(exactly = 1) { BirthdayWidgetWorker.enqueueNextUpdate(context, ExistingWorkPolicy.REPLACE) }
         verify(exactly = 1) { pendingResult.finish() }
     }
 
@@ -149,7 +138,6 @@ class BootReceiverTest {
         coVerify(exactly = 0) { notificationRepository.syncScheduling() }
         coVerify(exactly = 0) { widgetUpdater.updateWidget() }
         verify(exactly = 0) { alarmScheduler.scheduleNextWidgetUpdateAlarm() }
-        verify(exactly = 0) { BirthdayWidgetWorker.enqueueNextUpdate(any(), any()) }
         verify(exactly = 0) { receiver.goAsync() }
     }
 
@@ -161,7 +149,7 @@ class BootReceiverTest {
 
         coVerify(exactly = 0) { notificationRepository.syncScheduling() }
         coVerify(exactly = 0) { widgetUpdater.updateWidget() }
-        verify(exactly = 0) { BirthdayWidgetWorker.enqueueNextUpdate(any(), any()) }
+        verify(exactly = 0) { alarmScheduler.scheduleNextWidgetUpdateAlarm() }
         verify(exactly = 0) { receiver.goAsync() }
     }
 
@@ -179,7 +167,7 @@ class BootReceiverTest {
 
         coVerify(exactly = 0) { notificationRepository.syncScheduling() }
         coVerify(exactly = 0) { widgetUpdater.updateWidget() }
-        verify(exactly = 0) { BirthdayWidgetWorker.enqueueNextUpdate(any(), any()) }
+        verify(exactly = 0) { alarmScheduler.scheduleNextWidgetUpdateAlarm() }
         verify(exactly = 0) { receiver.goAsync() }
     }
 
@@ -192,7 +180,7 @@ class BootReceiverTest {
 
         coVerify(exactly = 1) { notificationRepository.syncScheduling() }
         coVerify(exactly = 1) { widgetUpdater.updateWidget() }
-        verify(exactly = 1) { BirthdayWidgetWorker.enqueueNextUpdate(context, ExistingWorkPolicy.REPLACE) }
+        verify(exactly = 1) { alarmScheduler.scheduleNextWidgetUpdateAlarm() }
         verify(exactly = 1) { pendingResult.finish() }
     }
 

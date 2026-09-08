@@ -32,6 +32,13 @@ import javax.inject.Singleton
  * and gracefully falls back to [AlarmManager.setAndAllowWhileIdle] if permissions are revoked,
  * complying with Google Play policies for `SCHEDULE_EXACT_ALARM`.
  *
+ * Widget-Update-Strategie (Single-Path):
+ * - [AlarmScheduler] ist der exklusive Planer für das tägliche Mitternachts-Widget-Update (00:01 Uhr).
+ * - Beim Auslösen empfängt [com.heckmannch.birthdaybuddy.widget.WidgetUpdateAlarmReceiver] den Broadcast,
+ *   delegiert die eigentliche Aktualisierung asynchron via [com.heckmannch.birthdaybuddy.widget.BirthdayWidgetWorker.enqueueImmediateWork]
+ *   an den WorkManager (welcher bei Fehlern automatische Retries durchführt) und stößt über
+ *   [scheduleNextWidgetUpdateAlarm] unmittelbar die Planung für den Folgetag an.
+ *
  * @property context The application context.
  * @property notificationRepositoryProvider Lazy provider for [NotificationRepository] to prevent cyclic Hilt dependencies.
  * @property settingsRepositoryProvider Lazy provider for [SettingsRepository] to access application settings.

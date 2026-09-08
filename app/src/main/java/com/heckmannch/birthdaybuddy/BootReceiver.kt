@@ -4,12 +4,10 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.util.Log
-import androidx.work.ExistingWorkPolicy
 import com.heckmannch.birthdaybuddy.di.ApplicationScope
 import com.heckmannch.birthdaybuddy.domain.repository.NotificationRepository
 import com.heckmannch.birthdaybuddy.domain.repository.WidgetUpdater
 import com.heckmannch.birthdaybuddy.util.AlarmScheduler
-import com.heckmannch.birthdaybuddy.widget.BirthdayWidgetWorker
 import dagger.hilt.EntryPoint
 import dagger.hilt.InstallIn
 import dagger.hilt.android.EntryPointAccessors
@@ -24,6 +22,17 @@ import kotlinx.coroutines.launch
  * Hintergrund: OneTimeWorkRequests werden vom Android-System beim Neustart gelöscht.
  * Zudem verbleibt bei Zeitzonen- oder Uhrzeitwechseln der geplante Job auf der alten absoluten Zeit.
  * Dieser Receiver stellt sicher, dass Benachrichtigungen stets zur korrekten lokalen Uhrzeit ausgelöst werden.
+ *
+ * Widget-Update-Strategie (Single-Path):
+ * 1. Sofortiges Rendern: [WidgetUpdater.updateWidget] aktualisiert bestehende Glance-Homescreen-Widgets
+ *    unmittelbar mit dem aktuellen Datenbestand, sodass keine veralteten Zustände nach Boot/Zeitwechsel sichtbar sind.
+ * 2. Deterministisches Mitternachts-Scheduling: [AlarmScheduler.scheduleNextWidgetUpdateAlarm] setzt einen
+ *    exakten Alarm ([android.app.AlarmManager.setExactAndAllowWhileIdle]) für Mitternacht (00:01 Uhr).
+ *    Dadurch wird der Datumswechsel auch im Doze-Modus pünktlich vollzogen.
+ * 3. WorkManager-Rolle: WorkManager wird hier bewusst NICHT mit verzögerten Jobs ([androidx.work.OneTimeWorkRequest.Builder.setInitialDelay])
+ *    eingeplant, da dieser im Doze-Modus bis zu Wartungsfenstern verschoben werden kann. Stattdessen dient
+ *    WorkManager ausschließlich zur asynchronen Ausführung bei Auslösen des AlarmReceivers sowie als
+ *    Retry-Mechanismus (Backoff) bei transienten Fehlern.
  *
  * Hinweis zur Hilt-Injection:
  * Der Receiver verwendet [EntryPointAccessors] anstelle von @AndroidEntryPoint mit try-catch,
@@ -81,7 +90,6 @@ class BootReceiver : BroadcastReceiver() {
                 try {
                     entryPoint.widgetUpdater().updateWidget()
                     entryPoint.alarmScheduler().scheduleNextWidgetUpdateAlarm()
-                    BirthdayWidgetWorker.enqueueNextUpdate(context, ExistingWorkPolicy.REPLACE)
                 } catch (e: Exception) {
                     // Safeguard: Fehler beim Widget-Update dürfen die Benachrichtigungsplanung und den Boot-Prozess nicht blockieren.
                     Log.w(TAG, "Fehler beim Widget-Update nach Boot/Zeitänderung", e)

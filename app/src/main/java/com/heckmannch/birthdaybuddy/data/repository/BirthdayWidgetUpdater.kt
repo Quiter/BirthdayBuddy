@@ -10,6 +10,17 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CancellationException
 import javax.inject.Inject
 
+/**
+ * Implementation of [WidgetUpdater] that coordinates Glance widget updates and exact midnight alarms.
+ *
+ * Widget-Update-Strategie (Single-Path):
+ * - [updateWidget]: Führt eine direkte, unmittelbare Aktualisierung aller [BirthdayWidget]-Instanzen
+ *   durch ([androidx.glance.appwidget.updateAll]).
+ * - [scheduleDailyUpdate]: Beauftragt [AlarmScheduler.scheduleNextWidgetUpdateAlarm] mit dem Setzen
+ *   eines Doze-resistenten Alarms ([android.app.AlarmManager.setExactAndAllowWhileIdle]) für 00:01 Uhr.
+ * - WorkManager wird nicht zur Vorab-Planung verwendet, sondern kommt erst bei Auslösen des Alarms
+ *   als robuster Execution- und Retry-Runner zum Einsatz.
+ */
 class BirthdayWidgetUpdater @Inject constructor(
     @param:ApplicationContext private val context: Context,
     private val alarmScheduler: AlarmScheduler,

@@ -25,8 +25,11 @@ import javax.inject.Inject
  * - Hält den reaktiven [AppSettings]-State (bezogen aus [SettingsRepository]), der für das globale App-Theme benötigt wird.
  * - Triggert [NotificationRepository.syncScheduling] sowie [WidgetUpdater.scheduleDailyUpdate]
  *   einmalig pro ViewModel-Lifetime (überlebt Konfigurationsänderungen wie Rotation,
- *   sodass weder ein redundanter syncScheduling- noch ein redundanter Widget-Enqueueing-Aufruf
+ *   sodass weder ein redundanter syncScheduling- noch ein redundanter Widget-Scheduling-Aufruf
  *   bei jeder Activity-Recreation stattfindet).
+ * - Widget-Update-Strategie (Single-Path): [WidgetUpdater.scheduleDailyUpdate] delegiert an den
+ *   AlarmScheduler, um den deterministischen Mitternachts-Alarm via AlarmManager sicherzustellen.
+ *   Beim App-Start wird bewusst kein redundanter WorkManager-Job eingeplant.
  * - Verwaltet eingehende Aktionen ([pendingAction]) in einem reaktiven StateFlow für Navigation
  *   und Deep-Links (z.B. Shortcuts, Widgets, AppFunctions) ohne Vermischung mit Activity-Lifecycle
  *   oder Abhängigkeit zu Android-Framework-APIs wie [android.content.Intent].
@@ -85,7 +88,7 @@ class AppViewModel @Inject constructor(
      * Exposes whether onboarding is completed for splash screen handling
      * and initial navigation key selection.
      */
-    val onboardingCompleted: StateFlow<Boolean?> = settingsRepository.settings
+    val onboardingCompleted: StateFlow<Boolean?> = appSettings
         .map<AppSettings, Boolean?> { it.onboardingCompleted }
         .stateIn(
             scope = viewModelScope,

@@ -46,11 +46,12 @@ class BirthdayBuddyApplication : Application(), Configuration.Provider,
      * Uses compile-time constant [BuildConfig.DEBUG] instead of runtime checks, allowing R8 / ProGuard
      * to perform dead-code elimination for verbose log levels in release builds.
      */
-    override val workManagerConfiguration: Configuration
-        get() = Configuration.Builder()
+    override val workManagerConfiguration: Configuration by lazy {
+        Configuration.Builder()
             .setWorkerFactory(workerFactory)
             .setMinimumLoggingLevel(if (BuildConfig.DEBUG) Log.DEBUG else Log.ERROR)
             .build()
+    }
 
     /**
      * Configures and creates the global [ImageLoader] singleton instance used across the app.

@@ -773,3 +773,17 @@ ecreateContactsTableV7 (mit giftIdeas TEXT NOT NULL, COALESCE(giftIdeas, '[]')) 
       - [AndroidCalendarStringProviderTest.kt](file:///c:/Users/chris/AndroidStudioProjects/BirthdayBuddy/app/src/test/java/com/heckmannch/birthdaybuddy/data/util/AndroidCalendarStringProviderTest.kt): Dedizierte Unit-Tests für `AndroidCalendarStringProvider`.
       - Vollständiger Unit-Test-Durchlauf (`./gradlew testDebugUnitTest`) erfolgreich abgeschlossen.
 
+377. **Bereinigung redundanter Widget-Update-Mechanismen & Etablierung des Single-Path-Prinzips (Architecture & Performance):**
+    - **Problem:** Das Projekt verfügte über drei redundante Widget-Update-Pfade (AlarmManager für Mitternacht, WorkManager mit 24h-Verzögerung via `BirthdayWidgetWorker.enqueueNextUpdate()` und direkte Aktualisierung via `WidgetUpdater.updateWidget()`). Im [BootReceiver.kt](file:///c:/Users/chris/AndroidStudioProjects/BirthdayBuddy/app/src/main/java/com/heckmannch/birthdaybuddy/BootReceiver.kt) wurden nach System-Boot und Zeit-/Datumswechseln alle drei Pfade gleichzeitig angestoßen, wodurch redundante Hintergrundjobs und unpräzise Ausführungen durch Doze-Mode-Verschiebungen bei WorkManager-Delays entstanden.
+    - **Single-Path Architektur:**
+      - **Deterministisches Scheduling:** Exklusiv über [AlarmManager](file:///c:/Users/chris/AndroidStudioProjects/BirthdayBuddy/app/src/main/java/com/heckmannch/birthdaybuddy/util/AlarmScheduler.kt) via `setExactAndAllowWhileIdle` für Mitternacht (00:01 Uhr). Löst bei Alarm [WidgetUpdateAlarmReceiver](file:///c:/Users/chris/AndroidStudioProjects/BirthdayBuddy/app/src/main/java/com/heckmannch/birthdaybuddy/widget/WidgetUpdateAlarmReceiver.kt) aus.
+      - **WorkManager als Execution & Retry-Runner:** [BirthdayWidgetWorker](file:///c:/Users/chris/AndroidStudioProjects/BirthdayBuddy/app/src/main/java/com/heckmannch/birthdaybuddy/widget/BirthdayWidgetWorker.kt) wird asynchron durch den AlarmReceiver via `enqueueImmediateWork()` aufgerufen und dient primär der Entkopplung vom Broadcast-Thread sowie als Ausfallsicherung (Retries mit linearem Backoff via `Result.retry()`).
+      - **Direktes Rendern:** Sofortige Updates via [WidgetUpdater.updateWidget()](file:///c:/Users/chris/AndroidStudioProjects/BirthdayBuddy/app/src/main/java/com/heckmannch/birthdaybuddy/domain/repository/WidgetUpdater.kt) bei Boot/Zeitänderung und Datenmutationen.
+    - **Code-Bereinigung:**
+      - [BootReceiver.kt](file:///c:/Users/chris/AndroidStudioProjects/BirthdayBuddy/app/src/main/java/com/heckmannch/birthdaybuddy/BootReceiver.kt): `BirthdayWidgetWorker.enqueueNextUpdate()` und ungenutzte Imports entfernt.
+      - [BirthdayWidgetWorker.kt](file:///c:/Users/chris/AndroidStudioProjects/BirthdayBuddy/app/src/main/java/com/heckmannch/birthdaybuddy/widget/BirthdayWidgetWorker.kt): `enqueueNextUpdate()` als `@Deprecated` markiert mit Verweis auf `AlarmScheduler`.
+      - Umfassende KDoc-Dokumentation der Architektur-Entscheidung in `BootReceiver`, `AppViewModel`, `BirthdayWidgetWorker`, `AlarmScheduler`, `WidgetUpdater` und `BirthdayWidgetUpdater`.
+    - **Testing & QA:**
+      - [BootReceiverTest.kt](file:///c:/Users/chris/AndroidStudioProjects/BirthdayBuddy/app/src/test/java/com/heckmannch/birthdaybuddy/BootReceiverTest.kt): Tests bereinigt und an Single-Path-Verhalten angepasst.
+      - Alle Unit-Tests erfolgreich ausgeführt (`./gradlew testDebugUnitTest`).
+
