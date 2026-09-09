@@ -787,3 +787,23 @@ ecreateContactsTableV7 (mit giftIdeas TEXT NOT NULL, COALESCE(giftIdeas, '[]')) 
       - [BootReceiverTest.kt](file:///c:/Users/chris/AndroidStudioProjects/BirthdayBuddy/app/src/test/java/com/heckmannch/birthdaybuddy/BootReceiverTest.kt): Tests bereinigt und an Single-Path-Verhalten angepasst.
       - Alle Unit-Tests erfolgreich ausgeführt (`./gradlew testDebugUnitTest`).
 
+378. **Schließung der Room-Migrationslücke V1→V5 in `AppDatabase` & Wiederherstellung der Schemas (Database & Data Integrity):**
+    - **Problem:** In `AppDatabase` existierten nur manuelle Migrationen ab Version 5 (`APP_MIGRATION_5_6`, `APP_MIGRATION_6_7`) und Auto-Migrationen (V7→V11). Die Migrationen V1→V5 sowie die Schemadateien `1.json` bis `4.json` fehlten. Da `fallbackToDestructiveMigration` gemäß Projekt-Richtlinie strikt verboten ist und im Builder nicht aufgerufen wird, stürzte die App bei Updates von Versionen 1–4 auf Version 11 mit einer `IllegalStateException` (fehlender Migrationspfad) ab.
+    - **Wiederherstellung der Schemas (`app/schemas/com.heckmannch.birthdaybuddy.data.local.AppDatabase/`):**
+      - Wiederherstellung von `1.json`, `2.json`, `3.json` und `4.json` aus der Git-Historie zur automatisierten Validierung via `MigrationTestHelper`.
+    - **Neue Migrationen in [AppDatabase.kt](file:///c:/Users/chris/AndroidStudioProjects/BirthdayBuddy/app/src/main/java/com/heckmannch/birthdaybuddy/data/local/AppDatabase.kt):**
+      - `APP_MIGRATION_1_2`: Hinzufügen von `dismissCount INTEGER NOT NULL DEFAULT 0` zu `pending_notifications` mit defensivem Fallback.
+      - `APP_MIGRATION_2_3`: Robuste Tabellenrekonstruktion von `app_settings` zur Entfernung der ungenutzten Spalte `swipeHintShown` (voll abwärtskompatibel ab `minSdk` 28).
+      - `APP_MIGRATION_3_4`: Hinzufügen der Spalte `phoneNumber TEXT` zu `contacts`.
+      - `APP_MIGRATION_4_5`: Hinzufügen der Messenger-Spalten `hasWhatsApp` und `hasSignal` (jeweils `INTEGER NOT NULL DEFAULT 0`) zu `contacts`.
+      - Registrierung aller Migrationen (`APP_MIGRATION_1_2` bis `APP_MIGRATION_6_7`) im `Room.databaseBuilder` in `buildAppDatabase()`.
+      - Vollständige KDoc-Dokumentation der Migrationskette V1→V11 unter Beibehaltung aller bestehenden Kommentare.
+    - **Erweiterung der Test-Suite in [MigrationTest.kt](file:///c:/Users/chris/AndroidStudioProjects/BirthdayBuddy/app/src/androidTest/java/com/heckmannch/birthdaybuddy/data/local/MigrationTest.kt):**
+      - Isolierte Migrationstests für jeden Schritt: `testMigration1To2`, `testMigration2To3`, `testMigration3To4`, `testMigration4To5`.
+      - End-to-End Migrationstests: `migrate1To5` und `migrate1To11` (Migration von V1 bis V11 mit Validierung aller Daten, Indizes und Droppen von Legacy-Tabellen).
+      - Aktualisierung von `migrateAll` zur Validierung des Room-Builders von V1 bis V11.
+    - **Testing & QA:**
+      - Erfolgreiche Kompilierung beider Build-Targets: `./gradlew :app:compileDebugKotlin :app:compileDebugAndroidTestKotlin`.
+      - Vollständiger Durchlauf aller Unit-Tests via `./gradlew testDebugUnitTest` erfolgreich.
+
+

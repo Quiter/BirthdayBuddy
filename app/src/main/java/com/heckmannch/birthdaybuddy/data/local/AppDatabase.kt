@@ -13,8 +13,12 @@ import androidx.sqlite.db.SupportSQLiteDatabase
  * Room-Datenbank für kontobezogene Entitäten ([ContactEntity], [PendingNotificationEntity]).
  *
  * Migrationen:
- * - Version 5 -> 6: [MIGRATION_5_6] (Manuell via Tabellenrekonstruktion zur Bereinigung von Nullabilities und Indizes)
- * - Version 6 -> 7: [MIGRATION_6_7] (Manuell, Bereinigung von Legacy-Tabellen und NOT NULL Constraint für giftIdeas)
+ * - Version 1 -> 2: [APP_MIGRATION_1_2] (Hinzufügen der Spalte `dismissCount` mit Default `0` in `pending_notifications`)
+ * - Version 2 -> 3: [APP_MIGRATION_2_3] (Tabellenrekonstruktion von `app_settings` zur Entfernung von `swipeHintShown`)
+ * - Version 3 -> 4: [APP_MIGRATION_3_4] (Hinzufügen der Spalte `phoneNumber` in `contacts`)
+ * - Version 4 -> 5: [APP_MIGRATION_4_5] (Hinzufügen der Messenger-Spalten `hasWhatsApp` und `hasSignal` mit Default `0` in `contacts`)
+ * - Version 5 -> 6: [APP_MIGRATION_5_6] (Manuell via Tabellenrekonstruktion zur Bereinigung von Nullabilities und Indizes)
+ * - Version 6 -> 7: [APP_MIGRATION_6_7] (Manuell, Bereinigung von Legacy-Tabellen und NOT NULL Constraint für giftIdeas)
  * - Version 7 -> 8: [AutoMigration] (Hinzufügen der Spalten `anniversary` und `nameDay` in `contacts`)
  * - Version 8 -> 9: [AutoMigration] (Hinzufügen der Spalte `spouseLookupKey` in `contacts`)
  * - Version 9 -> 10: [AutoMigration] (Hinzufügen der Spalte `isFavorite` mit Default `0` in `contacts`)
@@ -122,6 +126,160 @@ private fun recreateContactsTable(db: SupportSQLiteDatabase, giftIdeasNotNull: B
 }
 
 /**
+ * Migration from database version 1 to 2.
+ *
+ * Adds the 'dismissCount' column to the 'pending_notifications' table with default value 0.
+ * Includes defensive fallback in case the table is missing or already has the column.
+ */
+internal val APP_MIGRATION_1_2 = object : Migration(1, 2) {
+    override fun migrate(db: SupportSQLiteDatabase) {
+        try {
+            val columnCursor = db.query("PRAGMA table_info(pending_notifications)")
+            var hasTable = false
+            var hasDismissCount = false
+            while (columnCursor.moveToNext()) {
+                hasTable = true
+                val nameIndex = columnCursor.getColumnIndex("name")
+                if (nameIndex != -1 && columnCursor.getString(nameIndex) == "dismissCount") {
+                    hasDismissCount = true
+                }
+            }
+            columnCursor.close()
+
+            if (!hasTable) {
+                db.execSQL("CREATE TABLE IF NOT EXISTS `pending_notifications` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `contactLookupKeys` TEXT NOT NULL, `daysBefore` INTEGER NOT NULL, `year` INTEGER NOT NULL, `isDone` INTEGER NOT NULL, `dismissCount` INTEGER NOT NULL DEFAULT 0)")
+            } else if (!hasDismissCount) {
+                db.execSQL("ALTER TABLE pending_notifications ADD COLUMN dismissCount INTEGER NOT NULL DEFAULT 0")
+            }
+        } catch (e: Exception) {
+            throw RuntimeException(
+                "Migration 1 to 2 failed: adding dismissCount to pending_notifications failed.",
+                e
+            )
+        }
+    }
+}
+
+/**
+ * Migration from database version 2 to 3.
+ *
+ * Recreates the 'app_settings' table to remove the unused 'swipeHintShown' column,
+ * ensuring backwards compatibility across SQLite versions (including minSdk 28 / SQLite < 3.35.0).
+ */
+internal val APP_MIGRATION_2_3 = object : Migration(2, 3) {
+    override fun migrate(db: SupportSQLiteDatabase) {
+        try {
+            val columnCursor = db.query("PRAGMA table_info(app_settings)")
+            var hasSwipeHintShown = false
+            while (columnCursor.moveToNext()) {
+                val nameIndex = columnCursor.getColumnIndex("name")
+                if (nameIndex != -1 && columnCursor.getString(nameIndex) == "swipeHintShown") {
+                    hasSwipeHintShown = true
+                    break
+                }
+            }
+            columnCursor.close()
+
+            if (hasSwipeHintShown) {
+                db.execSQL(
+                    """
+                    CREATE TABLE IF NOT EXISTS `app_settings_new` (
+                        `id` INTEGER NOT NULL,
+                        `notificationsEnabled` INTEGER NOT NULL,
+                        `persistentNotifications` INTEGER NOT NULL,
+                        `onboardingCompleted` INTEGER NOT NULL,
+                        `lastSyncTimestamp` INTEGER NOT NULL,
+                        PRIMARY KEY(`id`)
+                    )
+                    """.trimIndent()
+                )
+                db.execSQL(
+                    """
+                    INSERT INTO app_settings_new (id, notificationsEnabled, persistentNotifications, onboardingCompleted, lastSyncTimestamp)
+                    SELECT id, notificationsEnabled, persistentNotifications, onboardingCompleted, lastSyncTimestamp
+                    FROM app_settings
+                    """.trimIndent()
+                )
+                db.execSQL("DROP TABLE app_settings")
+                db.execSQL("ALTER TABLE app_settings_new RENAME TO app_settings")
+            }
+        } catch (e: Exception) {
+            throw RuntimeException(
+                "Migration 2 to 3 failed: app_settings table recreation error.",
+                e
+            )
+        }
+    }
+}
+
+/**
+ * Migration from database version 3 to 4.
+ *
+ * Adds the nullable 'phoneNumber' column to the 'contacts' table.
+ */
+internal val APP_MIGRATION_3_4 = object : Migration(3, 4) {
+    override fun migrate(db: SupportSQLiteDatabase) {
+        try {
+            val columnCursor = db.query("PRAGMA table_info(contacts)")
+            var columnExists = false
+            while (columnCursor.moveToNext()) {
+                val nameIndex = columnCursor.getColumnIndex("name")
+                if (nameIndex != -1 && columnCursor.getString(nameIndex) == "phoneNumber") {
+                    columnExists = true
+                    break
+                }
+            }
+            columnCursor.close()
+
+            if (!columnExists) {
+                db.execSQL("ALTER TABLE contacts ADD COLUMN phoneNumber TEXT")
+            }
+        } catch (e: Exception) {
+            throw RuntimeException(
+                "Migration 3 to 4 failed: adding phoneNumber to contacts failed.",
+                e
+            )
+        }
+    }
+}
+
+/**
+ * Migration from database version 4 to 5.
+ *
+ * Adds the messenger columns 'hasWhatsApp' and 'hasSignal' with default value 0 to the 'contacts' table.
+ */
+internal val APP_MIGRATION_4_5 = object : Migration(4, 5) {
+    override fun migrate(db: SupportSQLiteDatabase) {
+        try {
+            val columnCursor = db.query("PRAGMA table_info(contacts)")
+            var hasWhatsApp = false
+            var hasSignal = false
+            while (columnCursor.moveToNext()) {
+                val nameIndex = columnCursor.getColumnIndex("name")
+                if (nameIndex != -1) {
+                    val columnName = columnCursor.getString(nameIndex)
+                    if (columnName == "hasWhatsApp") hasWhatsApp = true
+                    if (columnName == "hasSignal") hasSignal = true
+                }
+            }
+            columnCursor.close()
+
+            if (!hasWhatsApp) {
+                db.execSQL("ALTER TABLE contacts ADD COLUMN hasWhatsApp INTEGER NOT NULL DEFAULT 0")
+            }
+            if (!hasSignal) {
+                db.execSQL("ALTER TABLE contacts ADD COLUMN hasSignal INTEGER NOT NULL DEFAULT 0")
+            }
+        } catch (e: Exception) {
+            throw RuntimeException(
+                "Migration 4 to 5 failed: adding messenger columns to contacts failed.",
+                e
+            )
+        }
+    }
+}
+
+/**
  * Migration from database version 5 to 6.
  *
  * Recreates the 'contacts' table to apply the V6 schema (nullable birthday,
@@ -208,6 +366,10 @@ internal fun buildAppDatabase(context: Context): AppDatabase {
         "birthday_database",
     )
         .addMigrations(
+            APP_MIGRATION_1_2,
+            APP_MIGRATION_2_3,
+            APP_MIGRATION_3_4,
+            APP_MIGRATION_4_5,
             APP_MIGRATION_5_6,
             APP_MIGRATION_6_7
         )

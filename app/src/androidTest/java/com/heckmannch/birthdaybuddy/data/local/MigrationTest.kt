@@ -17,8 +17,8 @@ import java.io.IOException
 /**
  * Testet die Datenbank-Migrationen für [AppDatabase].
  *
- * Beinhaltet modulare, isolierte Tests für jeden Migrationsschritt (5->6, 6->7, 7->8, 8->9, 9->10, 10->11)
- * sowie End-to-End Migrationstests über mehrere Versionen hinweg (5->10, 5->11, 7->10, 7->11, 8->10, 8->11, 10->11).
+ * Beinhaltet modulare, isolierte Tests für jeden Migrationsschritt (1->2, 2->3, 3->4, 4->5, 5->6, 6->7, 7->8, 8->9, 9->10, 10->11)
+ * sowie End-to-End Migrationstests über mehrere Versionen hinweg (1->5, 1->11, 5->10, 5->11, 7->10, 7->11, 8->10, 8->11, 10->11).
  *
  * WICHTIG: Erfordert die exportierten Schemas in app/schemas.
  */
@@ -41,10 +41,11 @@ class MigrationTest {
     )
 
     private fun getColumnInfo(
-        db: SupportSQLiteDatabase
+        db: SupportSQLiteDatabase,
+        tableName: String = "contacts"
     ): Map<String, ColumnInfo> {
         val map = mutableMapOf<String, ColumnInfo>()
-        val cursor = db.query("PRAGMA table_info('contacts')")
+        val cursor = db.query("PRAGMA table_info('$tableName')")
         while (cursor.moveToNext()) {
             val name = cursor.getString(cursor.getColumnIndexOrThrow("name"))
             val notNull = cursor.getInt(cursor.getColumnIndexOrThrow("notnull")) == 1
@@ -125,6 +126,192 @@ class MigrationTest {
     // ==========================================
     // Isolierte Tests für jeden Migrationsschritt
     // ==========================================
+
+    @Test
+    @Throws(IOException::class)
+    fun testMigration1To2() {
+        // 1. Create database in version 1 with test data (v1 schema: pending_notifications has NO dismissCount)
+        helper.createDatabase(testDb, 1).apply {
+            execSQL(
+                "INSERT INTO contacts (contactId, lookupKey, fullName, birthday, labels, giftIdeas) " +
+                        "VALUES ('1', 'key1_test', 'Max Mustermann', '1990-01-01', '[]', '[]')"
+            )
+            execSQL(
+                "INSERT INTO pending_notifications (contactLookupKeys, daysBefore, year, isDone) " +
+                        "VALUES ('[\"key1_test\"]', 1, 2026, 0)"
+            )
+            close()
+        }
+
+        // 2. Run migration 1 -> 2 (APP_MIGRATION_1_2)
+        val migratedDb = helper.runMigrationsAndValidate(
+            testDb,
+            2,
+            true,
+            APP_MIGRATION_1_2
+        )
+
+        // 3. Verify data integrity in contacts
+        val cursor = migratedDb.query("SELECT * FROM contacts WHERE lookupKey = 'key1_test'")
+        assertTrue(cursor.moveToFirst())
+        assertEquals("Max Mustermann", cursor.getString(cursor.getColumnIndexOrThrow("fullName")))
+        assertEquals("1990-01-01", cursor.getString(cursor.getColumnIndexOrThrow("birthday")))
+        cursor.close()
+
+        // 4. Verify dismissCount column in pending_notifications
+        val notifColumns = getColumnInfo(migratedDb, "pending_notifications")
+        assertTrue(notifColumns.containsKey("dismissCount"))
+        assertTrue(notifColumns["dismissCount"]!!.isNotNull)
+        assertEquals("0", notifColumns["dismissCount"]!!.defaultValue)
+
+        val notifCursor = migratedDb.query("SELECT * FROM pending_notifications WHERE year = 2026")
+        assertTrue(notifCursor.moveToFirst())
+        assertEquals(0, notifCursor.getInt(notifCursor.getColumnIndexOrThrow("dismissCount")))
+        assertEquals(0, notifCursor.getInt(notifCursor.getColumnIndexOrThrow("isDone")))
+        notifCursor.close()
+    }
+
+    @Test
+    @Throws(IOException::class)
+    fun testMigration2To3() {
+        // 1. Create database in version 2 with test data (app_settings has swipeHintShown)
+        helper.createDatabase(testDb, 2).apply {
+            execSQL(
+                "INSERT INTO app_settings (id, notificationsEnabled, persistentNotifications, swipeHintShown, onboardingCompleted, lastSyncTimestamp) " +
+                        "VALUES (1, 1, 0, 1, 1, 123456789)"
+            )
+            execSQL(
+                "INSERT INTO contacts (contactId, lookupKey, fullName, birthday, labels, giftIdeas) " +
+                        "VALUES ('2', 'key2_test', 'Erika Mustermann', '1992-02-02', '[]', '[]')"
+            )
+            close()
+        }
+
+        // 2. Run migration 2 -> 3 (APP_MIGRATION_2_3)
+        val migratedDb = helper.runMigrationsAndValidate(
+            testDb,
+            3,
+            true,
+            APP_MIGRATION_2_3
+        )
+
+        // 3. Verify swipeHintShown column was removed from app_settings
+        val settingsColumns = getColumnInfo(migratedDb, "app_settings")
+        assertFalse(settingsColumns.containsKey("swipeHintShown"))
+        assertTrue(settingsColumns.containsKey("notificationsEnabled"))
+        assertTrue(settingsColumns.containsKey("persistentNotifications"))
+        assertTrue(settingsColumns.containsKey("onboardingCompleted"))
+        assertTrue(settingsColumns.containsKey("lastSyncTimestamp"))
+
+        // 4. Verify data in app_settings is preserved
+        val settingsCursor = migratedDb.query("SELECT * FROM app_settings WHERE id = 1")
+        assertTrue(settingsCursor.moveToFirst())
+        assertEquals(1, settingsCursor.getInt(settingsCursor.getColumnIndexOrThrow("notificationsEnabled")))
+        assertEquals(0, settingsCursor.getInt(settingsCursor.getColumnIndexOrThrow("persistentNotifications")))
+        assertEquals(1, settingsCursor.getInt(settingsCursor.getColumnIndexOrThrow("onboardingCompleted")))
+        assertEquals(123456789L, settingsCursor.getLong(settingsCursor.getColumnIndexOrThrow("lastSyncTimestamp")))
+        settingsCursor.close()
+
+        // 5. Verify contacts data is intact
+        val contactCursor = migratedDb.query("SELECT * FROM contacts WHERE lookupKey = 'key2_test'")
+        assertTrue(contactCursor.moveToFirst())
+        assertEquals("Erika Mustermann", contactCursor.getString(contactCursor.getColumnIndexOrThrow("fullName")))
+        contactCursor.close()
+    }
+
+    @Test
+    @Throws(IOException::class)
+    fun testMigration3To4() {
+        // 1. Create database in version 3 with test data (contacts has NO phoneNumber)
+        helper.createDatabase(testDb, 3).apply {
+            execSQL(
+                "INSERT INTO contacts (contactId, lookupKey, fullName, birthday, labels, giftIdeas) " +
+                        "VALUES ('3', 'key3_test', 'Hans Meier', '1985-05-05', '[]', '[]')"
+            )
+            close()
+        }
+
+        // 2. Run migration 3 -> 4 (APP_MIGRATION_3_4)
+        val migratedDb = helper.runMigrationsAndValidate(
+            testDb,
+            4,
+            true,
+            APP_MIGRATION_3_4
+        )
+
+        // 3. Verify phoneNumber column exists and is nullable
+        val columns = getColumnInfo(migratedDb)
+        assertTrue(columns.containsKey("phoneNumber"))
+        assertFalse(columns["phoneNumber"]!!.isNotNull)
+
+        // 4. Verify migrated record has NULL phoneNumber and data is preserved
+        val cursor = migratedDb.query("SELECT * FROM contacts WHERE lookupKey = 'key3_test'")
+        assertTrue(cursor.moveToFirst())
+        assertEquals("Hans Meier", cursor.getString(cursor.getColumnIndexOrThrow("fullName")))
+        assertTrue(cursor.isNull(cursor.getColumnIndexOrThrow("phoneNumber")))
+        cursor.close()
+
+        // 5. Verify new record can be inserted with a phone number
+        migratedDb.execSQL(
+            "INSERT INTO contacts (contactId, lookupKey, fullName, birthday, imageUri, phoneNumber, labels, giftIdeas) " +
+                    "VALUES ('4', 'key4_phone', 'Lisa Schulz', '1993-03-03', NULL, '+49123456789', '[]', '[]')"
+        )
+        val newCursor = migratedDb.query("SELECT * FROM contacts WHERE lookupKey = 'key4_phone'")
+        assertTrue(newCursor.moveToFirst())
+        assertEquals("+49123456789", newCursor.getString(newCursor.getColumnIndexOrThrow("phoneNumber")))
+        newCursor.close()
+    }
+
+    @Test
+    @Throws(IOException::class)
+    fun testMigration4To5() {
+        // 1. Create database in version 4 with test data (contacts has NO hasWhatsApp / hasSignal)
+        helper.createDatabase(testDb, 4).apply {
+            execSQL(
+                "INSERT INTO contacts (contactId, lookupKey, fullName, birthday, imageUri, phoneNumber, labels, giftIdeas) " +
+                        "VALUES ('4', 'key4_test', 'Paul Weber', '1988-08-08', NULL, '+49987654321', '[]', '[]')"
+            )
+            close()
+        }
+
+        // 2. Run migration 4 -> 5 (APP_MIGRATION_4_5)
+        val migratedDb = helper.runMigrationsAndValidate(
+            testDb,
+            5,
+            true,
+            APP_MIGRATION_4_5
+        )
+
+        // 3. Verify hasWhatsApp and hasSignal columns exist, are NOT NULL with default '0'
+        val columns = getColumnInfo(migratedDb)
+        assertTrue(columns.containsKey("hasWhatsApp"))
+        assertTrue(columns["hasWhatsApp"]!!.isNotNull)
+        assertEquals("0", columns["hasWhatsApp"]!!.defaultValue)
+
+        assertTrue(columns.containsKey("hasSignal"))
+        assertTrue(columns["hasSignal"]!!.isNotNull)
+        assertEquals("0", columns["hasSignal"]!!.defaultValue)
+
+        // 4. Verify migrated record defaults hasWhatsApp and hasSignal to 0
+        val cursor = migratedDb.query("SELECT * FROM contacts WHERE lookupKey = 'key4_test'")
+        assertTrue(cursor.moveToFirst())
+        assertEquals("Paul Weber", cursor.getString(cursor.getColumnIndexOrThrow("fullName")))
+        assertEquals("+49987654321", cursor.getString(cursor.getColumnIndexOrThrow("phoneNumber")))
+        assertEquals(0, cursor.getInt(cursor.getColumnIndexOrThrow("hasWhatsApp")))
+        assertEquals(0, cursor.getInt(cursor.getColumnIndexOrThrow("hasSignal")))
+        cursor.close()
+
+        // 5. Verify inserting a record with messenger flags succeeds
+        migratedDb.execSQL(
+            "INSERT INTO contacts (contactId, lookupKey, fullName, birthday, imageUri, phoneNumber, hasWhatsApp, hasSignal, labels, giftIdeas) " +
+                    "VALUES ('5', 'key5_msg', 'Klara Klein', '1994-04-04', NULL, '+49111222333', 1, 1, '[]', '[]')"
+        )
+        val msgCursor = migratedDb.query("SELECT * FROM contacts WHERE lookupKey = 'key5_msg'")
+        assertTrue(msgCursor.moveToFirst())
+        assertEquals(1, msgCursor.getInt(msgCursor.getColumnIndexOrThrow("hasWhatsApp")))
+        assertEquals(1, msgCursor.getInt(msgCursor.getColumnIndexOrThrow("hasSignal")))
+        msgCursor.close()
+    }
 
     @Test
     @Throws(IOException::class)
@@ -461,6 +648,128 @@ class MigrationTest {
 
     @Test
     @Throws(IOException::class)
+    fun migrate1To5() {
+        // 1. Create database in version 1 with test data
+        helper.createDatabase(testDb, 1).apply {
+            execSQL(
+                "INSERT INTO contacts (contactId, lookupKey, fullName, birthday, labels, giftIdeas) " +
+                        "VALUES ('1', 'key1_e2e_5', 'Max Mustermann', '1990-01-01', '[]', '[]')"
+            )
+            execSQL(
+                "INSERT INTO pending_notifications (contactLookupKeys, daysBefore, year, isDone) " +
+                        "VALUES ('[\"key1_e2e_5\"]', 1, 2026, 0)"
+            )
+            execSQL(
+                "INSERT INTO app_settings (id, notificationsEnabled, persistentNotifications, swipeHintShown, onboardingCompleted, lastSyncTimestamp) " +
+                        "VALUES (1, 1, 0, 1, 1, 999999)"
+            )
+            close()
+        }
+
+        // 2. Run migration chain 1 -> 5
+        val migratedDb = helper.runMigrationsAndValidate(
+            testDb,
+            5,
+            true,
+            APP_MIGRATION_1_2,
+            APP_MIGRATION_2_3,
+            APP_MIGRATION_3_4,
+            APP_MIGRATION_4_5
+        )
+
+        // 3. Verify data integrity in contacts table
+        val contactCursor = migratedDb.query("SELECT * FROM contacts WHERE lookupKey = 'key1_e2e_5'")
+        assertTrue(contactCursor.moveToFirst())
+        assertEquals("Max Mustermann", contactCursor.getString(contactCursor.getColumnIndexOrThrow("fullName")))
+        assertEquals("1990-01-01", contactCursor.getString(contactCursor.getColumnIndexOrThrow("birthday")))
+        assertTrue(contactCursor.isNull(contactCursor.getColumnIndexOrThrow("phoneNumber")))
+        assertEquals(0, contactCursor.getInt(contactCursor.getColumnIndexOrThrow("hasWhatsApp")))
+        assertEquals(0, contactCursor.getInt(contactCursor.getColumnIndexOrThrow("hasSignal")))
+        contactCursor.close()
+
+        // 4. Verify data integrity in pending_notifications table
+        val notifCursor = migratedDb.query("SELECT * FROM pending_notifications WHERE year = 2026")
+        assertTrue(notifCursor.moveToFirst())
+        assertEquals(0, notifCursor.getInt(notifCursor.getColumnIndexOrThrow("dismissCount")))
+        assertEquals(0, notifCursor.getInt(notifCursor.getColumnIndexOrThrow("isDone")))
+        notifCursor.close()
+
+        // 5. Verify app_settings (swipeHintShown removed, other data preserved)
+        val settingsColumns = getColumnInfo(migratedDb, "app_settings")
+        assertFalse(settingsColumns.containsKey("swipeHintShown"))
+        val settingsCursor = migratedDb.query("SELECT * FROM app_settings WHERE id = 1")
+        assertTrue(settingsCursor.moveToFirst())
+        assertEquals(1, settingsCursor.getInt(settingsCursor.getColumnIndexOrThrow("notificationsEnabled")))
+        assertEquals(999999L, settingsCursor.getLong(settingsCursor.getColumnIndexOrThrow("lastSyncTimestamp")))
+        settingsCursor.close()
+    }
+
+    @Test
+    @Throws(IOException::class)
+    fun migrate1To11() {
+        // 1. Create database in version 1 with test data across all initial tables
+        helper.createDatabase(testDb, 1).apply {
+            execSQL(
+                "INSERT INTO contacts (contactId, lookupKey, fullName, birthday, labels, giftIdeas) " +
+                        "VALUES ('1', 'key1_e2e_11', 'Max Mustermann', '1990-01-01', '[]', '[\"Krawatte\"]')"
+            )
+            execSQL(
+                "INSERT INTO pending_notifications (contactLookupKeys, daysBefore, year, isDone) " +
+                        "VALUES ('[\"key1_e2e_11\"]', 1, 2026, 0)"
+            )
+            execSQL("INSERT INTO label_configs (name, isHiddenFromFilter, isIgnored, isSystem) VALUES ('Familie', 0, 0, 1)")
+            execSQL("INSERT INTO notification_rules (daysBefore, hour, minute) VALUES (1, 9, 0)")
+            execSQL("INSERT INTO app_settings (id, notificationsEnabled, persistentNotifications, swipeHintShown, onboardingCompleted, lastSyncTimestamp) VALUES (1, 1, 0, 1, 1, 1000)")
+            close()
+        }
+
+        // 2. Run migration through the complete chain (1 to 11)
+        val migratedDb = helper.runMigrationsAndValidate(
+            testDb,
+            11,
+            true,
+            APP_MIGRATION_1_2,
+            APP_MIGRATION_2_3,
+            APP_MIGRATION_3_4,
+            APP_MIGRATION_4_5,
+            APP_MIGRATION_5_6,
+            APP_MIGRATION_6_7
+        )
+
+        // 3. Verify data integrity in contacts table
+        val cursor = migratedDb.query("SELECT * FROM contacts WHERE lookupKey = 'key1_e2e_11'")
+        assertTrue(cursor.moveToFirst())
+        assertEquals("Max Mustermann", cursor.getString(cursor.getColumnIndexOrThrow("fullName")))
+        assertEquals("1990-01-01", cursor.getString(cursor.getColumnIndexOrThrow("birthday")))
+        assertTrue(cursor.isNull(cursor.getColumnIndexOrThrow("phoneNumber")))
+        assertEquals(0, cursor.getInt(cursor.getColumnIndexOrThrow("hasWhatsApp")))
+        assertEquals(0, cursor.getInt(cursor.getColumnIndexOrThrow("hasSignal")))
+        assertEquals("[\"Krawatte\"]", cursor.getString(cursor.getColumnIndexOrThrow("giftIdeas")))
+        assertTrue(cursor.isNull(cursor.getColumnIndexOrThrow("anniversary")))
+        assertTrue(cursor.isNull(cursor.getColumnIndexOrThrow("nameDay")))
+        assertTrue(cursor.isNull(cursor.getColumnIndexOrThrow("spouseLookupKey")))
+        assertEquals(0, cursor.getInt(cursor.getColumnIndexOrThrow("isFavorite")))
+        cursor.close()
+
+        // 4. Verify data integrity in pending_notifications table
+        val notifCursor = migratedDb.query("SELECT * FROM pending_notifications WHERE year = 2026 AND daysBefore = 1")
+        assertTrue(notifCursor.moveToFirst())
+        assertEquals("[\"key1_e2e_11\"]", notifCursor.getString(notifCursor.getColumnIndexOrThrow("contactLookupKeys")))
+        assertEquals(0, notifCursor.getInt(notifCursor.getColumnIndexOrThrow("isDone")))
+        assertEquals(0, notifCursor.getInt(notifCursor.getColumnIndexOrThrow("dismissCount")))
+        notifCursor.close()
+
+        // 5. Verify legacy tables are dropped in V11
+        assertFalse(tableExists(migratedDb, "label_configs"))
+        assertFalse(tableExists(migratedDb, "notification_rules"))
+        assertFalse(tableExists(migratedDb, "app_settings"))
+
+        // 6. Verify all version 11 indices
+        assertVersion11Indices(migratedDb)
+    }
+
+    @Test
+    @Throws(IOException::class)
     fun migrate5To10() {
         // 1. Create database in version 5 with test data
         helper.createDatabase(testDb, 5).apply {
@@ -744,14 +1053,18 @@ class MigrationTest {
     @Test
     @Throws(IOException::class)
     fun migrateAll() {
-        // Erstellt die DB in V5 und migriert schrittweise auf die aktuelle Version
-        helper.createDatabase(testDb, 5).close()
+        // Erstellt die DB in V1 und migriert schrittweise auf die aktuelle Version
+        helper.createDatabase(testDb, 1).close()
 
         val db = Room.databaseBuilder(
             InstrumentationRegistry.getInstrumentation().targetContext,
             AppDatabase::class.java,
             testDb
         ).addMigrations(
+            APP_MIGRATION_1_2,
+            APP_MIGRATION_2_3,
+            APP_MIGRATION_3_4,
+            APP_MIGRATION_4_5,
             APP_MIGRATION_5_6,
             APP_MIGRATION_6_7
         ).build()
