@@ -1,8 +1,8 @@
 package com.heckmannch.birthdaybuddy.data.local
 
+import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
-import com.heckmannch.birthdaybuddy.domain.model.ThemeMode
 
 /**
  * Room entity representing global application settings and user preferences.
@@ -22,7 +22,8 @@ data class AppSettingsEntity(
     val birthdayCalendarColor: Int = 0xFFE91E63.toInt(),
     val anniversaryCalendarColor: Int = 0xFF9C27B0.toInt(),
     val nameDayCalendarColor: Int = 0xFFFF9800.toInt(),
-    val themeMode: ThemeMode = ThemeMode.SYSTEM,
+    @ColumnInfo(name = "themeMode")
+    val themeModeString: String = "SYSTEM",
     val themeAmoled: Boolean = false,
     val themeAccent: String = "SYSTEM",
     val labelsEnabled: Boolean = true

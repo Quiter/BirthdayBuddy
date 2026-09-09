@@ -66,7 +66,7 @@ class GiftIdeaBackupManagerTest {
     fun `exportGiftIdeas should produce correct JSON`() = runTest {
         // Given
         val giftIdeas = listOf(GiftIdea(text = "Book"))
-        val userData = listOf(ContactUserData(lookupKey = "key1", giftIdeas = giftIdeas))
+        val userData = listOf(ContactUserData(lookupKey = "key1", giftIdeasJson = com.heckmannch.birthdaybuddy.data.local.GiftIdeaConverters().fromGiftIdeaList(giftIdeas)))
         val contacts =
             listOf(ContactEntity(contactId = "1", lookupKey = "key1", fullName = "John Doe"))
 
@@ -118,8 +118,9 @@ class GiftIdeaBackupManagerTest {
         assertThat(count).isEqualTo(1)
         verify(contactUserDataDao).upsertUserDataList(org.mockito.kotlin.check { list ->
             assertThat(list).hasSize(1)
-            assertThat(list[0].giftIdeas).hasSize(1)
-            assertThat(list[0].giftIdeas[0].text).isEqualTo("Legacy Book")
+            val ideas = com.heckmannch.birthdaybuddy.data.local.GiftIdeaConverters().toGiftIdeaList(list[0].giftIdeasJson)
+            assertThat(ideas).hasSize(1)
+            assertThat(ideas[0].text).isEqualTo("Legacy Book")
         })
     }
 
@@ -151,7 +152,7 @@ class GiftIdeaBackupManagerTest {
             listOf(ContactEntity(contactId = "1", lookupKey = "key1", fullName = "John Doe"))
         val existingUserData = ContactUserData(
             lookupKey = "key1",
-            giftIdeas = emptyList(),
+            giftIdeasJson = "[]",
             spouseLookupKey = "spouse_key"
         )
         whenever(contactDao.getAllContactsImmediate()).thenReturn(contacts)

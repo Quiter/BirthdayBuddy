@@ -30,10 +30,7 @@ class ContactDbMapperTest {
             hasWhatsApp = true,
             hasSignal = false,
             labels = listOf("Freunde", "Familie"),
-            giftIdeas = listOf(
-                GiftIdea(id = "1", text = "Buch", isChecked = false),
-                GiftIdea(id = "2", text = "Gutschein", isChecked = true)
-            ),
+            giftIdeasJson = "[{\"id\":\"1\",\"text\":\"Buch\",\"isChecked\":false},{\"id\":\"2\",\"text\":\"Gutschein\",\"isChecked\":true}]",
             spouseLookupKey = "spouse_lookup_xyz"
         )
 
@@ -77,7 +74,7 @@ class ContactDbMapperTest {
             hasWhatsApp = false,
             hasSignal = false,
             labels = emptyList(),
-            giftIdeas = emptyList(),
+            giftIdeasJson = "[]",
             spouseLookupKey = null
         )
 
@@ -136,13 +133,9 @@ class ContactDbMapperTest {
         assertThat(entity.hasWhatsApp).isTrue()
         assertThat(entity.hasSignal).isFalse()
         assertThat(entity.labels).containsExactly("Freunde", "Familie").inOrder()
-        assertThat(entity.giftIdeas).hasSize(2)
-        assertThat(entity.giftIdeas[0].id).isEqualTo("1")
-        assertThat(entity.giftIdeas[0].text).isEqualTo("Buch")
-        assertThat(entity.giftIdeas[0].isChecked).isFalse()
-        assertThat(entity.giftIdeas[1].id).isEqualTo("2")
-        assertThat(entity.giftIdeas[1].text).isEqualTo("Gutschein")
-        assertThat(entity.giftIdeas[1].isChecked).isTrue()
+        assertThat(entity.giftIdeasJson).contains("\"text\":\"Buch\"")
+        assertThat(entity.giftIdeasJson).contains("\"text\":\"Gutschein\"")
+        assertThat(mapper.toDomain(entity).giftIdeas).hasSize(2)
         assertThat(entity.spouseLookupKey).isEqualTo("spouse_lookup_xyz")
     }
 
@@ -180,7 +173,7 @@ class ContactDbMapperTest {
         assertThat(entity.hasWhatsApp).isFalse()
         assertThat(entity.hasSignal).isFalse()
         assertThat(entity.labels).isEmpty()
-        assertThat(entity.giftIdeas).isEmpty()
+        assertThat(entity.giftIdeasJson).isEqualTo("[]")
         assertThat(entity.spouseLookupKey).isNull()
     }
 

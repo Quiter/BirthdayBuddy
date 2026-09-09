@@ -8,6 +8,7 @@ import com.google.common.truth.Truth.assertThat
 import com.heckmannch.birthdaybuddy.data.local.AppDatabase
 import com.heckmannch.birthdaybuddy.data.local.ContactEntity
 import com.heckmannch.birthdaybuddy.data.local.ContactUserData
+import com.heckmannch.birthdaybuddy.data.local.GiftIdeaConverters
 import com.heckmannch.birthdaybuddy.data.local.SettingsDatabase
 import com.heckmannch.birthdaybuddy.domain.model.GiftIdea
 import com.heckmannch.birthdaybuddy.domain.repository.GiftIdeaRepository
@@ -38,6 +39,16 @@ class ContactRepositoryGiftIdeaTest {
     private lateinit var appDb: AppDatabase
     private lateinit var settingsDb: SettingsDatabase
     private lateinit var repository: GiftIdeaRepository
+    private val converters = GiftIdeaConverters()
+
+    private fun ContactEntity?.giftIdeas(): List<GiftIdea> =
+        this?.let { converters.toGiftIdeaList(it.giftIdeasJson) } ?: emptyList()
+
+    private fun ContactUserData?.giftIdeas(): List<GiftIdea> =
+        this?.let { converters.toGiftIdeaList(it.giftIdeasJson) } ?: emptyList()
+
+    private fun giftIdeasJson(ideas: List<GiftIdea>): String =
+        converters.fromGiftIdeaList(ideas)
 
     private fun makeContact(lookupKey: String, name: String) = ContactEntity(
         contactId = lookupKey,
@@ -94,13 +105,13 @@ class ContactRepositoryGiftIdeaTest {
 
         // Assert – AppDB Cache
         val cachedContact = appDb.contactDao().getContactByLookupKey("alice")
-        assertThat(cachedContact?.giftIdeas).hasSize(1)
-        assertThat(cachedContact?.giftIdeas?.first()?.text).isEqualTo("Buch über Kotlin")
+        assertThat(cachedContact.giftIdeas()).hasSize(1)
+        assertThat(cachedContact.giftIdeas().first().text).isEqualTo("Buch über Kotlin")
 
         // Assert – SettingsDB (Quelle der Wahrheit)
         val userData = settingsDb.contactUserDataDao().getUserDataForContact("alice")
-        assertThat(userData?.giftIdeas).hasSize(1)
-        assertThat(userData?.giftIdeas?.first()?.text).isEqualTo("Buch über Kotlin")
+        assertThat(userData.giftIdeas()).hasSize(1)
+        assertThat(userData.giftIdeas().first().text).isEqualTo("Buch über Kotlin")
     }
 
     @Test
@@ -108,10 +119,10 @@ class ContactRepositoryGiftIdeaTest {
         // Arrange – Alice hat bereits eine Idee in der DB
         val existingIdea = makeIdea("Blumen")
         appDb.contactDao().upsertContact(
-            makeContact("alice", "Alice").copy(giftIdeas = listOf(existingIdea))
+            makeContact("alice", "Alice").copy(giftIdeasJson = giftIdeasJson(listOf(existingIdea)))
         )
         settingsDb.contactUserDataDao().upsertUserData(
-            ContactUserData(lookupKey = "alice", giftIdeas = listOf(existingIdea))
+            ContactUserData(lookupKey = "alice", giftIdeasJson = giftIdeasJson(listOf(existingIdea)))
         )
         val newIdea = makeIdea("Schokolade")
 
@@ -120,8 +131,8 @@ class ContactRepositoryGiftIdeaTest {
 
         // Assert – beide Ideen vorhanden, bestehende nicht überschrieben
         val userData = settingsDb.contactUserDataDao().getUserDataForContact("alice")
-        assertThat(userData?.giftIdeas).hasSize(2)
-        val texts = userData?.giftIdeas?.map { it.text }
+        assertThat(userData.giftIdeas()).hasSize(2)
+        val texts = userData.giftIdeas().map { it.text }
         assertThat(texts).contains("Blumen")
         assertThat(texts).contains("Schokolade")
     }
@@ -133,7 +144,7 @@ class ContactRepositoryGiftIdeaTest {
             makeContact("alice", "Alice").copy(spouseLookupKey = "bob")
         )
         settingsDb.contactUserDataDao().upsertUserData(
-            ContactUserData(lookupKey = "alice", giftIdeas = emptyList(), spouseLookupKey = "bob")
+            ContactUserData(lookupKey = "alice", giftIdeasJson = "[]", spouseLookupKey = "bob")
         )
         val newIdea = makeIdea("Schokolade")
 
@@ -143,11 +154,11 @@ class ContactRepositoryGiftIdeaTest {
         // Assert – spouseLookupKey in beiden DBs erhalten
         val userData = settingsDb.contactUserDataDao().getUserDataForContact("alice")
         assertThat(userData?.spouseLookupKey).isEqualTo("bob")
-        assertThat(userData?.giftIdeas).hasSize(1)
+        assertThat(userData.giftIdeas()).hasSize(1)
 
         val cachedContact = appDb.contactDao().getContactByLookupKey("alice")
         assertThat(cachedContact?.spouseLookupKey).isEqualTo("bob")
-        assertThat(cachedContact?.giftIdeas).hasSize(1)
+        assertThat(cachedContact.giftIdeas()).hasSize(1)
     }
 
     @Test
@@ -155,10 +166,10 @@ class ContactRepositoryGiftIdeaTest {
         // Arrange – Eine bereits erledigte Idee vorhanden
         val doneIdea = makeIdea("Erledigt", isChecked = true)
         appDb.contactDao().upsertContact(
-            makeContact("alice", "Alice").copy(giftIdeas = listOf(doneIdea))
+            makeContact("alice", "Alice").copy(giftIdeasJson = giftIdeasJson(listOf(doneIdea)))
         )
         settingsDb.contactUserDataDao().upsertUserData(
-            ContactUserData(lookupKey = "alice", giftIdeas = listOf(doneIdea))
+            ContactUserData(lookupKey = "alice", giftIdeasJson = giftIdeasJson(listOf(doneIdea)))
         )
         val newIdea = makeIdea("Neu")
 
@@ -167,9 +178,9 @@ class ContactRepositoryGiftIdeaTest {
 
         // Assert – neue Idee steht vor der erledigten
         val userData = settingsDb.contactUserDataDao().getUserDataForContact("alice")
-        assertThat(userData?.giftIdeas).hasSize(2)
-        assertThat(userData?.giftIdeas?.first()?.text).isEqualTo("Neu")
-        assertThat(userData?.giftIdeas?.last()?.isChecked).isTrue()
+        assertThat(userData.giftIdeas()).hasSize(2)
+        assertThat(userData.giftIdeas().first().text).isEqualTo("Neu")
+        assertThat(userData.giftIdeas().last().isChecked).isTrue()
     }
 
     @Test
@@ -191,10 +202,10 @@ class ContactRepositoryGiftIdeaTest {
         // Arrange
         val idea = makeIdea("Buch")
         appDb.contactDao().upsertContact(
-            makeContact("alice", "Alice").copy(giftIdeas = listOf(idea))
+            makeContact("alice", "Alice").copy(giftIdeasJson = giftIdeasJson(listOf(idea)))
         )
         settingsDb.contactUserDataDao().upsertUserData(
-            ContactUserData(lookupKey = "alice", giftIdeas = listOf(idea))
+            ContactUserData(lookupKey = "alice", giftIdeasJson = giftIdeasJson(listOf(idea)))
         )
 
         // Act – Idee als erledigt markieren
@@ -202,11 +213,11 @@ class ContactRepositoryGiftIdeaTest {
 
         // Assert – AppDB Cache
         val cachedContact = appDb.contactDao().getContactByLookupKey("alice")
-        assertThat(cachedContact?.giftIdeas?.first()?.isChecked).isTrue()
+        assertThat(cachedContact.giftIdeas().first().isChecked).isTrue()
 
         // Assert – SettingsDB (Quelle der Wahrheit)
         val userData = settingsDb.contactUserDataDao().getUserDataForContact("alice")
-        assertThat(userData?.giftIdeas?.first()?.isChecked).isTrue()
+        assertThat(userData.giftIdeas().first().isChecked).isTrue()
     }
 
     @Test
@@ -215,9 +226,9 @@ class ContactRepositoryGiftIdeaTest {
         val idea1 = makeIdea("Idee A")
         val idea2 = makeIdea("Idee B")
         val ideas = listOf(idea1, idea2)
-        appDb.contactDao().upsertContact(makeContact("alice", "Alice").copy(giftIdeas = ideas))
+        appDb.contactDao().upsertContact(makeContact("alice", "Alice").copy(giftIdeasJson = giftIdeasJson(ideas)))
         settingsDb.contactUserDataDao().upsertUserData(
-            ContactUserData(lookupKey = "alice", giftIdeas = ideas)
+            ContactUserData(lookupKey = "alice", giftIdeasJson = giftIdeasJson(ideas))
         )
 
         // Act – erste Idee abhaken
@@ -225,10 +236,10 @@ class ContactRepositoryGiftIdeaTest {
 
         // Assert – idea1 ist jetzt am Ende (erledigt)
         val userData = settingsDb.contactUserDataDao().getUserDataForContact("alice")
-        assertThat(userData?.giftIdeas).hasSize(2)
-        assertThat(userData?.giftIdeas?.last()?.id).isEqualTo(idea1.id)
-        assertThat(userData?.giftIdeas?.last()?.isChecked).isTrue()
-        assertThat(userData?.giftIdeas?.first()?.id).isEqualTo(idea2.id)
+        assertThat(userData.giftIdeas()).hasSize(2)
+        assertThat(userData.giftIdeas().last().id).isEqualTo(idea1.id)
+        assertThat(userData.giftIdeas().last().isChecked).isTrue()
+        assertThat(userData.giftIdeas().first().id).isEqualTo(idea2.id)
     }
 
     @Test
@@ -236,10 +247,10 @@ class ContactRepositoryGiftIdeaTest {
         // Arrange – Idee ist bereits erledigt
         val idea = makeIdea("Buch", isChecked = true)
         appDb.contactDao().upsertContact(
-            makeContact("alice", "Alice").copy(giftIdeas = listOf(idea))
+            makeContact("alice", "Alice").copy(giftIdeasJson = giftIdeasJson(listOf(idea)))
         )
         settingsDb.contactUserDataDao().upsertUserData(
-            ContactUserData(lookupKey = "alice", giftIdeas = listOf(idea))
+            ContactUserData(lookupKey = "alice", giftIdeasJson = giftIdeasJson(listOf(idea)))
         )
 
         // Act – Idee wieder öffnen
@@ -247,10 +258,10 @@ class ContactRepositoryGiftIdeaTest {
 
         // Assert – nicht mehr erledigt in beiden DBs
         val userData = settingsDb.contactUserDataDao().getUserDataForContact("alice")
-        assertThat(userData?.giftIdeas?.first()?.isChecked).isFalse()
+        assertThat(userData.giftIdeas().first().isChecked).isFalse()
 
         val cachedContact = appDb.contactDao().getContactByLookupKey("alice")
-        assertThat(cachedContact?.giftIdeas?.first()?.isChecked).isFalse()
+        assertThat(cachedContact.giftIdeas().first().isChecked).isFalse()
     }
 
     // ─────────────────────────────────
@@ -262,10 +273,10 @@ class ContactRepositoryGiftIdeaTest {
         // Arrange
         val idea = makeIdea("Zu löschen")
         appDb.contactDao().upsertContact(
-            makeContact("alice", "Alice").copy(giftIdeas = listOf(idea))
+            makeContact("alice", "Alice").copy(giftIdeasJson = giftIdeasJson(listOf(idea)))
         )
         settingsDb.contactUserDataDao().upsertUserData(
-            ContactUserData(lookupKey = "alice", giftIdeas = listOf(idea))
+            ContactUserData(lookupKey = "alice", giftIdeasJson = giftIdeasJson(listOf(idea)))
         )
 
         // Act
@@ -273,11 +284,11 @@ class ContactRepositoryGiftIdeaTest {
 
         // Assert – AppDB Cache leer
         val cachedContact = appDb.contactDao().getContactByLookupKey("alice")
-        assertThat(cachedContact?.giftIdeas).isEmpty()
+        assertThat(cachedContact.giftIdeas()).isEmpty()
 
         // Assert – SettingsDB (Quelle der Wahrheit) leer
         val userData = settingsDb.contactUserDataDao().getUserDataForContact("alice")
-        assertThat(userData?.giftIdeas).isEmpty()
+        assertThat(userData.giftIdeas()).isEmpty()
     }
 
     @Test
@@ -286,9 +297,9 @@ class ContactRepositoryGiftIdeaTest {
         val ideaToDelete = makeIdea("Löschen")
         val ideaToKeep = makeIdea("Behalten")
         val ideas = listOf(ideaToDelete, ideaToKeep)
-        appDb.contactDao().upsertContact(makeContact("alice", "Alice").copy(giftIdeas = ideas))
+        appDb.contactDao().upsertContact(makeContact("alice", "Alice").copy(giftIdeasJson = giftIdeasJson(ideas)))
         settingsDb.contactUserDataDao().upsertUserData(
-            ContactUserData(lookupKey = "alice", giftIdeas = ideas)
+            ContactUserData(lookupKey = "alice", giftIdeasJson = giftIdeasJson(ideas))
         )
 
         // Act
@@ -296,8 +307,8 @@ class ContactRepositoryGiftIdeaTest {
 
         // Assert – nur ideaToKeep übrig
         val userData = settingsDb.contactUserDataDao().getUserDataForContact("alice")
-        assertThat(userData?.giftIdeas).hasSize(1)
-        assertThat(userData?.giftIdeas?.first()?.text).isEqualTo("Behalten")
+        assertThat(userData.giftIdeas()).hasSize(1)
+        assertThat(userData.giftIdeas().first().text).isEqualTo("Behalten")
     }
 
     @Test
@@ -305,10 +316,10 @@ class ContactRepositoryGiftIdeaTest {
         // Arrange
         val idea = makeIdea("Existierende Idee")
         appDb.contactDao().upsertContact(
-            makeContact("alice", "Alice").copy(giftIdeas = listOf(idea))
+            makeContact("alice", "Alice").copy(giftIdeasJson = giftIdeasJson(listOf(idea)))
         )
         settingsDb.contactUserDataDao().upsertUserData(
-            ContactUserData(lookupKey = "alice", giftIdeas = listOf(idea))
+            ContactUserData(lookupKey = "alice", giftIdeasJson = giftIdeasJson(listOf(idea)))
         )
 
         // Act – mit unbekannter ID löschen
@@ -316,8 +327,8 @@ class ContactRepositoryGiftIdeaTest {
 
         // Assert – ursprüngliche Idee unverändert vorhanden
         val userData = settingsDb.contactUserDataDao().getUserDataForContact("alice")
-        assertThat(userData?.giftIdeas).hasSize(1)
-        assertThat(userData?.giftIdeas?.first()?.text).isEqualTo("Existierende Idee")
+        assertThat(userData.giftIdeas()).hasSize(1)
+        assertThat(userData.giftIdeas().first().text).isEqualTo("Existierende Idee")
     }
 
     // ─────────────────────────────────
@@ -329,10 +340,10 @@ class ContactRepositoryGiftIdeaTest {
         // Arrange
         val idea = makeIdea("Alter Text")
         appDb.contactDao().upsertContact(
-            makeContact("alice", "Alice").copy(giftIdeas = listOf(idea))
+            makeContact("alice", "Alice").copy(giftIdeasJson = giftIdeasJson(listOf(idea)))
         )
         settingsDb.contactUserDataDao().upsertUserData(
-            ContactUserData(lookupKey = "alice", giftIdeas = listOf(idea))
+            ContactUserData(lookupKey = "alice", giftIdeasJson = giftIdeasJson(listOf(idea)))
         )
 
         // Act
@@ -340,11 +351,11 @@ class ContactRepositoryGiftIdeaTest {
 
         // Assert – AppDB Cache
         val cachedContact = appDb.contactDao().getContactByLookupKey("alice")
-        assertThat(cachedContact?.giftIdeas?.first()?.text).isEqualTo("Neuer Text")
+        assertThat(cachedContact.giftIdeas().first().text).isEqualTo("Neuer Text")
 
         // Assert – SettingsDB (Quelle der Wahrheit)
         val userData = settingsDb.contactUserDataDao().getUserDataForContact("alice")
-        assertThat(userData?.giftIdeas?.first()?.text).isEqualTo("Neuer Text")
+        assertThat(userData.giftIdeas().first().text).isEqualTo("Neuer Text")
     }
 
     @Test
@@ -352,10 +363,10 @@ class ContactRepositoryGiftIdeaTest {
         // Arrange – erledigte Idee
         val idea = makeIdea("Original", isChecked = true)
         appDb.contactDao().upsertContact(
-            makeContact("alice", "Alice").copy(giftIdeas = listOf(idea))
+            makeContact("alice", "Alice").copy(giftIdeasJson = giftIdeasJson(listOf(idea)))
         )
         settingsDb.contactUserDataDao().upsertUserData(
-            ContactUserData(lookupKey = "alice", giftIdeas = listOf(idea))
+            ContactUserData(lookupKey = "alice", giftIdeasJson = giftIdeasJson(listOf(idea)))
         )
 
         // Act
@@ -363,10 +374,10 @@ class ContactRepositoryGiftIdeaTest {
 
         // Assert – ID und isChecked unverändert, nur Text geändert
         val userData = settingsDb.contactUserDataDao().getUserDataForContact("alice")
-        val updated = userData?.giftIdeas?.first()
-        assertThat(updated?.id).isEqualTo(idea.id)
-        assertThat(updated?.isChecked).isTrue()
-        assertThat(updated?.text).isEqualTo("Geändert")
+        val updated = userData.giftIdeas().first()
+        assertThat(updated.id).isEqualTo(idea.id)
+        assertThat(updated.isChecked).isTrue()
+        assertThat(updated.text).isEqualTo("Geändert")
     }
 
     @Test
@@ -374,10 +385,10 @@ class ContactRepositoryGiftIdeaTest {
         // Arrange
         val idea = makeIdea("Original")
         appDb.contactDao().upsertContact(
-            makeContact("alice", "Alice").copy(giftIdeas = listOf(idea))
+            makeContact("alice", "Alice").copy(giftIdeasJson = giftIdeasJson(listOf(idea)))
         )
         settingsDb.contactUserDataDao().upsertUserData(
-            ContactUserData(lookupKey = "alice", giftIdeas = listOf(idea))
+            ContactUserData(lookupKey = "alice", giftIdeasJson = giftIdeasJson(listOf(idea)))
         )
 
         // Act – unbekannte Ideen-ID
@@ -385,7 +396,7 @@ class ContactRepositoryGiftIdeaTest {
 
         // Assert – Original unverändert
         val userData = settingsDb.contactUserDataDao().getUserDataForContact("alice")
-        assertThat(userData?.giftIdeas?.first()?.text).isEqualTo("Original")
+        assertThat(userData.giftIdeas().first().text).isEqualTo("Original")
     }
 
     // ─────────────────────────────────
@@ -403,14 +414,14 @@ class ContactRepositoryGiftIdeaTest {
 
         // Assert – beide DBs zeigen identische Gift-Idea-Listen
         val settingsIdeas = settingsDb.contactUserDataDao()
-            .getUserDataForContact("alice")?.giftIdeas
+            .getUserDataForContact("alice").giftIdeas()
         val cacheIdeas = appDb.contactDao()
-            .getContactByLookupKey("alice")?.giftIdeas
+            .getContactByLookupKey("alice").giftIdeas()
 
-        assertThat(settingsIdeas?.map { it.text })
-            .isEqualTo(cacheIdeas?.map { it.text })
-        assertThat(settingsIdeas?.map { it.isChecked })
-            .isEqualTo(cacheIdeas?.map { it.isChecked })
+        assertThat(settingsIdeas.map { it.text })
+            .isEqualTo(cacheIdeas.map { it.text })
+        assertThat(settingsIdeas.map { it.isChecked })
+            .isEqualTo(cacheIdeas.map { it.isChecked })
     }
 
     @Test
@@ -419,9 +430,9 @@ class ContactRepositoryGiftIdeaTest {
         val idea1 = makeIdea("Erste")
         val idea2 = makeIdea("Zweite")
         val ideas = listOf(idea1, idea2)
-        appDb.contactDao().upsertContact(makeContact("alice", "Alice").copy(giftIdeas = ideas))
+        appDb.contactDao().upsertContact(makeContact("alice", "Alice").copy(giftIdeasJson = giftIdeasJson(ideas)))
         settingsDb.contactUserDataDao().upsertUserData(
-            ContactUserData(lookupKey = "alice", giftIdeas = ideas)
+            ContactUserData(lookupKey = "alice", giftIdeasJson = giftIdeasJson(ideas))
         )
 
         // Act – eine löschen
@@ -429,13 +440,13 @@ class ContactRepositoryGiftIdeaTest {
 
         // Assert – beide DBs zeigen nur noch idea2
         val settingsIdeas = settingsDb.contactUserDataDao()
-            .getUserDataForContact("alice")?.giftIdeas
+            .getUserDataForContact("alice").giftIdeas()
         val cacheIdeas = appDb.contactDao()
-            .getContactByLookupKey("alice")?.giftIdeas
+            .getContactByLookupKey("alice").giftIdeas()
 
         assertThat(settingsIdeas).hasSize(1)
         assertThat(cacheIdeas).hasSize(1)
-        assertThat(settingsIdeas?.first()?.text).isEqualTo(cacheIdeas?.first()?.text)
+        assertThat(settingsIdeas.first().text).isEqualTo(cacheIdeas.first().text)
     }
 
     @Test
@@ -443,10 +454,10 @@ class ContactRepositoryGiftIdeaTest {
         // Arrange
         val idea = makeIdea("Toggle-Test")
         appDb.contactDao().upsertContact(
-            makeContact("alice", "Alice").copy(giftIdeas = listOf(idea))
+            makeContact("alice", "Alice").copy(giftIdeasJson = giftIdeasJson(listOf(idea)))
         )
         settingsDb.contactUserDataDao().upsertUserData(
-            ContactUserData(lookupKey = "alice", giftIdeas = listOf(idea))
+            ContactUserData(lookupKey = "alice", giftIdeasJson = giftIdeasJson(listOf(idea)))
         )
 
         // Act
@@ -454,9 +465,9 @@ class ContactRepositoryGiftIdeaTest {
 
         // Assert – beide DBs zeigen identischen isChecked-Zustand
         val settingsChecked = settingsDb.contactUserDataDao()
-            .getUserDataForContact("alice")?.giftIdeas?.first()?.isChecked
+            .getUserDataForContact("alice").giftIdeas().first().isChecked
         val cacheChecked = appDb.contactDao()
-            .getContactByLookupKey("alice")?.giftIdeas?.first()?.isChecked
+            .getContactByLookupKey("alice").giftIdeas().first().isChecked
 
         assertThat(settingsChecked).isEqualTo(cacheChecked)
         assertThat(settingsChecked).isTrue()
@@ -467,10 +478,10 @@ class ContactRepositoryGiftIdeaTest {
         // Arrange
         val idea = makeIdea("Alt")
         appDb.contactDao().upsertContact(
-            makeContact("alice", "Alice").copy(giftIdeas = listOf(idea))
+            makeContact("alice", "Alice").copy(giftIdeasJson = giftIdeasJson(listOf(idea)))
         )
         settingsDb.contactUserDataDao().upsertUserData(
-            ContactUserData(lookupKey = "alice", giftIdeas = listOf(idea))
+            ContactUserData(lookupKey = "alice", giftIdeasJson = giftIdeasJson(listOf(idea)))
         )
 
         // Act
@@ -478,9 +489,9 @@ class ContactRepositoryGiftIdeaTest {
 
         // Assert – beide DBs zeigen denselben Text
         val settingsText = settingsDb.contactUserDataDao()
-            .getUserDataForContact("alice")?.giftIdeas?.first()?.text
+            .getUserDataForContact("alice").giftIdeas().first().text
         val cacheText = appDb.contactDao()
-            .getContactByLookupKey("alice")?.giftIdeas?.first()?.text
+            .getContactByLookupKey("alice").giftIdeas().first().text
 
         assertThat(settingsText).isEqualTo("Neu")
         assertThat(cacheText).isEqualTo("Neu")
@@ -504,9 +515,9 @@ class ContactRepositoryGiftIdeaTest {
 
         // Assert – beide DBs leer
         val settingsIdeas = settingsDb.contactUserDataDao()
-            .getUserDataForContact("alice")?.giftIdeas
+            .getUserDataForContact("alice").giftIdeas()
         val cacheIdeas = appDb.contactDao()
-            .getContactByLookupKey("alice")?.giftIdeas
+            .getContactByLookupKey("alice").giftIdeas()
 
         assertThat(settingsIdeas).isEmpty()
         assertThat(cacheIdeas).isEmpty()

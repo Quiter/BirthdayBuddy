@@ -1052,6 +1052,33 @@ class MigrationTest {
 
     @Test
     @Throws(IOException::class)
+    fun migrate11To12() {
+        // 1. Create database in version 11 with test data
+        helper.createDatabase(testDb, 11).apply {
+            execSQL(
+                "INSERT INTO contacts (contactId, lookupKey, fullName, birthday, anniversary, nameDay, imageUri, phoneNumber, isFavorite, hasWhatsApp, hasSignal, labels, giftIdeas, spouseLookupKey) " +
+                        "VALUES ('11', 'key11_test', 'Julia Test', '1995-03-20', '2020-08-15', '2020-04-12', 'content://test/img.jpg', '+4912345678', 1, 1, 0, '[]', '[{\"id\":\"idea1\",\"text\":\"Book\",\"isChecked\":false}]', 'keySpouse')"
+            )
+            close()
+        }
+
+        // 2. Run auto migration 11 -> 12 and validate schema
+        val migratedDb = helper.runMigrationsAndValidate(
+            testDb,
+            12,
+            true
+        )
+
+        // 3. Verify data integrity in contacts table
+        val contactCursor = migratedDb.query("SELECT * FROM contacts WHERE lookupKey = 'key11_test'")
+        assertTrue(contactCursor.moveToFirst())
+        assertEquals("Julia Test", contactCursor.getString(contactCursor.getColumnIndexOrThrow("fullName")))
+        assertEquals("[{\"id\":\"idea1\",\"text\":\"Book\",\"isChecked\":false}]", contactCursor.getString(contactCursor.getColumnIndexOrThrow("giftIdeas")))
+        contactCursor.close()
+    }
+
+    @Test
+    @Throws(IOException::class)
     fun migrateAll() {
         // Erstellt die DB in V1 und migriert schrittweise auf die aktuelle Version
         helper.createDatabase(testDb, 1).close()

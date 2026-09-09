@@ -60,4 +60,25 @@ class ConvertersTest {
         assertThat(converters.toList("")).isEmpty()
         assertThat(converters.toList("  ")).isEmpty()
     }
+
+    @Test
+    fun fromThemeMode_convertsEnumToString() {
+        assertThat(converters.fromThemeMode(com.heckmannch.birthdaybuddy.domain.model.ThemeMode.DARK)).isEqualTo("DARK")
+        assertThat(converters.fromThemeMode(com.heckmannch.birthdaybuddy.domain.model.ThemeMode.LIGHT)).isEqualTo("LIGHT")
+        assertThat(converters.fromThemeMode(com.heckmannch.birthdaybuddy.domain.model.ThemeMode.SYSTEM)).isEqualTo("SYSTEM")
+        assertThat(converters.fromThemeMode(null)).isNull()
+    }
+
+    @Test
+    fun toThemeMode_convertsStringToEnum() {
+        assertThat(converters.toThemeMode("DARK")).isEqualTo(com.heckmannch.birthdaybuddy.domain.model.ThemeMode.DARK)
+        assertThat(converters.toThemeMode("LIGHT")).isEqualTo(com.heckmannch.birthdaybuddy.domain.model.ThemeMode.LIGHT)
+        assertThat(converters.toThemeMode("SYSTEM")).isEqualTo(com.heckmannch.birthdaybuddy.domain.model.ThemeMode.SYSTEM)
+        assertThat(converters.toThemeMode(null)).isNull()
+    }
+
+    @Test
+    fun toThemeMode_fallsBackToSystemOnInvalidString() {
+        assertThat(converters.toThemeMode("UNKNOWN_VALUE")).isEqualTo(com.heckmannch.birthdaybuddy.domain.model.ThemeMode.SYSTEM)
+    }
 }

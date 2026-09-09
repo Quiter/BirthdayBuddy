@@ -9,6 +9,7 @@ import com.heckmannch.birthdaybuddy.data.local.ContactDao
 import com.heckmannch.birthdaybuddy.data.local.ContactEntity
 import com.heckmannch.birthdaybuddy.data.local.ContactUserData
 import com.heckmannch.birthdaybuddy.data.local.ContactUserDataDao
+import com.heckmannch.birthdaybuddy.data.local.GiftIdeaConverters
 import com.heckmannch.birthdaybuddy.data.local.SettingsDatabase
 import com.heckmannch.birthdaybuddy.di.IoDispatcher
 import com.heckmannch.birthdaybuddy.domain.model.GiftIdea
@@ -37,6 +38,7 @@ class GiftIdeaRepositoryImpl @Inject constructor(
     private val appDatabase: AppDatabase,
     private val settingsDatabase: SettingsDatabase,
     private val widgetUpdater: WidgetUpdater,
+    private val giftIdeaConverters: GiftIdeaConverters = GiftIdeaConverters(),
     @IoDispatcher private val ioDispatcher: CoroutineDispatcher,
 ) : GiftIdeaRepository {
 
@@ -81,19 +83,19 @@ class GiftIdeaRepositoryImpl @Inject constructor(
                     contactUserDataDao.upsertUserData(
                         ContactUserData(
                             lookupKey = lookupKey,
-                            giftIdeas = ideas,
+                            giftIdeasJson = giftIdeaConverters.fromGiftIdeaList(ideas),
                             spouseLookupKey = prevUserData?.spouseLookupKey
                         )
                     )
                 },
                 rollbackSettings = { prevUserData ->
                     val rollbackData = prevUserData
-                        ?: ContactUserData(lookupKey = lookupKey, giftIdeas = emptyList())
+                        ?: ContactUserData(lookupKey = lookupKey, giftIdeasJson = "[]")
                     contactUserDataDao.upsertUserData(rollbackData)
                 },
                 updateAppDbCache = {
                     contactDao.getContactByLookupKey(lookupKey)?.let { contact ->
-                        contactDao.upsertContact(contact.copy(giftIdeas = ideas))
+                        contactDao.upsertContact(contact.copy(giftIdeasJson = giftIdeaConverters.fromGiftIdeaList(ideas)))
                     }
                 },
                 errorMessage = "Failed to update gift idea cache, rolling back"
@@ -107,12 +109,14 @@ class GiftIdeaRepositoryImpl @Inject constructor(
         ideaId: String
     ): Pair<String, ContactEntity>? {
         val contact = contactDao.getContactByLookupKey(lookupKey) ?: return null
-        if (contact.giftIdeas.any { it.id == ideaId }) {
+        val contactIdeas = giftIdeaConverters.toGiftIdeaList(contact.giftIdeasJson)
+        if (contactIdeas.any { it.id == ideaId }) {
             return lookupKey to contact
         }
         val spouseKey = contact.spouseLookupKey ?: return null
         val spouseContact = contactDao.getContactByLookupKey(spouseKey) ?: return null
-        if (spouseContact.giftIdeas.any { it.id == ideaId }) {
+        val spouseIdeas = giftIdeaConverters.toGiftIdeaList(spouseContact.giftIdeasJson)
+        if (spouseIdeas.any { it.id == ideaId }) {
             return spouseKey to spouseContact
         }
         return null
@@ -121,7 +125,8 @@ class GiftIdeaRepositoryImpl @Inject constructor(
     override suspend fun addGiftIdea(lookupKey: String, newIdea: GiftIdea) =
         withContext(ioDispatcher) {
             val contact = contactDao.getContactByLookupKey(lookupKey) ?: return@withContext
-            val updatedIdeas = GiftIdea.withNewIdea(contact.giftIdeas, newIdea)
+            val ideas = giftIdeaConverters.toGiftIdeaList(contact.giftIdeasJson)
+            val updatedIdeas = GiftIdea.withNewIdea(ideas, newIdea)
             updateGiftIdeas(lookupKey, updatedIdeas)
         }
 
@@ -129,7 +134,8 @@ class GiftIdeaRepositoryImpl @Inject constructor(
         withContext(ioDispatcher) {
             val (targetKey, targetContact) = resolveContactForGiftIdea(lookupKey, ideaId)
                 ?: return@withContext
-            val updatedIdeas = targetContact.giftIdeas.filter { it.id != ideaId }
+            val ideas = giftIdeaConverters.toGiftIdeaList(targetContact.giftIdeasJson)
+            val updatedIdeas = ideas.filter { it.id != ideaId }
             updateGiftIdeas(targetKey, updatedIdeas)
         }
 
@@ -140,7 +146,8 @@ class GiftIdeaRepositoryImpl @Inject constructor(
         withContext(ioDispatcher) {
             val (targetKey, targetContact) = resolveContactForGiftIdea(lookupKey, idea.id)
                 ?: return@withContext
-            val updatedIdeas = GiftIdea.withToggledIdea(targetContact.giftIdeas, idea, isChecked)
+            val ideas = giftIdeaConverters.toGiftIdeaList(targetContact.giftIdeasJson)
+            val updatedIdeas = GiftIdea.withToggledIdea(ideas, idea, isChecked)
             updateGiftIdeas(targetKey, updatedIdeas)
         }
 
@@ -148,7 +155,8 @@ class GiftIdeaRepositoryImpl @Inject constructor(
         withContext(ioDispatcher) {
             val (targetKey, targetContact) = resolveContactForGiftIdea(lookupKey, ideaId)
                 ?: return@withContext
-            val updatedIdeas = targetContact.giftIdeas.map {
+            val ideas = giftIdeaConverters.toGiftIdeaList(targetContact.giftIdeasJson)
+            val updatedIdeas = ideas.map {
                 if (it.id == ideaId) it.copy(text = newText) else it
             }
             updateGiftIdeas(targetKey, updatedIdeas)

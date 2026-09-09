@@ -4,7 +4,6 @@ import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.Index
 import androidx.room.PrimaryKey
-import com.heckmannch.birthdaybuddy.domain.model.GiftIdea
 import java.time.LocalDate
 
 /**
@@ -42,6 +41,7 @@ data class ContactEntity(
     @ColumnInfo(defaultValue = "0")
     val hasSignal: Boolean = false,
     val labels: List<String> = emptyList(),
-    val giftIdeas: List<GiftIdea> = emptyList(),
+    @ColumnInfo(name = "giftIdeas")
+    val giftIdeasJson: String = "[]",
     val spouseLookupKey: String? = null
 )

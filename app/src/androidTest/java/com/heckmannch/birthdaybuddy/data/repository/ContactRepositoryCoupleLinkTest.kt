@@ -111,7 +111,7 @@ class ContactRepositoryCoupleLinkTest {
         appDb.contactDao().upsertContact(makeContact("alice", "Alice"))
         appDb.contactDao().upsertContact(makeContact("bob", "Bob"))
         settingsDb.contactUserDataDao().upsertUserData(
-            ContactUserData(lookupKey = "alice", giftIdeas = emptyList(), spouseLookupKey = null)
+            ContactUserData(lookupKey = "alice", giftIdeasJson = "[]", spouseLookupKey = null)
         )
 
         // Act
@@ -119,7 +119,7 @@ class ContactRepositoryCoupleLinkTest {
 
         // Assert – Gift Ideas nicht überschrieben
         val aliceData = settingsDb.contactUserDataDao().getUserDataForContact("alice")
-        assertThat(aliceData?.giftIdeas).isEmpty()
+        assertThat(aliceData?.giftIdeasJson).isEqualTo("[]")
         assertThat(aliceData?.spouseLookupKey).isEqualTo("bob")
     }
 

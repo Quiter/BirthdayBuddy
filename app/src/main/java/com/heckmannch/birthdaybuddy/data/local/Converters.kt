@@ -5,12 +5,15 @@ import androidx.room.TypeConverter
 import com.heckmannch.birthdaybuddy.domain.model.ThemeMode
 import com.heckmannch.birthdaybuddy.util.JsonUtils
 import java.time.LocalDate
+import javax.inject.Inject
+import javax.inject.Singleton
 
 /**
  * Room type converters for custom data types used in database entities,
  * including [ThemeMode], [LocalDate], and lists of strings.
  */
-class Converters {
+@Singleton
+class Converters @Inject constructor() {
     companion object {
         private const val TAG = "Converters"
         private val json = JsonUtils.defaultJson

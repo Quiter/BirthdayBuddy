@@ -105,7 +105,7 @@ class ContactRepositoryImplTest {
                 birthday = LocalDate.of(1990, 5, 10),
                 isFavorite = true,
                 labels = listOf("Friends"),
-                giftIdeas = emptyList(),
+                giftIdeasJson = "[]",
                 spouseLookupKey = "spouse_key"
             )
         )

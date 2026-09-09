@@ -1,8 +1,8 @@
 package com.heckmannch.birthdaybuddy.data.local
 
+import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
-import com.heckmannch.birthdaybuddy.domain.model.GiftIdea
 
 /**
  * Stores custom user data for a contact independent of the system contacts cache.
@@ -12,6 +12,7 @@ import com.heckmannch.birthdaybuddy.domain.model.GiftIdea
 data class ContactUserData(
     @PrimaryKey
     val lookupKey: String,
-    val giftIdeas: List<GiftIdea> = emptyList(),
+    @ColumnInfo(name = "giftIdeas")
+    val giftIdeasJson: String = "[]",
     val spouseLookupKey: String? = null
 )

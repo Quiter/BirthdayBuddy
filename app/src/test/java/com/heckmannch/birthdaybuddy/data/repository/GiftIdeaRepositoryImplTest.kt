@@ -10,6 +10,7 @@ import com.heckmannch.birthdaybuddy.data.local.ContactDao
 import com.heckmannch.birthdaybuddy.data.local.ContactEntity
 import com.heckmannch.birthdaybuddy.data.local.ContactUserData
 import com.heckmannch.birthdaybuddy.data.local.ContactUserDataDao
+import com.heckmannch.birthdaybuddy.data.local.GiftIdeaConverters
 import com.heckmannch.birthdaybuddy.data.local.SettingsDatabase
 import com.heckmannch.birthdaybuddy.domain.model.GiftIdea
 import com.heckmannch.birthdaybuddy.domain.repository.ContactRepository
@@ -49,6 +50,7 @@ class GiftIdeaRepositoryImplTest {
     private val widgetUpdater: WidgetUpdater = mock()
     private val appDatabase: AppDatabase = mock()
     private val settingsDatabase: SettingsDatabase = mock()
+    private val converters = GiftIdeaConverters()
 
     private lateinit var repository: GiftIdeaRepositoryImpl
 
@@ -73,6 +75,7 @@ class GiftIdeaRepositoryImplTest {
             appDatabase = appDatabase,
             settingsDatabase = settingsDatabase,
             widgetUpdater = widgetUpdater,
+            giftIdeaConverters = converters,
             ioDispatcher = mainDispatcherRule.testDispatcher,
         )
     }
@@ -95,7 +98,7 @@ class GiftIdeaRepositoryImplTest {
             contactId = "c1",
             lookupKey = "key1",
             fullName = "John Doe",
-            giftIdeas = emptyList()
+            giftIdeasJson = "[]"
         )
         whenever(contactDao.getContactByLookupKey("key1")).thenReturn(contactEntity)
         whenever(contactUserDataDao.getUserDataForContact("key1")).thenReturn(null)
@@ -108,13 +111,15 @@ class GiftIdeaRepositoryImplTest {
         // Assert
         verify(contactUserDataDao).upsertUserData(check {
             assertThat(it.lookupKey).isEqualTo("key1")
-            assertThat(it.giftIdeas).hasSize(1)
-            assertThat(it.giftIdeas.first().text).isEqualTo("Book")
+            val ideas = converters.toGiftIdeaList(it.giftIdeasJson)
+            assertThat(ideas).hasSize(1)
+            assertThat(ideas.first().text).isEqualTo("Book")
         })
         verify(contactDao).upsertContact(check {
             assertThat(it.lookupKey).isEqualTo("key1")
-            assertThat(it.giftIdeas).hasSize(1)
-            assertThat(it.giftIdeas.first().text).isEqualTo("Book")
+            val ideas = converters.toGiftIdeaList(it.giftIdeasJson)
+            assertThat(ideas).hasSize(1)
+            assertThat(ideas.first().text).isEqualTo("Book")
         })
         verify(widgetUpdater).updateWidget()
     }
@@ -126,12 +131,12 @@ class GiftIdeaRepositoryImplTest {
             contactId = "c1",
             lookupKey = "key1",
             fullName = "John Doe",
-            giftIdeas = emptyList(),
+            giftIdeasJson = "[]",
             spouseLookupKey = "spouse_key"
         )
         val existingUserData = ContactUserData(
             lookupKey = "key1",
-            giftIdeas = emptyList(),
+            giftIdeasJson = "[]",
             spouseLookupKey = "spouse_key"
         )
         whenever(contactDao.getContactByLookupKey("key1")).thenReturn(contactEntity)
@@ -145,13 +150,15 @@ class GiftIdeaRepositoryImplTest {
         // Assert
         verify(contactUserDataDao).upsertUserData(check {
             assertThat(it.lookupKey).isEqualTo("key1")
-            assertThat(it.giftIdeas).hasSize(1)
-            assertThat(it.giftIdeas.first().text).isEqualTo("Book")
+            val ideas = converters.toGiftIdeaList(it.giftIdeasJson)
+            assertThat(ideas).hasSize(1)
+            assertThat(ideas.first().text).isEqualTo("Book")
             assertThat(it.spouseLookupKey).isEqualTo("spouse_key")
         })
         verify(contactDao).upsertContact(check {
             assertThat(it.lookupKey).isEqualTo("key1")
-            assertThat(it.giftIdeas).hasSize(1)
+            val ideas = converters.toGiftIdeaList(it.giftIdeasJson)
+            assertThat(ideas).hasSize(1)
             assertThat(it.spouseLookupKey).isEqualTo("spouse_key")
         })
         verify(widgetUpdater).updateWidget()
@@ -160,12 +167,12 @@ class GiftIdeaRepositoryImplTest {
     @Test
     fun addGiftIdea_rollsBackSettings_whenCacheUpdateFails() = runTest(createTransactionElement()) {
         // Arrange
-        val prevUserData = ContactUserData(lookupKey = "key1", giftIdeas = emptyList())
+        val prevUserData = ContactUserData(lookupKey = "key1", giftIdeasJson = "[]")
         val contactEntity = ContactEntity(
             contactId = "c1",
             lookupKey = "key1",
             fullName = "John Doe",
-            giftIdeas = emptyList()
+            giftIdeasJson = "[]"
         )
         whenever(contactDao.getContactByLookupKey("key1")).thenReturn(contactEntity)
             .thenThrow(RuntimeException("Cache error"))
@@ -193,11 +200,11 @@ class GiftIdeaRepositoryImplTest {
             contactId = "c1",
             lookupKey = "key1",
             fullName = "John Doe",
-            giftIdeas = listOf(idea)
+            giftIdeasJson = converters.fromGiftIdeaList(listOf(idea))
         )
         whenever(contactDao.getContactByLookupKey("key1")).thenReturn(contactEntity)
         whenever(contactUserDataDao.getUserDataForContact("key1")).thenReturn(
-            ContactUserData(lookupKey = "key1", giftIdeas = listOf(idea))
+            ContactUserData(lookupKey = "key1", giftIdeasJson = converters.fromGiftIdeaList(listOf(idea)))
         )
 
         // Act
@@ -206,11 +213,13 @@ class GiftIdeaRepositoryImplTest {
         // Assert
         verify(contactUserDataDao).upsertUserData(check {
             assertThat(it.lookupKey).isEqualTo("key1")
-            assertThat(it.giftIdeas.first().isChecked).isTrue()
+            val ideas = converters.toGiftIdeaList(it.giftIdeasJson)
+            assertThat(ideas.first().isChecked).isTrue()
         })
         verify(contactDao).upsertContact(check {
             assertThat(it.lookupKey).isEqualTo("key1")
-            assertThat(it.giftIdeas.first().isChecked).isTrue()
+            val ideas = converters.toGiftIdeaList(it.giftIdeasJson)
+            assertThat(ideas.first().isChecked).isTrue()
         })
         verify(widgetUpdater).updateWidget()
     }
@@ -223,14 +232,14 @@ class GiftIdeaRepositoryImplTest {
             contactId = "c1",
             lookupKey = "key1",
             fullName = "Max",
-            giftIdeas = emptyList(),
+            giftIdeasJson = "[]",
             spouseLookupKey = "spouse_key"
         )
         val spouseEntity = ContactEntity(
             contactId = "c2",
             lookupKey = "spouse_key",
             fullName = "Erika",
-            giftIdeas = listOf(spouseIdea),
+            giftIdeasJson = converters.fromGiftIdeaList(listOf(spouseIdea)),
             spouseLookupKey = "key1"
         )
         whenever(contactDao.getContactByLookupKey("key1")).thenReturn(contactEntity)
@@ -238,7 +247,7 @@ class GiftIdeaRepositoryImplTest {
         whenever(contactUserDataDao.getUserDataForContact("spouse_key")).thenReturn(
             ContactUserData(
                 lookupKey = "spouse_key",
-                giftIdeas = listOf(spouseIdea),
+                giftIdeasJson = converters.fromGiftIdeaList(listOf(spouseIdea)),
                 spouseLookupKey = "key1"
             )
         )
@@ -249,12 +258,14 @@ class GiftIdeaRepositoryImplTest {
         // Assert - Updates should be applied to spouse_key
         verify(contactUserDataDao).upsertUserData(check {
             assertThat(it.lookupKey).isEqualTo("spouse_key")
-            assertThat(it.giftIdeas.first().isChecked).isTrue()
+            val ideas = converters.toGiftIdeaList(it.giftIdeasJson)
+            assertThat(ideas.first().isChecked).isTrue()
             assertThat(it.spouseLookupKey).isEqualTo("key1")
         })
         verify(contactDao).upsertContact(check {
             assertThat(it.lookupKey).isEqualTo("spouse_key")
-            assertThat(it.giftIdeas.first().isChecked).isTrue()
+            val ideas = converters.toGiftIdeaList(it.giftIdeasJson)
+            assertThat(ideas.first().isChecked).isTrue()
             assertThat(it.spouseLookupKey).isEqualTo("key1")
         })
         verify(widgetUpdater).updateWidget()
@@ -268,11 +279,11 @@ class GiftIdeaRepositoryImplTest {
             contactId = "c1",
             lookupKey = "key1",
             fullName = "John Doe",
-            giftIdeas = listOf(idea)
+            giftIdeasJson = converters.fromGiftIdeaList(listOf(idea))
         )
         whenever(contactDao.getContactByLookupKey("key1")).thenReturn(contactEntity)
         whenever(contactUserDataDao.getUserDataForContact("key1")).thenReturn(
-            ContactUserData(lookupKey = "key1", giftIdeas = listOf(idea))
+            ContactUserData(lookupKey = "key1", giftIdeasJson = converters.fromGiftIdeaList(listOf(idea)))
         )
 
         // Act
@@ -281,11 +292,13 @@ class GiftIdeaRepositoryImplTest {
         // Assert
         verify(contactUserDataDao).upsertUserData(check {
             assertThat(it.lookupKey).isEqualTo("key1")
-            assertThat(it.giftIdeas).isEmpty()
+            val ideas = converters.toGiftIdeaList(it.giftIdeasJson)
+            assertThat(ideas).isEmpty()
         })
         verify(contactDao).upsertContact(check {
             assertThat(it.lookupKey).isEqualTo("key1")
-            assertThat(it.giftIdeas).isEmpty()
+            val ideas = converters.toGiftIdeaList(it.giftIdeasJson)
+            assertThat(ideas).isEmpty()
         })
         verify(widgetUpdater).updateWidget()
     }
@@ -298,14 +311,14 @@ class GiftIdeaRepositoryImplTest {
             contactId = "c1",
             lookupKey = "key1",
             fullName = "Max",
-            giftIdeas = emptyList(),
+            giftIdeasJson = "[]",
             spouseLookupKey = "spouse_key"
         )
         val spouseEntity = ContactEntity(
             contactId = "c2",
             lookupKey = "spouse_key",
             fullName = "Erika",
-            giftIdeas = listOf(spouseIdea),
+            giftIdeasJson = converters.fromGiftIdeaList(listOf(spouseIdea)),
             spouseLookupKey = "key1"
         )
         whenever(contactDao.getContactByLookupKey("key1")).thenReturn(contactEntity)
@@ -313,7 +326,7 @@ class GiftIdeaRepositoryImplTest {
         whenever(contactUserDataDao.getUserDataForContact("spouse_key")).thenReturn(
             ContactUserData(
                 lookupKey = "spouse_key",
-                giftIdeas = listOf(spouseIdea),
+                giftIdeasJson = converters.fromGiftIdeaList(listOf(spouseIdea)),
                 spouseLookupKey = "key1"
             )
         )
@@ -324,12 +337,14 @@ class GiftIdeaRepositoryImplTest {
         // Assert - Deletion should happen on spouse_key
         verify(contactUserDataDao).upsertUserData(check {
             assertThat(it.lookupKey).isEqualTo("spouse_key")
-            assertThat(it.giftIdeas).isEmpty()
+            val ideas = converters.toGiftIdeaList(it.giftIdeasJson)
+            assertThat(ideas).isEmpty()
             assertThat(it.spouseLookupKey).isEqualTo("key1")
         })
         verify(contactDao).upsertContact(check {
             assertThat(it.lookupKey).isEqualTo("spouse_key")
-            assertThat(it.giftIdeas).isEmpty()
+            val ideas = converters.toGiftIdeaList(it.giftIdeasJson)
+            assertThat(ideas).isEmpty()
             assertThat(it.spouseLookupKey).isEqualTo("key1")
         })
         verify(widgetUpdater).updateWidget()
@@ -343,11 +358,11 @@ class GiftIdeaRepositoryImplTest {
             contactId = "c1",
             lookupKey = "key1",
             fullName = "John Doe",
-            giftIdeas = listOf(idea)
+            giftIdeasJson = converters.fromGiftIdeaList(listOf(idea))
         )
         whenever(contactDao.getContactByLookupKey("key1")).thenReturn(contactEntity)
         whenever(contactUserDataDao.getUserDataForContact("key1")).thenReturn(
-            ContactUserData(lookupKey = "key1", giftIdeas = listOf(idea))
+            ContactUserData(lookupKey = "key1", giftIdeasJson = converters.fromGiftIdeaList(listOf(idea)))
         )
 
         // Act
@@ -356,11 +371,13 @@ class GiftIdeaRepositoryImplTest {
         // Assert
         verify(contactUserDataDao).upsertUserData(check {
             assertThat(it.lookupKey).isEqualTo("key1")
-            assertThat(it.giftIdeas.first().text).isEqualTo("Updated text")
+            val ideas = converters.toGiftIdeaList(it.giftIdeasJson)
+            assertThat(ideas.first().text).isEqualTo("Updated text")
         })
         verify(contactDao).upsertContact(check {
             assertThat(it.lookupKey).isEqualTo("key1")
-            assertThat(it.giftIdeas.first().text).isEqualTo("Updated text")
+            val ideas = converters.toGiftIdeaList(it.giftIdeasJson)
+            assertThat(ideas.first().text).isEqualTo("Updated text")
         })
         verify(widgetUpdater).updateWidget()
     }
@@ -373,14 +390,14 @@ class GiftIdeaRepositoryImplTest {
             contactId = "c1",
             lookupKey = "key1",
             fullName = "Max",
-            giftIdeas = emptyList(),
+            giftIdeasJson = "[]",
             spouseLookupKey = "spouse_key"
         )
         val spouseEntity = ContactEntity(
             contactId = "c2",
             lookupKey = "spouse_key",
             fullName = "Erika",
-            giftIdeas = listOf(spouseIdea),
+            giftIdeasJson = converters.fromGiftIdeaList(listOf(spouseIdea)),
             spouseLookupKey = "key1"
         )
         whenever(contactDao.getContactByLookupKey("key1")).thenReturn(contactEntity)
@@ -388,7 +405,7 @@ class GiftIdeaRepositoryImplTest {
         whenever(contactUserDataDao.getUserDataForContact("spouse_key")).thenReturn(
             ContactUserData(
                 lookupKey = "spouse_key",
-                giftIdeas = listOf(spouseIdea),
+                giftIdeasJson = converters.fromGiftIdeaList(listOf(spouseIdea)),
                 spouseLookupKey = "key1"
             )
         )
@@ -399,12 +416,14 @@ class GiftIdeaRepositoryImplTest {
         // Assert - Update should happen on spouse_key
         verify(contactUserDataDao).upsertUserData(check {
             assertThat(it.lookupKey).isEqualTo("spouse_key")
-            assertThat(it.giftIdeas.first().text).isEqualTo("Updated text")
+            val ideas = converters.toGiftIdeaList(it.giftIdeasJson)
+            assertThat(ideas.first().text).isEqualTo("Updated text")
             assertThat(it.spouseLookupKey).isEqualTo("key1")
         })
         verify(contactDao).upsertContact(check {
             assertThat(it.lookupKey).isEqualTo("spouse_key")
-            assertThat(it.giftIdeas.first().text).isEqualTo("Updated text")
+            val ideas = converters.toGiftIdeaList(it.giftIdeasJson)
+            assertThat(ideas.first().text).isEqualTo("Updated text")
             assertThat(it.spouseLookupKey).isEqualTo("key1")
         })
         verify(widgetUpdater).updateWidget()

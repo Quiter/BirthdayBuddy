@@ -4,11 +4,14 @@ import android.util.Log
 import androidx.room.TypeConverter
 import com.heckmannch.birthdaybuddy.domain.model.GiftIdea
 import com.heckmannch.birthdaybuddy.util.JsonUtils
+import javax.inject.Inject
+import javax.inject.Singleton
 
 /**
  * Room type converters for serializing and deserializing lists of [GiftIdea] objects.
  */
-class GiftIdeaConverters {
+@Singleton
+class GiftIdeaConverters @Inject constructor() {
     companion object {
         private const val TAG = "GiftIdeaConverters"
         private val json = JsonUtils.defaultJson

@@ -1,6 +1,7 @@
 package com.heckmannch.birthdaybuddy.data.mapper
 
 import com.heckmannch.birthdaybuddy.data.local.ContactEntity
+import com.heckmannch.birthdaybuddy.data.local.GiftIdeaConverters
 import com.heckmannch.birthdaybuddy.domain.model.Contact
 import dagger.Reusable
 import javax.inject.Inject
@@ -9,7 +10,11 @@ import javax.inject.Inject
  * Mapper for converting between database entity [ContactEntity] and domain model [Contact].
  */
 @Reusable
-class ContactDbMapper @Inject constructor() {
+class ContactDbMapper @Inject constructor(
+    private val giftIdeaConverters: GiftIdeaConverters
+) {
+
+    constructor() : this(GiftIdeaConverters())
 
     /**
      * Converts a database [ContactEntity] into a domain [Contact] model.
@@ -28,7 +33,7 @@ class ContactDbMapper @Inject constructor() {
             hasWhatsApp = entity.hasWhatsApp,
             hasSignal = entity.hasSignal,
             labels = entity.labels,
-            giftIdeas = entity.giftIdeas,
+            giftIdeas = giftIdeaConverters.toGiftIdeaList(entity.giftIdeasJson),
             spouseLookupKey = entity.spouseLookupKey
         )
     }
@@ -56,7 +61,7 @@ class ContactDbMapper @Inject constructor() {
             hasWhatsApp = domain.hasWhatsApp,
             hasSignal = domain.hasSignal,
             labels = domain.labels,
-            giftIdeas = domain.giftIdeas,
+            giftIdeasJson = giftIdeaConverters.fromGiftIdeaList(domain.giftIdeas),
             spouseLookupKey = domain.spouseLookupKey
         )
     }

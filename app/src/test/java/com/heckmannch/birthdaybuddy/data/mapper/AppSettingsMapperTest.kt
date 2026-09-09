@@ -29,7 +29,7 @@ class AppSettingsMapperTest {
             birthdayCalendarColor = 0xFF112233.toInt(),
             anniversaryCalendarColor = 0xFF445566.toInt(),
             nameDayCalendarColor = 0xFF778899.toInt(),
-            themeMode = ThemeMode.DARK,
+            themeModeString = "DARK",
             themeAmoled = true,
             themeAccent = "BLUE",
             labelsEnabled = false
@@ -116,10 +116,21 @@ class AppSettingsMapperTest {
         assertThat(entity.birthdayCalendarColor).isEqualTo(0xFF112233.toInt())
         assertThat(entity.anniversaryCalendarColor).isEqualTo(0xFF445566.toInt())
         assertThat(entity.nameDayCalendarColor).isEqualTo(0xFF778899.toInt())
-        assertThat(entity.themeMode).isEqualTo(ThemeMode.DARK)
+        assertThat(entity.themeModeString).isEqualTo("DARK")
         assertThat(entity.themeAmoled).isTrue()
         assertThat(entity.themeAccent).isEqualTo("BLUE")
         assertThat(entity.labelsEnabled).isFalse()
+    }
+
+    @Test
+    fun toDomain_fallsBackToSystemOnInvalidThemeMode() {
+        val entity = AppSettingsEntity(
+            themeModeString = "INVALID_THEME"
+        )
+
+        val domain = mapper.toDomain(entity)
+
+        assertThat(domain.themeMode).isEqualTo(ThemeMode.SYSTEM)
     }
 
     @Test

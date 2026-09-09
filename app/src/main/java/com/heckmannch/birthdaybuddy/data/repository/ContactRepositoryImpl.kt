@@ -6,6 +6,7 @@ import android.provider.ContactsContract
 import android.util.Log
 import com.heckmannch.birthdaybuddy.data.local.ContactDao
 import com.heckmannch.birthdaybuddy.data.local.ContactUserDataDao
+import com.heckmannch.birthdaybuddy.data.local.GiftIdeaConverters
 import com.heckmannch.birthdaybuddy.data.local.LabelConfigDao
 import com.heckmannch.birthdaybuddy.data.local.LabelConfigEntity
 import com.heckmannch.birthdaybuddy.data.mapper.ContactDbMapper
@@ -52,6 +53,7 @@ class ContactRepositoryImpl @Inject constructor(
     private val contactDbMapper: ContactDbMapper,
     private val labelConfigMapper: LabelConfigMapper,
     private val contentResolver: ContentResolver,
+    private val giftIdeaConverters: GiftIdeaConverters = GiftIdeaConverters(),
     @IoDispatcher private val ioDispatcher: CoroutineDispatcher,
     @DefaultDispatcher private val defaultDispatcher: CoroutineDispatcher,
 ) : ContactRepository {
@@ -155,8 +157,9 @@ class ContactRepositoryImpl @Inject constructor(
                             val existing = dbContacts[lookupKey]
                             val userData = userDataMap[lookupKey]
 
+                            val rawGiftIdeasJson = userData?.giftIdeasJson ?: existing?.giftIdeasJson
                             val contact = systemContact.copy(
-                                giftIdeas = userData?.giftIdeas ?: existing?.giftIdeas ?: emptyList(),
+                                giftIdeas = giftIdeaConverters.toGiftIdeaList(rawGiftIdeasJson),
                                 spouseLookupKey = userData?.spouseLookupKey
                             )
                             contactDbMapper.toEntity(contact, localId = existing?.localId ?: 0)

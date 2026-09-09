@@ -1,8 +1,10 @@
 package com.heckmannch.birthdaybuddy.data.mapper
 
 import com.heckmannch.birthdaybuddy.data.local.AppSettingsEntity
+import com.heckmannch.birthdaybuddy.data.local.Converters
 import com.heckmannch.birthdaybuddy.domain.model.AppSettings
 import com.heckmannch.birthdaybuddy.domain.model.ThemeAccent
+import com.heckmannch.birthdaybuddy.domain.model.ThemeMode
 import dagger.Reusable
 import javax.inject.Inject
 
@@ -10,7 +12,11 @@ import javax.inject.Inject
  * Mapper to convert between [AppSettingsEntity] and [AppSettings].
  */
 @Reusable
-class AppSettingsMapper @Inject constructor() {
+class AppSettingsMapper @Inject constructor(
+    private val converters: Converters
+) {
+
+    constructor() : this(Converters())
 
     fun toDomain(entity: AppSettingsEntity): AppSettings {
         val isHex = entity.themeAccent.startsWith("#")
@@ -34,7 +40,7 @@ class AppSettingsMapper @Inject constructor() {
             birthdayCalendarColor = entity.birthdayCalendarColor,
             anniversaryCalendarColor = entity.anniversaryCalendarColor,
             nameDayCalendarColor = entity.nameDayCalendarColor,
-            themeMode = entity.themeMode,
+            themeMode = converters.toThemeMode(entity.themeModeString) ?: ThemeMode.SYSTEM,
             themeAmoled = entity.themeAmoled,
             themeAccent = themeAccentEnum,
             customAccentColor = customAccentColor,
@@ -62,7 +68,7 @@ class AppSettingsMapper @Inject constructor() {
             birthdayCalendarColor = domain.birthdayCalendarColor,
             anniversaryCalendarColor = domain.anniversaryCalendarColor,
             nameDayCalendarColor = domain.nameDayCalendarColor,
-            themeMode = domain.themeMode,
+            themeModeString = converters.fromThemeMode(domain.themeMode) ?: ThemeMode.SYSTEM.name,
             themeAmoled = domain.themeAmoled,
             themeAccent = themeAccent,
             labelsEnabled = domain.labelsEnabled

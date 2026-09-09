@@ -326,14 +326,52 @@ class SettingsMigrationTest {
 
     @Test
     @Throws(IOException::class)
+    fun migrate10To11() {
+        // 1. Create database in version 10
+        helper.createDatabase(testDb, 10).apply {
+            execSQL(
+                "INSERT INTO app_settings (id, notificationsEnabled, persistentNotifications, onboardingCompleted, lastSyncTimestamp, calendarSyncEnabled, calendarId, otherEventsEnabled, ignoredCouplePairs, birthdayCalendarColor, anniversaryCalendarColor, nameDayCalendarColor, themeMode, themeAmoled, themeAccent, labelsEnabled) " +
+                        "VALUES (0, 1, 1, 1, 123456789, 0, NULL, 0, '[]', -1564957, -6543440, -26624, 'DARK', 0, 'SYSTEM', 1)"
+            )
+            execSQL(
+                "INSERT INTO contact_user_data (lookupKey, giftIdeas, spouseLookupKey) " +
+                        "VALUES ('alice', '[{\"id\":\"idea1\",\"text\":\"Book\",\"isChecked\":false}]', 'bob')"
+            )
+            close()
+        }
+
+        // 2. Run migration to version 11 and validate
+        val migratedDb = helper.runMigrationsAndValidate(
+            testDb,
+            11,
+            true,
+            SETTINGS_MIGRATION_10_11
+        )
+
+        // 3. Verify columns and default values
+        val settingsCursor = migratedDb.query("SELECT * FROM app_settings WHERE id = 0")
+        assert(settingsCursor.moveToFirst())
+        val themeModeIdx = settingsCursor.getColumnIndex("themeMode")
+        assert(settingsCursor.getString(themeModeIdx) == "DARK")
+        settingsCursor.close()
+
+        val contactCursor = migratedDb.query("SELECT * FROM contact_user_data WHERE lookupKey = 'alice'")
+        assert(contactCursor.moveToFirst())
+        val giftIdeasIdx = contactCursor.getColumnIndex("giftIdeas")
+        assert(contactCursor.getString(giftIdeasIdx) == "[{\"id\":\"idea1\",\"text\":\"Book\",\"isChecked\":false}]")
+        contactCursor.close()
+    }
+
+    @Test
+    @Throws(IOException::class)
     fun migrateAll() {
         // 1. Create database in version 1
         helper.createDatabase(testDb, 1).close()
 
-        // 2. Run all migrations to version 10 and validate
+        // 2. Run all migrations to version 11 and validate
         helper.runMigrationsAndValidate(
             testDb,
-            10,
+            11,
             true,
             SETTINGS_MIGRATION_1_2,
             SETTINGS_MIGRATION_2_3,
@@ -343,7 +381,8 @@ class SettingsMigrationTest {
             SETTINGS_MIGRATION_6_7,
             SETTINGS_MIGRATION_7_8,
             SETTINGS_MIGRATION_8_9,
-            SETTINGS_MIGRATION_9_10
+            SETTINGS_MIGRATION_9_10,
+            SETTINGS_MIGRATION_10_11
         )
     }
 }

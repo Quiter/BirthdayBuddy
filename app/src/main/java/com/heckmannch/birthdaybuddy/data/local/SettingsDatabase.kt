@@ -33,10 +33,11 @@ import androidx.sqlite.db.SupportSQLiteDatabase
  * - Version 7 -> 8: [SETTINGS_MIGRATION_7_8] (Hinzufügen von `labelsEnabled` in `app_settings`)
  * - Version 8 -> 9: [SETTINGS_MIGRATION_8_9] (Tabellenrekonstruktion von `app_settings` zur Entfernung von `themeContrast`)
  * - Version 9 -> 10: [SETTINGS_MIGRATION_9_10] (Hinzufügen von `notificationsEnabled` und `showInWidget` in `label_configs`)
+ * - Version 10 -> 11: [SETTINGS_MIGRATION_10_11] (Entkopplung von Domain-Models: Umstellung auf giftIdeasJson in contact_user_data und themeModeString in app_settings)
  */
 @Database(
     entities = [LabelConfigEntity::class, NotificationRuleEntity::class, AppSettingsEntity::class, ContactUserData::class],
-    version = 10,
+    version = 11,
     exportSchema = true
 )
 @TypeConverters(Converters::class, GiftIdeaConverters::class)
@@ -214,6 +215,19 @@ internal val SETTINGS_MIGRATION_9_10 = object : Migration(9, 10) {
 }
 
 /**
+ * Migration von Version 10 auf 11.
+ *
+ * Entkopplung von Domain-Models: In 'contact_user_data' und 'app_settings'
+ * werden die Kotlin-Entity-Felder zu String entkoppelt. Die SQLite-Spalten
+ * 'giftIdeas' und 'themeMode' bleiben unverändert als TEXT NOT NULL erhalten.
+ */
+internal val SETTINGS_MIGRATION_10_11 = object : Migration(10, 11) {
+    override fun migrate(db: SupportSQLiteDatabase) {
+        // No-Op auf Tabellenebene: Spalten 'giftIdeas' und 'themeMode' existieren bereits als TEXT NOT NULL
+    }
+}
+
+/**
  * Erstellt und konfiguriert die [SettingsDatabase]-Instanz.
  *
  * Gemäß Projekt-Richtlinie wird [RoomDatabase.Builder.fallbackToDestructiveMigration] bewusst nicht aufgerufen,
@@ -238,7 +252,8 @@ internal fun buildSettingsDatabase(context: Context): SettingsDatabase {
             SETTINGS_MIGRATION_6_7,
             SETTINGS_MIGRATION_7_8,
             SETTINGS_MIGRATION_8_9,
-            SETTINGS_MIGRATION_9_10
+            SETTINGS_MIGRATION_9_10,
+            SETTINGS_MIGRATION_10_11
         )
         .build()
 }

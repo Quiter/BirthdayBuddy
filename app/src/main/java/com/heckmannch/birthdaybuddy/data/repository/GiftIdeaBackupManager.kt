@@ -42,6 +42,7 @@ class GiftIdeaBackupManager @Inject constructor(
     private val contactDao: ContactDao,
     private val contactUserDataDao: ContactUserDataDao,
     private val settingsDatabase: SettingsDatabase,
+    private val giftIdeaConverters: GiftIdeaConverters = GiftIdeaConverters(),
     @IoDispatcher private val ioDispatcher: CoroutineDispatcher,
 ) {
     private val json = JsonUtils.prettyJson
@@ -52,15 +53,18 @@ class GiftIdeaBackupManager @Inject constructor(
      */
     suspend fun exportGiftIdeas(): String = withContext(ioDispatcher) {
         val userDataList =
-            contactUserDataDao.getAllUserDataImmediate().filter { it.giftIdeas.isNotEmpty() }
+            contactUserDataDao.getAllUserDataImmediate().mapNotNull { userData ->
+                val ideas = giftIdeaConverters.toGiftIdeaList(userData.giftIdeasJson)
+                if (ideas.isEmpty()) null else userData to ideas
+            }
         val dbContacts = contactDao.getAllContactsImmediate().associateBy { it.lookupKey }
 
-        val entries = userDataList.map { userData ->
+        val entries = userDataList.map { (userData, ideas) ->
             val contact = dbContacts[userData.lookupKey]
             GiftIdeaBackupEntry(
                 lookupKey = userData.lookupKey,
                 fullName = contact?.fullName ?: "",
-                giftIdeas = userData.giftIdeas
+                giftIdeas = ideas
             )
         }
 
@@ -79,7 +83,6 @@ class GiftIdeaBackupManager @Inject constructor(
             val dbContacts = contactDao.getAllContactsImmediate()
             val contactsByLookup = dbContacts.associateBy { it.lookupKey }
             val contactsByName = dbContacts.associateBy { it.fullName }
-            val converters = GiftIdeaConverters()
             settingsDatabase.withTransaction {
                 val existingUserDataMap =
                     contactUserDataDao.getAllUserDataImmediate().associateBy { it.lookupKey }
@@ -105,7 +108,7 @@ class GiftIdeaBackupManager @Inject constructor(
                         is JsonElement -> {
                             val str = giftIdeasElement.jsonPrimitive.contentOrNull
                             if (!str.isNullOrBlank()) {
-                                converters.toGiftIdeaList(str)
+                                giftIdeaConverters.toGiftIdeaList(str)
                             } else {
                                 emptyList()
                             }
@@ -124,7 +127,7 @@ class GiftIdeaBackupManager @Inject constructor(
                         toUpsert.add(
                             ContactUserData(
                                 lookupKey = targetLookupKey,
-                                giftIdeas = giftIdeas,
+                                giftIdeasJson = giftIdeaConverters.fromGiftIdeaList(giftIdeas),
                                 spouseLookupKey = existingUserData?.spouseLookupKey
                             )
                         )

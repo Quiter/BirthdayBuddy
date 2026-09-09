@@ -58,7 +58,7 @@ class SettingsRepositoryImplTest {
             notificationsEnabled = true,
             persistentNotifications = false,
             onboardingCompleted = true,
-            themeMode = ThemeMode.DARK
+            themeModeString = "DARK"
         )
         settingsFlow.value = entity
 
@@ -92,7 +92,7 @@ class SettingsRepositoryImplTest {
             id = 0,
             notificationsEnabled = false,
             persistentNotifications = true,
-            themeMode = ThemeMode.LIGHT
+            themeModeString = "LIGHT"
         )
         coEvery { appSettingsDao.getSettingsImmediate() } returns currentEntity
 
@@ -112,7 +112,7 @@ class SettingsRepositoryImplTest {
         assertThat(saved.notificationsEnabled).isTrue()
         assertThat(saved.persistentNotifications).isTrue()
         assertThat(saved.calendarId).isEqualTo(42L)
-        assertThat(saved.themeMode).isEqualTo(ThemeMode.DARK)
+        assertThat(saved.themeModeString).isEqualTo("DARK")
     }
 
     @Test
