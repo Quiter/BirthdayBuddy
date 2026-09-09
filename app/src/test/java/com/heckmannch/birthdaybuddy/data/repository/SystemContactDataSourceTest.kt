@@ -1,12 +1,17 @@
 package com.heckmannch.birthdaybuddy.data.repository
 
 import android.content.Context
+import android.util.Log
 import com.google.common.truth.Truth.assertThat
 import com.heckmannch.birthdaybuddy.util.NO_YEAR_MARKER
 import com.heckmannch.birthdaybuddy.util.hasYear
+import io.mockk.every
 import io.mockk.mockk
+import io.mockk.mockkStatic
+import io.mockk.unmockkStatic
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
+import org.junit.After
 import org.junit.Before
 import org.junit.Test
 import java.time.LocalDate
@@ -19,7 +24,15 @@ class SystemContactDataSourceTest {
 
     @Before
     fun setUp() {
+        mockkStatic(Log::class)
+        every { Log.w(any(), any<String>(), any()) } returns 0
+        every { Log.w(any(), any<String>()) } returns 0
         dataSource = SystemContactDataSource(context, UnconfinedTestDispatcher())
+    }
+
+    @After
+    fun tearDown() {
+        unmockkStatic(Log::class)
     }
 
     @Test

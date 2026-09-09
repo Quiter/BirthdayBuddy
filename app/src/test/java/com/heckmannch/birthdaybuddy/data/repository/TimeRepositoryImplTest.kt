@@ -9,6 +9,7 @@ import com.google.common.truth.Truth.assertThat
 import com.heckmannch.birthdaybuddy.MainDispatcherRule
 import io.mockk.every
 import io.mockk.mockk
+import io.mockk.mockkConstructor
 import io.mockk.mockkStatic
 import io.mockk.slot
 import io.mockk.unmockkAll
@@ -35,6 +36,8 @@ class TimeRepositoryImplTest {
     @Before
     fun setUp() {
         mockkStatic(ContextCompat::class)
+        mockkConstructor(IntentFilter::class)
+        every { anyConstructed<IntentFilter>().addAction(any()) } returns Unit
     }
 
     @After

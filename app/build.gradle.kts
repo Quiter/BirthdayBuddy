@@ -65,7 +65,6 @@ android {
         disable += "GradleDependency"
     }
     testOptions {
-        unitTests.isReturnDefaultValues = true
         unitTests.isIncludeAndroidResources = true
     }
 }

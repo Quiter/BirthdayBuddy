@@ -3,6 +3,7 @@ package com.heckmannch.birthdaybuddy.util
 import android.app.AlarmManager
 import android.app.PendingIntent
 import android.content.Context
+import android.content.Intent
 import com.google.common.truth.Truth.assertThat
 import com.heckmannch.birthdaybuddy.domain.model.AppSettings
 import com.heckmannch.birthdaybuddy.domain.model.NotificationRule
@@ -11,6 +12,7 @@ import com.heckmannch.birthdaybuddy.domain.repository.SettingsRepository
 import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.mockk
+import io.mockk.mockkConstructor
 import io.mockk.mockkStatic
 import io.mockk.unmockkAll
 import io.mockk.verify
@@ -43,6 +45,9 @@ class AlarmSchedulerTest {
         every { android.util.Log.w(any(), any<String>()) } returns 0
         every { android.util.Log.e(any(), any(), any()) } returns 0
         every { android.util.Log.e(any(), any()) } returns 0
+
+        mockkConstructor(Intent::class)
+        every { anyConstructed<Intent>().setAction(any()) } returns mockk(relaxed = true)
 
         mockkStatic(PendingIntent::class)
         every {

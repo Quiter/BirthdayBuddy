@@ -1,5 +1,6 @@
 package com.heckmannch.birthdaybuddy.data.repository
 
+import android.util.Log
 import com.google.common.truth.Truth.assertThat
 import com.heckmannch.birthdaybuddy.MainDispatcherRule
 import com.heckmannch.birthdaybuddy.data.local.AppDatabase
@@ -15,11 +16,15 @@ import com.heckmannch.birthdaybuddy.domain.model.CoupleSuggestion
 import com.heckmannch.birthdaybuddy.domain.repository.CalendarSyncRepository
 import com.heckmannch.birthdaybuddy.domain.repository.SettingsRepository
 import com.heckmannch.birthdaybuddy.domain.repository.WidgetUpdater
+import io.mockk.every
+import io.mockk.mockkStatic
+import io.mockk.unmockkStatic
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.runTest
+import org.junit.After
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -54,6 +59,10 @@ class CoupleRepositoryImplTest {
 
     @Before
     fun setUp() {
+        mockkStatic(Log::class)
+        every { Log.e(any(), any(), any()) } returns 0
+        every { Log.e(any(), any()) } returns 0
+
         whenever(contactDao.getPotentialCouples()).thenReturn(potentialCouplesFlow)
         whenever(settingsRepository.settings).thenReturn(settingsFlow)
 
@@ -74,6 +83,11 @@ class CoupleRepositoryImplTest {
             contactDbMapper = contactDbMapper,
             ioDispatcher = mainDispatcherRule.testDispatcher,
         )
+    }
+
+    @After
+    fun tearDown() {
+        unmockkStatic(Log::class)
     }
 
     private fun createTransactionElement(): kotlin.coroutines.CoroutineContext {

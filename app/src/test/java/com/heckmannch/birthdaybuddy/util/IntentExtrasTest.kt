@@ -2,14 +2,31 @@ package com.heckmannch.birthdaybuddy.util
 
 import android.content.Intent
 import com.google.common.truth.Truth.assertThat
+import android.util.Log
 import io.mockk.every
 import io.mockk.just
 import io.mockk.mockk
+import io.mockk.mockkStatic
 import io.mockk.runs
+import io.mockk.unmockkAll
 import io.mockk.verify
+import org.junit.After
+import org.junit.Before
 import org.junit.Test
 
 class IntentExtrasTest {
+
+    @Before
+    fun setUp() {
+        mockkStatic(Log::class)
+        every { Log.w(any(), any<String>(), any()) } returns 0
+        every { Log.w(any(), any<String>()) } returns 0
+    }
+
+    @After
+    fun tearDown() {
+        unmockkAll()
+    }
 
     // =========================================================================
     // safeGetAndRemoveBooleanExtra Tests

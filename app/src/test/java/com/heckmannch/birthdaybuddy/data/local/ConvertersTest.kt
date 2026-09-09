@@ -1,10 +1,28 @@
 package com.heckmannch.birthdaybuddy.data.local
 
+import android.util.Log
 import com.google.common.truth.Truth.assertThat
+import io.mockk.every
+import io.mockk.mockkStatic
+import io.mockk.unmockkStatic
+import org.junit.After
+import org.junit.Before
 import org.junit.Test
 
 class ConvertersTest {
     private val converters = Converters()
+
+    @Before
+    fun setUp() {
+        mockkStatic(Log::class)
+        every { Log.w(any(), any<String>(), any()) } returns 0
+        every { Log.w(any(), any<String>()) } returns 0
+    }
+
+    @After
+    fun tearDown() {
+        unmockkStatic(Log::class)
+    }
 
     @Test
     fun fromList_serializesListToJsonString() {

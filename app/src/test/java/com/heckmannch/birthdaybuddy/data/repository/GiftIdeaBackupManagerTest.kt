@@ -9,6 +9,7 @@ import com.heckmannch.birthdaybuddy.data.local.ContactUserDataDao
 import com.heckmannch.birthdaybuddy.data.local.SettingsDatabase
 import com.heckmannch.birthdaybuddy.domain.model.GiftIdea
 import io.mockk.coEvery
+import io.mockk.every
 import io.mockk.mockkStatic
 import io.mockk.unmockkAll
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -35,6 +36,11 @@ class GiftIdeaBackupManagerTest {
     @Before
     fun setup() {
         mockkStatic("androidx.room.RoomDatabaseKt")
+        mockkStatic(android.util.Log::class)
+        every { android.util.Log.w(any(), any<String>()) } returns 0
+        every { android.util.Log.w(any(), any<String>(), any()) } returns 0
+        every { android.util.Log.e(any(), any(), any()) } returns 0
+        every { android.util.Log.e(any(), any()) } returns 0
         coEvery { settingsDatabase.withTransaction<Any?>(any()) } coAnswers {
             val block = secondArg<suspend () -> Any?>()
             block()

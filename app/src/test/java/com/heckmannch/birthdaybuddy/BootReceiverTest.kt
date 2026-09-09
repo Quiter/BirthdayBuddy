@@ -44,6 +44,10 @@ class BootReceiverTest {
         every { receiver.goAsync() } returns pendingResult
         every { context.applicationContext } returns appContext
 
+        mockkStatic(android.util.Log::class)
+        every { android.util.Log.w(any(), any<String>(), any()) } returns 0
+        every { android.util.Log.w(any(), any<String>()) } returns 0
+
         mockkStatic(EntryPointAccessors::class)
         every {
             EntryPointAccessors.fromApplication(

@@ -1,5 +1,6 @@
 package com.heckmannch.birthdaybuddy.data.repository
 
+import android.util.Log
 import com.google.common.truth.Truth.assertThat
 import com.heckmannch.birthdaybuddy.MainDispatcherRule
 import com.heckmannch.birthdaybuddy.data.local.NotificationRuleDao
@@ -17,12 +18,15 @@ import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk
+import io.mockk.mockkStatic
 import io.mockk.slot
+import io.mockk.unmockkStatic
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.runTest
+import org.junit.After
 import org.junit.Assert.assertThrows
 import org.junit.Before
 import org.junit.Rule
@@ -60,6 +64,10 @@ class NotificationRepositoryImplTest {
 
     @Before
     fun setUp() {
+        mockkStatic(Log::class)
+        every { Log.e(any(), any(), any()) } returns 0
+        every { Log.e(any(), any()) } returns 0
+
         // Stub flows accessed during initialization
         every { notificationRuleDao.getAllRules() } returns allRulesFlow
 
@@ -73,6 +81,11 @@ class NotificationRepositoryImplTest {
             ioDispatcher = mainDispatcherRule.testDispatcher,
             defaultDispatcher = mainDispatcherRule.testDispatcher
         )
+    }
+
+    @After
+    fun tearDown() {
+        unmockkStatic(Log::class)
     }
 
     @Test

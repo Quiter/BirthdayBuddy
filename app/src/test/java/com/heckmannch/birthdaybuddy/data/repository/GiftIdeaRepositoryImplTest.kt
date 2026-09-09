@@ -2,6 +2,7 @@ package com.heckmannch.birthdaybuddy.data.repository
 
 import android.content.ContentResolver
 import android.net.Uri
+import android.util.Log
 import com.google.common.truth.Truth.assertThat
 import com.heckmannch.birthdaybuddy.MainDispatcherRule
 import com.heckmannch.birthdaybuddy.data.local.AppDatabase
@@ -13,9 +14,13 @@ import com.heckmannch.birthdaybuddy.data.local.SettingsDatabase
 import com.heckmannch.birthdaybuddy.domain.model.GiftIdea
 import com.heckmannch.birthdaybuddy.domain.repository.ContactRepository
 import com.heckmannch.birthdaybuddy.domain.repository.WidgetUpdater
+import io.mockk.every
+import io.mockk.mockkStatic
+import io.mockk.unmockkStatic
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runTest
+import org.junit.After
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -49,6 +54,10 @@ class GiftIdeaRepositoryImplTest {
 
     @Before
     fun setUp() {
+        mockkStatic(Log::class)
+        every { Log.e(any(), any(), any()) } returns 0
+        every { Log.e(any(), any()) } returns 0
+
         val executor = java.util.concurrent.Executor { it.run() }
         whenever(appDatabase.transactionExecutor).thenReturn(executor)
         whenever(appDatabase.queryExecutor).thenReturn(executor)
@@ -66,6 +75,11 @@ class GiftIdeaRepositoryImplTest {
             widgetUpdater = widgetUpdater,
             ioDispatcher = mainDispatcherRule.testDispatcher,
         )
+    }
+
+    @After
+    fun tearDown() {
+        unmockkStatic(Log::class)
     }
 
     private fun createTransactionElement(): kotlin.coroutines.CoroutineContext {
