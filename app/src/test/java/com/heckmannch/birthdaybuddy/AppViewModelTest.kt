@@ -91,6 +91,15 @@ class AppViewModelTest {
     }
 
     @Test
+    fun `onboardingCompleted initial value is null until repository settings emits`() = runTest {
+        val pendingSettingsFlow = kotlinx.coroutines.flow.MutableSharedFlow<AppSettings>()
+        whenever(settingsRepository.settings).thenReturn(pendingSettingsFlow)
+
+        val freshViewModel = AppViewModel(syncNotificationSchedulingUseCase, scheduleDailyWidgetUpdateUseCase, settingsRepository)
+        assertThat(freshViewModel.onboardingCompleted.value).isNull()
+    }
+
+    @Test
     fun `onboardingCompleted emits value from repository settings`() = runTest {
         val completedSettings = AppSettings(onboardingCompleted = true)
         whenever(settingsRepository.settings).thenReturn(flowOf(completedSettings))
@@ -99,6 +108,17 @@ class AppViewModelTest {
         val result = freshViewModel.onboardingCompleted.first { it != null }
 
         assertThat(result).isTrue()
+    }
+
+    @Test
+    fun `onboardingCompleted emits false when repository settings has onboardingCompleted false`() = runTest {
+        val notCompletedSettings = AppSettings(onboardingCompleted = false)
+        whenever(settingsRepository.settings).thenReturn(flowOf(notCompletedSettings))
+
+        val freshViewModel = AppViewModel(syncNotificationSchedulingUseCase, scheduleDailyWidgetUpdateUseCase, settingsRepository)
+        val result = freshViewModel.onboardingCompleted.first { it != null }
+
+        assertThat(result).isFalse()
     }
 
     @Test

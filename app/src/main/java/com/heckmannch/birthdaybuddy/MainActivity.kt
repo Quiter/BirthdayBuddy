@@ -12,6 +12,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.adaptive.currentWindowAdaptiveInfoV2
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
 import androidx.compose.ui.Modifier
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -74,19 +75,21 @@ class MainActivity : ComponentActivity() {
                     customAccentColorHex = appSettings.customAccentColor
                 ) {
                     if (onboardingCompleted != null) {
-                        val initialKey: NavKey =
-                            if (onboardingCompleted == true) Home else Onboarding
-                        val backStack = rememberNavBackStack(initialKey)
+                        key(onboardingCompleted) {
+                            val initialKey: NavKey =
+                                if (onboardingCompleted == true) Home else Onboarding
+                            val backStack = rememberNavBackStack(initialKey)
 
-                        Surface(
-                            modifier = Modifier.fillMaxSize(),
-                            color = MaterialTheme.colorScheme.background,
-                        ) {
-                            AppNavHost(
-                                backStack = backStack,
-                                action = pendingAction,
-                                onActionHandled = appViewModel::consumeAction
-                            )
+                            Surface(
+                                modifier = Modifier.fillMaxSize(),
+                                color = MaterialTheme.colorScheme.background,
+                            ) {
+                                AppNavHost(
+                                    backStack = backStack,
+                                    action = pendingAction,
+                                    onActionHandled = appViewModel::consumeAction
+                                )
+                            }
                         }
                     }
                 }

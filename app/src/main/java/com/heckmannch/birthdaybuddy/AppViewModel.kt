@@ -87,8 +87,13 @@ class AppViewModel @Inject constructor(
     /**
      * Exposes whether onboarding is completed for splash screen handling
      * and initial navigation key selection.
+     *
+     * Directly observed from [SettingsRepository.settings] (a cold Flow from Room)
+     * with an initial value of null, so that the splash screen and initial route selection
+     * wait until the actual persisted settings are loaded from Room before determining
+     * whether to navigate to [Home] or [Onboarding].
      */
-    val onboardingCompleted: StateFlow<Boolean?> = appSettings
+    val onboardingCompleted: StateFlow<Boolean?> = settingsRepository.settings
         .map<AppSettings, Boolean?> { it.onboardingCompleted }
         .stateIn(
             scope = viewModelScope,
