@@ -5,9 +5,9 @@ import com.google.common.truth.Truth.assertThat
 import com.heckmannch.birthdaybuddy.domain.model.AppSettings
 import com.heckmannch.birthdaybuddy.domain.model.ThemeAccent
 import com.heckmannch.birthdaybuddy.domain.model.ThemeMode
-import com.heckmannch.birthdaybuddy.domain.repository.NotificationRepository
 import com.heckmannch.birthdaybuddy.domain.repository.SettingsRepository
-import com.heckmannch.birthdaybuddy.domain.repository.WidgetUpdater
+import com.heckmannch.birthdaybuddy.domain.usecase.ScheduleDailyWidgetUpdateUseCase
+import com.heckmannch.birthdaybuddy.domain.usecase.SyncNotificationSchedulingUseCase
 import com.heckmannch.birthdaybuddy.ui.navigation.AppAction
 import io.mockk.every
 import io.mockk.mockkStatic
@@ -30,9 +30,9 @@ class AppViewModelTest {
     @get:Rule
     val mainDispatcherRule = MainDispatcherRule()
 
-    private val notificationRepository: NotificationRepository = mock()
+    private val syncNotificationSchedulingUseCase: SyncNotificationSchedulingUseCase = mock()
+    private val scheduleDailyWidgetUpdateUseCase: ScheduleDailyWidgetUpdateUseCase = mock()
     private val settingsRepository: SettingsRepository = mock()
-    private val widgetUpdater: WidgetUpdater = mock()
 
     private lateinit var viewModel: AppViewModel
 
@@ -42,7 +42,7 @@ class AppViewModelTest {
         every { Log.w(any(), any<String>(), any()) } returns 0
         every { Log.w(any(), any<String>()) } returns 0
         whenever(settingsRepository.settings).thenReturn(flowOf(AppSettings()))
-        viewModel = AppViewModel(notificationRepository, settingsRepository, widgetUpdater)
+        viewModel = AppViewModel(syncNotificationSchedulingUseCase, scheduleDailyWidgetUpdateUseCase, settingsRepository)
     }
 
     @After
@@ -67,7 +67,7 @@ class AppViewModelTest {
         whenever(settingsRepository.settings).thenReturn(flowOf(customSettings))
 
         // Re-initialize to collect from the new flow
-        val freshViewModel = AppViewModel(notificationRepository, settingsRepository, widgetUpdater)
+        val freshViewModel = AppViewModel(syncNotificationSchedulingUseCase, scheduleDailyWidgetUpdateUseCase, settingsRepository)
         val result = freshViewModel.appSettings.first { it.themeMode == ThemeMode.DARK }
 
         assertThat(result.themeMode).isEqualTo(ThemeMode.DARK)
@@ -78,16 +78,16 @@ class AppViewModelTest {
 
     @Test
     fun `syncScheduling is called once on init`() = runTest {
-        // syncScheduling() is triggered in init {} of AppViewModel.
+        // syncNotificationSchedulingUseCase() is triggered in init {} of AppViewModel.
         // The viewModel is already created in @Before – verify the call occurred.
-        verify(notificationRepository).syncScheduling()
+        verify(syncNotificationSchedulingUseCase).invoke()
     }
 
     @Test
     fun `scheduleDailyUpdate is called once on init`() = runTest {
-        // scheduleDailyUpdate() is triggered in init {} of AppViewModel.
+        // scheduleDailyWidgetUpdateUseCase() is triggered in init {} of AppViewModel.
         // The viewModel is already created in @Before – verify the call occurred.
-        verify(widgetUpdater).scheduleDailyUpdate()
+        verify(scheduleDailyWidgetUpdateUseCase).invoke()
     }
 
     @Test
@@ -95,7 +95,7 @@ class AppViewModelTest {
         val completedSettings = AppSettings(onboardingCompleted = true)
         whenever(settingsRepository.settings).thenReturn(flowOf(completedSettings))
 
-        val freshViewModel = AppViewModel(notificationRepository, settingsRepository, widgetUpdater)
+        val freshViewModel = AppViewModel(syncNotificationSchedulingUseCase, scheduleDailyWidgetUpdateUseCase, settingsRepository)
         val result = freshViewModel.onboardingCompleted.first { it != null }
 
         assertThat(result).isTrue()
@@ -103,10 +103,10 @@ class AppViewModelTest {
 
     @Test
     fun `init completes safely and handles widget scheduling exception without crashing`() = runTest {
-        val failingWidgetUpdater: WidgetUpdater = mock()
-        whenever(failingWidgetUpdater.scheduleDailyUpdate()).thenThrow(RuntimeException("Scheduling failed"))
+        val failingScheduleDailyWidgetUpdateUseCase: ScheduleDailyWidgetUpdateUseCase = mock()
+        whenever(failingScheduleDailyWidgetUpdateUseCase.invoke()).thenThrow(RuntimeException("Scheduling failed"))
 
-        val vm = AppViewModel(notificationRepository, settingsRepository, failingWidgetUpdater)
+        val vm = AppViewModel(syncNotificationSchedulingUseCase, failingScheduleDailyWidgetUpdateUseCase, settingsRepository)
         assertThat(vm.appSettings.value).isEqualTo(AppSettings())
     }
 

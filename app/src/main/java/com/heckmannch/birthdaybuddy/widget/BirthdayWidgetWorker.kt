@@ -84,40 +84,6 @@ class BirthdayWidgetWorker @AssistedInject constructor(
             )
         }
 
-        /**
-         * Enqueues the next daily widget update worker.
-         *
-         * @deprecated Abgelöst durch das deterministische AlarmManager-Scheduling via [AlarmScheduler.scheduleNextWidgetUpdateAlarm].
-         * WorkManager wird in der Single-Path-Architektur nur noch für unmittelbare Ausführung ([enqueueImmediateWork])
-         * und automatische Retries bei Fehlschlägen eingesetzt.
-         *
-         * @param context Application or component context.
-         * @param existingWorkPolicy Policy for handling conflicts with existing work.
-         *   Defaults to [ExistingWorkPolicy.KEEP] when scheduled externally (e.g. on app launch)
-         *   to preserve any already scheduled update.
-         */
-        @Deprecated(
-            message = "Use AlarmScheduler.scheduleNextWidgetUpdateAlarm() for deterministic Doze-safe midnight triggers. WorkManager is only used for immediate execution and retries.",
-            replaceWith = ReplaceWith("AlarmScheduler.scheduleNextWidgetUpdateAlarm()")
-        )
-        fun enqueueNextUpdate(
-            context: Context,
-            existingWorkPolicy: ExistingWorkPolicy = ExistingWorkPolicy.KEEP,
-        ) {
-            val request = OneTimeWorkRequestBuilder<BirthdayWidgetWorker>()
-                .setInitialDelay(calculateDelayUntilMidnight(), TimeUnit.MILLISECONDS)
-                // Linearer Backoff (10s), um zeitkritische Widget-Aktualisierungen bei temporären Fehlern rasch zu wiederholen
-                .setBackoffCriteria(BackoffPolicy.LINEAR, WorkRequest.MIN_BACKOFF_MILLIS, TimeUnit.MILLISECONDS)
-                .addTag(WORK_TAG)
-                .build()
-
-            WorkManager.getInstance(context).enqueueUniqueWork(
-                WORK_NAME,
-                existingWorkPolicy,
-                request
-            )
-        }
-
         @VisibleForTesting
         internal fun calculateDelayUntilMidnight(now: LocalDateTime = LocalDateTime.now()): Long {
             // We plan for 00:01 AM to ensure the date has actually rolled over.

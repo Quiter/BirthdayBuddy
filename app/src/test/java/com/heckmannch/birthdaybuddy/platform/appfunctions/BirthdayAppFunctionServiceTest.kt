@@ -9,7 +9,7 @@ import com.heckmannch.birthdaybuddy.MainDispatcherRule
 import com.heckmannch.birthdaybuddy.domain.model.Contact
 import com.heckmannch.birthdaybuddy.domain.repository.ContactRepository
 import com.heckmannch.birthdaybuddy.domain.util.DeviceRegionProvider
-import com.heckmannch.birthdaybuddy.util.NO_YEAR_MARKER
+import com.heckmannch.birthdaybuddy.domain.util.NO_YEAR_MARKER
 import io.mockk.coEvery
 import io.mockk.mockk
 import kotlinx.coroutines.test.runTest

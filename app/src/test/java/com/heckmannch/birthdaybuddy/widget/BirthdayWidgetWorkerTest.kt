@@ -1,9 +1,7 @@
 package com.heckmannch.birthdaybuddy.widget
 
 import android.content.Context
-import androidx.work.ExistingWorkPolicy
 import androidx.work.ListenableWorker
-import androidx.work.OneTimeWorkRequest
 import androidx.work.WorkManager
 import androidx.work.WorkerParameters
 import com.google.common.truth.Truth.assertThat
@@ -16,7 +14,6 @@ import io.mockk.every
 import io.mockk.mockk
 import io.mockk.mockkObject
 import io.mockk.mockkStatic
-import io.mockk.slot
 import io.mockk.unmockkAll
 import io.mockk.verify
 import kotlinx.coroutines.CancellationException
@@ -95,37 +92,6 @@ class BirthdayWidgetWorkerTest {
         assertThat(actualDelay).isEqualTo(120_000L) // 2 minutes
     }
 
-    @Test
-    fun `enqueueNextUpdate - default policy - enqueues with KEEP`() {
-        val requestSlot = slot<OneTimeWorkRequest>()
-
-        BirthdayWidgetWorker.enqueueNextUpdate(context)
-
-        verify {
-            workManager.enqueueUniqueWork(
-                "DailyWidgetUpdateSingle",
-                ExistingWorkPolicy.KEEP,
-                capture(requestSlot)
-            )
-        }
-        val capturedRequest = requestSlot.captured
-        assertThat(capturedRequest.tags).contains("daily_widget_update")
-    }
-
-    @Test
-    fun `enqueueNextUpdate - custom policy - enqueues with specified policy`() {
-        val requestSlot = slot<OneTimeWorkRequest>()
-
-        BirthdayWidgetWorker.enqueueNextUpdate(context, ExistingWorkPolicy.APPEND_OR_REPLACE)
-
-        verify {
-            workManager.enqueueUniqueWork(
-                "DailyWidgetUpdateSingle",
-                ExistingWorkPolicy.APPEND_OR_REPLACE,
-                capture(requestSlot)
-            )
-        }
-    }
 
     @Test
     fun `doWork - success - calls widgetUpdater and enqueues next update with APPEND_OR_REPLACE`() = runTest {

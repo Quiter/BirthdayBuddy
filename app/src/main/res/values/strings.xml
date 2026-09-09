@@ -432,4 +432,6 @@
 
     <!-- AppFunctions: user-visible app description shown by AI assistants -->
     <string name="app_description_for_agents">BirthdayBuddy helps you remember birthdays and special occasions for your contacts.</string>
+
+    <string name="scrollbar_content_description">Scrollbar</string>
 </resources>

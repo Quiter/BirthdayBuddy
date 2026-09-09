@@ -191,18 +191,6 @@ class CalendarSyncRepositoryImpl @Inject constructor(
         deletedAny
     }
 
-    internal suspend fun debugPrintAllCalendars() {
-        Log.d(TAG, "=== START DEBUG PRINT ALL CALENDARS ===")
-        val calendars = systemCalendarDataSource.queryAllCalendars()
-        for (calendar in calendars) {
-            Log.d(
-                TAG,
-                "Calendar ID: ${calendar.id} | AccName: ${calendar.accountName} | AccType: ${calendar.accountType} | Name: ${calendar.name} | DispName: ${calendar.displayName} | Visible: ${calendar.visible}"
-            )
-        }
-        Log.d(TAG, "=== END DEBUG PRINT ALL CALENDARS ===")
-    }
-
     override suspend fun syncBirthdays(contacts: List<Contact>): Boolean =
         withContext(ioDispatcher) {
             if (!hasCalendarPermissions()) return@withContext false

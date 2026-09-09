@@ -24,7 +24,7 @@ import com.heckmannch.birthdaybuddy.ui.model.HomeUiState
 import com.heckmannch.birthdaybuddy.ui.model.PendingBirthdayEdit
 import com.heckmannch.birthdaybuddy.ui.screens.home.HomeViewModel.Companion.SEARCH_DEBOUNCE_DURATION
 import com.heckmannch.birthdaybuddy.util.Clock
-import com.heckmannch.birthdaybuddy.util.sanitizeBirthdayDate
+import com.heckmannch.birthdaybuddy.domain.util.sanitizeBirthdayDate
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers

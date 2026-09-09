@@ -7,7 +7,7 @@ import com.heckmannch.birthdaybuddy.domain.repository.NotificationRepository
 import com.heckmannch.birthdaybuddy.domain.repository.SettingsRepository
 import com.heckmannch.birthdaybuddy.domain.util.ContactFilterLogic
 import com.heckmannch.birthdaybuddy.domain.util.NotificationKeyUtils
-import com.heckmannch.birthdaybuddy.util.toYear
+import com.heckmannch.birthdaybuddy.domain.util.toYear
 import dagger.Reusable
 import kotlinx.coroutines.flow.first
 import java.time.LocalDateTime

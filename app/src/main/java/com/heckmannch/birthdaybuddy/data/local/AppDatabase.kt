@@ -57,14 +57,14 @@ private fun recreateContactsTable(db: SupportSQLiteDatabase, giftIdeasNotNull: B
 
     // 3. Vorhandene Spalten ermitteln, um fehlende Spalten robust abzufangen
     val columnsInOld = mutableSetOf<String>()
-    val columnCursor = db.query("PRAGMA table_info(contacts_old)")
-    while (columnCursor.moveToNext()) {
-        val nameIndex = columnCursor.getColumnIndex("name")
-        if (nameIndex != -1) {
-            columnsInOld.add(columnCursor.getString(nameIndex))
+    db.query("PRAGMA table_info(contacts_old)").use { columnCursor ->
+        while (columnCursor.moveToNext()) {
+            val nameIndex = columnCursor.getColumnIndex("name")
+            if (nameIndex != -1) {
+                columnsInOld.add(columnCursor.getString(nameIndex))
+            }
         }
     }
-    columnCursor.close()
 
     val selectColumns = mutableListOf<String>()
     selectColumns.add("localId")
@@ -134,17 +134,17 @@ private fun recreateContactsTable(db: SupportSQLiteDatabase, giftIdeasNotNull: B
 internal val APP_MIGRATION_1_2 = object : Migration(1, 2) {
     override fun migrate(db: SupportSQLiteDatabase) {
         try {
-            val columnCursor = db.query("PRAGMA table_info(pending_notifications)")
             var hasTable = false
             var hasDismissCount = false
-            while (columnCursor.moveToNext()) {
-                hasTable = true
-                val nameIndex = columnCursor.getColumnIndex("name")
-                if (nameIndex != -1 && columnCursor.getString(nameIndex) == "dismissCount") {
-                    hasDismissCount = true
+            db.query("PRAGMA table_info(pending_notifications)").use { columnCursor ->
+                while (columnCursor.moveToNext()) {
+                    hasTable = true
+                    val nameIndex = columnCursor.getColumnIndex("name")
+                    if (nameIndex != -1 && columnCursor.getString(nameIndex) == "dismissCount") {
+                        hasDismissCount = true
+                    }
                 }
             }
-            columnCursor.close()
 
             if (!hasTable) {
                 db.execSQL("CREATE TABLE IF NOT EXISTS `pending_notifications` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `contactLookupKeys` TEXT NOT NULL, `daysBefore` INTEGER NOT NULL, `year` INTEGER NOT NULL, `isDone` INTEGER NOT NULL, `dismissCount` INTEGER NOT NULL DEFAULT 0)")
@@ -169,16 +169,16 @@ internal val APP_MIGRATION_1_2 = object : Migration(1, 2) {
 internal val APP_MIGRATION_2_3 = object : Migration(2, 3) {
     override fun migrate(db: SupportSQLiteDatabase) {
         try {
-            val columnCursor = db.query("PRAGMA table_info(app_settings)")
             var hasSwipeHintShown = false
-            while (columnCursor.moveToNext()) {
-                val nameIndex = columnCursor.getColumnIndex("name")
-                if (nameIndex != -1 && columnCursor.getString(nameIndex) == "swipeHintShown") {
-                    hasSwipeHintShown = true
-                    break
+            db.query("PRAGMA table_info(app_settings)").use { columnCursor ->
+                while (columnCursor.moveToNext()) {
+                    val nameIndex = columnCursor.getColumnIndex("name")
+                    if (nameIndex != -1 && columnCursor.getString(nameIndex) == "swipeHintShown") {
+                        hasSwipeHintShown = true
+                        break
+                    }
                 }
             }
-            columnCursor.close()
 
             if (hasSwipeHintShown) {
                 db.execSQL(
@@ -220,16 +220,16 @@ internal val APP_MIGRATION_2_3 = object : Migration(2, 3) {
 internal val APP_MIGRATION_3_4 = object : Migration(3, 4) {
     override fun migrate(db: SupportSQLiteDatabase) {
         try {
-            val columnCursor = db.query("PRAGMA table_info(contacts)")
             var columnExists = false
-            while (columnCursor.moveToNext()) {
-                val nameIndex = columnCursor.getColumnIndex("name")
-                if (nameIndex != -1 && columnCursor.getString(nameIndex) == "phoneNumber") {
-                    columnExists = true
-                    break
+            db.query("PRAGMA table_info(contacts)").use { columnCursor ->
+                while (columnCursor.moveToNext()) {
+                    val nameIndex = columnCursor.getColumnIndex("name")
+                    if (nameIndex != -1 && columnCursor.getString(nameIndex) == "phoneNumber") {
+                        columnExists = true
+                        break
+                    }
                 }
             }
-            columnCursor.close()
 
             if (!columnExists) {
                 db.execSQL("ALTER TABLE contacts ADD COLUMN phoneNumber TEXT")
@@ -251,18 +251,18 @@ internal val APP_MIGRATION_3_4 = object : Migration(3, 4) {
 internal val APP_MIGRATION_4_5 = object : Migration(4, 5) {
     override fun migrate(db: SupportSQLiteDatabase) {
         try {
-            val columnCursor = db.query("PRAGMA table_info(contacts)")
             var hasWhatsApp = false
             var hasSignal = false
-            while (columnCursor.moveToNext()) {
-                val nameIndex = columnCursor.getColumnIndex("name")
-                if (nameIndex != -1) {
-                    val columnName = columnCursor.getString(nameIndex)
-                    if (columnName == "hasWhatsApp") hasWhatsApp = true
-                    if (columnName == "hasSignal") hasSignal = true
+            db.query("PRAGMA table_info(contacts)").use { columnCursor ->
+                while (columnCursor.moveToNext()) {
+                    val nameIndex = columnCursor.getColumnIndex("name")
+                    if (nameIndex != -1) {
+                        val columnName = columnCursor.getString(nameIndex)
+                        if (columnName == "hasWhatsApp") hasWhatsApp = true
+                        if (columnName == "hasSignal") hasSignal = true
+                    }
                 }
             }
-            columnCursor.close()
 
             if (!hasWhatsApp) {
                 db.execSQL("ALTER TABLE contacts ADD COLUMN hasWhatsApp INTEGER NOT NULL DEFAULT 0")
@@ -327,19 +327,19 @@ internal val APP_MIGRATION_6_7 = object : Migration(6, 7) {
         }
 
         try {
-            val columnCursor = db.query("PRAGMA table_info(contacts)")
             var isGiftIdeasNotNull = false
-            while (columnCursor.moveToNext()) {
-                val nameIndex = columnCursor.getColumnIndex("name")
-                val notNullIndex = columnCursor.getColumnIndex("notnull")
-                if (nameIndex != -1 && notNullIndex != -1) {
-                    if (columnCursor.getString(nameIndex) == "giftIdeas") {
-                        isGiftIdeasNotNull = columnCursor.getInt(notNullIndex) == 1
-                        break
+            db.query("PRAGMA table_info(contacts)").use { columnCursor ->
+                while (columnCursor.moveToNext()) {
+                    val nameIndex = columnCursor.getColumnIndex("name")
+                    val notNullIndex = columnCursor.getColumnIndex("notnull")
+                    if (nameIndex != -1 && notNullIndex != -1) {
+                        if (columnCursor.getString(nameIndex) == "giftIdeas") {
+                            isGiftIdeasNotNull = columnCursor.getInt(notNullIndex) == 1
+                            break
+                        }
                     }
                 }
             }
-            columnCursor.close()
 
             if (!isGiftIdeasNotNull) {
                 recreateContactsTable(db, giftIdeasNotNull = true)

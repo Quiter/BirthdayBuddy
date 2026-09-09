@@ -3,9 +3,9 @@ package com.heckmannch.birthdaybuddy
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
-import com.heckmannch.birthdaybuddy.domain.repository.NotificationRepository
 import com.heckmannch.birthdaybuddy.domain.repository.WidgetUpdater
-import com.heckmannch.birthdaybuddy.util.AlarmScheduler
+import com.heckmannch.birthdaybuddy.domain.usecase.ScheduleDailyWidgetUpdateUseCase
+import com.heckmannch.birthdaybuddy.domain.usecase.SyncNotificationSchedulingUseCase
 import dagger.hilt.android.EntryPointAccessors
 import io.mockk.coEvery
 import io.mockk.coVerify
@@ -30,9 +30,9 @@ class BootReceiverTest {
     private val context = mockk<Context>(relaxed = true)
     private val appContext = mockk<Context>(relaxed = true)
     private val entryPoint = mockk<BootReceiver.BootReceiverEntryPoint>()
-    private val notificationRepository = mockk<NotificationRepository>(relaxed = true)
+    private val syncNotificationSchedulingUseCase = mockk<SyncNotificationSchedulingUseCase>(relaxed = true)
+    private val scheduleDailyWidgetUpdateUseCase = mockk<ScheduleDailyWidgetUpdateUseCase>(relaxed = true)
     private val widgetUpdater = mockk<WidgetUpdater>(relaxed = true)
-    private val alarmScheduler = mockk<AlarmScheduler>(relaxed = true)
     private val pendingResult = mockk<BroadcastReceiver.PendingResult>(relaxed = true)
     private val testScope = CoroutineScope(kotlinx.coroutines.Dispatchers.Unconfined)
 
@@ -57,9 +57,9 @@ class BootReceiverTest {
         } returns entryPoint
 
         every { entryPoint.applicationScope() } returns testScope
-        every { entryPoint.notificationRepository() } returns notificationRepository
+        every { entryPoint.syncNotificationSchedulingUseCase() } returns syncNotificationSchedulingUseCase
+        every { entryPoint.scheduleDailyWidgetUpdateUseCase() } returns scheduleDailyWidgetUpdateUseCase
         every { entryPoint.widgetUpdater() } returns widgetUpdater
-        every { entryPoint.alarmScheduler() } returns alarmScheduler
     }
 
     @After
@@ -79,9 +79,9 @@ class BootReceiverTest {
 
         receiver.onReceive(context, intent)
 
-        coVerify(exactly = 1) { notificationRepository.syncScheduling() }
+        coVerify(exactly = 1) { syncNotificationSchedulingUseCase() }
         coVerify(exactly = 1) { widgetUpdater.updateWidget() }
-        verify(exactly = 1) { alarmScheduler.scheduleNextWidgetUpdateAlarm() }
+        coVerify(exactly = 1) { scheduleDailyWidgetUpdateUseCase() }
         verify(exactly = 1) { pendingResult.finish() }
     }
 
@@ -91,9 +91,9 @@ class BootReceiverTest {
 
         receiver.onReceive(context, intent)
 
-        coVerify(exactly = 1) { notificationRepository.syncScheduling() }
+        coVerify(exactly = 1) { syncNotificationSchedulingUseCase() }
         coVerify(exactly = 1) { widgetUpdater.updateWidget() }
-        verify(exactly = 1) { alarmScheduler.scheduleNextWidgetUpdateAlarm() }
+        coVerify(exactly = 1) { scheduleDailyWidgetUpdateUseCase() }
         verify(exactly = 1) { pendingResult.finish() }
     }
 
@@ -103,9 +103,9 @@ class BootReceiverTest {
 
         receiver.onReceive(context, intent)
 
-        coVerify(exactly = 1) { notificationRepository.syncScheduling() }
+        coVerify(exactly = 1) { syncNotificationSchedulingUseCase() }
         coVerify(exactly = 1) { widgetUpdater.updateWidget() }
-        verify(exactly = 1) { alarmScheduler.scheduleNextWidgetUpdateAlarm() }
+        coVerify(exactly = 1) { scheduleDailyWidgetUpdateUseCase() }
         verify(exactly = 1) { pendingResult.finish() }
     }
 
@@ -115,9 +115,9 @@ class BootReceiverTest {
 
         receiver.onReceive(context, intent)
 
-        coVerify(exactly = 1) { notificationRepository.syncScheduling() }
+        coVerify(exactly = 1) { syncNotificationSchedulingUseCase() }
         coVerify(exactly = 1) { widgetUpdater.updateWidget() }
-        verify(exactly = 1) { alarmScheduler.scheduleNextWidgetUpdateAlarm() }
+        coVerify(exactly = 1) { scheduleDailyWidgetUpdateUseCase() }
         verify(exactly = 1) { pendingResult.finish() }
     }
 
@@ -127,9 +127,9 @@ class BootReceiverTest {
 
         receiver.onReceive(context, intent)
 
-        coVerify(exactly = 1) { notificationRepository.syncScheduling() }
+        coVerify(exactly = 1) { syncNotificationSchedulingUseCase() }
         coVerify(exactly = 1) { widgetUpdater.updateWidget() }
-        verify(exactly = 1) { alarmScheduler.scheduleNextWidgetUpdateAlarm() }
+        coVerify(exactly = 1) { scheduleDailyWidgetUpdateUseCase() }
         verify(exactly = 1) { pendingResult.finish() }
     }
 
@@ -139,9 +139,9 @@ class BootReceiverTest {
 
         receiver.onReceive(context, intent)
 
-        coVerify(exactly = 0) { notificationRepository.syncScheduling() }
+        coVerify(exactly = 0) { syncNotificationSchedulingUseCase() }
         coVerify(exactly = 0) { widgetUpdater.updateWidget() }
-        verify(exactly = 0) { alarmScheduler.scheduleNextWidgetUpdateAlarm() }
+        coVerify(exactly = 0) { scheduleDailyWidgetUpdateUseCase() }
         verify(exactly = 0) { receiver.goAsync() }
     }
 
@@ -151,9 +151,9 @@ class BootReceiverTest {
         receiver.onReceive(context, null)
         receiver.onReceive(context, createIntent(null))
 
-        coVerify(exactly = 0) { notificationRepository.syncScheduling() }
+        coVerify(exactly = 0) { syncNotificationSchedulingUseCase() }
         coVerify(exactly = 0) { widgetUpdater.updateWidget() }
-        verify(exactly = 0) { alarmScheduler.scheduleNextWidgetUpdateAlarm() }
+        coVerify(exactly = 0) { scheduleDailyWidgetUpdateUseCase() }
         verify(exactly = 0) { receiver.goAsync() }
     }
 
@@ -169,22 +169,22 @@ class BootReceiverTest {
         val intent = createIntent(Intent.ACTION_TIMEZONE_CHANGED)
         receiver.onReceive(context, intent)
 
-        coVerify(exactly = 0) { notificationRepository.syncScheduling() }
+        coVerify(exactly = 0) { syncNotificationSchedulingUseCase() }
         coVerify(exactly = 0) { widgetUpdater.updateWidget() }
-        verify(exactly = 0) { alarmScheduler.scheduleNextWidgetUpdateAlarm() }
+        coVerify(exactly = 0) { scheduleDailyWidgetUpdateUseCase() }
         verify(exactly = 0) { receiver.goAsync() }
     }
 
     @Test
     fun `onReceive handles syncScheduling exception gracefully and still updates widget and finishes pending result`() {
-        coEvery { notificationRepository.syncScheduling() } throws RuntimeException("Scheduler error")
+        coEvery { syncNotificationSchedulingUseCase() } throws RuntimeException("Scheduler error")
 
         val intent = createIntent(Intent.ACTION_TIME_CHANGED)
         receiver.onReceive(context, intent)
 
-        coVerify(exactly = 1) { notificationRepository.syncScheduling() }
+        coVerify(exactly = 1) { syncNotificationSchedulingUseCase() }
         coVerify(exactly = 1) { widgetUpdater.updateWidget() }
-        verify(exactly = 1) { alarmScheduler.scheduleNextWidgetUpdateAlarm() }
+        coVerify(exactly = 1) { scheduleDailyWidgetUpdateUseCase() }
         verify(exactly = 1) { pendingResult.finish() }
     }
 
@@ -195,7 +195,7 @@ class BootReceiverTest {
         val intent = createIntent(Intent.ACTION_BOOT_COMPLETED)
         receiver.onReceive(context, intent)
 
-        coVerify(exactly = 1) { notificationRepository.syncScheduling() }
+        coVerify(exactly = 1) { syncNotificationSchedulingUseCase() }
         coVerify(exactly = 1) { widgetUpdater.updateWidget() }
         verify(exactly = 1) { pendingResult.finish() }
     }

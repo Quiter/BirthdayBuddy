@@ -5,7 +5,7 @@ import android.content.Intent
 import androidx.test.core.app.ApplicationProvider
 import com.google.common.truth.Truth.assertThat
 import com.heckmannch.birthdaybuddy.domain.util.DeviceRegionProvider
-import com.heckmannch.birthdaybuddy.ui.screens.home.components.actions.MessengerApp
+import com.heckmannch.birthdaybuddy.domain.model.MessengerApp
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner

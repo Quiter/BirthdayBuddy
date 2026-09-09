@@ -69,6 +69,7 @@ class ContactRepositoryCoupleLinkTest {
             settingsDatabase = settingsDb,
             contactDbMapper = ContactDbMapper(),
             ioDispatcher = Dispatchers.IO,
+            defaultDispatcher = Dispatchers.Default,
         )
     }
 

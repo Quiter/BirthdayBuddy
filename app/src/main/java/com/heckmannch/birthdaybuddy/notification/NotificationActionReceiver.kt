@@ -8,6 +8,8 @@ import android.util.Log
 import androidx.core.content.getSystemService
 import com.heckmannch.birthdaybuddy.di.ApplicationScope
 import com.heckmannch.birthdaybuddy.domain.repository.NotificationRepository
+import com.heckmannch.birthdaybuddy.domain.usecase.DismissNotificationUseCase
+import com.heckmannch.birthdaybuddy.domain.usecase.MarkNotificationAsDoneUseCase
 import com.heckmannch.birthdaybuddy.domain.usecase.ReshowNotificationUseCase
 import com.heckmannch.birthdaybuddy.domain.usecase.SnoozeNotificationUseCase
 import com.heckmannch.birthdaybuddy.domain.util.NotificationKeyUtils
@@ -31,6 +33,12 @@ class NotificationActionReceiver : BroadcastReceiver() {
 
     @Inject
     lateinit var notificationRepository: NotificationRepository
+
+    @Inject
+    lateinit var markNotificationAsDoneUseCase: MarkNotificationAsDoneUseCase
+
+    @Inject
+    lateinit var dismissNotificationUseCase: DismissNotificationUseCase
 
     @Inject
     lateinit var snoozeNotificationUseCase: SnoozeNotificationUseCase
@@ -74,7 +82,7 @@ class NotificationActionReceiver : BroadcastReceiver() {
                     val pendingResult = goAsync()
                     applicationScope.launch {
                         try {
-                            notificationRepository.markAsDone(pendingId)
+                            markNotificationAsDoneUseCase(pendingId)
                         } catch (e: Exception) {
                             if (e is CancellationException) throw e
                             Log.e(
@@ -97,7 +105,7 @@ class NotificationActionReceiver : BroadcastReceiver() {
                     applicationScope.launch {
                         try {
                             // Zähler für Wisch-Versuche erhöhen
-                            notificationRepository.incrementDismissCount(pendingId)
+                            dismissNotificationUseCase(pendingId)
 
                             val pendingNotification =
                                 notificationRepository.getPendingNotificationById(pendingId)

@@ -33,6 +33,15 @@
     public <init>();
 }
 
+# Protect Room @Dao interfaces to preserve method signatures and types for KSP/Room runtime implementations.
+-keep @androidx.room.Dao interface * { *; }
+
+# Protect non-entity query POJOs/projections (e.g. CoupleProjection) used in Room queries so Room reflection/mapping can instantiate them.
+-keepclassmembers class com.heckmannch.birthdaybuddy.data.local.*Projection {
+    <init>(...);
+    <fields>;
+}
+
 # ==============================================================================
 # 3. Jetpack Navigation 3 & kotlinx.serialization
 # ==============================================================================

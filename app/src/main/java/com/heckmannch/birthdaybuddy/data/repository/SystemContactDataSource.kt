@@ -6,7 +6,7 @@ import android.provider.ContactsContract
 import android.util.Log
 import com.heckmannch.birthdaybuddy.di.IoDispatcher
 import com.heckmannch.birthdaybuddy.domain.model.Contact
-import com.heckmannch.birthdaybuddy.util.NO_YEAR_MARKER
+import com.heckmannch.birthdaybuddy.domain.util.NO_YEAR_MARKER
 import com.heckmannch.birthdaybuddy.util.hasYear
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CancellationException

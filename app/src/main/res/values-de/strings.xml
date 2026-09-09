@@ -432,4 +432,6 @@
 
     <!-- AppFunctions: für Nutzer sichtbare App-Beschreibung für KI-Assistenten -->
     <string name="app_description_for_agents">BirthdayBuddy hilft dir, Geburtstage und besondere Anlässe deiner Kontakte nicht zu vergessen.</string>
+
+    <string name="scrollbar_content_description">Scrollleiste</string>
 </resources>

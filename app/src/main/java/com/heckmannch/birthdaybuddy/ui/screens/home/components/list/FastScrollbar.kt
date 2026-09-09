@@ -44,16 +44,17 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.Dp
-import androidx.compose.ui.unit.dp
+import com.heckmannch.birthdaybuddy.R
 import com.heckmannch.birthdaybuddy.ui.model.ContactUiModel
 import com.heckmannch.birthdaybuddy.ui.model.SampleData
-import com.heckmannch.birthdaybuddy.ui.theme.BirthdayBuddyTheme
 import com.heckmannch.birthdaybuddy.ui.theme.AlphaScrollbarThumb
+import com.heckmannch.birthdaybuddy.ui.theme.BirthdayBuddyTheme
 import com.heckmannch.birthdaybuddy.ui.theme.CardCornerRadiusLarge
 import com.heckmannch.birthdaybuddy.ui.theme.CardCornerRadiusSmall
 import com.heckmannch.birthdaybuddy.ui.theme.IconSizeExtraLarge
@@ -69,6 +70,7 @@ import com.heckmannch.birthdaybuddy.ui.theme.ScrollbarThumbHeight
 import com.heckmannch.birthdaybuddy.ui.theme.ScrollbarThumbWidth
 import com.heckmannch.birthdaybuddy.ui.theme.ScrollbarTouchTargetWidth
 import com.heckmannch.birthdaybuddy.ui.theme.SpacingExtraSmall
+import com.heckmannch.birthdaybuddy.ui.theme.SpacingNone
 import com.heckmannch.birthdaybuddy.ui.theme.SpacingTiny
 import com.heckmannch.birthdaybuddy.ui.theme.WidgetCornerRadius
 import kotlinx.coroutines.delay
@@ -220,7 +222,7 @@ internal class FastScrollState(
         scrollPercent: Float,
     ): Dp {
         return if (isDragging) {
-            with(density) { dragOffsetPx.toDp() }.coerceIn(0.dp, trackHeight)
+            with(density) { dragOffsetPx.toDp() }.coerceIn(SpacingNone, trackHeight)
         } else {
             trackHeight * scrollPercent
         }
@@ -276,7 +278,7 @@ internal class FastScrollState(
         sections: List<ScrollSection>,
     ): String {
         if (sections.isEmpty()) return ""
-        val percent = if (trackHeight > 0.dp) {
+        val percent = if (trackHeight > SpacingNone) {
             (thumbOffset / trackHeight).coerceIn(0f, 1f)
         } else 0f
         val sectionIndex = (percent * sections.size).toInt()
@@ -383,13 +385,14 @@ fun FastScrollbar(
     contacts: List<ContactUiModel>,
     getLabel: (ContactUiModel) -> String,
     modifier: Modifier = Modifier,
-    contentPadding: PaddingValues = PaddingValues(0.dp),
+    contentPadding: PaddingValues = PaddingValues(SpacingNone),
     headerCount: Int = 0,
     onSetFastScrolling: (Boolean) -> Unit = {},
 ) {
     val density = LocalDensity.current
     val haptic = LocalHapticFeedback.current
     val currentOnSetFastScrolling by rememberUpdatedState(onSetFastScrolling)
+    val scrollbarContentDescription = stringResource(R.string.scrollbar_content_description)
 
     val totalItems = contacts.size
     val state = rememberFastScrollState(listState = listState, density = density)
@@ -615,7 +618,7 @@ fun FastScrollbar(
                     .width(ScrollbarDefaults.ThumbWidth)
                     .height(ScrollbarDefaults.ThumbHeight)
                     .graphicsLayer { translationY = thumbOffset.toPx() }
-                    .semantics { contentDescription = "Scrollbar" }
+                    .semantics { contentDescription = scrollbarContentDescription }
                     .testTag("fast_scrollbar_thumb"),
                 shape = RoundedCornerShape(WidgetCornerRadius),
                 color = MaterialTheme.colorScheme.primary.copy(alpha = ScrollbarDefaults.AlphaThumb),

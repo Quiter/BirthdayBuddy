@@ -10,20 +10,17 @@ import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
 import androidx.work.WorkRequest
 import androidx.work.WorkerParameters
-import com.heckmannch.birthdaybuddy.domain.model.NotificationRule
 import com.heckmannch.birthdaybuddy.domain.model.PendingNotification
 import com.heckmannch.birthdaybuddy.domain.repository.ContactRepository
 import com.heckmannch.birthdaybuddy.domain.repository.NotificationRepository
 import com.heckmannch.birthdaybuddy.domain.repository.SettingsRepository
+import com.heckmannch.birthdaybuddy.domain.usecase.CleanupOldNotificationsUseCase
 import com.heckmannch.birthdaybuddy.domain.usecase.GetPendingNotificationsUseCase
 import com.heckmannch.birthdaybuddy.util.AlarmScheduler
 import com.heckmannch.birthdaybuddy.util.Clock
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
 import kotlinx.coroutines.CancellationException
-import java.time.Duration
-import java.time.LocalDateTime
-import java.time.LocalTime
 import java.util.concurrent.TimeUnit
 
 /**
@@ -37,6 +34,7 @@ class NotificationWorker @AssistedInject constructor(
     private val notificationRepository: NotificationRepository,
     private val settingsRepository: SettingsRepository,
     private val notificationHelper: NotificationHelper,
+    private val cleanupOldNotificationsUseCase: CleanupOldNotificationsUseCase,
     private val getPendingNotificationsUseCase: GetPendingNotificationsUseCase,
     private val alarmScheduler: AlarmScheduler,
     private val clock: Clock,
@@ -47,7 +45,7 @@ class NotificationWorker @AssistedInject constructor(
             // Vorjahres-Einträge bereinigen, damit die pendingId nicht unbegrenzt wächst
             // und PendingIntent-Request-Code-Kollisionen verhindert werden.
             val currentYear = clock.nowLocalDate().year
-            notificationRepository.deleteOldNotifications(currentYear)
+            cleanupOldNotificationsUseCase(currentYear)
 
             // Sync contacts before evaluating rules to make sure we work with the latest data
             contactRepository.syncContacts()
@@ -124,65 +122,6 @@ class NotificationWorker @AssistedInject constructor(
                 ExistingWorkPolicy.REPLACE,
                 request,
             )
-        }
-
-        /**
-         * Plant den nächsten fälligen Zeitpunkt basierend auf allen Regeln.
-         *
-         * @param existingWorkPolicy Richtlinie für die Behandlung von Arbeitskonflikten (standardmäßig [ExistingWorkPolicy.REPLACE]).
-         *   Nutze [ExistingWorkPolicy.REPLACE] nach Settings-Änderungen.
-         *   Nutze [ExistingWorkPolicy.APPEND_OR_REPLACE] für die Folgeplanung aus dem laufenden Worker,
-         *   damit die nächste Ausführung verkettet wird, ohne den aktuellen Worker abzubrechen oder
-         *   ignoriert zu werden.
-         * @param now Der aktuelle Zeitpunkt für die Berechnung (standardmäßig [LocalDateTime.now]).
-         */
-        @JvmStatic
-        @JvmOverloads
-        fun scheduleNext(
-            context: Context,
-            rules: List<NotificationRule>,
-            existingWorkPolicy: ExistingWorkPolicy = ExistingWorkPolicy.REPLACE,
-            now: LocalDateTime = LocalDateTime.now()
-        ) {
-            if (rules.isEmpty()) {
-                cancelNotification(context)
-                return
-            }
-
-            val uniqueTimes = rules.asSequence()
-                .map { LocalTime.of(it.hour, it.minute) }
-                .distinct()
-                .sorted()
-                .toList()
-
-            // Finde die nächste Zeit heute oder die erste Zeit morgen
-            val nextTime = uniqueTimes.firstOrNull { it.isAfter(now.toLocalTime()) }
-                ?: uniqueTimes.first()
-
-            var targetDateTime = LocalDateTime.of(now.toLocalDate(), nextTime)
-            if (!targetDateTime.isAfter(now)) {
-                targetDateTime = targetDateTime.plusDays(1)
-            }
-
-            val delay = Duration.between(now, targetDateTime).toMillis()
-
-            val request = OneTimeWorkRequestBuilder<NotificationWorker>()
-                .setInitialDelay(delay, TimeUnit.MILLISECONDS)
-                // Linearer Backoff (10s), um zeitkritische Benachrichtigungen bei temporären Fehlern rasch zu wiederholen
-                .setBackoffCriteria(BackoffPolicy.LINEAR, WorkRequest.MIN_BACKOFF_MILLIS, TimeUnit.MILLISECONDS)
-                .addTag(NotificationActions.WORK_TAG_NOTIFICATION)
-                .build()
-
-            WorkManager.getInstance(context).enqueueUniqueWork(
-                WORK_NAME,
-                existingWorkPolicy,
-                request,
-            )
-        }
-
-        @JvmStatic
-        fun cancelNotification(context: Context) {
-            WorkManager.getInstance(context).cancelUniqueWork(WORK_NAME)
         }
     }
 }

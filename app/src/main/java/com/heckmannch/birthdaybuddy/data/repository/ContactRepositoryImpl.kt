@@ -195,12 +195,12 @@ class ContactRepositoryImpl @Inject constructor(
     override suspend fun updateContactBirthday(
         contactId: String,
         birthday: LocalDate
-    ): Boolean {
+    ): Boolean = withContext(ioDispatcher) {
         val success = systemContactDataSource.updateContactBirthday(contactId, birthday)
         if (success) {
             syncContacts()
         }
-        return success
+        success
     }
 
     override suspend fun updateLabelsEnabled(enabled: Boolean) = withContext(ioDispatcher) {

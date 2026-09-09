@@ -108,12 +108,13 @@ Dieses Dokument dient als systemischer Kontext für die Entwicklung von Features
 ### Verzeichnisstruktur
 - **`di/`**: Hilt-Konfigurationsmodule (z.B. `AppModule.kt`, `HelperBindingsModule.kt`).
 - **`domain/`**:
-  - **`model/`**: Reine Kotlin-Geschäftsmodelle (z.B. `Contact`, `GiftIdea`, `EventType`).
+  - **`model/`**: Reine Kotlin-Geschäftsmodelle (z.B. `Contact`, `GiftIdea`, `EventType`, `MessengerApp`).
   - **`usecase/`**: Fachliche Anwendungsfälle / Use Cases (z.B. `GetContactsUseCase`, `GetPendingNotificationsUseCase`).
-  - **`appfunctions/model/`**: AppFunction-DTOs ohne Framework-Abhängigkeiten (`UpcomingBirthday.kt`, `ContactBirthday.kt`). Der Service selbst liegt in `platform/appfunctions/`.
+  - **`util/`**: Fachliche Hilfsfunktionen ohne Framework-Abhängigkeiten (`DateUtils.kt`, `PhoneNumberNormalizer.kt`).
   - **`permission/`**: Plattformunabhängige Schnittstellen für Berechtigungsprüfungen (`PermissionChecker.kt`).
 - **`platform/`**:
   - **`appfunctions/`**: Android-Framework-spezifischer `BirthdayAppFunctionService` (verwendet `PendingIntent`, `Intent`, `AppFunctionService`). Liegt hier, da der Domain-Layer frei von Framework-Abhängigkeiten bleiben muss.
+    - **`model/`**: AppFunction-DTOs (`UpcomingBirthday.kt`, `ContactBirthday.kt`) mit `@AppFunctionSerializable`.
 - **`data/`**:
   - **`local/`**: Room-Datenbanken (`AppDatabase`, `SettingsDatabase`), Entitäten (`Contact`, `AppSettings`, `NotificationRule`, `PendingNotification`) und DAOs.
   - **`repository/`**: Orchestriert den Datenfluss (`ContactRepository`, `CalendarSyncRepository`, `NotificationRepository`).

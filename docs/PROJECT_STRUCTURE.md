@@ -3,8 +3,8 @@
 ## 📁 Root
 - `MainActivity.kt`: Schlanker Einstiegspunkt der App. Verantwortlich für: Splash-Screen, Edge-to-Edge, Theme-Bereitstellung, Intent-Parsing via `IntentParser` in typsichere `AppAction`-Events, Weiterleitung an `AppViewModel` und Bereitstellung des UI-Trees. Die Navigationslogik liegt in `AppNavHost.kt`.
 - `BirthdayBuddyApplication.kt`: Hilt-Application Klasse zur Initialisierung der Dependency Injection und Konfiguration des WorkManagers.
-- `AppViewModel.kt`: App-weites `@HiltViewModel`, das auf Activity-Ebene gehalten wird (Root-Package, da Activity-weit gültig). Vollständig entkoppelt von Android-Framework-APIs; verwaltet reaktive `AppSettings`, triggert `syncScheduling()` & `WidgetUpdater.scheduleDailyUpdate()` und puffert `AppAction`-Events.
-- `BootReceiver.kt`: BroadcastReceiver für Geräteneustart (`BOOT_COMPLETED`), App-Updates (`MY_PACKAGE_REPLACED`) sowie Zeitzonen- und Uhrzeitanpassungen (`TIMEZONE_CHANGED`, `TIME_SET`, `DATE_CHANGED`) zur automatischen Neuplanung von Benachrichtigungen via `syncScheduling()`.
+- `AppViewModel.kt`: App-weites `@HiltViewModel`, das auf Activity-Ebene gehalten wird (Root-Package, da Activity-weit gültig). Vollständig entkoppelt von Android-Framework-APIs; verwaltet reaktive `AppSettings`, triggert `SyncNotificationSchedulingUseCase` & `ScheduleDailyWidgetUpdateUseCase` und puffert `AppAction`-Events.
+- `BootReceiver.kt`: BroadcastReceiver für Geräteneustart (`BOOT_COMPLETED`), App-Updates (`MY_PACKAGE_REPLACED`) sowie Zeitzonen- und Uhrzeitanpassungen (`TIMEZONE_CHANGED`, `TIME_SET`, `DATE_CHANGED`) zur automatischen Neuplanung von Benachrichtigungen und Widgets via `SyncNotificationSchedulingUseCase` und `ScheduleDailyWidgetUpdateUseCase`.
 - `AppViewModelTest.kt`: Tests für `AppViewModel`.
 - `PROJECT_STATUS.md`: Dokumentation des aktuellen Entwicklungsstands, der Architektur-Constraints und Meilensteine.
 - `PROJECT_STRUCTURE.md`: Diese Datei (Struktur-Dokumentation des Projekts).
@@ -82,6 +82,7 @@
     - `CoupleSuggestion.kt`: Reines Domänenmodell für Paar-Kopplungsvorschläge (frei von Android- oder UI-Abhängigkeiten).
     - `GiftIdea.kt`: Reines Domänenmodell für Geschenkideen (id, text, isChecked) mit statischen Hilfsmethoden zum Hinzufügen, Sortieren und Umschalten von Ideen.
     - `EventType.kt`: Typsicheres Enum zur Diskriminierung des aktiven Ereignistyps (`BIRTHDAY`, `ANNIVERSARY`, `NAME_DAY`). Liegt im Domain-Layer, um Tippfehler und stilles Fehlverhalten in der Filter-, Mapping- und Benachrichtigungslogik zu verhindern.
+    - `MessengerApp.kt`: Reines Kotlin-Domänen-Enum zur Identifikation unterstützter Messenger-Apps (`WHATSAPP`, `SIGNAL`, etc.) mit Paketnamen, frei von UI- und Framework-Abhängigkeiten.
 - ### 📁 Use Cases (`domain.usecase`)
     - `GetContactsUseCase.kt`: Kapselt die gesamte Filterlogik für die Home-Kontaktliste. Empfängt reaktive Inputs (Kontakte, Datum, Suchbegriff, Labels, Einstellungen) und gibt einen gefilterten Domain-Fluss `Flow<List<Contact>>` zurück. Enthält die `LabelSettingsState`-Datenklasse. Annotiert mit `@Reusable` (kein Singleton nötig).
     - `GetAvailableLabelsUseCase.kt`: Kapselt die Logik zur Ermittlung der verfügbaren Filter-Labels für den Home-Screen (User-Labels, "Ohne Datum"-Pseudo-Label und weitere Ereignistyp-Labels wie Hochzeitstag und Namenstag). Annotiert mit `@Reusable`.
@@ -96,17 +97,28 @@
     - `SyncCalendarUseCase.kt`: Synchronisiert Geburtstage, Hochzeitstage und Namenstage in den Systemkalender, sofern aktiviert.
     - `SetCalendarSyncEnabledUseCase.kt`: Konfiguriert die Kalendersynchronisation und führt Initialisierungs- oder Löschaktionen durch.
     - `UpdateCalendarColorUseCase.kt`: Aktualisiert die Systemkalenderfarbe für einen bestimmten Ereignistyp.
+    - `SyncNotificationSchedulingUseCase.kt`: Synchronisiert die Planung von Benachrichtigungen via `NotificationRepository.syncScheduling()`.
+    - `ScheduleDailyWidgetUpdateUseCase.kt`: Plant die tägliche Aktualisierung des Glance-Homescreen-Widgets via `WidgetUpdater.scheduleDailyUpdate()`.
+    - `MarkNotificationAsDoneUseCase.kt`: Markiert eine anstehende Benachrichtigung als erledigt via `NotificationRepository.markAsDone(pendingId)`.
+    - `DismissNotificationUseCase.kt`: Erhöht den Verwurf-Zähler einer Benachrichtigung via `NotificationRepository.incrementDismissCount(pendingId)`.
+    - `CleanupOldNotificationsUseCase.kt`: Bereinigt alte erledigte Benachrichtigungen vergangener Jahre via `NotificationRepository.deleteOldNotifications(year)`.
 - ### 📁 Utilities (`domain.util`)
     - `CalendarStringProvider.kt`: Plattformunabhängiges Interface zur Bereitstellung lokalisierter Strings für die Kalendersynchronisation (Namen, Titel, Beschreibungen), entkoppelt Repositories von Android-Ressourcen und ermöglicht pure JVM-Unit-Tests.
     - `ContactFilterLogic.kt`: Reines Domänen-Hilfsobjekt zur Kapselung der Multi-Label-Filterregeln (Ignorieren und Verbergen) für Benachrichtigungen und Widgets.
+    - `DateUtils.kt`: Reines Domänen-Utility für mathematische Datumsberechnungen (Schaltjahr-Projektion `toYear`, Bereinigung/Normalisierung von Geburtsdaten `sanitizeBirthdayDate` und Schaltjahr-Marker `NO_YEAR_MARKER = 4`), frei von Android- oder UI-Framework-Abhängigkeiten.
     - `DeviceRegionProvider.kt`: Plattformunabhängiges Interface zur deterministischen Ermittlung des ISO-Ländercodes der Geräteregion (entkoppelt den Domain-Layer von globalem JVM-State).
     - `NotificationKeyUtils.kt`: Zentrales Utility-Objekt zum sicheren Enkodieren, Dekodieren und Extrahieren des `EventType` für Benachrichtigungs-Lookup-Keys (verhindert Fragilität bei Doppelpunkten im LookupKey).
     - `PhoneNumberNormalizer.kt`: Reines Kotlin-Domänen-Hilfsobjekt zur E.164-konformen Bereinigung von Telefonnummern (inkl. Handhabung von Inlandsvorwahlen mit führender 0, `+` und `00`, redundanten `(0)`-Klammern, fehlerhaften `+0...`-Präfixen und Ziffern-Only-Aufbereitung für WhatsApp URLs; vollständig entkoppelt von globalem JVM-State über `DeviceRegionProvider`).
-- ### 📁 AppFunctions-Modelle (`domain.appfunctions.model`) — *Android 16+ / AI-Agent Integration*
-    - `model/UpcomingBirthday.kt`: `@AppFunctionSerializable` Datenklasse für einen Geburtstags-Treffer (Rückgabe von `getUpcomingBirthdays`).
-    - `model/ContactBirthday.kt`: `@AppFunctionSerializable` Datenklasse für die Geburtstagsdetails eines einzelnen Kontakts (Rückgabe von `getContactBirthday`).
 
-    > **Architekturentscheidung:** Die Modelle verbleiben im Domain-Layer, da `@AppFunctionSerializable` eine reine Serialisierungsannotation ohne Android-Laufzeitabhängigkeiten ist. Die Klassen repräsentieren fachliche DTOs. `BirthdayAppFunctionService` selbst liegt im `platform/`-Layer (siehe unten).
+## 📁 Platform Layer (`platform`)
+
+Enthält Android-Framework-spezifische Klassen, die nicht in den Domain-Layer gehören (z.B. Klassen mit `PendingIntent`, `Intent`, `Context`, `AppFunctionService`-Abhängigkeiten). Abhängigkeitsrichtung: `platform` → `domain` (erlaubt), `domain` → `platform` (verboten).
+
+- ### 📁 AppFunctions (`platform.appfunctions`) — *Android 16+ / AI-Agent Integration*
+    - `BirthdayAppFunctionService.kt`: Abstrakte `AppFunctionService`-Unterklasse (alpha10-API), annotiert mit `@AppFunctionServiceEntryPoint` und `@AndroidEntryPoint`. Stellt vier `@AppFunction`-Methoden bereit, die das Android-System und KI-Agenten (Google Assistant, Gemini) aufrufen können, ohne die App-UI zu öffnen. KSP generiert zur Compile-Zeit die konkrete Unterklasse `BirthdayBuddyGeneratedAppFunctionService` sowie das Assets-XML. Abhängigkeiten (`ContactRepository`, `IoDispatcher`) werden per Hilt field-injiziert. Liegt im `platform/`-Layer, da es `PendingIntent`, `Intent` und `MainActivity` importiert – Framework-Abhängigkeiten, die im Domain-Layer verboten sind.
+    - #### 📁 AppFunctions-Modelle (`platform.appfunctions.model`)
+        - `UpcomingBirthday.kt`: `@AppFunctionSerializable` Datenklasse für einen Geburtstags-Treffer (Rückgabe von `getUpcomingBirthdays`).
+        - `ContactBirthday.kt`: `@AppFunctionSerializable` Datenklasse für die Geburtstagsdetails eines einzelnen Kontakts (Rückgabe von `getContactBirthday`).
 
     **Bereitgestellte AppFunctions:**
 
@@ -116,12 +128,6 @@
     | `getContactBirthday` | `contactName: String` | `ContactBirthday?` | Sucht einen Kontakt per (Teil-)Name (case-insensitive); gibt null zurück, wenn kein Treffer. |
     | `sendBirthdayMessage` | `contactId, app` | `PendingIntent` | Öffnet eine Messaging-App für die Telefonnummer des Kontakts (WhatsApp, Signal, Telegram, SMS). |
     | `addBirthdayToContact` | `contactId, year?, month, day` | `PendingIntent` | Öffnet den In-App-Editierscreen per Deep-Link (kein Direktschreiben — User-Bestätigung erforderlich). |
-## 📁 Platform Layer (`platform`)
-
-Enthält Android-Framework-spezifische Klassen, die nicht in den Domain-Layer gehören (z.B. Klassen mit `PendingIntent`, `Intent`, `Context`, `AppFunctionService`-Abhängigkeiten). Abhängigkeitsrichtung: `platform` → `domain` (erlaubt), `domain` → `platform` (verboten).
-
-- ### 📁 AppFunctions (`platform.appfunctions`) — *Android 16+ / AI-Agent Integration*
-    - `BirthdayAppFunctionService.kt`: Abstrakte `AppFunctionService`-Unterklasse (alpha10-API), annotiert mit `@AppFunctionServiceEntryPoint` und `@AndroidEntryPoint`. Stellt vier `@AppFunction`-Methoden bereit, die das Android-System und KI-Agenten (Google Assistant, Gemini) aufrufen können, ohne die App-UI zu öffnen. KSP generiert zur Compile-Zeit die konkrete Unterklasse `BirthdayBuddyGeneratedAppFunctionService` sowie das Assets-XML. Abhängigkeiten (`ContactRepository`, `IoDispatcher`) werden per Hilt field-injiziert. Liegt im `platform/`-Layer, da es `PendingIntent`, `Intent` und `MainActivity` importiert – Framework-Abhängigkeiten, die im Domain-Layer verboten sind.
 
 ## 📁 UI Layer (`ui`)
 
@@ -162,7 +168,7 @@ Enthält Android-Framework-spezifische Klassen, die nicht in den Domain-Layer ge
             - ###### 📁 Actions (`home.components.actions`)
                 - `ContactActionRow.kt`: Reihe mit Messenger- und Kontakt-Aktionen.
                 - `HomeFAB.kt`: Multifunktionaler FAB mit Morphing-Animation.
-                - `MessengerApp.kt`: Enum zur Definition unterstützter Messenger und deren Branding.
+                - `MessengerAppUi.kt`: UI-Erweiterungseigenschaften für `MessengerApp` (Markenfarben `brandColor`, Ressourcen-IDs für Labels `labelResId` und Icons `iconResId`).
     - #### 📁 Onboarding (`onboarding`)
         - `OnboardingScreen.kt`: Multi-Page Flow für die initiale Konfiguration.
         - `OnboardingViewModel.kt`: Zuständig für den Onboarding-Status und Erststart-Prozess. Nutzt MVI-Intents und `onIntent()`. **Feature-co-located** neben `OnboardingScreen.kt`.
@@ -245,12 +251,12 @@ Enthält Android-Framework-spezifische Klassen, die nicht in den Domain-Layer ge
 ## 📁 Utilities (`util`)
 - `AlarmScheduler.kt`: Zentraler Singleton-Scheduler für zeitkritische Hintergrund-Alarme mittels `AlarmManager.setExactAndAllowWhileIdle` (mit Fallback auf `setAndAllowWhileIdle` und Permission-Check für `canScheduleExactAlarms`), um Doze Mode Verzögerungen bei Benachrichtigungen und Widget-Updates zu eliminieren.
 - `JsonUtils.kt`: Zentrales Singleton-Objekt für standardmäßig vorkonfigurierte `kotlinx.serialization.json.Json`-Instanzen (`defaultJson` mit `ignoreUnknownKeys = true`, `encodeDefaults = true` sowie `prettyJson`). Dient als SSOT für JSON-Serialisierung in der gesamten App (Converters, BackupManager).
-- `DateUtils.kt`: Robuste Erweiterungsfunktionen für LocalDate.
+- `DateUtils.kt`: Robuste UI-/Hilfs-Erweiterungsfunktionen für `LocalDate` (`hasYear`, `safeDaysUntilNext`, `safeNextAge`, `toNextOccurrence`, `isBirthdayToday`).
 - `StringUtils.kt`: Hilfsfunktionen für Namens- und String-Operationen (`mergeNames`, `getInitials`).
 - `ContextExtensions.kt`: Hilfsfunktionen für die sichere Navigation im Android-Context.
 - `IntentExtras.kt`: Zentrales `object` mit allen `const val`-Schlüsseln für Intent-Extras (`SCROLL_TO_TOP`, `NAVIGATE_TO_NOTIFICATIONS`, `OPEN_SEARCH`, `OPEN_ADD_CONTACT`) sowie sicheren, typgeprüften Extraktions- und Bereinigungsfunktionen (`safeGetAndRemoveBooleanExtra`, `safeGetIntExtra`, `safeGetStringArrayExtra`).
 - `IntentParser.kt`: Zentraler Parser zur sicheren Umwandlung von Android-`Intent`s in typsichere `AppAction`-Instanzen.
-- `MessengerUtils.kt`: Asynchrone, nicht-blockierende Hilfsfunktion `getInstalledMessengersAsync` zur Abfrage installierter Messenger-Apps ohne Thread-Blockierung im UI-Layer.
+- `MessengerUtils.kt`: Hilfsfunktionen zur thread-sicheren Abfrage und Zwischenspeicherung installierter Messenger-Apps via `PackageManager` (`getInstalledMessengers`, `getCachedMessengers`, `clearCache`, `getInstalledMessengersAsync`), ohne UI-Abhängigkeiten.
 - `WidgetUpdater.kt` & `BirthdayWidgetUpdater.kt`: Abstraktion und Implementierung zur Glance-unabhängigen Aktualisierung und WorkManager-Planung (`scheduleDailyUpdate()`) des App-Widgets.
 - `NotificationScheduler.kt` & `NotificationSchedulerImpl.kt`: Hilfsklassen zur WorkManager-unabhängigen Steuerung von Hintergrund-Workern.
 

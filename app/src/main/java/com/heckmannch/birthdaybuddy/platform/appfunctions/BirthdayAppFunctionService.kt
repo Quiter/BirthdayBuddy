@@ -6,12 +6,11 @@
  * Framework-APIs (`PendingIntent`, `Intent`, `MainActivity`), die im Domain-Layer verboten sind.
  *
  * **Abhängigkeitsrichtung:** `platform` → `domain` (erlaubt). Der Service operiert auf
- * Domain-Interfaces (`ContactRepository`) und Domain-DTOs (`UpcomingBirthday`, `ContactBirthday`),
- * ohne diese zu besitzen.
+ * Domain-Interfaces (`ContactRepository`), während die Framework-spezifischen DTOs
+ * (`UpcomingBirthday`, `ContactBirthday`) im `platform.appfunctions.model`-Package liegen.
  *
  * **Modelle:** Die `@AppFunctionSerializable`-Datenklassen (`UpcomingBirthday`, `ContactBirthday`)
- * verbleiben in `domain.appfunctions.model`, da sie fachliche DTOs ohne Framework-Abhängigkeiten
- * sind und das Dependency-Inversion-Prinzip wahren.
+ * liegen in `platform.appfunctions.model`, da sie Framework-spezifische DTOs für AppFunctions sind.
  */
 package com.heckmannch.birthdaybuddy.platform.appfunctions
 
@@ -30,13 +29,13 @@ import androidx.appfunctions.AppFunctionServiceEntryPoint
 import androidx.core.net.toUri
 import com.heckmannch.birthdaybuddy.MainActivity
 import com.heckmannch.birthdaybuddy.di.IoDispatcher
-import com.heckmannch.birthdaybuddy.domain.appfunctions.model.ContactBirthday
-import com.heckmannch.birthdaybuddy.domain.appfunctions.model.UpcomingBirthday
 import com.heckmannch.birthdaybuddy.domain.repository.ContactRepository
 import com.heckmannch.birthdaybuddy.domain.util.DeviceRegionProvider
+import com.heckmannch.birthdaybuddy.domain.util.NO_YEAR_MARKER
 import com.heckmannch.birthdaybuddy.domain.util.PhoneNumberNormalizer
+import com.heckmannch.birthdaybuddy.platform.appfunctions.model.ContactBirthday
+import com.heckmannch.birthdaybuddy.platform.appfunctions.model.UpcomingBirthday
 import com.heckmannch.birthdaybuddy.util.IntentExtras
-import com.heckmannch.birthdaybuddy.util.NO_YEAR_MARKER
 import com.heckmannch.birthdaybuddy.util.hasYear
 import com.heckmannch.birthdaybuddy.util.safeDaysUntilNext
 import com.heckmannch.birthdaybuddy.util.safeNextAge

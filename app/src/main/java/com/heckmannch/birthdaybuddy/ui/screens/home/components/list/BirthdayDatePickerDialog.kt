@@ -52,7 +52,7 @@ import com.heckmannch.birthdaybuddy.ui.theme.SpacingLarge
 import com.heckmannch.birthdaybuddy.ui.theme.SpacingNormal
 import com.heckmannch.birthdaybuddy.ui.theme.SpacingSmall
 import com.heckmannch.birthdaybuddy.ui.theme.WheelPickerItemHeight
-import com.heckmannch.birthdaybuddy.util.NO_YEAR_MARKER
+import com.heckmannch.birthdaybuddy.domain.util.NO_YEAR_MARKER
 import com.heckmannch.birthdaybuddy.util.hasYear
 import java.time.LocalDate
 import java.time.Month

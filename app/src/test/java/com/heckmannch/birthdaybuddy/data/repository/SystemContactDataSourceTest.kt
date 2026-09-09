@@ -3,7 +3,7 @@ package com.heckmannch.birthdaybuddy.data.repository
 import android.content.Context
 import android.util.Log
 import com.google.common.truth.Truth.assertThat
-import com.heckmannch.birthdaybuddy.util.NO_YEAR_MARKER
+import com.heckmannch.birthdaybuddy.domain.util.NO_YEAR_MARKER
 import com.heckmannch.birthdaybuddy.util.hasYear
 import io.mockk.every
 import io.mockk.mockk

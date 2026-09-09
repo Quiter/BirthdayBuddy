@@ -11,14 +11,13 @@ import com.heckmannch.birthdaybuddy.data.local.AppSettingsEntity
 import com.heckmannch.birthdaybuddy.domain.model.Contact
 import com.heckmannch.birthdaybuddy.domain.repository.CalendarSyncRepository
 import com.heckmannch.birthdaybuddy.domain.util.CalendarStringProvider
-import com.heckmannch.birthdaybuddy.util.NO_YEAR_MARKER
+import com.heckmannch.birthdaybuddy.domain.util.NO_YEAR_MARKER
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.mockkStatic
 import io.mockk.unmockkAll
-import io.mockk.verify
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runTest
 import org.junit.After
@@ -277,29 +276,6 @@ class CalendarSyncRepositoryImplTest {
         }
     }
 
-    @Test
-    fun debugPrintAllCalendars_queriesAllCalendarsAndLogsThem() = runTest {
-        // Arrange
-        val calendars = listOf(
-            SystemCalendarInfo(
-                id = 1L,
-                name = "Cal1",
-                accountName = "acc1",
-                accountType = "type1",
-                displayName = "disp1",
-                visible = 1
-            )
-        )
-        coEvery { systemCalendarDataSource.queryAllCalendars() } returns calendars
-
-        // Act
-        repository.debugPrintAllCalendars()
-
-        // Assert
-        coVerify { systemCalendarDataSource.queryAllCalendars() }
-        verify { Log.d("CalendarSyncRepo", "=== START DEBUG PRINT ALL CALENDARS ===") }
-        verify { Log.d("CalendarSyncRepo", "=== END DEBUG PRINT ALL CALENDARS ===") }
-    }
 
     @Test
     fun syncBirthdays_whenNoPermissions_returnsFalse() = runTest {

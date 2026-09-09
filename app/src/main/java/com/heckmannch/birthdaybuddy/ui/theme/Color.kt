@@ -13,6 +13,9 @@ val Purple40 = Color(0xFF6650a4)
 val PurpleGrey40 = Color(0xFF625b71)
 val Pink40 = Color(0xFF7D5260)
 
+// Action / Brand Colors
+val PixelBlue = Color(0xFF1A73E8)
+
 // Birthday Colors
 val BirthdayGold = Color(0xFFFFD700)
 val BirthdayGoldLight = Color(0xFFC67C00)

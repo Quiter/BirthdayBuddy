@@ -4,9 +4,9 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.heckmannch.birthdaybuddy.domain.model.AppSettings
-import com.heckmannch.birthdaybuddy.domain.repository.NotificationRepository
 import com.heckmannch.birthdaybuddy.domain.repository.SettingsRepository
-import com.heckmannch.birthdaybuddy.domain.repository.WidgetUpdater
+import com.heckmannch.birthdaybuddy.domain.usecase.ScheduleDailyWidgetUpdateUseCase
+import com.heckmannch.birthdaybuddy.domain.usecase.SyncNotificationSchedulingUseCase
 import com.heckmannch.birthdaybuddy.ui.navigation.AppAction
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -23,11 +23,11 @@ import javax.inject.Inject
  *
  * Verantwortlichkeiten:
  * - Hält den reaktiven [AppSettings]-State (bezogen aus [SettingsRepository]), der für das globale App-Theme benötigt wird.
- * - Triggert [NotificationRepository.syncScheduling] sowie [WidgetUpdater.scheduleDailyUpdate]
+ * - Triggert [SyncNotificationSchedulingUseCase] sowie [ScheduleDailyWidgetUpdateUseCase]
  *   einmalig pro ViewModel-Lifetime (überlebt Konfigurationsänderungen wie Rotation,
  *   sodass weder ein redundanter syncScheduling- noch ein redundanter Widget-Scheduling-Aufruf
  *   bei jeder Activity-Recreation stattfindet).
- * - Widget-Update-Strategie (Single-Path): [WidgetUpdater.scheduleDailyUpdate] delegiert an den
+ * - Widget-Update-Strategie (Single-Path): [ScheduleDailyWidgetUpdateUseCase] delegiert an den
  *   AlarmScheduler, um den deterministischen Mitternachts-Alarm via AlarmManager sicherzustellen.
  *   Beim App-Start wird bewusst kein redundanter WorkManager-Job eingeplant.
  * - Verwaltet eingehende Aktionen ([pendingAction]) in einem reaktiven StateFlow für Navigation
@@ -38,9 +38,9 @@ import javax.inject.Inject
  */
 @HiltViewModel
 class AppViewModel @Inject constructor(
-    private val notificationRepository: NotificationRepository,
+    private val syncNotificationSchedulingUseCase: SyncNotificationSchedulingUseCase,
+    private val scheduleDailyWidgetUpdateUseCase: ScheduleDailyWidgetUpdateUseCase,
     settingsRepository: SettingsRepository,
-    widgetUpdater: WidgetUpdater,
 ) : ViewModel() {
 
     private val _pendingAction = MutableStateFlow<AppAction?>(null)
@@ -100,13 +100,13 @@ class AppViewModel @Inject constructor(
     init {
         viewModelScope.launch {
             try {
-                notificationRepository.syncScheduling()
+                syncNotificationSchedulingUseCase()
             } catch (e: Exception) {
                 // Safeguard: Scheduler-Fehler dürfen den App-Start nicht blockieren.
                 Log.w(TAG, "Fehler bei der Synchronisierung der Benachrichtigungsplanung beim App-Start", e)
             }
             try {
-                widgetUpdater.scheduleDailyUpdate()
+                scheduleDailyWidgetUpdateUseCase()
             } catch (e: Exception) {
                 // Safeguard: Fehler beim Widget-Scheduling dürfen den App-Start nicht blockieren.
                 Log.w(TAG, "Fehler beim Planen der täglichen Widget-Aktualisierung beim App-Start", e)

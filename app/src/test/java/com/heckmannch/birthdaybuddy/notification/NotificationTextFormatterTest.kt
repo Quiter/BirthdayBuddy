@@ -6,7 +6,7 @@ import com.google.common.truth.Truth.assertThat
 import com.heckmannch.birthdaybuddy.R
 import com.heckmannch.birthdaybuddy.domain.model.Contact
 import com.heckmannch.birthdaybuddy.domain.model.EventType
-import com.heckmannch.birthdaybuddy.util.NO_YEAR_MARKER
+import com.heckmannch.birthdaybuddy.domain.util.NO_YEAR_MARKER
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith

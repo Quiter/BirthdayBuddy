@@ -5,9 +5,9 @@ import android.content.Context
 import android.content.Intent
 import android.util.Log
 import com.heckmannch.birthdaybuddy.di.ApplicationScope
-import com.heckmannch.birthdaybuddy.domain.repository.NotificationRepository
 import com.heckmannch.birthdaybuddy.domain.repository.WidgetUpdater
-import com.heckmannch.birthdaybuddy.util.AlarmScheduler
+import com.heckmannch.birthdaybuddy.domain.usecase.ScheduleDailyWidgetUpdateUseCase
+import com.heckmannch.birthdaybuddy.domain.usecase.SyncNotificationSchedulingUseCase
 import dagger.hilt.EntryPoint
 import dagger.hilt.InstallIn
 import dagger.hilt.android.EntryPointAccessors
@@ -26,8 +26,8 @@ import kotlinx.coroutines.launch
  * Widget-Update-Strategie (Single-Path):
  * 1. Sofortiges Rendern: [WidgetUpdater.updateWidget] aktualisiert bestehende Glance-Homescreen-Widgets
  *    unmittelbar mit dem aktuellen Datenbestand, sodass keine veralteten Zustände nach Boot/Zeitwechsel sichtbar sind.
- * 2. Deterministisches Mitternachts-Scheduling: [AlarmScheduler.scheduleNextWidgetUpdateAlarm] setzt einen
- *    exakten Alarm ([android.app.AlarmManager.setExactAndAllowWhileIdle]) für Mitternacht (00:01 Uhr).
+ * 2. Deterministisches Mitternachts-Scheduling: [ScheduleDailyWidgetUpdateUseCase] delegiert an den
+ *    AlarmScheduler, um einen exakten Alarm ([android.app.AlarmManager.setExactAndAllowWhileIdle]) für Mitternacht (00:01 Uhr) zu setzen.
  *    Dadurch wird der Datumswechsel auch im Doze-Modus pünktlich vollzogen.
  * 3. WorkManager-Rolle: WorkManager wird hier bewusst NICHT mit verzögerten Jobs ([androidx.work.OneTimeWorkRequest.Builder.setInitialDelay])
  *    eingeplant, da dieser im Doze-Modus bis zu Wartungsfenstern verschoben werden kann. Stattdessen dient
@@ -47,9 +47,9 @@ class BootReceiver : BroadcastReceiver() {
     interface BootReceiverEntryPoint {
         @ApplicationScope
         fun applicationScope(): CoroutineScope
-        fun notificationRepository(): NotificationRepository
+        fun syncNotificationSchedulingUseCase(): SyncNotificationSchedulingUseCase
+        fun scheduleDailyWidgetUpdateUseCase(): ScheduleDailyWidgetUpdateUseCase
         fun widgetUpdater(): WidgetUpdater
-        fun alarmScheduler(): AlarmScheduler
     }
 
     override fun onReceive(context: Context?, intent: Intent?) {
@@ -81,7 +81,7 @@ class BootReceiver : BroadcastReceiver() {
         entryPoint.applicationScope().launch {
             try {
                 try {
-                    entryPoint.notificationRepository().syncScheduling()
+                    entryPoint.syncNotificationSchedulingUseCase()()
                 } catch (e: Exception) {
                     // Safeguard: Scheduler-Fehler dürfen den Boot-Prozess nicht blockieren.
                     Log.w(TAG, "Fehler bei der Benachrichtigungsplanung nach Boot/Zeitänderung", e)
@@ -89,7 +89,7 @@ class BootReceiver : BroadcastReceiver() {
 
                 try {
                     entryPoint.widgetUpdater().updateWidget()
-                    entryPoint.alarmScheduler().scheduleNextWidgetUpdateAlarm()
+                    entryPoint.scheduleDailyWidgetUpdateUseCase()()
                 } catch (e: Exception) {
                     // Safeguard: Fehler beim Widget-Update dürfen die Benachrichtigungsplanung und den Boot-Prozess nicht blockieren.
                     Log.w(TAG, "Fehler beim Widget-Update nach Boot/Zeitänderung", e)

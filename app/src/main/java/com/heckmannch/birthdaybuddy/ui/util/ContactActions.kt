@@ -13,7 +13,7 @@ import androidx.core.app.ActivityCompat
 import androidx.core.net.toUri
 import com.heckmannch.birthdaybuddy.domain.util.DeviceRegionProvider
 import com.heckmannch.birthdaybuddy.domain.util.PhoneNumberNormalizer
-import com.heckmannch.birthdaybuddy.ui.screens.home.components.actions.MessengerApp
+import com.heckmannch.birthdaybuddy.domain.model.MessengerApp
 import com.heckmannch.birthdaybuddy.util.findActivity
 import dagger.hilt.EntryPoint
 import dagger.hilt.InstallIn

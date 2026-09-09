@@ -14,6 +14,15 @@ val SpacingLarge = 24.dp
 val SpacingExtraLarge = 32.dp
 
 /**
+ * Corner radius tokens for Material 3 shapes.
+ */
+val CornerRadiusExtraSmall = 4.dp
+val CornerRadiusSmall = 8.dp
+val CornerRadiusMedium = 12.dp
+val CornerRadiusLarge = 16.dp
+val CornerRadiusExtraLarge = 28.dp
+
+/**
  * Standardized icon sizes.
  */
 val IconSizeExtraSmall = 16.dp // Extra small icons (e.g., small edit indicators or status icons)

@@ -12,6 +12,8 @@ import com.heckmannch.birthdaybuddy.data.repository.NotificationSchedulerImpl
 import com.heckmannch.birthdaybuddy.domain.model.EventType
 import com.heckmannch.birthdaybuddy.domain.model.PendingNotification
 import com.heckmannch.birthdaybuddy.domain.repository.NotificationRepository
+import com.heckmannch.birthdaybuddy.domain.usecase.DismissNotificationUseCase
+import com.heckmannch.birthdaybuddy.domain.usecase.MarkNotificationAsDoneUseCase
 import com.heckmannch.birthdaybuddy.domain.usecase.ReshowNotificationUseCase
 import com.heckmannch.birthdaybuddy.domain.usecase.SnoozeNotificationUseCase
 import io.mockk.coEvery
@@ -53,6 +55,8 @@ class NotificationActionReceiverTest {
     private lateinit var context: Context
     private val notificationManager = mockk<NotificationManager>(relaxed = true)
     private val notificationRepository = mockk<NotificationRepository>(relaxed = true)
+    private val markNotificationAsDoneUseCase = mockk<MarkNotificationAsDoneUseCase>(relaxed = true)
+    private val dismissNotificationUseCase = mockk<DismissNotificationUseCase>(relaxed = true)
     private val snoozeNotificationUseCase = mockk<SnoozeNotificationUseCase>(relaxed = true)
     private val reshowNotificationUseCase = mockk<ReshowNotificationUseCase>(relaxed = true)
     private val pendingResult = mockk<BroadcastReceiver.PendingResult>(relaxed = true)
@@ -76,6 +80,8 @@ class NotificationActionReceiverTest {
 
         receiver.applicationScope = CoroutineScope(kotlinx.coroutines.Dispatchers.Unconfined)
         receiver.notificationRepository = notificationRepository
+        receiver.markNotificationAsDoneUseCase = markNotificationAsDoneUseCase
+        receiver.dismissNotificationUseCase = dismissNotificationUseCase
         receiver.snoozeNotificationUseCase = snoozeNotificationUseCase
         receiver.reshowNotificationUseCase = reshowNotificationUseCase
     }
@@ -100,7 +106,7 @@ class NotificationActionReceiverTest {
         receiver.onReceive(context, intent)
 
         verify(exactly = 1) { notificationManager.cancel(202) }
-        coVerify(exactly = 1) { notificationRepository.markAsDone(15) }
+        coVerify(exactly = 1) { markNotificationAsDoneUseCase(15) }
         verify(exactly = 1) { pendingResult.finish() }
     }
 
@@ -115,13 +121,13 @@ class NotificationActionReceiverTest {
         receiver.onReceive(context, intent)
 
         verify(exactly = 1) { notificationManager.cancel(202) }
-        coVerify(exactly = 0) { notificationRepository.markAsDone(any()) }
+        coVerify(exactly = 0) { markNotificationAsDoneUseCase(any()) }
         verify(exactly = 0) { receiver.goAsync() }
     }
 
     @Test
     fun onReceive_actionDone_whenRepositoryThrowsException_finishesPendingResultWithoutThrowing() = runTest {
-        coEvery { notificationRepository.markAsDone(15) } throws RuntimeException("Database error")
+        coEvery { markNotificationAsDoneUseCase(15) } throws RuntimeException("Database error")
 
         val intent = Intent(context, NotificationActionReceiver::class.java).apply {
             action = NotificationActions.ACTION_DONE
@@ -132,7 +138,7 @@ class NotificationActionReceiverTest {
         receiver.onReceive(context, intent)
 
         verify(exactly = 1) { notificationManager.cancel(202) }
-        coVerify(exactly = 1) { notificationRepository.markAsDone(15) }
+        coVerify(exactly = 1) { markNotificationAsDoneUseCase(15) }
         verify(exactly = 1) { pendingResult.finish() }
     }
 
@@ -224,7 +230,7 @@ class NotificationActionReceiverTest {
         receiver.onReceive(context, intent)
 
         coVerifyOrder {
-            notificationRepository.incrementDismissCount(30)
+            dismissNotificationUseCase(30)
             notificationRepository.getPendingNotificationById(30)
         }
         verify(exactly = 1) {
@@ -323,7 +329,7 @@ class NotificationActionReceiverTest {
 
         receiver.onReceive(context, intent)
 
-        coVerify(exactly = 1) { notificationRepository.incrementDismissCount(32) }
+        coVerify(exactly = 1) { dismissNotificationUseCase(32) }
         verify(exactly = 0) { reshowNotificationUseCase(any(), any(), any(), any(), any()) }
         verify(exactly = 1) { pendingResult.finish() }
     }
@@ -342,7 +348,7 @@ class NotificationActionReceiverTest {
 
         receiver.onReceive(context, intent)
 
-        coVerify(exactly = 1) { notificationRepository.incrementDismissCount(33) }
+        coVerify(exactly = 1) { dismissNotificationUseCase(33) }
         verify(exactly = 0) { reshowNotificationUseCase(any(), any(), any(), any(), any()) }
         verify(exactly = 1) { pendingResult.finish() }
     }
@@ -357,7 +363,7 @@ class NotificationActionReceiverTest {
 
         receiver.onReceive(context, intent)
 
-        coVerify(exactly = 0) { notificationRepository.incrementDismissCount(any()) }
+        coVerify(exactly = 0) { dismissNotificationUseCase(any()) }
         coVerify(exactly = 0) { notificationRepository.getPendingNotificationById(any()) }
         verify(exactly = 0) { reshowNotificationUseCase(any(), any(), any(), any(), any()) }
         verify(exactly = 0) { receiver.goAsync() }
@@ -365,7 +371,7 @@ class NotificationActionReceiverTest {
 
     @Test
     fun onReceive_actionDismissed_whenRepositoryThrowsException_finishesPendingResultWithoutThrowing() = runTest {
-        coEvery { notificationRepository.incrementDismissCount(34) } throws RuntimeException("Database error")
+        coEvery { dismissNotificationUseCase(34) } throws RuntimeException("Database error")
 
         val intent = Intent(context, NotificationActionReceiver::class.java).apply {
             action = NotificationActions.ACTION_DISMISSED
@@ -390,7 +396,7 @@ class NotificationActionReceiverTest {
         receiver.onReceive(null, intent)
 
         verify(exactly = 0) { notificationManager.cancel(any()) }
-        coVerify(exactly = 0) { notificationRepository.markAsDone(any()) }
+        coVerify(exactly = 0) { markNotificationAsDoneUseCase(any()) }
         verify(exactly = 0) { receiver.goAsync() }
     }
 
@@ -399,7 +405,7 @@ class NotificationActionReceiverTest {
         receiver.onReceive(context, null)
 
         verify(exactly = 0) { notificationManager.cancel(any()) }
-        coVerify(exactly = 0) { notificationRepository.markAsDone(any()) }
+        coVerify(exactly = 0) { markNotificationAsDoneUseCase(any()) }
         verify(exactly = 0) { receiver.goAsync() }
     }
 
@@ -413,8 +419,8 @@ class NotificationActionReceiverTest {
         receiver.onReceive(context, intent)
 
         verify(exactly = 0) { notificationManager.cancel(any()) }
-        coVerify(exactly = 0) { notificationRepository.markAsDone(any()) }
-        coVerify(exactly = 0) { notificationRepository.incrementDismissCount(any()) }
+        coVerify(exactly = 0) { markNotificationAsDoneUseCase(any()) }
+        coVerify(exactly = 0) { dismissNotificationUseCase(any()) }
         verify(exactly = 0) { snoozeNotificationUseCase(any(), any(), any()) }
         verify(exactly = 0) { reshowNotificationUseCase(any(), any(), any(), any(), any()) }
         verify(exactly = 0) { receiver.goAsync() }
@@ -427,8 +433,8 @@ class NotificationActionReceiverTest {
         receiver.onReceive(context, intent)
 
         verify(exactly = 0) { notificationManager.cancel(any()) }
-        coVerify(exactly = 0) { notificationRepository.markAsDone(any()) }
-        coVerify(exactly = 0) { notificationRepository.incrementDismissCount(any()) }
+        coVerify(exactly = 0) { markNotificationAsDoneUseCase(any()) }
+        coVerify(exactly = 0) { dismissNotificationUseCase(any()) }
         verify(exactly = 0) { snoozeNotificationUseCase(any(), any(), any()) }
         verify(exactly = 0) { reshowNotificationUseCase(any(), any(), any(), any(), any()) }
         verify(exactly = 0) { receiver.goAsync() }

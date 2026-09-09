@@ -82,6 +82,7 @@ class CoupleRepositoryImplTest {
             settingsDatabase = settingsDatabase,
             contactDbMapper = contactDbMapper,
             ioDispatcher = mainDispatcherRule.testDispatcher,
+            defaultDispatcher = mainDispatcherRule.testDispatcher,
         )
     }
 

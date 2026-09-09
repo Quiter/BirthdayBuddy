@@ -1,6 +1,7 @@
 package com.heckmannch.birthdaybuddy.util
 
 import android.content.Intent
+import com.heckmannch.birthdaybuddy.domain.util.NO_YEAR_MARKER
 import com.heckmannch.birthdaybuddy.ui.navigation.AppAction
 
 /**

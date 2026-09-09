@@ -35,12 +35,12 @@ import androidx.compose.ui.tooling.preview.Devices
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.LayoutDirection
-import androidx.compose.ui.unit.dp
 import androidx.window.core.layout.WindowSizeClass
 import com.heckmannch.birthdaybuddy.ui.theme.AlphaContainerMedium
 import com.heckmannch.birthdaybuddy.ui.theme.BirthdayBuddyTheme
 import com.heckmannch.birthdaybuddy.ui.theme.MaxWidthExpanded
 import com.heckmannch.birthdaybuddy.ui.theme.MaxWidthMedium
+import com.heckmannch.birthdaybuddy.ui.theme.SpacingNone
 import com.heckmannch.birthdaybuddy.ui.theme.SpacingNormal
 import com.heckmannch.birthdaybuddy.ui.theme.SpacingSmall
 
@@ -164,11 +164,11 @@ fun AppResponsiveScaffold(
                     windowSizeClass = windowSizeClass,
                     modifier = contentModifier
                 ) {
-                    content(if (consumePadding) paddingValues else PaddingValues(0.dp))
+                    content(if (consumePadding) paddingValues else PaddingValues(SpacingNone))
                 }
             } else {
                 Box(modifier = contentModifier) {
-                    content(if (consumePadding) paddingValues else PaddingValues(0.dp))
+                    content(if (consumePadding) paddingValues else PaddingValues(SpacingNone))
                 }
             }
         }

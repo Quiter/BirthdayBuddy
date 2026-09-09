@@ -31,6 +31,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import com.heckmannch.birthdaybuddy.R
 import com.heckmannch.birthdaybuddy.ui.components.SettingsDetailScaffold
+import com.heckmannch.birthdaybuddy.ui.components.withSettingsInsets
 import com.heckmannch.birthdaybuddy.ui.theme.BirthdayBuddyTheme
 import com.heckmannch.birthdaybuddy.ui.theme.ContactImageSizeOnboarding
 import com.heckmannch.birthdaybuddy.ui.theme.ElevationDefault
@@ -75,12 +76,7 @@ fun AboutScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .verticalScroll(rememberScrollState())
-                .padding(
-                    start = SpacingNormal,
-                    top = paddingValues.calculateTopPadding() + SpacingNormal,
-                    end = SpacingNormal,
-                    bottom = paddingValues.calculateBottomPadding() + SpacingNormal
-                ),
+                .padding(paddingValues.withSettingsInsets()),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Surface(

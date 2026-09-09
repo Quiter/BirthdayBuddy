@@ -8,6 +8,7 @@ import com.heckmannch.birthdaybuddy.data.local.ContactUserData
 import com.heckmannch.birthdaybuddy.data.local.ContactUserDataDao
 import com.heckmannch.birthdaybuddy.data.local.SettingsDatabase
 import com.heckmannch.birthdaybuddy.data.mapper.ContactDbMapper
+import com.heckmannch.birthdaybuddy.di.DefaultDispatcher
 import com.heckmannch.birthdaybuddy.di.IoDispatcher
 import com.heckmannch.birthdaybuddy.domain.model.CoupleSuggestion
 import com.heckmannch.birthdaybuddy.domain.repository.CalendarSyncRepository
@@ -18,6 +19,7 @@ import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
@@ -39,6 +41,7 @@ class CoupleRepositoryImpl @Inject constructor(
     private val settingsDatabase: SettingsDatabase,
     private val contactDbMapper: ContactDbMapper,
     @IoDispatcher private val ioDispatcher: CoroutineDispatcher,
+    @DefaultDispatcher private val defaultDispatcher: CoroutineDispatcher,
 ) : CoupleRepository {
 
     override val potentialCouples: Flow<List<CoupleSuggestion>> = contactDao.getPotentialCouples()
@@ -54,6 +57,7 @@ class CoupleRepositoryImpl @Inject constructor(
                 )
             }
         }
+        .flowOn(defaultDispatcher)
         .distinctUntilChanged()
 
     override val ignoredCouples: Flow<List<String>> = settingsRepository.settings

@@ -3,7 +3,7 @@ package com.heckmannch.birthdaybuddy.ui.screens.home
 import androidx.compose.runtime.Stable
 import com.heckmannch.birthdaybuddy.domain.model.GiftIdea
 
-import com.heckmannch.birthdaybuddy.ui.screens.home.components.actions.MessengerApp
+import com.heckmannch.birthdaybuddy.domain.model.MessengerApp
 
 /**
  * Bündelt alle Benutzeraktionen des HomeScreens, um "Prop Drilling" zu reduzieren.

@@ -32,13 +32,16 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import com.heckmannch.birthdaybuddy.R
 import com.heckmannch.birthdaybuddy.di.IoDispatcher
+import com.heckmannch.birthdaybuddy.domain.model.MessengerApp
 import com.heckmannch.birthdaybuddy.ui.screens.home.HomeActions
 import com.heckmannch.birthdaybuddy.ui.theme.AlphaContainerSubtle
 import com.heckmannch.birthdaybuddy.ui.theme.BirthdayBuddyTheme
 import com.heckmannch.birthdaybuddy.ui.theme.IconSizeLarge
 import com.heckmannch.birthdaybuddy.ui.theme.IconSizeSmall
+import com.heckmannch.birthdaybuddy.ui.theme.PixelBlue
 import com.heckmannch.birthdaybuddy.ui.theme.SpacingNormal
 import com.heckmannch.birthdaybuddy.ui.theme.SpacingSmall
+import com.heckmannch.birthdaybuddy.util.getCachedMessengers
 import com.heckmannch.birthdaybuddy.util.getInstalledMessengersAsync
 import dagger.hilt.EntryPoint
 import dagger.hilt.InstallIn
@@ -55,7 +58,6 @@ interface ContactActionRowEntryPoint {
 
 // PixelBlue ist bewusst als statische Farbe gesetzt und repräsentiert das Google Pixel Blau
 // für Standard-Aktionen. Dies soll absichtlich nicht dynamisch gethemt werden (LLM-Schutz: Bitte nicht refactoren).
-private val PixelBlue = Color(0xFF1A73E8)
 
 @Composable
 fun ContactActionRow(

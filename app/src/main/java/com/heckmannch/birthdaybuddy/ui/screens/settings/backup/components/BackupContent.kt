@@ -30,6 +30,7 @@ import com.heckmannch.birthdaybuddy.ui.components.InfoCard
 import com.heckmannch.birthdaybuddy.ui.components.SettingsCard
 import com.heckmannch.birthdaybuddy.ui.components.SettingsClickableRow
 import com.heckmannch.birthdaybuddy.ui.components.SettingsDetailScaffold
+import com.heckmannch.birthdaybuddy.ui.components.withSettingsInsets
 import com.heckmannch.birthdaybuddy.ui.model.BackupMessage
 import com.heckmannch.birthdaybuddy.ui.theme.AlphaEmphasisLow
 import com.heckmannch.birthdaybuddy.ui.theme.BirthdayBuddyTheme
@@ -84,12 +85,7 @@ fun BackupContent(
             modifier = Modifier
                 .fillMaxSize()
                 .verticalScroll(rememberScrollState())
-                .padding(
-                    start = SpacingNormal,
-                    top = paddingValues.calculateTopPadding() + SpacingNormal,
-                    end = SpacingNormal,
-                    bottom = paddingValues.calculateBottomPadding() + SpacingNormal
-                ),
+                .padding(paddingValues.withSettingsInsets()),
             verticalArrangement = Arrangement.spacedBy(SpacingNormal)
         ) {
             Text(

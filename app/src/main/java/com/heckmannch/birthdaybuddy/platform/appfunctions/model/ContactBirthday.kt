@@ -1,4 +1,4 @@
-package com.heckmannch.birthdaybuddy.domain.appfunctions.model
+package com.heckmannch.birthdaybuddy.platform.appfunctions.model
 
 import androidx.appfunctions.AppFunctionSerializable
 
