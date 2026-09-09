@@ -14,6 +14,11 @@ interface ContactRepository {
     val otherEventsEnabled: Flow<Boolean>
     val labelsEnabled: Flow<Boolean>
 
+    /**
+     * Emits an event whenever the system contacts provider detects a change in contacts.
+     */
+    val contactChanges: Flow<Unit>
+
     suspend fun getAllContactsImmediate(): List<Contact>
     suspend fun syncContacts()
     suspend fun updateLabelConfig(config: LabelConfig)

@@ -23,7 +23,6 @@ import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
 import androidx.navigation3.scene.Scene
 import androidx.navigation3.ui.NavDisplay
-import com.heckmannch.birthdaybuddy.ui.components.ContactSyncEffect
 import com.heckmannch.birthdaybuddy.ui.screens.home.HomeIntent
 import com.heckmannch.birthdaybuddy.ui.screens.home.HomeScreen
 import com.heckmannch.birthdaybuddy.ui.screens.home.HomeViewModel
@@ -115,9 +114,6 @@ fun AppNavHost(
                 LifecycleEventEffect(Lifecycle.Event.ON_RESUME) {
                     homeViewModel.onIntent(HomeIntent.AppResumed)
                 }
-
-                // Live-Sync bei Änderungen im System-Adressbuch
-                ContactSyncEffect(onSyncNeeded = { homeViewModel.onIntent(HomeIntent.SyncContacts()) })
 
                 // Aktionen für den Home-Screen verarbeiten (z.B. Widget / App Shortcuts / AppFunctions)
                 LaunchedEffect(action) {

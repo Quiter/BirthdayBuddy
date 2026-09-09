@@ -25,6 +25,7 @@ import io.mockk.slot
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.runTest
@@ -66,6 +67,7 @@ class HomeViewModelGiftIdeaTest {
         every { contactRepository.allContacts } returns MutableStateFlow(emptyList())
         every { contactRepository.otherEventsEnabled } returns MutableStateFlow(false)
         every { contactRepository.labelsEnabled } returns MutableStateFlow(true)
+        every { contactRepository.contactChanges } returns emptyFlow()
 
         // Stub use case operator functions returning flows to prevent flow combine hangs
         every { getContactsUseCase(any(), any(), any(), any()) } returns MutableStateFlow(

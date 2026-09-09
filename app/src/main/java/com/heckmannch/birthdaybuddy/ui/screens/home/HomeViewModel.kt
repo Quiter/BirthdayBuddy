@@ -152,6 +152,9 @@ class HomeViewModel @Inject constructor(
         /** Delay applied to search queries to debounce rapid keystrokes before triggering list filtering. */
         private val SEARCH_DEBOUNCE_DURATION = 300.milliseconds
 
+        /** Delay applied to contact change events to debounce burst updates from the system contacts provider. */
+        private val CONTACT_CHANGE_DEBOUNCE_DURATION = 1000.milliseconds
+
         /** Inactivity threshold (5 minutes). Exceeding this resets active search/label filters when app is resumed. */
         private val AUTO_RESET_INACTIVITY_TIMEOUT_MS = 5 * 60 * 1000L
 
@@ -303,6 +306,14 @@ class HomeViewModel @Inject constructor(
                     if (keywords.isNotEmpty()) {
                         triggerScrollToTop()
                     }
+                }
+        }
+
+        viewModelScope.launch {
+            contactRepository.contactChanges
+                .debounce(CONTACT_CHANGE_DEBOUNCE_DURATION)
+                .collect {
+                    onIntent(HomeIntent.SyncContacts())
                 }
         }
     }

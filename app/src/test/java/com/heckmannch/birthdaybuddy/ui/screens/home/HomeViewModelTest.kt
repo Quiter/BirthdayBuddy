@@ -24,7 +24,9 @@ import com.heckmannch.birthdaybuddy.domain.util.NO_YEAR_MARKER
 import com.heckmannch.birthdaybuddy.util.hasYear
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
@@ -34,6 +36,8 @@ import org.junit.Rule
 import org.junit.Test
 import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.mock
+import org.mockito.kotlin.times
+import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 import java.time.LocalDate
 
@@ -82,6 +86,7 @@ class HomeViewModelTest {
         whenever(contactRepository.allContacts).doReturn(MutableStateFlow(emptyList()))
         whenever(contactRepository.otherEventsEnabled).doReturn(MutableStateFlow(false))
         whenever(contactRepository.labelsEnabled).doReturn(MutableStateFlow(true))
+        whenever(contactRepository.contactChanges).doReturn(emptyFlow())
         whenever(coupleRepository.potentialCouples).doReturn(MutableStateFlow(emptyList()))
         whenever(coupleRepository.ignoredCouples).doReturn(MutableStateFlow(emptyList()))
         whenever(coupleRepository.ignoredCouplePairs).doReturn(MutableStateFlow(emptyList()))
@@ -595,5 +600,36 @@ class HomeViewModelTest {
         assertThat(edit.initialDate).isEqualTo(LocalDate.of(NO_YEAR_MARKER, 2, 29))
         assertThat(edit.initialDate.dayOfMonth).isEqualTo(29)
         assertThat(edit.initialDate.hasYear).isFalse()
+    }
+
+    @Test
+    fun contactChanges_triggersContactSyncWithDebounce() = runTest {
+        val contactChangesFlow = MutableSharedFlow<Unit>()
+        whenever(contactRepository.contactChanges).doReturn(contactChangesFlow)
+
+        viewModel = createViewModel()
+        advanceUntilIdle()
+
+        // Initial sync occurred on creation
+        verify(contactRepository, times(1)).syncContacts()
+
+        // Emit burst changes
+        contactChangesFlow.emit(Unit)
+        contactChangesFlow.emit(Unit)
+        contactChangesFlow.emit(Unit)
+
+        // Advance by less than debounce duration (1000ms)
+        testScheduler.advanceTimeBy(500)
+        testScheduler.runCurrent()
+
+        // Should not have triggered extra sync yet
+        verify(contactRepository, times(1)).syncContacts()
+
+        // Advance past debounce duration (1000ms total)
+        testScheduler.advanceTimeBy(600)
+        testScheduler.runCurrent()
+
+        // Now syncContacts should have been called again (total 2 times)
+        verify(contactRepository, times(2)).syncContacts()
     }
 }

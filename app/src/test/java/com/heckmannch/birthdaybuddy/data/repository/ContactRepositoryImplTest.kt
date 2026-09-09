@@ -1,5 +1,7 @@
 package com.heckmannch.birthdaybuddy.data.repository
 
+import android.content.ContentResolver
+import android.provider.ContactsContract
 import android.util.Log
 import com.google.common.truth.Truth.assertThat
 import com.heckmannch.birthdaybuddy.MainDispatcherRule
@@ -30,6 +32,7 @@ import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.mockito.kotlin.any
+import org.mockito.kotlin.eq
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.never
 import org.mockito.kotlin.verify
@@ -50,6 +53,7 @@ class ContactRepositoryImplTest {
     private val contactUserDataDao: ContactUserDataDao = mock()
     private val systemContactDataSource: SystemContactDataSource = mock()
     private val settingsRepository: SettingsRepository = mock()
+    private val contentResolver: ContentResolver = mock()
     private val contactDbMapper = ContactDbMapper()
     private val labelConfigMapper = LabelConfigMapper()
 
@@ -78,6 +82,7 @@ class ContactRepositoryImplTest {
             settingsRepository = settingsRepository,
             contactDbMapper = contactDbMapper,
             labelConfigMapper = labelConfigMapper,
+            contentResolver = contentResolver,
             ioDispatcher = mainDispatcherRule.testDispatcher,
             defaultDispatcher = mainDispatcherRule.testDispatcher,
         )
@@ -243,6 +248,7 @@ class ContactRepositoryImplTest {
             settingsRepository = settingsRepository,
             contactDbMapper = contactDbMapper,
             labelConfigMapper = labelConfigMapper,
+            contentResolver = contentResolver,
             ioDispatcher = mainDispatcherRule.testDispatcher,
             defaultDispatcher = mainDispatcherRule.testDispatcher,
         )
@@ -336,5 +342,24 @@ class ContactRepositoryImplTest {
     fun updateLabelsEnabled_delegatesToSettingsRepository() = runTest {
         repository.updateLabelsEnabled(false)
         verify(settingsRepository).updateSettings(any())
+    }
+
+    @Test
+    fun contactChanges_registersContentObserverAndUnregistersOnCancellation() = runTest {
+        val job = launch {
+            repository.contactChanges.collect {}
+        }
+        testScheduler.runCurrent()
+
+        verify(contentResolver).registerContentObserver(
+            eq(ContactsContract.Contacts.CONTENT_URI),
+            eq(true),
+            any()
+        )
+
+        job.cancel()
+        testScheduler.runCurrent()
+
+        verify(contentResolver).unregisterContentObserver(any())
     }
 }

@@ -22,6 +22,7 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.filter
+import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.runCurrent
@@ -93,6 +94,7 @@ class HomeViewModelSearchTest {
         whenever(contactRepository.labelConfigs).doReturn(MutableStateFlow(emptyList()))
         whenever(contactRepository.otherEventsEnabled).doReturn(MutableStateFlow(false))
         whenever(contactRepository.labelsEnabled).doReturn(MutableStateFlow(true))
+        whenever(contactRepository.contactChanges).doReturn(emptyFlow())
         whenever(coupleRepository.potentialCouples).doReturn(MutableStateFlow(emptyList()))
         whenever(coupleRepository.ignoredCouples).doReturn(MutableStateFlow(emptyList()))
         whenever(coupleRepository.ignoredCouplePairs).doReturn(MutableStateFlow(emptyList()))

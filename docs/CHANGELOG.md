@@ -864,3 +864,19 @@ ecreateContactsTableV7 (mit giftIdeas TEXT NOT NULL, COALESCE(giftIdeas, '[]')) 
     - **Dokumentation:**
       - Aktualisierung von [PROJECT_STRUCTURE.md](file:///c:/Users/chris/AndroidStudioProjects/BirthdayBuddy/docs/PROJECT_STRUCTURE.md) zur Abbildung der neuen Ordnerstruktur.
 
+383. **Refactoring des ContentObserver aus der UI-Schicht in die Data-Schicht (Architecture & Clean Code):**
+    - **Motivation:** Low-Level Android APIs (`ContentObserver`, `Handler`, `Looper`) verletzten das Clean-Architecture-Prinzip durch direkte Nutzung in der Compose UI-Schicht (`ContactSyncEffect.kt` via `DisposableEffect` in `AppNavHost.kt`).
+    - **Domain Layer:**
+      - [ContactRepository.kt](file:///c:/Users/chris/AndroidStudioProjects/BirthdayBuddy/app/src/main/java/com/heckmannch/birthdaybuddy/domain/repository/ContactRepository.kt): Hinzufügen des neuen reaktiven Flow-Properties `val contactChanges: Flow<Unit>`.
+    - **Data Layer:**
+      - [ContactRepositoryImpl.kt](file:///c:/Users/chris/AndroidStudioProjects/BirthdayBuddy/app/src/main/java/com/heckmannch/birthdaybuddy/data/repository/ContactRepositoryImpl.kt): Injektion von `ContentResolver` (aus `AppModule.kt`) und Implementierung von `contactChanges` via `callbackFlow`. Registriert einen `ContentObserver(null)` auf `ContactsContract.Contacts.CONTENT_URI` und deregistriert diesen lecksicher in `awaitClose`. Fängt `SecurityException` ab, falls Berechtigungen noch nicht vorliegen.
+    - **UI Layer:**
+      - `ui/components/ContactSyncEffect.kt`: Vollständig entfernt.
+      - [AppNavHost.kt](file:///c:/Users/chris/AndroidStudioProjects/BirthdayBuddy/app/src/main/java/com/heckmannch/birthdaybuddy/ui/navigation/AppNavHost.kt): Entfernung des `ContactSyncEffect`-Aufrufs und des ungenutzten Imports.
+      - [HomeViewModel.kt](file:///c:/Users/chris/AndroidStudioProjects/BirthdayBuddy/app/src/main/java/com/heckmannch/birthdaybuddy/ui/screens/home/HomeViewModel.kt): Sammelt `contactRepository.contactChanges` im `init`-Block mit einem Debounce von 1 Sekunde (`CONTACT_CHANGE_DEBOUNCE_DURATION = 1000.milliseconds`), um Burst-Updates zu vermeiden, und delegiert an `onIntent(HomeIntent.SyncContacts())`.
+    - **Testing & QA:**
+      - [ContactRepositoryImplTest.kt](file:///c:/Users/chris/AndroidStudioProjects/BirthdayBuddy/app/src/test/java/com/heckmannch/birthdaybuddy/data/repository/ContactRepositoryImplTest.kt): Mocking von `ContentResolver` und neuer Unit-Test `contactChanges_registersContentObserverAndUnregistersOnCancellation`.
+      - [HomeViewModelTest.kt](file:///c:/Users/chris/AndroidStudioProjects/BirthdayBuddy/app/src/test/java/com/heckmannch/birthdaybuddy/ui/screens/home/HomeViewModelTest.kt): Neuer Unit-Test `contactChanges_triggersContactSyncWithDebounce` zur Verifikation des 1000ms-Debouncings bei Burst-Events.
+      - [HomeViewModelSearchTest.kt](file:///c:/Users/chris/AndroidStudioProjects/BirthdayBuddy/app/src/test/java/com/heckmannch/birthdaybuddy/ui/screens/home/HomeViewModelSearchTest.kt) & [HomeViewModelGiftIdeaTest.kt](file:///c:/Users/chris/AndroidStudioProjects/BirthdayBuddy/app/src/test/java/com/heckmannch/birthdaybuddy/ui/screens/home/HomeViewModelGiftIdeaTest.kt): Stubbing von `contactChanges`.
+      - [PROJECT_STRUCTURE.md](file:///c:/Users/chris/AndroidStudioProjects/BirthdayBuddy/docs/PROJECT_STRUCTURE.md): Aktualisierung der Modul- und Dateiübersicht.
+

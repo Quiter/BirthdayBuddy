@@ -41,7 +41,7 @@
     - `PendingNotificationDao.kt`: DAO für die Verwaltung noch nicht quittierter Erinnerungen.
     - `ContactLabels.kt` (Veraltet): Hält aus Gründen der Rückwärtskompatibilität eine deprecated Delegation der Pseudo-Label-Identifier, die nun in der Domain-Schicht liegen.
 - ### 📁 Repository (`data.repository`)
-    - `ContactRepositoryImpl.kt`: Schlanke, SRP-konforme Implementierung des `ContactRepository` (8 funktionale Abhängigkeiten); orchestriert den Datenfluss zwischen Room-DB (`ContactDao`, `LabelConfigDao`, `ContactUserDataDao`) und der System-Kontaktquelle (`SystemContactDataSource`), Kontaktsynchronisation, Caching und Label-Management.
+    - `ContactRepositoryImpl.kt`: Schlanke, SRP-konforme Implementierung des `ContactRepository`; orchestriert den Datenfluss zwischen Room-DB (`ContactDao`, `LabelConfigDao`, `ContactUserDataDao`), ContentResolver (`ContentObserver` via `callbackFlow` für `contactChanges`) und der System-Kontaktquelle (`SystemContactDataSource`), Kontaktsynchronisation, Caching und Label-Management.
     - `GiftIdeaRepositoryImpl.kt`: Implementierung des `GiftIdeaRepository` für Geschenkideen-CRUD, atomaren 2-Phasen-Commit/Rollback über `AppDatabase` und `SettingsDatabase`, JSON-Im-/Export via `GiftIdeaBackupManager` und Widget-Updates.
     - `CoupleRepositoryImpl.kt`: Implementierung des `CoupleRepository` für Paar-Verknüpfung und -Aufhebung mit atomarem 2-Phasen-Commit/Rollback über `AppDatabase` und `SettingsDatabase`, reaktivem Stream für `potentialCouples` und Ignorierlisten-Verwaltung über `SettingsRepository`.
     - `SettingsRepositoryImpl.kt`: Thread-sichere Implementierung des `SettingsRepository` mittels `Mutex` zur Verwaltung und Mutation von `AppSettings` via `AppSettingsDao` und `AppSettingsMapper`.
@@ -217,7 +217,6 @@ Enthält Android-Framework-spezifische Klassen, die nicht in den Domain-Layer ge
     - `AppNavHost.kt`: Zentrales Navigations-Composable. Verwaltet den `NavDisplay` (Navigation 3) inklusive Screen-zu-Screen-Transitions (Push/Pop/PredictiveBack mit Parallax-Effekt), das vollständige Route-zu-Screen-Mapping mit ViewModel-Verknüpfungen und die Ausführung von `AppAction`-Events.
 - ### 📁 UI Components (`ui.components`)
     - `ColorPickerDialog.kt`: Wiederverwendbare, premium Farbauswahl-Komponente mit HSV-Farbraum-Koordinaten (Sättigung/Helligkeit), Hue-Slider, HEX-Texteingabe und Live-Vorschau.
-    - `ContactSyncEffect.kt`: Composable Effect, der Änderungen im System-Adressbuch beobachtet und `onSyncNeeded` mit einem 1-Sekunde-Debounce aufruft. Kapselt den `ContentObserver` und deregistriert ihn automatisch mit dem Compose-Lifecycle.
     - `ResponsiveLayout.kt`: Beinhaltet `AdaptiveContentContainer`, `AppResponsiveScaffold` und den globalen `LocalWindowWidthSizeClass` CompositionLocal-Provider zur flexiblen, abfragefreien Größenklassen-Weitergabe (Handy, Tablet, Chromebook).
     - `AppSwitch.kt`: Wiederverwendbare, standardisierte Switch-Komponente, die das Standard-Material-3-Design anwendet und bei Aktivierung automatisch ein Häkchen-Symbol anzeigt.
     - `SettingsComponents.kt`: Wiederverwendbare UI-Komponenten für Einstellungsseiten (`SettingsSectionHeader`, `SettingsCard`, `SettingsSwitchRow`, `SettingsClickableRow`).

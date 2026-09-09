@@ -1,5 +1,8 @@
 package com.heckmannch.birthdaybuddy.data.repository
 
+import android.content.ContentResolver
+import android.database.ContentObserver
+import android.provider.ContactsContract
 import android.util.Log
 import com.heckmannch.birthdaybuddy.data.local.ContactDao
 import com.heckmannch.birthdaybuddy.data.local.ContactUserDataDao
@@ -17,8 +20,10 @@ import com.heckmannch.birthdaybuddy.domain.repository.SettingsRepository
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.async
+import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
@@ -46,6 +51,7 @@ class ContactRepositoryImpl @Inject constructor(
     private val settingsRepository: SettingsRepository,
     private val contactDbMapper: ContactDbMapper,
     private val labelConfigMapper: LabelConfigMapper,
+    private val contentResolver: ContentResolver,
     @IoDispatcher private val ioDispatcher: CoroutineDispatcher,
     @DefaultDispatcher private val defaultDispatcher: CoroutineDispatcher,
 ) : ContactRepository {
@@ -78,6 +84,36 @@ class ContactRepositoryImpl @Inject constructor(
     override val labelsEnabled: Flow<Boolean> = settingsRepository.settings
         .map { it.labelsEnabled }
         .distinctUntilChanged()
+
+    /**
+     * Observes changes to [ContactsContract.Contacts.CONTENT_URI] using a [ContentObserver]
+     * within a [callbackFlow]. Automatically cleans up and unregisters the observer in [awaitClose].
+     */
+    override val contactChanges: Flow<Unit> = callbackFlow {
+        val observer = object : ContentObserver(null) {
+            override fun onChange(selfChange: Boolean) {
+                trySend(Unit)
+            }
+        }
+
+        try {
+            contentResolver.registerContentObserver(
+                ContactsContract.Contacts.CONTENT_URI,
+                true,
+                observer
+            )
+        } catch (_: SecurityException) {
+            // Keine Berechtigung vorhanden — kein Observer registriert
+        }
+
+        awaitClose {
+            try {
+                contentResolver.unregisterContentObserver(observer)
+            } catch (_: Exception) {
+                // Observer konnte nicht deregistriert werden oder war nicht registriert
+            }
+        }
+    }
 
     override suspend fun getAllContactsImmediate(): List<Contact> = withContext(ioDispatcher) {
         contactDao.getAllContactsImmediate().map { contactDbMapper.toDomain(it) }
