@@ -35,7 +35,6 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.compose.LifecycleResumeEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.heckmannch.birthdaybuddy.ui.components.AppResponsiveScaffold
-import com.heckmannch.birthdaybuddy.ui.model.OnboardingUiState
 import com.heckmannch.birthdaybuddy.ui.screens.onboarding.components.CalendarGuidePage
 import com.heckmannch.birthdaybuddy.ui.screens.onboarding.components.CalendarPage
 import com.heckmannch.birthdaybuddy.ui.screens.onboarding.components.ContactsPage

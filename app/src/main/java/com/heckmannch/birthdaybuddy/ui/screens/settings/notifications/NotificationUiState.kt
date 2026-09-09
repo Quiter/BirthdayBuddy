@@ -1,4 +1,4 @@
-package com.heckmannch.birthdaybuddy.ui.model
+package com.heckmannch.birthdaybuddy.ui.screens.settings.notifications
 
 import androidx.compose.runtime.Immutable
 import com.heckmannch.birthdaybuddy.domain.model.NotificationRule

@@ -31,7 +31,7 @@ import com.heckmannch.birthdaybuddy.ui.components.SettingsCard
 import com.heckmannch.birthdaybuddy.ui.components.SettingsClickableRow
 import com.heckmannch.birthdaybuddy.ui.components.SettingsDetailScaffold
 import com.heckmannch.birthdaybuddy.ui.components.withSettingsInsets
-import com.heckmannch.birthdaybuddy.ui.model.BackupMessage
+import com.heckmannch.birthdaybuddy.ui.screens.settings.backup.BackupMessage
 import com.heckmannch.birthdaybuddy.ui.theme.AlphaEmphasisLow
 import com.heckmannch.birthdaybuddy.ui.theme.BirthdayBuddyTheme
 import com.heckmannch.birthdaybuddy.ui.theme.SpacingNormal

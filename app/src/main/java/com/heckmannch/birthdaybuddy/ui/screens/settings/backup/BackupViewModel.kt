@@ -5,8 +5,6 @@ import androidx.lifecycle.viewModelScope
 import com.heckmannch.birthdaybuddy.di.IoDispatcher
 import com.heckmannch.birthdaybuddy.domain.usecase.ExportGiftIdeasUseCase
 import com.heckmannch.birthdaybuddy.domain.usecase.ImportGiftIdeasUseCase
-import com.heckmannch.birthdaybuddy.ui.model.BackupMessage
-import com.heckmannch.birthdaybuddy.ui.model.BackupUiState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineDispatcher

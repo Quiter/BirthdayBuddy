@@ -846,3 +846,21 @@ ecreateContactsTableV7 (mit giftIdeas TEXT NOT NULL, COALESCE(giftIdeas, '[]')) 
       - [AppViewModelTest.kt](file:///c:/Users/chris/AndroidStudioProjects/BirthdayBuddy/app/src/test/java/com/heckmannch/birthdaybuddy/AppViewModelTest.kt): Erweiterung der Unit-Tests um Prüfungen des initialen `null`-Zustands vor Eintreffen der Room-Flow-Emission sowie der Emissionen von `false` und `true`.
     - **Testing & QA:**
       - Alle Unit-Tests via `./gradlew testDebugUnitTest` erfolgreich durchgelaufen.
+
+382. **Feature-Co-Location von UI-State-Klassen (Architecture & Refactoring):**
+    - **Kontext & Motivation:** Gemäß den BirthdayBuddy-Projektrichtlinien gehören ViewModels und ihre zugehörigen UI-States feature-co-located in das jeweilige Feature-Verzeichnis unter `ui/screens/<feature>/`. Sechs feature-spezifische UI-State-Klassen verweilten bislang fälschlicherweise im globalen `ui/model/`-Paket.
+    - **Verschobene UI-State-Dateien:**
+      - [BackupUiState.kt](file:///c:/Users/chris/AndroidStudioProjects/BirthdayBuddy/app/src/main/java/com/heckmannch/birthdaybuddy/ui/screens/settings/backup/BackupUiState.kt): Verschiebung von `ui/model/BackupUiState.kt` nach `ui/screens/settings/backup/BackupUiState.kt` (`BackupMessage` und `BackupUiState`).
+      - [CalendarUiState.kt](file:///c:/Users/chris/AndroidStudioProjects/BirthdayBuddy/app/src/main/java/com/heckmannch/birthdaybuddy/ui/screens/settings/calendar/CalendarUiState.kt): Verschiebung von `ui/model/CalendarUiState.kt` nach `ui/screens/settings/calendar/CalendarUiState.kt`.
+      - [LabelUiState.kt](file:///c:/Users/chris/AndroidStudioProjects/BirthdayBuddy/app/src/main/java/com/heckmannch/birthdaybuddy/ui/screens/settings/labels/LabelUiState.kt): Verschiebung von `ui/model/LabelUiState.kt` nach `ui/screens/settings/labels/LabelUiState.kt` mit explizitem Import für das in `ui/model` verbleibende `LabelManagementModel`.
+      - [NotificationUiState.kt](file:///c:/Users/chris/AndroidStudioProjects/BirthdayBuddy/app/src/main/java/com/heckmannch/birthdaybuddy/ui/screens/settings/notifications/NotificationUiState.kt): Verschiebung von `ui/model/NotificationUiState.kt` nach `ui/screens/settings/notifications/NotificationUiState.kt`.
+      - [OnboardingUiState.kt](file:///c:/Users/chris/AndroidStudioProjects/BirthdayBuddy/app/src/main/java/com/heckmannch/birthdaybuddy/ui/screens/onboarding/OnboardingUiState.kt): Verschiebung von `ui/model/OnboardingUiState.kt` nach `ui/screens/onboarding/OnboardingUiState.kt`.
+      - [ThemeUiState.kt](file:///c:/Users/chris/AndroidStudioProjects/BirthdayBuddy/app/src/main/java/com/heckmannch/birthdaybuddy/ui/screens/settings/theme/ThemeUiState.kt): Verschiebung von `ui/model/ThemeUiState.kt` nach `ui/screens/settings/theme/ThemeUiState.kt`.
+    - **Bereinigung von `ui/model/`:**
+      - Beibehaltung der globalen bzw. feature-übergreifenden Modelle: `ContactUiModel.kt`, `CoupleSuggestionUiModel.kt`, `HomeUiState.kt`, `BirthdayTier.kt`, `LabelManagementModel.kt`, `SampleData.kt`.
+    - **Import-Aktualisierungen:**
+      - Bereinigung redundanter Same-Package-Imports in `BackupViewModel.kt`, `BackupViewModelTest.kt`, `CalendarViewModel.kt`, `LabelViewModel.kt`, `NotificationViewModel.kt`, `OnboardingViewModel.kt`, `OnboardingScreen.kt` und `ThemeViewModel.kt`.
+      - Aktualisierung der Import-Statements auf die neuen Pfade in `BackupContent.kt`, `BackupScreenshotTest.kt` und `OnboardingScreenshotTest.kt`.
+    - **Dokumentation:**
+      - Aktualisierung von [PROJECT_STRUCTURE.md](file:///c:/Users/chris/AndroidStudioProjects/BirthdayBuddy/docs/PROJECT_STRUCTURE.md) zur Abbildung der neuen Ordnerstruktur.
+

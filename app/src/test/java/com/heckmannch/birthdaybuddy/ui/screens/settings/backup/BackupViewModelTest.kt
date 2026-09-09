@@ -4,7 +4,6 @@ import com.google.common.truth.Truth.assertThat
 import com.heckmannch.birthdaybuddy.MainDispatcherRule
 import com.heckmannch.birthdaybuddy.domain.usecase.ExportGiftIdeasUseCase
 import com.heckmannch.birthdaybuddy.domain.usecase.ImportGiftIdeasUseCase
-import com.heckmannch.birthdaybuddy.ui.model.BackupMessage
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.runTest

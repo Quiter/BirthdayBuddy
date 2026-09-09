@@ -1,8 +1,8 @@
 package com.heckmannch.birthdaybuddy.screenshot.onboarding
 
 import com.heckmannch.birthdaybuddy.screenshot.BaseScreenshotTest
-import com.heckmannch.birthdaybuddy.ui.model.OnboardingUiState
 import com.heckmannch.birthdaybuddy.ui.screens.onboarding.OnboardingScreenContent
+import com.heckmannch.birthdaybuddy.ui.screens.onboarding.OnboardingUiState
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner

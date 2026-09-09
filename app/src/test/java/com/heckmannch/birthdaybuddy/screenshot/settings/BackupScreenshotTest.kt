@@ -1,7 +1,7 @@
 package com.heckmannch.birthdaybuddy.screenshot.settings
 
 import com.heckmannch.birthdaybuddy.screenshot.BaseScreenshotTest
-import com.heckmannch.birthdaybuddy.ui.model.BackupMessage
+import com.heckmannch.birthdaybuddy.ui.screens.settings.backup.BackupMessage
 import com.heckmannch.birthdaybuddy.ui.screens.settings.backup.components.BackupScreenContent
 import org.junit.Test
 import org.junit.runner.RunWith

@@ -1,6 +1,7 @@
-package com.heckmannch.birthdaybuddy.ui.model
+package com.heckmannch.birthdaybuddy.ui.screens.settings.labels
 
 import androidx.compose.runtime.Immutable
+import com.heckmannch.birthdaybuddy.ui.model.LabelManagementModel
 
 /**
  * Coherent UI state for the label settings screen.

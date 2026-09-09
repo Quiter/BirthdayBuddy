@@ -1,4 +1,4 @@
-package com.heckmannch.birthdaybuddy.ui.model
+package com.heckmannch.birthdaybuddy.ui.screens.settings.theme
 
 import androidx.compose.runtime.Immutable
 import com.heckmannch.birthdaybuddy.domain.model.ThemeAccent

@@ -1,4 +1,4 @@
-package com.heckmannch.birthdaybuddy.ui.model
+package com.heckmannch.birthdaybuddy.ui.screens.onboarding
 
 import androidx.compose.runtime.Immutable
 

@@ -172,6 +172,7 @@ Enthält Android-Framework-spezifische Klassen, die nicht in den Domain-Layer ge
     - #### 📁 Onboarding (`onboarding`)
         - `OnboardingScreen.kt`: Multi-Page Flow für die initiale Konfiguration.
         - `OnboardingViewModel.kt`: Zuständig für den Onboarding-Status und Erststart-Prozess. Nutzt MVI-Intents und `onIntent()`. **Feature-co-located** neben `OnboardingScreen.kt`.
+        - `OnboardingUiState.kt`: Gebündelter UI-State für den Onboarding-Flow (`hasContactPermission`, `hasNotificationPermission`, `hasCalendarPermission`, `isPersistentNotificationEnabled`, `currentPage`). **Feature-co-located**.
         - ##### 📁 Components (`onboarding.components`)
             - `OnboardingCommon.kt`: Gemeinsame UI-Komponenten und Wrapper.
             - `WelcomePage.kt`: Individuelle Onboarding-Seite für die Begrüßung.
@@ -185,14 +186,19 @@ Enthält Android-Framework-spezifische Klassen, die nicht in den Domain-Layer ge
         - `SettingsScreen.kt`: Haupteinstellungsmenü.
         - `labels/LabelSettingsScreen.kt`: Verwaltung der Label-Sichtbarkeit.
         - `labels/LabelViewModel.kt`: Logik für die Label-Verwaltung und Konfiguration. Nutzt MVI-Intents, `onIntent()` und konsistenten `uiState: StateFlow<LabelUiState>`. **Feature-co-located**.
+        - `labels/LabelUiState.kt`: Gebündelter State für den Label-Einstellungs-Screen (`labelsEnabled`, `labels`). **Feature-co-located**.
         - `notifications/NotificationSettingsScreen.kt`: Konfiguration des Erinnerungssystems.
         - `notifications/NotificationViewModel.kt`: Verwaltung der Benachrichtigungsregeln und deren Synchronisation mit dem WorkManager. **Feature-co-located**.
+        - `notifications/NotificationUiState.kt`: Gebündelter State für den Benachrichtigungs-Einstellungs-Screen. **Feature-co-located**.
         - `calendar/CalendarSettingsScreen.kt`: Screen zur detaillierten Kalender-Sync-Konfiguration.
         - `calendar/CalendarViewModel.kt`: ViewModel für die Kalender-Einstellungen. Nutzt MVI-Intents und `onIntent()`. **Feature-co-located**.
+        - `calendar/CalendarUiState.kt`: Gebündelter State für den Kalender-Einstellungs-Screen. **Feature-co-located**.
         - `backup/BackupScreen.kt`: Screen für den Import/Export von Geschenkideen.
         - `backup/BackupViewModel.kt`: Logik für den Import und Export von Geschenkideen. Nutzt MVI-Intents, `onIntent()` und `uiState`. **Feature-co-located**.
+        - `backup/BackupUiState.kt`: Gebündelter State (`BackupUiState`) und One-Time Status-Events (`BackupMessage`) für den Backup-Screen. **Feature-co-located**.
         - `theme/ThemeSettingsScreen.kt`: Einstellungsbildschirm zur Design-Auswahl.
         - `theme/ThemeViewModel.kt`: Hält und aktualisiert den UI-Zustand für das App-Design. Nutzt MVI-Intents und `onIntent()`. **Feature-co-located**.
+        - `theme/ThemeUiState.kt`: Gebündelter State für den Design-Einstellungs-Screen. **Feature-co-located**.
         - `otherevents/OtherEventsSettingsScreen.kt`: Screen zur Aktivierung des Features für weitere Ereignisse.
         - `sync/SyncSettingsScreen.kt`: Screen zur manuellen Synchronisierung der Kontakte.
         - `sync/SyncViewModel.kt`: ViewModel für die manuelle Synchronisierung. **Feature-co-located**.
@@ -200,16 +206,10 @@ Enthält Android-Framework-spezifische Klassen, die nicht in den Domain-Layer ge
         - `about/PrivacyPolicyScreen.kt`: Anzeige der Datenschutzerklärung.
 - ### 📁 Models (`ui.model`)
     - `ContactUiModel.kt`: Immutable UI-Modell für Kontakte.
-    - `BirthdayTier.kt`: Typsicheres Enum zur Klassifizierung des visuellen Tiers eines Kontakts (`MILESTONE_GOLD`, `MILESTONE_SILVER`, `CHILD`, `REGULAR`). Die Berechnung erfolgt einmalig in `ContactUiMapper` via `BirthdayTier.from(nextAge?)` und wird über `ContactUiModel.birthdayTier` an die UI übergeben. Ersetzt die doppelte Inline-Logik in `BirthdayItem.kt`.
-    - `HomeUiState.kt`: Gebündelter State für den Home-Screen.
-    - `CalendarUiState.kt`: Gebündelter State für den Kalender-Einstellungs-Screen.
-    - `NotificationUiState.kt`: Gebündelter State für den Benachrichtigungs-Einstellungs-Screen.
-    - `ThemeUiState.kt`: Gebündelter State für den Design-Einstellungs-Screen.
-    - `BackupUiState.kt`: Gebündelter State (`BackupUiState`) und One-Time Status-Events (`BackupMessage`) für den Backup-Screen.
-    - `LabelUiState.kt`: Gebündelter State für den Label-Einstellungs-Screen (`labelsEnabled`, `labels`).
-    - `LabelManagementModel.kt`: Modell für die Label-Verwaltung.
-    - `GiftIdea.kt`: Reines Domänenmodell für Geschenkideen (id, text, isChecked) mit Manipulations-Logik (Hinzufügen, Sortieren, Umschalten).
     - `CoupleSuggestionUiModel.kt`: Immutable UI-Modell für Paar-Vorschläge, entkoppelt die UI-Schicht von der Room-Entity.
+    - `HomeUiState.kt`: Gebündelter State für den Home-Screen.
+    - `BirthdayTier.kt`: Typsicheres Enum zur Klassifizierung des visuellen Tiers eines Kontakts (`MILESTONE_GOLD`, `MILESTONE_SILVER`, `CHILD`, `REGULAR`). Die Berechnung erfolgt einmalig in `ContactUiMapper` via `BirthdayTier.from(nextAge?)` und wird über `ContactUiModel.birthdayTier` an die UI übergeben. Ersetzt die doppelte Inline-Logik in `BirthdayItem.kt`.
+    - `LabelManagementModel.kt`: Modell für die Label-Verwaltung.
     - `SampleData.kt`: Zentraler Ort für Testdaten für Previews und Tests.
 - ### 📁 Navigation (`ui.navigation`)
     - `NavRoutes.kt`: Alle 12 typsicheren, serialisierbaren `NavKey`-Routenobjekte (`Home`, `Settings`, `LabelSettings`, `NotificationSettings`, etc.). Zentrale Quelle der Navigationsstruktur.

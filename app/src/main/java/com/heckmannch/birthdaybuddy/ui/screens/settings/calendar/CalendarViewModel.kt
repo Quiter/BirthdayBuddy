@@ -6,7 +6,6 @@ import com.heckmannch.birthdaybuddy.domain.repository.CalendarSyncRepository
 import com.heckmannch.birthdaybuddy.domain.repository.SettingsRepository
 import com.heckmannch.birthdaybuddy.domain.usecase.SetCalendarSyncEnabledUseCase
 import com.heckmannch.birthdaybuddy.domain.usecase.UpdateCalendarColorUseCase
-import com.heckmannch.birthdaybuddy.ui.model.CalendarUiState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
