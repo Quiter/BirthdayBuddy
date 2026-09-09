@@ -62,10 +62,11 @@ import kotlin.time.Duration.Companion.milliseconds
  *   couple suggestions, and transient user UI mutations encapsulated in internal [UserUiState]) into a unified
  *   [HomeUiState] using Kotlin Coroutines and Flows.
  * - **Harmonized Event & Transient State Handling**:
- *   Transient UI states requiring atomic consumption (e.g. search bar focus, newly created gift idea IDs,
- *   active birthday picker dialogs, pull-to-refresh sync indicators) are modeled consistently within [HomeUiState]
- *   and consumed via explicit `Consume*` / dismissal intents. Pure side-effects for list scrolling are dispatched
- *   via [scrollToTopEvent].
+ *   Transient one-shot UI events (e.g. search bar focus, newly created gift idea IDs, list scrolling)
+ *   are dispatched via a dedicated [eventFlow] ([HomeUiEvent]) and consumed via explicit `Consume*` intents,
+ *   preventing unnecessary recompositions of the state-consuming [HomeUiState] pipeline. Persistent UI states
+ *   (e.g. active birthday picker dialogs, pull-to-refresh sync indicators) remain modeled within [HomeUiState].
+ *   Pure side-effects for list scrolling are also dispatched via [scrollToTopEvent].
  * - **Debouncing & Transformation Optimization**:
  *   Search inputs are debounced ([SEARCH_DEBOUNCE_DURATION]) and processed on [Dispatchers.Default] with
  *   `distinctUntilChanged` to avoid redundant database querying and contact filtering computations during fast typing.
@@ -119,8 +120,6 @@ class HomeViewModel @Inject constructor(
      * @property selectedLabel Currently active label chip filter, or `null` if none selected.
      * @property isResettingFilter Flag signalling UI components to coordinate scroll or animation reset.
      * @property isSyncing Flag indicating active background contact synchronization (shows refresh indicator).
-     * @property searchFocusRequested One-shot flag commanding the UI to focus the search field and display soft keyboard.
-     * @property newlyAddedIdeaId Unique identifier of a freshly created gift idea awaiting UI focus, or `null`.
      * @property hasContactPermission Cached status of system contact read/write permissions.
      * @property pendingBirthdayEdit Data for active birthday picker dialog, or `null` if closed.
      */
@@ -129,8 +128,6 @@ class HomeViewModel @Inject constructor(
         val selectedLabel: String? = null,
         val isResettingFilter: Boolean = false,
         val isSyncing: Boolean = false,
-        val searchFocusRequested: Boolean = false,
-        val newlyAddedIdeaId: String? = null,
         val hasContactPermission: Boolean = false,
         val pendingBirthdayEdit: PendingBirthdayEdit? = null,
     )
@@ -177,6 +174,16 @@ class HomeViewModel @Inject constructor(
      * Public stream of one-shot scroll-to-top events observed by [HomeScreen].
      */
     val scrollToTopEvent: SharedFlow<Unit> = _scrollToTopEvent.asSharedFlow()
+
+    /**
+     * Internal event stream dispatching one-shot UI events to the UI.
+     */
+    private val _eventFlow = MutableSharedFlow<HomeUiEvent>(extraBufferCapacity = 64)
+
+    /**
+     * Public stream of one-shot UI events observed by [HomeContent].
+     */
+    val eventFlow: SharedFlow<HomeUiEvent> = _eventFlow.asSharedFlow()
 
     /**
      * Reactive stream combining label configurations and user preferences to determine ignored labels
@@ -276,8 +283,6 @@ class HomeViewModel @Inject constructor(
             selectedLabel = userState.selectedLabel,
             isResettingFilter = userState.isResettingFilter,
             isSyncing = userState.isSyncing,
-            searchFocusRequested = userState.searchFocusRequested,
-            newlyAddedIdeaId = userState.newlyAddedIdeaId,
             coupleSuggestion = suggestion,
             hasContactPermission = userState.hasContactPermission,
             pendingBirthdayEdit = userState.pendingBirthdayEdit,
@@ -308,6 +313,7 @@ class HomeViewModel @Inject constructor(
     private fun triggerScrollToTop() {
         viewModelScope.launch {
             _scrollToTopEvent.emit(Unit)
+            _eventFlow.emit(HomeUiEvent.ScrollToTop)
         }
     }
 
@@ -394,11 +400,11 @@ class HomeViewModel @Inject constructor(
                 resetFiltersInternal()
             }
 
-            // Creates a new empty gift idea, sets newlyAddedIdeaId to trigger UI focus, and persists to repository.
+            // Creates a new empty gift idea, emits a one-shot event to trigger UI focus, and persists to repository.
             is HomeIntent.AddGiftIdea -> {
                 val newIdea = GiftIdea(text = "")
-                _userUiState.update { it.copy(newlyAddedIdeaId = newIdea.id) }
                 viewModelScope.launch {
+                    _eventFlow.emit(HomeUiEvent.FocusNewlyAddedIdea(newIdea.id))
                     giftIdeaRepository.addGiftIdea(intent.lookupKey, newIdea)
                 }
             }
@@ -474,17 +480,19 @@ class HomeViewModel @Inject constructor(
 
             // Signals the UI to request focus on the search text field and show keyboard.
             is HomeIntent.TriggerSearchFocus -> {
-                _userUiState.update { it.copy(searchFocusRequested = true) }
+                viewModelScope.launch {
+                    _eventFlow.emit(HomeUiEvent.RequestSearchFocus)
+                }
             }
 
             // Consumes the search focus request after the UI has handled it.
             is HomeIntent.ConsumeSearchFocus -> {
-                _userUiState.update { it.copy(searchFocusRequested = false) }
+                // Acknowledged by UI consumption - state + consumption pattern maintained
             }
 
             // Consumes the newly added gift idea ID after focus has been applied by the UI.
             is HomeIntent.ConsumeNewlyAddedIdeaId -> {
-                _userUiState.update { it.copy(newlyAddedIdeaId = null) }
+                // Acknowledged by UI consumption - state + consumption pattern maintained
             }
 
             // Merges two independent contacts into a single couple entity.

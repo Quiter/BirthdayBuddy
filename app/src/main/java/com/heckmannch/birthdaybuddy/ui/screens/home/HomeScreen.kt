@@ -23,6 +23,7 @@ import com.heckmannch.birthdaybuddy.ui.model.HomeUiState
 import com.heckmannch.birthdaybuddy.ui.screens.home.components.list.BirthdayDatePickerDialog
 import com.heckmannch.birthdaybuddy.ui.screens.home.components.list.getAvatarCacheKey
 import com.heckmannch.birthdaybuddy.ui.util.ContactActions
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.collectLatest
 
@@ -47,6 +48,7 @@ import kotlinx.coroutines.flow.collectLatest
  * @param scrollToTopEvent A [SharedFlow] used to trigger scroll-to-top actions from global events
  *   (e.g., clicking on navigation items, status bar taps).
  * @param onNavigateToSettings Callback executed when the user initiates navigation to the app settings screen.
+ * @param eventFlow A [SharedFlow] used to observe one-shot UI events (e.g. search focus, gift idea focus).
  */
 @Composable
 fun HomeScreen(
@@ -54,6 +56,7 @@ fun HomeScreen(
     onIntent: (HomeIntent) -> Unit,
     scrollToTopEvent: SharedFlow<Unit>,
     onNavigateToSettings: () -> Unit,
+    eventFlow: SharedFlow<HomeUiEvent> = remember { MutableSharedFlow() },
 ) {
     // Android platform CompositionLocals for focus, keyboard, and package/system services context.
     val context = LocalContext.current
@@ -101,32 +104,6 @@ fun HomeScreen(
         homeState.animatedPlaceholder = searchPlaceholder
     }
 
-    /**
-     * External Search Focus Request Handler:
-     * Listens for search focus requests triggered programmatically by the ViewModel.
-     * Robustly requests focus on the text field and reveals the soft keyboard before
-     * consuming the focus event.
-     */
-    LaunchedEffect(uiState.searchFocusRequested) {
-        if (uiState.searchFocusRequested) {
-            runCatching {
-                homeState.searchFocusRequester.requestFocus()
-            }
-            keyboardController?.show()
-            onIntent(HomeIntent.ConsumeSearchFocus)
-        }
-    }
-
-    /**
-     * Gift Idea Addition Focus Management:
-     * Listens for the addition of a new gift idea. Consumes the event directly
-     * to reset the state without blocking or artificial delays.
-     */
-    LaunchedEffect(uiState.newlyAddedIdeaId) {
-        if (uiState.newlyAddedIdeaId != null) {
-            onIntent(HomeIntent.ConsumeNewlyAddedIdeaId)
-        }
-    }
 
     // --- SECTION 3: Performance & Coil Image Prefetching ---
 
@@ -266,11 +243,13 @@ fun HomeScreen(
     }
 
     // --- SECTION 7: View Layer Invocation ---
-    // Passes state and consolidated actions down to the layout rendering container.
+    // Passes state, event stream, and consolidated actions down to the layout rendering container.
     HomeContent(
         uiState = uiState,
         homeState = homeState,
         actions = actions,
+        events = eventFlow,
+        onIntent = onIntent,
     )
 }
 

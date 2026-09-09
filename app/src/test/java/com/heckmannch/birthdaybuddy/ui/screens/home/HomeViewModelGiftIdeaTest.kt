@@ -25,7 +25,8 @@ import io.mockk.slot
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.runTest
 import org.junit.After
 import org.junit.Before
@@ -109,9 +110,14 @@ class HomeViewModelGiftIdeaTest {
     }
 
     @Test
-    fun addGiftIdea_delegatesToRepository_andSetsNewlyAddedIdeaId() = runTest {
+    fun addGiftIdea_delegatesToRepository_andEmitsNewlyAddedIdeaEvent() = runTest {
         val lookupKey = "test_lookup_key"
         val giftIdeaSlot = slot<GiftIdea>()
+
+        val events = mutableListOf<HomeUiEvent>()
+        val collectJob = launch(UnconfinedTestDispatcher(testScheduler)) {
+            viewModel.eventFlow.collect { events.add(it) }
+        }
 
         // Dispatch AddGiftIdea intent
         viewModel.onIntent(HomeIntent.AddGiftIdea(lookupKey))
@@ -124,9 +130,12 @@ class HomeViewModelGiftIdeaTest {
         val capturedIdea = giftIdeaSlot.captured
         assertThat(capturedIdea.text).isEmpty()
 
-        // Verify that UI state updates newlyAddedIdeaId to match the new gift idea's ID
-        val state = viewModel.uiState.first { it.newlyAddedIdeaId != null }
-        assertThat(state.newlyAddedIdeaId).isEqualTo(capturedIdea.id)
+        // Verify that eventFlow emits FocusNewlyAddedIdea to match the new gift idea's ID
+        val event = events.filterIsInstance<HomeUiEvent.FocusNewlyAddedIdea>().firstOrNull()
+        assertThat(event).isNotNull()
+        assertThat(event?.ideaId).isEqualTo(capturedIdea.id)
+
+        collectJob.cancel()
     }
 
     @Test
@@ -188,19 +197,40 @@ class HomeViewModelGiftIdeaTest {
     }
 
     @Test
-    fun consumeNewlyAddedIdeaId_clearsIdInUiState() = runTest {
+    fun consumeNewlyAddedIdeaId_consumesSuccessfully() = runTest {
         val lookupKey = "test_lookup_key"
 
-        // 1. Populate newlyAddedIdeaId using AddGiftIdea
-        viewModel.onIntent(HomeIntent.AddGiftIdea(lookupKey))
-        val stateWithId = viewModel.uiState.first { it.newlyAddedIdeaId != null }
-        assertThat(stateWithId.newlyAddedIdeaId).isNotNull()
+        val events = mutableListOf<HomeUiEvent>()
+        val collectJob = launch(UnconfinedTestDispatcher(testScheduler)) {
+            viewModel.eventFlow.collect { events.add(it) }
+        }
 
-        // 2. Dispatch ConsumeNewlyAddedIdeaId intent
+        // 1. Trigger AddGiftIdea to emit one-shot event
+        viewModel.onIntent(HomeIntent.AddGiftIdea(lookupKey))
+        val event = events.filterIsInstance<HomeUiEvent.FocusNewlyAddedIdea>().firstOrNull()
+        assertThat(event).isNotNull()
+
+        // 2. Dispatch ConsumeNewlyAddedIdeaId intent to complete consumption cycle
         viewModel.onIntent(HomeIntent.ConsumeNewlyAddedIdeaId)
 
-        // 3. Verify it resets back to null in the UI state
-        val stateWithoutId = viewModel.uiState.first { it.newlyAddedIdeaId == null }
-        assertThat(stateWithoutId.newlyAddedIdeaId).isNull()
+        collectJob.cancel()
+    }
+
+    @Test
+    fun triggerSearchFocus_emitsRequestSearchFocusEvent_and_isConsumed() = runTest {
+        val events = mutableListOf<HomeUiEvent>()
+        val collectJob = launch(UnconfinedTestDispatcher(testScheduler)) {
+            viewModel.eventFlow.collect { events.add(it) }
+        }
+
+        // 1. Dispatch TriggerSearchFocus intent
+        viewModel.onIntent(HomeIntent.TriggerSearchFocus)
+        val event = events.filterIsInstance<HomeUiEvent.RequestSearchFocus>().firstOrNull()
+        assertThat(event).isNotNull()
+
+        // 2. Dispatch ConsumeSearchFocus intent to complete consumption cycle
+        viewModel.onIntent(HomeIntent.ConsumeSearchFocus)
+
+        collectJob.cancel()
     }
 }

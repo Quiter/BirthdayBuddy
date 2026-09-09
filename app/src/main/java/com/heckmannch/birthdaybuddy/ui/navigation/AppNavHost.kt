@@ -156,6 +156,7 @@ fun AppNavHost(
                     uiState = uiState,
                     onIntent = homeViewModel::onIntent,
                     scrollToTopEvent = homeViewModel.scrollToTopEvent,
+                    eventFlow = homeViewModel.eventFlow,
                     onNavigateToSettings = {
                         backStack.add(Settings())
                     }

@@ -137,7 +137,8 @@ Enthält Android-Framework-spezifische Klassen, die nicht in den Domain-Layer ge
         - `HomeState.kt`: Plain State Holder für die UI-Logik (Scroll-Zustand, Fokus).
         - `HomeActions.kt`: Wrapper für Benutzeraktionen zur Reduzierung von Prop-Drilling.
         - `HomeIntent.kt`: Sealed Interface `HomeIntent` und MVI-Intent-Klassen für den Home-Screen.
-        - `HomeViewModel.kt`: Zuständig für die Kontaktliste, Suche, Filterung und den Home-Screen State. Nutzt ein leichtgewichtiges MVI/UDF-Muster mit dem `HomeIntent` Interface und einem konsolidierten `UserUiState` Flow. **Feature-co-located** neben den zugehörigen Screen-Dateien.
+        - `HomeUiEvent.kt`: Sealed Interface `HomeUiEvent` für transiente One-Shot-UI-Events (`RequestSearchFocus`, `FocusNewlyAddedIdea`, `ScrollToTop`).
+        - `HomeViewModel.kt`: Zuständig für die Kontaktliste, Suche, Filterung und den Home-Screen State. Nutzt ein leichtgewichtiges MVI/UDF-Muster mit dem `HomeIntent` Interface, einem konsolidierten `UserUiState` Flow und einem dedizierten `eventFlow` für transiente One-Shot-Events. **Feature-co-located** neben den zugehörigen Screen-Dateien.
         - ##### 📁 Components (`home.components`)
             - ###### 📁 List (`home.components.list`)
                 - `BirthdayDatePickerDialog.kt`: Wiederverwendbarer, modularer Date-Picker Dialog für die bequeme Eingabe von Geburtstagen.

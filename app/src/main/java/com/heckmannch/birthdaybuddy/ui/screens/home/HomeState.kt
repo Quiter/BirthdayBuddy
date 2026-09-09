@@ -30,6 +30,7 @@ class HomeState(
     var resetScrollRequested by mutableStateOf(false)
     var animatedPlaceholder by mutableStateOf("")
     var isFastScrolling by mutableStateOf(false)
+    var newlyAddedIdeaId by mutableStateOf<String?>(null)
 
     val showScrollUp by derivedStateOf { listState.firstVisibleItemIndex > 0 }
 

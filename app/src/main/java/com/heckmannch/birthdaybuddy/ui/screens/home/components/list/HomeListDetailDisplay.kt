@@ -162,7 +162,7 @@ fun HomeListDetailDisplay(
                 if (contact != null) {
                     BirthdayDetailPane(
                         contact = contact,
-                        newlyAddedIdeaId = uiState.newlyAddedIdeaId,
+                        newlyAddedIdeaId = homeState.newlyAddedIdeaId ?: uiState.newlyAddedIdeaId,
                         actions = actions,
                         onClose = {
                             backStack.removeLastOrNull()

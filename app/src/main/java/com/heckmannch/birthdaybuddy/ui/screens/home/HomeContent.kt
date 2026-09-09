@@ -18,6 +18,7 @@ import androidx.compose.material3.pulltorefresh.PullToRefreshDefaults
 import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -25,6 +26,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.window.core.layout.WindowSizeClass
 import com.heckmannch.birthdaybuddy.ui.components.AppResponsiveScaffold
@@ -42,6 +44,8 @@ import com.heckmannch.birthdaybuddy.ui.theme.BirthdayBuddyTheme
 import com.heckmannch.birthdaybuddy.ui.theme.SidebarWidthCollapsed
 import com.heckmannch.birthdaybuddy.ui.theme.SidebarWidthExpanded
 import com.heckmannch.birthdaybuddy.ui.theme.SpacingSmall
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.emptyFlow
 
 /**
  * Root UI content composable for the home dashboard.
@@ -52,13 +56,39 @@ import com.heckmannch.birthdaybuddy.ui.theme.SpacingSmall
  * @param uiState Current UI state containing contact list, search query, labels, and sync status.
  * @param homeState State holder managing scroll state, snackbar host, search focus, and UI animations.
  * @param actions Callbacks for handling user actions and events.
+ * @param events Flow of one-shot [HomeUiEvent] instances consumed via [LaunchedEffect].
+ * @param onIntent Callback for dispatching MVI intents (e.g. consuming one-shot events).
  */
 @Composable
 fun HomeContent(
     uiState: HomeUiState,
     homeState: HomeState,
     actions: HomeActions,
+    events: Flow<HomeUiEvent> = emptyFlow(),
+    onIntent: (HomeIntent) -> Unit = {},
 ) {
+    val keyboardController = LocalSoftwareKeyboardController.current
+
+    LaunchedEffect(events) {
+        events.collect { event ->
+            when (event) {
+                is HomeUiEvent.RequestSearchFocus -> {
+                    runCatching {
+                        homeState.searchFocusRequester.requestFocus()
+                    }
+                    keyboardController?.show()
+                    onIntent(HomeIntent.ConsumeSearchFocus)
+                }
+                is HomeUiEvent.FocusNewlyAddedIdea -> {
+                    homeState.newlyAddedIdeaId = event.ideaId
+                    onIntent(HomeIntent.ConsumeNewlyAddedIdeaId)
+                }
+                is HomeUiEvent.ScrollToTop -> {
+                    homeState.scrollToTop()
+                }
+            }
+        }
+    }
     val windowSizeClass = LocalWindowSizeClass.current
     var isSidebarExpanded by rememberSaveable(windowSizeClass.isWidthExpanded) {
         mutableStateOf(windowSizeClass.isWidthExpanded)

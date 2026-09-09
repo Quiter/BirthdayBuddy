@@ -806,4 +806,16 @@ ecreateContactsTableV7 (mit giftIdeas TEXT NOT NULL, COALESCE(giftIdeas, '[]')) 
       - Erfolgreiche Kompilierung beider Build-Targets: `./gradlew :app:compileDebugKotlin :app:compileDebugAndroidTestKotlin`.
       - Vollständiger Durchlauf aller Unit-Tests via `./gradlew testDebugUnitTest` erfolgreich.
 
-
+379. **Entkopplung transienter One-Shot-Events aus `HomeUiState` in dedizierten `eventFlow` (Architecture & Performance):**
+    - **Problem:** Transiente One-Shot-Events (`searchFocusRequested: Boolean`, `newlyAddedIdeaId: String?`) waren direkt im `HomeUiState` eingebettet. Jedes Setzen und anschließende Quittieren (`ConsumeSearchFocus`, `ConsumeNewlyAddedIdeaId`) führte zu zwei vollständigen Recompositions des gesamten `HomeContent`-Composables und seiner Unterbäume, obwohl sich persistente UI-Daten (`contacts`, `searchQuery`, `availableLabels` etc.) nicht verändert hatten.
+    - **Extraktion in `HomeUiEvent`:**
+      - Einführung von [HomeUiEvent.kt](file:///c:/Users/chris/AndroidStudioProjects/BirthdayBuddy/app/src/main/java/com/heckmannch/birthdaybuddy/ui/screens/home/HomeUiEvent.kt) als sealed interface für diskrete One-Shot-Events (`RequestSearchFocus`, `FocusNewlyAddedIdea(val ideaId: String)`, `ScrollToTop`).
+      - Bereitstellung von `eventFlow: SharedFlow<HomeUiEvent>` in [HomeViewModel.kt](file:///c:/Users/chris/AndroidStudioProjects/BirthdayBuddy/app/src/main/java/com/heckmannch/birthdaybuddy/ui/screens/home/HomeViewModel.kt) mit Pufferung via `extraBufferCapacity = 64`.
+      - Bereinigung von `UserUiState` und dem reaktiven `uiState`-Combine-Block: Transiente Events triggern keine Emissionen mehr auf `uiState`.
+    - **UI & State-Consumption-Pattern:**
+      - [HomeContent.kt](file:///c:/Users/chris/AndroidStudioProjects/BirthdayBuddy/app/src/main/java/com/heckmannch/birthdaybuddy/ui/screens/home/HomeContent.kt): Konsumierung der Events via `LaunchedEffect(events)` unter Beibehaltung des UDF-Consumption-Patterns (`ConsumeSearchFocus`, `ConsumeNewlyAddedIdeaId`).
+      - [HomeState.kt](file:///c:/Users/chris/AndroidStudioProjects/BirthdayBuddy/app/src/main/java/com/heckmannch/birthdaybuddy/ui/screens/home/HomeState.kt): Aufnahme von `newlyAddedIdeaId` in den Plain State Holder zur lokalen Fokussierung ohne globale Recompositions.
+      - [HomeScreen.kt](file:///c:/Users/chris/AndroidStudioProjects/BirthdayBuddy/app/src/main/java/com/heckmannch/birthdaybuddy/ui/screens/home/HomeScreen.kt) & [AppNavHost.kt](file:///c:/Users/chris/AndroidStudioProjects/BirthdayBuddy/app/src/main/java/com/heckmannch/birthdaybuddy/ui/navigation/AppNavHost.kt): Durchreichen von `homeViewModel.eventFlow` und Bereinigung redundanter `LaunchedEffect`s.
+    - **Testing & QA:**
+      - [HomeViewModelGiftIdeaTest.kt](file:///c:/Users/chris/AndroidStudioProjects/BirthdayBuddy/app/src/test/java/com/heckmannch/birthdaybuddy/ui/screens/home/HomeViewModelGiftIdeaTest.kt): Anpassung und Erweiterung der Tests zur Validierung der Event-Emission auf `eventFlow` und der Quittierungs-Intents.
+      - Vollständiger Durchlauf aller Unit- und Screenshot-Tests via `./gradlew testDebugUnitTest` erfolgreich.
