@@ -3,6 +3,7 @@ package com.heckmannch.birthdaybuddy.ui.screens.settings.about
 import android.content.res.Resources
 import android.util.Log
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -11,13 +12,17 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.AnnotatedString
@@ -29,6 +34,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.withStyle
 import com.heckmannch.birthdaybuddy.R
+import com.heckmannch.birthdaybuddy.di.IoDispatcher
 import com.heckmannch.birthdaybuddy.ui.components.SettingsDetailScaffold
 import com.heckmannch.birthdaybuddy.ui.components.withSettingsInsets
 import com.heckmannch.birthdaybuddy.ui.theme.BirthdayBuddyTheme
@@ -36,6 +42,12 @@ import com.heckmannch.birthdaybuddy.ui.theme.SpacingExtraLarge
 import com.heckmannch.birthdaybuddy.ui.theme.SpacingMedium
 import com.heckmannch.birthdaybuddy.ui.theme.SpacingNormal
 import com.heckmannch.birthdaybuddy.ui.theme.SpacingSmall
+import dagger.hilt.EntryPoint
+import dagger.hilt.InstallIn
+import dagger.hilt.android.EntryPointAccessors
+import dagger.hilt.components.SingletonComponent
+import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.withContext
 
 /**
  * Vorkompilierter regulärer Ausdruck zum Parsen von Markdown-Links ([Link-Text](URL)).
@@ -43,16 +55,59 @@ import com.heckmannch.birthdaybuddy.ui.theme.SpacingSmall
  */
 private val LINK_REGEX = Regex("\\[([^]]+)]\\(([^)]+)\\)")
 
+/**
+ * EntryPoint zur Bereitstellung des [IoDispatcher] für Composable-Aufrufe ohne direktes Hilt-ViewModel.
+ */
+@EntryPoint
+@InstallIn(SingletonComponent::class)
+interface PrivacyPolicyEntryPoint {
+    @IoDispatcher
+    fun ioDispatcher(): CoroutineDispatcher
+}
+
+private sealed interface PrivacyPolicyUiState {
+    data object Loading : PrivacyPolicyUiState
+    data class Success(val text: String) : PrivacyPolicyUiState
+    data class Error(val fallbackText: String) : PrivacyPolicyUiState
+}
+
 @Composable
 fun PrivacyPolicyScreen(
     showBackButton: Boolean = true,
     onNavigateBack: () -> Unit
 ) {
+    val context = LocalContext.current
     val resources = LocalResources.current
     val configuration = LocalConfiguration.current
     val errorMessage = stringResource(R.string.settings_privacy_load_error)
-    val policyText = rememberSaveable(configuration) {
-        loadPrivacyPolicyText(resources, errorMessage)
+
+    val ioDispatcher = remember(context) {
+        runCatching {
+            EntryPointAccessors.fromApplication(
+                context.applicationContext,
+                PrivacyPolicyEntryPoint::class.java
+            ).ioDispatcher()
+        }.getOrElse { kotlinx.coroutines.Dispatchers.IO }
+    }
+
+    val uiState by androidx.compose.runtime.produceState<PrivacyPolicyUiState>(
+        initialValue = PrivacyPolicyUiState.Loading,
+        configuration,
+        ioDispatcher
+    ) {
+        value = try {
+            val text = withContext(ioDispatcher) {
+                loadPrivacyPolicyText(resources, errorMessage)
+            }
+            if (text == errorMessage) {
+                PrivacyPolicyUiState.Error(errorMessage)
+            } else {
+                PrivacyPolicyUiState.Success(text)
+            }
+        } catch (e: Exception) {
+            Log.w(TAG, "Unerwarteter Fehler beim asynchronen Laden der Datenschutzerklärung", e)
+            PrivacyPolicyUiState.Error(errorMessage)
+        }
     }
 
     SettingsDetailScaffold(
@@ -60,15 +115,47 @@ fun PrivacyPolicyScreen(
         showBackButton = showBackButton,
         onNavigateBack = onNavigateBack
     ) { paddingValues ->
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .verticalScroll(rememberScrollState())
-                .padding(paddingValues.withSettingsInsets()),
-            verticalArrangement = Arrangement.spacedBy(SpacingNormal)
-        ) {
-            MarkdownContent(policyText)
-            Spacer(modifier = Modifier.height(SpacingExtraLarge))
+        when (val state = uiState) {
+            is PrivacyPolicyUiState.Loading -> {
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(paddingValues.withSettingsInsets()),
+                    contentAlignment = Alignment.Center
+                ) {
+                    CircularProgressIndicator()
+                }
+            }
+
+            is PrivacyPolicyUiState.Success -> {
+                Column(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .verticalScroll(rememberScrollState())
+                        .padding(paddingValues.withSettingsInsets()),
+                    verticalArrangement = Arrangement.spacedBy(SpacingNormal)
+                ) {
+                    MarkdownContent(state.text)
+                    Spacer(modifier = Modifier.height(SpacingExtraLarge))
+                }
+            }
+
+            is PrivacyPolicyUiState.Error -> {
+                Column(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .verticalScroll(rememberScrollState())
+                        .padding(paddingValues.withSettingsInsets()),
+                    verticalArrangement = Arrangement.spacedBy(SpacingNormal)
+                ) {
+                    Text(
+                        text = state.fallbackText,
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = MaterialTheme.colorScheme.error
+                    )
+                    Spacer(modifier = Modifier.height(SpacingExtraLarge))
+                }
+            }
         }
     }
 }
