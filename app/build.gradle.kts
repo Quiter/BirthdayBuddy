@@ -20,7 +20,7 @@ android {
         minSdk = 28
         targetSdk = 37
         versionCode = 47
-        versionName = "2.15.6"
+        versionName = "2.15.7"
 
         testInstrumentationRunner = "com.heckmannch.birthdaybuddy.HiltTestRunner"
     }
@@ -42,6 +42,7 @@ android {
     packaging {
         resources {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
+            // Safe to exclude: no kotlin-reflect dependency; saves ~3 KB APK size
             excludes += "**/*.kotlin_module"
         }
     }
