@@ -31,6 +31,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -44,7 +45,9 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.tooling.preview.Preview
 import com.heckmannch.birthdaybuddy.R
 import com.heckmannch.birthdaybuddy.ui.theme.AlphaEmphasisLow
@@ -60,6 +63,9 @@ import com.heckmannch.birthdaybuddy.ui.theme.SpacingNormal
 /**
  * A custom search bar composable that supports animated placeholder transitions,
  * dynamic styling based on focus state, query clearing, settings navigation, and optional navigation icons.
+ *
+ * Internally preserves [TextFieldValue] state to decouple rapid local keyboard typing from asynchronous
+ * state hoisted query flows, preventing cursor jumping and out-of-order text insertion.
  *
  * @param query The current text entered into the search field.
  * @param placeholder The animated placeholder text displayed when the search query is empty.
@@ -83,6 +89,37 @@ fun SearchBar(
 ) {
     val focusManager = LocalFocusManager.current
     var isFocused by remember { mutableStateOf(false) }
+
+    var textFieldValue by remember {
+        mutableStateOf(
+            TextFieldValue(
+                text = query,
+                selection = TextRange(query.length)
+            )
+        )
+    }
+
+    // Tracks user-emitted query changes so that delayed asynchronous echoes from upstream StateFlows
+    // do not overwrite the user's active typing or reset cursor selection.
+    val pendingQueries = remember { mutableListOf<String>() }
+
+    // Synchronize external query changes (e.g. programmatically cleared search, filter resets)
+    LaunchedEffect(query) {
+        val pendingIndex = pendingQueries.indexOf(query)
+        if (pendingIndex != -1) {
+            // query is an echo of an in-flight user keystroke; consume up to this query
+            for (i in 0..pendingIndex) {
+                pendingQueries.removeAt(0)
+            }
+        } else if (query != textFieldValue.text) {
+            // query was modified externally (not by typing inside this search bar)
+            pendingQueries.clear()
+            textFieldValue = textFieldValue.copy(
+                text = query,
+                selection = TextRange(query.length)
+            )
+        }
+    }
 
     val containerColor by animateColorAsState(
         targetValue = if (isFocused) MaterialTheme.colorScheme.surface
@@ -112,8 +149,14 @@ fun SearchBar(
         tonalElevation = if (isFocused) SearchBarFocusedElevation else SpacingNone
     ) {
         TextField(
-            value = query,
-            onValueChange = onQueryChange,
+            value = textFieldValue,
+            onValueChange = { newValue ->
+                textFieldValue = newValue
+                if (newValue.text != query) {
+                    pendingQueries.add(newValue.text)
+                    onQueryChange(newValue.text)
+                }
+            },
             modifier = Modifier
                 .fillMaxSize()
                 .testTag("search_field")
@@ -152,11 +195,18 @@ fun SearchBar(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     AnimatedVisibility(
-                        visible = query.isNotEmpty(),
+                        visible = textFieldValue.text.isNotEmpty(),
                         enter = fadeIn(),
                         exit = fadeOut()
                     ) {
-                        IconButton(onClick = onClearQuery) {
+                        IconButton(
+                            onClick = {
+                                textFieldValue = TextFieldValue("")
+                                pendingQueries.clear()
+                                onClearQuery()
+                            },
+                            modifier = Modifier.testTag("clear_search_button")
+                        ) {
                             Icon(
                                 imageVector = Icons.Default.Close,
                                 contentDescription = stringResource(R.string.home_search_clear)

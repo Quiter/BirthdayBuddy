@@ -907,3 +907,20 @@ ecreateContactsTableV7 (mit giftIdeas TEXT NOT NULL, COALESCE(giftIdeas, '[]')) 
       - [MigrationTest.kt](file:///c:/Users/chris/AndroidStudioProjects/BirthdayBuddy/app/src/androidTest/java/com/heckmannch/birthdaybuddy/data/local/MigrationTest.kt) & [SettingsMigrationTest.kt](file:///c:/Users/chris/AndroidStudioProjects/BirthdayBuddy/app/src/androidTest/java/com/heckmannch/birthdaybuddy/data/local/SettingsMigrationTest.kt): Migrationstests für AppDatabase 11→12 und SettingsDatabase 10→11 ergänzt.
       - `./gradlew testDebugUnitTest` und `./gradlew assembleDebugAndroidTest` erfolgreich durchgeführt.
 
+385. **Behebung von Cursor-Sprüngen und vertauschten Buchstaben in der SearchBar (UI & State Management):**
+    - **Problem & Ursache:** In Jetpack Compose führt die Verwendung von `TextField(value = query: String, onValueChange = onQueryChange)` bei asynchroner State-Rückführung (über StateFlows und ViewModel-Pipelines) zu Desynchronisationen zwischen dem internen IME-Puffer und dem übergebenen `query`-String. Dadurch wurde die Texteingabe bei schnellem Tippen auf vorherige Zustände zurückgesetzt, der Cursor sprang ans Wortende oder an den Anfang, und nachfolgende Zeichen wurden in falscher Reihenfolge eingefügt.
+    - **Entkopplung in SearchBar.kt:**
+      - [SearchBar.kt](file:///c:/Users/chris/AndroidStudioProjects/BirthdayBuddy/app/src/main/java/com/heckmannch/birthdaybuddy/ui/screens/home/components/topbar/SearchBar.kt): Einführung eines internen `textFieldValue: TextFieldValue`-Zustands, der Tastaturanschläge, Selektion (`selection`) und IME-Komposition synchron auf dem UI-Thread verwaltet.
+      - Pufferung aktiver Eingaben (`pendingQueries`), um verzögert eintreffende Echos des ViewModels abzufangen und zu verhindern, dass veraltete `query`-Werte den aktuellen Cursor oder Text überschreiben.
+      - Saubere Synchronisation externer Ereignisse: Externe Resets (z. B. automatischer Filter-Reset nach 5 Minuten Inaktivität) aktualisieren den lokalen Zustand und setzen den Cursor an das Textende.
+      - Der Clear-Button reagiert nun unmittelbar auf `textFieldValue.text.isNotEmpty()` und leert das Textfeld beim Klick sofort ohne Latenz.
+      - Hinzufügen von `testTag("clear_search_button")` für robuste Testbarkeit.
+    - **Testing & QA:**
+      - [SearchBarTest.kt](file:///c:/Users/chris/AndroidStudioProjects/BirthdayBuddy/app/src/test/java/com/heckmannch/birthdaybuddy/ui/screens/home/components/topbar/SearchBarTest.kt): Neue Robolectric JVM Compose Test-Suite mit 4 Tests:
+        1. `searchBar_rapidTypingWithDelayedEcho_preservesExactCharacterOrder`: Verifikation, dass schnelles Tippen bei verzögerten ViewModel-Echos keine Buchstaben vertauscht und der Text exakt erhalten bleibt.
+        2. `searchBar_typingInMiddleOfWord_insertsCorrectlyWithoutJumpingToEnd`: Prüfung, dass das Einfügen von Buchstaben in der Wortmitte den Cursor nicht ans Ende springen lässt.
+        3. `searchBar_clearButton_clearsInputImmediatelyAndNotifiesCallback`: Test des sofortigen Leerns beim Klick auf den Clear-Button.
+        4. `searchBar_externalQueryReset_updatesTextCorrectly`: Test für externe State-Aktualisierungen und Filter-Resets.
+      - Verifikation: Erfolgreicher Durchlauf aller Tests via `./gradlew testDebugUnitTest`.
+
+

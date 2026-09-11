@@ -314,6 +314,7 @@ Diese Tests laufen ohne Emulator/Gerät direkt auf dem Entwicklungsrechner und s
 - `ui/screens/home/HomeViewModelGiftIdeaTest.kt`: Tests für Geschenkideen- und Geburtstags-Intents im `HomeViewModel`. **Feature-co-located** neben `HomeViewModel.kt`.
 - `ui/screens/home/HomeViewModelSearchTest.kt`: Tests der Such- und Filterlogik im `HomeViewModel`. **Feature-co-located** neben `HomeViewModel.kt`.
 - `ui/screens/home/HomeViewModelTest.kt`: Tests für das reaktive State-Management und die UI-Filterung im `HomeViewModel`. **Feature-co-located** neben `HomeViewModel.kt`.
+- `ui/screens/home/components/topbar/SearchBarTest.kt`: JVM Robolectric Compose UI-Tests für die `SearchBar` (schnelles Tippen, Cursor-Stabilität, Text-Reihenfolge, Clear-Button und externe Query-Resets).
 - `ui/screens/onboarding/OnboardingViewModelTest.kt`: Tests für den Onboarding-Status und Erststart-Prozess im `OnboardingViewModel`. **Feature-co-located** neben `OnboardingViewModel.kt`.
 - `viewmodel/BackupViewModelTest.kt`: Tests für `BackupViewModel` zur Absicherung des Geschenkideen-Im- und Exports.
 - `viewmodel/CalendarViewModelTest.kt`: Tests für `CalendarViewModel` zur Absicherung der Kalendereinstellungs- und Synchronisationssteuerung.

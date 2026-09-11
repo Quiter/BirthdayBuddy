@@ -10,8 +10,32 @@
 
 ---
 
-## 📝 Aktuelle Vorlage (v2.14.0)
+## 📝 Aktuelle Vorlage (v2.16.0)
 
+<!--suppress HtmlUnknownTag, HtmlUnknownTag -->
+<en-US>
+- Punctual notifications & reliable midnight widget updates via exact alarms
+- Instant background synchronization when contacts are updated in the address book
+- Smoother list scrolling and faster search interactions
+- Fixed an issue where onboarding could reappear on app restart
+- Added WhatsApp Business support for quick birthday messages
+- Under-the-hood stability and performance improvements
+</en-US>
+<!--suppress HtmlUnknownTag, HtmlUnknownTag -->
+<de-DE>
+- Pünktliche Benachrichtigungen & Mitternachts-Widget-Updates durch exakte Alarme
+- Sofortige Hintergrund-Synchronisation bei Änderungen im Telefonbuch
+- Spürbar flüssigere Listen- und Suchbedienung ohne Verzögerungen
+- Fehler behoben, durch den nach App-Neustart erneut das Onboarding erschien
+- WhatsApp Business Unterstützung für schnelle Geburtstagswünsche
+- Verbesserte Stabilität und Zuverlässigkeit der Datenverarbeitung
+</de-DE>
+
+---
+
+## 📜 Vorherige Versionen
+
+### v2.15.0
 <!--suppress HtmlUnknownTag, HtmlUnknownTag -->
 <en-US>
 - Redesigned birthday card layout for a cleaner, modern look
@@ -30,10 +54,6 @@
 - Fehlerbehebung bei der Navigation in die Benachrichtigungseinstellungen
 - Allgemeine Stabilitäts-, Layout- und Performance-Optimierungen
 </de-DE>
-
----
-
-## 📜 Vorherige Versionen
 
 ### v2.12.0
 <!--suppress HtmlUnknownTag, HtmlUnknownTag -->
