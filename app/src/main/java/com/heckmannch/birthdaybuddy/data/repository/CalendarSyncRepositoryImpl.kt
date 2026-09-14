@@ -267,7 +267,11 @@ class CalendarSyncRepositoryImpl @Inject constructor(
                 val contactsByLookupKey = contacts.associateBy { it.lookupKey }
                 val processedAnniversaries = HashSet<String>()
 
-                for (contact in contacts) {
+
+                // Deduplicate contacts by lookupKey to avoid creating duplicate events for the same contact
+                val uniqueContacts = contacts.distinctBy { it.lookupKey }
+
+                for (contact in uniqueContacts) {
                     // 1. Insert birthdays into the birthday calendar
                     contact.birthday?.let { birthday ->
                         val title =
