@@ -2,6 +2,7 @@ package com.heckmannch.birthdaybuddy.ui.util
 
 import android.Manifest
 import android.content.ActivityNotFoundException
+import android.content.ContentUris
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
@@ -169,6 +170,46 @@ class ContactActions @Inject constructor(
             Log.w(TAG, "Keine Kontakte-App zum Anzeigen des Kontakts gefunden.")
         } catch (e: SecurityException) {
             Log.e(TAG, "Sicherheitsfehler beim Anzeigen des Kontakts.", e)
+        }
+    }
+
+    /**
+     * Öffnet einen Kontakt direkt im Bearbeitungsmodus der Android Kontakte-App.
+     */
+    fun editContact(id: String, lookupKey: String) {
+        try {
+            val numericId = id.toLongOrNull()
+            val lookupUri = if (numericId != null) {
+                ContactsContract.Contacts.getLookupUri(numericId, lookupKey)
+                    ?: ContentUris.withAppendedId(ContactsContract.Contacts.CONTENT_URI, numericId)
+            } else if (lookupKey.isNotBlank()) {
+                Uri.withAppendedPath(ContactsContract.Contacts.CONTENT_LOOKUP_URI, Uri.encode(lookupKey))
+            } else {
+                null
+            }
+
+            if (lookupUri != null) {
+                val intent = Intent(Intent.ACTION_EDIT).apply {
+                    setDataAndType(lookupUri, ContactsContract.Contacts.CONTENT_ITEM_TYPE)
+                    putExtra("finishActivityOnSaveCompleted", true)
+                }
+                try {
+                    startActivitySafely(intent)
+                } catch (_: ActivityNotFoundException) {
+                    // Fallback ohne expliziten MIME-Type falls Hersteller-App setDataAndType nicht unterstützt
+                    val fallbackIntent = Intent(Intent.ACTION_EDIT, lookupUri).apply {
+                        putExtra("finishActivityOnSaveCompleted", true)
+                    }
+                    startActivitySafely(fallbackIntent)
+                }
+            } else {
+                Log.w(TAG, "Kontakt-URI konnte für ID=$id und LookupKey=$lookupKey nicht erzeugt werden.")
+            }
+        } catch (_: ActivityNotFoundException) {
+            // Expected: no handler installed for this intent
+            Log.w(TAG, "Keine Kontakte-App zum Bearbeiten des Kontakts gefunden.")
+        } catch (e: SecurityException) {
+            Log.e(TAG, "Sicherheitsfehler beim Bearbeiten des Kontakts.", e)
         }
     }
 

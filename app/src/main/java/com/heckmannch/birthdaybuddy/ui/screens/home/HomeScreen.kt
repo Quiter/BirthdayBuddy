@@ -212,6 +212,7 @@ fun HomeScreen(
 
                 // Launching external dialers, messenger, and device contacts editor
                 onOpenContact = contactActions::openContact,
+                onEditContact = contactActions::editContact,
                 onDial = contactActions::dialNumber,
                 onSendSms = contactActions::sendSms,
                 onOpenMessengerApp = contactActions::openMessengerApp,

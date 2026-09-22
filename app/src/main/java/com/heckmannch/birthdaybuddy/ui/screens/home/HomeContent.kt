@@ -21,6 +21,7 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -176,8 +177,18 @@ private fun HomeMainContent(
                 enter = scaleIn() + fadeIn(),
                 exit = scaleOut() + fadeOut()
             ) {
+                val selectedContact = remember(uiState.contacts, homeState.selectedContactId) {
+                    val id = homeState.selectedContactId
+                    if (id != null) {
+                        uiState.contacts?.find { it.id == id }
+                    } else {
+                        null
+                    }
+                }
+
                 HomeFAB(
                     showScrollUp = homeState.showScrollUp,
+                    selectedContact = selectedContact,
                     actions = actions,
                     onScrollToTop = {
                         focusManager.clearFocus()

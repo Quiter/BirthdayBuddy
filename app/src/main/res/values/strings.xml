@@ -10,6 +10,7 @@
     <string name="home_filter_no_birthday">No Birthday</string>
     <string name="home_scroll_to_top">Scroll to top</string>
     <string name="home_add_contact">Add contact</string>
+    <string name="home_edit_contact">Edit contact</string>
     <string name="cd_toggle_sidebar">Toggle Sidebar</string>
 
     <!-- Birthday List -->

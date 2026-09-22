@@ -10,6 +10,7 @@
     <string name="home_filter_no_birthday">Ohne Datum</string>
     <string name="home_scroll_to_top">Nach oben scrollen</string>
     <string name="home_add_contact">Kontakt hinzufügen</string>
+    <string name="home_edit_contact">Kontakt bearbeiten</string>
     <string name="cd_toggle_sidebar">Seitenleiste umschalten</string>
 
     <!-- Birthday List -->

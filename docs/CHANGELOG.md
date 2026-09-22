@@ -921,6 +921,26 @@ ecreateContactsTableV7 (mit giftIdeas TEXT NOT NULL, COALESCE(giftIdeas, '[]')) 
         2. `searchBar_typingInMiddleOfWord_insertsCorrectlyWithoutJumpingToEnd`: Prüfung, dass das Einfügen von Buchstaben in der Wortmitte den Cursor nicht ans Ende springen lässt.
         3. `searchBar_clearButton_clearsInputImmediatelyAndNotifiesCallback`: Test des sofortigen Leerns beim Klick auf den Clear-Button.
         4. `searchBar_externalQueryReset_updatesTextCorrectly`: Test für externe State-Aktualisierungen und Filter-Resets.
-      - Verifikation: Erfolgreicher Durchlauf aller Tests via `./gradlew testDebugUnitTest`.
+386. **Dynamischer HomeFAB: Morphing zum Edit-Button bei geöffnetem BirthdayDetailPane (UI & Intent Integration):**
+    - **Motivation:** Wenn ein Kontakt im Detail-Paneel (`BirthdayDetailPane`) aufgerufen wird, soll der primäre Aktionsbutton (`HomeFAB`) nicht mehr "Kontakt hinzufügen" oder "Nach oben scrollen" anzeigen, sondern sich nahtlos in einen Bearbeiten-Button verwandeln, der den geöffneten Kontakt direkt im Bearbeitungsmodus der Kontakte-App öffnet.
+    - **Intent-Handling (`ContactActions.kt`):**
+      - Neue Methode `editContact(id: String, lookupKey: String)` in [ContactActions.kt](file:///c:/Users/chris/AndroidStudioProjects/BirthdayBuddy/app/src/main/java/com/heckmannch/birthdaybuddy/ui/util/ContactActions.kt): Öffnet die System-Kontakte-App mittels `Intent(Intent.ACTION_EDIT)` mit `setDataAndType(lookupUri, ContactsContract.Contacts.CONTENT_ITEM_TYPE)` und `finishActivityOnSaveCompleted = true`.
+      - Enthält automatische Fallbacks (ohne expliziten MIME-Type) sowie sauberes Abfangen von `ActivityNotFoundException` und `SecurityException`.
+    - **State-Hoisting & Navigation (`HomeState.kt`, `HomeListDetailDisplay.kt`, `HomeContent.kt`):**
+      - [HomeState.kt](file:///c:/Users/chris/AndroidStudioProjects/BirthdayBuddy/app/src/main/java/com/heckmannch/birthdaybuddy/ui/screens/home/HomeState.kt): Der Navigation 3 `backStack: NavBackStack<NavKey>` wird nun im State-Holder verwaltet. Die reaktive Eigenschaft `selectedContactId` leitet die ID des im Detail-Paneel geöffneten Kontakts synchron ab.
+      - [HomeListDetailDisplay.kt](file:///c:/Users/chris/AndroidStudioProjects/BirthdayBuddy/app/src/main/java/com/heckmannch/birthdaybuddy/ui/screens/home/components/list/HomeListDetailDisplay.kt): Nutzt `homeState.backStack`, sodass der Selektionszustand synchron für den umgebenden Scaffold verfügbar ist.
+      - [HomeContent.kt](file:///c:/Users/chris/AndroidStudioProjects/BirthdayBuddy/app/src/main/java/com/heckmannch/birthdaybuddy/ui/screens/home/HomeContent.kt): Ermittelt das ausgewählte `ContactUiModel` und übergibt es an `HomeFAB`.
+    - **HomeFAB Morphing (`HomeFAB.kt`):**
+      - Erweiterung um `selectedContact: ContactUiModel? = null` und Enum `HomeFabMode` (`ADD`, `SCROLL_TO_TOP`, `EDIT`).
+      - Bei ausgewähltem Kontakt morpht der FAB animiert zu `Icons.Default.Edit` mit Beschriftung `home_edit_contact` und triggert `actions.onEditContact`.
+      - Wird das Detail-Paneel geschlossen, morpht der Button nahtlos zurück.
+    - **Layout-Clearance (`BirthdayDetailPane.kt`):**
+      - Ergänzung eines `FabBottomSpacing` Spacers am Ende des vertikal scrollbaren Inhalts, damit Geschenkideen beim Scrollen nicht vom schwebenden FAB verdeckt werden.
+    - **I18n:**
+      - Hinzufügen von `home_edit_contact` in [strings.xml (DE)](file:///c:/Users/chris/AndroidStudioProjects/BirthdayBuddy/app/src/main/res/values-de/strings.xml) ("Kontakt bearbeiten") und [strings.xml (EN)](file:///c:/Users/chris/AndroidStudioProjects/BirthdayBuddy/app/src/main/res/values/strings.xml) ("Edit contact").
+    - **Testing & QA:**
+      - [HomeFABTest.kt](file:///c:/Users/chris/AndroidStudioProjects/BirthdayBuddy/app/src/test/java/com/heckmannch/birthdaybuddy/ui/screens/home/HomeFABTest.kt): Robolectric-Tests für alle FAB-Zustände (Add, Scroll-to-Top, Edit) sowie End-to-End-Transition beim Öffnen und Schließen des Detail-Paneels im `HomeContent`.
+      - Alle Tests via `./gradlew testDebugUnitTest` erfolgreich durchgelaufen.
+
 
 

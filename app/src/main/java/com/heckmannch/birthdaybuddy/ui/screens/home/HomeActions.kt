@@ -23,6 +23,7 @@ data class HomeActions(
     val onUpdateBirthday: (String, java.time.LocalDate) -> Unit = { _, _ -> },
     val onOpenBirthdayPicker: (lookupKey: String, year: Int?, month: Int, day: Int) -> Unit = { _, _, _, _ -> },
     val onOpenContact: (String, String) -> Unit = { _, _ -> },
+    val onEditContact: (String, String) -> Unit = { _, _ -> },
     val onDial: (String) -> Unit = {},
     val onSendSms: (String) -> Unit = {},
     val onOpenMessengerApp: (MessengerApp, String) -> Unit = { _, _ -> },

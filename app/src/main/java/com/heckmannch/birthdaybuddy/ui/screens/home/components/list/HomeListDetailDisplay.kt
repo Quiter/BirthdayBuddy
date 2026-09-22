@@ -19,7 +19,6 @@ import androidx.compose.ui.tooling.preview.Devices
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.navigation3.runtime.NavKey
 import androidx.navigation3.runtime.entryProvider
-import androidx.navigation3.runtime.rememberNavBackStack
 import androidx.navigation3.ui.NavDisplay
 import com.heckmannch.birthdaybuddy.domain.model.ContactLabels
 import com.heckmannch.birthdaybuddy.ui.components.LocalWindowAdaptiveInfo
@@ -78,8 +77,8 @@ fun HomeListDetailDisplay(
     }
     val listDetailStrategy = rememberListDetailSceneStrategy<NavKey>(directive = directive)
 
-    val backStack = rememberNavBackStack(HomeNavKey.ContactList)
-    val selectedContactId = (backStack.lastOrNull() as? HomeNavKey.ContactDetail)?.contactId
+    val backStack = homeState.backStack
+    val selectedContactId = homeState.selectedContactId
 
     LaunchedEffect(contacts, selectedContactId) {
         if (selectedContactId != null && contacts?.none { it.id == selectedContactId } == true) {
