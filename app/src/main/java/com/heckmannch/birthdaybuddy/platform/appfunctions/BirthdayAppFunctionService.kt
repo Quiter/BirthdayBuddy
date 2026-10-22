@@ -22,7 +22,7 @@ import android.os.Build
 import android.util.Log
 import androidx.annotation.RequiresApi
 import androidx.annotation.VisibleForTesting
-import androidx.appfunctions.AppFunction
+import androidx.appfunctions.AppFunctionDeclaration
 import androidx.appfunctions.AppFunctionInvalidArgumentException
 import androidx.appfunctions.AppFunctionService
 import androidx.appfunctions.AppFunctionServiceEntryPoint
@@ -101,7 +101,7 @@ abstract class BirthdayAppFunctionService : AppFunctionService() {
      * @return A list of [UpcomingBirthday] objects sorted by `daysUntil` ascending,
      *   or an empty list if no birthdays fall within the window.
      */
-    @AppFunction(isDescribedByKDoc = true)
+    @AppFunctionDeclaration(isDescribedByKDoc = true)
     suspend fun getUpcomingBirthdays(withinDays: Int = 30): List<UpcomingBirthday> =
         withContext(ioDispatcher) {
             val clampedDays = withinDays.coerceIn(1, 365)
@@ -145,7 +145,7 @@ abstract class BirthdayAppFunctionService : AppFunctionService() {
      *   matched contact has no birthday stored.
      * @throws AppFunctionInvalidArgumentException if `contactName` is blank.
      */
-    @AppFunction(isDescribedByKDoc = true)
+    @AppFunctionDeclaration(isDescribedByKDoc = true)
     suspend fun getContactBirthday(contactName: String): ContactBirthday? =
         withContext(ioDispatcher) {
             if (contactName.isBlank()) {
@@ -191,7 +191,7 @@ abstract class BirthdayAppFunctionService : AppFunctionService() {
      * @throws AppFunctionInvalidArgumentException if `contactId` does not match any
      *   stored contact, the contact has no phone number, or `app` is not a recognised value.
      */
-    @AppFunction(isDescribedByKDoc = true)
+    @AppFunctionDeclaration(isDescribedByKDoc = true)
     suspend fun sendBirthdayMessage(
         contactId: String,
         app: String,
@@ -298,7 +298,7 @@ abstract class BirthdayAppFunctionService : AppFunctionService() {
      * @throws AppFunctionInvalidArgumentException if the contact is not found or
      *   the date values are out of range.
      */
-    @AppFunction(isDescribedByKDoc = true)
+    @AppFunctionDeclaration(isDescribedByKDoc = true)
     suspend fun addBirthdayToContact(
         contactId: String,
         year: Int?,

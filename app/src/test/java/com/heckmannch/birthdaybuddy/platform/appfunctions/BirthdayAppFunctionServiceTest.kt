@@ -3,6 +3,7 @@ package com.heckmannch.birthdaybuddy.platform.appfunctions
 import android.os.CancellationSignal
 import androidx.appfunctions.ExecuteAppFunctionRequest
 import androidx.appfunctions.ExecuteAppFunctionResponse
+import androidx.appfunctions.metadata.AppFunctionMetadata
 import androidx.appfunctions.internal.AppFunctionInventory
 import com.google.common.truth.Truth.assertThat
 import com.heckmannch.birthdaybuddy.MainDispatcherRule
@@ -63,6 +64,7 @@ class BirthdayAppFunctionServiceTest {
 
         override fun onExecuteFunction(
             request: ExecuteAppFunctionRequest,
+            metadata: AppFunctionMetadata,
             cancellationSignal: CancellationSignal,
             callback: Consumer<ExecuteAppFunctionResponse>
         ) {
