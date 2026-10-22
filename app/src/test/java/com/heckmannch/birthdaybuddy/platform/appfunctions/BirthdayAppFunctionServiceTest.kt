@@ -63,6 +63,7 @@ class BirthdayAppFunctionServiceTest {
 
         override fun onExecuteFunction(
             request: ExecuteAppFunctionRequest,
+            metadata: androidx.appfunctions.metadata.AppFunctionMetadata,
             cancellationSignal: CancellationSignal,
             callback: Consumer<ExecuteAppFunctionResponse>
         ) {
