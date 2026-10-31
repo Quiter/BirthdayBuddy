@@ -21,7 +21,6 @@ import com.heckmannch.birthdaybuddy.util.Clock
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
@@ -126,9 +125,8 @@ class HomeViewModelSearchTest {
         viewModel.onIntent(HomeIntent.SearchQueryChanged("Mustermann Max"))
 
         // Warten bis der State die Suche reflektiert und Ergebnisse liefert
-        val state = viewModel.uiState
-            .filter { (it.searchQuery == "Mustermann Max") && (it.contacts != null) }
-            .first()
+        val state =
+            viewModel.uiState.first { (it.searchQuery == "Mustermann Max") && (it.contacts != null) }
 
         assertThat(state.contacts).hasSize(1)
         assertThat(state.contacts?.first()?.fullName).isEqualTo("Max Mustermann")
@@ -150,9 +148,8 @@ class HomeViewModelSearchTest {
 
         viewModel.onIntent(HomeIntent.SearchQueryChanged("  Max  "))
 
-        val state = viewModel.uiState
-            .filter { (it.searchQuery == "  Max  ") && (it.contacts != null) }
-            .first()
+        val state =
+            viewModel.uiState.first { (it.searchQuery == "  Max  ") && (it.contacts != null) }
 
         assertThat(state.contacts).hasSize(1)
         assertThat(state.contacts?.first()?.fullName).isEqualTo("Max Mustermann")
@@ -168,22 +165,24 @@ class HomeViewModelSearchTest {
 
         // 2. Entering Search (first character): isResettingFilter should become true
         viewModel.onIntent(HomeIntent.SearchQueryChanged("M"))
-        val enteringState = viewModel.uiState.filter { it.searchQuery == "M" && it.isResettingFilter }.first()
+        val enteringState =
+            viewModel.uiState.first { it.searchQuery == "M" && it.isResettingFilter }
         assertThat(enteringState.isResettingFilter).isTrue()
 
         // UI resets filter flag
         viewModel.onIntent(HomeIntent.SetIsResettingFilter(false))
-        val resetState = viewModel.uiState.filter { !it.isResettingFilter }.first()
+        val resetState = viewModel.uiState.first { !it.isResettingFilter }
         assertThat(resetState.isResettingFilter).isFalse()
 
         // 3. Continuous typing: isResettingFilter should remain false
         viewModel.onIntent(HomeIntent.SearchQueryChanged("Ma"))
-        val typingState = viewModel.uiState.filter { it.searchQuery == "Ma" }.first()
+        val typingState = viewModel.uiState.first { it.searchQuery == "Ma" }
         assertThat(typingState.isResettingFilter).isFalse()
 
         // 4. Clearing search: isResettingFilter should become true again
         viewModel.onIntent(HomeIntent.SearchQueryChanged(""))
-        val clearingState = viewModel.uiState.filter { it.searchQuery.isEmpty() && it.isResettingFilter }.first()
+        val clearingState =
+            viewModel.uiState.first { it.searchQuery.isEmpty() && it.isResettingFilter }
         assertThat(clearingState.isResettingFilter).isTrue()
     }
 

@@ -207,7 +207,9 @@ class NotificationActionReceiverTest {
         assertThat(capturedRequest.workSpec.initialDelay).isEqualTo(TimeUnit.HOURS.toMillis(2))
         assertThat(capturedRequest.workSpec.input.getInt(NotificationActions.EXTRA_PENDING_ID, -1)).isEqualTo(12)
         assertThat(capturedRequest.workSpec.input.getInt(NotificationActions.EXTRA_DAYS_BEFORE, -1)).isEqualTo(3)
-        assertThat(capturedRequest.workSpec.input.getStringArray(NotificationActions.EXTRA_LOOKUP_KEYS)?.toList())
+        assertThat(
+            capturedRequest.workSpec.input.getNullableStringArray(NotificationActions.EXTRA_LOOKUP_KEYS)
+                ?.toList())
             .containsExactly("contact_lookup_1")
     }
 

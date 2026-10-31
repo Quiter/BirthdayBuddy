@@ -117,7 +117,7 @@ class NotificationSchedulerImplTest {
         val inputData = captured.workSpec.input
         assertThat(inputData.getInt(NotificationActions.EXTRA_PENDING_ID, -1)).isEqualTo(101)
         assertThat(inputData.getInt(NotificationActions.EXTRA_DAYS_BEFORE, -1)).isEqualTo(1)
-        assertThat(inputData.getStringArray(NotificationActions.EXTRA_LOOKUP_KEYS)?.toList())
+        assertThat(inputData.getNullableStringArray(NotificationActions.EXTRA_LOOKUP_KEYS)?.toList())
             .containsExactly("contact_lookup_key_alpha")
         assertThat(inputData.getString(NotificationActions.EXTRA_EVENT_TYPE)).isEqualTo(EventType.BIRTHDAY.name)
     }
@@ -141,7 +141,7 @@ class NotificationSchedulerImplTest {
         val captured = workRequestSlot.captured
         val inputData = captured.workSpec.input
         assertThat(inputData.getString(NotificationActions.EXTRA_EVENT_TYPE)).isEqualTo(EventType.ANNIVERSARY.name)
-        assertThat(inputData.getStringArray(NotificationActions.EXTRA_LOOKUP_KEYS)?.toList())
+        assertThat(inputData.getNullableStringArray(NotificationActions.EXTRA_LOOKUP_KEYS)?.toList())
             .containsExactly(anniversaryKey)
     }
 
@@ -182,7 +182,7 @@ class NotificationSchedulerImplTest {
         val captured = workRequestSlot.captured
         val inputData = captured.workSpec.input
         assertThat(inputData.getString(NotificationActions.EXTRA_EVENT_TYPE)).isEqualTo(EventType.BIRTHDAY.name)
-        assertThat(inputData.getStringArray(NotificationActions.EXTRA_LOOKUP_KEYS)).isEmpty()
+        assertThat(inputData.getNullableStringArray(NotificationActions.EXTRA_LOOKUP_KEYS)).isEmpty()
     }
 
     // =========================================================================
@@ -215,7 +215,7 @@ class NotificationSchedulerImplTest {
         val inputData = captured.workSpec.input
         assertThat(inputData.getInt(NotificationActions.EXTRA_PENDING_ID, -1)).isEqualTo(505)
         assertThat(inputData.getInt(NotificationActions.EXTRA_DAYS_BEFORE, -1)).isEqualTo(3)
-        assertThat(inputData.getStringArray(NotificationActions.EXTRA_LOOKUP_KEYS)?.toList())
+        assertThat(inputData.getNullableStringArray(NotificationActions.EXTRA_LOOKUP_KEYS)?.toList())
             .containsExactly("key_reshow_1", "key_reshow_2")
         assertThat(inputData.getString(NotificationActions.EXTRA_EVENT_TYPE)).isEqualTo(EventType.ANNIVERSARY.name)
     }

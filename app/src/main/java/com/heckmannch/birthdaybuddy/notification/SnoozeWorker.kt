@@ -22,9 +22,9 @@ class SnoozeWorker @AssistedInject constructor(
     override suspend fun doWork(): Result {
         val daysBefore = inputData.getInt(NotificationActions.EXTRA_DAYS_BEFORE, 0)
         val pendingId = inputData.getInt(NotificationActions.EXTRA_PENDING_ID, -1)
-        val lookupKeys = inputData.getStringArray(NotificationActions.EXTRA_LOOKUP_KEYS) ?: return Result.failure()
+        val lookupKeys = inputData.getNullableStringArray(NotificationActions.EXTRA_LOOKUP_KEYS) ?: return Result.failure()
 
-        val rawKeys = lookupKeys.map { NotificationKeyUtils.extractRawKey(it) }.toSet()
+        val rawKeys = lookupKeys.filterNotNull().map { NotificationKeyUtils.extractRawKey(it) }.toSet()
         val allContacts = contactRepository.allContacts.first()
         val targetContacts = allContacts.filter { it.lookupKey in rawKeys }
 
@@ -37,7 +37,7 @@ class SnoozeWorker @AssistedInject constructor(
                     EventType.BIRTHDAY
                 }
             } else {
-                val firstKey = lookupKeys.firstOrNull() ?: ""
+                val firstKey = lookupKeys.filterNotNull().firstOrNull() ?: ""
                 NotificationKeyUtils.extractEventType(firstKey)
             }
             notificationHelper.showBirthdayNotification(
