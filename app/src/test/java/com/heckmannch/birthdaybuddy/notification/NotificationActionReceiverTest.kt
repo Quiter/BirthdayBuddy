@@ -16,12 +16,14 @@ import com.heckmannch.birthdaybuddy.domain.usecase.DismissNotificationUseCase
 import com.heckmannch.birthdaybuddy.domain.usecase.MarkNotificationAsDoneUseCase
 import com.heckmannch.birthdaybuddy.domain.usecase.ReshowNotificationUseCase
 import com.heckmannch.birthdaybuddy.domain.usecase.SnoozeNotificationUseCase
+import dagger.hilt.android.EntryPointAccessors
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.coVerifyOrder
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.mockkObject
+import io.mockk.mockkStatic
 import io.mockk.slot
 import io.mockk.spyk
 import io.mockk.unmockkAll
@@ -60,6 +62,7 @@ class NotificationActionReceiverTest {
     private val snoozeNotificationUseCase = mockk<SnoozeNotificationUseCase>(relaxed = true)
     private val reshowNotificationUseCase = mockk<ReshowNotificationUseCase>(relaxed = true)
     private val pendingResult = mockk<BroadcastReceiver.PendingResult>(relaxed = true)
+    private val entryPoint = mockk<NotificationActionReceiver.NotificationActionReceiverEntryPoint>()
 
     private lateinit var receiver: NotificationActionReceiver
 
@@ -71,19 +74,23 @@ class NotificationActionReceiverTest {
             every { getSystemService(Context.NOTIFICATION_SERVICE) } returns notificationManager
         }
 
+        mockkStatic(EntryPointAccessors::class)
+        every {
+            EntryPointAccessors.fromApplication(
+                any(),
+                NotificationActionReceiver.NotificationActionReceiverEntryPoint::class.java,
+            )
+        } returns entryPoint
+
+        every { entryPoint.applicationScope() } returns CoroutineScope(mainDispatcherRule.testDispatcher)
+        every { entryPoint.notificationRepository() } returns notificationRepository
+        every { entryPoint.markNotificationAsDoneUseCase() } returns markNotificationAsDoneUseCase
+        every { entryPoint.dismissNotificationUseCase() } returns dismissNotificationUseCase
+        every { entryPoint.snoozeNotificationUseCase() } returns snoozeNotificationUseCase
+        every { entryPoint.reshowNotificationUseCase() } returns reshowNotificationUseCase
+
         receiver = spyk(NotificationActionReceiver())
-        val injectedField = Hilt_NotificationActionReceiver::class.java.getDeclaredField("injected")
-        injectedField.isAccessible = true
-        injectedField.set(receiver, true)
-
         every { receiver.goAsync() } returns pendingResult
-
-        receiver.applicationScope = CoroutineScope(kotlinx.coroutines.Dispatchers.Unconfined)
-        receiver.notificationRepository = notificationRepository
-        receiver.markNotificationAsDoneUseCase = markNotificationAsDoneUseCase
-        receiver.dismissNotificationUseCase = dismissNotificationUseCase
-        receiver.snoozeNotificationUseCase = snoozeNotificationUseCase
-        receiver.reshowNotificationUseCase = reshowNotificationUseCase
     }
 
     @After
@@ -164,7 +171,7 @@ class NotificationActionReceiverTest {
             snoozeNotificationUseCase(
                 pendingId = 12,
                 daysBefore = 3,
-                lookupKeys = listOf("contact_lookup_1", "contact_lookup_2")
+                lookupKeys = listOf("contact_lookup_1", "contact_lookup_2"),
             )
         }
     }
@@ -176,7 +183,7 @@ class NotificationActionReceiverTest {
         every { WorkManager.getInstance(any()) } returns workManager
 
         val realScheduler = NotificationSchedulerImpl(context, mockk(relaxed = true))
-        receiver.snoozeNotificationUseCase = SnoozeNotificationUseCase(realScheduler)
+        every { entryPoint.snoozeNotificationUseCase() } returns SnoozeNotificationUseCase(realScheduler)
 
         val workRequestSlot = slot<OneTimeWorkRequest>()
         every { workManager.enqueue(capture(workRequestSlot)) } returns mockk(relaxed = true)
@@ -215,7 +222,7 @@ class NotificationActionReceiverTest {
             daysBefore = 0,
             year = 2026,
             isDone = false,
-            dismissCount = 1
+            dismissCount = 1,
         )
         coEvery { notificationRepository.getPendingNotificationById(30) } returns pendingNotification
 
@@ -238,7 +245,7 @@ class NotificationActionReceiverTest {
                 pendingId = 30,
                 daysBefore = 0,
                 lookupKeys = listOf("key_birthday"),
-                eventType = EventType.BIRTHDAY
+                eventType = EventType.BIRTHDAY,
             )
         }
         verify(exactly = 1) { pendingResult.finish() }
@@ -251,7 +258,7 @@ class NotificationActionReceiverTest {
             daysBefore = 3,
             year = 2026,
             isDone = false,
-            dismissCount = 1
+            dismissCount = 1,
         )
         coEvery { notificationRepository.getPendingNotificationById(31) } returns pendingNotification
 
@@ -270,7 +277,7 @@ class NotificationActionReceiverTest {
                 pendingId = 31,
                 daysBefore = 3,
                 lookupKeys = listOf("anniversary:key_anniv"),
-                eventType = EventType.ANNIVERSARY
+                eventType = EventType.ANNIVERSARY,
             )
         }
         verify(exactly = 1) { pendingResult.finish() }
@@ -283,7 +290,7 @@ class NotificationActionReceiverTest {
             daysBefore = 1,
             year = 2026,
             isDone = false,
-            dismissCount = 1
+            dismissCount = 1,
         )
         coEvery { notificationRepository.getPendingNotificationById(35) } returns pendingNotification
 
@@ -302,7 +309,7 @@ class NotificationActionReceiverTest {
                 pendingId = 35,
                 daysBefore = 1,
                 lookupKeys = listOf("nameday:key_nameday"),
-                eventType = EventType.NAME_DAY
+                eventType = EventType.NAME_DAY,
             )
         }
         verify(exactly = 1) { pendingResult.finish() }
@@ -315,7 +322,7 @@ class NotificationActionReceiverTest {
             daysBefore = 0,
             year = 2026,
             isDone = true,
-            dismissCount = 1
+            dismissCount = 1,
         )
         coEvery { notificationRepository.getPendingNotificationById(32) } returns pendingNotification
 
@@ -387,7 +394,7 @@ class NotificationActionReceiverTest {
     }
 
     // =========================================================================
-    // 4. Invalid Actions / Null Inputs Tests
+    // 4. Invalid Actions / Null Inputs / Failure Tests
     // =========================================================================
 
     @Test
@@ -437,6 +444,28 @@ class NotificationActionReceiverTest {
         coVerify(exactly = 0) { dismissNotificationUseCase(any()) }
         verify(exactly = 0) { snoozeNotificationUseCase(any(), any(), any()) }
         verify(exactly = 0) { reshowNotificationUseCase(any(), any(), any(), any(), any()) }
+        verify(exactly = 0) { receiver.goAsync() }
+    }
+
+    @Test
+    fun onReceive_handlesEntryPointResolutionFailureGracefully() {
+        every {
+            EntryPointAccessors.fromApplication(
+                any(),
+                NotificationActionReceiver.NotificationActionReceiverEntryPoint::class.java,
+            )
+        } throws IllegalStateException("Hilt EntryPoint not found")
+
+        val intent = Intent(context, NotificationActionReceiver::class.java).apply {
+            action = NotificationActions.ACTION_DONE
+            putExtra(NotificationActions.EXTRA_NOTIFICATION_ID, 202)
+            putExtra(NotificationActions.EXTRA_PENDING_ID, 15)
+        }
+
+        receiver.onReceive(context, intent)
+
+        verify(exactly = 0) { notificationManager.cancel(any()) }
+        coVerify(exactly = 0) { markNotificationAsDoneUseCase(any()) }
         verify(exactly = 0) { receiver.goAsync() }
     }
 }

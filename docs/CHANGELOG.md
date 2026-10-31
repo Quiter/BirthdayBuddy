@@ -942,5 +942,20 @@ ecreateContactsTableV7 (mit giftIdeas TEXT NOT NULL, COALESCE(giftIdeas, '[]')) 
       - [HomeFABTest.kt](file:///c:/Users/chris/AndroidStudioProjects/BirthdayBuddy/app/src/test/java/com/heckmannch/birthdaybuddy/ui/screens/home/HomeFABTest.kt): Robolectric-Tests für alle FAB-Zustände (Add, Scroll-to-Top, Edit) sowie End-to-End-Transition beim Öffnen und Schließen des Detail-Paneels im `HomeContent`.
       - Alle Tests via `./gradlew testDebugUnitTest` erfolgreich durchgelaufen.
 
+387. **Refactoring von `NotificationActionReceiver` auf Hilt `@EntryPoint` und Bereinigung von Reflection im Test (Architecture & Testing):**
+    - **Motivation & Problem:** `NotificationActionReceiverTest` nutzte Reflection auf interne Hilt-Klassen (`Hilt_NotificationActionReceiver::class.java.getDeclaredField("injected")`), um die Hilt-Kompilations-Verdrahtung im Test manuell zu umgehen. Dies war fragil gegenüber AGP- und Hilt-Compiler-Updates.
+    - **Architektur-Anpassung (`NotificationActionReceiver.kt`):**
+      - [NotificationActionReceiver.kt](file:///c:/Users/chris/AndroidStudioProjects/BirthdayBuddy/app/src/main/java/com/heckmannch/birthdaybuddy/notification/NotificationActionReceiver.kt): Analog zu `NotificationAlarmReceiver` von `@AndroidEntryPoint` auf ein Hilt `@EntryPoint` Interface (`NotificationActionReceiverEntryPoint`) mit `EntryPointAccessors.fromApplication(...)` umgestellt.
+      - Bereitstellung der Abhängigkeiten (`@ApplicationScope applicationScope`, `notificationRepository`, UseCases) über das EntryPoint-Interface.
+      - Unterstützung eines optionalen Konstruktor-Providers `entryPointProvider` für flexible Testinjektion und saubere Fehlerbehandlung bei fehlgeschlagener EntryPoint-Auflösung.
+      - Vollständige Eliminierung des generierten Hilt-Kompilations-Wrappers (`Hilt_NotificationActionReceiver`).
+    - **Test-Refactoring (`NotificationActionReceiverTest.kt`):**
+      - [NotificationActionReceiverTest.kt](file:///c:/Users/chris/AndroidStudioProjects/BirthdayBuddy/app/src/test/java/com/heckmannch/birthdaybuddy/notification/NotificationActionReceiverTest.kt): Vollständige Entfernung des Reflection-Codes auf `injected`.
+      - Sauberes Mocking des `NotificationActionReceiverEntryPoint` über `EntryPointAccessors.fromApplication`.
+      - Nutzung der `mainDispatcherRule.testDispatcher` für den `applicationScope` (`CoroutineScope(mainDispatcherRule.testDispatcher)` statt `Dispatchers.Unconfined`).
+      - Hinzufügen eines Tests für die robuste Fehlerbehandlung bei fehlgeschlagener EntryPoint-Auflösung (`onReceive_handlesEntryPointResolutionFailureGracefully`).
+    - **Verifikation:**
+      - Alle Benachrichtigungstests (`./gradlew :app:testDebugUnitTest --tests "com.heckmannch.birthdaybuddy.notification.*"`) sowie die gesamte Unit-Test-Suite (738 Tests) erfolgreich ausgeführt.
+
 
 

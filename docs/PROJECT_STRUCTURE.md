@@ -235,7 +235,7 @@ Enthält Android-Framework-spezifische Klassen, die nicht in den Domain-Layer ge
 - `NotificationWorker.kt`: Hintergrund-Prozess für die Benachrichtigungs-Logik (`@AssistedInject` Hilt-Worker).
 - `NotificationAlarmReceiver.kt`: BroadcastReceiver für exakte Alarm-Trigger via `AlarmManager`, der `NotificationWorker` sofort zur Ausführung einreiht und die nächste Erinnerung via `AlarmScheduler` plant.
 - `SnoozeWorker.kt`: Hintergrund-Prozess für die "Später"-Funktion.
-- `NotificationActionReceiver.kt`: Verarbeitet Klicks auf Benachrichtigungs-Buttons (Snooze, Erledigt, Dismissed). Im `AndroidManifest.xml` als Receiver registriert.
+- `NotificationActionReceiver.kt`: Verarbeitet Klicks auf Benachrichtigungs-Buttons (Snooze, Erledigt, Dismissed) via Hilt `@EntryPoint` (`EntryPointAccessors.fromApplication`). Im `AndroidManifest.xml` als Receiver registriert.
 - `NotificationHelper.kt`: Hilfsklasse für den System-Notification-Manager (Erstellen und Anzeigen von Benachrichtigungen).
 - `NotificationTextFormatter.kt`: Kapselt die Generierung von Benachrichtigungstiteln und -texten (Geburtstage, Hochzeitstage, Namenstage, Einzelpersonen, Paare und Gruppen).
 
