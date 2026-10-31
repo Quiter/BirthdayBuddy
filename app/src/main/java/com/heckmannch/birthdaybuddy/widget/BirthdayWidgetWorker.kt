@@ -13,7 +13,6 @@ import androidx.work.WorkRequest
 import androidx.work.WorkerParameters
 import com.heckmannch.birthdaybuddy.domain.repository.WidgetUpdater
 import com.heckmannch.birthdaybuddy.util.AlarmScheduler
-import com.heckmannch.birthdaybuddy.util.Clock
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
 import kotlinx.coroutines.CancellationException
@@ -43,7 +42,6 @@ class BirthdayWidgetWorker @AssistedInject constructor(
     @Assisted workerParameters: WorkerParameters,
     private val widgetUpdater: WidgetUpdater,
     private val alarmScheduler: AlarmScheduler,
-    private val clock: Clock,
 ) : CoroutineWorker(context, workerParameters) {
 
     override suspend fun doWork(): Result {
