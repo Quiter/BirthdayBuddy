@@ -31,6 +31,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
@@ -46,6 +47,8 @@ import com.heckmannch.birthdaybuddy.ui.theme.IconSizeMedium
 import com.heckmannch.birthdaybuddy.ui.theme.IconSizeSmall
 import com.heckmannch.birthdaybuddy.ui.theme.SpacingExtraSmall
 import com.heckmannch.birthdaybuddy.ui.theme.SpacingSmall
+import kotlin.time.Duration.Companion.milliseconds
+import kotlinx.coroutines.delay
 
 @Composable
 fun GiftIdeaList(
@@ -60,7 +63,7 @@ fun GiftIdeaList(
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(bottom = SpacingSmall)
+            .padding(bottom = SpacingSmall),
     ) {
         giftIdeas.forEach { idea ->
             key(idea.id) {
@@ -70,7 +73,7 @@ fun GiftIdeaList(
                     onCheckedChange = { onCheckedChange(idea, it) },
                     onTextChange = { onTextChange(idea, it) },
                     onDelete = { onDelete(idea) },
-                    onDone = { onDone(idea) }
+                    onDone = { currentText -> onDone(idea.copy(text = currentText)) },
                 )
             }
         }
@@ -99,18 +102,48 @@ private fun GiftIdeaItem(
     onCheckedChange: (Boolean) -> Unit,
     onTextChange: (String) -> Unit,
     onDelete: () -> Unit,
-    onDone: () -> Unit,
+    onDone: (String) -> Unit,
 ) {
     val focusRequester = remember { FocusRequester() }
 
-    // Lokaler State für das Textfeld, um Cursor-Sprünge bei DB-Sync zu vermeiden.
-    // Wir synchronisieren den lokalen State nur, wenn sich die ID ändert oder 
-    // der externe Text signifikant abweicht (z.B. durch Cloud-Sync).
-    var localText by remember(idea.id) { mutableStateOf(idea.text) }
+    var isFocused by remember(idea.id) { mutableStateOf(false) }
+    var isDeleted by remember(idea.id) { mutableStateOf(false) }
 
+    // Lokaler State für das Textfeld, um Cursor-Sprünge und Überschreiben bei DB-Sync zu vermeiden.
+    var localText by remember(idea.id) { mutableStateOf(idea.text) }
+    var lastSavedText by remember(idea.id) { mutableStateOf(idea.text) }
+
+    // Speichert in-flight DB-Writes, damit asynchrone Echos aus Room nicht den lokalen State überschreiben.
+    val pendingTexts = remember(idea.id) { mutableListOf<String>() }
+
+    fun commitTextChange(text: String) {
+        if (!isDeleted && (text != lastSavedText)) {
+            lastSavedText = text
+            pendingTexts.add(text)
+            onTextChange(text)
+        }
+    }
+
+    // Synchronisiere extern geänderten Text nur, wenn das Feld nicht fokussiert ist
+    // und es sich nicht um ein Echo eines eigenen in-flight DB-Writes handelt.
     LaunchedEffect(idea.text) {
-        if (localText != idea.text) {
+        val pendingIndex = pendingTexts.indexOf(idea.text)
+        if (pendingIndex != -1) {
+            repeat(pendingIndex + 1) {
+                pendingTexts.removeAt(0)
+            }
+        } else if (!isFocused && (idea.text != localText)) {
+            pendingTexts.clear()
             localText = idea.text
+            lastSavedText = idea.text
+        }
+    }
+
+    // Debouncing für Texteingaben (300ms Verzögerung)
+    LaunchedEffect(localText) {
+        if (!isDeleted && (localText != lastSavedText)) {
+            delay(300.milliseconds)
+            commitTextChange(localText)
         }
     }
 
@@ -135,10 +168,20 @@ private fun GiftIdeaItem(
             value = localText,
             onValueChange = {
                 localText = it
-                onTextChange(it)
             },
             modifier = Modifier
                 .weight(1f)
+                .onFocusChanged { focusState ->
+                    val wasFocused = isFocused
+                    isFocused = focusState.isFocused
+                    if (wasFocused && !focusState.isFocused) {
+                        commitTextChange(localText)
+                        if (!isDeleted && (localText == lastSavedText) && (idea.text != localText)) {
+                            localText = idea.text
+                            lastSavedText = idea.text
+                        }
+                    }
+                }
                 .focusRequester(focusRequester)
                 .testTag("gift_text_field"),
             placeholder = { Text(stringResource(R.string.gift_idea_placeholder)) },
@@ -154,7 +197,10 @@ private fun GiftIdeaItem(
                 imeAction = ImeAction.Next
             ),
             keyboardActions = KeyboardActions(
-                onNext = { onDone() }
+                onNext = {
+                    commitTextChange(localText)
+                    onDone(localText)
+                }
             ),
             singleLine = true,
             textStyle = MaterialTheme.typography.bodyMedium.copy(
@@ -163,7 +209,12 @@ private fun GiftIdeaItem(
             )
         )
 
-        IconButton(onClick = onDelete) {
+        IconButton(
+            onClick = {
+                isDeleted = true
+                onDelete()
+            }
+        ) {
             Icon(
                 Icons.Default.DeleteOutline,
                 contentDescription = stringResource(R.string.gift_dialog_delete),

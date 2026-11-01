@@ -957,5 +957,22 @@ ecreateContactsTableV7 (mit giftIdeas TEXT NOT NULL, COALESCE(giftIdeas, '[]')) 
     - **Verifikation:**
       - Alle Benachrichtigungstests (`./gradlew :app:testDebugUnitTest --tests "com.heckmannch.birthdaybuddy.notification.*"`) sowie die gesamte Unit-Test-Suite (738 Tests) erfolgreich ausgeführt.
 
+388. **Beseitigung der Race Condition und DB-Write-Überlastung beim Bearbeiten von Geschenkideen (`GiftIdeaList.kt`) (Bugfix & UI / UX Performance):**
+    - **Problem & Ursache:** Bei der Eingabe in das Geschenkideen-Textfeld wurde pro Tastenanschlag unmittelbar `onTextChange` ausgelöst, was zu kontinuierlichen Schreiboperationen in die Room-Datenbank führte. Sobald der asynchrone Room-Flow die aktualisierte Liste zurück in die UI emittierte, überschrieb `LaunchedEffect(idea.text)` den lokalen Zustand `localText`, wodurch getippte Zeichen gelöscht wurden oder Zeichenfolgen durcheinander gerieten.
+    - **Focus-Tracking & Schutz des lokalen States ([GiftIdeaList.kt](file:///c:/Users/chris/AndroidStudioProjects/BirthdayBuddy/app/src/main/java/com/heckmannch/birthdaybuddy/ui/screens/home/components/list/GiftIdeaList.kt)):**
+      - Erfassung des Fokusstatus mittels `isFocused` über `Modifier.onFocusChanged`.
+      - Externe Aktualisierungen von `idea.text` dürfen `localText` nun nur synchronisieren, wenn das Textfeld nicht fokussiert ist (`!isFocused`).
+      - Pufferung eigener, in-flight DB-Writes in `pendingTexts` (analog zum bewährten Pattern aus `SearchBar.kt`), um asynchrone Echos aus Room deterministisch zu konsumieren und Race Conditions auch nach Fokusverlust zuverlässig zu verhindern.
+    - **Debouncing & verlässliches Speichern:**
+      - Einführung eines 300ms Debouncings per Coroutine (`LaunchedEffect(localText)`) via `delay(300.milliseconds)` vor dem Auslösen von `onTextChange`.
+      - Sofortiges, verbindliches Speichern von ausstehenden Änderungen bei Fokusverlust (`onFocusChanged`) sowie bei Tastatur-Aktionen (`KeyboardActions(onNext)`).
+      - Übergabe des aktuell getippten Textes an `onDone` zur Vermeidung veralteter Referenzen bei direkt nachfolgendem Hinzufügen weiterer Geschenkideen.
+      - Schutz vor Schreibkonflikten bei Löschvorgängen (`isDeleted` Flag im Delete-IconButton).
+    - **Testing & QA:**
+      - Neuer Unit-Test ([GiftIdeaListTest.kt](file:///c:/Users/chris/AndroidStudioProjects/BirthdayBuddy/app/src/test/java/com/heckmannch/birthdaybuddy/ui/screens/home/components/list/GiftIdeaListTest.kt)): Umfassende Robolectric-Tests für Debouncing (300ms), Schutz gegen asynchrone Room-Echos während des Tippens, Sofort-Speichern bei Fokusverlust sowie IME-Next-Trigger.
+      - Erfolgreiche Verifikation der gesamten Unit-Test-Suite (742 Tests via `./gradlew :app:testDebugUnitTest`).
+      - Compose-Preview `GiftIdeaListPreview` erfolgreich gerendert und validiert.
+
+
 
 
