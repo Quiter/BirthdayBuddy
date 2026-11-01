@@ -16,8 +16,6 @@ import com.heckmannch.birthdaybuddy.data.util.AndroidCalendarStringProvider
 import com.heckmannch.birthdaybuddy.data.util.AndroidDeviceRegionProvider
 import com.heckmannch.birthdaybuddy.domain.permission.PermissionChecker
 import com.heckmannch.birthdaybuddy.domain.repository.CalendarSyncRepository
-import com.heckmannch.birthdaybuddy.domain.util.CalendarStringProvider
-import com.heckmannch.birthdaybuddy.domain.util.DeviceRegionProvider
 import com.heckmannch.birthdaybuddy.domain.repository.ContactRepository
 import com.heckmannch.birthdaybuddy.domain.repository.CoupleRepository
 import com.heckmannch.birthdaybuddy.domain.repository.GiftIdeaRepository
@@ -26,6 +24,8 @@ import com.heckmannch.birthdaybuddy.domain.repository.NotificationScheduler
 import com.heckmannch.birthdaybuddy.domain.repository.SettingsRepository
 import com.heckmannch.birthdaybuddy.domain.repository.TimeRepository
 import com.heckmannch.birthdaybuddy.domain.repository.WidgetUpdater
+import com.heckmannch.birthdaybuddy.domain.util.CalendarStringProvider
+import com.heckmannch.birthdaybuddy.domain.util.DeviceRegionProvider
 import com.heckmannch.birthdaybuddy.util.Clock
 import com.heckmannch.birthdaybuddy.util.SystemClock
 import dagger.Binds

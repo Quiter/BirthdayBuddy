@@ -1,8 +1,8 @@
 package com.heckmannch.birthdaybuddy.ui.model
 
 import com.heckmannch.birthdaybuddy.domain.model.GiftIdea
-import com.heckmannch.birthdaybuddy.ui.screens.home.HomeActions
 import com.heckmannch.birthdaybuddy.domain.util.NO_YEAR_MARKER
+import com.heckmannch.birthdaybuddy.ui.screens.home.HomeActions
 import java.time.LocalDate
 
 /**

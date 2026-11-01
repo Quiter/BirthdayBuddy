@@ -59,9 +59,7 @@ class SyncViewModel @Inject constructor(
      * Backward-compatible event flow signaling completed synchronization.
      */
     val syncCompletedEvent: SharedFlow<Unit>
-        get() = _legacySyncCompletedEvent
-
-    private val _legacySyncCompletedEvent = MutableSharedFlow<Unit>(replay = 0)
+        field = MutableSharedFlow<Unit>(replay = 0)
 
     /**
      * Synchronizes contacts from the device system repository.
@@ -82,7 +80,7 @@ class SyncViewModel @Inject constructor(
                     delay((MIN_SPINNER_DURATION_MS - elapsedTime).milliseconds)
                 }
 
-                _legacySyncCompletedEvent.emit(Unit)
+                syncCompletedEvent.emit(Unit)
                 _events.emit(SyncEvent.Success)
             } catch (e: CancellationException) {
                 throw e

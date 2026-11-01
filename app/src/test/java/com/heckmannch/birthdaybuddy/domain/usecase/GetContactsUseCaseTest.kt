@@ -4,7 +4,6 @@ import com.google.common.truth.Truth.assertThat
 import com.heckmannch.birthdaybuddy.MainDispatcherRule
 import com.heckmannch.birthdaybuddy.domain.model.Contact
 import com.heckmannch.birthdaybuddy.domain.model.ContactLabels
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.runTest
@@ -17,7 +16,6 @@ import java.time.LocalDate
  * Unit tests for [GetContactsUseCase].
  * Verifies domain-level filtering logic.
  */
-@OptIn(ExperimentalCoroutinesApi::class)
 class GetContactsUseCaseTest {
 
     @get:Rule

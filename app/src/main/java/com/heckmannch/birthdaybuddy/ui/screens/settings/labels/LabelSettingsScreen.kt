@@ -24,7 +24,6 @@ import androidx.compose.material.icons.filled.ExpandMore
 import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.HorizontalDivider
@@ -187,7 +186,6 @@ internal fun LabelSettingsScreenContent(
 }
 
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun LabelConfigCard(
     label: LabelManagementModel,
@@ -205,8 +203,8 @@ private fun LabelConfigCard(
     val onHideToggle = remember(label, onConfigChanged) {
         {
             val newHidden = !label.isHiddenFromFilter
-            val newNotifications = if (newHidden) false else true
-            val newWidget = if (newHidden) false else true
+            val newNotifications = !newHidden
+            val newWidget = !newHidden
             onConfigChanged(
                 label.name,
                 newHidden,
@@ -220,8 +218,8 @@ private fun LabelConfigCard(
     val onIgnoreToggle = remember(label, onConfigChanged) {
         {
             val newIgnored = !label.isIgnored
-            val newNotifications = if (newIgnored) false else label.notificationsEnabled
-            val newWidget = if (newIgnored) false else label.showInWidget
+            val newNotifications = !newIgnored && label.notificationsEnabled
+            val newWidget = !newIgnored && label.showInWidget
             onConfigChanged(
                 label.name,
                 label.isHiddenFromFilter,

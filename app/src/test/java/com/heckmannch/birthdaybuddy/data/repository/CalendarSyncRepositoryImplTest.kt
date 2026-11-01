@@ -18,7 +18,6 @@ import io.mockk.every
 import io.mockk.mockk
 import io.mockk.mockkStatic
 import io.mockk.unmockkAll
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runTest
 import org.junit.After
 import org.junit.Before
@@ -26,7 +25,6 @@ import org.junit.Rule
 import org.junit.Test
 import java.time.LocalDate
 
-@OptIn(ExperimentalCoroutinesApi::class)
 class CalendarSyncRepositoryImplTest {
 
     @get:Rule

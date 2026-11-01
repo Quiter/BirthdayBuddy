@@ -5,7 +5,6 @@ import com.heckmannch.birthdaybuddy.MainDispatcherRule
 import com.heckmannch.birthdaybuddy.domain.model.Contact
 import com.heckmannch.birthdaybuddy.domain.model.ContactLabels
 import com.heckmannch.birthdaybuddy.domain.model.LabelConfig
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.runTest
@@ -20,7 +19,6 @@ import java.time.LocalDate
  * Verifies that label categorization, visibility rules, sorting, and ordering are
  * correctly computed based on contacts, label configurations, and active event settings.
  */
-@OptIn(ExperimentalCoroutinesApi::class)
 class GetAvailableLabelsUseCaseTest {
 
     @get:Rule

@@ -81,12 +81,9 @@ class CalendarSyncRepositoryImpl @Inject constructor(
         val calendars = systemCalendarDataSource.queryAllCalendars()
         val seenActiveIds = mutableMapOf<String, Long>()
 
-        for (calendar in calendars) {
-            val id = calendar.id
-            val accountName = calendar.accountName
-            val accountType = calendar.accountType
+        for ((id, name, accountName, accountType) in calendars) {
 
-            when (val name = calendar.name) {
+            when (name) {
                 // Delete legacy BirthdayBuddyCalendar (under phone account)
                 SystemCalendarDataSource.LEGACY_CALENDAR_NAME -> {
                     systemCalendarDataSource.deleteCalendarById(id, accountName, accountType)
@@ -151,11 +148,7 @@ class CalendarSyncRepositoryImpl @Inject constructor(
             appSettingsDao.upsertSettings(updatedSettings)
 
             val calendarId = systemCalendarDataSource.findCalendarIdByName(localType.calendarName)
-            if (calendarId != null) {
-                systemCalendarDataSource.updateCalendarColor(calendarId, newColor)
-            } else {
-                false
-            }
+            calendarId != null && systemCalendarDataSource.updateCalendarColor(calendarId, newColor)
         }
 
     override suspend fun deleteCalendar(): Boolean = withContext(ioDispatcher) {
@@ -169,11 +162,7 @@ class CalendarSyncRepositoryImpl @Inject constructor(
             LocalCalendarType.NAMEDAY.calendarName
         )
         val calendars = systemCalendarDataSource.queryAllCalendars()
-        for (calendar in calendars) {
-            val id = calendar.id
-            val accountName = calendar.accountName
-            val accountType = calendar.accountType
-            val name = calendar.name
+        for ((id, name, accountName, accountType) in calendars) {
 
             if (name in allTargetNames) {
                 systemCalendarDataSource.deleteCalendarById(id, accountName, accountType)
@@ -271,11 +260,11 @@ class CalendarSyncRepositoryImpl @Inject constructor(
                 // Deduplicate contacts by lookupKey to avoid creating duplicate events for the same contact
                 val uniqueContacts = contacts.distinctBy { it.lookupKey }
 
-                for (contact in uniqueContacts) {
+                for ((_, lookupKey, fullName, birthday, anniversary, nameDay, _, _, _, _, _, _, _, spouseKey) in uniqueContacts) {
                     // 1. Insert birthdays into the birthday calendar
-                    contact.birthday?.let { birthday ->
+                    birthday?.let { birthday ->
                         val title =
-                            calendarStringProvider.calendarEventTitle(contact.fullName)
+                            calendarStringProvider.calendarEventTitle(fullName)
                         val description = if (birthday.hasYear) {
                             calendarStringProvider.calendarEventBirthYear(birthday.year)
                         } else {
@@ -286,35 +275,34 @@ class CalendarSyncRepositoryImpl @Inject constructor(
 
                     // 2. Insert anniversaries into the anniversary calendar (if enabled)
                     if (otherEventsEnabled && anniversaryCalId != null) {
-                        contact.anniversary?.let { anniversary ->
+                        anniversary?.let { anniversary ->
                             val description = formatAnniversaryDescription(anniversary)
-                            val spouseKey = contact.spouseLookupKey
                             if (spouseKey != null) {
-                                if (!processedAnniversaries.contains(contact.lookupKey)) {
+                                if (!processedAnniversaries.contains(lookupKey)) {
                                     val spouse =
                                         contactsByLookupKey[spouseKey]?.takeIf { it.anniversary != null }
                                     if (spouse != null) {
                                         val mergedName = mergeNames(
-                                            contact.fullName,
+                                            fullName,
                                             spouse.fullName
                                         )
                                         val title = calendarStringProvider.calendarEventAnniversaryTitleCouple(
                                             mergedName
                                         )
                                         addEvent(anniversaryCalId, anniversary, title, description)
-                                        processedAnniversaries.add(contact.lookupKey)
+                                        processedAnniversaries.add(lookupKey)
                                         processedAnniversaries.add(spouse.lookupKey)
                                     } else {
                                         val title = calendarStringProvider.calendarEventAnniversaryTitle(
-                                            contact.fullName
+                                            fullName
                                         )
                                         addEvent(anniversaryCalId, anniversary, title, description)
-                                        processedAnniversaries.add(contact.lookupKey)
+                                        processedAnniversaries.add(lookupKey)
                                     }
                                 }
                             } else {
                                 val title = calendarStringProvider.calendarEventAnniversaryTitle(
-                                    contact.fullName
+                                    fullName
                                 )
                                 addEvent(anniversaryCalId, anniversary, title, description)
                             }
@@ -323,12 +311,12 @@ class CalendarSyncRepositoryImpl @Inject constructor(
 
                     // 3. Insert name days into the name day calendar (if enabled)
                     if (otherEventsEnabled && nameDayCalId != null) {
-                        contact.nameDay?.let { nameDay ->
+                        nameDay?.let { nameDay ->
                             val title = calendarStringProvider.calendarEventNameDayTitle(
-                                contact.fullName
+                                fullName
                             )
                             val description = calendarStringProvider.calendarEventNameDayDescription(
-                                contact.fullName
+                                fullName
                             )
                             addEvent(nameDayCalId, nameDay, title, description)
                         }

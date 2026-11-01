@@ -8,7 +8,6 @@ import androidx.compose.animation.scaleOut
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.PermanentDrawerSheet
 import androidx.compose.material3.PermanentNavigationDrawer
@@ -143,7 +142,6 @@ fun HomeContent(
  * @param onToggleSidebar Callback invoked when the user clicks the menu icon to toggle the sidebar.
  * @param modifier Optional [Modifier] for the root container.
  */
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun HomeMainContent(
     uiState: HomeUiState,

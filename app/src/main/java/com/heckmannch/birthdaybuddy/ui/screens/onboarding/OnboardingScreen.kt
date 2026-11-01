@@ -221,7 +221,7 @@ fun OnboardingContent(
 
     LaunchedEffect(uiState.currentPage, steps.size) {
         val targetPage = uiState.currentPage.coerceIn(0, (steps.size - 1).coerceAtLeast(0))
-        if (targetPage != pagerState.currentPage && targetPage in 0 until steps.size) {
+        if (targetPage != pagerState.currentPage && targetPage in steps.indices) {
             pagerState.animateScrollToPage(targetPage)
         }
     }

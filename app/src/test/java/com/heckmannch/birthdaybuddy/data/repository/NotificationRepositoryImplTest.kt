@@ -22,7 +22,6 @@ import io.mockk.mockkStatic
 import io.mockk.slot
 import io.mockk.unmockkStatic
 import kotlinx.coroutines.CancellationException
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.runTest
@@ -41,7 +40,6 @@ import org.junit.Test
  * It uses MockK for mocking DAO layer dependencies and [NotificationScheduler], and leverages
  * the [MainDispatcherRule] to ensure coroutines run synchronously on the UnconfinedTestDispatcher.
  */
-@OptIn(ExperimentalCoroutinesApi::class)
 class NotificationRepositoryImplTest {
 
     @get:Rule

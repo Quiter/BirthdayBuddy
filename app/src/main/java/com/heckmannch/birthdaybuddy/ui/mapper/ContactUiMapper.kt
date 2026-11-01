@@ -173,7 +173,7 @@ class ContactUiMapper @Inject constructor() {
             val spouseKey = contact.spouseLookupKey
             val spouse = if (spouseKey != null) contactMap[spouseKey] else null
 
-            if (spouse != null && spouse.anniversary != null) {
+            if (spouse?.anniversary != null) {
                 processedKeys.add(contact.lookupKey)
                 processedKeys.add(spouse.lookupKey)
 

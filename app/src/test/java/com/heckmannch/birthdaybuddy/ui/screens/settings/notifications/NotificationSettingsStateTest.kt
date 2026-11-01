@@ -7,9 +7,7 @@ import org.junit.Test
 
 class NotificationSettingsStateTest {
 
-    private val dummyScope = object : SaverScope {
-        override fun canBeSaved(value: Any): Boolean = true
-    }
+    private val dummyScope = SaverScope { true }
 
     @Test
     fun `saver preserves showAddDialog state`() {

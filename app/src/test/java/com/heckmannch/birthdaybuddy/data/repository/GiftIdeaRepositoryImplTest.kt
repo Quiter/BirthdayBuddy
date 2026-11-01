@@ -19,7 +19,6 @@ import io.mockk.every
 import io.mockk.mockkStatic
 import io.mockk.unmockkStatic
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runTest
 import org.junit.After
 import org.junit.Before
@@ -36,7 +35,6 @@ import java.io.ByteArrayOutputStream
 /**
  * JVM Unit Tests for [GiftIdeaRepositoryImpl].
  */
-@OptIn(ExperimentalCoroutinesApi::class)
 class GiftIdeaRepositoryImplTest {
 
     @get:Rule

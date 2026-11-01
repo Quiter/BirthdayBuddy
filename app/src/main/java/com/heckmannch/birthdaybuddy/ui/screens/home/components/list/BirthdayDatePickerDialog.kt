@@ -1,6 +1,5 @@
 package com.heckmannch.birthdaybuddy.ui.screens.home.components.list
 
-import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.gestures.snapping.rememberSnapFlingBehavior
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -42,17 +41,17 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.window.Dialog
 import com.heckmannch.birthdaybuddy.R
-import com.heckmannch.birthdaybuddy.ui.theme.BirthdayBuddyTheme
+import com.heckmannch.birthdaybuddy.domain.util.NO_YEAR_MARKER
 import com.heckmannch.birthdaybuddy.ui.components.AppSwitch
 import com.heckmannch.birthdaybuddy.ui.theme.AlphaOnboardingCalendarDisabled
 import com.heckmannch.birthdaybuddy.ui.theme.AlphaSurfaceContainerHigh
+import com.heckmannch.birthdaybuddy.ui.theme.BirthdayBuddyTheme
 import com.heckmannch.birthdaybuddy.ui.theme.BorderWidthThin
 import com.heckmannch.birthdaybuddy.ui.theme.ElevationHigh
 import com.heckmannch.birthdaybuddy.ui.theme.SpacingLarge
 import com.heckmannch.birthdaybuddy.ui.theme.SpacingNormal
 import com.heckmannch.birthdaybuddy.ui.theme.SpacingSmall
 import com.heckmannch.birthdaybuddy.ui.theme.WheelPickerItemHeight
-import com.heckmannch.birthdaybuddy.domain.util.NO_YEAR_MARKER
 import com.heckmannch.birthdaybuddy.util.hasYear
 import java.time.LocalDate
 import java.time.Month
@@ -242,7 +241,6 @@ fun BirthdayDatePickerDialog(
  * Ein wiederverwendbarer Wheel-Picker, der butterweiches Scrollen mit mechanischer Haptik
  * und einer ansprechenden 3D-Zylinderoptik in Compose realisiert.
  */
-@OptIn(ExperimentalFoundationApi::class)
 @Composable
 private fun WheelPicker(
     items: List<String>,

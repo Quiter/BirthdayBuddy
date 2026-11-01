@@ -412,8 +412,7 @@ fun FastScrollbar(
         derivedStateOf {
             val layoutInfo = listState.layoutInfo
             val visibleCount = layoutInfo.visibleItemsInfo.size
-            if (visibleCount == 0) false
-            else layoutInfo.totalItemsCount > visibleCount + 2
+            visibleCount != 0 && layoutInfo.totalItemsCount > visibleCount + 2
         }
     }
 

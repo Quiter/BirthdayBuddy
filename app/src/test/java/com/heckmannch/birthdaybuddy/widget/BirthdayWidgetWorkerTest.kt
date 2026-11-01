@@ -7,7 +7,6 @@ import androidx.work.WorkerParameters
 import com.google.common.truth.Truth.assertThat
 import com.heckmannch.birthdaybuddy.domain.repository.WidgetUpdater
 import com.heckmannch.birthdaybuddy.util.AlarmScheduler
-import com.heckmannch.birthdaybuddy.util.Clock
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
@@ -31,7 +30,6 @@ class BirthdayWidgetWorkerTest {
     private val workerParameters = mockk<WorkerParameters>(relaxed = true)
     private val widgetUpdater = mockk<WidgetUpdater>(relaxed = true)
     private val alarmScheduler = mockk<AlarmScheduler>(relaxed = true)
-    private val clock = mockk<Clock>(relaxed = true)
     private val workManager = mockk<WorkManager>(relaxed = true)
 
     @Before

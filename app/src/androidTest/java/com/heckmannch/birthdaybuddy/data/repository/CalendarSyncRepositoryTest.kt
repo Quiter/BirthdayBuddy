@@ -7,6 +7,7 @@ import androidx.test.platform.app.InstrumentationRegistry
 import com.google.common.truth.Truth.assertThat
 import com.heckmannch.birthdaybuddy.data.local.AppSettingsDao
 import com.heckmannch.birthdaybuddy.data.local.AppSettingsEntity
+import com.heckmannch.birthdaybuddy.data.util.AndroidCalendarStringProvider
 import com.heckmannch.birthdaybuddy.domain.model.Contact
 import com.heckmannch.birthdaybuddy.domain.repository.CalendarSyncRepository
 import kotlinx.coroutines.Dispatchers
@@ -20,8 +21,6 @@ import org.mockito.kotlin.mock
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 import java.time.LocalDate
-
-import com.heckmannch.birthdaybuddy.data.util.AndroidCalendarStringProvider
 
 @RunWith(AndroidJUnit4::class)
 class CalendarSyncRepositoryTest {

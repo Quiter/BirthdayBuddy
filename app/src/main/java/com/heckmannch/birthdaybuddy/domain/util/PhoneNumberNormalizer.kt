@@ -1,7 +1,5 @@
 package com.heckmannch.birthdaybuddy.domain.util
 
-import com.heckmannch.birthdaybuddy.domain.util.PhoneNumberNormalizer.normalizeToDigitsOnly
-
 /**
  * Pure domain utility for normalizing phone numbers to the E.164 standard.
  *

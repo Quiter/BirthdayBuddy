@@ -7,7 +7,6 @@ import android.provider.ContactsContract
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.google.common.truth.Truth.assertThat
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runTest
 import org.junit.Before
 import org.junit.Test
@@ -24,7 +23,6 @@ import org.mockito.kotlin.whenever
 import java.time.LocalDate
 
 @RunWith(AndroidJUnit4::class)
-@OptIn(ExperimentalCoroutinesApi::class)
 class SystemContactDataSourceTest {
 
     private val context: Context = mock()

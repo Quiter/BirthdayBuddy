@@ -11,7 +11,6 @@ import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.test.runTest
@@ -22,7 +21,6 @@ import org.junit.Test
 /**
  * JVM Unit Tests for [SyncCalendarUseCase].
  */
-@OptIn(ExperimentalCoroutinesApi::class)
 class SyncCalendarUseCaseTest {
 
     @get:Rule

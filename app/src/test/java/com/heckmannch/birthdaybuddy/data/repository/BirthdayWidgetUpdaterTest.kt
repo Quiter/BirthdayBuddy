@@ -15,7 +15,6 @@ import io.mockk.mockkStatic
 import io.mockk.unmockkAll
 import io.mockk.verify
 import kotlinx.coroutines.CancellationException
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runTest
 import org.junit.After
 import org.junit.Before
@@ -36,7 +35,6 @@ import org.robolectric.annotation.Config
  * WorkManager is not dispatched directly in advance here, but triggered when the alarm fires
  * in WidgetUpdateAlarmReceiver.
  */
-@OptIn(ExperimentalCoroutinesApi::class)
 @RunWith(RobolectricTestRunner::class)
 @Config(sdk = [35])
 class BirthdayWidgetUpdaterTest {

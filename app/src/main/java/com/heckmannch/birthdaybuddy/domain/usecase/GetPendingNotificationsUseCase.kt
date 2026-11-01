@@ -69,12 +69,12 @@ class GetPendingNotificationsUseCase @Inject constructor(
         val pendingEvents = mutableListOf<PendingNotificationEvent>()
         val scheduledKeysMap = mutableMapOf<Int, MutableSet<String>>()
 
-        for (rule in currentRules) {
-            val targetDate = today.plusDays(rule.daysBefore.toLong())
-            val scheduledKeys = scheduledKeysMap.getOrPut(rule.daysBefore) {
+        for ((daysBefore) in currentRules) {
+            val targetDate = today.plusDays(daysBefore.toLong())
+            val scheduledKeys = scheduledKeysMap.getOrPut(daysBefore) {
                 notificationRepository.getScheduledContactLookupKeys(
                     today.year,
-                    rule.daysBefore
+                    daysBefore
                 ).toMutableSet()
             }
 
@@ -93,7 +93,7 @@ class GetPendingNotificationsUseCase @Inject constructor(
                             contacts = listOf(contact),
                             eventType = EventType.BIRTHDAY,
                             dbKeys = listOf(dbKey),
-                            daysBefore = rule.daysBefore
+                            daysBefore = daysBefore
                         )
                     )
                 }
@@ -128,7 +128,7 @@ class GetPendingNotificationsUseCase @Inject constructor(
                                     contacts = listOf(contact, spouse),
                                     eventType = EventType.ANNIVERSARY,
                                     dbKeys = dbKeys,
-                                    daysBefore = rule.daysBefore
+                                    daysBefore = daysBefore
                                 )
                             )
                         }
@@ -143,7 +143,7 @@ class GetPendingNotificationsUseCase @Inject constructor(
                                     contacts = listOf(contact),
                                     eventType = EventType.ANNIVERSARY,
                                     dbKeys = listOf(dbKey),
-                                    daysBefore = rule.daysBefore
+                                    daysBefore = daysBefore
                                 )
                             )
                         }
@@ -166,7 +166,7 @@ class GetPendingNotificationsUseCase @Inject constructor(
                                 contacts = listOf(contact),
                                 eventType = EventType.NAME_DAY,
                                 dbKeys = listOf(dbKey),
-                                daysBefore = rule.daysBefore
+                                daysBefore = daysBefore
                             )
                         )
                     }

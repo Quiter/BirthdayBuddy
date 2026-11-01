@@ -1,14 +1,12 @@
 package com.heckmannch.birthdaybuddy.domain.usecase
 
 import com.heckmannch.birthdaybuddy.domain.repository.GiftIdeaRepository
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runTest
 import org.junit.Before
 import org.junit.Test
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.verify
 
-@OptIn(ExperimentalCoroutinesApi::class)
 class ExportGiftIdeasUseCaseTest {
 
     private val giftIdeaRepository: GiftIdeaRepository = mock()

@@ -243,7 +243,7 @@ class SystemContactDataSource @Inject constructor(
 
                 while (cursor.moveToNext()) {
                     val contactId = cursor.getString(idIdx) ?: continue
-                    val isStarred = if (starredIdx != -1) cursor.getInt(starredIdx) == 1 else false
+                    val isStarred = starredIdx != -1 && cursor.getInt(starredIdx) == 1
                     contactsMap[contactId] = Contact(
                         contactId = contactId,
                         lookupKey = cursor.getString(lookupIdx) ?: "",

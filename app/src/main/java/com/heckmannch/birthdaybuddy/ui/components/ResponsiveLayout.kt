@@ -68,7 +68,7 @@ val WindowSizeClass.isHeightExpanded: Boolean
  * CompositionLocal zur Bereitstellung der aktuellen Fenstergrößenklasse.
  * Verhindert Parameter-Drilling in tieferen UI-Hierarchien.
  */
-val LocalWindowSizeClass = compositionLocalOf<WindowSizeClass> {
+val LocalWindowSizeClass = compositionLocalOf {
     WindowSizeClass(360, 640)
 }
 
@@ -76,7 +76,7 @@ val LocalWindowSizeClass = compositionLocalOf<WindowSizeClass> {
  * CompositionLocal zur Bereitstellung der aktuellen WindowAdaptiveInfo.
  * Verhindert redundante Berechnungen und Parameter-Drilling.
  */
-val LocalWindowAdaptiveInfo = compositionLocalOf<WindowAdaptiveInfo> {
+val LocalWindowAdaptiveInfo = compositionLocalOf {
     WindowAdaptiveInfo(WindowSizeClass(360, 640), Posture())
 }
 

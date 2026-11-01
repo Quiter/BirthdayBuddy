@@ -150,7 +150,6 @@ class HomeFABTest {
                     LocalWindowSizeClass provides WindowSizeClass(840, 640)
                 ) {
                     val state = rememberHomeState()
-                    capturedState = state
                     HomeContent(
                         uiState = uiState,
                         homeState = state,

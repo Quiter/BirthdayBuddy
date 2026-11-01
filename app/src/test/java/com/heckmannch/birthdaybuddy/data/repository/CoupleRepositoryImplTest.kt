@@ -20,7 +20,6 @@ import io.mockk.every
 import io.mockk.mockkStatic
 import io.mockk.unmockkStatic
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.runTest
@@ -37,7 +36,6 @@ import org.mockito.kotlin.whenever
 /**
  * JVM Unit Tests for [CoupleRepositoryImpl].
  */
-@OptIn(ExperimentalCoroutinesApi::class)
 class CoupleRepositoryImplTest {
 
     @get:Rule

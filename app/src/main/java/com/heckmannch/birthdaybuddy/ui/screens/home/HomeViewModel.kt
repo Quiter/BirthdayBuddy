@@ -16,6 +16,7 @@ import com.heckmannch.birthdaybuddy.domain.usecase.GetCoupleSuggestionUseCase
 import com.heckmannch.birthdaybuddy.domain.usecase.IgnoreCoupleSuggestionUseCase
 import com.heckmannch.birthdaybuddy.domain.usecase.LinkAsCoupleUseCase
 import com.heckmannch.birthdaybuddy.domain.usecase.UnlinkCoupleUseCase
+import com.heckmannch.birthdaybuddy.domain.util.sanitizeBirthdayDate
 import com.heckmannch.birthdaybuddy.ui.mapper.ContactUiMapper
 import com.heckmannch.birthdaybuddy.ui.mapper.CoupleSuggestionUiMapper
 import com.heckmannch.birthdaybuddy.ui.model.ContactUiModel
@@ -24,11 +25,9 @@ import com.heckmannch.birthdaybuddy.ui.model.HomeUiState
 import com.heckmannch.birthdaybuddy.ui.model.PendingBirthdayEdit
 import com.heckmannch.birthdaybuddy.ui.screens.home.HomeViewModel.Companion.SEARCH_DEBOUNCE_DURATION
 import com.heckmannch.birthdaybuddy.util.Clock
-import com.heckmannch.birthdaybuddy.domain.util.sanitizeBirthdayDate
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
@@ -86,7 +85,7 @@ import kotlin.time.Duration.Companion.milliseconds
  * @property clock Abstraction for system time facilitating deterministic testing and time manipulation.
  * @property defaultDispatcher Coroutine dispatcher for offloading CPU-intensive stream transformations and mappings.
  */
-@OptIn(FlowPreview::class, ExperimentalCoroutinesApi::class)
+@OptIn(FlowPreview::class)
 @HiltViewModel
 class HomeViewModel @Inject constructor(
     private val contactRepository: ContactRepository,
@@ -156,7 +155,7 @@ class HomeViewModel @Inject constructor(
         private val CONTACT_CHANGE_DEBOUNCE_DURATION = 1000.milliseconds
 
         /** Inactivity threshold (5 minutes). Exceeding this resets active search/label filters when app is resumed. */
-        private val AUTO_RESET_INACTIVITY_TIMEOUT_MS = 5 * 60 * 1000L
+        private const val AUTO_RESET_INACTIVITY_TIMEOUT_MS = 5 * 60 * 1000L
 
         /** Minimum visible duration for the manual pull-to-refresh spinner to prevent jarring UI flicker. */
         private const val MIN_SYNC_SPINNER_DURATION_MS = 800L
@@ -387,7 +386,7 @@ class HomeViewModel @Inject constructor(
                         state.copy(
                             searchQuery = newQuery,
                             selectedLabel = updatedLabel,
-                            isResettingFilter = if (isTransition) true else state.isResettingFilter
+                            isResettingFilter = isTransition || state.isResettingFilter
                         )
                     }
                 }

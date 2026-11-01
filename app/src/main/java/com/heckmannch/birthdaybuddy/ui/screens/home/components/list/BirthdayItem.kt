@@ -28,7 +28,6 @@ import androidx.compose.material.icons.filled.ExpandMore
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.ListItem
@@ -82,7 +81,6 @@ import com.heckmannch.birthdaybuddy.ui.theme.birthdayKidAmberColor
 import com.heckmannch.birthdaybuddy.util.hasYear
 import java.time.LocalDate
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun BirthdayItem(
     contact: ContactUiModel,
@@ -134,11 +132,7 @@ fun BirthdayItem(
 
     var showConfetti by remember { mutableStateOf(value = false) }
     LaunchedEffect(isExpanded) {
-        if (isExpanded && contact.isToday) {
-            showConfetti = true
-        } else {
-            showConfetti = false
-        }
+        showConfetti = isExpanded && contact.isToday
     }
 
     val containerColor by animateColorAsState(
