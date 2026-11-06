@@ -984,6 +984,11 @@ ecreateContactsTableV7 (mit giftIdeas TEXT NOT NULL, COALESCE(giftIdeas, '[]')) 
     - **Härtung der Dokumentations-Pflicht:** In `local_LLM.md` wurde ein unübersehbarer `CAUTION`-Block an oberster Stelle platziert. Ein Task gilt für jedes LLM erst dann als abgeschlossen, wenn `CHANGELOG.md`, `PROJECT_STRUCTURE.md` und KDoc aktualisiert wurden.
     - **Vollständige Abdeckung:** Ergänzung von Skills-Management, Unit-Testing (`MainDispatcherRule`) und Coil-Caching (`getAvatarCacheKey`) in `local_LLM.md`.
 
+391. **Kontextschonendes Refactoring von `local_LLM.md` für lokale LLMs (LLM & Context Optimization):**
+    - **Auslagerung der Ausführlichkeit:** Wiederherstellung der vollständigen, detaillierten englischen System-Instruktionen in [project_guidelines.md](file:///c:/Users/chris/AndroidStudioProjects/BirthdayBuddy/.agents/rules/project_guidelines.md) für IDE-Agenten.
+    - **Ultra-kompakte `local_LLM.md`:** Reduzierung von [local_LLM.md](file:///c:/Users/chris/AndroidStudioProjects/BirthdayBuddy/.agents/rules/local_LLM.md) auf eine prägnante, ~35-zeilige Schnellstart-Datei (< 300 Tokens), die Rolle, unumstößliche Kernregeln (Room, Dispatcher, Doku-Pflicht), eine Orientierungskarte (`docs/PROJECT_STRUCTURE.md`, `docs/PROJECT_STATUS.md`, `project_guidelines.md`) und die 4-Schritt-Entwickler-Checkliste beinhaltet. Maximiert das freie Kontextfenster lokaler Modelle.
+
+
 
 
 
