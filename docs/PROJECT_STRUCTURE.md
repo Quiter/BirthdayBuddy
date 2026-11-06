@@ -10,7 +10,7 @@
 - `PROJECT_STRUCTURE.md`: Diese Datei (Struktur-Dokumentation des Projekts).
 - `CHANGELOG.md`: Vollständige Historie aller signifikanten Änderungen und Feature-Releases.
 - `scripts/`: Ordner für nützliche Hilfs- und Inspektionsskripte (z. B. Python-Skripte zur Validierung von emulatorbasierten Benachrichtigungsregeln und Datenbankabfragen).
-- `.agents/`: Enthält agentenspezifische Konfigurationen, darunter Projekt-Richtlinien (`rules/project_guidelines.md`), lokale Workspace-Skills (`skills/`) und per Git-Submodule verlinkte Community-Skills (`external/`).
+- `.agents/`: Enthält agentenspezifische Konfigurationen, darunter das zentrale konsolidierte LLM-Regelwerk (`rules/local_LLM.md`), eine schlanke Weiterleitung (`rules/project_guidelines.md`), lokale Workspace-Skills (`skills/`) und externe Skills (`external/`).
 
 ## 📁 DI (`di`)
 - `AppModule.kt`: Hilt-Modul zur Bereitstellung von Singleton-Instanzen, performanten leichtgewichtigen `@Reusable` DAO-Bindings sowie den **Coroutine-Dispatchern**:

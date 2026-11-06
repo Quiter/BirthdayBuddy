@@ -973,6 +973,19 @@ ecreateContactsTableV7 (mit giftIdeas TEXT NOT NULL, COALESCE(giftIdeas, '[]')) 
       - Erfolgreiche Verifikation der gesamten Unit-Test-Suite (742 Tests via `./gradlew :app:testDebugUnitTest`).
       - Compose-Preview `GiftIdeaListPreview` erfolgreich gerendert und validiert.
 
+389. **Erstellung der zentralen System-Prompt-Datei `local_LLM.md` unter `.agents/rules/` (LLM & Developer Experience):**
+    - **Motivation & Ziel:** Konsolidierung aller Richtlinien ([`project_guidelines.md`](file:///c:/Users/chris/AndroidStudioProjects/BirthdayBuddy/.agents/rules/project_guidelines.md)), Skills ([`SKILL.md`](file:///c:/Users/chris/AndroidStudioProjects/BirthdayBuddy/.agents/skills/projekt-kontext/SKILL.md)), Status-Meilensteine ([`PROJECT_STATUS.md`](file:///c:/Users/chris/AndroidStudioProjects/BirthdayBuddy/docs/PROJECT_STATUS.md)), Struktur-Dokumente ([`PROJECT_STRUCTURE.md`](file:///c:/Users/chris/AndroidStudioProjects/BirthdayBuddy/docs/PROJECT_STRUCTURE.md)) und des Changelogs in eine einzige, hochdichte System-Prompt-Datei für lokale LLMs.
+    - **Neue Datei:** Erstellung von [local_LLM.md](file:///c:/Users/chris/AndroidStudioProjects/BirthdayBuddy/.agents/rules/local_LLM.md) unter `.agents/rules/`.
+    - **Inhalte:** Senior-Android-Entwickler-Rolle, Kern-Prinzipien & Constraints (Room-Sicherheit, i18n, Dispatcher-Injektion, Dimensions.kt Tokens, Logging-Pflicht), Architektur-Standards (Navigation 3, Material 3 Adaptive, Feature-Co-Location, AppFunctions), vollständige Projekt-Strukturkarte und Schritt-für-Schritt-Entwickler-Checkliste.
+    - **Dokumentations-Update:** Registrierung in [PROJECT_STRUCTURE.md](file:///c:/Users/chris/AndroidStudioProjects/BirthdayBuddy/docs/PROJECT_STRUCTURE.md) und [CHANGELOG.md](file:///c:/Users/chris/AndroidStudioProjects/BirthdayBuddy/docs/CHANGELOG.md).
+
+390. **Konsolidierung des Regelwerks & Härtung der Dokumentations-Pflicht (LLM & Documentation):**
+    - **Überflüssigkeit beseitigt:** [project_guidelines.md](file:///c:/Users/chris/AndroidStudioProjects/BirthdayBuddy/.agents/rules/project_guidelines.md) wurde durch eine schlanke Weiterleitung auf das zentrale Regelwerk [local_LLM.md](file:///c:/Users/chris/AndroidStudioProjects/BirthdayBuddy/.agents/rules/local_LLM.md) ersetzt, um doppelte Token-Zufuhr bei IDE-Agenten zu vermeiden.
+    - **Härtung der Dokumentations-Pflicht:** In `local_LLM.md` wurde ein unübersehbarer `CAUTION`-Block an oberster Stelle platziert. Ein Task gilt für jedes LLM erst dann als abgeschlossen, wenn `CHANGELOG.md`, `PROJECT_STRUCTURE.md` und KDoc aktualisiert wurden.
+    - **Vollständige Abdeckung:** Ergänzung von Skills-Management, Unit-Testing (`MainDispatcherRule`) und Coil-Caching (`getAvatarCacheKey`) in `local_LLM.md`.
+
+
+
 
 
 
