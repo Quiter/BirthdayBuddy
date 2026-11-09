@@ -143,11 +143,10 @@ class HomeFABTest {
             contacts = listOf(sampleContact)
         )
 
-        lateinit var capturedState: HomeState
         composeRule.setContent {
             BirthdayBuddyTheme {
                 CompositionLocalProvider(
-                    LocalWindowSizeClass provides WindowSizeClass(840, 640)
+                    LocalWindowSizeClass provides WindowSizeClass(360, 640)
                 ) {
                     val state = rememberHomeState()
                     HomeContent(
@@ -161,23 +160,23 @@ class HomeFABTest {
 
         composeRule.waitForIdle()
 
-        // Initially on list: FAB is "Add contact"
+        // Initially on list: Navigation bar right action is "Add contact"
         composeRule.onNodeWithContentDescription("Add contact").assertIsDisplayed()
 
         // Select contact card to open detail pane
         composeRule.onNodeWithText("Anna Schmidt").performClick()
         composeRule.waitForIdle()
 
-        // FAB should now be "Edit contact"
+        // Action button in bar should now be "Edit contact"
         composeRule.onNodeWithContentDescription("Edit contact").assertIsDisplayed()
-        composeRule.onNodeWithTag("home_fab").performClick()
+        composeRule.onNodeWithContentDescription("Edit contact").performClick()
         assertThat(editedContactId).isEqualTo("101")
 
         // Close detail pane
         composeRule.onNodeWithTag("detail_close_button").performClick()
         composeRule.waitForIdle()
 
-        // FAB should revert back to "Add contact"
+        // Action button in bar should revert back to "Add contact"
         composeRule.onNodeWithContentDescription("Add contact").assertIsDisplayed()
     }
 }

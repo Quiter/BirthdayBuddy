@@ -199,6 +199,11 @@
     <string name="shortcut_search">Suche</string>
     <string name="shortcut_search_long">Kontakte durchsuchen</string>
 
+    <!-- Navigation Bar -->
+    <string name="nav_labels">Labels</string>
+    <string name="nav_list">Liste</string>
+    <string name="nav_add">Hinzufügen</string>
+
     <!-- Settings Screen -->
     <string name="settings_title">Einstellungen</string>
     <string name="settings_notifications_title">Benachrichtigungen</string>

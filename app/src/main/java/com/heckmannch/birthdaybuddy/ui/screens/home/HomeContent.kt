@@ -1,13 +1,16 @@
 package com.heckmannch.birthdaybuddy.ui.screens.home
 
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
-import androidx.compose.animation.scaleIn
-import androidx.compose.animation.scaleOut
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.Label
+import androidx.compose.material.icons.automirrored.outlined.Label
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.DateRange
+import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.outlined.DateRange
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.PermanentDrawerSheet
 import androidx.compose.material3.PermanentNavigationDrawer
@@ -27,23 +30,26 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.window.core.layout.WindowSizeClass
+import com.heckmannch.birthdaybuddy.R
 import com.heckmannch.birthdaybuddy.ui.components.AppResponsiveScaffold
+import com.heckmannch.birthdaybuddy.ui.components.LiquidGlassBottomNavBar
 import com.heckmannch.birthdaybuddy.ui.components.LocalWindowSizeClass
+import com.heckmannch.birthdaybuddy.ui.components.NavItem
 import com.heckmannch.birthdaybuddy.ui.components.isHeightCompact
 import com.heckmannch.birthdaybuddy.ui.components.isWidthCompact
 import com.heckmannch.birthdaybuddy.ui.components.isWidthExpanded
 import com.heckmannch.birthdaybuddy.ui.model.HomeUiState
 import com.heckmannch.birthdaybuddy.ui.model.SampleData
-import com.heckmannch.birthdaybuddy.ui.screens.home.components.actions.HomeFAB
+import com.heckmannch.birthdaybuddy.ui.screens.home.components.labels.LabelFilterBottomSheet
 import com.heckmannch.birthdaybuddy.ui.screens.home.components.labels.LabelSidebar
 import com.heckmannch.birthdaybuddy.ui.screens.home.components.list.HomeListDetailDisplay
 import com.heckmannch.birthdaybuddy.ui.screens.home.components.topbar.HomeTopBar
 import com.heckmannch.birthdaybuddy.ui.theme.BirthdayBuddyTheme
 import com.heckmannch.birthdaybuddy.ui.theme.SidebarWidthCollapsed
 import com.heckmannch.birthdaybuddy.ui.theme.SidebarWidthExpanded
-import com.heckmannch.birthdaybuddy.ui.theme.SpacingSmall
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.emptyFlow
 
@@ -51,7 +57,8 @@ import kotlinx.coroutines.flow.emptyFlow
  * Root UI content composable for the home dashboard.
  *
  * Handles adaptive layouts across different screen size classes, rendering either a permanent
- * navigation drawer with a [LabelSidebar] on larger screens or hosting [HomeMainContent] directly.
+ * navigation drawer with a [LabelSidebar] on larger screens or hosting [HomeMainContent] directly
+ * with the [LiquidGlassBottomNavBar] on compact screens.
  *
  * @param uiState Current UI state containing contact list, search query, labels, and sync status.
  * @param homeState State holder managing scroll state, snackbar host, search focus, and UI animations.
@@ -132,7 +139,7 @@ fun HomeContent(
  * Main UI content layout for [HomeContent].
  *
  * Displays the [HomeTopBar], list/detail navigation display ([HomeListDetailDisplay]),
- * pull-to-refresh container, and [HomeFAB].
+ * pull-to-refresh container, and [LiquidGlassBottomNavBar] (on compact screens).
  *
  * @param uiState Current UI state containing contact list, search query, and sync info.
  * @param homeState Screen state holder managing scroll state, snackbar host, and focus.
@@ -142,6 +149,7 @@ fun HomeContent(
  * @param onToggleSidebar Callback invoked when the user clicks the menu icon to toggle the sidebar.
  * @param modifier Optional [Modifier] for the root container.
  */
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun HomeMainContent(
     uiState: HomeUiState,
@@ -153,6 +161,16 @@ private fun HomeMainContent(
     modifier: Modifier = Modifier,
 ) {
     val focusManager = LocalFocusManager.current
+    var isLabelSheetOpen by remember { mutableStateOf(false) }
+
+    val selectedContact = remember(uiState.contacts, homeState.selectedContactId) {
+        val id = homeState.selectedContactId
+        if (id != null) {
+            uiState.contacts?.find { it.id == id }
+        } else {
+            null
+        }
+    }
 
     AppResponsiveScaffold(
         modifier = modifier,
@@ -169,33 +187,65 @@ private fun HomeMainContent(
                 onToggleSidebar = onToggleSidebar,
             )
         },
-        floatingActionButton = {
-            AnimatedVisibility(
-                visible = !homeState.isFastScrolling,
-                enter = scaleIn() + fadeIn(),
-                exit = scaleOut() + fadeOut()
-            ) {
-                val selectedContact = remember(uiState.contacts, homeState.selectedContactId) {
-                    val id = homeState.selectedContactId
-                    if (id != null) {
-                        uiState.contacts?.find { it.id == id }
-                    } else {
-                        null
-                    }
+        bottomBar = {
+            if (!showSidebar) {
+                val navLabelsText = stringResource(R.string.nav_labels)
+                val navListText = stringResource(R.string.nav_list)
+                val actionLabel = if (selectedContact != null) {
+                    stringResource(R.string.home_edit_contact)
+                } else {
+                    stringResource(R.string.home_add_contact)
+                }
+                val actionIcon = if (selectedContact != null) Icons.Default.Edit else Icons.Default.Add
+
+                val navItems = remember(navLabelsText, navListText, actionLabel, actionIcon) {
+                    listOf(
+                        NavItem(
+                            selectedIcon = Icons.AutoMirrored.Filled.Label,
+                            unselectedIcon = Icons.AutoMirrored.Outlined.Label,
+                            label = navLabelsText
+                        ),
+                        NavItem(
+                            selectedIcon = Icons.Filled.DateRange,
+                            unselectedIcon = Icons.Outlined.DateRange,
+                            label = navListText
+                        ),
+                        NavItem(
+                            selectedIcon = actionIcon,
+                            unselectedIcon = actionIcon,
+                            label = actionLabel
+                        )
+                    )
                 }
 
-                HomeFAB(
-                    showScrollUp = homeState.showScrollUp,
-                    selectedContact = selectedContact,
-                    actions = actions,
-                    onScrollToTop = {
-                        focusManager.clearFocus()
-                        homeState.scrollToTop()
-                    },
-                    modifier = Modifier.padding(SpacingSmall)
+                val selectedIndex = remember(uiState.selectedLabel) {
+                    if (uiState.selectedLabel != null) 0 else 1
+                }
+
+                LiquidGlassBottomNavBar(
+                    items = navItems,
+                    selectedIndex = selectedIndex,
+                    onItemSelected = { index ->
+                        when (index) {
+                            0 -> isLabelSheetOpen = true
+                            1 -> {
+                                actions.onLabelSelected(null)
+                                focusManager.clearFocus()
+                                homeState.scrollToTop()
+                            }
+                            2 -> {
+                                if (selectedContact != null) {
+                                    actions.onEditContact(selectedContact.contactId, selectedContact.lookupKey)
+                                } else {
+                                    actions.onAddContact()
+                                }
+                            }
+                        }
+                    }
                 )
             }
-        }
+        },
+        floatingActionButton = {}
     ) { paddingValues ->
         val pullToRefreshState = rememberPullToRefreshState()
         PullToRefreshBox(
@@ -219,6 +269,15 @@ private fun HomeMainContent(
                 actions = actions,
                 showLabelFilter = !showSidebar,
                 contentPadding = paddingValues,
+            )
+        }
+
+        if (isLabelSheetOpen) {
+            LabelFilterBottomSheet(
+                availableLabels = uiState.availableLabels,
+                selectedLabel = uiState.selectedLabel,
+                onLabelSelected = actions.onLabelSelected,
+                onDismissRequest = { isLabelSheetOpen = false }
             )
         }
     }

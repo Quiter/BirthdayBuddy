@@ -18,6 +18,8 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.Label
+import androidx.compose.material.icons.automirrored.outlined.Label
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Notifications
@@ -26,6 +28,7 @@ import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.material.icons.filled.Star
+import androidx.compose.material.icons.outlined.DateRange
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -47,6 +50,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
@@ -62,9 +66,12 @@ import androidx.navigation3.ui.NavDisplay
 import androidx.window.core.layout.WindowSizeClass
 import com.heckmannch.birthdaybuddy.R
 import com.heckmannch.birthdaybuddy.ui.components.AppResponsiveScaffold
+import com.heckmannch.birthdaybuddy.ui.components.LiquidGlassBottomNavBar
 import com.heckmannch.birthdaybuddy.ui.components.LocalWindowAdaptiveInfo
 import com.heckmannch.birthdaybuddy.ui.components.LocalWindowSizeClass
+import com.heckmannch.birthdaybuddy.ui.components.NavItem
 import com.heckmannch.birthdaybuddy.ui.components.isWidthCompact
+import com.heckmannch.birthdaybuddy.ui.util.ContactActions
 import com.heckmannch.birthdaybuddy.ui.screens.settings.about.AboutScreen
 import com.heckmannch.birthdaybuddy.ui.screens.settings.about.PrivacyPolicyScreen
 import com.heckmannch.birthdaybuddy.ui.screens.settings.backup.BackupScreen
@@ -213,7 +220,49 @@ internal fun SettingsContent(
 
     AppResponsiveScaffold(
         useAdaptiveWidth = false,
-        topBar = {}
+        topBar = {},
+        bottomBar = {
+            if (windowSizeClass.isWidthCompact) {
+                val context = LocalContext.current
+                val navLabelsText = stringResource(R.string.nav_labels)
+                val navListText = stringResource(R.string.nav_list)
+                val navAddText = stringResource(R.string.nav_add)
+
+                val navItems = remember(navLabelsText, navListText, navAddText) {
+                    listOf(
+                        NavItem(
+                            selectedIcon = Icons.AutoMirrored.Filled.Label,
+                            unselectedIcon = Icons.AutoMirrored.Outlined.Label,
+                            label = navLabelsText
+                        ),
+                        NavItem(
+                            selectedIcon = Icons.Filled.DateRange,
+                            unselectedIcon = Icons.Outlined.DateRange,
+                            label = navListText
+                        ),
+                        NavItem(
+                            selectedIcon = Icons.Default.Add,
+                            unselectedIcon = Icons.Default.Add,
+                            label = navAddText
+                        )
+                    )
+                }
+
+                LiquidGlassBottomNavBar(
+                    items = navItems,
+                    selectedIndex = -1,
+                    onItemSelected = { index ->
+                        when (index) {
+                            0, 1 -> onNavigateBack()
+                            2 -> {
+                                onNavigateBack()
+                                ContactActions(context).addContact()
+                            }
+                        }
+                    }
+                )
+            }
+        }
     ) { paddingValues ->
         NavDisplay(
             backStack = backStack,

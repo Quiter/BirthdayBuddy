@@ -58,12 +58,12 @@
   - Mapper: `ContactUiMapper`, `CoupleSuggestionUiMapper`.
   - Modelle: `ContactUiModel`, `CoupleSuggestionUiModel`, `HomeUiState`, `BirthdayTier` (Enum), `LabelManagementModel`, `SampleData`.
 - **UI Components & Illustrations (`ui.components`, `ui.illustrations`)**:
-  - Komponenten: `ColorPickerDialog`, `ResponsiveLayout` (WindowSizeClass & Responsive Scaffold), `AppSwitch`, `SettingsComponents`, `StepItem`.
+  - Komponenten: `LiquidGlassBottomNavBar`, `ColorPickerDialog`, `ResponsiveLayout` (WindowSizeClass & Responsive Scaffold), `AppSwitch`, `SettingsComponents`, `StepItem`.
   - Native Illustrationen: `WelcomeIllustration`, `ContactsIllustration`, `NotificationsIllustration`, `CalendarIllustration`, `CalendarGuideIllustration`, `ReadyIllustration`.
 - **Theme (`ui.theme`)**: `Theme.kt`, `Color.kt`, `ColorPresets.kt`, `Type.kt`, `Shapes.kt`, `Dimensions.kt`.
 - **Feature Screens (`ui.screens`)** *(Co-located ViewModels, States & Components)*:
   - **Home (`home/`)**: `HomeScreen`, `HomeContent`, `HomeNavKey`, `HomeState`, `HomeActions`, `HomeIntent`, `HomeUiEvent`, `HomeViewModel`.
-    - Components: `BirthdayList`, `BirthdayItem`, `BirthdayDetailPane`, `GiftIdeaList`, `FastScrollbar`, `ScrollbarBubble`, `LabelFilterBar`, `LabelSidebar`, `HomeTopBar`, `SearchBar`, `HomeFAB`, `ContactActionRow`, `MessengerAppUi`, `ConfettiEffect`, etc.
+    - Components: `BirthdayList`, `BirthdayItem`, `BirthdayDetailPane`, `GiftIdeaList`, `FastScrollbar`, `ScrollbarBubble`, `LabelFilterBar`, `LabelSidebar`, `LabelFilterBottomSheet`, `HomeTopBar`, `SearchBar`, `HomeFAB`, `ContactActionRow`, `MessengerAppUi`, `ConfettiEffect`, etc.
   - **Onboarding (`onboarding/`)**: `OnboardingScreen`, `OnboardingViewModel`, `OnboardingUiState` & Pages (`WelcomePage`, `ContactsPage`, `NotificationsPage`, `CalendarPage`, `CalendarGuidePage`, `ReadyPage`, `OnboardingFooter`).
   - **Settings (`settings/`)**: `SettingsScreen` & Sub-Features:
     - `labels/`: `LabelSettingsScreen`, `LabelViewModel`, `LabelUiState`.

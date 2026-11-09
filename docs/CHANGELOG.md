@@ -988,6 +988,15 @@ ecreateContactsTableV7 (mit giftIdeas TEXT NOT NULL, COALESCE(giftIdeas, '[]')) 
     - **Auslagerung der Ausführlichkeit:** Wiederherstellung der vollständigen, detaillierten englischen System-Instruktionen in [project_guidelines.md](file:///c:/Users/chris/AndroidStudioProjects/BirthdayBuddy/.agents/rules/project_guidelines.md) für IDE-Agenten.
     - **Ultra-kompakte `local_LLM.md`:** Reduzierung von [local_LLM.md](file:///c:/Users/chris/AndroidStudioProjects/BirthdayBuddy/.agents/rules/local_LLM.md) auf eine prägnante, ~35-zeilige Schnellstart-Datei (< 300 Tokens), die Rolle, unumstößliche Kernregeln (Room, Dispatcher, Doku-Pflicht), eine Orientierungskarte (`docs/PROJECT_STRUCTURE.md`, `docs/PROJECT_STATUS.md`, `project_guidelines.md`) und die 4-Schritt-Entwickler-Checkliste beinhaltet. Maximiert das freie Kontextfenster lokaler Modelle.
 
+392. **Integration der Liquid Glass Bottom Navigation Bar & FAB-Ablösung (UI & Navigation):**
+    - **Glaskomponente:** Erstellung von [LiquidGlassBottomNavBar.kt](file:///E:/Benutzer/Christof/Entwicklung/StudioProjects/BirthdayBuddy/app/src/main/java/com/heckmannch/birthdaybuddy/ui/components/LiquidGlassBottomNavBar.kt) in `ui/components/` mit lichtbrechenden Farbverläufen und federbasierter Indikator-Animation (`animateFloatAsState`).
+    - **FAB-Integration & Ablösung:** Vollständige Entfernung des schwebenden `HomeFAB` auf Smartphone-Layouts. Die FAB-Funktionalität ("Kontakt hinzufügen" bzw. "Kontakt bearbeiten" bei geöffnetem Detail-Pane) ist nun nahtlos als rechtes Element in der `LiquidGlassBottomNavBar` integriert.
+    - **3-Punkte-Navigationsstruktur:**
+      1. **Labels (links):** Öffnet das [LabelFilterBottomSheet.kt](file:///E:/Benutzer/Christof/Entwicklung/StudioProjects/BirthdayBuddy/app/src/main/java/com/heckmannch/birthdaybuddy/ui/screens/home/components/labels/LabelFilterBottomSheet.kt) zur interaktiven Label- und Kategorie-Auswahl.
+      2. **Liste (Mitte):** Setzt Filter zurück und scrollt die Hauptliste nach oben.
+      3. **Hinzufügen / Bearbeiten (rechts):** Ersetzt den FAB-Button und löst direkt die Kontakt-Erstellung bzw. -Bearbeitung aus.
+    - **Screen-übergreifende Überlagerung:** [SettingsScreen.kt](file:///E:/Benutzer/Christof/Entwicklung/StudioProjects/BirthdayBuddy/app/src/main/java/com/heckmannch/birthdaybuddy/ui/screens/settings/SettingsScreen.kt) bindet die `LiquidGlassBottomNavBar` ebenfalls ein, sodass die Leiste auch in den Einstellungen schwebend sichtbar bleibt und per Tippen auf Liste/Labels direkt zurück zur Hauptansicht wechselt.
+
 
 
 
