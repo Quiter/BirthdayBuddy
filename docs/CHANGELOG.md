@@ -988,9 +988,9 @@ ecreateContactsTableV7 (mit giftIdeas TEXT NOT NULL, COALESCE(giftIdeas, '[]')) 
     - **Auslagerung der Ausführlichkeit:** Wiederherstellung der vollständigen, detaillierten englischen System-Instruktionen in [project_guidelines.md](file:///c:/Users/chris/AndroidStudioProjects/BirthdayBuddy/.agents/rules/project_guidelines.md) für IDE-Agenten.
     - **Ultra-kompakte `local_LLM.md`:** Reduzierung von [local_LLM.md](file:///c:/Users/chris/AndroidStudioProjects/BirthdayBuddy/.agents/rules/local_LLM.md) auf eine prägnante, ~35-zeilige Schnellstart-Datei (< 300 Tokens), die Rolle, unumstößliche Kernregeln (Room, Dispatcher, Doku-Pflicht), eine Orientierungskarte (`docs/PROJECT_STRUCTURE.md`, `docs/PROJECT_STATUS.md`, `project_guidelines.md`) und die 4-Schritt-Entwickler-Checkliste beinhaltet. Maximiert das freie Kontextfenster lokaler Modelle.
 
-
-
-
-
-
-
+392. **Refactoring von `FastScrollbar.kt` zur Vermeidung bedingter Compose-Hooks & Lint-Bereinigung (Compose Architecture & Quality):**
+    - **Beseitigung vorzeitiger Abbrüche:** Entfernung des bedingten `if (!isNeeded || totalItems <= 0) return`-Aufrufs in [FastScrollbar.kt](file:///c:/Users/chris/AndroidStudioProjects/BirthdayBuddy/app/src/main/java/com/heckmannch/birthdaybuddy/ui/screens/home/components/list/FastScrollbar.kt), der nachgelagerte Zustandshooks (`LaunchedEffect(contacts)`, `animateFloatAsState` etc.) konditional übersprungen hatte.
+    - **Deterministische Zustandshooks:** Alle Compose-Hooks und `LaunchedEffect`-Blöcke verbleiben unkonditioniert aktiv. Dadurch setzt `LaunchedEffect(contacts)` den Scrollzustand (`state.resetOnContactsChange()`) auch bei kurzen oder gefilterten Listen stets zuverlässig zurück.
+    - **Saubere Sichtbarkeits- und Interaktionssteuerung:** Kapselung der Aktivitäts- und Darstellungslogik über `isNeeded`, `isVisible` und `alphaState` im Layout-Bereich. Der Pointer-Input (`dragModifier`) und der Scrollbar-Thumb (`Surface`) werden nur noch aktiv gerendert bzw. angebunden, wenn `isNeeded && (state.isVisible || (alphaState.value > 0f))`.
+    - **Lint- und KDoc-Bereinigung:** Umbenennung von `const val` Konstanten in `ScrollbarDefaults` auf SCREAMING_SNAKE_CASE (`ALPHA_THUMB`, `FADE_DURATION_MS`), Behebung von KDoc-Linkwarnungen (`firstIndex`, `LabelFilterBar`, `LazyColumn`, `expectedItemHeights`), Einfügen fehlender Trailing Commas, explizite Benennung boolescher Literale (`value = false`) und Setzen klarstellender Klammern bei komplexen Ausdrücken.
+    - **Verifikation:** Alle Unit-Tests für `FastScrollbar` und `FastScrollState` (`FastScrollbarBoundsTest`, `FastScrollStateTest`) und die gesamten Home-Tests erfolgreich ausgeführt; null Lint-Warnungen in `FastScrollbar.kt`.
