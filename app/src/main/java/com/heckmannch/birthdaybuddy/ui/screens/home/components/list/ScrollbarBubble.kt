@@ -7,22 +7,24 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.window.Popup
 import androidx.compose.ui.window.PopupProperties
+import com.heckmannch.birthdaybuddy.ui.theme.SpacingExtraSmall
 import com.heckmannch.birthdaybuddy.ui.theme.SpacingNormal
 import com.heckmannch.birthdaybuddy.ui.theme.SpacingSmall
 
@@ -38,6 +40,12 @@ import com.heckmannch.birthdaybuddy.ui.theme.SpacingSmall
  * - The offset is provided as a lambda (`thumbOffset: () -> Dp`) to allow
  *   `graphicsLayer` to read it during the draw phase, avoiding recomposition
  *   on every drag pixel.
+ * - Horizontal positioning: Anchored to [Popup]'s `TopEnd` (the right edge of the screen).
+ *   The inner container aligns content to `TopEnd` with an end padding equal to the thumb
+ *   area (`ScrollbarDefaults.ThumbWidth + ScrollbarDefaults.BubbleOffsetX + SpacingExtraSmall`).
+ *   This ensures the bubble's right edge (with the pointy `topEnd` corner) floats directly
+ *   adjacent to the visual scrollbar thumb, while expanding freely to the left without being
+ *   bounded by `BarWidth` or clipped.
  * - Visibility is `internal` (not `private`) so that [FastScrollbar] can call
  *   it from a separate file within the same package.
  *
@@ -56,25 +64,32 @@ internal fun ScrollbarBubble(
 
     if (transitionState.currentState || transitionState.targetState) {
         Popup(
-            alignment = androidx.compose.ui.Alignment.TopStart,
+            alignment = Alignment.TopEnd,
             offset = remember { IntOffset.Zero },
             properties = PopupProperties(
                 focusable = false,
                 dismissOnBackPress = false,
                 dismissOnClickOutside = false,
                 clippingEnabled = false,
-                usePlatformDefaultWidth = false
-            )
+                usePlatformDefaultWidth = false,
+            ),
         ) {
             Box(
                 modifier = Modifier
-                    .width(ScrollbarDefaults.BarWidth)
-                    .fillMaxHeight()
+                    .fillMaxSize()
+                    .padding(
+                        end = ScrollbarDefaults.ThumbWidth +
+                            ScrollbarDefaults.BubbleOffsetX +
+                            SpacingExtraSmall,
+                    ),
+                contentAlignment = Alignment.TopEnd,
             ) {
-                Box(modifier = Modifier.graphicsLayer {
-                    translationY =
-                        (thumbOffset() - ScrollbarDefaults.BubbleOffsetY).toPx().coerceAtLeast(0f)
-                }) {
+                Box(
+                    modifier = Modifier.graphicsLayer {
+                        translationY =
+                            (thumbOffset() - ScrollbarDefaults.BubbleOffsetY).toPx().coerceAtLeast(0f)
+                    },
+                ) {
                     AnimatedVisibility(
                         visibleState = transitionState,
                         enter = fadeIn() + slideInHorizontally { it / 2 },
@@ -85,20 +100,21 @@ internal fun ScrollbarBubble(
                                 topStart = ScrollbarDefaults.BubbleCornerLarge,
                                 bottomStart = ScrollbarDefaults.BubbleCornerLarge,
                                 topEnd = ScrollbarDefaults.BubbleCornerSmall,
-                                bottomEnd = ScrollbarDefaults.BubbleCornerLarge
+                                bottomEnd = ScrollbarDefaults.BubbleCornerLarge,
                             ),
                             color = MaterialTheme.colorScheme.primary,
                             tonalElevation = ScrollbarDefaults.BubbleElevation,
-                            modifier = Modifier.padding(end = SpacingNormal)
                         ) {
                             Text(
                                 text = label,
                                 modifier = Modifier.padding(
                                     horizontal = SpacingNormal,
-                                    vertical = SpacingSmall
+                                    vertical = SpacingSmall,
                                 ),
                                 color = MaterialTheme.colorScheme.onPrimary,
                                 style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis,
                             )
                         }
                     }

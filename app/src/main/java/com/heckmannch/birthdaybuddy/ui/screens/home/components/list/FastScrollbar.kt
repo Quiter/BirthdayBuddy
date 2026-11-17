@@ -87,6 +87,7 @@ internal object ScrollbarDefaults {
     val ThumbWidth = ScrollbarThumbWidth
     val ThumbHeight = ScrollbarThumbHeight
     val BubbleOffsetY = SpacingExtraSmall
+    val BubbleOffsetX = SpacingExtraSmall
     val BubbleCornerLarge = CardCornerRadiusLarge
     val BubbleCornerSmall = CardCornerRadiusSmall
     val BubbleElevation = ScrollbarBubbleElevation
