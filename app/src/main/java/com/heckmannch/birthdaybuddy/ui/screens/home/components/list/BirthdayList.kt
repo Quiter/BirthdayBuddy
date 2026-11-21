@@ -143,9 +143,9 @@ fun BirthdayList(
             targetValue = AlphaEmphasisMedium,
             animationSpec = infiniteRepeatable(
                 animation = tween(1000, easing = LinearEasing),
-                repeatMode = RepeatMode.Reverse
+                repeatMode = RepeatMode.Reverse,
             ),
-            label = "alpha"
+            label = "alpha",
         )
 
         LazyColumn(
@@ -156,7 +156,7 @@ fun BirthdayList(
                 start = contentPadding.calculateStartPadding(layoutDirection),
                 top = contentPadding.calculateTopPadding(),
                 end = contentPadding.calculateEndPadding(layoutDirection),
-                bottom = contentPadding.calculateBottomPadding() + FabBottomSpacing
+                bottom = contentPadding.calculateBottomPadding() + FabBottomSpacing,
             ),
             userScrollEnabled = false,
         ) {
@@ -171,7 +171,7 @@ fun BirthdayList(
 
     var previousLabel by remember { mutableStateOf(selectedLabel) }
     var previousQuery by remember { mutableStateOf(searchQuery) }
-    val skipPlacementAnimation = selectedLabel != previousLabel || searchQuery != previousQuery
+    val skipPlacementAnimation = (selectedLabel != previousLabel) || (searchQuery != previousQuery)
 
     SideEffect {
         previousLabel = selectedLabel
@@ -193,7 +193,7 @@ fun BirthdayList(
             start = contentPadding.calculateStartPadding(layoutDirection),
             top = contentPadding.calculateTopPadding(),
             end = contentPadding.calculateEndPadding(layoutDirection),
-            bottom = contentPadding.calculateBottomPadding() + FabBottomSpacing
+            bottom = contentPadding.calculateBottomPadding() + FabBottomSpacing,
         ),
     ) {
         if (showLabelFilter && availableLabels.isNotEmpty()) {
@@ -236,7 +236,7 @@ fun BirthdayList(
         } else {
             itemsIndexed(
                 items = contacts,
-                key = { _, it -> it.id },
+                key = { _, contact -> contact.id },
                 contentType = { _, _ -> "birthdayItem" },
             ) { index, contact ->
                 val isExpanded = onContactSelected == null && expandedContactId == contact.id

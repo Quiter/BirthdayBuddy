@@ -64,16 +64,16 @@ fun BirthdayQuotePlaceholder(
             .padding(SpacingNormal)
             .testTag("birthday_quote_placeholder"),
         colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceContainerHigh
+            containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
         ),
-        shape = RoundedCornerShape(CardCornerRadiusLarge)
+        shape = RoundedCornerShape(CardCornerRadiusLarge),
     ) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(SpacingExtraLarge),
             horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center
+            verticalArrangement = Arrangement.Center,
         ) {
             // Premium Icon Container
             Surface(
@@ -82,15 +82,15 @@ fun BirthdayQuotePlaceholder(
                 color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = AlphaOnboardingCalendarDisabled),
                 border = BorderStroke(
                     width = BorderWidthThick,
-                    color = MaterialTheme.colorScheme.primary.copy(alpha = AlphaBorderSubtle)
-                )
+                    color = MaterialTheme.colorScheme.primary.copy(alpha = AlphaBorderSubtle),
+                ),
             ) {
                 Box(contentAlignment = Alignment.Center) {
                     Icon(
                         imageVector = Icons.Default.Cake,
                         contentDescription = null,
                         modifier = Modifier.size(ContactImageSizeNormal),
-                        tint = MaterialTheme.colorScheme.primary
+                        tint = MaterialTheme.colorScheme.primary,
                     )
                 }
             }
@@ -101,7 +101,7 @@ fun BirthdayQuotePlaceholder(
                 text = stringResource(R.string.detail_placeholder_title),
                 style = MaterialTheme.typography.titleLarge,
                 color = MaterialTheme.colorScheme.onSurface,
-                textAlign = TextAlign.Center
+                textAlign = TextAlign.Center,
             )
 
             Spacer(modifier = Modifier.height(SpacingNormal))
@@ -113,17 +113,17 @@ fun BirthdayQuotePlaceholder(
                 color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = AlphaEmphasisLow),
                 border = BorderStroke(
                     width = BorderWidthThin,
-                    color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = AlphaOnboardingCalendarDisabled)
-                )
+                    color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = AlphaOnboardingCalendarDisabled),
+                ),
             ) {
                 Text(
                     text = stringResource(R.string.detail_placeholder_quote),
                     style = MaterialTheme.typography.bodyLarge.copy(
-                        fontStyle = FontStyle.Italic
+                        fontStyle = FontStyle.Italic,
                     ),
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     textAlign = TextAlign.Center,
-                    modifier = Modifier.padding(SpacingLarge)
+                    modifier = Modifier.padding(SpacingLarge),
                 )
             }
 
@@ -133,7 +133,7 @@ fun BirthdayQuotePlaceholder(
                 text = stringResource(R.string.detail_placeholder_subtitle),
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = AlphaEmphasisMedium),
-                textAlign = TextAlign.Center
+                textAlign = TextAlign.Center,
             )
         }
     }

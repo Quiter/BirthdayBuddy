@@ -56,13 +56,13 @@ fun BirthdayStatus(
     if (daysUntilNext == null) {
         IconButton(
             onClick = onEditBirthday,
-            modifier = modifier.padding(end = SpacingMedium)
+            modifier = modifier.padding(end = SpacingMedium),
         ) {
             Icon(
                 imageVector = Icons.Default.Add,
                 contentDescription = stringResource(R.string.item_action_edit_birthday),
                 tint = MaterialTheme.colorScheme.primary,
-                modifier = Modifier.size(IconSizeNormal)
+                modifier = Modifier.size(IconSizeNormal),
             )
         }
     } else {
@@ -70,14 +70,14 @@ fun BirthdayStatus(
             horizontalAlignment = Alignment.End,
             modifier = modifier
                 .padding(end = SpacingSmall)
-                .semantics(mergeDescendants = true) {}
+                .semantics(mergeDescendants = true) {},
         ) {
             if (nextAge != null) {
                 Text(
                     text = stringResource(R.string.widget_turns_age, nextAge),
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.primary
+                    color = MaterialTheme.colorScheme.primary,
                 )
             }
 
@@ -87,13 +87,13 @@ fun BirthdayStatus(
                         imageVector = Icons.Default.Cake,
                         contentDescription = null,
                         tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = AlphaEmphasisMedium),
-                        modifier = Modifier.size(IconSizeExtraSmall)
+                        modifier = Modifier.size(IconSizeExtraSmall),
                     )
                     Spacer(modifier = Modifier.width(SpacingExtraSmall))
                     Text(
                         text = stringResource(R.string.item_today),
                         color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = AlphaEmphasisMedium),
-                        style = MaterialTheme.typography.bodyMedium
+                        style = MaterialTheme.typography.bodyMedium,
                     )
                 }
             } else {
@@ -101,10 +101,10 @@ fun BirthdayStatus(
                     text = pluralStringResource(
                         R.plurals.item_days_left,
                         daysUntilNext.toInt(),
-                        daysUntilNext.toInt()
+                        daysUntilNext.toInt(),
                     ),
                     style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = AlphaEmphasisMedium)
+                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = AlphaEmphasisMedium),
                 )
             }
         }
@@ -117,14 +117,14 @@ fun BirthdayStatusPreview() {
     BirthdayBuddyTheme {
         Column(
             modifier = Modifier.padding(SpacingNormal),
-            horizontalAlignment = Alignment.End
+            horizontalAlignment = Alignment.End,
         ) {
             // Missing Date / Action button
             BirthdayStatus(
                 isToday = false,
                 nextAge = null,
                 daysUntilNext = null,
-                onEditBirthday = {}
+                onEditBirthday = {},
             )
             Spacer(modifier = Modifier.padding(bottom = SpacingNormal))
 
@@ -133,7 +133,7 @@ fun BirthdayStatusPreview() {
                 isToday = true,
                 nextAge = 25,
                 daysUntilNext = 0,
-                onEditBirthday = {}
+                onEditBirthday = {},
             )
             Spacer(modifier = Modifier.padding(bottom = SpacingNormal))
 
@@ -142,7 +142,7 @@ fun BirthdayStatusPreview() {
                 isToday = true,
                 nextAge = null,
                 daysUntilNext = 0,
-                onEditBirthday = {}
+                onEditBirthday = {},
             )
             Spacer(modifier = Modifier.padding(bottom = SpacingNormal))
 
@@ -151,7 +151,7 @@ fun BirthdayStatusPreview() {
                 isToday = false,
                 nextAge = 30,
                 daysUntilNext = 5,
-                onEditBirthday = {}
+                onEditBirthday = {},
             )
         }
     }

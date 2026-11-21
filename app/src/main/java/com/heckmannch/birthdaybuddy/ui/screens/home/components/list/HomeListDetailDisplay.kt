@@ -97,10 +97,10 @@ fun HomeListDetailDisplay(
                     detailPlaceholder = {
                         BirthdayQuotePlaceholder(
                             contentPadding = contentPadding,
-                            modifier = Modifier.fillMaxSize()
+                            modifier = Modifier.fillMaxSize(),
                         )
-                    }
-                )
+                    },
+                ),
             ) {
                 Box(modifier = Modifier.fillMaxSize()) {
                     BirthdayList(
@@ -122,14 +122,14 @@ fun HomeListDetailDisplay(
                             keyboardController?.hide()
                         },
                         contentPadding = contentPadding,
-                        showLabelFilter = showLabelFilter
+                        showLabelFilter = showLabelFilter,
                     )
 
                     val currentHeaderCount = remember(
                         uiState.availableLabels,
                         showLabelFilter,
                         uiState.selectedLabel,
-                        uiState.coupleSuggestion
+                        uiState.coupleSuggestion,
                     ) {
                         val currentShowLabelFilter =
                             uiState.availableLabels.isNotEmpty() && showLabelFilter
@@ -153,7 +153,7 @@ fun HomeListDetailDisplay(
             }
 
             entry<HomeNavKey.ContactDetail>(
-                metadata = ListDetailSceneStrategy.detailPane()
+                metadata = ListDetailSceneStrategy.detailPane(),
             ) { key ->
                 val contact = remember(contacts, key.contactId) {
                     contacts?.find { it.id == key.contactId }
@@ -167,11 +167,11 @@ fun HomeListDetailDisplay(
                             backStack.removeLastOrNull()
                         },
                         contentPadding = contentPadding,
-                        modifier = Modifier.fillMaxSize()
+                        modifier = Modifier.fillMaxSize(),
                     )
                 }
             }
-        }
+        },
     )
 }
 

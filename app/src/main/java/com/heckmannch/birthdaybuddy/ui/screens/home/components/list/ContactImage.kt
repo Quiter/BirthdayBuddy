@@ -13,6 +13,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.Typography
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -43,7 +44,7 @@ import com.heckmannch.birthdaybuddy.ui.theme.SpacingNormal
  * Combining lookupKey (if available) with imageUri ensures stable cache keys across list renders and fast scrolling.
  */
 fun getAvatarCacheKey(imageUri: String, lookupKey: String? = null): String {
-    return if (!lookupKey.isNullOrBlank()) "avatar_${lookupKey}_${imageUri}" else "avatar_${imageUri}"
+    return if (!lookupKey.isNullOrBlank()) "avatar_${lookupKey}_$imageUri" else "avatar_$imageUri"
 }
 
 /**
@@ -56,9 +57,9 @@ fun getAvatarCacheKey(imageUri: String, lookupKey: String? = null): String {
  * - Dynamic corner radius scaling: Outer corner is sized proportionally at `size * 0.3f`.
  * - In dual-avatar mode, nested avatars scale to `size * 0.7f` with corner radius `nestedSize * 0.28f`.
  *   The secondary avatar (bottom-right) is surrounded by a surface cutout border overlay.
- * - Single avatar initials typography adapts automatically: [MaterialTheme.typography.titleLarge] for sizes
- *   larger than [ContactImageSizeSmall] (e.g. expanded items, header, or detail views), otherwise [MaterialTheme.typography.titleSmall].
- * - In dual-avatar mode, text style scales between [MaterialTheme.typography.titleSmall] and [MaterialTheme.typography.labelSmall].
+ * - Single avatar initials typography adapts automatically: [Typography.titleLarge] for sizes
+ *   larger than [ContactImageSizeSmall] (e.g. expanded items, header, or detail views), otherwise [Typography.titleSmall].
+ * - In dual-avatar mode, text style scales between [Typography.titleSmall] and [Typography.labelSmall].
  *
  * @param imageUri URI string for the primary contact's photo, or `null` to show [initials].
  * @param fullName Full display name of the primary contact (used for accessibility content description).
@@ -109,7 +110,7 @@ fun ContactImage(
             shape = RoundedCornerShape(outerCorner),
             textStyle = if (size > ContactImageSizeSmall) MaterialTheme.typography.titleLarge else MaterialTheme.typography.titleSmall,
             containerColor = MaterialTheme.colorScheme.primaryContainer,
-            contentColor = MaterialTheme.colorScheme.onPrimaryContainer
+            contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
         )
     } else {
         val resolvedSecondFullName = secondFullName?.takeIf { it.isNotBlank() }
@@ -118,7 +119,7 @@ fun ContactImage(
 
         // Overlapping dual avatar layout for couples
         Box(
-            modifier = modifier.size(size)
+            modifier = modifier.size(size),
         ) {
             // First contact (top-left)
             SingleAvatar(
@@ -132,7 +133,7 @@ fun ContactImage(
                 shape = RoundedCornerShape(nestedCorner),
                 textStyle = if (size > ContactImageSizeSmall) MaterialTheme.typography.titleSmall else MaterialTheme.typography.labelSmall,
                 containerColor = MaterialTheme.colorScheme.primaryContainer,
-                contentColor = MaterialTheme.colorScheme.onPrimaryContainer
+                contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
             )
 
             // Second contact (bottom-right) with a surface border overlay
@@ -142,7 +143,7 @@ fun ContactImage(
                     .align(Alignment.BottomEnd)
                     .clip(RoundedCornerShape(nestedCorner))
                     .background(MaterialTheme.colorScheme.surface)
-                    .padding(secondAvatarPadding)
+                    .padding(secondAvatarPadding),
             ) {
                 SingleAvatar(
                     modifier = Modifier.fillMaxSize(),
@@ -153,7 +154,7 @@ fun ContactImage(
                     shape = RoundedCornerShape(secondAvatarCorner),
                     textStyle = if (size > ContactImageSizeSmall) MaterialTheme.typography.titleSmall else MaterialTheme.typography.labelSmall,
                     containerColor = MaterialTheme.colorScheme.secondaryContainer,
-                    contentColor = MaterialTheme.colorScheme.onSecondaryContainer
+                    contentColor = MaterialTheme.colorScheme.onSecondaryContainer,
                 )
             }
         }
@@ -185,19 +186,19 @@ private fun SingleAvatar(
             model = request,
             contentDescription = stringResource(R.string.item_image_desc, fullName),
             modifier = modifier.clip(shape),
-            contentScale = ContentScale.Crop
+            contentScale = ContentScale.Crop,
         )
     } else {
         Box(
             modifier = modifier
                 .clip(shape)
                 .background(containerColor),
-            contentAlignment = Alignment.Center
+            contentAlignment = Alignment.Center,
         ) {
             Text(
                 text = initials,
                 style = textStyle,
-                color = contentColor
+                color = contentColor,
             )
         }
     }
@@ -211,19 +212,19 @@ private fun ContactImagePreview() {
         Surface(color = MaterialTheme.colorScheme.background) {
             Column(
                 modifier = Modifier.padding(SpacingNormal),
-                verticalArrangement = Arrangement.spacedBy(SpacingNormal)
+                verticalArrangement = Arrangement.spacedBy(SpacingNormal),
             ) {
                 // Row 1: Standard List Size (40.dp) - Single Initials, Image URI, Couple Initials
                 Row(
                     horizontalArrangement = Arrangement.spacedBy(SpacingMedium),
-                    verticalAlignment = Alignment.CenterVertically
+                    verticalAlignment = Alignment.CenterVertically,
                 ) {
                     // 1. Einzelner Kontakt mit Initialen
                     ContactImage(
                         imageUri = null,
                         fullName = "Max Mustermann",
                         initials = "MM",
-                        size = ContactImageSizeSmall
+                        size = ContactImageSizeSmall,
                     )
 
                     // 2. Einzelner Kontakt mit Bild-URI
@@ -231,7 +232,7 @@ private fun ContactImagePreview() {
                         imageUri = "content://com.android.contacts/display_photo/1",
                         fullName = "Erika Mustermann",
                         initials = "EM",
-                        size = ContactImageSizeSmall
+                        size = ContactImageSizeSmall,
                     )
 
                     // 3. Paar-Kontakt mit Initialen (Primary- & Secondary-Container)
@@ -242,21 +243,21 @@ private fun ContactImagePreview() {
                         secondImageUri = null,
                         secondFullName = "Erika Mustermann",
                         secondInitials = "E",
-                        size = ContactImageSizeSmall
+                        size = ContactImageSizeSmall,
                     )
                 }
 
                 // Row 2: Vergrößerte Kontakte (z. B. Detail- / Header-Größe)
                 Row(
                     horizontalArrangement = Arrangement.spacedBy(SpacingMedium),
-                    verticalAlignment = Alignment.CenterVertically
+                    verticalAlignment = Alignment.CenterVertically,
                 ) {
                     // 4. Vergrößerter Kontakt (Header-Größe)
                     ContactImage(
                         imageUri = null,
                         fullName = "Max Mustermann",
                         initials = "MM",
-                        size = ContactAvatarHeaderSize
+                        size = ContactAvatarHeaderSize,
                     )
 
                     // Vergrößerter Paar-Kontakt (Header-Größe)
@@ -267,7 +268,7 @@ private fun ContactImagePreview() {
                         secondImageUri = null,
                         secondFullName = "Erika Mustermann",
                         secondInitials = "E",
-                        size = ContactAvatarHeaderSize
+                        size = ContactAvatarHeaderSize,
                     )
 
                     // Großer Detail-Kontakt (Large 96.dp)
@@ -275,7 +276,7 @@ private fun ContactImagePreview() {
                         imageUri = null,
                         fullName = "Lukas Kind",
                         initials = "LK",
-                        size = ContactImageSizeLarge
+                        size = ContactImageSizeLarge,
                     )
                 }
             }

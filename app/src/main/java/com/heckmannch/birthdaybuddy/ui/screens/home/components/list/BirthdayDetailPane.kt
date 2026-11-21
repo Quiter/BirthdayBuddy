@@ -28,6 +28,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalFocusManager
@@ -81,14 +82,16 @@ fun BirthdayDetailPane(
 ) {
     val focusManager = LocalFocusManager.current
 
-    val onOpenDatePicker = {
-        val initialDate = contact.birthday ?: LocalDate.now()
-        actions.onOpenBirthdayPicker(
-            contact.lookupKey,
-            contact.birthday?.let { if (it.hasYear) it.year else null },
-            initialDate.monthValue,
-            initialDate.dayOfMonth,
-        )
+    val onOpenDatePicker = remember(contact.lookupKey, contact.birthday, actions) {
+        {
+            val initialDate = contact.birthday ?: LocalDate.now()
+            actions.onOpenBirthdayPicker(
+                contact.lookupKey,
+                contact.birthday?.let { if (it.hasYear) it.year else null },
+                initialDate.monthValue,
+                initialDate.dayOfMonth,
+            )
+        }
     }
 
     Card(
@@ -98,9 +101,9 @@ fun BirthdayDetailPane(
             .padding(SpacingNormal)
             .testTag("birthday_detail_pane"),
         colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceContainerHigh
+            containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
         ),
-        shape = MaterialTheme.shapes.extraLarge
+        shape = MaterialTheme.shapes.extraLarge,
     ) {
         Box(modifier = Modifier.fillMaxSize()) {
             Column(
@@ -109,7 +112,7 @@ fun BirthdayDetailPane(
                     .verticalScroll(rememberScrollState())
                     .padding(SpacingLarge),
                 horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.spacedBy(SpacingNormal)
+                verticalArrangement = Arrangement.spacedBy(SpacingNormal),
             ) {
                 // Großes Avatar-Bild (96.dp statt 40.dp)
                 ContactImage(
