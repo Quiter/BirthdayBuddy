@@ -639,6 +639,19 @@
     - **Verifikation:** Alle Unit-Tests für `FastScrollbar` und `FastScrollState` (`FastScrollbarBoundsTest`, `FastScrollStateTest`) und die gesamten Home-Tests erfolgreich ausgeführt; null Lint-Warnungen in `FastScrollbar.kt`.
 
 393. **Korrektur der horizontalen Ausrichtung der `ScrollbarBubble` (`ScrollbarBubble.kt`, `FastScrollbar.kt`) (UI / UX Polish):**
+    - **Problem & Ursache:** Die `ScrollbarBubble` war innerhalb des `Popup`s zuvor an `TopStart` ausgerichtet und in der Breite auf `ScrollbarDefaults.BarWidth` (150.dp Touch-Target) begrenzt. Bei einem dynamischen negativen X-Versatz (`-(size.width + offset)`) relativ zu `BarWidth` schwebte die Bubble 150.dp weit links im Display (viel zu weit vom sichtbaren Thumb entfernt) und wurde durch die Breitenbeschränkung des inneren Containers abgeschnitten.
+    - **Exakte Kanten-Ausrichtung an den Thumb ([ScrollbarBubble.kt](file:///c:/Users/chris/AndroidStudioProjects/BirthdayBuddy/app/src/main/java/com/heckmannch/birthdaybuddy/ui/screens/home/components/list/ScrollbarBubble.kt)):**
+      - Das `Popup` ist nun an `Alignment.TopEnd` (am rechten Bildschirmrand) ausgerichtet.
+      - Der äußere Box-Container nutzt `Modifier.fillMaxSize()` und definiert ein explizites rechtes Padding:
+        `end = ScrollbarDefaults.ThumbWidth + ScrollbarDefaults.BubbleOffsetX + SpacingExtraSmall`.
+      - Mit `contentAlignment = Alignment.TopEnd` schmiegt sich die rechte Kante der Bubble unmittelbar und mit perfektem Abstand (`BubbleOffsetX = SpacingExtraSmall`) links an den sichtbaren Scrollbar-Thumb an.
+      - Da kein künstliches Breitenlimit (`BarWidth`) mehr auf dem Container liegt, kann die Bubble nach links beliebig weit expandieren, ohne abgeschnitten zu werden.
+      - Die spitze Ecke (`topEnd` mit `BubbleCornerSmall`) zeigt exakt auf den Thumb, und das Label bleibt links vom Finger optimal lesbar.
+    - **Design-Token-Konformität ([FastScrollbar.kt](file:///c:/Users/chris/AndroidStudioProjects/BirthdayBuddy/app/src/main/java/com/heckmannch/birthdaybuddy/ui/screens/home/components/list/FastScrollbar.kt)):**
+      - `ScrollbarDefaults.BubbleOffsetX` wurde mit dem Design-Token `SpacingExtraSmall` (4.dp) definiert.
+    - **Code-Qualität:** 0 Lint-Warnungen und 0 Compiler-Fehler in `ScrollbarBubble.kt` und `FastScrollbar.kt`.
+
+393. **Korrektur der horizontalen Ausrichtung der `ScrollbarBubble` (`ScrollbarBubble.kt`, `FastScrollbar.kt`) (UI / UX Polish):**
     - **Problem & Ursache:** Die `ScrollbarBubble` war innerhalb des `Popup`s an `TopStart` ausgerichtet, verfügte jedoch über keinen horizontalen Offset. Dadurch ragte die Bubble bei langen Monats- oder Buchstaben-Labels (z. B. „September“) nach rechts über den Bildschirmrand hinaus, verdeckte den Scrollbar-Thumb und wurde vom Finger des Nutzers verdeckt. Zudem zeigte die spitze Ecke (`topEnd`) dadurch nicht plausibel zum Thumb.
     - **Horizontale Neupositionierung ([ScrollbarBubble.kt](file:///c:/Users/chris/AndroidStudioProjects/BirthdayBuddy/app/src/main/java/com/heckmannch/birthdaybuddy/ui/screens/home/components/list/ScrollbarBubble.kt)):**
       - Im `graphicsLayer` wurde ein dynamischer negativer X-Versatz implementiert: `translationX = -(size.width + ScrollbarDefaults.BubbleOffsetX.toPx())`.
@@ -649,3 +662,22 @@
     - **Design-Token-Konformität ([FastScrollbar.kt](file:///c:/Users/chris/AndroidStudioProjects/BirthdayBuddy/app/src/main/java/com/heckmannch/birthdaybuddy/ui/screens/home/components/list/FastScrollbar.kt)):**
       - Definition von `BubbleOffsetX = SpacingSmall` in `ScrollbarDefaults` unter strikter Verwendung des Design-Token-Systems aus `Dimensions.kt`.
     - **Code-Qualität:** 0 Lint-Warnungen und 0 Compiler-Fehler in `ScrollbarBubble.kt` und `FastScrollbar.kt`.
+
+394. **Modularisierung des Projekt-Kontexts in aufgabenspezifische Agent-Skills (`.agents/skills/`) (LLM & Context Optimization):**
+    - **Problem:** Die bisherige `projekt-kontext/SKILL.md` war eine monolithische Sammeldatei (~135 Zeilen), die bei jeder Aktivierung das gesamte Kontextfenster des Modells mit nicht-aufgabenbezogenen Richtlinien (z.B. Room-Migrationen bei UI-Tasks oder Compose-Paddings bei Threading-Tasks) belastete.
+    - **Modularer Aufbau:** Aufteilung in 7 hochspezialisierte, kompakte Teil-Skills mit präzisen YAML-Frontmatter-Beschreibungen (Aktivierungstriggern) und eine verschlankte Basis-Datei:
+      - `projekt-kontext`: Schlanker Einstiegspunkt (Tech-Stack, Evergreen-Prinzip, Layering-Architektur, Namenskonventionen, Skill-Übersicht).
+      - `bb-compose-ui`: Material 3 Compose, `Dimensions.kt` Single Source of Truth, Bottom-Padding-Regel, Responsive/Tablets (`ResponsiveLayout.kt`), Edge-to-Edge (`AppResponsiveScaffold`), native Animationen, Coil-Caching.
+      - `bb-navigation`: Navigation 3 (`NavDisplay`), Serializable Route Keys (`NavRoutes.kt`), `AppNavHost.kt`, ViewModel-Lifecycle via `rememberViewModelStoreNavEntryDecorator()`, Parameter-Übergabe per Hilt Assisted Injection.
+      - `bb-room-database`: Room Persistenz, striktes Verbot von `fallbackToDestructiveMigration`, Auto-Migrationen, Schema-Export nach `app/schemas`, `AppDatabase` vs. `SettingsDatabase`, ProGuard-Regeln.
+      - `bb-coroutines-threading`: Threading-Regeln, Verbot von `Dispatchers.IO`, Injektion via `@IoDispatcher`, `@DefaultDispatcher`, `@MainDispatcher`, Main-Safety aller suspend-Funktionen, Import-Standards.
+      - `bb-testing-qa`: Unit Tests mit `MainDispatcherRule`, Roborazzi JVM-Screenshot-Tests für Phone/Tablet & Light/Dark/AMOLED, Pre-Release-Gates.
+      - `bb-i18n-docs`: Synchrone Zweisprachigkeit (`values-de/strings.xml` & `values/strings.xml`), Pflicht-Updates von `CHANGELOG.md` & `PROJECT_STRUCTURE.md`, englische KDoc.
+      - `bb-glance-widget`: Jetpack Glance Homescreen-Widget, transluzente M3-Karten, Worker & AlarmReceiver Update-Mechanismus.
+    - **Dokumentations-Updates:** Registrierung in [`PROJECT_STRUCTURE.md`](file:///E:/Benutzer/Christof/Entwicklung/StudioProjects/BirthdayBuddy/docs/PROJECT_STRUCTURE.md) und [`CHANGELOG.md`](file:///E:/Benutzer/Christof/Entwicklung/StudioProjects/BirthdayBuddy/docs/CHANGELOG.md).
+
+395. **Konsolidierung des Regelwerks in eine zentrale Pointer-Datei `project_rules.md` & Beseitigung redundanter Regeldateien (LLM & Context Optimization):**
+    - **Konsolidierung:** Zusammenführung von `local_LLM.md` und `project_guidelines.md` in die neue, kompakte Datei [`project_rules.md`](file:///E:/Benutzer/Christof/Entwicklung/StudioProjects/BirthdayBuddy/.agents/rules/project_rules.md) unter `.agents/rules/`.
+    - **Inhalt & Struktur:** Enthält die unumstößlichen Kernregeln (Dokumentationspflicht, Room-Sicherheit, Dispatcher-Injektion, I18n, UI-Tokens, Version Catalog), eine tabellarische Pointer-Übersicht aller 8 modularen Skills unter `.agents/skills/` für on-demand Aktivierung, eine Navigationskarte zu den Projektdokumenten und den standardisierten 4-Schritt-Entwicklungs-Workflow.
+    - **Bereinigung:** Die obsoleten Dateien `local_LLM.md` und `project_guidelines.md` wurden restlos entfernt. Dadurch existiert im Ordner `.agents/rules/` nur noch genau eine schlanke Datei (< 70 Zeilen), was Context-Window-Bloat in IDE-Agenten und lokalen LLMs vollständig verhindert.
+    - **Dokumentations-Updates:** Registrierung in [`PROJECT_STRUCTURE.md`](file:///E:/Benutzer/Christof/Entwicklung/StudioProjects/BirthdayBuddy/docs/PROJECT_STRUCTURE.md) und [`CHANGELOG.md`](file:///E:/Benutzer/Christof/Entwicklung/StudioProjects/BirthdayBuddy/docs/CHANGELOG.md).

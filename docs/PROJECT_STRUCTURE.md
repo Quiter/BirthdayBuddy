@@ -5,7 +5,16 @@
 - `BirthdayBuddyApplication.kt`: Hilt-Application-Klasse zur DI- und WorkManager-Initialisierung.
 - `AppViewModel.kt`: Activity-weites ViewModel für globale `AppSettings`, Sync-Triggering & `AppAction`-Buffering.
 - `BootReceiver.kt`: BroadcastReceiver für System-Events (`BOOT_COMPLETED`, `MY_PACKAGE_REPLACED`, `TIMEZONE_CHANGED`, etc.) zur automatisierten Neuplanung von Alarmen & Widgets.
-- Meta & Dokumentation: `PROJECT_STATUS.md`, `PROJECT_STRUCTURE.md`, `CHANGELOG.md`, `scripts/` (Hilfsskripte), `.agents/` (Projekt-Richtlinien & Skills).
+- Meta & Dokumentation: `PROJECT_STATUS.md`, `PROJECT_STRUCTURE.md`, `CHANGELOG.md`, `scripts/` (Hilfsskripte), `.agents/rules/project_rules.md` (Zentrales LLM-Regelwerk & Pointer-Index).
+- **Agent Skills (`.agents/skills/`)**: Modulare Richtlinien-Skills zur Vermeidung von Kontext-Überladung:
+  - `projekt-kontext`: Basis-Architektur, Tech-Stack & Verzeichnisübersicht.
+  - `bb-compose-ui`: Compose, Material 3, Spacings/Dimensions, Responsive Layouts.
+  - `bb-navigation`: Navigation 3, Routen, Assisted Injection.
+  - `bb-room-database`: Room-Datenbanken, Auto-Migrationen & Schema-Sicherheit.
+  - `bb-coroutines-threading`: Dispatcher-Injektion (`@IoDispatcher`), Main-Safety.
+  - `bb-testing-qa`: Unit Tests (`MainDispatcherRule`), Roborazzi Screenshot-Tests.
+  - `bb-i18n-docs`: Zweisprachigkeit (`values-de` / `values`), Changelog- & Doc-Pflichten.
+  - `bb-glance-widget`: Jetpack Glance Homescreen-Widget & M3-Karten.
 
 ## 📁 DI (`di`)
 - `AppModule.kt`: Hilt-Modul für Singleton-Instanzen, `@Reusable` DAO-Bindings und Coroutine-Dispatcher (`@IoDispatcher`, `@DefaultDispatcher`, `@MainDispatcher`, `@ApplicationScope`).
