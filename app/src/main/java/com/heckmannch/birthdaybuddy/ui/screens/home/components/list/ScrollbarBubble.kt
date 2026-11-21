@@ -24,7 +24,6 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.window.Popup
 import androidx.compose.ui.window.PopupProperties
-import com.heckmannch.birthdaybuddy.ui.theme.SpacingExtraSmall
 import com.heckmannch.birthdaybuddy.ui.theme.SpacingNormal
 import com.heckmannch.birthdaybuddy.ui.theme.SpacingSmall
 
@@ -80,7 +79,7 @@ internal fun ScrollbarBubble(
                     .padding(
                         end = ScrollbarDefaults.ThumbWidth +
                             ScrollbarDefaults.BubbleOffsetX +
-                            SpacingExtraSmall,
+                            SpacingNormal,
                     ),
                 contentAlignment = Alignment.TopEnd,
             ) {

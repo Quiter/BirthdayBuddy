@@ -8,6 +8,8 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.getBoundsInRoot
 import androidx.compose.ui.test.junit4.v2.createComposeRule
 import androidx.compose.ui.test.onNodeWithContentDescription
@@ -241,5 +243,37 @@ class FastScrollbarBoundsTest {
         // Ensures the scrollbar in HomeListDetailDisplay correctly aligns with BirthdayList
         assertThat(scrollbarBounds.top).isEqualTo(topPadding)
         assertThat(scrollbarBounds.bottom).isEqualTo(rootBounds.bottom - bottomPadding)
+    }
+
+    @Test
+    fun scrollbarBubble_withLongLabel_isPositionedToLeftOfBarWidth() {
+        val containerWidth = 400.dp
+        val containerHeight = 800.dp
+        val label = "September"
+
+        composeRule.setContent {
+            BirthdayBuddyTheme {
+                Box(
+                    modifier = Modifier
+                        .testTag("bubble_container")
+                        .size(width = containerWidth, height = containerHeight),
+                ) {
+                    ScrollbarBubble(
+                        visible = true,
+                        label = label,
+                    ) { 100.dp }
+                }
+            }
+        }
+
+        val bubbleNode = composeRule.onNodeWithText(label, useUnmergedTree = true)
+        bubbleNode.assertIsDisplayed()
+
+        val containerBounds = composeRule.onNodeWithTag("bubble_container").getBoundsInRoot()
+        val bubbleBounds = bubbleNode.getBoundsInRoot()
+
+        // The bubble must be positioned to the left of the scrollbar area (ScrollbarDefaults.BarWidth)
+        val expectedMaxRight = containerBounds.right - ScrollbarDefaults.BarWidth
+        assertThat(bubbleBounds.right).isAtMost(expectedMaxRight)
     }
 }
