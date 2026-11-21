@@ -20,7 +20,7 @@ android {
         minSdk = 28
         targetSdk = 37
         versionCode = 49
-        versionName = "2.16.11"
+        versionName = "2.16.12"
 
         testInstrumentationRunner = "com.heckmannch.birthdaybuddy.HiltTestRunner"
     }
@@ -68,6 +68,7 @@ android {
     testOptions {
         unitTests.isIncludeAndroidResources = true
     }
+    compileSdkMinor = 2
 }
 
 room {
