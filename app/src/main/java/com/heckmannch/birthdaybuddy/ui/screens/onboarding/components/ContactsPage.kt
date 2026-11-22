@@ -105,7 +105,6 @@ fun ContactsPage(
                 ) {
                     Column(modifier = Modifier.padding(SpacingSmall)) {
                         ListItem(
-                            headlineContent = { Text(stringResource(R.string.settings_sync_title)) },
                             trailingContent = {
                                 AppSwitch(
                                     checked = enabled,
@@ -113,7 +112,9 @@ fun ContactsPage(
                                 )
                             },
                             colors = ListItemDefaults.colors(containerColor = Color.Transparent)
-                        )
+                        ) {
+                            Text(stringResource(R.string.settings_sync_title))
+                        }
                     }
                 }
             }

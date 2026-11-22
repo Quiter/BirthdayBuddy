@@ -127,7 +127,7 @@ internal fun LabelSettingsScreenContent(
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     ListItem(
-                        headlineContent = { Text(stringResource(R.string.labels_enable)) },
+                        modifier = Modifier.clickable { onLabelsEnabledChanged(!labelsEnabled) },
                         supportingContent = { Text(stringResource(R.string.labels_enable_desc)) },
                         trailingContent = {
                             AppSwitch(
@@ -135,9 +135,10 @@ internal fun LabelSettingsScreenContent(
                                 onCheckedChange = onLabelsEnabledChanged
                             )
                         },
-                        modifier = Modifier.clickable { onLabelsEnabledChanged(!labelsEnabled) },
                         colors = ListItemDefaults.colors(containerColor = Color.Transparent)
-                    )
+                    ) {
+                        Text(stringResource(R.string.labels_enable))
+                    }
                 }
             }
 
@@ -385,7 +386,9 @@ private fun LabelConfigCard(
                     )
 
                     ListItem(
-                        headlineContent = { Text(stringResource(R.string.labels_notifications_title)) },
+                        modifier = Modifier.clickable(enabled = enabled) {
+                            onNotificationsToggle(!label.notificationsEnabled)
+                        },
                         supportingContent = { Text(stringResource(R.string.labels_notifications_desc)) },
                         trailingContent = {
                             AppSwitch(
@@ -394,14 +397,15 @@ private fun LabelConfigCard(
                                 enabled = enabled
                             )
                         },
-                        modifier = Modifier.clickable(enabled = enabled) {
-                            onNotificationsToggle(!label.notificationsEnabled)
-                        },
                         colors = ListItemDefaults.colors(containerColor = Color.Transparent)
-                    )
+                    ) {
+                        Text(stringResource(R.string.labels_notifications_title))
+                    }
 
                     ListItem(
-                        headlineContent = { Text(stringResource(R.string.labels_widget_title)) },
+                        modifier = Modifier.clickable(enabled = enabled) {
+                            onWidgetToggle(!label.showInWidget)
+                        },
                         supportingContent = { Text(stringResource(R.string.labels_widget_desc)) },
                         trailingContent = {
                             AppSwitch(
@@ -410,11 +414,10 @@ private fun LabelConfigCard(
                                 enabled = enabled
                             )
                         },
-                        modifier = Modifier.clickable(enabled = enabled) {
-                            onWidgetToggle(!label.showInWidget)
-                        },
                         colors = ListItemDefaults.colors(containerColor = Color.Transparent)
-                    )
+                    ) {
+                        Text(stringResource(R.string.labels_widget_title))
+                    }
                 }
             }
         }

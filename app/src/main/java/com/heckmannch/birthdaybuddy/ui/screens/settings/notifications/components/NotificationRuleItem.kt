@@ -33,7 +33,7 @@ fun NotificationRuleItem(
     }
 
     ListItem(
-        headlineContent = { Text(daysStr) },
+        modifier = Modifier.clickable { onEditRule(rule) },
         supportingContent = {
             Text(stringResource(R.string.rule_time_format, rule.hour, rule.minute))
         },
@@ -49,8 +49,9 @@ fun NotificationRuleItem(
             }
         },
         colors = ListItemDefaults.colors(containerColor = Color.Transparent),
-        modifier = Modifier.clickable { onEditRule(rule) },
-    )
+    ) {
+        Text(daysStr)
+    }
 }
 
 @Preview

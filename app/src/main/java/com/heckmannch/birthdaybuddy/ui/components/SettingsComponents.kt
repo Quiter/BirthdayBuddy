@@ -137,7 +137,12 @@ fun SettingsSwitchRow(
     enabled: Boolean = true
 ) {
     ListItem(
-        headlineContent = { Text(title) },
+        modifier = modifier.toggleable(
+            value = checked,
+            enabled = enabled,
+            role = Role.Switch,
+            onValueChange = onCheckedChange
+        ),
         supportingContent = description?.let { { Text(it) } },
         leadingContent = leadingIcon,
         trailingContent = {
@@ -148,13 +153,9 @@ fun SettingsSwitchRow(
             )
         },
         colors = ListItemDefaults.colors(containerColor = Color.Transparent),
-        modifier = modifier.toggleable(
-            value = checked,
-            enabled = enabled,
-            role = Role.Switch,
-            onValueChange = onCheckedChange
-        )
-    )
+    ) {
+        Text(title)
+    }
 }
 
 /**
@@ -179,13 +180,14 @@ fun SettingsClickableRow(
     enabled: Boolean = true
 ) {
     ListItem(
-        headlineContent = { Text(title) },
+        modifier = modifier.clickable(enabled = enabled, onClick = onClick),
         supportingContent = description?.let { { Text(it) } },
         leadingContent = leadingIcon,
         trailingContent = trailingContent,
         colors = ListItemDefaults.colors(containerColor = Color.Transparent),
-        modifier = modifier.clickable(enabled = enabled, onClick = onClick)
-    )
+    ) {
+        Text(title)
+    }
 }
 
 /**

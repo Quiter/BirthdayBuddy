@@ -185,32 +185,6 @@ fun BirthdayItem(
                         haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                         onExpand()
                     },
-                    headlineContent = {
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            Text(
-                                text = contact.fullName,
-                                style = if (isExpanded) MaterialTheme.typography.titleLarge else MaterialTheme.typography.titleMedium
-                            )
-                            if (contact.isFavorite) {
-                                Spacer(modifier = Modifier.width(SpacingSmall))
-                                Icon(
-                                    imageVector = Icons.Default.Star,
-                                    contentDescription = stringResource(R.string.contact_favorite_desc),
-                                    modifier = Modifier.size(IconSizeSmall),
-                                    tint = birthdayGoldColor
-                                )
-                            }
-                            if (contact.hasGiftIdeas) {
-                                Spacer(modifier = Modifier.width(SpacingSmall))
-                                Icon(
-                                    Icons.Default.Edit,
-                                    contentDescription = null,
-                                    modifier = Modifier.size(IconSizeExtraSmall),
-                                    tint = birthdayKidAmberColor
-                                )
-                            }
-                        }
-                    },
                     supportingContent = {
                         Column {
                             Text(
@@ -251,7 +225,32 @@ fun BirthdayItem(
                         )
                     },
                     colors = ListItemDefaults.colors(containerColor = Color.Transparent)
-                )
+                ) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Text(
+                            text = contact.fullName,
+                            style = if (isExpanded) MaterialTheme.typography.titleLarge else MaterialTheme.typography.titleMedium
+                        )
+                        if (contact.isFavorite) {
+                            Spacer(modifier = Modifier.width(SpacingSmall))
+                            Icon(
+                                imageVector = Icons.Default.Star,
+                                contentDescription = stringResource(R.string.contact_favorite_desc),
+                                modifier = Modifier.size(IconSizeSmall),
+                                tint = birthdayGoldColor
+                            )
+                        }
+                        if (contact.hasGiftIdeas) {
+                            Spacer(modifier = Modifier.width(SpacingSmall))
+                            Icon(
+                                Icons.Default.Edit,
+                                contentDescription = null,
+                                modifier = Modifier.size(IconSizeExtraSmall),
+                                tint = birthdayKidAmberColor
+                            )
+                        }
+                    }
+                }
 
                 AnimatedVisibility(
                     visible = isExpanded,

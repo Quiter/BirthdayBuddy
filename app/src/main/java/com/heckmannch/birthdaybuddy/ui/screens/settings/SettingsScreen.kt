@@ -455,12 +455,6 @@ private fun SettingsMenuItem(
 
     ListItem(
         modifier = itemModifier,
-        headlineContent = {
-            Text(
-                text = stringResource(titleRes),
-                color = contentColor
-            )
-        },
         supportingContent = {
             Text(
                 text = stringResource(descRes),
@@ -477,7 +471,12 @@ private fun SettingsMenuItem(
         colors = ListItemDefaults.colors(
             containerColor = Color.Transparent
         )
-    )
+    ) {
+        Text(
+            text = stringResource(titleRes),
+            color = contentColor
+        )
+    }
 }
 
 @Preview(showBackground = true)

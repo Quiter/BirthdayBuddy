@@ -107,7 +107,7 @@
 ## 🧪 Testing (`app/src/test` & `app/src/androidTest`)
 
 ### 📁 Lokale JVM Unit-Tests (`app/src/test`)
-- **Infrastructure & Root**: `MainDispatcherRule.kt`, `AppViewModelTest.kt`, `BootReceiverTest.kt`.
+- **Infrastructure & Root**: `MainDispatcherRule.kt`, `AppViewModelTest.kt`, `BootReceiverTest.kt`, `app/src/test/resources/robolectric.properties` (Globales SDK=35 Pinning).
 - **Data Layer**: `ContactDaoTest`, `PendingNotificationDaoTest`, `ConvertersTest`, `GiftIdeaConvertersTest`, DB-Mapper-Tests, Repository-Tests (`ContactRepositoryImplTest`, `CoupleRepositoryImplTest`, `GiftIdeaRepositoryImplTest`, `NotificationRepositoryImplTest`, `CalendarSyncRepositoryImplTest`, etc.).
 - **Domain Layer**: Tests für Use Cases (`GetContactsUseCaseTest`, `GetPendingNotificationsUseCaseTest`, etc.) und Utilities (`PhoneNumberNormalizerTest`, `NotificationKeyUtilsTest`, `ContactFilterLogicTest`).
 - **Platform & Notification**: `BirthdayAppFunctionServiceTest`, `NotificationAlarmReceiverTest`, `NotificationActionReceiverTest`, `NotificationTextFormatterTest`, `NotificationWorkerTest`, `SnoozeWorkerTest`.
