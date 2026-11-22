@@ -77,8 +77,9 @@ internal fun ScrollbarBubble(
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(
-                        end = ScrollbarDefaults.BarWidth +
-                            ScrollbarDefaults.BubbleOffsetX,
+                        end = ScrollbarDefaults.ThumbWidth +
+                            ScrollbarDefaults.BubbleOffsetX +
+                            SpacingNormal,
                     ),
                 contentAlignment = Alignment.TopEnd,
             ) {
