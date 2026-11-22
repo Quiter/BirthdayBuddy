@@ -8,9 +8,6 @@ on:
 permissions:
   contents: write
 
-env:
-  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
-
 jobs:
   check-version:
     runs-on: ubuntu-latest
@@ -76,7 +73,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Set up JDK 21
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v5
         with:
           java-version: '21'
           distribution: 'temurin'
@@ -97,7 +94,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Set up JDK 21
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v5
         with:
           java-version: '21'
           distribution: 'temurin'
