@@ -52,7 +52,7 @@ class FastScrollbarBoundsTest {
         SampleData.sampleContacts[index % SampleData.sampleContacts.size].copy(
             id = "contact_$index",
             fullName = "Contact $index",
-            monthName = "Month ${(index % 12) + 1}"
+            monthName = "Month ${(index % 12) + 1}",
         )
     }
 
@@ -246,7 +246,7 @@ class FastScrollbarBoundsTest {
     }
 
     @Test
-    fun scrollbarBubble_withLongLabel_isPositionedToLeftOfBarWidth() {
+    fun scrollbarBubble_withLongLabel_isPositionedToLeftOfThumbWidth() {
         val containerWidth = 400.dp
         val containerHeight = 800.dp
         val label = "September"
@@ -272,8 +272,8 @@ class FastScrollbarBoundsTest {
         val containerBounds = composeRule.onNodeWithTag("bubble_container").getBoundsInRoot()
         val bubbleBounds = bubbleNode.getBoundsInRoot()
 
-        // The bubble must be positioned to the left of the scrollbar area (ScrollbarDefaults.BarWidth)
-        val expectedMaxRight = containerBounds.right - ScrollbarDefaults.BarWidth
+        // The bubble must be positioned to the left of the scrollbar thumb (ScrollbarDefaults.ThumbWidth)
+        val expectedMaxRight = containerBounds.right - ScrollbarDefaults.ThumbWidth
         assertThat(bubbleBounds.right).isAtMost(expectedMaxRight)
     }
 }
