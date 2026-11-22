@@ -20,10 +20,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntOffset
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Popup
 import androidx.compose.ui.window.PopupProperties
+import com.heckmannch.birthdaybuddy.ui.theme.BirthdayBuddyTheme
 import com.heckmannch.birthdaybuddy.ui.theme.SpacingNormal
 import com.heckmannch.birthdaybuddy.ui.theme.SpacingSmall
 
@@ -122,3 +125,16 @@ internal fun ScrollbarBubble(
         }
     }
 }
+
+@Preview
+@Composable
+private fun ScrollbarBubblePreview() {
+    BirthdayBuddyTheme {
+        ScrollbarBubble(
+            visible = true,
+            label = "March",
+            thumbOffset = { 40.dp },
+        )
+    }
+}
+
