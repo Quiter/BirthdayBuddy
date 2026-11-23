@@ -12,6 +12,8 @@
     <string name="home_add_contact">Kontakt hinzufügen</string>
     <string name="home_edit_contact">Kontakt bearbeiten</string>
     <string name="cd_toggle_sidebar">Seitenleiste umschalten</string>
+    <string name="cd_open_search">Suche öffnen</string>
+    <string name="cd_close_search">Suche schließen</string>
 
     <!-- Birthday List -->
     <string name="empty_permission_desc">Um deine Geburtstage zu sehen, benötigt BirthdayBuddy Zugriff auf deine Kontakte.</string>
@@ -41,6 +43,14 @@
         <item quantity="one">in 1 T.</item>
         <item quantity="other">in %d T.</item>
     </plurals>
+
+    <!-- BuddyListCard / MorpheStyleListCard -->
+    <string name="card_expand_details">Details anzeigen</string>
+    <string name="card_collapse_details">Details verbergen</string>
+    <string name="card_contact_sample_title">Max Mustermann</string>
+    <string name="card_contact_sample_subtitle">Wird 30 in 5 Tagen (15.04.1995)</string>
+    <string name="card_label_sample_title">Familie</string>
+    <string name="card_label_sample_subtitle">12 Kontakte • Benachrichtigungen aktiv</string>
 
     <!-- Widget -->
     <string name="widget_no_birthdays">Keine Geburtstage</string>

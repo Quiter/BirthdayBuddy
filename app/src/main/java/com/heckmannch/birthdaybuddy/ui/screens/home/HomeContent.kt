@@ -162,11 +162,13 @@ private fun HomeMainContent(
         topBar = {
             HomeTopBar(
                 searchQuery = uiState.searchQuery,
+                isSearchActive = uiState.isSearchActive,
                 placeholder = homeState.animatedPlaceholder,
                 showSidebar = showSidebar,
                 focusRequester = homeState.searchFocusRequester,
                 actions = actions,
                 onToggleSidebar = onToggleSidebar,
+                onToggleSearch = actions.onToggleSearch,
             )
         },
         floatingActionButton = {

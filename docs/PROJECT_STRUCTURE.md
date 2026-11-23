@@ -67,7 +67,7 @@
   - Mapper: `ContactUiMapper`, `CoupleSuggestionUiMapper`.
   - Modelle: `ContactUiModel`, `CoupleSuggestionUiModel`, `HomeUiState`, `BirthdayTier` (Enum), `LabelManagementModel`, `SampleData`.
 - **UI Components & Illustrations (`ui.components`, `ui.illustrations`)**:
-  - Komponenten: `ColorPickerDialog`, `ResponsiveLayout` (WindowSizeClass & Responsive Scaffold), `AppSwitch`, `SettingsComponents`, `StepItem`.
+  - Komponenten: `AppTopHeader` (Morphe-Style Header mit weich animierter Suchleiste), `BuddyListCard` (`MorpheStyleListCard`), `ColorPickerDialog`, `ResponsiveLayout` (WindowSizeClass & Responsive Scaffold), `AppSwitch`, `SettingsComponents`, `StepItem`.
   - Native Illustrationen: `WelcomeIllustration`, `ContactsIllustration`, `NotificationsIllustration`, `CalendarIllustration`, `CalendarGuideIllustration`, `ReadyIllustration`.
 - **Theme (`ui.theme`)**: `Theme.kt`, `Color.kt`, `ColorPresets.kt`, `Type.kt`, `Shapes.kt`, `Dimensions.kt`.
 - **Feature Screens (`ui.screens`)** *(Co-located ViewModels, States & Components)*:

@@ -124,6 +124,7 @@ class HomeViewModel @Inject constructor(
      */
     private data class UserUiState(
         val searchQuery: String = "",
+        val isSearchActive: Boolean = false,
         val selectedLabel: String? = null,
         val isResettingFilter: Boolean = false,
         val isSyncing: Boolean = false,
@@ -282,6 +283,7 @@ class HomeViewModel @Inject constructor(
             contacts = contacts,
             availableLabels = labels,
             searchQuery = userState.searchQuery,
+            isSearchActive = userState.isSearchActive,
             selectedLabel = userState.selectedLabel,
             isResettingFilter = userState.isResettingFilter,
             isSyncing = userState.isSyncing,
@@ -333,8 +335,8 @@ class HomeViewModel @Inject constructor(
      */
     private fun resetFiltersInternal() {
         _userUiState.update { state ->
-            if (state.searchQuery.isNotEmpty() || state.selectedLabel != null) {
-                state.copy(searchQuery = "", selectedLabel = null, isResettingFilter = true)
+            if (state.searchQuery.isNotEmpty() || state.isSearchActive || state.selectedLabel != null) {
+                state.copy(searchQuery = "", isSearchActive = false, selectedLabel = null, isResettingFilter = true)
             } else {
                 state
             }
@@ -364,12 +366,25 @@ class HomeViewModel @Inject constructor(
                 lastInteractionTime = clock.currentTimeMillis()
             }
 
+            // Toggles search mode expansion and clears query when deactivated.
+            is HomeIntent.SetSearchActive -> {
+                _userUiState.update { state ->
+                    val newQuery = if (!intent.active) "" else state.searchQuery
+                    state.copy(isSearchActive = intent.active, searchQuery = newQuery)
+                }
+                if (intent.active) {
+                    viewModelScope.launch {
+                        _eventFlow.emit(HomeUiEvent.RequestSearchFocus)
+                    }
+                }
+            }
+
             // Updates the search query text, clears label selection if transitioning from blank to typed, and scrolls to top.
             is HomeIntent.SearchQueryChanged -> {
                 val newQuery = intent.query
                 var shouldTriggerScroll = false
                 _userUiState.update { state ->
-                    if (state.searchQuery == newQuery) state
+                    if (state.searchQuery == newQuery && state.isSearchActive) state
                     else {
                         val isEnteringSearch = state.searchQuery.isEmpty() && newQuery.isNotEmpty()
                         val isClearingSearch = state.searchQuery.isNotEmpty() && newQuery.isEmpty()
@@ -383,8 +398,10 @@ class HomeViewModel @Inject constructor(
                             } else {
                                 state.selectedLabel
                             }
+                        val isSearchActive = newQuery.isNotEmpty() || state.isSearchActive
                         state.copy(
                             searchQuery = newQuery,
+                            isSearchActive = isSearchActive,
                             selectedLabel = updatedLabel,
                             isResettingFilter = isTransition || state.isResettingFilter
                         )

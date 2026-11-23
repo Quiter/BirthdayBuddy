@@ -163,8 +163,9 @@ fun HomeScreen(
     val actions =
         remember(onIntent, contactActions, permissionLauncher, homeState) {
             HomeActions(
-                // Search bar input queries
+                // Search bar input queries and active state toggles
                 onSearchQueryChange = { query -> onIntent(HomeIntent.SearchQueryChanged(query)) },
+                onToggleSearch = { active -> onIntent(HomeIntent.SetSearchActive(active)) },
 
                 // Label-based filtering selection
                 onLabelSelected = { label -> onIntent(HomeIntent.LabelSelected(label)) },

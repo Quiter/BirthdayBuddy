@@ -10,6 +10,13 @@ import java.time.LocalDate
  */
 sealed interface HomeIntent {
     /**
+     * Dispatched when search mode is activated or deactivated.
+     *
+     * @property active `true` to expand search bar, `false` to collapse back to header.
+     */
+    data class SetSearchActive(val active: Boolean) : HomeIntent
+
+    /**
      * Dispatched when the user updates text in the search input field.
      *
      * @property query The updated search text query.

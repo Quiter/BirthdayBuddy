@@ -11,6 +11,7 @@ import com.heckmannch.birthdaybuddy.domain.model.MessengerApp
 @Stable
 data class HomeActions(
     val onSearchQueryChange: (String) -> Unit = {},
+    val onToggleSearch: (Boolean) -> Unit = {},
     val onLabelSelected: (String?) -> Unit = {},
     val onClearSearch: () -> Unit = {},
     val onNavigateToSettings: () -> Unit = {},

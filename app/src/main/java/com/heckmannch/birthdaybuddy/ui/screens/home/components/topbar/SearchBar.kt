@@ -60,6 +60,8 @@ import com.heckmannch.birthdaybuddy.ui.theme.SpacingExtraSmall
 import com.heckmannch.birthdaybuddy.ui.theme.SpacingNone
 import com.heckmannch.birthdaybuddy.ui.theme.SpacingNormal
 
+import androidx.compose.foundation.layout.RowScope
+
 /**
  * A custom search bar composable that supports animated placeholder transitions,
  * dynamic styling based on focus state, query clearing, settings navigation, and optional navigation icons.
@@ -75,6 +77,7 @@ import com.heckmannch.birthdaybuddy.ui.theme.SpacingNormal
  * @param focusRequester The [FocusRequester] used to request focus on the underlying text field.
  * @param modifier The modifier to be applied to the search bar layout.
  * @param navigationIcon Optional composable to display as the leading icon in place of the default search icon.
+ * @param trailingActions Optional composable slot to customize trailing action icons in place of the default settings icon.
  */
 @Composable
 fun SearchBar(
@@ -86,6 +89,7 @@ fun SearchBar(
     focusRequester: FocusRequester,
     modifier: Modifier = Modifier,
     navigationIcon: @Composable (() -> Unit)? = null,
+    trailingActions: @Composable (RowScope.() -> Unit)? = null,
 ) {
     val focusManager = LocalFocusManager.current
     var isFocused by remember { mutableStateOf(false) }
@@ -190,39 +194,7 @@ fun SearchBar(
                 }
             },
             trailingIcon = {
-                Row(
-                    modifier = Modifier.padding(end = SpacingExtraSmall),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    AnimatedVisibility(
-                        visible = textFieldValue.text.isNotEmpty(),
-                        enter = fadeIn(),
-                        exit = fadeOut()
-                    ) {
-                        IconButton(
-                            onClick = {
-                                textFieldValue = TextFieldValue("")
-                                pendingQueries.clear()
-                                onClearQuery()
-                            },
-                            modifier = Modifier.testTag("clear_search_button")
-                        ) {
-                            Icon(
-                                imageVector = Icons.Default.Close,
-                                contentDescription = stringResource(R.string.home_search_clear)
-                            )
-                        }
-                    }
-                    IconButton(
-                        onClick = onSettingsClick,
-                        modifier = Modifier.testTag("settings_button")
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.Settings,
-                            contentDescription = stringResource(R.string.home_settings)
-                        )
-                    }
-                }
+
             },
             singleLine = true,
             colors = TextFieldDefaults.colors(
