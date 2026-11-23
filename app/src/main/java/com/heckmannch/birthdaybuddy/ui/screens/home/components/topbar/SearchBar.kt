@@ -194,7 +194,37 @@ fun SearchBar(
                 }
             },
             trailingIcon = {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    if (textFieldValue.text.isNotEmpty()) {
+                        IconButton(
+                            onClick = onClearQuery,
+                            modifier = Modifier.testTag("clear_search_button")
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Close,
+                                contentDescription = stringResource(R.string.home_search_clear),
+                                tint = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+                    }
 
+                    if (trailingActions != null) {
+                        trailingActions()
+                    } else {
+                        IconButton(
+                            onClick = onSettingsClick,
+                            modifier = Modifier.testTag("settings_button")
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Settings,
+                                contentDescription = stringResource(R.string.home_settings),
+                                tint = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+                    }
+                }
             },
             singleLine = true,
             colors = TextFieldDefaults.colors(
