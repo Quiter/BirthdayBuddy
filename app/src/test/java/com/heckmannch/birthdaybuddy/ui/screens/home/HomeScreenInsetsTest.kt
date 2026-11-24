@@ -26,7 +26,7 @@ import org.robolectric.annotation.GraphicsMode
 /**
  * Verifies that all elements on the home screen (BirthdayDetailPane, BirthdayQuotePlaceholder,
  * BirthdayList items, FastScrollbar) properly respect insets and never disappear
- * behind [com.heckmannch.birthdaybuddy.ui.screens.home.components.topbar.HomeTopBar].
+ * behind [com.heckmannch.birthdaybuddy.ui.screens.home.components.header.HomeHeader].
  */
 @RunWith(RobolectricTestRunner::class)
 @Config(sdk = [35], qualifiers = "w840dp-h640dp-xxhdpi")
