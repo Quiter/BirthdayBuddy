@@ -12,14 +12,18 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.platform.LocalInspectionMode
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.tooling.preview.Preview
 import coil3.ImageLoader
 import coil3.imageLoader
 import coil3.request.ImageRequest
 import com.heckmannch.birthdaybuddy.R
 import com.heckmannch.birthdaybuddy.ui.model.ContactUiModel
 import com.heckmannch.birthdaybuddy.ui.model.HomeUiState
+import com.heckmannch.birthdaybuddy.ui.model.SampleData
+import com.heckmannch.birthdaybuddy.ui.theme.BirthdayBuddyTheme
 import com.heckmannch.birthdaybuddy.ui.screens.home.components.list.BirthdayDatePickerDialog
 import com.heckmannch.birthdaybuddy.ui.screens.home.components.list.getAvatarCacheKey
 import com.heckmannch.birthdaybuddy.ui.util.ContactActions
@@ -56,8 +60,10 @@ fun HomeScreen(
     onIntent: (HomeIntent) -> Unit,
     scrollToTopEvent: SharedFlow<Unit>,
     onNavigateToSettings: () -> Unit,
-    eventFlow: SharedFlow<HomeUiEvent> = remember { MutableSharedFlow() },
+    eventFlow: SharedFlow<HomeUiEvent>? = null,
 ) {
+    val actualEventFlow = eventFlow ?: remember { MutableSharedFlow() }
+
     // Android platform CompositionLocals for focus, keyboard, and package/system services context.
     val context = LocalContext.current
     val focusManager = LocalFocusManager.current
@@ -85,13 +91,17 @@ fun HomeScreen(
      * [Manifest.permission.WRITE_CONTACTS]).
      * Initiates contact synchronization once read permission is granted.
      */
-    val permissionLauncher =
+    val isInspectionMode = LocalInspectionMode.current
+    val permissionLauncher = if (!isInspectionMode) {
         rememberLauncherForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { permissions ->
             val readGranted = permissions[Manifest.permission.READ_CONTACTS] == true
             if (readGranted) {
                 onIntent(HomeIntent.SyncContacts())
             }
         }
+    } else {
+        rememberLauncherForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) {}
+    }
 
     // --- SECTION 2: UI Coordination, Focus, & Micro-Animations ---
 
@@ -230,7 +240,24 @@ fun HomeScreen(
             )
         }
 
-    // --- SECTION 6: Global Dialog Overlays ---
+    // --- SECTION 6: View Layer Invocation ---
+    HomeScreenContent(
+        uiState = uiState,
+        homeState = homeState,
+        actions = actions,
+        events = actualEventFlow,
+        onIntent = onIntent,
+    )
+}
+
+@Composable
+internal fun HomeScreenContent(
+    uiState: HomeUiState,
+    homeState: HomeState,
+    actions: HomeActions,
+    events: SharedFlow<HomeUiEvent>,
+    onIntent: (HomeIntent) -> Unit,
+) {
     if (uiState.pendingBirthdayEdit != null) {
         val edit = uiState.pendingBirthdayEdit
         BirthdayDatePickerDialog(
@@ -244,13 +271,11 @@ fun HomeScreen(
         )
     }
 
-    // --- SECTION 7: View Layer Invocation ---
-    // Passes state, event stream, and consolidated actions down to the layout rendering container.
     HomeContent(
         uiState = uiState,
         homeState = homeState,
         actions = actions,
-        events = eventFlow,
+        events = events,
         onIntent = onIntent,
     )
 }
@@ -292,3 +317,16 @@ private fun prefetchAvatarImages(
     }
 }
 
+@Preview(showBackground = true)
+@Composable
+fun HomeScreenPreview() {
+    BirthdayBuddyTheme {
+        HomeScreenContent(
+            uiState = SampleData.homeUiState,
+            homeState = rememberHomeState(),
+            actions = SampleData.homeActions,
+            events = remember { MutableSharedFlow() },
+            onIntent = {},
+        )
+    }
+}
