@@ -14,6 +14,7 @@
     <string name="cd_toggle_sidebar">Seitenleiste umschalten</string>
     <string name="cd_open_search">Suche öffnen</string>
     <string name="cd_close_search">Suche schließen</string>
+    <string name="cd_clear_search">Suche leeren</string>
 
     <!-- Birthday List -->
     <string name="empty_permission_desc">Um deine Geburtstage zu sehen, benötigt BirthdayBuddy Zugriff auf deine Kontakte.</string>

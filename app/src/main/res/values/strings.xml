@@ -14,6 +14,7 @@
     <string name="cd_toggle_sidebar">Toggle Sidebar</string>
     <string name="cd_open_search">Open search</string>
     <string name="cd_close_search">Close search</string>
+    <string name="cd_clear_search">Clear search</string>
 
     <!-- Birthday List -->
     <string name="empty_permission_desc">To see your birthdays, BirthdayBuddy needs access to your contacts.</string>

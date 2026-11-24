@@ -86,6 +86,7 @@ tasks.withType<Test>().configureEach {
 }
 
 dependencies {
+    implementation(libs.androidx.compose.foundation)
     // Baseline Profile
     baselineProfile(project(":baselineprofile"))
     implementation(libs.androidx.profileinstaller)

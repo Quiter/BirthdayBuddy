@@ -15,26 +15,31 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextField
+import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import com.heckmannch.birthdaybuddy.R
-import com.heckmannch.birthdaybuddy.ui.screens.home.components.topbar.SearchBar
 import com.heckmannch.birthdaybuddy.ui.theme.BirthdayBuddyTheme
 import com.heckmannch.birthdaybuddy.ui.theme.SearchBarHeight
 import com.heckmannch.birthdaybuddy.ui.theme.SpacingNormal
@@ -77,30 +82,28 @@ fun AppTopHeader(
     showSearchButton: Boolean = true,
     navigationIcon: @Composable (() -> Unit)? = null,
     actions: @Composable RowScope.() -> Unit = {},
-) {
-    AppTopHeader(
-        titleContent = {
-            Text(
-                text = title,
-                style = MaterialTheme.typography.titleLarge,
-                fontWeight = FontWeight.SemiBold,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
-            )
-        },
-        isSearchActive = isSearchActive,
-        searchQuery = searchQuery,
-        onSearchQueryChange = onSearchQueryChange,
-        onSearchActiveChange = onSearchActiveChange,
-        modifier = modifier,
-        searchPlaceholder = searchPlaceholder,
-        onClearSearch = onClearSearch,
-        focusRequester = focusRequester,
-        showSearchButton = showSearchButton,
-        navigationIcon = navigationIcon,
-        actions = actions,
-    )
-}
+) = AppTopHeader(
+    titleContent = {
+        Text(
+            text = title,
+            style = MaterialTheme.typography.titleLarge,
+            fontWeight = FontWeight.SemiBold,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
+        )
+    },
+    isSearchActive = isSearchActive,
+    searchQuery = searchQuery,
+    onSearchQueryChange = onSearchQueryChange,
+    onSearchActiveChange = onSearchActiveChange,
+    modifier = modifier,
+    searchPlaceholder = searchPlaceholder,
+    onClearSearch = onClearSearch,
+    focusRequester = focusRequester,
+    showSearchButton = showSearchButton,
+    navigationIcon = navigationIcon,
+    actions = actions,
+)
 
 /**
  * Overloaded [AppTopHeader] accepting a custom [titleContent] composable.
@@ -144,28 +147,52 @@ fun AppTopHeader(
                 modifier = Modifier.fillMaxWidth(),
             ) { active ->
                 if (active) {
-                    SearchBar(
-                        query = searchQuery,
-                        placeholder = searchPlaceholder,
-                        onQueryChange = onSearchQueryChange,
-                        onClearQuery = onClearSearch,
-                        onSettingsClick = {},
-                        focusRequester = focusRequester,
-                        navigationIcon = {
-                            IconButton(
-                                onClick = { onSearchActiveChange(false) },
-                                modifier = Modifier.testTag("close_search_button"),
-                            ) {
-                                Icon(
-                                    imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                                    contentDescription = stringResource(R.string.cd_close_search),
-                                )
-                            }
-                        },
-                        trailingActions = actions,
-                        modifier = Modifier.fillMaxWidth()
-                    )
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = SpacingNormal),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        // 1. Suchfeld, das den verfügbaren Platz einnimmt
+                        TextField(
+                            value = searchQuery,
+                            onValueChange = onSearchQueryChange,
+                            modifier = Modifier
+                                .weight(1f)
+                                .focusRequester(focusRequester)
+                                .testTag("search_field"),
+                            placeholder = { Text(searchPlaceholder) },
+                            singleLine = true,
+                            keyboardOptions = KeyboardOptions(
+                                imeAction = ImeAction.Search
+                            ),
+                            leadingIcon = { Icon(Icons.Default.Search, contentDescription = null) },
+                            trailingIcon = {
+                                if (searchQuery.isNotEmpty()) {
+                                    IconButton(onClick = onClearSearch) {
+                                        Icon(Icons.Default.Close, contentDescription = stringResource(R.string.cd_clear_search))
+                                    }
+                                }
+                            },
+                            colors = TextFieldDefaults.colors(
+                                focusedContainerColor = MaterialTheme.colorScheme.surface,
+                                unfocusedContainerColor = MaterialTheme.colorScheme.surfaceVariant,
+                                disabledContainerColor = MaterialTheme.colorScheme.surfaceVariant,
+                                focusedIndicatorColor = MaterialTheme.colorScheme.primary,
+                                unfocusedIndicatorColor = MaterialTheme.colorScheme.primary,
+                            ),
+                            textStyle = MaterialTheme.typography.bodyLarge
+                        )
+                        // 2. Schließ-Button (wo die Suchleiste wieder ausgeblendet wird)
+                        IconButton(
+                            onClick = { onSearchActiveChange(false) },
+                            modifier = Modifier.testTag("close_search_button")
+                        ) {
+                            Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.cd_close_search))
+                        }
+                    }
                 } else {
+                    // Normal Header (Nicht in Suchmodus)
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
