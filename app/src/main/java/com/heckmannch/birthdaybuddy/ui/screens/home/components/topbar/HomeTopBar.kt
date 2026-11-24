@@ -1,5 +1,6 @@
 package com.heckmannch.birthdaybuddy.ui.screens.home.components.topbar
 
+import android.annotation.SuppressLint
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.Settings
@@ -44,7 +45,7 @@ fun HomeTopBar(
     actions: HomeActions,
     onToggleSidebar: () -> Unit,
     onToggleSearch: (Boolean) -> Unit = actions.onToggleSearch,
-    modifier: Modifier = Modifier,
+    @SuppressLint("ModifierParameter") modifier: Modifier = Modifier,
 ) {
     AppTopHeader(
         title = stringResource(R.string.app_name),
@@ -77,32 +78,6 @@ fun HomeTopBar(
             }
         },
         modifier = modifier.testTag("home_top_bar"),
-    )
-}
-
-/**
- * Overloaded [HomeTopBar] for backwards compatibility when [isSearchActive] is omitted.
- */
-@Composable
-fun HomeTopBar(
-    searchQuery: String,
-    placeholder: String,
-    showSidebar: Boolean,
-    focusRequester: FocusRequester,
-    actions: HomeActions,
-    onToggleSidebar: () -> Unit,
-    modifier: Modifier = Modifier,
-) {
-    HomeTopBar(
-        searchQuery = searchQuery,
-        isSearchActive = searchQuery.isNotEmpty(),
-        placeholder = placeholder,
-        showSidebar = showSidebar,
-        focusRequester = focusRequester,
-        actions = actions,
-        onToggleSidebar = onToggleSidebar,
-        onToggleSearch = actions.onToggleSearch,
-        modifier = modifier,
     )
 }
 

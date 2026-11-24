@@ -188,7 +188,7 @@ fun AppTopHeader(
                             onClick = { onSearchActiveChange(false) },
                             modifier = Modifier.testTag("close_search_button")
                         ) {
-                            Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.cd_close_search))
+                            Icon(Icons.Default.Search, contentDescription = stringResource(R.string.cd_close_search))
                         }
                     }
                 } else {
