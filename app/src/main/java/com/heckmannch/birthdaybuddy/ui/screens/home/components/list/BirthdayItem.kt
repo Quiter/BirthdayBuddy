@@ -57,6 +57,7 @@ import com.heckmannch.birthdaybuddy.ui.model.BirthdayTier
 import com.heckmannch.birthdaybuddy.ui.model.ContactUiModel
 import com.heckmannch.birthdaybuddy.ui.model.SampleData
 import com.heckmannch.birthdaybuddy.ui.screens.home.HomeActions
+import com.heckmannch.birthdaybuddy.ui.screens.home.components.cards.BirthdayCard
 import com.heckmannch.birthdaybuddy.ui.screens.home.components.actions.ContactActionRow
 import com.heckmannch.birthdaybuddy.ui.theme.AlphaEmphasisLow
 import com.heckmannch.birthdaybuddy.ui.theme.AlphaEmphasisMedium
@@ -105,21 +106,6 @@ fun BirthdayItem(
         }
     }
 
-    val borderStroke = remember(contact.isToday, contact.birthdayTier) {
-        if (contact.isToday) {
-            when (contact.birthdayTier) {
-                BirthdayTier.MILESTONE_GOLD -> BorderStroke(BirthdayBorderWidth, BirthdayGold)
-                BirthdayTier.MILESTONE_SILVER -> BorderStroke(BirthdayBorderWidth, BirthdaySilver)
-                BirthdayTier.CHILD -> BorderStroke(
-                    BirthdayBorderWidth,
-                    Brush.linearGradient(KidColors)
-                )
-
-                BirthdayTier.REGULAR -> BorderStroke(BirthdayBorderWidth, BirthdaySilver)
-            }
-        } else null
-    }
-
     val confettiColors = remember(contact.isToday, contact.birthdayTier) {
         if (!contact.isToday) return@remember emptyList()
         when (contact.birthdayTier) {
@@ -135,161 +121,78 @@ fun BirthdayItem(
         showConfetti = isExpanded && contact.isToday
     }
 
-    val containerColor by animateColorAsState(
-        targetValue = when {
-            isSelected -> MaterialTheme.colorScheme.primaryContainer.copy(alpha = AlphaSurfaceContainerHigh)
-            isExpanded -> MaterialTheme.colorScheme.surfaceContainerHigh
-            else -> MaterialTheme.colorScheme.surfaceContainerLow
-        },
-        animationSpec = spring(
-            stiffness = Spring.StiffnessMediumLow
-        ),
-        label = "cardContainerColor"
-    )
-
-    val imageSize by animateDpAsState(
-        targetValue = if (isExpanded) ContactAvatarHeaderSize else ContactImageSizeSmall,
-        animationSpec = spring(
-            dampingRatio = Spring.DampingRatioNoBouncy,
-            stiffness = Spring.StiffnessMediumLow
-        ),
-        label = "contactImageSize"
-    )
-
-    Card(
+    Box(
         modifier = modifier
             .fillMaxWidth()
             .padding(horizontal = SpacingNormal)
-            .padding(bottom = SpacingSmall),
-        colors = CardDefaults.cardColors(
-            containerColor = containerColor,
-        ),
-        border = borderStroke ?: if (isSelected) BorderStroke(
-            SelectedBorderWidth,
-            MaterialTheme.colorScheme.primary.copy(alpha = AlphaEmphasisLow)
-        ) else null,
+            .padding(bottom = SpacingSmall)
     ) {
-        Box {
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .animateContentSize(
-                        animationSpec = spring(
-                            dampingRatio = Spring.DampingRatioNoBouncy,
-                            stiffness = Spring.StiffnessMediumLow,
-                        )
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .animateContentSize(
+                    animationSpec = spring(
+                        dampingRatio = Spring.DampingRatioNoBouncy,
+                        stiffness = Spring.StiffnessMediumLow,
                     )
-            ) {
-                ListItem(
-                    modifier = Modifier.clickable {
-                        haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                        onExpand()
-                    },
-                    supportingContent = {
-                        Column {
-                            Text(
-                                text = contact.dateText,
-                                style = MaterialTheme.typography.bodyMedium,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
-                            if (isExpanded && contact.labels.isNotEmpty()) {
-                                Spacer(modifier = Modifier.height(SpacingExtraSmall))
-                                Text(
-                                    text = contact.labels.joinToString(", "),
-                                    style = MaterialTheme.typography.labelSmall,
-                                    color = MaterialTheme.colorScheme.primary.copy(alpha = AlphaEmphasisMedium),
-                                    maxLines = 1,
-                                    overflow = TextOverflow.Ellipsis
-                                )
-                            }
-                        }
-                    },
-                    leadingContent = {
-                        ContactImage(
-                            imageUri = contact.imageUri,
-                            fullName = contact.fullName,
-                            initials = contact.initials,
-                            lookupKey = contact.lookupKey,
-                            secondImageUri = contact.secondImageUri,
-                            secondInitials = contact.secondInitials,
-                            secondFullName = contact.secondFullName,
-                            size = imageSize
-                        )
-                    },
-                    trailingContent = {
-                        BirthdayStatus(
-                            isToday = contact.isToday,
-                            nextAge = contact.nextAge,
-                            daysUntilNext = contact.daysUntilNext,
-                            onEditBirthday = onOpenDatePicker,
-                        )
-                    },
-                    colors = ListItemDefaults.colors(containerColor = Color.Transparent)
-                ) {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Text(
-                            text = contact.fullName,
-                            style = if (isExpanded) MaterialTheme.typography.titleLarge else MaterialTheme.typography.titleMedium
-                        )
-                        if (contact.isFavorite) {
-                            Spacer(modifier = Modifier.width(SpacingSmall))
-                            Icon(
-                                imageVector = Icons.Default.Star,
-                                contentDescription = stringResource(R.string.contact_favorite_desc),
-                                modifier = Modifier.size(IconSizeSmall),
-                                tint = birthdayGoldColor
-                            )
-                        }
-                        if (contact.hasGiftIdeas) {
-                            Spacer(modifier = Modifier.width(SpacingSmall))
-                            Icon(
-                                Icons.Default.Edit,
-                                contentDescription = null,
-                                modifier = Modifier.size(IconSizeExtraSmall),
-                                tint = birthdayKidAmberColor
-                            )
-                        }
-                    }
-                }
-
-                AnimatedVisibility(
-                    visible = isExpanded,
-                    enter = fadeIn(animationSpec = spring(stiffness = Spring.StiffnessMediumLow)),
-                    exit = fadeOut(animationSpec = spring(stiffness = Spring.StiffnessMediumLow))
-                ) {
-                    Column {
-                        ContactActionRow(
-                            contactId = contact.contactId,
-                            lookupKey = contact.lookupKey,
-                            phoneNumber = contact.phoneNumber,
-                            hasBirthday = contact.daysUntilNext != null,
-                            onAddBirthday = onOpenDatePicker,
-                            actions = actions,
-                            isCouple = contact.isCouple
-                        )
-
-                        HorizontalDivider(
-                            modifier = Modifier.padding(start = SpacingNormal, end = SpacingNormal, bottom = SpacingMedium),
-                            color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = AlphaEmphasisLow)
-                        )
-
-                        BirthdayItemGiftIdeaSection(
-                            contact = contact,
-                            isExpanded = isExpanded,
-                            newlyAddedIdeaId = newlyAddedIdeaId,
-                            actions = actions,
-                        )
-                    }
-                }
-            }
-
-            if (showConfetti) {
-                ConfettiEffect(
-                    colors = confettiColors,
-                    modifier = Modifier.matchParentSize(),
-                    onAnimationEnd = { showConfetti = false }
                 )
+        ) {
+            BirthdayCard(
+                contact = contact,
+                onClick = {
+                    haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                    onExpand()
+                },
+                selected = if (isSelected) true else null,
+                trailing = {
+                    BirthdayStatus(
+                        isToday = contact.isToday,
+                        nextAge = contact.nextAge,
+                        daysUntilNext = contact.daysUntilNext,
+                        onEditBirthday = onOpenDatePicker,
+                    )
+                }
+            )
+
+            AnimatedVisibility(
+                visible = isExpanded,
+                enter = fadeIn(animationSpec = spring(stiffness = Spring.StiffnessMediumLow)),
+                exit = fadeOut(animationSpec = spring(stiffness = Spring.StiffnessMediumLow))
+            ) {
+                Column(
+                    modifier = Modifier.padding(top = SpacingSmall)
+                ) {
+                    ContactActionRow(
+                        contactId = contact.contactId,
+                        lookupKey = contact.lookupKey,
+                        phoneNumber = contact.phoneNumber,
+                        hasBirthday = contact.daysUntilNext != null,
+                        onAddBirthday = onOpenDatePicker,
+                        actions = actions,
+                        isCouple = contact.isCouple
+                    )
+
+                    HorizontalDivider(
+                        modifier = Modifier.padding(start = SpacingNormal, end = SpacingNormal, bottom = SpacingMedium),
+                        color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = AlphaEmphasisLow)
+                    )
+
+                    BirthdayItemGiftIdeaSection(
+                        contact = contact,
+                        isExpanded = isExpanded,
+                        newlyAddedIdeaId = newlyAddedIdeaId,
+                        actions = actions,
+                    )
+                }
             }
+        }
+
+        if (showConfetti) {
+            ConfettiEffect(
+                colors = confettiColors,
+                modifier = Modifier.matchParentSize(),
+                onAnimationEnd = { showConfetti = false }
+            )
         }
     }
 }
