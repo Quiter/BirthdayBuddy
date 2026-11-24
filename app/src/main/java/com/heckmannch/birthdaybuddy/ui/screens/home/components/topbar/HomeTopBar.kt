@@ -1,29 +1,21 @@
 package com.heckmannch.birthdaybuddy.ui.screens.home.components.topbar
 
 import android.annotation.SuppressLint
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Menu
-import androidx.compose.material.icons.filled.Settings
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
-import androidx.compose.ui.platform.testTag
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
-import com.heckmannch.birthdaybuddy.R
-import com.heckmannch.birthdaybuddy.ui.components.AppTopHeader
 import com.heckmannch.birthdaybuddy.ui.model.SampleData
 import com.heckmannch.birthdaybuddy.ui.screens.home.HomeActions
+import com.heckmannch.birthdaybuddy.ui.screens.home.components.header.HomeHeader
 import com.heckmannch.birthdaybuddy.ui.theme.BirthdayBuddyTheme
 
 /**
  * Top bar composable for the home screen dashboard.
  *
- * Built on top of [AppTopHeader], encapsulating status bar insets handling, an expandable
- * search bar, title presentation, settings action, and optional navigation sidebar toggle.
+ * Delegates presentation to [HomeHeader] located in `ui/screens/home/components/header`,
+ * providing integrated search, app branding title/logo, settings navigation, and contact addition actions.
  *
  * @param searchQuery Current search text query.
  * @param isSearchActive Whether search mode is active.
@@ -47,37 +39,16 @@ fun HomeTopBar(
     onToggleSearch: (Boolean) -> Unit = actions.onToggleSearch,
     @SuppressLint("ModifierParameter") modifier: Modifier = Modifier,
 ) {
-    AppTopHeader(
-        title = stringResource(R.string.app_name),
-        isSearchActive = isSearchActive,
+    HomeHeader(
         searchQuery = searchQuery,
-        onSearchQueryChange = actions.onSearchQueryChange,
-        onSearchActiveChange = onToggleSearch,
-        searchPlaceholder = placeholder,
-        onClearSearch = actions.onClearSearch,
+        isSearchActive = isSearchActive,
+        placeholder = placeholder,
+        showSidebar = showSidebar,
         focusRequester = focusRequester,
-        navigationIcon = if (showSidebar) {
-            {
-                IconButton(onClick = onToggleSidebar) {
-                    Icon(
-                        imageVector = Icons.Default.Menu,
-                        contentDescription = stringResource(R.string.cd_toggle_sidebar),
-                    )
-                }
-            }
-        } else null,
-        actions = {
-            IconButton(
-                onClick = actions.onNavigateToSettings,
-                modifier = Modifier.testTag("settings_button"),
-            ) {
-                Icon(
-                    imageVector = Icons.Default.Settings,
-                    contentDescription = stringResource(R.string.home_settings),
-                )
-            }
-        },
-        modifier = modifier.testTag("home_top_bar"),
+        actions = actions,
+        onToggleSidebar = onToggleSidebar,
+        onToggleSearch = onToggleSearch,
+        modifier = modifier,
     )
 }
 

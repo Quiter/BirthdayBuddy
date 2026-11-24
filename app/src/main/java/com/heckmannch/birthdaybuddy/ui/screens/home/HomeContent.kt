@@ -37,6 +37,7 @@ import com.heckmannch.birthdaybuddy.ui.components.isWidthExpanded
 import com.heckmannch.birthdaybuddy.ui.model.HomeUiState
 import com.heckmannch.birthdaybuddy.ui.model.SampleData
 import com.heckmannch.birthdaybuddy.ui.screens.home.components.actions.HomeFAB
+import com.heckmannch.birthdaybuddy.ui.screens.home.components.header.HomeHeader
 import com.heckmannch.birthdaybuddy.ui.screens.home.components.labels.LabelSidebar
 import com.heckmannch.birthdaybuddy.ui.screens.home.components.list.HomeListDetailDisplay
 import com.heckmannch.birthdaybuddy.ui.screens.home.components.topbar.HomeTopBar
@@ -160,7 +161,7 @@ private fun HomeMainContent(
         useAdaptiveWidth = false,
         snackbarHost = { SnackbarHost(hostState = homeState.snackbarHostState) },
         topBar = {
-            HomeTopBar(
+            HomeHeader(
                 searchQuery = uiState.searchQuery,
                 isSearchActive = uiState.isSearchActive,
                 placeholder = homeState.animatedPlaceholder,

@@ -72,6 +72,7 @@
 - **Theme (`ui.theme`)**: `Theme.kt`, `Color.kt`, `ColorPresets.kt`, `Type.kt`, `Shapes.kt`, `Dimensions.kt`.
 - **Feature Screens (`ui.screens`)** *(Co-located ViewModels, States & Components)*:
   - **Home (`home/`)**: `HomeScreen`, `HomeContent`, `HomeNavKey`, `HomeState`, `HomeActions`, `HomeIntent`, `HomeUiEvent`, `HomeViewModel`.
+    - Header (`components/header/`): `HomeHeader`, `HomeHeaderBar`, `SearchFieldState`, `TitleAction`.
     - Components: `BirthdayList`, `BirthdayItem`, `BirthdayDetailPane`, `GiftIdeaList`, `FastScrollbar`, `ScrollbarBubble`, `LabelFilterBar`, `LabelSidebar`, `HomeTopBar`, `SearchBar`, `HomeFAB`, `ContactActionRow`, `MessengerAppUi`, `ConfettiEffect`, etc.
   - **Onboarding (`onboarding/`)**: `OnboardingScreen`, `OnboardingViewModel`, `OnboardingUiState` & Pages (`WelcomePage`, `ContactsPage`, `NotificationsPage`, `CalendarPage`, `CalendarGuidePage`, `ReadyPage`, `OnboardingFooter`).
   - **Settings (`settings/`)**: `SettingsScreen` & Sub-Features:

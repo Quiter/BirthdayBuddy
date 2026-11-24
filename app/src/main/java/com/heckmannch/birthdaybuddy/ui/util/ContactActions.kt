@@ -219,7 +219,7 @@ class ContactActions @Inject constructor(
     fun addContact() {
         try {
             val intent = Intent(Intent.ACTION_INSERT).apply {
-                type = ContactsContract.Contacts.CONTENT_TYPE
+                setDataAndType(ContactsContract.Contacts.CONTENT_URI, ContactsContract.Contacts.CONTENT_TYPE)
             }
             startActivitySafely(intent)
         } catch (_: ActivityNotFoundException) {

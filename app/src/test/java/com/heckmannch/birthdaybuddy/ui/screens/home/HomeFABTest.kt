@@ -2,6 +2,8 @@ package com.heckmannch.birthdaybuddy.ui.screens.home
 
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.hasContentDescription
+import androidx.compose.ui.test.hasTestTag
 import androidx.compose.ui.test.junit4.v2.createComposeRule
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithTag
@@ -162,7 +164,7 @@ class HomeFABTest {
         composeRule.waitForIdle()
 
         // Initially on list: FAB is "Add contact"
-        composeRule.onNodeWithContentDescription("Add contact").assertIsDisplayed()
+        composeRule.onNode(hasTestTag("home_fab") and hasContentDescription("Add contact")).assertIsDisplayed()
 
         // Select contact card to open detail pane
         composeRule.onNodeWithText("Anna Schmidt").performClick()
@@ -178,6 +180,6 @@ class HomeFABTest {
         composeRule.waitForIdle()
 
         // FAB should revert back to "Add contact"
-        composeRule.onNodeWithContentDescription("Add contact").assertIsDisplayed()
+        composeRule.onNode(hasTestTag("home_fab") and hasContentDescription("Add contact")).assertIsDisplayed()
     }
 }
