@@ -1,7 +1,6 @@
 package com.heckmannch.birthdaybuddy.ui.screens.home.components.topbar
 
 import androidx.compose.animation.AnimatedContent
-import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.tween
@@ -11,7 +10,7 @@ import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -22,7 +21,6 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Search
-import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -36,7 +34,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
@@ -56,11 +53,8 @@ import com.heckmannch.birthdaybuddy.ui.theme.BirthdayBuddyTheme
 import com.heckmannch.birthdaybuddy.ui.theme.SearchBarBorderWidth
 import com.heckmannch.birthdaybuddy.ui.theme.SearchBarFocusedElevation
 import com.heckmannch.birthdaybuddy.ui.theme.SearchBarHeight
-import com.heckmannch.birthdaybuddy.ui.theme.SpacingExtraSmall
 import com.heckmannch.birthdaybuddy.ui.theme.SpacingNone
 import com.heckmannch.birthdaybuddy.ui.theme.SpacingNormal
-
-import androidx.compose.foundation.layout.RowScope
 
 /**
  * A custom search bar composable that supports animated placeholder transitions,
@@ -105,17 +99,16 @@ fun SearchBar(
 
     // Tracks user-emitted query changes so that delayed asynchronous echoes from upstream StateFlows
     // do not overwrite the user's active typing or reset cursor selection.
-    val pendingQueries = remember { mutableListOf<String>() }
+    val pendingQueries: MutableList<String> = remember { mutableListOf<String>() }
 
     // Synchronize external query changes (e.g. programmatically cleared search, filter resets)
     LaunchedEffect(query) {
         val pendingIndex = pendingQueries.indexOf(query)
-        if (pendingIndex != -1) {
+        if (pendingIndex != -1)
             // query is an echo of an in-flight user keystroke; consume up to this query
-            for (i in 0..pendingIndex) {
+            repeat((0..pendingIndex).count()) {
                 pendingQueries.removeAt(0)
-            }
-        } else if (query != textFieldValue.text) {
+            } else if (query != textFieldValue.text) {
             // query was modified externally (not by typing inside this search bar)
             pendingQueries.clear()
             textFieldValue = textFieldValue.copy(
@@ -194,35 +187,16 @@ fun SearchBar(
                 }
             },
             trailingIcon = {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    if (textFieldValue.text.isNotEmpty()) {
-                        IconButton(
-                            onClick = onClearQuery,
-                            modifier = Modifier.testTag("clear_search_button")
-                        ) {
-                            Icon(
-                                imageVector = Icons.Default.Close,
-                                contentDescription = stringResource(R.string.home_search_clear),
-                                tint = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
-                        }
-                    }
-
-                    if (trailingActions != null) {
-                        trailingActions()
-                    } else {
-                        IconButton(
-                            onClick = onSettingsClick,
-                            modifier = Modifier.testTag("settings_button")
-                        ) {
-                            Icon(
-                                imageVector = Icons.Default.Settings,
-                                contentDescription = stringResource(R.string.home_settings),
-                                tint = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
-                        }
+                if (textFieldValue.text.isNotEmpty()) {
+                    IconButton(
+                        onClick = onClearQuery,
+                        modifier = Modifier.testTag("clear_search_button")
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Close,
+                            contentDescription = stringResource(R.string.home_search_clear),
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
                     }
                 }
             },
