@@ -1,5 +1,6 @@
 package com.heckmannch.birthdaybuddy.ui.screens.home
 
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
@@ -39,17 +40,18 @@ import com.heckmannch.birthdaybuddy.ui.theme.SpacingSmall
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.emptyFlow
 
+import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.dp
+
 /**
  * Root UI content composable for the home dashboard.
- *
- * Handles adaptive layouts across different screen size classes, rendering either a permanent
- * navigation drawer with a [LabelSidebar] on larger screens or hosting [HomeMainContent] directly.
  *
  * @param uiState Current UI state containing contact list, search query, labels, and sync status.
  * @param homeState State holder managing scroll state, snackbar host, search focus, and UI animations.
  * @param actions Callbacks for handling user actions and events.
  * @param events Flow of one-shot [HomeUiEvent] instances consumed via [LaunchedEffect].
  * @param onIntent Callback for dispatching MVI intents (e.g. consuming one-shot events).
+ * @param bottomBarHeight Padding reserved for the floating pill bar at the bottom.
  */
 @Composable
 fun HomeContent(
@@ -58,6 +60,7 @@ fun HomeContent(
     actions: HomeActions,
     events: Flow<HomeUiEvent> = emptyFlow(),
     onIntent: (HomeIntent) -> Unit = {},
+    bottomBarHeight: Dp = 0.dp,
 ) {
     val keyboardController = LocalSoftwareKeyboardController.current
 
@@ -94,7 +97,8 @@ fun HomeContent(
             actions = actions,
             windowSizeClass = windowSizeClass,
             showSidebar = showSidebar,
-            onToggleSidebar = { isSidebarExpanded = !isSidebarExpanded }
+            onToggleSidebar = { isSidebarExpanded = !isSidebarExpanded },
+            bottomBarHeight = bottomBarHeight,
         )
     }
 
@@ -143,6 +147,7 @@ private fun HomeMainContent(
     showSidebar: Boolean,
     onToggleSidebar: () -> Unit,
     modifier: Modifier = Modifier,
+    bottomBarHeight: Dp = 0.dp,
 ) {
     AppResponsiveScaffold(
         modifier = modifier,
@@ -163,6 +168,12 @@ private fun HomeMainContent(
         }
     ) { paddingValues ->
         val pullToRefreshState = rememberPullToRefreshState()
+        val combinedPadding = PaddingValues(
+            start = paddingValues.calculateLeftPadding(androidx.compose.ui.unit.LayoutDirection.Ltr),
+            top = paddingValues.calculateTopPadding(),
+            end = paddingValues.calculateRightPadding(androidx.compose.ui.unit.LayoutDirection.Ltr),
+            bottom = paddingValues.calculateBottomPadding() + bottomBarHeight,
+        )
         PullToRefreshBox(
             isRefreshing = uiState.isSyncing,
             onRefresh = actions.onRefresh,
@@ -183,7 +194,7 @@ private fun HomeMainContent(
                 homeState = homeState,
                 actions = actions,
                 showLabelFilter = !showSidebar,
-                contentPadding = paddingValues,
+                contentPadding = combinedPadding,
             )
         }
     }

@@ -20,7 +20,7 @@ android {
         minSdk = 28
         targetSdk = 37
         versionCode = 52
-        versionName = "2.17.0.8"
+        versionName = "2.17.0.9"
 
         testInstrumentationRunner = "com.heckmannch.birthdaybuddy.HiltTestRunner"
     }
@@ -102,6 +102,8 @@ dependencies {
     implementation(libs.bundles.room)
     implementation(libs.bundles.coil)
     implementation(libs.bundles.glance)
+    implementation(libs.haze)
+    implementation(libs.haze.blur)
     implementation(libs.androidx.work.runtime.ktx)
     implementation(libs.material)
     implementation(libs.material.color.utilities)

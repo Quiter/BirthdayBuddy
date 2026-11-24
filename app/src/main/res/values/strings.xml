@@ -445,5 +445,12 @@
     <!-- AppFunctions: user-visible app description shown by AI assistants -->
     <string name="app_description_for_agents">BirthdayBuddy helps you remember birthdays and special occasions for your contacts.</string>
 
+    <!-- Main Pager Navigation -->
+    <string name="nav_tab_labels">Labels</string>
+    <string name="nav_tab_home">Home</string>
+    <string name="nav_tab_settings">Settings</string>
+    <string name="labels_screen_title">Labels</string>
+    <string name="labels_screen_empty">No contacts with labels found</string>
+
     <string name="scrollbar_content_description">Scrollbar</string>
 </resources>

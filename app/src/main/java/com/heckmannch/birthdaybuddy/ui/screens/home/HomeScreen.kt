@@ -31,20 +31,11 @@ import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.collectLatest
 
+import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.dp
+
 /**
  * [HomeScreen] is the orchestrator and state-coordinating controller for the main dashboard.
- *
- * ### Architectural & Design Patterns
- * - **MVI / UDF (Uni-Directional Data Flow)**: This screen acts as the controller layer. It translates
- *   user interactions into discrete events/commands ([HomeIntent]) propagated to the ViewModel, and
- *   listens to the read-only [HomeUiState] representing the latest UI state.
- * - **Separation of Concerns**: This Composable intercepts platform-specific details:
- *   1. System permissions (e.g., [Manifest.permission.READ_CONTACTS] and [Manifest.permission.WRITE_CONTACTS]).
- *   2. Device/UI feedback elements (e.g., keyboard management, system focus).
- *   3. Context-dependent prefetching (e.g., pre-loading image resources into the Coil cache).
- *   By doing this, the layout renderer [HomeContent] remains a "dumb", stateless UI view. This
- *   enables reliable @Preview rendering and simplifies JVM/Compose instrumented testing because
- *   there are no hidden platform dependencies or Hilt DI container requirements.
  *
  * @param uiState The read-only state representation of the Home screen, providing lists of contacts,
  *   filtering, status information, and animation triggers.
@@ -53,6 +44,7 @@ import kotlinx.coroutines.flow.collectLatest
  *   (e.g., clicking on navigation items, status bar taps).
  * @param onNavigateToSettings Callback executed when the user initiates navigation to the app settings screen.
  * @param eventFlow A [SharedFlow] used to observe one-shot UI events (e.g. search focus, gift idea focus).
+ * @param bottomBarHeight Padding reserved for the floating pill bar at the bottom of the list.
  */
 @Composable
 fun HomeScreen(
@@ -61,6 +53,7 @@ fun HomeScreen(
     scrollToTopEvent: SharedFlow<Unit>,
     onNavigateToSettings: () -> Unit,
     eventFlow: SharedFlow<HomeUiEvent>? = null,
+    bottomBarHeight: Dp = 0.dp,
 ) {
     val actualEventFlow = eventFlow ?: remember { MutableSharedFlow() }
 
@@ -247,6 +240,7 @@ fun HomeScreen(
         actions = actions,
         events = actualEventFlow,
         onIntent = onIntent,
+        bottomBarHeight = bottomBarHeight,
     )
 }
 
@@ -257,6 +251,7 @@ internal fun HomeScreenContent(
     actions: HomeActions,
     events: SharedFlow<HomeUiEvent>,
     onIntent: (HomeIntent) -> Unit,
+    bottomBarHeight: Dp = 0.dp,
 ) {
     if (uiState.pendingBirthdayEdit != null) {
         val edit = uiState.pendingBirthdayEdit
@@ -277,6 +272,7 @@ internal fun HomeScreenContent(
         actions = actions,
         events = events,
         onIntent = onIntent,
+        bottomBarHeight = bottomBarHeight,
     )
 }
 

@@ -122,11 +122,13 @@ private data class SettingsMenuItemData(
 @Composable
 fun SettingsScreen(
     initialTab: SettingsTab? = null,
-    onNavigateBack: () -> Unit,
+    onNavigateBack: () -> Unit = {},
+    showBackButton: Boolean = true,
 ) {
     SettingsContent(
         initialTab = initialTab,
         onNavigateBack = onNavigateBack,
+        showBackButton = showBackButton,
     )
 }
 
@@ -140,6 +142,7 @@ fun SettingsScreen(
 internal fun SettingsContent(
     initialTab: SettingsTab? = null,
     onNavigateBack: () -> Unit = {},
+    showBackButton: Boolean = true,
 ) {
     val windowAdaptiveInfo = LocalWindowAdaptiveInfo.current
     val windowSizeClass = LocalWindowSizeClass.current
@@ -268,14 +271,16 @@ internal fun SettingsContent(
                         TopAppBar(
                             title = { Text(stringResource(R.string.settings_title)) },
                             navigationIcon = {
-                                IconButton(
-                                    onClick = onNavigateBack,
-                                    modifier = Modifier.testTag("settings_back_button")
-                                ) {
-                                    Icon(
-                                        imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                                        contentDescription = stringResource(R.string.notifications_back),
-                                    )
+                                if (showBackButton) {
+                                    IconButton(
+                                        onClick = onNavigateBack,
+                                        modifier = Modifier.testTag("settings_back_button")
+                                    ) {
+                                        Icon(
+                                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                                            contentDescription = stringResource(R.string.notifications_back),
+                                        )
+                                    }
                                 }
                             },
                             colors = TopAppBarDefaults.topAppBarColors(

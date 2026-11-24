@@ -12,8 +12,12 @@ import androidx.compose.animation.togetherWith
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import kotlinx.coroutines.launch
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LifecycleEventEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -148,15 +152,94 @@ fun AppNavHost(
                     }
                 }
 
-                HomeScreen(
-                    uiState = uiState,
-                    onIntent = homeViewModel::onIntent,
-                    scrollToTopEvent = homeViewModel.scrollToTopEvent,
-                    eventFlow = homeViewModel.eventFlow,
-                    onNavigateToSettings = {
-                        backStack.add(Settings())
+                val pagerState = androidx.compose.foundation.pager.rememberPagerState(
+                    initialPage = MainPage.HOME.ordinal
+                ) {
+                    MainPage.entries.size
+                }
+
+                val scope = rememberCoroutineScope()
+                val context = LocalContext.current
+                val contactActions = remember(context) {
+                    com.heckmannch.birthdaybuddy.ui.util.ContactActions(context)
+                }
+                val labelActions = remember(homeViewModel, contactActions, scope, pagerState) {
+                    com.heckmannch.birthdaybuddy.ui.screens.home.HomeActions(
+                        onSearchQueryChange = { homeViewModel.onIntent(HomeIntent.SearchQueryChanged(it)) },
+                        onToggleSearch = { homeViewModel.onIntent(HomeIntent.SetSearchActive(it)) },
+                        onLabelSelected = { homeViewModel.onIntent(HomeIntent.LabelSelected(it)) },
+                        onClearSearch = { homeViewModel.onIntent(HomeIntent.SearchQueryChanged("")) },
+                        onNavigateToSettings = {
+                            scope.launch { pagerState.turnTo(MainPage.SETTINGS) }
+                        },
+                        onAddContact = contactActions::addContact,
+                        onRequestPermission = {},
+                        onAddGiftIdea = { homeViewModel.onIntent(HomeIntent.AddGiftIdea(it)) },
+                        onToggleGiftIdea = { key, idea, checked ->
+                            homeViewModel.onIntent(HomeIntent.ToggleGiftIdea(key, idea, checked))
+                        },
+                        onUpdateGiftIdeaText = { key, id, text ->
+                            homeViewModel.onIntent(HomeIntent.UpdateGiftIdeaText(key, id, text))
+                        },
+                        onDeleteGiftIdea = { key, id ->
+                            homeViewModel.onIntent(HomeIntent.DeleteGiftIdea(key, id))
+                        },
+                        onUpdateBirthday = { id, bday ->
+                            homeViewModel.onIntent(HomeIntent.UpdateBirthday(id, bday))
+                        },
+                        onOpenBirthdayPicker = { key, y, m, d ->
+                            homeViewModel.onIntent(HomeIntent.OpenBirthdayPicker(key, y, m, d))
+                        },
+                        onOpenContact = contactActions::openContact,
+                        onEditContact = contactActions::editContact,
+                        onDial = contactActions::dialNumber,
+                        onSendSms = contactActions::sendSms,
+                        onOpenMessengerApp = contactActions::openMessengerApp,
+                        onRefresh = { homeViewModel.onIntent(HomeIntent.SyncContacts(showLoading = true)) },
+                        onUnlinkCouple = { homeViewModel.onIntent(HomeIntent.UnlinkCouple(it)) },
+                        onLinkAsCouple = { k1, k2 -> homeViewModel.onIntent(HomeIntent.LinkAsCouple(k1, k2)) },
+                        onIgnoreCoupleSuggestion = { k1, k2 ->
+                            homeViewModel.onIntent(HomeIntent.IgnoreCoupleSuggestion(k1, k2))
+                        },
+                    )
+                }
+
+                MainPagerScaffold(
+                    pagerState = pagerState,
+                ) { page, bottomBarHeight ->
+                    when (page) {
+                        MainPage.LABELS -> {
+                            com.heckmannch.birthdaybuddy.ui.screens.labels.LabelsScreen(
+                                uiState = uiState,
+                                actions = labelActions,
+                                bottomBarHeight = bottomBarHeight,
+                            )
+                        }
+
+                        MainPage.HOME -> {
+                            HomeScreen(
+                                uiState = uiState,
+                                onIntent = homeViewModel::onIntent,
+                                scrollToTopEvent = homeViewModel.scrollToTopEvent,
+                                eventFlow = homeViewModel.eventFlow,
+                                onNavigateToSettings = {
+                                    scope.launch { pagerState.turnTo(MainPage.SETTINGS) }
+                                },
+                                bottomBarHeight = bottomBarHeight,
+                            )
+                        }
+
+                        MainPage.SETTINGS -> {
+                            SettingsScreen(
+                                initialTab = null,
+                                onNavigateBack = {
+                                    scope.launch { pagerState.turnTo(MainPage.HOME) }
+                                },
+                                showBackButton = false,
+                            )
+                        }
                     }
-                )
+                }
             }
 
             entry<Settings> { key ->
