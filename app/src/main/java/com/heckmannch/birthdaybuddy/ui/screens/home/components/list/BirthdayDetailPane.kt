@@ -9,7 +9,6 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -18,6 +17,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CardGiftcard
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -48,7 +48,6 @@ import com.heckmannch.birthdaybuddy.ui.theme.AlphaEmphasisLow
 import com.heckmannch.birthdaybuddy.ui.theme.AlphaEmphasisMedium
 import com.heckmannch.birthdaybuddy.ui.theme.BirthdayBuddyTheme
 import com.heckmannch.birthdaybuddy.ui.theme.ContactImageSizeLarge
-import com.heckmannch.birthdaybuddy.ui.theme.FabBottomSpacing
 import com.heckmannch.birthdaybuddy.ui.theme.IconSizeMedium
 import com.heckmannch.birthdaybuddy.ui.theme.IconSizeSmall
 import com.heckmannch.birthdaybuddy.ui.theme.SpacingExtraLarge
@@ -242,9 +241,19 @@ fun BirthdayDetailPane(
                         }
                     }
                 )
+            }
 
-                // Extra Spacing am Ende, damit die Inhalte nicht vom FAB verdeckt werden
-                Spacer(modifier = Modifier.height(FabBottomSpacing))
+            IconButton(
+                onClick = { actions.onEditContact(contact.contactId, contact.lookupKey) },
+                modifier = Modifier
+                    .align(Alignment.TopStart)
+                    .padding(SpacingSmall)
+                    .testTag("detail_edit_button")
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Edit,
+                    contentDescription = stringResource(R.string.home_edit_contact)
+                )
             }
 
             IconButton(

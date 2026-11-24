@@ -82,7 +82,6 @@ import com.heckmannch.birthdaybuddy.ui.theme.BorderWidthThin
 import com.heckmannch.birthdaybuddy.ui.theme.ContactImageSizeNormal
 import com.heckmannch.birthdaybuddy.ui.theme.ContactImageSizeSmall
 import com.heckmannch.birthdaybuddy.ui.theme.ContactItemSkeletonHeight
-import com.heckmannch.birthdaybuddy.ui.theme.FabBottomSpacing
 import com.heckmannch.birthdaybuddy.ui.theme.OnboardingIllustrationHeight
 import com.heckmannch.birthdaybuddy.ui.theme.OnboardingIllustrationHeightSmall
 import com.heckmannch.birthdaybuddy.ui.theme.SidebarWidthCollapsed
@@ -156,7 +155,7 @@ fun BirthdayList(
                 start = contentPadding.calculateStartPadding(layoutDirection),
                 top = contentPadding.calculateTopPadding(),
                 end = contentPadding.calculateEndPadding(layoutDirection),
-                bottom = contentPadding.calculateBottomPadding() + FabBottomSpacing,
+                bottom = contentPadding.calculateBottomPadding(),
             ),
             userScrollEnabled = false,
         ) {
@@ -193,7 +192,7 @@ fun BirthdayList(
             start = contentPadding.calculateStartPadding(layoutDirection),
             top = contentPadding.calculateTopPadding(),
             end = contentPadding.calculateEndPadding(layoutDirection),
-            bottom = contentPadding.calculateBottomPadding() + FabBottomSpacing,
+            bottom = contentPadding.calculateBottomPadding(),
         ),
     ) {
         if (showLabelFilter && availableLabels.isNotEmpty()) {

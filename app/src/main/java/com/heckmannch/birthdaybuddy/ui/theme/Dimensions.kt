@@ -42,7 +42,6 @@ val ContactImageSizeSmall = 40.dp
 val ContactImageSizeNormal = 64.dp
 val ContactImageSizeLarge = 96.dp
 val ContactImageSizeOnboarding = 180.dp
-val FabBottomSpacing = 80.dp // Spacing from bottom of screen to float above FAB
 val BirthdayQuoteIconContainerSize = 120.dp
 val GridColumnMinWidth = 340.dp // Minimum column width for adaptive settings grids
 val EmptyStatePadding = 64.dp  // Padding for centered empty state containers

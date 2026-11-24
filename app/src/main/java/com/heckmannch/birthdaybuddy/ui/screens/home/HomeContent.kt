@@ -1,10 +1,5 @@
 package com.heckmannch.birthdaybuddy.ui.screens.home
 
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
-import androidx.compose.animation.scaleIn
-import androidx.compose.animation.scaleOut
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
@@ -20,12 +15,10 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.window.core.layout.WindowSizeClass
@@ -36,11 +29,9 @@ import com.heckmannch.birthdaybuddy.ui.components.isWidthCompact
 import com.heckmannch.birthdaybuddy.ui.components.isWidthExpanded
 import com.heckmannch.birthdaybuddy.ui.model.HomeUiState
 import com.heckmannch.birthdaybuddy.ui.model.SampleData
-import com.heckmannch.birthdaybuddy.ui.screens.home.components.actions.HomeFAB
 import com.heckmannch.birthdaybuddy.ui.screens.home.components.header.HomeHeader
 import com.heckmannch.birthdaybuddy.ui.screens.home.components.labels.LabelSidebar
 import com.heckmannch.birthdaybuddy.ui.screens.home.components.list.HomeListDetailDisplay
-import com.heckmannch.birthdaybuddy.ui.screens.home.components.topbar.HomeTopBar
 import com.heckmannch.birthdaybuddy.ui.theme.BirthdayBuddyTheme
 import com.heckmannch.birthdaybuddy.ui.theme.SidebarWidthCollapsed
 import com.heckmannch.birthdaybuddy.ui.theme.SidebarWidthExpanded
@@ -132,8 +123,8 @@ fun HomeContent(
 /**
  * Main UI content layout for [HomeContent].
  *
- * Displays the [HomeTopBar], list/detail navigation display ([HomeListDetailDisplay]),
- * pull-to-refresh container, and [HomeFAB].
+ * Displays the [HomeHeader], list/detail navigation display ([HomeListDetailDisplay]),
+ * and pull-to-refresh container.
  *
  * @param uiState Current UI state containing contact list, search query, and sync info.
  * @param homeState Screen state holder managing scroll state, snackbar host, and focus.
@@ -153,8 +144,6 @@ private fun HomeMainContent(
     onToggleSidebar: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    val focusManager = LocalFocusManager.current
-
     AppResponsiveScaffold(
         modifier = modifier,
         windowSizeClass = windowSizeClass,
@@ -171,33 +160,6 @@ private fun HomeMainContent(
                 onToggleSidebar = onToggleSidebar,
                 onToggleSearch = actions.onToggleSearch,
             )
-        },
-        floatingActionButton = {
-            AnimatedVisibility(
-                visible = !homeState.isFastScrolling,
-                enter = scaleIn() + fadeIn(),
-                exit = scaleOut() + fadeOut()
-            ) {
-                val selectedContact = remember(uiState.contacts, homeState.selectedContactId) {
-                    val id = homeState.selectedContactId
-                    if (id != null) {
-                        uiState.contacts?.find { it.id == id }
-                    } else {
-                        null
-                    }
-                }
-
-                HomeFAB(
-                    showScrollUp = homeState.showScrollUp,
-                    selectedContact = selectedContact,
-                    actions = actions,
-                    onScrollToTop = {
-                        focusManager.clearFocus()
-                        homeState.scrollToTop()
-                    },
-                    modifier = Modifier.padding(SpacingSmall)
-                )
-            }
         }
     ) { paddingValues ->
         val pullToRefreshState = rememberPullToRefreshState()

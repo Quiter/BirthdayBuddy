@@ -5,6 +5,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.selection.toggleable
@@ -239,7 +240,7 @@ fun SettingsDetailScaffold(
     title: String,
     onNavigateBack: () -> Unit,
     showBackButton: Boolean = true,
-    floatingActionButton: @Composable () -> Unit = {},
+    actions: @Composable RowScope.() -> Unit = {},
     snackbarHost: @Composable () -> Unit = {},
     content: @Composable (PaddingValues) -> Unit
 ) {
@@ -247,7 +248,6 @@ fun SettingsDetailScaffold(
         TopAppBarDefaults.exitUntilCollapsedScrollBehavior(rememberTopAppBarState())
     AppResponsiveScaffold(
         modifier = modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
-        floatingActionButton = floatingActionButton,
         snackbarHost = snackbarHost,
         topBar = {
             LargeTopAppBar(
@@ -262,6 +262,7 @@ fun SettingsDetailScaffold(
                         }
                     }
                 },
+                actions = actions,
                 scrollBehavior = scrollBehavior
             )
         }
