@@ -1,37 +1,10 @@
 package com.heckmannch.birthdaybuddy.ui.screens.settings
 
 import androidx.annotation.VisibleForTesting
-import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.calculateEndPadding
 import androidx.compose.foundation.layout.calculateStartPadding
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.automirrored.filled.Label
-import androidx.compose.material.icons.filled.DateRange
-import androidx.compose.material.icons.filled.Info
-import androidx.compose.material.icons.filled.Notifications
-import androidx.compose.material.icons.filled.Palette
-import androidx.compose.material.icons.filled.Refresh
-import androidx.compose.material.icons.filled.Settings
-import androidx.compose.material.icons.filled.Share
-import androidx.compose.material.icons.filled.Star
-import androidx.compose.material.icons.filled.Storage
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
 import androidx.compose.material3.adaptive.ExperimentalMaterial3AdaptiveApi
 import androidx.compose.material3.adaptive.layout.calculatePaneScaffoldDirective
 import androidx.compose.material3.adaptive.navigation3.ListDetailSceneStrategy
@@ -43,18 +16,12 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLayoutDirection
-import androidx.compose.ui.platform.testTag
-import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.viewmodel.navigation3.rememberViewModelStoreNavEntryDecorator
 import androidx.navigation3.runtime.NavKey
 import androidx.navigation3.runtime.entryProvider
@@ -62,32 +29,15 @@ import androidx.navigation3.runtime.rememberNavBackStack
 import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
 import androidx.navigation3.ui.NavDisplay
 import androidx.window.core.layout.WindowSizeClass
-import com.heckmannch.birthdaybuddy.R
-import com.heckmannch.birthdaybuddy.ui.screens.settings.about.LicensesScreen
-import com.heckmannch.birthdaybuddy.ui.screens.settings.storage.StorageSettingsScreen
 import com.heckmannch.birthdaybuddy.ui.components.AppResponsiveScaffold
-import com.heckmannch.birthdaybuddy.ui.components.AppTopHeader
 import com.heckmannch.birthdaybuddy.ui.components.LocalWindowAdaptiveInfo
 import com.heckmannch.birthdaybuddy.ui.components.LocalWindowSizeClass
-import com.heckmannch.birthdaybuddy.ui.components.SettingsColumn
-import com.heckmannch.birthdaybuddy.ui.components.SettingsGroup
-import com.heckmannch.birthdaybuddy.ui.components.SettingsItem
-import com.heckmannch.birthdaybuddy.ui.components.SettingsSection
-import com.heckmannch.birthdaybuddy.ui.components.isWidthCompact
-import com.heckmannch.birthdaybuddy.ui.screens.settings.about.AboutScreen
-import com.heckmannch.birthdaybuddy.ui.screens.settings.about.PrivacyPolicyScreen
-import com.heckmannch.birthdaybuddy.ui.screens.settings.backup.BackupScreen
-import com.heckmannch.birthdaybuddy.ui.screens.settings.calendar.CalendarSettingsScreen
-import com.heckmannch.birthdaybuddy.ui.screens.settings.labels.LabelSettingsScreen
-import com.heckmannch.birthdaybuddy.ui.screens.settings.notifications.NotificationSettingsScreen
-import com.heckmannch.birthdaybuddy.ui.screens.settings.otherevents.OtherEventsSettingsScreen
-import com.heckmannch.birthdaybuddy.ui.screens.settings.sync.SyncSettingsScreen
-import com.heckmannch.birthdaybuddy.ui.screens.settings.theme.ThemeSettingsScreen
+import com.heckmannch.birthdaybuddy.ui.screens.settings.components.SettingsDetailPane
+import com.heckmannch.birthdaybuddy.ui.screens.settings.components.SettingsDetailPlaceholder
+import com.heckmannch.birthdaybuddy.ui.screens.settings.components.SettingsHeader
+import com.heckmannch.birthdaybuddy.ui.screens.settings.components.SettingsMenuList
 import com.heckmannch.birthdaybuddy.ui.theme.BirthdayBuddyTheme
-import com.heckmannch.birthdaybuddy.ui.theme.IconSizeExtraLarge
-import com.heckmannch.birthdaybuddy.ui.theme.SpacingLarge
 import com.heckmannch.birthdaybuddy.ui.theme.SpacingNone
-import com.heckmannch.birthdaybuddy.ui.theme.SpacingNormal
 import kotlinx.serialization.Serializable
 
 /**
@@ -109,20 +59,15 @@ enum class SettingsTab {
 }
 
 /**
- * Data holder for items displayed in the settings menu list.
+ * Type-safe navigation keys for Jetpack Navigation 3, annotated with @Serializable.
  */
-private data class SettingsMenuItemData(
-    val titleRes: Int,
-    val descRes: Int,
-    val icon: ImageVector,
-    val tab: SettingsTab,
-    val section: SettingsSectionType
-)
+@Serializable
+internal sealed interface SettingsNavKey : NavKey {
+    @Serializable
+    data object SettingsMenu : SettingsNavKey
 
-private enum class SettingsSectionType {
-    GENERAL,
-    DATA,
-    ABOUT
+    @Serializable
+    data class SettingsDetail(val tab: SettingsTab) : SettingsNavKey
 }
 
 /**
@@ -144,11 +89,11 @@ fun SettingsScreen(
 }
 
 /**
- * Displays the actual settings content with Morphe-inspired SettingsColumn, SettingsSection,
- * SettingsGroup, and SettingsItem, with glassmorphic CardBorder outlines and correct header/bottom padding.
+ * Displays the actual settings content with Navigation 3 multi-pane support,
+ * header, menu sections, cards, and detail pane.
  */
 @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3AdaptiveApi::class)
+@OptIn(ExperimentalMaterial3AdaptiveApi::class)
 @Composable
 internal fun SettingsContent(
     initialTab: SettingsTab? = null,
@@ -171,73 +116,7 @@ internal fun SettingsContent(
         rememberNavBackStack(SettingsNavKey.SettingsMenu)
     }
 
-    val menuItems = remember {
-        listOf(
-            SettingsMenuItemData(
-                titleRes = R.string.settings_theme_title,
-                descRes = R.string.settings_theme_desc,
-                icon = Icons.Default.Palette,
-                tab = SettingsTab.THEME,
-                section = SettingsSectionType.GENERAL
-            ),
-            SettingsMenuItemData(
-                titleRes = R.string.settings_notifications_title,
-                descRes = R.string.settings_notifications_desc,
-                icon = Icons.Default.Notifications,
-                tab = SettingsTab.NOTIFICATIONS,
-                section = SettingsSectionType.GENERAL
-            ),
-            SettingsMenuItemData(
-                titleRes = R.string.settings_calendar_title,
-                descRes = R.string.settings_calendar_desc,
-                icon = Icons.Default.DateRange,
-                tab = SettingsTab.CALENDAR,
-                section = SettingsSectionType.GENERAL
-            ),
-            SettingsMenuItemData(
-                titleRes = R.string.settings_labels_title,
-                descRes = R.string.settings_labels_desc,
-                icon = Icons.AutoMirrored.Filled.Label,
-                tab = SettingsTab.LABELS,
-                section = SettingsSectionType.GENERAL
-            ),
-            SettingsMenuItemData(
-                titleRes = R.string.settings_other_events_title,
-                descRes = R.string.settings_other_events_desc,
-                icon = Icons.Default.Star,
-                tab = SettingsTab.OTHER_EVENTS,
-                section = SettingsSectionType.GENERAL
-            ),
-            SettingsMenuItemData(
-                titleRes = R.string.settings_sync_title,
-                descRes = R.string.settings_sync_desc,
-                icon = Icons.Default.Refresh,
-                tab = SettingsTab.SYNC,
-                section = SettingsSectionType.DATA
-            ),
-            SettingsMenuItemData(
-                titleRes = R.string.settings_backup_title,
-                descRes = R.string.settings_backup_desc,
-                icon = Icons.Default.Share,
-                tab = SettingsTab.BACKUP,
-                section = SettingsSectionType.DATA
-            ),
-            SettingsMenuItemData(
-                titleRes = R.string.storage_management_title,
-                descRes = R.string.storage_management_desc,
-                icon = Icons.Default.Storage,
-                tab = SettingsTab.STORAGE,
-                section = SettingsSectionType.DATA
-            ),
-            SettingsMenuItemData(
-                titleRes = R.string.settings_about_title,
-                descRes = R.string.settings_about_desc,
-                icon = Icons.Default.Info,
-                tab = SettingsTab.ABOUT,
-                section = SettingsSectionType.ABOUT
-            )
-        )
-    }
+    val menuItems = rememberSettingsMenuItems()
 
     NavDisplay(
         backStack = backStack,
@@ -257,67 +136,34 @@ internal fun SettingsContent(
         entryProvider = entryProvider {
             entry<SettingsNavKey.SettingsMenu>(
                 metadata = ListDetailSceneStrategy.listPane(
-                    detailPlaceholder = {
-                        Column(
-                            modifier = Modifier
-                                .fillMaxSize()
-                                .padding(SpacingLarge),
-                            horizontalAlignment = Alignment.CenterHorizontally,
-                            verticalArrangement = Arrangement.Center
-                        ) {
-                            Icon(
-                                imageVector = Icons.Default.Settings,
-                                contentDescription = null,
-                                modifier = Modifier.size(IconSizeExtraLarge),
-                                tint = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
-                            Spacer(modifier = Modifier.height(SpacingNormal))
-                            Text(
-                                text = stringResource(R.string.settings_select_item_hint),
-                                style = MaterialTheme.typography.bodyLarge,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                textAlign = TextAlign.Center
-                            )
-                        }
-                    }
+                    detailPlaceholder = { SettingsDetailPlaceholder() }
                 )
             ) {
                 var isSearchActive by rememberSaveable { mutableStateOf(false) }
                 var searchQuery by rememberSaveable { mutableStateOf("") }
+                // Using LocalContext.current is acceptable for non-config-aware lookups,
+                // but we've replaced the resource lookup logic inside the filter for the fix.
                 val context = LocalContext.current
 
                 val filteredMenuItems = remember(menuItems, searchQuery) {
                     if (searchQuery.isBlank()) menuItems
                     else menuItems.filter {
-                        context.getString(it.titleRes).contains(searchQuery, ignoreCase = true) ||
-                        context.getString(it.descRes).contains(searchQuery, ignoreCase = true)
+                        (context.resources.getString(it.titleRes)).contains(searchQuery, ignoreCase = true) ||
+                        (context.resources.getString(it.descRes)).contains(searchQuery, ignoreCase = true)
                     }
                 }
 
                 AppResponsiveScaffold(
                     useAdaptiveWidth = false,
                     topBar = {
-                        AppTopHeader(
-                            title = stringResource(R.string.settings_title),
+                        SettingsHeader(
                             isSearchActive = isSearchActive,
                             searchQuery = searchQuery,
                             onSearchQueryChange = { searchQuery = it },
                             onSearchActiveChange = { isSearchActive = it },
-                            searchPlaceholder = stringResource(R.string.settings_search),
                             onClearSearch = { searchQuery = "" },
-                            navigationIcon = if (showBackButton) {
-                                {
-                                    IconButton(
-                                        onClick = onNavigateBack,
-                                        modifier = Modifier.testTag("settings_back_button")
-                                    ) {
-                                        Icon(
-                                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                                            contentDescription = stringResource(R.string.notifications_back),
-                                        )
-                                    }
-                                }
-                            } else null
+                            showBackButton = showBackButton,
+                            onNavigateBack = onNavigateBack
                         )
                     }
                 ) { paddingValues ->
@@ -329,187 +175,25 @@ internal fun SettingsContent(
                         bottom = paddingValues.calculateBottomPadding() + bottomBarHeight,
                     )
 
-                    val scrollState = rememberScrollState()
-
-                    Column(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .background(MaterialTheme.colorScheme.surfaceContainerLow)
-                    ) {
-                        SettingsColumn(
-                            modifier = Modifier
-                                .fillMaxSize()
-                                .verticalScroll(scrollState)
-                                .padding(combinedPadding)
-                        ) {
-                            val generalItems = filteredMenuItems.filter { it.section == SettingsSectionType.GENERAL }
-                            if (generalItems.isNotEmpty()) {
-                                SettingsSection(
-                                    title = stringResource(R.string.settings_theme_title),
-                                    icon = Icons.Default.Palette
-                                ) {
-                                    SettingsGroup {
-                                        generalItems.forEach { item ->
-                                            SettingsItem(
-                                                onClick = {
-                                                    backStack.removeIf { it is SettingsNavKey.SettingsDetail }
-                                                    backStack.add(SettingsNavKey.SettingsDetail(item.tab))
-                                                },
-                                                title = stringResource(item.titleRes),
-                                                subtitle = stringResource(item.descRes),
-                                                icon = item.icon
-                                            )
-                                        }
-                                    }
-                                }
-                            }
-
-                            val dataItems = filteredMenuItems.filter { it.section == SettingsSectionType.DATA }
-                            if (dataItems.isNotEmpty()) {
-                                SettingsSection(
-                                    title = stringResource(R.string.settings_sync_title),
-                                    icon = Icons.Default.Refresh
-                                ) {
-                                    SettingsGroup {
-                                        dataItems.forEach { item ->
-                                            SettingsItem(
-                                                onClick = {
-                                                    backStack.removeIf { it is SettingsNavKey.SettingsDetail }
-                                                    backStack.add(SettingsNavKey.SettingsDetail(item.tab))
-                                                },
-                                                title = stringResource(item.titleRes),
-                                                subtitle = stringResource(item.descRes),
-                                                icon = item.icon
-                                            )
-                                        }
-                                    }
-                                }
-                            }
-
-                            val aboutItems = filteredMenuItems.filter { it.section == SettingsSectionType.ABOUT }
-                            if (aboutItems.isNotEmpty()) {
-                                SettingsSection(
-                                    title = stringResource(R.string.settings_about_title),
-                                    icon = Icons.Default.Info
-                                ) {
-                                    SettingsGroup {
-                                        aboutItems.forEach { item ->
-                                            SettingsItem(
-                                                onClick = {
-                                                    backStack.removeIf { it is SettingsNavKey.SettingsDetail }
-                                                    backStack.add(SettingsNavKey.SettingsDetail(item.tab))
-                                                },
-                                                title = stringResource(item.titleRes),
-                                                subtitle = stringResource(item.descRes),
-                                                icon = item.icon
-                                            )
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
+                    SettingsMenuList(
+                        menuItems = filteredMenuItems,
+                        onItemClick = { item ->
+                            backStack.removeIf { it is SettingsNavKey.SettingsDetail }
+                            backStack.add(SettingsNavKey.SettingsDetail(item.tab))
+                        },
+                        paddingValues = combinedPadding
+                    )
                 }
             }
 
             entry<SettingsNavKey.SettingsDetail>(
                 metadata = ListDetailSceneStrategy.detailPane()
             ) { key ->
-                Box(
-                    modifier = Modifier.fillMaxSize()
-                ) {
-                    when (key.tab) {
-                        SettingsTab.NOTIFICATIONS -> {
-                            NotificationSettingsScreen(
-                                viewModel = hiltViewModel(),
-                                showBackButton = windowSizeClass.isWidthCompact,
-                                onNavigateBack = { backStack.removeLastOrNull() }
-                            )
-                        }
-
-                        SettingsTab.CALENDAR -> {
-                            CalendarSettingsScreen(
-                                viewModel = hiltViewModel(),
-                                showBackButton = windowSizeClass.isWidthCompact,
-                                onNavigateBack = { backStack.removeLastOrNull() }
-                            )
-                        }
-
-                        SettingsTab.LABELS -> {
-                            LabelSettingsScreen(
-                                viewModel = hiltViewModel(),
-                                showBackButton = windowSizeClass.isWidthCompact,
-                                onNavigateBack = { backStack.removeLastOrNull() }
-                            )
-                        }
-
-                        SettingsTab.BACKUP -> {
-                            BackupScreen(
-                                viewModel = hiltViewModel(),
-                                showBackButton = windowSizeClass.isWidthCompact,
-                                onNavigateBack = { backStack.removeLastOrNull() }
-                            )
-                        }
-
-                        SettingsTab.THEME -> {
-                            ThemeSettingsScreen(
-                                viewModel = hiltViewModel(),
-                                showBackButton = windowSizeClass.isWidthCompact,
-                                onNavigateBack = { backStack.removeLastOrNull() }
-                            )
-                        }
-
-                        SettingsTab.SYNC -> {
-                            SyncSettingsScreen(
-                                viewModel = hiltViewModel(),
-                                showBackButton = windowSizeClass.isWidthCompact,
-                                onNavigateBack = { backStack.removeLastOrNull() }
-                            )
-                        }
-
-                        SettingsTab.OTHER_EVENTS -> {
-                            OtherEventsSettingsScreen(
-                                viewModel = hiltViewModel(),
-                                showBackButton = windowSizeClass.isWidthCompact,
-                                onNavigateBack = { backStack.removeLastOrNull() }
-                            )
-                        }
-
-                        SettingsTab.ABOUT -> {
-                            AboutScreen(
-                                showBackButton = windowSizeClass.isWidthCompact,
-                                onNavigateBack = { backStack.removeLastOrNull() },
-                                onNavigateToPrivacyPolicy = {
-                                    backStack.add(SettingsNavKey.SettingsDetail(SettingsTab.PRIVACY_POLICY))
-                                },
-                                onNavigateToLicenses = {
-                                    backStack.add(SettingsNavKey.SettingsDetail(SettingsTab.LICENSES))
-                                }
-                            )
-                        }
-
-                        SettingsTab.PRIVACY_POLICY -> {
-                            PrivacyPolicyScreen(
-                                showBackButton = true,
-                                onNavigateBack = { backStack.removeLastOrNull() }
-                            )
-                        }
-
-                        SettingsTab.STORAGE -> {
-                            StorageSettingsScreen(
-                                showBackButton = windowSizeClass.isWidthCompact,
-                                onNavigateBack = { backStack.removeLastOrNull() }
-                            )
-                        }
-
-                        SettingsTab.LICENSES -> {
-                            LicensesScreen(
-                                showBackButton = windowSizeClass.isWidthCompact,
-                                onNavigateBack = { backStack.removeLastOrNull() }
-                            )
-                        }
-                    }
-                }
+                SettingsDetailPane(
+                    tab = key.tab,
+                    windowSizeClass = windowSizeClass,
+                    backStack = backStack
+                )
             }
         }
     )
@@ -527,16 +211,4 @@ private fun SettingsPreview() {
             )
         }
     }
-}
-
-/**
- * Type-safe navigation keys for Jetpack Navigation 3, annotated with @Serializable.
- */
-@Serializable
-private sealed interface SettingsNavKey : NavKey {
-    @Serializable
-    data object SettingsMenu : SettingsNavKey
-
-    @Serializable
-    data class SettingsDetail(val tab: SettingsTab) : SettingsNavKey
 }

@@ -8,7 +8,6 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.PersonAdd
-import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -57,6 +56,7 @@ import com.heckmannch.birthdaybuddy.ui.theme.SpacingSmall
  */
 @Composable
 fun HomeHeader(
+    modifier: Modifier = Modifier,
     searchQuery: String,
     isSearchActive: Boolean,
     placeholder: String = stringResource(R.string.home_placeholder_search),
@@ -65,7 +65,6 @@ fun HomeHeader(
     actions: HomeActions = HomeActions.previewDefaults(),
     onToggleSidebar: () -> Unit = {},
     onToggleSearch: (Boolean) -> Unit = actions.onToggleSearch,
-    modifier: Modifier = Modifier,
 ) {
     val searchState = rememberSearchFieldState(initialQuery = searchQuery)
 
@@ -138,15 +137,6 @@ fun HomeHeader(
                 onClick = actions.onAddContact,
                 style = TitleActionStyle.Plain,
                 modifier = Modifier.testTag("add_contact_button"),
-            )
-
-            // 2. Einstellungs Action Button
-            TitleAction(
-                icon = Icons.Default.Settings,
-                contentDescription = stringResource(R.string.home_settings),
-                onClick = actions.onNavigateToSettings,
-                style = TitleActionStyle.Plain,
-                modifier = Modifier.testTag("settings_button"),
             )
         },
         search = searchState,
