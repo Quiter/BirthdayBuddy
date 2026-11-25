@@ -223,13 +223,61 @@ jobs:
             } > release_notes.md
           fi
 
+      - name: Verify APK exists and check size
+        run: |
+          apk_file="${{ needs.check-version.outputs.apk_name }}"
+          if [ ! -f "$apk_file" ]; then
+            echo "Error: File $apk_file does not exist!"
+            exit 1
+          fi
+          ls -lh "$apk_file"
+
       - name: Create Release and Upload
-        uses: softprops/action-gh-release@v2
-        with:
-          tag_name: ${{ needs.check-version.outputs.tag_name }}
-          name: ${{ needs.check-version.outputs.release_name }}
-          files: ${{ needs.check-version.outputs.apk_name }}
-          prerelease: ${{ needs.check-version.outputs.prerelease == 'true' }}
-          body_path: release_notes.md
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG_NAME: ${{ needs.check-version.outputs.tag_name }}
+          RELEASE_NAME: ${{ needs.check-version.outputs.release_name }}
+          APK_NAME: ${{ needs.check-version.outputs.apk_name }}
+          IS_PRERELEASE: ${{ needs.check-version.outputs.prerelease }}
+        run: |
+          PRERELEASE_FLAG=""
+          if [ "$IS_PRERELEASE" = "true" ]; then
+            PRERELEASE_FLAG="--prerelease"
+          fi
+
+          echo "Ensuring release exists for tag $TAG_NAME..."
+          if ! gh release view "$TAG_NAME" >/dev/null 2>&1; then
+            gh release create "$TAG_NAME" \
+              --title "$RELEASE_NAME" \
+              --notes-file release_notes.md \
+              $PRERELEASE_FLAG
+          else
+            echo "Release $TAG_NAME already exists, updating title, notes, and prerelease state..."
+            gh release edit "$TAG_NAME" \
+              --title "$RELEASE_NAME" \
+              --notes-file release_notes.md \
+              $PRERELEASE_FLAG
+          fi
+
+          echo "Uploading $APK_NAME with retry..."
+          MAX_RETRIES=4
+          RETRY_COUNT=0
+          UPLOAD_SUCCESS=false
+
+          while [ $RETRY_COUNT -lt $MAX_RETRIES ]; do
+            RETRY_COUNT=$((RETRY_COUNT+1))
+            echo "Attempt $RETRY_COUNT of $MAX_RETRIES..."
+            if gh release upload "$TAG_NAME" "$APK_NAME" --clobber; then
+              UPLOAD_SUCCESS=true
+              echo "Upload successful!"
+              break
+            else
+              echo "Upload failed on attempt $RETRY_COUNT. Waiting before retry..."
+              sleep 10
+            fi
+          done
+
+          if [ "$UPLOAD_SUCCESS" != "true" ]; then
+            echo "Failed to upload $APK_NAME after $MAX_RETRIES attempts."
+            exit 1
+          fi
