@@ -228,7 +228,6 @@ class FastScrollbarBoundsTest {
                             uiState = uiState,
                             homeState = homeState,
                             actions = noOpActions(),
-                            showLabelFilter = true,
                             contentPadding = PaddingValues(top = topPadding, bottom = bottomPadding),
                             modifier = Modifier.fillMaxSize(),
                         )

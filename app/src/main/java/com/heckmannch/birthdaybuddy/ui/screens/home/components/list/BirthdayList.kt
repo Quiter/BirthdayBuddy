@@ -68,7 +68,6 @@ import com.heckmannch.birthdaybuddy.ui.model.ContactUiModel
 import com.heckmannch.birthdaybuddy.ui.model.CoupleSuggestionUiModel
 import com.heckmannch.birthdaybuddy.ui.model.SampleData
 import com.heckmannch.birthdaybuddy.ui.screens.home.HomeActions
-import com.heckmannch.birthdaybuddy.ui.screens.home.components.labels.LabelFilterBar
 import com.heckmannch.birthdaybuddy.ui.theme.AlphaBorderSubtle
 import com.heckmannch.birthdaybuddy.ui.theme.AlphaContainerLow
 import com.heckmannch.birthdaybuddy.ui.theme.AlphaEmphasisLow
@@ -129,7 +128,6 @@ fun BirthdayList(
     onContactSelected: ((ContactUiModel) -> Unit)? = null,
     onInteraction: () -> Unit = {},
     contentPadding: PaddingValues = PaddingValues(SpacingNone),
-    showLabelFilter: Boolean = true,
 ) {
 
     val layoutDirection = LocalLayoutDirection.current
@@ -195,26 +193,6 @@ fun BirthdayList(
             bottom = contentPadding.calculateBottomPadding(),
         ),
     ) {
-        if (showLabelFilter && availableLabels.isNotEmpty()) {
-            val hasCoupleSuggestion =
-                selectedLabel == ContactLabels.LABEL_ANNIVERSARY && coupleSuggestion != null
-            // IMPORTANT: LabelFilterBar is the first LazyColumn item (not a sticky overlay).
-            // It scrolls away and reappears naturally. Do NOT move it outside the LazyColumn;
-            // doing so would break the headerCount accounting in FastScrollbar.
-            item(key = "label_filter_bar") {
-                LabelFilterBar(
-                    visible = true,
-                    labels = availableLabels,
-                    selectedLabel = selectedLabel,
-                    onLabelSelected = actions.onLabelSelected,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .let { modifier ->
-                            if (hasCoupleSuggestion) modifier.padding(bottom = SpacingSmall) else modifier
-                        }
-                )
-            }
-        }
         if (selectedLabel == ContactLabels.LABEL_ANNIVERSARY && coupleSuggestion != null) {
             item(key = "couple_suggestion") {
                 CoupleSuggestionBanner(

@@ -155,7 +155,6 @@ class HomeScreenInsetsTest {
                         uiState = uiState,
                         homeState = rememberHomeState(),
                         actions = noOpActions(),
-                        showLabelFilter = true,
                         contentPadding = PaddingValues(top = topPadding, bottom = bottomPadding),
                         modifier = Modifier.fillMaxSize(),
                     )

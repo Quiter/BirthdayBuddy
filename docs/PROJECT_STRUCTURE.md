@@ -73,7 +73,8 @@
 - **Feature Screens (`ui.screens`)** *(Co-located ViewModels, States & Components)*:
   - **Home (`home/`)**: `HomeScreen`, `HomeContent`, `HomeNavKey`, `HomeState`, `HomeActions`, `HomeIntent`, `HomeUiEvent`, `HomeViewModel`.
     - Header (`components/header/`): `HomeHeader`, `HomeHeaderBar`, `SearchFieldState`, `TitleAction`.
-    - Components: `BirthdayList`, `BirthdayItem`, `BirthdayDetailPane`, `GiftIdeaList`, `FastScrollbar`, `ScrollbarBubble`, `LabelFilterBar`, `LabelSidebar`, `HomeTopBar`, `SearchBar`, `HomeFAB`, `ContactActionRow`, `MessengerAppUi`, `ConfettiEffect`, etc.
+    - Components: `BirthdayList`, `BirthdayItem`, `BirthdayDetailPane`, `GiftIdeaList`, `FastScrollbar`, `ScrollbarBubble`, `HomeTopBar`, `SearchBar`, `ContactActionRow`, `MessengerAppUi`, `ConfettiEffect`, etc.
+  - **Labels (`labels/`)**: `LabelsScreen` *(reiner Label-Verwaltungs-Screen ohne FAB; Label-Erstellung erfolgt über das TopAppBar Header-Icon)*.
   - **Onboarding (`onboarding/`)**: `OnboardingScreen`, `OnboardingViewModel`, `OnboardingUiState` & Pages (`WelcomePage`, `ContactsPage`, `NotificationsPage`, `CalendarPage`, `CalendarGuidePage`, `ReadyPage`, `OnboardingFooter`).
   - **Settings (`settings/`)**: `SettingsScreen` & Sub-Features:
     - `labels/`: `LabelSettingsScreen`, `LabelViewModel`, `LabelUiState`.

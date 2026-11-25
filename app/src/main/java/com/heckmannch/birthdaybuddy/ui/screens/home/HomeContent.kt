@@ -3,10 +3,6 @@ package com.heckmannch.birthdaybuddy.ui.screens.home
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.PermanentDrawerSheet
-import androidx.compose.material3.PermanentNavigationDrawer
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.material3.pulltorefresh.PullToRefreshDefaults
@@ -14,34 +10,22 @@ import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.dp
 import androidx.window.core.layout.WindowSizeClass
 import com.heckmannch.birthdaybuddy.ui.components.AppResponsiveScaffold
 import com.heckmannch.birthdaybuddy.ui.components.LocalWindowSizeClass
-import com.heckmannch.birthdaybuddy.ui.components.isHeightCompact
-import com.heckmannch.birthdaybuddy.ui.components.isWidthCompact
-import com.heckmannch.birthdaybuddy.ui.components.isWidthExpanded
 import com.heckmannch.birthdaybuddy.ui.model.HomeUiState
 import com.heckmannch.birthdaybuddy.ui.model.SampleData
 import com.heckmannch.birthdaybuddy.ui.screens.home.components.header.HomeHeader
-import com.heckmannch.birthdaybuddy.ui.screens.home.components.labels.LabelSidebar
 import com.heckmannch.birthdaybuddy.ui.screens.home.components.list.HomeListDetailDisplay
 import com.heckmannch.birthdaybuddy.ui.theme.BirthdayBuddyTheme
-import com.heckmannch.birthdaybuddy.ui.theme.SidebarWidthCollapsed
-import com.heckmannch.birthdaybuddy.ui.theme.SidebarWidthExpanded
-import com.heckmannch.birthdaybuddy.ui.theme.SpacingSmall
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.emptyFlow
-
-import androidx.compose.ui.unit.Dp
-import androidx.compose.ui.unit.dp
 
 /**
  * Root UI content composable for the home dashboard.
@@ -85,43 +69,14 @@ fun HomeContent(
         }
     }
     val windowSizeClass = LocalWindowSizeClass.current
-    var isSidebarExpanded by rememberSaveable(windowSizeClass.isWidthExpanded) {
-        mutableStateOf(windowSizeClass.isWidthExpanded)
-    }
-    val showSidebar = !windowSizeClass.isWidthCompact && !windowSizeClass.isHeightCompact
 
-    val mainContent = @Composable {
-        HomeMainContent(
-            uiState = uiState,
-            homeState = homeState,
-            actions = actions,
-            windowSizeClass = windowSizeClass,
-            showSidebar = showSidebar,
-            onToggleSidebar = { isSidebarExpanded = !isSidebarExpanded },
-            bottomBarHeight = bottomBarHeight,
-        )
-    }
-
-    if (showSidebar) {
-        PermanentNavigationDrawer(
-            drawerContent = {
-                PermanentDrawerSheet(
-                    modifier = Modifier.width(if (isSidebarExpanded) SidebarWidthExpanded else SidebarWidthCollapsed),
-                    drawerContainerColor = MaterialTheme.colorScheme.surfaceContainerLow
-                ) {
-                    LabelSidebar(
-                        labels = uiState.availableLabels,
-                        selectedLabel = uiState.selectedLabel,
-                        onLabelSelected = actions.onLabelSelected,
-                        isExpanded = isSidebarExpanded
-                    )
-                }
-            },
-            content = mainContent
-        )
-    } else {
-        mainContent()
-    }
+    HomeMainContent(
+        uiState = uiState,
+        homeState = homeState,
+        actions = actions,
+        windowSizeClass = windowSizeClass,
+        bottomBarHeight = bottomBarHeight,
+    )
 }
 
 /**
@@ -134,8 +89,6 @@ fun HomeContent(
  * @param homeState Screen state holder managing scroll state, snackbar host, and focus.
  * @param actions Callbacks for user interactions.
  * @param windowSizeClass Current window size class for responsive layout adjustments.
- * @param showSidebar Whether the navigation sidebar toggle icon is displayed.
- * @param onToggleSidebar Callback invoked when the user clicks the menu icon to toggle the sidebar.
  * @param modifier Optional [Modifier] for the root container.
  */
 @Composable
@@ -144,8 +97,6 @@ private fun HomeMainContent(
     homeState: HomeState,
     actions: HomeActions,
     windowSizeClass: WindowSizeClass,
-    showSidebar: Boolean,
-    onToggleSidebar: () -> Unit,
     modifier: Modifier = Modifier,
     bottomBarHeight: Dp = 0.dp,
 ) {
@@ -159,10 +110,9 @@ private fun HomeMainContent(
                 searchQuery = uiState.searchQuery,
                 isSearchActive = uiState.isSearchActive,
                 placeholder = homeState.animatedPlaceholder,
-                showSidebar = showSidebar,
+                showSidebar = false,
                 focusRequester = homeState.searchFocusRequester,
                 actions = actions,
-                onToggleSidebar = onToggleSidebar,
                 onToggleSearch = actions.onToggleSearch,
             )
         }
@@ -193,7 +143,6 @@ private fun HomeMainContent(
                 uiState = uiState,
                 homeState = homeState,
                 actions = actions,
-                showLabelFilter = !showSidebar,
                 contentPadding = combinedPadding,
             )
         }
