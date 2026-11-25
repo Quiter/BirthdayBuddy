@@ -1,174 +1,270 @@
 package com.heckmannch.birthdaybuddy.ui.components
 
-
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.selection.toggleable
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.CornerBasedShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material.icons.automirrored.filled.NavigateNext
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LargeTopAppBar
-import androidx.compose.material3.ListItem
-import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.semantics.Role
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.semantics.heading
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.dp
 import com.heckmannch.birthdaybuddy.R
+import com.heckmannch.birthdaybuddy.ui.screens.home.components.cards.CardBorder
 import com.heckmannch.birthdaybuddy.ui.theme.AlphaEmphasisLow
-import com.heckmannch.birthdaybuddy.ui.theme.BirthdayBuddyTheme
 import com.heckmannch.birthdaybuddy.ui.theme.SpacingNormal
 import com.heckmannch.birthdaybuddy.ui.theme.SpacingSmall
 
-
 /**
- * A standardized section header for settings screens.
- *
- * @param title The section title text.
- * @param modifier The modifier to be applied to the text.
+ * Surface fill color for settings cards adhering to Morphe architecture and Material 3 guidelines.
  */
 @Composable
-fun SettingsSectionHeader(
-    title: String,
-    modifier: Modifier = Modifier
-) {
-    Text(
-        text = title,
-        style = MaterialTheme.typography.labelLarge,
-        color = MaterialTheme.colorScheme.primary,
-        modifier = modifier.padding(
-            start = SpacingNormal,
-            end = SpacingNormal,
-            bottom = SpacingSmall
-        )
-    )
-}
+fun cardFill(): Color = MaterialTheme.colorScheme.surfaceContainer
 
 /**
- * Standardized settings section combining a [SettingsSectionHeader] with a [SettingsCard].
- * Applies consistent bottom padding between sections.
- *
- * @param title The section header title.
- * @param content The card content (usually a list of SettingsSwitchRow / SettingsClickableRow).
+ * Elevated card container with subtle glassmorphism outline border (`CardBorder`).
+ * Modeled after Morphe Manager's `SurfaceCard` and `CardBorder`.
  */
 @Composable
-fun SettingsSection(
-    title: String,
+fun SurfaceCard(
     modifier: Modifier = Modifier,
-    content: @Composable ColumnScope.() -> Unit
+    onClick: (() -> Unit)? = null,
+    enabled: Boolean = true,
+    elevation: Dp = 1.dp,
+    cornerRadius: Dp = 20.dp,
+    showBorder: Boolean = true,
+    color: Color = cardFill(),
+    shape: CornerBasedShape = RoundedCornerShape(cornerRadius),
+    content: @Composable () -> Unit
 ) {
-    Column(
+    val border = if (showBorder) CardBorder.neutral else null
+
+    Surface(
         modifier = modifier
             .fillMaxWidth()
-            .padding(bottom = SpacingNormal)
+            .then(
+                if (onClick != null) {
+                    Modifier.clickable(enabled = enabled, onClick = onClick)
+                } else Modifier
+            ),
+        shape = shape,
+        color = color,
+        contentColor = MaterialTheme.colorScheme.onSurface,
+        tonalElevation = elevation,
+        shadowElevation = 0.dp,
+        border = border
     ) {
-        SettingsSectionHeader(title = title)
-        SettingsCard(
-            modifier = Modifier.padding(horizontal = SpacingNormal),
-            content = content
-        )
+        content()
     }
 }
 
 /**
- * A standardized card container for settings screens that groups options together.
- *
- * @param modifier The modifier to be applied to the card.
- * @param content The content of the card (usually a list of rows).
+ * Settings card container for grouping options together.
  */
 @Composable
 fun SettingsCard(
     modifier: Modifier = Modifier,
     content: @Composable ColumnScope.() -> Unit
 ) {
-    Card(
-        shape = MaterialTheme.shapes.extraLarge,
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceContainer
-        ),
-        modifier = modifier.fillMaxWidth(),
-        content = {
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clip(MaterialTheme.shapes.extraLarge),
-                content = content
-            )
-        }
-    )
-}
-
-/**
- * A standardized settings list row with a title, optional description, leading icon, and trailing switch.
- *
- * @param title The title of the setting.
- * @param checked The checked state of the switch.
- * @param onCheckedChange Action to trigger when the switch state changes.
- * @param modifier The modifier to be applied to the row.
- * @param description Optional description text below the title.
- * @param leadingIcon Optional leading icon.
- * @param enabled Whether this row is enabled and interactive.
- */
-@Composable
-fun SettingsSwitchRow(
-    title: String,
-    checked: Boolean,
-    onCheckedChange: (Boolean) -> Unit,
-    modifier: Modifier = Modifier,
-    description: String? = null,
-    leadingIcon: @Composable (() -> Unit)? = null,
-    enabled: Boolean = true
-) {
-    ListItem(
-        modifier = modifier.toggleable(
-            value = checked,
-            enabled = enabled,
-            role = Role.Switch,
-            onValueChange = onCheckedChange
-        ),
-        supportingContent = description?.let { { Text(it) } },
-        leadingContent = leadingIcon,
-        trailingContent = {
-            AppSwitch(
-                checked = checked,
-                onCheckedChange = null,
-                enabled = enabled
-            )
-        },
-        colors = ListItemDefaults.colors(containerColor = Color.Transparent),
+    SurfaceCard(
+        modifier = modifier,
+        showBorder = true
     ) {
-        Text(title)
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(vertical = 4.dp),
+            content = content
+        )
     }
 }
 
 /**
- * A standardized settings list row for clickable actions (like Sync, Backup Import/Export, or custom selectors).
- *
- * @param title The title of the action.
- * @param onClick Action to trigger when clicked.
- * @param modifier The modifier to be applied to the row.
- * @param description Optional description text below the title.
- * @param leadingIcon Optional leading icon.
- * @param trailingContent Optional trailing component.
- * @param enabled Whether this row is enabled and interactive.
+ * Settings item card wrapper.
+ */
+@Composable
+fun SettingsItemCard(
+    onClick: (() -> Unit)?,
+    modifier: Modifier = Modifier,
+    enabled: Boolean = true,
+    showBorder: Boolean = true,
+    color: Color = cardFill(),
+    shape: CornerBasedShape = RoundedCornerShape(20.dp),
+    content: @Composable () -> Unit
+) {
+    SurfaceCard(
+        onClick = onClick,
+        enabled = enabled,
+        elevation = 1.dp,
+        cornerRadius = 20.dp,
+        showBorder = showBorder,
+        color = color,
+        shape = shape,
+        modifier = modifier
+    ) {
+        content()
+    }
+}
+
+/**
+ * Horizontal divider for settings sections.
+ */
+@Composable
+fun SettingsDivider(
+    modifier: Modifier = Modifier,
+    fullWidth: Boolean = false
+) {
+    HorizontalDivider(
+        modifier = if (fullWidth) modifier else modifier.padding(horizontal = SpacingNormal),
+        color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = AlphaEmphasisLow)
+    )
+}
+
+/**
+ * Reusable icon component with standard styling.
+ */
+@Composable
+fun ThemedIcon(
+    icon: ImageVector,
+    modifier: Modifier = Modifier,
+    size: Dp = 24.dp,
+    tint: Color = MaterialTheme.colorScheme.primary,
+    contentDescription: String? = null
+) {
+    Icon(
+        imageVector = icon,
+        contentDescription = contentDescription,
+        tint = tint,
+        modifier = modifier.size(size)
+    )
+}
+
+/**
+ * Row with icon, title, description, and trailing content.
+ */
+@Composable
+fun IconTextRow(
+    modifier: Modifier = Modifier,
+    leadingContent: @Composable (() -> Unit)? = null,
+    title: String,
+    description: String? = null,
+    titleStyle: TextStyle = MaterialTheme.typography.bodyLarge,
+    titleWeight: FontWeight = FontWeight.Medium,
+    titleColor: Color = MaterialTheme.colorScheme.onSurface,
+    descriptionStyle: TextStyle = MaterialTheme.typography.bodyMedium,
+    descriptionColor: Color = MaterialTheme.colorScheme.onSurfaceVariant,
+    trailingContent: @Composable (() -> Unit)? = null,
+    spacing: Dp = SpacingNormal
+) {
+    Row(
+        modifier = modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.spacedBy(spacing),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        leadingContent?.invoke()
+
+        Column(
+            modifier = Modifier.weight(1f),
+            verticalArrangement = Arrangement.spacedBy(2.dp)
+        ) {
+            Text(
+                text = title,
+                style = titleStyle,
+                fontWeight = titleWeight,
+                color = titleColor
+            )
+            description?.let {
+                Text(
+                    text = it,
+                    style = descriptionStyle,
+                    color = descriptionColor
+                )
+            }
+        }
+
+        trailingContent?.invoke()
+    }
+}
+
+/**
+ * Forward chevron icon pointing towards subpages or details.
+ */
+@Composable
+fun ForwardChevronIcon(
+    modifier: Modifier = Modifier,
+    size: Dp = 24.dp,
+    tint: Color = MaterialTheme.colorScheme.primary
+) {
+    ThemedIcon(
+        icon = Icons.AutoMirrored.Filled.NavigateNext,
+        modifier = modifier,
+        size = size,
+        tint = tint
+    )
+}
+
+/**
+ * Standard settings item row.
+ */
+@Composable
+fun SettingsItem(
+    onClick: () -> Unit,
+    title: String,
+    modifier: Modifier = Modifier,
+    icon: ImageVector? = null,
+    leadingContent: @Composable (() -> Unit)? = null,
+    subtitle: String? = null,
+    enabled: Boolean = true,
+    showBorder: Boolean = true,
+    statusContent: @Composable (() -> Unit)? = null,
+    trailingContent: @Composable (() -> Unit)? = { ForwardChevronIcon() }
+) {
+    SettingsItemCard(
+        onClick = onClick,
+        enabled = enabled,
+        showBorder = showBorder,
+        modifier = modifier
+    ) {
+        IconTextRow(
+            modifier = Modifier.padding(SpacingNormal),
+            leadingContent = leadingContent ?: icon?.let { { ThemedIcon(icon = it) } },
+            title = title,
+            description = subtitle,
+            trailingContent = statusContent ?: trailingContent
+        )
+    }
+}
+
+/**
+ * Clickable settings row for detail screens.
  */
 @Composable
 fun SettingsClickableRow(
@@ -180,60 +276,168 @@ fun SettingsClickableRow(
     trailingContent: @Composable (() -> Unit)? = null,
     enabled: Boolean = true
 ) {
-    ListItem(
-        modifier = modifier.clickable(enabled = enabled, onClick = onClick),
-        supportingContent = description?.let { { Text(it) } },
-        leadingContent = leadingIcon,
-        trailingContent = trailingContent,
-        colors = ListItemDefaults.colors(containerColor = Color.Transparent),
+    SettingsItemCard(
+        onClick = onClick,
+        enabled = enabled,
+        showBorder = false,
+        modifier = modifier
     ) {
-        Text(title)
+        IconTextRow(
+            modifier = Modifier.padding(SpacingNormal),
+            leadingContent = leadingIcon,
+            title = title,
+            description = description,
+            trailingContent = trailingContent
+        )
     }
 }
 
 /**
- * A standardized divider for use between rows inside a [SettingsCard].
- * Uses reduced-alpha outline-variant color per MD3 spec for decorative dividers.
+ * Settings switch item row.
  */
 @Composable
-fun SettingsDivider(modifier: Modifier = Modifier) {
-    HorizontalDivider(
-        color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = AlphaEmphasisLow),
-        modifier = modifier.padding(horizontal = SpacingNormal)
+fun SettingsSwitchItem(
+    checked: Boolean,
+    onToggle: () -> Unit,
+    title: String,
+    modifier: Modifier = Modifier,
+    icon: ImageVector? = null,
+    leadingContent: @Composable (() -> Unit)? = null,
+    subtitle: String? = null,
+    showBorder: Boolean = true
+) {
+    SettingsItem(
+        onClick = onToggle,
+        title = title,
+        modifier = modifier,
+        icon = icon,
+        leadingContent = leadingContent,
+        subtitle = subtitle,
+        showBorder = showBorder,
+        trailingContent = {
+            AppSwitch(
+                checked = checked,
+                onCheckedChange = null
+            )
+        }
     )
 }
 
-@Preview(showBackground = true)
+/**
+ * Settings switch row for detail screens inside a [SettingsCard].
+ */
 @Composable
-private fun SettingsComponentsPreview() {
-    BirthdayBuddyTheme {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(SpacingNormal)
-        ) {
-            SettingsSectionHeader(title = "Benachrichtigungen")
-            SettingsCard {
-                SettingsSwitchRow(
-                    title = "Geburtstags-Erinnerungen",
-                    description = "Erhalte Benachrichtigungen an Geburtstagen",
-                    checked = true,
-                    onCheckedChange = {}
-                )
-                SettingsClickableRow(
-                    title = "Erinnerungszeit",
-                    description = "09:00 Uhr",
-                    onClick = {}
+fun SettingsSwitchRow(
+    title: String,
+    checked: Boolean,
+    onCheckedChange: (Boolean) -> Unit,
+    modifier: Modifier = Modifier,
+    description: String? = null,
+    leadingIcon: @Composable (() -> Unit)? = null,
+    enabled: Boolean = true
+) {
+    SettingsItemCard(
+        onClick = { onCheckedChange(!checked) },
+        enabled = enabled,
+        showBorder = false,
+        modifier = modifier
+    ) {
+        IconTextRow(
+            modifier = Modifier.padding(SpacingNormal),
+            leadingContent = leadingIcon,
+            title = title,
+            description = description,
+            trailingContent = {
+                AppSwitch(
+                    checked = checked,
+                    onCheckedChange = null,
+                    enabled = enabled
                 )
             }
-        }
+        )
     }
 }
 
 /**
- * A standardized scaffold layout for settings detail screens.
+ * Group container for settings items.
  */
-@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun SettingsGroup(
+    modifier: Modifier = Modifier,
+    content: @Composable ColumnScope.() -> Unit
+) {
+    Column(
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(vertical = 4.dp),
+        verticalArrangement = Arrangement.spacedBy(4.dp),
+        content = content
+    )
+}
+
+/**
+ * Titled section container for settings.
+ */
+@Composable
+fun SettingsSection(
+    title: String,
+    modifier: Modifier = Modifier,
+    icon: ImageVector? = null,
+    content: @Composable ColumnScope.() -> Unit
+) {
+    Column(
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(bottom = SpacingNormal)
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(start = SpacingNormal, end = SpacingNormal, bottom = SpacingSmall)
+                .semantics { heading() },
+            horizontalArrangement = Arrangement.spacedBy(SpacingSmall),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            if (icon != null) {
+                ThemedIcon(icon = icon, size = 20.dp, tint = MaterialTheme.colorScheme.primary)
+            }
+            Text(
+                text = title,
+                style = MaterialTheme.typography.titleSmall,
+                fontWeight = FontWeight.SemiBold,
+                color = MaterialTheme.colorScheme.primary
+            )
+        }
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = SpacingNormal),
+            verticalArrangement = Arrangement.spacedBy(4.dp),
+            content = content
+        )
+    }
+}
+
+/**
+ * Vertical column container for settings sections.
+ */
+@Composable
+fun SettingsColumn(
+    modifier: Modifier = Modifier,
+    content: @Composable ColumnScope.() -> Unit
+) {
+    Column(
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(vertical = SpacingNormal),
+        verticalArrangement = Arrangement.spacedBy(SpacingNormal),
+        content = content
+    )
+}
+
+/**
+ * Standardized scaffold layout for settings detail screens.
+ */
 @Composable
 fun SettingsDetailScaffold(
     modifier: Modifier = Modifier,

@@ -236,6 +236,7 @@ fun AppNavHost(
                                     scope.launch { pagerState.turnTo(MainPage.HOME) }
                                 },
                                 showBackButton = false,
+                                bottomBarHeight = bottomBarHeight,
                             )
                         }
                     }

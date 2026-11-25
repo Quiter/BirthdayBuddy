@@ -431,6 +431,8 @@
     <string name="color_picker_hex_label">HEX Code</string>
     <string name="color_picker_hex_placeholder">e.g. FF5722</string>
     <string name="color_picker_preview">Preview</string>
+    <string name="color_picker_shade">Color shade panel</string>
+    <string name="color_picker_hue">Hue spectrum slider</string>
 
     <!-- Adaptive Details Screen -->
     <string name="detail_close_desc">Close details</string>
@@ -461,6 +463,7 @@
     <string name="labels_all_card_desc">All contacts with assigned labels</string>
     <string name="labels_count_contacts_one">1 contact</string>
     <string name="labels_count_contacts_many">%1$d contacts</string>
+    <string name="settings_search">Search settings</string>
 
     <string name="scrollbar_content_description">Scrollbar</string>
 </resources>
