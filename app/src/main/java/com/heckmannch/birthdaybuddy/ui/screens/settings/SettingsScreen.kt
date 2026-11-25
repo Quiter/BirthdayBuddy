@@ -26,6 +26,7 @@ import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.material.icons.filled.Star
+import androidx.compose.material.icons.filled.Storage
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -62,6 +63,8 @@ import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
 import androidx.navigation3.ui.NavDisplay
 import androidx.window.core.layout.WindowSizeClass
 import com.heckmannch.birthdaybuddy.R
+import com.heckmannch.birthdaybuddy.ui.screens.settings.about.LicensesScreen
+import com.heckmannch.birthdaybuddy.ui.screens.settings.storage.StorageSettingsScreen
 import com.heckmannch.birthdaybuddy.ui.components.AppResponsiveScaffold
 import com.heckmannch.birthdaybuddy.ui.components.AppTopHeader
 import com.heckmannch.birthdaybuddy.ui.components.LocalWindowAdaptiveInfo
@@ -100,7 +103,9 @@ enum class SettingsTab {
     SYNC,
     OTHER_EVENTS,
     ABOUT,
-    PRIVACY_POLICY
+    PRIVACY_POLICY,
+    STORAGE,
+    LICENSES
 }
 
 /**
@@ -215,6 +220,13 @@ internal fun SettingsContent(
                 descRes = R.string.settings_backup_desc,
                 icon = Icons.Default.Share,
                 tab = SettingsTab.BACKUP,
+                section = SettingsSectionType.DATA
+            ),
+            SettingsMenuItemData(
+                titleRes = R.string.storage_management_title,
+                descRes = R.string.storage_management_desc,
+                icon = Icons.Default.Storage,
+                tab = SettingsTab.STORAGE,
                 section = SettingsSectionType.DATA
             ),
             SettingsMenuItemData(
@@ -469,6 +481,9 @@ internal fun SettingsContent(
                                 onNavigateBack = { backStack.removeLastOrNull() },
                                 onNavigateToPrivacyPolicy = {
                                     backStack.add(SettingsNavKey.SettingsDetail(SettingsTab.PRIVACY_POLICY))
+                                },
+                                onNavigateToLicenses = {
+                                    backStack.add(SettingsNavKey.SettingsDetail(SettingsTab.LICENSES))
                                 }
                             )
                         }
@@ -476,6 +491,20 @@ internal fun SettingsContent(
                         SettingsTab.PRIVACY_POLICY -> {
                             PrivacyPolicyScreen(
                                 showBackButton = true,
+                                onNavigateBack = { backStack.removeLastOrNull() }
+                            )
+                        }
+
+                        SettingsTab.STORAGE -> {
+                            StorageSettingsScreen(
+                                showBackButton = windowSizeClass.isWidthCompact,
+                                onNavigateBack = { backStack.removeLastOrNull() }
+                            )
+                        }
+
+                        SettingsTab.LICENSES -> {
+                            LicensesScreen(
+                                showBackButton = windowSizeClass.isWidthCompact,
                                 onNavigateBack = { backStack.removeLastOrNull() }
                             )
                         }

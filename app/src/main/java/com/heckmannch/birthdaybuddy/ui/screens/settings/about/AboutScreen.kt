@@ -45,7 +45,8 @@ private const val TAG = "AboutScreen"
 fun AboutScreen(
     showBackButton: Boolean = true,
     onNavigateBack: () -> Unit,
-    onNavigateToPrivacyPolicy: () -> Unit
+    onNavigateToPrivacyPolicy: () -> Unit,
+    onNavigateToLicenses: () -> Unit
 ) {
     val context = LocalContext.current
     val versionName = remember {
@@ -132,6 +133,16 @@ fun AboutScreen(
                 )
             }
 
+            Spacer(modifier = Modifier.height(SpacingNormal))
+
+            TextButton(onClick = onNavigateToLicenses) {
+                Text(
+                    text = stringResource(R.string.opensource_licenses),
+                    style = MaterialTheme.typography.labelLarge,
+                    color = MaterialTheme.colorScheme.primary
+                )
+            }
+
             Spacer(modifier = Modifier.height(SpacingExtraLarge))
 
             Text(
@@ -167,7 +178,8 @@ private fun AboutPreview() {
     BirthdayBuddyTheme {
         AboutScreen(
             onNavigateBack = {},
-            onNavigateToPrivacyPolicy = {}
+            onNavigateToPrivacyPolicy = {},
+            onNavigateToLicenses = {}
         )
     }
 }

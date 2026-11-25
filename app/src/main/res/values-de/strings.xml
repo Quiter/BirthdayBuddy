@@ -464,6 +464,15 @@
     <string name="labels_count_contacts_one">1 Kontakt</string>
     <string name="labels_count_contacts_many">%1$d Kontakte</string>
     <string name="settings_search">Einstellungen durchsuchen</string>
+    <string name="opensource_licenses">Open-Source-Lizenzen</string>
+    <string name="storage_management_title">Speicher &amp; Cache</string>
+    <string name="storage_management_desc">Datenbankgröße und App-Cache verwalten</string>
+    <string name="storage_database_size">Datenbankgröße</string>
+    <string name="storage_cache_size">Cache-Größe</string>
+    <string name="storage_clear_cache">Cache leeren</string>
+    <string name="storage_clear_cache_desc">Temporären Speicher freigeben</string>
+    <string name="storage_app_info">App-Systeminformationen</string>
+    <string name="storage_app_info_desc">App-Info in den Systemeinstellungen öffnen</string>
 
     <string name="scrollbar_content_description">Scrollleiste</string>
 </resources>

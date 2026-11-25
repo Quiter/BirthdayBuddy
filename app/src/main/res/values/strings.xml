@@ -464,6 +464,15 @@
     <string name="labels_count_contacts_one">1 contact</string>
     <string name="labels_count_contacts_many">%1$d contacts</string>
     <string name="settings_search">Search settings</string>
+    <string name="opensource_licenses">Open Source Licenses</string>
+    <string name="storage_management_title">Storage &amp; Cache</string>
+    <string name="storage_management_desc">Manage database size and app cache</string>
+    <string name="storage_database_size">Database Size</string>
+    <string name="storage_cache_size">Cache Size</string>
+    <string name="storage_clear_cache">Clear Cache</string>
+    <string name="storage_clear_cache_desc">Free up temporary storage</string>
+    <string name="storage_app_info">App System Info</string>
+    <string name="storage_app_info_desc">Open application info in system settings</string>
 
     <string name="scrollbar_content_description">Scrollbar</string>
 </resources>
