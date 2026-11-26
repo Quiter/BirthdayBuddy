@@ -7,11 +7,11 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.navigation3.runtime.rememberNavBackStack
-import com.heckmannch.birthdaybuddy.ui.theme.BirthdayBuddyTheme
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.navigation3.runtime.NavBackStack
 import androidx.navigation3.runtime.NavKey
+import androidx.navigation3.runtime.rememberNavBackStack
+import androidx.window.core.layout.WindowSizeClass
 import com.heckmannch.birthdaybuddy.ui.components.isWidthCompact
 import com.heckmannch.birthdaybuddy.ui.screens.settings.SettingsNavKey
 import com.heckmannch.birthdaybuddy.ui.screens.settings.SettingsTab
@@ -24,7 +24,7 @@ import com.heckmannch.birthdaybuddy.ui.screens.settings.subscreens.notifications
 import com.heckmannch.birthdaybuddy.ui.screens.settings.subscreens.storage.StorageSettingsScreen
 import com.heckmannch.birthdaybuddy.ui.screens.settings.subscreens.sync.SyncSettingsScreen
 import com.heckmannch.birthdaybuddy.ui.screens.settings.subscreens.theme.ThemeSettingsScreen
-import androidx.window.core.layout.WindowSizeClass
+import com.heckmannch.birthdaybuddy.ui.theme.BirthdayBuddyTheme
 
 /**
  * Content composable for rendering the detail screen corresponding to a selected [SettingsTab].

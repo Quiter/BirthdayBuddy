@@ -4,9 +4,6 @@
 
     <!-- HomeScreen & General -->
     <string name="home_placeholder_search">Kontakt suchen</string>
-    <string name="home_search_clear">Suche löschen</string>
-    <string name="home_settings">Einstellungen</string>
-    <string name="home_filter_all">Alle</string>
     <string name="home_filter_no_birthday">Ohne Datum</string>
     <string name="home_scroll_to_top">Nach oben scrollen</string>
     <string name="home_add_contact">Kontakt hinzufügen</string>
@@ -69,7 +66,6 @@
 
     <!-- Notification Settings -->
     <string name="notifications_title">Benachrichtigungen</string>
-    <string name="notifications_back">Zurück</string>
     <string name="notifications_add_rule">Regel hinzufügen</string>
     <string name="notifications_edit_rule">Regel bearbeiten</string>
     <string name="notifications_header">Geburtstags-Erinnerungen</string>
@@ -229,13 +225,8 @@
     <string name="settings_select_item_hint">Wähle eine Einstellung aus dem Menü</string>
 
     <!-- Label Settings Screen -->
-    <string name="labels_title">Labels verwalten</string>
     <string name="labels_enable">Label-Management aktivieren</string>
     <string name="labels_enable_desc">Kontakte nach Labels/Gruppen filtern und bestimmte Labels ausblenden</string>
-    <string name="labels_info_title">Label-Konfiguration</string>
-    <string name="labels_empty">Keine Labels gefunden</string>
-    <string name="labels_info_hide">Filter verbergen: Label erscheint nicht in der Leiste zum Filtern der Kontakte.</string>
-    <string name="labels_info_ignore">Ignorieren: Kontakte werden komplett ausgeblendet, sind aber in der Suche auffindbar.</string>
     <string name="labels_system_tag">SYSTEM</string>
     <string name="labels_action_hide">Verbergen</string>
     <string name="labels_action_ignore">Ignorieren</string>
@@ -324,8 +315,6 @@
     <!-- Weitere Ereignisse -->
     <string name="other_events_enable">Weitere Ereignisse aktivieren</string>
     <string name="other_events_desc">Zeige Namenstage und Hochzeitstage aus deinen System-Kontakten an.</string>
-    <string name="other_events_info_title">Experimentelles Feature</string>
-    <string name="other_events_info_desc">Dieses Feature lädt Hochzeitstage und Namenstage deiner Kontakte und integriert sie als filterbare Tabs auf der Startseite sowie in das Benachrichtigungssystem.</string>
     <string name="settings_other_events_title">Weitere Ereignisse</string>
     <string name="settings_other_events_desc">Hochzeitstage und Namenstage verwalten</string>
     <string name="home_filter_anniversary">Hochzeitstag</string>
@@ -428,11 +417,7 @@
     <string name="theme_accent_pink">Pink</string>
     <string name="theme_accent_custom">Eigene</string>
     <string name="theme_accent_custom_dialog_title">Eigene Akzentfarbe</string>
-    <string name="theme_accent_custom_dialog_desc">Wähle eine Vorlage oder gib einen Hex-Code ein:</string>
-    <string name="theme_accent_custom_invalid_hex">Ungültiger Hex-Code (z.B. #FF5722)</string>
     <string name="color_picker_hex_label">HEX-Code</string>
-    <string name="color_picker_hex_placeholder">z.B. FF5722</string>
-    <string name="color_picker_preview">Vorschau</string>
     <string name="color_picker_shade">Farbton-Bereich</string>
     <string name="color_picker_hue">Farbkreis-Regler</string>
 
@@ -454,13 +439,11 @@
     <string name="nav_tab_home">Home</string>
     <string name="nav_tab_settings">Einstellungen</string>
     <string name="labels_screen_title">Labels</string>
-    <string name="labels_screen_empty">Keine Kontakte mit Labels gefunden</string>
     <string name="labels_add_title">Neues Label erstellen</string>
     <string name="labels_add_placeholder">Labelname</string>
     <string name="labels_add_confirm">Erstellen</string>
     <string name="labels_cancel">Abbrechen</string>
     <string name="labels_assigned_contacts">Zugewiesene Kontakte (%1$d)</string>
-    <string name="labels_no_assigned_contacts">Keine Kontakte zugewiesen</string>
     <string name="labels_all_card">Alle Labels</string>
     <string name="labels_all_card_desc">Alle Kontakte mit zugewiesenen Labels</string>
     <string name="labels_count_contacts_one">1 Kontakt</string>

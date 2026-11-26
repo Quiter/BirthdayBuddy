@@ -20,7 +20,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
-import kotlinx.coroutines.launch
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LifecycleEventEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -37,6 +36,7 @@ import com.heckmannch.birthdaybuddy.ui.screens.onboarding.OnboardingScreen
 import com.heckmannch.birthdaybuddy.ui.screens.onboarding.OnboardingViewModel
 import com.heckmannch.birthdaybuddy.ui.screens.settings.SettingsScreen
 import com.heckmannch.birthdaybuddy.ui.screens.settings.SettingsTab
+import kotlinx.coroutines.launch
 
 /**
  * Zentrale Navigations-Komponente der App.
