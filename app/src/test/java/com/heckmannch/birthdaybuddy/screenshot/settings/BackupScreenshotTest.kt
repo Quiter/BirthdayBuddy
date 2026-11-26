@@ -1,8 +1,8 @@
-package com.heckmannch.birthdaybuddy.screenshot.settings
+﻿package com.heckmannch.birthdaybuddy.screenshot.settings
 
 import com.heckmannch.birthdaybuddy.screenshot.BaseScreenshotTest
-import com.heckmannch.birthdaybuddy.ui.screens.settings.backup.BackupMessage
-import com.heckmannch.birthdaybuddy.ui.screens.settings.backup.components.BackupScreenContent
+import com.heckmannch.birthdaybuddy.ui.screens.settings.subscreens.backup.BackupMessage
+import com.heckmannch.birthdaybuddy.ui.screens.settings.subscreens.backup.components.BackupScreenContent
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
@@ -103,3 +103,4 @@ class BackupScreenshotTest : BaseScreenshotTest() {
         captureScreenshot()
     }
 }
+

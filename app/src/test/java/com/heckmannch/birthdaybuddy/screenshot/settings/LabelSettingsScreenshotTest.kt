@@ -1,8 +1,8 @@
-package com.heckmannch.birthdaybuddy.screenshot.settings
+﻿package com.heckmannch.birthdaybuddy.screenshot.settings
 
 import com.heckmannch.birthdaybuddy.screenshot.BaseScreenshotTest
 import com.heckmannch.birthdaybuddy.ui.model.LabelManagementModel
-import com.heckmannch.birthdaybuddy.ui.screens.settings.labels.LabelSettingsScreenContent
+import com.heckmannch.birthdaybuddy.ui.screens.settings.subscreens.labels.LabelSettingsScreenContent
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
@@ -157,3 +157,4 @@ class LabelSettingsScreenshotTest : BaseScreenshotTest() {
         captureScreenshot()
     }
 }
+

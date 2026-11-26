@@ -1,4 +1,4 @@
-package com.heckmannch.birthdaybuddy.ui.screens.labels
+﻿package com.heckmannch.birthdaybuddy.ui.screens.labels
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.PaddingValues
@@ -40,9 +40,9 @@ import com.heckmannch.birthdaybuddy.ui.screens.home.HomeActions
 import com.heckmannch.birthdaybuddy.ui.screens.labels.components.AddLabelDialog
 import com.heckmannch.birthdaybuddy.ui.screens.labels.components.AllLabelsCard
 import com.heckmannch.birthdaybuddy.ui.screens.labels.components.LabelCard
-import com.heckmannch.birthdaybuddy.ui.screens.settings.labels.LabelIntent
-import com.heckmannch.birthdaybuddy.ui.screens.settings.labels.LabelUiState
-import com.heckmannch.birthdaybuddy.ui.screens.settings.labels.LabelViewModel
+import com.heckmannch.birthdaybuddy.ui.screens.settings.subscreens.labels.LabelIntent
+import com.heckmannch.birthdaybuddy.ui.screens.settings.subscreens.labels.LabelUiState
+import com.heckmannch.birthdaybuddy.ui.screens.settings.subscreens.labels.LabelViewModel
 import com.heckmannch.birthdaybuddy.ui.theme.BirthdayBuddyTheme
 import com.heckmannch.birthdaybuddy.ui.theme.SpacingNormal
 import com.heckmannch.birthdaybuddy.ui.theme.SpacingSmall
@@ -242,3 +242,4 @@ private fun LabelsScreenPreview() {
         )
     }
 }
+

@@ -1,9 +1,9 @@
-package com.heckmannch.birthdaybuddy.screenshot.settings
+﻿package com.heckmannch.birthdaybuddy.screenshot.settings
 
 import com.heckmannch.birthdaybuddy.domain.model.NotificationRule
 import com.heckmannch.birthdaybuddy.screenshot.BaseScreenshotTest
-import com.heckmannch.birthdaybuddy.ui.screens.settings.notifications.NotificationSettingsContent
-import com.heckmannch.birthdaybuddy.ui.screens.settings.notifications.NotificationSettingsState
+import com.heckmannch.birthdaybuddy.ui.screens.settings.subscreens.notifications.NotificationSettingsContent
+import com.heckmannch.birthdaybuddy.ui.screens.settings.subscreens.notifications.NotificationSettingsState
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
@@ -219,3 +219,4 @@ class NotificationSettingsScreenshotTest : BaseScreenshotTest() {
         captureScreenshot()
     }
 }
+

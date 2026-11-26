@@ -1,4 +1,4 @@
-package com.heckmannch.birthdaybuddy.ui.screens.settings.components
+﻿package com.heckmannch.birthdaybuddy.ui.screens.settings.components
 
 import android.content.res.Configuration
 import androidx.compose.foundation.layout.Box
@@ -14,17 +14,17 @@ import androidx.navigation3.runtime.NavKey
 import com.heckmannch.birthdaybuddy.ui.components.isWidthCompact
 import com.heckmannch.birthdaybuddy.ui.screens.settings.SettingsNavKey
 import com.heckmannch.birthdaybuddy.ui.screens.settings.SettingsTab
-import com.heckmannch.birthdaybuddy.ui.screens.settings.about.AboutScreen
-import com.heckmannch.birthdaybuddy.ui.screens.settings.about.LicensesScreen
-import com.heckmannch.birthdaybuddy.ui.screens.settings.about.PrivacyPolicyScreen
-import com.heckmannch.birthdaybuddy.ui.screens.settings.backup.BackupScreen
-import com.heckmannch.birthdaybuddy.ui.screens.settings.calendar.CalendarSettingsScreen
-import com.heckmannch.birthdaybuddy.ui.screens.settings.labels.LabelSettingsScreen
-import com.heckmannch.birthdaybuddy.ui.screens.settings.notifications.NotificationSettingsScreen
-import com.heckmannch.birthdaybuddy.ui.screens.settings.otherevents.OtherEventsSettingsScreen
-import com.heckmannch.birthdaybuddy.ui.screens.settings.storage.StorageSettingsScreen
-import com.heckmannch.birthdaybuddy.ui.screens.settings.sync.SyncSettingsScreen
-import com.heckmannch.birthdaybuddy.ui.screens.settings.theme.ThemeSettingsScreen
+import com.heckmannch.birthdaybuddy.ui.screens.settings.subscreens.about.AboutScreen
+import com.heckmannch.birthdaybuddy.ui.screens.settings.subscreens.about.LicensesScreen
+import com.heckmannch.birthdaybuddy.ui.screens.settings.subscreens.about.PrivacyPolicyScreen
+import com.heckmannch.birthdaybuddy.ui.screens.settings.subscreens.backup.BackupScreen
+import com.heckmannch.birthdaybuddy.ui.screens.settings.subscreens.calendar.CalendarSettingsScreen
+import com.heckmannch.birthdaybuddy.ui.screens.settings.subscreens.labels.LabelSettingsScreen
+import com.heckmannch.birthdaybuddy.ui.screens.settings.subscreens.notifications.NotificationSettingsScreen
+import com.heckmannch.birthdaybuddy.ui.screens.settings.subscreens.otherevents.OtherEventsSettingsScreen
+import com.heckmannch.birthdaybuddy.ui.screens.settings.subscreens.storage.StorageSettingsScreen
+import com.heckmannch.birthdaybuddy.ui.screens.settings.subscreens.sync.SyncSettingsScreen
+import com.heckmannch.birthdaybuddy.ui.screens.settings.subscreens.theme.ThemeSettingsScreen
 import androidx.window.core.layout.WindowSizeClass
 
 /**
@@ -147,3 +147,4 @@ private fun SettingsDetailPanePreview() {
         )
     }
 }
+

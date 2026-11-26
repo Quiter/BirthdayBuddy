@@ -14,27 +14,32 @@ import com.heckmannch.birthdaybuddy.ui.components.AppTopHeader
 import com.heckmannch.birthdaybuddy.ui.theme.BirthdayBuddyTheme
 
 /**
- * Top header component for the main settings menu.
+ * Reusable top header component for settings screens and sub-screens.
  * Displays the screen title, optional back navigation button, and search functionality.
  */
 @Composable
 internal fun SettingsHeader(
-    isSearchActive: Boolean,
-    searchQuery: String,
-    onSearchQueryChange: (String) -> Unit,
-    onSearchActiveChange: (Boolean) -> Unit,
-    onClearSearch: () -> Unit,
+    title: String,
+    isSearchActive: Boolean = false,
+    searchQuery: String = "",
+    onSearchQueryChange: (String) -> Unit = {},
+    onSearchActiveChange: (Boolean) -> Unit = {},
+    onClearSearch: () -> Unit = {},
     showBackButton: Boolean = true,
-    onNavigateBack: () -> Unit = {}
+    onNavigateBack: () -> Unit = {},
+    showSearchButton: Boolean = false,
+    modifier: Modifier = Modifier
 ) {
     AppTopHeader(
-        title = stringResource(R.string.settings_title),
+        title = title,
         isSearchActive = isSearchActive,
         searchQuery = searchQuery,
         onSearchQueryChange = onSearchQueryChange,
         onSearchActiveChange = onSearchActiveChange,
         searchPlaceholder = stringResource(R.string.settings_search),
         onClearSearch = onClearSearch,
+        showSearchButton = showSearchButton,
+        modifier = modifier,
         navigationIcon = if (showBackButton) {
             {
                 IconButton(
@@ -43,7 +48,7 @@ internal fun SettingsHeader(
                 ) {
                     Icon(
                         imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                        contentDescription = stringResource(R.string.notifications_back),
+                        contentDescription = stringResource(R.string.navigate_back),
                     )
                 }
             }
@@ -56,13 +61,15 @@ internal fun SettingsHeader(
 private fun SettingsHeaderPreview() {
     BirthdayBuddyTheme {
         SettingsHeader(
+            title = stringResource(R.string.settings_title),
             isSearchActive = false,
             searchQuery = "",
             onSearchQueryChange = {},
             onSearchActiveChange = {},
             onClearSearch = {},
             showBackButton = true,
-            onNavigateBack = {}
+            onNavigateBack = {},
+            showSearchButton = true
         )
     }
 }

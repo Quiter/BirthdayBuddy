@@ -17,6 +17,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
+import com.heckmannch.birthdaybuddy.R
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.tooling.preview.Preview
@@ -157,13 +159,15 @@ internal fun SettingsContent(
                     useAdaptiveWidth = false,
                     topBar = {
                         SettingsHeader(
+                            title = stringResource(R.string.settings_title),
                             isSearchActive = isSearchActive,
                             searchQuery = searchQuery,
                             onSearchQueryChange = { searchQuery = it },
                             onSearchActiveChange = { isSearchActive = it },
                             onClearSearch = { searchQuery = "" },
                             showBackButton = showBackButton,
-                            onNavigateBack = onNavigateBack
+                            onNavigateBack = onNavigateBack,
+                            showSearchButton = true
                         )
                     }
                 ) { paddingValues ->

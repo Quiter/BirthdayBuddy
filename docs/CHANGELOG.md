@@ -65,6 +65,12 @@
     - **Internationalisierung (I18n):** Synchrone Pflege von `cd_open_search` und `cd_close_search` in [`strings.xml`](file:///E:/Benutzer/Christof/Entwicklung/StudioProjects/BirthdayBuddy/app/src/main/res/values/strings.xml) und [`strings-de.xml`](file:///E:/Benutzer/Christof/Entwicklung/StudioProjects/BirthdayBuddy/app/src/main/res/values-de/strings.xml).
     - **Testing & QA:** Erstellung von [`AppTopHeaderTest.kt`](file:///E:/Benutzer/Christof/Entwicklung/StudioProjects/BirthdayBuddy/app/src/test/java/com/heckmannch/birthdaybuddy/ui/components/AppTopHeaderTest.kt) und erfolgreiche Ausführung aller 746 Unit- und Integrationstests (`./gradlew testDebugUnitTest`).
 
+354. **Restrukturierung und Aufgeräumtheit des Settings-Verzeichnisses durch Einführung des `subscreens`-Unterverzeichnisses (Architecture & Code Organization):**
+    - **Verzeichnis-Cleanup:** Verschiebung aller Einstellungs-Unternavigationsseiten und Feature-Pakete (`about`, `backup`, `calendar`, `labels`, `notifications`, `otherevents`, `storage`, `sync`, `theme`) in das neue Unterverzeichnis `ui.screens.settings.subscreens`.
+    - **Package- & Import-Anpassungen:** Aktualisierung aller Package-Deklarationen und Import-Anweisungen in Produktions- und Test-Dateien (inklusive Roborazzi-Screenshot-Tests).
+    - **Build & QA:** Erfolgreiche Verifikation des gesamten Projektes und aller 738 Unit-Tests (`./gradlew testDebugUnitTest`).
+    - **Dokumentations-Updates:** Aktualisierung von [`PROJECT_STRUCTURE.md`](file:///E:/Benutzer/Christof/Entwicklung/StudioProjects/BirthdayBuddy/docs/PROJECT_STRUCTURE.md) und [`CHANGELOG.md`](file:///E:/Benutzer/Christof/Entwicklung/StudioProjects/BirthdayBuddy/docs/CHANGELOG.md).
+
 349. **UDF- & MVI-Refaktorisierung des Backup-Features (Architecture & Clean Code):**
     - **Beseitigung des UDF-Architekturbruchs:** Entfernung aller UI-Callbacks (`onSuccess`, `onError`, `onInvalid`) aus `BackupIntent`. MVI-Intents enthalten nun ausschließlich reine Parameter (`uri: Uri`).
     - **Einführung von `BackupUiState` & `BackupMessage`:** Erstellung des neuen Immutable-UI-Zustandsmodells [`BackupUiState.kt`](file:///c:/Users/chris/AndroidStudioProjects/BirthdayBuddy/app/src/main/java/com/heckmannch/birthdaybuddy/ui/model/BackupUiState.kt) mit `isLoading: Boolean` und der versiegelten Statushierarchie `BackupMessage` (`ExportSuccess`, `ExportError`, `ImportSuccess`, `ImportInvalid`, `ImportError`).

@@ -76,15 +76,16 @@
     - Components: `BirthdayList`, `BirthdayItem`, `BirthdayDetailPane`, `GiftIdeaList`, `FastScrollbar`, `ScrollbarBubble`, `HomeTopBar`, `SearchBar`, `ContactActionRow`, `MessengerAppUi`, `ConfettiEffect`, etc.
   - **Labels (`labels/`)**: `LabelsScreen` *(reiner Label-Verwaltungs-Screen ohne FAB; Label-Erstellung erfolgt über das TopAppBar Header-Icon)*.
   - **Onboarding (`onboarding/`)**: `OnboardingScreen`, `OnboardingViewModel`, `OnboardingUiState` & Pages (`WelcomePage`, `ContactsPage`, `NotificationsPage`, `CalendarPage`, `CalendarGuidePage`, `ReadyPage`, `OnboardingFooter`).
-  - **Settings (`settings/`)**: `SettingsScreen` & Sub-Features:
-    - `labels/`: `LabelSettingsScreen`, `LabelViewModel`, `LabelUiState`.
-    - `notifications/`: `NotificationSettingsScreen`, `NotificationViewModel`, `NotificationUiState`.
-    - `calendar/`: `CalendarSettingsScreen`, `CalendarViewModel`, `CalendarUiState`.
-    - `backup/`: `BackupScreen`, `BackupViewModel`, `BackupUiState`.
-    - `theme/`: `ThemeSettingsScreen`, `ThemeViewModel`, `ThemeUiState`.
-    - `otherevents/`: `OtherEventsSettingsScreen`.
-    - `sync/`: `SyncSettingsScreen`, `SyncViewModel`.
-    - `about/`: `AboutScreen`, `PrivacyPolicyScreen`.
+  - **Settings (`settings/`)**: `SettingsScreen`, `SettingsMenuItemData.kt`, `components/` & Sub-Features in `subscreens/`:
+    - `subscreens/labels/`: `LabelSettingsScreen`, `LabelViewModel`, `LabelUiState`.
+    - `subscreens/notifications/`: `NotificationSettingsScreen`, `NotificationViewModel`, `NotificationUiState`.
+    - `subscreens/calendar/`: `CalendarSettingsScreen`, `CalendarViewModel`, `CalendarUiState`.
+    - `subscreens/backup/`: `BackupScreen`, `BackupViewModel`, `BackupUiState`.
+    - `subscreens/theme/`: `ThemeSettingsScreen`, `ThemeViewModel`, `ThemeUiState`.
+    - `subscreens/otherevents/`: `OtherEventsSettingsScreen`.
+    - `subscreens/sync/`: `SyncSettingsScreen`, `SyncViewModel`.
+    - `subscreens/about/`: `AboutScreen`, `LicensesScreen`, `PrivacyPolicyScreen`.
+    - `subscreens/storage/`: `StorageSettingsScreen`.
 
 ## 📁 Notification-Infrastruktur (`notification`)
 - `NotificationWorker.kt`: Worker für Benachrichtigungs-Verarbeitung (`@AssistedInject`).
