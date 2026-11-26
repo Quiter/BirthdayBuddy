@@ -1,7 +1,7 @@
 package com.heckmannch.birthdaybuddy.screenshot.settings
 
 import com.heckmannch.birthdaybuddy.screenshot.BaseScreenshotTest
-import com.heckmannch.birthdaybuddy.ui.screens.settings.SettingsScreen
+import com.heckmannch.birthdaybuddy.ui.screens.settings.SettingsContent
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
@@ -9,7 +9,7 @@ import org.robolectric.annotation.Config
 import org.robolectric.annotation.GraphicsMode
 
 /**
- * Screenshot tests for [SettingsScreen] overview menu.
+ * Screenshot tests for [SettingsContent] overview menu.
  *
  * Covers:
  * - Compact mode on phone (Light + Dark mode)
@@ -25,9 +25,11 @@ class SettingsOverviewScreenshotTest : BaseScreenshotTest() {
     @Test
     fun settingsOverview_phone_compact_lightMode() {
         setScreenshotContent(windowSizeClass = phoneSize, darkTheme = false) {
-            SettingsScreen(
+            SettingsContent(
                 initialTab = null,
                 onNavigateBack = {},
+                labelsEnabled = true,
+                otherEventsEnabled = false,
             )
         }
         captureScreenshot()
@@ -36,9 +38,11 @@ class SettingsOverviewScreenshotTest : BaseScreenshotTest() {
     @Test
     fun settingsOverview_phone_compact_darkMode() {
         setScreenshotContent(windowSizeClass = phoneSize, darkTheme = true) {
-            SettingsScreen(
+            SettingsContent(
                 initialTab = null,
                 onNavigateBack = {},
+                labelsEnabled = true,
+                otherEventsEnabled = false,
             )
         }
         captureScreenshot()
@@ -49,9 +53,11 @@ class SettingsOverviewScreenshotTest : BaseScreenshotTest() {
     @Test
     fun settingsOverview_tablet_splitPane_lightMode() {
         setScreenshotContent(windowSizeClass = tabletSize, darkTheme = false) {
-            SettingsScreen(
+            SettingsContent(
                 initialTab = null,
                 onNavigateBack = {},
+                labelsEnabled = true,
+                otherEventsEnabled = false,
             )
         }
         captureScreenshot()
@@ -60,9 +66,11 @@ class SettingsOverviewScreenshotTest : BaseScreenshotTest() {
     @Test
     fun settingsOverview_tablet_splitPane_darkMode() {
         setScreenshotContent(windowSizeClass = tabletSize, darkTheme = true) {
-            SettingsScreen(
+            SettingsContent(
                 initialTab = null,
                 onNavigateBack = {},
+                labelsEnabled = true,
+                otherEventsEnabled = false,
             )
         }
         captureScreenshot()

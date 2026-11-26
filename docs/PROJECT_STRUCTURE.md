@@ -82,7 +82,6 @@
     - `subscreens/calendar/`: `CalendarSettingsScreen`, `CalendarViewModel`, `CalendarUiState`.
     - `subscreens/backup/`: `BackupScreen`, `BackupViewModel`, `BackupUiState`.
     - `subscreens/theme/`: `ThemeSettingsScreen`, `ThemeViewModel`, `ThemeUiState`.
-    - `subscreens/otherevents/`: `OtherEventsSettingsScreen`.
     - `subscreens/sync/`: `SyncSettingsScreen`, `SyncViewModel`.
     - `subscreens/about/`: `AboutScreen`, `LicensesScreen`, `PrivacyPolicyScreen`.
     - `subscreens/storage/`: `StorageSettingsScreen`.

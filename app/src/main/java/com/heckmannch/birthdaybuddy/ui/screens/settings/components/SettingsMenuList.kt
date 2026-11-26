@@ -10,6 +10,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import com.heckmannch.birthdaybuddy.R
+import com.heckmannch.birthdaybuddy.ui.components.SettingsItem
 import com.heckmannch.birthdaybuddy.ui.screens.settings.SettingsMenuItemData
 import com.heckmannch.birthdaybuddy.ui.screens.settings.SettingsSectionType
 import com.heckmannch.birthdaybuddy.ui.screens.settings.rememberSettingsMenuItems
@@ -27,16 +28,35 @@ import com.heckmannch.birthdaybuddy.ui.theme.BirthdayBuddyTheme
 internal fun SettingsMenuList(
     menuItems: List<SettingsMenuItemData>,
     onItemClick: (SettingsMenuItemData) -> Unit,
+    labelsEnabled: Boolean,
+    onLabelsEnabledChanged: (Boolean) -> Unit,
+    otherEventsEnabled: Boolean,
+    onOtherEventsEnabledChanged: (Boolean) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val generalItems = remember(menuItems) { menuItems.filter { it.section == SettingsSectionType.GENERAL } }
     SettingsMenuSectionCard(
         sectionTitle = stringResource(R.string.settings_theme_title),
         sectionIcon = Icons.Default.Palette,
-        items = generalItems,
-        onItemClick = onItemClick,
         modifier = modifier,
-    )
+    ) {
+        generalItems.forEach { item ->
+            SettingsItem(
+                onClick = { onItemClick(item) },
+                title = stringResource(item.titleRes),
+                subtitle = stringResource(item.descRes),
+                icon = item.icon
+            )
+        }
+        LabelManagementExpandableCard(
+            labelsEnabled = labelsEnabled,
+            onLabelsEnabledChanged = onLabelsEnabledChanged
+        )
+        OtherEventsManagementExpandableCard(
+            otherEventsEnabled = otherEventsEnabled,
+            onOtherEventsEnabledChanged = onOtherEventsEnabledChanged
+        )
+    }
 
     val dataItems = remember(menuItems) { menuItems.filter { it.section == SettingsSectionType.DATA } }
     SettingsMenuSectionCard(
@@ -63,6 +83,10 @@ private fun SettingsMenuListPreview() {
             SettingsMenuList(
                 menuItems = rememberSettingsMenuItems(),
                 onItemClick = {},
+                labelsEnabled = true,
+                onLabelsEnabledChanged = {},
+                otherEventsEnabled = true,
+                onOtherEventsEnabledChanged = {}
             )
         }
     }

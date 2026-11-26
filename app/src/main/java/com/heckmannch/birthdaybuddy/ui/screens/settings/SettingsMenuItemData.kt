@@ -2,14 +2,12 @@ package com.heckmannch.birthdaybuddy.ui.screens.settings
 
 import androidx.annotation.StringRes
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.Label
 import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.Palette
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Share
-import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.filled.Storage
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
@@ -62,20 +60,6 @@ internal fun rememberSettingsMenuItems(): List<SettingsMenuItemData> {
                 descRes = R.string.settings_calendar_desc,
                 icon = Icons.Default.DateRange,
                 tab = SettingsTab.CALENDAR,
-                section = SettingsSectionType.GENERAL
-            ),
-            SettingsMenuItemData(
-                titleRes = R.string.settings_labels_title,
-                descRes = R.string.settings_labels_desc,
-                icon = Icons.AutoMirrored.Filled.Label,
-                tab = SettingsTab.LABELS,
-                section = SettingsSectionType.GENERAL
-            ),
-            SettingsMenuItemData(
-                titleRes = R.string.settings_other_events_title,
-                descRes = R.string.settings_other_events_desc,
-                icon = Icons.Default.Star,
-                tab = SettingsTab.OTHER_EVENTS,
                 section = SettingsSectionType.GENERAL
             ),
             SettingsMenuItemData(

@@ -20,9 +20,7 @@ import com.heckmannch.birthdaybuddy.ui.screens.settings.subscreens.about.License
 import com.heckmannch.birthdaybuddy.ui.screens.settings.subscreens.about.PrivacyPolicyScreen
 import com.heckmannch.birthdaybuddy.ui.screens.settings.subscreens.backup.BackupScreen
 import com.heckmannch.birthdaybuddy.ui.screens.settings.subscreens.calendar.CalendarSettingsScreen
-import com.heckmannch.birthdaybuddy.ui.screens.settings.subscreens.labels.LabelSettingsScreen
 import com.heckmannch.birthdaybuddy.ui.screens.settings.subscreens.notifications.NotificationSettingsScreen
-import com.heckmannch.birthdaybuddy.ui.screens.settings.subscreens.otherevents.OtherEventsSettingsScreen
 import com.heckmannch.birthdaybuddy.ui.screens.settings.subscreens.storage.StorageSettingsScreen
 import com.heckmannch.birthdaybuddy.ui.screens.settings.subscreens.sync.SyncSettingsScreen
 import com.heckmannch.birthdaybuddy.ui.screens.settings.subscreens.theme.ThemeSettingsScreen
@@ -59,14 +57,6 @@ internal fun SettingsDetailPane(
                     )
                 }
 
-                SettingsTab.LABELS -> {
-                    LabelSettingsScreen(
-                        viewModel = hiltViewModel(),
-                        showBackButton = windowSizeClass.isWidthCompact,
-                        onNavigateBack = { backStack.removeLastOrNull() }
-                    )
-                }
-
                 SettingsTab.BACKUP -> {
                     BackupScreen(
                         viewModel = hiltViewModel(),
@@ -85,14 +75,6 @@ internal fun SettingsDetailPane(
 
                 SettingsTab.SYNC -> {
                     SyncSettingsScreen(
-                        viewModel = hiltViewModel(),
-                        showBackButton = windowSizeClass.isWidthCompact,
-                        onNavigateBack = { backStack.removeLastOrNull() }
-                    )
-                }
-
-                SettingsTab.OTHER_EVENTS -> {
-                    OtherEventsSettingsScreen(
                         viewModel = hiltViewModel(),
                         showBackButton = windowSizeClass.isWidthCompact,
                         onNavigateBack = { backStack.removeLastOrNull() }

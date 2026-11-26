@@ -40,6 +40,12 @@ import com.heckmannch.birthdaybuddy.ui.screens.settings.components.SettingsHeade
 import com.heckmannch.birthdaybuddy.ui.screens.settings.components.SettingsMenuList
 import com.heckmannch.birthdaybuddy.ui.theme.BirthdayBuddyTheme
 import com.heckmannch.birthdaybuddy.ui.theme.SpacingNone
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.heckmannch.birthdaybuddy.ui.screens.settings.subscreens.labels.LabelIntent
+import com.heckmannch.birthdaybuddy.ui.screens.settings.subscreens.labels.LabelViewModel
+import com.heckmannch.birthdaybuddy.ui.screens.settings.subscreens.notifications.NotificationIntent
+import com.heckmannch.birthdaybuddy.ui.screens.settings.subscreens.notifications.NotificationViewModel
 import kotlinx.serialization.Serializable
 
 /**
@@ -49,11 +55,9 @@ import kotlinx.serialization.Serializable
 enum class SettingsTab {
     NOTIFICATIONS,
     CALENDAR,
-    LABELS,
     BACKUP,
     THEME,
     SYNC,
-    OTHER_EVENTS,
     ABOUT,
     PRIVACY_POLICY,
     STORAGE,
@@ -82,13 +86,22 @@ fun SettingsScreen(
     showBackButton: Boolean = true,
     bottomBarHeight: Dp = 0.dp,
     onSubscreenChanged: (Boolean) -> Unit = {},
+    labelViewModel: LabelViewModel = hiltViewModel(),
+    notificationViewModel: NotificationViewModel = hiltViewModel(),
 ) {
+    val labelUiState by labelViewModel.uiState.collectAsStateWithLifecycle()
+    val notificationUiState by notificationViewModel.uiState.collectAsStateWithLifecycle()
+
     SettingsContent(
         initialTab = initialTab,
         onNavigateBack = onNavigateBack,
         showBackButton = showBackButton,
         bottomBarHeight = bottomBarHeight,
         onSubscreenChanged = onSubscreenChanged,
+        labelsEnabled = labelUiState.labelsEnabled,
+        onLabelsEnabledChanged = { labelViewModel.onIntent(LabelIntent.SetLabelsEnabled(it)) },
+        otherEventsEnabled = notificationUiState.otherEventsEnabled,
+        onOtherEventsEnabledChanged = { notificationViewModel.onIntent(NotificationIntent.SetOtherEventsEnabled(it)) }
     )
 }
 
@@ -105,6 +118,10 @@ internal fun SettingsContent(
     showBackButton: Boolean = true,
     bottomBarHeight: Dp = 0.dp,
     onSubscreenChanged: (Boolean) -> Unit = {},
+    labelsEnabled: Boolean = true,
+    onLabelsEnabledChanged: (Boolean) -> Unit = {},
+    otherEventsEnabled: Boolean = false,
+    onOtherEventsEnabledChanged: (Boolean) -> Unit = {},
 ) {
     val windowAdaptiveInfo = LocalWindowAdaptiveInfo.current
     val windowSizeClass = LocalWindowSizeClass.current
@@ -198,6 +215,10 @@ internal fun SettingsContent(
                                 backStack.removeIf { it is SettingsNavKey.SettingsDetail }
                                 backStack.add(SettingsNavKey.SettingsDetail(item.tab))
                             },
+                            labelsEnabled = labelsEnabled,
+                            onLabelsEnabledChanged = onLabelsEnabledChanged,
+                            otherEventsEnabled = otherEventsEnabled,
+                            onOtherEventsEnabledChanged = onOtherEventsEnabledChanged
                         )
                     }
                 }

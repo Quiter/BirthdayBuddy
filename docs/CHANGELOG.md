@@ -820,4 +820,9 @@
     - **Refactoring `SettingsMenuList.kt` & `SettingsScreen.kt`:** [`SettingsMenuList.kt`](file:///E:/Benutzer/Christof/Entwicklung/StudioProjects/BirthdayBuddy/app/src/main/java/com/heckmannch/birthdaybuddy/ui/screens/settings/components/SettingsMenuList.kt) nutzt nun `SettingsBody`, und [`SettingsScreen.kt`](file:///E:/Benutzer/Christof/Entwicklung/StudioProjects/BirthdayBuddy/app/src/main/java/com/heckmannch/birthdaybuddy/ui/screens/settings/SettingsScreen.kt) reicht `bottomBarHeight` sauber an die `SettingsMenuList` weiter.
     - **Testing & QA:** Erfolgreiche Kompilierung (`./gradlew assembleDebug`).
 
+406. **Entfernung der Unterseite für weitere Events und Ersetzung durch aufklappbare Card in den Settings (UI & Architecture):**
+    - **Entfernung der Unterseite:** Die gesamte Subscreen-Page `otherevents` (`OtherEventsSettingsScreen.kt`) sowie der Navigationseintrag wurden vollständig entfernt.
+    - **Aufklappbare Card in Settings:** Hinzufügen von [`OtherEventsManagementExpandableCard.kt`](file:///E:/Benutzer/Christof/Entwicklung/StudioProjects/BirthdayBuddy/app/src/main/java/com/heckmannch/birthdaybuddy/ui/screens/settings/components/OtherEventsManagementExpandableCard.kt) im General-Abschnitt von [`SettingsMenuList.kt`](file:///E:/Benutzer/Christof/Entwicklung/StudioProjects/BirthdayBuddy/app/src/main/java/com/heckmannch/birthdaybuddy/ui/screens/settings/components/SettingsMenuList.kt) (analog zur Label-Verwaltungskarte). Nutzer können dort direkt per Switch die weiteren Ereignisse (Namenstage und Hochzeitstage) ein- und ausschalten.
+    - **Testing & QA:** Alle 732 JUnit- und Roborazzi-Screenshot-Tests erfolgreich bestanden (`./gradlew testDebugUnitTest`).
+
 
