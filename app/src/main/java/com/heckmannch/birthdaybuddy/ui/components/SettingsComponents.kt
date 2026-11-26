@@ -6,41 +6,30 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CornerBasedShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.NavigateNext
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.LargeTopAppBar
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBarDefaults
-import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.input.nestedscroll.nestedScroll
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import com.heckmannch.birthdaybuddy.R
-import com.heckmannch.birthdaybuddy.ui.screens.settings.components.SettingsHeader
 import com.heckmannch.birthdaybuddy.ui.screens.home.components.cards.CardBorder
-import com.heckmannch.birthdaybuddy.ui.theme.AlphaEmphasisLow
+import com.heckmannch.birthdaybuddy.ui.screens.settings.components.SettingsHeader
 import com.heckmannch.birthdaybuddy.ui.theme.SpacingNormal
 import com.heckmannch.birthdaybuddy.ui.theme.SpacingSmall
 
@@ -133,20 +122,6 @@ fun SettingsItemCard(
     ) {
         content()
     }
-}
-
-/**
- * Horizontal divider for settings sections.
- */
-@Composable
-fun SettingsDivider(
-    modifier: Modifier = Modifier,
-    fullWidth: Boolean = false
-) {
-    HorizontalDivider(
-        modifier = if (fullWidth) modifier else modifier.padding(horizontal = SpacingNormal),
-        color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = AlphaEmphasisLow)
-    )
 }
 
 /**
@@ -294,37 +269,6 @@ fun SettingsClickableRow(
 }
 
 /**
- * Settings switch item row.
- */
-@Composable
-fun SettingsSwitchItem(
-    checked: Boolean,
-    onToggle: () -> Unit,
-    title: String,
-    modifier: Modifier = Modifier,
-    icon: ImageVector? = null,
-    leadingContent: @Composable (() -> Unit)? = null,
-    subtitle: String? = null,
-    showBorder: Boolean = true
-) {
-    SettingsItem(
-        onClick = onToggle,
-        title = title,
-        modifier = modifier,
-        icon = icon,
-        leadingContent = leadingContent,
-        subtitle = subtitle,
-        showBorder = showBorder,
-        trailingContent = {
-            AppSwitch(
-                checked = checked,
-                onCheckedChange = null
-            )
-        }
-    )
-}
-
-/**
  * Settings switch row for detail screens inside a [SettingsCard].
  */
 @Composable
@@ -384,6 +328,8 @@ fun SettingsSection(
     title: String,
     modifier: Modifier = Modifier,
     icon: ImageVector? = null,
+    description: String? = null,
+    actionContent: @Composable (() -> Unit)? = null,
     content: @Composable ColumnScope.() -> Unit
 ) {
     Column(
@@ -402,12 +348,25 @@ fun SettingsSection(
             if (icon != null) {
                 ThemedIcon(icon = icon, size = 20.dp, tint = MaterialTheme.colorScheme.primary)
             }
-            Text(
-                text = title,
-                style = MaterialTheme.typography.titleSmall,
-                fontWeight = FontWeight.SemiBold,
-                color = MaterialTheme.colorScheme.primary
-            )
+            Column(
+                modifier = Modifier.weight(1f),
+                verticalArrangement = Arrangement.spacedBy(2.dp)
+            ) {
+                Text(
+                    text = title,
+                    style = MaterialTheme.typography.titleSmall,
+                    fontWeight = FontWeight.SemiBold,
+                    color = MaterialTheme.colorScheme.primary
+                )
+                if (description != null) {
+                    Text(
+                        text = description,
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+            }
+            actionContent?.invoke()
         }
         Column(
             modifier = Modifier
@@ -445,13 +404,13 @@ fun SettingsDetailScaffold(
     title: String,
     onNavigateBack: () -> Unit,
     showBackButton: Boolean = true,
-    actions: @Composable RowScope.() -> Unit = {},
     snackbarHost: @Composable () -> Unit = {},
     content: @Composable (PaddingValues) -> Unit
 ) {
     AppResponsiveScaffold(
         modifier = modifier,
         snackbarHost = snackbarHost,
+        containerColor = MaterialTheme.colorScheme.surfaceContainerLow,
         topBar = {
             SettingsHeader(
                 title = title,

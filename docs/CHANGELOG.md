@@ -797,4 +797,21 @@
     - Die vertikale Strukturierung und Trennung innerhalb von [`SettingsMenuSectionCard`](file:///E:/Benutzer/Christof/Entwicklung/StudioProjects/BirthdayBuddy/app/src/main/java/com/heckmannch/birthdaybuddy/ui/screens/settings/components/SettingsMenuSectionCard.kt) erfolgt nun rein über konsistente Abstände (`Arrangement.spacedBy`), was für ein ruhigeres und moderneres Morphe-Design sorgt.
     - **Testing:** Kompilierung und alle 39 Screenshot-Tests in `testDebugUnitTest` erfolgreich verifiziert.
 
+404. **Generalisierung von `SettingsMenuSectionCard` & vollständiges Settings-Subscreen-Refactoring (UI Design & Consistency):**
+    - **Schritt 1 – Flexible `SettingsMenuSectionCard`:** [`SettingsMenuSectionCard.kt`](file:///E:/Benutzer/Christof/Entwicklung/StudioProjects/BirthdayBuddy/app/src/main/java/com/heckmannch/birthdaybuddy/ui/screens/settings/components/SettingsMenuSectionCard.kt) wurde generalisiert:
+      - `sectionIcon: ImageVector?` ist nun optional (kein Pflichtparameter mehr).
+      - `sectionDescription: String?` – optionaler Erklärungstext direkt unterhalb des Titels.
+      - `actionContent: @Composable (() -> Unit)?` – optionaler Trailing-Slot im Header (z.B. Add-Button, Badge).
+    - **Schritt 1b – Erweiterung von `SettingsSection`:** [`SettingsComponents.kt`](file:///E:/Benutzer/Christof/Entwicklung/StudioProjects/BirthdayBuddy/app/src/main/java/com/heckmannch/birthdaybuddy/ui/components/SettingsComponents.kt) wurde erweitert:
+      - `SettingsSection` erhält dieselben neuen Parameter (`description`, `actionContent`), die direkt aus `SettingsMenuSectionCard` weitergereicht werden.
+      - `SettingsDetailScaffold` bekommt `containerColor = MaterialTheme.colorScheme.surfaceContainerLow` für einheitlichen Listen-Hintergrund auf allen Subscreens.
+    - **Schritt 2 – `AboutScreen.kt`:** [`AboutScreen.kt`](file:///E:/Benutzer/Christof/Entwicklung/StudioProjects/BirthdayBuddy/app/src/main/java/com/heckmannch/birthdaybuddy/ui/screens/settings/subscreens/about/AboutScreen.kt) vollständig auf `SettingsMenuSectionCard` umgestellt:
+      - Rohes `Column`-Layout mit `TextButton`s ersetzt durch `LazyColumn` mit zwei dedizierten Sektionskarten: `about_section_info` (App-Version) und `about_section_legal` (Datenschutz + Lizenzen).
+      - Neue String-Ressourcen `about_section_info` / `about_section_legal` in `values/strings.xml` und `values-de/strings.xml` hinzugefügt.
+    - **Schritt 2 – `StorageSettingsScreen.kt`:** [`StorageSettingsScreen.kt`](file:///E:/Benutzer/Christof/Entwicklung/StudioProjects/BirthdayBuddy/app/src/main/java/com/heckmannch/birthdaybuddy/ui/screens/settings/subscreens/storage/StorageSettingsScreen.kt) in zwei logische `SettingsMenuSectionCard`-Sektionen aufgeteilt:
+      - `storage_overview_title` (Datenbankgröße + Cache-Größe) und `storage_actions_title` (Cache leeren + App-Info).
+      - Neue String-Ressourcen `storage_overview_title` / `storage_actions_title` in beiden Sprachdateien hinzugefügt.
+    - **Schritt 2 – `NotificationSettingsScreen.kt`:** Der Add-Rule-Button wurde aus der `SettingsDetailScaffold`-TopBar herausgenommen und in den `actionContent`-Slot der `SettingsMenuSectionCard` für geplante Regeln verlagert – sowohl im leeren als auch im befüllten Zustand.
+    - **Qualitätssicherung:** Alle 39 Screenshot-Tests in `testDebugUnitTest` erfolgreich bestanden. `assembleDebug` fehlerfrei.
+
 

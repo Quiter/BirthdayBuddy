@@ -159,6 +159,8 @@
     <string name="notif_desc_named">Vergiss nicht zu gratulieren!</string>
 
     <!-- About Screen -->
+    <string name="about_section_info">App-Informationen</string>
+    <string name="about_section_legal">Rechtliches</string>
     <string name="about_description">BirthdayBuddy hilft dir dabei, nie wieder einen Geburtstag zu vergessen. Erhalte rechtzeitig Erinnerungen und verwalte Geschenkideen direkt in der App.</string>
 
     <string name="about_privacy_policy">Datenschutzerklärung</string>
@@ -467,6 +469,8 @@
     <string name="opensource_licenses">Open-Source-Lizenzen</string>
     <string name="storage_management_title">Speicher &amp; Cache</string>
     <string name="storage_management_desc">Datenbankgröße und App-Cache verwalten</string>
+    <string name="storage_overview_title">Speicherübersicht</string>
+    <string name="storage_actions_title">Speicherverwaltung</string>
     <string name="storage_database_size">Datenbankgröße</string>
     <string name="storage_cache_size">Cache-Größe</string>
     <string name="storage_clear_cache">Cache leeren</string>

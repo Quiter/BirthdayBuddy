@@ -3,11 +3,9 @@
 import android.content.Intent
 import android.net.Uri
 import android.provider.Settings
-import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Info
@@ -17,11 +15,14 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.tooling.preview.Preview
 import com.heckmannch.birthdaybuddy.R
 import com.heckmannch.birthdaybuddy.ui.components.SettingsDetailScaffold
 import com.heckmannch.birthdaybuddy.ui.components.SettingsItem
 import com.heckmannch.birthdaybuddy.ui.components.withSettingsInsets
 import com.heckmannch.birthdaybuddy.ui.screens.settings.components.SettingsMenuSectionCard
+import com.heckmannch.birthdaybuddy.ui.theme.BirthdayBuddyTheme
+import com.heckmannch.birthdaybuddy.ui.theme.SpacingNormal
 import java.io.File
 import java.util.Locale
 
@@ -55,49 +56,62 @@ fun StorageSettingsScreen(
         showBackButton = showBackButton,
         onNavigateBack = onNavigateBack
     ) { paddingValues ->
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .verticalScroll(rememberScrollState())
-                .padding(paddingValues.withSettingsInsets())
+        LazyColumn(
+            modifier = Modifier.fillMaxSize(),
+            contentPadding = paddingValues.withSettingsInsets(),
+            verticalArrangement = Arrangement.spacedBy(SpacingNormal)
         ) {
-            SettingsMenuSectionCard(
-                sectionTitle = stringResource(R.string.storage_management_title),
-                sectionIcon = Icons.Default.Storage
-            ) {
-                SettingsItem(
-                    onClick = {},
-                    title = stringResource(R.string.storage_database_size),
-                    subtitle = dbSize,
-                    icon = Icons.Default.Info
-                )
-                SettingsItem(
-                    onClick = {},
-                    title = stringResource(R.string.storage_cache_size),
-                    subtitle = cacheSize,
-                    icon = Icons.Default.Storage
-                )
-                SettingsItem(
-                    onClick = {
-                        try {
-                            context.cacheDir.deleteRecursively()
-                        } catch (_: Exception) {}
-                    },
-                    title = stringResource(R.string.storage_clear_cache),
-                    subtitle = stringResource(R.string.storage_clear_cache_desc),
-                    icon = Icons.Default.Delete
-                )
-                SettingsItem(
-                    onClick = {
-                        val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
-                            data = Uri.fromParts("package", context.packageName, null)
-                        }
-                        context.startActivity(intent)
-                    },
-                    title = stringResource(R.string.storage_app_info),
-                    subtitle = stringResource(R.string.storage_app_info_desc),
-                    icon = Icons.Default.Info
-                )
+            // Storage overview section
+            item {
+                SettingsMenuSectionCard(
+                    sectionTitle = stringResource(R.string.storage_overview_title),
+                    sectionIcon = Icons.Default.Storage
+                ) {
+                    SettingsItem(
+                        onClick = {},
+                        title = stringResource(R.string.storage_database_size),
+                        subtitle = dbSize,
+                        icon = Icons.Default.Info,
+                        trailingContent = null
+                    )
+                    SettingsItem(
+                        onClick = {},
+                        title = stringResource(R.string.storage_cache_size),
+                        subtitle = cacheSize,
+                        icon = Icons.Default.Storage,
+                        trailingContent = null
+                    )
+                }
+            }
+
+            // Storage actions section
+            item {
+                SettingsMenuSectionCard(
+                    sectionTitle = stringResource(R.string.storage_actions_title),
+                    sectionIcon = Icons.Default.Delete
+                ) {
+                    SettingsItem(
+                        onClick = {
+                            try {
+                                context.cacheDir.deleteRecursively()
+                            } catch (_: Exception) {}
+                        },
+                        title = stringResource(R.string.storage_clear_cache),
+                        subtitle = stringResource(R.string.storage_clear_cache_desc),
+                        icon = Icons.Default.Delete
+                    )
+                    SettingsItem(
+                        onClick = {
+                            val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
+                                data = Uri.fromParts("package", context.packageName, null)
+                            }
+                            context.startActivity(intent)
+                        },
+                        title = stringResource(R.string.storage_app_info),
+                        subtitle = stringResource(R.string.storage_app_info_desc),
+                        icon = Icons.Default.Info
+                    )
+                }
             }
         }
     }
@@ -125,3 +139,13 @@ private fun formatBytes(bytes: Long): String {
     return String.format(Locale.ROOT, "%.1f GB", gb)
 }
 
+@Preview(showBackground = true)
+@Composable
+private fun StorageSettingsPreview() {
+    BirthdayBuddyTheme {
+        StorageSettingsScreen(
+            showBackButton = true,
+            onNavigateBack = {}
+        )
+    }
+}

@@ -4,16 +4,16 @@ import android.content.pm.PackageInfo
 import android.content.pm.PackageManager
 import android.os.Build
 import android.util.Log
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.Policy
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -24,10 +24,11 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import com.heckmannch.birthdaybuddy.R
 import com.heckmannch.birthdaybuddy.ui.components.SettingsDetailScaffold
+import com.heckmannch.birthdaybuddy.ui.components.SettingsItem
 import com.heckmannch.birthdaybuddy.ui.components.withSettingsInsets
+import com.heckmannch.birthdaybuddy.ui.screens.settings.components.SettingsMenuSectionCard
 import com.heckmannch.birthdaybuddy.ui.screens.settings.subscreens.about.components.AboutAppHeader
 import com.heckmannch.birthdaybuddy.ui.theme.BirthdayBuddyTheme
-import com.heckmannch.birthdaybuddy.ui.theme.SpacingExtraLarge
 import com.heckmannch.birthdaybuddy.ui.theme.SpacingNormal
 
 private const val TAG = "AboutScreen"
@@ -64,72 +65,91 @@ fun AboutScreen(
         showBackButton = showBackButton,
         onNavigateBack = onNavigateBack
     ) { paddingValues ->
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .verticalScroll(rememberScrollState())
-                .padding(paddingValues.withSettingsInsets()),
-            horizontalAlignment = Alignment.CenterHorizontally
+        LazyColumn(
+            modifier = Modifier.fillMaxSize(),
+            contentPadding = paddingValues.withSettingsInsets(),
+            verticalArrangement = Arrangement.spacedBy(SpacingNormal)
         ) {
-            AboutAppHeader(versionName = versionName)
+            // App header: logo, name, version
+            item {
+                Column(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    AboutAppHeader(versionName = versionName)
+                }
+            }
 
-            Spacer(modifier = Modifier.height(SpacingExtraLarge))
-
-            Text(
-                text = stringResource(R.string.about_description),
-                style = MaterialTheme.typography.bodyLarge,
-                textAlign = TextAlign.Center,
-                modifier = Modifier.padding(horizontal = SpacingNormal)
-            )
-
-            Spacer(modifier = Modifier.height(SpacingExtraLarge))
-
-            TextButton(onClick = onNavigateToPrivacyPolicy) {
+            // Description
+            item {
                 Text(
-                    text = stringResource(R.string.about_privacy_policy),
-                    style = MaterialTheme.typography.labelLarge,
-                    color = MaterialTheme.colorScheme.primary
+                    text = stringResource(R.string.about_description),
+                    style = MaterialTheme.typography.bodyLarge,
+                    textAlign = TextAlign.Center,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.fillMaxWidth()
                 )
             }
 
-            Spacer(modifier = Modifier.height(SpacingNormal))
-
-            TextButton(onClick = onNavigateToLicenses) {
-                Text(
-                    text = stringResource(R.string.opensource_licenses),
-                    style = MaterialTheme.typography.labelLarge,
-                    color = MaterialTheme.colorScheme.primary
-                )
+            // App info section: version + credits
+            item {
+                SettingsMenuSectionCard(
+                    sectionTitle = stringResource(R.string.about_section_info),
+                    sectionIcon = Icons.Default.Info
+                ) {
+                    SettingsItem(
+                        onClick = {},
+                        title = stringResource(R.string.app_name),
+                        subtitle = stringResource(R.string.settings_version, versionName),
+                        icon = Icons.Default.Info,
+                        trailingContent = null
+                    )
+                }
             }
 
-            Spacer(modifier = Modifier.height(SpacingExtraLarge))
+            // Legal section: privacy policy + open-source licenses
+            item {
+                SettingsMenuSectionCard(
+                    sectionTitle = stringResource(R.string.about_section_legal),
+                    sectionIcon = Icons.Default.Policy
+                ) {
+                    SettingsItem(
+                        onClick = onNavigateToPrivacyPolicy,
+                        title = stringResource(R.string.about_privacy_policy),
+                        icon = Icons.Default.Policy
+                    )
+                    SettingsItem(
+                        onClick = onNavigateToLicenses,
+                        title = stringResource(R.string.opensource_licenses),
+                        icon = Icons.Default.Info
+                    )
+                }
+            }
 
-            Text(
-                text = stringResource(R.string.app_name),
-                style = MaterialTheme.typography.titleMedium,
-                color = MaterialTheme.colorScheme.primary
-            )
-            Text(
-                text = stringResource(R.string.settings_version, versionName),
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-            Spacer(modifier = Modifier.height(SpacingNormal))
-            Text(
-                text = stringResource(R.string.settings_made_with),
-                style = MaterialTheme.typography.labelMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-            Spacer(modifier = Modifier.height(SpacingNormal))
-            Text(
-                text = stringResource(R.string.about_copyright),
-                style = MaterialTheme.typography.labelMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
+            // Footer: "made with love" + copyright
+            item {
+                Column(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.spacedBy(SpacingNormal)
+                ) {
+                    Text(
+                        text = stringResource(R.string.settings_made_with),
+                        style = MaterialTheme.typography.labelMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        textAlign = TextAlign.Center
+                    )
+                    Text(
+                        text = stringResource(R.string.about_copyright),
+                        style = MaterialTheme.typography.labelMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        textAlign = TextAlign.Center
+                    )
+                }
+            }
         }
     }
 }
-
 
 @Preview(showBackground = true)
 @Composable
@@ -142,4 +162,3 @@ private fun AboutPreview() {
         )
     }
 }
-

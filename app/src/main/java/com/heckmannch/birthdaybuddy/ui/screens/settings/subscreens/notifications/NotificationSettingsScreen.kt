@@ -260,16 +260,6 @@ internal fun NotificationSettingsContent(
         title = stringResource(R.string.notifications_title),
         showBackButton = showBackButton,
         onNavigateBack = onNavigateBack,
-        actions = {
-            if (notificationsEnabled && hasSystemPermission) {
-                IconButton(onClick = { state.openAddDialog() }) {
-                    Icon(
-                        Icons.Default.Add,
-                        contentDescription = stringResource(R.string.notifications_add_rule)
-                    )
-                }
-            }
-        }
     ) { paddingValues ->
         if (!hasSystemPermission) {
             PermissionRequestState(
@@ -318,24 +308,47 @@ internal fun NotificationSettingsContent(
 
                     if (rules.isEmpty()) {
                         item(span = { GridItemSpan(maxLineSpan) }) {
-                            Box(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(SpacingExtraLarge),
-                                contentAlignment = Alignment.Center
+                            // Header with add-rule action via actionContent slot
+                            SettingsMenuSectionCard(
+                                sectionTitle = stringResource(R.string.notifications_planned_header),
+                                sectionIcon = Icons.Default.Notifications,
+                                actionContent = {
+                                    IconButton(onClick = { state.openAddDialog() }) {
+                                        Icon(
+                                            Icons.Default.Add,
+                                            contentDescription = stringResource(R.string.notifications_add_rule)
+                                        )
+                                    }
+                                }
                             ) {
-                                Text(
-                                    stringResource(R.string.notifications_empty),
-                                    style = MaterialTheme.typography.bodyMedium,
-                                    color = MaterialTheme.colorScheme.outline
-                                )
+                                Box(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(SpacingExtraLarge),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Text(
+                                        stringResource(R.string.notifications_empty),
+                                        style = MaterialTheme.typography.bodyMedium,
+                                        color = MaterialTheme.colorScheme.outline
+                                    )
+                                }
                             }
                         }
                     } else {
                         item(span = { GridItemSpan(maxLineSpan) }) {
+                            // Header with add-rule action via actionContent slot
                             SettingsMenuSectionCard(
                                 sectionTitle = stringResource(R.string.notifications_planned_header),
-                                sectionIcon = Icons.Default.Notifications
+                                sectionIcon = Icons.Default.Notifications,
+                                actionContent = {
+                                    IconButton(onClick = { state.openAddDialog() }) {
+                                        Icon(
+                                            Icons.Default.Add,
+                                            contentDescription = stringResource(R.string.notifications_add_rule)
+                                        )
+                                    }
+                                }
                             ) {
                                 rules.forEach { rule ->
                                     NotificationRuleItem(
