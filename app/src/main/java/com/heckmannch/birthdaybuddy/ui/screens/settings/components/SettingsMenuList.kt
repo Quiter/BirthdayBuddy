@@ -15,10 +15,13 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.tooling.preview.Preview
 import com.heckmannch.birthdaybuddy.R
 import com.heckmannch.birthdaybuddy.ui.components.SettingsColumn
 import com.heckmannch.birthdaybuddy.ui.screens.settings.SettingsMenuItemData
 import com.heckmannch.birthdaybuddy.ui.screens.settings.SettingsSectionType
+import com.heckmannch.birthdaybuddy.ui.screens.settings.rememberSettingsMenuItems
+import com.heckmannch.birthdaybuddy.ui.theme.BirthdayBuddyTheme
 
 /**
  * Scrollable list of settings menu cards grouped by section.
@@ -67,5 +70,17 @@ internal fun SettingsMenuList(
                 onItemClick = onItemClick
             )
         }
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun SettingsMenuListPreview() {
+    BirthdayBuddyTheme {
+        SettingsMenuList(
+            menuItems = rememberSettingsMenuItems(),
+            onItemClick = {},
+            paddingValues = PaddingValues()
+        )
     }
 }

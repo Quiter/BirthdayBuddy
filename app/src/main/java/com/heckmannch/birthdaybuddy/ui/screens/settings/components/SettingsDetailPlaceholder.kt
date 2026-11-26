@@ -17,7 +17,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
 import com.heckmannch.birthdaybuddy.R
+import com.heckmannch.birthdaybuddy.ui.theme.BirthdayBuddyTheme
 import com.heckmannch.birthdaybuddy.ui.theme.IconSizeExtraLarge
 import com.heckmannch.birthdaybuddy.ui.theme.SpacingLarge
 import com.heckmannch.birthdaybuddy.ui.theme.SpacingNormal
@@ -49,5 +51,13 @@ internal fun SettingsDetailPlaceholder(
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             textAlign = TextAlign.Center
         )
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun SettingsDetailPlaceholderPreview() {
+    BirthdayBuddyTheme {
+        SettingsDetailPlaceholder()
     }
 }

@@ -1,9 +1,13 @@
 package com.heckmannch.birthdaybuddy.ui.screens.settings.components
 
+import android.content.res.Configuration
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.tooling.preview.Preview
+import androidx.navigation3.runtime.rememberNavBackStack
+import com.heckmannch.birthdaybuddy.ui.theme.BirthdayBuddyTheme
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.navigation3.runtime.NavBackStack
 import androidx.navigation3.runtime.NavKey
@@ -127,5 +131,19 @@ internal fun SettingsDetailPane(
                 )
             }
         }
+    }
+}
+
+@Preview(name = "Light Mode", showBackground = true)
+@Preview(name = "Dark Mode", uiMode = Configuration.UI_MODE_NIGHT_YES, showBackground = true)
+@Composable
+private fun SettingsDetailPanePreview() {
+    BirthdayBuddyTheme {
+        val backStack = rememberNavBackStack(SettingsNavKey.SettingsDetail(SettingsTab.ABOUT))
+        SettingsDetailPane(
+            tab = SettingsTab.ABOUT,
+            windowSizeClass = WindowSizeClass(360, 640),
+            backStack = backStack
+        )
     }
 }

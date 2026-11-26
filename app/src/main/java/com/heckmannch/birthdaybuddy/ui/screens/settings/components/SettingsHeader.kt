@@ -8,8 +8,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.tooling.preview.Preview
 import com.heckmannch.birthdaybuddy.R
 import com.heckmannch.birthdaybuddy.ui.components.AppTopHeader
+import com.heckmannch.birthdaybuddy.ui.theme.BirthdayBuddyTheme
 
 /**
  * Top header component for the main settings menu.
@@ -48,3 +50,20 @@ internal fun SettingsHeader(
         } else null
     )
 }
+
+@Preview(showBackground = true)
+@Composable
+private fun SettingsHeaderPreview() {
+    BirthdayBuddyTheme {
+        SettingsHeader(
+            isSearchActive = false,
+            searchQuery = "",
+            onSearchQueryChange = {},
+            onSearchActiveChange = {},
+            onClearSearch = {},
+            showBackButton = true,
+            onNavigateBack = {}
+        )
+    }
+}
+
