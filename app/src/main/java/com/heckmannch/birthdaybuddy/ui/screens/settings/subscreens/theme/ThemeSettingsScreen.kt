@@ -21,13 +21,14 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.heckmannch.birthdaybuddy.R
 import com.heckmannch.birthdaybuddy.domain.model.ThemeAccent
 import com.heckmannch.birthdaybuddy.domain.model.ThemeMode
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Palette
 import com.heckmannch.birthdaybuddy.ui.components.ColorPickerDialog
 import com.heckmannch.birthdaybuddy.ui.components.SettingsClickableRow
 import com.heckmannch.birthdaybuddy.ui.components.SettingsDetailScaffold
-import com.heckmannch.birthdaybuddy.ui.components.SettingsDivider
-import com.heckmannch.birthdaybuddy.ui.components.SettingsSection
 import com.heckmannch.birthdaybuddy.ui.components.SettingsSwitchRow
 import com.heckmannch.birthdaybuddy.ui.components.withSettingsInsets
+import com.heckmannch.birthdaybuddy.ui.screens.settings.components.SettingsMenuSectionCard
 import com.heckmannch.birthdaybuddy.ui.screens.settings.subscreens.theme.components.ThemeAccentSelector
 import com.heckmannch.birthdaybuddy.ui.theme.BirthdayBuddyTheme
 import com.heckmannch.birthdaybuddy.ui.theme.BirthdayKidGreen
@@ -92,7 +93,10 @@ internal fun ThemeSettingsScreenContent(
         ) {
             // --- Theme Mode ---
             item {
-                SettingsSection(title = stringResource(R.string.settings_theme_mode_header)) {
+                SettingsMenuSectionCard(
+                    sectionTitle = stringResource(R.string.settings_theme_mode_header),
+                    sectionIcon = Icons.Default.Palette
+                ) {
                     SettingsClickableRow(
                         title = stringResource(R.string.settings_theme_mode_system),
                         description = stringResource(R.string.settings_theme_mode_system_desc),
@@ -104,7 +108,6 @@ internal fun ThemeSettingsScreenContent(
                             )
                         }
                     )
-                    SettingsDivider()
                     SettingsClickableRow(
                         title = stringResource(R.string.settings_theme_mode_light),
                         onClick = { onThemeModeChange(ThemeMode.LIGHT) },
@@ -115,7 +118,6 @@ internal fun ThemeSettingsScreenContent(
                             )
                         }
                     )
-                    SettingsDivider()
                     SettingsClickableRow(
                         title = stringResource(R.string.settings_theme_mode_dark),
                         onClick = { onThemeModeChange(ThemeMode.DARK) },
@@ -126,7 +128,6 @@ internal fun ThemeSettingsScreenContent(
                             )
                         }
                     )
-                    SettingsDivider()
                     val isDarkThemeActive =
                         themeMode == ThemeMode.DARK || (themeMode == ThemeMode.SYSTEM && isSystemInDarkTheme())
                     SettingsSwitchRow(
@@ -146,7 +147,10 @@ internal fun ThemeSettingsScreenContent(
 
             // --- Accent Colors ---
             item {
-                SettingsSection(title = stringResource(R.string.settings_theme_accent_header)) {
+                SettingsMenuSectionCard(
+                    sectionTitle = stringResource(R.string.settings_theme_accent_header),
+                    sectionIcon = Icons.Default.Palette
+                ) {
                     ThemeAccentSelector(
                         themeAccent = themeAccent,
                         customAccentColor = customAccentColor,

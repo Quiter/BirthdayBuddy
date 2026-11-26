@@ -1,5 +1,6 @@
 package com.heckmannch.birthdaybuddy.ui.screens.settings.components
 
+import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Palette
 import androidx.compose.runtime.Composable
@@ -17,6 +18,27 @@ import com.heckmannch.birthdaybuddy.ui.screens.settings.rememberSettingsMenuItem
 import com.heckmannch.birthdaybuddy.ui.theme.BirthdayBuddyTheme
 
 /**
+ * Renders a settings section card containing a header and a group of items.
+ */
+@Composable
+internal fun SettingsMenuSectionCard(
+    sectionTitle: String,
+    sectionIcon: ImageVector,
+    modifier: Modifier = Modifier,
+    content: @Composable ColumnScope.() -> Unit
+) {
+    SettingsSection(
+        title = sectionTitle,
+        icon = sectionIcon,
+        modifier = modifier
+    ) {
+        SettingsGroup {
+            content()
+        }
+    }
+}
+
+/**
  * Renders a settings section card containing a header and a group of menu items.
  */
 @Composable
@@ -29,20 +51,18 @@ internal fun SettingsMenuSectionCard(
 ) {
     if (items.isEmpty()) return
 
-    SettingsSection(
-        title = sectionTitle,
-        icon = sectionIcon,
+    SettingsMenuSectionCard(
+        sectionTitle = sectionTitle,
+        sectionIcon = sectionIcon,
         modifier = modifier
     ) {
-        SettingsGroup {
-            items.forEach { item ->
-                SettingsItem(
-                    onClick = { onItemClick(item) },
-                    title = stringResource(item.titleRes),
-                    subtitle = stringResource(item.descRes),
-                    icon = item.icon
-                )
-            }
+        items.forEach { item ->
+            SettingsItem(
+                onClick = { onItemClick(item) },
+                title = stringResource(item.titleRes),
+                subtitle = stringResource(item.descRes),
+                icon = item.icon
+            )
         }
     }
 }

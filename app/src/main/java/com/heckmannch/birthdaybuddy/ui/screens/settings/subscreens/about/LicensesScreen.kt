@@ -5,17 +5,17 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.MaterialTheme
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Info
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import com.heckmannch.birthdaybuddy.R
 import com.heckmannch.birthdaybuddy.ui.components.SettingsDetailScaffold
-import com.heckmannch.birthdaybuddy.ui.components.SettingsGroup
 import com.heckmannch.birthdaybuddy.ui.components.SettingsItem
-import com.heckmannch.birthdaybuddy.ui.components.SettingsSection
 import com.heckmannch.birthdaybuddy.ui.components.withSettingsInsets
+import com.heckmannch.birthdaybuddy.ui.screens.settings.components.SettingsMenuSectionCard
 
 data class OpenSourceLibrary(
     val name: String,
@@ -49,15 +49,16 @@ fun LicensesScreen(
                 .verticalScroll(rememberScrollState())
                 .padding(paddingValues.withSettingsInsets())
         ) {
-            SettingsSection(title = stringResource(R.string.opensource_licenses)) {
-                SettingsGroup {
-                    libraries.forEach { lib ->
-                        SettingsItem(
-                            onClick = {},
-                            title = lib.name,
-                            subtitle = "${lib.author} • ${lib.license}\n${lib.description}"
-                        )
-                    }
+            SettingsMenuSectionCard(
+                sectionTitle = stringResource(R.string.opensource_licenses),
+                sectionIcon = Icons.Default.Info
+            ) {
+                libraries.forEach { lib ->
+                    SettingsItem(
+                        onClick = {},
+                        title = lib.name,
+                        subtitle = "${lib.author} • ${lib.license}\n${lib.description}"
+                    )
                 }
             }
         }

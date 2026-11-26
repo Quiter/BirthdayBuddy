@@ -31,13 +31,11 @@ import com.heckmannch.birthdaybuddy.R
 import com.heckmannch.birthdaybuddy.domain.repository.CalendarSyncRepository
 import com.heckmannch.birthdaybuddy.ui.components.ColorPickerDialog
 import com.heckmannch.birthdaybuddy.ui.components.InfoCard
-import com.heckmannch.birthdaybuddy.ui.components.SettingsCard
 import com.heckmannch.birthdaybuddy.ui.components.SettingsClickableRow
 import com.heckmannch.birthdaybuddy.ui.components.SettingsDetailScaffold
-import com.heckmannch.birthdaybuddy.ui.components.SettingsDivider
-import com.heckmannch.birthdaybuddy.ui.components.SettingsSection
 import com.heckmannch.birthdaybuddy.ui.components.SettingsSwitchRow
 import com.heckmannch.birthdaybuddy.ui.components.withSettingsInsets
+import com.heckmannch.birthdaybuddy.ui.screens.settings.components.SettingsMenuSectionCard
 import com.heckmannch.birthdaybuddy.ui.screens.settings.subscreens.calendar.components.SetupStepsCard
 import com.heckmannch.birthdaybuddy.ui.theme.BirthdayBuddyTheme
 import com.heckmannch.birthdaybuddy.ui.theme.CalendarPresetColors
@@ -171,7 +169,10 @@ internal fun CalendarSettingsScreenContent(
             }
 
             item {
-                SettingsCard {
+                SettingsMenuSectionCard(
+                    sectionTitle = stringResource(R.string.settings_calendar_title),
+                    sectionIcon = Icons.Default.DateRange
+                ) {
                     SettingsSwitchRow(
                         title = stringResource(R.string.calendar_settings_enable),
                         checked = calendarSyncEnabled,
@@ -188,7 +189,10 @@ internal fun CalendarSettingsScreenContent(
 
             if (calendarSyncEnabled) {
                 item {
-                    SettingsSection(title = stringResource(R.string.calendar_colors_section_title)) {
+                    SettingsMenuSectionCard(
+                        sectionTitle = stringResource(R.string.calendar_colors_section_title),
+                        sectionIcon = Icons.Default.DateRange
+                    ) {
                         // NOTE FOR FUTURE LLMs/DEVELOPERS:
                         // We intentionally use SettingsClickableRow instead of StepItem here.
                         // While both show leading items (color circles/icons), color selections are independent,
@@ -214,7 +218,6 @@ internal fun CalendarSettingsScreenContent(
                             }
                         )
                         if (otherEventsEnabled) {
-                            SettingsDivider()
                             SettingsClickableRow(
                                 title = stringResource(R.string.calendar_color_anniversaries),
                                 leadingIcon = {
@@ -234,7 +237,6 @@ internal fun CalendarSettingsScreenContent(
                                     )
                                 }
                             )
-                            SettingsDivider()
                             SettingsClickableRow(
                                 title = stringResource(R.string.calendar_color_namedays),
                                 leadingIcon = {

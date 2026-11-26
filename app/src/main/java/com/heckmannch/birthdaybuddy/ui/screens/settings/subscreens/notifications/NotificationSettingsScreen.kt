@@ -24,6 +24,7 @@ import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.NotificationsOff
 import androidx.compose.material3.Button
 import androidx.compose.material3.Icon
@@ -51,12 +52,10 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.heckmannch.birthdaybuddy.R
 import com.heckmannch.birthdaybuddy.domain.model.NotificationRule
 import com.heckmannch.birthdaybuddy.ui.components.InfoCard
-import com.heckmannch.birthdaybuddy.ui.components.SettingsCard
 import com.heckmannch.birthdaybuddy.ui.components.SettingsDetailScaffold
-import com.heckmannch.birthdaybuddy.ui.components.SettingsDivider
-import com.heckmannch.birthdaybuddy.ui.components.SettingsSection
 import com.heckmannch.birthdaybuddy.ui.components.SettingsSwitchRow
 import com.heckmannch.birthdaybuddy.ui.components.withSettingsInsets
+import com.heckmannch.birthdaybuddy.ui.screens.settings.components.SettingsMenuSectionCard
 import com.heckmannch.birthdaybuddy.ui.screens.settings.subscreens.notifications.NotificationSettingsState.Companion.Saver
 import com.heckmannch.birthdaybuddy.ui.screens.settings.subscreens.notifications.components.EditRuleDialog
 import com.heckmannch.birthdaybuddy.ui.screens.settings.subscreens.notifications.components.NotificationRuleItem
@@ -286,7 +285,10 @@ internal fun NotificationSettingsContent(
                 verticalArrangement = Arrangement.spacedBy(SpacingNormal)
             ) {
                 item(span = { GridItemSpan(maxLineSpan) }) {
-                    SettingsCard {
+                    SettingsMenuSectionCard(
+                        sectionTitle = stringResource(R.string.notifications_header),
+                        sectionIcon = Icons.Default.Notifications
+                    ) {
                         SettingsSwitchRow(
                             title = stringResource(R.string.notifications_header),
                             description = stringResource(R.string.notifications_desc),
@@ -295,7 +297,6 @@ internal fun NotificationSettingsContent(
                         )
 
                         if (notificationsEnabled) {
-                            SettingsDivider()
                             SettingsSwitchRow(
                                 title = stringResource(R.string.notifications_persistent_header),
                                 description = stringResource(R.string.notifications_persistent_desc),
@@ -332,16 +333,16 @@ internal fun NotificationSettingsContent(
                         }
                     } else {
                         item(span = { GridItemSpan(maxLineSpan) }) {
-                            SettingsSection(title = stringResource(R.string.notifications_planned_header)) {
-                                rules.forEachIndexed { index, rule ->
+                            SettingsMenuSectionCard(
+                                sectionTitle = stringResource(R.string.notifications_planned_header),
+                                sectionIcon = Icons.Default.Notifications
+                            ) {
+                                rules.forEach { rule ->
                                     NotificationRuleItem(
                                         rule = rule,
                                         onEditRule = { state.openEditDialog(it) },
                                         onDeleteRule = onDeleteRule,
                                     )
-                                    if (index < rules.size - 1) {
-                                        SettingsDivider()
-                                    }
                                 }
                             }
                         }

@@ -18,12 +18,11 @@ import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.Label
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.ExpandLess
 import androidx.compose.material.icons.filled.ExpandMore
 import androidx.compose.material.icons.filled.VisibilityOff
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.HorizontalDivider
@@ -54,9 +53,11 @@ import com.heckmannch.birthdaybuddy.R
 import com.heckmannch.birthdaybuddy.ui.components.AppSwitch
 import com.heckmannch.birthdaybuddy.ui.components.InfoCard
 import com.heckmannch.birthdaybuddy.ui.components.SettingsDetailScaffold
+import com.heckmannch.birthdaybuddy.ui.components.SettingsSwitchRow
 import com.heckmannch.birthdaybuddy.ui.components.withSettingsInsets
 import com.heckmannch.birthdaybuddy.ui.model.LabelManagementModel
 import com.heckmannch.birthdaybuddy.ui.screens.home.components.labels.toDisplayLabel
+import com.heckmannch.birthdaybuddy.ui.screens.settings.components.SettingsMenuSectionCard
 import com.heckmannch.birthdaybuddy.ui.theme.AlphaEmphasisDisabled
 import com.heckmannch.birthdaybuddy.ui.theme.BirthdayBuddyTheme
 import com.heckmannch.birthdaybuddy.ui.theme.ChipPaddingHorizontal
@@ -119,26 +120,16 @@ internal fun LabelSettingsScreenContent(
         ) {
             // Master-Switch ganz oben
             item(span = { GridItemSpan(maxLineSpan) }) {
-                Card(
-                    shape = MaterialTheme.shapes.extraLarge,
-                    colors = CardDefaults.cardColors(
-                        containerColor = MaterialTheme.colorScheme.surfaceContainer
-                    ),
-                    modifier = Modifier.fillMaxWidth()
+                SettingsMenuSectionCard(
+                    sectionTitle = stringResource(R.string.settings_labels_title),
+                    sectionIcon = Icons.AutoMirrored.Filled.Label
                 ) {
-                    ListItem(
-                        modifier = Modifier.clickable { onLabelsEnabledChanged(!labelsEnabled) },
-                        supportingContent = { Text(stringResource(R.string.labels_enable_desc)) },
-                        trailingContent = {
-                            AppSwitch(
-                                checked = labelsEnabled,
-                                onCheckedChange = onLabelsEnabledChanged
-                            )
-                        },
-                        colors = ListItemDefaults.colors(containerColor = Color.Transparent)
-                    ) {
-                        Text(stringResource(R.string.labels_enable))
-                    }
+                    SettingsSwitchRow(
+                        title = stringResource(R.string.labels_enable),
+                        description = stringResource(R.string.labels_enable_desc),
+                        checked = labelsEnabled,
+                        onCheckedChange = onLabelsEnabledChanged
+                    )
                 }
             }
 

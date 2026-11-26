@@ -11,7 +11,6 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Share
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
@@ -27,12 +26,11 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import com.heckmannch.birthdaybuddy.R
 import com.heckmannch.birthdaybuddy.ui.components.InfoCard
-import com.heckmannch.birthdaybuddy.ui.components.SettingsCard
 import com.heckmannch.birthdaybuddy.ui.components.SettingsClickableRow
 import com.heckmannch.birthdaybuddy.ui.components.SettingsDetailScaffold
 import com.heckmannch.birthdaybuddy.ui.components.withSettingsInsets
+import com.heckmannch.birthdaybuddy.ui.screens.settings.components.SettingsMenuSectionCard
 import com.heckmannch.birthdaybuddy.ui.screens.settings.subscreens.backup.BackupMessage
-import com.heckmannch.birthdaybuddy.ui.theme.AlphaEmphasisLow
 import com.heckmannch.birthdaybuddy.ui.theme.BirthdayBuddyTheme
 import com.heckmannch.birthdaybuddy.ui.theme.SpacingNormal
 
@@ -94,17 +92,16 @@ fun BackupContent(
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
 
-            SettingsCard {
+            SettingsMenuSectionCard(
+                sectionTitle = stringResource(R.string.settings_backup_title),
+                sectionIcon = Icons.Default.Share
+            ) {
                 SettingsClickableRow(
                     title = stringResource(R.string.backup_export_title),
                     description = stringResource(R.string.backup_export_desc),
                     onClick = onExportClick,
                     leadingIcon = { Icon(Icons.Default.Share, contentDescription = null) },
                     enabled = !isLoading
-                )
-                HorizontalDivider(
-                    color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = AlphaEmphasisLow),
-                    modifier = Modifier.padding(horizontal = SpacingNormal)
                 )
                 SettingsClickableRow(
                     title = stringResource(R.string.backup_import_title),

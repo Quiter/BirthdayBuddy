@@ -14,10 +14,10 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.heckmannch.birthdaybuddy.R
 import com.heckmannch.birthdaybuddy.ui.components.InfoCard
-import com.heckmannch.birthdaybuddy.ui.components.SettingsCard
 import com.heckmannch.birthdaybuddy.ui.components.SettingsDetailScaffold
 import com.heckmannch.birthdaybuddy.ui.components.SettingsSwitchRow
 import com.heckmannch.birthdaybuddy.ui.components.withSettingsInsets
+import com.heckmannch.birthdaybuddy.ui.screens.settings.components.SettingsMenuSectionCard
 import com.heckmannch.birthdaybuddy.ui.screens.settings.subscreens.notifications.NotificationIntent
 import com.heckmannch.birthdaybuddy.ui.screens.settings.subscreens.notifications.NotificationViewModel
 import com.heckmannch.birthdaybuddy.ui.theme.BirthdayBuddyTheme
@@ -58,7 +58,10 @@ private fun OtherEventsSettingsContent(
             verticalArrangement = Arrangement.spacedBy(SpacingNormal)
         ) {
             item {
-                SettingsCard {
+                SettingsMenuSectionCard(
+                    sectionTitle = stringResource(R.string.settings_other_events_title),
+                    sectionIcon = Icons.Default.Star
+                ) {
                     SettingsSwitchRow(
                         title = stringResource(R.string.other_events_enable),
                         description = stringResource(R.string.other_events_desc),

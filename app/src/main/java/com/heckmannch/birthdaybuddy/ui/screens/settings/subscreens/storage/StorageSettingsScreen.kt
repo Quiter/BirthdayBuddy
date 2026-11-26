@@ -19,10 +19,9 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import com.heckmannch.birthdaybuddy.R
 import com.heckmannch.birthdaybuddy.ui.components.SettingsDetailScaffold
-import com.heckmannch.birthdaybuddy.ui.components.SettingsGroup
 import com.heckmannch.birthdaybuddy.ui.components.SettingsItem
-import com.heckmannch.birthdaybuddy.ui.components.SettingsSection
 import com.heckmannch.birthdaybuddy.ui.components.withSettingsInsets
+import com.heckmannch.birthdaybuddy.ui.screens.settings.components.SettingsMenuSectionCard
 import java.io.File
 import java.util.Locale
 
@@ -62,45 +61,43 @@ fun StorageSettingsScreen(
                 .verticalScroll(rememberScrollState())
                 .padding(paddingValues.withSettingsInsets())
         ) {
-            SettingsSection(
-                title = stringResource(R.string.storage_management_title),
-                icon = Icons.Default.Storage
+            SettingsMenuSectionCard(
+                sectionTitle = stringResource(R.string.storage_management_title),
+                sectionIcon = Icons.Default.Storage
             ) {
-                SettingsGroup {
-                    SettingsItem(
-                        onClick = {},
-                        title = stringResource(R.string.storage_database_size),
-                        subtitle = dbSize,
-                        icon = Icons.Default.Info
-                    )
-                    SettingsItem(
-                        onClick = {},
-                        title = stringResource(R.string.storage_cache_size),
-                        subtitle = cacheSize,
-                        icon = Icons.Default.Storage
-                    )
-                    SettingsItem(
-                        onClick = {
-                            try {
-                                context.cacheDir.deleteRecursively()
-                            } catch (_: Exception) {}
-                        },
-                        title = stringResource(R.string.storage_clear_cache),
-                        subtitle = stringResource(R.string.storage_clear_cache_desc),
-                        icon = Icons.Default.Delete
-                    )
-                    SettingsItem(
-                        onClick = {
-                            val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
-                                data = Uri.fromParts("package", context.packageName, null)
-                            }
-                            context.startActivity(intent)
-                        },
-                        title = stringResource(R.string.storage_app_info),
-                        subtitle = stringResource(R.string.storage_app_info_desc),
-                        icon = Icons.Default.Info
-                    )
-                }
+                SettingsItem(
+                    onClick = {},
+                    title = stringResource(R.string.storage_database_size),
+                    subtitle = dbSize,
+                    icon = Icons.Default.Info
+                )
+                SettingsItem(
+                    onClick = {},
+                    title = stringResource(R.string.storage_cache_size),
+                    subtitle = cacheSize,
+                    icon = Icons.Default.Storage
+                )
+                SettingsItem(
+                    onClick = {
+                        try {
+                            context.cacheDir.deleteRecursively()
+                        } catch (_: Exception) {}
+                    },
+                    title = stringResource(R.string.storage_clear_cache),
+                    subtitle = stringResource(R.string.storage_clear_cache_desc),
+                    icon = Icons.Default.Delete
+                )
+                SettingsItem(
+                    onClick = {
+                        val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
+                            data = Uri.fromParts("package", context.packageName, null)
+                        }
+                        context.startActivity(intent)
+                    },
+                    title = stringResource(R.string.storage_app_info),
+                    subtitle = stringResource(R.string.storage_app_info_desc),
+                    icon = Icons.Default.Info
+                )
             }
         }
     }
