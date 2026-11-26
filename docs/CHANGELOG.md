@@ -814,4 +814,10 @@
     - **Schritt 2 – `NotificationSettingsScreen.kt`:** Der Add-Rule-Button wurde aus der `SettingsDetailScaffold`-TopBar herausgenommen und in den `actionContent`-Slot der `SettingsMenuSectionCard` für geplante Regeln verlagert – sowohl im leeren als auch im befüllten Zustand.
     - **Qualitätssicherung:** Alle 39 Screenshot-Tests in `testDebugUnitTest` erfolgreich bestanden. `assembleDebug` fehlerfrei.
 
+405. **Einführung von `SettingsBody` & `SettingsFooter` für einheitliche Layout-Struktur und `GlassPillBar`-Unterstützung (UI Architecture & Component Modularization):**
+    - **Erstellung von `SettingsBody.kt`:** [`SettingsBody.kt`](file:///E:/Benutzer/Christof/Entwicklung/StudioProjects/BirthdayBuddy/app/src/main/java/com/heckmannch/birthdaybuddy/ui/screens/settings/components/SettingsBody.kt) als wiederverwendbares Container-Composable für Einstellungsseiten. Verwaltet den einheitlichen Hintergrund (`surfaceContainerLow`), vertikales Scrolling und reaktive Insets inklusive Platzreservierung für schwebende Bottom-Bars (`bottomBarHeight`).
+    - **Erstellung von `SettingsFooter.kt`:** [`SettingsFooter.kt`](file:///E:/Benutzer/Christof/Entwicklung/StudioProjects/BirthdayBuddy/app/src/main/java/com/heckmannch/birthdaybuddy/ui/screens/settings/components/SettingsFooter.kt) für optionalen Footer-Text (z.B. App-Version/Copyright) und automatisches Bottom-Spacing, damit schwebende Elemente wie die `GlassPillBar` den untersten Inhalt beim Scrollen nicht verdecken.
+    - **Refactoring `SettingsMenuList.kt` & `SettingsScreen.kt`:** [`SettingsMenuList.kt`](file:///E:/Benutzer/Christof/Entwicklung/StudioProjects/BirthdayBuddy/app/src/main/java/com/heckmannch/birthdaybuddy/ui/screens/settings/components/SettingsMenuList.kt) nutzt nun `SettingsBody`, und [`SettingsScreen.kt`](file:///E:/Benutzer/Christof/Entwicklung/StudioProjects/BirthdayBuddy/app/src/main/java/com/heckmannch/birthdaybuddy/ui/screens/settings/SettingsScreen.kt) reicht `bottomBarHeight` sauber an die `SettingsMenuList` weiter.
+    - **Testing & QA:** Erfolgreiche Kompilierung (`./gradlew assembleDebug`).
+
 

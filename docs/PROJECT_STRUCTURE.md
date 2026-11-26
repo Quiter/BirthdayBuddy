@@ -76,7 +76,7 @@
     - Components: `BirthdayList`, `BirthdayItem`, `BirthdayDetailPane`, `GiftIdeaList`, `FastScrollbar`, `ScrollbarBubble`, `HomeTopBar`, `SearchBar`, `ContactActionRow`, `MessengerAppUi`, `ConfettiEffect`, etc.
   - **Labels (`labels/`)**: `LabelsScreen` *(reiner Label-Verwaltungs-Screen ohne FAB; Label-Erstellung erfolgt über das TopAppBar Header-Icon)*.
   - **Onboarding (`onboarding/`)**: `OnboardingScreen`, `OnboardingViewModel`, `OnboardingUiState` & Pages (`WelcomePage`, `ContactsPage`, `NotificationsPage`, `CalendarPage`, `CalendarGuidePage`, `ReadyPage`, `OnboardingFooter`).
-  - **Settings (`settings/`)**: `SettingsScreen`, `SettingsMenuItemData.kt`, `components/` & Sub-Features in `subscreens/`:
+  - **Settings (`settings/`)**: `SettingsScreen`, `SettingsMenuItemData.kt`, `components/` (`SettingsHeader`, `SettingsBody`, `SettingsFooter`, `SettingsMenuList`, `SettingsMenuSectionCard`, `SettingsDetailPane`) & Sub-Features in `subscreens/`:
     - `subscreens/labels/`: `LabelSettingsScreen`, `LabelViewModel`, `LabelUiState`.
     - `subscreens/notifications/`: `NotificationSettingsScreen`, `NotificationViewModel`, `NotificationUiState`.
     - `subscreens/calendar/`: `CalendarSettingsScreen`, `CalendarViewModel`, `CalendarUiState`.

@@ -1,9 +1,6 @@
 package com.heckmannch.birthdaybuddy.ui.screens.settings
 
 import androidx.annotation.VisibleForTesting
-import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.calculateEndPadding
-import androidx.compose.foundation.layout.calculateStartPadding
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.adaptive.ExperimentalMaterial3AdaptiveApi
 import androidx.compose.material3.adaptive.layout.calculatePaneScaffoldDirective
@@ -20,7 +17,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import com.heckmannch.birthdaybuddy.R
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -34,6 +30,7 @@ import androidx.window.core.layout.WindowSizeClass
 import com.heckmannch.birthdaybuddy.ui.components.AppResponsiveScaffold
 import com.heckmannch.birthdaybuddy.ui.components.LocalWindowAdaptiveInfo
 import com.heckmannch.birthdaybuddy.ui.components.LocalWindowSizeClass
+import com.heckmannch.birthdaybuddy.ui.screens.settings.components.SettingsBody
 import com.heckmannch.birthdaybuddy.ui.screens.settings.components.SettingsDetailPane
 import com.heckmannch.birthdaybuddy.ui.screens.settings.components.SettingsDetailPlaceholder
 import com.heckmannch.birthdaybuddy.ui.screens.settings.components.SettingsHeader
@@ -171,22 +168,18 @@ internal fun SettingsContent(
                         )
                     }
                 ) { paddingValues ->
-                    val layoutDirection = LocalLayoutDirection.current
-                    val combinedPadding = PaddingValues(
-                        start = paddingValues.calculateStartPadding(layoutDirection),
-                        top = paddingValues.calculateTopPadding(),
-                        end = paddingValues.calculateEndPadding(layoutDirection),
-                        bottom = paddingValues.calculateBottomPadding() + bottomBarHeight,
-                    )
-
-                    SettingsMenuList(
-                        menuItems = filteredMenuItems,
-                        onItemClick = { item ->
-                            backStack.removeIf { it is SettingsNavKey.SettingsDetail }
-                            backStack.add(SettingsNavKey.SettingsDetail(item.tab))
-                        },
-                        paddingValues = combinedPadding
-                    )
+                    SettingsBody(
+                        paddingValues = paddingValues,
+                        bottomBarHeight = bottomBarHeight,
+                    ) {
+                        SettingsMenuList(
+                            menuItems = filteredMenuItems,
+                            onItemClick = { item ->
+                                backStack.removeIf { it is SettingsNavKey.SettingsDetail }
+                                backStack.add(SettingsNavKey.SettingsDetail(item.tab))
+                            },
+                        )
+                    }
                 }
             }
 
