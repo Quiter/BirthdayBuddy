@@ -5,6 +5,7 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
@@ -30,30 +31,33 @@ internal fun SettingsHeader(
     showSearchButton: Boolean = false,
     modifier: Modifier = Modifier
 ) {
-    AppTopHeader(
-        title = title,
-        isSearchActive = isSearchActive,
-        searchQuery = searchQuery,
-        onSearchQueryChange = onSearchQueryChange,
-        onSearchActiveChange = onSearchActiveChange,
-        searchPlaceholder = stringResource(R.string.settings_search),
-        onClearSearch = onClearSearch,
-        showSearchButton = showSearchButton,
-        modifier = modifier,
-        navigationIcon = if (showBackButton) {
-            {
-                IconButton(
-                    onClick = onNavigateBack,
-                    modifier = Modifier.testTag("settings_back_button")
-                ) {
-                    Icon(
-                        imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                        contentDescription = stringResource(R.string.navigate_back),
-                    )
+    val isSubscreen = LocalIsSubscreen.current || showBackButton
+    CompositionLocalProvider(LocalIsSubscreen provides isSubscreen) {
+        AppTopHeader(
+            title = title,
+            isSearchActive = isSearchActive,
+            searchQuery = searchQuery,
+            onSearchQueryChange = onSearchQueryChange,
+            onSearchActiveChange = onSearchActiveChange,
+            searchPlaceholder = stringResource(R.string.settings_search),
+            onClearSearch = onClearSearch,
+            showSearchButton = showSearchButton,
+            modifier = modifier,
+            navigationIcon = if (showBackButton) {
+                {
+                    IconButton(
+                        onClick = onNavigateBack,
+                        modifier = Modifier.testTag("settings_back_button")
+                    ) {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                            contentDescription = stringResource(R.string.navigate_back),
+                        )
+                    }
                 }
-            }
-        } else null
-    )
+            } else null
+        )
+    }
 }
 
 @Preview(showBackground = true)
@@ -73,4 +77,5 @@ private fun SettingsHeaderPreview() {
         )
     }
 }
+
 

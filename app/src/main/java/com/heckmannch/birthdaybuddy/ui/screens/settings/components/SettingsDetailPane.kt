@@ -4,6 +4,7 @@ import android.content.res.Configuration
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.navigation3.runtime.rememberNavBackStack
@@ -37,102 +38,105 @@ internal fun SettingsDetailPane(
     backStack: NavBackStack<NavKey>,
     modifier: Modifier = Modifier
 ) {
-    Box(
-        modifier = modifier.fillMaxSize()
-    ) {
-        when (tab) {
-            SettingsTab.NOTIFICATIONS -> {
-                NotificationSettingsScreen(
-                    viewModel = hiltViewModel(),
-                    showBackButton = windowSizeClass.isWidthCompact,
-                    onNavigateBack = { backStack.removeLastOrNull() }
-                )
-            }
+    CompositionLocalProvider(LocalIsSubscreen provides true) {
+        Box(
+            modifier = modifier.fillMaxSize()
+        ) {
+            when (tab) {
+                SettingsTab.NOTIFICATIONS -> {
+                    NotificationSettingsScreen(
+                        viewModel = hiltViewModel(),
+                        showBackButton = windowSizeClass.isWidthCompact,
+                        onNavigateBack = { backStack.removeLastOrNull() }
+                    )
+                }
 
-            SettingsTab.CALENDAR -> {
-                CalendarSettingsScreen(
-                    viewModel = hiltViewModel(),
-                    showBackButton = windowSizeClass.isWidthCompact,
-                    onNavigateBack = { backStack.removeLastOrNull() }
-                )
-            }
+                SettingsTab.CALENDAR -> {
+                    CalendarSettingsScreen(
+                        viewModel = hiltViewModel(),
+                        showBackButton = windowSizeClass.isWidthCompact,
+                        onNavigateBack = { backStack.removeLastOrNull() }
+                    )
+                }
 
-            SettingsTab.LABELS -> {
-                LabelSettingsScreen(
-                    viewModel = hiltViewModel(),
-                    showBackButton = windowSizeClass.isWidthCompact,
-                    onNavigateBack = { backStack.removeLastOrNull() }
-                )
-            }
+                SettingsTab.LABELS -> {
+                    LabelSettingsScreen(
+                        viewModel = hiltViewModel(),
+                        showBackButton = windowSizeClass.isWidthCompact,
+                        onNavigateBack = { backStack.removeLastOrNull() }
+                    )
+                }
 
-            SettingsTab.BACKUP -> {
-                BackupScreen(
-                    viewModel = hiltViewModel(),
-                    showBackButton = windowSizeClass.isWidthCompact,
-                    onNavigateBack = { backStack.removeLastOrNull() }
-                )
-            }
+                SettingsTab.BACKUP -> {
+                    BackupScreen(
+                        viewModel = hiltViewModel(),
+                        showBackButton = windowSizeClass.isWidthCompact,
+                        onNavigateBack = { backStack.removeLastOrNull() }
+                    )
+                }
 
-            SettingsTab.THEME -> {
-                ThemeSettingsScreen(
-                    viewModel = hiltViewModel(),
-                    showBackButton = windowSizeClass.isWidthCompact,
-                    onNavigateBack = { backStack.removeLastOrNull() }
-                )
-            }
+                SettingsTab.THEME -> {
+                    ThemeSettingsScreen(
+                        viewModel = hiltViewModel(),
+                        showBackButton = windowSizeClass.isWidthCompact,
+                        onNavigateBack = { backStack.removeLastOrNull() }
+                    )
+                }
 
-            SettingsTab.SYNC -> {
-                SyncSettingsScreen(
-                    viewModel = hiltViewModel(),
-                    showBackButton = windowSizeClass.isWidthCompact,
-                    onNavigateBack = { backStack.removeLastOrNull() }
-                )
-            }
+                SettingsTab.SYNC -> {
+                    SyncSettingsScreen(
+                        viewModel = hiltViewModel(),
+                        showBackButton = windowSizeClass.isWidthCompact,
+                        onNavigateBack = { backStack.removeLastOrNull() }
+                    )
+                }
 
-            SettingsTab.OTHER_EVENTS -> {
-                OtherEventsSettingsScreen(
-                    viewModel = hiltViewModel(),
-                    showBackButton = windowSizeClass.isWidthCompact,
-                    onNavigateBack = { backStack.removeLastOrNull() }
-                )
-            }
+                SettingsTab.OTHER_EVENTS -> {
+                    OtherEventsSettingsScreen(
+                        viewModel = hiltViewModel(),
+                        showBackButton = windowSizeClass.isWidthCompact,
+                        onNavigateBack = { backStack.removeLastOrNull() }
+                    )
+                }
 
-            SettingsTab.ABOUT -> {
-                AboutScreen(
-                    showBackButton = windowSizeClass.isWidthCompact,
-                    onNavigateBack = { backStack.removeLastOrNull() },
-                    onNavigateToPrivacyPolicy = {
-                        backStack.add(SettingsNavKey.SettingsDetail(SettingsTab.PRIVACY_POLICY))
-                    },
-                    onNavigateToLicenses = {
-                        backStack.add(SettingsNavKey.SettingsDetail(SettingsTab.LICENSES))
-                    }
-                )
-            }
+                SettingsTab.ABOUT -> {
+                    AboutScreen(
+                        showBackButton = windowSizeClass.isWidthCompact,
+                        onNavigateBack = { backStack.removeLastOrNull() },
+                        onNavigateToPrivacyPolicy = {
+                            backStack.add(SettingsNavKey.SettingsDetail(SettingsTab.PRIVACY_POLICY))
+                        },
+                        onNavigateToLicenses = {
+                            backStack.add(SettingsNavKey.SettingsDetail(SettingsTab.LICENSES))
+                        }
+                    )
+                }
 
-            SettingsTab.PRIVACY_POLICY -> {
-                PrivacyPolicyScreen(
-                    showBackButton = true,
-                    onNavigateBack = { backStack.removeLastOrNull() }
-                )
-            }
+                SettingsTab.PRIVACY_POLICY -> {
+                    PrivacyPolicyScreen(
+                        showBackButton = true,
+                        onNavigateBack = { backStack.removeLastOrNull() }
+                    )
+                }
 
-            SettingsTab.STORAGE -> {
-                StorageSettingsScreen(
-                    showBackButton = windowSizeClass.isWidthCompact,
-                    onNavigateBack = { backStack.removeLastOrNull() }
-                )
-            }
+                SettingsTab.STORAGE -> {
+                    StorageSettingsScreen(
+                        showBackButton = windowSizeClass.isWidthCompact,
+                        onNavigateBack = { backStack.removeLastOrNull() }
+                    )
+                }
 
-            SettingsTab.LICENSES -> {
-                LicensesScreen(
-                    showBackButton = windowSizeClass.isWidthCompact,
-                    onNavigateBack = { backStack.removeLastOrNull() }
-                )
+                SettingsTab.LICENSES -> {
+                    LicensesScreen(
+                        showBackButton = windowSizeClass.isWidthCompact,
+                        onNavigateBack = { backStack.removeLastOrNull() }
+                    )
+                }
             }
         }
     }
 }
+
 
 @Preview(name = "Light Mode", showBackground = true)
 @Preview(name = "Dark Mode", uiMode = Configuration.UI_MODE_NIGHT_YES, showBackground = true)

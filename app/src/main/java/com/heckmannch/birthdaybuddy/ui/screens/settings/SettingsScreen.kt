@@ -8,6 +8,7 @@ import androidx.compose.material3.adaptive.navigation3.ListDetailSceneStrategy
 import androidx.compose.material3.adaptive.navigation3.rememberListDetailSceneStrategy
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -30,9 +31,11 @@ import androidx.window.core.layout.WindowSizeClass
 import com.heckmannch.birthdaybuddy.ui.components.AppResponsiveScaffold
 import com.heckmannch.birthdaybuddy.ui.components.LocalWindowAdaptiveInfo
 import com.heckmannch.birthdaybuddy.ui.components.LocalWindowSizeClass
+import com.heckmannch.birthdaybuddy.ui.components.isWidthCompact
 import com.heckmannch.birthdaybuddy.ui.screens.settings.components.SettingsBody
 import com.heckmannch.birthdaybuddy.ui.screens.settings.components.SettingsDetailPane
 import com.heckmannch.birthdaybuddy.ui.screens.settings.components.SettingsDetailPlaceholder
+import com.heckmannch.birthdaybuddy.ui.screens.settings.components.SettingsFooter
 import com.heckmannch.birthdaybuddy.ui.screens.settings.components.SettingsHeader
 import com.heckmannch.birthdaybuddy.ui.screens.settings.components.SettingsMenuList
 import com.heckmannch.birthdaybuddy.ui.theme.BirthdayBuddyTheme
@@ -78,12 +81,14 @@ fun SettingsScreen(
     onNavigateBack: () -> Unit = {},
     showBackButton: Boolean = true,
     bottomBarHeight: Dp = 0.dp,
+    onSubscreenChanged: (Boolean) -> Unit = {},
 ) {
     SettingsContent(
         initialTab = initialTab,
         onNavigateBack = onNavigateBack,
         showBackButton = showBackButton,
         bottomBarHeight = bottomBarHeight,
+        onSubscreenChanged = onSubscreenChanged,
     )
 }
 
@@ -99,6 +104,7 @@ internal fun SettingsContent(
     onNavigateBack: () -> Unit = {},
     showBackButton: Boolean = true,
     bottomBarHeight: Dp = 0.dp,
+    onSubscreenChanged: (Boolean) -> Unit = {},
 ) {
     val windowAdaptiveInfo = LocalWindowAdaptiveInfo.current
     val windowSizeClass = LocalWindowSizeClass.current
@@ -113,6 +119,14 @@ internal fun SettingsContent(
         rememberNavBackStack(SettingsNavKey.SettingsMenu, SettingsNavKey.SettingsDetail(initialTab))
     } else {
         rememberNavBackStack(SettingsNavKey.SettingsMenu)
+    }
+
+    val isSubscreenActive = remember(backStack.size, windowSizeClass.isWidthCompact) {
+        windowSizeClass.isWidthCompact && backStack.lastOrNull() is SettingsNavKey.SettingsDetail
+    }
+
+    LaunchedEffect(isSubscreenActive) {
+        onSubscreenChanged(isSubscreenActive)
     }
 
     val menuItems = rememberSettingsMenuItems()
@@ -171,6 +185,12 @@ internal fun SettingsContent(
                     SettingsBody(
                         paddingValues = paddingValues,
                         bottomBarHeight = bottomBarHeight,
+                        footer = {
+                            SettingsFooter(
+                                text = stringResource(R.string.settings_version, "2.1.0"),
+                                bottomBarHeight = bottomBarHeight
+                            )
+                        }
                     ) {
                         SettingsMenuList(
                             menuItems = filteredMenuItems,

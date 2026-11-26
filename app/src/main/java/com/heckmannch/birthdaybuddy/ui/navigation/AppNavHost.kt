@@ -12,10 +12,13 @@ import androidx.compose.animation.togetherWith
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import kotlinx.coroutines.launch
 import androidx.lifecycle.Lifecycle
@@ -204,8 +207,13 @@ fun AppNavHost(
                     )
                 }
 
+                var isSettingsSubscreenOpen by remember { mutableStateOf(false) }
+
                 MainPagerScaffold(
                     pagerState = pagerState,
+                    navigationCovered = {
+                        pagerState.currentPage == MainPage.SETTINGS.ordinal && isSettingsSubscreenOpen
+                    },
                 ) { page, bottomBarHeight ->
                     when (page) {
                         MainPage.LABELS -> {
@@ -236,7 +244,8 @@ fun AppNavHost(
                                     scope.launch { pagerState.turnTo(MainPage.HOME) }
                                 },
                                 showBackButton = false,
-                                bottomBarHeight = bottomBarHeight,
+                                bottomBarHeight = if (isSettingsSubscreenOpen) 0.dp else bottomBarHeight,
+                                onSubscreenChanged = { isSettingsSubscreenOpen = it },
                             )
                         }
                     }
@@ -252,6 +261,7 @@ fun AppNavHost(
         }
     )
 }
+
 
 // ---------------------------------------------------------------------------
 // Screen Transitions & Animation Constants
