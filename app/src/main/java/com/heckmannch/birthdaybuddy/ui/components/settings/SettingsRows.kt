@@ -3,7 +3,6 @@ package com.heckmannch.birthdaybuddy.ui.components.settings
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -40,11 +39,6 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
 import com.heckmannch.birthdaybuddy.R
-import com.heckmannch.birthdaybuddy.ui.components.AppSwitch
-import com.heckmannch.birthdaybuddy.ui.components.cards.GlassCardExpandButton
-import com.heckmannch.birthdaybuddy.ui.components.cards.GlassCardLayout
-import com.heckmannch.birthdaybuddy.ui.components.cards.GlassCardScope
-import com.heckmannch.birthdaybuddy.ui.components.cards.GlassCardStyle
 import com.heckmannch.birthdaybuddy.ui.theme.AlphaEmphasisDisabled
 import com.heckmannch.birthdaybuddy.ui.theme.AlphaEmphasisHigh
 import com.heckmannch.birthdaybuddy.ui.theme.AlphaSettingsOutlineMuted
@@ -53,11 +47,9 @@ import com.heckmannch.birthdaybuddy.ui.theme.BorderWidthThin
 import com.heckmannch.birthdaybuddy.ui.theme.CornerRadiusLargeIncreased
 import com.heckmannch.birthdaybuddy.ui.theme.IconSizeNormal
 import com.heckmannch.birthdaybuddy.ui.theme.SettingsCardElevationLow
-import com.heckmannch.birthdaybuddy.ui.theme.SpacingExtraSmall
 import com.heckmannch.birthdaybuddy.ui.theme.SpacingMedium
 import com.heckmannch.birthdaybuddy.ui.theme.SpacingNormal
 import com.heckmannch.birthdaybuddy.ui.theme.SpacingTiny
-import com.heckmannch.birthdaybuddy.ui.theme.defaultCardGradient
 
 /**
  * Resolves the surface fill color for settings cards with crisp contrast across
@@ -427,156 +419,4 @@ fun SettingsSwitchItem(
             )
         }
     }
-}
-
-/**
- * Clickable settings row delegating to [SettingsItem] for subpage consistency.
- */
-@Composable
-fun SettingsClickableRow(
-    title: String,
-    onClick: () -> Unit,
-    modifier: Modifier = Modifier,
-    description: String? = null,
-    leadingIcon: @Composable (() -> Unit)? = null,
-    trailingContent: @Composable (() -> Unit)? = null,
-    enabled: Boolean = true,
-    segment: ListSegment? = null,
-) {
-    SettingsItem(
-        onClick = onClick,
-        title = title,
-        modifier = modifier,
-        leadingContent = leadingIcon,
-        subtitle = description,
-        enabled = enabled,
-        segment = segment,
-        trailingContent = trailingContent,
-    )
-}
-
-/**
- * Settings switch row delegating to [SettingsSwitchItem] for subpage consistency.
- */
-@Composable
-fun SettingsSwitchRow(
-    title: String,
-    checked: Boolean,
-    onCheckedChange: (Boolean) -> Unit,
-    modifier: Modifier = Modifier,
-    description: String? = null,
-    leadingIcon: @Composable (() -> Unit)? = null,
-    enabled: Boolean = true,
-    segment: ListSegment? = null,
-) {
-    SettingsSwitchItem(
-        title = title,
-        checked = checked,
-        onCheckedChange = onCheckedChange,
-        modifier = modifier,
-        subtitle = description,
-        leadingContent = leadingIcon,
-        enabled = enabled,
-        segment = segment,
-    )
-}
-
-@Composable
-private fun GlassCardScope.SettingsTitleContent(
-    title: String,
-    subtitle: String?,
-) {
-    Column(
-        modifier = with(row) { Modifier.weight(1f) },
-        verticalArrangement = Arrangement.spacedBy(style.textSpacing),
-    ) {
-        Text(
-            text = title,
-            style = style.titleStyle,
-            color = style.titleColor,
-        )
-        subtitle?.let {
-            Text(
-                text = it,
-                style = style.subtitleStyle,
-                color = style.subtitleColor,
-            )
-        }
-    }
-}
-
-/**
- * Expandable settings card built on [GlassCardLayout]. Retained for reusable expandable cards
- * and glass-card UI tests.
- */
-@Composable
-fun SettingsExpandableCard(
-    title: String,
-    expanded: Boolean,
-    onExpandedChange: (Boolean) -> Unit,
-    modifier: Modifier = Modifier,
-    subtitle: String? = null,
-    icon: ImageVector? = null,
-    leadingContent: @Composable (() -> Unit)? = null,
-    enabled: Boolean = true,
-    gradientColors: List<Color> = defaultCardGradient(),
-    expandedContent: @Composable ColumnScope.(GlassCardStyle) -> Unit,
-) {
-    GlassCardLayout(
-        modifier = modifier,
-        gradientColors = gradientColors,
-        onClick = { onExpandedChange(!expanded) },
-        enabled = enabled,
-        expanded = expanded,
-        trailing = {
-            GlassCardExpandButton(
-                expanded = expanded,
-                onToggle = { onExpandedChange(!expanded) },
-                style = style,
-                contentDescription = stringResource(
-                    if (expanded) R.string.labels_collapse_card else R.string.labels_expand_card
-                ),
-            )
-        },
-        expandedContent = expandedContent,
-    ) {
-        leadingContent?.invoke() ?: icon?.let { ThemedIcon(icon = it) }
-        SettingsTitleContent(title = title, subtitle = subtitle)
-    }
-}
-
-/**
- * Inline switch row intended to be placed inside an expanded [SettingsExpandableCard]
- * without nesting a second frosted glass card border.
- */
-@Composable
-fun SettingsInlineSwitchRow(
-    title: String,
-    checked: Boolean,
-    onCheckedChange: (Boolean) -> Unit,
-    cardStyle: GlassCardStyle,
-    modifier: Modifier = Modifier,
-    description: String? = null,
-    enabled: Boolean = true,
-) {
-    IconTextRow(
-        modifier = modifier
-            .fillMaxWidth()
-            .clickable(enabled = enabled) { onCheckedChange(!checked) }
-            .padding(vertical = SpacingExtraSmall),
-        title = title,
-        description = description,
-        titleStyle = cardStyle.titleStyle,
-        titleWeight = FontWeight.Medium,
-        titleColor = cardStyle.titleColor,
-        descriptionStyle = cardStyle.subtitleStyle,
-        descriptionColor = cardStyle.subtitleColor,
-        trailingContent = {
-            AppSwitch(
-                checked = checked,
-                onCheckedChange = null,
-                enabled = enabled,
-            )
-        },
-    )
 }

@@ -11,7 +11,6 @@ import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import com.google.common.truth.Truth.assertThat
 import com.heckmannch.birthdaybuddy.domain.model.ThemeMode
-import com.heckmannch.birthdaybuddy.ui.components.settings.SettingsExpandableCard
 import com.heckmannch.birthdaybuddy.ui.components.settings.SettingsItem
 import com.heckmannch.birthdaybuddy.ui.model.LabelManagementModel
 import com.heckmannch.birthdaybuddy.ui.model.SampleData
@@ -21,6 +20,7 @@ import com.heckmannch.birthdaybuddy.ui.theme.LabelHiddenDarkStart
 import com.heckmannch.birthdaybuddy.ui.theme.LabelHiddenLightStart
 import com.heckmannch.birthdaybuddy.ui.theme.LabelIgnoredDarkStart
 import com.heckmannch.birthdaybuddy.ui.theme.LabelIgnoredLightStart
+import com.heckmannch.birthdaybuddy.ui.theme.defaultCardGradient
 import com.heckmannch.birthdaybuddy.ui.theme.labelHiddenCardGradient
 import com.heckmannch.birthdaybuddy.ui.theme.labelIgnoredCardGradient
 import org.junit.Rule
@@ -33,7 +33,7 @@ import org.robolectric.annotation.GraphicsMode
 /**
  * Unit tests for the centralized frosted glass card architecture in `ui.components.cards`
  * and its usage across Home ([ContactCard]), Labels ([LabelCard]), and Settings
- * ([SettingsItem], [SettingsExpandableCard]), as well as centralized color tokens in `Color.kt`.
+ * ([SettingsItem]), as well as centralized color tokens in `Color.kt`.
  */
 @RunWith(RobolectricTestRunner::class)
 @Config(sdk = [35])
@@ -142,7 +142,7 @@ class GlassCardTest {
     }
 
     @Test
-    fun settingsCards_supportBothClickableNavigationAndExpansion() {
+    fun settingsItemAndGlassCard_supportClickableNavigationAndExpansion() {
         var navigated = false
         var expanded by mutableStateOf(false)
 
@@ -154,13 +154,15 @@ class GlassCardTest {
                         title = "Theme",
                         subtitle = "Customize look"
                     )
-                    SettingsExpandableCard(
-                        title = "Manage labels",
-                        subtitle = "Adjust filters",
+                    GlassCardLayout(
+                        gradientColors = defaultCardGradient(),
+                        onClick = { expanded = !expanded },
                         expanded = expanded,
-                        onExpandedChange = { expanded = it }
+                        expandedContent = {
+                            Text("Expanded card content")
+                        }
                     ) {
-                        Text("Expanded label switch")
+                        Text("Expandable card")
                     }
                 }
             }
@@ -170,11 +172,11 @@ class GlassCardTest {
         composeRule.waitForIdle()
         assertThat(navigated).isTrue()
 
-        composeRule.onNodeWithText("Expanded label switch").assertDoesNotExist()
-        composeRule.onNodeWithText("Manage labels").performClick()
+        composeRule.onNodeWithText("Expanded card content").assertDoesNotExist()
+        composeRule.onNodeWithText("Expandable card").performClick()
         composeRule.waitForIdle()
         assertThat(expanded).isTrue()
-        composeRule.onNodeWithText("Expanded label switch").assertIsDisplayed()
+        composeRule.onNodeWithText("Expanded card content").assertIsDisplayed()
     }
 
     @Test

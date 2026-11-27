@@ -39,7 +39,6 @@ import com.heckmannch.birthdaybuddy.ui.theme.CornerRadiusSmall
 import com.heckmannch.birthdaybuddy.ui.theme.IconSizeMedium
 import com.heckmannch.birthdaybuddy.ui.theme.IconSizeSmall
 import com.heckmannch.birthdaybuddy.ui.theme.SettingsSegmentBlockGap
-import com.heckmannch.birthdaybuddy.ui.theme.SettingsSegmentGap
 import com.heckmannch.birthdaybuddy.ui.theme.SpacingExtraSmall
 import com.heckmannch.birthdaybuddy.ui.theme.SpacingSmall
 import com.heckmannch.birthdaybuddy.ui.theme.SpacingTiny
@@ -351,7 +350,6 @@ fun SettingsSection(
 fun SettingsColumn(
     modifier: Modifier = Modifier,
     spacing: Dp = SettingsSegmentBlockGap,
-    tightSpacing: Dp = SettingsSegmentGap,
     content: @Composable () -> Unit,
 ) {
     Layout(
@@ -359,26 +357,23 @@ fun SettingsColumn(
         modifier = modifier.fillMaxWidth(),
     ) { measurables, constraints ->
         val childConstraints = constraints.copy(minHeight = 0)
-        val placeables = measurables.map { measurable ->
-            val parentData = measurable.parentData as? SettingsBlockParentData
-            measurable.measure(childConstraints) to (parentData?.endsBlock == true)
-        }
-        val visibleItems = placeables.filter { (placeable, _) -> placeable.height > 0 }
+        val visibleItems = measurables
+            .map { it.measure(childConstraints) }
+            .filter { it.height > 0 }
         val blockGapPx = spacing.roundToPx()
-        val tightGapPx = tightSpacing.roundToPx()
 
         var totalHeight = 0
         val yPositions = IntArray(visibleItems.size)
-        visibleItems.forEachIndexed { idx, (placeable, endsBlock) ->
+        visibleItems.forEachIndexed { idx, placeable ->
             yPositions[idx] = totalHeight
             totalHeight += placeable.height
             if (idx < visibleItems.lastIndex) {
-                totalHeight += if (endsBlock) blockGapPx else blockGapPx.coerceAtLeast(tightGapPx)
+                totalHeight += blockGapPx
             }
         }
 
         layout(constraints.maxWidth, totalHeight.coerceIn(constraints.minHeight, constraints.maxHeight)) {
-            visibleItems.forEachIndexed { idx, (placeable, _) ->
+            visibleItems.forEachIndexed { idx, placeable ->
                 placeable.placeRelative(0, yPositions[idx])
             }
         }

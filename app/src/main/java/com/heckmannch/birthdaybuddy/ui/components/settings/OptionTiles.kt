@@ -57,7 +57,7 @@ import com.heckmannch.birthdaybuddy.ui.theme.SpacingSmall
 import kotlin.math.roundToInt
 
 /**
- * Parent-data payload carrying an option tile's current press progress for [ButtonGroupRow].
+ * Parent-data payload carrying an option tile's current press progress for [OptionGroup].
  */
 @Immutable
 internal data class ButtonGroupItemData(val pressProgress: Float = 0f)
@@ -68,7 +68,7 @@ private data class ButtonGroupItemModifier(val pressProgress: Float) : ParentDat
 }
 
 /**
- * Attaches live press-expansion progress to a child of [ButtonGroupRow].
+ * Attaches live press-expansion progress to a child of [OptionGroup].
  */
 fun Modifier.buttonGroupItem(pressProgress: Float): Modifier =
     this.then(ButtonGroupItemModifier(pressProgress))
@@ -111,11 +111,11 @@ internal fun widenPressed(
 }
 
 /**
- * Expressive horizontal connected button group where pressing a button subtly expands its width
- * and compresses its immediate neighbors.
+ * Expressive horizontal connected button group for mutually exclusive option tiles,
+ * where pressing a tile subtly expands its width and compresses its immediate neighbors.
  */
 @Composable
-fun ButtonGroupRow(
+fun OptionGroup(
     modifier: Modifier = Modifier,
     spacing: Dp = SettingsSegmentGap,
     content: @Composable () -> Unit,
@@ -156,20 +156,6 @@ fun ButtonGroupRow(
             }
         }
     }
-}
-
-/**
- * Semantic wrapper around [ButtonGroupRow] for mutually exclusive option tiles.
- */
-@Composable
-fun OptionGroup(
-    modifier: Modifier = Modifier,
-    content: @Composable () -> Unit,
-) {
-    ButtonGroupRow(
-        modifier = modifier,
-        content = content,
-    )
 }
 
 /**

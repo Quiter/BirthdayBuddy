@@ -56,25 +56,8 @@ enum class SettingsSemanticTone {
 }
 
 /**
- * Muted caption footnote placed underneath a [SettingsGroup] to explain behavior.
- */
-@Composable
-fun Footnote(
-    text: String,
-    modifier: Modifier = Modifier,
-) {
-    Text(
-        text = text,
-        style = MaterialTheme.typography.bodySmall,
-        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = AlphaSettingsSubtitleMuted),
-        modifier = modifier
-            .fillMaxWidth()
-            .padding(horizontal = SpacingExtraSmall),
-    )
-}
-
-/**
- * Settings explanatory footer that automatically hides while a page-level search is active.
+ * Muted explanatory caption placed underneath a [SettingsGroup] that automatically hides
+ * while a page-level search is active.
  */
 @Composable
 fun SettingsFooter(
@@ -83,9 +66,14 @@ fun SettingsFooter(
 ) {
     val search = LocalSettingsSearch.current
     if (search?.isActive == true) return
-    Footnote(
+    Text(
         text = text,
-        modifier = modifier.padding(top = SpacingExtraSmall),
+        style = MaterialTheme.typography.bodySmall,
+        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = AlphaSettingsSubtitleMuted),
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(top = SpacingExtraSmall)
+            .padding(horizontal = SpacingExtraSmall),
     )
 }
 

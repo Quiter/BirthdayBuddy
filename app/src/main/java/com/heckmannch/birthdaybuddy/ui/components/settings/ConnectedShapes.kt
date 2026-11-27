@@ -24,7 +24,6 @@ import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.Dp
-import androidx.compose.ui.unit.lerp
 import com.heckmannch.birthdaybuddy.ui.theme.CornerRadiusExtraLarge
 import com.heckmannch.birthdaybuddy.ui.theme.CornerRadiusExtraSmall
 import com.heckmannch.birthdaybuddy.ui.theme.CornerRadiusLargeIncreased
@@ -50,16 +49,6 @@ data class CornerRadii(
     val bottomStart: Dp,
 ) {
     /**
-     * Converts these corner radii into a [RoundedCornerShape].
-     */
-    fun toShape(): RoundedCornerShape = RoundedCornerShape(
-        topStart = topStart,
-        topEnd = topEnd,
-        bottomEnd = bottomEnd,
-        bottomStart = bottomStart,
-    )
-
-    /**
      * Scales all corners by [factor], typically used for press feedback morphing.
      */
     fun scaled(factor: Float): CornerRadii = CornerRadii(
@@ -74,16 +63,6 @@ data class CornerRadii(
          * Uniform corner radii across all four corners.
          */
         fun uniform(radius: Dp): CornerRadii = CornerRadii(radius, radius, radius, radius)
-
-        /**
-         * Linearly interpolates between [start] and [stop] by [fraction].
-         */
-        fun lerp(start: CornerRadii, stop: CornerRadii, fraction: Float): CornerRadii = CornerRadii(
-            topStart = lerp(start.topStart, stop.topStart, fraction),
-            topEnd = lerp(start.topEnd, stop.topEnd, fraction),
-            bottomEnd = lerp(start.bottomEnd, stop.bottomEnd, fraction),
-            bottomStart = lerp(start.bottomStart, stop.bottomStart, fraction),
-        )
     }
 }
 

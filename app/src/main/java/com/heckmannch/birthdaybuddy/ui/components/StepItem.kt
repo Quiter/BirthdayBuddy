@@ -45,7 +45,7 @@ import com.heckmannch.birthdaybuddy.ui.theme.SpacingSmall
  * - This component is intended for sequential checklist tasks (e.g., granting permissions, enabling features, configuring settings guides).
  * - It supports progress indicators (numbers, icons, completed checkmarks, and locked states).
  * - For general, non-sequential clickable rows in settings screens (such as color picker selectors, action buttons, etc.),
- *   do NOT use StepItem. Use [com.heckmannch.birthdaybuddy.ui.components.settings.SettingsClickableRow] instead to preserve the semantical structure and visual distinction.
+ *   do NOT use StepItem. Use [com.heckmannch.birthdaybuddy.ui.components.settings.SettingsItem] instead to preserve the semantical structure and visual distinction.
  */
 @Composable
 fun StepItem(

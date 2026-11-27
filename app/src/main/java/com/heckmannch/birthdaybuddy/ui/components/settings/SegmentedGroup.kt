@@ -22,8 +22,6 @@ import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.layout.ParentDataModifier
-import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.IntSize
 import com.heckmannch.birthdaybuddy.ui.theme.SettingsSegmentGap
 
@@ -89,21 +87,6 @@ internal val LocalSegmentRegistry = compositionLocalOf<SegmentRegistry?> { null 
  * rows inside a [SettingsGroup] immediately round their newly exposed edges.
  */
 internal val LocalRowLeaving = compositionLocalOf { false }
-
-/**
- * Parent-data flag used by [SettingsColumn] to identify blocks that close a visual section.
- */
-internal data class SettingsBlockParentData(val endsBlock: Boolean = false)
-
-private object EndsBlockModifier : ParentDataModifier {
-    override fun Density.modifyParentData(parentData: Any?): Any =
-        SettingsBlockParentData(endsBlock = true)
-}
-
-/**
- * Marks this composable as closing a visual block inside [SettingsColumn].
- */
-fun Modifier.endsBlock(): Modifier = this.then(EndsBlockModifier)
 
 /**
  * Vertical segmented container for related settings cards.

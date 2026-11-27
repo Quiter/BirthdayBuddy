@@ -11,10 +11,10 @@ import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import com.google.common.truth.Truth.assertThat
+import com.heckmannch.birthdaybuddy.ui.components.settings.SettingsPageHeader
 import com.heckmannch.birthdaybuddy.ui.screens.home.HomeActions
 import com.heckmannch.birthdaybuddy.ui.screens.home.components.header.HomeHeader
 import com.heckmannch.birthdaybuddy.ui.screens.labels.components.LabelsHeader
-import com.heckmannch.birthdaybuddy.ui.screens.settings.components.SettingsHeader
 import com.heckmannch.birthdaybuddy.ui.theme.BirthdayBuddyTheme
 import org.junit.Rule
 import org.junit.Test
@@ -24,7 +24,7 @@ import org.robolectric.annotation.Config
 import org.robolectric.annotation.GraphicsMode
 
 /**
- * Unit tests for [AppTopHeader], [HomeHeader], [SettingsHeader], and [LabelsHeader] ensuring central layout inheritance,
+ * Unit tests for [AppTopHeader], [HomeHeader], [SettingsPageHeader], and [LabelsHeader] ensuring central layout inheritance,
  * navigation icon display, action buttons, and search mode transitions.
  */
 @RunWith(RobolectricTestRunner::class)
@@ -134,12 +134,12 @@ class AppTopHeaderTest {
     }
 
     @Test
-    fun settingsHeader_displaysTitleAndBackButton_withoutSearchButton() {
+    fun settingsPageHeader_displaysTitleAndBackButton_withoutSearchButton() {
         var backClicked = false
 
         composeRule.setContent {
             BirthdayBuddyTheme {
-                SettingsHeader(
+                SettingsPageHeader(
                     title = "Benachrichtigungen",
                     showBackButton = true,
                     onNavigateBack = { backClicked = true },
@@ -158,10 +158,10 @@ class AppTopHeaderTest {
     }
 
     @Test
-    fun settingsHeader_mainScreen_hidesBackButtonAndSearchButton() {
+    fun settingsPageHeader_mainScreen_hidesBackButtonAndSearchButton() {
         composeRule.setContent {
             BirthdayBuddyTheme {
-                SettingsHeader(
+                SettingsPageHeader(
                     title = "Einstellungen",
                     showBackButton = false,
                 )

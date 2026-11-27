@@ -13,7 +13,6 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -456,61 +455,10 @@ fun SettingsSubpageScaffold(
 }
 
 /**
- * Compatibility wrapper around [PinnedHeaderPage] for screens expecting [PaddingValues].
- */
-@Composable
-fun SettingsDetailScaffold(
-    modifier: Modifier = Modifier,
-    title: String,
-    onNavigateBack: () -> Unit,
-    showBackButton: Boolean = true,
-    snackbarHost: @Composable () -> Unit = {},
-    content: @Composable (PaddingValues) -> Unit,
-) {
-    val scrollState = rememberScrollState()
-    Box(
-        modifier = modifier
-            .fillMaxSize()
-            .background(settingsPageBackground()),
-    ) {
-        PinnedHeaderPage(
-            scrollState = scrollState,
-            header = {
-                Box(
-                    modifier = Modifier.fillMaxWidth(),
-                    contentAlignment = Alignment.Center,
-                ) {
-                    SettingsPageHeader(
-                        title = title,
-                        showBackButton = showBackButton,
-                        onNavigateBack = onNavigateBack,
-                        showSearchButton = false,
-                    )
-                }
-            },
-        ) { insets ->
-            Box(
-                modifier = Modifier.fillMaxSize(),
-                contentAlignment = Alignment.TopCenter,
-            ) {
-                content(
-                    PaddingValues(
-                        top = insets.top,
-                        bottom = insets.bottom,
-                    )
-                )
-            }
-        }
-
-        SettingsSnackbarContainer(snackbarHost = snackbarHost)
-    }
-}
-
-/**
  * Overlay container helper for pinned-header pages that host a snackbar at the bottom edge.
  */
 @Composable
-fun BoxScope.SettingsSnackbarContainer(
+private fun BoxScope.SettingsSnackbarContainer(
     bottomPadding: Dp = 0.dp,
     snackbarHost: @Composable () -> Unit,
 ) {

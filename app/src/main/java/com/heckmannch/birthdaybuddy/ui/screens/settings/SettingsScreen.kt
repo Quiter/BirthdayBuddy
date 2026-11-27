@@ -85,8 +85,8 @@ import com.heckmannch.birthdaybuddy.ui.components.settings.rememberSettingsSearc
 import com.heckmannch.birthdaybuddy.ui.components.settings.rememberSettingsSearchState
 import com.heckmannch.birthdaybuddy.ui.components.settings.settingsPageBackground
 import com.heckmannch.birthdaybuddy.ui.components.settings.verticalScrollFade
-import com.heckmannch.birthdaybuddy.ui.screens.settings.components.SettingsDetailPane
-import com.heckmannch.birthdaybuddy.ui.screens.settings.components.SettingsDetailPlaceholder
+import com.heckmannch.birthdaybuddy.ui.components.settings.SettingsDetailPane
+import com.heckmannch.birthdaybuddy.ui.components.settings.SettingsDetailPlaceholder
 import com.heckmannch.birthdaybuddy.ui.screens.settings.subscreens.labels.LabelIntent
 import com.heckmannch.birthdaybuddy.ui.screens.settings.subscreens.labels.LabelViewModel
 import com.heckmannch.birthdaybuddy.ui.screens.settings.subscreens.notifications.NotificationIntent
