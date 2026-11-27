@@ -21,6 +21,7 @@ import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
+import java.io.IOException
 import javax.inject.Inject
 
 /**
@@ -181,23 +182,63 @@ class GiftIdeaRepositoryImpl @Inject constructor(
     override suspend fun exportGiftIdeas(uriString: String): Unit = withContext(ioDispatcher) {
         val json = giftIdeaBackupManager.exportGiftIdeas()
         val uri = uriString.toUri()
-        contentResolver.openOutputStream(uri)?.use { outputStream ->
-            outputStream.write(json.toByteArray())
+        // Open with "wt" (write + truncate) so overwriting an existing SAF document does not leave trailing bytes.
+        // Fall back to "w" only if a provider explicitly rejects the "wt" mode.
+        val outputStream = try {
+            contentResolver.openOutputStream(uri, "wt")
+        } catch (_: IllegalArgumentException) {
+            contentResolver.openOutputStream(uri, "w")
+        } catch (_: UnsupportedOperationException) {
+            contentResolver.openOutputStream(uri, "w")
+        } ?: throw IOException("Could not open output stream for URI: $uri")
+
+        outputStream.use { stream ->
+            stream.write(json.toByteArray(Charsets.UTF_8))
         }
     }
 
-    override suspend fun importGiftIdeas(uriString: String): Int {
+    override suspend fun importGiftIdeas(uriString: String): Int = withContext(ioDispatcher) {
         val uri = uriString.toUri()
-        val json = withContext(ioDispatcher) {
-            contentResolver.openInputStream(uri)?.use { inputStream ->
-                inputStream.bufferedReader().readText()
-            }
-        } ?: return -1
+        val json = contentResolver.openInputStream(uri)?.use { inputStream ->
+            inputStream.bufferedReader(Charsets.UTF_8).readText()
+        } ?: return@withContext -1
         val count = giftIdeaBackupManager.importGiftIdeas(json)
         if (count > 0) {
-            contactRepository.syncContacts() // Update cache
+            contactRepository.syncContacts()
+            syncCachedContactGiftIdeas()
         }
-        return count
+        count
+    }
+
+    /**
+     * Synchronizes the cached `giftIdeasJson` fields in [AppDatabase] from [SettingsDatabase]
+     * for all contacts currently present in the local cache. This ensures imported gift ideas
+     * become immediately visible even when system contacts permission is not granted and
+     * [ContactRepository.syncContacts] returns early.
+     */
+    private suspend fun syncCachedContactGiftIdeas() {
+        giftIdeaMutex.withLock {
+            val cachedContacts = contactDao.getAllContactsImmediate()
+            if (cachedContacts.isEmpty()) return
+
+            val userDataByKey = contactUserDataDao.getAllUserDataImmediate()
+                .associateBy { it.lookupKey }
+            if (userDataByKey.isEmpty()) return
+
+            val contactsToUpdate = cachedContacts.mapNotNull { contact ->
+                val userData = userDataByKey[contact.lookupKey] ?: return@mapNotNull null
+                if (contact.giftIdeasJson != userData.giftIdeasJson) {
+                    contact.copy(giftIdeasJson = userData.giftIdeasJson)
+                } else {
+                    null
+                }
+            }
+
+            if (contactsToUpdate.isNotEmpty()) {
+                contactDao.upsertContacts(contactsToUpdate)
+                widgetUpdater.updateWidget()
+            }
+        }
     }
 
     companion object {

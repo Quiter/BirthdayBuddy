@@ -10,9 +10,11 @@ import kotlinx.coroutines.test.runTest
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
+import org.mockito.kotlin.doAnswer
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
+import java.io.IOException
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class BackupViewModelTest {
@@ -68,6 +70,24 @@ class BackupViewModelTest {
             val state = viewModel.uiState.value
             assertThat(state.isLoading).isFalse()
             assertThat(state.message).isEqualTo(BackupMessage.ExportError("Export failed"))
+        }
+
+    @Test
+    fun `ExportGiftIdeas intent should update state to ExportError when usecase throws IOException`() =
+        runTest(testDispatcher) {
+            // Given
+            val exception = IOException("Could not open output stream for URI: $uriString")
+            whenever(exportGiftIdeasUseCase(uriString)).doAnswer { throw exception }
+
+            // When
+            viewModel.onIntent(BackupIntent.ExportGiftIdeas(uriString))
+
+            // Then
+            val state = viewModel.uiState.value
+            assertThat(state.isLoading).isFalse()
+            assertThat(state.message).isEqualTo(
+                BackupMessage.ExportError("Could not open output stream for URI: $uriString")
+            )
         }
 
     @Test
