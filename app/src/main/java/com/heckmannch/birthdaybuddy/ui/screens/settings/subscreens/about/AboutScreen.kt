@@ -1,176 +1,147 @@
 ﻿package com.heckmannch.birthdaybuddy.ui.screens.settings.subscreens.about
 
-import android.content.pm.PackageInfo
-import android.content.pm.PackageManager
-import android.os.Build
-import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Info
-import androidx.compose.material.icons.filled.Policy
+import androidx.compose.material.icons.rounded.Description
+import androidx.compose.material.icons.rounded.Info
+import androidx.compose.material.icons.rounded.Policy
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
+import com.heckmannch.birthdaybuddy.BuildConfig
 import com.heckmannch.birthdaybuddy.R
-import com.heckmannch.birthdaybuddy.ui.components.layout.AppResponsiveScaffold
+import com.heckmannch.birthdaybuddy.ui.components.settings.SectionCard
+import com.heckmannch.birthdaybuddy.ui.components.settings.SettingsGroup
 import com.heckmannch.birthdaybuddy.ui.components.settings.SettingsItem
-import com.heckmannch.birthdaybuddy.ui.screens.settings.components.SettingsBody
-import com.heckmannch.birthdaybuddy.ui.screens.settings.components.SettingsFooter
-import com.heckmannch.birthdaybuddy.ui.screens.settings.components.SettingsHeader
-import com.heckmannch.birthdaybuddy.ui.screens.settings.components.SettingsMenuSectionCard
+import com.heckmannch.birthdaybuddy.ui.components.settings.SettingsSection
+import com.heckmannch.birthdaybuddy.ui.components.settings.SettingsSubpageScaffold
+import com.heckmannch.birthdaybuddy.ui.theme.AlphaSettingsSubtitleMuted
 import com.heckmannch.birthdaybuddy.ui.theme.BirthdayBuddyTheme
+import com.heckmannch.birthdaybuddy.ui.theme.CornerRadiusLarge
+import com.heckmannch.birthdaybuddy.ui.theme.SettingsAboutLogoSize
+import com.heckmannch.birthdaybuddy.ui.theme.SpacingExtraSmall
+import com.heckmannch.birthdaybuddy.ui.theme.SpacingMedium
 import com.heckmannch.birthdaybuddy.ui.theme.SpacingNormal
+import com.heckmannch.birthdaybuddy.ui.theme.SpacingSmall
 
-private const val TAG = "AboutScreen"
-
+/**
+ * Expressive About subpage displaying app identity, version, legal links, and credits.
+ */
 @Composable
 fun AboutScreen(
     showBackButton: Boolean = true,
     onNavigateBack: () -> Unit,
     onNavigateToPrivacyPolicy: () -> Unit,
-    onNavigateToLicenses: () -> Unit
+    onNavigateToLicenses: () -> Unit,
 ) {
-    val context = LocalContext.current
-    val versionName = remember {
-        try {
-            val packageInfo: PackageInfo =
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                    context.packageManager.getPackageInfo(
-                        context.packageName,
-                        PackageManager.PackageInfoFlags.of(0)
-                    )
-                } else {
-                    @Suppress("DEPRECATION")
-                    context.packageManager.getPackageInfo(context.packageName, 0)
-                }
-            packageInfo.versionName ?: "2.1.0"
-        } catch (e: Exception) {
-            Log.w(TAG, "Fehler beim Auslesen der Versionsbezeichnung via PackageManager", e)
-            "2.1.0"
-        }
-    }
+    val versionName = BuildConfig.VERSION_NAME
 
-    AppResponsiveScaffold(
-        topBar = {
-            SettingsHeader(
-                title = stringResource(R.string.settings_about_title),
-                showBackButton = showBackButton,
-                onNavigateBack = onNavigateBack
-            )
-        }
-    ) { paddingValues ->
-        SettingsBody(
-            paddingValues = paddingValues,
-            footer = {
-                SettingsFooter(showInSubscreen = true) {
-                    Column(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.spacedBy(SpacingNormal)
-                    ) {
-                        Text(
-                            text = stringResource(R.string.settings_made_with),
-                            style = MaterialTheme.typography.labelMedium,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            textAlign = TextAlign.Center
-                        )
-                        Text(
-                            text = stringResource(R.string.about_copyright),
-                            style = MaterialTheme.typography.labelMedium,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            textAlign = TextAlign.Center
-                        )
-                    }
-                }
-            }
-        ) {
-            // App header: logo, name, version
-            AboutAppHeader(versionName = versionName)
-
-            // Description
-            Text(
-                text = stringResource(R.string.about_description),
-                style = MaterialTheme.typography.bodyLarge,
-                textAlign = TextAlign.Center,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
+    SettingsSubpageScaffold(
+        title = stringResource(R.string.settings_about_title),
+        showBackButton = showBackButton,
+        onNavigateBack = onNavigateBack,
+    ) {
+        SectionCard {
+            Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = SpacingNormal)
-            )
-
-            // App info section: version + credits
-            SettingsMenuSectionCard(
-                sectionTitle = stringResource(R.string.about_section_info),
-                sectionIcon = Icons.Default.Info
+                    .padding(vertical = SpacingSmall),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(SpacingMedium),
             ) {
-                SettingsItem(
-                    onClick = {},
-                    title = stringResource(R.string.app_name),
-                    subtitle = stringResource(R.string.settings_version, versionName),
-                    icon = Icons.Default.Info,
-                    trailingContent = null
+                Image(
+                    painter = painterResource(R.drawable.ic_app_logo),
+                    contentDescription = null,
+                    modifier = Modifier
+                        .size(SettingsAboutLogoSize)
+                        .clip(RoundedCornerShape(CornerRadiusLarge)),
+                )
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.spacedBy(SpacingExtraSmall),
+                ) {
+                    Text(
+                        text = stringResource(R.string.app_name),
+                        style = MaterialTheme.typography.titleLarge,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.onSurface,
+                    )
+                    Text(
+                        text = stringResource(R.string.settings_version, versionName),
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.primary,
+                        fontWeight = FontWeight.Medium,
+                    )
+                }
+                Text(
+                    text = stringResource(R.string.about_description),
+                    style = MaterialTheme.typography.bodyMedium,
+                    textAlign = TextAlign.Center,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             }
+        }
 
-            // Legal section: privacy policy + open-source licenses
-            SettingsMenuSectionCard(
-                sectionTitle = stringResource(R.string.about_section_legal),
-                sectionIcon = Icons.Default.Policy
-            ) {
+        SettingsSection(title = stringResource(R.string.about_section_info)) {
+            SettingsGroup {
+                SettingsItem(
+                    onClick = null,
+                    title = stringResource(R.string.app_name),
+                    subtitle = stringResource(R.string.settings_version, versionName),
+                    icon = Icons.Rounded.Info,
+                )
+            }
+        }
+
+        SettingsSection(title = stringResource(R.string.about_section_legal)) {
+            SettingsGroup {
                 SettingsItem(
                     onClick = onNavigateToPrivacyPolicy,
                     title = stringResource(R.string.about_privacy_policy),
-                    icon = Icons.Default.Policy
+                    icon = Icons.Rounded.Policy,
                 )
                 SettingsItem(
                     onClick = onNavigateToLicenses,
                     title = stringResource(R.string.opensource_licenses),
-                    icon = Icons.Default.Info
+                    icon = Icons.Rounded.Description,
                 )
             }
         }
-    }
-}
 
-@Composable
-private fun AboutAppHeader(versionName: String) {
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(vertical = SpacingNormal),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(SpacingNormal)
-    ) {
-        Image(
-            painter = painterResource(R.drawable.ic_app_logo),
-            contentDescription = null,
-            modifier = Modifier.size(72.dp)
-        )
-        Text(
-            text = stringResource(R.string.app_name),
-            style = MaterialTheme.typography.titleLarge,
-            fontWeight = FontWeight.Bold
-        )
-        Text(
-            text = stringResource(R.string.settings_version, versionName),
-            style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
-        )
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = SpacingSmall, bottom = SpacingNormal),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(SpacingExtraSmall),
+        ) {
+            Text(
+                text = stringResource(R.string.settings_made_with),
+                style = MaterialTheme.typography.labelMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = AlphaSettingsSubtitleMuted),
+                textAlign = TextAlign.Center,
+            )
+            Text(
+                text = stringResource(R.string.about_copyright),
+                style = MaterialTheme.typography.labelMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = AlphaSettingsSubtitleMuted),
+                textAlign = TextAlign.Center,
+            )
+        }
     }
 }
 
@@ -181,7 +152,7 @@ private fun AboutPreview() {
         AboutScreen(
             onNavigateBack = {},
             onNavigateToPrivacyPolicy = {},
-            onNavigateToLicenses = {}
+            onNavigateToLicenses = {},
         )
     }
 }

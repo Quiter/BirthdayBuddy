@@ -10,25 +10,16 @@ import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.VisibleForTesting
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.lazy.grid.GridCells
-import androidx.compose.foundation.lazy.grid.GridItemSpan
-import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Notifications
-import androidx.compose.material.icons.filled.NotificationsOff
+import androidx.compose.material.icons.rounded.Add
+import androidx.compose.material.icons.rounded.Info
+import androidx.compose.material.icons.rounded.Notifications
+import androidx.compose.material.icons.rounded.NotificationsActive
+import androidx.compose.material.icons.rounded.NotificationsOff
 import androidx.compose.material3.Button
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -51,24 +42,26 @@ import androidx.lifecycle.compose.LifecycleEventEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.heckmannch.birthdaybuddy.R
 import com.heckmannch.birthdaybuddy.domain.model.NotificationRule
-import com.heckmannch.birthdaybuddy.ui.components.cards.InfoCard
-import com.heckmannch.birthdaybuddy.ui.components.layout.withSettingsInsets
-import com.heckmannch.birthdaybuddy.ui.components.settings.SettingsDetailScaffold
-import com.heckmannch.birthdaybuddy.ui.components.settings.SettingsSwitchRow
-import com.heckmannch.birthdaybuddy.ui.screens.settings.components.SettingsMenuSectionCard
+import com.heckmannch.birthdaybuddy.ui.components.settings.FoldingVisibility
+import com.heckmannch.birthdaybuddy.ui.components.settings.SettingsGroup
+import com.heckmannch.birthdaybuddy.ui.components.settings.SettingsHeaderActionButton
+import com.heckmannch.birthdaybuddy.ui.components.settings.SettingsItemCard
+import com.heckmannch.birthdaybuddy.ui.components.settings.SettingsNotice
+import com.heckmannch.birthdaybuddy.ui.components.settings.SettingsSection
+import com.heckmannch.birthdaybuddy.ui.components.settings.SettingsSemanticTone
+import com.heckmannch.birthdaybuddy.ui.components.settings.SettingsSubpageScaffold
+import com.heckmannch.birthdaybuddy.ui.components.settings.SettingsSwitchItem
 import com.heckmannch.birthdaybuddy.ui.screens.settings.subscreens.notifications.NotificationSettingsState.Companion.Saver
 import com.heckmannch.birthdaybuddy.ui.screens.settings.subscreens.notifications.components.EditRuleDialog
 import com.heckmannch.birthdaybuddy.ui.screens.settings.subscreens.notifications.components.NotificationRuleItem
-import com.heckmannch.birthdaybuddy.ui.theme.AlphaSurfaceContainerHigh
 import com.heckmannch.birthdaybuddy.ui.theme.BirthdayBuddyTheme
-import com.heckmannch.birthdaybuddy.ui.theme.GridColumnMinWidth
-import com.heckmannch.birthdaybuddy.ui.theme.IconSizeExtraLarge
-import com.heckmannch.birthdaybuddy.ui.theme.SpacingExtraLarge
-import com.heckmannch.birthdaybuddy.ui.theme.SpacingLarge
 import com.heckmannch.birthdaybuddy.ui.theme.SpacingNormal
 
 private const val TAG = "NotificationSettingsScreen"
 
+/**
+ * Entry point for the Notifications settings subpage.
+ */
 @Composable
 fun NotificationSettingsScreen(
     viewModel: NotificationViewModel,
@@ -90,7 +83,7 @@ fun NotificationSettingsScreen(
 
     val state = rememberNotificationSettingsState()
     val permissionLauncher = rememberLauncherForActivityResult(
-        ActivityResultContracts.RequestPermission()
+        ActivityResultContracts.RequestPermission(),
     ) { isGranted ->
         hasAttemptedPermission = true
         if (isGranted) {
@@ -123,13 +116,7 @@ fun NotificationSettingsScreen(
         },
         onTogglePersistent = { viewModel.onIntent(NotificationIntent.SetPersistent(it)) },
         onAddRule = { days, hour, minute ->
-            viewModel.onIntent(
-                NotificationIntent.AddRule(
-                    days,
-                    hour,
-                    minute
-                )
-            )
+            viewModel.onIntent(NotificationIntent.AddRule(days, hour, minute))
         },
         onUpdateRule = { viewModel.onIntent(NotificationIntent.UpdateRule(it)) },
         onDeleteRule = { viewModel.onIntent(NotificationIntent.DeleteRule(it)) },
@@ -139,7 +126,7 @@ fun NotificationSettingsScreen(
                 val shouldShowRationale = activity?.let {
                     ActivityCompat.shouldShowRequestPermissionRationale(
                         it,
-                        Manifest.permission.POST_NOTIFICATIONS
+                        Manifest.permission.POST_NOTIFICATIONS,
                     )
                 } ?: false
 
@@ -147,7 +134,6 @@ fun NotificationSettingsScreen(
                     permissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
                     hasAttemptedPermission = true
                 } else {
-                    // Fallback: Systemeinstellungen öffnen, wenn der Dialog nicht mehr erscheint
                     try {
                         val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
                             data = Uri.fromParts("package", context.packageName, null)
@@ -164,8 +150,7 @@ fun NotificationSettingsScreen(
 }
 
 /**
- * Plain State Holder für die UI-Logik der Benachrichtigungs-Einstellungen.
- * Kapselt die Sichtbarkeit der Dialoge.
+ * Plain state holder for dialog visibility in Notification settings.
  */
 @Stable
 class NotificationSettingsState(
@@ -227,18 +212,21 @@ class NotificationSettingsState(
                     initialShowAddDialog = showAddDialog,
                     initialRuleToEdit = rule,
                 )
-            }
+            },
         )
     }
 }
 
+/**
+ * Remembers a [NotificationSettingsState] across configuration changes.
+ */
 @Composable
-fun rememberNotificationSettingsState(): NotificationSettingsState {
-    return rememberSaveable(saver = Saver) {
-        NotificationSettingsState()
-    }
-}
+fun rememberNotificationSettingsState(): NotificationSettingsState =
+    rememberSaveable(saver = Saver) { NotificationSettingsState() }
 
+/**
+ * Stateless UI content for Notification settings in Morphe expressive style.
+ */
 @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
 @Composable
 internal fun NotificationSettingsContent(
@@ -256,107 +244,91 @@ internal fun NotificationSettingsContent(
     onRequestPermission: () -> Unit,
     onNavigateBack: () -> Unit,
 ) {
-    SettingsDetailScaffold(
+    SettingsSubpageScaffold(
         title = stringResource(R.string.notifications_title),
         showBackButton = showBackButton,
         onNavigateBack = onNavigateBack,
-    ) { paddingValues ->
+    ) {
         if (!hasSystemPermission) {
-            PermissionRequestState(
-                onRequestPermission = onRequestPermission,
-                modifier = Modifier.padding(paddingValues)
+            SettingsNotice(
+                title = stringResource(R.string.notifications_title),
+                message = stringResource(R.string.notifications_permission_missing_desc),
+                icon = Icons.Rounded.NotificationsOff,
+                tone = SettingsSemanticTone.Warning,
+                action = {
+                    Button(onClick = onRequestPermission) {
+                        Text(stringResource(R.string.notifications_permission_btn))
+                    }
+                },
             )
         } else {
-            LazyVerticalGrid(
-                columns = GridCells.Adaptive(minSize = GridColumnMinWidth),
-                modifier = Modifier.fillMaxSize(),
-                contentPadding = paddingValues.withSettingsInsets(vertical = SpacingNormal),
-                horizontalArrangement = Arrangement.spacedBy(SpacingNormal),
-                verticalArrangement = Arrangement.spacedBy(SpacingNormal)
-            ) {
-                item(span = { GridItemSpan(maxLineSpan) }) {
-                    SettingsMenuSectionCard(
-                        sectionTitle = stringResource(R.string.notifications_header),
-                        sectionIcon = Icons.Default.Notifications
-                    ) {
-                        SettingsSwitchRow(
-                            title = stringResource(R.string.notifications_header),
-                            description = stringResource(R.string.notifications_desc),
-                            checked = notificationsEnabled,
-                            onCheckedChange = onToggleNotifications
-                        )
+            SettingsSection(title = stringResource(R.string.notifications_header)) {
+                SettingsGroup {
+                    SettingsSwitchItem(
+                        title = stringResource(R.string.notifications_header),
+                        subtitle = stringResource(R.string.notifications_desc),
+                        icon = Icons.Rounded.Notifications,
+                        checked = notificationsEnabled,
+                        onCheckedChange = onToggleNotifications,
+                    )
 
-                        if (notificationsEnabled) {
-                            SettingsSwitchRow(
-                                title = stringResource(R.string.notifications_persistent_header),
-                                description = stringResource(R.string.notifications_persistent_desc),
-                                checked = persistentNotifications,
-                                onCheckedChange = onTogglePersistent
-                            )
-                        }
+                    FoldingVisibility(visible = notificationsEnabled) {
+                        SettingsSwitchItem(
+                            title = stringResource(R.string.notifications_persistent_header),
+                            subtitle = stringResource(R.string.notifications_persistent_desc),
+                            icon = Icons.Rounded.NotificationsActive,
+                            checked = persistentNotifications,
+                            onCheckedChange = onTogglePersistent,
+                        )
                     }
                 }
+            }
 
-                if (notificationsEnabled) {
-                    item(span = { GridItemSpan(maxLineSpan) }) {
-                        InfoCard(
-                            title = stringResource(R.string.notifications_persistent_info_title),
-                            description = stringResource(R.string.notifications_persistent_info_desc),
-                            modifier = Modifier
+            FoldingVisibility(visible = notificationsEnabled) {
+                SettingsNotice(
+                    title = stringResource(R.string.notifications_persistent_info_title),
+                    message = stringResource(R.string.notifications_persistent_info_desc),
+                    icon = Icons.Rounded.Info,
+                    tone = SettingsSemanticTone.Neutral,
+                )
+            }
+
+            FoldingVisibility(visible = notificationsEnabled) {
+                SettingsSection(
+                    title = stringResource(R.string.notifications_planned_header),
+                    actionContent = {
+                        SettingsHeaderActionButton(
+                            icon = Icons.Rounded.Add,
+                            contentDescription = stringResource(R.string.notifications_add_rule),
+                            onClick = { state.openAddDialog() },
+                            active = true,
                         )
-                    }
-
-                    if (rules.isEmpty()) {
-                        item(span = { GridItemSpan(maxLineSpan) }) {
-                            // Header with add-rule action via actionContent slot
-                            SettingsMenuSectionCard(
-                                sectionTitle = stringResource(R.string.notifications_planned_header),
-                                sectionIcon = Icons.Default.Notifications,
-                                actionContent = {
-                                    IconButton(onClick = { state.openAddDialog() }) {
-                                        Icon(
-                                            Icons.Default.Add,
-                                            contentDescription = stringResource(R.string.notifications_add_rule)
-                                        )
-                                    }
-                                }
-                            ) {
+                    },
+                ) {
+                    SettingsGroup {
+                        if (rules.isEmpty()) {
+                            SettingsItemCard(onClick = null) {
                                 Box(
                                     modifier = Modifier
                                         .fillMaxWidth()
-                                        .padding(SpacingExtraLarge),
-                                    contentAlignment = Alignment.Center
+                                        .padding(vertical = SpacingNormal),
+                                    contentAlignment = Alignment.Center,
                                 ) {
                                     Text(
-                                        stringResource(R.string.notifications_empty),
+                                        text = stringResource(R.string.notifications_empty),
                                         style = MaterialTheme.typography.bodyMedium,
-                                        color = MaterialTheme.colorScheme.outline
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                        textAlign = TextAlign.Center,
                                     )
                                 }
                             }
-                        }
-                    } else {
-                        item(span = { GridItemSpan(maxLineSpan) }) {
-                            // Header with add-rule action via actionContent slot
-                            SettingsMenuSectionCard(
-                                sectionTitle = stringResource(R.string.notifications_planned_header),
-                                sectionIcon = Icons.Default.Notifications,
-                                actionContent = {
-                                    IconButton(onClick = { state.openAddDialog() }) {
-                                        Icon(
-                                            Icons.Default.Add,
-                                            contentDescription = stringResource(R.string.notifications_add_rule)
-                                        )
-                                    }
-                                }
-                            ) {
-                                rules.forEach { rule ->
-                                    NotificationRuleItem(
-                                        rule = rule,
-                                        onEditRule = { state.openEditDialog(it) },
-                                        onDeleteRule = onDeleteRule,
-                                    )
-                                }
+                        } else {
+                            rules.forEach { rule ->
+                                NotificationRuleItem(
+                                    rule = rule,
+                                    onEditRule = { state.openEditDialog(it) },
+                                    onDeleteRule = onDeleteRule,
+                                )
                             }
                         }
                     }
@@ -394,37 +366,6 @@ internal fun NotificationSettingsContent(
     }
 }
 
-@Composable
-private fun PermissionRequestState(
-    modifier: Modifier = Modifier,
-    onRequestPermission: () -> Unit,
-) {
-    Column(
-        modifier = modifier
-            .fillMaxSize()
-            .padding(SpacingExtraLarge),
-        verticalArrangement = Arrangement.Center,
-        horizontalAlignment = Alignment.CenterHorizontally,
-    ) {
-        Icon(
-            imageVector = Icons.Default.NotificationsOff,
-            contentDescription = null,
-            modifier = Modifier.size(IconSizeExtraLarge),
-            tint = MaterialTheme.colorScheme.primary.copy(alpha = AlphaSurfaceContainerHigh),
-        )
-        Spacer(modifier = Modifier.height(SpacingNormal))
-        Text(
-            text = stringResource(R.string.notifications_permission_missing_desc),
-            textAlign = TextAlign.Center,
-            style = MaterialTheme.typography.bodyLarge,
-        )
-        Spacer(modifier = Modifier.height(SpacingLarge))
-        Button(onClick = onRequestPermission) {
-            Text(stringResource(R.string.notifications_permission_btn))
-        }
-    }
-}
-
 @Preview(showBackground = true)
 @Composable
 private fun NotificationSettingsPreview() {
@@ -448,4 +389,3 @@ private fun NotificationSettingsPreview() {
         )
     }
 }
-

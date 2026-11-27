@@ -20,6 +20,7 @@ val CornerRadiusExtraSmall = 4.dp
 val CornerRadiusSmall = 8.dp
 val CornerRadiusMedium = 12.dp
 val CornerRadiusLarge = 16.dp
+val CornerRadiusLargeIncreased = 20.dp
 val CornerRadiusExtraLarge = 28.dp
 
 /**
@@ -177,6 +178,42 @@ const val AlphaGlassCardShadow = 0.40f
 const val AlphaGlassCardUnselected = 0.55f
 const val AlphaGlassCardBorderNeutral = 0.40f
 const val AlphaGlassCardBorderTinted = 0.25f
+
+/**
+ * Shared tokens for the Morphe-style expressive Settings UI system.
+ */
+val SettingsSegmentGap = 2.dp
+val SettingsSegmentBlockGap = 16.dp
+val SettingsContentMaxWidth = 560.dp
+val SettingsHeaderControlSize = 40.dp
+val SettingsOptionCardHeightCompact = 64.dp
+val SettingsOptionIconSizeCompact = 22.dp
+val SettingsSwatchSize = 48.dp
+val SettingsEmptyStateIconSize = 56.dp
+val SettingsAboutLogoSize = 72.dp
+val SettingsEdgeFadeWidth = 24.dp
+val SettingsNoticeActionMinHeight = 44.dp
+val SettingsCardElevationLow = 1.dp
+
+const val SettingsAnimDurationMs = 220
+const val SettingsAnimDurationShortMs = 180
+const val SettingsPressedCornerScale = 0.5f
+const val SettingsPressedWidthRatio = 0.15f
+const val SettingsMorphFadeFraction = 0.25f
+
+const val AlphaSettingsHeaderControlActive = 0.45f
+const val AlphaSettingsHeaderControlIdle = 0.18f
+const val AlphaSettingsSelectionUnselectedDark = 0.35f
+const val AlphaSettingsSelectionUnselectedLight = 0.60f
+const val AlphaSettingsSelectionBorderDark = 0.55f
+const val AlphaSettingsSelectionBorderLight = 0.45f
+const val AlphaSettingsOutlineMuted = 0.50f
+const val AlphaSettingsNoticeDivider = 0.20f
+const val AlphaSettingsEmptyIcon = 0.50f
+const val AlphaSettingsSubtitleMuted = 0.70f
+const val AlphaSettingsInfoStatContainer = 0.30f
+const val AlphaSettingsSwatchUnselected = 0.40f
+
 
 
 

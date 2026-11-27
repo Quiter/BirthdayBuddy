@@ -1,24 +1,41 @@
 package com.heckmannch.birthdaybuddy.ui.components.settings
 
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.NavigateNext
+import androidx.compose.material.icons.automirrored.rounded.KeyboardArrowRight
+import androidx.compose.material.icons.rounded.Check
+import androidx.compose.material.icons.rounded.Close
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Switch
+import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
@@ -28,11 +45,33 @@ import com.heckmannch.birthdaybuddy.ui.components.cards.GlassCardExpandButton
 import com.heckmannch.birthdaybuddy.ui.components.cards.GlassCardLayout
 import com.heckmannch.birthdaybuddy.ui.components.cards.GlassCardScope
 import com.heckmannch.birthdaybuddy.ui.components.cards.GlassCardStyle
+import com.heckmannch.birthdaybuddy.ui.theme.AlphaEmphasisDisabled
+import com.heckmannch.birthdaybuddy.ui.theme.AlphaEmphasisHigh
+import com.heckmannch.birthdaybuddy.ui.theme.AlphaSettingsOutlineMuted
+import com.heckmannch.birthdaybuddy.ui.theme.AlphaSettingsSubtitleMuted
+import com.heckmannch.birthdaybuddy.ui.theme.BorderWidthThin
+import com.heckmannch.birthdaybuddy.ui.theme.CornerRadiusLargeIncreased
 import com.heckmannch.birthdaybuddy.ui.theme.IconSizeNormal
+import com.heckmannch.birthdaybuddy.ui.theme.SettingsCardElevationLow
 import com.heckmannch.birthdaybuddy.ui.theme.SpacingExtraSmall
+import com.heckmannch.birthdaybuddy.ui.theme.SpacingMedium
 import com.heckmannch.birthdaybuddy.ui.theme.SpacingNormal
 import com.heckmannch.birthdaybuddy.ui.theme.SpacingTiny
 import com.heckmannch.birthdaybuddy.ui.theme.defaultCardGradient
+
+/**
+ * Resolves the surface fill color for settings cards with crisp contrast across
+ * Light, Dark, and AMOLED Black themes.
+ */
+@Composable
+fun cardFill(): Color {
+    val colorScheme = MaterialTheme.colorScheme
+    return if (colorScheme.isDarkSurface()) {
+        colorScheme.surfaceContainer
+    } else {
+        colorScheme.surfaceContainerLowest
+    }
+}
 
 /**
  * Reusable icon component with standard settings styling.
@@ -43,18 +82,208 @@ fun ThemedIcon(
     modifier: Modifier = Modifier,
     size: Dp = IconSizeNormal,
     tint: Color = MaterialTheme.colorScheme.primary,
-    contentDescription: String? = null
+    contentDescription: String? = null,
 ) {
     Icon(
         imageVector = icon,
         contentDescription = contentDescription,
         tint = tint,
-        modifier = modifier.size(size)
+        modifier = modifier.size(size),
     )
 }
 
 /**
- * Row with icon, title, description, and trailing content.
+ * Forward chevron icon pointing towards subpages or details.
+ */
+@Composable
+fun ForwardChevronIcon(
+    modifier: Modifier = Modifier,
+    size: Dp = IconSizeNormal,
+    tint: Color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = AlphaSettingsSubtitleMuted),
+) {
+    ThemedIcon(
+        icon = Icons.AutoMirrored.Rounded.KeyboardArrowRight,
+        modifier = modifier,
+        size = size,
+        tint = tint,
+    )
+}
+
+/**
+ * Expressive Material 3 toggle switch displaying a checkmark when enabled and a close mark
+ * when disabled inside the thumb.
+ */
+@Composable
+fun ToggleSwitch(
+    checked: Boolean,
+    onCheckedChange: ((Boolean) -> Unit)?,
+    modifier: Modifier = Modifier,
+    enabled: Boolean = true,
+) {
+    val colorScheme = MaterialTheme.colorScheme
+    Switch(
+        checked = checked,
+        onCheckedChange = onCheckedChange,
+        modifier = modifier,
+        enabled = enabled,
+        thumbContent = {
+            Icon(
+                imageVector = if (checked) Icons.Rounded.Check else Icons.Rounded.Close,
+                contentDescription = null,
+                tint = when {
+                    !enabled -> colorScheme.onSurface.copy(alpha = AlphaEmphasisDisabled)
+                    checked -> colorScheme.primary
+                    else -> colorScheme.surfaceContainerHighest
+                },
+                modifier = Modifier.size(SwitchDefaults.IconSize),
+            )
+        },
+    )
+}
+
+/**
+ * Segmented surface card that automatically connects its corners with sibling cards inside a
+ * [SettingsGroup] (or an explicit [ListSegment]) and responds to presses with corner morphing.
+ */
+@Composable
+fun SurfaceCard(
+    modifier: Modifier = Modifier,
+    onClick: (() -> Unit)? = null,
+    enabled: Boolean = true,
+    segment: ListSegment? = null,
+    containerColor: Color = cardFill(),
+    contentPadding: PaddingValues = PaddingValues(horizontal = SpacingNormal, vertical = SpacingMedium),
+    content: @Composable () -> Unit,
+) {
+    val corners = rememberSegmentCorners(segment)
+    val interactionSource = remember { MutableInteractionSource() }
+    val shape = if (onClick != null) {
+        rememberPressShape(base = corners, interactionSource = interactionSource)
+    } else {
+        animateCornersAsState(corners)
+    }
+    val borderColor = MaterialTheme.colorScheme.outlineVariant.copy(alpha = AlphaSettingsOutlineMuted)
+
+    val interactiveModifier = if (onClick != null) {
+        Modifier.shapedClickable(
+            shape = shape,
+            interactionSource = interactionSource,
+            enabled = enabled,
+            onClick = onClick,
+        )
+    } else {
+        Modifier
+    }
+
+    Box(
+        modifier = modifier
+            .fillMaxWidth()
+            .alpha(if (enabled) AlphaEmphasisHigh else AlphaEmphasisDisabled)
+            .background(containerColor, shape)
+            .border(BorderStroke(BorderWidthThin, borderColor), shape)
+            .then(interactiveModifier)
+            .padding(contentPadding),
+    ) {
+        content()
+    }
+}
+
+/**
+ * Segmented toggleable surface card used by [SettingsSwitchItem] so the entire card participates
+ * in press corner morphing, ripple feedback, and accessible toggle semantics.
+ */
+@Composable
+private fun ToggleableSurfaceCard(
+    checked: Boolean,
+    onCheckedChange: (Boolean) -> Unit,
+    modifier: Modifier = Modifier,
+    enabled: Boolean = true,
+    segment: ListSegment? = null,
+    containerColor: Color = cardFill(),
+    contentPadding: PaddingValues = PaddingValues(horizontal = SpacingNormal, vertical = SpacingMedium),
+    content: @Composable () -> Unit,
+) {
+    val corners = rememberSegmentCorners(segment)
+    val interactionSource = remember { MutableInteractionSource() }
+    val shape = rememberPressShape(base = corners, interactionSource = interactionSource)
+    val borderColor = MaterialTheme.colorScheme.outlineVariant.copy(alpha = AlphaSettingsOutlineMuted)
+    val stateDesc = stringResource(
+        if (checked) R.string.settings_state_enabled else R.string.settings_state_disabled
+    )
+
+    Box(
+        modifier = modifier
+            .fillMaxWidth()
+            .alpha(if (enabled) AlphaEmphasisHigh else AlphaEmphasisDisabled)
+            .background(containerColor, shape)
+            .border(BorderStroke(BorderWidthThin, borderColor), shape)
+            .shapedToggleable(
+                value = checked,
+                shape = shape,
+                interactionSource = interactionSource,
+                enabled = enabled,
+                role = Role.Switch,
+                onValueChange = onCheckedChange,
+            )
+            .semantics { stateDescription = stateDesc }
+            .padding(contentPadding),
+    ) {
+        content()
+    }
+}
+
+/**
+ * General-purpose segmented card for arbitrary custom content inside a [SettingsGroup].
+ */
+@Composable
+fun SettingsItemCard(
+    modifier: Modifier = Modifier,
+    onClick: (() -> Unit)? = null,
+    enabled: Boolean = true,
+    segment: ListSegment? = null,
+    contentPadding: PaddingValues = PaddingValues(horizontal = SpacingNormal, vertical = SpacingNormal),
+    content: @Composable () -> Unit,
+) {
+    SurfaceCard(
+        modifier = modifier,
+        onClick = onClick,
+        enabled = enabled,
+        segment = segment,
+        contentPadding = contentPadding,
+        content = content,
+    )
+}
+
+/**
+ * Standalone rounded container card for hero headers, selectors, and instructional blocks.
+ */
+@Composable
+fun SectionCard(
+    modifier: Modifier = Modifier,
+    containerColor: Color = cardFill(),
+    contentPadding: PaddingValues = PaddingValues(SpacingNormal),
+    content: @Composable ColumnScope.() -> Unit,
+) {
+    val shape = RoundedCornerShape(CornerRadiusLargeIncreased)
+    val borderColor = MaterialTheme.colorScheme.outlineVariant.copy(alpha = AlphaSettingsOutlineMuted)
+    Surface(
+        modifier = modifier.fillMaxWidth(),
+        shape = shape,
+        color = containerColor,
+        tonalElevation = SettingsCardElevationLow,
+        border = BorderStroke(BorderWidthThin, borderColor),
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(contentPadding),
+            content = content,
+        )
+    }
+}
+
+/**
+ * Row with optional leading visual, title, description, and trailing content.
  */
 @Composable
 fun IconTextRow(
@@ -66,32 +295,32 @@ fun IconTextRow(
     titleWeight: FontWeight = FontWeight.Medium,
     titleColor: Color = MaterialTheme.colorScheme.onSurface,
     descriptionStyle: TextStyle = MaterialTheme.typography.bodyMedium,
-    descriptionColor: Color = MaterialTheme.colorScheme.onSurfaceVariant,
+    descriptionColor: Color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = AlphaSettingsSubtitleMuted),
     trailingContent: @Composable (() -> Unit)? = null,
-    spacing: Dp = SpacingNormal
+    spacing: Dp = SpacingNormal,
 ) {
     Row(
         modifier = modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.spacedBy(spacing),
-        verticalAlignment = Alignment.CenterVertically
+        verticalAlignment = Alignment.CenterVertically,
     ) {
         leadingContent?.invoke()
 
         Column(
             modifier = Modifier.weight(1f),
-            verticalArrangement = Arrangement.spacedBy(SpacingTiny)
+            verticalArrangement = Arrangement.spacedBy(SpacingTiny),
         ) {
             Text(
                 text = title,
                 style = titleStyle,
                 fontWeight = titleWeight,
-                color = titleColor
+                color = titleColor,
             )
             description?.let {
                 Text(
                     text = it,
                     style = descriptionStyle,
-                    color = descriptionColor
+                    color = descriptionColor,
                 )
             }
         }
@@ -101,79 +330,184 @@ fun IconTextRow(
 }
 
 /**
- * Forward chevron icon pointing towards subpages or details.
- */
-@Composable
-fun ForwardChevronIcon(
-    modifier: Modifier = Modifier,
-    size: Dp = IconSizeNormal,
-    tint: Color = MaterialTheme.colorScheme.primary
-) {
-    ThemedIcon(
-        icon = Icons.AutoMirrored.Filled.NavigateNext,
-        modifier = modifier,
-        size = size,
-        tint = tint
-    )
-}
-
-@Composable
-private fun GlassCardScope.SettingsTitleContent(
-    title: String,
-    subtitle: String?
-) {
-    Column(
-        modifier = with(row) { Modifier.weight(1f) },
-        verticalArrangement = Arrangement.spacedBy(style.textSpacing)
-    ) {
-        Text(
-            text = title,
-            style = style.titleStyle,
-            color = style.titleColor
-        )
-        subtitle?.let {
-            Text(
-                text = it,
-                style = style.subtitleStyle,
-                color = style.subtitleColor
-            )
-        }
-    }
-}
-
-/**
- * Standard settings item card built on the central [GlassCardLayout].
- * Supports click-to-navigate to a settings detail sub-screen or action.
+ * Standard expressive segmented settings row. Automatically registers with [LocalSettingsSearch]
+ * and connects with sibling rows inside a [SettingsGroup].
  */
 @Composable
 fun SettingsItem(
-    onClick: () -> Unit,
+    onClick: (() -> Unit)?,
     title: String,
     modifier: Modifier = Modifier,
     icon: ImageVector? = null,
     leadingContent: @Composable (() -> Unit)? = null,
     subtitle: String? = null,
     enabled: Boolean = true,
-    gradientColors: List<Color> = defaultCardGradient(),
+    segment: ListSegment? = null,
+    searchKeywords: List<String> = emptyList(),
     statusContent: @Composable (() -> Unit)? = null,
-    trailingContent: @Composable (() -> Unit)? = { ForwardChevronIcon() }
+    trailingContent: @Composable (() -> Unit)? = if (onClick != null) {
+        { ForwardChevronIcon() }
+    } else {
+        null
+    },
 ) {
-    GlassCardLayout(
-        modifier = modifier,
-        gradientColors = gradientColors,
-        onClick = onClick,
-        enabled = enabled,
-        trailing = statusContent?.let { content -> { content() } }
-            ?: trailingContent?.let { content -> { content() } }
-    ) {
-        leadingContent?.invoke() ?: icon?.let { ThemedIcon(icon = it) }
-        SettingsTitleContent(title = title, subtitle = subtitle)
+    val searchTerms = remember(title, subtitle, searchKeywords) {
+        buildList {
+            add(title)
+            if (subtitle != null) add(subtitle)
+            addAll(searchKeywords)
+        }.toTypedArray()
+    }
+
+    SearchableSetting(*searchTerms) {
+        SurfaceCard(
+            modifier = modifier,
+            onClick = onClick,
+            enabled = enabled,
+            segment = segment,
+        ) {
+            IconTextRow(
+                leadingContent = leadingContent ?: icon?.let { vector ->
+                    { ThemedIcon(icon = vector) }
+                },
+                title = title,
+                description = subtitle,
+                trailingContent = statusContent ?: trailingContent,
+            )
+        }
     }
 }
 
 /**
- * Expandable settings card built on the central [GlassCardLayout].
- * Enables inline expansion directly inside Settings screens alongside clickable detail cards.
+ * Expressive segmented switch row for boolean settings. Automatically registers with
+ * [LocalSettingsSearch] and connects with sibling rows inside a [SettingsGroup].
+ */
+@Composable
+fun SettingsSwitchItem(
+    title: String,
+    checked: Boolean,
+    onCheckedChange: (Boolean) -> Unit,
+    modifier: Modifier = Modifier,
+    subtitle: String? = null,
+    icon: ImageVector? = null,
+    leadingContent: @Composable (() -> Unit)? = null,
+    enabled: Boolean = true,
+    segment: ListSegment? = null,
+    searchKeywords: List<String> = emptyList(),
+) {
+    val searchTerms = remember(title, subtitle, searchKeywords) {
+        buildList {
+            add(title)
+            if (subtitle != null) add(subtitle)
+            addAll(searchKeywords)
+        }.toTypedArray()
+    }
+
+    SearchableSetting(*searchTerms) {
+        ToggleableSurfaceCard(
+            checked = checked,
+            onCheckedChange = onCheckedChange,
+            modifier = modifier,
+            enabled = enabled,
+            segment = segment,
+        ) {
+            IconTextRow(
+                leadingContent = leadingContent ?: icon?.let { vector ->
+                    { ThemedIcon(icon = vector) }
+                },
+                title = title,
+                description = subtitle,
+                trailingContent = {
+                    ToggleSwitch(
+                        checked = checked,
+                        onCheckedChange = null,
+                        enabled = enabled,
+                    )
+                },
+            )
+        }
+    }
+}
+
+/**
+ * Clickable settings row delegating to [SettingsItem] for subpage consistency.
+ */
+@Composable
+fun SettingsClickableRow(
+    title: String,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+    description: String? = null,
+    leadingIcon: @Composable (() -> Unit)? = null,
+    trailingContent: @Composable (() -> Unit)? = null,
+    enabled: Boolean = true,
+    segment: ListSegment? = null,
+) {
+    SettingsItem(
+        onClick = onClick,
+        title = title,
+        modifier = modifier,
+        leadingContent = leadingIcon,
+        subtitle = description,
+        enabled = enabled,
+        segment = segment,
+        trailingContent = trailingContent,
+    )
+}
+
+/**
+ * Settings switch row delegating to [SettingsSwitchItem] for subpage consistency.
+ */
+@Composable
+fun SettingsSwitchRow(
+    title: String,
+    checked: Boolean,
+    onCheckedChange: (Boolean) -> Unit,
+    modifier: Modifier = Modifier,
+    description: String? = null,
+    leadingIcon: @Composable (() -> Unit)? = null,
+    enabled: Boolean = true,
+    segment: ListSegment? = null,
+) {
+    SettingsSwitchItem(
+        title = title,
+        checked = checked,
+        onCheckedChange = onCheckedChange,
+        modifier = modifier,
+        subtitle = description,
+        leadingContent = leadingIcon,
+        enabled = enabled,
+        segment = segment,
+    )
+}
+
+@Composable
+private fun GlassCardScope.SettingsTitleContent(
+    title: String,
+    subtitle: String?,
+) {
+    Column(
+        modifier = with(row) { Modifier.weight(1f) },
+        verticalArrangement = Arrangement.spacedBy(style.textSpacing),
+    ) {
+        Text(
+            text = title,
+            style = style.titleStyle,
+            color = style.titleColor,
+        )
+        subtitle?.let {
+            Text(
+                text = it,
+                style = style.subtitleStyle,
+                color = style.subtitleColor,
+            )
+        }
+    }
+}
+
+/**
+ * Expandable settings card built on [GlassCardLayout]. Retained for reusable expandable cards
+ * and glass-card UI tests.
  */
 @Composable
 fun SettingsExpandableCard(
@@ -186,7 +520,7 @@ fun SettingsExpandableCard(
     leadingContent: @Composable (() -> Unit)? = null,
     enabled: Boolean = true,
     gradientColors: List<Color> = defaultCardGradient(),
-    expandedContent: @Composable ColumnScope.(GlassCardStyle) -> Unit
+    expandedContent: @Composable ColumnScope.(GlassCardStyle) -> Unit,
 ) {
     GlassCardLayout(
         modifier = modifier,
@@ -201,71 +535,13 @@ fun SettingsExpandableCard(
                 style = style,
                 contentDescription = stringResource(
                     if (expanded) R.string.labels_collapse_card else R.string.labels_expand_card
-                )
+                ),
             )
         },
-        expandedContent = expandedContent
+        expandedContent = expandedContent,
     ) {
         leadingContent?.invoke() ?: icon?.let { ThemedIcon(icon = it) }
         SettingsTitleContent(title = title, subtitle = subtitle)
-    }
-}
-
-/**
- * Clickable settings row card for detail screens built on [GlassCardLayout].
- */
-@Composable
-fun SettingsClickableRow(
-    title: String,
-    onClick: () -> Unit,
-    modifier: Modifier = Modifier,
-    description: String? = null,
-    leadingIcon: @Composable (() -> Unit)? = null,
-    trailingContent: @Composable (() -> Unit)? = null,
-    enabled: Boolean = true,
-    gradientColors: List<Color> = defaultCardGradient()
-) {
-    GlassCardLayout(
-        modifier = modifier,
-        gradientColors = gradientColors,
-        onClick = onClick,
-        enabled = enabled,
-        trailing = trailingContent?.let { content -> { content() } }
-    ) {
-        leadingIcon?.invoke()
-        SettingsTitleContent(title = title, subtitle = description)
-    }
-}
-
-/**
- * Settings switch row card for detail screens built on [GlassCardLayout].
- */
-@Composable
-fun SettingsSwitchRow(
-    title: String,
-    checked: Boolean,
-    onCheckedChange: (Boolean) -> Unit,
-    modifier: Modifier = Modifier,
-    description: String? = null,
-    leadingIcon: @Composable (() -> Unit)? = null,
-    enabled: Boolean = true,
-    gradientColors: List<Color> = defaultCardGradient()
-) {
-    GlassCardLayout(
-        modifier = modifier,
-        gradientColors = gradientColors,
-        onClick = { onCheckedChange(!checked) },
-        enabled = enabled,
-        trailing = {
-            AppSwitch(
-                checked = checked,
-                onCheckedChange = null,
-                enabled = enabled
-            )
-        }
-    ) {
-        leadingIcon?.invoke()
-        SettingsTitleContent(title = title, subtitle = description)
     }
 }
 
@@ -281,7 +557,7 @@ fun SettingsInlineSwitchRow(
     cardStyle: GlassCardStyle,
     modifier: Modifier = Modifier,
     description: String? = null,
-    enabled: Boolean = true
+    enabled: Boolean = true,
 ) {
     IconTextRow(
         modifier = modifier
@@ -299,8 +575,8 @@ fun SettingsInlineSwitchRow(
             AppSwitch(
                 checked = checked,
                 onCheckedChange = null,
-                enabled = enabled
+                enabled = enabled,
             )
-        }
+        },
     )
 }

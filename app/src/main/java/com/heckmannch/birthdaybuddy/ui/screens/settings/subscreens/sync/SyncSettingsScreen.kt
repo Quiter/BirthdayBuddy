@@ -5,14 +5,11 @@ import android.content.pm.PackageManager
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.VisibleForTesting
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Refresh
-import androidx.compose.material3.Icon
-import androidx.compose.material3.LinearProgressIndicator
+import androidx.compose.material.icons.rounded.Info
+import androidx.compose.material.icons.rounded.Sync
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
@@ -27,14 +24,19 @@ import androidx.core.content.ContextCompat
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.heckmannch.birthdaybuddy.R
-import com.heckmannch.birthdaybuddy.ui.components.cards.InfoCard
-import com.heckmannch.birthdaybuddy.ui.components.layout.withSettingsInsets
-import com.heckmannch.birthdaybuddy.ui.components.settings.SettingsClickableRow
-import com.heckmannch.birthdaybuddy.ui.components.settings.SettingsDetailScaffold
-import com.heckmannch.birthdaybuddy.ui.screens.settings.components.SettingsMenuSectionCard
+import com.heckmannch.birthdaybuddy.ui.components.settings.SettingsGroup
+import com.heckmannch.birthdaybuddy.ui.components.settings.SettingsItem
+import com.heckmannch.birthdaybuddy.ui.components.settings.SettingsNotice
+import com.heckmannch.birthdaybuddy.ui.components.settings.SettingsSection
+import com.heckmannch.birthdaybuddy.ui.components.settings.SettingsSemanticTone
+import com.heckmannch.birthdaybuddy.ui.components.settings.SettingsSubpageScaffold
 import com.heckmannch.birthdaybuddy.ui.theme.BirthdayBuddyTheme
-import com.heckmannch.birthdaybuddy.ui.theme.SpacingNormal
+import com.heckmannch.birthdaybuddy.ui.theme.BorderWidthThick
+import com.heckmannch.birthdaybuddy.ui.theme.IconSizeMedium
 
+/**
+ * Entry point for the Contact Synchronization settings subpage.
+ */
 @Composable
 fun SyncSettingsScreen(
     viewModel: SyncViewModel = hiltViewModel(),
@@ -91,6 +93,9 @@ fun SyncSettingsScreen(
     )
 }
 
+/**
+ * Stateless UI content for Contact Synchronization settings in Morphe expressive style.
+ */
 @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
 @Composable
 internal fun SyncSettingsScreenContent(
@@ -100,49 +105,40 @@ internal fun SyncSettingsScreenContent(
     showBackButton: Boolean = true,
     onNavigateBack: () -> Unit = {},
 ) {
-    SettingsDetailScaffold(
+    SettingsSubpageScaffold(
         title = stringResource(R.string.settings_sync_title),
         showBackButton = showBackButton,
         onNavigateBack = onNavigateBack,
-        snackbarHost = { SnackbarHost(hostState = snackbarHostState) }
-    ) { paddingValues ->
-        LazyColumn(
-            modifier = Modifier.fillMaxSize(),
-            contentPadding = paddingValues.withSettingsInsets(),
-            verticalArrangement = Arrangement.spacedBy(SpacingNormal)
-        ) {
-            item {
-                SettingsMenuSectionCard(
-                    sectionTitle = stringResource(R.string.settings_sync_title),
-                    sectionIcon = Icons.Default.Refresh
-                ) {
-                    if (uiState.isSyncing) {
-                        LinearProgressIndicator(
-                            modifier = Modifier.fillMaxWidth()
-                        )
-                    }
-                    SettingsClickableRow(
-                        title = stringResource(R.string.sync_button_title),
-                        description = stringResource(R.string.sync_button_desc),
-                        onClick = onSyncClick,
-                        enabled = !uiState.isSyncing,
-                        leadingIcon = {
-                            Icon(
-                                imageVector = Icons.Default.Refresh,
-                                contentDescription = null
+        snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
+    ) {
+        SettingsSection(title = stringResource(R.string.settings_sync_title)) {
+            SettingsGroup {
+                SettingsItem(
+                    onClick = onSyncClick,
+                    title = stringResource(R.string.sync_button_title),
+                    subtitle = stringResource(R.string.sync_button_desc),
+                    icon = Icons.Rounded.Sync,
+                    enabled = !uiState.isSyncing,
+                    statusContent = if (uiState.isSyncing) {
+                        {
+                            CircularProgressIndicator(
+                                modifier = Modifier.size(IconSizeMedium),
+                                strokeWidth = BorderWidthThick,
                             )
                         }
-                    )
-                }
-            }
-
-            item {
-                InfoCard(
-                    title = stringResource(R.string.sync_explanation_title),
-                    description = stringResource(R.string.sync_explanation_desc)
+                    } else {
+                        null
+                    },
                 )
             }
         }
+
+        SettingsNotice(
+            title = stringResource(R.string.sync_explanation_title),
+            message = stringResource(R.string.sync_explanation_desc),
+            icon = Icons.Rounded.Info,
+            tone = SettingsSemanticTone.Neutral,
+        )
     }
 }
 
@@ -155,11 +151,7 @@ private fun SyncSettingsPreview() {
             snackbarHostState = remember { SnackbarHostState() },
             onSyncClick = {},
             showBackButton = true,
-            onNavigateBack = {}
+            onNavigateBack = {},
         )
     }
 }
-
-
-
-

@@ -5,15 +5,13 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.VisibleForTesting
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.DateRange
-import androidx.compose.material3.Icon
+import androidx.compose.material.icons.rounded.CalendarMonth
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -29,19 +27,24 @@ import androidx.lifecycle.compose.LifecycleEventEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.heckmannch.birthdaybuddy.R
 import com.heckmannch.birthdaybuddy.domain.repository.CalendarSyncRepository
-import com.heckmannch.birthdaybuddy.ui.components.cards.InfoCard
 import com.heckmannch.birthdaybuddy.ui.components.colorpicker.ColorPickerDialog
-import com.heckmannch.birthdaybuddy.ui.components.layout.withSettingsInsets
-import com.heckmannch.birthdaybuddy.ui.components.settings.SettingsClickableRow
-import com.heckmannch.birthdaybuddy.ui.components.settings.SettingsDetailScaffold
-import com.heckmannch.birthdaybuddy.ui.components.settings.SettingsSwitchRow
-import com.heckmannch.birthdaybuddy.ui.screens.settings.components.SettingsMenuSectionCard
+import com.heckmannch.birthdaybuddy.ui.components.settings.FoldingVisibility
+import com.heckmannch.birthdaybuddy.ui.components.settings.SettingsFooter
+import com.heckmannch.birthdaybuddy.ui.components.settings.SettingsGroup
+import com.heckmannch.birthdaybuddy.ui.components.settings.SettingsItem
+import com.heckmannch.birthdaybuddy.ui.components.settings.SettingsSection
+import com.heckmannch.birthdaybuddy.ui.components.settings.SettingsSubpageScaffold
+import com.heckmannch.birthdaybuddy.ui.components.settings.SettingsSwitchItem
 import com.heckmannch.birthdaybuddy.ui.screens.settings.subscreens.calendar.components.SetupStepsCard
+import com.heckmannch.birthdaybuddy.ui.theme.AlphaSettingsOutlineMuted
 import com.heckmannch.birthdaybuddy.ui.theme.BirthdayBuddyTheme
+import com.heckmannch.birthdaybuddy.ui.theme.BorderWidthThin
 import com.heckmannch.birthdaybuddy.ui.theme.CalendarPresetColors
-import com.heckmannch.birthdaybuddy.ui.theme.IconSizeLarge
-import com.heckmannch.birthdaybuddy.ui.theme.SpacingNormal
+import com.heckmannch.birthdaybuddy.ui.theme.IconSizeNormal
 
+/**
+ * Entry point for the Calendar Synchronization settings subpage.
+ */
 @Composable
 fun CalendarSettingsScreen(
     viewModel: CalendarViewModel,
@@ -57,22 +60,16 @@ fun CalendarSettingsScreen(
     val hasPermission = uiState.hasCalendarPermission
 
     var activeColorPickerType by remember {
-        mutableStateOf<CalendarSyncRepository.CalendarType?>(
-            null
-        )
+        mutableStateOf<CalendarSyncRepository.CalendarType?>(null)
     }
     var activeColorPickerInitialColor by remember { mutableStateOf(Color.Unspecified) }
 
     val permissionLauncher = rememberLauncherForActivityResult(
-        ActivityResultContracts.RequestMultiplePermissions()
+        ActivityResultContracts.RequestMultiplePermissions(),
     ) { permissions ->
         val granted = permissions[Manifest.permission.READ_CALENDAR] == true &&
-                permissions[Manifest.permission.WRITE_CALENDAR] == true
-        if (granted) {
-            viewModel.onIntent(CalendarIntent.SetCalendarSyncEnabled(true))
-        } else {
-            viewModel.onIntent(CalendarIntent.SetCalendarSyncEnabled(false))
-        }
+            permissions[Manifest.permission.WRITE_CALENDAR] == true
+        viewModel.onIntent(CalendarIntent.SetCalendarSyncEnabled(granted))
         viewModel.onIntent(CalendarIntent.CheckPermissionStatus)
     }
 
@@ -88,7 +85,7 @@ fun CalendarSettingsScreen(
                 permissionLauncher.launch(
                     arrayOf(
                         Manifest.permission.READ_CALENDAR,
-                        Manifest.permission.WRITE_CALENDAR
+                        Manifest.permission.WRITE_CALENDAR,
                     )
                 )
             }
@@ -114,11 +111,11 @@ fun CalendarSettingsScreen(
             permissionLauncher.launch(
                 arrayOf(
                     Manifest.permission.READ_CALENDAR,
-                    Manifest.permission.WRITE_CALENDAR
+                    Manifest.permission.WRITE_CALENDAR,
                 )
             )
         },
-        onNavigateBack = onNavigateBack
+        onNavigateBack = onNavigateBack,
     )
 
     activeColorPickerType?.let { type ->
@@ -131,11 +128,14 @@ fun CalendarSettingsScreen(
                 viewModel.onIntent(CalendarIntent.UpdateCalendarColor(type, selectedColor.toArgb()))
                 activeColorPickerType = null
             },
-            presets = presets
+            presets = presets,
         )
     }
 }
 
+/**
+ * Stateless UI content for Calendar Synchronization settings in Morphe expressive style.
+ */
 @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
 @Composable
 internal fun CalendarSettingsScreenContent(
@@ -151,125 +151,86 @@ internal fun CalendarSettingsScreenContent(
     onRequestPermission: () -> Unit = {},
     onNavigateBack: () -> Unit = {},
 ) {
-    SettingsDetailScaffold(
+    SettingsSubpageScaffold(
         title = stringResource(R.string.settings_calendar_title),
         showBackButton = showBackButton,
-        onNavigateBack = onNavigateBack
-    ) { paddingValues ->
-        LazyColumn(
-            modifier = Modifier.fillMaxSize(),
-            contentPadding = paddingValues.withSettingsInsets(),
-            verticalArrangement = Arrangement.spacedBy(SpacingNormal)
-        ) {
-            item {
-                InfoCard(
-                    title = stringResource(R.string.calendar_settings_header),
-                    description = stringResource(R.string.calendar_settings_desc)
+        onNavigateBack = onNavigateBack,
+    ) {
+        SettingsSection(title = stringResource(R.string.calendar_settings_header)) {
+            SettingsGroup {
+                SettingsSwitchItem(
+                    title = stringResource(R.string.calendar_settings_enable),
+                    icon = Icons.Rounded.CalendarMonth,
+                    checked = calendarSyncEnabled,
+                    onCheckedChange = onToggleChange,
                 )
             }
+            SettingsFooter(text = stringResource(R.string.calendar_settings_desc))
+        }
 
-            item {
-                SettingsMenuSectionCard(
-                    sectionTitle = stringResource(R.string.settings_calendar_title),
-                    sectionIcon = Icons.Default.DateRange
-                ) {
-                    SettingsSwitchRow(
-                        title = stringResource(R.string.calendar_settings_enable),
-                        checked = calendarSyncEnabled,
-                        onCheckedChange = onToggleChange,
-                        leadingIcon = {
-                            Icon(
-                                imageVector = Icons.Default.DateRange,
-                                contentDescription = null
+        FoldingVisibility(visible = calendarSyncEnabled) {
+            SettingsSection(title = stringResource(R.string.calendar_colors_section_title)) {
+                SettingsGroup {
+                    SettingsItem(
+                        title = stringResource(R.string.calendar_color_birthdays),
+                        leadingContent = { CalendarColorDot(color = Color(birthdayColor)) },
+                        onClick = {
+                            onColorRowClick(
+                                CalendarSyncRepository.CalendarType.BIRTHDAY,
+                                Color(birthdayColor),
                             )
-                        }
+                        },
                     )
-                }
-            }
-
-            if (calendarSyncEnabled) {
-                item {
-                    SettingsMenuSectionCard(
-                        sectionTitle = stringResource(R.string.calendar_colors_section_title),
-                        sectionIcon = Icons.Default.DateRange
-                    ) {
-                        // NOTE FOR FUTURE LLMs/DEVELOPERS:
-                        // We intentionally use SettingsClickableRow instead of StepItem here.
-                        // While both show leading items (color circles/icons), color selections are independent,
-                        // non-sequential settings actions. StepItem is reserved for progressive setup steps
-                        // (as seen in SetupStepsCard below). Using SettingsClickableRow maintains structural semantic clarity.
-                        SettingsClickableRow(
-                            title = stringResource(R.string.calendar_color_birthdays),
-                            leadingIcon = {
-                                Box(
-                                    modifier = Modifier
-                                        .size(IconSizeLarge)
-                                        .background(
-                                            Color(birthdayColor),
-                                            shape = CircleShape
-                                        )
-                                )
-                            },
+                    FoldingVisibility(visible = otherEventsEnabled) {
+                        SettingsItem(
+                            title = stringResource(R.string.calendar_color_anniversaries),
+                            leadingContent = { CalendarColorDot(color = Color(anniversaryColor)) },
                             onClick = {
                                 onColorRowClick(
-                                    CalendarSyncRepository.CalendarType.BIRTHDAY,
-                                    Color(birthdayColor)
+                                    CalendarSyncRepository.CalendarType.ANNIVERSARY,
+                                    Color(anniversaryColor),
                                 )
-                            }
+                            },
                         )
-                        if (otherEventsEnabled) {
-                            SettingsClickableRow(
-                                title = stringResource(R.string.calendar_color_anniversaries),
-                                leadingIcon = {
-                                    Box(
-                                        modifier = Modifier
-                                            .size(IconSizeLarge)
-                                            .background(
-                                                Color(anniversaryColor),
-                                                shape = CircleShape
-                                            )
-                                    )
-                                },
-                                onClick = {
-                                    onColorRowClick(
-                                        CalendarSyncRepository.CalendarType.ANNIVERSARY,
-                                        Color(anniversaryColor)
-                                    )
-                                }
-                            )
-                            SettingsClickableRow(
-                                title = stringResource(R.string.calendar_color_namedays),
-                                leadingIcon = {
-                                    Box(
-                                        modifier = Modifier
-                                            .size(IconSizeLarge)
-                                            .background(
-                                                Color(nameDayColor),
-                                                shape = CircleShape
-                                            )
-                                    )
-                                },
-                                onClick = {
-                                    onColorRowClick(
-                                        CalendarSyncRepository.CalendarType.NAMEDAY,
-                                        Color(nameDayColor)
-                                    )
-                                }
-                            )
-                        }
+                    }
+                    FoldingVisibility(visible = otherEventsEnabled) {
+                        SettingsItem(
+                            title = stringResource(R.string.calendar_color_namedays),
+                            leadingContent = { CalendarColorDot(color = Color(nameDayColor)) },
+                            onClick = {
+                                onColorRowClick(
+                                    CalendarSyncRepository.CalendarType.NAMEDAY,
+                                    Color(nameDayColor),
+                                )
+                            },
+                        )
                     }
                 }
             }
+        }
 
-            item {
-                SetupStepsCard(
-                    hasPermission = hasPermission,
-                    calendarSyncEnabled = calendarSyncEnabled,
-                    onRequestPermission = onRequestPermission
-                )
-            }
+        SettingsSection(title = stringResource(R.string.calendar_guide_title)) {
+            SetupStepsCard(
+                hasPermission = hasPermission,
+                calendarSyncEnabled = calendarSyncEnabled,
+                onRequestPermission = onRequestPermission,
+            )
         }
     }
+}
+
+@Composable
+private fun CalendarColorDot(color: Color) {
+    Box(
+        modifier = Modifier
+            .size(IconSizeNormal)
+            .background(color = color, shape = CircleShape)
+            .border(
+                width = BorderWidthThin,
+                color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = AlphaSettingsOutlineMuted),
+                shape = CircleShape,
+            ),
+    )
 }
 
 @Preview(showBackground = true)
@@ -287,10 +248,7 @@ private fun CalendarSettingsPreview() {
             onToggleChange = {},
             onColorRowClick = { _, _ -> },
             onRequestPermission = {},
-            onNavigateBack = {}
+            onNavigateBack = {},
         )
     }
 }
-
-
-

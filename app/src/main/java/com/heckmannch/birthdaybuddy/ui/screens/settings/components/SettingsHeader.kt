@@ -1,26 +1,24 @@
 package com.heckmannch.birthdaybuddy.ui.screens.settings.components
 
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import com.heckmannch.birthdaybuddy.R
-import com.heckmannch.birthdaybuddy.ui.components.bars.AppTopHeader
+import com.heckmannch.birthdaybuddy.ui.components.settings.SettingsPageHeader
 import com.heckmannch.birthdaybuddy.ui.theme.BirthdayBuddyTheme
+import com.heckmannch.birthdaybuddy.ui.theme.SpacingMedium
+import com.heckmannch.birthdaybuddy.ui.theme.SpacingNormal
 
 /**
- * Top header component for settings screen and sub-screens, inheriting design elements from [AppTopHeader].
- *
- * Specific Settings screen customizations:
- * 1. Screen title.
- * 2. Back navigation button for sub-screens.
- * 3. Search action button disabled by default (`showSearchButton = false`).
+ * Top header component for the Settings screen and sub-screens, backed by the
+ * Morphe-style [SettingsPageHeader] while preserving test tags (`settings_back_button`,
+ * `open_search_button`, `close_search_button`, `search_field`).
  */
 @Composable
 internal fun SettingsHeader(
@@ -35,31 +33,24 @@ internal fun SettingsHeader(
     onNavigateBack: () -> Unit = {},
     showSearchButton: Boolean = false,
 ) {
-    val isSubscreen = LocalIsSubscreen.current || showBackButton
-    CompositionLocalProvider(LocalIsSubscreen provides isSubscreen) {
-        AppTopHeader(
+    Box(
+        modifier = modifier
+            .fillMaxWidth()
+            .statusBarsPadding()
+            .padding(horizontal = SpacingNormal, vertical = SpacingMedium),
+        contentAlignment = Alignment.Center,
+    ) {
+        SettingsPageHeader(
             title = title,
-            modifier = modifier,
+            showBackButton = showBackButton,
+            onNavigateBack = onNavigateBack,
+            showSearchButton = showSearchButton,
             isSearchActive = isSearchActive,
             searchQuery = searchQuery,
+            searchPlaceholder = stringResource(R.string.settings_search),
             onSearchQueryChange = onSearchQueryChange,
             onSearchActiveChange = onSearchActiveChange,
-            searchPlaceholder = stringResource(R.string.settings_search),
             onClearSearch = onClearSearch,
-            showSearchButton = showSearchButton,
-            navigationIcon = if (showBackButton) {
-                {
-                    IconButton(
-                        onClick = onNavigateBack,
-                        modifier = Modifier.testTag("settings_back_button"),
-                    ) {
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = stringResource(R.string.navigate_back),
-                        )
-                    }
-                }
-            } else null
         )
     }
 }

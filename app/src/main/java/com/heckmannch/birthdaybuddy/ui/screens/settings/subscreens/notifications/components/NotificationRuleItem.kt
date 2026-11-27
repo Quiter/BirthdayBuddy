@@ -1,24 +1,24 @@
 ﻿package com.heckmannch.birthdaybuddy.ui.screens.settings.subscreens.notifications.components
 
-import androidx.compose.foundation.clickable
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.icons.filled.Notifications
+import androidx.compose.material.icons.rounded.DeleteOutline
+import androidx.compose.material.icons.rounded.Schedule
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.ListItem
-import androidx.compose.material3.ListItemDefaults
-import androidx.compose.material3.Text
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import com.heckmannch.birthdaybuddy.R
 import com.heckmannch.birthdaybuddy.domain.model.NotificationRule
+import com.heckmannch.birthdaybuddy.ui.components.settings.SettingsGroup
+import com.heckmannch.birthdaybuddy.ui.components.settings.SettingsItem
 import com.heckmannch.birthdaybuddy.ui.theme.BirthdayBuddyTheme
 
+/**
+ * Expressive segmented card row representing a single scheduled [NotificationRule].
+ */
 @Composable
 fun NotificationRuleItem(
     rule: NotificationRule,
@@ -32,41 +32,33 @@ fun NotificationRuleItem(
         else -> pluralStringResource(R.plurals.rule_days_before, rule.daysBefore, rule.daysBefore)
     }
 
-    ListItem(
-        modifier = Modifier.clickable { onEditRule(rule) },
-        supportingContent = {
-            Text(stringResource(R.string.rule_time_format, rule.hour, rule.minute))
-        },
-        leadingContent = {
-            Icon(Icons.Default.Notifications, contentDescription = null)
-        },
+    SettingsItem(
+        onClick = { onEditRule(rule) },
+        title = daysStr,
+        subtitle = stringResource(R.string.rule_time_format, rule.hour, rule.minute),
+        icon = Icons.Rounded.Schedule,
         trailingContent = {
             IconButton(onClick = { onDeleteRule(rule) }) {
                 Icon(
-                    Icons.Default.Delete,
-                    contentDescription = stringResource(R.string.notifications_delete)
+                    imageVector = Icons.Rounded.DeleteOutline,
+                    contentDescription = stringResource(R.string.notifications_delete),
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             }
         },
-        colors = ListItemDefaults.colors(containerColor = Color.Transparent),
-    ) {
-        Text(daysStr)
-    }
+    )
 }
 
-@Preview
+@Preview(showBackground = true)
 @Composable
 private fun NotificationRuleItemPreview() {
     BirthdayBuddyTheme {
-        NotificationRuleItem(
-            rule = NotificationRule(
-                daysBefore = 1,
-                hour = 9,
-                minute = 0
-            ),
-            onEditRule = {},
-            onDeleteRule = {}
-        )
+        SettingsGroup {
+            NotificationRuleItem(
+                rule = NotificationRule(daysBefore = 1, hour = 9, minute = 0),
+                onEditRule = {},
+                onDeleteRule = {},
+            )
+        }
     }
 }
-

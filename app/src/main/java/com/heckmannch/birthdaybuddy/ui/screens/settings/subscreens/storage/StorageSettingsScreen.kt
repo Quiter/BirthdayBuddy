@@ -3,122 +3,142 @@
 import android.content.Intent
 import android.net.Uri
 import android.provider.Settings
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.icons.filled.Info
-import androidx.compose.material.icons.filled.Storage
+import androidx.compose.material.icons.automirrored.rounded.OpenInNew
+import androidx.compose.material.icons.rounded.Cached
+import androidx.compose.material.icons.rounded.DeleteOutline
+import androidx.compose.material.icons.rounded.Info
+import androidx.compose.material.icons.rounded.Storage
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.ui.Modifier
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import com.heckmannch.birthdaybuddy.R
-import com.heckmannch.birthdaybuddy.ui.components.layout.withSettingsInsets
-import com.heckmannch.birthdaybuddy.ui.components.settings.SettingsDetailScaffold
+import com.heckmannch.birthdaybuddy.ui.components.settings.InfoStatBox
+import com.heckmannch.birthdaybuddy.ui.components.settings.SettingsGroup
 import com.heckmannch.birthdaybuddy.ui.components.settings.SettingsItem
-import com.heckmannch.birthdaybuddy.ui.screens.settings.components.SettingsMenuSectionCard
+import com.heckmannch.birthdaybuddy.ui.components.settings.SettingsItemCard
+import com.heckmannch.birthdaybuddy.ui.components.settings.SettingsSection
+import com.heckmannch.birthdaybuddy.ui.components.settings.SettingsSubpageScaffold
+import com.heckmannch.birthdaybuddy.ui.components.settings.ThemedIcon
 import com.heckmannch.birthdaybuddy.ui.theme.BirthdayBuddyTheme
-import com.heckmannch.birthdaybuddy.ui.theme.SpacingNormal
+import com.heckmannch.birthdaybuddy.ui.theme.IconSizeMedium
+import kotlinx.coroutines.launch
 import java.io.File
 import java.util.Locale
 
+/**
+ * Expressive Storage Management settings subpage displaying total usage, breakdown,
+ * and live-refreshing cache cleanup.
+ */
 @Composable
 fun StorageSettingsScreen(
     showBackButton: Boolean = true,
-    onNavigateBack: () -> Unit
+    onNavigateBack: () -> Unit,
 ) {
     val context = LocalContext.current
-    val cacheSize = remember {
-        try {
-            val cacheDir = context.cacheDir
-            val size = getFolderSize(cacheDir)
-            formatBytes(size)
-        } catch (e: Exception) {
-            "0 B"
-        }
-    }
+    val snackbarHostState = remember { SnackbarHostState() }
+    val scope = rememberCoroutineScope()
+    val cacheClearedMessage = stringResource(R.string.settings_storage_cache_cleared)
+    var refreshTrigger by remember { mutableIntStateOf(0) }
 
-    val dbSize = remember {
-        try {
+    val cacheBytes = remember(refreshTrigger) {
+        runCatching { getFolderSize(context.cacheDir) }.getOrDefault(0L)
+    }
+    val dbBytes = remember(refreshTrigger) {
+        runCatching {
             val dbFile = context.getDatabasePath("settings_database")
-            if (dbFile.exists()) formatBytes(dbFile.length()) else "Unknown"
-        } catch (e: Exception) {
-            "Unknown"
-        }
+            if (dbFile.exists()) dbFile.length() else 0L
+        }.getOrDefault(0L)
     }
+    val totalSize = remember(cacheBytes, dbBytes) { formatBytes(cacheBytes + dbBytes) }
+    val cacheSize = remember(cacheBytes) { formatBytes(cacheBytes) }
+    val dbSize = remember(dbBytes) { formatBytes(dbBytes) }
 
-    SettingsDetailScaffold(
+    SettingsSubpageScaffold(
         title = stringResource(R.string.storage_management_title),
         showBackButton = showBackButton,
-        onNavigateBack = onNavigateBack
-    ) { paddingValues ->
-        LazyColumn(
-            modifier = Modifier.fillMaxSize(),
-            contentPadding = paddingValues.withSettingsInsets(),
-            verticalArrangement = Arrangement.spacedBy(SpacingNormal)
-        ) {
-            // Storage overview section
-            item {
-                SettingsMenuSectionCard(
-                    sectionTitle = stringResource(R.string.storage_overview_title),
-                    sectionIcon = Icons.Default.Storage
-                ) {
-                    SettingsItem(
-                        onClick = {},
-                        title = stringResource(R.string.storage_database_size),
-                        subtitle = dbSize,
-                        icon = Icons.Default.Info,
-                        trailingContent = null
-                    )
-                    SettingsItem(
-                        onClick = {},
-                        title = stringResource(R.string.storage_cache_size),
-                        subtitle = cacheSize,
-                        icon = Icons.Default.Storage,
-                        trailingContent = null
-                    )
-                }
+        onNavigateBack = onNavigateBack,
+        snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
+    ) {
+        SettingsGroup {
+            SettingsItemCard(onClick = null) {
+                InfoStatBox(
+                    label = stringResource(R.string.settings_storage_total),
+                    value = totalSize,
+                    icon = Icons.Rounded.Storage,
+                )
             }
+        }
 
-            // Storage actions section
-            item {
-                SettingsMenuSectionCard(
-                    sectionTitle = stringResource(R.string.storage_actions_title),
-                    sectionIcon = Icons.Default.Delete
-                ) {
-                    SettingsItem(
-                        onClick = {
-                            try {
-                                context.cacheDir.deleteRecursively()
-                            } catch (_: Exception) {}
-                        },
-                        title = stringResource(R.string.storage_clear_cache),
-                        subtitle = stringResource(R.string.storage_clear_cache_desc),
-                        icon = Icons.Default.Delete
-                    )
-                    SettingsItem(
-                        onClick = {
-                            val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
-                                data = Uri.fromParts("package", context.packageName, null)
+        SettingsSection(title = stringResource(R.string.storage_overview_title)) {
+            SettingsGroup {
+                SettingsItem(
+                    onClick = null,
+                    title = stringResource(R.string.storage_database_size),
+                    subtitle = dbSize,
+                    icon = Icons.Rounded.Storage,
+                )
+                SettingsItem(
+                    onClick = null,
+                    title = stringResource(R.string.storage_cache_size),
+                    subtitle = cacheSize,
+                    icon = Icons.Rounded.Cached,
+                )
+            }
+        }
+
+        SettingsSection(title = stringResource(R.string.storage_actions_title)) {
+            SettingsGroup {
+                SettingsItem(
+                    onClick = {
+                        runCatching {
+                            context.cacheDir.listFiles()?.forEach { child ->
+                                child.deleteRecursively()
                             }
-                            context.startActivity(intent)
-                        },
-                        title = stringResource(R.string.storage_app_info),
-                        subtitle = stringResource(R.string.storage_app_info_desc),
-                        icon = Icons.Default.Info
-                    )
-                }
+                        }
+                        refreshTrigger++
+                        scope.launch {
+                            snackbarHostState.showSnackbar(cacheClearedMessage)
+                        }
+                    },
+                    title = stringResource(R.string.storage_clear_cache),
+                    subtitle = stringResource(R.string.storage_clear_cache_desc),
+                    icon = Icons.Rounded.DeleteOutline,
+                )
+                SettingsItem(
+                    onClick = {
+                        val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
+                            data = Uri.fromParts("package", context.packageName, null)
+                        }
+                        context.startActivity(intent)
+                    },
+                    title = stringResource(R.string.storage_app_info),
+                    subtitle = stringResource(R.string.storage_app_info_desc),
+                    icon = Icons.Rounded.Info,
+                    trailingContent = {
+                        ThemedIcon(
+                            icon = Icons.AutoMirrored.Rounded.OpenInNew,
+                            size = IconSizeMedium,
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    },
+                )
             }
         }
     }
 }
 
 private fun getFolderSize(file: File): Long {
-    var size: Long = 0
+    var size = 0L
     if (file.isDirectory) {
         file.listFiles()?.forEach { child ->
             size += getFolderSize(child)
@@ -145,7 +165,7 @@ private fun StorageSettingsPreview() {
     BirthdayBuddyTheme {
         StorageSettingsScreen(
             showBackButton = true,
-            onNavigateBack = {}
+            onNavigateBack = {},
         )
     }
 }

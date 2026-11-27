@@ -1,22 +1,14 @@
 ﻿package com.heckmannch.birthdaybuddy.ui.screens.settings.subscreens.backup.components
 
 import androidx.annotation.VisibleForTesting
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Share
-import androidx.compose.material3.Icon
-import androidx.compose.material3.LinearProgressIndicator
-import androidx.compose.material3.MaterialTheme
+import androidx.compose.material.icons.rounded.Download
+import androidx.compose.material.icons.rounded.Info
+import androidx.compose.material.icons.rounded.Upload
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
@@ -25,17 +17,20 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import com.heckmannch.birthdaybuddy.R
-import com.heckmannch.birthdaybuddy.ui.components.cards.InfoCard
-import com.heckmannch.birthdaybuddy.ui.components.layout.withSettingsInsets
-import com.heckmannch.birthdaybuddy.ui.components.settings.SettingsClickableRow
-import com.heckmannch.birthdaybuddy.ui.components.settings.SettingsDetailScaffold
-import com.heckmannch.birthdaybuddy.ui.screens.settings.components.SettingsMenuSectionCard
+import com.heckmannch.birthdaybuddy.ui.components.settings.SettingsFooter
+import com.heckmannch.birthdaybuddy.ui.components.settings.SettingsGroup
+import com.heckmannch.birthdaybuddy.ui.components.settings.SettingsItem
+import com.heckmannch.birthdaybuddy.ui.components.settings.SettingsNotice
+import com.heckmannch.birthdaybuddy.ui.components.settings.SettingsSection
+import com.heckmannch.birthdaybuddy.ui.components.settings.SettingsSemanticTone
+import com.heckmannch.birthdaybuddy.ui.components.settings.SettingsSubpageScaffold
 import com.heckmannch.birthdaybuddy.ui.screens.settings.subscreens.backup.BackupMessage
 import com.heckmannch.birthdaybuddy.ui.theme.BirthdayBuddyTheme
-import com.heckmannch.birthdaybuddy.ui.theme.SpacingNormal
+import com.heckmannch.birthdaybuddy.ui.theme.BorderWidthThick
+import com.heckmannch.birthdaybuddy.ui.theme.IconSizeMedium
 
 /**
- * Die UI-Darstellung der Backup-Seite.
+ * Expressive UI content for the Backup & Restore settings subpage.
  */
 @Composable
 fun BackupContent(
@@ -58,69 +53,70 @@ fun BackupContent(
         val msg = message ?: return@LaunchedEffect
         when (msg) {
             is BackupMessage.ExportSuccess -> snackbarHostState.showSnackbar(exportSuccessMsg)
-            is BackupMessage.ExportError -> snackbarHostState.showSnackbar(exportFailedMsg.format(msg.errorMessage ?: ""))
+            is BackupMessage.ExportError -> snackbarHostState.showSnackbar(
+                exportFailedMsg.format(msg.errorMessage ?: "")
+            )
             is BackupMessage.ImportSuccess -> {
                 val formatted = context.applicationContext.resources.getQuantityString(
                     R.plurals.backup_import_success,
                     msg.count,
-                    msg.count
+                    msg.count,
                 )
                 snackbarHostState.showSnackbar(formatted)
             }
             is BackupMessage.ImportInvalid -> snackbarHostState.showSnackbar(importInvalidMsg)
-            is BackupMessage.ImportError -> snackbarHostState.showSnackbar(importFailedMsg.format(msg.errorMessage ?: ""))
+            is BackupMessage.ImportError -> snackbarHostState.showSnackbar(
+                importFailedMsg.format(msg.errorMessage ?: "")
+            )
         }
         onDismissMessage()
     }
 
-    SettingsDetailScaffold(
+    val loadingStatus: (@Composable () -> Unit)? = if (isLoading) {
+        {
+            CircularProgressIndicator(
+                modifier = Modifier.size(IconSizeMedium),
+                strokeWidth = BorderWidthThick,
+            )
+        }
+    } else {
+        null
+    }
+
+    SettingsSubpageScaffold(
         title = stringResource(R.string.settings_backup_title),
         showBackButton = showBackButton,
         onNavigateBack = onNavigateBack,
-        snackbarHost = { SnackbarHost(hostState = snackbarHostState) }
-    ) { paddingValues ->
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .verticalScroll(rememberScrollState())
-                .padding(paddingValues.withSettingsInsets()),
-            verticalArrangement = Arrangement.spacedBy(SpacingNormal)
-        ) {
-            Text(
-                stringResource(R.string.backup_desc),
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-
-            SettingsMenuSectionCard(
-                sectionTitle = stringResource(R.string.settings_backup_title),
-                sectionIcon = Icons.Default.Share
-            ) {
-                SettingsClickableRow(
-                    title = stringResource(R.string.backup_export_title),
-                    description = stringResource(R.string.backup_export_desc),
+        snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
+    ) {
+        SettingsSection(title = stringResource(R.string.settings_backup_title)) {
+            SettingsGroup {
+                SettingsItem(
                     onClick = onExportClick,
-                    leadingIcon = { Icon(Icons.Default.Share, contentDescription = null) },
-                    enabled = !isLoading
+                    title = stringResource(R.string.backup_export_title),
+                    subtitle = stringResource(R.string.backup_export_desc),
+                    icon = Icons.Rounded.Upload,
+                    enabled = !isLoading,
+                    statusContent = loadingStatus,
                 )
-                SettingsClickableRow(
-                    title = stringResource(R.string.backup_import_title),
-                    description = stringResource(R.string.backup_import_desc),
+                SettingsItem(
                     onClick = onImportClick,
-                    leadingIcon = { Icon(Icons.Default.Add, contentDescription = null) },
-                    enabled = !isLoading
+                    title = stringResource(R.string.backup_import_title),
+                    subtitle = stringResource(R.string.backup_import_desc),
+                    icon = Icons.Rounded.Download,
+                    enabled = !isLoading,
+                    statusContent = loadingStatus,
                 )
             }
-
-            if (isLoading) {
-                LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
-            }
-
-            InfoCard(
-                title = stringResource(R.string.backup_info_title),
-                description = stringResource(R.string.backup_info_content)
-            )
+            SettingsFooter(text = stringResource(R.string.backup_desc))
         }
+
+        SettingsNotice(
+            title = stringResource(R.string.backup_info_title),
+            message = stringResource(R.string.backup_info_content),
+            icon = Icons.Rounded.Info,
+            tone = SettingsSemanticTone.Neutral,
+        )
     }
 }
 
@@ -159,7 +155,7 @@ private fun BackupPreview() {
             isLoading = false,
             onExportClick = {},
             onImportClick = {},
-            onNavigateBack = {}
+            onNavigateBack = {},
         )
     }
 }
@@ -172,8 +168,7 @@ private fun BackupLoadingPreview() {
             isLoading = true,
             onExportClick = {},
             onImportClick = {},
-            onNavigateBack = {}
+            onNavigateBack = {},
         )
     }
 }
-

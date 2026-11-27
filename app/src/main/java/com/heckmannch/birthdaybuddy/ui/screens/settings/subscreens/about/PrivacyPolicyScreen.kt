@@ -6,21 +6,21 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.ErrorOutline
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalResources
@@ -33,10 +33,13 @@ import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.withStyle
+import androidx.compose.ui.tooling.preview.Preview
 import com.heckmannch.birthdaybuddy.R
 import com.heckmannch.birthdaybuddy.di.IoDispatcher
-import com.heckmannch.birthdaybuddy.ui.components.layout.withSettingsInsets
-import com.heckmannch.birthdaybuddy.ui.components.settings.SettingsDetailScaffold
+import com.heckmannch.birthdaybuddy.ui.components.settings.SectionCard
+import com.heckmannch.birthdaybuddy.ui.components.settings.SettingsNotice
+import com.heckmannch.birthdaybuddy.ui.components.settings.SettingsSemanticTone
+import com.heckmannch.birthdaybuddy.ui.components.settings.SettingsSubpageScaffold
 import com.heckmannch.birthdaybuddy.ui.theme.BirthdayBuddyTheme
 import com.heckmannch.birthdaybuddy.ui.theme.SpacingExtraLarge
 import com.heckmannch.birthdaybuddy.ui.theme.SpacingMedium
@@ -47,16 +50,18 @@ import dagger.hilt.InstallIn
 import dagger.hilt.android.EntryPointAccessors
 import dagger.hilt.components.SingletonComponent
 import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
 /**
- * Vorkompilierter regulärer Ausdruck zum Parsen von Markdown-Links ([Link-Text](URL)).
- * Auf Dateiebene deklariert, um wiederholte Allokationen und Kompilierungen während des Renderings zu vermeiden.
+ * Precompiled regular expression for parsing Markdown links (`[label](url)`).
  */
 private val LINK_REGEX = Regex("\\[([^]]+)]\\(([^)]+)\\)")
 
+private const val TAG = "PrivacyPolicyScreen"
+
 /**
- * EntryPoint zur Bereitstellung des [IoDispatcher] für Composable-Aufrufe ohne direktes Hilt-ViewModel.
+ * Hilt EntryPoint exposing [IoDispatcher] for composables without a dedicated ViewModel.
  */
 @EntryPoint
 @InstallIn(SingletonComponent::class)
@@ -71,10 +76,13 @@ private sealed interface PrivacyPolicyUiState {
     data class Error(val fallbackText: String) : PrivacyPolicyUiState
 }
 
+/**
+ * Expressive Privacy Policy subpage rendering localized Markdown from raw resources.
+ */
 @Composable
 fun PrivacyPolicyScreen(
     showBackButton: Boolean = true,
-    onNavigateBack: () -> Unit
+    onNavigateBack: () -> Unit,
 ) {
     val context = LocalContext.current
     val resources = LocalResources.current
@@ -85,15 +93,15 @@ fun PrivacyPolicyScreen(
         runCatching {
             EntryPointAccessors.fromApplication(
                 context.applicationContext,
-                PrivacyPolicyEntryPoint::class.java
+                PrivacyPolicyEntryPoint::class.java,
             ).ioDispatcher()
-        }.getOrElse { kotlinx.coroutines.Dispatchers.IO }
+        }.getOrElse { Dispatchers.IO }
     }
 
-    val uiState by androidx.compose.runtime.produceState<PrivacyPolicyUiState>(
+    val uiState by produceState<PrivacyPolicyUiState>(
         initialValue = PrivacyPolicyUiState.Loading,
         configuration,
-        ioDispatcher
+        ioDispatcher,
     ) {
         value = try {
             val text = withContext(ioDispatcher) {
@@ -110,59 +118,42 @@ fun PrivacyPolicyScreen(
         }
     }
 
-    SettingsDetailScaffold(
+    SettingsSubpageScaffold(
         title = stringResource(R.string.settings_privacy_title),
         showBackButton = showBackButton,
-        onNavigateBack = onNavigateBack
-    ) { paddingValues ->
+        onNavigateBack = onNavigateBack,
+    ) {
         when (val state = uiState) {
             is PrivacyPolicyUiState.Loading -> {
                 Box(
                     modifier = Modifier
-                        .fillMaxSize()
-                        .padding(paddingValues.withSettingsInsets()),
-                    contentAlignment = Alignment.Center
+                        .fillMaxWidth()
+                        .padding(vertical = SpacingExtraLarge),
+                    contentAlignment = Alignment.Center,
                 ) {
                     CircularProgressIndicator()
                 }
             }
 
             is PrivacyPolicyUiState.Success -> {
-                Column(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .verticalScroll(rememberScrollState())
-                        .padding(paddingValues.withSettingsInsets()),
-                    verticalArrangement = Arrangement.spacedBy(SpacingNormal)
-                ) {
-                    MarkdownContent(state.text)
-                    Spacer(modifier = Modifier.height(SpacingExtraLarge))
+                SectionCard {
+                    Column(verticalArrangement = Arrangement.spacedBy(SpacingNormal)) {
+                        MarkdownContent(state.text)
+                    }
                 }
             }
 
             is PrivacyPolicyUiState.Error -> {
-                Column(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .verticalScroll(rememberScrollState())
-                        .padding(paddingValues.withSettingsInsets()),
-                    verticalArrangement = Arrangement.spacedBy(SpacingNormal)
-                ) {
-                    Text(
-                        text = state.fallbackText,
-                        style = MaterialTheme.typography.bodyLarge,
-                        color = MaterialTheme.colorScheme.error
-                    )
-                    Spacer(modifier = Modifier.height(SpacingExtraLarge))
-                }
+                SettingsNotice(
+                    message = state.fallbackText,
+                    icon = Icons.Rounded.ErrorOutline,
+                    tone = SettingsSemanticTone.Error,
+                )
             }
         }
     }
 }
 
-/**
- * Ein sehr simpler Markdown-Renderer für die Datenschutzerklärung.
- */
 @Composable
 private fun MarkdownContent(text: String) {
     val lines = text.split("\n")
@@ -174,32 +165,34 @@ private fun MarkdownContent(text: String) {
             trimmed.startsWith("# ") -> {
                 Text(
                     text = trimmed.removePrefix("# "),
-                    style = MaterialTheme.typography.headlineMedium,
+                    style = MaterialTheme.typography.headlineSmall,
                     color = MaterialTheme.colorScheme.primary,
                     fontWeight = FontWeight.Bold,
-                    modifier = Modifier.padding(bottom = SpacingSmall)
+                    modifier = Modifier.padding(bottom = SpacingSmall),
                 )
             }
 
             trimmed.startsWith("## ") -> {
                 Text(
                     text = trimmed.removePrefix("## "),
-                    style = MaterialTheme.typography.titleLarge,
+                    style = MaterialTheme.typography.titleMedium,
                     color = MaterialTheme.colorScheme.secondary,
                     fontWeight = FontWeight.Bold,
-                    modifier = Modifier.padding(bottom = SpacingMedium)
+                    modifier = Modifier.padding(bottom = SpacingMedium),
                 )
             }
 
             trimmed.startsWith("* ") -> {
                 Row(modifier = Modifier.padding(start = SpacingSmall)) {
                     Text(
-                        stringResource(R.string.bullet_point),
-                        style = MaterialTheme.typography.bodyLarge
+                        text = stringResource(R.string.bullet_point),
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurface,
                     )
                     Text(
                         text = parseMarkdownInline(trimmed.removePrefix("* "), linkColor),
-                        style = MaterialTheme.typography.bodyLarge
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurface,
                     )
                 }
             }
@@ -211,60 +204,49 @@ private fun MarkdownContent(text: String) {
             trimmed.isNotBlank() -> {
                 Text(
                     text = parseMarkdownInline(trimmed, linkColor),
-                    style = MaterialTheme.typography.bodyLarge,
-                    color = MaterialTheme.colorScheme.onSurface
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurface,
                 )
             }
         }
     }
 }
 
-/**
- * Wandelt Markdown-Formatierungen (Fett, Links) in einen AnnotatedString um.
- */
 private fun parseMarkdownInline(
     text: String,
-    linkColor: androidx.compose.ui.graphics.Color
-): AnnotatedString {
-    return buildAnnotatedString {
-        var currentIndex = 0
+    linkColor: Color,
+): AnnotatedString = buildAnnotatedString {
+    var currentIndex = 0
 
-        LINK_REGEX.findAll(text).forEach { match ->
-            // Text vor dem Link verarbeiten (Fett-Check)
-            appendBoldText(text.substring(currentIndex, match.range.first))
+    LINK_REGEX.findAll(text).forEach { match ->
+        appendBoldText(text.substring(currentIndex, match.range.first))
 
-            val linkText = match.groupValues[1]
-            val url = match.groupValues[2]
+        val linkText = match.groupValues[1]
+        val url = match.groupValues[2]
 
-            // Link hinzufügen
-            val start = length
-            append(linkText)
-            addLink(
-                url = LinkAnnotation.Url(
-                    url = url,
-                    styles = TextLinkStyles(
-                        style = SpanStyle(
-                            color = linkColor,
-                            textDecoration = TextDecoration.Underline,
-                            fontWeight = FontWeight.Bold
-                        )
+        val start = length
+        append(linkText)
+        addLink(
+            url = LinkAnnotation.Url(
+                url = url,
+                styles = TextLinkStyles(
+                    style = SpanStyle(
+                        color = linkColor,
+                        textDecoration = TextDecoration.Underline,
+                        fontWeight = FontWeight.Bold,
                     )
                 ),
-                start = start,
-                end = length
-            )
+            ),
+            start = start,
+            end = length,
+        )
 
-            currentIndex = match.range.last + 1
-        }
-
-        // Restlichen Text nach dem letzten Link verarbeiten
-        appendBoldText(text.substring(currentIndex))
+        currentIndex = match.range.last + 1
     }
+
+    appendBoldText(text.substring(currentIndex))
 }
 
-/**
- * Hilfsfunktion zum Verarbeiten von fettgedrucktem Text.
- */
 private fun AnnotatedString.Builder.appendBoldText(text: String) {
     val parts = text.split("**")
     parts.forEachIndexed { index, part ->
@@ -278,11 +260,8 @@ private fun AnnotatedString.Builder.appendBoldText(text: String) {
     }
 }
 
-private const val TAG = "PrivacyPolicyScreen"
-
 /**
- * Liest den Inhalt der Datenschutzerklärung synchron aus den Raw-Ressourcen ein.
- * Gekapselt als Hilfsfunktion zur Trennung von deklarativer UI und Ressourcen-Extraktion.
+ * Synchronously reads the localized privacy policy Markdown text from raw resources.
  */
 internal fun loadPrivacyPolicyText(resources: Resources, errorMessage: String): String {
     return try {
@@ -295,13 +274,10 @@ internal fun loadPrivacyPolicyText(resources: Resources, errorMessage: String): 
     }
 }
 
+@Preview(showBackground = true)
 @Composable
-@androidx.compose.ui.tooling.preview.Preview(showBackground = true)
 fun PrivacyPolicyScreenPreview() {
     BirthdayBuddyTheme {
-        PrivacyPolicyScreen(
-            onNavigateBack = {}
-        )
+        PrivacyPolicyScreen(onNavigateBack = {})
     }
 }
-
