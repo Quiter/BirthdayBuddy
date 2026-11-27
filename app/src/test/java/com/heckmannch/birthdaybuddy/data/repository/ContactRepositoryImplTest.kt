@@ -377,15 +377,21 @@ class ContactRepositoryImplTest {
     }
 
     @Test
-    fun syncContacts_catchesAndLogsGenericExceptionWithoutCrashing() = runTest {
+    fun syncContacts_logsAndRethrowsGenericException() = runTest {
         // Arrange
         whenever(permissionChecker.hasContactsPermission()).thenReturn(true)
         whenever(systemContactDataSource.fetchContactGroups()).thenThrow(RuntimeException("Provider failed"))
 
-        // Act (should not throw)
-        repository.syncContacts()
-
-        // Assert
+        // Act & Assert
+        var caught: Throwable? = null
+        try {
+            repository.syncContacts()
+        } catch (e: Throwable) {
+            caught = e
+        }
+        assertThat(caught).isInstanceOf(RuntimeException::class.java)
+        assertThat(caught).hasMessageThat().isEqualTo("Provider failed")
+        io.mockk.verify(exactly = 1) { Log.e(any(), any(), any<RuntimeException>()) }
         verify(contactDao, never()).refreshContacts(any())
         verify(widgetUpdater, never()).updateWidget()
         verify(calendarSyncRepository, never()).syncBirthdays(any())
@@ -464,7 +470,13 @@ class ContactRepositoryImplTest {
         whenever(contactUserDataDao.getAllUserDataImmediate()).thenReturn(emptyList())
 
         // Act 1 - First sync fails due to exception
-        repository.syncContacts()
+        var caught: Throwable? = null
+        try {
+            repository.syncContacts()
+        } catch (e: Throwable) {
+            caught = e
+        }
+        assertThat(caught).isInstanceOf(RuntimeException::class.java)
 
         // Act 2 - Second sync should execute successfully because Mutex was cleanly unlocked
         repository.syncContacts()

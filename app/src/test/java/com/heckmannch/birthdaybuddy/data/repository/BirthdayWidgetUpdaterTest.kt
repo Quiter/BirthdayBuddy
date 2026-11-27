@@ -3,10 +3,13 @@ package com.heckmannch.birthdaybuddy.data.repository
 import android.content.Context
 import android.util.Log
 import androidx.glance.appwidget.updateAll
+import androidx.work.ListenableWorker
+import androidx.work.WorkerParameters
 import com.google.common.truth.Truth.assertThat
 import com.heckmannch.birthdaybuddy.MainDispatcherRule
 import com.heckmannch.birthdaybuddy.util.AlarmScheduler
 import com.heckmannch.birthdaybuddy.widget.BirthdayWidget
+import com.heckmannch.birthdaybuddy.widget.BirthdayWidgetWorker
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
@@ -82,15 +85,33 @@ class BirthdayWidgetUpdaterTest {
     }
 
     @Test
-    fun `updateWidget - generic exception - catches error and logs without rethrowing`() = runTest {
+    fun `updateWidget - generic exception - logs error and rethrows exception`() = runTest {
         coEvery { any<BirthdayWidget>().updateAll(context) } throws RuntimeException("Glance rendering crashed")
 
-        updater.updateWidget()
+        var thrown: RuntimeException? = null
+        try {
+            updater.updateWidget()
+        } catch (e: RuntimeException) {
+            thrown = e
+        }
 
-        // Should not throw, verify exception was caught and logged
+        assertThat(thrown).isNotNull()
+        assertThat(thrown).hasMessageThat().contains("Glance rendering crashed")
         verify(exactly = 1) {
             Log.e("BirthdayWidgetUpdater", "Widget update failed", any<RuntimeException>())
         }
+    }
+
+    @Test
+    fun `updateWidget - failing updateAll causes BirthdayWidgetWorker doWork to return retry`() = runTest {
+        coEvery { any<BirthdayWidget>().updateAll(context) } throws RuntimeException("Glance rendering crashed")
+        val workerParameters: WorkerParameters = mockk(relaxed = true)
+        val worker = BirthdayWidgetWorker(context, workerParameters, updater, alarmScheduler)
+
+        val result = worker.doWork()
+
+        assertThat(result).isEqualTo(ListenableWorker.Result.retry())
+        verify(exactly = 0) { alarmScheduler.scheduleNextWidgetUpdateAlarm() }
     }
 
     @Test

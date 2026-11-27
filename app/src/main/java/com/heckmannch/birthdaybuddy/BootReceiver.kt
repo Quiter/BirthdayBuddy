@@ -91,11 +91,20 @@ class BootReceiver : BroadcastReceiver() {
 
                 try {
                     entryPoint.widgetUpdater().updateWidget()
-                    entryPoint.scheduleDailyWidgetUpdateUseCase()()
+                } catch (e: CancellationException) {
+                    throw e
                 } catch (e: Exception) {
-                    if (e is CancellationException) throw e
-                    // Safeguard: Fehler beim Widget-Update dürfen die Benachrichtigungsplanung und den Boot-Prozess nicht blockieren.
+                    // Safeguard: Fehler beim Widget-Update dürfen die weitere Boot-Verarbeitung nicht blockieren.
                     Log.w(TAG, "Fehler beim Widget-Update nach Boot/Zeitänderung", e)
+                }
+
+                try {
+                    entryPoint.scheduleDailyWidgetUpdateUseCase()()
+                } catch (e: CancellationException) {
+                    throw e
+                } catch (e: Exception) {
+                    // Safeguard: Fehler beim Widget-Scheduling dürfen den Boot-Prozess nicht blockieren.
+                    Log.w(TAG, "Fehler bei der Widget-Zeitplanung nach Boot/Zeitänderung", e)
                 }
             } finally {
                 pendingResult.finish()

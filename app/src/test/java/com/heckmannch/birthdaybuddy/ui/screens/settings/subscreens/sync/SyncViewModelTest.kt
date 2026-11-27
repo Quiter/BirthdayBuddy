@@ -1,14 +1,34 @@
 ﻿package com.heckmannch.birthdaybuddy.ui.screens.settings.subscreens.sync
 
+import android.content.ContentResolver
+import android.util.Log
 import com.google.common.truth.Truth.assertThat
 import com.heckmannch.birthdaybuddy.MainDispatcherRule
+import com.heckmannch.birthdaybuddy.data.local.ContactDao
+import com.heckmannch.birthdaybuddy.data.local.ContactUserDataDao
+import com.heckmannch.birthdaybuddy.data.local.LabelConfigDao
+import com.heckmannch.birthdaybuddy.data.mapper.ContactDbMapper
+import com.heckmannch.birthdaybuddy.data.mapper.LabelConfigMapper
+import com.heckmannch.birthdaybuddy.data.repository.ContactRepositoryImpl
+import com.heckmannch.birthdaybuddy.data.repository.SystemContactDataSource
+import com.heckmannch.birthdaybuddy.domain.model.AppSettings
+import com.heckmannch.birthdaybuddy.domain.permission.PermissionChecker
+import com.heckmannch.birthdaybuddy.domain.repository.CalendarSyncRepository
 import com.heckmannch.birthdaybuddy.domain.repository.ContactRepository
 import com.heckmannch.birthdaybuddy.domain.repository.CoupleRepository
+import com.heckmannch.birthdaybuddy.domain.repository.SettingsRepository
+import com.heckmannch.birthdaybuddy.domain.repository.WidgetUpdater
 import com.heckmannch.birthdaybuddy.util.Clock
+import io.mockk.every
+import io.mockk.mockkStatic
+import io.mockk.unmockkStatic
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.runTest
+import org.junit.After
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -32,8 +52,16 @@ class SyncViewModelTest {
 
     @Before
     fun setup() {
+        mockkStatic(Log::class)
+        every { Log.e(any(), any(), any()) } returns 0
+        every { Log.e(any(), any()) } returns 0
         whenever(clock.currentTimeMillis()).thenReturn(1000L)
         viewModel = SyncViewModel(contactRepository, coupleRepository, clock)
+    }
+
+    @After
+    fun tearDown() {
+        unmockkStatic(Log::class)
     }
 
     @Test
@@ -90,17 +118,97 @@ class SyncViewModelTest {
                 throw IOException(errorMsg)
             }
 
-            var receivedEvent: SyncEvent? = null
+            var legacyEventEmitted = false
+            val receivedEvents = mutableListOf<SyncEvent>()
+            val legacyJob = backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) {
+                viewModel.syncCompletedEvent.collect {
+                    legacyEventEmitted = true
+                }
+            }
             val job = backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) {
                 viewModel.events.collect {
-                    receivedEvent = it
+                    receivedEvents.add(it)
                 }
             }
 
             viewModel.syncContacts()
             testScheduler.advanceUntilIdle()
 
-            assertThat(receivedEvent).isEqualTo(SyncEvent.Error(errorMsg))
+            assertThat(legacyEventEmitted).isFalse()
+            assertThat(receivedEvents).containsExactly(SyncEvent.Error(errorMsg))
+            assertThat(viewModel.uiState.value.isSyncing).isFalse()
+
+            legacyJob.cancel()
+            job.cancel()
+        }
+
+    @Test
+    fun `syncContacts with real ContactRepositoryImpl emits Error event when contact provider fails`() =
+        runTest {
+            val permissionChecker: PermissionChecker = mock()
+            val contactDao: ContactDao = mock()
+            val labelConfigDao: LabelConfigDao = mock()
+            val contactUserDataDao: ContactUserDataDao = mock()
+            val systemContactDataSource: SystemContactDataSource = mock()
+            val settingsRepository: SettingsRepository = mock()
+            val calendarSyncRepository: CalendarSyncRepository = mock()
+            val widgetUpdater: WidgetUpdater = mock()
+            val contentResolver: ContentResolver = mock()
+
+            whenever(contactDao.getAllContacts()).thenReturn(MutableStateFlow(emptyList()))
+            whenever(labelConfigDao.getAllConfigs()).thenReturn(MutableStateFlow(emptyList()))
+            whenever(settingsRepository.settings).thenReturn(MutableStateFlow(AppSettings()))
+            whenever(permissionChecker.hasContactsPermission()).thenReturn(true)
+            whenever(systemContactDataSource.fetchContactGroups())
+                .thenThrow(RuntimeException("Contacts provider unavailable"))
+
+            val realRepository = ContactRepositoryImpl(
+                permissionChecker = permissionChecker,
+                contactDao = contactDao,
+                labelConfigDao = labelConfigDao,
+                contactUserDataDao = contactUserDataDao,
+                systemContactDataSource = systemContactDataSource,
+                settingsRepository = settingsRepository,
+                calendarSyncRepository = calendarSyncRepository,
+                widgetUpdater = widgetUpdater,
+                contactDbMapper = ContactDbMapper(),
+                labelConfigMapper = LabelConfigMapper(),
+                contentResolver = contentResolver,
+                ioDispatcher = mainDispatcherRule.testDispatcher,
+                defaultDispatcher = mainDispatcherRule.testDispatcher,
+            )
+            val realViewModel = SyncViewModel(realRepository, coupleRepository, clock)
+
+            val receivedEvents = mutableListOf<SyncEvent>()
+            val job = backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) {
+                realViewModel.events.collect { receivedEvents.add(it) }
+            }
+
+            realViewModel.syncContacts()
+            testScheduler.advanceUntilIdle()
+
+            assertThat(receivedEvents).containsExactly(SyncEvent.Error("Contacts provider unavailable"))
+            assertThat(realViewModel.uiState.value.isSyncing).isFalse()
+
+            job.cancel()
+        }
+
+    @Test
+    fun `syncContacts resets isSyncing and does not emit Error when CancellationException occurs`() =
+        runTest {
+            whenever(contactRepository.syncContacts()).thenAnswer {
+                throw CancellationException("Sync cancelled")
+            }
+
+            val receivedEvents = mutableListOf<SyncEvent>()
+            val job = backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) {
+                viewModel.events.collect { receivedEvents.add(it) }
+            }
+
+            viewModel.syncContacts()
+            testScheduler.advanceUntilIdle()
+
+            assertThat(receivedEvents).isEmpty()
             assertThat(viewModel.uiState.value.isSyncing).isFalse()
 
             job.cancel()

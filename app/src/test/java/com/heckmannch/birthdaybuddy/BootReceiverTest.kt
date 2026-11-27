@@ -188,7 +188,7 @@ class BootReceiverTest {
     }
 
     @Test
-    fun `onReceive handles widget update exception gracefully and still syncs scheduling and finishes pending result`() {
+    fun `onReceive handles widget update exception gracefully and still syncs scheduling, schedules daily widget update, and finishes pending result`() {
         coEvery { widgetUpdater.updateWidget() } throws RuntimeException("Widget update error")
 
         val intent = createIntent(Intent.ACTION_BOOT_COMPLETED)
@@ -196,6 +196,7 @@ class BootReceiverTest {
 
         coVerify(exactly = 1) { syncNotificationSchedulingUseCase() }
         coVerify(exactly = 1) { widgetUpdater.updateWidget() }
+        coVerify(exactly = 1) { scheduleDailyWidgetUpdateUseCase() }
         verify(exactly = 1) { pendingResult.finish() }
     }
 
@@ -208,6 +209,20 @@ class BootReceiverTest {
 
         coVerify(exactly = 1) { syncNotificationSchedulingUseCase() }
         coVerify(exactly = 0) { widgetUpdater.updateWidget() }
+        coVerify(exactly = 0) { scheduleDailyWidgetUpdateUseCase() }
+        verify(exactly = 0) { android.util.Log.w(any(), any<String>(), any()) }
+        verify(exactly = 1) { pendingResult.finish() }
+    }
+
+    @Test
+    fun `onReceive rethrows CancellationException from widget update without scheduling daily widget update and still finishes pending result`() {
+        coEvery { widgetUpdater.updateWidget() } throws CancellationException("Cancelled")
+
+        val intent = createIntent(Intent.ACTION_BOOT_COMPLETED)
+        receiver.onReceive(context, intent)
+
+        coVerify(exactly = 1) { syncNotificationSchedulingUseCase() }
+        coVerify(exactly = 1) { widgetUpdater.updateWidget() }
         coVerify(exactly = 0) { scheduleDailyWidgetUpdateUseCase() }
         verify(exactly = 0) { android.util.Log.w(any(), any<String>(), any()) }
         verify(exactly = 1) { pendingResult.finish() }

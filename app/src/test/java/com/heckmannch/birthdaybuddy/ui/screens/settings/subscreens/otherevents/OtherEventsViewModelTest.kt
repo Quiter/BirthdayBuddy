@@ -1,5 +1,6 @@
 package com.heckmannch.birthdaybuddy.ui.screens.settings.subscreens.otherevents
 
+import android.util.Log
 import com.google.common.truth.Truth.assertThat
 import com.heckmannch.birthdaybuddy.MainDispatcherRule
 import com.heckmannch.birthdaybuddy.domain.model.AppSettings
@@ -9,9 +10,14 @@ import com.heckmannch.birthdaybuddy.domain.repository.ContactRepository
 import com.heckmannch.birthdaybuddy.domain.repository.SettingsRepository
 import com.heckmannch.birthdaybuddy.domain.usecase.GetDetectedOtherEventsUseCase
 import com.heckmannch.birthdaybuddy.domain.usecase.SyncCalendarUseCase
+import io.mockk.every
+import io.mockk.mockkStatic
+import io.mockk.unmockkStatic
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.runTest
+import org.junit.After
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -34,9 +40,17 @@ class OtherEventsViewModelTest {
 
     @Before
     fun setUp() {
+        mockkStatic(Log::class)
+        every { Log.e(any(), any(), any()) } returns 0
+        every { Log.e(any(), any()) } returns 0
         getDetectedOtherEventsUseCase = GetDetectedOtherEventsUseCase(mainDispatcherRule.testDispatcher)
         whenever(settingsRepository.settings).thenReturn(flowOf(AppSettings()))
         whenever(contactRepository.allContacts).thenReturn(flowOf(emptyList()))
+    }
+
+    @After
+    fun tearDown() {
+        unmockkStatic(Log::class)
     }
 
     private fun createViewModel() = OtherEventsViewModel(
@@ -132,5 +146,29 @@ class OtherEventsViewModelTest {
         verify(settingsRepository, org.mockito.kotlin.times(2)).updateSettings(captor2.capture())
         val reenabledState = captor2.secondValue(AppSettings(disabledOtherEventLabels = listOf(customKey)))
         assertThat(reenabledState.disabledOtherEventLabels).isEmpty()
+    }
+
+    @Test
+    fun `SetOtherEventsEnabled true logs error and still syncs calendar when contact sync fails`() = runTest {
+        whenever(contactRepository.syncContacts()).thenThrow(RuntimeException("Sync failed"))
+        val viewModel = createViewModel()
+
+        viewModel.onIntent(OtherEventsIntent.SetOtherEventsEnabled(true))
+
+        verify(contactRepository).syncContacts()
+        verify(syncCalendarUseCase).invoke()
+        io.mockk.verify(exactly = 1) { Log.e("OtherEventsViewModel", any(), any<RuntimeException>()) }
+    }
+
+    @Test
+    fun `SetOtherEventsEnabled true rethrows CancellationException from contact sync without syncing calendar`() = runTest {
+        whenever(contactRepository.syncContacts()).thenThrow(CancellationException("Cancelled"))
+        val viewModel = createViewModel()
+
+        viewModel.onIntent(OtherEventsIntent.SetOtherEventsEnabled(true))
+
+        verify(contactRepository).syncContacts()
+        verify(syncCalendarUseCase, never()).invoke()
+        io.mockk.verify(exactly = 0) { Log.e(any(), any(), any()) }
     }
 }

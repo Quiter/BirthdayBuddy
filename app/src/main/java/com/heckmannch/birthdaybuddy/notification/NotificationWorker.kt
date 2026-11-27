@@ -97,6 +97,8 @@ class NotificationWorker @AssistedInject constructor(
             Log.e(TAG, "Failed to evaluate notifications in NotificationWorker", e)
             try {
                 scheduleNextRun()
+            } catch (scheduleEx: CancellationException) {
+                throw scheduleEx
             } catch (scheduleEx: Exception) {
                 Log.e(TAG, "Failed to schedule next notification worker run", scheduleEx)
             }

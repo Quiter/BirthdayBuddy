@@ -12,6 +12,9 @@ package com.heckmannch.birthdaybuddy.domain.repository
 interface WidgetUpdater {
     /**
      * Updates all installed widget instances immediately with the latest contact data.
+     *
+     * Implementations log and propagate failures so retrying callers (such as `BirthdayWidgetWorker`)
+     * can trigger a retry, while best-effort callers are expected to guard the invocation locally.
      */
     suspend fun updateWidget()
 

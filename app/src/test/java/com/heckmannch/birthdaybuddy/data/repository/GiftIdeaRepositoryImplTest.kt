@@ -635,6 +635,110 @@ class GiftIdeaRepositoryImplTest {
     }
 
     @Test
+    fun addGiftIdea_succeedsAndLogsError_whenWidgetUpdateThrows() = runTest(createTransactionElement()) {
+        val contactEntity = ContactEntity(
+            contactId = "c1",
+            lookupKey = "key1",
+            fullName = "John Doe",
+            giftIdeasJson = "[]"
+        )
+        whenever(contactDao.getContactByLookupKey("key1")).thenReturn(contactEntity)
+        whenever(contactUserDataDao.getUserDataForContact("key1")).thenReturn(null)
+        whenever(widgetUpdater.updateWidget()).thenThrow(RuntimeException("Widget error"))
+
+        repository.addGiftIdea("key1", GiftIdea(id = "idea1", text = "Book"))
+
+        verify(contactUserDataDao).upsertUserData(any())
+        verify(contactDao).upsertContact(any())
+        verify(widgetUpdater).updateWidget()
+        io.mockk.verify(exactly = 1) { Log.e(any(), any(), any<RuntimeException>()) }
+    }
+
+    @Test
+    fun addGiftIdea_rethrowsCancellationException_fromWidgetUpdate() = runTest(createTransactionElement()) {
+        val contactEntity = ContactEntity(
+            contactId = "c1",
+            lookupKey = "key1",
+            fullName = "John Doe",
+            giftIdeasJson = "[]"
+        )
+        whenever(contactDao.getContactByLookupKey("key1")).thenReturn(contactEntity)
+        whenever(contactUserDataDao.getUserDataForContact("key1")).thenReturn(null)
+        whenever(widgetUpdater.updateWidget()).thenThrow(CancellationException("Widget cancelled"))
+
+        var caught: Throwable? = null
+        try {
+            repository.addGiftIdea("key1", GiftIdea(id = "idea1", text = "Book"))
+        } catch (e: Throwable) {
+            caught = e
+        }
+
+        assertThat(caught).isInstanceOf(CancellationException::class.java)
+    }
+
+    @Test
+    fun importGiftIdeas_stillSyncsCacheAndReturnsCount_whenContactSyncOrWidgetUpdateFails() = runTest {
+        val uriString = "content://test_uri"
+        val mockUri: Uri = mock()
+        mockStatic(Uri::class.java).use { mockedStatic ->
+            mockedStatic.`when`<Uri> { Uri.parse(uriString) }.thenReturn(mockUri)
+
+            val json = "[{\"lookupKey\":\"key1\"}]"
+            val inputStream = ByteArrayInputStream(json.toByteArray(Charsets.UTF_8))
+            whenever(contentResolver.openInputStream(mockUri)).thenReturn(inputStream)
+            whenever(giftIdeaBackupManager.importGiftIdeas(json)).thenReturn(1)
+            whenever(contactRepository.syncContacts()).thenThrow(RuntimeException("Sync failed"))
+            whenever(widgetUpdater.updateWidget()).thenThrow(RuntimeException("Widget failed"))
+
+            val importedJson = converters.fromGiftIdeaList(listOf(GiftIdea(id = "i1", text = "Blumen")))
+            val contact1 = ContactEntity(
+                localId = 1L,
+                contactId = "c1",
+                lookupKey = "key1",
+                fullName = "Anna",
+                giftIdeasJson = "[]"
+            )
+            whenever(contactDao.getAllContactsImmediate()).thenReturn(listOf(contact1))
+            whenever(contactUserDataDao.getAllUserDataImmediate()).thenReturn(
+                listOf(ContactUserData(lookupKey = "key1", giftIdeasJson = importedJson))
+            )
+
+            val result = repository.importGiftIdeas(uriString)
+
+            assertThat(result).isEqualTo(1)
+            verify(contactRepository).syncContacts()
+            verify(contactDao).upsertContacts(any())
+            verify(widgetUpdater).updateWidget()
+            io.mockk.verify(exactly = 2) { Log.e(any(), any(), any<RuntimeException>()) }
+        }
+    }
+
+    @Test
+    fun importGiftIdeas_rethrowsCancellationException_fromContactSync() = runTest {
+        val uriString = "content://test_uri"
+        val mockUri: Uri = mock()
+        mockStatic(Uri::class.java).use { mockedStatic ->
+            mockedStatic.`when`<Uri> { Uri.parse(uriString) }.thenReturn(mockUri)
+
+            val json = "[{\"lookupKey\":\"key1\"}]"
+            val inputStream = ByteArrayInputStream(json.toByteArray(Charsets.UTF_8))
+            whenever(contentResolver.openInputStream(mockUri)).thenReturn(inputStream)
+            whenever(giftIdeaBackupManager.importGiftIdeas(json)).thenReturn(1)
+            whenever(contactRepository.syncContacts()).thenThrow(CancellationException("Sync cancelled"))
+
+            var caught: Throwable? = null
+            try {
+                repository.importGiftIdeas(uriString)
+            } catch (e: Throwable) {
+                caught = e
+            }
+
+            assertThat(caught).isInstanceOf(CancellationException::class.java)
+            verify(contactDao, never()).upsertContacts(any())
+        }
+    }
+
+    @Test
     fun concurrentMutations_areSerializedByMutex_withoutLostUpdates() = runTest(createTransactionElement()) {
         // Arrange: in-memory backing state for ContactDao and ContactUserDataDao
         var storedContact = ContactEntity(

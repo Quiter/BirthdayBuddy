@@ -1,6 +1,7 @@
 package com.heckmannch.birthdaybuddy.data.repository
 
 import android.content.ContentResolver
+import android.util.Log
 import androidx.core.net.toUri
 import com.heckmannch.birthdaybuddy.data.local.AppDatabase
 import com.heckmannch.birthdaybuddy.data.local.ContactDao
@@ -14,6 +15,7 @@ import com.heckmannch.birthdaybuddy.domain.model.GiftIdea
 import com.heckmannch.birthdaybuddy.domain.repository.ContactRepository
 import com.heckmannch.birthdaybuddy.domain.repository.GiftIdeaRepository
 import com.heckmannch.birthdaybuddy.domain.repository.WidgetUpdater
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
@@ -80,7 +82,7 @@ class GiftIdeaRepositoryImpl @Inject constructor(
                 },
             )
         }
-        widgetUpdater.updateWidget()
+        updateWidgetSafely()
     }
 
     private suspend fun resolveContactForGiftIdea(
@@ -174,7 +176,13 @@ class GiftIdeaRepositoryImpl @Inject constructor(
         } ?: return@withContext -1
         val count = giftIdeaBackupManager.importGiftIdeas(json)
         if (count > 0) {
-            contactRepository.syncContacts()
+            try {
+                contactRepository.syncContacts()
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                Log.e(TAG, "Error syncing contacts after gift idea import: ${e.message}", e)
+            }
             syncCachedContactGiftIdeas()
         }
         count
@@ -206,8 +214,22 @@ class GiftIdeaRepositoryImpl @Inject constructor(
 
             if (contactsToUpdate.isNotEmpty()) {
                 contactDao.upsertContacts(contactsToUpdate)
-                widgetUpdater.updateWidget()
+                updateWidgetSafely()
             }
+        }
+    }
+
+    /**
+     * Triggers a best-effort home screen widget refresh so widget rendering failures cannot
+     * abort or mask already-committed gift idea persistence.
+     */
+    private suspend fun updateWidgetSafely() {
+        try {
+            widgetUpdater.updateWidget()
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: Exception) {
+            Log.e(TAG, "Error updating widget after gift idea update: ${e.message}", e)
         }
     }
 

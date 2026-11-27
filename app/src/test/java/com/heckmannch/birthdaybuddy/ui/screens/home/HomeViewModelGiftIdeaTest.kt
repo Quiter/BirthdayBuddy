@@ -1,5 +1,6 @@
 package com.heckmannch.birthdaybuddy.ui.screens.home
 
+import android.util.Log
 import androidx.lifecycle.viewModelScope
 import com.google.common.truth.Truth.assertThat
 import com.heckmannch.birthdaybuddy.MainDispatcherRule
@@ -18,16 +19,22 @@ import com.heckmannch.birthdaybuddy.domain.usecase.UnlinkCoupleUseCase
 import com.heckmannch.birthdaybuddy.ui.mapper.ContactUiMapper
 import com.heckmannch.birthdaybuddy.ui.mapper.CoupleSuggestionUiMapper
 import com.heckmannch.birthdaybuddy.util.Clock
+import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk
+import io.mockk.mockkStatic
 import io.mockk.slot
+import io.mockk.unmockkStatic
+import io.mockk.verify
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
+import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
 import org.junit.After
 import org.junit.Before
@@ -61,6 +68,10 @@ class HomeViewModelGiftIdeaTest {
 
     @Before
     fun setup() {
+        mockkStatic(Log::class)
+        every { Log.e(any(), any(), any()) } returns 0
+        every { Log.e(any(), any()) } returns 0
+
         // Stub standard flows accessed on HomeViewModel initialization
         every { timeRepository.currentDate } returns MutableStateFlow(today)
         every { contactRepository.labelConfigs } returns MutableStateFlow(emptyList())
@@ -109,6 +120,7 @@ class HomeViewModelGiftIdeaTest {
             job?.cancel()
             job?.join()
         }
+        unmockkStatic(Log::class)
     }
 
     @Test
@@ -211,5 +223,57 @@ class HomeViewModelGiftIdeaTest {
         assertThat(event).isNotNull()
 
         collectJob.cancel()
+    }
+
+    @Test
+    fun giftIdeaAndCoupleMutations_doNotCrash_whenRepositoryThrowsDbException() = runTest {
+        val dbError = RuntimeException("Database write failed")
+        val idea = GiftIdea(id = "idea_1", text = "Book", isChecked = false)
+        coEvery { giftIdeaRepository.addGiftIdea(any(), any()) } throws dbError
+        coEvery { giftIdeaRepository.toggleGiftIdea(any(), any(), any()) } throws dbError
+        coEvery { giftIdeaRepository.deleteGiftIdea(any(), any()) } throws dbError
+        coEvery { giftIdeaRepository.updateGiftIdeaText(any(), any(), any()) } throws dbError
+        coEvery { contactRepository.updateContactBirthday(any(), any()) } throws dbError
+        coEvery { linkAsCoupleUseCase(any(), any()) } throws dbError
+        coEvery { unlinkCoupleUseCase(any()) } throws dbError
+        coEvery { ignoreCoupleSuggestionUseCase(any(), any()) } throws dbError
+        coEvery { contactRepository.getAllContactsImmediate() } throws dbError
+
+        viewModel.onIntent(HomeIntent.AddGiftIdea("k1"))
+        viewModel.onIntent(HomeIntent.ToggleGiftIdea("k1", idea, true))
+        viewModel.onIntent(HomeIntent.DeleteGiftIdea("k1", "idea_1"))
+        viewModel.onIntent(HomeIntent.UpdateGiftIdeaText("k1", "idea_1", "New text"))
+        viewModel.onIntent(HomeIntent.UpdateBirthday("c1", LocalDate.of(1990, 8, 25)))
+        viewModel.onIntent(HomeIntent.LinkAsCouple("k1", "k2"))
+        viewModel.onIntent(HomeIntent.UnlinkCouple("k1"))
+        viewModel.onIntent(HomeIntent.IgnoreCoupleSuggestion("k1", "k2"))
+        viewModel.onIntent(HomeIntent.OpenBirthdayPicker("k1", 1990, 8, 25))
+        advanceUntilIdle()
+
+        verify(exactly = 9) { Log.e("HomeViewModel", any(), dbError) }
+        assertThat(viewModel.viewModelScope.coroutineContext[Job]?.isActive).isTrue()
+    }
+
+    @Test
+    fun syncContacts_logsErrorAndResetsIsSyncing_whenRepositoryThrows() = runTest {
+        val syncError = RuntimeException("Contacts provider failed")
+        coEvery { contactRepository.syncContacts() } throws syncError
+
+        viewModel.onIntent(HomeIntent.SyncContacts(showLoading = true))
+        advanceUntilIdle()
+
+        verify(atLeast = 1) { Log.e("HomeViewModel", "Failed to sync contacts", syncError) }
+        assertThat(viewModel.uiState.value.isSyncing).isFalse()
+    }
+
+    @Test
+    fun launchSafe_doesNotLogCancellationException() = runTest {
+        coEvery { giftIdeaRepository.deleteGiftIdea(any(), any()) } throws CancellationException("Cancelled")
+
+        viewModel.onIntent(HomeIntent.DeleteGiftIdea("k1", "idea_1"))
+        advanceUntilIdle()
+
+        verify(exactly = 0) { Log.e(any(), any(), any()) }
+        assertThat(viewModel.viewModelScope.coroutineContext[Job]?.isActive).isTrue()
     }
 }

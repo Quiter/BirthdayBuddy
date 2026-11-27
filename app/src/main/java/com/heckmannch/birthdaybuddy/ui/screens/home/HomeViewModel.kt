@@ -1,5 +1,6 @@
 package com.heckmannch.birthdaybuddy.ui.screens.home
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.heckmannch.birthdaybuddy.di.DefaultDispatcher
@@ -26,7 +27,9 @@ import com.heckmannch.birthdaybuddy.ui.model.PendingBirthdayEdit
 import com.heckmannch.birthdaybuddy.ui.screens.home.HomeViewModel.Companion.SEARCH_DEBOUNCE_DURATION
 import com.heckmannch.birthdaybuddy.util.Clock
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
@@ -151,6 +154,8 @@ class HomeViewModel @Inject constructor(
     )
 
     companion object {
+        private const val TAG = "HomeViewModel"
+
         /** Delay applied to search queries to debounce rapid keystrokes before triggering list filtering. */
         private val SEARCH_DEBOUNCE_DURATION = 300.milliseconds
 
@@ -437,7 +442,7 @@ class HomeViewModel @Inject constructor(
             // Creates a new empty gift idea, emits a one-shot event to trigger UI focus, and persists to repository.
             is HomeIntent.AddGiftIdea -> {
                 val newIdea = GiftIdea(text = "")
-                viewModelScope.launch {
+                launchSafe("add gift idea") {
                     _eventFlow.emit(HomeUiEvent.FocusNewlyAddedIdea(newIdea.id))
                     giftIdeaRepository.addGiftIdea(intent.lookupKey, newIdea)
                 }
@@ -445,7 +450,7 @@ class HomeViewModel @Inject constructor(
 
             // Toggles the checked/purchased status of an existing gift idea item.
             is HomeIntent.ToggleGiftIdea -> {
-                viewModelScope.launch {
+                launchSafe("toggle gift idea") {
                     giftIdeaRepository.toggleGiftIdea(
                         intent.lookupKey,
                         intent.idea,
@@ -456,14 +461,14 @@ class HomeViewModel @Inject constructor(
 
             // Deletes a gift idea item by its unique ID.
             is HomeIntent.DeleteGiftIdea -> {
-                viewModelScope.launch {
+                launchSafe("delete gift idea") {
                     giftIdeaRepository.deleteGiftIdea(intent.lookupKey, intent.ideaId)
                 }
             }
 
             // Updates the description text of an existing gift idea item.
             is HomeIntent.UpdateGiftIdeaText -> {
-                viewModelScope.launch {
+                launchSafe("update gift idea text") {
                     giftIdeaRepository.updateGiftIdeaText(
                         intent.lookupKey,
                         intent.ideaId,
@@ -474,7 +479,7 @@ class HomeViewModel @Inject constructor(
 
             // Persists an updated birthday date for a specific contact.
             is HomeIntent.UpdateBirthday -> {
-                viewModelScope.launch {
+                launchSafe("update birthday") {
                     contactRepository.updateContactBirthday(intent.contactId, intent.birthday)
                 }
             }
@@ -486,15 +491,17 @@ class HomeViewModel @Inject constructor(
                     val startTime = clock.currentTimeMillis()
                     if (intent.showLoading) {
                         _userUiState.update { it.copy(isSyncing = true) }
-                        coupleRepository.clearIgnoredCouplePairs()
                     }
                     try {
+                        if (intent.showLoading) {
+                            coupleRepository.clearIgnoredCouplePairs()
+                        }
                         contactRepository.syncContacts()
-                    } catch (e: kotlinx.coroutines.CancellationException) {
+                    } catch (e: CancellationException) {
                         // Re-throw CancellationException to ensure proper coroutine cancellation mechanics
                         throw e
                     } catch (e: Exception) {
-                        // Prevent UI freezing/crashing on sync errors; further error handling/logging can be attached here
+                        Log.e(TAG, "Failed to sync contacts", e)
                     } finally {
                         if (intent.showLoading) {
                             val elapsedTime = clock.currentTimeMillis() - startTime
@@ -521,21 +528,21 @@ class HomeViewModel @Inject constructor(
 
             // Merges two independent contacts into a single couple entity.
             is HomeIntent.LinkAsCouple -> {
-                viewModelScope.launch {
+                launchSafe("link couple") {
                     linkAsCoupleUseCase(intent.lookupKey1, intent.lookupKey2)
                 }
             }
 
             // Unlinks a linked couple entity back into two separate individual contacts.
             is HomeIntent.UnlinkCouple -> {
-                viewModelScope.launch {
+                launchSafe("unlink couple") {
                     unlinkCoupleUseCase(intent.lookupKey)
                 }
             }
 
             // Dismisses and ignores a couple pairing suggestion.
             is HomeIntent.IgnoreCoupleSuggestion -> {
-                viewModelScope.launch {
+                launchSafe("ignore couple suggestion") {
                     ignoreCoupleSuggestionUseCase(intent.lookupKey1, intent.lookupKey2)
                 }
             }
@@ -547,7 +554,7 @@ class HomeViewModel @Inject constructor(
 
             // Resolves the contact and safely normalizes leap day (Feb 29) & day bounds before opening the birthday picker dialog.
             is HomeIntent.OpenBirthdayPicker -> {
-                viewModelScope.launch {
+                launchSafe("open birthday picker") {
                     val contact = findContact(intent.contactLookupKey)
                     if (contact != null) {
                         val initialDate = sanitizeBirthdayDate(
@@ -570,6 +577,25 @@ class HomeViewModel @Inject constructor(
             // Dismisses the active birthday picker dialog and clears pending edit state.
             is HomeIntent.DismissBirthdayPicker -> {
                 _userUiState.update { it.copy(pendingBirthdayEdit = null) }
+            }
+        }
+    }
+
+    /**
+     * Launches a coroutine in [viewModelScope] that catches non-cancellation exceptions,
+     * logs them with [actionName], and rethrows [CancellationException] to preserve structured concurrency.
+     */
+    private fun launchSafe(
+        actionName: String,
+        block: suspend CoroutineScope.() -> Unit,
+    ) {
+        viewModelScope.launch {
+            try {
+                block()
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                Log.e(TAG, "Failed to $actionName", e)
             }
         }
     }

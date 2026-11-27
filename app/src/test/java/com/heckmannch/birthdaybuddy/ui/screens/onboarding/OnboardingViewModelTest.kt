@@ -254,6 +254,38 @@ class OnboardingViewModelTest {
     }
 
     @Test
+    fun `completeOnboarding should still update widget when contact sync fails`() = runTest {
+        whenever(contactRepository.syncContacts()).thenThrow(RuntimeException("Contact sync failed"))
+
+        viewModel.onIntent(
+            OnboardingIntent.CompleteOnboarding(
+                notificationsEnabled = false,
+                calendarSyncEnabled = false
+            )
+        )
+
+        verify(contactRepository).syncContacts()
+        verify(widgetUpdater).updateWidget()
+    }
+
+    @Test
+    fun `completeOnboarding should rethrow CancellationException from contact sync`() = runTest {
+        whenever(contactRepository.syncContacts()).thenThrow(CancellationException("Cancelled"))
+
+        val vm = createViewModel(scope = this)
+        vm.onIntent(
+            OnboardingIntent.CompleteOnboarding(
+                notificationsEnabled = false,
+                calendarSyncEnabled = true
+            )
+        )
+
+        verify(contactRepository).syncContacts()
+        verify(syncCalendarUseCase, never()).invoke()
+        verify(widgetUpdater, never()).updateWidget()
+    }
+
+    @Test
     fun `completeOnboarding should insert default rule if notifications enabled and no rules exist`() =
         runTest {
             whenever(notificationRepository.getAllRulesImmediate()).thenReturn(emptyList())

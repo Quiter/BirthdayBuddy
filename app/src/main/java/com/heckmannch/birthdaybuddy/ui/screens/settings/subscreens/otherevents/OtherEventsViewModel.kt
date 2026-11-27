@@ -1,5 +1,6 @@
 package com.heckmannch.birthdaybuddy.ui.screens.settings.subscreens.otherevents
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.heckmannch.birthdaybuddy.di.DefaultDispatcher
@@ -8,6 +9,7 @@ import com.heckmannch.birthdaybuddy.domain.repository.SettingsRepository
 import com.heckmannch.birthdaybuddy.domain.usecase.GetDetectedOtherEventsUseCase
 import com.heckmannch.birthdaybuddy.domain.usecase.SyncCalendarUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.SharingStarted
@@ -85,11 +87,32 @@ class OtherEventsViewModel @Inject constructor(
      * calendar synchronization so affected event calendars stay in sync.
      */
     private fun setOtherEventsEnabled(enabled: Boolean) = viewModelScope.launch {
-        settingsRepository.updateSettings { it.copy(otherEventsEnabled = enabled) }
-        if (enabled) {
-            contactRepository.syncContacts()
+        try {
+            settingsRepository.updateSettings { it.copy(otherEventsEnabled = enabled) }
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: Exception) {
+            Log.e(TAG, "Failed to update otherEventsEnabled setting", e)
+            return@launch
         }
-        syncCalendarUseCase()
+
+        if (enabled) {
+            try {
+                contactRepository.syncContacts()
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                Log.e(TAG, "Failed to sync contacts after enabling other events", e)
+            }
+        }
+
+        try {
+            syncCalendarUseCase()
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: Exception) {
+            Log.e(TAG, "Failed to sync calendar after toggling other events", e)
+        }
     }
 
     /**
@@ -97,16 +120,26 @@ class OtherEventsViewModel @Inject constructor(
      * `disabledOtherEventLabels` and refreshes calendar synchronization.
      */
     private fun setEventLabelEnabled(eventKey: String, enabled: Boolean) = viewModelScope.launch {
-        settingsRepository.updateSettings { current ->
-            val updated = current.disabledOtherEventLabels.toMutableSet()
-            if (enabled) {
-                updated.remove(eventKey)
-            } else {
-                updated.add(eventKey)
+        try {
+            settingsRepository.updateSettings { current ->
+                val updated = current.disabledOtherEventLabels.toMutableSet()
+                if (enabled) {
+                    updated.remove(eventKey)
+                } else {
+                    updated.add(eventKey)
+                }
+                current.copy(disabledOtherEventLabels = updated.sorted())
             }
-            current.copy(disabledOtherEventLabels = updated.sorted())
+            syncCalendarUseCase()
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: Exception) {
+            Log.e(TAG, "Failed to update event label setting for $eventKey", e)
         }
-        syncCalendarUseCase()
+    }
+
+    private companion object {
+        private const val TAG = "OtherEventsViewModel"
     }
 }
 

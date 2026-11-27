@@ -21,6 +21,14 @@ interface ContactRepository {
     val contactChanges: Flow<Unit>
 
     suspend fun getAllContactsImmediate(): List<Contact>
+
+    /**
+     * Synchronizes system contacts into the local cache.
+     *
+     * Propagates synchronization failures after logging so callers such as workers or sync screens
+     * can trigger retries or display errors; downstream best-effort side effects (widget/calendar)
+     * remain isolated.
+     */
     suspend fun syncContacts()
     suspend fun updateLabelConfig(config: LabelConfig)
     suspend fun updateContactBirthday(contactId: String, birthday: LocalDate): Boolean

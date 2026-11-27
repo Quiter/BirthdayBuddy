@@ -172,7 +172,13 @@ class OnboardingViewModel @Inject constructor(
             notificationRepository.syncScheduling()
 
             // Trigger initial background sync of contacts
-            contactRepository.syncContacts()
+            try {
+                contactRepository.syncContacts()
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                Log.w(TAG, "Fehler beim Kontakt-Sync nach Abschluss des Onboardings", e)
+            }
 
             // Trigger calendar sync after contacts have synced if enabled during onboarding
             if (calendarSyncEnabled) {

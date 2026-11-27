@@ -205,6 +205,7 @@ class ContactRepositoryImpl @Inject constructor(
                 throw e
             } catch (e: Exception) {
                 Log.e(TAG, "Error during contact sync: ${e.message}", e)
+                throw e
             }
         }
     }

@@ -35,7 +35,8 @@ class BirthdayWidgetUpdater @Inject constructor(
         } catch (e: CancellationException) {
             throw e
         } catch (e: Exception) {
-            Log.e("BirthdayWidgetUpdater", "Widget update failed", e)
+            Log.e(TAG, "Widget update failed", e)
+            throw e
         }
     }
 
@@ -43,7 +44,11 @@ class BirthdayWidgetUpdater @Inject constructor(
         try {
             alarmScheduler.scheduleNextWidgetUpdateAlarm()
         } catch (e: Exception) {
-            Log.e("BirthdayWidgetUpdater", "Widget scheduling failed", e)
+            Log.e(TAG, "Widget scheduling failed", e)
         }
+    }
+
+    private companion object {
+        private const val TAG = "BirthdayWidgetUpdater"
     }
 }
