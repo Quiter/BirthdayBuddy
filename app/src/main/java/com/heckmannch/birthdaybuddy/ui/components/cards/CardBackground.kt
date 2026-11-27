@@ -1,4 +1,4 @@
-package com.heckmannch.birthdaybuddy.ui.screens.home.components.cards
+package com.heckmannch.birthdaybuddy.ui.components.cards
 
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animateFloatAsState
@@ -16,6 +16,8 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.unit.LayoutDirection
+import com.heckmannch.birthdaybuddy.ui.theme.GlassDarkContentColor
+import com.heckmannch.birthdaybuddy.ui.theme.GlassLightContentColor
 import kotlin.math.abs
 
 val LocalCardBackground = compositionLocalOf<Color?> { null }
@@ -42,7 +44,8 @@ fun List<Color>.blend(): Color = when {
 
 fun Color.requiresLightContent(): Boolean = luminance() < 0.5f
 
-fun Color.contrastingContent(): Color = if (requiresLightContent()) Color.White else Color.Black
+fun Color.contrastingContent(): Color =
+    if (requiresLightContent()) GlassLightContentColor else GlassDarkContentColor
 
 fun Color.ensureContrast(
     background: Color,

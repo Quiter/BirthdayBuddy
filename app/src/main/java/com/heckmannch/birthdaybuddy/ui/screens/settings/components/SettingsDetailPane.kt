@@ -12,7 +12,7 @@ import androidx.navigation3.runtime.NavBackStack
 import androidx.navigation3.runtime.NavKey
 import androidx.navigation3.runtime.rememberNavBackStack
 import androidx.window.core.layout.WindowSizeClass
-import com.heckmannch.birthdaybuddy.ui.components.isWidthCompact
+import com.heckmannch.birthdaybuddy.ui.components.layout.isWidthCompact
 import com.heckmannch.birthdaybuddy.ui.screens.settings.SettingsNavKey
 import com.heckmannch.birthdaybuddy.ui.screens.settings.SettingsTab
 import com.heckmannch.birthdaybuddy.ui.screens.settings.subscreens.about.AboutScreen

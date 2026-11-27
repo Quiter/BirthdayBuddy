@@ -1,4 +1,4 @@
-package com.heckmannch.birthdaybuddy.ui.components
+package com.heckmannch.birthdaybuddy.ui.components.bars
 
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.animateIntAsState

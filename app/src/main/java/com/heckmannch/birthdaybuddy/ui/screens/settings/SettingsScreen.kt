@@ -30,10 +30,10 @@ import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
 import androidx.navigation3.ui.NavDisplay
 import androidx.window.core.layout.WindowSizeClass
 import com.heckmannch.birthdaybuddy.R
-import com.heckmannch.birthdaybuddy.ui.components.AppResponsiveScaffold
-import com.heckmannch.birthdaybuddy.ui.components.LocalWindowAdaptiveInfo
-import com.heckmannch.birthdaybuddy.ui.components.LocalWindowSizeClass
-import com.heckmannch.birthdaybuddy.ui.components.isWidthCompact
+import com.heckmannch.birthdaybuddy.ui.components.layout.AppResponsiveScaffold
+import com.heckmannch.birthdaybuddy.ui.components.layout.LocalWindowAdaptiveInfo
+import com.heckmannch.birthdaybuddy.ui.components.layout.LocalWindowSizeClass
+import com.heckmannch.birthdaybuddy.ui.components.layout.isWidthCompact
 import com.heckmannch.birthdaybuddy.ui.screens.settings.components.SettingsBody
 import com.heckmannch.birthdaybuddy.ui.screens.settings.components.SettingsDetailPane
 import com.heckmannch.birthdaybuddy.ui.screens.settings.components.SettingsDetailPlaceholder

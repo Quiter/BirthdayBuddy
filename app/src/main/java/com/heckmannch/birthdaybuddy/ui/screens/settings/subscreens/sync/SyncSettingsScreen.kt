@@ -27,10 +27,10 @@ import androidx.core.content.ContextCompat
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.heckmannch.birthdaybuddy.R
-import com.heckmannch.birthdaybuddy.ui.components.InfoCard
-import com.heckmannch.birthdaybuddy.ui.components.SettingsClickableRow
-import com.heckmannch.birthdaybuddy.ui.components.SettingsDetailScaffold
-import com.heckmannch.birthdaybuddy.ui.components.withSettingsInsets
+import com.heckmannch.birthdaybuddy.ui.components.cards.InfoCard
+import com.heckmannch.birthdaybuddy.ui.components.layout.withSettingsInsets
+import com.heckmannch.birthdaybuddy.ui.components.settings.SettingsClickableRow
+import com.heckmannch.birthdaybuddy.ui.components.settings.SettingsDetailScaffold
 import com.heckmannch.birthdaybuddy.ui.screens.settings.components.SettingsMenuSectionCard
 import com.heckmannch.birthdaybuddy.ui.theme.BirthdayBuddyTheme
 import com.heckmannch.birthdaybuddy.ui.theme.SpacingNormal

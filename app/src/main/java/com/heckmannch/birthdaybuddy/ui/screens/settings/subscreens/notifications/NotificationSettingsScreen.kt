@@ -51,10 +51,10 @@ import androidx.lifecycle.compose.LifecycleEventEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.heckmannch.birthdaybuddy.R
 import com.heckmannch.birthdaybuddy.domain.model.NotificationRule
-import com.heckmannch.birthdaybuddy.ui.components.InfoCard
-import com.heckmannch.birthdaybuddy.ui.components.SettingsDetailScaffold
-import com.heckmannch.birthdaybuddy.ui.components.SettingsSwitchRow
-import com.heckmannch.birthdaybuddy.ui.components.withSettingsInsets
+import com.heckmannch.birthdaybuddy.ui.components.cards.InfoCard
+import com.heckmannch.birthdaybuddy.ui.components.layout.withSettingsInsets
+import com.heckmannch.birthdaybuddy.ui.components.settings.SettingsDetailScaffold
+import com.heckmannch.birthdaybuddy.ui.components.settings.SettingsSwitchRow
 import com.heckmannch.birthdaybuddy.ui.screens.settings.components.SettingsMenuSectionCard
 import com.heckmannch.birthdaybuddy.ui.screens.settings.subscreens.notifications.NotificationSettingsState.Companion.Saver
 import com.heckmannch.birthdaybuddy.ui.screens.settings.subscreens.notifications.components.EditRuleDialog

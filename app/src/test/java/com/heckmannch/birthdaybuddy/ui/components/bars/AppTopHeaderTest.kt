@@ -1,4 +1,4 @@
-package com.heckmannch.birthdaybuddy.ui.components
+package com.heckmannch.birthdaybuddy.ui.components.bars
 
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf

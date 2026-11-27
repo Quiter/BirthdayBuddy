@@ -1,4 +1,4 @@
-package com.heckmannch.birthdaybuddy.ui.screens.home.components.cards
+package com.heckmannch.birthdaybuddy.ui.components.cards
 
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
@@ -8,20 +8,31 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shadow
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.Dp
-import androidx.compose.ui.unit.dp
+import com.heckmannch.birthdaybuddy.ui.theme.AlphaGlassCardChipContainer
+import com.heckmannch.birthdaybuddy.ui.theme.AlphaGlassCardFillEnd
+import com.heckmannch.birthdaybuddy.ui.theme.AlphaGlassCardFlatEdge
+import com.heckmannch.birthdaybuddy.ui.theme.AlphaGlassCardMarkContainer
+import com.heckmannch.birthdaybuddy.ui.theme.AlphaGlassCardShadow
+import com.heckmannch.birthdaybuddy.ui.theme.AlphaGlassCardSubtitle
 import com.heckmannch.birthdaybuddy.ui.theme.CornerRadiusLarge
+import com.heckmannch.birthdaybuddy.ui.theme.GlassCardHeightDefault
+import com.heckmannch.birthdaybuddy.ui.theme.GlassCardIconSize
+import com.heckmannch.birthdaybuddy.ui.theme.GlassCardMarkSize
+import com.heckmannch.birthdaybuddy.ui.theme.GlassDarkContentColor
+import com.heckmannch.birthdaybuddy.ui.theme.GlassLightContentColor
+import com.heckmannch.birthdaybuddy.ui.theme.GlassShadowColor
 import com.heckmannch.birthdaybuddy.ui.theme.SpacingExtraSmall
 import com.heckmannch.birthdaybuddy.ui.theme.SpacingNormal
 
 /**
- * Visual style configuration for frosted glass cards across BirthdayBuddy screens.
- * Directly modeled after Morphe Manager's GlassCardStyle architecture for a frosted glass look.
+ * Visual style configuration for frosted glass cards across BirthdayBuddy screens
+ * (Home, Labels, and Settings).
  */
 @Immutable
 data class GlassCardStyle(
     val monochrome: Boolean = false,
     val outlines: Boolean = true,
-    val iconSize: Dp = 56.dp,
+    val iconSize: Dp = GlassCardIconSize,
     val titleColor: Color,
     val subtitleColor: Color,
     val titleStyle: TextStyle,
@@ -31,16 +42,16 @@ data class GlassCardStyle(
     val actionContainerColor: Color,
     val actionContentColor: Color,
     val markContainerColor: Color,
-    val markSize: Dp = 24.dp,
+    val markSize: Dp = GlassCardMarkSize,
     val cardColor: Color,
     val cardRadius: Dp = CornerRadiusLarge,
-    val cardHeight: Dp = 80.dp,
+    val cardHeight: Dp = GlassCardHeightDefault,
     val contentPadding: Dp = SpacingNormal,
     val contentSpacing: Dp = SpacingNormal,
     val textSpacing: Dp = SpacingExtraSmall
 ) {
     /** Even edge of a card in one color for flat contrast. */
-    val flatEdgeColor: Color get() = titleColor.copy(alpha = 0.30f)
+    val flatEdgeColor: Color get() = titleColor.copy(alpha = AlphaGlassCardFlatEdge)
 
     fun cardColors(bundleColors: List<Color>): List<Color> =
         if (bundleColors.isEmpty()) listOf(cardColor) else bundleColors
@@ -59,51 +70,50 @@ data class GlassCardStyle(
         if (fill.requiresLightContent()) return this
 
         return copy(
-            titleColor = Color.Black,
-            subtitleColor = Color.Black.copy(alpha = subtitleColor.alpha),
+            titleColor = GlassDarkContentColor,
+            subtitleColor = GlassDarkContentColor.copy(alpha = subtitleColor.alpha),
             titleStyle = titleStyle.copy(shadow = null),
             subtitleStyle = subtitleStyle.copy(shadow = null),
-            chipContainerColor = Color.Black.copy(alpha = chipContainerColor.alpha),
-            chipContentColor = Color.Black,
-            actionContainerColor = Color.Black,
-            actionContentColor = Color.White,
-            markContainerColor = Color.Black.copy(alpha = markContainerColor.alpha)
+            chipContainerColor = GlassDarkContentColor.copy(alpha = chipContainerColor.alpha),
+            chipContentColor = GlassDarkContentColor,
+            actionContainerColor = GlassDarkContentColor,
+            actionContentColor = GlassLightContentColor,
+            markContainerColor = GlassDarkContentColor.copy(alpha = markContainerColor.alpha)
         )
     }
 
     companion object {
-        const val FILL_ALPHA = 0.64f
+        const val FILL_ALPHA = AlphaGlassCardFillEnd
     }
 }
 
 @Composable
-fun glassCardStyle(subtitleAlpha: Float = 0.85f): GlassCardStyle {
+fun glassCardStyle(subtitleAlpha: Float = AlphaGlassCardSubtitle): GlassCardStyle {
     val titleShadow = Shadow(
-        color = Color.Black.copy(alpha = 0.4f),
+        color = GlassShadowColor.copy(alpha = AlphaGlassCardShadow),
         offset = Offset(0f, 2f),
         blurRadius = 4f
     )
     val subtitleShadow = Shadow(
-        color = Color.Black.copy(alpha = 0.4f),
+        color = GlassShadowColor.copy(alpha = AlphaGlassCardShadow),
         offset = Offset(0f, 1f),
         blurRadius = 2f
     )
-    val iconSize = 56.dp
 
     return GlassCardStyle(
         monochrome = false,
         outlines = true,
-        iconSize = iconSize,
-        titleColor = Color.White,
-        subtitleColor = Color.White.copy(alpha = subtitleAlpha),
+        iconSize = GlassCardIconSize,
+        titleColor = GlassLightContentColor,
+        subtitleColor = GlassLightContentColor.copy(alpha = subtitleAlpha),
         titleStyle = MaterialTheme.typography.titleMedium.copy(shadow = titleShadow),
         subtitleStyle = MaterialTheme.typography.bodyMedium.copy(shadow = subtitleShadow),
-        chipContainerColor = Color.White.copy(alpha = 0.20f),
-        chipContentColor = Color.White,
+        chipContainerColor = GlassLightContentColor.copy(alpha = AlphaGlassCardChipContainer),
+        chipContentColor = GlassLightContentColor,
         actionContainerColor = MaterialTheme.colorScheme.primaryContainer,
         actionContentColor = MaterialTheme.colorScheme.onPrimaryContainer,
-        markContainerColor = Color.White.copy(alpha = 0.35f),
-        markSize = 24.dp,
+        markContainerColor = GlassLightContentColor.copy(alpha = AlphaGlassCardMarkContainer),
+        markSize = GlassCardMarkSize,
         cardColor = MaterialTheme.colorScheme.surfaceContainerHigh
     )
 }

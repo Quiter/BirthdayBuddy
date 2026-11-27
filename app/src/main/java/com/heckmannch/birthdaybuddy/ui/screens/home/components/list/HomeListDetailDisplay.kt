@@ -21,7 +21,7 @@ import androidx.navigation3.runtime.NavKey
 import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.ui.NavDisplay
 import com.heckmannch.birthdaybuddy.domain.model.ContactLabels
-import com.heckmannch.birthdaybuddy.ui.components.LocalWindowAdaptiveInfo
+import com.heckmannch.birthdaybuddy.ui.components.layout.LocalWindowAdaptiveInfo
 import com.heckmannch.birthdaybuddy.ui.model.ContactUiModel
 import com.heckmannch.birthdaybuddy.ui.model.HomeUiState
 import com.heckmannch.birthdaybuddy.ui.model.SampleData

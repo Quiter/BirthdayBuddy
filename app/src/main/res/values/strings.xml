@@ -42,14 +42,6 @@
         <item quantity="other">in %d d.</item>
     </plurals>
 
-    <!-- BuddyListCard / MorpheStyleListCard -->
-    <string name="card_expand_details">Show details</string>
-    <string name="card_collapse_details">Hide details</string>
-    <string name="card_contact_sample_title">Max Mustermann</string>
-    <string name="card_contact_sample_subtitle">Turning 30 in 5 days (15.04.1995)</string>
-    <string name="card_label_sample_title">Family</string>
-    <string name="card_label_sample_subtitle">12 contacts • Notifications active</string>
-
     <!-- Widget -->
     <string name="widget_no_birthdays">No birthdays</string>
     <string name="widget_turns_age">turns %d</string>

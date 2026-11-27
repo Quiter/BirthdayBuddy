@@ -44,7 +44,7 @@ import com.heckmannch.birthdaybuddy.ui.model.ContactUiModel
 import com.heckmannch.birthdaybuddy.ui.model.SampleData
 import com.heckmannch.birthdaybuddy.ui.screens.home.HomeActions
 import com.heckmannch.birthdaybuddy.ui.screens.home.components.actions.ContactActionRow
-import com.heckmannch.birthdaybuddy.ui.screens.home.components.cards.BirthdayCard
+import com.heckmannch.birthdaybuddy.ui.components.cards.BirthdayCard
 import com.heckmannch.birthdaybuddy.ui.theme.AlphaEmphasisLow
 import com.heckmannch.birthdaybuddy.ui.theme.BirthdayBuddyTheme
 import com.heckmannch.birthdaybuddy.ui.theme.BirthdayGold

@@ -1,4 +1,4 @@
-package com.heckmannch.birthdaybuddy.ui.components
+package com.heckmannch.birthdaybuddy.ui.components.bars
 
 import androidx.compose.foundation.background
 import androidx.compose.material3.MaterialTheme

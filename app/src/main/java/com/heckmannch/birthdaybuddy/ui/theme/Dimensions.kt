@@ -53,10 +53,6 @@ val SidebarWidthCollapsed = 80.dp
 val SidebarHeaderSpacerHeight = 36.dp
 val SidebarItemWidthCollapsed = 64.dp
 val ContactItemSkeletonHeight = 72.dp
-val ListCardElevation = ElevationDefault
-val ListCardPaddingHorizontal = SpacingNormal
-val ListCardPaddingVertical = SpacingMedium
-val LabelColorDotSize = IconSizeExtraSmall
 val ScrollbarTouchTargetWidth = 150.dp
 val ScrollbarThumbWidth = 26.dp
 val ScrollbarThumbHeight = 44.dp
@@ -83,7 +79,13 @@ const val AlphaContainerMedium = 0.3f // Medium container alpha (e.g., for info 
 const val AlphaSurfaceContainerLow = 0.5f
 const val AlphaSurfaceContainerHigh = 0.6f
 const val AlphaBorderSubtle = 0.2f
-val ColorPickerHandleInnerRadius = 6.dp
+val ColorPickerComparisonSize = 56.dp
+val ColorPickerPresetSize = 36.dp
+val ColorPickerPanelHeight = 180.dp
+val ColorPickerPanelDefaultHeight = 200.dp
+val ColorPickerMarkerRadius = 10.dp
+val ColorPickerMarkerStroke = 3.dp
+const val AlphaColorPickerMarkerShadow = 0.35f
 const val AnimDurationShort = 300   // Short animation duration in ms
 const val AnimDurationMedium = 500  // Medium animation duration in ms
 const val AnimDelayPermission = 300 // Delay before requesting permissions after navigation (ms)
@@ -145,6 +147,36 @@ const val AlphaOnboardingCalendarDisabled = 0.4f
 const val AlphaOnboardingCalendarInactive = 0.05f
 const val OnboardingCalendarEventAlpha = 0.8f
 const val AlphaWidgetCard = 0.8f
+
+/**
+ * Shared frosted glass card tokens used across Home, Labels, and Settings.
+ */
+val GlassCardHeightDefault = 80.dp
+val GlassCardIconSize = 56.dp
+val GlassCardMarkSize = 24.dp
+val GlassCardSelectionMarkSize = 28.dp
+val GlassCardTagIconSize = 12.dp
+val GlassCardSubtitleIconSize = 16.dp
+val GlassCardSwipeThreshold = 90.dp
+val GlassCardSwipeIconSize = 22.dp
+val GlassCardSkeletonTitleHeight = 18.dp
+val GlassCardSkeletonSubtitleHeight = 14.dp
+
+const val AlphaGlassCardFillStart = 0.70f
+const val AlphaGlassCardFillMid = 0.58f
+const val AlphaGlassCardFillEnd = 0.64f
+const val AlphaGlassCardBorderHighlight = 0.65f
+const val AlphaGlassCardBorderMid = 0.30f
+const val AlphaGlassCardBorderEnd = 0.15f
+const val AlphaGlassCardBorderSubtle = 0.20f
+const val AlphaGlassCardFlatEdge = 0.30f
+const val AlphaGlassCardSubtitle = 0.85f
+const val AlphaGlassCardChipContainer = 0.20f
+const val AlphaGlassCardMarkContainer = 0.35f
+const val AlphaGlassCardShadow = 0.40f
+const val AlphaGlassCardUnselected = 0.55f
+const val AlphaGlassCardBorderNeutral = 0.40f
+const val AlphaGlassCardBorderTinted = 0.25f
 
 
 

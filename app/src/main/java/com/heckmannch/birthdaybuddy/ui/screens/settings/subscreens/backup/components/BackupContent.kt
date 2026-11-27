@@ -25,10 +25,10 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import com.heckmannch.birthdaybuddy.R
-import com.heckmannch.birthdaybuddy.ui.components.InfoCard
-import com.heckmannch.birthdaybuddy.ui.components.SettingsClickableRow
-import com.heckmannch.birthdaybuddy.ui.components.SettingsDetailScaffold
-import com.heckmannch.birthdaybuddy.ui.components.withSettingsInsets
+import com.heckmannch.birthdaybuddy.ui.components.cards.InfoCard
+import com.heckmannch.birthdaybuddy.ui.components.layout.withSettingsInsets
+import com.heckmannch.birthdaybuddy.ui.components.settings.SettingsClickableRow
+import com.heckmannch.birthdaybuddy.ui.components.settings.SettingsDetailScaffold
 import com.heckmannch.birthdaybuddy.ui.screens.settings.components.SettingsMenuSectionCard
 import com.heckmannch.birthdaybuddy.ui.screens.settings.subscreens.backup.BackupMessage
 import com.heckmannch.birthdaybuddy.ui.theme.BirthdayBuddyTheme

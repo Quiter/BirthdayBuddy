@@ -1,4 +1,4 @@
-package com.heckmannch.birthdaybuddy.ui.components
+package com.heckmannch.birthdaybuddy.ui.components.cards
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -27,6 +27,9 @@ import com.heckmannch.birthdaybuddy.ui.theme.SpacingExtraSmall
 import com.heckmannch.birthdaybuddy.ui.theme.SpacingMedium
 import com.heckmannch.birthdaybuddy.ui.theme.SpacingNormal
 
+/**
+ * Informational Material 3 card displaying an info icon, bold title, and body description.
+ */
 @Composable
 fun InfoCard(
     title: String,

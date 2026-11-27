@@ -11,9 +11,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import com.heckmannch.birthdaybuddy.R
-import com.heckmannch.birthdaybuddy.ui.components.SettingsDetailScaffold
-import com.heckmannch.birthdaybuddy.ui.components.SettingsItem
-import com.heckmannch.birthdaybuddy.ui.components.withSettingsInsets
+import com.heckmannch.birthdaybuddy.ui.components.layout.withSettingsInsets
+import com.heckmannch.birthdaybuddy.ui.components.settings.SettingsDetailScaffold
+import com.heckmannch.birthdaybuddy.ui.components.settings.SettingsItem
 import com.heckmannch.birthdaybuddy.ui.screens.settings.components.SettingsMenuSectionCard
 
 data class OpenSourceLibrary(

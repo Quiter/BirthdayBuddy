@@ -1,4 +1,4 @@
-package com.heckmannch.birthdaybuddy.ui.components
+package com.heckmannch.birthdaybuddy.ui.components.colorpicker
 
 import androidx.activity.ComponentActivity
 import androidx.compose.ui.graphics.Color

@@ -20,10 +20,10 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.heckmannch.birthdaybuddy.R
 import com.heckmannch.birthdaybuddy.domain.model.ThemeAccent
 import com.heckmannch.birthdaybuddy.domain.model.ThemeMode
-import com.heckmannch.birthdaybuddy.ui.components.AppResponsiveScaffold
-import com.heckmannch.birthdaybuddy.ui.components.ColorPickerDialog
-import com.heckmannch.birthdaybuddy.ui.components.SettingsClickableRow
-import com.heckmannch.birthdaybuddy.ui.components.SettingsSwitchRow
+import com.heckmannch.birthdaybuddy.ui.components.colorpicker.ColorPickerDialog
+import com.heckmannch.birthdaybuddy.ui.components.layout.AppResponsiveScaffold
+import com.heckmannch.birthdaybuddy.ui.components.settings.SettingsClickableRow
+import com.heckmannch.birthdaybuddy.ui.components.settings.SettingsSwitchRow
 import com.heckmannch.birthdaybuddy.ui.screens.settings.components.SettingsBody
 import com.heckmannch.birthdaybuddy.ui.screens.settings.components.SettingsFooter
 import com.heckmannch.birthdaybuddy.ui.screens.settings.components.SettingsHeader

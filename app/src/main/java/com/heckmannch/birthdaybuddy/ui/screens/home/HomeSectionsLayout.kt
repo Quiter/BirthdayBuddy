@@ -17,10 +17,10 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import com.heckmannch.birthdaybuddy.ui.components.ListScrollbar
-import com.heckmannch.birthdaybuddy.ui.components.PinnedHeaderPage
-import com.heckmannch.birthdaybuddy.ui.components.ScrollToTopButton
-import com.heckmannch.birthdaybuddy.ui.components.buildIndexedScrollTargets
+import com.heckmannch.birthdaybuddy.ui.components.layout.ListScrollbar
+import com.heckmannch.birthdaybuddy.ui.components.layout.PinnedHeaderPage
+import com.heckmannch.birthdaybuddy.ui.components.layout.ScrollToTopButton
+import com.heckmannch.birthdaybuddy.ui.components.layout.buildIndexedScrollTargets
 import com.heckmannch.birthdaybuddy.ui.model.HomeUiState
 import com.heckmannch.birthdaybuddy.ui.screens.home.components.header.HomeHeader
 import com.heckmannch.birthdaybuddy.ui.screens.home.components.list.BirthdayItem

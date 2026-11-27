@@ -27,8 +27,8 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.heckmannch.birthdaybuddy.R
-import com.heckmannch.birthdaybuddy.ui.components.AppResponsiveScaffold
-import com.heckmannch.birthdaybuddy.ui.components.SettingsItem
+import com.heckmannch.birthdaybuddy.ui.components.layout.AppResponsiveScaffold
+import com.heckmannch.birthdaybuddy.ui.components.settings.SettingsItem
 import com.heckmannch.birthdaybuddy.ui.screens.settings.components.SettingsBody
 import com.heckmannch.birthdaybuddy.ui.screens.settings.components.SettingsFooter
 import com.heckmannch.birthdaybuddy.ui.screens.settings.components.SettingsHeader

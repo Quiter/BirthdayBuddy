@@ -67,16 +67,21 @@
   - Mapper: `ContactUiMapper`, `CoupleSuggestionUiMapper`.
   - Modelle: `ContactUiModel`, `CoupleSuggestionUiModel`, `HomeUiState`, `BirthdayTier` (Enum), `LabelManagementModel`, `SampleData`.
 - **UI Components & Illustrations (`ui.components`, `ui.illustrations`)**:
-  - Komponenten: `AppTopHeader` (Morphe-Style Header mit weich animierter Suchleiste), `BuddyListCard` (`MorpheStyleListCard`), `ColorPickerDialog`, `ResponsiveLayout` (WindowSizeClass & Responsive Scaffold), `AppSwitch`, `SettingsComponents`, `StepItem`.
+  - **Bars (`ui.components.bars/`)**: `AppTopHeader` (zentraler Header mit animierter Suchleiste), `GlassPillBar` (`FloatingPillBar`), `GlassBlur` (`LocalBackdropHaze`, `glassFill`).
+  - **Cards (`ui.components.cards/`)**: `GlassCard` (`GlassCardLayout`, `GlassCardScope`, `GlassCardTag`, `GlassCardExpandButton`, `GlassCardLoading`), `ContactCard` (`BirthdayCard`), `InfoCard`, `GlassCardStyle`, `CardBackground`, `CardBorder`, `SelectableCard`, `SwipeableCard`.
+  - **Color Picker (`ui.components.colorpicker/`)**: `ColorPickerDialog`, `ColorPickerCanvas` (`HsvColor`, `SaturationValuePanel`, `HueSlider`).
+  - **Layout (`ui.components.layout/`)**: `ResponsiveLayout` (`WindowSizeClass`, `AppResponsiveScaffold`, `AdaptiveContentContainer`, `withSettingsInsets`), `PageScaffold` (`PinnedHeaderPage`, `FloatingBarsLayout`, `PageInsets`), `SharedScrollbar` (`ListScrollbar`, `ScrollToTopButton`).
+  - **Settings (`ui.components.settings/`)**: `SettingsRows` (`SettingsItem`, `SettingsExpandableCard`, `SettingsClickableRow`, `SettingsSwitchRow`, `SettingsInlineSwitchRow`, `ThemedIcon`, `IconTextRow`, `ForwardChevronIcon`), `SettingsLayout` (`SettingsGroup`, `SettingsSection`, `SettingsColumn`, `SettingsDetailScaffold`).
+  - **Basis-Komponenten (`ui.components/`)**: `AppSwitch`, `StepItem`.
   - Native Illustrationen: `WelcomeIllustration`, `ContactsIllustration`, `NotificationsIllustration`, `CalendarIllustration`, `CalendarGuideIllustration`, `ReadyIllustration`.
-- **Theme (`ui.theme`)**: `Theme.kt`, `Color.kt`, `ColorPresets.kt`, `Type.kt`, `Shapes.kt`, `Dimensions.kt`.
+- **Theme (`ui.theme`)**: `Theme.kt`, `Color.kt` (inkl. zentraler Glass-Card-, Geburtstags- und Label-Status-Gradients), `ColorPresets.kt`, `Type.kt`, `Shapes.kt`, `Dimensions.kt` (inkl. Glass-Card-Tokens).
 - **Feature Screens (`ui.screens`)** *(Co-located ViewModels, States & Components)*:
   - **Home (`home/`)**: `HomeScreen`, `HomeContent`, `HomeNavKey`, `HomeState`, `HomeActions`, `HomeIntent`, `HomeUiEvent`, `HomeViewModel`.
     - Header (`components/header/`): `HomeHeader` (erbt von `AppTopHeader`), `TitleAction`.
-    - Components: `BirthdayList`, `BirthdayItem`, `BirthdayDetailPane`, `GiftIdeaList`, `FastScrollbar`, `ScrollbarBubble`, `HomeTopBar`, `SearchBar`, `ContactActionRow`, `MessengerAppUi`, `ConfettiEffect`, etc.
-  - **Labels (`labels/`)**: `LabelsScreen`, `components/` (`LabelsHeader` [erbt von `AppTopHeader`], `AddLabelDialog`, `AllLabelsCard`, `LabelCard`). Label-Erstellung erfolgt über das Header-Plus-Icon.
+    - Components: `BirthdayList`, `BirthdayItem` (nutzt zentrales `BirthdayCard` aus `ui.components.cards/`), `BirthdayDetailPane`, `GiftIdeaList`, `FastScrollbar`, `ScrollbarBubble`, `ContactActionRow`, `MessengerAppUi`, `ConfettiEffect`, etc.
+  - **Labels (`labels/`)**: `LabelsScreen`, `components/` (`LabelsHeader` [erbt von `AppTopHeader`], `AddLabelDialog`, `AllLabelsCard`, `LabelCard` [expandierbare Glass-Cards mit Statusfärbung rot/grau über `Color.kt`], `SelectionCheckIndicator`, `ContactChip`). Label-Erstellung erfolgt über das Header-Plus-Icon.
   - **Onboarding (`onboarding/`)**: `OnboardingScreen`, `OnboardingViewModel`, `OnboardingUiState` & Pages (`WelcomePage`, `ContactsPage`, `NotificationsPage`, `CalendarPage`, `CalendarGuidePage`, `ReadyPage`, `OnboardingFooter`).
-  - **Settings (`settings/`)**: `SettingsScreen`, `SettingsMenuItemData.kt`, `components/` (`SettingsHeader`, `SettingsBody`, `SettingsFooter`, `SettingsMenuList`, `SettingsMenuSectionCard`, `SettingsDetailPane`) & Sub-Features in `subscreens/`:
+  - **Settings (`settings/`)**: `SettingsScreen`, `SettingsMenuItemData.kt`, `components/` (`SettingsHeader`, `SettingsBody`, `SettingsFooter`, `SettingsMenuList`, `SettingsMenuSectionCard`, `SettingsDetailPane`, `LabelManagementCard`, `OtherEventsManagementExpandableCard` – alle über zentrale `GlassCardLayout`-Komponenten) & Sub-Features in `subscreens/`:
     - `subscreens/labels/`: `LabelSettingsScreen`, `LabelViewModel`, `LabelUiState`.
     - `subscreens/notifications/`: `NotificationSettingsScreen`, `NotificationViewModel`, `NotificationUiState`.
     - `subscreens/calendar/`: `CalendarSettingsScreen`, `CalendarViewModel`, `CalendarUiState`.

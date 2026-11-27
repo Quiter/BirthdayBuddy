@@ -18,7 +18,7 @@ import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import com.heckmannch.birthdaybuddy.ui.components.SettingsColumn
+import com.heckmannch.birthdaybuddy.ui.components.settings.SettingsColumn
 import com.heckmannch.birthdaybuddy.ui.theme.BirthdayBuddyTheme
 
 /**

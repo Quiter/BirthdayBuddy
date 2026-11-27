@@ -2,7 +2,7 @@
  * Copyright 2026 BirthdayBuddy / Morphe Architecture.
  */
 
-package com.heckmannch.birthdaybuddy.ui.components
+package com.heckmannch.birthdaybuddy.ui.components.layout
 
 import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.background

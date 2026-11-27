@@ -1,4 +1,4 @@
-package com.heckmannch.birthdaybuddy.ui.components
+package com.heckmannch.birthdaybuddy.ui.components.colorpicker
 
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.foundation.background
@@ -34,13 +34,15 @@ import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
 import androidx.core.graphics.toColorInt
 import com.heckmannch.birthdaybuddy.R
-import com.heckmannch.birthdaybuddy.ui.components.colorpicker.HsvColor
-import com.heckmannch.birthdaybuddy.ui.components.colorpicker.HueSlider
-import com.heckmannch.birthdaybuddy.ui.components.colorpicker.SaturationValuePanel
+import com.heckmannch.birthdaybuddy.ui.theme.AlphaEmphasisLow
 import com.heckmannch.birthdaybuddy.ui.theme.BirthdayBuddyTheme
+import com.heckmannch.birthdaybuddy.ui.theme.BorderWidthThin
+import com.heckmannch.birthdaybuddy.ui.theme.ColorPickerComparisonSize
+import com.heckmannch.birthdaybuddy.ui.theme.ColorPickerPanelHeight
+import com.heckmannch.birthdaybuddy.ui.theme.ColorPickerPresetSize
+import com.heckmannch.birthdaybuddy.ui.theme.SelectedBorderWidthThick
 import com.heckmannch.birthdaybuddy.ui.theme.SpacingMedium
 import com.heckmannch.birthdaybuddy.ui.theme.SpacingNormal
 import com.heckmannch.birthdaybuddy.ui.theme.SpacingSmall
@@ -65,8 +67,6 @@ private fun Color.toHsv(): Triple<Float, Float, Float> {
     android.graphics.Color.colorToHSV(this.toArgb(), hsv)
     return Triple(hsv[0], hsv[1], hsv[2])
 }
-
-private val ComparisonSize = 56.dp
 
 /**
  * Advanced Color Picker Dialog inspired by Morphe Manager's architecture.
@@ -166,7 +166,7 @@ fun ColorPickerDialog(
                 SaturationValuePanel(
                     hsv = hsv,
                     onChange = { s, v -> moveTo(hsv.copy(saturation = s, value = v)) },
-                    height = 180.dp,
+                    height = ColorPickerPanelHeight,
                     contentDescription = stringResource(R.string.color_picker_shade)
                 )
 
@@ -201,9 +201,13 @@ fun ColorPickerDialog(
 private fun ColorComparison(before: List<Color>, after: List<Color>) {
     Row(
         modifier = Modifier
-            .size(ComparisonSize)
+            .size(ColorPickerComparisonSize)
             .clip(CircleShape)
-            .border(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.5f), CircleShape)
+            .border(
+                BorderWidthThin,
+                MaterialTheme.colorScheme.outline.copy(alpha = AlphaEmphasisLow),
+                CircleShape
+            )
     ) {
         ComparisonHalf(before)
         ComparisonHalf(after)
@@ -243,11 +247,11 @@ private fun ColorPresetGrid(
                     val isSelected = color.toArgb() == selectedColor.toArgb()
                     Box(
                         modifier = Modifier
-                            .size(36.dp)
+                            .size(ColorPickerPresetSize)
                             .clip(CircleShape)
                             .background(color)
                             .border(
-                                width = if (isSelected) 3.dp else 1.dp,
+                                width = if (isSelected) SelectedBorderWidthThick else BorderWidthThin,
                                 color = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outlineVariant,
                                 shape = CircleShape
                             )

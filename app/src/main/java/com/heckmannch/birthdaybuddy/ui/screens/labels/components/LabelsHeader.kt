@@ -13,7 +13,7 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import com.heckmannch.birthdaybuddy.R
-import com.heckmannch.birthdaybuddy.ui.components.AppTopHeader
+import com.heckmannch.birthdaybuddy.ui.components.bars.AppTopHeader
 import com.heckmannch.birthdaybuddy.ui.theme.BirthdayBuddyTheme
 
 /**

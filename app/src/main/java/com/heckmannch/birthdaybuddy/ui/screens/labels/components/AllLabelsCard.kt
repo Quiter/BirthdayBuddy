@@ -1,35 +1,23 @@
 package com.heckmannch.birthdaybuddy.ui.screens.labels.components
 
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedCard
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import com.heckmannch.birthdaybuddy.R
+import com.heckmannch.birthdaybuddy.ui.components.cards.GlassCardLayout
+import com.heckmannch.birthdaybuddy.ui.components.cards.GlassCardTag
 import com.heckmannch.birthdaybuddy.ui.theme.BirthdayBuddyTheme
-import com.heckmannch.birthdaybuddy.ui.theme.BorderWidthThin
-import com.heckmannch.birthdaybuddy.ui.theme.SelectedBorderWidth
-import com.heckmannch.birthdaybuddy.ui.theme.SpacingExtraSmall
-import com.heckmannch.birthdaybuddy.ui.theme.SpacingMedium
-import com.heckmannch.birthdaybuddy.ui.theme.SpacingNormal
-import com.heckmannch.birthdaybuddy.ui.theme.SpacingSmall
+import com.heckmannch.birthdaybuddy.ui.theme.defaultCardGradient
+import com.heckmannch.birthdaybuddy.ui.theme.labelActiveCardGradient
 
 /**
- * Card representing "All Labels" selection.
+ * Card representing "All Labels" selection using the central [GlassCardLayout].
  */
 @Composable
 internal fun AllLabelsCard(
@@ -38,59 +26,45 @@ internal fun AllLabelsCard(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    val colors = MaterialTheme.colorScheme
-    val containerColor = if (isActive) colors.secondaryContainer.copy(alpha = 0.55f) else colors.surfaceContainerLow
-    val borderColor = if (isActive) colors.primary else colors.outlineVariant.copy(alpha = 0.5f)
+    val gradientColors = if (isActive) labelActiveCardGradient() else defaultCardGradient()
+    val countText = if (contactsCount == 1) {
+        stringResource(R.string.labels_count_contacts_one)
+    } else {
+        stringResource(R.string.labels_count_contacts_many, contactsCount)
+    }
 
-    OutlinedCard(
+    GlassCardLayout(
+        modifier = modifier,
+        gradientColors = gradientColors,
         onClick = onClick,
-        shape = MaterialTheme.shapes.extraLarge,
-        colors = CardDefaults.outlinedCardColors(containerColor = containerColor),
-        border = BorderStroke(width = if (isActive) SelectedBorderWidth else BorderWidthThin, color = borderColor),
-        modifier = modifier.fillMaxWidth()
+        trailing = {
+            GlassCardTag(text = countText)
+        }
     ) {
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween,
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(SpacingNormal)
+        SelectionCheckIndicator(
+            selected = isActive,
+            ink = style.titleColor
+        )
+
+        Column(
+            modifier = with(row) { Modifier.weight(1f) },
+            verticalArrangement = Arrangement.spacedBy(style.textSpacing)
         ) {
-            SelectionCheckIndicator(
-                selected = isActive,
-                modifier = Modifier.padding(end = SpacingMedium)
+            Text(
+                text = stringResource(R.string.labels_all_card),
+                style = style.titleStyle,
+                fontWeight = FontWeight.Bold,
+                color = style.titleColor,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
             )
-
-            Column(modifier = Modifier.weight(1f)) {
-                Text(
-                    text = stringResource(R.string.labels_all_card),
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Bold,
-                    color = colors.onSurface
-                )
-                Spacer(modifier = Modifier.height(SpacingExtraSmall))
-                Text(
-                    text = stringResource(R.string.labels_all_card_desc),
-                    style = MaterialTheme.typography.bodySmall,
-                    color = colors.onSurfaceVariant
-                )
-            }
-
-            Surface(
-                color = colors.surfaceVariant,
-                shape = MaterialTheme.shapes.small
-            ) {
-                Text(
-                    text = if (contactsCount == 1) {
-                        stringResource(R.string.labels_count_contacts_one)
-                    } else {
-                        stringResource(R.string.labels_count_contacts_many, contactsCount)
-                    },
-                    style = MaterialTheme.typography.labelSmall,
-                    modifier = Modifier.padding(horizontal = SpacingSmall, vertical = SpacingExtraSmall),
-                    color = colors.onSurfaceVariant
-                )
-            }
+            Text(
+                text = stringResource(R.string.labels_all_card_desc),
+                style = style.subtitleStyle,
+                color = style.subtitleColor,
+                maxLines = 2,
+                overflow = TextOverflow.Ellipsis
+            )
         }
     }
 }

@@ -54,7 +54,7 @@ Für tiefgehende Detailthemen existieren spezialisierte Skills, die gezielt gela
 - **`ui/`**:
   - **`screens/`**: Feature-basierte Verzeichnisse (`home/`, `settings/`, `onboarding/`). Screen, Content, ViewModel, State und Events sind feature-co-located.
   - **`navigation/`**: Navigation 3 Routen (`NavRoutes.kt`) und Nav-Host (`AppNavHost.kt`).
-  - **`components/`**: Globale UI-Komponenten (`ResponsiveLayout.kt`, `ColorPickerDialog.kt`).
+  - **`components/`**: Globale UI-Komponenten (`bars/`, `cards/`, `colorpicker/`, `layout/`, `settings/`, `AppSwitch.kt`, `StepItem.kt`).
   - **`illustrations/`**: Native Compose-Animationen (`ContactsIllustration.kt`).
   - **`theme/`**: Design-System (Farben, Typografie, Formen, `Dimensions.kt`).
 - **`widget/`**: Glance App-Widget (`BirthdayWidget.kt`, `BirthdayWidgetWorker.kt`).

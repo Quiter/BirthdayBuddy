@@ -1,4 +1,4 @@
-package com.heckmannch.birthdaybuddy.ui.screens.home.components.cards
+package com.heckmannch.birthdaybuddy.ui.components.cards
 
 import android.view.HapticFeedbackConstants
 import androidx.compose.animation.core.Animatable
@@ -39,8 +39,10 @@ import androidx.compose.ui.semantics.CustomAccessibilityAction
 import androidx.compose.ui.semantics.customActions
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.dp
+import com.heckmannch.birthdaybuddy.ui.theme.AlphaGlassCardSubtitle
 import com.heckmannch.birthdaybuddy.ui.theme.CornerRadiusLarge
+import com.heckmannch.birthdaybuddy.ui.theme.GlassCardSwipeIconSize
+import com.heckmannch.birthdaybuddy.ui.theme.GlassCardSwipeThreshold
 import com.heckmannch.birthdaybuddy.ui.theme.SpacingExtraSmall
 import com.heckmannch.birthdaybuddy.ui.theme.SpacingLarge
 import kotlinx.coroutines.launch
@@ -60,11 +62,9 @@ data class SwipeActionConfig(
  */
 class SwipeAction(val config: SwipeActionConfig, val onTrigger: () -> Unit)
 
-private val SwipeActionThreshold = 90.dp
-
 @Composable
 private fun BoxScope.SwipeReveal(config: SwipeActionConfig, progress: Float, atEnd: Boolean) {
-    val tint = config.containerColor.copy(alpha = 0.85f * progress)
+    val tint = config.containerColor.copy(alpha = AlphaGlassCardSubtitle * progress)
     val clear = config.containerColor.copy(alpha = 0f)
     Box(
         modifier = Modifier
@@ -89,7 +89,7 @@ private fun BoxScope.SwipeReveal(config: SwipeActionConfig, progress: Float, atE
                 imageVector = config.icon,
                 contentDescription = null,
                 tint = config.contentColor,
-                modifier = Modifier.size(22.dp)
+                modifier = Modifier.size(GlassCardSwipeIconSize)
             )
             Text(
                 text = config.label,
@@ -103,8 +103,7 @@ private fun BoxScope.SwipeReveal(config: SwipeActionConfig, progress: Float, atE
 
 /**
  * Container component that enables horizontal swipe gesture handling for cards.
- * Uncovers custom start/end actions when dragged beyond [SwipeActionThreshold].
- * Directly modeled after Morphe Manager's SwipeableCardContainer.
+ * Uncovers custom start/end actions when dragged beyond [GlassCardSwipeThreshold].
  */
 @Composable
 fun SwipeableCardContainer(
@@ -118,7 +117,7 @@ fun SwipeableCardContainer(
 ) {
     val view = LocalView.current
     val scope = rememberCoroutineScope()
-    val actionThresholdPx = with(LocalDensity.current) { SwipeActionThreshold.toPx() }
+    val actionThresholdPx = with(LocalDensity.current) { GlassCardSwipeThreshold.toPx() }
     val currentStart by rememberUpdatedState(start)
     val currentEnd by rememberUpdatedState(end)
 

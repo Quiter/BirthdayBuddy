@@ -1,4 +1,4 @@
-package com.heckmannch.birthdaybuddy.ui.screens.home.components.cards
+package com.heckmannch.birthdaybuddy.ui.components.cards
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.Crossfade
@@ -29,13 +29,20 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.state.ToggleableState
-import androidx.compose.ui.unit.dp
+import com.heckmannch.birthdaybuddy.ui.theme.AlphaEmphasisDisabled
+import com.heckmannch.birthdaybuddy.ui.theme.AlphaEmphasisHigh
+import com.heckmannch.birthdaybuddy.ui.theme.AlphaEmphasisLow
+import com.heckmannch.birthdaybuddy.ui.theme.AlphaGlassCardSubtitle
+import com.heckmannch.birthdaybuddy.ui.theme.AlphaGlassCardUnselected
+import com.heckmannch.birthdaybuddy.ui.theme.AlphaSurfaceContainerHigh
+import com.heckmannch.birthdaybuddy.ui.theme.GlassCardSelectionMarkSize
+import com.heckmannch.birthdaybuddy.ui.theme.IconSizeSmall
+import com.heckmannch.birthdaybuddy.ui.theme.SelectedBorderWidth
 
-val SelectionMarkSize = 28.dp
+val SelectionMarkSize = GlassCardSelectionMarkSize
 
 /**
  * Wraps card content with a selection mode alpha dimming animation.
- * Directly modeled after Morphe Manager's SelectableCard.
  */
 @Composable
 fun SelectableCard(
@@ -45,7 +52,7 @@ fun SelectableCard(
     content: @Composable () -> Unit
 ) {
     val cardAlpha by animateFloatAsState(
-        targetValue = if (isSelectionMode && !isSelected) 0.55f else 1f,
+        targetValue = if (isSelectionMode && !isSelected) AlphaGlassCardUnselected else AlphaEmphasisHigh,
         animationSpec = tween(200),
         label = "card_alpha"
     )
@@ -113,7 +120,7 @@ private fun SwappedSlot(
 }
 
 /**
- * Circle check indicator matching Morphe Manager's checkbox style.
+ * Circle check indicator matching the frosted glass card style.
  */
 @Composable
 fun SelectionCheckIndicator(
@@ -124,9 +131,9 @@ fun SelectionCheckIndicator(
     ink: Color? = null
 ) {
     val colors = MaterialTheme.colorScheme
-    val container = ink ?: accentColor?.copy(alpha = 0.85f) ?: colors.primaryContainer
+    val container = ink ?: accentColor?.copy(alpha = AlphaGlassCardSubtitle) ?: colors.primaryContainer
     val content = ink?.contrastingContent() ?: colors.onPrimaryContainer
-    val outline = ink?.copy(alpha = 0.6f) ?: colors.outlineVariant
+    val outline = ink?.copy(alpha = AlphaSurfaceContainerHigh) ?: colors.outlineVariant
 
     Crossfade(
         targetState = state,
@@ -140,14 +147,14 @@ fun SelectionCheckIndicator(
                     modifier = Modifier
                         .size(SelectionMarkSize)
                         .clip(CircleShape)
-                        .background(if (enabled) container else container.copy(alpha = 0.38f)),
+                        .background(if (enabled) container else container.copy(alpha = AlphaEmphasisDisabled)),
                     contentAlignment = Alignment.Center
                 ) {
                     Icon(
                         imageVector = Icons.Default.Check,
                         contentDescription = null,
-                        tint = if (enabled) content else content.copy(alpha = 0.38f),
-                        modifier = Modifier.size(18.dp)
+                        tint = if (enabled) content else content.copy(alpha = AlphaEmphasisDisabled),
+                        modifier = Modifier.size(IconSizeSmall)
                     )
                 }
             }
@@ -156,7 +163,7 @@ fun SelectionCheckIndicator(
                     modifier = Modifier
                         .size(SelectionMarkSize)
                         .clip(CircleShape)
-                        .border(1.5.dp, outline, CircleShape)
+                        .border(SelectedBorderWidth, outline, CircleShape)
                 ) {}
             }
             ToggleableState.Indeterminate -> {
@@ -164,7 +171,7 @@ fun SelectionCheckIndicator(
                     modifier = Modifier
                         .size(SelectionMarkSize)
                         .clip(CircleShape)
-                        .background(container.copy(alpha = 0.5f)),
+                        .background(container.copy(alpha = AlphaEmphasisLow)),
                     contentAlignment = Alignment.Center
                 ) {}
             }

@@ -18,8 +18,8 @@ import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation3.runtime.NavKey
 import androidx.navigation3.runtime.rememberNavBackStack
-import com.heckmannch.birthdaybuddy.ui.components.LocalWindowAdaptiveInfo
-import com.heckmannch.birthdaybuddy.ui.components.LocalWindowSizeClass
+import com.heckmannch.birthdaybuddy.ui.components.layout.LocalWindowAdaptiveInfo
+import com.heckmannch.birthdaybuddy.ui.components.layout.LocalWindowSizeClass
 import com.heckmannch.birthdaybuddy.ui.navigation.AppNavHost
 import com.heckmannch.birthdaybuddy.ui.navigation.Home
 import com.heckmannch.birthdaybuddy.ui.navigation.Onboarding

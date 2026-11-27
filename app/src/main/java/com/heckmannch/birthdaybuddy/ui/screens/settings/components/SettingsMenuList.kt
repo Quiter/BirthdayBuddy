@@ -10,7 +10,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import com.heckmannch.birthdaybuddy.R
-import com.heckmannch.birthdaybuddy.ui.components.SettingsItem
+import com.heckmannch.birthdaybuddy.ui.components.settings.SettingsItem
 import com.heckmannch.birthdaybuddy.ui.screens.settings.SettingsMenuItemData
 import com.heckmannch.birthdaybuddy.ui.screens.settings.SettingsSectionType
 import com.heckmannch.birthdaybuddy.ui.screens.settings.rememberSettingsMenuItems

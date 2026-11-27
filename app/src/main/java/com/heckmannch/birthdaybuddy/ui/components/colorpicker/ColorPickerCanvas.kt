@@ -27,7 +27,10 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.Dp
-import androidx.compose.ui.unit.dp
+import com.heckmannch.birthdaybuddy.ui.theme.AlphaColorPickerMarkerShadow
+import com.heckmannch.birthdaybuddy.ui.theme.ColorPickerMarkerRadius
+import com.heckmannch.birthdaybuddy.ui.theme.ColorPickerMarkerStroke
+import com.heckmannch.birthdaybuddy.ui.theme.ColorPickerPanelDefaultHeight
 import com.heckmannch.birthdaybuddy.ui.theme.SpacingMedium
 
 /**
@@ -45,9 +48,7 @@ data class HsvColor(val hue: Float, val saturation: Float, val value: Float) {
     }
 }
 
-private val MarkerRadius = 10.dp
-private val MarkerStroke = 3.dp
-private val HueStripHeight = (MarkerRadius + MarkerStroke / 2) * 2
+private val HueStripHeight = (ColorPickerMarkerRadius + ColorPickerMarkerStroke / 2) * 2
 private val HueStops = List(13) { Color.hsv(it * 30f, 1f, 1f) }
 
 /**
@@ -58,7 +59,7 @@ fun SaturationValuePanel(
     hsv: HsvColor,
     onChange: (saturation: Float, value: Float) -> Unit,
     modifier: Modifier = Modifier,
-    height: Dp = 200.dp,
+    height: Dp = ColorPickerPanelDefaultHeight,
     contentDescription: String? = null
 ) {
     var size by remember { mutableStateOf(Size.Zero) }
@@ -95,7 +96,7 @@ fun SaturationValuePanel(
         drawMarker(
             center = Offset(hsv.saturation * size.width, (1f - hsv.value) * size.height),
             fill = hsv.color,
-            radius = MarkerRadius.toPx()
+            radius = ColorPickerMarkerRadius.toPx()
         )
     }
 }
@@ -143,20 +144,20 @@ fun HueSlider(
         drawMarker(
             center = Offset((hue / 360f) * size.width, size.height / 2f),
             fill = Color.hsv(hue, 1f, 1f),
-            radius = MarkerRadius.toPx()
+            radius = ColorPickerMarkerRadius.toPx()
         )
     }
 }
 
 private fun DrawScope.drawMarker(center: Offset, fill: Color, radius: Float) {
-    val stroke = MarkerStroke.toPx()
+    val stroke = ColorPickerMarkerStroke.toPx()
     val outer = radius + stroke / 2f
     val clamped = Offset(
         center.x.coerceIn(outer, (size.width - outer).coerceAtLeast(outer)),
         center.y.coerceIn(outer, (size.height - outer).coerceAtLeast(outer))
     )
 
-    drawCircle(Color.Black.copy(alpha = 0.35f), outer, clamped)
+    drawCircle(Color.Black.copy(alpha = AlphaColorPickerMarkerShadow), outer, clamped)
     drawCircle(fill, radius, clamped)
     drawCircle(Color.White, radius, clamped, style = Stroke(stroke))
 }

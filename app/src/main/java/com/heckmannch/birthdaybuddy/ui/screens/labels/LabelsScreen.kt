@@ -45,10 +45,10 @@ import com.heckmannch.birthdaybuddy.ui.theme.SpacingSmall
  * Do NOT append contact lists or contact groups below the label cards.
  * Label creation is triggered via the [LabelsHeader] action icon (NO FloatingActionButton).
  *
- * Uses expandable Label Cards inspired by Morphe Manager's `PatchCard` design.
+ * Uses expandable frosted glass cards built on the central `GlassCardLayout`.
  * Each card allows:
- * - Direct tap on card surface: Selects/activates the label filter for the app.
- * - Tap on expansion arrow: Opens/closes label details and granular controls.
+ * - Direct tap on card surface or expand button: Opens/closes label details and granular controls.
+ * - Tap on leading selection indicator: Selects/activates the label filter for the app.
  */
 @Composable
 fun LabelsScreen(

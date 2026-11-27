@@ -2,7 +2,7 @@
  * Copyright 2026 BirthdayBuddy / Morphe Architecture.
  */
 
-package com.heckmannch.birthdaybuddy.ui.components
+package com.heckmannch.birthdaybuddy.ui.components.layout
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.Animatable
