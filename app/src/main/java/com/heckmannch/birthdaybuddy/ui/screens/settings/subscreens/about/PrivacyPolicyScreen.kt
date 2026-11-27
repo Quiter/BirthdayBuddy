@@ -49,6 +49,7 @@ import dagger.hilt.EntryPoint
 import dagger.hilt.InstallIn
 import dagger.hilt.android.EntryPointAccessors
 import dagger.hilt.components.SingletonComponent
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -113,6 +114,7 @@ fun PrivacyPolicyScreen(
                 PrivacyPolicyUiState.Success(text)
             }
         } catch (e: Exception) {
+            if (e is CancellationException) throw e
             Log.w(TAG, "Unerwarteter Fehler beim asynchronen Laden der Datenschutzerklärung", e)
             PrivacyPolicyUiState.Error(errorMessage)
         }

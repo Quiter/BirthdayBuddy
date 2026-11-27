@@ -97,6 +97,46 @@ class ContactFilterLogicTest {
         assertThat(result).isEmpty()
     }
 
+    // --- Ignored-Only Filtering Tests ---
+
+    @Test
+    fun `filterOutIgnored returns all contacts when labels are disabled`() {
+        val ignoredContact = createContact(labels = listOf("Ex-Colleagues"))
+        val result = ContactFilterLogic.filterOutIgnored(
+            contacts = listOf(ignoredContact),
+            labelsEnabled = false,
+            configs = configs,
+        )
+        assertThat(result).containsExactly(ignoredContact)
+    }
+
+    @Test
+    fun `filterOutIgnored excludes contacts with ignored label even when combined with active label`() {
+        val activeContact = createContact(labels = listOf("Family")).copy(lookupKey = "k_active")
+        val hiddenNotifContact = createContact(labels = listOf("Work")).copy(lookupKey = "k_work")
+        val noLabelContact = createContact(labels = emptyList()).copy(lookupKey = "k_none")
+        val ignoredContact = createContact(labels = listOf("Family", "Ex-Colleagues")).copy(lookupKey = "k_ignored")
+
+        val result = ContactFilterLogic.filterOutIgnored(
+            contacts = listOf(activeContact, hiddenNotifContact, noLabelContact, ignoredContact),
+            labelsEnabled = true,
+            configs = configs,
+        )
+
+        assertThat(result).containsExactly(activeContact, hiddenNotifContact, noLabelContact)
+    }
+
+    @Test
+    fun `filterOutIgnored returns all contacts when no ignored labels are configured`() {
+        val contact = createContact(labels = listOf("Family"))
+        val result = ContactFilterLogic.filterOutIgnored(
+            contacts = listOf(contact),
+            labelsEnabled = true,
+            configs = listOf(activeLabel, hiddenNotifLabel),
+        )
+        assertThat(result).containsExactly(contact)
+    }
+
     private fun createContact(
         birthday: LocalDate? = LocalDate.of(1990, 5, 15),
         labels: List<String> = emptyList()

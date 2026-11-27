@@ -20,7 +20,7 @@ android {
         minSdk = 28
         targetSdk = 37
         versionCode = 53
-        versionName = "2.17.1.25"
+        versionName = "2.17.1.26"
 
         testInstrumentationRunner = "com.heckmannch.birthdaybuddy.HiltTestRunner"
     }
@@ -86,7 +86,6 @@ tasks.withType<Test>().configureEach {
 }
 
 dependencies {
-    implementation(libs.androidx.compose.foundation)
     // Baseline Profile
     baselineProfile(project(":baselineprofile"))
     implementation(libs.androidx.profileinstaller)
@@ -100,7 +99,7 @@ dependencies {
     implementation(libs.androidx.core.splashscreen)
     implementation(libs.bundles.lifecycle)
     implementation(libs.bundles.room)
-    implementation(libs.bundles.coil)
+    implementation(libs.coil.compose)
     implementation(libs.bundles.glance)
     implementation(libs.haze)
     implementation(libs.haze.blur)

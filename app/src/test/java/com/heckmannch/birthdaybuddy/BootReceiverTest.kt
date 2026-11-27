@@ -15,6 +15,7 @@ import io.mockk.mockkStatic
 import io.mockk.spyk
 import io.mockk.unmockkAll
 import io.mockk.verify
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import org.junit.After
 import org.junit.Before
@@ -195,6 +196,20 @@ class BootReceiverTest {
 
         coVerify(exactly = 1) { syncNotificationSchedulingUseCase() }
         coVerify(exactly = 1) { widgetUpdater.updateWidget() }
+        verify(exactly = 1) { pendingResult.finish() }
+    }
+
+    @Test
+    fun `onReceive rethrows CancellationException from syncScheduling without running widget update and still finishes pending result`() {
+        coEvery { syncNotificationSchedulingUseCase() } throws CancellationException("Cancelled")
+
+        val intent = createIntent(Intent.ACTION_BOOT_COMPLETED)
+        receiver.onReceive(context, intent)
+
+        coVerify(exactly = 1) { syncNotificationSchedulingUseCase() }
+        coVerify(exactly = 0) { widgetUpdater.updateWidget() }
+        coVerify(exactly = 0) { scheduleDailyWidgetUpdateUseCase() }
+        verify(exactly = 0) { android.util.Log.w(any(), any<String>(), any()) }
         verify(exactly = 1) { pendingResult.finish() }
     }
 }

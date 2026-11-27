@@ -1,7 +1,5 @@
 package com.heckmannch.birthdaybuddy.data.repository
 
-import android.util.Log
-import androidx.room.withTransaction
 import com.heckmannch.birthdaybuddy.data.local.AppDatabase
 import com.heckmannch.birthdaybuddy.data.local.ContactDao
 import com.heckmannch.birthdaybuddy.data.local.ContactUserData
@@ -15,7 +13,6 @@ import com.heckmannch.birthdaybuddy.domain.repository.CalendarSyncRepository
 import com.heckmannch.birthdaybuddy.domain.repository.CoupleRepository
 import com.heckmannch.birthdaybuddy.domain.repository.SettingsRepository
 import com.heckmannch.birthdaybuddy.domain.repository.WidgetUpdater
-import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.distinctUntilChanged
@@ -64,40 +61,13 @@ class CoupleRepositoryImpl @Inject constructor(
         .map { it.ignoredCouplePairs }
         .distinctUntilChanged()
 
-    /**
-     * Executes a 2-phase transactional update:
-     * 1. Reads previous state from SettingsDB / Room.
-     * 2. Writes updated data to SettingsDB (Source of Truth).
-     * 3. Updates AppDB cache. If this fails, rolls back the SettingsDB change and rethrows.
-     */
-    private suspend fun <T> executeWithSettingsRollback(
-        readPreviousState: suspend () -> T,
-        writeSettings: suspend (T) -> Unit,
-        rollbackSettings: suspend (T) -> Unit,
-        updateAppDbCache: suspend () -> Unit,
-        errorMessage: String
-    ) {
-        val previousState = readPreviousState()
-        settingsDatabase.withTransaction {
-            writeSettings(previousState)
-        }
-        try {
-            appDatabase.withTransaction {
-                updateAppDbCache()
-            }
-        } catch (e: Exception) {
-            if (e is CancellationException) throw e
-            Log.e(TAG, "$errorMessage: ${e.message}", e)
-            settingsDatabase.withTransaction {
-                rollbackSettings(previousState)
-            }
-            throw e
-        }
-    }
-
     override suspend fun linkAsCouple(lookupKey1: String, lookupKey2: String) {
         withContext(ioDispatcher) {
             executeWithSettingsRollback(
+                settingsDatabase = settingsDatabase,
+                appDatabase = appDatabase,
+                logTag = TAG,
+                errorMessage = "Cache update failed for linkAsCouple, rolling back settings",
                 readPreviousState = {
                     val prevUserData1 = contactUserDataDao.getUserDataForContact(lookupKey1)
                     val prevUserData2 = contactUserDataDao.getUserDataForContact(lookupKey2)
@@ -133,7 +103,6 @@ class CoupleRepositoryImpl @Inject constructor(
                         contactDao.upsertContact(contact.copy(spouseLookupKey = lookupKey1))
                     }
                 },
-                errorMessage = "Cache update failed for linkAsCouple, rolling back settings"
             )
         }
         updateWidgetAndSyncCalendar()
@@ -145,6 +114,10 @@ class CoupleRepositoryImpl @Inject constructor(
             val spouseKey = contact.spouseLookupKey ?: return@withContext
 
             executeWithSettingsRollback(
+                settingsDatabase = settingsDatabase,
+                appDatabase = appDatabase,
+                logTag = TAG,
+                errorMessage = "Cache update failed for unlinkCouple, rolling back settings",
                 readPreviousState = {
                     val prevUserData1 = contactUserDataDao.getUserDataForContact(lookupKey)
                     val prevUserData2 = contactUserDataDao.getUserDataForContact(spouseKey)
@@ -166,7 +139,6 @@ class CoupleRepositoryImpl @Inject constructor(
                         contactDao.upsertContact(it.copy(spouseLookupKey = null))
                     }
                 },
-                errorMessage = "Cache update failed for unlinkCouple, rolling back settings"
             )
         }
         updateWidgetAndSyncCalendar()

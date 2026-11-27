@@ -8,13 +8,45 @@ import com.heckmannch.birthdaybuddy.domain.model.LabelConfig
  *
  * Rules:
  * 1. Ignored Labels: If a contact is assigned to at least one label marked as [LabelConfig.isIgnored],
- *    the contact is completely ignored (excluded from notifications and widgets).
+ *    the contact is completely ignored (excluded from notifications, widgets, and AppFunctions).
  * 2. Hidden Labels: If a contact is assigned to multiple labels and none are ignored,
  *    it is only hidden if ALL of its assigned labels are hidden (disabled).
  *    If at least one assigned label is active (or if the contact has no labels at all),
  *    the contact remains included.
  */
 object ContactFilterLogic {
+
+    /**
+     * Evaluates whether a [Contact] is not excluded by an ignored label.
+     *
+     * If [labelsEnabled] is `false`, all contacts remain visible regardless of label configs.
+     * Otherwise, a contact is excluded if at least one of its assigned labels is in [ignoredLabels].
+     */
+    fun isNotIgnored(
+        contact: Contact,
+        labelsEnabled: Boolean,
+        ignoredLabels: Set<String>,
+    ): Boolean {
+        if (!labelsEnabled) return true
+        return contact.labels.none { it in ignoredLabels }
+    }
+
+    /**
+     * Filters out [Contact]s assigned to any label marked as [LabelConfig.isIgnored]
+     * when [labelsEnabled] is `true`.
+     */
+    fun filterOutIgnored(
+        contacts: List<Contact>,
+        labelsEnabled: Boolean,
+        configs: Collection<LabelConfig>,
+    ): List<Contact> {
+        if (!labelsEnabled) return contacts
+        val ignoredLabels = extractIgnoredLabels(configs)
+        if (ignoredLabels.isEmpty()) return contacts
+        return contacts.filter { contact ->
+            isNotIgnored(contact, labelsEnabled = true, ignoredLabels = ignoredLabels)
+        }
+    }
 
     /**
      * Extracts the set of label names configured as ignored.

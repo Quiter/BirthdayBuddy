@@ -68,7 +68,6 @@ roborazzi = "1.79.0"
 robolectric = "4.18.1"
 baselineprofile = "1.5.0"
 profileinstaller = "1.4.1"
-foundation = "1.13.0"
 
 
 [libraries]
@@ -90,13 +89,13 @@ androidx-compose-ui = { group = "androidx.compose.ui", name = "ui" }
 androidx-compose-ui-graphics = { group = "androidx.compose.ui", name = "ui-graphics" }
 androidx-compose-ui-tooling = { group = "androidx.compose.ui", name = "ui-tooling" }
 androidx-compose-ui-tooling-preview = { group = "androidx.compose.ui", name = "ui-tooling-preview" }
+androidx-compose-foundation = { group = "androidx.compose.foundation", name = "foundation" }
 androidx-compose-material3 = { group = "androidx.compose.material3", name = "material3" }
 androidx-compose-material-icons-core = { group = "androidx.compose.material", name = "material-icons-core" }
 androidx-compose-material-icons-extended = { group = "androidx.compose.material", name = "material-icons-extended" }
 material = { group = "com.google.android.material", name = "material", version.ref = "material" }
 material-color-utilities = { group = "com.materialkolor", name = "material-color-utilities", version.ref = "materialColorUtilities" }
 coil-compose = { group = "io.coil-kt.coil3", name = "coil-compose", version.ref = "coil" }
-coil-network-okhttp = { group = "io.coil-kt.coil3", name = "coil-network-okhttp", version.ref = "coil" }
 haze = { group = "dev.chrisbanes.haze", name = "haze", version.ref = "haze" }
 haze-blur = { group = "dev.chrisbanes.haze", name = "haze-blur", version.ref = "haze" }
 
@@ -167,7 +166,6 @@ roborazzi-junit-rule = { group = "io.github.takahirom.roborazzi", name = "robora
 robolectric = { group = "org.robolectric", name = "robolectric", version.ref = "robolectric" }
 androidx-profileinstaller = { group = "androidx.profileinstaller", name = "profileinstaller", version.ref = "profileinstaller" }
 benchmark-macro-junit4 = { group = "androidx.benchmark", name = "benchmark-macro-junit4", version.ref = "baselineprofile" }
-androidx-compose-foundation = { group = "androidx.compose.foundation", name = "foundation", version.ref = "foundation" }
 
 
 [plugins]
@@ -207,6 +205,7 @@ compose-ui-core = [
     "androidx-compose-ui",
     "androidx-compose-ui-graphics",
     "androidx-compose-ui-tooling-preview",
+    "androidx-compose-foundation",
     "androidx-compose-material3",
     "androidx-compose-material-icons-core",
     "androidx-compose-material-icons-extended"
@@ -230,10 +229,6 @@ lifecycle = [
 room = [
     "androidx-room-runtime",
     "androidx-room-ktx"
-]
-coil = [
-    "coil-compose",
-    "coil-network-okhttp"
 ]
 glance = [
     "androidx-glance-appwidget",

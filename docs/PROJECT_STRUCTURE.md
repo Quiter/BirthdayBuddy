@@ -33,7 +33,7 @@
   - `CoupleRepositoryImpl.kt`: Verknüpfung verheirateter Ehepartner & Vorschlagsverwaltung.
   - `SettingsRepositoryImpl.kt`: Thread-sichere Mutation von `AppSettings` via `Mutex`.
   - `NotificationRepositoryImpl.kt`, `CalendarSyncRepositoryImpl.kt`, `TimeRepositoryImpl.kt`, `StorageRepositoryImpl.kt`.
-  - Helpers & Data Sources: `GiftIdeaBackupManager`, `BirthdayWidgetUpdater`, `NotificationSchedulerImpl`, `SystemCalendarDataSourceImpl`, `SystemCalendarInfo`, `SystemContactDataSource`.
+  - Helpers & Data Sources: `RepositoryTransactionHelper`, `GiftIdeaBackupManager`, `BirthdayWidgetUpdater`, `NotificationSchedulerImpl`, `SystemCalendarDataSourceImpl`, `SystemCalendarInfo`, `SystemContactDataSource`.
 - **Mapper & Provider (`data.mapper`, `data.permission`, `data.util`)**:
   - Mapper: `ContactDbMapper`, `AppSettingsMapper`.
   - Berechtigungen: `AndroidPermissionChecker.kt`.
@@ -117,7 +117,7 @@
 
 ### 📁 Lokale JVM Unit-Tests (`app/src/test`)
 - **Infrastructure & Root**: `MainDispatcherRule.kt`, `AppViewModelTest.kt`, `BootReceiverTest.kt`, `app/src/test/resources/robolectric.properties` (Globales SDK=35 Pinning).
-- **Data Layer**: `ContactDaoTest`, `PendingNotificationDaoTest`, `ConvertersTest`, `GiftIdeaConvertersTest`, DB-Mapper-Tests, Repository-Tests (`ContactRepositoryImplTest`, `CoupleRepositoryImplTest`, `GiftIdeaRepositoryImplTest`, `NotificationRepositoryImplTest`, `CalendarSyncRepositoryImplTest`, `StorageRepositoryImplTest`, etc.).
+- **Data Layer**: `ContactDaoTest`, `PendingNotificationDaoTest`, `ConvertersTest`, `GiftIdeaConvertersTest`, DB-Mapper-Tests, `RepositoryTransactionHelperTest`, Repository-Tests (`ContactRepositoryImplTest`, `CoupleRepositoryImplTest`, `GiftIdeaRepositoryImplTest`, `NotificationRepositoryImplTest`, `CalendarSyncRepositoryImplTest`, `StorageRepositoryImplTest`, etc.).
 - **Domain Layer**: Tests für Use Cases (`GetContactsUseCaseTest`, `GetPendingNotificationsUseCaseTest`, etc.) und Utilities (`PhoneNumberNormalizerTest`, `NotificationKeyUtilsTest`, `ContactFilterLogicTest`).
 - **Platform & Notification**: `BirthdayAppFunctionServiceTest`, `NotificationAlarmReceiverTest`, `NotificationActionReceiverTest`, `NotificationTextFormatterTest`, `NotificationWorkerTest`, `SnoozeWorkerTest`.
 - **UI & ViewModels**: Feature-co-located ViewModel-Tests (`HomeViewModelTest`, `OnboardingViewModelTest`, `BackupViewModelTest`, `CalendarViewModelTest`, `LabelViewModelTest`, `ThemeViewModelTest`, `SyncViewModelTest`, `StorageSettingsViewModelTest`), Compose-Komponenten- & UI-Util-Tests (`GiftIdeaListTest`, `SearchBarTest`, `FastScrollbarBoundsTest`, `AppTopHeaderTest`, `GlassCardTest`, `SettingsComponentsTest`, `ColorPickerComponentsTest`, `ColorUtilsTest`).

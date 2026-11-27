@@ -12,6 +12,7 @@ import dagger.hilt.EntryPoint
 import dagger.hilt.InstallIn
 import dagger.hilt.android.EntryPointAccessors
 import dagger.hilt.components.SingletonComponent
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 
@@ -83,6 +84,7 @@ class BootReceiver : BroadcastReceiver() {
                 try {
                     entryPoint.syncNotificationSchedulingUseCase()()
                 } catch (e: Exception) {
+                    if (e is CancellationException) throw e
                     // Safeguard: Scheduler-Fehler dürfen den Boot-Prozess nicht blockieren.
                     Log.w(TAG, "Fehler bei der Benachrichtigungsplanung nach Boot/Zeitänderung", e)
                 }
@@ -91,6 +93,7 @@ class BootReceiver : BroadcastReceiver() {
                     entryPoint.widgetUpdater().updateWidget()
                     entryPoint.scheduleDailyWidgetUpdateUseCase()()
                 } catch (e: Exception) {
+                    if (e is CancellationException) throw e
                     // Safeguard: Fehler beim Widget-Update dürfen die Benachrichtigungsplanung und den Boot-Prozess nicht blockieren.
                     Log.w(TAG, "Fehler beim Widget-Update nach Boot/Zeitänderung", e)
                 }

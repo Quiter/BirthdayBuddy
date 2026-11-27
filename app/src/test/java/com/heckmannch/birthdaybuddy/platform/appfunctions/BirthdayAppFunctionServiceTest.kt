@@ -6,12 +6,18 @@ import androidx.appfunctions.ExecuteAppFunctionResponse
 import androidx.appfunctions.internal.AppFunctionInventory
 import com.google.common.truth.Truth.assertThat
 import com.heckmannch.birthdaybuddy.MainDispatcherRule
+import com.heckmannch.birthdaybuddy.domain.model.AppSettings
 import com.heckmannch.birthdaybuddy.domain.model.Contact
+import com.heckmannch.birthdaybuddy.domain.model.LabelConfig
 import com.heckmannch.birthdaybuddy.domain.repository.ContactRepository
+import com.heckmannch.birthdaybuddy.domain.repository.SettingsRepository
 import com.heckmannch.birthdaybuddy.domain.util.DeviceRegionProvider
 import com.heckmannch.birthdaybuddy.domain.util.NO_YEAR_MARKER
+import com.heckmannch.birthdaybuddy.util.Clock
 import io.mockk.coEvery
+import io.mockk.every
 import io.mockk.mockk
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.runTest
 import org.junit.Before
 import org.junit.Rule
@@ -20,6 +26,7 @@ import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
 import java.time.LocalDate
+import java.time.ZoneId
 import java.util.function.Consumer
 
 /**
@@ -36,10 +43,22 @@ class BirthdayAppFunctionServiceTest {
     val mainDispatcherRule = MainDispatcherRule()
 
     private val contactRepository: ContactRepository = mockk()
+    private val settingsRepository: SettingsRepository = mockk()
+
+    private class FakeClock(
+        var currentDate: LocalDate = LocalDate.of(2026, 6, 15),
+    ) : Clock {
+        override fun currentTimeMillis(): Long =
+            currentDate.atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli()
+
+        override fun nowLocalDate(zoneId: ZoneId): LocalDate = currentDate
+    }
+
+    private val clock = FakeClock()
 
     /**
      * Concrete test subclass of the abstract [BirthdayAppFunctionService].
-     * Injects the mocked [ContactRepository] and test dispatcher directly,
+     * Injects the mocked repositories, fake clock, and test dispatcher directly,
      * bypassing the Hilt injection that is not available in JVM unit tests.
      */
     private inner class TestBirthdayAppFunctionService : BirthdayAppFunctionService() {
@@ -47,10 +66,12 @@ class BirthdayAppFunctionServiceTest {
 
         init {
             contactRepository = this@BirthdayAppFunctionServiceTest.contactRepository
+            settingsRepository = this@BirthdayAppFunctionServiceTest.settingsRepository
             ioDispatcher = mainDispatcherRule.testDispatcher
             deviceRegionProvider = object : DeviceRegionProvider {
                 override fun getCountryIso(): String = "DE"
             }
+            clock = this@BirthdayAppFunctionServiceTest.clock
         }
 
         override fun isPackageInstalled(pm: android.content.pm.PackageManager, packageName: String): Boolean {
@@ -76,7 +97,8 @@ class BirthdayAppFunctionServiceTest {
     private lateinit var service: TestBirthdayAppFunctionService
 
     // Representative test contacts with various birthday scenarios
-    private val today: LocalDate = LocalDate.now()
+    private val today: LocalDate
+        get() = clock.currentDate
 
     private fun contactWithBirthdayInDays(
         lookupKey: String,
@@ -84,6 +106,7 @@ class BirthdayAppFunctionServiceTest {
         daysFromNow: Int,
         year: Int? = 1990,
         phone: String? = "+4917612345678",
+        labels: List<String> = emptyList(),
     ): Contact {
         val date = today.plusDays(daysFromNow.toLong())
         // Store birthday as a date in a sentinel year if no year given, else use actual year
@@ -98,11 +121,14 @@ class BirthdayAppFunctionServiceTest {
             fullName = name,
             birthday = birthdayDate,
             phoneNumber = phone,
+            labels = labels,
         )
     }
 
     @Before
     fun setUp() {
+        coEvery { settingsRepository.getSettingsImmediate() } returns AppSettings(labelsEnabled = true)
+        every { contactRepository.labelConfigs } returns flowOf(emptyList())
         service = TestBirthdayAppFunctionService()
     }
 
@@ -282,6 +308,86 @@ class BirthdayAppFunctionServiceTest {
             // "Andrea Müller" < "Andrea Schulz" alphabetically
             assertThat(result!!.fullName).isEqualTo("Andrea Müller")
         }
+
+    // ---- Ignored labels & Clock injection ---------------------------------------------------
+
+    @Test
+    fun `getUpcomingBirthdays excludes contacts with ignored label when labelsEnabled is true`() = runTest {
+        val visible = contactWithBirthdayInDays("k_vis", "Anna Visible", daysFromNow = 5, labels = listOf("Family"))
+        val ignored = contactWithBirthdayInDays("k_ign", "Bob Ignored", daysFromNow = 5, labels = listOf("Ex-Colleagues"))
+
+        coEvery { contactRepository.getAllContactsImmediate() } returns listOf(visible, ignored)
+        coEvery { settingsRepository.getSettingsImmediate() } returns AppSettings(labelsEnabled = true)
+        every { contactRepository.labelConfigs } returns flowOf(
+            listOf(
+                LabelConfig(name = "Family", isIgnored = false),
+                LabelConfig(name = "Ex-Colleagues", isIgnored = true),
+            )
+        )
+
+        val result = service.getUpcomingBirthdays(withinDays = 30)
+
+        assertThat(result.map { it.contactId }).containsExactly("k_vis")
+    }
+
+    @Test
+    fun `getUpcomingBirthdays includes contacts with ignored label when labelsEnabled is false`() = runTest {
+        val visible = contactWithBirthdayInDays("k_vis", "Anna Visible", daysFromNow = 5, labels = listOf("Family"))
+        val ignored = contactWithBirthdayInDays("k_ign", "Bob Ignored", daysFromNow = 6, labels = listOf("Ex-Colleagues"))
+
+        coEvery { contactRepository.getAllContactsImmediate() } returns listOf(visible, ignored)
+        coEvery { settingsRepository.getSettingsImmediate() } returns AppSettings(labelsEnabled = false)
+        every { contactRepository.labelConfigs } returns flowOf(
+            listOf(LabelConfig(name = "Ex-Colleagues", isIgnored = true))
+        )
+
+        val result = service.getUpcomingBirthdays(withinDays = 30)
+
+        assertThat(result.map { it.contactId }).containsExactly("k_vis", "k_ign").inOrder()
+    }
+
+    @Test
+    fun `getContactBirthday excludes ignored contact when labelsEnabled is true and returns it when false`() = runTest {
+        val ignored = contactWithBirthdayInDays("k_ign", "Bob Ignored", daysFromNow = 5, labels = listOf("Spam"))
+        coEvery { contactRepository.getAllContactsImmediate() } returns listOf(ignored)
+        every { contactRepository.labelConfigs } returns flowOf(
+            listOf(LabelConfig(name = "Spam", isIgnored = true))
+        )
+
+        coEvery { settingsRepository.getSettingsImmediate() } returns AppSettings(labelsEnabled = true)
+        assertThat(service.getContactBirthday("Bob")).isNull()
+
+        coEvery { settingsRepository.getSettingsImmediate() } returns AppSettings(labelsEnabled = false)
+        assertThat(service.getContactBirthday("Bob")?.contactId).isEqualTo("k_ign")
+    }
+
+    @Test
+    fun `getUpcomingBirthdays and getContactBirthday use injected clock deterministically`() = runTest {
+        clock.currentDate = LocalDate.of(2026, 6, 15)
+        val contact = Contact(
+            contactId = "k_clk",
+            lookupKey = "k_clk",
+            fullName = "Clara Clock",
+            birthday = LocalDate.of(1996, 6, 20),
+        )
+        coEvery { contactRepository.getAllContactsImmediate() } returns listOf(contact)
+
+        val upcoming1 = service.getUpcomingBirthdays(withinDays = 30)
+        val single1 = service.getContactBirthday("Clara")
+        assertThat(upcoming1.single().daysUntil).isEqualTo(5)
+        assertThat(upcoming1.single().age).isEqualTo(30)
+        assertThat(single1?.daysUntil).isEqualTo(5)
+        assertThat(single1?.age).isEqualTo(30)
+
+        // Advance clock to birthday next year (2027-06-19 -> 1 day before 31st birthday)
+        clock.currentDate = LocalDate.of(2027, 6, 19)
+        val upcoming2 = service.getUpcomingBirthdays(withinDays = 30)
+        val single2 = service.getContactBirthday("Clara")
+        assertThat(upcoming2.single().daysUntil).isEqualTo(1)
+        assertThat(upcoming2.single().age).isEqualTo(31)
+        assertThat(single2?.daysUntil).isEqualTo(1)
+        assertThat(single2?.age).isEqualTo(31)
+    }
 
     // ---- buildSendBirthdayMessageIntent ----------------------------------------------------
 

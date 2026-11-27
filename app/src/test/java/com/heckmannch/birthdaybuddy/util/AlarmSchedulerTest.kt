@@ -16,6 +16,7 @@ import io.mockk.mockkConstructor
 import io.mockk.mockkStatic
 import io.mockk.unmockkAll
 import io.mockk.verify
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.test.runTest
@@ -24,9 +25,19 @@ import org.junit.Before
 import org.junit.Test
 import java.time.LocalDateTime
 import java.time.ZoneId
+import java.time.ZonedDateTime
 import javax.inject.Provider
 
 class AlarmSchedulerTest {
+
+    private class FakeClock(
+        var currentZoned: ZonedDateTime = ZonedDateTime.of(2026, 9, 7, 12, 0, 0, 0, ZoneId.systemDefault()),
+    ) : Clock {
+        override val zone: ZoneId
+            get() = currentZoned.zone
+
+        override fun currentTimeMillis(): Long = currentZoned.toInstant().toEpochMilli()
+    }
 
     private val context = mockk<Context>(relaxed = true)
     private val alarmManager = mockk<AlarmManager>(relaxed = true)
@@ -34,6 +45,7 @@ class AlarmSchedulerTest {
     private val settingsRepository = mockk<SettingsRepository>(relaxed = true)
     private val repositoryProvider = Provider { notificationRepository }
     private val settingsRepositoryProvider = Provider { settingsRepository }
+    private val clock = FakeClock()
     private val testDispatcher: CoroutineDispatcher = Dispatchers.Unconfined
 
     private lateinit var scheduler: AlarmScheduler
@@ -66,6 +78,7 @@ class AlarmSchedulerTest {
             context = context,
             notificationRepositoryProvider = repositoryProvider,
             settingsRepositoryProvider = settingsRepositoryProvider,
+            clock = clock,
             ioDispatcher = testDispatcher,
         )
     }
@@ -286,6 +299,21 @@ class AlarmSchedulerTest {
     }
 
     @Test
+    fun `rescheduleNotificationAlarm - rethrows CancellationException without logging`() = runTest {
+        coEvery { settingsRepository.getSettingsImmediate() } throws CancellationException("Cancelled")
+
+        var thrown: CancellationException? = null
+        try {
+            scheduler.rescheduleNotificationAlarm()
+        } catch (e: CancellationException) {
+            thrown = e
+        }
+
+        assertThat(thrown).isNotNull()
+        verify(exactly = 0) { android.util.Log.e(any(), any(), any()) }
+    }
+
+    @Test
     fun `rescheduleAllAlarms - reschedules both notification and widget update alarms`() = runTest {
         val rules = listOf(NotificationRule(daysBefore = 0, hour = 9, minute = 0))
         coEvery { settingsRepository.getSettingsImmediate() } returns AppSettings(notificationsEnabled = true)
@@ -300,5 +328,28 @@ class AlarmSchedulerTest {
                 any<PendingIntent>(),
             )
         }
+    }
+
+    @Test
+    fun `scheduleNextNotificationAlarm - single-arg overload uses injected clock and zone`() {
+        val zone = ZoneId.of("America/New_York")
+        clock.currentZoned = ZonedDateTime.of(2026, 9, 7, 10, 0, 0, 0, zone)
+        val rules = listOf(NotificationRule(daysBefore = 0, hour = 15, minute = 0))
+        val expectedMillis = ZonedDateTime.of(2026, 9, 7, 15, 0, 0, 0, zone).toInstant().toEpochMilli()
+
+        val result = scheduler.scheduleNextNotificationAlarm(rules)
+
+        assertThat(result).isEqualTo(expectedMillis)
+    }
+
+    @Test
+    fun `scheduleNextWidgetUpdateAlarm - zero-arg overload uses injected clock and zone`() {
+        val zone = ZoneId.of("Asia/Tokyo")
+        clock.currentZoned = ZonedDateTime.of(2026, 9, 7, 14, 0, 0, 0, zone)
+        val expectedMillis = ZonedDateTime.of(2026, 9, 8, 0, 1, 0, 0, zone).toInstant().toEpochMilli()
+
+        val result = scheduler.scheduleNextWidgetUpdateAlarm()
+
+        assertThat(result).isEqualTo(expectedMillis)
     }
 }

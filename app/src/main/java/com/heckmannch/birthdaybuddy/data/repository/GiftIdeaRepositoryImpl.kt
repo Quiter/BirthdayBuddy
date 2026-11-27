@@ -1,9 +1,7 @@
 package com.heckmannch.birthdaybuddy.data.repository
 
 import android.content.ContentResolver
-import android.util.Log
 import androidx.core.net.toUri
-import androidx.room.withTransaction
 import com.heckmannch.birthdaybuddy.data.local.AppDatabase
 import com.heckmannch.birthdaybuddy.data.local.ContactDao
 import com.heckmannch.birthdaybuddy.data.local.ContactEntity
@@ -16,7 +14,6 @@ import com.heckmannch.birthdaybuddy.domain.model.GiftIdea
 import com.heckmannch.birthdaybuddy.domain.repository.ContactRepository
 import com.heckmannch.birthdaybuddy.domain.repository.GiftIdeaRepository
 import com.heckmannch.birthdaybuddy.domain.repository.WidgetUpdater
-import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
@@ -51,40 +48,13 @@ class GiftIdeaRepositoryImpl @Inject constructor(
      */
     private val giftIdeaMutex = Mutex()
 
-    /**
-     * Executes a 2-phase transactional update:
-     * 1. Reads previous state from SettingsDB / Room.
-     * 2. Writes updated data to SettingsDB (Source of Truth).
-     * 3. Updates AppDB cache. If this fails, rolls back the SettingsDB change and rethrows.
-     */
-    private suspend fun <T> executeWithSettingsRollback(
-        readPreviousState: suspend () -> T,
-        writeSettings: suspend (T) -> Unit,
-        rollbackSettings: suspend (T) -> Unit,
-        updateAppDbCache: suspend () -> Unit,
-        errorMessage: String
-    ) {
-        val previousState = readPreviousState()
-        settingsDatabase.withTransaction {
-            writeSettings(previousState)
-        }
-        try {
-            appDatabase.withTransaction {
-                updateAppDbCache()
-            }
-        } catch (e: Exception) {
-            if (e is CancellationException) throw e
-            Log.e(TAG, "$errorMessage: ${e.message}", e)
-            settingsDatabase.withTransaction {
-                rollbackSettings(previousState)
-            }
-            throw e
-        }
-    }
-
     private suspend fun updateGiftIdeas(lookupKey: String, ideas: List<GiftIdea>) {
         withContext(ioDispatcher) {
             executeWithSettingsRollback(
+                settingsDatabase = settingsDatabase,
+                appDatabase = appDatabase,
+                logTag = TAG,
+                errorMessage = "Failed to update gift idea cache, rolling back",
                 readPreviousState = {
                     contactUserDataDao.getUserDataForContact(lookupKey)
                 },
@@ -107,7 +77,6 @@ class GiftIdeaRepositoryImpl @Inject constructor(
                         contactDao.upsertContact(contact.copy(giftIdeasJson = giftIdeaConverters.fromGiftIdeaList(ideas)))
                     }
                 },
-                errorMessage = "Failed to update gift idea cache, rolling back"
             )
         }
         widgetUpdater.updateWidget()
