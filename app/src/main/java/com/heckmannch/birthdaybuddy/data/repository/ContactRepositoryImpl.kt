@@ -287,6 +287,7 @@ class ContactRepositoryImpl @Inject constructor(
 
     override suspend fun updateLabelConfig(config: LabelConfig): Unit = withContext(ioDispatcher) {
         labelConfigDao.upsertConfig(labelConfigMapper.toEntity(config))
+        updateWidgetSafely()
     }
 
     override suspend fun updateContactBirthday(
@@ -302,6 +303,22 @@ class ContactRepositoryImpl @Inject constructor(
 
     override suspend fun updateLabelsEnabled(enabled: Boolean) = withContext(ioDispatcher) {
         settingsRepository.updateSettings { it.copy(labelsEnabled = enabled) }
+        updateWidgetSafely()
+    }
+
+    /**
+     * Triggers a best-effort home screen widget refresh so widget rendering failures cannot
+     * abort or mask already-committed label configuration updates.
+     * [CancellationException] is rethrown to preserve structured concurrency.
+     */
+    private suspend fun updateWidgetSafely() {
+        try {
+            widgetUpdater.updateWidget()
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: Exception) {
+            Log.e(TAG, "Error updating widget after label configuration update: ${e.message}", e)
+        }
     }
 
     companion object {

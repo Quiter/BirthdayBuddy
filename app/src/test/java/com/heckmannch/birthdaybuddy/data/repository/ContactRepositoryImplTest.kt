@@ -35,6 +35,7 @@ import org.junit.Rule
 import org.junit.Test
 import org.mockito.kotlin.any
 import org.mockito.kotlin.eq
+import org.mockito.kotlin.inOrder
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.never
 import org.mockito.kotlin.verify
@@ -524,15 +525,73 @@ class ContactRepositoryImplTest {
     }
 
     @Test
-    fun updateLabelConfig_delegatesToLabelConfigDao() = runTest {
+    fun updateLabelConfig_delegatesToLabelConfigDaoAndUpdatesWidget() = runTest {
         val config = LabelConfig(name = "Family", isHiddenFromFilter = true, isIgnored = false)
         repository.updateLabelConfig(config)
+
+        val ordered = inOrder(labelConfigDao, widgetUpdater)
+        ordered.verify(labelConfigDao).upsertConfig(labelConfigMapper.toEntity(config))
+        ordered.verify(widgetUpdater).updateWidget()
+    }
+
+    @Test
+    fun updateLabelConfig_succeeds_whenWidgetUpdateThrowsException() = runTest {
+        val config = LabelConfig(name = "Family", isHiddenFromFilter = false, isIgnored = true)
+        whenever(widgetUpdater.updateWidget()).thenThrow(RuntimeException("Widget error"))
+
+        repository.updateLabelConfig(config)
+
+        verify(labelConfigDao).upsertConfig(labelConfigMapper.toEntity(config))
+        verify(widgetUpdater).updateWidget()
+        io.mockk.verify(exactly = 1) { Log.e(any(), any(), any<RuntimeException>()) }
+    }
+
+    @Test
+    fun updateLabelConfig_rethrowsCancellationException_fromWidgetUpdate() = runTest {
+        val config = LabelConfig(name = "Family", showInWidget = false)
+        whenever(widgetUpdater.updateWidget()).thenThrow(CancellationException("Widget cancelled"))
+
+        var caught: Throwable? = null
+        try {
+            repository.updateLabelConfig(config)
+        } catch (e: Throwable) {
+            caught = e
+        }
+        assertThat(caught).isInstanceOf(CancellationException::class.java)
         verify(labelConfigDao).upsertConfig(labelConfigMapper.toEntity(config))
     }
 
     @Test
-    fun updateLabelsEnabled_delegatesToSettingsRepository() = runTest {
+    fun updateLabelsEnabled_delegatesToSettingsRepositoryAndUpdatesWidget() = runTest {
         repository.updateLabelsEnabled(false)
+
+        val ordered = inOrder(settingsRepository, widgetUpdater)
+        ordered.verify(settingsRepository).updateSettings(any())
+        ordered.verify(widgetUpdater).updateWidget()
+    }
+
+    @Test
+    fun updateLabelsEnabled_succeeds_whenWidgetUpdateThrowsException() = runTest {
+        whenever(widgetUpdater.updateWidget()).thenThrow(RuntimeException("Widget error"))
+
+        repository.updateLabelsEnabled(true)
+
+        verify(settingsRepository).updateSettings(any())
+        verify(widgetUpdater).updateWidget()
+        io.mockk.verify(exactly = 1) { Log.e(any(), any(), any<RuntimeException>()) }
+    }
+
+    @Test
+    fun updateLabelsEnabled_rethrowsCancellationException_fromWidgetUpdate() = runTest {
+        whenever(widgetUpdater.updateWidget()).thenThrow(CancellationException("Widget cancelled"))
+
+        var caught: Throwable? = null
+        try {
+            repository.updateLabelsEnabled(false)
+        } catch (e: Throwable) {
+            caught = e
+        }
+        assertThat(caught).isInstanceOf(CancellationException::class.java)
         verify(settingsRepository).updateSettings(any())
     }
 

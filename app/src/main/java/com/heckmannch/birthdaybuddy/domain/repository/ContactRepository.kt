@@ -30,7 +30,16 @@ interface ContactRepository {
      * remain isolated.
      */
     suspend fun syncContacts()
+
+    /**
+     * Persists the given [LabelConfig] and refreshes the home screen widget defensively.
+     */
     suspend fun updateLabelConfig(config: LabelConfig)
+
     suspend fun updateContactBirthday(contactId: String, birthday: LocalDate): Boolean
+
+    /**
+     * Updates the global label-filtering toggle and refreshes the home screen widget defensively.
+     */
     suspend fun updateLabelsEnabled(enabled: Boolean)
 }
