@@ -19,6 +19,7 @@ interface NotificationRepository {
 
     // Pending Notifications
     suspend fun getActiveNotificationsImmediate(): List<PendingNotification>
+    suspend fun getNextPendingNotificationId(): Int
     suspend fun insertPendingNotification(notification: PendingNotification): Long
     suspend fun getPendingNotificationById(id: Int): PendingNotification?
 

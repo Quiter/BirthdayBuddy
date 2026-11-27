@@ -16,36 +16,25 @@ import com.heckmannch.birthdaybuddy.ui.model.SampleData
 import com.heckmannch.birthdaybuddy.ui.screens.home.HomeActions
 import com.heckmannch.birthdaybuddy.ui.screens.home.components.list.BirthdayItem
 import com.heckmannch.birthdaybuddy.ui.theme.BirthdayBuddyTheme
+import dagger.hilt.android.testing.HiltAndroidRule
+import dagger.hilt.android.testing.HiltAndroidTest
 import org.junit.Rule
 import org.junit.Test
 
+@HiltAndroidTest
 class BirthdayItemInteractionTest {
 
-    @get:Rule
+    @get:Rule(order = 0)
+    val hiltRule = HiltAndroidRule(this)
+
+    @get:Rule(order = 1)
     val composeTestRule = createAndroidComposeRule<ComponentActivity>()
 
     @Test
     fun expandingItem_allowsAddingAndTypingGiftIdeas() {
         val sampleContact = SampleData.contact1.copy(giftIdeas = emptyList())
 
-        val actions = HomeActions(
-            onSearchQueryChange = {},
-            onLabelSelected = {},
-            onClearSearch = {},
-            onNavigateToSettings = {},
-            onAddContact = {},
-            onRequestPermission = {},
-            onAddGiftIdea = { _ -> },
-            onToggleGiftIdea = { _, _, _ -> },
-            onUpdateGiftIdeaText = { _, _, _ -> },
-            onDeleteGiftIdea = { _, _ -> },
-            onUpdateBirthday = { _, _ -> },
-            onOpenContact = { _, _ -> },
-            onDial = {},
-            onSendSms = {},
-            onOpenMessengerApp = { _, _ -> },
-            onRefresh = {},
-        )
+        val actions = HomeActions.previewDefaults()
 
         composeTestRule.setContent {
             var contactState by remember { mutableStateOf(sampleContact) }

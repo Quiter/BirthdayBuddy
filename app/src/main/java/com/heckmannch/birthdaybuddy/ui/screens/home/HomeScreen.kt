@@ -12,52 +12,54 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.platform.LocalInspectionMode
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.dp
 import coil3.ImageLoader
 import coil3.imageLoader
 import coil3.request.ImageRequest
 import com.heckmannch.birthdaybuddy.R
-import com.heckmannch.birthdaybuddy.ui.model.ContactUiModel
 import com.heckmannch.birthdaybuddy.ui.model.HomeUiState
+import com.heckmannch.birthdaybuddy.ui.model.SampleData
 import com.heckmannch.birthdaybuddy.ui.screens.home.components.list.BirthdayDatePickerDialog
 import com.heckmannch.birthdaybuddy.ui.screens.home.components.list.getAvatarCacheKey
+import com.heckmannch.birthdaybuddy.ui.theme.BirthdayBuddyTheme
 import com.heckmannch.birthdaybuddy.ui.util.ContactActions
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.SharedFlow
-import kotlinx.coroutines.flow.collectLatest
+
+private const val PREFETCH_AVATAR_LIMIT = 20
+
+private data class AvatarPrefetchTarget(
+    val lookupKey: String?,
+    val imageUri: String,
+)
 
 /**
  * [HomeScreen] is the orchestrator and state-coordinating controller for the main dashboard.
  *
- * ### Architectural & Design Patterns
- * - **MVI / UDF (Uni-Directional Data Flow)**: This screen acts as the controller layer. It translates
- *   user interactions into discrete events/commands ([HomeIntent]) propagated to the ViewModel, and
- *   listens to the read-only [HomeUiState] representing the latest UI state.
- * - **Separation of Concerns**: This Composable intercepts platform-specific details:
- *   1. System permissions (e.g., [Manifest.permission.READ_CONTACTS] and [Manifest.permission.WRITE_CONTACTS]).
- *   2. Device/UI feedback elements (e.g., keyboard management, system focus).
- *   3. Context-dependent prefetching (e.g., pre-loading image resources into the Coil cache).
- *   By doing this, the layout renderer [HomeContent] remains a "dumb", stateless UI view. This
- *   enables reliable @Preview rendering and simplifies JVM/Compose instrumented testing because
- *   there are no hidden platform dependencies or Hilt DI container requirements.
- *
  * @param uiState The read-only state representation of the Home screen, providing lists of contacts,
  *   filtering, status information, and animation triggers.
  * @param onIntent Callback lambda used to dispatch user actions ([HomeIntent]) to the underlying ViewModel.
- * @param scrollToTopEvent A [SharedFlow] used to trigger scroll-to-top actions from global events
- *   (e.g., clicking on navigation items, status bar taps).
  * @param onNavigateToSettings Callback executed when the user initiates navigation to the app settings screen.
- * @param eventFlow A [SharedFlow] used to observe one-shot UI events (e.g. search focus, gift idea focus).
+ * @param eventFlow A [SharedFlow] used to observe one-shot UI events (e.g. search focus, gift idea focus, scroll-to-top).
+ * @param bottomBarHeight Padding reserved for the floating pill bar at the bottom of the list.
+ * @param onDetailOpenChanged Callback invoked when a compact full-screen contact detail pane opens or closes.
  */
 @Composable
 fun HomeScreen(
     uiState: HomeUiState,
     onIntent: (HomeIntent) -> Unit,
-    scrollToTopEvent: SharedFlow<Unit>,
     onNavigateToSettings: () -> Unit,
-    eventFlow: SharedFlow<HomeUiEvent> = remember { MutableSharedFlow() },
+    eventFlow: SharedFlow<HomeUiEvent>? = null,
+    bottomBarHeight: Dp = 0.dp,
+    onDetailOpenChanged: (Boolean) -> Unit = {},
 ) {
+    val actualEventFlow = eventFlow ?: remember { MutableSharedFlow() }
+
     // Android platform CompositionLocals for focus, keyboard, and package/system services context.
     val context = LocalContext.current
     val focusManager = LocalFocusManager.current
@@ -85,13 +87,17 @@ fun HomeScreen(
      * [Manifest.permission.WRITE_CONTACTS]).
      * Initiates contact synchronization once read permission is granted.
      */
-    val permissionLauncher =
+    val isInspectionMode = LocalInspectionMode.current
+    val permissionLauncher = if (!isInspectionMode) {
         rememberLauncherForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { permissions ->
             val readGranted = permissions[Manifest.permission.READ_CONTACTS] == true
             if (readGranted) {
                 onIntent(HomeIntent.SyncContacts())
             }
         }
+    } else {
+        rememberLauncherForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) {}
+    }
 
     // --- SECTION 2: UI Coordination, Focus, & Micro-Animations ---
 
@@ -115,34 +121,25 @@ fun HomeScreen(
      * Specifying explicit memoryCacheKey and diskCacheKey matching ContactImage guarantees instant
      * retrieval from memory without redundant reads/decodes or disk/provider queries.
      */
-    LaunchedEffect(uiState.contacts) {
-        prefetchAvatarImages(context, uiState.contacts)
-    }
-
-    // --- SECTION 4: Scroll & Soft-Keyboard Interaction Coordination ---
-
-    /**
-     * Global Scroll Reset Listener:
-     * Collects scroll-to-top requests dispatched from outside (e.g., clicking on home button or top status bar).
-     */
-    LaunchedEffect(scrollToTopEvent) {
-        scrollToTopEvent.collectLatest {
-            homeState.resetScrollRequested = true
-        }
-    }
-
-    /**
-     * Robust List Scroll Reset Handler:
-     * Triggers the actual scroll reset animation inside the list state. Initiated once contacts are loaded,
-     * resetting filters/state and resetting the filter resetting flags on complete.
-     */
-    LaunchedEffect(uiState.contacts, homeState.resetScrollRequested) {
-        if (homeState.resetScrollRequested && (uiState.contacts != null)) {
-            homeState.performScrollReset {
-                onIntent(HomeIntent.SetIsResettingFilter(isResetting = false))
+    val prefetchTargets = remember(uiState.contacts) {
+        val contacts = uiState.contacts ?: return@remember emptyList()
+        buildList {
+            for (index in 0 until minOf(contacts.size, PREFETCH_AVATAR_LIMIT)) {
+                val contact = contacts[index]
+                contact.imageUri?.takeIf { it.isNotBlank() }?.let { uri ->
+                    add(AvatarPrefetchTarget(contact.lookupKey, uri))
+                }
+                contact.secondImageUri?.takeIf { it.isNotBlank() }?.let { secondUri ->
+                    add(AvatarPrefetchTarget(contact.secondLookupKey, secondUri))
+                }
             }
         }
     }
+    LaunchedEffect(prefetchTargets) {
+        prefetchAvatarImages(context, prefetchTargets)
+    }
+
+    // --- SECTION 4: Soft-Keyboard Interaction Coordination ---
 
     /**
      * Soft Keyboard Auto-Dismissal:
@@ -163,8 +160,9 @@ fun HomeScreen(
     val actions =
         remember(onIntent, contactActions, permissionLauncher, homeState) {
             HomeActions(
-                // Search bar input queries
+                // Search bar input queries and active state toggles
                 onSearchQueryChange = { query -> onIntent(HomeIntent.SearchQueryChanged(query)) },
+                onToggleSearch = { active -> onIntent(HomeIntent.SetSearchActive(active)) },
 
                 // Label-based filtering selection
                 onLabelSelected = { label -> onIntent(HomeIntent.LabelSelected(label)) },
@@ -212,6 +210,7 @@ fun HomeScreen(
 
                 // Launching external dialers, messenger, and device contacts editor
                 onOpenContact = contactActions::openContact,
+                onEditContact = contactActions::editContact,
                 onDial = contactActions::dialNumber,
                 onSendSms = contactActions::sendSms,
                 onOpenMessengerApp = contactActions::openMessengerApp,
@@ -228,7 +227,28 @@ fun HomeScreen(
             )
         }
 
-    // --- SECTION 6: Global Dialog Overlays ---
+    // --- SECTION 6: View Layer Invocation ---
+    HomeScreenContent(
+        uiState = uiState,
+        homeState = homeState,
+        actions = actions,
+        events = actualEventFlow,
+        onIntent = onIntent,
+        bottomBarHeight = bottomBarHeight,
+        onDetailOpenChanged = onDetailOpenChanged,
+    )
+}
+
+@Composable
+internal fun HomeScreenContent(
+    uiState: HomeUiState,
+    homeState: HomeState,
+    actions: HomeActions,
+    events: SharedFlow<HomeUiEvent>,
+    onIntent: (HomeIntent) -> Unit,
+    bottomBarHeight: Dp = 0.dp,
+    onDetailOpenChanged: (Boolean) -> Unit = {},
+) {
     if (uiState.pendingBirthdayEdit != null) {
         val edit = uiState.pendingBirthdayEdit
         BirthdayDatePickerDialog(
@@ -242,14 +262,14 @@ fun HomeScreen(
         )
     }
 
-    // --- SECTION 7: View Layer Invocation ---
-    // Passes state, event stream, and consolidated actions down to the layout rendering container.
     HomeContent(
         uiState = uiState,
         homeState = homeState,
         actions = actions,
-        events = eventFlow,
+        events = events,
         onIntent = onIntent,
+        bottomBarHeight = bottomBarHeight,
+        onDetailOpenChanged = onDetailOpenChanged,
     )
 }
 
@@ -261,32 +281,32 @@ fun HomeScreen(
  */
 private fun prefetchAvatarImages(
     context: Context,
-    contacts: List<ContactUiModel>?,
-    limit: Int = 40,
+    targets: List<AvatarPrefetchTarget>,
 ) {
-    if (contacts.isNullOrEmpty()) return
+    if (targets.isEmpty()) return
     // Limit prefetching to the top most relevant entries to prevent I/O pool starvation and memory cache bloat
-    contacts.take(limit).forEach { contact ->
-        contact.imageUri?.let { uri ->
-            val cacheKey = getAvatarCacheKey(uri, contact.lookupKey)
-            val request = ImageRequest.Builder(context)
-                .data(uri)
-                .size(coil3.size.Size(256, 256))
-                .memoryCacheKey(cacheKey)
-                .diskCacheKey(cacheKey)
-                .build()
-            context.imageLoader.enqueue(request)
-        }
-        contact.secondImageUri?.let { secondUri ->
-            val secondCacheKey = getAvatarCacheKey(secondUri, null)
-            val request = ImageRequest.Builder(context)
-                .data(secondUri)
-                .size(coil3.size.Size(256, 256))
-                .memoryCacheKey(secondCacheKey)
-                .diskCacheKey(secondCacheKey)
-                .build()
-            context.imageLoader.enqueue(request)
-        }
+    targets.forEach { target ->
+        val cacheKey = getAvatarCacheKey(target.imageUri, target.lookupKey)
+        val request = ImageRequest.Builder(context)
+            .data(target.imageUri)
+            .size(coil3.size.Size(256, 256))
+            .memoryCacheKey(cacheKey)
+            .diskCacheKey(cacheKey)
+            .build()
+        context.imageLoader.enqueue(request)
     }
 }
 
+@Preview(showBackground = true)
+@Composable
+fun HomeScreenPreview() {
+    BirthdayBuddyTheme {
+        HomeScreenContent(
+            uiState = SampleData.homeUiState,
+            homeState = rememberHomeState(),
+            actions = SampleData.homeActions,
+            events = remember { MutableSharedFlow() },
+            onIntent = {},
+        )
+    }
+}

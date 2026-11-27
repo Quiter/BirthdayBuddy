@@ -10,7 +10,10 @@ import com.heckmannch.birthdaybuddy.domain.permission.PermissionChecker
 import com.heckmannch.birthdaybuddy.domain.repository.ContactRepository
 import com.heckmannch.birthdaybuddy.domain.repository.NotificationRepository
 import com.heckmannch.birthdaybuddy.domain.repository.SettingsRepository
+import com.heckmannch.birthdaybuddy.domain.repository.WidgetUpdater
+import com.heckmannch.birthdaybuddy.domain.usecase.SyncCalendarUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -37,6 +40,8 @@ import javax.inject.Inject
  * @param notificationRepository Repository for retrieving and persisting notification rules.
  * @param settingsRepository Repository for retrieving and persisting application settings.
  * @param contactRepository Repository for managing contacts and executing initial contact synchronization.
+ * @param syncCalendarUseCase Use case for synchronizing contact events to the Android system calendar.
+ * @param widgetUpdater Updater for refreshing home screen Glance widgets.
  * @param permissionChecker Utility for verifying Android runtime permissions.
  * @param applicationScope Application-level coroutine scope surviving ViewModel and NavEntry lifecycles.
  * @param ioDispatcher Coroutine dispatcher dedicated to I/O and persistence operations.
@@ -46,6 +51,8 @@ class OnboardingViewModel @Inject constructor(
     private val notificationRepository: NotificationRepository,
     private val settingsRepository: SettingsRepository,
     private val contactRepository: ContactRepository,
+    private val syncCalendarUseCase: SyncCalendarUseCase,
+    private val widgetUpdater: WidgetUpdater,
     private val permissionChecker: PermissionChecker,
     @ApplicationScope private val applicationScope: CoroutineScope,
     @IoDispatcher private val ioDispatcher: CoroutineDispatcher,
@@ -166,6 +173,28 @@ class OnboardingViewModel @Inject constructor(
 
             // Trigger initial background sync of contacts
             contactRepository.syncContacts()
+
+            // Trigger calendar sync after contacts have synced if enabled during onboarding
+            if (calendarSyncEnabled) {
+                try {
+                    syncCalendarUseCase()
+                } catch (e: CancellationException) {
+                    throw e
+                } catch (e: Exception) {
+                    Log.w(TAG, "Fehler beim Kalender-Sync nach Abschluss des Onboardings", e)
+                }
+            }
+
+            // Refresh home screen widgets after onboarding completion
+            try {
+                widgetUpdater.updateWidget()
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                Log.w(TAG, "Fehler beim Widget-Update nach Abschluss des Onboardings", e)
+            }
+        } catch (e: CancellationException) {
+            throw e
         } catch (e: Exception) {
             // Prevent crashing on onboarding completion error
             Log.w(TAG, "Fehler beim Abschließen des Onboardings", e)

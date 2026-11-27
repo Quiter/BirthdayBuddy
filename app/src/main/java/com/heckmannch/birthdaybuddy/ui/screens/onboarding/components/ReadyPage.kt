@@ -20,9 +20,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import com.heckmannch.birthdaybuddy.R
-import com.heckmannch.birthdaybuddy.ui.components.LocalWindowSizeClass
 import com.heckmannch.birthdaybuddy.ui.components.StepItem
-import com.heckmannch.birthdaybuddy.ui.components.isWidthCompact
+import com.heckmannch.birthdaybuddy.ui.components.layout.LocalWindowSizeClass
+import com.heckmannch.birthdaybuddy.ui.components.layout.isWidthCompact
 import com.heckmannch.birthdaybuddy.ui.illustrations.ReadyIllustration
 import com.heckmannch.birthdaybuddy.ui.theme.AlphaEmphasisSubtle
 import com.heckmannch.birthdaybuddy.ui.theme.BirthdayBuddyTheme

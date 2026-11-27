@@ -20,7 +20,6 @@ import io.mockk.slot
 import io.mockk.unmockkAll
 import io.mockk.verify
 import kotlinx.coroutines.CancellationException
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runTest
 import org.junit.After
 import org.junit.Before
@@ -30,7 +29,6 @@ import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
 
-@OptIn(ExperimentalCoroutinesApi::class)
 @RunWith(RobolectricTestRunner::class)
 @Config(sdk = [35])
 class SystemCalendarDataSourceImplTest {
@@ -374,6 +372,61 @@ class SystemCalendarDataSourceImplTest {
         val calendars = dataSource.queryAllCalendars()
 
         assertThat(calendars).isEmpty()
+    }
+
+    @Test
+    fun `getAllCalendars - when cursor contains null columns - defaults to empty strings without NPE`() = runTest {
+        val cursor: Cursor = mockk(relaxed = true)
+
+        every { cursor.getColumnIndex(CalendarContract.Calendars._ID) } returns 0
+        every { cursor.getColumnIndex(CalendarContract.Calendars.ACCOUNT_NAME) } returns 1
+        every { cursor.getColumnIndex(CalendarContract.Calendars.ACCOUNT_TYPE) } returns 2
+        every { cursor.getColumnIndex(CalendarContract.Calendars.NAME) } returns 3
+        every { cursor.getColumnIndex(CalendarContract.Calendars.CALENDAR_DISPLAY_NAME) } returns 4
+        every { cursor.getColumnIndex(CalendarContract.Calendars.VISIBLE) } returns 5
+
+        every { cursor.moveToNext() } returnsMany listOf(true, true, false)
+        every { cursor.getLong(0) } returnsMany listOf(10L, 11L)
+        every { cursor.getString(1) } returnsMany listOf(null, "Google")
+        every { cursor.getString(2) } returnsMany listOf(null, "com.google")
+        every { cursor.getString(3) } returnsMany listOf(null, "Personal")
+        every { cursor.getString(4) } returnsMany listOf(null, "Persönlich")
+        every { cursor.getInt(5) } returnsMany listOf(1, 1)
+        every { cursor.close() } returns Unit
+
+        every {
+            contentResolver.query(
+                CalendarContract.Calendars.CONTENT_URI,
+                any(),
+                null,
+                null,
+                null
+            )
+        } returns cursor
+
+        val calendars = dataSource.queryAllCalendars()
+
+        assertThat(calendars).hasSize(2)
+        assertThat(calendars[0]).isEqualTo(
+            SystemCalendarInfo(
+                id = 10L,
+                name = "",
+                accountName = "",
+                accountType = "",
+                displayName = "",
+                visible = 1
+            )
+        )
+        assertThat(calendars[1]).isEqualTo(
+            SystemCalendarInfo(
+                id = 11L,
+                name = "Personal",
+                accountName = "Google",
+                accountType = "com.google",
+                displayName = "Persönlich",
+                visible = 1
+            )
+        )
     }
 
     @Test

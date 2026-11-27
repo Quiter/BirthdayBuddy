@@ -1,8 +1,8 @@
 package com.heckmannch.birthdaybuddy.util
 
 import android.content.Intent
-import com.google.common.truth.Truth.assertThat
 import android.util.Log
+import com.google.common.truth.Truth.assertThat
 import io.mockk.every
 import io.mockk.just
 import io.mockk.mockk

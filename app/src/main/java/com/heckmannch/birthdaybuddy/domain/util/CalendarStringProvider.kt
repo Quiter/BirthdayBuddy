@@ -20,6 +20,9 @@ interface CalendarStringProvider {
     /** Localized display name for the name days calendar. */
     fun calendarNameNameDays(): String
 
+    /** Localized display name for generic "Other" (`Event.TYPE_OTHER`) events calendar. */
+    fun calendarNameOtherEvent(): String = "Other"
+
     /** Localized display name for a given [CalendarSyncRepository.CalendarType]. */
     fun calendarDisplayName(type: CalendarSyncRepository.CalendarType): String
 
@@ -49,4 +52,15 @@ interface CalendarStringProvider {
 
     /** Localized event description for a name day. */
     fun calendarEventNameDayDescription(contactName: String): String
+
+    /** Localized event title for a custom/other date-field event. */
+    fun calendarEventCustomTitle(contactName: String, eventName: String): String =
+        "$contactName – $eventName"
+
+    /** Localized event description for a custom/other date-field event with a known year. */
+    fun calendarEventCustomYear(eventName: String, year: Int): String =
+        "$eventName ($year)"
+
+    /** Localized event description for a custom/other date-field event without a year. */
+    fun calendarEventCustomNoYear(eventName: String): String = eventName
 }

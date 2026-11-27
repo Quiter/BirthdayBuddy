@@ -25,6 +25,14 @@ class NotificationSchedulerImpl @Inject constructor(
 
     override fun cancelNotification() {
         alarmScheduler.cancelNotificationAlarm()
+        cancelAllSnoozedNotifications()
+    }
+
+    /**
+     * Cancels all pending WorkManager jobs tagged with [NotificationActions.WORK_TAG_SNOOZE].
+     */
+    override fun cancelAllSnoozedNotifications() {
+        WorkManager.getInstance(context).cancelAllWorkByTag(NotificationActions.WORK_TAG_SNOOZE)
     }
 
     override fun snoozeNotification(pendingId: Int, daysBefore: Int, lookupKeys: List<String>) {
@@ -53,6 +61,7 @@ class NotificationSchedulerImpl @Inject constructor(
         val reShowRequest = OneTimeWorkRequestBuilder<SnoozeWorker>()
             .setInitialDelay(delayMillis, TimeUnit.MILLISECONDS)
             .setInputData(data)
+            .addTag(NotificationActions.WORK_TAG_SNOOZE)
             .build()
 
         WorkManager.getInstance(context).enqueue(reShowRequest)

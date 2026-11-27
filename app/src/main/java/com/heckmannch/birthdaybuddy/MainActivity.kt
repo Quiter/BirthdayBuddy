@@ -12,14 +12,13 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.adaptive.currentWindowAdaptiveInfoV2
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.key
 import androidx.compose.ui.Modifier
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation3.runtime.NavKey
 import androidx.navigation3.runtime.rememberNavBackStack
-import com.heckmannch.birthdaybuddy.ui.components.LocalWindowAdaptiveInfo
-import com.heckmannch.birthdaybuddy.ui.components.LocalWindowSizeClass
+import com.heckmannch.birthdaybuddy.ui.components.layout.LocalWindowAdaptiveInfo
+import com.heckmannch.birthdaybuddy.ui.components.layout.LocalWindowSizeClass
 import com.heckmannch.birthdaybuddy.ui.navigation.AppNavHost
 import com.heckmannch.birthdaybuddy.ui.navigation.Home
 import com.heckmannch.birthdaybuddy.ui.navigation.Onboarding
@@ -75,21 +74,19 @@ class MainActivity : ComponentActivity() {
                     customAccentColorHex = appSettings.customAccentColor
                 ) {
                     if (onboardingCompleted != null) {
-                        key(onboardingCompleted) {
-                            val initialKey: NavKey =
-                                if (onboardingCompleted == true) Home else Onboarding
-                            val backStack = rememberNavBackStack(initialKey)
+                        val initialKey: NavKey =
+                            if (onboardingCompleted == true) Home else Onboarding
+                        val backStack = rememberNavBackStack(initialKey)
 
-                            Surface(
-                                modifier = Modifier.fillMaxSize(),
-                                color = MaterialTheme.colorScheme.background,
-                            ) {
-                                AppNavHost(
-                                    backStack = backStack,
-                                    action = pendingAction,
-                                    onActionHandled = appViewModel::consumeAction
-                                )
-                            }
+                        Surface(
+                            modifier = Modifier.fillMaxSize(),
+                            color = MaterialTheme.colorScheme.background,
+                        ) {
+                            AppNavHost(
+                                backStack = backStack,
+                                action = pendingAction,
+                                onActionHandled = appViewModel::consumeAction
+                            )
                         }
                     }
                 }

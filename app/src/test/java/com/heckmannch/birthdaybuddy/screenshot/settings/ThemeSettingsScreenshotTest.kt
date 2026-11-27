@@ -1,9 +1,9 @@
-package com.heckmannch.birthdaybuddy.screenshot.settings
+﻿package com.heckmannch.birthdaybuddy.screenshot.settings
 
 import com.heckmannch.birthdaybuddy.domain.model.ThemeAccent
 import com.heckmannch.birthdaybuddy.domain.model.ThemeMode
 import com.heckmannch.birthdaybuddy.screenshot.BaseScreenshotTest
-import com.heckmannch.birthdaybuddy.ui.screens.settings.theme.ThemeSettingsScreenContent
+import com.heckmannch.birthdaybuddy.ui.screens.settings.subscreens.theme.ThemeSettingsScreenContent
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
@@ -95,3 +95,4 @@ class ThemeSettingsScreenshotTest : BaseScreenshotTest() {
         captureScreenshot()
     }
 }
+

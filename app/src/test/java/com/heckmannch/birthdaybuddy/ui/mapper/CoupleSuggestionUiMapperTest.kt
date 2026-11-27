@@ -50,6 +50,6 @@ class CoupleSuggestionUiMapperTest {
         val uiModel = mapper.toUiModel(domain)
 
         assertThat(uiModel.firstInitials).isEqualTo("M")
-        assertThat(uiModel.secondInitials).isEqualTo("?")
+        assertThat(uiModel.secondInitials).isEqualTo("")
     }
 }

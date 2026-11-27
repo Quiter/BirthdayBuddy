@@ -4,10 +4,11 @@ import com.google.common.truth.Truth.assertThat
 import com.heckmannch.birthdaybuddy.domain.model.Contact
 import com.heckmannch.birthdaybuddy.domain.model.ContactLabels
 import com.heckmannch.birthdaybuddy.domain.model.EventType
-import com.heckmannch.birthdaybuddy.ui.model.BirthdayTier
 import com.heckmannch.birthdaybuddy.domain.util.NO_YEAR_MARKER
+import com.heckmannch.birthdaybuddy.ui.model.BirthdayTier
 import org.junit.Test
 import java.time.LocalDate
+import java.util.Locale
 
 /**
  * Unit tests for [ContactUiMapper].
@@ -103,7 +104,7 @@ class ContactUiMapperTest {
         val contact2 = Contact(contactId = "2", lookupKey = "2", fullName = "  ", birthday = today)
 
         assertThat(mapper.toUiModel(contact1, today).initials).isEqualTo("MM")
-        assertThat(mapper.toUiModel(contact2, today).initials).isEqualTo("?")
+        assertThat(mapper.toUiModel(contact2, today).initials).isEqualTo("")
     }
 
     @Test
@@ -222,10 +223,12 @@ class ContactUiMapperTest {
         val contacts = listOf(
             Contact(
                 contactId = "1", lookupKey = "k1", fullName = "Alice",
+                imageUri = "content://alice",
                 anniversary = today.plusDays(3), spouseLookupKey = "k2",
             ),
             Contact(
                 contactId = "2", lookupKey = "k2", fullName = "Bob",
+                imageUri = "content://bob",
                 anniversary = today.plusDays(3), spouseLookupKey = "k1",
             ),
             Contact(
@@ -245,7 +248,54 @@ class ContactUiMapperTest {
         assertThat(result).hasSize(2)
         // Sorted by daysUntilNext (Single is 1 day, Couple is 3 days)
         assertThat(result[0].fullName).isEqualTo("Single")
+        assertThat(result[0].secondLookupKey).isNull()
         assertThat(result[1].fullName).isEqualTo("Alice & Bob")
         assertThat(result[1].isCouple).isTrue()
+        assertThat(result[1].lookupKey).isEqualTo("k1")
+        assertThat(result[1].secondLookupKey).isEqualTo("k2")
+        assertThat(result[1].imageUri).isEqualTo("content://alice")
+        assertThat(result[1].secondImageUri).isEqualTo("content://bob")
+    }
+
+    @Test
+    fun `toUiModel - reacts immediately to default Locale changes on same instance`() {
+        val originalLocale = Locale.getDefault()
+        try {
+            Locale.setDefault(Locale.ENGLISH)
+            val contactWithYear = Contact(
+                contactId = "loc_1",
+                lookupKey = "loc_key_1",
+                fullName = "Locale Test",
+                birthday = LocalDate.of(1990, 5, 20),
+            )
+            val contactWithoutYear = Contact(
+                contactId = "loc_2",
+                lookupKey = "loc_key_2",
+                fullName = "Locale No Year",
+                birthday = LocalDate.of(NO_YEAR_MARKER, 5, 20),
+            )
+
+            val englishWithYear = mapper.toUiModel(contactWithYear, today)
+            val englishWithoutYear = mapper.toUiModel(contactWithoutYear, today)
+            assertThat(englishWithYear.dateText).contains("May")
+            assertThat(englishWithYear.monthName).isEqualTo("May")
+            assertThat(englishWithoutYear.dateText).isEqualTo("20 May")
+
+            // Switch to German on the exact same mapper instance
+            Locale.setDefault(Locale.GERMAN)
+            val germanWithYear = mapper.toUiModel(contactWithYear, today)
+            val germanWithoutYear = mapper.toUiModel(contactWithoutYear, today)
+            assertThat(germanWithYear.dateText).contains("Mai")
+            assertThat(germanWithYear.monthName).isEqualTo("Mai")
+            assertThat(germanWithoutYear.dateText).isEqualTo("20. Mai")
+
+            // Switch back to English on the same instance
+            Locale.setDefault(Locale.ENGLISH)
+            val backToEnglish = mapper.toUiModel(contactWithYear, today)
+            assertThat(backToEnglish.dateText).contains("May")
+            assertThat(backToEnglish.monthName).isEqualTo("May")
+        } finally {
+            Locale.setDefault(originalLocale)
+        }
     }
 }

@@ -17,6 +17,7 @@ import io.mockk.mockkStatic
 import io.mockk.spyk
 import io.mockk.unmockkAll
 import io.mockk.verify
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import org.junit.After
@@ -78,7 +79,7 @@ class NotificationAlarmReceiverTest {
     }
 
     @Test
-    fun `onReceive enqueues NotificationWorker immediately with REPLACE and reschedules alarm`() {
+    fun `onReceive enqueues NotificationWorker immediately with APPEND_OR_REPLACE and reschedules alarm`() {
         val intent = createIntent()
 
         receiver.onReceive(context, intent)
@@ -86,7 +87,7 @@ class NotificationAlarmReceiverTest {
         verify(exactly = 1) {
             workManager.enqueueUniqueWork(
                 NotificationActions.WORK_NAME_NOTIFICATION_UPDATE,
-                ExistingWorkPolicy.REPLACE,
+                ExistingWorkPolicy.APPEND_OR_REPLACE,
                 any<OneTimeWorkRequest>(),
             )
         }
@@ -120,7 +121,7 @@ class NotificationAlarmReceiverTest {
         verify(exactly = 1) {
             workManager.enqueueUniqueWork(
                 NotificationActions.WORK_NAME_NOTIFICATION_UPDATE,
-                ExistingWorkPolicy.REPLACE,
+                ExistingWorkPolicy.APPEND_OR_REPLACE,
                 any<OneTimeWorkRequest>(),
             )
         }
@@ -138,11 +139,23 @@ class NotificationAlarmReceiverTest {
         verify(exactly = 1) {
             workManager.enqueueUniqueWork(
                 NotificationActions.WORK_NAME_NOTIFICATION_UPDATE,
-                ExistingWorkPolicy.REPLACE,
+                ExistingWorkPolicy.APPEND_OR_REPLACE,
                 any<OneTimeWorkRequest>(),
             )
         }
         coVerify(exactly = 1) { alarmScheduler.rescheduleNotificationAlarm() }
+        verify(exactly = 1) { pendingResult.finish() }
+    }
+
+    @Test
+    fun `onReceive rethrows CancellationException without logging error and still finishes pending result`() {
+        coEvery { alarmScheduler.rescheduleNotificationAlarm() } throws CancellationException("Cancelled")
+
+        val intent = createIntent()
+        receiver.onReceive(context, intent)
+
+        coVerify(exactly = 1) { alarmScheduler.rescheduleNotificationAlarm() }
+        verify(exactly = 0) { android.util.Log.e(any(), any(), any()) }
         verify(exactly = 1) { pendingResult.finish() }
     }
 }

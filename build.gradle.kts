@@ -93,7 +93,7 @@ abstract class BaseAgentSkillsTask @Inject constructor(
 
         // Clean up orphaned external skills in .agents/skills
         skillsDir.listFiles()?.forEach { file ->
-            if (file.isDirectory && file.name !in EXCLUDED_SKILLS) {
+            if (file.isDirectory && !isLocalSkill(file.name)) {
                 if (!externalSkillNames.contains(file.name)) {
                     println("Removing orphaned skill: ${file.name}")
                     fileSystem.delete {
@@ -106,7 +106,7 @@ abstract class BaseAgentSkillsTask @Inject constructor(
         // Copy external skills to .agents/skills
         externalSkills.forEach { sourceSkillDir ->
             val skillName = sourceSkillDir.name
-            if (skillName in EXCLUDED_SKILLS) {
+            if (isLocalSkill(skillName)) {
                 return@forEach
             }
             val targetSkillDir = File(skillsDir, skillName)
@@ -122,6 +122,9 @@ abstract class BaseAgentSkillsTask @Inject constructor(
             }
         }
     }
+
+    private fun isLocalSkill(name: String): Boolean =
+        (name in EXCLUDED_SKILLS) || name.startsWith("bb-")
 
     companion object {
         private val EXCLUDED_SKILLS = setOf("projekt-kontext")

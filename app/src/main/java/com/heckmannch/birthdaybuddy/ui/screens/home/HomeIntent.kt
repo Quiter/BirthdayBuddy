@@ -10,6 +10,13 @@ import java.time.LocalDate
  */
 sealed interface HomeIntent {
     /**
+     * Dispatched when search mode is activated or deactivated.
+     *
+     * @property active `true` to expand search bar, `false` to collapse back to header.
+     */
+    data class SetSearchActive(val active: Boolean) : HomeIntent
+
+    /**
      * Dispatched when the user updates text in the search input field.
      *
      * @property query The updated search text query.
@@ -87,16 +94,6 @@ sealed interface HomeIntent {
      * Dispatched to programmatically request focus and soft keyboard on the search bar (e.g. via keyboard shortcut).
      */
     data object TriggerSearchFocus : HomeIntent
-
-    /**
-     * Dispatched by the UI after successfully applying focus to the search bar to consume the one-shot state.
-     */
-    data object ConsumeSearchFocus : HomeIntent
-
-    /**
-     * Dispatched by the UI after successfully applying focus to a newly added gift idea item.
-     */
-    data object ConsumeNewlyAddedIdeaId : HomeIntent
 
     /**
      * Dispatched when the user confirms linking two contacts together into a couple entity.

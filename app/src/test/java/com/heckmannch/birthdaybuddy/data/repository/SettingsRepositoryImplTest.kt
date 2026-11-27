@@ -12,7 +12,6 @@ import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.slot
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.first
@@ -27,7 +26,6 @@ import kotlin.time.Duration.Companion.milliseconds
 /**
  * JVM Unit Tests for [SettingsRepositoryImpl].
  */
-@OptIn(ExperimentalCoroutinesApi::class)
 class SettingsRepositoryImplTest {
 
     @get:Rule

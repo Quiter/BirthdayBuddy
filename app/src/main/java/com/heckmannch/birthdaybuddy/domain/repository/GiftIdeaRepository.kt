@@ -12,12 +12,13 @@ interface GiftIdeaRepository {
      * Exports all persisted gift ideas across contacts to the target URI in JSON format.
      *
      * @param uriString The URI string representing the destination document.
+     * @throws java.io.IOException If the output stream cannot be opened or writing fails.
      */
     suspend fun exportGiftIdeas(uriString: String)
 
     /**
      * Imports gift ideas from the specified source document URI, updating contact records
-     * and merging with existing ideas.
+     * and refreshing cached contact gift ideas when entries are imported.
      *
      * @param uriString The URI string pointing to the source JSON document.
      * @return The number of successfully imported gift ideas, or -1 if the file could not be read or parsed.

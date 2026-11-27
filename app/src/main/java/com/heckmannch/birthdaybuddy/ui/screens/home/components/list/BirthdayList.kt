@@ -68,7 +68,6 @@ import com.heckmannch.birthdaybuddy.ui.model.ContactUiModel
 import com.heckmannch.birthdaybuddy.ui.model.CoupleSuggestionUiModel
 import com.heckmannch.birthdaybuddy.ui.model.SampleData
 import com.heckmannch.birthdaybuddy.ui.screens.home.HomeActions
-import com.heckmannch.birthdaybuddy.ui.screens.home.components.labels.LabelFilterBar
 import com.heckmannch.birthdaybuddy.ui.theme.AlphaBorderSubtle
 import com.heckmannch.birthdaybuddy.ui.theme.AlphaContainerLow
 import com.heckmannch.birthdaybuddy.ui.theme.AlphaEmphasisLow
@@ -82,7 +81,6 @@ import com.heckmannch.birthdaybuddy.ui.theme.BorderWidthThin
 import com.heckmannch.birthdaybuddy.ui.theme.ContactImageSizeNormal
 import com.heckmannch.birthdaybuddy.ui.theme.ContactImageSizeSmall
 import com.heckmannch.birthdaybuddy.ui.theme.ContactItemSkeletonHeight
-import com.heckmannch.birthdaybuddy.ui.theme.FabBottomSpacing
 import com.heckmannch.birthdaybuddy.ui.theme.OnboardingIllustrationHeight
 import com.heckmannch.birthdaybuddy.ui.theme.OnboardingIllustrationHeightSmall
 import com.heckmannch.birthdaybuddy.ui.theme.SidebarWidthCollapsed
@@ -126,11 +124,9 @@ fun BirthdayList(
     searchQuery: String = "",
     actions: HomeActions,
     coupleSuggestion: CoupleSuggestionUiModel? = null,
-    selectedContactId: String? = null,
     onContactSelected: ((ContactUiModel) -> Unit)? = null,
     onInteraction: () -> Unit = {},
     contentPadding: PaddingValues = PaddingValues(SpacingNone),
-    showLabelFilter: Boolean = true,
 ) {
 
     val layoutDirection = LocalLayoutDirection.current
@@ -143,9 +139,9 @@ fun BirthdayList(
             targetValue = AlphaEmphasisMedium,
             animationSpec = infiniteRepeatable(
                 animation = tween(1000, easing = LinearEasing),
-                repeatMode = RepeatMode.Reverse
+                repeatMode = RepeatMode.Reverse,
             ),
-            label = "alpha"
+            label = "alpha",
         )
 
         LazyColumn(
@@ -156,7 +152,7 @@ fun BirthdayList(
                 start = contentPadding.calculateStartPadding(layoutDirection),
                 top = contentPadding.calculateTopPadding(),
                 end = contentPadding.calculateEndPadding(layoutDirection),
-                bottom = contentPadding.calculateBottomPadding() + FabBottomSpacing
+                bottom = contentPadding.calculateBottomPadding(),
             ),
             userScrollEnabled = false,
         ) {
@@ -171,7 +167,7 @@ fun BirthdayList(
 
     var previousLabel by remember { mutableStateOf(selectedLabel) }
     var previousQuery by remember { mutableStateOf(searchQuery) }
-    val skipPlacementAnimation = selectedLabel != previousLabel || searchQuery != previousQuery
+    val skipPlacementAnimation = (selectedLabel != previousLabel) || (searchQuery != previousQuery)
 
     SideEffect {
         previousLabel = selectedLabel
@@ -193,29 +189,9 @@ fun BirthdayList(
             start = contentPadding.calculateStartPadding(layoutDirection),
             top = contentPadding.calculateTopPadding(),
             end = contentPadding.calculateEndPadding(layoutDirection),
-            bottom = contentPadding.calculateBottomPadding() + FabBottomSpacing
+            bottom = contentPadding.calculateBottomPadding(),
         ),
     ) {
-        if (showLabelFilter && availableLabels.isNotEmpty()) {
-            val hasCoupleSuggestion =
-                selectedLabel == ContactLabels.LABEL_ANNIVERSARY && coupleSuggestion != null
-            // IMPORTANT: LabelFilterBar is the first LazyColumn item (not a sticky overlay).
-            // It scrolls away and reappears naturally. Do NOT move it outside the LazyColumn;
-            // doing so would break the headerCount accounting in FastScrollbar.
-            item(key = "label_filter_bar") {
-                LabelFilterBar(
-                    visible = true,
-                    labels = availableLabels,
-                    selectedLabel = selectedLabel,
-                    onLabelSelected = actions.onLabelSelected,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .let { modifier ->
-                            if (hasCoupleSuggestion) modifier.padding(bottom = SpacingSmall) else modifier
-                        }
-                )
-            }
-        }
         if (selectedLabel == ContactLabels.LABEL_ANNIVERSARY && coupleSuggestion != null) {
             item(key = "couple_suggestion") {
                 CoupleSuggestionBanner(
@@ -236,16 +212,14 @@ fun BirthdayList(
         } else {
             itemsIndexed(
                 items = contacts,
-                key = { _, it -> it.id },
+                key = { _, contact -> contact.id },
                 contentType = { _, _ -> "birthdayItem" },
             ) { index, contact ->
                 val isExpanded = onContactSelected == null && expandedContactId == contact.id
-                val isSelected = onContactSelected != null && selectedContactId == contact.id
 
                 BirthdayItem(
                     contact = contact,
                     isExpanded = isExpanded,
-                    isSelected = isSelected,
                     newlyAddedIdeaId = newlyAddedIdeaId,
                     onExpand = {
                         onInteraction()

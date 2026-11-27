@@ -24,9 +24,10 @@ class StringUtilsTest {
     }
 
     @Test
-    fun `getInitials returns question mark for empty or blank string`() {
-        assertThat("".getInitials()).isEqualTo("?")
-        assertThat("   ".getInitials()).isEqualTo("?")
+    fun `getInitials returns empty string without special characters for empty or blank string`() {
+        assertThat("".getInitials()).isEqualTo("")
+        assertThat("   ".getInitials()).isEqualTo("")
+        assertThat("? ! #".getInitials()).isEqualTo("")
     }
 
     @Test
@@ -40,5 +41,21 @@ class StringUtilsTest {
         assertThat("Max Mustermann".getInitials()).isEqualTo("MM")
         assertThat("Johann Sebastian Bach".getInitials()).isEqualTo("JB")
         assertThat(" anna maria schmidt ".getInitials()).isEqualTo("AS")
+    }
+
+    @Test
+    fun `getInitials ignores text inside parentheses and extracts letters from remaining name`() {
+        assertThat("Max Mustermann (Muster)".getInitials()).isEqualTo("MM")
+        assertThat("Erika (geb. Schmidt) Mustermann".getInitials()).isEqualTo("EM")
+        assertThat("Mustermann (Max)".getInitials()).isEqualTo("M")
+        assertThat("(Muster) Hans".getInitials()).isEqualTo("H")
+        assertThat("(Dr.) Hans Müller".getInitials()).isEqualTo("HM")
+    }
+
+    @Test
+    fun `getInitials strips special characters and returns only letters`() {
+        assertThat("Hans-Peter Müller".getInitials()).isEqualTo("HM")
+        assertThat("Max & Erika".getInitials()).isEqualTo("ME")
+        assertThat("O'Connor".getInitials()).isEqualTo("O")
     }
 }

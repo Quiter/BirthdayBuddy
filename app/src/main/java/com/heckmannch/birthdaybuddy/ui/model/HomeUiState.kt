@@ -19,6 +19,7 @@ data class PendingBirthdayEdit(
 data class HomeUiState(
     val contacts: List<ContactUiModel>? = null,
     val searchQuery: String = "",
+    val isSearchActive: Boolean = false,
     val availableLabels: List<String> = emptyList(),
     val selectedLabel: String? = null,
     val isResettingFilter: Boolean = false,

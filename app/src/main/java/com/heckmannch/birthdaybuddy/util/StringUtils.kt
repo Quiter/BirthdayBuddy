@@ -1,5 +1,7 @@
 package com.heckmannch.birthdaybuddy.util
 
+@Suppress("RegExpRedundantEscape")
+private val PARENTHESES_REGEX = "\\(.*?\\)|\\[.*?\\]|\\{.*?\\}".toRegex()
 private val WHITESPACE_REGEX = "\\s+".toRegex()
 
 /**
@@ -8,7 +10,7 @@ private val WHITESPACE_REGEX = "\\s+".toRegex()
 fun mergeNames(name1: String, name2: String): String {
     val parts1 = name1.trim().split(WHITESPACE_REGEX)
     val parts2 = name2.trim().split(WHITESPACE_REGEX)
-    if (parts1.size > 1 && parts2.size > 1 && parts1.last()
+    if ((parts1.size > 1) && (parts2.size > 1) && parts1.last()
             .equals(parts2.last(), ignoreCase = true)
     ) {
         val firstName1 = parts1.dropLast(1).joinToString(" ")
@@ -20,12 +22,22 @@ fun mergeNames(name1: String, name2: String): String {
 
 /**
  * Berechnet Initialen aus einem Namen (z.B. "Max Mustermann" → "MM").
+ * Ignoriert Namenszusätze in Klammern (z.B. "(Muster)" oder "(Dr.)"), entfernt Sonderzeichen
+ * und gibt ausschließlich gültige Buchstaben ohne Sonderzeichen zurück.
  */
 fun String.getInitials(): String {
-    val parts = this.trim().split(WHITESPACE_REGEX).filter { it.isNotBlank() }
+    val textWithoutParentheses = this.replace(PARENTHESES_REGEX, " ")
+    val words = textWithoutParentheses
+        .trim()
+        .split(WHITESPACE_REGEX)
+        .asSequence()
+        .map { word -> word.filter { it.isLetter() } }
+        .filter { it.isNotBlank() }
+        .toList()
+
     return when {
-        parts.isEmpty() -> "?"
-        parts.size == 1 -> parts.first().take(1).uppercase()
-        else -> "${parts.first().take(1)}${parts.last().take(1)}".uppercase()
+        words.isEmpty() -> ""
+        words.size == 1 -> words.first().take(1).uppercase()
+        else -> "${words.first().take(1)}${words.last().take(1)}".uppercase()
     }
 }

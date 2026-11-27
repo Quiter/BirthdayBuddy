@@ -34,7 +34,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.compose.LifecycleResumeEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.heckmannch.birthdaybuddy.ui.components.AppResponsiveScaffold
+import com.heckmannch.birthdaybuddy.ui.components.layout.AppResponsiveScaffold
 import com.heckmannch.birthdaybuddy.ui.screens.onboarding.components.CalendarGuidePage
 import com.heckmannch.birthdaybuddy.ui.screens.onboarding.components.CalendarPage
 import com.heckmannch.birthdaybuddy.ui.screens.onboarding.components.ContactsPage
@@ -221,7 +221,7 @@ fun OnboardingContent(
 
     LaunchedEffect(uiState.currentPage, steps.size) {
         val targetPage = uiState.currentPage.coerceIn(0, (steps.size - 1).coerceAtLeast(0))
-        if (targetPage != pagerState.currentPage && targetPage in 0 until steps.size) {
+        if (targetPage != pagerState.currentPage && targetPage in steps.indices) {
             pagerState.animateScrollToPage(targetPage)
         }
     }

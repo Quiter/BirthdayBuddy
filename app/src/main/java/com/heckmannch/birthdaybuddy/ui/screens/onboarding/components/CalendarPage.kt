@@ -52,7 +52,6 @@ fun CalendarPage(
             ) {
                 Column(modifier = Modifier.padding(SpacingSmall)) {
                     ListItem(
-                        headlineContent = { Text(stringResource(R.string.onboarding_calendar_enable)) },
                         trailingContent = {
                             AppSwitch(
                                 checked = enabled,
@@ -60,7 +59,9 @@ fun CalendarPage(
                             )
                         },
                         colors = ListItemDefaults.colors(containerColor = Color.Transparent)
-                    )
+                    ) {
+                        Text(stringResource(R.string.onboarding_calendar_enable))
+                    }
                 }
             }
         },

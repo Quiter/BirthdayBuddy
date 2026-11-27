@@ -20,6 +20,7 @@ val CornerRadiusExtraSmall = 4.dp
 val CornerRadiusSmall = 8.dp
 val CornerRadiusMedium = 12.dp
 val CornerRadiusLarge = 16.dp
+val CornerRadiusLargeIncreased = 20.dp
 val CornerRadiusExtraLarge = 28.dp
 
 /**
@@ -42,7 +43,6 @@ val ContactImageSizeSmall = 40.dp
 val ContactImageSizeNormal = 64.dp
 val ContactImageSizeLarge = 96.dp
 val ContactImageSizeOnboarding = 180.dp
-val FabBottomSpacing = 80.dp // Spacing from bottom of screen to float above FAB
 val BirthdayQuoteIconContainerSize = 120.dp
 val GridColumnMinWidth = 340.dp // Minimum column width for adaptive settings grids
 val EmptyStatePadding = 64.dp  // Padding for centered empty state containers
@@ -80,7 +80,18 @@ const val AlphaContainerMedium = 0.3f // Medium container alpha (e.g., for info 
 const val AlphaSurfaceContainerLow = 0.5f
 const val AlphaSurfaceContainerHigh = 0.6f
 const val AlphaBorderSubtle = 0.2f
-val ColorPickerHandleInnerRadius = 6.dp
+val ColorPickerComparisonSize = 56.dp
+val ColorPickerSwatchMaxSize = 48.dp
+val ColorPickerPanelHeight = 200.dp
+val ColorPickerPanelLandscapeHeight = 150.dp
+val ColorPickerPanelDefaultHeight = 200.dp
+val ColorPickerDialogLandscapeMaxWidth = 600.dp
+val ColorPickerMarkerRadius = 10.dp
+val ColorPickerMarkerStroke = 3.dp
+val ColorPickerCheckerCellSize = 6.dp
+const val AlphaColorPickerMarkerShadow = 0.35f
+const val AlphaColorPickerSwatchDisabled = 0.5f
+const val ColorPickerSelectedBorderDarkenFactor = 0.4f
 const val AnimDurationShort = 300   // Short animation duration in ms
 const val AnimDurationMedium = 500  // Medium animation duration in ms
 const val AnimDelayPermission = 300 // Delay before requesting permissions after navigation (ms)
@@ -142,6 +153,94 @@ const val AlphaOnboardingCalendarDisabled = 0.4f
 const val AlphaOnboardingCalendarInactive = 0.05f
 const val OnboardingCalendarEventAlpha = 0.8f
 const val AlphaWidgetCard = 0.8f
+
+/**
+ * Shared frosted glass card tokens used across Home, Labels, and Settings.
+ */
+val GlassCardHeightDefault = 80.dp
+val GlassCardIconSize = 56.dp
+val GlassCardMarkSize = 24.dp
+val GlassCardSelectionMarkSize = 28.dp
+val GlassCardTagIconSize = 12.dp
+val GlassCardSubtitleIconSize = 16.dp
+val GlassCardSwipeThreshold = 90.dp
+val GlassCardSwipeIconSize = 22.dp
+val GlassCardSkeletonTitleHeight = 18.dp
+val GlassCardSkeletonSubtitleHeight = 14.dp
+
+const val AlphaGlassCardFillStart = 0.70f
+const val AlphaGlassCardFillMid = 0.58f
+const val AlphaGlassCardFillEnd = 0.64f
+const val AlphaGlassCardBorderHighlight = 0.65f
+const val AlphaGlassCardBorderMid = 0.30f
+const val AlphaGlassCardBorderEnd = 0.15f
+const val AlphaGlassCardBorderSubtle = 0.20f
+const val AlphaGlassCardFlatEdge = 0.30f
+const val AlphaGlassCardSubtitle = 0.85f
+const val AlphaGlassCardChipContainer = 0.20f
+const val AlphaGlassCardMarkContainer = 0.35f
+const val AlphaGlassCardShadow = 0.40f
+const val AlphaGlassCardUnselected = 0.55f
+const val AlphaGlassCardBorderNeutral = 0.40f
+const val AlphaGlassCardBorderTinted = 0.25f
+
+/**
+ * Shared tokens for the Morphe-style expressive Settings UI system.
+ */
+val SettingsSegmentGap = 2.dp
+val SettingsSegmentBlockGap = 16.dp
+val SettingsContentMaxWidth = 560.dp
+val SettingsHeaderControlSize = 40.dp
+val SettingsOptionCardHeightCompact = 64.dp
+val SettingsOptionIconSizeCompact = 22.dp
+val SettingsSwatchSize = 48.dp
+val SettingsEmptyStateIconSize = 56.dp
+val SettingsAboutLogoSize = 72.dp
+val SettingsEdgeFadeWidth = 24.dp
+val SettingsNoticeActionMinHeight = 44.dp
+val SettingsCardElevationLow = 1.dp
+
+const val SettingsAnimDurationMs = 220
+const val SettingsAnimDurationShortMs = 180
+const val SettingsPressedCornerScale = 0.5f
+const val SettingsPressedWidthRatio = 0.15f
+const val SettingsMorphFadeFraction = 0.25f
+
+const val AlphaSettingsHeaderControlActive = 0.45f
+const val AlphaSettingsHeaderControlIdle = 0.18f
+const val AlphaSettingsSelectionUnselectedDark = 0.35f
+const val AlphaSettingsSelectionUnselectedLight = 0.60f
+const val AlphaSettingsSelectionBorderDark = 0.55f
+const val AlphaSettingsSelectionBorderLight = 0.45f
+const val AlphaSettingsOutlineMuted = 0.50f
+const val AlphaSettingsNoticeDivider = 0.20f
+const val AlphaSettingsEmptyIcon = 0.50f
+const val AlphaSettingsSubtitleMuted = 0.70f
+const val AlphaSettingsInfoStatContainer = 0.30f
+const val AlphaSettingsSwatchUnselected = 0.40f
+
+/**
+ * Shared tokens for the Morphe-style Contact Detail Pane transitions and entrance choreography.
+ */
+const val DetailDialogScale = 0.95f
+const val DetailHeaderIconDamping = 0.55f
+const val DetailHeaderIconStiffness = 320f
+const val DetailHeaderIconInitialScale = 0.6f
+const val DetailHeaderTextDurationMs = 260
+const val DetailHeaderTextDelayMs = 60
+const val DetailHeaderSubtitleStartFraction = 0.15f
+const val DetailHeaderActionsDurationMs = 240
+const val DetailHeaderActionsDelayMs = 160
+const val DetailHeaderSlideOffsetPx = 40f
+const val DetailHeaderActionSlideOffsetPx = 20f
+const val DetailStaggerStepMs = 40
+const val DetailStaggerOffsetPx = 28f
+const val DetailStaggerInitialScale = 0.97f
+const val AlphaDetailCardBorder = 0.30f
+const val AlphaDetailInfoIcon = 0.55f
+const val AlphaDetailInfoLabel = 0.60f
+
+
 
 
 

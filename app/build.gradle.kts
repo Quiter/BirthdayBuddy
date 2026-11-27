@@ -19,8 +19,8 @@ android {
         applicationId = "com.heckmannch.birthdaybuddy"
         minSdk = 28
         targetSdk = 37
-        versionCode = 48
-        versionName = "2.16.1"
+        versionCode = 53
+        versionName = "2.17.1.26"
 
         testInstrumentationRunner = "com.heckmannch.birthdaybuddy.HiltTestRunner"
     }
@@ -68,6 +68,7 @@ android {
     testOptions {
         unitTests.isIncludeAndroidResources = true
     }
+    compileSdkMinor = 2
 }
 
 room {
@@ -98,8 +99,10 @@ dependencies {
     implementation(libs.androidx.core.splashscreen)
     implementation(libs.bundles.lifecycle)
     implementation(libs.bundles.room)
-    implementation(libs.bundles.coil)
+    implementation(libs.coil.compose)
     implementation(libs.bundles.glance)
+    implementation(libs.haze)
+    implementation(libs.haze.blur)
     implementation(libs.androidx.work.runtime.ktx)
     implementation(libs.material)
     implementation(libs.material.color.utilities)

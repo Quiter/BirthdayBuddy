@@ -1,11 +1,13 @@
 ---
 name: projekt-kontext
-description: Lädt die unveränderlichen Projekt-Richtlinien, den Tech-Stack und die Ordnerstruktur von BirthdayBuddy für die Entwicklung neuer Features.
+description: Lädt die grundlegenden Projekt-Richtlinien, den Tech-Stack, die Architektur-Ebenen und die Ordnerstruktur von BirthdayBuddy. Dient als zentraler Einstiegspunkt für Feature-Planung und allgemeine Konventionen.
 ---
 
-# BirthdayBuddy Projekt-Kontext & Richtlinien
+# BirthdayBuddy: Projekt-Kontext & Architektur-Grundlagen
 
-Dieses Dokument dient als systemischer Kontext für die Entwicklung von Features und Code-Anpassungen im **BirthdayBuddy**-Projekt. Es enthält alle unveränderlichen Architekturregeln, den Technologiestack und Richtlinien zur Einhaltung der Code-Qualität.
+Dieses Dokument dient als schlanker Einstiegspunkt für die Entwicklung von Features und Code-Anpassungen im **BirthdayBuddy**-Projekt. Es definiert den Technologiestack, die Clean-Architecture-Ebenen und Namenskonventionen.
+
+Für tiefgehende Detailthemen existieren spezialisierte Skills, die gezielt geladen werden können (siehe unten).
 
 ---
 
@@ -13,87 +15,18 @@ Dieses Dokument dient als systemischer Kontext für die Entwicklung von Features
 
 > [!IMPORTANT]
 > **Single Source of Truth (SSOT) für Abhängigkeiten**:
-> Alle Bibliotheks-, Plugin- und SDK-Versionen werden ausschließlich im Gradle Version Catalog ([`gradle/libs.versions.toml`](file:///c:/Users/chris/AndroidStudioProjects/BirthdayBuddy/gradle/libs.versions.toml)) gepflegt.
+> Alle Bibliotheks-, Plugin- und SDK-Versionen werden ausschließlich im Gradle Version Catalog ([`gradle/libs.versions.toml`](file:///E:/Benutzer/Christof/Entwicklung/StudioProjects/BirthdayBuddy/gradle/libs.versions.toml)) gepflegt.
 > In Richtlinien und Prompts werden **keine statischen Versionsnummern festgeschrieben**. Das Projekt wird kontinuierlich auf aktuellen, zueinander kompatiblen stabilen Versionen gehalten (Evergreen-Prinzip).
 
 - **Plattform & Build**:
-  - **Gradle Version Catalog**: Zentraler Einstiegspunkt für alle Abhängigkeiten und Plugins (`gradle/libs.versions.toml`).
-  - **Java / JVM Toolchain**: Java 17 (`jvmToolchain(17)`, `sourceCompatibility` / `targetCompatibility`).
+  - **Gradle Version Catalog**: Zentraler Einstiegspunkt (`gradle/libs.versions.toml`).
+  - **Java / JVM Toolchain**: Java 17 (`jvmToolchain(17)`).
   - **Gradle & AGP**: Modernes Gradle & Android Gradle Plugin (AGP 9.x+ deklaratives Plugin-Management).
-  - **Gradle DSL**: Ausschließlich Kotlin DSL mit typsicheren Accessoren (`configure<ApplicationExtension>`). Legacy `apply plugin` ist verboten; alle Plugins im `plugins { ... }`-Block deklarieren.
+  - **Gradle DSL**: Ausschließlich Kotlin DSL mit typsicheren Accessoren. Legacy `apply plugin` ist verboten; alle Plugins im `plugins { ... }`-Block deklarieren.
   - **Compiler-Flags** (in `gradle.properties` erzwungen):
     - `android.nonTransitiveRClass=true` (R-Klassen nicht transitiv für maximale Build-Performance)
     - `android.nonFinalResIds=true` (Ressourcen-IDs sind nicht final)
-- **UI & UX**:
-  - **Framework**: Jetpack Compose mit aktuellem Compose BOM, Material 3 & Material 3 Adaptive Layouts.
-  - **Homescreen-Widgets**: Jetpack Glance (mit transparentem Container & 80% transluzenten M3-Karten).
-  - **Animationen**: 100% native Compose-Illustrationen und animierte Shader (vollständiger Verzicht auf Lottie für minimierte APK-Größe).
-- **Data & Architecture**:
-  - **Datenbank & Caching**: Room mit KSP-Compiler für robustes Caching & persistente Einstellungen.
-  - **Hintergrund-Tasks**: WorkManager mit Hilt-Worker-Integration (`@AssistedInject`).
-  - **Dependency Injection**: Hilt mit KSP-Unterstützung.
-  - **On-Device AI / System-Shortcuts**: Android AppFunctions (`platform/appfunctions/`, API 36+).
-  - **Architektur-Pattern**: Clean Architecture (Feature-based Layering) & MVI/UDF (Uni-Directional Data Flow) mit `@Immutable` UI-Modellen und Screen-spezifischen ViewModels.
-
----
-
-## 🏛️ Architektur- & Entwicklungsregeln
-
-### 1. Architektur & Navigation (Navigation 3)
-- **Navigation**: Verwaltet über Jetpack Navigation 3 (`NavDisplay`).
-  - Alle Routen/Keys müssen `@Serializable` Kotlin-Objekte oder Data Classes sein ([`NavRoutes.kt`](file:///c:/Users/chris/AndroidStudioProjects/BirthdayBuddy/app/src/main/java/com/heckmannch/birthdaybuddy/ui/navigation/NavRoutes.kt)).
-  - Die Navigationsstruktur und das Screen-Mapping werden zentral in [`AppNavHost.kt`](file:///c:/Users/chris/AndroidStudioProjects/BirthdayBuddy/app/src/main/java/com/heckmannch/birthdaybuddy/ui/navigation/AppNavHost.kt) verwaltet.
-  - Der Backstack wird als observable State-Liste von Keys verwaltet und per Mutation (Add/Pop) gesteuert.
-- **ViewModels**:
-  - Müssen vollständig von Android APIs entkoppelt sein.
-  - Liegen **feature-co-located** direkt im jeweiligen Feature-Ordner unter `ui/screens/<feature>/` (Ausnahme: `AppViewModel.kt` im Root-Package für Activity-weite Aufgaben).
-  - ViewModels werden via `hiltViewModel()` bezogen und müssen über `rememberViewModelStoreNavEntryDecorator()` an den jeweiligen `NavEntry` gekoppelt werden.
-  - **Parameter-Übergabe**: Keine String-Bundles/`SavedStateHandle` verwenden. Stattdessen **Hilt Assisted Injection** (Factory & Creation-Callback im `NavEntry`-Block) nutzen.
-
-### 2. Datenbank-Sicherheit (Room)
-- **Migrations-Sicherheit**:
-  - Die Verwendung von `fallbackToDestructiveMigration` ist **verboten**.
-  - Jede Schema-Änderung erfordert:
-    1. Erhöhung der Version in der Room-Datenbank.
-    2. Definition einer Auto-Migration (oder manuellen Migration).
-    3. Export des Datenbankschemas nach `app/schemas` für automatisierte Tests.
-- **Daten-Modellierung**: Room-Entitäten und DAOs müssen in `proguard-rules.pro` vor Code-Shrinking geschützt werden.
-
-### 3. UI- & Layout-Prinzipien
-- **Padding & Spacing**:
-  - Keine additiven vertikalen Paddings verwenden. Abstände zwischen Elementen müssen über `bottom-padding` definiert werden, um Layout-Sprünge innerhalb von `AnimatedVisibility` zu verhindern.
-  - Alle UI-Maße (Spacings, Icons, Opazitäten) müssen aus [Dimensions.kt](file:///c:/Users/chris/AndroidStudioProjects/BirthdayBuddy/app/src/main/java/com/heckmannch/birthdaybuddy/ui/theme/Dimensions.kt) stammen (keine Hardcoded/Magic-Values).
-- **Responsive Layouts**:
-  - Multi-Column-Layouts auf Tablets/Chromebooks mittels `WindowSizeClass` (aus `androidx.window.core.layout`) über `ResponsiveLayout.kt` und `calculatePaneScaffoldDirective(windowAdaptiveInfo)` realisieren (Master-Detail).
-  - Volle Edge-to-Edge Unterstützung (Android 15+) unter Verwendung von `AppResponsiveScaffold` für automatische System-Insets.
-- **Bilder & Scrolling**:
-  - Coil-Bilder vorab über `enqueue` mit expliziten Memory-Cache-Keys laden, um Scroll-Lag in Fast-Scroll-Listen zu verhindern.
-
-### 4. Internationalisierung (I18n) & Dokumentation
-- **I18n**: Jedes neue oder geänderte String-Ressource-Element muss zeitgleich in [strings.xml (DE)](file:///c:/Users/chris/AndroidStudioProjects/BirthdayBuddy/app/src/main/res/values-de/strings.xml) und [strings.xml (EN)](file:///c:/Users/chris/AndroidStudioProjects/BirthdayBuddy/app/src/main/res/values/strings.xml) eingepflegt werden.
-- **Dokumentations-Pflicht**:
-  - Signifikante Code-Änderungen *zwingend* an [CHANGELOG.md](file:///c:/Users/chris/AndroidStudioProjects/BirthdayBuddy/docs/CHANGELOG.md) anhängen.
-  - Neue Dateien, Module oder DB-Entitäten in [PROJECT_STRUCTURE.md](file:///c:/Users/chris/AndroidStudioProjects/BirthdayBuddy/docs/PROJECT_STRUCTURE.md) registrieren.
-  - KDoc (Englisch) und inline Kommentare für alle neuen/modifizierten Klassen, public Funktionen und komplexe Logikblöcke zur Erklärung von Entwurfsentscheidungen nutzen.
-
-### 5. Testing & Qualitätssicherung
-- **Unit Tests**: ViewModels, Use Cases und Repositories müssen in `src/test` abgedeckt sein (unter Nutzung der `MainDispatcherRule`).
-- **Screenshot Tests**: JVM-basierte Roborazzi Screenshot-Tests in `src/test/java/.../screenshot/` zur Verifikation von UI-Layouts und Dark/Light-Theming.
-- **Pre-Release Check**: Vor jedem Release müssen die Tests via `./gradlew test` (sowie instrumentierte Tests bei DB-/ContentProvider-Änderungen) erfolgreich durchgelaufen sein.
-
-### 6. Coroutines & Dispatcher-Richtlinie (Threading, Hilt & Main-Safety)
-- **Keine hardcodierten Dispatcher (Google Best Practice)**:
-  - Niemals `Dispatchers.IO` oder `Dispatchers.Default` direkt im Code instanziieren / aufrufen (`withContext(Dispatchers.IO)` ist verboten).
-  - Dispatcher müssen stets per Hilt-Konstruktorinjektion mit den Qualifiers aus `com.heckmannch.birthdaybuddy.di` injiziert werden:
-    - `@IoDispatcher private val ioDispatcher: CoroutineDispatcher` für I/O, Datenbank-, Datei- und ContentResolver-Operationen.
-    - `@DefaultDispatcher private val defaultDispatcher: CoroutineDispatcher` für rechenintensive CPU-Operationen (Diffing, Filterung, O(n)-Transformationen).
-    - `@MainDispatcher private val mainDispatcher: CoroutineDispatcher` für UI- und Main-Thread-Operationen.
-- **Main-Safety**:
-  - Jede `suspend`-Funktion in Repositories und DataSources MUSS "main-safe" sein (sie wechselt selbst intern via `withContext(ioDispatcher)` bzw. `withContext(defaultDispatcher)` und blockiert niemals den Aufrufer).
-- **Import-Konvention**:
-  - `@IoDispatcher` / `@DefaultDispatcher` / `@MainDispatcher`: `com.heckmannch.birthdaybuddy.di.*` (Hilt Qualifier).
-  - `CoroutineDispatcher`: `kotlinx.coroutines.CoroutineDispatcher` (Typ für Parameter & Felder).
-  - `Dispatchers`: `kotlinx.coroutines.Dispatchers` (darf **ausschließlich** im Hilt-Modul `AppModule.kt` oder in Test-Setups / Default-Parametern referenziert werden).
+- **Architektur-Pattern**: Clean Architecture (Feature-based Layering) & MVI/UDF (Uni-Directional Data Flow) mit `@Immutable` UI-Modellen und Screen-spezifischen ViewModels.
 
 ---
 
@@ -105,30 +38,45 @@ Dieses Dokument dient als systemischer Kontext für die Entwicklung von Features
 - **UI-Modelle**: Suffix `UiModel` (z.B. `ContactUiModel.kt`) oder `UiState` (z.B. `HomeUiState.kt`).
 - **Ressourcen**: Standardmäßig Kleinschreibung mit Snake-Case (`ic_launcher.xml`, `strings.xml`).
 
-### Verzeichnisstruktur
-- **`di/`**: Hilt-Konfigurationsmodule (z.B. `AppModule.kt`, `HelperBindingsModule.kt`).
+### Verzeichnisstruktur (`com.heckmannch.birthdaybuddy`)
+- **`di/`**: Hilt-Konfigurationsmodule und Dispatcher-Qualifiers (`AppModule.kt`, `Qualifiers.kt`).
 - **`domain/`**:
-  - **`model/`**: Reine Kotlin-Geschäftsmodelle (z.B. `Contact`, `GiftIdea`, `EventType`, `MessengerApp`).
-  - **`usecase/`**: Fachliche Anwendungsfälle / Use Cases (z.B. `GetContactsUseCase`, `GetPendingNotificationsUseCase`).
-  - **`util/`**: Fachliche Hilfsfunktionen ohne Framework-Abhängigkeiten (`DateUtils.kt`, `PhoneNumberNormalizer.kt`).
+  - **`model/`**: Reine Kotlin-Geschäftsmodelle frei von Android-Framework-Abhängigkeiten (`Contact.kt`, `GiftIdea.kt`).
+  - **`usecase/`**: Fachliche Anwendungsfälle (`GetContactsUseCase.kt`, `SyncCalendarUseCase.kt`).
+  - **`util/`**: Fachliche Hilfsfunktionen (`DateUtils.kt`, `PhoneNumberNormalizer.kt`).
   - **`permission/`**: Plattformunabhängige Schnittstellen für Berechtigungsprüfungen (`PermissionChecker.kt`).
 - **`platform/`**:
-  - **`appfunctions/`**: Android-Framework-spezifischer `BirthdayAppFunctionService` (verwendet `PendingIntent`, `Intent`, `AppFunctionService`). Liegt hier, da der Domain-Layer frei von Framework-Abhängigkeiten bleiben muss.
-    - **`model/`**: AppFunction-DTOs (`UpcomingBirthday.kt`, `ContactBirthday.kt`) mit `@AppFunctionSerializable`.
+  - **`appfunctions/`**: Android-Framework-spezifischer `BirthdayAppFunctionService` (API 36+ Shortcuts / On-Device AI).
 - **`data/`**:
-  - **`local/`**: Room-Datenbanken (`AppDatabase`, `SettingsDatabase`), Entitäten (`Contact`, `AppSettings`, `NotificationRule`, `PendingNotification`) und DAOs.
-  - **`repository/`**: Orchestriert den Datenfluss (`ContactRepository`, `CalendarSyncRepository`, `NotificationRepository`).
+  - **`local/`**: Room-Datenbanken (`AppDatabase`, `SettingsDatabase`), Entitäten und DAOs.
+  - **`repository/`**: Repository-Implementierungen (`ContactRepositoryImpl`, `CalendarSyncRepositoryImpl`).
   - **`mapper/`**: Mappings von DB-Entitäten zu Domain-Modellen (`ContactDbMapper`).
-  - **`permission/`**: Plattformspezifische Implementierung (`AndroidPermissionChecker.kt`).
 - **`ui/`**:
-  - **`screens/`**: Feature-basierte Verzeichnisse (`home/`, `onboarding/`, `settings/`). Jedes Feature beherbergt Screen, Content, ViewModel, State, Actions und Sub-Komponenten (feature-co-located).
+  - **`screens/`**: Feature-basierte Verzeichnisse (`home/`, `settings/`, `onboarding/`). Screen, Content, ViewModel, State und Events sind feature-co-located.
   - **`navigation/`**: Navigation 3 Routen (`NavRoutes.kt`) und Nav-Host (`AppNavHost.kt`).
-  - **`model/`**: Immutable UI-Modelle, Enums (z.B. `BirthdayTier`) und UI-States.
-  - **`components/`**: Globale, wiederverwendbare Custom-Komponenten (z.B. `ColorPickerDialog.kt`, `ResponsiveLayout.kt`).
-  - **`illustrations/`**: Native Compose-Animationen (`ContactsIllustration.kt`, `WelcomeIllustration.kt`).
-  - **`theme/`**: Jetpack Compose Design-System (Farben, Typografie, Formen, `Dimensions.kt`).
-- **`util/` & `ui/util/`**: Allgemeingültige Hilfsklassen (`DateUtils.kt`, `IntentExtras.kt`, `ContactActions.kt`).
-- **`widget/`**: Glance App-Widget Implementierung (`BirthdayWidget.kt`, `BirthdayWidgetWorker.kt`).
+  - **`components/`**: Globale UI-Komponenten (`bars/`, `cards/`, `colorpicker/`, `layout/`, `settings/`, `AppSwitch.kt`, `StepItem.kt`).
+  - **`illustrations/`**: Native Compose-Animationen (`ContactsIllustration.kt`).
+  - **`theme/`**: Design-System (Farben, Typografie, Formen, `Dimensions.kt`).
+- **`widget/`**: Glance App-Widget (`BirthdayWidget.kt`, `BirthdayWidgetWorker.kt`).
+- **`notification/`**: Benachrichtigungslogik, Worker und Alarm-Receiver.
 
-## Synchronisations-Regel
-Sobald neue Architektur-Muster, Bibliotheken oder globale UI-Komponenten finalisiert und getestet wurden, MUSS der Agent die entsprechende Dokumentation und Richtlinien eigenständig aktualisieren, bevor der Task als abgeschlossen gilt.
+---
+
+## 🎯 Spezialisierte BirthdayBuddy Skills
+
+Für spezifische Aufgaben existieren modulare Skills, die gezielt vom Modell geladen werden können:
+
+| Skill | Zweck & Aktivierung |
+|---|---|
+| **`bb-compose-ui`** | UI-Entwicklung, Composables, Spacings/Bottom-Padding, `Dimensions.kt`, Responsive Layouts (Tablets), Insets, Coil-Bildvorabladung |
+| **`bb-navigation`** | Jetpack Navigation 3, `NavRoutes.kt`, `AppNavHost.kt`, ViewModels an NavEntry koppeln, Hilt Assisted Injection |
+| **`bb-room-database`** | Room Entities, DAOs, Migrationen (kein Destructive Migration!), Schema Export nach `app/schemas` |
+| **`bb-coroutines-threading`** | Coroutines, Hilt Dispatcher-Injektion (`@IoDispatcher`, `@DefaultDispatcher`), Main-Safety, Threading-Regeln |
+| **`bb-testing-qa`** | Unit Tests (`MainDispatcherRule`), Roborazzi Screenshot-Tests, Quality Gates |
+| **`bb-i18n-docs`** | Lokalisierung (synchrone Pflege von `values-de` und `values`), `CHANGELOG.md`, `PROJECT_STRUCTURE.md`, KDoc |
+| **`bb-glance-widget`** | Homescreen-Widget mit Jetpack Glance, M3-Styling (transluzent), Widget-Updates via Worker/Alarm |
+
+---
+
+## 🔄 Synchronisations-Regel
+Sobald neue Architektur-Muster, Bibliotheken oder globale UI-Komponenten finalisiert und getestet wurden, MUSS die entsprechende Dokumentation und Richtlinie eigenständig aktualisiert werden, bevor der Task als abgeschlossen gilt.

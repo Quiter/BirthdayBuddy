@@ -83,15 +83,16 @@ internal object ScrollbarDefaults {
     const val FADE_OUT_DELAY_MS = ScrollbarFadeOutDelayMs
     val EstimatedHeaderHeight = ScrollbarEstimatedHeaderHeight
     val EstimatedContactHeight = ScrollbarEstimatedContactHeight
-    const val AlphaThumb = AlphaScrollbarThumb
+    const val ALPHA_THUMB = AlphaScrollbarThumb
     val ThumbWidth = ScrollbarThumbWidth
     val ThumbHeight = ScrollbarThumbHeight
     val BubbleOffsetY = SpacingExtraSmall
+    val BubbleOffsetX = SpacingExtraSmall
     val BubbleCornerLarge = CardCornerRadiusLarge
     val BubbleCornerSmall = CardCornerRadiusSmall
     val BubbleElevation = ScrollbarBubbleElevation
     val ThumbElevation = ScrollbarThumbElevation
-    const val FadeDurationMs = ScrollbarFadeDurationMs
+    const val FADE_DURATION_MS = ScrollbarFadeDurationMs
 }
 
 /**
@@ -100,7 +101,7 @@ internal object ScrollbarDefaults {
 data class ScrollSection(
     val label: String,
     val startIndex: Int,
-    val count: Int
+    val count: Int,
 )
 
 /**
@@ -112,11 +113,11 @@ internal class FastScrollState(
     val listState: LazyListState,
     var density: Density,
 ) {
-    var isDragging by mutableStateOf(false)
+    var isDragging by mutableStateOf(value = false)
     var dragOffsetPx by mutableFloatStateOf(0f)
-    var hasUserScrolled by mutableStateOf(false)
-    var isVisible by mutableStateOf(false)
-    var showBubble by mutableStateOf(false)
+    var hasUserScrolled by mutableStateOf(value = false)
+    var isVisible by mutableStateOf(value = false)
+    var showBubble by mutableStateOf(value = false)
 
     /**
      * Estimated header height in pixels using the current density.
@@ -189,8 +190,8 @@ internal class FastScrollState(
      * FORWARD MAPPING: List position → Thumb position (LINEAR)
      *
      * scrollPercent = scrolledPx / maxScrollPx
-     *   scrolledPx  = cumulativeHeights[firstIndex] + firstVisibleScrollOffset
-     *   maxScrollPx = totalHeight - viewportHeight + afterContentPadding
+     *   scrolledPx  = cumulativeHeight(firstIndex) + firstVisibleScrollOffset
+     *   maxScrollPx = (totalHeight - viewportHeight) + afterContentPadding
      *
      * Purely linear based on stable expected item heights, avoiding jumpiness.
      */
@@ -203,11 +204,11 @@ internal class FastScrollState(
         if (viewportHeight <= 0f) return 0f
 
         val afterPad = listState.layoutInfo.afterContentPadding.toFloat()
-        val maxScrollPx = totalHeight - viewportHeight + afterPad
+        val maxScrollPx = (totalHeight - viewportHeight) + afterPad
         if (maxScrollPx <= 0f) return 0f
 
         val firstIndex = listState.firstVisibleItemIndex
-            .coerceIn(0, (totalItems + headerCount - 1).coerceAtLeast(0))
+            .coerceIn(0, ((totalItems + headerCount) - 1).coerceAtLeast(0))
         val firstOffset = listState.firstVisibleItemScrollOffset.toFloat()
 
         val scrolledPx = cumulativeHeight(firstIndex, headerCount) + firstOffset
@@ -256,12 +257,12 @@ internal class FastScrollState(
         val sectionFloat = percent * sections.size.toFloat()
         val sectionIndex = sectionFloat.toInt().coerceIn(0, sections.size - 1)
         val sectionProgress = (sectionFloat - sectionIndex).coerceIn(0f, 1f)
-        val section = sections[sectionIndex]
+        val (_, startIndex, count) = sections[sectionIndex]
 
         val targetFloatIndex =
-            section.startIndex.toFloat() + sectionProgress * section.count.toFloat()
+            startIndex.toFloat() + (sectionProgress * count.toFloat())
         val targetIndex = targetFloatIndex.toInt()
-            .coerceIn(0, (totalItems + headerCount - 1).coerceAtLeast(0))
+            .coerceIn(0, ((totalItems + headerCount) - 1).coerceAtLeast(0))
         val fractional = (targetFloatIndex - targetIndex).coerceIn(0f, 1f)
         val itemSizePx = getItemHeightPx(targetIndex, headerCount)
         val offsetPx = (fractional * itemSizePx).toInt()
@@ -292,6 +293,8 @@ internal class FastScrollState(
     fun resetOnContactsChange() {
         hasUserScrolled = false
         dragOffsetPx = 0f
+        isVisible = false
+        showBubble = false
     }
 }
 
@@ -359,22 +362,22 @@ internal fun rememberFastScrollState(
  *      (index 0, offset 0) to avoid showing the scrollbar during refresh gestures.
  *    - **Top-of-List Reset**: Reset `hasUserScrolled` to `false` (and hide the scrollbar)
  *      as soon as the list is scrolled completely back to the top (index 0, offset 0).
- *      This ensures UI elements at the very top of the LazyColumn (e.g. [LabelFilterBar]) are
+ *      This ensures UI elements at the very top of the LazyColumn (e.g. `LabelFilterBar`) are
  *      fully visible and not obscured by the scrollbar.
  *    - **Tab / Filter Switches**: Automatically reset `hasUserScrolled` to `false` AND
  *      `dragOffsetPx` to `0f` when `contacts` change, so programmatic list resets do not
  *      trigger visibility and the thumb always starts at the correct (top) position.
  * 7. **LabelFilterBar / Header Items (IMPORTANT)**:
- *    - The [LabelFilterBar] is rendered as the **first item** inside the [BirthdayList]
- *      [LazyColumn] (not as a separate sticky overlay). This means:
+ *    - The `LabelFilterBar` is rendered as the **first item** inside the [BirthdayList]
+ *      `LazyColumn` (not as a separate sticky overlay). This means:
  *      a) It scrolls away when the user scrolls down, and reappears when scrolling back up.
  *      b) The `headerCount` parameter MUST be set to 1 when `availableLabels` is non-empty,
  *         plus 1 more if a couple-suggestion banner is shown. The caller (HomeContent) is
  *         responsible for computing and passing the correct value.
- *      c) The [expectedItemHeights] array allocates `headerCount` slots of 56 dp each before
+ *      c) The `expectedItemHeights` array allocates `headerCount` slots of 56 dp each before
  *         the contact items (80 dp each), so the linear height model stays accurate.
- *      d) Do NOT move [LabelFilterBar] back to a top-of-screen sticky overlay — that would
- *         break the [headerCount] accounting and cause the scrollbar thumb to jump.
+ *      d) Do NOT move `LabelFilterBar` back to a top-of-screen sticky overlay — that would
+ *         break the `headerCount` accounting and cause the scrollbar thumb to jump.
  *
  * @param contentPadding Scaffold or container padding values to constrain the scrollbar
  *                      within the visible list area (e.g. below top app bar and above navigation bar).
@@ -408,16 +411,13 @@ fun FastScrollbar(
     }
 
     // Dynamic visibility threshold: list must be longer than the viewport + 2 items
-    val isNeeded by remember(listState) {
+    val isNeeded by remember(listState, totalItems) {
         derivedStateOf {
             val layoutInfo = listState.layoutInfo
             val visibleCount = layoutInfo.visibleItemsInfo.size
-            if (visibleCount == 0) false
-            else layoutInfo.totalItemsCount > visibleCount + 2
+            (totalItems > 0) && (visibleCount != 0) && (layoutInfo.totalItemsCount > (visibleCount + 2))
         }
     }
-
-    if (!isNeeded || totalItems <= 0) return
 
     // Group contacts into scrollable sections based on label (Month or Letter)
     val sections = remember(contacts, getLabel, headerCount) {
@@ -431,7 +431,9 @@ fun FastScrollbar(
     val isListDragged by listState.interactionSource.collectIsDraggedAsState()
 
     val isAtTop by remember(listState) {
-        derivedStateOf { listState.firstVisibleItemIndex == 0 && listState.firstVisibleItemScrollOffset == 0 }
+        derivedStateOf {
+            (listState.firstVisibleItemIndex == 0) && (listState.firstVisibleItemScrollOffset == 0)
+        }
     }
 
     LaunchedEffect(isListDragged, isAtTop, listState.isScrollInProgress) {
@@ -458,11 +460,18 @@ fun FastScrollbar(
         state.resetOnContactsChange()
     }
 
+    LaunchedEffect(isNeeded) {
+        if (!isNeeded && state.isDragging) {
+            state.isDragging = false
+            currentOnSetFastScrolling(false)
+        }
+    }
+
     // NOTE: hasUserScrolled = true for thumb drags is set directly in onDragStart
     // (no LaunchedEffect needed; the gesture callback is synchronous).
 
-    LaunchedEffect(listState.isScrollInProgress, state.isDragging, state.hasUserScrolled) {
-        if (state.hasUserScrolled && (listState.isScrollInProgress || state.isDragging)) {
+    LaunchedEffect(listState.isScrollInProgress, state.isDragging, state.hasUserScrolled, isNeeded) {
+        if (isNeeded && state.hasUserScrolled && (listState.isScrollInProgress || state.isDragging)) {
             state.isVisible = true
         } else {
             if (state.isVisible) {
@@ -473,9 +482,9 @@ fun FastScrollbar(
     }
 
     val alphaState = animateFloatAsState(
-        targetValue = if (state.isVisible) 1f else 0f,
-        animationSpec = tween(durationMillis = ScrollbarDefaults.FadeDurationMs),
-        label = "Scrollbar Alpha"
+        targetValue = if (isNeeded && state.isVisible) 1f else 0f,
+        animationSpec = tween(durationMillis = ScrollbarDefaults.FADE_DURATION_MS),
+        label = "Scrollbar Alpha",
     )
 
     // Bubble visibility logic
@@ -493,9 +502,9 @@ fun FastScrollbar(
             .width(ScrollbarDefaults.BarWidth)
             .padding(
                 top = contentPadding.calculateTopPadding(),
-                bottom = contentPadding.calculateBottomPadding()
+                bottom = contentPadding.calculateBottomPadding(),
             )
-            .testTag("fast_scrollbar")
+            .testTag("fast_scrollbar"),
     ) {
         val viewHeight = maxHeight
         val trackHeight = viewHeight - ScrollbarDefaults.ThumbHeight
@@ -506,8 +515,8 @@ fun FastScrollbar(
         // FORWARD MAPPING: List position → Thumb position (LINEAR)
         //
         // scrollPercent = scrolledPx / maxScrollPx
-        //   scrolledPx  = cumulativeHeights[firstIndex] + firstVisibleScrollOffset
-        //   maxScrollPx = totalHeight - viewportHeight + afterContentPadding
+        //   scrolledPx  = cumulativeHeight(firstIndex) + firstVisibleScrollOffset
+        //   maxScrollPx = (totalHeight - viewportHeight) + afterContentPadding
         //
         // afterContentPadding (= LazyColumn bottom contentPadding in px) is CRITICAL:
         // it extends the scrollable range beyond the item heights. Without it,
@@ -546,20 +555,19 @@ fun FastScrollbar(
         // Haptic feedback when crossing a section boundary during drag
         var lastLabelForHaptic by remember { mutableStateOf("") }
         LaunchedEffect(currentLabel) {
-            if (state.isDragging && currentLabel.isNotEmpty() && currentLabel != lastLabelForHaptic) {
+            if (state.isDragging && currentLabel.isNotEmpty() && (currentLabel != lastLabelForHaptic)) {
                 haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                 lastLabelForHaptic = currentLabel
             }
         }
 
         ScrollbarBubble(
-            visible = state.showBubble && currentLabel.isNotEmpty(),
+            visible = isNeeded && state.showBubble && currentLabel.isNotEmpty(),
             label = currentLabel,
-            thumbOffset = { thumbOffset }
-        )
+        ) { thumbOffset }
 
-        // Interactive touch track: only attach pointerInput when visible to prevent ghost touches
-        val dragModifier = if (state.isVisible) {
+        // Interactive touch track: only attach pointerInput when visible and needed to prevent ghost touches
+        val dragModifier = if (isNeeded && state.isVisible) {
             Modifier.pointerInput(trackHeightPx, sections, headerCount, totalItems) {
                 detectVerticalDragGestures(
                     onDragStart = { offset ->
@@ -568,13 +576,13 @@ fun FastScrollbar(
                         state.hasUserScrolled = true
                         currentOnSetFastScrolling(true)
                         state.dragOffsetPx =
-                            (offset.y - thumbHeightPx / 2f).coerceIn(0f, trackHeightPx)
+                            (offset.y - (thumbHeightPx / 2f)).coerceIn(0f, trackHeightPx)
                         state.updateScrollPosition(
                             state.dragOffsetPx,
                             trackHeightPx,
                             sections,
                             totalItems,
-                            headerCount
+                            headerCount,
                         )
                     },
                     onDragEnd = {
@@ -593,7 +601,7 @@ fun FastScrollbar(
                         trackHeightPx,
                         sections,
                         totalItems,
-                        headerCount
+                        headerCount,
                     )
                     change.consume()
                 }
@@ -602,46 +610,48 @@ fun FastScrollbar(
             Modifier
         }
 
-        Box(
-            modifier = Modifier
-                .align(Alignment.CenterEnd)
-                .width(ScrollbarDefaults.ThumbSize)
-                .fillMaxHeight()
-                .graphicsLayer { alpha = alphaState.value }
-                .then(dragModifier)
-        ) {
-            // Visual scrollbar thumb
-            Surface(
+        if (isNeeded && (state.isVisible || (alphaState.value > 0f))) {
+            Box(
                 modifier = Modifier
-                    .align(Alignment.TopEnd)
-                    .padding(end = SpacingExtraSmall)
-                    .width(ScrollbarDefaults.ThumbWidth)
-                    .height(ScrollbarDefaults.ThumbHeight)
-                    .graphicsLayer { translationY = thumbOffset.toPx() }
-                    .semantics { contentDescription = scrollbarContentDescription }
-                    .testTag("fast_scrollbar_thumb"),
-                shape = RoundedCornerShape(WidgetCornerRadius),
-                color = MaterialTheme.colorScheme.primary.copy(alpha = ScrollbarDefaults.AlphaThumb),
-                tonalElevation = ScrollbarDefaults.ThumbElevation
+                    .align(Alignment.CenterEnd)
+                    .width(ScrollbarDefaults.ThumbSize)
+                    .fillMaxHeight()
+                    .graphicsLayer { alpha = alphaState.value }
+                    .then(dragModifier),
             ) {
-                Column(
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.Center,
-                    modifier = Modifier.fillMaxSize()
+                // Visual scrollbar thumb
+                Surface(
+                    modifier = Modifier
+                        .align(Alignment.TopEnd)
+                        .padding(end = SpacingExtraSmall)
+                        .width(ScrollbarDefaults.ThumbWidth)
+                        .height(ScrollbarDefaults.ThumbHeight)
+                        .graphicsLayer { translationY = thumbOffset.toPx() }
+                        .semantics { contentDescription = scrollbarContentDescription }
+                        .testTag("fast_scrollbar_thumb"),
+                    shape = RoundedCornerShape(WidgetCornerRadius),
+                    color = MaterialTheme.colorScheme.primary.copy(alpha = ScrollbarDefaults.ALPHA_THUMB),
+                    tonalElevation = ScrollbarDefaults.ThumbElevation,
                 ) {
-                    Icon(
-                        Icons.Default.KeyboardArrowUp,
-                        null,
-                        Modifier.size(ScrollbarArrowSize),
-                        tint = MaterialTheme.colorScheme.onPrimary
-                    )
-                    Spacer(Modifier.height(SpacingTiny))
-                    Icon(
-                        Icons.Default.KeyboardArrowDown,
-                        null,
-                        Modifier.size(ScrollbarArrowSize),
-                        tint = MaterialTheme.colorScheme.onPrimary
-                    )
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.Center,
+                        modifier = Modifier.fillMaxSize(),
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.KeyboardArrowUp,
+                            contentDescription = null,
+                            modifier = Modifier.size(ScrollbarArrowSize),
+                            tint = MaterialTheme.colorScheme.onPrimary,
+                        )
+                        Spacer(Modifier.height(SpacingTiny))
+                        Icon(
+                            imageVector = Icons.Default.KeyboardArrowDown,
+                            contentDescription = null,
+                            modifier = Modifier.size(ScrollbarArrowSize),
+                            tint = MaterialTheme.colorScheme.onPrimary,
+                        )
+                    }
                 }
             }
         }
@@ -655,7 +665,7 @@ private fun FastScrollbarPreview() {
         FastScrollbar(
             listState = rememberLazyListState(),
             contacts = SampleData.sampleContacts,
-            getLabel = { it.monthName },
+            getLabel = ContactUiModel::monthName,
         )
     }
 }

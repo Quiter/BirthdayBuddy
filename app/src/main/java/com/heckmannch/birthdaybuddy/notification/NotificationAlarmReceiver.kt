@@ -11,6 +11,7 @@ import dagger.hilt.EntryPoint
 import dagger.hilt.InstallIn
 import dagger.hilt.android.EntryPointAccessors
 import dagger.hilt.components.SingletonComponent
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
@@ -65,6 +66,7 @@ class NotificationAlarmReceiver : BroadcastReceiver() {
             try {
                 entryPoint.alarmScheduler().rescheduleNotificationAlarm()
             } catch (e: Exception) {
+                if (e is CancellationException) throw e
                 Log.e(TAG, "Failed to reschedule next notification alarm", e)
             } finally {
                 pendingResult.finish()

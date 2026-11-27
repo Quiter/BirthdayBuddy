@@ -79,12 +79,19 @@ class BirthdayBuddyApplication : Application(), Configuration.Provider,
             // Disk caching: 2% disk limit stored under the app's cache directory
             .diskCache {
                 DiskCache.Builder()
-                    .directory(context.cacheDir.resolve("image_cache").absolutePath.toPath())
+                    .directory(context.cacheDir.resolve(COIL_IMAGE_CACHE_DIR).absolutePath.toPath())
                     .maxSizePercent(0.02)
                     .build()
             }
             // Default crossfade transition for polished image loading animations
             .crossfade(true)
             .build()
+    }
+
+    companion object {
+        /**
+         * Subdirectory inside [Application.getCacheDir] managed exclusively by Coil's [DiskCache].
+         */
+        internal const val COIL_IMAGE_CACHE_DIR = "image_cache"
     }
 }

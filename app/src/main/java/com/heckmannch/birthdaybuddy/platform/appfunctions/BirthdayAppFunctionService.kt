@@ -29,18 +29,23 @@ import androidx.appfunctions.AppFunctionServiceEntryPoint
 import androidx.core.net.toUri
 import com.heckmannch.birthdaybuddy.MainActivity
 import com.heckmannch.birthdaybuddy.di.IoDispatcher
+import com.heckmannch.birthdaybuddy.domain.model.Contact
 import com.heckmannch.birthdaybuddy.domain.repository.ContactRepository
+import com.heckmannch.birthdaybuddy.domain.repository.SettingsRepository
+import com.heckmannch.birthdaybuddy.domain.util.ContactFilterLogic
 import com.heckmannch.birthdaybuddy.domain.util.DeviceRegionProvider
 import com.heckmannch.birthdaybuddy.domain.util.NO_YEAR_MARKER
 import com.heckmannch.birthdaybuddy.domain.util.PhoneNumberNormalizer
 import com.heckmannch.birthdaybuddy.platform.appfunctions.model.ContactBirthday
 import com.heckmannch.birthdaybuddy.platform.appfunctions.model.UpcomingBirthday
+import com.heckmannch.birthdaybuddy.util.Clock
 import com.heckmannch.birthdaybuddy.util.IntentExtras
 import com.heckmannch.birthdaybuddy.util.hasYear
 import com.heckmannch.birthdaybuddy.util.safeDaysUntilNext
 import com.heckmannch.birthdaybuddy.util.safeNextAge
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.withContext
 import java.time.DateTimeException
 import java.time.LocalDate
@@ -79,11 +84,33 @@ abstract class BirthdayAppFunctionService : AppFunctionService() {
     internal lateinit var contactRepository: ContactRepository
 
     @Inject
+    internal lateinit var settingsRepository: SettingsRepository
+
+    @Inject
     @IoDispatcher
     internal lateinit var ioDispatcher: CoroutineDispatcher
 
     @Inject
     internal lateinit var deviceRegionProvider: DeviceRegionProvider
+
+    @Inject
+    internal lateinit var clock: Clock
+
+    /**
+     * Returns all cached contacts excluding those assigned to ignored labels when label filtering
+     * is enabled in [SettingsRepository].
+     */
+    private suspend fun getVisibleContacts(): List<Contact> {
+        val contacts = contactRepository.getAllContactsImmediate()
+        val settings = settingsRepository.getSettingsImmediate()
+        if (!settings.labelsEnabled) return contacts
+        val labelConfigs = contactRepository.labelConfigs.first()
+        return ContactFilterLogic.filterOutIgnored(
+            contacts = contacts,
+            labelsEnabled = true,
+            configs = labelConfigs,
+        )
+    }
 
     // -----------------------------------------------------------------------------------------
     // getUpcomingBirthdays
@@ -105,23 +132,19 @@ abstract class BirthdayAppFunctionService : AppFunctionService() {
     suspend fun getUpcomingBirthdays(withinDays: Int = 30): List<UpcomingBirthday> =
         withContext(ioDispatcher) {
             val clampedDays = withinDays.coerceIn(1, 365)
-            val today = LocalDate.now()
-            contactRepository.getAllContactsImmediate()
-                .filter { contact ->
-                    val birthday = contact.birthday ?: return@filter false
+            val today = clock.nowLocalDate()
+            getVisibleContacts()
+                .mapNotNull { contact ->
+                    val birthday = contact.birthday ?: return@mapNotNull null
                     val days = birthday.safeDaysUntilNext(today)
-                    days in 0..clampedDays.toLong()
-                }
-                .map { contact ->
-                    val birthday = contact.birthday!!
-                    val days = birthday.safeDaysUntilNext(today).toInt()
+                    if (days !in 0..clampedDays.toLong()) return@mapNotNull null
                     UpcomingBirthday(
                         contactId = contact.lookupKey,
                         fullName = contact.fullName,
                         birthdayMonth = birthday.monthValue,
                         birthdayDay = birthday.dayOfMonth,
                         birthdayYear = if (birthday.hasYear) birthday.year else null,
-                        daysUntil = days,
+                        daysUntil = days.toInt(),
                         age = birthday.safeNextAge(today),
                     )
                 }
@@ -153,8 +176,8 @@ abstract class BirthdayAppFunctionService : AppFunctionService() {
                     errorMessage = "contactName must not be blank.",
                 )
             }
-            val today = LocalDate.now()
-            val contact = contactRepository.getAllContactsImmediate()
+            val today = clock.nowLocalDate()
+            val contact = getVisibleContacts()
                 .filter { it.fullName.contains(contactName, ignoreCase = true) }
                 .minByOrNull { it.fullName }
                 ?: return@withContext null
@@ -196,7 +219,7 @@ abstract class BirthdayAppFunctionService : AppFunctionService() {
         contactId: String,
         app: String,
     ): PendingIntent = withContext(ioDispatcher) {
-        val contact = contactRepository.getAllContactsImmediate()
+        val contact = getVisibleContacts()
             .find { it.lookupKey == contactId }
             ?: throw AppFunctionInvalidArgumentException(
                 errorMessage = "No contact found for contactId '$contactId'. " +
@@ -324,7 +347,7 @@ abstract class BirthdayAppFunctionService : AppFunctionService() {
             )
         }
 
-        val contact = contactRepository.getAllContactsImmediate()
+        val contact = getVisibleContacts()
             .find { it.lookupKey == contactId }
             ?: throw AppFunctionInvalidArgumentException(
                 errorMessage = "No contact found for contactId '$contactId'. " +

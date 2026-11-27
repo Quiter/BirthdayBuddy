@@ -3,6 +3,7 @@ package com.heckmannch.birthdaybuddy.notification
 import android.content.Context
 import com.heckmannch.birthdaybuddy.R
 import com.heckmannch.birthdaybuddy.domain.model.Contact
+import com.heckmannch.birthdaybuddy.domain.model.ContactLabels
 import com.heckmannch.birthdaybuddy.domain.model.EventType
 import com.heckmannch.birthdaybuddy.util.hasYear
 import com.heckmannch.birthdaybuddy.util.mergeNames
@@ -13,7 +14,8 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 /**
- * Formats notification titles and content descriptions for birthday, anniversary, and name day events.
+ * Formats notification titles and content descriptions for birthday, anniversary, name day,
+ * and dynamic custom date-field events.
  *
  * Encapsulates string formatting logic across single contacts (with/without age), married couples,
  * and multi-contact groups.
@@ -32,9 +34,21 @@ class NotificationTextFormatter @Inject constructor(
      */
     fun isCoupleAnniversary(contacts: List<Contact>, eventType: EventType): Boolean {
         return eventType == EventType.ANNIVERSARY &&
-                contacts.size == 2 &&
-                contacts[0].spouseLookupKey == contacts[1].lookupKey &&
-                contacts[1].spouseLookupKey == contacts[0].lookupKey
+            contacts.size == 2 &&
+            contacts[0].spouseLookupKey == contacts[1].lookupKey &&
+            contacts[1].spouseLookupKey == contacts[0].lookupKey
+    }
+
+    /**
+     * Resolves a human-readable display name for a [customEventKey].
+     */
+    private fun resolveCustomEventName(customEventKey: String?): String = when {
+        customEventKey == null || customEventKey == ContactLabels.LABEL_OTHER_EVENT ->
+            context.getString(R.string.home_filter_other_event)
+        ContactLabels.isCustomEventLabel(customEventKey) ->
+            ContactLabels.extractCustomEventName(customEventKey)
+                ?: context.getString(R.string.home_filter_other_event)
+        else -> customEventKey
     }
 
     /**
@@ -42,23 +56,25 @@ class NotificationTextFormatter @Inject constructor(
      *
      * @param contacts The list of contacts associated with the event.
      * @param daysBefore The number of days before the event (0 = today, 1 = tomorrow, 7 = 1 week, etc.).
-     * @param eventType The type of event ([EventType.BIRTHDAY], [EventType.ANNIVERSARY], [EventType.NAME_DAY]).
+     * @param eventType The type of event ([EventType.BIRTHDAY], [EventType.ANNIVERSARY], [EventType.NAME_DAY], [EventType.CUSTOM]).
      * @param today The reference date for age and date calculations (defaults to [LocalDate.now]).
+     * @param customEventKey Optional canonical custom event key when [eventType] is [EventType.CUSTOM].
      * @return The localized title string.
      */
     fun buildTitle(
         contacts: List<Contact>,
         daysBefore: Int,
         eventType: EventType = EventType.BIRTHDAY,
-        today: LocalDate = LocalDate.now()
+        today: LocalDate = LocalDate.now(),
+        customEventKey: String? = null,
     ): String {
         if (contacts.isEmpty()) return ""
 
         val isCouple = isCoupleAnniversary(contacts, eventType)
         return if (contacts.size == 1 || isCouple) {
-            buildSingleOrCoupleTitle(contacts, daysBefore, eventType, isCouple, today)
+            buildSingleOrCoupleTitle(contacts, daysBefore, eventType, isCouple, today, customEventKey)
         } else {
-            buildGroupTitle(contacts.size, daysBefore, eventType)
+            buildGroupTitle(contacts.size, daysBefore, eventType, customEventKey)
         }
     }
 
@@ -66,21 +82,27 @@ class NotificationTextFormatter @Inject constructor(
      * Builds the notification content text (subtext or body description).
      *
      * @param contacts The list of contacts associated with the event.
-     * @param eventType The type of event ([EventType.BIRTHDAY], [EventType.ANNIVERSARY], [EventType.NAME_DAY]).
+     * @param eventType The type of event ([EventType.BIRTHDAY], [EventType.ANNIVERSARY], [EventType.NAME_DAY], [EventType.CUSTOM]).
      * @param showHint Whether to display a hint explaining how persistent notifications work.
+     * @param customEventKey Optional canonical custom event key when [eventType] is [EventType.CUSTOM].
      * @return The formatted content text.
      */
     fun buildContentText(
         contacts: List<Contact>,
         eventType: EventType = EventType.BIRTHDAY,
-        showHint: Boolean = false
+        showHint: Boolean = false,
+        customEventKey: String? = null,
     ): String {
         val isCouple = isCoupleAnniversary(contacts, eventType)
         return if (contacts.size == 1 || isCouple) {
             val defaultDesc = when (eventType) {
                 EventType.ANNIVERSARY -> context.getString(R.string.notif_desc_anniversary)
                 EventType.NAME_DAY -> context.getString(R.string.notif_desc_nameday)
-                else -> context.getString(R.string.notif_desc_named)
+                EventType.CUSTOM -> context.getString(
+                    R.string.notif_desc_custom,
+                    resolveCustomEventName(customEventKey)
+                )
+                EventType.BIRTHDAY -> context.getString(R.string.notif_desc_named)
             }
             if (showHint) {
                 context.getString(R.string.notif_hint_persistent)
@@ -102,7 +124,8 @@ class NotificationTextFormatter @Inject constructor(
         daysBefore: Int,
         eventType: EventType,
         isCouple: Boolean,
-        today: LocalDate
+        today: LocalDate,
+        customEventKey: String?,
     ): String {
         val name = if (isCouple) {
             mergeNames(contacts[0].fullName, contacts[1].fullName)
@@ -114,7 +137,27 @@ class NotificationTextFormatter @Inject constructor(
         return when (eventType) {
             EventType.ANNIVERSARY -> buildAnniversaryTitle(contact, name, daysBefore, isCouple, today)
             EventType.NAME_DAY -> buildNameDayTitle(name, daysBefore)
-            else -> buildBirthdayTitle(contact, name, daysBefore, today)
+            EventType.CUSTOM -> buildCustomEventTitle(name, daysBefore, resolveCustomEventName(customEventKey))
+            EventType.BIRTHDAY -> buildBirthdayTitle(contact, name, daysBefore, today)
+        }
+    }
+
+    private fun buildCustomEventTitle(
+        name: String,
+        daysBefore: Int,
+        eventName: String,
+    ): String {
+        return when (daysBefore) {
+            0 -> context.getString(R.string.notif_title_today_custom, name, eventName)
+            1 -> context.getString(R.string.notif_title_tomorrow_custom, name, eventName)
+            7 -> context.getString(R.string.notif_title_week_custom, name, eventName)
+            else -> context.resources.getQuantityString(
+                R.plurals.notif_title_days_custom,
+                daysBefore,
+                daysBefore,
+                name,
+                eventName,
+            )
         }
     }
 
@@ -262,7 +305,8 @@ class NotificationTextFormatter @Inject constructor(
     private fun buildGroupTitle(
         contactCount: Int,
         daysBefore: Int,
-        eventType: EventType
+        eventType: EventType,
+        customEventKey: String?,
     ): String {
         return when (eventType) {
             EventType.ANNIVERSARY -> when (daysBefore) {
@@ -319,7 +363,41 @@ class NotificationTextFormatter @Inject constructor(
                 )
             }
 
-            else -> when (daysBefore) {
+            EventType.CUSTOM -> {
+                val eventName = resolveCustomEventName(customEventKey)
+                when (daysBefore) {
+                    0 -> context.resources.getQuantityString(
+                        R.plurals.notif_title_today_custom_plural,
+                        contactCount,
+                        contactCount,
+                        eventName,
+                    )
+
+                    1 -> context.resources.getQuantityString(
+                        R.plurals.notif_title_tomorrow_custom_plural,
+                        contactCount,
+                        contactCount,
+                        eventName,
+                    )
+
+                    7 -> context.resources.getQuantityString(
+                        R.plurals.notif_title_week_custom_plural,
+                        contactCount,
+                        contactCount,
+                        eventName,
+                    )
+
+                    else -> context.resources.getQuantityString(
+                        R.plurals.notif_title_days_custom_plural,
+                        daysBefore,
+                        daysBefore,
+                        contactCount,
+                        eventName,
+                    )
+                }
+            }
+
+            EventType.BIRTHDAY -> when (daysBefore) {
                 0 -> context.resources.getQuantityString(
                     R.plurals.notif_title_today_plural,
                     contactCount,

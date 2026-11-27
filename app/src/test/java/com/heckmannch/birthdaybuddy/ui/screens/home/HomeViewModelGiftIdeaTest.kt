@@ -199,39 +199,16 @@ class HomeViewModelGiftIdeaTest {
     }
 
     @Test
-    fun consumeNewlyAddedIdeaId_consumesSuccessfully() = runTest {
-        val lookupKey = "test_lookup_key"
-
+    fun triggerSearchFocus_emitsRequestSearchFocusEvent() = runTest {
         val events = mutableListOf<HomeUiEvent>()
         val collectJob = launch(UnconfinedTestDispatcher(testScheduler)) {
             viewModel.eventFlow.collect { events.add(it) }
         }
 
-        // 1. Trigger AddGiftIdea to emit one-shot event
-        viewModel.onIntent(HomeIntent.AddGiftIdea(lookupKey))
-        val event = events.filterIsInstance<HomeUiEvent.FocusNewlyAddedIdea>().firstOrNull()
-        assertThat(event).isNotNull()
-
-        // 2. Dispatch ConsumeNewlyAddedIdeaId intent to complete consumption cycle
-        viewModel.onIntent(HomeIntent.ConsumeNewlyAddedIdeaId)
-
-        collectJob.cancel()
-    }
-
-    @Test
-    fun triggerSearchFocus_emitsRequestSearchFocusEvent_and_isConsumed() = runTest {
-        val events = mutableListOf<HomeUiEvent>()
-        val collectJob = launch(UnconfinedTestDispatcher(testScheduler)) {
-            viewModel.eventFlow.collect { events.add(it) }
-        }
-
-        // 1. Dispatch TriggerSearchFocus intent
+        // Dispatch TriggerSearchFocus intent
         viewModel.onIntent(HomeIntent.TriggerSearchFocus)
         val event = events.filterIsInstance<HomeUiEvent.RequestSearchFocus>().firstOrNull()
         assertThat(event).isNotNull()
-
-        // 2. Dispatch ConsumeSearchFocus intent to complete consumption cycle
-        viewModel.onIntent(HomeIntent.ConsumeSearchFocus)
 
         collectJob.cancel()
     }

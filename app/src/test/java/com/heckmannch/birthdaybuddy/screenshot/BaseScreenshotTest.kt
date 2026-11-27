@@ -11,8 +11,8 @@ import com.github.takahirom.roborazzi.RoborazziRule
 import com.github.takahirom.roborazzi.RoborazziRule.Options
 import com.github.takahirom.roborazzi.captureRoboImage
 import com.heckmannch.birthdaybuddy.domain.model.ThemeMode
-import com.heckmannch.birthdaybuddy.ui.components.LocalWindowAdaptiveInfo
-import com.heckmannch.birthdaybuddy.ui.components.LocalWindowSizeClass
+import com.heckmannch.birthdaybuddy.ui.components.layout.LocalWindowAdaptiveInfo
+import com.heckmannch.birthdaybuddy.ui.components.layout.LocalWindowSizeClass
 import com.heckmannch.birthdaybuddy.ui.theme.BirthdayBuddyTheme
 import org.junit.Rule
 

@@ -71,4 +71,16 @@ class NotificationKeyUtilsTest {
         assertThat(NotificationKeyUtils.extractEventType("nameday:lookup:with:colons"))
             .isEqualTo(EventType.NAME_DAY)
     }
+
+    @Test
+    fun `custom event encode and decode roundtrip preserves colons in both eventKey and lookupKey`() {
+        val eventKey = "custom_event:Taufe:2020"
+        val lookupKey = "0r1-4234:5678:90"
+
+        val encoded = NotificationKeyUtils.encodeKey(lookupKey, EventType.CUSTOM, eventKey)
+
+        assertThat(NotificationKeyUtils.extractEventType(encoded)).isEqualTo(EventType.CUSTOM)
+        assertThat(NotificationKeyUtils.extractCustomEventKey(encoded)).isEqualTo(eventKey)
+        assertThat(NotificationKeyUtils.extractRawKey(encoded)).isEqualTo(lookupKey)
+    }
 }

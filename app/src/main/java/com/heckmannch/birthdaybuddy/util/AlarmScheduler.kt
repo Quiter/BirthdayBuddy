@@ -14,11 +14,11 @@ import com.heckmannch.birthdaybuddy.domain.repository.SettingsRepository
 import com.heckmannch.birthdaybuddy.notification.NotificationAlarmReceiver
 import com.heckmannch.birthdaybuddy.widget.WidgetUpdateAlarmReceiver
 import dagger.hilt.android.qualifiers.ApplicationContext
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.withContext
 import java.time.LocalDateTime
 import java.time.LocalTime
-import java.time.ZoneId
 import javax.inject.Inject
 import javax.inject.Provider
 import javax.inject.Singleton
@@ -42,6 +42,7 @@ import javax.inject.Singleton
  * @property context The application context.
  * @property notificationRepositoryProvider Lazy provider for [NotificationRepository] to prevent cyclic Hilt dependencies.
  * @property settingsRepositoryProvider Lazy provider for [SettingsRepository] to access application settings.
+ * @property clock Injected [Clock] abstraction for deterministic time and time-zone queries.
  * @property ioDispatcher Injected dispatcher for background I/O operations.
  */
 @Singleton
@@ -49,6 +50,7 @@ class AlarmScheduler @Inject constructor(
     @param:ApplicationContext private val context: Context,
     private val notificationRepositoryProvider: Provider<NotificationRepository>,
     private val settingsRepositoryProvider: Provider<SettingsRepository>,
+    private val clock: Clock,
     @IoDispatcher private val ioDispatcher: CoroutineDispatcher,
 ) {
 
@@ -76,7 +78,7 @@ class AlarmScheduler @Inject constructor(
      * @return The epoch millisecond timestamp for which the alarm was scheduled, or `null` if cancelled/unavailable.
      */
     fun scheduleNextNotificationAlarm(rules: List<NotificationRule>): Long? =
-        scheduleNextNotificationAlarm(rules, LocalDateTime.now())
+        scheduleNextNotificationAlarm(rules, clock.nowLocalDateTime())
 
     /**
      * Schedules the next exact notification alarm based on the configured notification rules and reference time.
@@ -113,7 +115,7 @@ class AlarmScheduler @Inject constructor(
         }
 
         val triggerAtMillis = targetDateTime
-            .atZone(ZoneId.systemDefault())
+            .atZone(clock.zone)
             .toInstant()
             .toEpochMilli()
 
@@ -141,7 +143,7 @@ class AlarmScheduler @Inject constructor(
      * @return The epoch millisecond timestamp for which the widget alarm was scheduled, or `null` if unavailable.
      */
     fun scheduleNextWidgetUpdateAlarm(): Long? =
-        scheduleNextWidgetUpdateAlarm(LocalDateTime.now())
+        scheduleNextWidgetUpdateAlarm(clock.nowLocalDateTime())
 
     /**
      * Schedules the next exact widget update alarm for midnight (00:01 AM) based on a reference time.
@@ -160,7 +162,7 @@ class AlarmScheduler @Inject constructor(
         }
 
         val triggerAtMillis = targetDateTime
-            .atZone(ZoneId.systemDefault())
+            .atZone(clock.zone)
             .toInstant()
             .toEpochMilli()
 
@@ -205,6 +207,7 @@ class AlarmScheduler @Inject constructor(
 
             scheduleNextNotificationAlarm(rules)
         } catch (e: Exception) {
+            if (e is CancellationException) throw e
             Log.e(TAG, "Failed to reschedule notification alarm from repository", e)
         }
     }

@@ -4,13 +4,14 @@
 
     <!-- HomeScreen & General -->
     <string name="home_placeholder_search">Kontakt suchen</string>
-    <string name="home_search_clear">Suche löschen</string>
-    <string name="home_settings">Einstellungen</string>
-    <string name="home_filter_all">Alle</string>
     <string name="home_filter_no_birthday">Ohne Datum</string>
     <string name="home_scroll_to_top">Nach oben scrollen</string>
     <string name="home_add_contact">Kontakt hinzufügen</string>
+    <string name="home_edit_contact">Kontakt bearbeiten</string>
     <string name="cd_toggle_sidebar">Seitenleiste umschalten</string>
+    <string name="cd_open_search">Suche öffnen</string>
+    <string name="cd_close_search">Suche schließen</string>
+    <string name="cd_clear_search">Suche leeren</string>
 
     <!-- Birthday List -->
     <string name="empty_permission_desc">Um deine Geburtstage zu sehen, benötigt BirthdayBuddy Zugriff auf deine Kontakte.</string>
@@ -21,6 +22,7 @@
 
     <string name="item_image_desc">Kontaktbild von %1$s</string>
     <string name="contact_favorite_desc">Favorit</string>
+    <string name="contact_unknown">Unbekannt</string>
     <string name="item_action_gifts">Geschenkideen</string>
     <string name="item_action_contact">Kontakt</string>
     <string name="item_today">Heute!</string>
@@ -57,7 +59,6 @@
 
     <!-- Notification Settings -->
     <string name="notifications_title">Benachrichtigungen</string>
-    <string name="notifications_back">Zurück</string>
     <string name="notifications_add_rule">Regel hinzufügen</string>
     <string name="notifications_edit_rule">Regel bearbeiten</string>
     <string name="notifications_header">Geburtstags-Erinnerungen</string>
@@ -147,6 +148,8 @@
     <string name="notif_desc_named">Vergiss nicht zu gratulieren!</string>
 
     <!-- About Screen -->
+    <string name="about_section_info">App-Informationen</string>
+    <string name="about_section_legal">Rechtliches</string>
     <string name="about_description">BirthdayBuddy hilft dir dabei, nie wieder einen Geburtstag zu vergessen. Erhalte rechtzeitig Erinnerungen und verwalte Geschenkideen direkt in der App.</string>
 
     <string name="about_privacy_policy">Datenschutzerklärung</string>
@@ -215,13 +218,8 @@
     <string name="settings_select_item_hint">Wähle eine Einstellung aus dem Menü</string>
 
     <!-- Label Settings Screen -->
-    <string name="labels_title">Labels verwalten</string>
     <string name="labels_enable">Label-Management aktivieren</string>
     <string name="labels_enable_desc">Kontakte nach Labels/Gruppen filtern und bestimmte Labels ausblenden</string>
-    <string name="labels_info_title">Label-Konfiguration</string>
-    <string name="labels_empty">Keine Labels gefunden</string>
-    <string name="labels_info_hide">Filter verbergen: Label erscheint nicht in der Leiste zum Filtern der Kontakte.</string>
-    <string name="labels_info_ignore">Ignorieren: Kontakte werden komplett ausgeblendet, sind aber in der Suche auffindbar.</string>
     <string name="labels_system_tag">SYSTEM</string>
     <string name="labels_action_hide">Verbergen</string>
     <string name="labels_action_ignore">Ignorieren</string>
@@ -286,6 +284,7 @@
     <string name="calendar_color_birthdays">Farbe für Geburtstagskalender</string>
     <string name="calendar_color_anniversaries">Farbe für Hochzeitstagskalender</string>
     <string name="calendar_color_namedays">Farbe für Namenstagskalender</string>
+    <string name="calendar_color_custom_event">Farbe für %1$s</string>
 
     <!-- Calendar Event Strings -->
     <string name="calendar_event_title">%1$s hat Geburtstag</string>
@@ -297,6 +296,9 @@
     <string name="calendar_event_anniversary_no_year">Hochzeitstag ohne Jahr</string>
     <string name="calendar_event_nameday_title">%1$s hat Namenstag</string>
     <string name="calendar_event_nameday_description">%1$s hat Namenstag</string>
+    <string name="calendar_event_custom_title">%1$s – %2$s</string>
+    <string name="calendar_event_custom_year">%1$s (%2$d)</string>
+    <string name="calendar_event_custom_no_year">%1$s</string>
     <string name="onboarding_calendar_guide_title">Geburtstage im Kalender anzeigen</string>
     <string name="onboarding_calendar_guide_desc">Da BirthdayBuddy einen eigenen Kalender anlegt, musst du diesen eventuell einmalig in deiner Kalender-App einblenden.</string>
     <string name="onboarding_calendar_guide_step1_title">1. Kalender-App öffnen</string>
@@ -309,13 +311,15 @@
 
     <!-- Weitere Ereignisse -->
     <string name="other_events_enable">Weitere Ereignisse aktivieren</string>
-    <string name="other_events_desc">Zeige Namenstage und Hochzeitstage aus deinen System-Kontakten an.</string>
-    <string name="other_events_info_title">Experimentelles Feature</string>
-    <string name="other_events_info_desc">Dieses Feature lädt Hochzeitstage und Namenstage deiner Kontakte und integriert sie als filterbare Tabs auf der Startseite sowie in das Benachrichtigungssystem.</string>
+    <string name="other_events_desc">Zeige Hochzeitstage, Namenstage und weitere Datumsfelder aus deinen System-Kontakten an.</string>
     <string name="settings_other_events_title">Weitere Ereignisse</string>
-    <string name="settings_other_events_desc">Hochzeitstage und Namenstage verwalten</string>
+    <string name="settings_other_events_desc">Hochzeitstage, Namenstage und eigene Datumsfelder verwalten</string>
+    <string name="other_events_section_detected">Gefundene Ereignisse</string>
+    <string name="other_events_empty_title">Keine weiteren Ereignisse gefunden</string>
+    <string name="other_events_empty_desc">In deinen System-Kontakten wurden bisher keine zusätzlichen Datumsfelder (wie Hochzeitstag, Namenstag oder eigene Ereignisse) gefunden.</string>
     <string name="home_filter_anniversary">Hochzeitstag</string>
     <string name="home_filter_name_day">Namenstag</string>
+    <string name="home_filter_other_event">Sonstiges</string>
 
     <!-- Benachrichtigungen Hochzeitstage -->
     <string name="notif_title_today_anniversary_age">Heute ist der %2$d. Hochzeitstag von %1$s!</string>
@@ -386,6 +390,32 @@
     <string name="notif_desc_anniversary">Alles Gute zum Hochzeitstag!</string>
     <string name="notif_desc_nameday">Alles Gute zum Namenstag!</string>
 
+    <!-- Benachrichtigungen Benutzerdefinierte Ereignisse -->
+    <string name="notif_title_today_custom">Heute: %2$s von %1$s</string>
+    <string name="notif_title_tomorrow_custom">Morgen: %2$s von %1$s</string>
+    <string name="notif_title_week_custom">In einer Woche: %2$s von %1$s</string>
+    <plurals name="notif_title_days_custom">
+        <item quantity="one">In einem Tag: %3$s von %2$s</item>
+        <item quantity="other">In %1$d Tagen: %3$s von %2$s</item>
+    </plurals>
+    <plurals name="notif_title_today_custom_plural">
+        <item quantity="one">Heute: 1 Ereignis (%2$s)</item>
+        <item quantity="other">Heute: %1$d Ereignisse (%2$s)</item>
+    </plurals>
+    <plurals name="notif_title_tomorrow_custom_plural">
+        <item quantity="one">Morgen: 1 Ereignis (%2$s)</item>
+        <item quantity="other">Morgen: %1$d Ereignisse (%2$s)</item>
+    </plurals>
+    <plurals name="notif_title_week_custom_plural">
+        <item quantity="one">In einer Woche: 1 Ereignis (%2$s)</item>
+        <item quantity="other">In einer Woche: %1$d Ereignisse (%2$s)</item>
+    </plurals>
+    <plurals name="notif_title_days_custom_plural">
+        <item quantity="one">In einem Tag: %2$d Ereignisse (%3$s)</item>
+        <item quantity="other">In %1$d Tagen: %2$d Ereignisse (%3$s)</item>
+    </plurals>
+    <string name="notif_desc_custom">Erinnerung an %1$s</string>
+
     <!-- Couple / Joint Anniversary -->
     <string name="action_unlink_couple">Entkoppeln</string>
     <string name="couple_suggestion_title">Gemeinsamer Hochzeitstag?</string>
@@ -414,14 +444,15 @@
     <string name="theme_accent_pink">Pink</string>
     <string name="theme_accent_custom">Eigene</string>
     <string name="theme_accent_custom_dialog_title">Eigene Akzentfarbe</string>
-    <string name="theme_accent_custom_dialog_desc">Wähle eine Vorlage oder gib einen Hex-Code ein:</string>
-    <string name="theme_accent_custom_invalid_hex">Ungültiger Hex-Code (z.B. #FF5722)</string>
     <string name="color_picker_hex_label">HEX-Code</string>
-    <string name="color_picker_hex_placeholder">z.B. FF5722</string>
-    <string name="color_picker_preview">Vorschau</string>
+    <string name="color_picker_shade">Farbton-Bereich</string>
+    <string name="color_picker_hue">Farbkreis-Regler</string>
 
     <!-- Adaptive Details Screen -->
     <string name="detail_close_desc">Details schließen</string>
+    <string name="detail_birthday_label">Geburtstag</string>
+    <string name="detail_age_label">Nächstes Alter</string>
+    <string name="detail_edit_birthday_desc">Geburtstag bearbeiten</string>
     <string name="detail_placeholder_title">Wähle einen Kontakt</string>
     <string name="detail_placeholder_subtitle">Wähle links einen Kontakt aus, um Details anzuzeigen oder Geschenkideen zu verwalten.</string>
     <string name="detail_placeholder_quote">„Jeder Geburtstag ist der Beginn einer neuen 365-tägigen Reise um die Sonne. Genieße die Fahrt!“</string>
@@ -432,6 +463,47 @@
 
     <!-- AppFunctions: für Nutzer sichtbare App-Beschreibung für KI-Assistenten -->
     <string name="app_description_for_agents">BirthdayBuddy hilft dir, Geburtstage und besondere Anlässe deiner Kontakte nicht zu vergessen.</string>
+
+    <!-- Main Pager Navigation -->
+    <string name="nav_tab_labels">Labels</string>
+    <string name="nav_tab_home">Home</string>
+    <string name="nav_tab_settings">Einstellungen</string>
+    <string name="labels_screen_title">Labels</string>
+    <string name="labels_add_title">Neues Label erstellen</string>
+    <string name="labels_add_placeholder">Labelname</string>
+    <string name="labels_add_confirm">Erstellen</string>
+    <string name="labels_cancel">Abbrechen</string>
+    <string name="labels_assigned_contacts">Zugewiesene Kontakte (%1$d)</string>
+    <string name="labels_all_card">Alle Labels</string>
+    <string name="labels_all_card_desc">Alle Kontakte mit zugewiesenen Labels</string>
+    <string name="labels_count_contacts_one">1 Kontakt</string>
+    <string name="labels_count_contacts_many">%1$d Kontakte</string>
+    <string name="labels_section_hidden">Verborgene Labels</string>
+    <string name="labels_section_ignored">Ignorierte Labels</string>
+    <string name="settings_search">Einstellungen durchsuchen</string>
+    <string name="settings_search_no_results">Keine passenden Einstellungen gefunden</string>
+    <string name="settings_section_general">Allgemein</string>
+    <string name="settings_section_data">Daten &amp; Synchronisierung</string>
+    <string name="settings_section_about">Über</string>
+    <string name="settings_state_enabled">Aktiviert</string>
+    <string name="settings_state_disabled">Deaktiviert</string>
+    <string name="settings_state_selected">Ausgewählt</string>
+    <string name="settings_state_not_selected">Nicht ausgewählt</string>
+    <string name="settings_licenses_search">Lizenzen durchsuchen</string>
+    <string name="settings_storage_total">App-Speicher</string>
+    <string name="settings_storage_cache_cleared">Cache geleert</string>
+    <string name="settings_about_help_info_desc">Version, Datenschutzerklärung und Lizenzen</string>
+    <string name="opensource_licenses">Open-Source-Lizenzen</string>
+    <string name="storage_management_title">Speicher &amp; Cache</string>
+    <string name="storage_management_desc">Datenbankgröße und App-Cache verwalten</string>
+    <string name="storage_overview_title">Speicherübersicht</string>
+    <string name="storage_actions_title">Speicherverwaltung</string>
+    <string name="storage_database_size">Datenbankgröße</string>
+    <string name="storage_cache_size">Cache-Größe</string>
+    <string name="storage_clear_cache">Cache leeren</string>
+    <string name="storage_clear_cache_desc">Temporären Speicher freigeben</string>
+    <string name="storage_app_info">App-Systeminformationen</string>
+    <string name="storage_app_info_desc">App-Info in den Systemeinstellungen öffnen</string>
 
     <string name="scrollbar_content_description">Scrollleiste</string>
 </resources>

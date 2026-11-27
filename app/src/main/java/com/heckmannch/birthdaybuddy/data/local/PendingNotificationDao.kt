@@ -29,6 +29,12 @@ interface PendingNotificationDao {
     suspend fun getNotificationById(id: Int): PendingNotificationEntity?
 
     /**
+     * Computes the next available positive ID for a new pending notification.
+     */
+    @Query("SELECT COALESCE(MAX(id), 0) + 1 FROM pending_notifications")
+    suspend fun getNextNotificationId(): Int
+
+    /**
      * Retrieves pending notifications scheduled for a specific [year] and advance days offset [daysBefore].
      */
     @Query("SELECT * FROM pending_notifications WHERE year = :year AND daysBefore = :daysBefore")

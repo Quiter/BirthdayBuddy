@@ -26,6 +26,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalInspectionMode
 import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -48,6 +49,7 @@ import dagger.hilt.InstallIn
 import dagger.hilt.android.EntryPointAccessors
 import dagger.hilt.components.SingletonComponent
 import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.Dispatchers
 
 @EntryPoint
 @InstallIn(SingletonComponent::class)
@@ -72,12 +74,17 @@ fun ContactActionRow(
 ) {
     val context = LocalContext.current
     val resources = LocalResources.current
+    val isPreview = LocalInspectionMode.current
 
-    val ioDispatcher = remember(context) {
-        EntryPointAccessors.fromApplication(
-            context.applicationContext,
-            ContactActionRowEntryPoint::class.java,
-        ).ioDispatcher()
+    val ioDispatcher = remember(context, isPreview) {
+        if (isPreview) {
+            Dispatchers.IO
+        } else {
+            EntryPointAccessors.fromApplication(
+                context.applicationContext,
+                ContactActionRowEntryPoint::class.java,
+            ).ioDispatcher()
+        }
     }
 
     val installedMessengers by produceState(

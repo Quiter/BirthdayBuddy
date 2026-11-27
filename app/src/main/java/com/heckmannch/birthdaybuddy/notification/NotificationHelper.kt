@@ -42,7 +42,8 @@ class NotificationHelper @Inject constructor(
         contacts: List<Contact>,
         daysBefore: Int,
         pendingId: Int = -1,
-        eventType: EventType = EventType.BIRTHDAY
+        eventType: EventType = EventType.BIRTHDAY,
+        customEventKey: String? = null,
     ) {
         val settings = settingsRepository.settings.first()
         val isPersistent = settings.persistentNotifications
@@ -90,7 +91,7 @@ class NotificationHelper @Inject constructor(
         )
 
         val dbKeys = contacts.map { contact ->
-            NotificationKeyUtils.encodeKey(contact.lookupKey, eventType)
+            NotificationKeyUtils.encodeKey(contact.lookupKey, eventType, customEventKey)
         }.toTypedArray()
 
         // Action-Intent: Später erinnern (Snooze)
@@ -132,13 +133,15 @@ class NotificationHelper @Inject constructor(
         val title = notificationTextFormatter.buildTitle(
             contacts = contacts,
             daysBefore = daysBefore,
-            eventType = eventType
+            eventType = eventType,
+            customEventKey = customEventKey,
         )
 
         val contentText = notificationTextFormatter.buildContentText(
             contacts = contacts,
             eventType = eventType,
-            showHint = showHint
+            showHint = showHint,
+            customEventKey = customEventKey,
         )
 
         val notification = NotificationCompat.Builder(context, CHANNEL_ID)

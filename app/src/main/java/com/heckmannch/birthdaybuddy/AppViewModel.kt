@@ -9,6 +9,7 @@ import com.heckmannch.birthdaybuddy.domain.usecase.ScheduleDailyWidgetUpdateUseC
 import com.heckmannch.birthdaybuddy.domain.usecase.SyncNotificationSchedulingUseCase
 import com.heckmannch.birthdaybuddy.ui.navigation.AppAction
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -107,12 +108,14 @@ class AppViewModel @Inject constructor(
             try {
                 syncNotificationSchedulingUseCase()
             } catch (e: Exception) {
+                if (e is CancellationException) throw e
                 // Safeguard: Scheduler-Fehler dürfen den App-Start nicht blockieren.
                 Log.w(TAG, "Fehler bei der Synchronisierung der Benachrichtigungsplanung beim App-Start", e)
             }
             try {
                 scheduleDailyWidgetUpdateUseCase()
             } catch (e: Exception) {
+                if (e is CancellationException) throw e
                 // Safeguard: Fehler beim Widget-Scheduling dürfen den App-Start nicht blockieren.
                 Log.w(TAG, "Fehler beim Planen der täglichen Widget-Aktualisierung beim App-Start", e)
             }

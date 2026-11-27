@@ -12,27 +12,34 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.focus.FocusRequester
+import androidx.navigation3.runtime.NavBackStack
+import androidx.navigation3.runtime.NavKey
+import androidx.navigation3.runtime.rememberNavBackStack
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 
 /**
  * Plain State Holder für die UI-Logik des HomeScreens.
- * Kapselt Scroll-Logik, Snackbar-Status und Fokus-Management.
+ * Kapselt Scroll-Logik, Snackbar-Status, Navigations-Backstack und Fokus-Management.
  */
 @Stable
 class HomeState(
     val listState: LazyListState,
     val snackbarHostState: SnackbarHostState,
     val searchFocusRequester: FocusRequester,
+    val backStack: NavBackStack<NavKey>,
     private val scope: CoroutineScope,
 ) {
+
     var hasAttemptedContactPermission by mutableStateOf(false)
-    var resetScrollRequested by mutableStateOf(false)
     var animatedPlaceholder by mutableStateOf("")
     var isFastScrolling by mutableStateOf(false)
     var newlyAddedIdeaId by mutableStateOf<String?>(null)
 
     val showScrollUp by derivedStateOf { listState.firstVisibleItemIndex > 0 }
+
+    val selectedContactId: String?
+        get() = (backStack.lastOrNull() as? HomeNavKey.ContactDetail)?.contactId
 
     /**
      * Steuert den Sperr-Status während des schnellen Scrollens.
@@ -44,20 +51,15 @@ class HomeState(
     /**
      * Scrollt die Liste zum Anfang.
      */
-    fun scrollToTop(animate: Boolean = true) {
+    fun scrollToTop(
+        animate: Boolean = true,
+        onComplete: (() -> Unit)? = null,
+    ) {
         scope.launch {
             if (animate) listState.animateScrollToItem(0)
             else listState.scrollToItem(0)
+            onComplete?.invoke()
         }
-    }
-
-    /**
-     * Führt einen robusten Scroll-Reset durch (nützlich bei Filteränderungen).
-     */
-    suspend fun performScrollReset(onComplete: () -> Unit) {
-        listState.scrollToItem(0)
-        onComplete()
-        resetScrollRequested = false
     }
 }
 
@@ -69,7 +71,8 @@ fun rememberHomeState(
     listState: LazyListState = rememberLazyListState(),
     snackbarHostState: SnackbarHostState = remember { SnackbarHostState() },
     searchFocusRequester: FocusRequester = remember { FocusRequester() },
+    backStack: NavBackStack<NavKey> = rememberNavBackStack(HomeNavKey.ContactList),
     scope: CoroutineScope = rememberCoroutineScope(),
-) = remember(listState, snackbarHostState, searchFocusRequester, scope) {
-    HomeState(listState, snackbarHostState, searchFocusRequester, scope)
+) = remember(listState, snackbarHostState, searchFocusRequester, backStack, scope) {
+    HomeState(listState, snackbarHostState, searchFocusRequester, backStack, scope)
 }

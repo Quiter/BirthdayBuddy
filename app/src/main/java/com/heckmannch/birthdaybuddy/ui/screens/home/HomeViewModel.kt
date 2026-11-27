@@ -16,6 +16,7 @@ import com.heckmannch.birthdaybuddy.domain.usecase.GetCoupleSuggestionUseCase
 import com.heckmannch.birthdaybuddy.domain.usecase.IgnoreCoupleSuggestionUseCase
 import com.heckmannch.birthdaybuddy.domain.usecase.LinkAsCoupleUseCase
 import com.heckmannch.birthdaybuddy.domain.usecase.UnlinkCoupleUseCase
+import com.heckmannch.birthdaybuddy.domain.util.sanitizeBirthdayDate
 import com.heckmannch.birthdaybuddy.ui.mapper.ContactUiMapper
 import com.heckmannch.birthdaybuddy.ui.mapper.CoupleSuggestionUiMapper
 import com.heckmannch.birthdaybuddy.ui.model.ContactUiModel
@@ -24,7 +25,6 @@ import com.heckmannch.birthdaybuddy.ui.model.HomeUiState
 import com.heckmannch.birthdaybuddy.ui.model.PendingBirthdayEdit
 import com.heckmannch.birthdaybuddy.ui.screens.home.HomeViewModel.Companion.SEARCH_DEBOUNCE_DURATION
 import com.heckmannch.birthdaybuddy.util.Clock
-import com.heckmannch.birthdaybuddy.domain.util.sanitizeBirthdayDate
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
@@ -42,6 +42,8 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.drop
+import kotlinx.coroutines.flow.emptyFlow
+import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
@@ -63,10 +65,9 @@ import kotlin.time.Duration.Companion.milliseconds
  *   [HomeUiState] using Kotlin Coroutines and Flows.
  * - **Harmonized Event & Transient State Handling**:
  *   Transient one-shot UI events (e.g. search bar focus, newly created gift idea IDs, list scrolling)
- *   are dispatched via a dedicated [eventFlow] ([HomeUiEvent]) and consumed via explicit `Consume*` intents,
+ *   are dispatched via a dedicated [eventFlow] ([HomeUiEvent]),
  *   preventing unnecessary recompositions of the state-consuming [HomeUiState] pipeline. Persistent UI states
  *   (e.g. active birthday picker dialogs, pull-to-refresh sync indicators) remain modeled within [HomeUiState].
- *   Pure side-effects for list scrolling are also dispatched via [scrollToTopEvent].
  * - **Debouncing & Transformation Optimization**:
  *   Search inputs are debounced ([SEARCH_DEBOUNCE_DURATION]) and processed on [Dispatchers.Default] with
  *   `distinctUntilChanged` to avoid redundant database querying and contact filtering computations during fast typing.
@@ -125,6 +126,7 @@ class HomeViewModel @Inject constructor(
      */
     private data class UserUiState(
         val searchQuery: String = "",
+        val isSearchActive: Boolean = false,
         val selectedLabel: String? = null,
         val isResettingFilter: Boolean = false,
         val isSyncing: Boolean = false,
@@ -156,7 +158,7 @@ class HomeViewModel @Inject constructor(
         private val CONTACT_CHANGE_DEBOUNCE_DURATION = 1000.milliseconds
 
         /** Inactivity threshold (5 minutes). Exceeding this resets active search/label filters when app is resumed. */
-        private val AUTO_RESET_INACTIVITY_TIMEOUT_MS = 5 * 60 * 1000L
+        private const val AUTO_RESET_INACTIVITY_TIMEOUT_MS = 5 * 60 * 1000L
 
         /** Minimum visible duration for the manual pull-to-refresh spinner to prevent jarring UI flicker. */
         private const val MIN_SYNC_SPINNER_DURATION_MS = 800L
@@ -167,16 +169,6 @@ class HomeViewModel @Inject constructor(
         /** Regex used to split search query strings into distinct whitespace-delimited keyword tokens. */
         private val WHITESPACE_REGEX = "\\s+".toRegex()
     }
-
-    /**
-     * Internal event channel dispatching one-shot scroll-to-top commands to the UI.
-     */
-    private val _scrollToTopEvent = MutableSharedFlow<Unit>(replay = 0)
-
-    /**
-     * Public stream of one-shot scroll-to-top events observed by [HomeScreen].
-     */
-    val scrollToTopEvent: SharedFlow<Unit> = _scrollToTopEvent.asSharedFlow()
 
     /**
      * Internal event stream dispatching one-shot UI events to the UI.
@@ -195,14 +187,20 @@ class HomeViewModel @Inject constructor(
     private val labelSettingsState: Flow<GetContactsUseCase.LabelSettingsState> = combine(
         contactRepository.labelConfigs,
         contactRepository.labelsEnabled,
-        contactRepository.otherEventsEnabled
-    ) { configs, labelsEnabled, otherEventsEnabled ->
+        contactRepository.otherEventsEnabled,
+        contactRepository.disabledOtherEventLabels,
+    ) { configs, labelsEnabled, otherEventsEnabled, disabledOtherEventLabels ->
         val ignored = if (!labelsEnabled) emptySet()
         else configs.asSequence()
             .filter { it.isIgnored }
             .map { it.name }
             .toSet()
-        GetContactsUseCase.LabelSettingsState(ignored, labelsEnabled, otherEventsEnabled)
+        GetContactsUseCase.LabelSettingsState(
+            ignoredLabels = ignored,
+            labelsEnabled = labelsEnabled,
+            otherEventsEnabled = otherEventsEnabled,
+            disabledOtherEventLabels = disabledOtherEventLabels,
+        )
     }
         .distinctUntilChanged()
         .flowOn(defaultDispatcher)
@@ -238,15 +236,15 @@ class HomeViewModel @Inject constructor(
         filteredContacts,
         timeRepository.currentDate,
         _userUiState.map { it.selectedLabel }.distinctUntilChanged(),
-        contactRepository.labelsEnabled,
-        contactRepository.otherEventsEnabled
-    ) { contacts, today, selectedLabel, labelsEnabled, otherEventsEnabled ->
+        labelSettingsState,
+    ) { contacts, today, selectedLabel, settings ->
         contactUiMapper.mapToUiModels(
             contacts = contacts,
             today = today,
             selectedLabel = selectedLabel,
-            labelsEnabled = labelsEnabled,
-            otherEventsEnabled = otherEventsEnabled
+            labelsEnabled = settings.labelsEnabled,
+            otherEventsEnabled = settings.otherEventsEnabled,
+            disabledOtherEventLabels = settings.disabledOtherEventLabels,
         )
     }.flowOn(defaultDispatcher)
 
@@ -258,6 +256,7 @@ class HomeViewModel @Inject constructor(
         configs = contactRepository.labelConfigs,
         otherEventsEnabled = contactRepository.otherEventsEnabled,
         labelsEnabled = contactRepository.labelsEnabled,
+        disabledOtherEventLabels = contactRepository.disabledOtherEventLabels,
     )
 
     /**
@@ -283,6 +282,7 @@ class HomeViewModel @Inject constructor(
             contacts = contacts,
             availableLabels = labels,
             searchQuery = userState.searchQuery,
+            isSearchActive = userState.isSearchActive,
             selectedLabel = userState.selectedLabel,
             isResettingFilter = userState.isResettingFilter,
             isSyncing = userState.isSyncing,
@@ -310,8 +310,17 @@ class HomeViewModel @Inject constructor(
         }
 
         viewModelScope.launch {
-            contactRepository.contactChanges
-                .debounce(CONTACT_CHANGE_DEBOUNCE_DURATION)
+            _userUiState
+                .map { it.hasContactPermission }
+                .distinctUntilChanged()
+                .flatMapLatest { granted ->
+                    if (granted) {
+                        contactRepository.contactChanges
+                            .debounce(CONTACT_CHANGE_DEBOUNCE_DURATION)
+                    } else {
+                        emptyFlow()
+                    }
+                }
                 .collect {
                     onIntent(HomeIntent.SyncContacts())
                 }
@@ -323,7 +332,6 @@ class HomeViewModel @Inject constructor(
      */
     private fun triggerScrollToTop() {
         viewModelScope.launch {
-            _scrollToTopEvent.emit(Unit)
             _eventFlow.emit(HomeUiEvent.ScrollToTop)
         }
     }
@@ -334,8 +342,8 @@ class HomeViewModel @Inject constructor(
      */
     private fun resetFiltersInternal() {
         _userUiState.update { state ->
-            if (state.searchQuery.isNotEmpty() || state.selectedLabel != null) {
-                state.copy(searchQuery = "", selectedLabel = null, isResettingFilter = true)
+            if (state.searchQuery.isNotEmpty() || state.isSearchActive || state.selectedLabel != null) {
+                state.copy(searchQuery = "", isSearchActive = false, selectedLabel = null, isResettingFilter = true)
             } else {
                 state
             }
@@ -365,12 +373,25 @@ class HomeViewModel @Inject constructor(
                 lastInteractionTime = clock.currentTimeMillis()
             }
 
+            // Toggles search mode expansion and clears query when deactivated.
+            is HomeIntent.SetSearchActive -> {
+                _userUiState.update { state ->
+                    val newQuery = if (!intent.active) "" else state.searchQuery
+                    state.copy(isSearchActive = intent.active, searchQuery = newQuery)
+                }
+                if (intent.active) {
+                    viewModelScope.launch {
+                        _eventFlow.emit(HomeUiEvent.RequestSearchFocus)
+                    }
+                }
+            }
+
             // Updates the search query text, clears label selection if transitioning from blank to typed, and scrolls to top.
             is HomeIntent.SearchQueryChanged -> {
                 val newQuery = intent.query
                 var shouldTriggerScroll = false
                 _userUiState.update { state ->
-                    if (state.searchQuery == newQuery) state
+                    if (state.searchQuery == newQuery && state.isSearchActive) state
                     else {
                         val isEnteringSearch = state.searchQuery.isEmpty() && newQuery.isNotEmpty()
                         val isClearingSearch = state.searchQuery.isNotEmpty() && newQuery.isEmpty()
@@ -384,10 +405,12 @@ class HomeViewModel @Inject constructor(
                             } else {
                                 state.selectedLabel
                             }
+                        val isSearchActive = newQuery.isNotEmpty() || state.isSearchActive
                         state.copy(
                             searchQuery = newQuery,
+                            isSearchActive = isSearchActive,
                             selectedLabel = updatedLabel,
-                            isResettingFilter = if (isTransition) true else state.isResettingFilter
+                            isResettingFilter = isTransition || state.isResettingFilter
                         )
                     }
                 }
@@ -494,16 +517,6 @@ class HomeViewModel @Inject constructor(
                 viewModelScope.launch {
                     _eventFlow.emit(HomeUiEvent.RequestSearchFocus)
                 }
-            }
-
-            // Consumes the search focus request after the UI has handled it.
-            is HomeIntent.ConsumeSearchFocus -> {
-                // Acknowledged by UI consumption - state + consumption pattern maintained
-            }
-
-            // Consumes the newly added gift idea ID after focus has been applied by the UI.
-            is HomeIntent.ConsumeNewlyAddedIdeaId -> {
-                // Acknowledged by UI consumption - state + consumption pattern maintained
             }
 
             // Merges two independent contacts into a single couple entity.

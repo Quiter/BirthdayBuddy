@@ -5,17 +5,21 @@ import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import androidx.core.content.ContextCompat
+import com.heckmannch.birthdaybuddy.di.ApplicationScope
 import com.heckmannch.birthdaybuddy.domain.repository.TimeRepository
+import com.heckmannch.birthdaybuddy.util.Clock
 import dagger.hilt.android.qualifiers.ApplicationContext
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.shareIn
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import java.time.LocalDate
-import java.time.LocalDateTime
 import java.time.temporal.ChronoUnit
 import javax.inject.Inject
 import kotlin.time.Duration.Companion.milliseconds
@@ -23,30 +27,36 @@ import kotlin.time.Duration.Companion.milliseconds
 /**
  * Implementierung von [TimeRepository], die das aktuelle Datum bereitstellt und automatisch aktualisiert.
  *
- * Registriert einen [BroadcastReceiver] für System-Ereignisse (Datumswechsel, Zeitzonenwechsel,
- * manuelle Zeitänderungen) und führt parallel eine Coroutine-Schleife bis Mitternacht aus.
+ * Registriert einen einzelnen geteilten [BroadcastReceiver] (via [shareIn]) für System-Ereignisse
+ * (Datumswechsel, Zeitzonenwechsel, manuelle Zeitänderungen) und führt parallel eine DST-sichere
+ * Coroutine-Schleife bis Mitternacht aus.
  *
  * @property context Der [ApplicationContext] zur Registrierung des BroadcastReceivers.
+ * @property clock Injizierte [Clock]-Abstraktion für deterministische Zeit- und Zeitzonenabfragen.
+ * @property applicationScope Anwendungsweiter [CoroutineScope] für den geteilten [currentDate]-Flow.
  */
 class TimeRepositoryImpl @Inject constructor(
     @param:ApplicationContext private val context: Context,
+    private val clock: Clock,
+    @ApplicationScope private val applicationScope: CoroutineScope,
 ) : TimeRepository {
 
     /**
-     * Ein Flow, der das aktuelle Datum emittiert und sich automatisch aktualisiert:
-     * - Sofortige Emission beim Abonnieren ([LocalDate.now]).
+     * Ein geteilter Flow, der das aktuelle Datum emittiert und sich automatisch aktualisiert:
+     * - Sofortige Emission beim Abonnieren ([Clock.nowLocalDate]).
      * - Reaktiv auf System-Broadcasts ([Intent.ACTION_DATE_CHANGED], [Intent.ACTION_TIMEZONE_CHANGED], [Intent.ACTION_TIME_CHANGED]).
-     * - Zeitgesteuert um Mitternacht (+1s Puffer) über eine parallele Coroutine-Schleife.
-     * - Unnötige Re-Emissions werden via [distinctUntilChanged] gefiltert.
+     * - DST-sicher zeitgesteuert um Mitternacht (+1s Puffer) über [ZonedDateTime].
+     * - Unnötige Re-Emissions werden via [distinctUntilChanged] gefiltert und über [shareIn]
+     *   mit [SharingStarted.WhileSubscribed] an alle Collector verteilt.
      */
     override val currentDate: Flow<LocalDate> = callbackFlow {
         // Sofortige Emission des aktuellen Datums
-        trySend(LocalDate.now())
+        trySend(clock.nowLocalDate())
 
         // BroadcastReceiver für System-Datums- und Zeitanpassungen
         val receiver = object : BroadcastReceiver() {
             override fun onReceive(context: Context?, intent: Intent?) {
-                trySend(LocalDate.now())
+                trySend(clock.nowLocalDate())
             }
         }
 
@@ -69,16 +79,18 @@ class TimeRepositoryImpl @Inject constructor(
             ContextCompat.RECEIVER_EXPORTED,
         )
 
-        // Parallele Coroutine-Schleife, die gezielt zu Mitternacht aufwacht
+        // Parallele Coroutine-Schleife, die DST-sicher gezielt zu Mitternacht aufwacht
         val midnightJob = launch {
             while (isActive) {
-                val now = LocalDateTime.now()
-                val nextMidnight = now.toLocalDate().plusDays(1).atStartOfDay()
+                val zone = clock.zone
+                val now = clock.nowZonedDateTime(zone)
+                val nextMidnight = now.toLocalDate().plusDays(1).atStartOfDay(zone)
                 val millisUntilMidnight = ChronoUnit.MILLIS.between(now, nextMidnight)
+                    .coerceAtLeast(0L)
 
                 // Warte bis Mitternacht + 1 Sekunde Puffer
-                delay((millisUntilMidnight + 1000).milliseconds)
-                trySend(LocalDate.now())
+                delay((millisUntilMidnight + MIDNIGHT_BUFFER_MS).milliseconds)
+                trySend(clock.nowLocalDate())
             }
         }
 
@@ -86,6 +98,20 @@ class TimeRepositoryImpl @Inject constructor(
             midnightJob.cancel()
             context.unregisterReceiver(receiver)
         }
-    }.distinctUntilChanged()
+    }
+        .distinctUntilChanged()
+        .shareIn(
+            scope = applicationScope,
+            started = SharingStarted.WhileSubscribed(
+                stopTimeoutMillis = STOP_TIMEOUT_MILLIS,
+                replayExpirationMillis = 0L,
+            ),
+            replay = 1,
+        )
+
+    companion object {
+        private const val STOP_TIMEOUT_MILLIS = 5_000L
+        private const val MIDNIGHT_BUFFER_MS = 1_000L
+    }
 }
 

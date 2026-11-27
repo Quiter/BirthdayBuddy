@@ -83,10 +83,18 @@ class NotificationSchedulerImplTest {
     }
 
     @Test
-    fun `cancelNotification - delegates to AlarmScheduler cancelNotificationAlarm`() {
+    fun `cancelNotification - delegates to AlarmScheduler cancelNotificationAlarm and cancels snoozed work`() {
         scheduler.cancelNotification()
 
         verify(exactly = 1) { alarmScheduler.cancelNotificationAlarm() }
+        verify(exactly = 1) { workManager.cancelAllWorkByTag(NotificationActions.WORK_TAG_SNOOZE) }
+    }
+
+    @Test
+    fun `cancelAllSnoozedNotifications - cancels all WorkManager jobs with WORK_TAG_SNOOZE`() {
+        scheduler.cancelAllSnoozedNotifications()
+
+        verify(exactly = 1) { workManager.cancelAllWorkByTag(NotificationActions.WORK_TAG_SNOOZE) }
     }
 
     // =========================================================================
@@ -117,7 +125,7 @@ class NotificationSchedulerImplTest {
         val inputData = captured.workSpec.input
         assertThat(inputData.getInt(NotificationActions.EXTRA_PENDING_ID, -1)).isEqualTo(101)
         assertThat(inputData.getInt(NotificationActions.EXTRA_DAYS_BEFORE, -1)).isEqualTo(1)
-        assertThat(inputData.getStringArray(NotificationActions.EXTRA_LOOKUP_KEYS)?.toList())
+        assertThat(inputData.getNullableStringArray(NotificationActions.EXTRA_LOOKUP_KEYS)?.toList())
             .containsExactly("contact_lookup_key_alpha")
         assertThat(inputData.getString(NotificationActions.EXTRA_EVENT_TYPE)).isEqualTo(EventType.BIRTHDAY.name)
     }
@@ -141,7 +149,7 @@ class NotificationSchedulerImplTest {
         val captured = workRequestSlot.captured
         val inputData = captured.workSpec.input
         assertThat(inputData.getString(NotificationActions.EXTRA_EVENT_TYPE)).isEqualTo(EventType.ANNIVERSARY.name)
-        assertThat(inputData.getStringArray(NotificationActions.EXTRA_LOOKUP_KEYS)?.toList())
+        assertThat(inputData.getNullableStringArray(NotificationActions.EXTRA_LOOKUP_KEYS)?.toList())
             .containsExactly(anniversaryKey)
     }
 
@@ -182,7 +190,7 @@ class NotificationSchedulerImplTest {
         val captured = workRequestSlot.captured
         val inputData = captured.workSpec.input
         assertThat(inputData.getString(NotificationActions.EXTRA_EVENT_TYPE)).isEqualTo(EventType.BIRTHDAY.name)
-        assertThat(inputData.getStringArray(NotificationActions.EXTRA_LOOKUP_KEYS)).isEmpty()
+        assertThat(inputData.getNullableStringArray(NotificationActions.EXTRA_LOOKUP_KEYS)).isEmpty()
     }
 
     // =========================================================================
@@ -210,12 +218,13 @@ class NotificationSchedulerImplTest {
         verify(exactly = 1) { workManager.enqueue(any<OneTimeWorkRequest>()) }
 
         val captured = workRequestSlot.captured
+        assertThat(captured.tags).contains(NotificationActions.WORK_TAG_SNOOZE)
         assertThat(captured.workSpec.initialDelay).isEqualTo(2500L)
 
         val inputData = captured.workSpec.input
         assertThat(inputData.getInt(NotificationActions.EXTRA_PENDING_ID, -1)).isEqualTo(505)
         assertThat(inputData.getInt(NotificationActions.EXTRA_DAYS_BEFORE, -1)).isEqualTo(3)
-        assertThat(inputData.getStringArray(NotificationActions.EXTRA_LOOKUP_KEYS)?.toList())
+        assertThat(inputData.getNullableStringArray(NotificationActions.EXTRA_LOOKUP_KEYS)?.toList())
             .containsExactly("key_reshow_1", "key_reshow_2")
         assertThat(inputData.getString(NotificationActions.EXTRA_EVENT_TYPE)).isEqualTo(EventType.ANNIVERSARY.name)
     }

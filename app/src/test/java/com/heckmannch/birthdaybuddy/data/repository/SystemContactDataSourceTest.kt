@@ -1,37 +1,66 @@
 package com.heckmannch.birthdaybuddy.data.repository
 
+import android.content.ContentProviderOperation
+import android.content.ContentResolver
 import android.content.Context
+import android.database.MatrixCursor
+import android.provider.ContactsContract
 import android.util.Log
+import androidx.test.core.app.ApplicationProvider
 import com.google.common.truth.Truth.assertThat
+import com.heckmannch.birthdaybuddy.R
 import com.heckmannch.birthdaybuddy.domain.util.NO_YEAR_MARKER
 import com.heckmannch.birthdaybuddy.util.hasYear
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.mockkStatic
+import io.mockk.slot
 import io.mockk.unmockkStatic
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
+import kotlinx.coroutines.test.runTest
 import org.junit.After
 import org.junit.Before
 import org.junit.Test
+import org.junit.runner.RunWith
+import org.robolectric.RobolectricTestRunner
+import org.robolectric.annotation.Config
 import java.time.LocalDate
+import java.util.Locale
 
 @OptIn(ExperimentalCoroutinesApi::class)
+@RunWith(RobolectricTestRunner::class)
+@Config(sdk = [35])
 class SystemContactDataSourceTest {
 
-    private val context: Context = mockk(relaxed = true)
+    private val contentResolver: ContentResolver = mockk(relaxed = true)
+    private lateinit var realContext: Context
+    private lateinit var context: Context
     private lateinit var dataSource: SystemContactDataSource
+    private lateinit var originalLocale: Locale
 
     @Before
     fun setUp() {
+        originalLocale = Locale.getDefault()
         mockkStatic(Log::class)
         every { Log.w(any(), any<String>(), any()) } returns 0
         every { Log.w(any(), any<String>()) } returns 0
+        every { Log.e(any(), any()) } returns 0
+        every { Log.e(any(), any(), any()) } returns 0
+
+        realContext = ApplicationProvider.getApplicationContext()
+        context = mockk(relaxed = true)
+        every { context.contentResolver } returns contentResolver
+        every { context.getString(R.string.contact_unknown) } answers {
+            realContext.getString(R.string.contact_unknown)
+        }
+
         dataSource = SystemContactDataSource(context, UnconfinedTestDispatcher())
     }
 
     @After
     fun tearDown() {
+        Locale.setDefault(originalLocale)
         unmockkStatic(Log::class)
     }
 
@@ -112,5 +141,167 @@ class SystemContactDataSourceTest {
         assertThat(dataSource.parseDate("invalid-date")).isNull()
         assertThat(dataSource.parseDate("--02-30")).isNull()
         assertThat(dataSource.parseDate("--13-01")).isNull()
+    }
+
+    @Test
+    fun `updateContactBirthday formats no-year date with ASCII digits under Arabic locale`() = runTest {
+        Locale.setDefault(Locale.forLanguageTag("ar-EG-u-nu-arab"))
+
+        val existingCursor = MatrixCursor(arrayOf(ContactsContract.Data._ID)).apply {
+            addRow(arrayOf(99L))
+        }
+        every {
+            contentResolver.query(
+                ContactsContract.Data.CONTENT_URI,
+                any(),
+                any(),
+                any(),
+                any()
+            )
+        } returns existingCursor
+
+        val opsSlot = slot<ArrayList<ContentProviderOperation>>()
+        every {
+            contentResolver.applyBatch(ContactsContract.AUTHORITY, capture(opsSlot))
+        } returns emptyArray()
+
+        val result = dataSource.updateContactBirthday("1", LocalDate.of(NO_YEAR_MARKER, 5, 9))
+
+        assertThat(result).isTrue()
+        assertThat(opsSlot.captured).hasSize(1)
+        val resolvedValues = opsSlot.captured[0].resolveValueBackReferences(emptyArray(), 0)
+        assertThat(resolvedValues?.getAsString(ContactsContract.CommonDataKinds.Event.START_DATE))
+            .isEqualTo("--05-09")
+    }
+
+    @Test
+    fun `fetchContactsFromSystem handles null display name and null cursor columns without NPE`() = runTest {
+        val contactsCursor = MatrixCursor(
+            arrayOf(
+                ContactsContract.Contacts._ID,
+                ContactsContract.Contacts.LOOKUP_KEY,
+                ContactsContract.Contacts.DISPLAY_NAME,
+                ContactsContract.Contacts.PHOTO_THUMBNAIL_URI,
+                ContactsContract.Contacts.STARRED
+            )
+        ).apply {
+            addRow(arrayOf<Any?>("1", null, null, null, 0))
+            addRow(arrayOf<Any?>(null, "ignored", "ShouldSkip", null, 0))
+        }
+
+        val eventsCursor = MatrixCursor(
+            arrayOf(
+                ContactsContract.Data.CONTACT_ID,
+                ContactsContract.CommonDataKinds.Event.START_DATE,
+                ContactsContract.CommonDataKinds.Event.TYPE,
+                ContactsContract.CommonDataKinds.Event.LABEL
+            )
+        ).apply {
+            addRow(
+                arrayOf<Any?>(
+                    "1",
+                    "1990-05-15",
+                    ContactsContract.CommonDataKinds.Event.TYPE_BIRTHDAY,
+                    null
+                )
+            )
+        }
+
+        val dataCursor = MatrixCursor(
+            arrayOf(
+                ContactsContract.Data.CONTACT_ID,
+                ContactsContract.Data.MIMETYPE,
+                ContactsContract.CommonDataKinds.GroupMembership.GROUP_ROW_ID
+            )
+        ).apply {
+            // Null contact ID and null mimetype rows must be safely skipped
+            addRow(arrayOf<Any?>(null, "vnd.android.cursor.item/vnd.com.whatsapp.profile", 10L))
+            addRow(arrayOf<Any?>("1", null, 10L))
+            addRow(arrayOf<Any?>("1", "vnd.android.cursor.item/vnd.com.whatsapp.profile", 10L))
+        }
+
+        val phoneCursor = MatrixCursor(
+            arrayOf(
+                ContactsContract.CommonDataKinds.Phone.CONTACT_ID,
+                ContactsContract.CommonDataKinds.Phone.NUMBER,
+                ContactsContract.CommonDataKinds.Phone.IS_PRIMARY
+            )
+        ).apply {
+            addRow(arrayOf<Any?>(null, "+49123456", 1))
+            addRow(arrayOf<Any?>("1", null, 1))
+            addRow(arrayOf<Any?>("1", "+491701234567", 0))
+        }
+
+        every {
+            contentResolver.query(
+                ContactsContract.Contacts.CONTENT_URI,
+                any(),
+                any(),
+                any(),
+                any()
+            )
+        } returns contactsCursor
+
+        every {
+            contentResolver.query(
+                ContactsContract.Data.CONTENT_URI,
+                any(),
+                match { it.contains(ContactsContract.CommonDataKinds.Event.CONTENT_ITEM_TYPE) || it == "${ContactsContract.Data.MIMETYPE} = ?" },
+                match { it.isNotEmpty() && it[0] == ContactsContract.CommonDataKinds.Event.CONTENT_ITEM_TYPE },
+                any()
+            )
+        } returns eventsCursor
+
+        every {
+            contentResolver.query(
+                ContactsContract.Data.CONTENT_URI,
+                any(),
+                match { it.contains("IN (?, ?)") },
+                any(),
+                any()
+            )
+        } returns dataCursor
+
+        every {
+            contentResolver.query(
+                ContactsContract.Data.CONTENT_URI,
+                any(),
+                match { it.contains("${ContactsContract.Data.MIMETYPE} = ? AND ${ContactsContract.Data.CONTACT_ID} IN") },
+                any(),
+                any()
+            )
+        } returns MatrixCursor(
+            arrayOf(
+                ContactsContract.CommonDataKinds.GroupMembership.CONTACT_ID,
+                ContactsContract.CommonDataKinds.GroupMembership.GROUP_ROW_ID
+            )
+        ).apply {
+            addRow(arrayOf<Any?>(null, 10L))
+            addRow(arrayOf<Any?>("1", 10L))
+        }
+
+        every {
+            contentResolver.query(
+                ContactsContract.CommonDataKinds.Phone.CONTENT_URI,
+                any(),
+                any(),
+                any(),
+                any()
+            )
+        } returns phoneCursor
+
+        val groups = mapOf(10L to GroupInfo("Friends", isSystem = false))
+        val contacts = dataSource.fetchContactsFromSystem(groups)
+
+        assertThat(contacts).hasSize(1)
+        val contact = contacts.first()
+        assertThat(contact.contactId).isEqualTo("1")
+        assertThat(contact.lookupKey).isEmpty()
+        assertThat(contact.fullName).isEqualTo(realContext.getString(R.string.contact_unknown))
+        assertThat(contact.birthday).isEqualTo(LocalDate.of(1990, 5, 15))
+        assertThat(contact.phoneNumber).isEqualTo("+491701234567")
+        assertThat(contact.hasWhatsApp).isTrue()
+        assertThat(contact.hasSignal).isFalse()
+        assertThat(contact.labels).containsExactly("Friends")
     }
 }

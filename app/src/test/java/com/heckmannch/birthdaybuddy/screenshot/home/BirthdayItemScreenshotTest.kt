@@ -216,21 +216,4 @@ class BirthdayItemScreenshotTest : BaseScreenshotTest() {
         }
         captureScreenshot()
     }
-
-    // --- Selected (Tablet detail pane) ---
-
-    @Test
-    fun birthdayItem_selected_lightMode() {
-        setScreenshotContent(windowSizeClass = phoneSize, darkTheme = false) {
-            BirthdayItem(
-                contact = SampleData.contact1,
-                isExpanded = false,
-                isSelected = true,
-                newlyAddedIdeaId = null,
-                onExpand = {},
-                actions = noOpActions(),
-            )
-        }
-        captureScreenshot()
-    }
 }

@@ -9,6 +9,7 @@ import com.heckmannch.birthdaybuddy.data.repository.GiftIdeaRepositoryImpl
 import com.heckmannch.birthdaybuddy.data.repository.NotificationRepositoryImpl
 import com.heckmannch.birthdaybuddy.data.repository.NotificationSchedulerImpl
 import com.heckmannch.birthdaybuddy.data.repository.SettingsRepositoryImpl
+import com.heckmannch.birthdaybuddy.data.repository.StorageRepositoryImpl
 import com.heckmannch.birthdaybuddy.data.repository.SystemCalendarDataSource
 import com.heckmannch.birthdaybuddy.data.repository.SystemCalendarDataSourceImpl
 import com.heckmannch.birthdaybuddy.data.repository.TimeRepositoryImpl
@@ -16,16 +17,17 @@ import com.heckmannch.birthdaybuddy.data.util.AndroidCalendarStringProvider
 import com.heckmannch.birthdaybuddy.data.util.AndroidDeviceRegionProvider
 import com.heckmannch.birthdaybuddy.domain.permission.PermissionChecker
 import com.heckmannch.birthdaybuddy.domain.repository.CalendarSyncRepository
-import com.heckmannch.birthdaybuddy.domain.util.CalendarStringProvider
-import com.heckmannch.birthdaybuddy.domain.util.DeviceRegionProvider
 import com.heckmannch.birthdaybuddy.domain.repository.ContactRepository
 import com.heckmannch.birthdaybuddy.domain.repository.CoupleRepository
 import com.heckmannch.birthdaybuddy.domain.repository.GiftIdeaRepository
 import com.heckmannch.birthdaybuddy.domain.repository.NotificationRepository
 import com.heckmannch.birthdaybuddy.domain.repository.NotificationScheduler
 import com.heckmannch.birthdaybuddy.domain.repository.SettingsRepository
+import com.heckmannch.birthdaybuddy.domain.repository.StorageRepository
 import com.heckmannch.birthdaybuddy.domain.repository.TimeRepository
 import com.heckmannch.birthdaybuddy.domain.repository.WidgetUpdater
+import com.heckmannch.birthdaybuddy.domain.util.CalendarStringProvider
+import com.heckmannch.birthdaybuddy.domain.util.DeviceRegionProvider
 import com.heckmannch.birthdaybuddy.util.Clock
 import com.heckmannch.birthdaybuddy.util.SystemClock
 import dagger.Binds
@@ -178,4 +180,14 @@ interface HelperBindingsModule {
     @Binds
     @Singleton
     fun bindCalendarStringProvider(provider: AndroidCalendarStringProvider): CalendarStringProvider
+
+    /**
+     * Binds the storage repository interface to its Android implementation.
+     *
+     * @param repository The [StorageRepositoryImpl] implementation.
+     * @return The bound [StorageRepository] interface.
+     */
+    @Binds
+    @Singleton
+    fun bindStorageRepository(repository: StorageRepositoryImpl): StorageRepository
 }

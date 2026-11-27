@@ -1,7 +1,7 @@
-package com.heckmannch.birthdaybuddy.screenshot.settings
+﻿package com.heckmannch.birthdaybuddy.screenshot.settings
 
 import com.heckmannch.birthdaybuddy.screenshot.BaseScreenshotTest
-import com.heckmannch.birthdaybuddy.ui.screens.settings.calendar.CalendarSettingsScreenContent
+import com.heckmannch.birthdaybuddy.ui.screens.settings.subscreens.calendar.CalendarSettingsScreenContent
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
@@ -114,3 +114,4 @@ class CalendarSettingsScreenshotTest : BaseScreenshotTest() {
         captureScreenshot()
     }
 }
+

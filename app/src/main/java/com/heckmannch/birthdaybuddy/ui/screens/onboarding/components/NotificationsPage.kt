@@ -55,7 +55,6 @@ fun NotificationsPage(
             ) {
                 Column(modifier = Modifier.padding(SpacingSmall)) {
                     ListItem(
-                        headlineContent = { Text(stringResource(R.string.onboarding_notif_enable)) },
                         trailingContent = {
                             AppSwitch(
                                 checked = enabled,
@@ -63,10 +62,11 @@ fun NotificationsPage(
                             )
                         },
                         colors = ListItemDefaults.colors(containerColor = Color.Transparent)
-                    )
+                    ) {
+                        Text(stringResource(R.string.onboarding_notif_enable))
+                    }
                     if (enabled) {
                         ListItem(
-                            headlineContent = { Text(stringResource(R.string.onboarding_notif_persistent)) },
                             trailingContent = {
                                 AppSwitch(
                                     checked = persistent,
@@ -74,7 +74,9 @@ fun NotificationsPage(
                                 )
                             },
                             colors = ListItemDefaults.colors(containerColor = Color.Transparent)
-                        )
+                        ) {
+                            Text(stringResource(R.string.onboarding_notif_persistent))
+                        }
                     }
                 }
             }

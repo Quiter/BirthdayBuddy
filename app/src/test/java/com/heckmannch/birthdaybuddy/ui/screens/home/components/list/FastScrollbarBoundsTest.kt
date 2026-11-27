@@ -8,6 +8,8 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.getBoundsInRoot
 import androidx.compose.ui.test.junit4.v2.createComposeRule
 import androidx.compose.ui.test.onNodeWithContentDescription
@@ -19,7 +21,7 @@ import androidx.compose.ui.test.swipeUp
 import androidx.compose.ui.unit.dp
 import androidx.window.core.layout.WindowSizeClass
 import com.google.common.truth.Truth.assertThat
-import com.heckmannch.birthdaybuddy.ui.components.LocalWindowSizeClass
+import com.heckmannch.birthdaybuddy.ui.components.layout.LocalWindowSizeClass
 import com.heckmannch.birthdaybuddy.ui.model.HomeUiState
 import com.heckmannch.birthdaybuddy.ui.model.SampleData
 import com.heckmannch.birthdaybuddy.ui.screens.home.HomeActions
@@ -50,7 +52,7 @@ class FastScrollbarBoundsTest {
         SampleData.sampleContacts[index % SampleData.sampleContacts.size].copy(
             id = "contact_$index",
             fullName = "Contact $index",
-            monthName = "Month ${(index % 12) + 1}"
+            monthName = "Month ${(index % 12) + 1}",
         )
     }
 
@@ -226,7 +228,6 @@ class FastScrollbarBoundsTest {
                             uiState = uiState,
                             homeState = homeState,
                             actions = noOpActions(),
-                            showLabelFilter = true,
                             contentPadding = PaddingValues(top = topPadding, bottom = bottomPadding),
                             modifier = Modifier.fillMaxSize(),
                         )
@@ -241,5 +242,37 @@ class FastScrollbarBoundsTest {
         // Ensures the scrollbar in HomeListDetailDisplay correctly aligns with BirthdayList
         assertThat(scrollbarBounds.top).isEqualTo(topPadding)
         assertThat(scrollbarBounds.bottom).isEqualTo(rootBounds.bottom - bottomPadding)
+    }
+
+    @Test
+    fun scrollbarBubble_withLongLabel_isPositionedToLeftOfThumbWidth() {
+        val containerWidth = 400.dp
+        val containerHeight = 800.dp
+        val label = "September"
+
+        composeRule.setContent {
+            BirthdayBuddyTheme {
+                Box(
+                    modifier = Modifier
+                        .testTag("bubble_container")
+                        .size(width = containerWidth, height = containerHeight),
+                ) {
+                    ScrollbarBubble(
+                        visible = true,
+                        label = label,
+                    ) { 100.dp }
+                }
+            }
+        }
+
+        val bubbleNode = composeRule.onNodeWithText(label, useUnmergedTree = true)
+        bubbleNode.assertIsDisplayed()
+
+        val containerBounds = composeRule.onNodeWithTag("bubble_container").getBoundsInRoot()
+        val bubbleBounds = bubbleNode.getBoundsInRoot()
+
+        // The bubble must be positioned to the left of the scrollbar thumb (ScrollbarDefaults.ThumbWidth)
+        val expectedMaxRight = containerBounds.right - ScrollbarDefaults.ThumbWidth
+        assertThat(bubbleBounds.right).isAtMost(expectedMaxRight)
     }
 }

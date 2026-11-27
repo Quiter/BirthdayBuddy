@@ -12,7 +12,8 @@ import com.heckmannch.birthdaybuddy.ui.navigation.AppAction
 import io.mockk.every
 import io.mockk.mockkStatic
 import io.mockk.unmockkStatic
-import kotlinx.coroutines.ExperimentalCoroutinesApi
+import io.mockk.verify as mockkVerify
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.runTest
@@ -21,10 +22,10 @@ import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.mockito.kotlin.mock
+import org.mockito.kotlin.never
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 
-@OptIn(ExperimentalCoroutinesApi::class)
 class AppViewModelTest {
 
     @get:Rule
@@ -128,6 +129,18 @@ class AppViewModelTest {
 
         val vm = AppViewModel(syncNotificationSchedulingUseCase, failingScheduleDailyWidgetUpdateUseCase, settingsRepository)
         assertThat(vm.appSettings.value).isEqualTo(AppSettings())
+    }
+
+    @Test
+    fun `init rethrows CancellationException from syncNotificationSchedulingUseCase without swallowing or continuing`() = runTest {
+        val cancellingSyncUseCase: SyncNotificationSchedulingUseCase = mock()
+        val widgetUpdateUseCase: ScheduleDailyWidgetUpdateUseCase = mock()
+        whenever(cancellingSyncUseCase.invoke()).thenThrow(CancellationException("Cancelled"))
+
+        AppViewModel(cancellingSyncUseCase, widgetUpdateUseCase, settingsRepository)
+
+        verify(widgetUpdateUseCase, never()).invoke()
+        mockkVerify(exactly = 0) { Log.w(any(), any<String>(), any()) }
     }
 
     @Test

@@ -6,7 +6,9 @@ import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
@@ -23,7 +25,7 @@ private data class Particle(
     val velocityX: Float,
     val velocityY: Float,
     val rotation: Float,
-    val rotationSpeed: Float
+    val rotationSpeed: Float,
 )
 
 @Composable
@@ -31,16 +33,17 @@ fun ConfettiEffect(
     colors: List<Color>,
     modifier: Modifier = Modifier,
     particleCount: Int = 30,
-    onAnimationEnd: () -> Unit = {}
+    onAnimationEnd: () -> Unit = {},
 ) {
     val progress = remember { Animatable(0f) }
+    val currentOnAnimationEnd by rememberUpdatedState(onAnimationEnd)
 
     LaunchedEffect(Unit) {
         progress.animateTo(
             targetValue = 1f,
-            animationSpec = tween(3000, easing = LinearEasing)
+            animationSpec = tween(3000, easing = LinearEasing),
         )
-        onAnimationEnd()
+        currentOnAnimationEnd()
     }
 
     val particles = remember(colors, particleCount) {
@@ -48,36 +51,35 @@ fun ConfettiEffect(
             emptyList()
         } else {
             List(particleCount) {
-                val particleSize = Random.nextFloat() * 10f + 5f
+                val particleSize = (Random.nextFloat() * 10f) + 5f
                 Particle(
                     x = Random.nextFloat(),
                     y = Random.nextFloat() * -1f,
                     size = Size(particleSize, particleSize),
                     color = colors.random(),
                     velocityX = (Random.nextFloat() - 0.5f) * 0.2f,
-                    velocityY = Random.nextFloat() * 0.5f + 0.5f,
+                    velocityY = (Random.nextFloat() * 0.5f) + 0.5f,
                     rotation = Random.nextFloat() * 360f,
-                    rotationSpeed = (Random.nextFloat() - 0.5f) * 10f
+                    rotationSpeed = (Random.nextFloat() - 0.5f) * 10f,
                 )
             }
         }
     }
 
-    if (progress.value < 1f) {
-        Canvas(modifier = modifier) {
-            val progressValue = progress.value
-            particles.forEach { particle ->
-                val currentY = lerp(particle.y * size.height, size.height * 1.5f, progressValue)
-                val currentX = (particle.x * size.width) + (particle.velocityX * size.width * progressValue)
-                val currentRotation = particle.rotation + (particle.rotationSpeed * progressValue * 360f)
+    Canvas(modifier = modifier) {
+        if (progress.value >= 1f) return@Canvas
+        val progressValue = progress.value
+        particles.forEach { (x, y, particleSize, color, velocityX, _, rotation, rotationSpeed) ->
+            val currentY = lerp(y * size.height, size.height * 1.5f, progressValue)
+            val currentX = (x * size.width) + (velocityX * size.width * progressValue)
+            val currentRotation = rotation + (rotationSpeed * progressValue * 360f)
 
-                rotate(currentRotation, pivot = Offset(currentX, currentY)) {
-                    drawRect(
-                        color = particle.color,
-                        topLeft = Offset(currentX, currentY),
-                        size = particle.size
-                    )
-                }
+            rotate(currentRotation, pivot = Offset(currentX, currentY)) {
+                drawRect(
+                    color = color,
+                    topLeft = Offset(currentX, currentY),
+                    size = particleSize,
+                )
             }
         }
     }

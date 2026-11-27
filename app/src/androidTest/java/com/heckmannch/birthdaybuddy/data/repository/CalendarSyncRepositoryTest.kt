@@ -5,10 +5,11 @@ import android.provider.CalendarContract
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import com.google.common.truth.Truth.assertThat
-import com.heckmannch.birthdaybuddy.data.local.AppSettingsDao
-import com.heckmannch.birthdaybuddy.data.local.AppSettingsEntity
+import com.heckmannch.birthdaybuddy.data.util.AndroidCalendarStringProvider
+import com.heckmannch.birthdaybuddy.domain.model.AppSettings
 import com.heckmannch.birthdaybuddy.domain.model.Contact
 import com.heckmannch.birthdaybuddy.domain.repository.CalendarSyncRepository
+import com.heckmannch.birthdaybuddy.domain.repository.SettingsRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.test.runTest
 import org.junit.Before
@@ -21,12 +22,10 @@ import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 import java.time.LocalDate
 
-import com.heckmannch.birthdaybuddy.data.util.AndroidCalendarStringProvider
-
 @RunWith(AndroidJUnit4::class)
 class CalendarSyncRepositoryTest {
 
-    private val appSettingsDao: AppSettingsDao = mock()
+    private val settingsRepository: SettingsRepository = mock()
     private val systemCalendarDataSource: SystemCalendarDataSource = mock()
     private lateinit var repository: CalendarSyncRepository
 
@@ -35,7 +34,7 @@ class CalendarSyncRepositoryTest {
         val context = InstrumentationRegistry.getInstrumentation().targetContext
         val calendarStringProvider = AndroidCalendarStringProvider(context)
         repository = CalendarSyncRepositoryImpl(
-            appSettingsDao = appSettingsDao,
+            settingsRepository = settingsRepository,
             systemCalendarDataSource = systemCalendarDataSource,
             calendarStringProvider = calendarStringProvider,
             ioDispatcher = Dispatchers.IO,
@@ -55,8 +54,8 @@ class CalendarSyncRepositoryTest {
 
         whenever(systemCalendarDataSource.hasCalendarPermissions()).thenReturn(true)
         whenever(systemCalendarDataSource.queryAllCalendars()).thenReturn(emptyList())
-        whenever(appSettingsDao.getSettingsImmediate()).thenReturn(
-            AppSettingsEntity(
+        whenever(settingsRepository.getSettingsImmediate()).thenReturn(
+            AppSettings(
                 otherEventsEnabled = false
             )
         )

@@ -6,7 +6,6 @@ import com.heckmannch.birthdaybuddy.domain.repository.CoupleRepository
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.mockk
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runTest
 import org.junit.Before
 import org.junit.Rule
@@ -15,7 +14,6 @@ import org.junit.Test
 /**
  * JVM Unit Tests for [UnlinkCoupleUseCase].
  */
-@OptIn(ExperimentalCoroutinesApi::class)
 class UnlinkCoupleUseCaseTest {
 
     @get:Rule

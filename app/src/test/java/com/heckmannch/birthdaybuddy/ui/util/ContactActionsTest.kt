@@ -4,13 +4,13 @@ import android.content.Context
 import android.content.Intent
 import androidx.test.core.app.ApplicationProvider
 import com.google.common.truth.Truth.assertThat
-import com.heckmannch.birthdaybuddy.domain.util.DeviceRegionProvider
 import com.heckmannch.birthdaybuddy.domain.model.MessengerApp
+import com.heckmannch.birthdaybuddy.domain.util.DeviceRegionProvider
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
-import org.robolectric.annotation.Config
 import org.robolectric.Shadows.shadowOf
+import org.robolectric.annotation.Config
 
 /**
  * Unit tests for [ContactActions] verifying normalized phone numbers and intent generation.

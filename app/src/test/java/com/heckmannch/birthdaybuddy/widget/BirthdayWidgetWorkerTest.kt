@@ -7,7 +7,6 @@ import androidx.work.WorkerParameters
 import com.google.common.truth.Truth.assertThat
 import com.heckmannch.birthdaybuddy.domain.repository.WidgetUpdater
 import com.heckmannch.birthdaybuddy.util.AlarmScheduler
-import com.heckmannch.birthdaybuddy.util.Clock
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
@@ -31,7 +30,6 @@ class BirthdayWidgetWorkerTest {
     private val workerParameters = mockk<WorkerParameters>(relaxed = true)
     private val widgetUpdater = mockk<WidgetUpdater>(relaxed = true)
     private val alarmScheduler = mockk<AlarmScheduler>(relaxed = true)
-    private val clock = mockk<Clock>(relaxed = true)
     private val workManager = mockk<WorkManager>(relaxed = true)
 
     @Before
@@ -95,7 +93,7 @@ class BirthdayWidgetWorkerTest {
 
     @Test
     fun `doWork - success - calls widgetUpdater and enqueues next update with APPEND_OR_REPLACE`() = runTest {
-        val worker = BirthdayWidgetWorker(context, workerParameters, widgetUpdater, alarmScheduler, clock)
+        val worker = BirthdayWidgetWorker(context, workerParameters, widgetUpdater, alarmScheduler)
 
         val result = worker.doWork()
 
@@ -107,7 +105,7 @@ class BirthdayWidgetWorkerTest {
     @Test
     fun `doWork - cancellation exception - rethrows CancellationException`() = runTest {
         coEvery { widgetUpdater.updateWidget() } throws CancellationException("Job was cancelled")
-        val worker = BirthdayWidgetWorker(context, workerParameters, widgetUpdater, alarmScheduler, clock)
+        val worker = BirthdayWidgetWorker(context, workerParameters, widgetUpdater, alarmScheduler)
 
         assertThrows(CancellationException::class.java) {
             kotlinx.coroutines.runBlocking {
@@ -119,7 +117,7 @@ class BirthdayWidgetWorkerTest {
     @Test
     fun `doWork - failure - returns retry and does not schedule next run`() = runTest {
         coEvery { widgetUpdater.updateWidget() } throws RuntimeException("Widget update crashed")
-        val worker = BirthdayWidgetWorker(context, workerParameters, widgetUpdater, alarmScheduler, clock)
+        val worker = BirthdayWidgetWorker(context, workerParameters, widgetUpdater, alarmScheduler)
 
         val result = worker.doWork()
 

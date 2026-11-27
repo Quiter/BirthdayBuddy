@@ -35,16 +35,22 @@ object IntentExtras {
     /**
      * Liest ein Extra sicher aus einem [Intent] aus, fängt Exceptions ab und gibt bei Fehlern oder Fehlen den [defaultValue] zurück.
      */
-    private inline fun <T> safeGet(
+    private inline fun <reified T> safeGet(
         intent: Intent?,
         key: String,
-        defaultValue: T,
-        extract: Intent.(String) -> T
+        defaultValue: T
     ): T {
         if (intent == null) return defaultValue
         return try {
             if (intent.hasExtra(key)) {
-                intent.extract(key)
+                @Suppress("UNCHECKED_CAST")
+                when (defaultValue) {
+                    is Boolean -> intent.getBooleanExtra(key, defaultValue) as T
+                    is String? -> (intent.getStringExtra(key) ?: defaultValue) as T
+                    is Int -> intent.getIntExtra(key, defaultValue) as T
+                    is Array<*> -> (intent.getStringArrayExtra(key) ?: defaultValue) as T
+                    else -> defaultValue
+                }
             } else {
                 defaultValue
             }
@@ -58,16 +64,15 @@ object IntentExtras {
      * Liest ein Extra sicher aus einem [Intent] aus und entfernt es anschließend zwingend aus dem Intent.
      * Fängt Exceptions ab, führt im Fehlerfall ein Fallback-removeExtra durch und gibt [defaultValue] zurück.
      */
-    private inline fun <T> safeGetAndRemove(
+    private inline fun <reified T> safeGetAndRemove(
         intent: Intent?,
         key: String,
-        defaultValue: T,
-        extract: Intent.(String) -> T
+        defaultValue: T
     ): T {
         if (intent == null) return defaultValue
         return try {
             if (intent.hasExtra(key)) {
-                val value = intent.extract(key)
+                val value = safeGet(intent, key, defaultValue)
                 intent.removeExtra(key)
                 value
             } else {
@@ -101,9 +106,7 @@ object IntentExtras {
         intent: Intent?,
         key: String,
         defaultValue: Boolean = false
-    ): Boolean = safeGetAndRemove(intent, key, defaultValue) { k ->
-        getBooleanExtra(k, defaultValue)
-    }
+    ): Boolean = safeGetAndRemove(intent, key, defaultValue)
 
     /**
      * Liest ein String-Extra sicher aus einem [Intent] aus und entfernt es anschließend zwingend aus dem Intent.
@@ -120,9 +123,7 @@ object IntentExtras {
         intent: Intent?,
         key: String,
         defaultValue: String? = null
-    ): String? = safeGetAndRemove(intent, key, defaultValue) { k ->
-        getStringExtra(k) ?: defaultValue
-    }
+    ): String? = safeGetAndRemove(intent, key, defaultValue)
 
     /**
      * Liest ein Int-Extra sicher aus einem [Intent] aus und entfernt es anschließend zwingend aus dem Intent.
@@ -139,9 +140,7 @@ object IntentExtras {
         intent: Intent?,
         key: String,
         defaultValue: Int = -1
-    ): Int = safeGetAndRemove(intent, key, defaultValue) { k ->
-        getIntExtra(k, defaultValue)
-    }
+    ): Int = safeGetAndRemove(intent, key, defaultValue)
 
     /**
      * Liest ein Boolean-Extra sicher aus einem [Intent] aus, ohne den Intent zu mutieren.
@@ -157,9 +156,7 @@ object IntentExtras {
         intent: Intent?,
         key: String,
         defaultValue: Boolean = false
-    ): Boolean = safeGet(intent, key, defaultValue) { k ->
-        getBooleanExtra(k, defaultValue)
-    }
+    ): Boolean = safeGet(intent, key, defaultValue)
 
     /**
      * Liest ein String-Extra sicher aus einem [Intent] aus, ohne den Intent zu mutieren.
@@ -175,9 +172,7 @@ object IntentExtras {
         intent: Intent?,
         key: String,
         defaultValue: String? = null
-    ): String? = safeGet(intent, key, defaultValue) { k ->
-        getStringExtra(k) ?: defaultValue
-    }
+    ): String? = safeGet(intent, key, defaultValue)
 
     /**
      * Liest ein Int-Extra sicher aus einem [Intent] aus.
@@ -188,9 +183,7 @@ object IntentExtras {
         intent: Intent?,
         key: String,
         defaultValue: Int = -1
-    ): Int = safeGet(intent, key, defaultValue) { k ->
-        getIntExtra(k, defaultValue)
-    }
+    ): Int = safeGet(intent, key, defaultValue)
 
     /**
      * Liest ein String-Array-Extra sicher aus einem [Intent] aus.
@@ -200,9 +193,7 @@ object IntentExtras {
     fun safeGetStringArrayExtra(
         intent: Intent?,
         key: String
-    ): Array<String> = safeGet(intent, key, emptyArray()) { k ->
-        getStringArrayExtra(k) ?: emptyArray()
-    }
+    ): Array<String> = safeGet(intent, key, emptyArray())
 }
 
 /**

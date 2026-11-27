@@ -4,7 +4,6 @@ import com.google.common.truth.Truth.assertThat
 import com.heckmannch.birthdaybuddy.MainDispatcherRule
 import com.heckmannch.birthdaybuddy.domain.model.Contact
 import com.heckmannch.birthdaybuddy.domain.model.ContactLabels
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.runTest
@@ -17,7 +16,6 @@ import java.time.LocalDate
  * Unit tests for [GetContactsUseCase].
  * Verifies domain-level filtering logic.
  */
-@OptIn(ExperimentalCoroutinesApi::class)
 class GetContactsUseCaseTest {
 
     @get:Rule
@@ -335,5 +333,71 @@ class GetContactsUseCaseTest {
 
         assertThat(result).hasSize(1)
         assertThat(result.first().fullName).isEqualTo("Birthday Person")
+    }
+
+    @Test
+    fun labelFilter_dynamicCustomEvent_showsMatchingContactsUnlessDisabled() = runTest {
+        val customKey = ContactLabels.customEventLabel("Jahrestag")
+        val contacts = listOf(
+            Contact(
+                contactId = "1",
+                lookupKey = "k1",
+                fullName = "Custom Person",
+                customEvents = mapOf(customKey to today.plusDays(4)),
+            ),
+            Contact(
+                contactId = "2",
+                lookupKey = "k2",
+                fullName = "Birthday Only",
+                birthday = today.plusDays(1),
+            ),
+        )
+
+        val enabledResult = invoke(
+            contacts = contacts,
+            selectedLabel = customKey,
+            settings = defaultSettings.copy(otherEventsEnabled = true),
+        ).first()
+        assertThat(enabledResult.map { it.fullName }).containsExactly("Custom Person")
+
+        val disabledResult = invoke(
+            contacts = contacts,
+            selectedLabel = customKey,
+            settings = defaultSettings.copy(
+                otherEventsEnabled = true,
+                disabledOtherEventLabels = setOf(customKey),
+            ),
+        ).first()
+        assertThat(disabledResult).isEmpty()
+    }
+
+    @Test
+    fun labelsDisabled_includesEnabledCustomEventsAndExcludesDisabledOnes() = runTest {
+        val enabledKey = ContactLabels.customEventLabel("Jahrestag")
+        val disabledKey = ContactLabels.customEventLabel("DisabledEvent")
+        val contacts = listOf(
+            Contact(
+                contactId = "1",
+                lookupKey = "k1",
+                fullName = "Enabled Custom",
+                customEvents = mapOf(enabledKey to today.plusDays(2)),
+            ),
+            Contact(
+                contactId = "2",
+                lookupKey = "k2",
+                fullName = "Disabled Custom",
+                customEvents = mapOf(disabledKey to today.plusDays(3)),
+            ),
+        )
+        val settings = GetContactsUseCase.LabelSettingsState(
+            ignoredLabels = emptySet(),
+            labelsEnabled = false,
+            otherEventsEnabled = true,
+            disabledOtherEventLabels = setOf(disabledKey),
+        )
+
+        val result = invoke(contacts, settings = settings).first()
+
+        assertThat(result.map { it.fullName }).containsExactly("Enabled Custom")
     }
 }

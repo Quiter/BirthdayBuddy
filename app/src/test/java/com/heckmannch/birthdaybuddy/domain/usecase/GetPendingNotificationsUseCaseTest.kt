@@ -10,7 +10,6 @@ import com.heckmannch.birthdaybuddy.domain.model.NotificationRule
 import com.heckmannch.birthdaybuddy.domain.repository.ContactRepository
 import com.heckmannch.birthdaybuddy.domain.repository.NotificationRepository
 import com.heckmannch.birthdaybuddy.domain.repository.SettingsRepository
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.runTest
 import org.junit.Before
@@ -23,7 +22,6 @@ import org.mockito.kotlin.whenever
 import java.time.LocalDate
 import java.time.LocalDateTime
 
-@OptIn(ExperimentalCoroutinesApi::class)
 class GetPendingNotificationsUseCaseTest {
 
     @get:Rule

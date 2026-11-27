@@ -20,7 +20,6 @@ import io.mockk.every
 import io.mockk.mockkStatic
 import io.mockk.unmockkStatic
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.runTest
@@ -37,7 +36,6 @@ import org.mockito.kotlin.whenever
 /**
  * JVM Unit Tests for [CoupleRepositoryImpl].
  */
-@OptIn(ExperimentalCoroutinesApi::class)
 class CoupleRepositoryImplTest {
 
     @get:Rule
@@ -219,22 +217,18 @@ class CoupleRepositoryImplTest {
         repository.unlinkCouple("k1")
 
         // Assert
-        verify(contactUserDataDao).upsertUserData(check {
-            assertThat(it.lookupKey).isEqualTo("k1")
-            assertThat(it.spouseLookupKey).isNull()
-        })
-        verify(contactUserDataDao).upsertUserData(check {
-            assertThat(it.lookupKey).isEqualTo("k2")
-            assertThat(it.spouseLookupKey).isNull()
-        })
-        verify(contactDao).upsertContact(check {
-            assertThat(it.lookupKey).isEqualTo("k1")
-            assertThat(it.spouseLookupKey).isNull()
-        })
-        verify(contactDao).upsertContact(check {
-            assertThat(it.lookupKey).isEqualTo("k2")
-            assertThat(it.spouseLookupKey).isNull()
-        })
+        val userDataCaptor = org.mockito.kotlin.argumentCaptor<ContactUserData>()
+        verify(contactUserDataDao, org.mockito.kotlin.times(2)).upsertUserData(userDataCaptor.capture())
+        val savedUserData = userDataCaptor.allValues
+        assertThat(savedUserData.map { it.lookupKey }).containsExactly("k1", "k2")
+        assertThat(savedUserData.all { it.spouseLookupKey == null }).isTrue()
+
+        val contactCaptor = org.mockito.kotlin.argumentCaptor<ContactEntity>()
+        verify(contactDao, org.mockito.kotlin.times(2)).upsertContact(contactCaptor.capture())
+        val savedContacts = contactCaptor.allValues
+        assertThat(savedContacts.map { it.lookupKey }).containsExactly("k1", "k2")
+        assertThat(savedContacts.all { it.spouseLookupKey == null }).isTrue()
+
         verify(widgetUpdater).updateWidget()
     }
 

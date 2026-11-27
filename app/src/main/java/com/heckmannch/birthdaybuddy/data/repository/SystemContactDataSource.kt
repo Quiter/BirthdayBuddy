@@ -4,8 +4,10 @@ import android.content.ContentProviderOperation
 import android.content.Context
 import android.provider.ContactsContract
 import android.util.Log
+import com.heckmannch.birthdaybuddy.R
 import com.heckmannch.birthdaybuddy.di.IoDispatcher
 import com.heckmannch.birthdaybuddy.domain.model.Contact
+import com.heckmannch.birthdaybuddy.domain.model.ContactLabels
 import com.heckmannch.birthdaybuddy.domain.util.NO_YEAR_MARKER
 import com.heckmannch.birthdaybuddy.util.hasYear
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -16,6 +18,7 @@ import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.withContext
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
+import java.util.Locale
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -54,13 +57,19 @@ class SystemContactDataSource @Inject constructor(
         setOf("my contacts", "all contacts", "contacts")
 
 
+    /**
+     * Updates or inserts the birthday event for the given [contactId] in the system contacts.
+     *
+     * Dates without a birth year are formatted as `--MM-DD` using [Locale.ROOT] so that
+     * ASCII digits are guaranteed regardless of the device's default locale.
+     */
     suspend fun updateContactBirthday(contactId: String, birthday: LocalDate): Boolean =
         withContext(ioDispatcher) {
             try {
                 val dateStr = if (birthday.hasYear) {
                     birthday.format(DateTimeFormatter.ISO_LOCAL_DATE)
                 } else {
-                    "--%02d-%02d".format(birthday.monthValue, birthday.dayOfMonth)
+                    String.format(Locale.ROOT, "--%02d-%02d", birthday.monthValue, birthday.dayOfMonth)
                 }
 
                 val ops = arrayListOf<ContentProviderOperation>()
@@ -241,21 +250,24 @@ class SystemContactDataSource @Inject constructor(
                 val photoIdx = cursor.getColumnIndex(ContactsContract.Contacts.PHOTO_THUMBNAIL_URI)
                 val starredIdx = cursor.getColumnIndex(ContactsContract.Contacts.STARRED)
 
-                while (cursor.moveToNext()) {
-                    val contactId = cursor.getString(idIdx) ?: continue
-                    val isStarred = if (starredIdx != -1) cursor.getInt(starredIdx) == 1 else false
-                    contactsMap[contactId] = Contact(
-                        contactId = contactId,
-                        lookupKey = cursor.getString(lookupIdx) ?: "",
-                        fullName = cursor.getString(nameIdx) ?: "Unbekannt",
-                        birthday = null,
-                        imageUri = cursor.getString(photoIdx),
-                        isFavorite = isStarred,
-                    )
+                if (idIdx != -1) {
+                    while (cursor.moveToNext()) {
+                        val contactId = cursor.getString(idIdx) ?: continue
+                        val isStarred = starredIdx != -1 && cursor.getInt(starredIdx) == 1
+                        contactsMap[contactId] = Contact(
+                            contactId = contactId,
+                            lookupKey = if (lookupIdx != -1) cursor.getString(lookupIdx).orEmpty() else "",
+                            fullName = (if (nameIdx != -1) cursor.getString(nameIdx) else null)
+                                ?: context.getString(R.string.contact_unknown),
+                            birthday = null,
+                            imageUri = if (photoIdx != -1) cursor.getString(photoIdx) else null,
+                            isFavorite = isStarred,
+                        )
+                    }
                 }
             }
 
-            // 2. Ereignisse (Geburtstag, Hochzeitstag, Namenstag) laden und zuordnen
+            // 2. Ereignisse (Geburtstag, Hochzeitstag, Namenstag, Sonstiges & benutzerdefinierte Datumsfelder) laden
             val eventProjection = arrayOf(
                 ContactsContract.Data.CONTACT_ID,
                 ContactsContract.CommonDataKinds.Event.START_DATE,
@@ -286,7 +298,8 @@ class SystemContactDataSource @Inject constructor(
                     val dateStr = cursor.getString(dateIdx)
                     val date = parseDate(dateStr) ?: continue
                     val type = cursor.getInt(typeIdx)
-                    val label = cursor.getString(labelIdx)?.lowercase()?.trim()
+                    val rawLabel = cursor.getString(labelIdx)?.trim()
+                    val normalizedLabel = rawLabel?.lowercase()
 
                     contactsMap[contactId]?.let { contact ->
                         when {
@@ -295,12 +308,29 @@ class SystemContactDataSource @Inject constructor(
                             }
 
                             type == ContactsContract.CommonDataKinds.Event.TYPE_ANNIVERSARY ||
-                                    (type == ContactsContract.CommonDataKinds.Event.TYPE_CUSTOM && label in anniversaryLabels) -> {
+                                    (type == ContactsContract.CommonDataKinds.Event.TYPE_CUSTOM && normalizedLabel in anniversaryLabels) -> {
                                 contactsMap[contactId] = contact.copy(anniversary = date)
                             }
 
-                            type == ContactsContract.CommonDataKinds.Event.TYPE_CUSTOM && label in nameDayLabels -> {
+                            type == ContactsContract.CommonDataKinds.Event.TYPE_CUSTOM && normalizedLabel in nameDayLabels -> {
                                 contactsMap[contactId] = contact.copy(nameDay = date)
+                            }
+
+                            type == ContactsContract.CommonDataKinds.Event.TYPE_CUSTOM -> {
+                                val eventKey = if (!rawLabel.isNullOrBlank()) {
+                                    ContactLabels.customEventLabel(rawLabel)
+                                } else {
+                                    ContactLabels.LABEL_OTHER_EVENT
+                                }
+                                contactsMap[contactId] = contact.copy(
+                                    customEvents = contact.customEvents + (eventKey to date)
+                                )
+                            }
+
+                            type == ContactsContract.CommonDataKinds.Event.TYPE_OTHER -> {
+                                contactsMap[contactId] = contact.copy(
+                                    customEvents = contact.customEvents + (ContactLabels.LABEL_OTHER_EVENT to date)
+                                )
                             }
                         }
                     }
@@ -355,10 +385,11 @@ class SystemContactDataSource @Inject constructor(
                 )?.use { cursor ->
                     val idIdx = cursor.getColumnIndex(ContactsContract.Data.CONTACT_ID)
                     val mimeIdx = cursor.getColumnIndex(ContactsContract.Data.MIMETYPE)
+                    if (idIdx == -1 || mimeIdx == -1) return@forEach
 
                     while (cursor.moveToNext()) {
-                        val id = cursor.getString(idIdx)
-                        val mime = cursor.getString(mimeIdx)
+                        val id = cursor.getString(idIdx) ?: continue
+                        val mime = cursor.getString(mimeIdx) ?: continue
 
                         val current = result.getOrDefault(id, Pair(false, false))
                         if (mime == whatsappMimeType) {
@@ -398,10 +429,11 @@ class SystemContactDataSource @Inject constructor(
                         cursor.getColumnIndex(ContactsContract.CommonDataKinds.Phone.CONTACT_ID)
                     val numberIdx =
                         cursor.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER)
+                    if (idIdx == -1 || numberIdx == -1) return@forEach
 
                     while (cursor.moveToNext()) {
-                        val contactId = cursor.getString(idIdx)
-                        val number = cursor.getString(numberIdx)
+                        val contactId = cursor.getString(idIdx) ?: continue
+                        val number = cursor.getString(numberIdx) ?: continue
                         // Wir nehmen die erste (primäre) Nummer
                         if (!result.containsKey(contactId)) {
                             result[contactId] = number
@@ -442,12 +474,13 @@ class SystemContactDataSource @Inject constructor(
                     cursor.getColumnIndex(ContactsContract.CommonDataKinds.GroupMembership.CONTACT_ID)
                 val groupRowIdIdx =
                     cursor.getColumnIndex(ContactsContract.CommonDataKinds.GroupMembership.GROUP_ROW_ID)
+                if (idIdx == -1 || groupRowIdIdx == -1) return@forEach
 
                 while (cursor.moveToNext()) {
-                    val contactId = cursor.getString(idIdx)
+                    val contactId = cursor.getString(idIdx) ?: continue
                     val groupId = cursor.getLong(groupRowIdIdx)
                     groups[groupId]?.let { groupInfo ->
-                        val lowerTitle = groupInfo.title.lowercase()
+                        val lowerTitle = groupInfo.title.lowercase(Locale.ROOT)
                         val isRedundant = lowerTitle in redundantLabels
                         if (!isRedundant) {
                             result.getOrPut(contactId) { mutableSetOf() }.add(groupInfo.title)

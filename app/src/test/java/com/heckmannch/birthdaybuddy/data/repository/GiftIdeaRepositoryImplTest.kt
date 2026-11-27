@@ -18,25 +18,31 @@ import com.heckmannch.birthdaybuddy.domain.repository.WidgetUpdater
 import io.mockk.every
 import io.mockk.mockkStatic
 import io.mockk.unmockkStatic
+import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.runTest
 import org.junit.After
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.mockito.Mockito.mockStatic
+import org.mockito.kotlin.any
 import org.mockito.kotlin.check
+import org.mockito.kotlin.doSuspendableAnswer
 import org.mockito.kotlin.mock
+import org.mockito.kotlin.never
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
+import java.io.IOException
+import java.util.concurrent.atomic.AtomicInteger
 
 /**
  * JVM Unit Tests for [GiftIdeaRepositoryImpl].
  */
-@OptIn(ExperimentalCoroutinesApi::class)
 class GiftIdeaRepositoryImplTest {
 
     @get:Rule
@@ -65,6 +71,11 @@ class GiftIdeaRepositoryImplTest {
         whenever(appDatabase.queryExecutor).thenReturn(executor)
         whenever(settingsDatabase.transactionExecutor).thenReturn(executor)
         whenever(settingsDatabase.queryExecutor).thenReturn(executor)
+
+        runBlocking {
+            whenever(contactDao.getAllContactsImmediate()).thenReturn(emptyList())
+            whenever(contactUserDataDao.getAllUserDataImmediate()).thenReturn(emptyList())
+        }
 
         repository = GiftIdeaRepositoryImpl(
             contentResolver = contentResolver,
@@ -430,7 +441,50 @@ class GiftIdeaRepositoryImplTest {
     }
 
     @Test
-    fun exportGiftIdeas_writesBackupToOutputStream() = runTest {
+    fun exportGiftIdeas_writesBackupToOutputStreamWithTruncateModeAndUtf8() = runTest {
+        val uriString = "content://test_uri"
+        val mockUri: Uri = mock()
+        mockStatic(Uri::class.java).use { mockedStatic ->
+            mockedStatic.`when`<Uri> { Uri.parse(uriString) }.thenReturn(mockUri)
+
+            val json = "{\"ideas\": [\"Bücher & Geschenke 🎁\"]}"
+            whenever(giftIdeaBackupManager.exportGiftIdeas()).thenReturn(json)
+            val outputStream = ByteArrayOutputStream()
+            whenever(contentResolver.openOutputStream(mockUri, "wt")).thenReturn(outputStream)
+
+            repository.exportGiftIdeas(uriString)
+
+            verify(giftIdeaBackupManager).exportGiftIdeas()
+            verify(contentResolver).openOutputStream(mockUri, "wt")
+            assertThat(outputStream.toByteArray()).isEqualTo(json.toByteArray(Charsets.UTF_8))
+        }
+    }
+
+    @Test
+    fun exportGiftIdeas_throwsIOException_whenOpenOutputStreamReturnsNull() = runTest {
+        val uriString = "content://test_uri"
+        val mockUri: Uri = mock()
+        mockStatic(Uri::class.java).use { mockedStatic ->
+            mockedStatic.`when`<Uri> { Uri.parse(uriString) }.thenReturn(mockUri)
+
+            whenever(giftIdeaBackupManager.exportGiftIdeas()).thenReturn("[]")
+            whenever(contentResolver.openOutputStream(mockUri, "wt")).thenReturn(null)
+
+            var thrown: Throwable? = null
+            try {
+                repository.exportGiftIdeas(uriString)
+            } catch (e: Throwable) {
+                thrown = e
+            }
+
+            assertThat(thrown).isInstanceOf(IOException::class.java)
+            assertThat(thrown?.message).isEqualTo("Could not open output stream for URI: $mockUri")
+            verify(contentResolver).openOutputStream(mockUri, "wt")
+        }
+    }
+
+    @Test
+    fun exportGiftIdeas_fallsBackToWriteMode_whenProviderRejectsTruncateMode() = runTest {
         val uriString = "content://test_uri"
         val mockUri: Uri = mock()
         mockStatic(Uri::class.java).use { mockedStatic ->
@@ -439,13 +493,15 @@ class GiftIdeaRepositoryImplTest {
             val json = "{\"ideas\": []}"
             whenever(giftIdeaBackupManager.exportGiftIdeas()).thenReturn(json)
             val outputStream = ByteArrayOutputStream()
-            whenever(contentResolver.openOutputStream(mockUri)).thenReturn(outputStream)
+            whenever(contentResolver.openOutputStream(mockUri, "wt"))
+                .thenThrow(IllegalArgumentException("Unsupported mode: wt"))
+            whenever(contentResolver.openOutputStream(mockUri, "w")).thenReturn(outputStream)
 
             repository.exportGiftIdeas(uriString)
 
-            verify(giftIdeaBackupManager).exportGiftIdeas()
-            verify(contentResolver).openOutputStream(mockUri)
-            assertThat(outputStream.toString()).isEqualTo(json)
+            verify(contentResolver).openOutputStream(mockUri, "wt")
+            verify(contentResolver).openOutputStream(mockUri, "w")
+            assertThat(outputStream.toByteArray()).isEqualTo(json.toByteArray(Charsets.UTF_8))
         }
     }
 
@@ -457,7 +513,7 @@ class GiftIdeaRepositoryImplTest {
             mockedStatic.`when`<Uri> { Uri.parse(uriString) }.thenReturn(mockUri)
 
             val json = "{\"ideas\": []}"
-            val inputStream = ByteArrayInputStream(json.toByteArray())
+            val inputStream = ByteArrayInputStream(json.toByteArray(Charsets.UTF_8))
             whenever(contentResolver.openInputStream(mockUri)).thenReturn(inputStream)
             whenever(giftIdeaBackupManager.importGiftIdeas(json)).thenReturn(3)
 
@@ -468,5 +524,185 @@ class GiftIdeaRepositoryImplTest {
             verify(giftIdeaBackupManager).importGiftIdeas(json)
             verify(contactRepository).syncContacts()
         }
+    }
+
+    @Test
+    fun importGiftIdeas_updatesCachedContactsGiftIdeas_evenWithoutContactsPermission() = runTest {
+        val uriString = "content://test_uri"
+        val mockUri: Uri = mock()
+        mockStatic(Uri::class.java).use { mockedStatic ->
+            mockedStatic.`when`<Uri> { Uri.parse(uriString) }.thenReturn(mockUri)
+
+            val json = "[{\"lookupKey\":\"key1\"}]"
+            val inputStream = ByteArrayInputStream(json.toByteArray(Charsets.UTF_8))
+            whenever(contentResolver.openInputStream(mockUri)).thenReturn(inputStream)
+            whenever(giftIdeaBackupManager.importGiftIdeas(json)).thenReturn(1)
+            // Simulate contactRepository.syncContacts() returning early due to missing permission (no-op)
+            whenever(contactRepository.syncContacts()).thenReturn(Unit)
+
+            val importedJson = converters.fromGiftIdeaList(listOf(GiftIdea(id = "i1", text = "Blumen")))
+            val contact1 = ContactEntity(
+                localId = 1L,
+                contactId = "c1",
+                lookupKey = "key1",
+                fullName = "Anna",
+                giftIdeasJson = "[]"
+            )
+            val contact2 = ContactEntity(
+                localId = 2L,
+                contactId = "c2",
+                lookupKey = "key2",
+                fullName = "Ben",
+                giftIdeasJson = "[]"
+            )
+            whenever(contactDao.getAllContactsImmediate()).thenReturn(listOf(contact1, contact2))
+            whenever(contactUserDataDao.getAllUserDataImmediate()).thenReturn(
+                listOf(
+                    ContactUserData(lookupKey = "key1", giftIdeasJson = importedJson),
+                    ContactUserData(lookupKey = "key2", giftIdeasJson = "[]")
+                )
+            )
+
+            val result = repository.importGiftIdeas(uriString)
+
+            assertThat(result).isEqualTo(1)
+            verify(contactRepository).syncContacts()
+            verify(contactDao).upsertContacts(check { updated ->
+                assertThat(updated).hasSize(1)
+                assertThat(updated.first().lookupKey).isEqualTo("key1")
+                assertThat(updated.first().giftIdeasJson).isEqualTo(importedJson)
+            })
+            verify(widgetUpdater).updateWidget()
+        }
+    }
+
+    @Test
+    fun importGiftIdeas_doesNotSyncCache_whenImportCountIsZero() = runTest {
+        val uriString = "content://test_uri"
+        val mockUri: Uri = mock()
+        mockStatic(Uri::class.java).use { mockedStatic ->
+            mockedStatic.`when`<Uri> { Uri.parse(uriString) }.thenReturn(mockUri)
+
+            val json = "[]"
+            val inputStream = ByteArrayInputStream(json.toByteArray(Charsets.UTF_8))
+            whenever(contentResolver.openInputStream(mockUri)).thenReturn(inputStream)
+            whenever(giftIdeaBackupManager.importGiftIdeas(json)).thenReturn(0)
+
+            val result = repository.importGiftIdeas(uriString)
+
+            assertThat(result).isEqualTo(0)
+            verify(contactRepository, never()).syncContacts()
+            verify(contactDao, never()).upsertContacts(any())
+            verify(widgetUpdater, never()).updateWidget()
+        }
+    }
+
+    @Test
+    fun concurrentMutations_areSerializedByMutex_withoutLostUpdates() = runTest(createTransactionElement()) {
+        // Arrange: in-memory backing state for ContactDao and ContactUserDataDao
+        var storedContact = ContactEntity(
+            contactId = "c1",
+            lookupKey = "key1",
+            fullName = "John Doe",
+            giftIdeasJson = "[]"
+        )
+        var storedUserData: ContactUserData? = null
+        val writeCount = AtomicInteger(0)
+        val firstWriteEntered = CompletableDeferred<Unit>()
+        val allowFirstWriteToFinish = CompletableDeferred<Unit>()
+
+        whenever(contactDao.getContactByLookupKey("key1")).doSuspendableAnswer { storedContact }
+        whenever(contactUserDataDao.getUserDataForContact("key1")).doSuspendableAnswer { storedUserData }
+        whenever(contactUserDataDao.upsertUserData(any())).doSuspendableAnswer { invocation ->
+            val data = invocation.getArgument<ContactUserData>(0)
+            if (writeCount.incrementAndGet() == 1) {
+                firstWriteEntered.complete(Unit)
+                allowFirstWriteToFinish.await()
+            }
+            storedUserData = data
+        }
+        whenever(contactDao.upsertContact(any())).doSuspendableAnswer { invocation ->
+            storedContact = invocation.getArgument(0)
+        }
+
+        val idea1 = GiftIdea(id = "idea1", text = "Book", isChecked = false)
+        val idea2 = GiftIdea(id = "idea2", text = "Flowers", isChecked = false)
+
+        // Act: start first mutation and suspend mid-write, then fire concurrent mutations
+        val job1 = launch { repository.addGiftIdea("key1", idea1) }
+        firstWriteEntered.await()
+
+        val job2 = launch { repository.addGiftIdea("key1", idea2) }
+        val job3 = launch { repository.toggleGiftIdea("key1", idea1, isChecked = true) }
+        val job4 = launch { repository.updateGiftIdeaText("key1", "idea2", "Red Flowers") }
+
+        allowFirstWriteToFinish.complete(Unit)
+
+        job1.join()
+        job2.join()
+        job3.join()
+        job4.join()
+
+        // Assert: all mutations were applied sequentially without lost updates
+        val finalCacheIdeas = converters.toGiftIdeaList(storedContact.giftIdeasJson)
+        val finalSettingsIdeas = converters.toGiftIdeaList(storedUserData!!.giftIdeasJson)
+
+        assertThat(finalCacheIdeas).hasSize(2)
+        assertThat(finalCacheIdeas.find { it.id == "idea1" }?.isChecked).isTrue()
+        assertThat(finalCacheIdeas.find { it.id == "idea1" }?.text).isEqualTo("Book")
+        assertThat(finalCacheIdeas.find { it.id == "idea2" }?.text).isEqualTo("Red Flowers")
+        assertThat(finalSettingsIdeas).isEqualTo(finalCacheIdeas)
+    }
+
+    @Test
+    fun concurrentAddAndRemove_areSerializedByMutex_withoutLostUpdates() = runTest(createTransactionElement()) {
+        // Arrange
+        val idea1 = GiftIdea(id = "idea1", text = "Book")
+        val idea2 = GiftIdea(id = "idea2", text = "Mug")
+        val idea3 = GiftIdea(id = "idea3", text = "Headphones")
+        val initialJson = converters.fromGiftIdeaList(listOf(idea1, idea2))
+
+        var storedContact = ContactEntity(
+            contactId = "c1",
+            lookupKey = "key1",
+            fullName = "John Doe",
+            giftIdeasJson = initialJson
+        )
+        var storedUserData: ContactUserData? = ContactUserData(
+            lookupKey = "key1",
+            giftIdeasJson = initialJson
+        )
+        val writeCount = AtomicInteger(0)
+        val firstWriteEntered = CompletableDeferred<Unit>()
+        val allowFirstWriteToFinish = CompletableDeferred<Unit>()
+
+        whenever(contactDao.getContactByLookupKey("key1")).doSuspendableAnswer { storedContact }
+        whenever(contactUserDataDao.getUserDataForContact("key1")).doSuspendableAnswer { storedUserData }
+        whenever(contactUserDataDao.upsertUserData(any())).doSuspendableAnswer { invocation ->
+            val data = invocation.getArgument<ContactUserData>(0)
+            if (writeCount.incrementAndGet() == 1) {
+                firstWriteEntered.complete(Unit)
+                allowFirstWriteToFinish.await()
+            }
+            storedUserData = data
+        }
+        whenever(contactDao.upsertContact(any())).doSuspendableAnswer { invocation ->
+            storedContact = invocation.getArgument(0)
+        }
+
+        // Act
+        val removeJob = launch { repository.removeGiftIdea("key1", "idea1") }
+        firstWriteEntered.await()
+
+        val addJob = launch { repository.addGiftIdea("key1", idea3) }
+        allowFirstWriteToFinish.complete(Unit)
+
+        removeJob.join()
+        addJob.join()
+
+        // Assert: idea1 removed AND idea3 preserved
+        val finalIdeas = converters.toGiftIdeaList(storedContact.giftIdeasJson)
+        assertThat(finalIdeas.map { it.id }).containsExactly("idea2", "idea3")
+        assertThat(converters.toGiftIdeaList(storedUserData!!.giftIdeasJson)).isEqualTo(finalIdeas)
     }
 }

@@ -12,7 +12,7 @@ import androidx.compose.ui.test.performClick
 import androidx.compose.ui.unit.dp
 import androidx.window.core.layout.WindowSizeClass
 import com.google.common.truth.Truth.assertThat
-import com.heckmannch.birthdaybuddy.ui.components.LocalWindowSizeClass
+import com.heckmannch.birthdaybuddy.ui.components.layout.LocalWindowSizeClass
 import com.heckmannch.birthdaybuddy.ui.model.SampleData
 import com.heckmannch.birthdaybuddy.ui.screens.home.components.list.HomeListDetailDisplay
 import com.heckmannch.birthdaybuddy.ui.theme.BirthdayBuddyTheme
@@ -26,7 +26,7 @@ import org.robolectric.annotation.GraphicsMode
 /**
  * Verifies that all elements on the home screen (BirthdayDetailPane, BirthdayQuotePlaceholder,
  * BirthdayList items, FastScrollbar) properly respect insets and never disappear
- * behind [com.heckmannch.birthdaybuddy.ui.screens.home.components.topbar.HomeTopBar].
+ * behind [com.heckmannch.birthdaybuddy.ui.screens.home.components.header.HomeHeader].
  */
 @RunWith(RobolectricTestRunner::class)
 @Config(sdk = [35], qualifiers = "w840dp-h640dp-xxhdpi")
@@ -155,7 +155,6 @@ class HomeScreenInsetsTest {
                         uiState = uiState,
                         homeState = rememberHomeState(),
                         actions = noOpActions(),
-                        showLabelFilter = true,
                         contentPadding = PaddingValues(top = topPadding, bottom = bottomPadding),
                         modifier = Modifier.fillMaxSize(),
                     )

@@ -15,6 +15,7 @@ import io.mockk.mockkStatic
 import io.mockk.spyk
 import io.mockk.unmockkAll
 import io.mockk.verify
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import org.junit.After
@@ -140,6 +141,18 @@ class WidgetUpdateAlarmReceiverTest {
             )
         }
         verify(exactly = 1) { alarmScheduler.scheduleNextWidgetUpdateAlarm() }
+        verify(exactly = 1) { pendingResult.finish() }
+    }
+
+    @Test
+    fun `onReceive rethrows CancellationException without logging error and still finishes pending result`() {
+        every { alarmScheduler.scheduleNextWidgetUpdateAlarm() } throws CancellationException("Cancelled")
+
+        val intent = createIntent()
+        receiver.onReceive(context, intent)
+
+        verify(exactly = 1) { alarmScheduler.scheduleNextWidgetUpdateAlarm() }
+        verify(exactly = 0) { android.util.Log.e(any(), any(), any()) }
         verify(exactly = 1) { pendingResult.finish() }
     }
 }

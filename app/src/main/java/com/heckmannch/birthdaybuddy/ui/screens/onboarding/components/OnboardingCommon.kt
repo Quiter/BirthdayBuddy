@@ -30,9 +30,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.window.core.layout.WindowSizeClass
-import com.heckmannch.birthdaybuddy.ui.components.LocalWindowSizeClass
-import com.heckmannch.birthdaybuddy.ui.components.isHeightCompact
-import com.heckmannch.birthdaybuddy.ui.components.isWidthCompact
+import com.heckmannch.birthdaybuddy.ui.components.layout.LocalWindowSizeClass
+import com.heckmannch.birthdaybuddy.ui.components.layout.isHeightCompact
+import com.heckmannch.birthdaybuddy.ui.components.layout.isWidthCompact
 import com.heckmannch.birthdaybuddy.ui.theme.IconSizeExtraLarge
 import com.heckmannch.birthdaybuddy.ui.theme.OnboardingIllustrationHeight
 import com.heckmannch.birthdaybuddy.ui.theme.OnboardingIllustrationHeightSmall
