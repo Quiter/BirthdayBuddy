@@ -18,11 +18,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
-import com.heckmannch.birthdaybuddy.R
 import com.heckmannch.birthdaybuddy.ui.model.BirthdayTier
 import com.heckmannch.birthdaybuddy.ui.model.ContactUiModel
 import com.heckmannch.birthdaybuddy.ui.model.SampleData
@@ -106,26 +103,6 @@ fun ContactCardScope.ContactCardContent(
             line?.let { GlassCardSubtitle(it) }
         }
     }
-}
-
-/**
- * Chip/Badge tag rendered inside a frosted glass contact card.
- */
-@Composable
-fun ContactCardScope.ContactCardTag(
-    text: String?,
-    modifier: Modifier = Modifier,
-    icon: ImageVector? = null,
-    containerColor: Color = style.chipContainerColor,
-    contentColor: Color = style.chipContentColor
-) {
-    GlassCardTag(
-        text = text,
-        modifier = modifier,
-        icon = icon,
-        containerColor = containerColor,
-        contentColor = contentColor
-    )
 }
 
 /**
@@ -215,14 +192,7 @@ fun ContactCard(
             ContactCardContent(
                 contact = contact,
                 subtitleLine = subtitleLine
-            ) {
-                if (contact.isToday) {
-                    ContactCardTag(
-                        text = stringResource(R.string.item_today),
-                        icon = Icons.Default.Cake
-                    )
-                }
-            }
+            )
         }
     }
 }

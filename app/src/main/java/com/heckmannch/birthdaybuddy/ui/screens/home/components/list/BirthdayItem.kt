@@ -66,7 +66,6 @@ fun BirthdayItem(
     onExpand: () -> Unit,
     actions: HomeActions,
     modifier: Modifier = Modifier,
-    isSelected: Boolean = false,
 ) {
     val haptic = LocalHapticFeedback.current
 
@@ -119,7 +118,6 @@ fun BirthdayItem(
                     haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                     onExpand()
                 },
-                selected = if (isSelected) true else null,
                 trailing = {
                     BirthdayStatus(
                         isToday = contact.isToday,

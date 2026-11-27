@@ -111,7 +111,6 @@ fun HomeListDetailDisplay(
                         searchQuery = uiState.searchQuery,
                         actions = actions,
                         coupleSuggestion = uiState.coupleSuggestion,
-                        selectedContactId = selectedContactId,
                         onContactSelected = { contact ->
                             backStack.navigateToContactDetail(contact.id)
                         },

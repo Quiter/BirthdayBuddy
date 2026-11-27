@@ -124,7 +124,6 @@ fun BirthdayList(
     searchQuery: String = "",
     actions: HomeActions,
     coupleSuggestion: CoupleSuggestionUiModel? = null,
-    selectedContactId: String? = null,
     onContactSelected: ((ContactUiModel) -> Unit)? = null,
     onInteraction: () -> Unit = {},
     contentPadding: PaddingValues = PaddingValues(SpacingNone),
@@ -217,12 +216,10 @@ fun BirthdayList(
                 contentType = { _, _ -> "birthdayItem" },
             ) { index, contact ->
                 val isExpanded = onContactSelected == null && expandedContactId == contact.id
-                val isSelected = onContactSelected != null && selectedContactId == contact.id
 
                 BirthdayItem(
                     contact = contact,
                     isExpanded = isExpanded,
-                    isSelected = isSelected,
                     newlyAddedIdeaId = newlyAddedIdeaId,
                     onExpand = {
                         onInteraction()
