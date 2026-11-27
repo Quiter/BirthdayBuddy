@@ -169,4 +169,42 @@ class StorageSettingsViewModelTest {
         assertThat(formatStorageBytes(2L * 1024L * 1024L + 512L * 1024L)).isEqualTo("2.5 MB")
         assertThat(formatStorageBytes(1024L * 1024L * 1024L)).isEqualTo("1.0 GB")
     }
+
+    @Test
+    fun `clearCache buffers CacheCleared event when collector is paused and delivers on resume`() = runTest {
+        whenever(storageRepository.getStorageUsage()).thenReturn(
+            StorageUsage(databaseBytes = 1024L, cacheBytes = 2048L),
+            StorageUsage(databaseBytes = 1024L, cacheBytes = 0L),
+            StorageUsage(databaseBytes = 1024L, cacheBytes = 0L),
+        )
+
+        val viewModel = StorageSettingsViewModel(storageRepository)
+        testScheduler.advanceUntilIdle()
+
+        // First clear with active collector
+        val firstCollectorEvents = mutableListOf<StorageSettingsEvent>()
+        val firstJob = backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) {
+            viewModel.events.collect { firstCollectorEvents.add(it) }
+        }
+        viewModel.clearCache()
+        testScheduler.advanceUntilIdle()
+        assertThat(firstCollectorEvents).containsExactly(StorageSettingsEvent.CacheCleared)
+
+        // Simulate collector pause (e.g. rotation)
+        firstJob.cancel()
+
+        // Second clear while no collector is active
+        viewModel.clearCache()
+        testScheduler.advanceUntilIdle()
+
+        // Simulate collector resume: receives buffered second event, does not replay first
+        val resumedCollectorEvents = mutableListOf<StorageSettingsEvent>()
+        val resumedJob = backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) {
+            viewModel.events.collect { resumedCollectorEvents.add(it) }
+        }
+        testScheduler.advanceUntilIdle()
+
+        assertThat(resumedCollectorEvents).containsExactly(StorageSettingsEvent.CacheCleared)
+        resumedJob.cancel()
+    }
 }

@@ -8,13 +8,13 @@ import com.heckmannch.birthdaybuddy.domain.repository.CoupleRepository
 import com.heckmannch.birthdaybuddy.util.Clock
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -52,14 +52,14 @@ class SyncViewModel @Inject constructor(
     private val _uiState = MutableStateFlow(SyncUiState())
     val uiState: StateFlow<SyncUiState> = _uiState.asStateFlow()
 
-    private val _events = MutableSharedFlow<SyncEvent>(replay = 0)
-    val events: SharedFlow<SyncEvent> = _events.asSharedFlow()
+    private val _events = Channel<SyncEvent>(Channel.BUFFERED)
 
     /**
-     * Backward-compatible event flow signaling completed synchronization.
+     * Buffered one-off UI events emitted by this ViewModel.
+     * Uses a buffered [Channel] so events sent during brief lifecycle pauses or rotations
+     * are retained and delivered once collection resumes.
      */
-    val syncCompletedEvent: SharedFlow<Unit>
-        field = MutableSharedFlow<Unit>(replay = 0)
+    val events: Flow<SyncEvent> = _events.receiveAsFlow()
 
     /**
      * Synchronizes contacts from the device system repository.
@@ -80,8 +80,7 @@ class SyncViewModel @Inject constructor(
                     delay((MIN_SPINNER_DURATION_MS - elapsedTime).milliseconds)
                 }
 
-                syncCompletedEvent.emit(Unit)
-                _events.emit(SyncEvent.Success)
+                _events.send(SyncEvent.Success)
             } catch (e: CancellationException) {
                 throw e
             } catch (e: Exception) {
@@ -89,7 +88,7 @@ class SyncViewModel @Inject constructor(
                 if (elapsedTime < MIN_SPINNER_DURATION_MS) {
                     delay((MIN_SPINNER_DURATION_MS - elapsedTime).milliseconds)
                 }
-                _events.emit(SyncEvent.Error(e.message))
+                _events.send(SyncEvent.Error(e.message))
             } finally {
                 _uiState.update { it.copy(isSyncing = false) }
             }

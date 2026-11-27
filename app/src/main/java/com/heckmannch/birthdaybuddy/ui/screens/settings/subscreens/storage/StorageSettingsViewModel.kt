@@ -6,12 +6,12 @@ import com.heckmannch.birthdaybuddy.domain.repository.StorageRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -31,8 +31,14 @@ class StorageSettingsViewModel @Inject constructor(
     private val _uiState = MutableStateFlow(StorageUiState(isLoading = true))
     val uiState: StateFlow<StorageUiState> = _uiState.asStateFlow()
 
-    private val _events = MutableSharedFlow<StorageSettingsEvent>(replay = 0)
-    val events: SharedFlow<StorageSettingsEvent> = _events.asSharedFlow()
+    private val _events = Channel<StorageSettingsEvent>(Channel.BUFFERED)
+
+    /**
+     * Buffered one-off UI events emitted by this ViewModel.
+     * Uses a buffered [Channel] so events sent during brief lifecycle pauses or rotations
+     * are retained and delivered once collection resumes.
+     */
+    val events: Flow<StorageSettingsEvent> = _events.receiveAsFlow()
 
     private var refreshJob: Job? = null
 
@@ -90,7 +96,7 @@ class StorageSettingsViewModel @Inject constructor(
                         isLoading = false,
                     )
                 }
-                _events.emit(StorageSettingsEvent.CacheCleared)
+                _events.send(StorageSettingsEvent.CacheCleared)
             } catch (e: CancellationException) {
                 throw e
             } catch (_: Exception) {

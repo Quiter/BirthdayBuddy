@@ -65,16 +65,10 @@ class SyncViewModelTest {
     }
 
     @Test
-    fun `syncContacts clears ignored couple pairs, calls sync, and emits syncCompletedEvent and Success event`() =
+    fun `syncContacts clears ignored couple pairs, calls sync, and emits Success event`() =
         runTest {
-            var legacyEventEmitted = false
             var event: SyncEvent? = null
 
-            val legacyJob = backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) {
-                viewModel.syncCompletedEvent.collect {
-                    legacyEventEmitted = true
-                }
-            }
             val eventJob = backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) {
                 viewModel.events.collect {
                     event = it
@@ -86,11 +80,9 @@ class SyncViewModelTest {
 
             verify(coupleRepository).clearIgnoredCouplePairs()
             verify(contactRepository).syncContacts()
-            assertThat(legacyEventEmitted).isTrue()
             assertThat(event).isEqualTo(SyncEvent.Success)
             assertThat(viewModel.uiState.value.isSyncing).isFalse()
 
-            legacyJob.cancel()
             eventJob.cancel()
         }
 
@@ -118,13 +110,7 @@ class SyncViewModelTest {
                 throw IOException(errorMsg)
             }
 
-            var legacyEventEmitted = false
             val receivedEvents = mutableListOf<SyncEvent>()
-            val legacyJob = backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) {
-                viewModel.syncCompletedEvent.collect {
-                    legacyEventEmitted = true
-                }
-            }
             val job = backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) {
                 viewModel.events.collect {
                     receivedEvents.add(it)
@@ -134,11 +120,9 @@ class SyncViewModelTest {
             viewModel.syncContacts()
             testScheduler.advanceUntilIdle()
 
-            assertThat(legacyEventEmitted).isFalse()
             assertThat(receivedEvents).containsExactly(SyncEvent.Error(errorMsg))
             assertThat(viewModel.uiState.value.isSyncing).isFalse()
 
-            legacyJob.cancel()
             job.cancel()
         }
 
@@ -212,6 +196,54 @@ class SyncViewModelTest {
             assertThat(viewModel.uiState.value.isSyncing).isFalse()
 
             job.cancel()
+        }
+
+    @Test
+    fun `syncContacts buffers Success event when no collector is active and delivers on resume`() =
+        runTest {
+            viewModel.syncContacts()
+            testScheduler.advanceUntilIdle()
+
+            val receivedEvents = mutableListOf<SyncEvent>()
+            val job = backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) {
+                viewModel.events.collect { receivedEvents.add(it) }
+            }
+            testScheduler.advanceUntilIdle()
+
+            assertThat(receivedEvents).containsExactly(SyncEvent.Success)
+            job.cancel()
+        }
+
+    @Test
+    fun `syncContacts delivers buffered Error event after collector pauses and resumes without replaying consumed events`() =
+        runTest {
+            val firstCollectorEvents = mutableListOf<SyncEvent>()
+            val firstJob = backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) {
+                viewModel.events.collect { firstCollectorEvents.add(it) }
+            }
+
+            viewModel.syncContacts()
+            testScheduler.advanceUntilIdle()
+            assertThat(firstCollectorEvents).containsExactly(SyncEvent.Success)
+
+            // Simulate lifecycle pause / configuration change
+            firstJob.cancel()
+
+            whenever(contactRepository.syncContacts()).thenAnswer {
+                throw IOException("Sync failed while paused")
+            }
+            viewModel.syncContacts()
+            testScheduler.advanceUntilIdle()
+
+            // Simulate lifecycle resume
+            val resumedCollectorEvents = mutableListOf<SyncEvent>()
+            val resumedJob = backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) {
+                viewModel.events.collect { resumedCollectorEvents.add(it) }
+            }
+            testScheduler.advanceUntilIdle()
+
+            assertThat(resumedCollectorEvents).containsExactly(SyncEvent.Error("Sync failed while paused"))
+            resumedJob.cancel()
         }
 }
 
