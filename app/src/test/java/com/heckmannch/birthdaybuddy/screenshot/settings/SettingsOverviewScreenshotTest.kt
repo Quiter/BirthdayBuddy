@@ -29,7 +29,6 @@ class SettingsOverviewScreenshotTest : BaseScreenshotTest() {
                 initialTab = null,
                 onNavigateBack = {},
                 labelsEnabled = true,
-                otherEventsEnabled = false,
             )
         }
         captureScreenshot()
@@ -42,7 +41,6 @@ class SettingsOverviewScreenshotTest : BaseScreenshotTest() {
                 initialTab = null,
                 onNavigateBack = {},
                 labelsEnabled = true,
-                otherEventsEnabled = false,
             )
         }
         captureScreenshot()
@@ -57,7 +55,6 @@ class SettingsOverviewScreenshotTest : BaseScreenshotTest() {
                 initialTab = null,
                 onNavigateBack = {},
                 labelsEnabled = true,
-                otherEventsEnabled = false,
             )
         }
         captureScreenshot()
@@ -70,7 +67,6 @@ class SettingsOverviewScreenshotTest : BaseScreenshotTest() {
                 initialTab = null,
                 onNavigateBack = {},
                 labelsEnabled = true,
-                otherEventsEnabled = false,
             )
         }
         captureScreenshot()

@@ -12,7 +12,7 @@ import javax.inject.Inject
  * resources using [Context].
  */
 class AndroidCalendarStringProvider @Inject constructor(
-    @ApplicationContext private val appContext: Context,
+    @param:ApplicationContext private val appContext: Context,
 ) : CalendarStringProvider {
 
     override fun calendarNameBirthdays(): String =
@@ -23,6 +23,9 @@ class AndroidCalendarStringProvider @Inject constructor(
 
     override fun calendarNameNameDays(): String =
         appContext.getString(R.string.calendar_name_namedays)
+
+    override fun calendarNameOtherEvent(): String =
+        appContext.getString(R.string.home_filter_other_event)
 
     override fun calendarDisplayName(type: CalendarSyncRepository.CalendarType): String =
         when (type) {
@@ -57,4 +60,13 @@ class AndroidCalendarStringProvider @Inject constructor(
 
     override fun calendarEventNameDayDescription(contactName: String): String =
         appContext.getString(R.string.calendar_event_nameday_description, contactName)
+
+    override fun calendarEventCustomTitle(contactName: String, eventName: String): String =
+        appContext.getString(R.string.calendar_event_custom_title, contactName, eventName)
+
+    override fun calendarEventCustomYear(eventName: String, year: Int): String =
+        appContext.getString(R.string.calendar_event_custom_year, eventName, year)
+
+    override fun calendarEventCustomNoYear(eventName: String): String =
+        appContext.getString(R.string.calendar_event_custom_no_year, eventName)
 }

@@ -283,6 +283,7 @@
     <string name="calendar_color_birthdays">Farbe für Geburtstagskalender</string>
     <string name="calendar_color_anniversaries">Farbe für Hochzeitstagskalender</string>
     <string name="calendar_color_namedays">Farbe für Namenstagskalender</string>
+    <string name="calendar_color_custom_event">Farbe für %1$s</string>
 
     <!-- Calendar Event Strings -->
     <string name="calendar_event_title">%1$s hat Geburtstag</string>
@@ -294,6 +295,9 @@
     <string name="calendar_event_anniversary_no_year">Hochzeitstag ohne Jahr</string>
     <string name="calendar_event_nameday_title">%1$s hat Namenstag</string>
     <string name="calendar_event_nameday_description">%1$s hat Namenstag</string>
+    <string name="calendar_event_custom_title">%1$s – %2$s</string>
+    <string name="calendar_event_custom_year">%1$s (%2$d)</string>
+    <string name="calendar_event_custom_no_year">%1$s</string>
     <string name="onboarding_calendar_guide_title">Geburtstage im Kalender anzeigen</string>
     <string name="onboarding_calendar_guide_desc">Da BirthdayBuddy einen eigenen Kalender anlegt, musst du diesen eventuell einmalig in deiner Kalender-App einblenden.</string>
     <string name="onboarding_calendar_guide_step1_title">1. Kalender-App öffnen</string>
@@ -306,11 +310,15 @@
 
     <!-- Weitere Ereignisse -->
     <string name="other_events_enable">Weitere Ereignisse aktivieren</string>
-    <string name="other_events_desc">Zeige Namenstage und Hochzeitstage aus deinen System-Kontakten an.</string>
+    <string name="other_events_desc">Zeige Hochzeitstage, Namenstage und weitere Datumsfelder aus deinen System-Kontakten an.</string>
     <string name="settings_other_events_title">Weitere Ereignisse</string>
-    <string name="settings_other_events_desc">Hochzeitstage und Namenstage verwalten</string>
+    <string name="settings_other_events_desc">Hochzeitstage, Namenstage und eigene Datumsfelder verwalten</string>
+    <string name="other_events_section_detected">Gefundene Ereignisse</string>
+    <string name="other_events_empty_title">Keine weiteren Ereignisse gefunden</string>
+    <string name="other_events_empty_desc">In deinen System-Kontakten wurden bisher keine zusätzlichen Datumsfelder (wie Hochzeitstag, Namenstag oder eigene Ereignisse) gefunden.</string>
     <string name="home_filter_anniversary">Hochzeitstag</string>
     <string name="home_filter_name_day">Namenstag</string>
+    <string name="home_filter_other_event">Sonstiges</string>
 
     <!-- Benachrichtigungen Hochzeitstage -->
     <string name="notif_title_today_anniversary_age">Heute ist der %2$d. Hochzeitstag von %1$s!</string>
@@ -381,6 +389,32 @@
     <string name="notif_desc_anniversary">Alles Gute zum Hochzeitstag!</string>
     <string name="notif_desc_nameday">Alles Gute zum Namenstag!</string>
 
+    <!-- Benachrichtigungen Benutzerdefinierte Ereignisse -->
+    <string name="notif_title_today_custom">Heute: %2$s von %1$s</string>
+    <string name="notif_title_tomorrow_custom">Morgen: %2$s von %1$s</string>
+    <string name="notif_title_week_custom">In einer Woche: %2$s von %1$s</string>
+    <plurals name="notif_title_days_custom">
+        <item quantity="one">In einem Tag: %3$s von %2$s</item>
+        <item quantity="other">In %1$d Tagen: %3$s von %2$s</item>
+    </plurals>
+    <plurals name="notif_title_today_custom_plural">
+        <item quantity="one">Heute: 1 Ereignis (%2$s)</item>
+        <item quantity="other">Heute: %1$d Ereignisse (%2$s)</item>
+    </plurals>
+    <plurals name="notif_title_tomorrow_custom_plural">
+        <item quantity="one">Morgen: 1 Ereignis (%2$s)</item>
+        <item quantity="other">Morgen: %1$d Ereignisse (%2$s)</item>
+    </plurals>
+    <plurals name="notif_title_week_custom_plural">
+        <item quantity="one">In einer Woche: 1 Ereignis (%2$s)</item>
+        <item quantity="other">In einer Woche: %1$d Ereignisse (%2$s)</item>
+    </plurals>
+    <plurals name="notif_title_days_custom_plural">
+        <item quantity="one">In einem Tag: %2$d Ereignisse (%3$s)</item>
+        <item quantity="other">In %1$d Tagen: %2$d Ereignisse (%3$s)</item>
+    </plurals>
+    <string name="notif_desc_custom">Erinnerung an %1$s</string>
+
     <!-- Couple / Joint Anniversary -->
     <string name="action_unlink_couple">Entkoppeln</string>
     <string name="couple_suggestion_title">Gemeinsamer Hochzeitstag?</string>
@@ -440,6 +474,8 @@
     <string name="labels_all_card_desc">Alle Kontakte mit zugewiesenen Labels</string>
     <string name="labels_count_contacts_one">1 Kontakt</string>
     <string name="labels_count_contacts_many">%1$d Kontakte</string>
+    <string name="labels_section_hidden">Verborgene Labels</string>
+    <string name="labels_section_ignored">Ignorierte Labels</string>
     <string name="settings_search">Einstellungen durchsuchen</string>
     <string name="settings_search_no_results">Keine passenden Einstellungen gefunden</string>
     <string name="settings_section_general">Allgemein</string>

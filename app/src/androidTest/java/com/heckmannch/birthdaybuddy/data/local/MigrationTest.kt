@@ -1079,6 +1079,41 @@ class MigrationTest {
 
     @Test
     @Throws(IOException::class)
+    fun migrate12To13() {
+        // 1. Create database in version 12 with test data
+        helper.createDatabase(testDb, 12).apply {
+            execSQL(
+                "INSERT INTO contacts (contactId, lookupKey, fullName, birthday, anniversary, nameDay, imageUri, phoneNumber, isFavorite, hasWhatsApp, hasSignal, labels, giftIdeas, spouseLookupKey) " +
+                        "VALUES ('12', 'key12_test', 'Lukas Test', '1992-07-14', '2021-05-01', NULL, NULL, NULL, 0, 0, 0, '[\"Familie\"]', '[]', NULL)"
+            )
+            close()
+        }
+
+        // 2. Run auto migration 12 -> 13 and validate schema
+        val migratedDb = helper.runMigrationsAndValidate(
+            testDb,
+            13,
+            true
+        )
+
+        // 3. Verify existing data is preserved and customEvents column has default value '{}'
+        val cursor = migratedDb.query("SELECT * FROM contacts WHERE lookupKey = 'key12_test'")
+        assertTrue(cursor.moveToFirst())
+        assertEquals("Lukas Test", cursor.getString(cursor.getColumnIndexOrThrow("fullName")))
+        assertEquals("1992-07-14", cursor.getString(cursor.getColumnIndexOrThrow("birthday")))
+        assertEquals("2021-05-01", cursor.getString(cursor.getColumnIndexOrThrow("anniversary")))
+        assertEquals("{}", cursor.getString(cursor.getColumnIndexOrThrow("customEvents")))
+        cursor.close()
+
+        // 4. Verify customEvents column is NOT NULL with default '{}'
+        val columns = getColumnInfo(migratedDb)
+        assertTrue(columns.containsKey("customEvents"))
+        assertTrue(columns["customEvents"]!!.isNotNull)
+        assertEquals("'{}'", columns["customEvents"]!!.defaultValue)
+    }
+
+    @Test
+    @Throws(IOException::class)
     fun migrateAll() {
         // Erstellt die DB in V1 und migriert schrittweise auf die aktuelle Version
         helper.createDatabase(testDb, 1).close()

@@ -223,4 +223,44 @@ class GetAvailableLabelsUseCaseTest {
             ContactLabels.LABEL_NAME_DAY
         ).inOrder()
     }
+
+    @Test
+    fun whenDynamicCustomEventsAndOtherEventExist_respectsDisabledKeysAndHiddenConfigs() = runTest {
+        val customActive = ContactLabels.customEventLabel("Jahrestag")
+        val customDisabled = ContactLabels.customEventLabel("DisabledEvent")
+        val customHidden = ContactLabels.customEventLabel("HiddenEvent")
+
+        val contacts = listOf(
+            Contact(
+                contactId = "1",
+                lookupKey = "k1",
+                fullName = "Alice",
+                birthday = LocalDate.of(1990, 5, 10),
+                anniversary = LocalDate.of(2020, 10, 10),
+                customEvents = mapOf(
+                    customActive to LocalDate.of(2021, 1, 1),
+                    customDisabled to LocalDate.of(2021, 2, 2),
+                    customHidden to LocalDate.of(2021, 3, 3),
+                    ContactLabels.LABEL_OTHER_EVENT to LocalDate.of(2021, 4, 4),
+                ),
+            )
+        )
+        val configs = listOf(
+            LabelConfig(name = customHidden, isHiddenFromFilter = true, isIgnored = false),
+            LabelConfig(name = ContactLabels.LABEL_ANNIVERSARY, isIgnored = true),
+        )
+
+        val result = useCase(
+            contacts = MutableStateFlow(contacts),
+            configs = MutableStateFlow(configs),
+            otherEventsEnabled = MutableStateFlow(true),
+            labelsEnabled = MutableStateFlow(true),
+            disabledOtherEventLabels = MutableStateFlow(setOf(customDisabled)),
+        ).first()
+
+        assertThat(result).containsExactly(
+            customActive,
+            ContactLabels.LABEL_OTHER_EVENT,
+        ).inOrder()
+    }
 }

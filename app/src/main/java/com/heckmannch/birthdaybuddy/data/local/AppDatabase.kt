@@ -24,17 +24,19 @@ import androidx.sqlite.db.SupportSQLiteDatabase
  * - Version 9 -> 10: [AutoMigration] (Hinzufügen der Spalte `isFavorite` mit Default `0` in `contacts`)
  * - Version 10 -> 11: [AutoMigration] (Hinzufügen von Indizes für `PendingNotificationEntity` (`isDone`, `year`/`daysBefore`) und `ContactEntity` (`anniversary`))
  * - Version 11 -> 12: [AutoMigration] (Entkopplung von Domain-Models: Umstellung von giftIdeas auf giftIdeasJson in `ContactEntity`)
+ * - Version 12 -> 13: [AutoMigration] (Hinzufügen der Spalte `customEvents` mit Default `'{}'` in `contacts` für benutzerdefinierte Datumsfelder)
  */
 @Database(
     entities = [ContactEntity::class, PendingNotificationEntity::class],
-    version = 12,
+    version = 13,
     exportSchema = true,
     autoMigrations = [
         AutoMigration(from = 7, to = 8),
         AutoMigration(from = 8, to = 9),
         AutoMigration(from = 9, to = 10),
         AutoMigration(from = 10, to = 11),
-        AutoMigration(from = 11, to = 12)
+        AutoMigration(from = 11, to = 12),
+        AutoMigration(from = 12, to = 13)
     ]
 )
 @TypeConverters(Converters::class, GiftIdeaConverters::class)

@@ -32,6 +32,8 @@ data class ContactEntity(
     val birthday: LocalDate? = null,
     val anniversary: LocalDate? = null,
     val nameDay: LocalDate? = null,
+    @ColumnInfo(name = "customEvents", defaultValue = "{}")
+    val customEventsJson: String = "{}",
     val imageUri: String? = null,
     val phoneNumber: String? = null,
     @ColumnInfo(defaultValue = "0")

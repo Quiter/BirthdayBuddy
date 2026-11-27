@@ -85,6 +85,7 @@ class HomeViewModelTest {
         whenever(contactRepository.labelConfigs).doReturn(MutableStateFlow(emptyList()))
         whenever(contactRepository.allContacts).doReturn(MutableStateFlow(emptyList()))
         whenever(contactRepository.otherEventsEnabled).doReturn(MutableStateFlow(false))
+        whenever(contactRepository.disabledOtherEventLabels).doReturn(MutableStateFlow(emptySet()))
         whenever(contactRepository.labelsEnabled).doReturn(MutableStateFlow(true))
         whenever(contactRepository.contactChanges).doReturn(emptyFlow())
         whenever(coupleRepository.potentialCouples).doReturn(MutableStateFlow(emptyList()))

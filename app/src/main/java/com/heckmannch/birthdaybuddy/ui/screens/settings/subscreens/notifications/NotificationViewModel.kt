@@ -4,7 +4,6 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.heckmannch.birthdaybuddy.domain.model.NotificationRule
 import com.heckmannch.birthdaybuddy.domain.permission.PermissionChecker
-import com.heckmannch.birthdaybuddy.domain.repository.ContactRepository
 import com.heckmannch.birthdaybuddy.domain.repository.NotificationRepository
 import com.heckmannch.birthdaybuddy.domain.repository.SettingsRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -20,7 +19,6 @@ import javax.inject.Inject
 class NotificationViewModel @Inject constructor(
     private val notificationRepository: NotificationRepository,
     private val settingsRepository: SettingsRepository,
-    private val contactRepository: ContactRepository,
     private val permissionChecker: PermissionChecker,
 ) : ViewModel() {
 
@@ -35,7 +33,6 @@ class NotificationViewModel @Inject constructor(
         NotificationUiState(
             notificationsEnabled = settings.notificationsEnabled,
             persistentNotifications = settings.persistentNotifications,
-            otherEventsEnabled = settings.otherEventsEnabled,
             notificationRules = rules,
             hasSystemNotificationPermission = hasPermission
         )
@@ -52,7 +49,6 @@ class NotificationViewModel @Inject constructor(
         when (intent) {
             is NotificationIntent.SetEnabled -> setNotificationsEnabled(intent.enabled)
             is NotificationIntent.SetPersistent -> setPersistentNotifications(intent.persistent)
-            is NotificationIntent.SetOtherEventsEnabled -> setOtherEventsEnabled(intent.enabled)
             is NotificationIntent.AddRule -> addNotificationRule(
                 intent.daysBefore,
                 intent.hour,
@@ -95,21 +91,6 @@ class NotificationViewModel @Inject constructor(
         settingsRepository.updateSettings { it.copy(persistentNotifications = persistent) }
     }
 
-    /**
-     * Enables or disables notifications for other events like anniversaries and name days.
-     *
-     * Design: Toggling this setting triggers a full sync of contacts so that their non-birthday events
-     * are correctly populated or cleared in the local cache.
-     *
-     * @param enabled True to enable other events, false to disable.
-     */
-    private fun setOtherEventsEnabled(enabled: Boolean) = viewModelScope.launch {
-        settingsRepository.updateSettings { it.copy(otherEventsEnabled = enabled) }
-        if (enabled) {
-            contactRepository.syncContacts()
-        }
-    }
-
     private fun addNotificationRule(daysBefore: Int, hour: Int, minute: Int) =
         viewModelScope.launch {
             val existingRules = notificationRepository.getAllRulesImmediate()
@@ -141,7 +122,6 @@ class NotificationViewModel @Inject constructor(
 sealed interface NotificationIntent {
     data class SetEnabled(val enabled: Boolean) : NotificationIntent
     data class SetPersistent(val persistent: Boolean) : NotificationIntent
-    data class SetOtherEventsEnabled(val enabled: Boolean) : NotificationIntent
     data class AddRule(val daysBefore: Int, val hour: Int, val minute: Int) : NotificationIntent
     data class UpdateRule(val rule: NotificationRule) : NotificationIntent
     data class DeleteRule(val rule: NotificationRule) : NotificationIntent

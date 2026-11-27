@@ -34,10 +34,11 @@ import androidx.sqlite.db.SupportSQLiteDatabase
  * - Version 8 -> 9: [SETTINGS_MIGRATION_8_9] (Tabellenrekonstruktion von `app_settings` zur Entfernung von `themeContrast`)
  * - Version 9 -> 10: [SETTINGS_MIGRATION_9_10] (Hinzufügen von `notificationsEnabled` und `showInWidget` in `label_configs`)
  * - Version 10 -> 11: [SETTINGS_MIGRATION_10_11] (Entkopplung von Domain-Models: Umstellung auf giftIdeasJson in contact_user_data und themeModeString in app_settings)
+ * - Version 11 -> 12: [SETTINGS_MIGRATION_11_12] (Hinzufügen von `disabledOtherEventLabels` und `customEventCalendarColors` in `app_settings`)
  */
 @Database(
     entities = [LabelConfigEntity::class, NotificationRuleEntity::class, AppSettingsEntity::class, ContactUserData::class],
-    version = 11,
+    version = 12,
     exportSchema = true
 )
 @TypeConverters(Converters::class, GiftIdeaConverters::class)
@@ -228,6 +229,20 @@ internal val SETTINGS_MIGRATION_10_11 = object : Migration(10, 11) {
 }
 
 /**
+ * Migration von Version 11 auf 12.
+ *
+ * Fügt die Spalten `disabledOtherEventLabels` (Default `'[]'`) und `customEventCalendarColors`
+ * (Default `'{}'`) zur Tabelle `app_settings` hinzu, um einzelne Datumsfeld-Labels für
+ * „Weitere Ereignisse“ und deren Kalenderfarben persistent zu speichern.
+ */
+internal val SETTINGS_MIGRATION_11_12 = object : Migration(11, 12) {
+    override fun migrate(db: SupportSQLiteDatabase) {
+        db.execSQL("ALTER TABLE app_settings ADD COLUMN disabledOtherEventLabels TEXT NOT NULL DEFAULT '[]'")
+        db.execSQL("ALTER TABLE app_settings ADD COLUMN customEventCalendarColors TEXT NOT NULL DEFAULT '{}'")
+    }
+}
+
+/**
  * Erstellt und konfiguriert die [SettingsDatabase]-Instanz.
  *
  * Gemäß Projekt-Richtlinie wird [RoomDatabase.Builder.fallbackToDestructiveMigration] bewusst nicht aufgerufen,
@@ -253,7 +268,8 @@ internal fun buildSettingsDatabase(context: Context): SettingsDatabase {
             SETTINGS_MIGRATION_7_8,
             SETTINGS_MIGRATION_8_9,
             SETTINGS_MIGRATION_9_10,
-            SETTINGS_MIGRATION_10_11
+            SETTINGS_MIGRATION_10_11,
+            SETTINGS_MIGRATION_11_12
         )
         .build()
 }

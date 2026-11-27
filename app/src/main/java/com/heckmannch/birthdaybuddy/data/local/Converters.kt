@@ -10,7 +10,7 @@ import javax.inject.Singleton
 
 /**
  * Room type converters for custom data types used in database entities,
- * including [ThemeMode], [LocalDate], and lists of strings.
+ * including [ThemeMode], [LocalDate], lists of strings, and JSON map helpers.
  */
 @Singleton
 class Converters @Inject constructor() {
@@ -78,6 +78,58 @@ class Converters @Inject constructor() {
             Log.w(TAG, "Fehler beim Deserialisieren der String-Liste als JSON, nutze Pipe-Fallback", e)
             // Fallback for legacy data (pipe-separated)
             data.split("|").filter { it.isNotBlank() }
+        }
+    }
+
+    /**
+     * Serializes a map of custom event keys to ISO-8601 [LocalDate] strings into a JSON object.
+     */
+    fun fromCustomEventsMap(map: Map<String, LocalDate>?): String {
+        if (map.isNullOrEmpty()) return "{}"
+        val stringMap = map.mapValues { (_, date) -> date.toString() }
+        return json.encodeToString(stringMap)
+    }
+
+    /**
+     * Deserializes a JSON object string into a map of custom event keys to [LocalDate].
+     * Invalid date entries are skipped defensively.
+     */
+    fun toCustomEventsMap(data: String?): Map<String, LocalDate> {
+        if (data.isNullOrBlank() || data == "{}") return emptyMap()
+        return try {
+            val rawMap = json.decodeFromString<Map<String, String>>(data)
+            buildMap {
+                rawMap.forEach { (key, dateStr) ->
+                    val parsed = fromString(dateStr)
+                    if (key.isNotBlank() && parsed != null) {
+                        put(key, parsed)
+                    }
+                }
+            }
+        } catch (e: Exception) {
+            Log.w(TAG, "Fehler beim Deserialisieren der Custom-Events-Map", e)
+            emptyMap()
+        }
+    }
+
+    /**
+     * Serializes a map of event keys to ARGB color integers into a JSON object.
+     */
+    fun fromIntMap(map: Map<String, Int>?): String {
+        if (map.isNullOrEmpty()) return "{}"
+        return json.encodeToString(map)
+    }
+
+    /**
+     * Deserializes a JSON object string into a map of event keys to ARGB color integers.
+     */
+    fun toIntMap(data: String?): Map<String, Int> {
+        if (data.isNullOrBlank() || data == "{}") return emptyMap()
+        return try {
+            json.decodeFromString<Map<String, Int>>(data)
+        } catch (e: Exception) {
+            Log.w(TAG, "Fehler beim Deserialisieren der Int-Map", e)
+            emptyMap()
         }
     }
 }

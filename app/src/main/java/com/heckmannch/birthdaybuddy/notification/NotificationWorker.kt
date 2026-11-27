@@ -66,7 +66,8 @@ class NotificationWorker @AssistedInject constructor(
                     contacts = event.contacts,
                     daysBefore = event.daysBefore,
                     pendingId = pendingId,
-                    eventType = event.eventType
+                    eventType = event.eventType,
+                    customEventKey = event.customEventKey,
                 )
             }
 

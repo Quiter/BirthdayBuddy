@@ -195,14 +195,20 @@ class HomeViewModel @Inject constructor(
     private val labelSettingsState: Flow<GetContactsUseCase.LabelSettingsState> = combine(
         contactRepository.labelConfigs,
         contactRepository.labelsEnabled,
-        contactRepository.otherEventsEnabled
-    ) { configs, labelsEnabled, otherEventsEnabled ->
+        contactRepository.otherEventsEnabled,
+        contactRepository.disabledOtherEventLabels,
+    ) { configs, labelsEnabled, otherEventsEnabled, disabledOtherEventLabels ->
         val ignored = if (!labelsEnabled) emptySet()
         else configs.asSequence()
             .filter { it.isIgnored }
             .map { it.name }
             .toSet()
-        GetContactsUseCase.LabelSettingsState(ignored, labelsEnabled, otherEventsEnabled)
+        GetContactsUseCase.LabelSettingsState(
+            ignoredLabels = ignored,
+            labelsEnabled = labelsEnabled,
+            otherEventsEnabled = otherEventsEnabled,
+            disabledOtherEventLabels = disabledOtherEventLabels,
+        )
     }
         .distinctUntilChanged()
         .flowOn(defaultDispatcher)
@@ -238,15 +244,15 @@ class HomeViewModel @Inject constructor(
         filteredContacts,
         timeRepository.currentDate,
         _userUiState.map { it.selectedLabel }.distinctUntilChanged(),
-        contactRepository.labelsEnabled,
-        contactRepository.otherEventsEnabled
-    ) { contacts, today, selectedLabel, labelsEnabled, otherEventsEnabled ->
+        labelSettingsState,
+    ) { contacts, today, selectedLabel, settings ->
         contactUiMapper.mapToUiModels(
             contacts = contacts,
             today = today,
             selectedLabel = selectedLabel,
-            labelsEnabled = labelsEnabled,
-            otherEventsEnabled = otherEventsEnabled
+            labelsEnabled = settings.labelsEnabled,
+            otherEventsEnabled = settings.otherEventsEnabled,
+            disabledOtherEventLabels = settings.disabledOtherEventLabels,
         )
     }.flowOn(defaultDispatcher)
 
@@ -258,6 +264,7 @@ class HomeViewModel @Inject constructor(
         configs = contactRepository.labelConfigs,
         otherEventsEnabled = contactRepository.otherEventsEnabled,
         labelsEnabled = contactRepository.labelsEnabled,
+        disabledOtherEventLabels = contactRepository.disabledOtherEventLabels,
     )
 
     /**

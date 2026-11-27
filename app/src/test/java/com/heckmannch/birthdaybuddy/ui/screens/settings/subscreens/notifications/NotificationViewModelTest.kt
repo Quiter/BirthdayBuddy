@@ -5,7 +5,6 @@ import com.heckmannch.birthdaybuddy.MainDispatcherRule
 import com.heckmannch.birthdaybuddy.domain.model.AppSettings
 import com.heckmannch.birthdaybuddy.domain.model.NotificationRule
 import com.heckmannch.birthdaybuddy.domain.permission.PermissionChecker
-import com.heckmannch.birthdaybuddy.domain.repository.ContactRepository
 import com.heckmannch.birthdaybuddy.domain.repository.NotificationRepository
 import com.heckmannch.birthdaybuddy.domain.repository.SettingsRepository
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -32,7 +31,6 @@ class NotificationViewModelTest {
 
     private val notificationRepository: NotificationRepository = mock()
     private val settingsRepository: SettingsRepository = mock()
-    private val contactRepository: ContactRepository = mock()
     private val permissionChecker: PermissionChecker = mock()
 
     private lateinit var viewModel: NotificationViewModel
@@ -40,7 +38,6 @@ class NotificationViewModelTest {
     private val testSettings = AppSettings(
         notificationsEnabled = true,
         persistentNotifications = false,
-        otherEventsEnabled = false
     )
 
     private val testRules = listOf(
@@ -55,7 +52,7 @@ class NotificationViewModelTest {
         whenever(notificationRepository.getAllRulesImmediate()).thenReturn(testRules)
         whenever(permissionChecker.hasNotificationPermission()).thenReturn(true)
 
-        viewModel = NotificationViewModel(notificationRepository, settingsRepository, contactRepository, permissionChecker)
+        viewModel = NotificationViewModel(notificationRepository, settingsRepository, permissionChecker)
     }
 
     @Test
@@ -64,7 +61,6 @@ class NotificationViewModelTest {
 
         assertThat(uiState.notificationsEnabled).isTrue()
         assertThat(uiState.persistentNotifications).isFalse()
-        assertThat(uiState.otherEventsEnabled).isFalse()
         assertThat(uiState.notificationRules).isEqualTo(testRules)
         assertThat(uiState.hasSystemNotificationPermission).isTrue()
     }
@@ -75,7 +71,6 @@ class NotificationViewModelTest {
         val viewModel = NotificationViewModel(
             notificationRepository,
             settingsRepository,
-            contactRepository,
             permissionChecker
         )
 
@@ -115,17 +110,6 @@ class NotificationViewModelTest {
     }
 
     @Test
-    fun `setOtherEventsEnabled should delegate to repository and sync contacts`() = runTest {
-        viewModel.onIntent(NotificationIntent.SetOtherEventsEnabled(true))
-
-        val captor = argumentCaptor<(AppSettings) -> AppSettings>()
-        verify(settingsRepository).updateSettings(captor.capture())
-        val updated = captor.firstValue(AppSettings(otherEventsEnabled = false))
-        assertThat(updated.otherEventsEnabled).isTrue()
-        verify(contactRepository).syncContacts()
-    }
-
-    @Test
     fun `addNotificationRule should delegate to repository`() = runTest {
         viewModel.onIntent(NotificationIntent.AddRule(daysBefore = 2, hour = 10, minute = 30))
 
@@ -154,4 +138,3 @@ class NotificationViewModelTest {
         verify(notificationRepository).deleteRule(rule)
     }
 }
-

@@ -6,6 +6,7 @@ import android.provider.ContactsContract
 import android.util.Log
 import com.heckmannch.birthdaybuddy.di.IoDispatcher
 import com.heckmannch.birthdaybuddy.domain.model.Contact
+import com.heckmannch.birthdaybuddy.domain.model.ContactLabels
 import com.heckmannch.birthdaybuddy.domain.util.NO_YEAR_MARKER
 import com.heckmannch.birthdaybuddy.util.hasYear
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -255,7 +256,7 @@ class SystemContactDataSource @Inject constructor(
                 }
             }
 
-            // 2. Ereignisse (Geburtstag, Hochzeitstag, Namenstag) laden und zuordnen
+            // 2. Ereignisse (Geburtstag, Hochzeitstag, Namenstag, Sonstiges & benutzerdefinierte Datumsfelder) laden
             val eventProjection = arrayOf(
                 ContactsContract.Data.CONTACT_ID,
                 ContactsContract.CommonDataKinds.Event.START_DATE,
@@ -286,7 +287,8 @@ class SystemContactDataSource @Inject constructor(
                     val dateStr = cursor.getString(dateIdx)
                     val date = parseDate(dateStr) ?: continue
                     val type = cursor.getInt(typeIdx)
-                    val label = cursor.getString(labelIdx)?.lowercase()?.trim()
+                    val rawLabel = cursor.getString(labelIdx)?.trim()
+                    val normalizedLabel = rawLabel?.lowercase()
 
                     contactsMap[contactId]?.let { contact ->
                         when {
@@ -295,12 +297,29 @@ class SystemContactDataSource @Inject constructor(
                             }
 
                             type == ContactsContract.CommonDataKinds.Event.TYPE_ANNIVERSARY ||
-                                    (type == ContactsContract.CommonDataKinds.Event.TYPE_CUSTOM && label in anniversaryLabels) -> {
+                                    (type == ContactsContract.CommonDataKinds.Event.TYPE_CUSTOM && normalizedLabel in anniversaryLabels) -> {
                                 contactsMap[contactId] = contact.copy(anniversary = date)
                             }
 
-                            type == ContactsContract.CommonDataKinds.Event.TYPE_CUSTOM && label in nameDayLabels -> {
+                            type == ContactsContract.CommonDataKinds.Event.TYPE_CUSTOM && normalizedLabel in nameDayLabels -> {
                                 contactsMap[contactId] = contact.copy(nameDay = date)
+                            }
+
+                            type == ContactsContract.CommonDataKinds.Event.TYPE_CUSTOM -> {
+                                val eventKey = if (!rawLabel.isNullOrBlank()) {
+                                    ContactLabels.customEventLabel(rawLabel)
+                                } else {
+                                    ContactLabels.LABEL_OTHER_EVENT
+                                }
+                                contactsMap[contactId] = contact.copy(
+                                    customEvents = contact.customEvents + (eventKey to date)
+                                )
+                            }
+
+                            type == ContactsContract.CommonDataKinds.Event.TYPE_OTHER -> {
+                                contactsMap[contactId] = contact.copy(
+                                    customEvents = contact.customEvents + (ContactLabels.LABEL_OTHER_EVENT to date)
+                                )
                             }
                         }
                     }

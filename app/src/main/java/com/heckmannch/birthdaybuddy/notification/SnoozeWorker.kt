@@ -29,6 +29,7 @@ class SnoozeWorker @AssistedInject constructor(
         val targetContacts = allContacts.filter { it.lookupKey in rawKeys }
 
         if (targetContacts.isNotEmpty()) {
+            val firstKey = lookupKeys.filterNotNull().firstOrNull() ?: ""
             val eventTypeStr = inputData.getString(NotificationActions.EXTRA_EVENT_TYPE)
             val eventType = if (eventTypeStr != null) {
                 try {
@@ -37,14 +38,15 @@ class SnoozeWorker @AssistedInject constructor(
                     EventType.BIRTHDAY
                 }
             } else {
-                val firstKey = lookupKeys.filterNotNull().firstOrNull() ?: ""
                 NotificationKeyUtils.extractEventType(firstKey)
             }
+            val customEventKey = NotificationKeyUtils.extractCustomEventKey(firstKey)
             notificationHelper.showBirthdayNotification(
-                targetContacts,
-                daysBefore,
-                pendingId,
-                eventType
+                contacts = targetContacts,
+                daysBefore = daysBefore,
+                pendingId = pendingId,
+                eventType = eventType,
+                customEventKey = customEventKey,
             )
         }
 

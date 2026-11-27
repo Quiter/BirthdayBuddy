@@ -31,13 +31,14 @@ class GetContactsUseCase @Inject constructor(
         val ignoredLabels: Set<String>,
         val labelsEnabled: Boolean,
         val otherEventsEnabled: Boolean,
+        val disabledOtherEventLabels: Set<String> = emptySet(),
     )
 
     /**
      * Returns a [Flow] that emits the filtered list of domain [Contact] models
      * whenever any of the upstream inputs changes.
      *
-     * The returned flow is pinned to [Dispatchers.Default] via [flowOn] so that
+     * The returned flow is pinned to [defaultDispatcher] via [flowOn] so that
      * the heavy CPU work is always offloaded from the Main thread.
      * Callers MUST NOT add an additional [flowOn] on top of this flow.
      */
@@ -65,6 +66,7 @@ class GetContactsUseCase @Inject constructor(
         val ignoredLabels = settingsState.ignoredLabels
         val labelsEnabled = settingsState.labelsEnabled
         val otherEventsEnabled = settingsState.otherEventsEnabled
+        val disabledEvents = settingsState.disabledOtherEventLabels
 
         val contactMap = rawContacts.associateBy { it.lookupKey }
 
@@ -72,8 +74,8 @@ class GetContactsUseCase @Inject constructor(
             // 1. Keyword search filter (checks self or spouse)
             if (isSearching && !keywords.all { keyword ->
                     contact.fullName.contains(keyword, ignoreCase = true) ||
-                            (contact.spouseLookupKey?.let { contactMap[it]?.fullName }
-                                ?.contains(keyword, ignoreCase = true) ?: false)
+                        (contact.spouseLookupKey?.let { contactMap[it]?.fullName }
+                            ?.contains(keyword, ignoreCase = true) ?: false)
                 }
             ) return@filter false
 
@@ -85,29 +87,40 @@ class GetContactsUseCase @Inject constructor(
             // 3. Label / Event type filter
             if (!labelsEnabled) {
                 val hasBirthday = contact.birthday != null
-                val hasNameDay = otherEventsEnabled && contact.nameDay != null
-                val hasAnniversary = otherEventsEnabled && contact.anniversary != null
-                hasBirthday || hasNameDay || hasAnniversary || isSearching
+                val hasAnniversary = otherEventsEnabled &&
+                    ContactLabels.LABEL_ANNIVERSARY !in disabledEvents &&
+                    contact.anniversary != null
+                val hasNameDay = otherEventsEnabled &&
+                    ContactLabels.LABEL_NAME_DAY !in disabledEvents &&
+                    contact.nameDay != null
+                val hasCustomEvent = otherEventsEnabled &&
+                    contact.customEvents.keys.any { it !in disabledEvents }
+                hasBirthday || hasNameDay || hasAnniversary || hasCustomEvent || isSearching
             } else {
-                when (label) {
-                    null -> {
+                when {
+                    label == null -> {
                         // All contacts with a birthday, or during search, contacts with no events too
                         contact.birthday != null || isSearching
                     }
 
-                    ContactLabels.LABEL_NO_BIRTHDAY -> {
+                    label == ContactLabels.LABEL_NO_BIRTHDAY -> {
                         // Contacts without birthday
                         contact.birthday == null
                     }
 
-                    ContactLabels.LABEL_ANNIVERSARY -> {
-                        // Contacts with anniversary
-                        contact.anniversary != null
+                    label == ContactLabels.LABEL_ANNIVERSARY -> {
+                        // Contacts with anniversary (unless this event label is disabled)
+                        label !in disabledEvents && contact.anniversary != null
                     }
 
-                    ContactLabels.LABEL_NAME_DAY -> {
-                        // Contacts with name day
-                        contact.nameDay != null
+                    label == ContactLabels.LABEL_NAME_DAY -> {
+                        // Contacts with name day (unless this event label is disabled)
+                        label !in disabledEvents && contact.nameDay != null
+                    }
+
+                    ContactLabels.isDynamicCustomEventKey(label) -> {
+                        // Contacts with this specific custom/other date-field event (unless disabled)
+                        label !in disabledEvents && contact.customEvents.containsKey(label)
                     }
 
                     else -> {

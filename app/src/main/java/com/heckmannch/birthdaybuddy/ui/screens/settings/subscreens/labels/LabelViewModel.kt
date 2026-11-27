@@ -4,8 +4,13 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.heckmannch.birthdaybuddy.di.DefaultDispatcher
 import com.heckmannch.birthdaybuddy.domain.model.ContactLabels
+import com.heckmannch.birthdaybuddy.domain.model.EventType
 import com.heckmannch.birthdaybuddy.domain.model.LabelConfig
 import com.heckmannch.birthdaybuddy.domain.repository.ContactRepository
+import com.heckmannch.birthdaybuddy.domain.repository.TimeRepository
+import com.heckmannch.birthdaybuddy.domain.usecase.CategorizedLabel
+import com.heckmannch.birthdaybuddy.domain.usecase.GetCategorizedLabelsUseCase
+import com.heckmannch.birthdaybuddy.ui.mapper.ContactUiMapper
 import com.heckmannch.birthdaybuddy.ui.model.LabelManagementModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineDispatcher
@@ -16,67 +21,87 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import java.time.LocalDate
 import javax.inject.Inject
 
 @HiltViewModel
 class LabelViewModel @Inject constructor(
     private val contactRepository: ContactRepository,
+    getCategorizedLabelsUseCase: GetCategorizedLabelsUseCase,
+    private val contactUiMapper: ContactUiMapper,
+    timeRepository: TimeRepository,
     @DefaultDispatcher private val defaultDispatcher: CoroutineDispatcher = Dispatchers.Default,
 ) : ViewModel() {
 
+    private val categorizedLabelsFlow = getCategorizedLabelsUseCase(
+        contacts = contactRepository.allContacts,
+        configs = contactRepository.labelConfigs,
+        otherEventsEnabled = contactRepository.otherEventsEnabled,
+        disabledOtherEventLabels = contactRepository.disabledOtherEventLabels,
+    )
+
     /**
-     * Unified UI state combining label enablement status and configured labels.
+     * Unified UI state combining label enablement status and categorized label sections with
+     * their unfiltered assigned contacts.
      */
     val uiState: StateFlow<LabelUiState> = combine(
         contactRepository.labelsEnabled,
-        contactRepository.labelConfigs,
-        contactRepository.allContacts,
-    ) { labelsEnabled, configs, contacts ->
-        val labelsInUse = contacts.asSequence().flatMap { it.labels }.toSet()
-        val configMap = configs.associateBy { it.name }
-
-        // Standard-Labels sortiert nach Name (ohne das Pseudo-Label)
-        val standardList = configs.asSequence()
-            .filter { it.name in labelsInUse && it.name != ContactLabels.LABEL_NO_BIRTHDAY }
-            .map { config ->
-                LabelManagementModel(
-                    config.name,
-                    config.isHiddenFromFilter,
-                    config.isIgnored,
-                    config.isSystem,
-                    config.notificationsEnabled,
-                    config.showInWidget,
-                )
-            }.sortedBy { it.name }.toList()
-
-        // Pseudo-Label "Ohne Datum" am Ende anhängen, falls Kontakte ohne Geburtstag da sind
-        val hasMissingBirthdays = contacts.any { it.birthday == null }
-        val labelList = if (hasMissingBirthdays) {
-            val pseudoConfig = configMap[ContactLabels.LABEL_NO_BIRTHDAY]
-                ?: LabelConfig(ContactLabels.LABEL_NO_BIRTHDAY)
-            standardList + LabelManagementModel(
-                pseudoConfig.name,
-                pseudoConfig.isHiddenFromFilter,
-                pseudoConfig.isIgnored,
-                pseudoConfig.isSystem,
-                pseudoConfig.notificationsEnabled,
-                pseudoConfig.showInWidget,
-            )
-        } else {
-            standardList
-        }
-
+        categorizedLabelsFlow,
+        timeRepository.currentDate,
+    ) { labelsEnabled, categorized, today ->
         LabelUiState(
             labelsEnabled = labelsEnabled,
-            labels = labelList,
+            activeLabels = categorized.activeLabels.map { it.toUiModel(today) },
+            otherEventLabels = categorized.otherEventLabels.map { it.toUiModel(today) },
+            hiddenLabels = categorized.hiddenLabels.map { it.toUiModel(today) },
+            ignoredLabels = categorized.ignoredLabels.map { it.toUiModel(today) },
+            allLabeledContactsCount = categorized.totalLabeledContactsCount,
         )
     }
         .flowOn(defaultDispatcher)
         .stateIn(
             scope = viewModelScope,
             started = SharingStarted.WhileSubscribed(5000),
-            initialValue = LabelUiState()
+            initialValue = LabelUiState(),
         )
+
+    private fun CategorizedLabel.toUiModel(today: LocalDate): LabelWithContactsUiModel {
+        val labelName = config.name
+        val mappedContacts = assignedContacts.map { contact ->
+            when {
+                labelName == ContactLabels.LABEL_ANNIVERSARY -> {
+                    contactUiMapper.toUiModelForEvent(contact, today, EventType.ANNIVERSARY)
+                }
+
+                labelName == ContactLabels.LABEL_NAME_DAY -> {
+                    contactUiMapper.toUiModelForEvent(contact, today, EventType.NAME_DAY)
+                }
+
+                ContactLabels.isDynamicCustomEventKey(labelName) -> {
+                    contactUiMapper.toUiModelForEvent(
+                        contact = contact,
+                        today = today,
+                        eventType = EventType.CUSTOM,
+                        customEventKey = labelName,
+                    )
+                }
+
+                else -> contactUiMapper.toUiModel(contact, today)
+            }
+        }
+
+        return LabelWithContactsUiModel(
+            label = LabelManagementModel(
+                name = config.name,
+                isHiddenFromFilter = config.isHiddenFromFilter,
+                isIgnored = config.isIgnored,
+                isSystem = config.isSystem,
+                notificationsEnabled = config.notificationsEnabled,
+                showInWidget = config.showInWidget,
+            ),
+            assignedContacts = mappedContacts,
+        )
+    }
 
     fun onIntent(intent: LabelIntent) {
         when (intent) {
@@ -87,7 +112,7 @@ class LabelViewModel @Inject constructor(
                     intent.ignored,
                     intent.isSystem,
                     intent.notificationsEnabled,
-                    intent.showInWidget
+                    intent.showInWidget,
                 )
             }
 
@@ -103,20 +128,19 @@ class LabelViewModel @Inject constructor(
         ignored: Boolean,
         isSystem: Boolean,
         notificationsEnabled: Boolean,
-        showInWidget: Boolean
-    ) =
-        viewModelScope.launch {
-            contactRepository.updateLabelConfig(
-                LabelConfig(
-                    name = name,
-                    isHiddenFromFilter = hidden,
-                    isIgnored = ignored,
-                    isSystem = isSystem,
-                    notificationsEnabled = notificationsEnabled,
-                    showInWidget = showInWidget
-                )
+        showInWidget: Boolean,
+    ) = viewModelScope.launch {
+        contactRepository.updateLabelConfig(
+            LabelConfig(
+                name = name,
+                isHiddenFromFilter = hidden,
+                isIgnored = ignored,
+                isSystem = isSystem,
+                notificationsEnabled = notificationsEnabled,
+                showInWidget = showInWidget,
             )
-        }
+        )
+    }
 
     /**
      * Updates the status of the label management feature.
@@ -133,9 +157,8 @@ sealed interface LabelIntent {
         val ignored: Boolean,
         val isSystem: Boolean,
         val notificationsEnabled: Boolean = true,
-        val showInWidget: Boolean = true
+        val showInWidget: Boolean = true,
     ) : LabelIntent
 
     data class SetLabelsEnabled(val enabled: Boolean) : LabelIntent
 }
-

@@ -1,7 +1,9 @@
 package com.heckmannch.birthdaybuddy.domain.usecase
 
 import com.heckmannch.birthdaybuddy.domain.model.Contact
+import com.heckmannch.birthdaybuddy.domain.model.ContactLabels
 import com.heckmannch.birthdaybuddy.domain.model.EventType
+import com.heckmannch.birthdaybuddy.domain.model.LabelConfig
 import com.heckmannch.birthdaybuddy.domain.repository.ContactRepository
 import com.heckmannch.birthdaybuddy.domain.repository.NotificationRepository
 import com.heckmannch.birthdaybuddy.domain.repository.SettingsRepository
@@ -16,7 +18,9 @@ import javax.inject.Inject
 
 /**
  * Evaluates active notification rules for the given time and returns the list of events
- * (birthdays, anniversaries, name days) that should be notified to the user.
+ * (birthdays, anniversaries, name days, and custom date-field events) that should be notified
+ * to the user.
+ *
  * It considers any rules whose scheduled time has arrived today and filters out already
  * scheduled notifications via the database to prevent duplicates even when execution is delayed.
  */
@@ -33,8 +37,19 @@ class GetPendingNotificationsUseCase @Inject constructor(
         val contacts: List<Contact>,
         val eventType: EventType,
         val dbKeys: List<String>,
-        val daysBefore: Int
+        val daysBefore: Int,
+        val customEventKey: String? = null,
     )
+
+    private fun isEventLabelEligibleForNotifications(
+        eventKey: String,
+        labelsEnabled: Boolean,
+        configMap: Map<String, LabelConfig>,
+    ): Boolean {
+        if (!labelsEnabled) return true
+        val config = configMap[eventKey] ?: return true
+        return !config.isIgnored && config.notificationsEnabled
+    }
 
     suspend operator fun invoke(now: LocalDateTime): List<PendingNotificationEvent> {
         val settings = settingsRepository.settings.first()
@@ -58,6 +73,8 @@ class GetPendingNotificationsUseCase @Inject constructor(
 
         val labelsEnabled = contactRepository.labelsEnabled.first()
         val labelConfigs = if (!labelsEnabled) emptyList() else contactRepository.labelConfigs.first()
+        val labelConfigMap = labelConfigs.associateBy { it.name }
+
         // Optimization: Use getAllContactsImmediate() directly instead of collecting from allContacts.first()
         // to avoid unnecessary Flow collector overhead during one-shot notification evaluations.
         val contactList = contactRepository.getAllContactsImmediate()
@@ -102,73 +119,116 @@ class GetPendingNotificationsUseCase @Inject constructor(
             // 2. Further events (only if otherEventsEnabled is active)
             if (settings.otherEventsEnabled) {
                 // Anniversaries with spouse coupling
-                val anniversaries = allContacts.filter { contact ->
-                    contact.anniversary?.let { anniv ->
-                        anniv.toYear(targetDate.year) == targetDate
-                    } ?: false
-                }
-                val processedAnniversaries = mutableSetOf<String>()
-                for (contact in anniversaries) {
-                    if (processedAnniversaries.contains(contact.lookupKey)) continue
+                if (settings.isOtherEventEnabled(ContactLabels.LABEL_ANNIVERSARY) &&
+                    isEventLabelEligibleForNotifications(
+                        ContactLabels.LABEL_ANNIVERSARY,
+                        labelsEnabled,
+                        labelConfigMap
+                    )
+                ) {
+                    val anniversaries = allContacts.filter { contact ->
+                        contact.anniversary?.let { anniv ->
+                            anniv.toYear(targetDate.year) == targetDate
+                        } ?: false
+                    }
+                    val processedAnniversaries = mutableSetOf<String>()
+                    for (contact in anniversaries) {
+                        if (processedAnniversaries.contains(contact.lookupKey)) continue
 
-                    val spouseKey = contact.spouseLookupKey
-                    val spouse =
-                        if (spouseKey != null) anniversaries.find { it.lookupKey == spouseKey } else null
+                        val spouseKey = contact.spouseLookupKey
+                        val spouse =
+                            if (spouseKey != null) anniversaries.find { it.lookupKey == spouseKey } else null
 
-                    if (spouse != null) {
-                        val dbKeys = listOf(
-                            NotificationKeyUtils.encodeKey(contact.lookupKey, EventType.ANNIVERSARY),
-                            NotificationKeyUtils.encodeKey(spouse.lookupKey, EventType.ANNIVERSARY)
-                        )
-                        val anyScheduled = dbKeys.any { dbKey -> scheduledKeys.contains(dbKey) }
-                        if (!anyScheduled) {
-                            scheduledKeys.addAll(dbKeys)
-                            pendingEvents.add(
-                                PendingNotificationEvent(
-                                    contacts = listOf(contact, spouse),
-                                    eventType = EventType.ANNIVERSARY,
-                                    dbKeys = dbKeys,
-                                    daysBefore = daysBefore
-                                )
+                        if (spouse != null) {
+                            val dbKeys = listOf(
+                                NotificationKeyUtils.encodeKey(contact.lookupKey, EventType.ANNIVERSARY),
+                                NotificationKeyUtils.encodeKey(spouse.lookupKey, EventType.ANNIVERSARY)
                             )
+                            val anyScheduled = dbKeys.any { dbKey -> scheduledKeys.contains(dbKey) }
+                            if (!anyScheduled) {
+                                scheduledKeys.addAll(dbKeys)
+                                pendingEvents.add(
+                                    PendingNotificationEvent(
+                                        contacts = listOf(contact, spouse),
+                                        eventType = EventType.ANNIVERSARY,
+                                        dbKeys = dbKeys,
+                                        daysBefore = daysBefore
+                                    )
+                                )
+                            }
+                            processedAnniversaries.add(contact.lookupKey)
+                            processedAnniversaries.add(spouse.lookupKey)
+                        } else {
+                            val dbKey = NotificationKeyUtils.encodeKey(contact.lookupKey, EventType.ANNIVERSARY)
+                            if (!scheduledKeys.contains(dbKey)) {
+                                scheduledKeys.add(dbKey)
+                                pendingEvents.add(
+                                    PendingNotificationEvent(
+                                        contacts = listOf(contact),
+                                        eventType = EventType.ANNIVERSARY,
+                                        dbKeys = listOf(dbKey),
+                                        daysBefore = daysBefore
+                                    )
+                                )
+                            }
+                            processedAnniversaries.add(contact.lookupKey)
                         }
-                        processedAnniversaries.add(contact.lookupKey)
-                        processedAnniversaries.add(spouse.lookupKey)
-                    } else {
-                        val dbKey = NotificationKeyUtils.encodeKey(contact.lookupKey, EventType.ANNIVERSARY)
+                    }
+                }
+
+                // Name days
+                if (settings.isOtherEventEnabled(ContactLabels.LABEL_NAME_DAY) &&
+                    isEventLabelEligibleForNotifications(
+                        ContactLabels.LABEL_NAME_DAY,
+                        labelsEnabled,
+                        labelConfigMap
+                    )
+                ) {
+                    val nameDays = allContacts.filter { contact ->
+                        contact.nameDay?.let { nd ->
+                            nd.toYear(targetDate.year) == targetDate
+                        } ?: false
+                    }
+                    for (contact in nameDays) {
+                        val dbKey = NotificationKeyUtils.encodeKey(contact.lookupKey, EventType.NAME_DAY)
                         if (!scheduledKeys.contains(dbKey)) {
                             scheduledKeys.add(dbKey)
                             pendingEvents.add(
                                 PendingNotificationEvent(
                                     contacts = listOf(contact),
-                                    eventType = EventType.ANNIVERSARY,
+                                    eventType = EventType.NAME_DAY,
                                     dbKeys = listOf(dbKey),
                                     daysBefore = daysBefore
                                 )
                             )
                         }
-                        processedAnniversaries.add(contact.lookupKey)
                     }
                 }
 
-                // Name days
-                val nameDays = allContacts.filter { contact ->
-                    contact.nameDay?.let { nd ->
-                        nd.toYear(targetDate.year) == targetDate
-                    } ?: false
-                }
-                for (contact in nameDays) {
-                    val dbKey = NotificationKeyUtils.encodeKey(contact.lookupKey, EventType.NAME_DAY)
-                    if (!scheduledKeys.contains(dbKey)) {
-                        scheduledKeys.add(dbKey)
-                        pendingEvents.add(
-                            PendingNotificationEvent(
-                                contacts = listOf(contact),
-                                eventType = EventType.NAME_DAY,
-                                dbKeys = listOf(dbKey),
-                                daysBefore = daysBefore
-                            )
+                // Dynamic custom / other date-field events
+                for (contact in allContacts) {
+                    for ((eventKey, eventDate) in contact.customEvents) {
+                        if (!settings.isOtherEventEnabled(eventKey)) continue
+                        if (!isEventLabelEligibleForNotifications(eventKey, labelsEnabled, labelConfigMap)) continue
+                        if (eventDate.toYear(targetDate.year) != targetDate) continue
+
+                        val dbKey = NotificationKeyUtils.encodeKey(
+                            lookupKey = contact.lookupKey,
+                            eventType = EventType.CUSTOM,
+                            customEventKey = eventKey,
                         )
+                        if (!scheduledKeys.contains(dbKey)) {
+                            scheduledKeys.add(dbKey)
+                            pendingEvents.add(
+                                PendingNotificationEvent(
+                                    contacts = listOf(contact),
+                                    eventType = EventType.CUSTOM,
+                                    dbKeys = listOf(dbKey),
+                                    daysBefore = daysBefore,
+                                    customEventKey = eventKey,
+                                )
+                            )
+                        }
                     }
                 }
             }

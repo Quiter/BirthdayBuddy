@@ -35,12 +35,18 @@ import com.heckmannch.birthdaybuddy.ui.components.settings.SettingsItem
 import com.heckmannch.birthdaybuddy.ui.components.settings.SettingsSection
 import com.heckmannch.birthdaybuddy.ui.components.settings.SettingsSubpageScaffold
 import com.heckmannch.birthdaybuddy.ui.components.settings.SettingsSwitchItem
+import com.heckmannch.birthdaybuddy.ui.screens.home.components.labels.toDisplayLabel
 import com.heckmannch.birthdaybuddy.ui.screens.settings.subscreens.calendar.components.SetupStepsCard
 import com.heckmannch.birthdaybuddy.ui.theme.AlphaSettingsOutlineMuted
 import com.heckmannch.birthdaybuddy.ui.theme.BirthdayBuddyTheme
 import com.heckmannch.birthdaybuddy.ui.theme.BorderWidthThin
 import com.heckmannch.birthdaybuddy.ui.theme.CalendarPresetColors
 import com.heckmannch.birthdaybuddy.ui.theme.IconSizeNormal
+
+private sealed interface ColorPickerTarget {
+    data class Standard(val type: CalendarSyncRepository.CalendarType) : ColorPickerTarget
+    data class CustomEvent(val eventKey: String) : ColorPickerTarget
+}
 
 /**
  * Entry point for the Calendar Synchronization settings subpage.
@@ -54,13 +60,16 @@ fun CalendarSettingsScreen(
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val calendarSyncEnabled = uiState.calendarSyncEnabled
     val otherEventsEnabled = uiState.otherEventsEnabled
+    val anniversaryEnabled = uiState.anniversaryEnabled
+    val nameDayEnabled = uiState.nameDayEnabled
     val birthdayColor = uiState.birthdayCalendarColor
     val anniversaryColor = uiState.anniversaryCalendarColor
     val nameDayColor = uiState.nameDayCalendarColor
+    val customEventCalendars = uiState.customEventCalendars
     val hasPermission = uiState.hasCalendarPermission
 
-    var activeColorPickerType by remember {
-        mutableStateOf<CalendarSyncRepository.CalendarType?>(null)
+    var activeColorPickerTarget by remember {
+        mutableStateOf<ColorPickerTarget?>(null)
     }
     var activeColorPickerInitialColor by remember { mutableStateOf(Color.Unspecified) }
 
@@ -98,13 +107,20 @@ fun CalendarSettingsScreen(
         calendarSyncEnabled = calendarSyncEnabled && hasPermission,
         hasPermission = hasPermission,
         otherEventsEnabled = otherEventsEnabled,
+        anniversaryEnabled = anniversaryEnabled,
+        nameDayEnabled = nameDayEnabled,
         birthdayColor = birthdayColor,
         anniversaryColor = anniversaryColor,
         nameDayColor = nameDayColor,
+        customEventCalendars = customEventCalendars,
         showBackButton = showBackButton,
         onToggleChange = onToggleChange,
         onColorRowClick = { type, color ->
-            activeColorPickerType = type
+            activeColorPickerTarget = ColorPickerTarget.Standard(type)
+            activeColorPickerInitialColor = color
+        },
+        onCustomEventColorRowClick = { eventKey, color ->
+            activeColorPickerTarget = ColorPickerTarget.CustomEvent(eventKey)
             activeColorPickerInitialColor = color
         },
         onRequestPermission = {
@@ -118,15 +134,30 @@ fun CalendarSettingsScreen(
         onNavigateBack = onNavigateBack,
     )
 
-    activeColorPickerType?.let { type ->
+    activeColorPickerTarget?.let { target ->
         val presets = remember { CalendarPresetColors }
         ColorPickerDialog(
             initialColor = activeColorPickerInitialColor,
             title = stringResource(R.string.calendar_color_picker_title),
-            onDismissRequest = { activeColorPickerType = null },
+            onDismissRequest = { activeColorPickerTarget = null },
             onColorSelected = { selectedColor ->
-                viewModel.onIntent(CalendarIntent.UpdateCalendarColor(type, selectedColor.toArgb()))
-                activeColorPickerType = null
+                when (target) {
+                    is ColorPickerTarget.Standard -> {
+                        viewModel.onIntent(
+                            CalendarIntent.UpdateCalendarColor(target.type, selectedColor.toArgb())
+                        )
+                    }
+
+                    is ColorPickerTarget.CustomEvent -> {
+                        viewModel.onIntent(
+                            CalendarIntent.UpdateCustomEventCalendarColor(
+                                target.eventKey,
+                                selectedColor.toArgb()
+                            )
+                        )
+                    }
+                }
+                activeColorPickerTarget = null
             },
             presets = presets,
         )
@@ -145,9 +176,13 @@ internal fun CalendarSettingsScreenContent(
     birthdayColor: Int,
     anniversaryColor: Int,
     nameDayColor: Int,
+    anniversaryEnabled: Boolean = otherEventsEnabled,
+    nameDayEnabled: Boolean = otherEventsEnabled,
+    customEventCalendars: List<CustomEventCalendarColorItem> = emptyList(),
     showBackButton: Boolean = true,
     onToggleChange: (Boolean) -> Unit = {},
     onColorRowClick: (CalendarSyncRepository.CalendarType, Color) -> Unit = { _, _ -> },
+    onCustomEventColorRowClick: (String, Color) -> Unit = { _, _ -> },
     onRequestPermission: () -> Unit = {},
     onNavigateBack: () -> Unit = {},
 ) {
@@ -181,7 +216,7 @@ internal fun CalendarSettingsScreenContent(
                             )
                         },
                     )
-                    FoldingVisibility(visible = otherEventsEnabled) {
+                    FoldingVisibility(visible = otherEventsEnabled && anniversaryEnabled) {
                         SettingsItem(
                             title = stringResource(R.string.calendar_color_anniversaries),
                             leadingContent = { CalendarColorDot(color = Color(anniversaryColor)) },
@@ -193,7 +228,7 @@ internal fun CalendarSettingsScreenContent(
                             },
                         )
                     }
-                    FoldingVisibility(visible = otherEventsEnabled) {
+                    FoldingVisibility(visible = otherEventsEnabled && nameDayEnabled) {
                         SettingsItem(
                             title = stringResource(R.string.calendar_color_namedays),
                             leadingContent = { CalendarColorDot(color = Color(nameDayColor)) },
@@ -201,6 +236,19 @@ internal fun CalendarSettingsScreenContent(
                                 onColorRowClick(
                                     CalendarSyncRepository.CalendarType.NAMEDAY,
                                     Color(nameDayColor),
+                                )
+                            },
+                        )
+                    }
+                    customEventCalendars.forEach { customItem ->
+                        val displayName = customItem.eventKey.toDisplayLabel()
+                        SettingsItem(
+                            title = stringResource(R.string.calendar_color_custom_event, displayName),
+                            leadingContent = { CalendarColorDot(color = Color(customItem.color)) },
+                            onClick = {
+                                onCustomEventColorRowClick(
+                                    customItem.eventKey,
+                                    Color(customItem.color),
                                 )
                             },
                         )

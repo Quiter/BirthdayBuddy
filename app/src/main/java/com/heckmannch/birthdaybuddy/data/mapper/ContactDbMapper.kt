@@ -1,6 +1,7 @@
 package com.heckmannch.birthdaybuddy.data.mapper
 
 import com.heckmannch.birthdaybuddy.data.local.ContactEntity
+import com.heckmannch.birthdaybuddy.data.local.Converters
 import com.heckmannch.birthdaybuddy.data.local.GiftIdeaConverters
 import com.heckmannch.birthdaybuddy.domain.model.Contact
 import dagger.Reusable
@@ -11,10 +12,11 @@ import javax.inject.Inject
  */
 @Reusable
 class ContactDbMapper @Inject constructor(
-    private val giftIdeaConverters: GiftIdeaConverters
+    private val giftIdeaConverters: GiftIdeaConverters,
+    private val converters: Converters = Converters()
 ) {
 
-    constructor() : this(GiftIdeaConverters())
+    constructor() : this(GiftIdeaConverters(), Converters())
 
     /**
      * Converts a database [ContactEntity] into a domain [Contact] model.
@@ -27,6 +29,7 @@ class ContactDbMapper @Inject constructor(
             birthday = entity.birthday,
             anniversary = entity.anniversary,
             nameDay = entity.nameDay,
+            customEvents = converters.toCustomEventsMap(entity.customEventsJson),
             imageUri = entity.imageUri,
             phoneNumber = entity.phoneNumber,
             isFavorite = entity.isFavorite,
@@ -55,6 +58,7 @@ class ContactDbMapper @Inject constructor(
             birthday = domain.birthday,
             anniversary = domain.anniversary,
             nameDay = domain.nameDay,
+            customEventsJson = converters.fromCustomEventsMap(domain.customEvents),
             imageUri = domain.imageUri,
             phoneNumber = domain.phoneNumber,
             isFavorite = domain.isFavorite,

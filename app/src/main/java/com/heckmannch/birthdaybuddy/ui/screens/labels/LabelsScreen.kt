@@ -3,10 +3,14 @@
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -15,11 +19,16 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalHapticFeedback
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.heading
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.heckmannch.birthdaybuddy.R
 import com.heckmannch.birthdaybuddy.domain.model.ContactLabels
 import com.heckmannch.birthdaybuddy.ui.model.HomeUiState
 import com.heckmannch.birthdaybuddy.ui.model.LabelManagementModel
@@ -32,12 +41,14 @@ import com.heckmannch.birthdaybuddy.ui.screens.labels.components.LabelsHeader
 import com.heckmannch.birthdaybuddy.ui.screens.settings.subscreens.labels.LabelIntent
 import com.heckmannch.birthdaybuddy.ui.screens.settings.subscreens.labels.LabelUiState
 import com.heckmannch.birthdaybuddy.ui.screens.settings.subscreens.labels.LabelViewModel
+import com.heckmannch.birthdaybuddy.ui.screens.settings.subscreens.labels.LabelWithContactsUiModel
 import com.heckmannch.birthdaybuddy.ui.theme.BirthdayBuddyTheme
+import com.heckmannch.birthdaybuddy.ui.theme.SpacingExtraSmall
 import com.heckmannch.birthdaybuddy.ui.theme.SpacingNormal
 import com.heckmannch.birthdaybuddy.ui.theme.SpacingSmall
 
 /**
- * Screen displaying and managing contact labels.
+ * Screen displaying and managing contact labels and pseudo-labels.
  *
  * ### ARCHITECTURAL RULE:
  * [LabelsScreen] displays ONLY label management cards and label options.
@@ -45,10 +56,11 @@ import com.heckmannch.birthdaybuddy.ui.theme.SpacingSmall
  * Do NOT append contact lists or contact groups below the label cards.
  * Label creation is triggered via the [LabelsHeader] action icon (NO FloatingActionButton).
  *
- * Uses expandable frosted glass cards built on the central `GlassCardLayout`.
- * Each card allows:
- * - Direct tap on card surface or expand button: Opens/closes label details and granular controls.
- * - Tap on leading selection indicator: Selects/activates the label filter for the app.
+ * Sections below [AllLabelsCard] are strictly ordered and omitted when empty:
+ * 1. Unrestricted active labels (no header)
+ * 2. Other Events (`R.string.settings_other_events_title`)
+ * 3. Hidden labels (`R.string.labels_section_hidden`)
+ * 4. Ignored labels (`R.string.labels_section_ignored`)
  */
 @Composable
 fun LabelsScreen(
@@ -91,9 +103,6 @@ fun LabelsScreenContent(
     onUpdateLabelConfig: (name: String, hidden: Boolean, ignored: Boolean, isSystem: Boolean, notificationsEnabled: Boolean, showInWidget: Boolean) -> Unit = { _, _, _, _, _, _ -> },
 ) {
     val haptic = LocalHapticFeedback.current
-    val allContacts = uiState.contacts ?: emptyList()
-    val availableLabels = labelUiState.labels
-
     var showAddLabelDialog by remember { mutableStateOf(false) }
 
     val activeLabelFilter = uiState.selectedLabel
@@ -107,6 +116,11 @@ fun LabelsScreenContent(
                 showAddLabelDialog = false
             }
         )
+    }
+
+    val onSelectLabel: (String) -> Unit = { labelName ->
+        haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+        actions.onLabelSelected(if (activeLabelFilter == labelName) null else labelName)
     }
 
     Scaffold(
@@ -131,11 +145,11 @@ fun LabelsScreenContent(
             ),
             verticalArrangement = Arrangement.spacedBy(SpacingSmall),
         ) {
-            // 1. "Alle Labels" Card
+            // "Alle Labels" Card
             item(key = "all_labels_card") {
                 AllLabelsCard(
                     isActive = activeLabelFilter == null,
-                    contactsCount = allContacts.count { it.labels.isNotEmpty() },
+                    contactsCount = labelUiState.allLabeledContactsCount,
                     onClick = {
                         haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                         actions.onLabelSelected(null)
@@ -143,32 +157,98 @@ fun LabelsScreenContent(
                 )
             }
 
-            // 2. Expandable Morphe-style Label Cards
-            items(
-                items = availableLabels,
-                key = { it.name }
-            ) { label ->
-                val assignedContacts = remember(allContacts, label.name) {
-                    if (label.name == ContactLabels.LABEL_NO_BIRTHDAY) {
-                        allContacts.filter { it.birthday == null }
-                    } else {
-                        allContacts.filter { it.labels.contains(label.name) }
-                    }
-                }
+            // Section 1: Unrestricted active labels (no header)
+            labelSection(
+                sectionKey = "active",
+                headerTitle = null,
+                entries = labelUiState.activeLabels,
+                activeLabelFilter = activeLabelFilter,
+                onSelectLabel = onSelectLabel,
+                onUpdateLabelConfig = onUpdateLabelConfig,
+            )
 
-                LabelCard(
-                    label = label,
-                    isActive = activeLabelFilter == label.name,
-                    assignedContacts = assignedContacts,
-                    onSelectLabel = {
-                        haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                        actions.onLabelSelected(if (activeLabelFilter == label.name) null else label.name)
-                    },
-                    onConfigChanged = onUpdateLabelConfig,
-                )
-            }
+            // Section 2: "Weitere Ereignisse" (uses identical string resource as Settings)
+            labelSection(
+                sectionKey = "other_events",
+                headerTitle = { stringResource(R.string.settings_other_events_title) },
+                entries = labelUiState.otherEventLabels,
+                activeLabelFilter = activeLabelFilter,
+                onSelectLabel = onSelectLabel,
+                onUpdateLabelConfig = onUpdateLabelConfig,
+            )
+
+            // Section 3: Verborgene Labels
+            labelSection(
+                sectionKey = "hidden",
+                headerTitle = { stringResource(R.string.labels_section_hidden) },
+                entries = labelUiState.hiddenLabels,
+                activeLabelFilter = activeLabelFilter,
+                onSelectLabel = onSelectLabel,
+                onUpdateLabelConfig = onUpdateLabelConfig,
+            )
+
+            // Section 4: Ignorierte Labels
+            labelSection(
+                sectionKey = "ignored",
+                headerTitle = { stringResource(R.string.labels_section_ignored) },
+                entries = labelUiState.ignoredLabels,
+                activeLabelFilter = activeLabelFilter,
+                onSelectLabel = onSelectLabel,
+                onUpdateLabelConfig = onUpdateLabelConfig,
+            )
         }
     }
+}
+
+private fun LazyListScope.labelSection(
+    sectionKey: String,
+    headerTitle: (@Composable () -> String)?,
+    entries: List<LabelWithContactsUiModel>,
+    activeLabelFilter: String?,
+    onSelectLabel: (String) -> Unit,
+    onUpdateLabelConfig: (String, Boolean, Boolean, Boolean, Boolean, Boolean) -> Unit,
+) {
+    if (entries.isEmpty()) return
+
+    if (headerTitle != null) {
+        item(key = "section_header_$sectionKey") {
+            LabelsSectionHeader(title = headerTitle())
+        }
+    }
+
+    items(
+        items = entries,
+        key = { it.label.name },
+    ) { entry ->
+        LabelCard(
+            label = entry.label,
+            isActive = activeLabelFilter == entry.label.name,
+            assignedContacts = entry.assignedContacts,
+            onSelectLabel = { onSelectLabel(entry.label.name) },
+            onConfigChanged = onUpdateLabelConfig,
+        )
+    }
+}
+
+@Composable
+private fun LabelsSectionHeader(
+    title: String,
+    modifier: Modifier = Modifier,
+) {
+    Text(
+        text = title,
+        style = MaterialTheme.typography.titleSmall,
+        fontWeight = FontWeight.SemiBold,
+        color = MaterialTheme.colorScheme.primary,
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(
+                start = SpacingExtraSmall,
+                end = SpacingExtraSmall,
+                top = SpacingSmall,
+            )
+            .semantics { heading() },
+    )
 }
 
 @Preview(showBackground = true)
@@ -178,32 +258,81 @@ private fun LabelsScreenPreview() {
         LabelsScreenContent(
             uiState = SampleData.homeUiState,
             labelUiState = LabelUiState(
-                labels = listOf(
-                    LabelManagementModel(
-                        name = "Familie",
-                        isHiddenFromFilter = false,
-                        isIgnored = false,
-                        isSystem = true,
-                        notificationsEnabled = true,
-                        showInWidget = true,
+                activeLabels = listOf(
+                    LabelWithContactsUiModel(
+                        label = LabelManagementModel(
+                            name = "Familie",
+                            isHiddenFromFilter = false,
+                            isIgnored = false,
+                            isSystem = true,
+                            notificationsEnabled = true,
+                            showInWidget = true,
+                        ),
+                        assignedContacts = SampleData.sampleContacts,
                     ),
-                    LabelManagementModel(
-                        name = "Freunde",
-                        isHiddenFromFilter = false,
-                        isIgnored = false,
-                        isSystem = false,
-                        notificationsEnabled = true,
-                        showInWidget = true,
+                    LabelWithContactsUiModel(
+                        label = LabelManagementModel(
+                            name = ContactLabels.LABEL_NO_BIRTHDAY,
+                            isHiddenFromFilter = false,
+                            isIgnored = false,
+                            isSystem = false,
+                            notificationsEnabled = false,
+                            showInWidget = false,
+                        ),
+                        assignedContacts = emptyList(),
                     ),
-                    LabelManagementModel(
-                        name = "Arbeit",
-                        isHiddenFromFilter = true,
-                        isIgnored = false,
-                        isSystem = false,
-                        notificationsEnabled = false,
-                        showInWidget = false,
+                ),
+                otherEventLabels = listOf(
+                    LabelWithContactsUiModel(
+                        label = LabelManagementModel(
+                            name = ContactLabels.LABEL_ANNIVERSARY,
+                            isHiddenFromFilter = false,
+                            isIgnored = false,
+                            isSystem = false,
+                            notificationsEnabled = true,
+                            showInWidget = true,
+                        ),
+                        assignedContacts = SampleData.sampleContacts.take(2),
                     ),
-                )
+                    LabelWithContactsUiModel(
+                        label = LabelManagementModel(
+                            name = ContactLabels.customEventLabel("Jahrestag"),
+                            isHiddenFromFilter = false,
+                            isIgnored = false,
+                            isSystem = false,
+                            notificationsEnabled = true,
+                            showInWidget = true,
+                        ),
+                        assignedContacts = SampleData.sampleContacts.take(1),
+                    ),
+                ),
+                hiddenLabels = listOf(
+                    LabelWithContactsUiModel(
+                        label = LabelManagementModel(
+                            name = "Arbeit",
+                            isHiddenFromFilter = true,
+                            isIgnored = false,
+                            isSystem = false,
+                            notificationsEnabled = false,
+                            showInWidget = false,
+                        ),
+                        assignedContacts = SampleData.sampleContacts.take(1),
+                    ),
+                ),
+                ignoredLabels = listOf(
+                    LabelWithContactsUiModel(
+                        label = LabelManagementModel(
+                            name = "Spam",
+                            isHiddenFromFilter = false,
+                            isIgnored = true,
+                            isSystem = false,
+                            notificationsEnabled = false,
+                            showInWidget = false,
+                        ),
+                        assignedContacts = emptyList(),
+                    ),
+                ),
+                allLabeledContactsCount = SampleData.sampleContacts.size,
             ),
             actions = SampleData.homeActions,
         )

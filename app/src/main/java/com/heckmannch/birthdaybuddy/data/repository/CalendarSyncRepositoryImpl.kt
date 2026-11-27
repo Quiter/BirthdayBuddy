@@ -5,9 +5,13 @@ import android.provider.CalendarContract
 import android.util.Log
 import com.heckmannch.birthdaybuddy.data.local.AppSettingsDao
 import com.heckmannch.birthdaybuddy.data.local.AppSettingsEntity
+import com.heckmannch.birthdaybuddy.data.local.Converters
 import com.heckmannch.birthdaybuddy.di.IoDispatcher
+import com.heckmannch.birthdaybuddy.domain.model.AppSettings
 import com.heckmannch.birthdaybuddy.domain.model.Contact
+import com.heckmannch.birthdaybuddy.domain.model.ContactLabels
 import com.heckmannch.birthdaybuddy.domain.repository.CalendarSyncRepository
+import com.heckmannch.birthdaybuddy.domain.usecase.GetDetectedOtherEventsUseCase
 import com.heckmannch.birthdaybuddy.domain.util.CalendarStringProvider
 import com.heckmannch.birthdaybuddy.util.hasYear
 import com.heckmannch.birthdaybuddy.util.mergeNames
@@ -20,17 +24,18 @@ import javax.inject.Inject
 
 /**
  * Implementation of [CalendarSyncRepository] that synchronizes contact events
- * (such as birthdays, anniversaries, and name days) with Android's system calendar database.
+ * (birthdays, anniversaries, name days, and dynamic custom date-field events)
+ * with Android's system calendar database.
  *
- * It uses content providers to manage custom application-specific calendars ("BirthdayBuddy")
- * and schedules recurring sync operations. Design decisions include offloading the heavy ContentProvider
- * batch operations to [kotlinx.coroutines.Dispatchers.IO] to keep UI threads responsive.
+ * Uses [GetDetectedOtherEventsUseCase] as the shared source of truth for non-birthday
+ * event labels, ensuring full consistency with the "Other Events" settings screen.
  */
 class CalendarSyncRepositoryImpl @Inject constructor(
     private val appSettingsDao: AppSettingsDao,
     private val systemCalendarDataSource: SystemCalendarDataSource,
     private val calendarStringProvider: CalendarStringProvider,
     @IoDispatcher private val ioDispatcher: CoroutineDispatcher,
+    private val converters: Converters = Converters(),
 ) : CalendarSyncRepository {
 
     private enum class LocalCalendarType(val calendarName: String) {
@@ -46,6 +51,16 @@ class CalendarSyncRepositoryImpl @Inject constructor(
                     CalendarSyncRepository.CalendarType.NAMEDAY -> NAMEDAY
                 }
         }
+    }
+
+    private fun customEventCalendarName(eventKey: String): String =
+        "$CUSTOM_EVENT_CALENDAR_PREFIX$eventKey"
+
+    private fun resolveCustomEventDisplayName(eventKey: String): String = when {
+        eventKey == ContactLabels.LABEL_OTHER_EVENT -> calendarStringProvider.calendarNameOtherEvent()
+        ContactLabels.isCustomEventLabel(eventKey) ->
+            ContactLabels.extractCustomEventName(eventKey) ?: eventKey
+        else -> eventKey
     }
 
     override fun hasCalendarPermissions(): Boolean {
@@ -72,8 +87,21 @@ class CalendarSyncRepositoryImpl @Inject constructor(
             )
         }
 
+    private suspend fun getOrCreateCustomEventCalendar(
+        eventKey: String,
+        customColors: Map<String, Int>,
+    ): Long? = withContext(ioDispatcher) {
+        val preferredColor = customColors[eventKey] ?: AppSettings.DEFAULT_CUSTOM_EVENT_CALENDAR_COLOR
+        val displayName = resolveCustomEventDisplayName(eventKey)
+        systemCalendarDataSource.getOrCreateCalendar(
+            customEventCalendarName(eventKey),
+            displayName,
+            preferredColor
+        )
+    }
+
     private suspend fun cleanCalendars(): Unit = withContext(ioDispatcher) {
-        val activeNames = setOf(
+        val fixedNames = setOf(
             LocalCalendarType.BIRTHDAY.calendarName,
             LocalCalendarType.ANNIVERSARY.calendarName,
             LocalCalendarType.NAMEDAY.calendarName
@@ -82,15 +110,17 @@ class CalendarSyncRepositoryImpl @Inject constructor(
         val seenActiveIds = mutableMapOf<String, Long>()
 
         for ((id, name, accountName, accountType) in calendars) {
-
-            when (name) {
+            val isManagedName = name in fixedNames || name.startsWith(CUSTOM_EVENT_CALENDAR_PREFIX)
+            when {
                 // Delete legacy BirthdayBuddyCalendar (under phone account)
-                SystemCalendarDataSource.LEGACY_CALENDAR_NAME -> {
+                name == SystemCalendarDataSource.LEGACY_CALENDAR_NAME -> {
                     systemCalendarDataSource.deleteCalendarById(id, accountName, accountType)
                 }
 
-                in activeNames -> {
-                    if (accountName == SystemCalendarDataSource.ACCOUNT_NAME && accountType == CalendarContract.ACCOUNT_TYPE_LOCAL) {
+                isManagedName -> {
+                    if (accountName == SystemCalendarDataSource.ACCOUNT_NAME &&
+                        accountType == CalendarContract.ACCOUNT_TYPE_LOCAL
+                    ) {
                         val existingId = seenActiveIds[name]
                         if (existingId == null) {
                             seenActiveIds[name] = id
@@ -125,11 +155,28 @@ class CalendarSyncRepositoryImpl @Inject constructor(
         }
     }
 
+    private suspend fun deleteStaleCustomEventCalendars(activeCustomCalendarNames: Set<String>) {
+        val calendars = systemCalendarDataSource.queryAllCalendars()
+        for ((id, name, accountName, accountType) in calendars) {
+            if (name.startsWith(CUSTOM_EVENT_CALENDAR_PREFIX) && name !in activeCustomCalendarNames) {
+                systemCalendarDataSource.deleteCalendarById(id, accountName, accountType)
+            }
+        }
+    }
+
     private fun formatAnniversaryDescription(anniversary: LocalDate): String {
         return if (anniversary.hasYear) {
             calendarStringProvider.calendarEventAnniversaryYear(anniversary.year)
         } else {
             calendarStringProvider.calendarEventAnniversaryNoYear()
+        }
+    }
+
+    private fun formatCustomEventDescription(eventName: String, date: LocalDate): String {
+        return if (date.hasYear) {
+            calendarStringProvider.calendarEventCustomYear(eventName, date.year)
+        } else {
+            calendarStringProvider.calendarEventCustomNoYear(eventName)
         }
     }
 
@@ -151,11 +198,28 @@ class CalendarSyncRepositoryImpl @Inject constructor(
             calendarId != null && systemCalendarDataSource.updateCalendarColor(calendarId, newColor)
         }
 
+    override suspend fun updateCustomEventCalendarColor(
+        eventKey: String,
+        newColor: Int
+    ): Boolean = withContext(ioDispatcher) {
+        val currentSettings = appSettingsDao.getSettingsImmediate() ?: AppSettingsEntity()
+        val currentColors = converters.toIntMap(currentSettings.customEventCalendarColorsJson).toMutableMap()
+        currentColors[eventKey] = newColor
+        appSettingsDao.upsertSettings(
+            currentSettings.copy(
+                customEventCalendarColorsJson = converters.fromIntMap(currentColors)
+            )
+        )
+
+        val calendarId = systemCalendarDataSource.findCalendarIdByName(customEventCalendarName(eventKey))
+        calendarId != null && systemCalendarDataSource.updateCalendarColor(calendarId, newColor)
+    }
+
     override suspend fun deleteCalendar(): Boolean = withContext(ioDispatcher) {
         val currentSettings = appSettingsDao.getSettingsImmediate() ?: AppSettingsEntity()
 
         var deletedAny = false
-        val allTargetNames = setOf(
+        val fixedTargetNames = setOf(
             SystemCalendarDataSource.LEGACY_CALENDAR_NAME,
             LocalCalendarType.BIRTHDAY.calendarName,
             LocalCalendarType.ANNIVERSARY.calendarName,
@@ -163,8 +227,7 @@ class CalendarSyncRepositoryImpl @Inject constructor(
         )
         val calendars = systemCalendarDataSource.queryAllCalendars()
         for ((id, name, accountName, accountType) in calendars) {
-
-            if (name in allTargetNames) {
+            if (name in fixedTargetNames || name.startsWith(CUSTOM_EVENT_CALENDAR_PREFIX)) {
                 systemCalendarDataSource.deleteCalendarById(id, accountName, accountType)
                 deletedAny = true
             }
@@ -189,14 +252,39 @@ class CalendarSyncRepositoryImpl @Inject constructor(
 
             val currentSettings = appSettingsDao.getSettingsImmediate() ?: AppSettingsEntity()
             val otherEventsEnabled = currentSettings.otherEventsEnabled
+            val disabledOtherEventLabels = currentSettings.disabledOtherEventLabels.toSet()
+            val customColors = converters.toIntMap(currentSettings.customEventCalendarColorsJson)
+
+            val anniversaryEnabled = otherEventsEnabled &&
+                ContactLabels.LABEL_ANNIVERSARY !in disabledOtherEventLabels
+            val nameDayEnabled = otherEventsEnabled &&
+                ContactLabels.LABEL_NAME_DAY !in disabledOtherEventLabels
+
+            // Discover active dynamic custom/other events from the shared source of truth
+            val activeCustomEventKeys = if (otherEventsEnabled) {
+                GetDetectedOtherEventsUseCase.detect(contacts, disabledOtherEventLabels)
+                    .asSequence()
+                    .filter { it.isEnabled && ContactLabels.isDynamicCustomEventKey(it.eventKey) }
+                    .map { it.eventKey }
+                    .toList()
+            } else {
+                emptyList()
+            }
 
             // Retrieve or create IDs for all active calendars
             val birthdayCalId =
                 getOrCreateCalendar(LocalCalendarType.BIRTHDAY) ?: return@withContext false
             val anniversaryCalId =
-                if (otherEventsEnabled) getOrCreateCalendar(LocalCalendarType.ANNIVERSARY) else null
+                if (anniversaryEnabled) getOrCreateCalendar(LocalCalendarType.ANNIVERSARY) else null
             val nameDayCalId =
-                if (otherEventsEnabled) getOrCreateCalendar(LocalCalendarType.NAMEDAY) else null
+                if (nameDayEnabled) getOrCreateCalendar(LocalCalendarType.NAMEDAY) else null
+
+            val customEventCalIds = mutableMapOf<String, Long>()
+            for (eventKey in activeCustomEventKeys) {
+                getOrCreateCustomEventCalendar(eventKey, customColors)?.let { calId ->
+                    customEventCalIds[eventKey] = calId
+                }
+            }
 
             try {
                 // Clear birthdays
@@ -205,6 +293,14 @@ class CalendarSyncRepositoryImpl @Inject constructor(
                 // Clear anniversaries and name days, or delete calendar if disabled
                 prepareOptionalCalendar(anniversaryCalId, LocalCalendarType.ANNIVERSARY)
                 prepareOptionalCalendar(nameDayCalId, LocalCalendarType.NAMEDAY)
+
+                // Clear active custom event calendars and delete stale/disabled ones
+                customEventCalIds.values.forEach { calId ->
+                    systemCalendarDataSource.clearCalendarEvents(calId)
+                }
+                deleteStaleCustomEventCalendars(
+                    activeCustomEventKeys.mapTo(mutableSetOf()) { customEventCalendarName(it) }
+                )
 
                 val operations = ArrayList<ContentProviderOperation>()
 
@@ -256,15 +352,17 @@ class CalendarSyncRepositoryImpl @Inject constructor(
                 val contactsByLookupKey = contacts.associateBy { it.lookupKey }
                 val processedAnniversaries = HashSet<String>()
 
-
                 // Deduplicate contacts by lookupKey to avoid creating duplicate events for the same contact
                 val uniqueContacts = contacts.distinctBy { it.lookupKey }
 
-                for ((_, lookupKey, fullName, birthday, anniversary, nameDay, _, _, _, _, _, _, _, spouseKey) in uniqueContacts) {
+                for (contact in uniqueContacts) {
+                    val lookupKey = contact.lookupKey
+                    val fullName = contact.fullName
+                    val spouseKey = contact.spouseLookupKey
+
                     // 1. Insert birthdays into the birthday calendar
-                    birthday?.let { birthday ->
-                        val title =
-                            calendarStringProvider.calendarEventTitle(fullName)
+                    contact.birthday?.let { birthday ->
+                        val title = calendarStringProvider.calendarEventTitle(fullName)
                         val description = if (birthday.hasYear) {
                             calendarStringProvider.calendarEventBirthYear(birthday.year)
                         } else {
@@ -274,8 +372,8 @@ class CalendarSyncRepositoryImpl @Inject constructor(
                     }
 
                     // 2. Insert anniversaries into the anniversary calendar (if enabled)
-                    if (otherEventsEnabled && anniversaryCalId != null) {
-                        anniversary?.let { anniversary ->
+                    if (anniversaryEnabled && anniversaryCalId != null) {
+                        contact.anniversary?.let { anniversary ->
                             val description = formatAnniversaryDescription(anniversary)
                             if (spouseKey != null) {
                                 if (!processedAnniversaries.contains(lookupKey)) {
@@ -310,15 +408,25 @@ class CalendarSyncRepositoryImpl @Inject constructor(
                     }
 
                     // 3. Insert name days into the name day calendar (if enabled)
-                    if (otherEventsEnabled && nameDayCalId != null) {
-                        nameDay?.let { nameDay ->
-                            val title = calendarStringProvider.calendarEventNameDayTitle(
-                                fullName
-                            )
-                            val description = calendarStringProvider.calendarEventNameDayDescription(
-                                fullName
-                            )
+                    if (nameDayEnabled && nameDayCalId != null) {
+                        contact.nameDay?.let { nameDay ->
+                            val title = calendarStringProvider.calendarEventNameDayTitle(fullName)
+                            val description = calendarStringProvider.calendarEventNameDayDescription(fullName)
                             addEvent(nameDayCalId, nameDay, title, description)
+                        }
+                    }
+
+                    // 4. Insert enabled custom/other date-field events into their respective calendars
+                    if (customEventCalIds.isNotEmpty()) {
+                        for ((eventKey, eventDate) in contact.customEvents) {
+                            val calId = customEventCalIds[eventKey] ?: continue
+                            val eventDisplayName = resolveCustomEventDisplayName(eventKey)
+                            val title = calendarStringProvider.calendarEventCustomTitle(
+                                fullName,
+                                eventDisplayName
+                            )
+                            val description = formatCustomEventDescription(eventDisplayName, eventDate)
+                            addEvent(calId, eventDate, title, description)
                         }
                     }
                 }
@@ -339,5 +447,6 @@ class CalendarSyncRepositoryImpl @Inject constructor(
         private const val TAG = "CalendarSyncRepo"
         private const val BATCH_SIZE = 400
         private const val DEFAULT_EVENT_YEAR = 2000
+        internal const val CUSTOM_EVENT_CALENDAR_PREFIX = "BirthdayBuddy_Event_"
     }
 }

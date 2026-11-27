@@ -83,6 +83,10 @@ class ContactRepositoryImpl @Inject constructor(
         .map { it.otherEventsEnabled }
         .distinctUntilChanged()
 
+    override val disabledOtherEventLabels: Flow<Set<String>> = settingsRepository.settings
+        .map { it.disabledOtherEventLabels.toSet() }
+        .distinctUntilChanged()
+
     override val labelsEnabled: Flow<Boolean> = settingsRepository.settings
         .map { it.labelsEnabled }
         .distinctUntilChanged()

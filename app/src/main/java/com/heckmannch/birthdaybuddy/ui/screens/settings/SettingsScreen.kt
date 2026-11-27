@@ -89,8 +89,6 @@ import com.heckmannch.birthdaybuddy.ui.components.settings.SettingsDetailPane
 import com.heckmannch.birthdaybuddy.ui.components.settings.SettingsDetailPlaceholder
 import com.heckmannch.birthdaybuddy.ui.screens.settings.subscreens.labels.LabelIntent
 import com.heckmannch.birthdaybuddy.ui.screens.settings.subscreens.labels.LabelViewModel
-import com.heckmannch.birthdaybuddy.ui.screens.settings.subscreens.notifications.NotificationIntent
-import com.heckmannch.birthdaybuddy.ui.screens.settings.subscreens.notifications.NotificationViewModel
 import com.heckmannch.birthdaybuddy.ui.theme.BirthdayBuddyTheme
 import com.heckmannch.birthdaybuddy.ui.theme.CornerRadiusSmall
 import com.heckmannch.birthdaybuddy.ui.theme.IconSizeLarge
@@ -107,6 +105,7 @@ import kotlinx.serialization.Serializable
 enum class SettingsTab {
     NOTIFICATIONS,
     CALENDAR,
+    OTHER_EVENTS,
     BACKUP,
     THEME,
     SYNC,
@@ -122,6 +121,7 @@ enum class SettingsTab {
             THEME -> R.string.settings_theme_title
             NOTIFICATIONS -> R.string.settings_notifications_title
             CALENDAR -> R.string.settings_calendar_title
+            OTHER_EVENTS -> R.string.settings_other_events_title
             SYNC -> R.string.settings_sync_title
             BACKUP -> R.string.settings_backup_title
             STORAGE -> R.string.storage_management_title
@@ -137,6 +137,7 @@ enum class SettingsTab {
             THEME -> R.string.settings_theme_desc
             NOTIFICATIONS -> R.string.settings_notifications_desc
             CALENDAR -> R.string.settings_calendar_desc
+            OTHER_EVENTS -> R.string.settings_other_events_desc
             SYNC -> R.string.settings_sync_desc
             BACKUP -> R.string.settings_backup_desc
             STORAGE -> R.string.storage_management_desc
@@ -151,6 +152,7 @@ enum class SettingsTab {
             THEME -> Icons.Rounded.Palette
             NOTIFICATIONS -> Icons.Rounded.Notifications
             CALENDAR -> Icons.Rounded.CalendarMonth
+            OTHER_EVENTS -> Icons.Rounded.Star
             SYNC -> Icons.Rounded.Sync
             BACKUP -> Icons.Rounded.Backup
             STORAGE -> Icons.Rounded.Storage
@@ -183,10 +185,8 @@ fun SettingsScreen(
     bottomBarHeight: Dp = 0.dp,
     onSubscreenChanged: (Boolean) -> Unit = {},
     labelViewModel: LabelViewModel = hiltViewModel(),
-    notificationViewModel: NotificationViewModel = hiltViewModel(),
 ) {
     val labelUiState by labelViewModel.uiState.collectAsStateWithLifecycle()
-    val notificationUiState by notificationViewModel.uiState.collectAsStateWithLifecycle()
 
     SettingsContent(
         initialTab = initialTab,
@@ -196,8 +196,6 @@ fun SettingsScreen(
         onSubscreenChanged = onSubscreenChanged,
         labelsEnabled = labelUiState.labelsEnabled,
         onLabelsEnabledChanged = { labelViewModel.onIntent(LabelIntent.SetLabelsEnabled(it)) },
-        otherEventsEnabled = notificationUiState.otherEventsEnabled,
-        onOtherEventsEnabledChanged = { notificationViewModel.onIntent(NotificationIntent.SetOtherEventsEnabled(it)) },
     )
 }
 
@@ -216,8 +214,6 @@ internal fun SettingsContent(
     onSubscreenChanged: (Boolean) -> Unit = {},
     labelsEnabled: Boolean = true,
     onLabelsEnabledChanged: (Boolean) -> Unit = {},
-    otherEventsEnabled: Boolean = false,
-    onOtherEventsEnabledChanged: (Boolean) -> Unit = {},
 ) {
     val windowAdaptiveInfo = LocalWindowAdaptiveInfo.current
     val windowSizeClass = LocalWindowSizeClass.current
@@ -280,8 +276,6 @@ internal fun SettingsContent(
                     bottomBarHeight = bottomBarHeight,
                     labelsEnabled = labelsEnabled,
                     onLabelsEnabledChanged = onLabelsEnabledChanged,
-                    otherEventsEnabled = otherEventsEnabled,
-                    onOtherEventsEnabledChanged = onOtherEventsEnabledChanged,
                     onOpenTab = openTab,
                     onNavigateBack = onNavigateBack,
                 )
@@ -306,8 +300,6 @@ private fun SettingsOverviewPage(
     bottomBarHeight: Dp,
     labelsEnabled: Boolean,
     onLabelsEnabledChanged: (Boolean) -> Unit,
-    otherEventsEnabled: Boolean,
-    onOtherEventsEnabledChanged: (Boolean) -> Unit,
     onOpenTab: (SettingsTab) -> Unit,
     onNavigateBack: () -> Unit,
 ) {
@@ -371,8 +363,6 @@ private fun SettingsOverviewPage(
                             GeneralSettingsSection(
                                 labelsEnabled = labelsEnabled,
                                 onLabelsEnabledChanged = onLabelsEnabledChanged,
-                                otherEventsEnabled = otherEventsEnabled,
-                                onOtherEventsEnabledChanged = onOtherEventsEnabledChanged,
                                 onOpenTab = onOpenTab,
                             )
 
@@ -408,8 +398,6 @@ private fun SettingsOverviewPage(
 private fun GeneralSettingsSection(
     labelsEnabled: Boolean,
     onLabelsEnabledChanged: (Boolean) -> Unit,
-    otherEventsEnabled: Boolean,
-    onOtherEventsEnabledChanged: (Boolean) -> Unit,
     onOpenTab: (SettingsTab) -> Unit,
 ) {
     SettingsSection(title = stringResource(R.string.settings_section_general)) {
@@ -428,17 +416,7 @@ private fun GeneralSettingsSection(
                     stringResource(R.string.labels_enable_desc),
                 ),
             )
-            SettingsSwitchItem(
-                title = stringResource(R.string.settings_other_events_title),
-                subtitle = stringResource(R.string.settings_other_events_desc),
-                icon = Icons.Rounded.Star,
-                checked = otherEventsEnabled,
-                onCheckedChange = onOtherEventsEnabledChanged,
-                searchKeywords = listOf(
-                    stringResource(R.string.other_events_enable),
-                    stringResource(R.string.other_events_desc),
-                ),
-            )
+            SettingsSubpageLink(tab = SettingsTab.OTHER_EVENTS, onOpenTab = onOpenTab)
         }
     }
 }
@@ -573,6 +551,28 @@ private fun SubpageSearchMatches(onOpenTab: (SettingsTab) -> Unit) {
                 searchKeywords = listOf(
                     stringResource(R.string.calendar_color_anniversaries),
                     stringResource(R.string.calendar_color_namedays),
+                ),
+            )
+        }
+    }
+
+    // Other Events subpage items
+    SettingsSection(
+        title = stringResource(SettingsTab.OTHER_EVENTS.titleRes),
+        icon = SettingsTab.OTHER_EVENTS.icon,
+        onTitleClick = { onOpenTab(SettingsTab.OTHER_EVENTS) },
+    ) {
+        SettingsGroup {
+            SettingsItem(
+                onClick = { onOpenTab(SettingsTab.OTHER_EVENTS) },
+                title = stringResource(R.string.other_events_enable),
+                subtitle = stringResource(R.string.other_events_desc),
+                icon = Icons.Rounded.Star,
+                searchKeywords = listOf(
+                    stringResource(R.string.home_filter_anniversary),
+                    stringResource(R.string.home_filter_name_day),
+                    stringResource(R.string.home_filter_other_event),
+                    stringResource(R.string.other_events_section_detected),
                 ),
             )
         }

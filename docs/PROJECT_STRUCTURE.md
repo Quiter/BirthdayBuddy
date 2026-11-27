@@ -45,7 +45,7 @@
   - `PermissionChecker`: Plattformunabhängige Berechtigungsprüfung.
   - Modelle: `ContactLabels` (Pseudo-Labels), `CoupleSuggestion`, `GiftIdea`, `EventType` (Enum), `MessengerApp` (Enum).
 - **Use Cases (`domain.usecase`)**:
-  - Kontakte & Filter: `GetContactsUseCase`, `GetAvailableLabelsUseCase`.
+  - Kontakte & Filter: `GetContactsUseCase`, `GetAvailableLabelsUseCase`, `GetDetectedOtherEventsUseCase`, `GetCategorizedLabelsUseCase`.
   - Benachrichtigungen: `GetPendingNotificationsUseCase`, `SnoozeNotificationUseCase`, `SyncNotificationSchedulingUseCase`, `MarkNotificationAsDoneUseCase`, `DismissNotificationUseCase`, `CleanupOldNotificationsUseCase`.
   - Paar-Verknüpfungen: `GetCoupleSuggestionUseCase`, `LinkAsCoupleUseCase`, `UnlinkCoupleUseCase`, `IgnoreCoupleSuggestionUseCase`.
   - Geschenkideen: `ExportGiftIdeasUseCase`, `ImportGiftIdeasUseCase`.
@@ -85,6 +85,7 @@
     - `subscreens/labels/`: `LabelSettingsScreen`, `LabelViewModel`, `LabelUiState`.
     - `subscreens/notifications/`: `NotificationSettingsScreen`, `NotificationViewModel`, `NotificationUiState`.
     - `subscreens/calendar/`: `CalendarSettingsScreen`, `CalendarViewModel`, `CalendarUiState`.
+    - `subscreens/otherevents/`: `OtherEventsSettingsScreen`, `OtherEventsViewModel`, `OtherEventsUiState`.
     - `subscreens/backup/`: `BackupScreen`, `BackupViewModel`, `BackupUiState`.
     - `subscreens/theme/`: `ThemeSettingsScreen`, `ThemeViewModel`, `ThemeUiState`.
     - `subscreens/sync/`: `SyncSettingsScreen`, `SyncViewModel`.
@@ -122,7 +123,7 @@
 - **Utilities & Widgets**: `AlarmSchedulerTest`, `IntentParserTest`, `IntentExtrasTest`, `WidgetLayoutHelperTest`, `BirthdayWidgetWorkerTest`.
 
 ### 📁 Instrumentierte Integrationstests (`app/src/androidTest`)
-- DB-Migrationstests: `MigrationTest.kt` (V1–V11), `SettingsMigrationTest.kt` (V1–V10).
+- DB-Migrationstests: `MigrationTest.kt` (V1–V13), `SettingsMigrationTest.kt` (V1–V12).
 - Provider & Integration: `NotificationRepositoryTest`, `SystemContactDataSourceTest`, `CalendarSyncRepositoryTest`, `BirthdayItemInteractionTest`.
 
 ### 📸 Screenshot-Tests (`app/src/test/java/.../screenshot/`)
