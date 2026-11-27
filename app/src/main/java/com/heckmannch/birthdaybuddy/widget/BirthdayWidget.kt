@@ -37,7 +37,6 @@ import com.heckmannch.birthdaybuddy.R
 import com.heckmannch.birthdaybuddy.domain.model.Contact
 import com.heckmannch.birthdaybuddy.domain.repository.ContactRepository
 import com.heckmannch.birthdaybuddy.domain.util.ContactFilterLogic
-import com.heckmannch.birthdaybuddy.ui.theme.AlphaWidgetCard
 import com.heckmannch.birthdaybuddy.ui.theme.SpacingExtraSmall
 import com.heckmannch.birthdaybuddy.ui.theme.SpacingMedium
 import com.heckmannch.birthdaybuddy.ui.theme.SpacingSmall
@@ -202,8 +201,6 @@ class BirthdayWidget : GlanceAppWidget() {
             )
         }
 
-        val itemBackgroundColor = GlanceTheme.colors.surfaceVariant.getColor(context).copy(alpha = AlphaWidgetCard)
-
         Box(
             modifier = GlanceModifier
                 .height(blockHeight)
@@ -214,7 +211,7 @@ class BirthdayWidget : GlanceAppWidget() {
             Box(
                 modifier = GlanceModifier
                     .fillMaxSize()
-                    .background(itemBackgroundColor)
+                    .background(R.color.widget_card_background)
                     .cornerRadius(WidgetCornerRadius)
                     .padding(horizontal = SpacingMedium, vertical = SpacingExtraSmall),
                 contentAlignment = Alignment.Center,

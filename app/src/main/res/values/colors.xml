@@ -2,4 +2,6 @@
 <resources>
     <color name="launcher_background">#FFFFFF</color>
     <color name="shortcut_foreground">#6650a4</color>
+    <!-- M3 Light surfaceVariant (#E7E0EC) at 80% opacity (AlphaWidgetCard) for Glance widget cards -->
+    <color name="widget_card_background">#CCE7E0EC</color>
 </resources>

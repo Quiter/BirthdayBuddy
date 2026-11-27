@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- M3 Dark surfaceVariant (#49454F) at 80% opacity (AlphaWidgetCard) for Glance widget cards -->
+    <color name="widget_card_background">#CC49454F</color>
+</resources>

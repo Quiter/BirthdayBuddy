@@ -8,6 +8,7 @@ import com.heckmannch.birthdaybuddy.domain.util.NO_YEAR_MARKER
 import com.heckmannch.birthdaybuddy.ui.model.BirthdayTier
 import org.junit.Test
 import java.time.LocalDate
+import java.util.Locale
 
 /**
  * Unit tests for [ContactUiMapper].
@@ -247,5 +248,47 @@ class ContactUiMapperTest {
         assertThat(result[0].fullName).isEqualTo("Single")
         assertThat(result[1].fullName).isEqualTo("Alice & Bob")
         assertThat(result[1].isCouple).isTrue()
+    }
+
+    @Test
+    fun `toUiModel - reacts immediately to default Locale changes on same instance`() {
+        val originalLocale = Locale.getDefault()
+        try {
+            Locale.setDefault(Locale.ENGLISH)
+            val contactWithYear = Contact(
+                contactId = "loc_1",
+                lookupKey = "loc_key_1",
+                fullName = "Locale Test",
+                birthday = LocalDate.of(1990, 5, 20),
+            )
+            val contactWithoutYear = Contact(
+                contactId = "loc_2",
+                lookupKey = "loc_key_2",
+                fullName = "Locale No Year",
+                birthday = LocalDate.of(NO_YEAR_MARKER, 5, 20),
+            )
+
+            val englishWithYear = mapper.toUiModel(contactWithYear, today)
+            val englishWithoutYear = mapper.toUiModel(contactWithoutYear, today)
+            assertThat(englishWithYear.dateText).contains("May")
+            assertThat(englishWithYear.monthName).isEqualTo("May")
+            assertThat(englishWithoutYear.dateText).isEqualTo("20 May")
+
+            // Switch to German on the exact same mapper instance
+            Locale.setDefault(Locale.GERMAN)
+            val germanWithYear = mapper.toUiModel(contactWithYear, today)
+            val germanWithoutYear = mapper.toUiModel(contactWithoutYear, today)
+            assertThat(germanWithYear.dateText).contains("Mai")
+            assertThat(germanWithYear.monthName).isEqualTo("Mai")
+            assertThat(germanWithoutYear.dateText).isEqualTo("20. Mai")
+
+            // Switch back to English on the same instance
+            Locale.setDefault(Locale.ENGLISH)
+            val backToEnglish = mapper.toUiModel(contactWithYear, today)
+            assertThat(backToEnglish.dateText).contains("May")
+            assertThat(backToEnglish.monthName).isEqualTo("May")
+        } finally {
+            Locale.setDefault(originalLocale)
+        }
     }
 }

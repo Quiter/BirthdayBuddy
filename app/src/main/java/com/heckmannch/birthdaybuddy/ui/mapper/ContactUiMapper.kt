@@ -25,24 +25,44 @@ import javax.inject.Inject
  */
 @Reusable
 class ContactUiMapper @Inject constructor() {
-    private val dateFormatter = DateTimeFormatter.ofLocalizedDate(FormatStyle.LONG)
+    private data class LocaleFormatters(
+        val locale: Locale,
+        val dateFormatter: DateTimeFormatter,
+        val dayMonthFormatter: DateTimeFormatter,
+        val monthFormatter: DateTimeFormatter,
+    )
 
-    // Creates the best format ONLY for day/month based on the user's locale (e.g. "12. Mai" vs "May 12")
-    private val dayMonthFormatter = try {
-        DateTimeFormatter.ofPattern(
-            DateFormat.getBestDateTimePattern(Locale.getDefault(), "dMMMM"),
-            Locale.getDefault(),
-        )
-    } catch (_: Throwable) {
-        // Fallback for local JVM tests (where DateFormat is not mocked)
-        if (Locale.getDefault().language == Locale.GERMAN.language) {
-            DateTimeFormatter.ofPattern("d. MMMM", Locale.getDefault())
-        } else {
-            DateTimeFormatter.ofPattern("d MMMM", Locale.getDefault())
+    @Volatile
+    private var cachedFormatters: LocaleFormatters? = null
+
+    private fun getFormatters(): LocaleFormatters {
+        val currentLocale = Locale.getDefault()
+        val cached = cachedFormatters
+        if (cached != null && cached.locale == currentLocale) {
+            return cached
         }
+        return createFormatters(currentLocale).also { cachedFormatters = it }
     }
 
-    private val monthFormatter = DateTimeFormatter.ofPattern("MMMM", Locale.getDefault())
+    private fun createFormatters(locale: Locale): LocaleFormatters = LocaleFormatters(
+        locale = locale,
+        dateFormatter = DateTimeFormatter.ofLocalizedDate(FormatStyle.LONG).withLocale(locale),
+        // Creates the best format ONLY for day/month based on the user's locale (e.g. "12. Mai" vs "May 12")
+        dayMonthFormatter = try {
+            DateTimeFormatter.ofPattern(
+                DateFormat.getBestDateTimePattern(locale, "dMMMM"),
+                locale,
+            )
+        } catch (_: Throwable) {
+            // Fallback for local JVM tests (where DateFormat is not mocked)
+            if (locale.language == Locale.GERMAN.language) {
+                DateTimeFormatter.ofPattern("d. MMMM", locale)
+            } else {
+                DateTimeFormatter.ofPattern("d MMMM", locale)
+            }
+        },
+        monthFormatter = DateTimeFormatter.ofPattern("MMMM", locale),
+    )
 
     fun toUiModel(contact: Contact, today: LocalDate): ContactUiModel {
         return toUiModelForEvent(contact, today, EventType.BIRTHDAY)
@@ -74,6 +94,7 @@ class ContactUiMapper @Inject constructor() {
         eventDate: LocalDate?,
         id: String,
     ): ContactUiModel {
+        val formatters = getFormatters()
         val hasYear = eventDate?.hasYear ?: false
         val daysLeft = eventDate?.safeDaysUntilNext(today)
         val nextAgeValue = eventDate?.safeNextAge(today)
@@ -85,10 +106,10 @@ class ContactUiMapper @Inject constructor() {
             fullName = contact.fullName,
             dateText = when {
                 eventDate == null -> "-"
-                !hasYear -> eventDate.format(dayMonthFormatter)
-                else -> eventDate.format(dateFormatter)
+                !hasYear -> eventDate.format(formatters.dayMonthFormatter)
+                else -> eventDate.format(formatters.dateFormatter)
             },
-            monthName = eventDate?.format(monthFormatter) ?: "",
+            monthName = eventDate?.format(formatters.monthFormatter) ?: "",
             imageUri = contact.imageUri,
             phoneNumber = contact.phoneNumber,
             initials = contact.fullName.getInitials(),

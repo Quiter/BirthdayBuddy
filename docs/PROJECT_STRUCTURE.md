@@ -108,6 +108,7 @@
 - `WidgetUpdateAlarmReceiver.kt`: Exakter Mitternacht-Alarm-Receiver (00:01 Uhr) zur Widget-Aktualisierung.
 
 ## 🌍 Ressourcen (`res`, `res-messenger`)
+- `res/values/colors.xml` & `res/values-night/colors.xml` (u. a. Day/Night `widget_card_background`).
 - `res/values/strings.xml` (EN) & `res/values-de/strings.xml` (DE).
 - `res/raw/privacy_policy.md` (EN) & `res/raw-de/privacy_policy.md` (DE).
 - `res-messenger/drawable/`: Marken-Icons für Messenger-Apps (WhatsApp, Signal, etc.).
