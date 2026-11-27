@@ -9,6 +9,7 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.animation.togetherWith
+import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -68,25 +69,12 @@ fun AppNavHost(
 
     // Globale Navigations-Aktionen behandeln (z.B. Benachrichtigungseinstellungen direkt öffnen oder zu Home wechseln)
     LaunchedEffect(action) {
-        when (action) {
-            null -> return@LaunchedEffect
-            AppAction.NavigateToNotifications -> {
-                val targetKey = Settings(initialTab = SettingsTab.NOTIFICATIONS)
-                if (!backStack.contains(targetKey)) {
-                    backStack.add(targetKey)
-                }
-                onActionHandled()
-            }
-            AppAction.OpenSearch,
-            AppAction.ScrollToTop,
-            AppAction.OpenAddContact,
-            is AppAction.OpenBirthdayPicker -> {
-                if (backStack.lastOrNull() != Home) {
-                    backStack.clear()
-                    backStack.add(Home)
-                }
-            }
-        }
+        if (action == null) return@LaunchedEffect
+        handleGlobalAppAction(
+            action = action,
+            backStack = backStack,
+            onActionHandled = onActionHandled,
+        )
     }
 
     NavDisplay(
@@ -122,43 +110,25 @@ fun AppNavHost(
                     homeViewModel.onIntent(HomeIntent.AppResumed)
                 }
 
-                // Aktionen für den Home-Screen verarbeiten (z.B. Widget / App Shortcuts / AppFunctions)
-                LaunchedEffect(action) {
-                    when (action) {
-                        null -> return@LaunchedEffect
-                        AppAction.ScrollToTop -> {
-                            homeViewModel.onIntent(HomeIntent.TriggerScrollToTop)
-                            onActionHandled()
-                        }
-                        AppAction.OpenSearch -> {
-                            homeViewModel.onIntent(HomeIntent.TriggerSearchFocus)
-                            onActionHandled()
-                        }
-                        AppAction.OpenAddContact -> {
-                            homeViewModel.onIntent(HomeIntent.SyncContacts())
-                            onActionHandled()
-                        }
-                        is AppAction.OpenBirthdayPicker -> {
-                            homeViewModel.onIntent(
-                                HomeIntent.OpenBirthdayPicker(
-                                    contactLookupKey = action.contactLookupKey,
-                                    year = action.year,
-                                    month = action.month,
-                                    day = action.day,
-                                )
-                            )
-                            onActionHandled()
-                        }
-                        AppAction.NavigateToNotifications -> {
-                            // Bereits auf globaler Navigationsebene behandelt
-                        }
-                    }
-                }
-
-                val pagerState = androidx.compose.foundation.pager.rememberPagerState(
+                val pagerState = rememberPagerState(
                     initialPage = MainPage.HOME.ordinal
                 ) {
                     MainPage.entries.size
+                }
+
+                // Aktionen für den Home-Screen verarbeiten (z.B. Widget / App Shortcuts / AppFunctions)
+                LaunchedEffect(action) {
+                    if (action == null) return@LaunchedEffect
+                    handleHomeAppAction(
+                        action = action,
+                        ensureHomePage = {
+                            if (pagerState.currentPage != MainPage.HOME.ordinal) {
+                                pagerState.animateScrollToPage(MainPage.HOME.ordinal)
+                            }
+                        },
+                        onIntent = homeViewModel::onIntent,
+                        onActionHandled = onActionHandled,
+                    )
                 }
 
                 val scope = rememberCoroutineScope()
@@ -263,6 +233,88 @@ fun AppNavHost(
             }
         }
     )
+}
+
+/**
+ * Wendet eine globale [AppAction] auf den [backStack] an.
+ *
+ * Solange [Onboarding] aktiv ist (`backStack.lastOrNull() == Onboarding`), werden eingehende
+ * Deep-Links ignoriert und quittiert, damit externe Intents das Onboarding nicht umgehen können.
+ */
+internal fun handleGlobalAppAction(
+    action: AppAction,
+    backStack: MutableList<NavKey>,
+    onActionHandled: () -> Unit,
+) {
+    if (backStack.lastOrNull() == Onboarding) {
+        onActionHandled()
+        return
+    }
+    when (action) {
+        AppAction.NavigateToNotifications -> {
+            val targetKey = Settings(initialTab = SettingsTab.NOTIFICATIONS)
+            if (!backStack.contains(targetKey)) {
+                backStack.add(targetKey)
+            }
+            onActionHandled()
+        }
+        AppAction.OpenSearch,
+        AppAction.ScrollToTop,
+        AppAction.OpenAddContact,
+        is AppAction.OpenBirthdayPicker -> {
+            if (backStack.lastOrNull() != Home) {
+                backStack.clear()
+                backStack.add(Home)
+            }
+        }
+    }
+}
+
+/**
+ * Verarbeitet eine [AppAction] im [Home]-Kontext.
+ *
+ * Bei Aktionen, die eine sichtbare Interaktion auf dem Home-Tab erfordern ([AppAction.ScrollToTop],
+ * [AppAction.OpenSearch], [AppAction.OpenBirthdayPicker]), wird zunächst [ensureHomePage] aufgerufen,
+ * um den Pager von anderen Tabs ([MainPage.LABELS], [MainPage.SETTINGS]) zurück auf [MainPage.HOME]
+ * zu bewegen, bevor der entsprechende [HomeIntent] ausgelöst wird.
+ */
+internal suspend fun handleHomeAppAction(
+    action: AppAction,
+    ensureHomePage: suspend () -> Unit,
+    onIntent: (HomeIntent) -> Unit,
+    onActionHandled: () -> Unit,
+) {
+    when (action) {
+        AppAction.ScrollToTop -> {
+            ensureHomePage()
+            onIntent(HomeIntent.TriggerScrollToTop)
+            onActionHandled()
+        }
+        AppAction.OpenSearch -> {
+            ensureHomePage()
+            onIntent(HomeIntent.TriggerSearchFocus)
+            onActionHandled()
+        }
+        AppAction.OpenAddContact -> {
+            onIntent(HomeIntent.SyncContacts())
+            onActionHandled()
+        }
+        is AppAction.OpenBirthdayPicker -> {
+            ensureHomePage()
+            onIntent(
+                HomeIntent.OpenBirthdayPicker(
+                    contactLookupKey = action.contactLookupKey,
+                    year = action.year,
+                    month = action.month,
+                    day = action.day,
+                )
+            )
+            onActionHandled()
+        }
+        AppAction.NavigateToNotifications -> {
+            // Bereits auf globaler Navigationsebene behandelt
+        }
+    }
 }
 
 
