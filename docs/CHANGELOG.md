@@ -935,12 +935,11 @@
       - `HomeHeader` wird auf kompakten Bildschirmen über `compactListTopBar` innerhalb des `ContactList`-Eintrags in [`HomeListDetailDisplay.kt`](file:///E:/Benutzer/Christof/Entwicklung/StudioProjects/BirthdayBuddy/app/src/main/java/com/heckmannch/birthdaybuddy/ui/screens/home/components/list/HomeListDetailDisplay.kt) gerendert, sodass er gemeinsam mit der Kontaktliste sauber ausblendet, während das Frosted-Header-Band von [`BirthdayDetailPane.kt`](file:///E:/Benutzer/Christof/Entwicklung/StudioProjects/BirthdayBuddy/app/src/main/java/com/heckmannch/birthdaybuddy/ui/screens/home/components/list/BirthdayDetailPane.kt) Edge-to-Edge unter der Statusleiste liegt (inkl. System-Bar-Insets) und sich über das `X` oben rechts schließen lässt. Auf Tablets bleibt `HomeHeader` über beiden Panes sichtbar.
     - **Design-Tokens & Lokalisierung:** Neue Animations- und Alpha-Tokens in [`Dimensions.kt`](file:///E:/Benutzer/Christof/Entwicklung/StudioProjects/BirthdayBuddy/app/src/main/java/com/heckmannch/birthdaybuddy/ui/theme/Dimensions.kt) sowie synchrone DE/EN-Strings (`detail_birthday_label`, `detail_age_label`, `detail_edit_birthday_desc`) in [`values-de/strings.xml`](file:///E:/Benutzer/Christof/Entwicklung/StudioProjects/BirthdayBuddy/app/src/main/res/values-de/strings.xml) und [`values/strings.xml`](file:///E:/Benutzer/Christof/Entwicklung/StudioProjects/BirthdayBuddy/app/src/main/res/values/strings.xml).
 
-
-
-
-
-
-
-
-
-
+418. **Behebung von Null-Safety-, Locale- und I18n-Fehlern in `SystemCalendarDataSourceImpl` und `SystemContactDataSource` (Bugfix & I18n):**
+    - **[`SystemCalendarDataSourceImpl.kt`](file:///E:/Benutzer/Christof/Entwicklung/StudioProjects/BirthdayBuddy/app/src/main/java/com/heckmannch/birthdaybuddy/data/repository/SystemCalendarDataSourceImpl.kt):** Null-Absicherung von `ACCOUNT_NAME`, `ACCOUNT_TYPE`, `NAME` und `CALENDAR_DISPLAY_NAME` via `.orEmpty()` sowie Spaltenindex-Guards (`!= -1`) in `queryAllCalendars()`, damit lokale OEM-Kalender mit `NULL`-Spalten keine NPE mehr auslösen.
+    - **[`SystemContactDataSource.kt`](file:///E:/Benutzer/Christof/Entwicklung/StudioProjects/BirthdayBuddy/app/src/main/java/com/heckmannch/birthdaybuddy/data/repository/SystemContactDataSource.kt):**
+      - Formatierung von Geburtstagen ohne Jahr (`--MM-DD`) in `updateContactBirthday()` auf `String.format(Locale.ROOT, "--%02d-%02d", ...)` umgestellt, um unter jeder Locale (auch `ar`) reine ASCII-Ziffern zu garantieren.
+      - Hartcodiertes `"Unbekannt"` in `fetchContactsFromSystem()` durch `context.getString(R.string.contact_unknown)` ersetzt.
+      - Null-Guards (`?: continue` und Spaltenindex-Checks) für `cursor.getString(...)` in `fetchMessengerAvailabilityForContacts()`, `fetchPhoneNumbersForContacts()` und `fetchLabelsForContacts()` ergänzt; `lowercase(Locale.ROOT)` für interne Label-Vergleiche verwendet.
+    - **I18n:** Synchrone Ergänzung von `contact_unknown` in [`values/strings.xml`](file:///E:/Benutzer/Christof/Entwicklung/StudioProjects/BirthdayBuddy/app/src/main/res/values/strings.xml) (`Unknown`) und [`values-de/strings.xml`](file:///E:/Benutzer/Christof/Entwicklung/StudioProjects/BirthdayBuddy/app/src/main/res/values-de/strings.xml) (`Unbekannt`).
+    - **Testing & QA:** Neue Unit-Tests für `NULL`-Spalten und arabische Locale in [`SystemCalendarDataSourceImplTest.kt`](file:///E:/Benutzer/Christof/Entwicklung/StudioProjects/BirthdayBuddy/app/src/test/java/com/heckmannch/birthdaybuddy/data/repository/SystemCalendarDataSourceImplTest.kt) und [`SystemContactDataSourceTest.kt`](file:///E:/Benutzer/Christof/Entwicklung/StudioProjects/BirthdayBuddy/app/src/test/java/com/heckmannch/birthdaybuddy/data/repository/SystemContactDataSourceTest.kt); alle 820 Unit-Tests via `./gradlew :app:testDebugUnitTest` erfolgreich durchgelaufen.

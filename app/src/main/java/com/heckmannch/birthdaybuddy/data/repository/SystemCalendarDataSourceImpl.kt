@@ -196,6 +196,14 @@ class SystemCalendarDataSourceImpl @Inject constructor(
             }
         }
 
+    /**
+     * Queries all calendars from the Android system calendar provider.
+     *
+     * OEM local calendars may return `NULL` for [CalendarContract.Calendars.ACCOUNT_NAME],
+     * [CalendarContract.Calendars.ACCOUNT_TYPE], [CalendarContract.Calendars.NAME], or
+     * [CalendarContract.Calendars.CALENDAR_DISPLAY_NAME]; those fields are guarded via
+     * `.orEmpty()` to avoid NPEs when constructing [SystemCalendarInfo].
+     */
     override suspend fun queryAllCalendars(): List<SystemCalendarInfo> =
         withContext(ioDispatcher) {
             val projection = arrayOf(
@@ -223,13 +231,18 @@ class SystemCalendarDataSourceImpl @Inject constructor(
                         cursor.getColumnIndex(CalendarContract.Calendars.CALENDAR_DISPLAY_NAME)
                     val visibleCol = cursor.getColumnIndex(CalendarContract.Calendars.VISIBLE)
 
+                    if (idCol == -1) return@withContext emptyList()
+
                     while (cursor.moveToNext()) {
                         val id = cursor.getLong(idCol)
-                        val accName = cursor.getString(accNameCol)
-                        val accType = cursor.getString(accTypeCol)
-                        val name = cursor.getString(nameCol) ?: ""
-                        val dispName = cursor.getString(dispNameCol)
-                        val visible = cursor.getInt(visibleCol)
+                        val accName =
+                            if (accNameCol != -1) cursor.getString(accNameCol).orEmpty() else ""
+                        val accType =
+                            if (accTypeCol != -1) cursor.getString(accTypeCol).orEmpty() else ""
+                        val name = if (nameCol != -1) cursor.getString(nameCol).orEmpty() else ""
+                        val dispName =
+                            if (dispNameCol != -1) cursor.getString(dispNameCol).orEmpty() else ""
+                        val visible = if (visibleCol != -1) cursor.getInt(visibleCol) else 0
                         list.add(
                             SystemCalendarInfo(
                                 id = id,
