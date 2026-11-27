@@ -263,4 +263,57 @@ class GetAvailableLabelsUseCaseTest {
             ContactLabels.LABEL_OTHER_EVENT,
         ).inOrder()
     }
+
+    @Test
+    fun whenCustomLabelConfigHasZeroContacts_excludesItFromAvailableFilterLabels() = runTest {
+        val contacts = listOf(
+            Contact(
+                contactId = "1",
+                lookupKey = "k1",
+                fullName = "Alice",
+                birthday = LocalDate.of(1990, 5, 10),
+                labels = listOf("Work", "family"),
+            )
+        )
+        val configs = listOf(
+            LabelConfig(name = "Work", isSystem = false),
+            LabelConfig(name = "family", isSystem = false),
+            LabelConfig(name = "EmptyCustomLabel", isSystem = false),
+        )
+
+        val result = useCase(
+            contacts = MutableStateFlow(contacts),
+            configs = MutableStateFlow(configs),
+            otherEventsEnabled = MutableStateFlow(false),
+            labelsEnabled = MutableStateFlow(true),
+        ).first()
+
+        assertThat(result).containsExactly("family", "Work").inOrder()
+    }
+
+    @Test
+    fun whenInUseLabelIsRedundant_excludesItFromAvailableFilterLabels() = runTest {
+        val contacts = listOf(
+            Contact(
+                contactId = "1",
+                lookupKey = "k1",
+                fullName = "Alice",
+                birthday = LocalDate.of(1990, 5, 10),
+                labels = listOf("Favorites", "Family"),
+            )
+        )
+        val configs = listOf(
+            LabelConfig(name = "Favorites", isSystem = false),
+            LabelConfig(name = "Family", isSystem = false),
+        )
+
+        val result = useCase(
+            contacts = MutableStateFlow(contacts),
+            configs = MutableStateFlow(configs),
+            otherEventsEnabled = MutableStateFlow(false),
+            labelsEnabled = MutableStateFlow(true),
+        ).first()
+
+        assertThat(result).containsExactly("Family")
+    }
 }

@@ -179,4 +179,28 @@ class LabelViewModelTest {
         // Then
         verify(contactRepository).updateLabelsEnabled(false)
     }
+
+    @Test
+    fun `uiState should expose newly created custom label with zero contacts`() = runTest {
+        val configs = listOf(
+            LabelConfig(
+                name = "Book Club",
+                isHiddenFromFilter = false,
+                isIgnored = false,
+                isSystem = false,
+                notificationsEnabled = true,
+                showInWidget = true,
+            ),
+        )
+        whenever(contactRepository.labelConfigs).thenReturn(flowOf(configs))
+        whenever(contactRepository.allContacts).thenReturn(flowOf(emptyList()))
+        whenever(contactRepository.labelsEnabled).thenReturn(flowOf(true))
+
+        val viewModel = createViewModel()
+
+        val state = viewModel.uiState.first { it.activeLabels.isNotEmpty() }
+        assertThat(state.activeLabels.map { it.label.name }).containsExactly("Book Club")
+        assertThat(state.activeLabels.first().assignedContacts).isEmpty()
+        assertThat(state.allLabeledContactsCount).isEqualTo(0)
+    }
 }

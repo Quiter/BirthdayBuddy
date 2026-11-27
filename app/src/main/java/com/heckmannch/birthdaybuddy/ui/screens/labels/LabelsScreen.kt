@@ -112,7 +112,6 @@ fun LabelsScreenContent(
             onDismiss = { showAddLabelDialog = false },
             onConfirm = { name ->
                 onUpdateLabelConfig(name, false, false, false, true, true)
-                actions.onLabelSelected(name)
                 showAddLabelDialog = false
             }
         )

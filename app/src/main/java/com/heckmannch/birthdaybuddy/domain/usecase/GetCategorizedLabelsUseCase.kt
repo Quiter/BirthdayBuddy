@@ -9,6 +9,7 @@ import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flowOn
+import java.util.Locale
 import javax.inject.Inject
 
 /**
@@ -30,7 +31,8 @@ data class CategorizedLabel(
  * completely decoupled from UI rendering.
  *
  * Each label appears in exactly one mutually exclusive section:
- * 1. [activeLabels]: Active regular labels (alphabetical) + [ContactLabels.LABEL_NO_BIRTHDAY] at the end
+ * 1. [activeLabels]: Active regular labels (alphabetical, including persisted non-system custom
+ *    labels with 0 assigned contacts) + [ContactLabels.LABEL_NO_BIRTHDAY] at the end
  *    (when neither hidden nor ignored).
  * 2. [otherEventLabels]: Active pseudo-labels for enabled "Other Events" in canonical order
  *    (when neither hidden nor ignored).
@@ -86,6 +88,11 @@ class GetCategorizedLabelsUseCase @Inject constructor(
         /**
          * Pure, synchronous categorization of all regular labels and pseudo-labels.
          *
+         * Regular labels include both labels currently assigned to at least one contact and
+         * persisted custom non-system [LabelConfig] rows (`!config.isSystem`, non-redundant,
+         * non-pseudo) so user-created labels with 0 assigned contacts remain visible and
+         * configurable on the Labels screen while deleted system groups do not reappear as ghosts.
+         *
          * @param contacts Unfiltered list of contacts.
          * @param configs Persisted [LabelConfig] rows from the database.
          * @param otherEventsEnabled Whether global "Other Events" support is enabled.
@@ -113,12 +120,14 @@ class GetCategorizedLabelsUseCase @Inject constructor(
                 }
             }
 
-            // 1. Regular contact labels currently assigned to at least one contact (alphabetical)
+            // 1. Regular contact labels assigned to contacts + persisted non-system custom configs
             val contactsByLabel = mutableMapOf<String, MutableList<Contact>>()
             for (contact in contacts) {
                 for (labelName in contact.labels) {
-                    if (labelName == ContactLabels.LABEL_NO_BIRTHDAY ||
-                        ContactLabels.isOtherEventLabel(labelName)
+                    if (labelName.isBlank() ||
+                        labelName == ContactLabels.LABEL_NO_BIRTHDAY ||
+                        ContactLabels.isOtherEventLabel(labelName) ||
+                        ContactLabels.isRedundantLabel(labelName)
                     ) {
                         continue
                     }
@@ -126,14 +135,27 @@ class GetCategorizedLabelsUseCase @Inject constructor(
                 }
             }
 
-            contactsByLabel.keys
-                .sortedBy { it.lowercase() }
+            val regularLabelNames = buildSet {
+                addAll(contactsByLabel.keys)
+                configs.asSequence()
+                    .filter { config ->
+                        config.name.isNotBlank() &&
+                            !config.isSystem &&
+                            config.name != ContactLabels.LABEL_NO_BIRTHDAY &&
+                            !ContactLabels.isOtherEventLabel(config.name) &&
+                            !ContactLabels.isRedundantLabel(config.name)
+                    }
+                    .mapTo(this) { it.name }
+            }
+
+            regularLabelNames
+                .sortedBy { it.lowercase(Locale.ROOT) }
                 .forEach { labelName ->
                     val config = configMap[labelName] ?: LabelConfig(name = labelName)
                     val assigned = contactsByLabel[labelName]
                         .orEmpty()
                         .distinctBy { it.lookupKey }
-                        .sortedBy { it.fullName.lowercase() }
+                        .sortedBy { it.fullName.lowercase(Locale.ROOT) }
                     addEntry(
                         CategorizedLabel(
                             config = config,
@@ -147,7 +169,7 @@ class GetCategorizedLabelsUseCase @Inject constructor(
             val contactsWithoutBirthday = contacts
                 .filter { it.birthday == null }
                 .distinctBy { it.lookupKey }
-                .sortedBy { it.fullName.lowercase() }
+                .sortedBy { it.fullName.lowercase(Locale.ROOT) }
 
             if (contactsWithoutBirthday.isNotEmpty()) {
                 val noBirthdayConfig = configMap[ContactLabels.LABEL_NO_BIRTHDAY]
@@ -174,7 +196,7 @@ class GetCategorizedLabelsUseCase @Inject constructor(
                     val assigned = contacts
                         .filter { it.hasEvent(event.eventKey) }
                         .distinctBy { it.lookupKey }
-                        .sortedBy { it.fullName.lowercase() }
+                        .sortedBy { it.fullName.lowercase(Locale.ROOT) }
                     addEntry(
                         CategorizedLabel(
                             config = eventConfig,

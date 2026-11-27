@@ -10,14 +10,19 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.flowOn
+import java.util.Locale
 import javax.inject.Inject
 
 /**
- * Reusable UseCase that calculates the list of available labels for the filter bar.
+ * Reusable UseCase that calculates the list of available labels for the Home filter bar.
  *
- * This computes the visible labels (user-defined labels currently in use by any contact,
+ * This computes the visible labels (user-defined labels currently assigned to at least one contact,
  * the "no birthday" pseudo-label, and enabled non-birthday event categories discovered via
  * [GetDetectedOtherEventsUseCase]) based on active contacts, label configurations, and app settings.
+ *
+ * Persisted custom labels with zero assigned contacts are intentionally omitted from the Home
+ * filter bar so users are not presented with empty filter chips; those labels remain visible and
+ * configurable on the Labels management screen via [GetCategorizedLabelsUseCase].
  */
 @Reusable
 class GetAvailableLabelsUseCase @Inject constructor(
@@ -61,13 +66,15 @@ class GetAvailableLabelsUseCase @Inject constructor(
         val activeUserLabels = inUseLabels.asSequence()
             .filter { name ->
                 val config = configMap[name]
-                (config?.isSystem == false) &&
+                name.isNotBlank() &&
+                    (config?.isSystem == false) &&
                     !(config.isHiddenFromFilter) &&
                     !(config.isIgnored) &&
                     name != ContactLabels.LABEL_NO_BIRTHDAY &&
-                    !ContactLabels.isOtherEventLabel(name)
+                    !ContactLabels.isOtherEventLabel(name) &&
+                    !ContactLabels.isRedundantLabel(name)
             }
-            .sorted()
+            .sortedBy { it.lowercase(Locale.ROOT) }
             .toList()
 
         // Aktivierte „Weitere Ereignisse“ aus derselben Datenquelle ermitteln

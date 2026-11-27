@@ -1,5 +1,7 @@
 package com.heckmannch.birthdaybuddy.domain.model
 
+import java.util.Locale
+
 /**
  * Domain-defined special label identifiers used to represent pseudo-categories
  * (contacts without a birthday, anniversaries, name days, and custom date-field events)
@@ -20,6 +22,22 @@ object ContactLabels {
     const val CUSTOM_EVENT_PREFIX = "custom_event:"
 
     /**
+     * Lowercase names of redundant Android system/favorites contact groups that must never
+     * appear as regular user labels or filter chips.
+     */
+    val REDUNDANT_LABELS: Set<String> = setOf(
+        "my contacts",
+        "contacts",
+        "all contacts",
+        "ich",
+        "me",
+        "starred in android",
+        "starred",
+        "favorites",
+        "favoriten",
+    )
+
+    /**
      * Creates a canonical pseudo-label key for a custom contact date-field label.
      */
     fun customEventLabel(rawLabel: String): String = "$CUSTOM_EVENT_PREFIX${rawLabel.trim()}"
@@ -38,6 +56,13 @@ object ContactLabels {
             label == LABEL_NAME_DAY ||
             label == LABEL_OTHER_EVENT ||
             isCustomEventLabel(label)
+
+    /**
+     * Returns `true` if [label] matches a redundant Android system or favorites group name
+     * (case-insensitive using [Locale.ROOT]).
+     */
+    fun isRedundantLabel(label: String): Boolean =
+        label.trim().lowercase(Locale.ROOT) in REDUNDANT_LABELS
 
     /**
      * Returns `true` if [label] is stored in [Contact.customEvents]

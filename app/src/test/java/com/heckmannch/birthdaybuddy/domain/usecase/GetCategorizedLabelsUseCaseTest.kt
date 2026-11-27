@@ -149,7 +149,7 @@ class GetCategorizedLabelsUseCaseTest {
     }
 
     @Test
-    fun categorize_ignoresUnusedOrphanLabelConfigs() = runTest {
+    fun categorize_ignoresUnusedSystemRedundantAndPseudoLabelConfigs() = runTest {
         val contacts = listOf(
             Contact(
                 contactId = "1",
@@ -161,7 +161,46 @@ class GetCategorizedLabelsUseCaseTest {
         )
         val configs = listOf(
             LabelConfig("Family"),
-            LabelConfig("DeletedGroup"),
+            LabelConfig("DeletedSystemGroup", isSystem = true),
+            LabelConfig("My Contacts", isSystem = false),
+            LabelConfig("Favorites", isSystem = false),
+            LabelConfig("  Starred in Android  ", isSystem = false),
+            LabelConfig("Favoriten", isSystem = false),
+            LabelConfig("   ", isSystem = false),
+            LabelConfig(ContactLabels.LABEL_NO_BIRTHDAY, isSystem = false),
+            LabelConfig(ContactLabels.LABEL_ANNIVERSARY, isSystem = false),
+            LabelConfig(ContactLabels.customEventLabel("Jahrestag"), isSystem = false),
+        )
+
+        val result = useCase(
+            contacts = MutableStateFlow(contacts),
+            configs = MutableStateFlow(configs),
+            otherEventsEnabled = MutableStateFlow(true),
+            disabledOtherEventLabels = MutableStateFlow(emptySet()),
+        ).first()
+
+        assertThat(result.activeLabels.map { it.config.name }).containsExactly("Family")
+        assertThat(result.otherEventLabels).isEmpty()
+        assertThat(result.hiddenLabels).isEmpty()
+        assertThat(result.ignoredLabels).isEmpty()
+    }
+
+    @Test
+    fun categorize_includesPersistedCustomLabelsWithZeroContactsSortedAlphabetically() = runTest {
+        val contacts = listOf(
+            Contact(
+                contactId = "1",
+                lookupKey = "k1",
+                fullName = "Alice",
+                birthday = null,
+                labels = listOf("Work", "Family"),
+            )
+        )
+        val configs = listOf(
+            LabelConfig(name = "Family", isSystem = false),
+            LabelConfig(name = "Work", isSystem = false),
+            LabelConfig(name = "sport", isSystem = false),
+            LabelConfig(name = "Book Club", isSystem = false),
         )
 
         val result = useCase(
@@ -171,6 +210,41 @@ class GetCategorizedLabelsUseCaseTest {
             disabledOtherEventLabels = MutableStateFlow(emptySet()),
         ).first()
 
-        assertThat(result.activeLabels.map { it.config.name }).containsExactly("Family")
+        assertThat(result.activeLabels.map { it.config.name }).containsExactly(
+            "Book Club",
+            "Family",
+            "sport",
+            "Work",
+            ContactLabels.LABEL_NO_BIRTHDAY,
+        ).inOrder()
+        assertThat(result.activeLabels[0].assignedContacts).isEmpty()
+        assertThat(result.activeLabels[1].assignedContacts.map { it.fullName }).containsExactly("Alice")
+        assertThat(result.activeLabels[2].assignedContacts).isEmpty()
+        assertThat(result.activeLabels[3].assignedContacts.map { it.fullName }).containsExactly("Alice")
+        assertThat(result.totalLabeledContactsCount).isEqualTo(1)
+    }
+
+    @Test
+    fun categorize_placesPersistedCustomLabelsWithZeroContactsIntoHiddenAndIgnoredSections() = runTest {
+        val configs = listOf(
+            LabelConfig(name = "ActiveEmpty", isHiddenFromFilter = false, isIgnored = false, isSystem = false),
+            LabelConfig(name = "HiddenEmpty", isHiddenFromFilter = true, isIgnored = false, isSystem = false),
+            LabelConfig(name = "IgnoredEmpty", isHiddenFromFilter = true, isIgnored = true, isSystem = false),
+        )
+
+        val result = useCase(
+            contacts = MutableStateFlow(emptyList()),
+            configs = MutableStateFlow(configs),
+            otherEventsEnabled = MutableStateFlow(false),
+            disabledOtherEventLabels = MutableStateFlow(emptySet()),
+        ).first()
+
+        assertThat(result.activeLabels.map { it.config.name }).containsExactly("ActiveEmpty")
+        assertThat(result.activeLabels.first().assignedContacts).isEmpty()
+        assertThat(result.hiddenLabels.map { it.config.name }).containsExactly("HiddenEmpty")
+        assertThat(result.hiddenLabels.first().assignedContacts).isEmpty()
+        assertThat(result.ignoredLabels.map { it.config.name }).containsExactly("IgnoredEmpty")
+        assertThat(result.ignoredLabels.first().assignedContacts).isEmpty()
+        assertThat(result.totalLabeledContactsCount).isEqualTo(0)
     }
 }

@@ -37,17 +37,7 @@ class SystemContactDataSource @Inject constructor(
     companion object {
         private const val TAG = "SystemContactDataSource"
 
-        val redundantLabels = setOf(
-            "my contacts",
-            "contacts",
-            "all contacts",
-            "ich",
-            "me",
-            "starred in android",
-            "starred",
-            "favorites",
-            "favoriten"
-        )
+        val redundantLabels: Set<String> = ContactLabels.REDUNDANT_LABELS
     }
 
     /**
