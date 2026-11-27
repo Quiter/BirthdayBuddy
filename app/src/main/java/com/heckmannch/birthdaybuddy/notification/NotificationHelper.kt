@@ -31,6 +31,8 @@ class NotificationHelper @Inject constructor(
 
     companion object {
         const val CHANNEL_ID = NotificationActions.CHANNEL_ID
+        /** Request-code offset (mod 10) for the notification content [PendingIntent]. */
+        const val OFFSET_CONTENT = 0
         const val OFFSET_SNOOZE = 1
         const val OFFSET_DONE = 2
         const val OFFSET_DISMISSED = 3
@@ -38,6 +40,10 @@ class NotificationHelper @Inject constructor(
         const val FALLBACK_NOTIFICATION_ID_BASE = 200
     }
 
+    /**
+     * Builds and posts a birthday/event notification with distinct [PendingIntent] request codes
+     * (`notificationId * 10 + OFFSET_*`) so content, action, and delete intents never collide across IDs.
+     */
     suspend fun showBirthdayNotification(
         contacts: List<Contact>,
         daysBefore: Int,
@@ -74,8 +80,10 @@ class NotificationHelper @Inject constructor(
         // Falls keine pendingId da ist (Snooze-Fallback), nutzen wir den Standard-Algorithmus
         val notificationId = if (pendingId != -1) pendingId else (FALLBACK_NOTIFICATION_ID_BASE + daysBefore)
 
+        // Jeder PendingIntent-Typ belegt eine eigene Restklasse modulo 10 (OFFSET_CONTENT = 0..OFFSET_SETTINGS = 4),
+        // sodass z. B. pendingId = 14 (140) nicht mit pendingId = 1 Settings-Intent (14) kollidiert.
         val pendingIntent = PendingIntent.getActivity(
-            context, notificationId, intent,
+            context, notificationId * 10 + OFFSET_CONTENT, intent,
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
 
