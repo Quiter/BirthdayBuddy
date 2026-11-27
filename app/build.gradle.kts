@@ -20,7 +20,7 @@ android {
         minSdk = 28
         targetSdk = 37
         versionCode = 52
-        versionName = "2.17.1.9"
+        versionName = "2.17.1.10"
 
         testInstrumentationRunner = "com.heckmannch.birthdaybuddy.HiltTestRunner"
     }
