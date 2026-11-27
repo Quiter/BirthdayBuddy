@@ -171,33 +171,40 @@ class OnboardingViewModel @Inject constructor(
             }
             notificationRepository.syncScheduling()
 
-            // Trigger initial background sync of contacts
-            try {
-                contactRepository.syncContacts()
-            } catch (e: CancellationException) {
-                throw e
-            } catch (e: Exception) {
-                Log.w(TAG, "Fehler beim Kontakt-Sync nach Abschluss des Onboardings", e)
-            }
-
-            // Trigger calendar sync after contacts have synced if enabled during onboarding
-            if (calendarSyncEnabled) {
+            // Trigger initial background sync of contacts. When contacts permission is granted,
+            // ContactRepository.syncContacts() already refreshes widgets and syncs the calendar.
+            var sideEffectsSyncedViaContacts = false
+            if (permissionChecker.hasContactsPermission()) {
                 try {
-                    syncCalendarUseCase()
+                    contactRepository.syncContacts()
+                    sideEffectsSyncedViaContacts = true
                 } catch (e: CancellationException) {
                     throw e
                 } catch (e: Exception) {
-                    Log.w(TAG, "Fehler beim Kalender-Sync nach Abschluss des Onboardings", e)
+                    Log.w(TAG, "Fehler beim Kontakt-Sync nach Abschluss des Onboardings", e)
                 }
             }
 
-            // Refresh home screen widgets after onboarding completion
-            try {
-                widgetUpdater.updateWidget()
-            } catch (e: CancellationException) {
-                throw e
-            } catch (e: Exception) {
-                Log.w(TAG, "Fehler beim Widget-Update nach Abschluss des Onboardings", e)
+            // Fallback when contacts permission was denied or contact sync failed:
+            // ensure calendar sync (if enabled) and initial widget update still run.
+            if (!sideEffectsSyncedViaContacts) {
+                if (calendarSyncEnabled) {
+                    try {
+                        syncCalendarUseCase()
+                    } catch (e: CancellationException) {
+                        throw e
+                    } catch (e: Exception) {
+                        Log.w(TAG, "Fehler beim Kalender-Sync nach Abschluss des Onboardings", e)
+                    }
+                }
+
+                try {
+                    widgetUpdater.updateWidget()
+                } catch (e: CancellationException) {
+                    throw e
+                } catch (e: Exception) {
+                    Log.w(TAG, "Fehler beim Widget-Update nach Abschluss des Onboardings", e)
+                }
             }
         } catch (e: CancellationException) {
             throw e

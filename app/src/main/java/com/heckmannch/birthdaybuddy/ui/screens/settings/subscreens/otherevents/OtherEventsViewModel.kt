@@ -4,6 +4,7 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.heckmannch.birthdaybuddy.di.DefaultDispatcher
+import com.heckmannch.birthdaybuddy.domain.permission.PermissionChecker
 import com.heckmannch.birthdaybuddy.domain.repository.ContactRepository
 import com.heckmannch.birthdaybuddy.domain.repository.SettingsRepository
 import com.heckmannch.birthdaybuddy.domain.usecase.GetDetectedOtherEventsUseCase
@@ -34,6 +35,7 @@ class OtherEventsViewModel @Inject constructor(
     private val contactRepository: ContactRepository,
     private val syncCalendarUseCase: SyncCalendarUseCase,
     getDetectedOtherEventsUseCase: GetDetectedOtherEventsUseCase,
+    private val permissionChecker: PermissionChecker,
     @DefaultDispatcher private val defaultDispatcher: CoroutineDispatcher = Dispatchers.Default,
 ) : ViewModel() {
 
@@ -83,8 +85,9 @@ class OtherEventsViewModel @Inject constructor(
     }
 
     /**
-     * Toggles global "Other Events" support, refreshes contacts when enabling, and triggers
-     * calendar synchronization so affected event calendars stay in sync.
+     * Toggles global "Other Events" support, refreshes contacts when enabling (if contacts
+     * permission is granted), and ensures calendar synchronization stays up to date without
+     * triggering a duplicate sync when [ContactRepository.syncContacts] already handled it.
      */
     private fun setOtherEventsEnabled(enabled: Boolean) = viewModelScope.launch {
         try {
@@ -96,9 +99,11 @@ class OtherEventsViewModel @Inject constructor(
             return@launch
         }
 
-        if (enabled) {
+        var calendarSyncedViaContacts = false
+        if (enabled && permissionChecker.hasContactsPermission()) {
             try {
                 contactRepository.syncContacts()
+                calendarSyncedViaContacts = true
             } catch (e: CancellationException) {
                 throw e
             } catch (e: Exception) {
@@ -106,12 +111,14 @@ class OtherEventsViewModel @Inject constructor(
             }
         }
 
-        try {
-            syncCalendarUseCase()
-        } catch (e: CancellationException) {
-            throw e
-        } catch (e: Exception) {
-            Log.e(TAG, "Failed to sync calendar after toggling other events", e)
+        if (!calendarSyncedViaContacts) {
+            try {
+                syncCalendarUseCase()
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                Log.e(TAG, "Failed to sync calendar after toggling other events", e)
+            }
         }
     }
 

@@ -158,8 +158,9 @@ class OnboardingViewModelTest {
     }
 
     @Test
-    fun `completeOnboarding should update settings and trigger contact, calendar and widget sync`() =
+    fun `completeOnboarding with contacts permission should update settings and delegate calendar and widget sync to contact sync`() =
         runTest {
+            whenever(permissionChecker.hasContactsPermission()).thenReturn(true)
             whenever(notificationRepository.getAllRulesImmediate()).thenReturn(emptyList())
 
             viewModel.onIntent(
@@ -183,15 +184,32 @@ class OnboardingViewModelTest {
             assertThat(updated.onboardingCompleted).isTrue()
             verify(notificationRepository).syncScheduling()
 
-            inOrder(contactRepository, syncCalendarUseCase, widgetUpdater) {
-                verify(contactRepository).syncContacts()
+            verify(contactRepository).syncContacts()
+            verify(syncCalendarUseCase, never()).invoke()
+            verify(widgetUpdater, never()).updateWidget()
+        }
+
+    @Test
+    fun `completeOnboarding without contacts permission should sync calendar and update widget`() =
+        runTest {
+            whenever(permissionChecker.hasContactsPermission()).thenReturn(false)
+
+            viewModel.onIntent(
+                OnboardingIntent.CompleteOnboarding(
+                    notificationsEnabled = false,
+                    calendarSyncEnabled = true
+                )
+            )
+
+            verify(contactRepository, never()).syncContacts()
+            inOrder(syncCalendarUseCase, widgetUpdater) {
                 verify(syncCalendarUseCase).invoke()
                 verify(widgetUpdater).updateWidget()
             }
         }
 
     @Test
-    fun `completeOnboarding should update widget but skip calendar sync when calendarSyncEnabled is false`() =
+    fun `completeOnboarding without contacts permission should update widget but skip calendar sync when calendarSyncEnabled is false`() =
         runTest {
             viewModel.onIntent(
                 OnboardingIntent.CompleteOnboarding(
@@ -200,7 +218,7 @@ class OnboardingViewModelTest {
                 )
             )
 
-            verify(contactRepository).syncContacts()
+            verify(contactRepository, never()).syncContacts()
             verify(syncCalendarUseCase, never()).invoke()
             verify(widgetUpdater).updateWidget()
         }
@@ -216,7 +234,7 @@ class OnboardingViewModelTest {
             )
         )
 
-        verify(contactRepository).syncContacts()
+        verify(contactRepository, never()).syncContacts()
         verify(syncCalendarUseCase).invoke()
         verify(widgetUpdater).updateWidget()
     }
@@ -232,7 +250,7 @@ class OnboardingViewModelTest {
             )
         )
 
-        verify(contactRepository).syncContacts()
+        verify(contactRepository, never()).syncContacts()
         verify(widgetUpdater).updateWidget()
     }
 
@@ -248,13 +266,31 @@ class OnboardingViewModelTest {
             )
         )
 
-        verify(contactRepository).syncContacts()
+        verify(contactRepository, never()).syncContacts()
         verify(syncCalendarUseCase).invoke()
         verify(widgetUpdater, never()).updateWidget()
     }
 
     @Test
-    fun `completeOnboarding should still update widget when contact sync fails`() = runTest {
+    fun `completeOnboarding should fall back to calendar sync and widget update when contact sync fails`() = runTest {
+        whenever(permissionChecker.hasContactsPermission()).thenReturn(true)
+        whenever(contactRepository.syncContacts()).thenThrow(RuntimeException("Contact sync failed"))
+
+        viewModel.onIntent(
+            OnboardingIntent.CompleteOnboarding(
+                notificationsEnabled = false,
+                calendarSyncEnabled = true
+            )
+        )
+
+        verify(contactRepository).syncContacts()
+        verify(syncCalendarUseCase).invoke()
+        verify(widgetUpdater).updateWidget()
+    }
+
+    @Test
+    fun `completeOnboarding should still update widget when contact sync fails and calendarSyncEnabled is false`() = runTest {
+        whenever(permissionChecker.hasContactsPermission()).thenReturn(true)
         whenever(contactRepository.syncContacts()).thenThrow(RuntimeException("Contact sync failed"))
 
         viewModel.onIntent(
@@ -265,11 +301,13 @@ class OnboardingViewModelTest {
         )
 
         verify(contactRepository).syncContacts()
+        verify(syncCalendarUseCase, never()).invoke()
         verify(widgetUpdater).updateWidget()
     }
 
     @Test
     fun `completeOnboarding should rethrow CancellationException from contact sync`() = runTest {
+        whenever(permissionChecker.hasContactsPermission()).thenReturn(true)
         whenever(contactRepository.syncContacts()).thenThrow(CancellationException("Cancelled"))
 
         val vm = createViewModel(scope = this)

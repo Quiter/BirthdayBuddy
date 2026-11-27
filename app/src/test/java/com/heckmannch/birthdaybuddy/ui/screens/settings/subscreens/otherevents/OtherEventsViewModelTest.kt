@@ -6,6 +6,7 @@ import com.heckmannch.birthdaybuddy.MainDispatcherRule
 import com.heckmannch.birthdaybuddy.domain.model.AppSettings
 import com.heckmannch.birthdaybuddy.domain.model.Contact
 import com.heckmannch.birthdaybuddy.domain.model.ContactLabels
+import com.heckmannch.birthdaybuddy.domain.permission.PermissionChecker
 import com.heckmannch.birthdaybuddy.domain.repository.ContactRepository
 import com.heckmannch.birthdaybuddy.domain.repository.SettingsRepository
 import com.heckmannch.birthdaybuddy.domain.usecase.GetDetectedOtherEventsUseCase
@@ -36,6 +37,7 @@ class OtherEventsViewModelTest {
     private val settingsRepository: SettingsRepository = mock()
     private val contactRepository: ContactRepository = mock()
     private val syncCalendarUseCase: SyncCalendarUseCase = mock()
+    private val permissionChecker: PermissionChecker = mock()
     private lateinit var getDetectedOtherEventsUseCase: GetDetectedOtherEventsUseCase
 
     @Before
@@ -46,6 +48,7 @@ class OtherEventsViewModelTest {
         getDetectedOtherEventsUseCase = GetDetectedOtherEventsUseCase(mainDispatcherRule.testDispatcher)
         whenever(settingsRepository.settings).thenReturn(flowOf(AppSettings()))
         whenever(contactRepository.allContacts).thenReturn(flowOf(emptyList()))
+        whenever(permissionChecker.hasContactsPermission()).thenReturn(true)
     }
 
     @After
@@ -58,6 +61,7 @@ class OtherEventsViewModelTest {
         contactRepository = contactRepository,
         syncCalendarUseCase = syncCalendarUseCase,
         getDetectedOtherEventsUseCase = getDetectedOtherEventsUseCase,
+        permissionChecker = permissionChecker,
         defaultDispatcher = mainDispatcherRule.testDispatcher,
     )
 
@@ -99,7 +103,8 @@ class OtherEventsViewModelTest {
     }
 
     @Test
-    fun `SetOtherEventsEnabled true updates settings, syncs contacts, and syncs calendar`() = runTest {
+    fun `SetOtherEventsEnabled true with contacts permission updates settings, syncs contacts, and skips duplicate calendar sync`() = runTest {
+        whenever(permissionChecker.hasContactsPermission()).thenReturn(true)
         val viewModel = createViewModel()
 
         viewModel.onIntent(OtherEventsIntent.SetOtherEventsEnabled(true))
@@ -109,6 +114,21 @@ class OtherEventsViewModelTest {
         val updated = captor.firstValue(AppSettings(otherEventsEnabled = false))
         assertThat(updated.otherEventsEnabled).isTrue()
         verify(contactRepository).syncContacts()
+        verify(syncCalendarUseCase, never()).invoke()
+    }
+
+    @Test
+    fun `SetOtherEventsEnabled true without contacts permission updates settings and falls back to calendar sync`() = runTest {
+        whenever(permissionChecker.hasContactsPermission()).thenReturn(false)
+        val viewModel = createViewModel()
+
+        viewModel.onIntent(OtherEventsIntent.SetOtherEventsEnabled(true))
+
+        val captor = argumentCaptor<(AppSettings) -> AppSettings>()
+        verify(settingsRepository).updateSettings(captor.capture())
+        val updated = captor.firstValue(AppSettings(otherEventsEnabled = false))
+        assertThat(updated.otherEventsEnabled).isTrue()
+        verify(contactRepository, never()).syncContacts()
         verify(syncCalendarUseCase).invoke()
     }
 
