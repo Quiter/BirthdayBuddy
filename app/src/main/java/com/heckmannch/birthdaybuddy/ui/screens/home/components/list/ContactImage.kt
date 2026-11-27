@@ -15,7 +15,10 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.Typography
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -192,25 +195,75 @@ private fun SingleAvatar(
                 .diskCacheKey(cacheKey)
                 .build()
         }
-        AsyncImage(
-            model = request,
-            contentDescription = stringResource(R.string.item_image_desc, fullName),
-            modifier = modifier.clip(shape),
-            contentScale = ContentScale.Crop,
-        )
-    } else {
-        Box(
-            modifier = modifier
-                .clip(shape)
-                .background(containerColor),
-            contentAlignment = Alignment.Center,
-        ) {
-            Text(
-                text = initials,
-                style = textStyle,
-                color = contentColor,
-            )
+        var isImageLoaded by remember(imageUri, cacheKey) { mutableStateOf(false) }
+        var loadFailed by remember(imageUri, cacheKey) { mutableStateOf(false) }
+
+        Box(modifier = modifier) {
+            if (!isImageLoaded || loadFailed) {
+                InitialsAvatar(
+                    initials = initials,
+                    shape = shape,
+                    textStyle = textStyle,
+                    containerColor = containerColor,
+                    contentColor = contentColor,
+                    modifier = Modifier.fillMaxSize(),
+                )
+            }
+            if (!loadFailed) {
+                AsyncImage(
+                    model = request,
+                    contentDescription = stringResource(R.string.item_image_desc, fullName),
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .clip(shape),
+                    contentScale = ContentScale.Crop,
+                    onLoading = {
+                        isImageLoaded = false
+                        loadFailed = false
+                    },
+                    onSuccess = {
+                        isImageLoaded = true
+                        loadFailed = false
+                    },
+                    onError = {
+                        isImageLoaded = false
+                        loadFailed = true
+                    },
+                )
+            }
         }
+    } else {
+        InitialsAvatar(
+            initials = initials,
+            shape = shape,
+            textStyle = textStyle,
+            containerColor = containerColor,
+            contentColor = contentColor,
+            modifier = modifier,
+        )
+    }
+}
+
+@Composable
+private fun InitialsAvatar(
+    initials: String,
+    shape: Shape,
+    textStyle: TextStyle,
+    containerColor: Color,
+    contentColor: Color,
+    modifier: Modifier = Modifier,
+) {
+    Box(
+        modifier = modifier
+            .clip(shape)
+            .background(containerColor),
+        contentAlignment = Alignment.Center,
+    ) {
+        Text(
+            text = initials,
+            style = textStyle,
+            color = contentColor,
+        )
     }
 }
 
