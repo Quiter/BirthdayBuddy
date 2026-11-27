@@ -38,6 +38,7 @@ import com.heckmannch.birthdaybuddy.ui.theme.ContactImageSizeSmall
 import com.heckmannch.birthdaybuddy.ui.theme.SelectedBorderWidth
 import com.heckmannch.birthdaybuddy.ui.theme.SpacingMedium
 import com.heckmannch.birthdaybuddy.ui.theme.SpacingNormal
+import com.heckmannch.birthdaybuddy.util.getInitials
 
 /**
  * Computes a robust cache key for contact avatar images used in Coil memory and disk caches.
@@ -91,11 +92,15 @@ fun ContactImage(
     val secondAvatarPadding = (size * 0.0375f).coerceAtLeast(SelectedBorderWidth)
     val secondAvatarCorner = nestedCorner * 0.875f
 
+    val resolvedInitials = remember(initials, fullName) {
+        initials.filter { it.isLetter() }.uppercase().ifBlank { fullName.getInitials() }
+    }
+
     val firstCacheKey = remember(imageUri, lookupKey) {
-        imageUri?.let { getAvatarCacheKey(it, lookupKey) }
+        imageUri?.takeIf { it.isNotBlank() }?.let { getAvatarCacheKey(it, lookupKey) }
     }
     val secondCacheKey = remember(secondImageUri, secondLookupKey) {
-        secondImageUri?.let { getAvatarCacheKey(it, secondLookupKey) }
+        secondImageUri?.takeIf { it.isNotBlank() }?.let { getAvatarCacheKey(it, secondLookupKey) }
     }
 
     val isDualAvatar = !secondInitials.isNullOrBlank() || !secondImageUri.isNullOrBlank()
@@ -106,7 +111,7 @@ fun ContactImage(
             imageUri = imageUri,
             cacheKey = firstCacheKey,
             fullName = fullName,
-            initials = initials,
+            initials = resolvedInitials,
             shape = RoundedCornerShape(outerCorner),
             textStyle = if (size > ContactImageSizeSmall) MaterialTheme.typography.titleLarge else MaterialTheme.typography.titleSmall,
             containerColor = MaterialTheme.colorScheme.primaryContainer,
@@ -116,6 +121,11 @@ fun ContactImage(
         val resolvedSecondFullName = secondFullName?.takeIf { it.isNotBlank() }
             ?: secondInitials?.takeIf { it.isNotBlank() }
             ?: fullName
+
+        val resolvedSecondInitials = remember(secondInitials, resolvedSecondFullName) {
+            secondInitials?.filter { it.isLetter() }?.uppercase()?.ifBlank { null }
+                ?: resolvedSecondFullName.getInitials()
+        }
 
         // Overlapping dual avatar layout for couples
         Box(
@@ -129,7 +139,7 @@ fun ContactImage(
                 imageUri = imageUri,
                 cacheKey = firstCacheKey,
                 fullName = fullName,
-                initials = initials,
+                initials = resolvedInitials,
                 shape = RoundedCornerShape(nestedCorner),
                 textStyle = if (size > ContactImageSizeSmall) MaterialTheme.typography.titleSmall else MaterialTheme.typography.labelSmall,
                 containerColor = MaterialTheme.colorScheme.primaryContainer,
@@ -150,7 +160,7 @@ fun ContactImage(
                     imageUri = secondImageUri,
                     cacheKey = secondCacheKey,
                     fullName = resolvedSecondFullName,
-                    initials = secondInitials ?: "",
+                    initials = resolvedSecondInitials,
                     shape = RoundedCornerShape(secondAvatarCorner),
                     textStyle = if (size > ContactImageSizeSmall) MaterialTheme.typography.titleSmall else MaterialTheme.typography.labelSmall,
                     containerColor = MaterialTheme.colorScheme.secondaryContainer,
@@ -173,7 +183,7 @@ private fun SingleAvatar(
     containerColor: Color,
     contentColor: Color,
 ) {
-    if (imageUri != null) {
+    if (!imageUri.isNullOrBlank()) {
         val context = LocalContext.current
         val request = remember(imageUri, cacheKey, context) {
             ImageRequest.Builder(context)

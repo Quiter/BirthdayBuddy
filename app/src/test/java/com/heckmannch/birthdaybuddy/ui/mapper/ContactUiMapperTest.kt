@@ -103,7 +103,7 @@ class ContactUiMapperTest {
         val contact2 = Contact(contactId = "2", lookupKey = "2", fullName = "  ", birthday = today)
 
         assertThat(mapper.toUiModel(contact1, today).initials).isEqualTo("MM")
-        assertThat(mapper.toUiModel(contact2, today).initials).isEqualTo("?")
+        assertThat(mapper.toUiModel(contact2, today).initials).isEqualTo("")
     }
 
     @Test

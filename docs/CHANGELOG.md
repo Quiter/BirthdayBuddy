@@ -912,6 +912,18 @@
       - Ergänzung von `cancelAllSnoozedNotifications()` (`WorkManager.cancelAllWorkByTag(WORK_TAG_SNOOZE)`) und Aufruf innerhalb von `cancelNotification()`, sodass beim globalen Deaktivieren (`syncScheduling()` mit `notificationsEnabled == false`) auch ausstehende Snooze- und Reshow-Jobs zuverlässig abgebrochen werden.
     - **Testing & QA:** Erweiterte Unit-Tests in [`NotificationWorkerTest.kt`](file:///E:/Benutzer/Christof/Entwicklung/StudioProjects/BirthdayBuddy/app/src/test/java/com/heckmannch/birthdaybuddy/notification/NotificationWorkerTest.kt), [`SnoozeWorkerTest.kt`](file:///E:/Benutzer/Christof/Entwicklung/StudioProjects/BirthdayBuddy/app/src/test/java/com/heckmannch/birthdaybuddy/notification/SnoozeWorkerTest.kt), [`NotificationSchedulerImplTest.kt`](file:///E:/Benutzer/Christof/Entwicklung/StudioProjects/BirthdayBuddy/app/src/test/java/com/heckmannch/birthdaybuddy/data/repository/NotificationSchedulerImplTest.kt), [`NotificationAlarmReceiverTest.kt`](file:///E:/Benutzer/Christof/Entwicklung/StudioProjects/BirthdayBuddy/app/src/test/java/com/heckmannch/birthdaybuddy/notification/NotificationAlarmReceiverTest.kt), [`NotificationRepositoryImplTest.kt`](file:///E:/Benutzer/Christof/Entwicklung/StudioProjects/BirthdayBuddy/app/src/test/java/com/heckmannch/birthdaybuddy/data/repository/NotificationRepositoryImplTest.kt) und [`PendingNotificationDaoTest.kt`](file:///E:/Benutzer/Christof/Entwicklung/StudioProjects/BirthdayBuddy/app/src/test/java/com/heckmannch/birthdaybuddy/data/local/PendingNotificationDaoTest.kt); alle 816 Unit-Tests grün.
 
+416. **Robustes Auslesen und Bereinigen von Avatar-Initialen ohne Sonderzeichen & Klammern-Ignorierung (UI & Clean Code):**
+    - **`StringUtils.kt` (`String.getInitials()`):**
+      - Entfernung aller Namenszusätze und Klammerausdrücke (`(Name)`, `[Name]`, `{Name}`) via `PARENTHESES_REGEX` vor der Initialenberechnung.
+      - Filterung aller Nicht-Buchstaben (`it.isLetter()`), um sicherzustellen, dass keine Sonderzeichen (wie `?`, `-`, `&`, `.`, Zahlen oder Interpunktion) in den Avatar-Initialen erscheinen.
+      - Rückgabe eines leeren Strings `""` anstelle von `"?"`, wenn keine gültigen Buchstaben vorhanden sind.
+    - **`ContactImage.kt` (`ContactImage` & `SingleAvatar`):**
+      - Laufzeit-Synthese (`remember(initials, fullName)`) zur Bereinigung von Initialen und automatischer Fallback-Generierung aus `fullName.getInitials()`, falls `initials` leer ist oder Sonderzeichen enthielt.
+      - Unterstützung von `imageUri.isNullOrBlank()`, um leere/ungültige Image-URIs direkt auf das Initialen-Fallback umzuleiten.
+    - **Unit-Tests & QA:**
+      - Erweiterte Unit-Tests in [`StringUtilsTest.kt`](file:///E:/Benutzer/Christof/Entwicklung/StudioProjects/BirthdayBuddy/app/src/test/java/com/heckmannch/birthdaybuddy/util/StringUtilsTest.kt) (inkl. Tests für Klammerausdrücke, Sonderzeichen, Präfixe und leere Strings), [`ContactUiMapperTest.kt`](file:///E:/Benutzer/Christof/Entwicklung/StudioProjects/BirthdayBuddy/app/src/test/java/com/heckmannch/birthdaybuddy/ui/mapper/ContactUiMapperTest.kt) und [`CoupleSuggestionUiMapperTest.kt`](file:///E:/Benutzer/Christof/Entwicklung/StudioProjects/BirthdayBuddy/app/src/test/java/com/heckmannch/birthdaybuddy/ui/mapper/CoupleSuggestionUiMapperTest.kt). Alle 818 Unit-Tests erfolgreich verifiziert.
+
+
 
 
 
