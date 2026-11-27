@@ -11,6 +11,10 @@ import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import com.google.common.truth.Truth.assertThat
+import com.heckmannch.birthdaybuddy.ui.screens.home.HomeActions
+import com.heckmannch.birthdaybuddy.ui.screens.home.components.header.HomeHeader
+import com.heckmannch.birthdaybuddy.ui.screens.labels.components.LabelsHeader
+import com.heckmannch.birthdaybuddy.ui.screens.settings.components.SettingsHeader
 import com.heckmannch.birthdaybuddy.ui.theme.BirthdayBuddyTheme
 import org.junit.Rule
 import org.junit.Test
@@ -20,7 +24,8 @@ import org.robolectric.annotation.Config
 import org.robolectric.annotation.GraphicsMode
 
 /**
- * Unit tests for [AppTopHeader] ensuring state transitions between Title Mode and Search Bar Mode.
+ * Unit tests for [AppTopHeader], [HomeHeader], [SettingsHeader], and [LabelsHeader] ensuring central layout inheritance,
+ * navigation icon display, action buttons, and search mode transitions.
  */
 @RunWith(RobolectricTestRunner::class)
 @Config(sdk = [35])
@@ -100,5 +105,93 @@ class AppTopHeaderTest {
         assertThat(isSearchActive).isFalse()
         composeRule.onNodeWithText("BirthdayBuddy").assertIsDisplayed()
         composeRule.onNodeWithTag("open_search_button").assertIsDisplayed()
+    }
+
+    @Test
+    fun homeHeader_displaysLogoTitleAndAddContactAction() {
+        var addContactClicked = false
+
+        composeRule.setContent {
+            BirthdayBuddyTheme {
+                HomeHeader(
+                    searchQuery = "",
+                    isSearchActive = false,
+                    actions = HomeActions.previewDefaults().copy(
+                        onAddContact = { addContactClicked = true },
+                    ),
+                )
+            }
+        }
+
+        composeRule.onNodeWithText("BirthdayBuddy").assertIsDisplayed()
+        composeRule.onNodeWithTag("add_contact_button").assertIsDisplayed()
+        composeRule.onNodeWithTag("open_search_button").assertIsDisplayed()
+
+        composeRule.onNodeWithTag("add_contact_button").performClick()
+        composeRule.waitForIdle()
+
+        assertThat(addContactClicked).isTrue()
+    }
+
+    @Test
+    fun settingsHeader_displaysTitleAndBackButton_withoutSearchButton() {
+        var backClicked = false
+
+        composeRule.setContent {
+            BirthdayBuddyTheme {
+                SettingsHeader(
+                    title = "Benachrichtigungen",
+                    showBackButton = true,
+                    onNavigateBack = { backClicked = true },
+                )
+            }
+        }
+
+        composeRule.onNodeWithText("Benachrichtigungen").assertIsDisplayed()
+        composeRule.onNodeWithTag("settings_back_button").assertIsDisplayed()
+        composeRule.onNodeWithTag("open_search_button").assertDoesNotExist()
+
+        composeRule.onNodeWithTag("settings_back_button").performClick()
+        composeRule.waitForIdle()
+
+        assertThat(backClicked).isTrue()
+    }
+
+    @Test
+    fun settingsHeader_mainScreen_hidesBackButtonAndSearchButton() {
+        composeRule.setContent {
+            BirthdayBuddyTheme {
+                SettingsHeader(
+                    title = "Einstellungen",
+                    showBackButton = false,
+                )
+            }
+        }
+
+        composeRule.onNodeWithText("Einstellungen").assertIsDisplayed()
+        composeRule.onNodeWithTag("settings_back_button").assertDoesNotExist()
+        composeRule.onNodeWithTag("open_search_button").assertDoesNotExist()
+    }
+
+    @Test
+    fun labelsHeader_displaysTitleAndAddLabelAction_withoutSearchButton() {
+        var addLabelClicked = false
+
+        composeRule.setContent {
+            BirthdayBuddyTheme {
+                LabelsHeader(
+                    onAddLabel = { addLabelClicked = true },
+                )
+            }
+        }
+
+        composeRule.onNodeWithText("Labels").assertIsDisplayed()
+        composeRule.onNodeWithTag("add_label_button").assertIsDisplayed()
+        composeRule.onNodeWithTag("open_search_button").assertDoesNotExist()
+
+        composeRule.onNodeWithTag("add_label_button").performClick()
+        composeRule.waitForIdle()
+
+        assertThat(addLabelClicked).isTrue()
     }
 }

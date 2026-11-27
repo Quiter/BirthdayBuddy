@@ -15,12 +15,17 @@ import com.heckmannch.birthdaybuddy.ui.components.AppTopHeader
 import com.heckmannch.birthdaybuddy.ui.theme.BirthdayBuddyTheme
 
 /**
- * Reusable top header component for settings screens and sub-screens.
- * Displays the screen title, optional back navigation button, and search functionality.
+ * Top header component for settings screen and sub-screens, inheriting design elements from [AppTopHeader].
+ *
+ * Specific Settings screen customizations:
+ * 1. Screen title.
+ * 2. Back navigation button for sub-screens.
+ * 3. Search action button disabled by default (`showSearchButton = false`).
  */
 @Composable
 internal fun SettingsHeader(
     title: String,
+    modifier: Modifier = Modifier,
     isSearchActive: Boolean = false,
     searchQuery: String = "",
     onSearchQueryChange: (String) -> Unit = {},
@@ -29,12 +34,12 @@ internal fun SettingsHeader(
     showBackButton: Boolean = true,
     onNavigateBack: () -> Unit = {},
     showSearchButton: Boolean = false,
-    modifier: Modifier = Modifier
 ) {
     val isSubscreen = LocalIsSubscreen.current || showBackButton
     CompositionLocalProvider(LocalIsSubscreen provides isSubscreen) {
         AppTopHeader(
             title = title,
+            modifier = modifier,
             isSearchActive = isSearchActive,
             searchQuery = searchQuery,
             onSearchQueryChange = onSearchQueryChange,
@@ -42,12 +47,11 @@ internal fun SettingsHeader(
             searchPlaceholder = stringResource(R.string.settings_search),
             onClearSearch = onClearSearch,
             showSearchButton = showSearchButton,
-            modifier = modifier,
             navigationIcon = if (showBackButton) {
                 {
                     IconButton(
                         onClick = onNavigateBack,
-                        modifier = Modifier.testTag("settings_back_button")
+                        modifier = Modifier.testTag("settings_back_button"),
                     ) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
@@ -66,16 +70,9 @@ private fun SettingsHeaderPreview() {
     BirthdayBuddyTheme {
         SettingsHeader(
             title = stringResource(R.string.settings_title),
-            isSearchActive = false,
-            searchQuery = "",
-            onSearchQueryChange = {},
-            onSearchActiveChange = {},
-            onClearSearch = {},
             showBackButton = true,
             onNavigateBack = {},
-            showSearchButton = true
+            showSearchButton = false,
         )
     }
 }
-
-

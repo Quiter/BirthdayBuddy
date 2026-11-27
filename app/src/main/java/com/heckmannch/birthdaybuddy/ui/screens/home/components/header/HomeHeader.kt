@@ -13,7 +13,6 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -25,6 +24,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import com.heckmannch.birthdaybuddy.R
+import com.heckmannch.birthdaybuddy.ui.components.AppTopHeader
 import com.heckmannch.birthdaybuddy.ui.model.SampleData
 import com.heckmannch.birthdaybuddy.ui.screens.home.HomeActions
 import com.heckmannch.birthdaybuddy.ui.theme.BirthdayBuddyTheme
@@ -34,16 +34,16 @@ import com.heckmannch.birthdaybuddy.ui.theme.SpacingSmall
 /**
  * Top start page header for BirthdayBuddy with integrated search and quick actions.
  *
- * Inspired by Morphe Manager's `HomeHeader` and `HeaderBar` architecture.
+ * Inherits overall header styling and search transitions from [AppTopHeader].
  *
- * Elements:
+ * Specific Home screen elements:
  * 1. App logo icon ([R.drawable.ic_app_logo]) and stylized "BirthdayBuddy" title.
- * 2. Integrated expandable search bar tied to [SearchFieldState].
+ * 2. Integrated expandable search bar.
  * 3. Action bar buttons:
- *    - Add Contact: Triggers system intent `Intent(Intent.ACTION_INSERT, ContactsContract.Contacts.CONTENT_URI)`
- *      via [HomeActions.onAddContact] / [com.heckmannch.birthdaybuddy.ui.util.ContactActions.addContact].
- *    - Settings: Navigates to app settings via [HomeActions.onNavigateToSettings].
+ *    - Add Contact: Triggers system intent via [HomeActions.onAddContact].
+ *    - Optional Navigation sidebar toggle drawer button.
  *
+ * @param modifier Optional [Modifier].
  * @param searchQuery Current active search query text.
  * @param isSearchActive Whether search bar mode is active.
  * @param placeholder Search bar hint text.
@@ -52,13 +52,12 @@ import com.heckmannch.birthdaybuddy.ui.theme.SpacingSmall
  * @param actions User interaction callbacks bundle [HomeActions].
  * @param onToggleSidebar Callback when user taps navigation sidebar toggle button.
  * @param onToggleSearch Callback when search mode is activated or deactivated.
- * @param modifier Optional [Modifier].
  */
 @Composable
 fun HomeHeader(
     modifier: Modifier = Modifier,
-    searchQuery: String,
-    isSearchActive: Boolean,
+    searchQuery: String = "",
+    isSearchActive: Boolean = false,
     placeholder: String = stringResource(R.string.home_placeholder_search),
     showSidebar: Boolean = false,
     focusRequester: FocusRequester = remember { FocusRequester() },
@@ -66,39 +65,8 @@ fun HomeHeader(
     onToggleSidebar: () -> Unit = {},
     onToggleSearch: (Boolean) -> Unit = actions.onToggleSearch,
 ) {
-    val searchState = rememberSearchFieldState(initialQuery = searchQuery)
-
-    // Synchronize external isSearchActive and searchQuery states
-    LaunchedEffect(isSearchActive) {
-        if (searchState.visible != isSearchActive) {
-            if (isSearchActive) searchState.open() else searchState.collapse()
-        }
-    }
-
-    LaunchedEffect(searchQuery) {
-        if (searchState.query != searchQuery) {
-            searchState.query = searchQuery
-        }
-    }
-
-    // React to user typing in SearchFieldState
-    LaunchedEffect(searchState.query) {
-        if (searchState.query != searchQuery) {
-            actions.onSearchQueryChange(searchState.query)
-        }
-    }
-
-    // React to search visibility changes
-    LaunchedEffect(searchState.visible) {
-        if (searchState.visible != isSearchActive) {
-            onToggleSearch(searchState.visible)
-        }
-    }
-
-    SearchFieldBackHandler(state = searchState)
-
-    HomeHeaderBar(
-        title = {
+    AppTopHeader(
+        titleContent = {
             Row(
                 verticalAlignment = Alignment.CenterVertically,
             ) {
@@ -118,7 +86,16 @@ fun HomeHeader(
                 )
             }
         },
-        navigation = if (showSidebar) {
+        modifier = modifier.testTag("home_top_bar"),
+        isSearchActive = isSearchActive,
+        searchQuery = searchQuery,
+        onSearchQueryChange = actions.onSearchQueryChange,
+        onSearchActiveChange = onToggleSearch,
+        searchPlaceholder = placeholder,
+        onClearSearch = actions.onClearSearch,
+        focusRequester = focusRequester,
+        showSearchButton = true,
+        navigationIcon = if (showSidebar) {
             {
                 IconButton(onClick = onToggleSidebar) {
                     Icon(
@@ -130,7 +107,6 @@ fun HomeHeader(
             }
         } else null,
         actions = {
-            // 1. Kontakt hinzufügen Action Button (System-Intent ACTION_INSERT)
             TitleAction(
                 icon = Icons.Default.PersonAdd,
                 contentDescription = stringResource(R.string.home_add_contact),
@@ -139,11 +115,6 @@ fun HomeHeader(
                 modifier = Modifier.testTag("add_contact_button"),
             )
         },
-        search = searchState,
-        searchLabel = placeholder,
-        focusRequester = focusRequester,
-        onClearSearch = actions.onClearSearch,
-        modifier = modifier,
     )
 }
 

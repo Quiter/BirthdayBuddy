@@ -1,5 +1,6 @@
 package com.heckmannch.birthdaybuddy.ui.components
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -15,6 +16,8 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
@@ -32,6 +35,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -45,21 +50,21 @@ import com.heckmannch.birthdaybuddy.ui.theme.SpacingNormal
 import com.heckmannch.birthdaybuddy.ui.theme.SpacingSmall
 
 /**
- * Reusable top header component inspired by MorpheApp architecture.
+ * Central top header component defining design standards for all app headers.
  *
- * Displays a title, optional action icons, and an integrated search action button that
- * softly expands into a search bar when activated.
+ * Displays a title, optional navigation icon, optional action icons, and an integrated
+ * search action button that expands into a search bar when activated.
  *
- * Adheres strictly to BirthdayBuddy padding guidelines:
+ * Adheres strictly to BirthdayBuddy padding and design guidelines:
  * Maintains a fixed vertical container height without additive top/bottom padding jumps
- * during [AnimatedContent] transitions.
+ * during [AnimatedContent] search transitions.
  *
  * @param title Screen title text.
+ * @param modifier Optional [Modifier] for the top surface container.
  * @param isSearchActive Whether search bar mode is currently active.
  * @param searchQuery Current search text query.
  * @param onSearchQueryChange Callback when search text changes.
  * @param onSearchActiveChange Callback invoked when search mode is toggled (opened or closed).
- * @param modifier Optional [Modifier] for the top surface container.
  * @param searchPlaceholder Hint text inside the search bar.
  * @param onClearSearch Callback when search query is cleared.
  * @param focusRequester Focus requester for search input field.
@@ -70,11 +75,11 @@ import com.heckmannch.birthdaybuddy.ui.theme.SpacingSmall
 @Composable
 fun AppTopHeader(
     title: String,
-    isSearchActive: Boolean,
-    searchQuery: String,
-    onSearchQueryChange: (String) -> Unit,
-    onSearchActiveChange: (Boolean) -> Unit,
     modifier: Modifier = Modifier,
+    isSearchActive: Boolean = false,
+    searchQuery: String = "",
+    onSearchQueryChange: (String) -> Unit = {},
+    onSearchActiveChange: (Boolean) -> Unit = {},
     searchPlaceholder: String = stringResource(R.string.home_placeholder_search),
     onClearSearch: () -> Unit = {},
     focusRequester: FocusRequester = remember { FocusRequester() },
@@ -91,11 +96,11 @@ fun AppTopHeader(
             overflow = TextOverflow.Ellipsis,
         )
     },
+    modifier = modifier,
     isSearchActive = isSearchActive,
     searchQuery = searchQuery,
     onSearchQueryChange = onSearchQueryChange,
     onSearchActiveChange = onSearchActiveChange,
-    modifier = modifier,
     searchPlaceholder = searchPlaceholder,
     onClearSearch = onClearSearch,
     focusRequester = focusRequester,
@@ -110,11 +115,11 @@ fun AppTopHeader(
 @Composable
 fun AppTopHeader(
     titleContent: @Composable () -> Unit,
-    isSearchActive: Boolean,
-    searchQuery: String,
-    onSearchQueryChange: (String) -> Unit,
-    onSearchActiveChange: (Boolean) -> Unit,
     modifier: Modifier = Modifier,
+    isSearchActive: Boolean = false,
+    searchQuery: String = "",
+    onSearchQueryChange: (String) -> Unit = {},
+    onSearchActiveChange: (Boolean) -> Unit = {},
     searchPlaceholder: String = stringResource(R.string.home_placeholder_search),
     onClearSearch: () -> Unit = {},
     focusRequester: FocusRequester = remember { FocusRequester() },
@@ -123,6 +128,12 @@ fun AppTopHeader(
     actions: @Composable RowScope.() -> Unit = {},
 ) {
     val topPadding = WindowInsets.statusBars.asPaddingValues().calculateTopPadding()
+
+    if (isSearchActive) {
+        BackHandler {
+            onSearchActiveChange(false)
+        }
+    }
 
     Surface(
         color = MaterialTheme.colorScheme.surface,
@@ -146,13 +157,13 @@ fun AppTopHeader(
                 modifier = Modifier.fillMaxWidth(),
             ) { active ->
                 if (active) {
+                    val focusManager = LocalFocusManager.current
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(horizontal = SpacingNormal),
-                        verticalAlignment = Alignment.CenterVertically
+                        verticalAlignment = Alignment.CenterVertically,
                     ) {
-                        // 1. Suchfeld, das den verfügbaren Platz einnimmt
                         TextField(
                             value = searchQuery,
                             onValueChange = onSearchQueryChange,
@@ -162,36 +173,61 @@ fun AppTopHeader(
                                 .testTag("search_field"),
                             placeholder = { Text(searchPlaceholder) },
                             singleLine = true,
+                            shape = CircleShape,
                             keyboardOptions = KeyboardOptions(
                                 imeAction = ImeAction.Search
                             ),
-                            leadingIcon = { Icon(Icons.Default.Search, contentDescription = null) },
+                            keyboardActions = KeyboardActions(
+                                onSearch = { focusManager.clearFocus() }
+                            ),
+                            leadingIcon = {
+                                Icon(
+                                    imageVector = Icons.Default.Search,
+                                    contentDescription = null,
+                                    tint = MaterialTheme.colorScheme.primary
+                                )
+                            },
                             trailingIcon = {
                                 if (searchQuery.isNotEmpty()) {
-                                    IconButton(onClick = onClearSearch) {
-                                        Icon(Icons.Default.Close, contentDescription = stringResource(R.string.cd_clear_search))
+                                    IconButton(
+                                        onClick = {
+                                            onSearchQueryChange("")
+                                            onClearSearch()
+                                        },
+                                        modifier = Modifier.testTag("clear_search_button")
+                                    ) {
+                                        Icon(
+                                            imageVector = Icons.Default.Close,
+                                            contentDescription = stringResource(R.string.cd_clear_search),
+                                            tint = MaterialTheme.colorScheme.onSurfaceVariant
+                                        )
                                     }
                                 }
                             },
                             colors = TextFieldDefaults.colors(
-                                focusedContainerColor = MaterialTheme.colorScheme.surface,
+                                focusedContainerColor = MaterialTheme.colorScheme.surfaceVariant,
                                 unfocusedContainerColor = MaterialTheme.colorScheme.surfaceVariant,
                                 disabledContainerColor = MaterialTheme.colorScheme.surfaceVariant,
-                                focusedIndicatorColor = MaterialTheme.colorScheme.primary,
-                                unfocusedIndicatorColor = MaterialTheme.colorScheme.primary,
+                                focusedIndicatorColor = Color.Transparent,
+                                unfocusedIndicatorColor = Color.Transparent,
                             ),
                             textStyle = MaterialTheme.typography.bodyLarge
                         )
-                        // 2. Schließ-Button (wo die Suchleiste wieder ausgeblendet wird)
+
+                        Spacer(modifier = Modifier.width(SpacingSmall))
+
                         IconButton(
                             onClick = { onSearchActiveChange(false) },
                             modifier = Modifier.testTag("close_search_button")
                         ) {
-                            Icon(Icons.Default.Search, contentDescription = stringResource(R.string.cd_close_search))
+                            Icon(
+                                imageVector = Icons.Default.Close,
+                                contentDescription = stringResource(R.string.cd_close_search),
+                                tint = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
                         }
                     }
                 } else {
-                    // Normal Header (Nicht in Suchmodus)
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()

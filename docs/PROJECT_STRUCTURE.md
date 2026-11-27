@@ -72,9 +72,9 @@
 - **Theme (`ui.theme`)**: `Theme.kt`, `Color.kt`, `ColorPresets.kt`, `Type.kt`, `Shapes.kt`, `Dimensions.kt`.
 - **Feature Screens (`ui.screens`)** *(Co-located ViewModels, States & Components)*:
   - **Home (`home/`)**: `HomeScreen`, `HomeContent`, `HomeNavKey`, `HomeState`, `HomeActions`, `HomeIntent`, `HomeUiEvent`, `HomeViewModel`.
-    - Header (`components/header/`): `HomeHeader`, `HomeHeaderBar`, `SearchFieldState`, `TitleAction`.
+    - Header (`components/header/`): `HomeHeader` (erbt von `AppTopHeader`), `TitleAction`.
     - Components: `BirthdayList`, `BirthdayItem`, `BirthdayDetailPane`, `GiftIdeaList`, `FastScrollbar`, `ScrollbarBubble`, `HomeTopBar`, `SearchBar`, `ContactActionRow`, `MessengerAppUi`, `ConfettiEffect`, etc.
-  - **Labels (`labels/`)**: `LabelsScreen` *(reiner Label-Verwaltungs-Screen ohne FAB; Label-Erstellung erfolgt über das TopAppBar Header-Icon)*.
+  - **Labels (`labels/`)**: `LabelsScreen`, `components/` (`LabelsHeader` [erbt von `AppTopHeader`], `AddLabelDialog`, `AllLabelsCard`, `LabelCard`). Label-Erstellung erfolgt über das Header-Plus-Icon.
   - **Onboarding (`onboarding/`)**: `OnboardingScreen`, `OnboardingViewModel`, `OnboardingUiState` & Pages (`WelcomePage`, `ContactsPage`, `NotificationsPage`, `CalendarPage`, `CalendarGuidePage`, `ReadyPage`, `OnboardingFooter`).
   - **Settings (`settings/`)**: `SettingsScreen`, `SettingsMenuItemData.kt`, `components/` (`SettingsHeader`, `SettingsBody`, `SettingsFooter`, `SettingsMenuList`, `SettingsMenuSectionCard`, `SettingsDetailPane`) & Sub-Features in `subscreens/`:
     - `subscreens/labels/`: `LabelSettingsScreen`, `LabelViewModel`, `LabelUiState`.

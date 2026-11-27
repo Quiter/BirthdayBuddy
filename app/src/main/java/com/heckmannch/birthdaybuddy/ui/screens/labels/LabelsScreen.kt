@@ -6,16 +6,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -24,14 +15,11 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalHapticFeedback
-import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.heckmannch.birthdaybuddy.R
 import com.heckmannch.birthdaybuddy.domain.model.ContactLabels
 import com.heckmannch.birthdaybuddy.ui.model.HomeUiState
 import com.heckmannch.birthdaybuddy.ui.model.LabelManagementModel
@@ -40,6 +28,7 @@ import com.heckmannch.birthdaybuddy.ui.screens.home.HomeActions
 import com.heckmannch.birthdaybuddy.ui.screens.labels.components.AddLabelDialog
 import com.heckmannch.birthdaybuddy.ui.screens.labels.components.AllLabelsCard
 import com.heckmannch.birthdaybuddy.ui.screens.labels.components.LabelCard
+import com.heckmannch.birthdaybuddy.ui.screens.labels.components.LabelsHeader
 import com.heckmannch.birthdaybuddy.ui.screens.settings.subscreens.labels.LabelIntent
 import com.heckmannch.birthdaybuddy.ui.screens.settings.subscreens.labels.LabelUiState
 import com.heckmannch.birthdaybuddy.ui.screens.settings.subscreens.labels.LabelViewModel
@@ -54,7 +43,7 @@ import com.heckmannch.birthdaybuddy.ui.theme.SpacingSmall
  * [LabelsScreen] displays ONLY label management cards and label options.
  * Contacts are exclusively rendered on the main dashboard (HomeScreen).
  * Do NOT append contact lists or contact groups below the label cards.
- * Label creation is triggered via the TopAppBar header action icon (NO FloatingActionButton).
+ * Label creation is triggered via the [LabelsHeader] action icon (NO FloatingActionButton).
  *
  * Uses expandable Label Cards inspired by Morphe Manager's `PatchCard` design.
  * Each card allows:
@@ -92,7 +81,6 @@ fun LabelsScreen(
     )
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun LabelsScreenContent(
     uiState: HomeUiState,
@@ -124,31 +112,10 @@ fun LabelsScreenContent(
     Scaffold(
         modifier = modifier.fillMaxSize(),
         topBar = {
-            TopAppBar(
-                title = {
-                    Text(
-                        text = stringResource(R.string.labels_screen_title),
-                        style = MaterialTheme.typography.titleLarge,
-                        fontWeight = FontWeight.Bold,
-                    )
-                },
-                actions = {
-                    IconButton(
-                        onClick = {
-                            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                            showAddLabelDialog = true
-                        }
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.Add,
-                            contentDescription = stringResource(R.string.labels_add_title),
-                            tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                        )
-                    }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.background,
-                ),
+            LabelsHeader(
+                onAddLabel = {
+                    showAddLabelDialog = true
+                }
             )
         },
     ) { innerPadding ->
@@ -242,4 +209,3 @@ private fun LabelsScreenPreview() {
         )
     }
 }
-
