@@ -1,5 +1,6 @@
 package com.heckmannch.birthdaybuddy.ui.screens.onboarding
 
+import android.util.Log
 import com.google.common.truth.Truth.assertThat
 import com.heckmannch.birthdaybuddy.MainDispatcherRule
 import com.heckmannch.birthdaybuddy.domain.model.AppSettings
@@ -7,17 +8,25 @@ import com.heckmannch.birthdaybuddy.domain.permission.PermissionChecker
 import com.heckmannch.birthdaybuddy.domain.repository.ContactRepository
 import com.heckmannch.birthdaybuddy.domain.repository.NotificationRepository
 import com.heckmannch.birthdaybuddy.domain.repository.SettingsRepository
+import com.heckmannch.birthdaybuddy.domain.repository.WidgetUpdater
+import com.heckmannch.birthdaybuddy.domain.usecase.SyncCalendarUseCase
+import io.mockk.every
+import io.mockk.mockkStatic
+import io.mockk.unmockkStatic
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest
+import org.junit.After
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.mockito.kotlin.any
 import org.mockito.kotlin.argumentCaptor
+import org.mockito.kotlin.inOrder
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.never
 import org.mockito.kotlin.verify
@@ -32,26 +41,41 @@ class OnboardingViewModelTest {
     private val notificationRepository: NotificationRepository = mock()
     private val settingsRepository: SettingsRepository = mock()
     private val contactRepository: ContactRepository = mock()
+    private val syncCalendarUseCase: SyncCalendarUseCase = mock()
+    private val widgetUpdater: WidgetUpdater = mock()
     private val permissionChecker: PermissionChecker = mock()
 
     private lateinit var viewModel: OnboardingViewModel
 
+    private fun createViewModel(
+        scope: CoroutineScope = CoroutineScope(mainDispatcherRule.testDispatcher),
+    ) = OnboardingViewModel(
+        notificationRepository = notificationRepository,
+        settingsRepository = settingsRepository,
+        contactRepository = contactRepository,
+        syncCalendarUseCase = syncCalendarUseCase,
+        widgetUpdater = widgetUpdater,
+        permissionChecker = permissionChecker,
+        applicationScope = scope,
+        ioDispatcher = mainDispatcherRule.testDispatcher,
+    )
+
     @Before
     fun setup() {
+        mockkStatic(Log::class)
+        every { Log.w(any(), any<String>(), any()) } returns 0
+        every { Log.w(any(), any<String>()) } returns 0
         whenever(settingsRepository.settings).thenReturn(flowOf(AppSettings(onboardingCompleted = false)))
         // Default permission mock values to false
         whenever(permissionChecker.hasContactsPermission()).thenReturn(false)
         whenever(permissionChecker.hasNotificationPermission()).thenReturn(false)
         whenever(permissionChecker.hasCalendarPermission()).thenReturn(false)
-        viewModel =
-            OnboardingViewModel(
-                notificationRepository,
-                settingsRepository,
-                contactRepository,
-                permissionChecker,
-                CoroutineScope(mainDispatcherRule.testDispatcher),
-                mainDispatcherRule.testDispatcher
-            )
+        viewModel = createViewModel()
+    }
+
+    @After
+    fun tearDown() {
+        unmockkStatic(Log::class)
     }
 
     @Test
@@ -60,15 +84,7 @@ class OnboardingViewModelTest {
         whenever(permissionChecker.hasNotificationPermission()).thenReturn(true)
         whenever(permissionChecker.hasCalendarPermission()).thenReturn(false)
 
-        val localViewModel =
-            OnboardingViewModel(
-                notificationRepository,
-                settingsRepository,
-                contactRepository,
-                permissionChecker,
-                CoroutineScope(mainDispatcherRule.testDispatcher),
-                mainDispatcherRule.testDispatcher
-            )
+        val localViewModel = createViewModel()
         val collectJob = launch { localViewModel.uiState.collect {} }
         runCurrent()
 
@@ -123,14 +139,7 @@ class OnboardingViewModelTest {
         whenever(permissionChecker.hasNotificationPermission()).thenReturn(false)
         whenever(permissionChecker.hasCalendarPermission()).thenReturn(true)
 
-        val vm = OnboardingViewModel(
-            notificationRepository,
-            settingsRepository,
-            contactRepository,
-            permissionChecker,
-            CoroutineScope(mainDispatcherRule.testDispatcher),
-            mainDispatcherRule.testDispatcher
-        )
+        val vm = createViewModel()
 
         // Verify initial value BEFORE any collection
         assertThat(vm.uiState.value.hasContactPermission).isTrue()
@@ -149,30 +158,99 @@ class OnboardingViewModelTest {
     }
 
     @Test
-    fun `completeOnboarding should update settings and trigger sync`() = runTest {
-        whenever(notificationRepository.getAllRulesImmediate()).thenReturn(emptyList())
+    fun `completeOnboarding should update settings and trigger contact, calendar and widget sync`() =
+        runTest {
+            whenever(notificationRepository.getAllRulesImmediate()).thenReturn(emptyList())
+
+            viewModel.onIntent(
+                OnboardingIntent.CompleteOnboarding(
+                    notificationsEnabled = true,
+                    calendarSyncEnabled = true
+                )
+            )
+
+            val captor = argumentCaptor<(AppSettings) -> AppSettings>()
+            verify(settingsRepository).updateSettings(captor.capture())
+            val updated = captor.firstValue(
+                AppSettings(
+                    notificationsEnabled = false,
+                    calendarSyncEnabled = false,
+                    onboardingCompleted = false
+                )
+            )
+            assertThat(updated.notificationsEnabled).isTrue()
+            assertThat(updated.calendarSyncEnabled).isTrue()
+            assertThat(updated.onboardingCompleted).isTrue()
+            verify(notificationRepository).syncScheduling()
+
+            inOrder(contactRepository, syncCalendarUseCase, widgetUpdater) {
+                verify(contactRepository).syncContacts()
+                verify(syncCalendarUseCase).invoke()
+                verify(widgetUpdater).updateWidget()
+            }
+        }
+
+    @Test
+    fun `completeOnboarding should update widget but skip calendar sync when calendarSyncEnabled is false`() =
+        runTest {
+            viewModel.onIntent(
+                OnboardingIntent.CompleteOnboarding(
+                    notificationsEnabled = false,
+                    calendarSyncEnabled = false
+                )
+            )
+
+            verify(contactRepository).syncContacts()
+            verify(syncCalendarUseCase, never()).invoke()
+            verify(widgetUpdater).updateWidget()
+        }
+
+    @Test
+    fun `completeOnboarding should still update widget when calendar sync fails`() = runTest {
+        whenever(syncCalendarUseCase.invoke()).thenThrow(RuntimeException("Calendar sync failed"))
 
         viewModel.onIntent(
             OnboardingIntent.CompleteOnboarding(
-                notificationsEnabled = true,
+                notificationsEnabled = false,
                 calendarSyncEnabled = true
             )
         )
 
-        val captor = argumentCaptor<(AppSettings) -> AppSettings>()
-        verify(settingsRepository).updateSettings(captor.capture())
-        val updated = captor.firstValue(
-            AppSettings(
+        verify(contactRepository).syncContacts()
+        verify(syncCalendarUseCase).invoke()
+        verify(widgetUpdater).updateWidget()
+    }
+
+    @Test
+    fun `completeOnboarding should not crash when widget update fails`() = runTest {
+        whenever(widgetUpdater.updateWidget()).thenThrow(RuntimeException("Widget error"))
+
+        viewModel.onIntent(
+            OnboardingIntent.CompleteOnboarding(
                 notificationsEnabled = false,
-                calendarSyncEnabled = false,
-                onboardingCompleted = false
+                calendarSyncEnabled = false
             )
         )
-        assertThat(updated.notificationsEnabled).isTrue()
-        assertThat(updated.calendarSyncEnabled).isTrue()
-        assertThat(updated.onboardingCompleted).isTrue()
-        verify(notificationRepository).syncScheduling()
+
         verify(contactRepository).syncContacts()
+        verify(widgetUpdater).updateWidget()
+    }
+
+    @Test
+    fun `completeOnboarding should rethrow CancellationException from calendar sync`() = runTest {
+        whenever(syncCalendarUseCase.invoke()).thenThrow(CancellationException("Cancelled"))
+
+        val vm = createViewModel(scope = this)
+        vm.onIntent(
+            OnboardingIntent.CompleteOnboarding(
+                notificationsEnabled = false,
+                calendarSyncEnabled = true
+            )
+        )
+
+        verify(contactRepository).syncContacts()
+        verify(syncCalendarUseCase).invoke()
+        verify(widgetUpdater, never()).updateWidget()
     }
 
     @Test

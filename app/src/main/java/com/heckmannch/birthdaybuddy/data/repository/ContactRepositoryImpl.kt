@@ -5,6 +5,7 @@ import android.database.ContentObserver
 import android.provider.ContactsContract
 import android.util.Log
 import com.heckmannch.birthdaybuddy.data.local.ContactDao
+import com.heckmannch.birthdaybuddy.data.local.ContactEntity
 import com.heckmannch.birthdaybuddy.data.local.ContactUserDataDao
 import com.heckmannch.birthdaybuddy.data.local.GiftIdeaConverters
 import com.heckmannch.birthdaybuddy.data.local.LabelConfigDao
@@ -16,8 +17,10 @@ import com.heckmannch.birthdaybuddy.di.IoDispatcher
 import com.heckmannch.birthdaybuddy.domain.model.Contact
 import com.heckmannch.birthdaybuddy.domain.model.LabelConfig
 import com.heckmannch.birthdaybuddy.domain.permission.PermissionChecker
+import com.heckmannch.birthdaybuddy.domain.repository.CalendarSyncRepository
 import com.heckmannch.birthdaybuddy.domain.repository.ContactRepository
 import com.heckmannch.birthdaybuddy.domain.repository.SettingsRepository
+import com.heckmannch.birthdaybuddy.domain.repository.WidgetUpdater
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.async
@@ -40,8 +43,8 @@ import javax.inject.Inject
  *
  * It bridges the local Room database cache with the Android system's contact provider
  * ([SystemContactDataSource]). It handles contact synchronization, label config synchronization,
- * and handles coroutine dispatching offloading heavy mapping calculations to [DefaultDispatcher]
- * or [IoDispatcher].
+ * downstream widget and calendar synchronization, and coroutine dispatching offloading heavy
+ * mapping calculations to [DefaultDispatcher] or [IoDispatcher].
  */
 class ContactRepositoryImpl @Inject constructor(
     private val permissionChecker: PermissionChecker,
@@ -50,6 +53,8 @@ class ContactRepositoryImpl @Inject constructor(
     private val contactUserDataDao: ContactUserDataDao,
     private val systemContactDataSource: SystemContactDataSource,
     private val settingsRepository: SettingsRepository,
+    private val calendarSyncRepository: CalendarSyncRepository,
+    private val widgetUpdater: WidgetUpdater,
     private val contactDbMapper: ContactDbMapper,
     private val labelConfigMapper: LabelConfigMapper,
     private val contentResolver: ContentResolver,
@@ -130,7 +135,7 @@ class ContactRepositoryImpl @Inject constructor(
             try {
                 if (!permissionChecker.hasContactsPermission()) return@withLock
 
-                coroutineScope {
+                val reconciledContacts = coroutineScope {
                     // 1. Load data from all sources in parallel
                     val systemDataDeferred = async {
                         val groups = systemContactDataSource.fetchContactGroups()
@@ -155,8 +160,10 @@ class ContactRepositoryImpl @Inject constructor(
                     syncLabelConfigs(systemContacts, dbConfigs, groups)
 
                     // 3. Diffing: Reconcile contacts (CPU-intensive operation offloaded to Dispatchers.Default)
-                    val finalEntities = withContext(defaultDispatcher) {
-                        systemContacts.map { systemContact ->
+                    val (contacts, finalEntities) = withContext(defaultDispatcher) {
+                        val reconciled = ArrayList<Contact>(systemContacts.size)
+                        val entities = ArrayList<ContactEntity>(systemContacts.size)
+                        for (systemContact in systemContacts) {
                             val lookupKey = systemContact.lookupKey
                             val existing = dbContacts[lookupKey]
                             val userData = userDataMap[lookupKey]
@@ -166,8 +173,12 @@ class ContactRepositoryImpl @Inject constructor(
                                 giftIdeas = giftIdeaConverters.toGiftIdeaList(rawGiftIdeasJson),
                                 spouseLookupKey = userData?.spouseLookupKey
                             )
-                            contactDbMapper.toEntity(contact, localId = existing?.localId ?: 0)
+                            reconciled.add(contact)
+                            entities.add(
+                                contactDbMapper.toEntity(contact, localId = existing?.localId ?: 0)
+                            )
                         }
+                        reconciled to entities
                     }
 
                     // 4. Batch update via transaction
@@ -177,12 +188,47 @@ class ContactRepositoryImpl @Inject constructor(
                     settingsRepository.updateSettings {
                         it.copy(lastSyncTimestamp = System.currentTimeMillis())
                     }
+
+                    contacts
                 }
+
+                // 6. Notify home screen widget and Android system calendar defensively
+                notifyWidgetAndCalendar(reconciledContacts)
             } catch (e: CancellationException) {
                 throw e
             } catch (e: Exception) {
                 Log.e(TAG, "Error during contact sync: ${e.message}", e)
             }
+        }
+    }
+
+    /**
+     * Triggers an immediate home screen widget refresh and, when calendar sync is enabled
+     * and calendar permissions are granted, synchronizes contact events with Android's system
+     * calendar.
+     *
+     * Both side effects are independently guarded so a failure in either operation cannot
+     * abort the other or break contact/birthday persistence. [CancellationException] is always
+     * rethrown to preserve structured concurrency.
+     */
+    private suspend fun notifyWidgetAndCalendar(contacts: List<Contact>) {
+        try {
+            widgetUpdater.updateWidget()
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: Exception) {
+            Log.e(TAG, "Error updating widget after contact sync: ${e.message}", e)
+        }
+
+        try {
+            val currentSettings = settingsRepository.getSettingsImmediate()
+            if (currentSettings.calendarSyncEnabled && permissionChecker.hasCalendarPermission()) {
+                calendarSyncRepository.syncBirthdays(contacts)
+            }
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: Exception) {
+            Log.e(TAG, "Error syncing calendar after contact sync: ${e.message}", e)
         }
     }
 

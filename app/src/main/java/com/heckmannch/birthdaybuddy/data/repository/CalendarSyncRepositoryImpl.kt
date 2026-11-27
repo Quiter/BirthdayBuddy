@@ -17,6 +17,8 @@ import com.heckmannch.birthdaybuddy.util.hasYear
 import com.heckmannch.birthdaybuddy.util.mergeNames
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import java.time.LocalDate
 import java.time.ZoneOffset
@@ -37,6 +39,14 @@ class CalendarSyncRepositoryImpl @Inject constructor(
     @IoDispatcher private val ioDispatcher: CoroutineDispatcher,
     private val converters: Converters = Converters(),
 ) : CalendarSyncRepository {
+
+    /**
+     * Mutex ensuring mutual exclusion for mutating calendar operations ([syncBirthdays],
+     * [deleteCalendar]) so overlapping sync requests (e.g. onboarding completion followed
+     * immediately by HomeViewModel initialization) execute sequentially without racing on
+     * Android's CalendarProvider.
+     */
+    private val syncMutex = Mutex()
 
     private enum class LocalCalendarType(val calendarName: String) {
         BIRTHDAY("BirthdayBuddy_Birthdays"),
@@ -216,36 +226,39 @@ class CalendarSyncRepositoryImpl @Inject constructor(
     }
 
     override suspend fun deleteCalendar(): Boolean = withContext(ioDispatcher) {
-        val currentSettings = appSettingsDao.getSettingsImmediate() ?: AppSettingsEntity()
+        syncMutex.withLock {
+            val currentSettings = appSettingsDao.getSettingsImmediate() ?: AppSettingsEntity()
 
-        var deletedAny = false
-        val fixedTargetNames = setOf(
-            SystemCalendarDataSource.LEGACY_CALENDAR_NAME,
-            LocalCalendarType.BIRTHDAY.calendarName,
-            LocalCalendarType.ANNIVERSARY.calendarName,
-            LocalCalendarType.NAMEDAY.calendarName
-        )
-        val calendars = systemCalendarDataSource.queryAllCalendars()
-        for ((id, name, accountName, accountType) in calendars) {
-            if (name in fixedTargetNames || name.startsWith(CUSTOM_EVENT_CALENDAR_PREFIX)) {
-                systemCalendarDataSource.deleteCalendarById(id, accountName, accountType)
-                deletedAny = true
-            }
-        }
-
-        // Update local settings in database
-        appSettingsDao.upsertSettings(
-            currentSettings.copy(
-                calendarSyncEnabled = false,
-                calendarId = null
+            var deletedAny = false
+            val fixedTargetNames = setOf(
+                SystemCalendarDataSource.LEGACY_CALENDAR_NAME,
+                LocalCalendarType.BIRTHDAY.calendarName,
+                LocalCalendarType.ANNIVERSARY.calendarName,
+                LocalCalendarType.NAMEDAY.calendarName
             )
-        )
-        deletedAny
+            val calendars = systemCalendarDataSource.queryAllCalendars()
+            for ((id, name, accountName, accountType) in calendars) {
+                if (name in fixedTargetNames || name.startsWith(CUSTOM_EVENT_CALENDAR_PREFIX)) {
+                    systemCalendarDataSource.deleteCalendarById(id, accountName, accountType)
+                    deletedAny = true
+                }
+            }
+
+            // Update local settings in database
+            appSettingsDao.upsertSettings(
+                currentSettings.copy(
+                    calendarSyncEnabled = false,
+                    calendarId = null
+                )
+            )
+            deletedAny
+        }
     }
 
     override suspend fun syncBirthdays(contacts: List<Contact>): Boolean =
         withContext(ioDispatcher) {
-            if (!hasCalendarPermissions()) return@withContext false
+            syncMutex.withLock {
+                if (!hasCalendarPermissions()) return@withLock false
 
             // Clean up outdated or duplicate calendars prior to syncing
             cleanCalendars()
@@ -273,7 +286,7 @@ class CalendarSyncRepositoryImpl @Inject constructor(
 
             // Retrieve or create IDs for all active calendars
             val birthdayCalId =
-                getOrCreateCalendar(LocalCalendarType.BIRTHDAY) ?: return@withContext false
+                getOrCreateCalendar(LocalCalendarType.BIRTHDAY) ?: return@withLock false
             val anniversaryCalId =
                 if (anniversaryEnabled) getOrCreateCalendar(LocalCalendarType.ANNIVERSARY) else null
             val nameDayCalId =
@@ -440,6 +453,7 @@ class CalendarSyncRepositoryImpl @Inject constructor(
             } catch (e: Exception) {
                 Log.e(TAG, "Error syncing events to calendars", e)
                 false
+            }
             }
         }
 

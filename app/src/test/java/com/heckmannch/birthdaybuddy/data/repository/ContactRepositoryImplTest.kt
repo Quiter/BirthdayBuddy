@@ -16,7 +16,9 @@ import com.heckmannch.birthdaybuddy.domain.model.AppSettings
 import com.heckmannch.birthdaybuddy.domain.model.Contact
 import com.heckmannch.birthdaybuddy.domain.model.LabelConfig
 import com.heckmannch.birthdaybuddy.domain.permission.PermissionChecker
+import com.heckmannch.birthdaybuddy.domain.repository.CalendarSyncRepository
 import com.heckmannch.birthdaybuddy.domain.repository.SettingsRepository
+import com.heckmannch.birthdaybuddy.domain.repository.WidgetUpdater
 import io.mockk.every
 import io.mockk.mockkStatic
 import io.mockk.unmockkStatic
@@ -51,6 +53,8 @@ class ContactRepositoryImplTest {
     private val contactUserDataDao: ContactUserDataDao = mock()
     private val systemContactDataSource: SystemContactDataSource = mock()
     private val settingsRepository: SettingsRepository = mock()
+    private val calendarSyncRepository: CalendarSyncRepository = mock()
+    private val widgetUpdater: WidgetUpdater = mock()
     private val contentResolver: ContentResolver = mock()
     private val contactDbMapper = ContactDbMapper()
     private val labelConfigMapper = LabelConfigMapper()
@@ -70,6 +74,10 @@ class ContactRepositoryImplTest {
         whenever(contactDao.getAllContacts()).thenReturn(allContactsFlow)
         whenever(labelConfigDao.getAllConfigs()).thenReturn(labelConfigsFlow)
         whenever(settingsRepository.settings).thenReturn(settingsFlow)
+        runTest {
+            whenever(settingsRepository.getSettingsImmediate()).thenReturn(AppSettings())
+        }
+        whenever(permissionChecker.hasCalendarPermission()).thenReturn(false)
 
         repository = ContactRepositoryImpl(
             permissionChecker = permissionChecker,
@@ -78,6 +86,8 @@ class ContactRepositoryImplTest {
             contactUserDataDao = contactUserDataDao,
             systemContactDataSource = systemContactDataSource,
             settingsRepository = settingsRepository,
+            calendarSyncRepository = calendarSyncRepository,
+            widgetUpdater = widgetUpdater,
             contactDbMapper = contactDbMapper,
             labelConfigMapper = labelConfigMapper,
             contentResolver = contentResolver,
@@ -144,6 +154,8 @@ class ContactRepositoryImplTest {
         // Assert
         verify(systemContactDataSource, never()).fetchContactGroups()
         verify(contactDao, never()).getAllContactsImmediate()
+        verify(widgetUpdater, never()).updateWidget()
+        verify(calendarSyncRepository, never()).syncBirthdays(any())
     }
 
     @Test
@@ -177,6 +189,171 @@ class ContactRepositoryImplTest {
         verify(contactUserDataDao).getAllUserDataImmediate()
         verify(contactDao).refreshContacts(any())
         verify(settingsRepository).updateSettings(any())
+        verify(widgetUpdater).updateWidget()
+        verify(calendarSyncRepository, never()).syncBirthdays(any())
+    }
+
+    @Test
+    fun syncContacts_updatesWidgetAndSyncsCalendar_whenCalendarSyncEnabledAndPermitted() = runTest {
+        // Arrange
+        whenever(permissionChecker.hasContactsPermission()).thenReturn(true)
+        whenever(permissionChecker.hasCalendarPermission()).thenReturn(true)
+        whenever(settingsRepository.getSettingsImmediate()).thenReturn(
+            AppSettings(calendarSyncEnabled = true)
+        )
+        val groups = mapOf(1L to GroupInfo("Friends", isSystem = false))
+        val systemContact = Contact(
+            contactId = "c1",
+            lookupKey = "key1",
+            fullName = "Alice",
+            birthday = LocalDate.of(1990, 1, 1),
+            labels = listOf("Friends")
+        )
+        whenever(systemContactDataSource.fetchContactGroups()).thenReturn(groups)
+        whenever(systemContactDataSource.fetchContactsFromSystem(groups)).thenReturn(
+            listOf(systemContact)
+        )
+        whenever(contactDao.getAllContactsImmediate()).thenReturn(emptyList())
+        whenever(labelConfigDao.getAllConfigsImmediate()).thenReturn(emptyList())
+        whenever(contactUserDataDao.getAllUserDataImmediate()).thenReturn(emptyList())
+
+        // Act
+        repository.syncContacts()
+
+        // Assert
+        verify(widgetUpdater).updateWidget()
+        verify(calendarSyncRepository).syncBirthdays(listOf(systemContact))
+    }
+
+    @Test
+    fun syncContacts_doesNotSyncCalendar_whenCalendarPermissionMissing() = runTest {
+        // Arrange
+        whenever(permissionChecker.hasContactsPermission()).thenReturn(true)
+        whenever(permissionChecker.hasCalendarPermission()).thenReturn(false)
+        whenever(settingsRepository.getSettingsImmediate()).thenReturn(
+            AppSettings(calendarSyncEnabled = true)
+        )
+        val groups = mapOf(1L to GroupInfo("Friends", isSystem = false))
+        whenever(systemContactDataSource.fetchContactGroups()).thenReturn(groups)
+        whenever(systemContactDataSource.fetchContactsFromSystem(groups)).thenReturn(emptyList())
+        whenever(contactDao.getAllContactsImmediate()).thenReturn(emptyList())
+        whenever(labelConfigDao.getAllConfigsImmediate()).thenReturn(emptyList())
+        whenever(contactUserDataDao.getAllUserDataImmediate()).thenReturn(emptyList())
+
+        // Act
+        repository.syncContacts()
+
+        // Assert
+        verify(widgetUpdater).updateWidget()
+        verify(calendarSyncRepository, never()).syncBirthdays(any())
+    }
+
+    @Test
+    fun syncContacts_continuesCalendarSync_whenWidgetUpdateThrowsException() = runTest {
+        // Arrange
+        whenever(permissionChecker.hasContactsPermission()).thenReturn(true)
+        whenever(permissionChecker.hasCalendarPermission()).thenReturn(true)
+        whenever(settingsRepository.getSettingsImmediate()).thenReturn(
+            AppSettings(calendarSyncEnabled = true)
+        )
+        whenever(widgetUpdater.updateWidget()).thenThrow(RuntimeException("Widget error"))
+        val groups = mapOf(1L to GroupInfo("Friends", isSystem = false))
+        val systemContact = Contact(
+            contactId = "c1",
+            lookupKey = "key1",
+            fullName = "Alice",
+            birthday = LocalDate.of(1990, 1, 1)
+        )
+        whenever(systemContactDataSource.fetchContactGroups()).thenReturn(groups)
+        whenever(systemContactDataSource.fetchContactsFromSystem(groups)).thenReturn(
+            listOf(systemContact)
+        )
+        whenever(contactDao.getAllContactsImmediate()).thenReturn(emptyList())
+        whenever(labelConfigDao.getAllConfigsImmediate()).thenReturn(emptyList())
+        whenever(contactUserDataDao.getAllUserDataImmediate()).thenReturn(emptyList())
+
+        // Act (should not throw)
+        repository.syncContacts()
+
+        // Assert
+        verify(contactDao).refreshContacts(any())
+        verify(widgetUpdater).updateWidget()
+        verify(calendarSyncRepository).syncBirthdays(listOf(systemContact))
+    }
+
+    @Test
+    fun syncContacts_succeeds_whenCalendarSyncThrowsException() = runTest {
+        // Arrange
+        whenever(permissionChecker.hasContactsPermission()).thenReturn(true)
+        whenever(permissionChecker.hasCalendarPermission()).thenReturn(true)
+        whenever(settingsRepository.getSettingsImmediate()).thenReturn(
+            AppSettings(calendarSyncEnabled = true)
+        )
+        whenever(calendarSyncRepository.syncBirthdays(any()))
+            .thenThrow(RuntimeException("Calendar error"))
+        val groups = mapOf(1L to GroupInfo("Friends", isSystem = false))
+        whenever(systemContactDataSource.fetchContactGroups()).thenReturn(groups)
+        whenever(systemContactDataSource.fetchContactsFromSystem(groups)).thenReturn(emptyList())
+        whenever(contactDao.getAllContactsImmediate()).thenReturn(emptyList())
+        whenever(labelConfigDao.getAllConfigsImmediate()).thenReturn(emptyList())
+        whenever(contactUserDataDao.getAllUserDataImmediate()).thenReturn(emptyList())
+
+        // Act (should not throw)
+        repository.syncContacts()
+
+        // Assert
+        verify(contactDao).refreshContacts(any())
+        verify(widgetUpdater).updateWidget()
+        verify(calendarSyncRepository).syncBirthdays(emptyList())
+    }
+
+    @Test
+    fun syncContacts_rethrowsCancellationException_fromWidgetUpdate() = runTest {
+        // Arrange
+        whenever(permissionChecker.hasContactsPermission()).thenReturn(true)
+        whenever(widgetUpdater.updateWidget()).thenThrow(CancellationException("Widget cancelled"))
+        val groups = emptyMap<Long, GroupInfo>()
+        whenever(systemContactDataSource.fetchContactGroups()).thenReturn(groups)
+        whenever(systemContactDataSource.fetchContactsFromSystem(groups)).thenReturn(emptyList())
+        whenever(contactDao.getAllContactsImmediate()).thenReturn(emptyList())
+        whenever(labelConfigDao.getAllConfigsImmediate()).thenReturn(emptyList())
+        whenever(contactUserDataDao.getAllUserDataImmediate()).thenReturn(emptyList())
+
+        // Act & Assert
+        var caught: Throwable? = null
+        try {
+            repository.syncContacts()
+        } catch (e: Throwable) {
+            caught = e
+        }
+        assertThat(caught).isInstanceOf(CancellationException::class.java)
+    }
+
+    @Test
+    fun syncContacts_rethrowsCancellationException_fromCalendarSync() = runTest {
+        // Arrange
+        whenever(permissionChecker.hasContactsPermission()).thenReturn(true)
+        whenever(permissionChecker.hasCalendarPermission()).thenReturn(true)
+        whenever(settingsRepository.getSettingsImmediate()).thenReturn(
+            AppSettings(calendarSyncEnabled = true)
+        )
+        whenever(calendarSyncRepository.syncBirthdays(any()))
+            .thenThrow(CancellationException("Calendar cancelled"))
+        val groups = emptyMap<Long, GroupInfo>()
+        whenever(systemContactDataSource.fetchContactGroups()).thenReturn(groups)
+        whenever(systemContactDataSource.fetchContactsFromSystem(groups)).thenReturn(emptyList())
+        whenever(contactDao.getAllContactsImmediate()).thenReturn(emptyList())
+        whenever(labelConfigDao.getAllConfigsImmediate()).thenReturn(emptyList())
+        whenever(contactUserDataDao.getAllUserDataImmediate()).thenReturn(emptyList())
+
+        // Act & Assert
+        var caught: Throwable? = null
+        try {
+            repository.syncContacts()
+        } catch (e: Throwable) {
+            caught = e
+        }
+        assertThat(caught).isInstanceOf(CancellationException::class.java)
     }
 
     @Test
@@ -209,6 +386,8 @@ class ContactRepositoryImplTest {
 
         // Assert
         verify(contactDao, never()).refreshContacts(any())
+        verify(widgetUpdater, never()).updateWidget()
+        verify(calendarSyncRepository, never()).syncBirthdays(any())
     }
 
     @Test
@@ -244,6 +423,8 @@ class ContactRepositoryImplTest {
             contactUserDataDao = contactUserDataDao,
             systemContactDataSource = systemContactDataSource,
             settingsRepository = settingsRepository,
+            calendarSyncRepository = calendarSyncRepository,
+            widgetUpdater = widgetUpdater,
             contactDbMapper = contactDbMapper,
             labelConfigMapper = labelConfigMapper,
             contentResolver = contentResolver,
@@ -359,5 +540,86 @@ class ContactRepositoryImplTest {
         testScheduler.runCurrent()
 
         verify(contentResolver).unregisterContentObserver(any())
+    }
+
+    @Test
+    fun updateContactBirthday_updatesWidgetAndSyncsCalendar_whenSuccessful() = runTest {
+        // Arrange
+        val birthday = LocalDate.of(1992, 8, 15)
+        val groups = emptyMap<Long, GroupInfo>()
+        val updatedContact = Contact(
+            contactId = "c1",
+            lookupKey = "key1",
+            fullName = "Alice",
+            birthday = birthday
+        )
+        whenever(systemContactDataSource.updateContactBirthday("c1", birthday)).thenReturn(true)
+        whenever(permissionChecker.hasContactsPermission()).thenReturn(true)
+        whenever(permissionChecker.hasCalendarPermission()).thenReturn(true)
+        whenever(settingsRepository.getSettingsImmediate()).thenReturn(
+            AppSettings(calendarSyncEnabled = true)
+        )
+        whenever(systemContactDataSource.fetchContactGroups()).thenReturn(groups)
+        whenever(systemContactDataSource.fetchContactsFromSystem(groups)).thenReturn(
+            listOf(updatedContact)
+        )
+        whenever(contactDao.getAllContactsImmediate()).thenReturn(emptyList())
+        whenever(labelConfigDao.getAllConfigsImmediate()).thenReturn(emptyList())
+        whenever(contactUserDataDao.getAllUserDataImmediate()).thenReturn(emptyList())
+
+        // Act
+        val result = repository.updateContactBirthday("c1", birthday)
+
+        // Assert
+        assertThat(result).isTrue()
+        verify(contactDao).refreshContacts(any())
+        verify(widgetUpdater).updateWidget()
+        verify(calendarSyncRepository).syncBirthdays(listOf(updatedContact))
+    }
+
+    @Test
+    fun updateContactBirthday_returnsTrue_whenWidgetAndCalendarSyncFail() = runTest {
+        // Arrange
+        val birthday = LocalDate.of(1992, 8, 15)
+        val groups = emptyMap<Long, GroupInfo>()
+        whenever(systemContactDataSource.updateContactBirthday("c1", birthday)).thenReturn(true)
+        whenever(permissionChecker.hasContactsPermission()).thenReturn(true)
+        whenever(permissionChecker.hasCalendarPermission()).thenReturn(true)
+        whenever(settingsRepository.getSettingsImmediate()).thenReturn(
+            AppSettings(calendarSyncEnabled = true)
+        )
+        whenever(systemContactDataSource.fetchContactGroups()).thenReturn(groups)
+        whenever(systemContactDataSource.fetchContactsFromSystem(groups)).thenReturn(emptyList())
+        whenever(contactDao.getAllContactsImmediate()).thenReturn(emptyList())
+        whenever(labelConfigDao.getAllConfigsImmediate()).thenReturn(emptyList())
+        whenever(contactUserDataDao.getAllUserDataImmediate()).thenReturn(emptyList())
+        whenever(widgetUpdater.updateWidget()).thenThrow(RuntimeException("Widget failure"))
+        whenever(calendarSyncRepository.syncBirthdays(any()))
+            .thenThrow(RuntimeException("Calendar failure"))
+
+        // Act
+        val result = repository.updateContactBirthday("c1", birthday)
+
+        // Assert
+        assertThat(result).isTrue()
+        verify(contactDao).refreshContacts(any())
+        verify(widgetUpdater).updateWidget()
+        verify(calendarSyncRepository).syncBirthdays(emptyList())
+    }
+
+    @Test
+    fun updateContactBirthday_doesNotSync_whenSystemUpdateFails() = runTest {
+        // Arrange
+        val birthday = LocalDate.of(1992, 8, 15)
+        whenever(systemContactDataSource.updateContactBirthday("c1", birthday)).thenReturn(false)
+
+        // Act
+        val result = repository.updateContactBirthday("c1", birthday)
+
+        // Assert
+        assertThat(result).isFalse()
+        verify(contactDao, never()).refreshContacts(any())
+        verify(widgetUpdater, never()).updateWidget()
+        verify(calendarSyncRepository, never()).syncBirthdays(any())
     }
 }
