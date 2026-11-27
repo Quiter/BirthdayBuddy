@@ -43,6 +43,9 @@ class NotificationHelper @Inject constructor(
     /**
      * Builds and posts a birthday/event notification with distinct [PendingIntent] request codes
      * (`notificationId * 10 + OFFSET_*`) so content, action, and delete intents never collide across IDs.
+     *
+     * @return `true` if [NotificationManager.notify] was invoked, or `false` if the
+     * [NotificationManager] service is unavailable or system notifications are disabled.
      */
     suspend fun showBirthdayNotification(
         contacts: List<Contact>,
@@ -50,7 +53,7 @@ class NotificationHelper @Inject constructor(
         pendingId: Int = -1,
         eventType: EventType = EventType.BIRTHDAY,
         customEventKey: String? = null,
-    ) {
+    ): Boolean {
         val settings = settingsRepository.settings.first()
         val isPersistent = settings.persistentNotifications
 
@@ -61,7 +64,7 @@ class NotificationHelper @Inject constructor(
         val showHint = isPersistent && dismissCount >= 3
 
         val notificationManager =
-            context.getSystemService<NotificationManager>() ?: return
+            context.getSystemService<NotificationManager>() ?: return false
 
         val channel = NotificationChannel(
             CHANNEL_ID,
@@ -176,7 +179,8 @@ class NotificationHelper @Inject constructor(
             .setAutoCancel(!isPersistent)
             .build()
 
-        if (!NotificationManagerCompat.from(context).areNotificationsEnabled()) return
+        if (!NotificationManagerCompat.from(context).areNotificationsEnabled()) return false
         notificationManager.notify(notificationId, notification)
+        return true
     }
 }

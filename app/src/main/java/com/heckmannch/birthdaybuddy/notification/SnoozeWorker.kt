@@ -1,6 +1,7 @@
 package com.heckmannch.birthdaybuddy.notification
 
 import android.content.Context
+import android.util.Log
 import androidx.hilt.work.HiltWorker
 import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
@@ -62,15 +63,25 @@ class SnoozeWorker @AssistedInject constructor(
                 NotificationKeyUtils.extractEventType(firstKey)
             }
             val customEventKey = NotificationKeyUtils.extractCustomEventKey(firstKey)
-            notificationHelper.showBirthdayNotification(
+            val posted = notificationHelper.showBirthdayNotification(
                 contacts = targetContacts,
                 daysBefore = daysBefore,
                 pendingId = pendingId,
                 eventType = eventType,
                 customEventKey = customEventKey,
             )
+            if (!posted) {
+                Log.w(
+                    TAG,
+                    "Could not post snoozed notification (pendingId=$pendingId, eventType=$eventType, daysBefore=$daysBefore)",
+                )
+            }
         }
 
         return Result.success()
+    }
+
+    private companion object {
+        private const val TAG = "SnoozeWorker"
     }
 }

@@ -44,17 +44,19 @@ class NotificationWorker @AssistedInject constructor(
         return try {
             // Vorjahres-Einträge bereinigen, damit die pendingId nicht unbegrenzt wächst
             // und PendingIntent-Request-Code-Kollisionen verhindert werden.
-            val currentYear = clock.nowLocalDate().year
+            val now = clock.nowLocalDateTime()
+            val currentYear = now.year
             cleanupOldNotificationsUseCase(currentYear)
 
             // Sync contacts before evaluating rules to make sure we work with the latest data
             contactRepository.syncContacts()
 
             // Evaluieren der fälligen Benachrichtigungen via Use Case
-            val pendingEvents = getPendingNotificationsUseCase(clock.nowLocalDateTime())
+            val pendingEvents = getPendingNotificationsUseCase(now)
 
-            // Für jedes fällige Event erst die Benachrichtigung anzeigen und danach als verarbeitet persistieren,
-            // damit bei einem Fehler oder Prozess-Abbruch während des Anzeigens kein Event für das ganze Jahr verloren geht.
+            // Für jedes fällige Event erst die Benachrichtigung anzeigen und nur bei tatsächlichem Posten
+            // als verarbeitet persistieren, damit bei fehlender System-Berechtigung, einem Fehler oder
+            // Prozess-Abbruch kein Event still für das ganze Jahr verloren geht.
             pendingEvents.forEach { event ->
                 val pendingId = notificationRepository.getNextPendingNotificationId()
                 val pending = PendingNotification(
@@ -64,7 +66,7 @@ class NotificationWorker @AssistedInject constructor(
                     id = pendingId,
                 )
 
-                notificationHelper.showBirthdayNotification(
+                val posted = notificationHelper.showBirthdayNotification(
                     contacts = event.contacts,
                     daysBefore = event.daysBefore,
                     pendingId = pendingId,
@@ -72,7 +74,14 @@ class NotificationWorker @AssistedInject constructor(
                     customEventKey = event.customEventKey,
                 )
 
-                notificationRepository.insertPendingNotification(pending)
+                if (posted) {
+                    notificationRepository.insertPendingNotification(pending)
+                } else {
+                    Log.w(
+                        TAG,
+                        "Skipped persisting pending notification (id=$pendingId, eventType=${event.eventType}, daysBefore=${event.daysBefore}) because notification could not be posted",
+                    )
+                }
             }
 
             // Plane den nächsten Lauf sauber und deterministisch über APPEND_OR_REPLACE.

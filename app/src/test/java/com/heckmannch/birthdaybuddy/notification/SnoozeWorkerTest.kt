@@ -16,7 +16,9 @@ import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk
+import io.mockk.mockkStatic
 import io.mockk.unmockkAll
+import io.mockk.verify
 import kotlinx.coroutines.test.runTest
 import org.junit.After
 import org.junit.Before
@@ -33,8 +35,13 @@ class SnoozeWorkerTest {
 
     @Before
     fun setUp() {
+        mockkStatic(android.util.Log::class)
+        every { android.util.Log.w(any(), any<String>()) } returns 0
         coEvery { settingsRepository.getSettingsImmediate() } returns AppSettings(notificationsEnabled = true)
         coEvery { notificationRepository.getPendingNotificationById(any()) } returns null
+        coEvery {
+            notificationHelper.showBirthdayNotification(any(), any(), any(), any(), any())
+        } returns true
     }
 
     @After
@@ -331,5 +338,34 @@ class SnoozeWorkerTest {
             coVerify(exactly = 0) {
                 notificationHelper.showBirthdayNotification(any(), any(), any(), any())
             }
+        }
+
+    @Test
+    fun `doWork - logs warning and returns success when showBirthdayNotification returns false`() =
+        runTest {
+            // Arrange
+            val inputData = Data.Builder()
+                .putInt(NotificationActions.EXTRA_DAYS_BEFORE, 0)
+                .putInt(NotificationActions.EXTRA_PENDING_ID, 106)
+                .putStringArray(NotificationActions.EXTRA_LOOKUP_KEYS, arrayOf("contact_a"))
+                .build()
+            every { workerParams.inputData } returns inputData
+
+            val contacts = listOf(
+                Contact(contactId = "1", lookupKey = "contact_a", fullName = "Alice")
+            )
+            coEvery { contactRepository.getAllContactsImmediate() } returns contacts
+            coEvery {
+                notificationHelper.showBirthdayNotification(any(), any(), any(), any(), any())
+            } returns false
+
+            val worker = createWorker()
+
+            // Act
+            val result = worker.doWork()
+
+            // Assert
+            assertThat(result).isEqualTo(ListenableWorker.Result.success())
+            verify(exactly = 1) { android.util.Log.w(any(), any<String>()) }
         }
 }

@@ -75,12 +75,13 @@ class NotificationHelperTest {
             birthday = LocalDate.of(1990, 5, 24)
         )
 
-        notificationHelper.showBirthdayNotification(
+        val posted = notificationHelper.showBirthdayNotification(
             contacts = listOf(contact),
             daysBefore = 0,
             pendingId = 456
         )
 
+        assertThat(posted).isTrue()
         // Query active notifications with real wall-clock polling to prevent system IPC latency race conditions.
         // Thread.sleep is used because runTest virtualizes delay() instantly.
         val birthdayNotification = pollActiveNotification(456)
@@ -104,12 +105,13 @@ class NotificationHelperTest {
             birthday = LocalDate.of(1992, 8, 15)
         )
 
-        notificationHelper.showBirthdayNotification(
+        val posted = notificationHelper.showBirthdayNotification(
             contacts = listOf(contact1, contact2),
             daysBefore = 1,
             pendingId = 789
         )
 
+        assertThat(posted).isTrue()
         val notification = pollActiveNotification(789)
 
         assertThat(notification).isNotNull()
@@ -130,12 +132,13 @@ class NotificationHelperTest {
             birthday = LocalDate.of(1990, 5, 24)
         )
 
-        notificationHelper.showBirthdayNotification(
+        val posted = notificationHelper.showBirthdayNotification(
             contacts = listOf(contact),
             daysBefore = 0,
             pendingId = 555
         )
 
+        assertThat(posted).isTrue()
         val notification = pollActiveNotification(555)
 
         assertThat(notification).isNotNull()
@@ -153,13 +156,14 @@ class NotificationHelperTest {
             anniversary = LocalDate.of(2015, 6, 12)
         )
 
-        notificationHelper.showBirthdayNotification(
+        val posted = notificationHelper.showBirthdayNotification(
             contacts = listOf(contact),
             daysBefore = 0,
             pendingId = 666,
             eventType = EventType.ANNIVERSARY
         )
 
+        assertThat(posted).isTrue()
         val notification = pollActiveNotification(666)
 
         assertThat(notification).isNotNull()

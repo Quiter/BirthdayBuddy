@@ -327,12 +327,13 @@ class NotificationHelperTest {
 
         val contact = Contact(contactId = "1", lookupKey = "key1", fullName = "Max")
 
-        helper.showBirthdayNotification(
+        val posted = helper.showBirthdayNotification(
             contacts = listOf(contact),
             daysBefore = 0,
             pendingId = 601
         )
 
+        assertThat(posted).isFalse()
         // Channel is still created, but notify is skipped
         verify(exactly = 1) { notificationManager.createNotificationChannel(any()) }
         verify(exactly = 0) { notificationManager.notify(any(), any()) }
@@ -344,12 +345,13 @@ class NotificationHelperTest {
 
         val contact = Contact(contactId = "1", lookupKey = "key1", fullName = "Max")
 
-        helper.showBirthdayNotification(
+        val posted = helper.showBirthdayNotification(
             contacts = listOf(contact),
             daysBefore = 0,
             pendingId = 602
         )
 
+        assertThat(posted).isTrue()
         verify(exactly = 1) { notificationManager.notify(602, any()) }
     }
 
@@ -405,12 +407,13 @@ class NotificationHelperTest {
 
         val contact = Contact(contactId = "1", lookupKey = "key1", fullName = "Max")
 
-        helper.showBirthdayNotification(
+        val posted = helper.showBirthdayNotification(
             contacts = listOf(contact),
             daysBefore = 0,
             pendingId = 999
         )
 
+        assertThat(posted).isFalse()
         verify(exactly = 0) { notificationManager.createNotificationChannel(any()) }
         verify(exactly = 0) { notificationManager.notify(any(), any()) }
     }

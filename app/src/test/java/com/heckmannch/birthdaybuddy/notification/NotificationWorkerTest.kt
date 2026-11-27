@@ -33,6 +33,7 @@ import org.junit.After
 import org.junit.Before
 import org.junit.Test
 import java.time.LocalDate
+import java.time.LocalDateTime
 
 class NotificationWorkerTest {
 
@@ -54,6 +55,11 @@ class NotificationWorkerTest {
         every { WorkManager.getInstance(any()) } returns workManager
         mockkStatic(android.util.Log::class)
         every { android.util.Log.e(any(), any(), any()) } returns 0
+        every { android.util.Log.w(any(), any<String>()) } returns 0
+        every { clock.nowLocalDateTime() } returns LocalDateTime.of(2026, 1, 1, 9, 0)
+        coEvery {
+            notificationHelper.showBirthdayNotification(any(), any(), any(), any(), any())
+        } returns true
     }
 
     @After
@@ -95,7 +101,8 @@ class NotificationWorkerTest {
     @Test
     fun `doWork - with pending events - inserts pending notifications and triggers notification helper`() = runTest {
         val currentYear = 2026
-        every { clock.nowLocalDate() } returns LocalDate.of(currentYear, 1, 1)
+        val now = LocalDateTime.of(currentYear, 1, 1, 9, 0)
+        every { clock.nowLocalDateTime() } returns now
 
         val testContact = Contact(
             contactId = "1",
@@ -113,7 +120,7 @@ class NotificationWorkerTest {
             NotificationRule(daysBefore = 1, hour = 9, minute = 0)
         )
 
-        coEvery { getPendingNotificationsUseCase(any()) } returns listOf(pendingEvent)
+        coEvery { getPendingNotificationsUseCase(now) } returns listOf(pendingEvent)
         coEvery { notificationRepository.getNextPendingNotificationId() } returns 42
         coEvery { notificationRepository.insertPendingNotification(any()) } returns 42L
         coEvery { settingsRepository.getSettingsImmediate() } returns AppSettings(notificationsEnabled = true)
@@ -135,6 +142,10 @@ class NotificationWorkerTest {
         val result = worker.doWork()
 
         assertThat(result).isEqualTo(ListenableWorker.Result.success())
+        verify(exactly = 1) { clock.nowLocalDateTime(any()) }
+        verify(exactly = 0) { clock.nowLocalDate(any()) }
+        coVerify(exactly = 1) { cleanupOldNotificationsUseCase(currentYear) }
+        coVerify(exactly = 1) { getPendingNotificationsUseCase(now) }
         coVerifyOrder {
             notificationHelper.showBirthdayNotification(
                 contacts = listOf(testContact),
@@ -149,9 +160,66 @@ class NotificationWorkerTest {
     }
 
     @Test
+    fun `doWork - when showBirthdayNotification returns false - does not persist pending notification and logs warning`() = runTest {
+        val currentYear = 2026
+        val now = LocalDateTime.of(currentYear, 1, 1, 9, 0)
+        every { clock.nowLocalDateTime() } returns now
+
+        val testContact = Contact(
+            contactId = "1",
+            lookupKey = "contact_lookup_1",
+            fullName = "Max Mustermann",
+            birthday = LocalDate.of(1990, 1, 2)
+        )
+        val pendingEvent = GetPendingNotificationsUseCase.PendingNotificationEvent(
+            contacts = listOf(testContact),
+            eventType = EventType.BIRTHDAY,
+            dbKeys = listOf("contact_lookup_1#BIRTHDAY"),
+            daysBefore = 1
+        )
+        val rules = listOf(NotificationRule(daysBefore = 1, hour = 9, minute = 0))
+
+        coEvery { getPendingNotificationsUseCase(now) } returns listOf(pendingEvent)
+        coEvery { notificationRepository.getNextPendingNotificationId() } returns 42
+        coEvery {
+            notificationHelper.showBirthdayNotification(any(), any(), any(), any(), any())
+        } returns false
+        coEvery { settingsRepository.getSettingsImmediate() } returns AppSettings(notificationsEnabled = true)
+        coEvery { notificationRepository.getAllRulesImmediate() } returns rules
+
+        val worker = NotificationWorker(
+            context = context,
+            workerParameters = workerParameters,
+            contactRepository = contactRepository,
+            notificationRepository = notificationRepository,
+            settingsRepository = settingsRepository,
+            notificationHelper = notificationHelper,
+            cleanupOldNotificationsUseCase = cleanupOldNotificationsUseCase,
+            getPendingNotificationsUseCase = getPendingNotificationsUseCase,
+            alarmScheduler = alarmScheduler,
+            clock = clock,
+        )
+
+        val result = worker.doWork()
+
+        assertThat(result).isEqualTo(ListenableWorker.Result.success())
+        coVerify(exactly = 1) {
+            notificationHelper.showBirthdayNotification(
+                contacts = listOf(testContact),
+                daysBefore = 1,
+                pendingId = 42,
+                eventType = EventType.BIRTHDAY,
+            )
+        }
+        coVerify(exactly = 0) { notificationRepository.insertPendingNotification(any()) }
+        verify(exactly = 1) { android.util.Log.w(any(), any<String>()) }
+        verify(exactly = 1) { alarmScheduler.scheduleNextNotificationAlarm(rules) }
+    }
+
+    @Test
     fun `doWork - when showBirthdayNotification fails - does not persist pending notification and returns retry`() = runTest {
         val currentYear = 2026
-        every { clock.nowLocalDate() } returns LocalDate.of(currentYear, 1, 1)
+        every { clock.nowLocalDateTime() } returns LocalDateTime.of(currentYear, 1, 1, 9, 0)
 
         val testContact = Contact(
             contactId = "1",
