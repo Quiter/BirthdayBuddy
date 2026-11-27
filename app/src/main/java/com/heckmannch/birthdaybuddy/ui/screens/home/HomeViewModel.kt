@@ -28,6 +28,7 @@ import com.heckmannch.birthdaybuddy.util.Clock
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
@@ -41,6 +42,8 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.drop
+import kotlinx.coroutines.flow.emptyFlow
+import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
@@ -85,7 +88,7 @@ import kotlin.time.Duration.Companion.milliseconds
  * @property clock Abstraction for system time facilitating deterministic testing and time manipulation.
  * @property defaultDispatcher Coroutine dispatcher for offloading CPU-intensive stream transformations and mappings.
  */
-@OptIn(FlowPreview::class)
+@OptIn(FlowPreview::class, ExperimentalCoroutinesApi::class)
 @HiltViewModel
 class HomeViewModel @Inject constructor(
     private val contactRepository: ContactRepository,
@@ -318,8 +321,17 @@ class HomeViewModel @Inject constructor(
         }
 
         viewModelScope.launch {
-            contactRepository.contactChanges
-                .debounce(CONTACT_CHANGE_DEBOUNCE_DURATION)
+            _userUiState
+                .map { it.hasContactPermission }
+                .distinctUntilChanged()
+                .flatMapLatest { granted ->
+                    if (granted) {
+                        contactRepository.contactChanges
+                            .debounce(CONTACT_CHANGE_DEBOUNCE_DURATION)
+                    } else {
+                        emptyFlow()
+                    }
+                }
                 .collect {
                     onIntent(HomeIntent.SyncContacts())
                 }

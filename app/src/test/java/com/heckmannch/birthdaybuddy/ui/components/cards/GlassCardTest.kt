@@ -7,6 +7,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.v2.createComposeRule
+import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import com.google.common.truth.Truth.assertThat
@@ -64,7 +65,8 @@ class GlassCardTest {
     }
 
     @Test
-    fun labelCard_clickExpandsAndRevealsGranularControls() {
+    fun labelCard_clickSelectsLabelAndExpandButtonRevealsGranularControls() {
+        var selectClicks = 0
         val label = LabelManagementModel(
             name = "Familie",
             isHiddenFromFilter = false,
@@ -80,7 +82,7 @@ class GlassCardTest {
                     label = label,
                     isActive = false,
                     assignedContacts = emptyList(),
-                    onSelectLabel = {},
+                    onSelectLabel = { selectClicks++ },
                     onConfigChanged = { _, _, _, _, _, _ -> }
                 )
             }
@@ -89,10 +91,26 @@ class GlassCardTest {
         composeRule.onNodeWithText("Familie").assertIsDisplayed()
         composeRule.onNodeWithText("Granular controls").assertDoesNotExist()
 
+        // Tapping the card selects the label without expanding it
         composeRule.onNodeWithText("Familie").performClick()
         composeRule.waitForIdle()
 
+        assertThat(selectClicks).isEqualTo(1)
+        composeRule.onNodeWithText("Granular controls").assertDoesNotExist()
+
+        // Tapping the trailing expand arrow expands the card without re-triggering selection
+        composeRule.onNodeWithContentDescription("Show details").performClick()
+        composeRule.waitForIdle()
+
+        assertThat(selectClicks).isEqualTo(1)
         composeRule.onNodeWithText("Granular controls").assertIsDisplayed()
+
+        // Tapping the trailing collapse arrow collapses the card without re-triggering selection
+        composeRule.onNodeWithContentDescription("Hide details").performClick()
+        composeRule.waitForIdle()
+
+        assertThat(selectClicks).isEqualTo(1)
+        composeRule.onNodeWithText("Granular controls").assertDoesNotExist()
     }
 
     @Test

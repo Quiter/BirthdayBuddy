@@ -633,4 +633,62 @@ class HomeViewModelTest {
         // Now syncContacts should have been called again (total 2 times)
         verify(contactRepository, times(2)).syncContacts()
     }
+
+    @Test
+    fun contactChanges_whenPermissionChangesFromFalseToTrue_subscribesAndTriggersSync() = runTest {
+        val contactChangesFlow = MutableSharedFlow<Unit>()
+        whenever(contactRepository.contactChanges).doReturn(contactChangesFlow)
+        whenever(permissionChecker.hasContactsPermission()).doReturn(false)
+
+        viewModel = createViewModel()
+        advanceUntilIdle()
+
+        // Initial sync called on creation, but contactChanges must not be subscribed without permission
+        verify(contactRepository, times(1)).syncContacts()
+        assertThat(contactChangesFlow.subscriptionCount.value).isEqualTo(0)
+
+        // Grant permission later and resume app
+        whenever(permissionChecker.hasContactsPermission()).doReturn(true)
+        viewModel.onIntent(HomeIntent.AppResumed)
+        testScheduler.runCurrent()
+
+        // contactChanges is now actively subscribed
+        assertThat(contactChangesFlow.subscriptionCount.value).isEqualTo(1)
+
+        // Emit change and advance past debounce duration (1000ms)
+        contactChangesFlow.emit(Unit)
+        testScheduler.advanceTimeBy(1100)
+        testScheduler.runCurrent()
+
+        // Sync should have been triggered by the contactChanges emission
+        verify(contactRepository, times(2)).syncContacts()
+    }
+
+    @Test
+    fun contactChanges_whenPermissionRevoked_cancelsCollectionAndIgnoresEmissions() = runTest {
+        val contactChangesFlow = MutableSharedFlow<Unit>()
+        whenever(contactRepository.contactChanges).doReturn(contactChangesFlow)
+        whenever(permissionChecker.hasContactsPermission()).doReturn(true)
+
+        viewModel = createViewModel()
+        advanceUntilIdle()
+
+        verify(contactRepository, times(1)).syncContacts()
+        assertThat(contactChangesFlow.subscriptionCount.value).isEqualTo(1)
+
+        // Revoke permission and resume app
+        whenever(permissionChecker.hasContactsPermission()).doReturn(false)
+        viewModel.onIntent(HomeIntent.AppResumed)
+        testScheduler.runCurrent()
+
+        // Collection must be cancelled immediately
+        assertThat(contactChangesFlow.subscriptionCount.value).isEqualTo(0)
+
+        // Subsequent emissions must not trigger a sync
+        contactChangesFlow.emit(Unit)
+        testScheduler.advanceTimeBy(1100)
+        testScheduler.runCurrent()
+
+        verify(contactRepository, times(1)).syncContacts()
+    }
 }

@@ -98,7 +98,9 @@ class ContactRepositoryImpl @Inject constructor(
 
     /**
      * Observes changes to [ContactsContract.Contacts.CONTENT_URI] using a [ContentObserver]
-     * within a [callbackFlow]. Automatically cleans up and unregisters the observer in [awaitClose].
+     * within a [callbackFlow]. Closes cleanly if registering the observer fails due to a
+     * [SecurityException], and automatically unregisters the observer in [awaitClose] only
+     * if registration succeeded.
      */
     override val contactChanges: Flow<Unit> = callbackFlow {
         val observer = object : ContentObserver(null) {
@@ -107,21 +109,26 @@ class ContactRepositoryImpl @Inject constructor(
             }
         }
 
-        try {
+        val isRegistered = try {
             contentResolver.registerContentObserver(
                 ContactsContract.Contacts.CONTENT_URI,
                 true,
                 observer
             )
+            true
         } catch (_: SecurityException) {
-            // Keine Berechtigung vorhanden — kein Observer registriert
+            // Keine Berechtigung vorhanden — Flow sauber schließen, da kein Observer registriert werden kann
+            close()
+            false
         }
 
         awaitClose {
-            try {
-                contentResolver.unregisterContentObserver(observer)
-            } catch (_: Exception) {
-                // Observer konnte nicht deregistriert werden oder war nicht registriert
+            if (isRegistered) {
+                try {
+                    contentResolver.unregisterContentObserver(observer)
+                } catch (_: Exception) {
+                    // Observer konnte nicht deregistriert werden
+                }
             }
         }
     }

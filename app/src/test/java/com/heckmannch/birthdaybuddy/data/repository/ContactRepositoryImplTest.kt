@@ -26,6 +26,7 @@ import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.runTest
 import org.junit.After
@@ -540,6 +541,22 @@ class ContactRepositoryImplTest {
         testScheduler.runCurrent()
 
         verify(contentResolver).unregisterContentObserver(any())
+    }
+
+    @Test
+    fun contactChanges_closesCleanlyWithoutUnregistering_whenRegisterThrowsSecurityException() = runTest {
+        whenever(
+            contentResolver.registerContentObserver(
+                eq(ContactsContract.Contacts.CONTENT_URI),
+                eq(true),
+                any()
+            )
+        ).thenThrow(SecurityException("Permission denied"))
+
+        val emissions = repository.contactChanges.toList()
+
+        assertThat(emissions).isEmpty()
+        verify(contentResolver, never()).unregisterContentObserver(any())
     }
 
     @Test

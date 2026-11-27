@@ -55,8 +55,8 @@ import com.heckmannch.birthdaybuddy.ui.theme.labelIgnoredCardGradient
  * - Active filter labels: theme accent ([labelActiveCardGradient])
  * - Default labels: neutral frosted glass ([defaultCardGradient])
  *
- * Tapping the card or expand button expands/collapses granular options and assigned contacts.
- * Tapping the leading selection circle toggles the active label filter.
+ * Tapping the card toggles the active label filter ([onSelectLabel]).
+ * Tapping the trailing expand button expands/collapses granular options and assigned contacts.
  */
 @Composable
 internal fun LabelCard(
@@ -85,7 +85,7 @@ internal fun LabelCard(
     GlassCardLayout(
         modifier = modifier,
         gradientColors = gradientColors,
-        onClick = { expanded = !expanded },
+        onClick = onSelectLabel,
         expanded = expanded,
         trailing = {
             GlassCardExpandButton(
@@ -236,11 +236,10 @@ internal fun LabelCard(
             }
         }
     ) {
-        // 1. Selection indicator (left) - toggles active filter
+        // 1. Selection indicator (left) - reflects active filter state
         SelectionCheckIndicator(
             selected = isActive,
-            ink = style.titleColor,
-            onClick = onSelectLabel
+            ink = style.titleColor
         )
 
         // 2. Label Title, Badges & Contact Count (middle)
