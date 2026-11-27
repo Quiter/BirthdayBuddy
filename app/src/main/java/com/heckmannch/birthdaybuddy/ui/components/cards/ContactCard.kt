@@ -63,6 +63,7 @@ fun ContactCardScope.ContactCardContent(
             secondImageUri = contact.secondImageUri,
             secondInitials = contact.secondInitials,
             secondFullName = contact.secondFullName,
+            secondLookupKey = contact.secondLookupKey,
             size = style.iconSize
         )
     }

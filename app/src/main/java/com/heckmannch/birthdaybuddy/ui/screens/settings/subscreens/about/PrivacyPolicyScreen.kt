@@ -154,17 +154,52 @@ fun PrivacyPolicyScreen(
     }
 }
 
+internal sealed interface MarkdownBlock {
+    data class Heading1(val text: String) : MarkdownBlock
+    data class Heading2(val text: String) : MarkdownBlock
+    data class BulletItem(val text: AnnotatedString) : MarkdownBlock
+    data class Paragraph(val text: AnnotatedString) : MarkdownBlock
+    data object Divider : MarkdownBlock
+}
+
+internal fun parseMarkdownBlocks(
+    text: String,
+    linkColor: Color,
+): List<MarkdownBlock> {
+    return text.lineSequence()
+        .map { it.trim() }
+        .mapNotNull { trimmed ->
+            when {
+                trimmed.startsWith("# ") -> MarkdownBlock.Heading1(trimmed.removePrefix("# "))
+                trimmed.startsWith("## ") -> MarkdownBlock.Heading2(trimmed.removePrefix("## "))
+                trimmed.startsWith("* ") -> MarkdownBlock.BulletItem(
+                    parseMarkdownInline(trimmed.removePrefix("* "), linkColor),
+                )
+
+                trimmed == "***" || trimmed == "---" -> MarkdownBlock.Divider
+                trimmed.isNotBlank() -> MarkdownBlock.Paragraph(
+                    parseMarkdownInline(trimmed, linkColor),
+                )
+
+                else -> null
+            }
+        }
+        .toList()
+}
+
 @Composable
 private fun MarkdownContent(text: String) {
-    val lines = text.split("\n")
     val linkColor = MaterialTheme.colorScheme.primary
+    val blocks = remember(text, linkColor) {
+        parseMarkdownBlocks(text, linkColor)
+    }
+    val bulletPoint = stringResource(R.string.bullet_point)
 
-    lines.forEach { line ->
-        val trimmed = line.trim()
-        when {
-            trimmed.startsWith("# ") -> {
+    blocks.forEach { block ->
+        when (block) {
+            is MarkdownBlock.Heading1 -> {
                 Text(
-                    text = trimmed.removePrefix("# "),
+                    text = block.text,
                     style = MaterialTheme.typography.headlineSmall,
                     color = MaterialTheme.colorScheme.primary,
                     fontWeight = FontWeight.Bold,
@@ -172,9 +207,9 @@ private fun MarkdownContent(text: String) {
                 )
             }
 
-            trimmed.startsWith("## ") -> {
+            is MarkdownBlock.Heading2 -> {
                 Text(
-                    text = trimmed.removePrefix("## "),
+                    text = block.text,
                     style = MaterialTheme.typography.titleMedium,
                     color = MaterialTheme.colorScheme.secondary,
                     fontWeight = FontWeight.Bold,
@@ -182,28 +217,28 @@ private fun MarkdownContent(text: String) {
                 )
             }
 
-            trimmed.startsWith("* ") -> {
+            is MarkdownBlock.BulletItem -> {
                 Row(modifier = Modifier.padding(start = SpacingSmall)) {
                     Text(
-                        text = stringResource(R.string.bullet_point),
+                        text = bulletPoint,
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurface,
                     )
                     Text(
-                        text = parseMarkdownInline(trimmed.removePrefix("* "), linkColor),
+                        text = block.text,
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurface,
                     )
                 }
             }
 
-            trimmed == "***" || trimmed == "---" -> {
+            MarkdownBlock.Divider -> {
                 HorizontalDivider(modifier = Modifier.padding(vertical = SpacingSmall))
             }
 
-            trimmed.isNotBlank() -> {
+            is MarkdownBlock.Paragraph -> {
                 Text(
-                    text = parseMarkdownInline(trimmed, linkColor),
+                    text = block.text,
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurface,
                 )

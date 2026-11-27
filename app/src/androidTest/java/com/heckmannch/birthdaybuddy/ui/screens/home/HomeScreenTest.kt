@@ -18,7 +18,6 @@ import com.heckmannch.birthdaybuddy.ui.model.ContactUiModel
 import com.heckmannch.birthdaybuddy.ui.model.HomeUiState
 import com.heckmannch.birthdaybuddy.ui.model.SampleData
 import com.heckmannch.birthdaybuddy.ui.theme.BirthdayBuddyTheme
-import kotlinx.coroutines.flow.MutableSharedFlow
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -49,7 +48,6 @@ class HomeScreenTest {
                     HomeScreen(
                         uiState = fakeState,
                         onIntent = { /* no-op */ },
-                        scrollToTopEvent = MutableSharedFlow(),
                         onNavigateToSettings = {}
                     )
                 }
@@ -72,7 +70,6 @@ class HomeScreenTest {
                     HomeScreen(
                         uiState = fakeState,
                         onIntent = { /* no-op */ },
-                        scrollToTopEvent = MutableSharedFlow(),
                         onNavigateToSettings = {}
                     )
                 }
@@ -95,7 +92,6 @@ class HomeScreenTest {
                     HomeScreen(
                         uiState = fakeState,
                         onIntent = { /* no-op */ },
-                        scrollToTopEvent = MutableSharedFlow(),
                         onNavigateToSettings = {}
                     )
                 }
@@ -172,7 +168,6 @@ class HomeScreenTest {
                         onIntent = { intent ->
                             onIntentHandler(intent)
                         },
-                        scrollToTopEvent = MutableSharedFlow(),
                         onNavigateToSettings = {}
                     )
                 }

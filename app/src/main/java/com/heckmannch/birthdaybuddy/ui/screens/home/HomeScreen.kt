@@ -22,7 +22,6 @@ import coil3.ImageLoader
 import coil3.imageLoader
 import coil3.request.ImageRequest
 import com.heckmannch.birthdaybuddy.R
-import com.heckmannch.birthdaybuddy.ui.model.ContactUiModel
 import com.heckmannch.birthdaybuddy.ui.model.HomeUiState
 import com.heckmannch.birthdaybuddy.ui.model.SampleData
 import com.heckmannch.birthdaybuddy.ui.screens.home.components.list.BirthdayDatePickerDialog
@@ -31,7 +30,13 @@ import com.heckmannch.birthdaybuddy.ui.theme.BirthdayBuddyTheme
 import com.heckmannch.birthdaybuddy.ui.util.ContactActions
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.SharedFlow
-import kotlinx.coroutines.flow.collectLatest
+
+private const val PREFETCH_AVATAR_LIMIT = 20
+
+private data class AvatarPrefetchTarget(
+    val lookupKey: String?,
+    val imageUri: String,
+)
 
 /**
  * [HomeScreen] is the orchestrator and state-coordinating controller for the main dashboard.
@@ -39,10 +44,8 @@ import kotlinx.coroutines.flow.collectLatest
  * @param uiState The read-only state representation of the Home screen, providing lists of contacts,
  *   filtering, status information, and animation triggers.
  * @param onIntent Callback lambda used to dispatch user actions ([HomeIntent]) to the underlying ViewModel.
- * @param scrollToTopEvent A [SharedFlow] used to trigger scroll-to-top actions from global events
- *   (e.g., clicking on navigation items, status bar taps).
  * @param onNavigateToSettings Callback executed when the user initiates navigation to the app settings screen.
- * @param eventFlow A [SharedFlow] used to observe one-shot UI events (e.g. search focus, gift idea focus).
+ * @param eventFlow A [SharedFlow] used to observe one-shot UI events (e.g. search focus, gift idea focus, scroll-to-top).
  * @param bottomBarHeight Padding reserved for the floating pill bar at the bottom of the list.
  * @param onDetailOpenChanged Callback invoked when a compact full-screen contact detail pane opens or closes.
  */
@@ -50,7 +53,6 @@ import kotlinx.coroutines.flow.collectLatest
 fun HomeScreen(
     uiState: HomeUiState,
     onIntent: (HomeIntent) -> Unit,
-    scrollToTopEvent: SharedFlow<Unit>,
     onNavigateToSettings: () -> Unit,
     eventFlow: SharedFlow<HomeUiEvent>? = null,
     bottomBarHeight: Dp = 0.dp,
@@ -119,34 +121,25 @@ fun HomeScreen(
      * Specifying explicit memoryCacheKey and diskCacheKey matching ContactImage guarantees instant
      * retrieval from memory without redundant reads/decodes or disk/provider queries.
      */
-    LaunchedEffect(uiState.contacts) {
-        prefetchAvatarImages(context, uiState.contacts)
-    }
-
-    // --- SECTION 4: Scroll & Soft-Keyboard Interaction Coordination ---
-
-    /**
-     * Global Scroll Reset Listener:
-     * Collects scroll-to-top requests dispatched from outside (e.g., clicking on home button or top status bar).
-     */
-    LaunchedEffect(scrollToTopEvent) {
-        scrollToTopEvent.collectLatest {
-            homeState.resetScrollRequested = true
-        }
-    }
-
-    /**
-     * Robust List Scroll Reset Handler:
-     * Triggers the actual scroll reset animation inside the list state. Initiated once contacts are loaded,
-     * resetting filters/state and resetting the filter resetting flags on complete.
-     */
-    LaunchedEffect(uiState.contacts, homeState.resetScrollRequested) {
-        if (homeState.resetScrollRequested && (uiState.contacts != null)) {
-            homeState.performScrollReset {
-                onIntent(HomeIntent.SetIsResettingFilter(isResetting = false))
+    val prefetchTargets = remember(uiState.contacts) {
+        val contacts = uiState.contacts ?: return@remember emptyList()
+        buildList {
+            for (index in 0 until minOf(contacts.size, PREFETCH_AVATAR_LIMIT)) {
+                val contact = contacts[index]
+                contact.imageUri?.takeIf { it.isNotBlank() }?.let { uri ->
+                    add(AvatarPrefetchTarget(contact.lookupKey, uri))
+                }
+                contact.secondImageUri?.takeIf { it.isNotBlank() }?.let { secondUri ->
+                    add(AvatarPrefetchTarget(contact.secondLookupKey, secondUri))
+                }
             }
         }
     }
+    LaunchedEffect(prefetchTargets) {
+        prefetchAvatarImages(context, prefetchTargets)
+    }
+
+    // --- SECTION 4: Soft-Keyboard Interaction Coordination ---
 
     /**
      * Soft Keyboard Auto-Dismissal:
@@ -288,32 +281,19 @@ internal fun HomeScreenContent(
  */
 private fun prefetchAvatarImages(
     context: Context,
-    contacts: List<ContactUiModel>?,
-    limit: Int = 40,
+    targets: List<AvatarPrefetchTarget>,
 ) {
-    if (contacts.isNullOrEmpty()) return
+    if (targets.isEmpty()) return
     // Limit prefetching to the top most relevant entries to prevent I/O pool starvation and memory cache bloat
-    contacts.take(limit).forEach { contact ->
-        contact.imageUri?.let { uri ->
-            val cacheKey = getAvatarCacheKey(uri, contact.lookupKey)
-            val request = ImageRequest.Builder(context)
-                .data(uri)
-                .size(coil3.size.Size(256, 256))
-                .memoryCacheKey(cacheKey)
-                .diskCacheKey(cacheKey)
-                .build()
-            context.imageLoader.enqueue(request)
-        }
-        contact.secondImageUri?.let { secondUri ->
-            val secondCacheKey = getAvatarCacheKey(secondUri, null)
-            val request = ImageRequest.Builder(context)
-                .data(secondUri)
-                .size(coil3.size.Size(256, 256))
-                .memoryCacheKey(secondCacheKey)
-                .diskCacheKey(secondCacheKey)
-                .build()
-            context.imageLoader.enqueue(request)
-        }
+    targets.forEach { target ->
+        val cacheKey = getAvatarCacheKey(target.imageUri, target.lookupKey)
+        val request = ImageRequest.Builder(context)
+            .data(target.imageUri)
+            .size(coil3.size.Size(256, 256))
+            .memoryCacheKey(cacheKey)
+            .diskCacheKey(cacheKey)
+            .build()
+        context.imageLoader.enqueue(request)
     }
 }
 

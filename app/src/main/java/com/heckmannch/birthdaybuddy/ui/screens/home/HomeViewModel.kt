@@ -65,10 +65,9 @@ import kotlin.time.Duration.Companion.milliseconds
  *   [HomeUiState] using Kotlin Coroutines and Flows.
  * - **Harmonized Event & Transient State Handling**:
  *   Transient one-shot UI events (e.g. search bar focus, newly created gift idea IDs, list scrolling)
- *   are dispatched via a dedicated [eventFlow] ([HomeUiEvent]) and consumed via explicit `Consume*` intents,
+ *   are dispatched via a dedicated [eventFlow] ([HomeUiEvent]),
  *   preventing unnecessary recompositions of the state-consuming [HomeUiState] pipeline. Persistent UI states
  *   (e.g. active birthday picker dialogs, pull-to-refresh sync indicators) remain modeled within [HomeUiState].
- *   Pure side-effects for list scrolling are also dispatched via [scrollToTopEvent].
  * - **Debouncing & Transformation Optimization**:
  *   Search inputs are debounced ([SEARCH_DEBOUNCE_DURATION]) and processed on [Dispatchers.Default] with
  *   `distinctUntilChanged` to avoid redundant database querying and contact filtering computations during fast typing.
@@ -170,16 +169,6 @@ class HomeViewModel @Inject constructor(
         /** Regex used to split search query strings into distinct whitespace-delimited keyword tokens. */
         private val WHITESPACE_REGEX = "\\s+".toRegex()
     }
-
-    /**
-     * Internal event channel dispatching one-shot scroll-to-top commands to the UI.
-     */
-    private val _scrollToTopEvent = MutableSharedFlow<Unit>(replay = 0)
-
-    /**
-     * Public stream of one-shot scroll-to-top events observed by [HomeScreen].
-     */
-    val scrollToTopEvent: SharedFlow<Unit> = _scrollToTopEvent.asSharedFlow()
 
     /**
      * Internal event stream dispatching one-shot UI events to the UI.
@@ -343,7 +332,6 @@ class HomeViewModel @Inject constructor(
      */
     private fun triggerScrollToTop() {
         viewModelScope.launch {
-            _scrollToTopEvent.emit(Unit)
             _eventFlow.emit(HomeUiEvent.ScrollToTop)
         }
     }
@@ -529,16 +517,6 @@ class HomeViewModel @Inject constructor(
                 viewModelScope.launch {
                     _eventFlow.emit(HomeUiEvent.RequestSearchFocus)
                 }
-            }
-
-            // Consumes the search focus request after the UI has handled it.
-            is HomeIntent.ConsumeSearchFocus -> {
-                // Acknowledged by UI consumption - state + consumption pattern maintained
-            }
-
-            // Consumes the newly added gift idea ID after focus has been applied by the UI.
-            is HomeIntent.ConsumeNewlyAddedIdeaId -> {
-                // Acknowledged by UI consumption - state + consumption pattern maintained
             }
 
             // Merges two independent contacts into a single couple entity.

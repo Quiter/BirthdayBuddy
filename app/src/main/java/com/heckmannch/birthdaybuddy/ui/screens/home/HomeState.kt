@@ -32,7 +32,6 @@ class HomeState(
 ) {
 
     var hasAttemptedContactPermission by mutableStateOf(false)
-    var resetScrollRequested by mutableStateOf(false)
     var animatedPlaceholder by mutableStateOf("")
     var isFastScrolling by mutableStateOf(false)
     var newlyAddedIdeaId by mutableStateOf<String?>(null)
@@ -52,20 +51,15 @@ class HomeState(
     /**
      * Scrollt die Liste zum Anfang.
      */
-    fun scrollToTop(animate: Boolean = true) {
+    fun scrollToTop(
+        animate: Boolean = true,
+        onComplete: (() -> Unit)? = null,
+    ) {
         scope.launch {
             if (animate) listState.animateScrollToItem(0)
             else listState.scrollToItem(0)
+            onComplete?.invoke()
         }
-    }
-
-    /**
-     * Führt einen robusten Scroll-Reset durch (nützlich bei Filteränderungen).
-     */
-    suspend fun performScrollReset(onComplete: () -> Unit) {
-        listState.scrollToItem(0)
-        onComplete()
-        resetScrollRequested = false
     }
 }
 

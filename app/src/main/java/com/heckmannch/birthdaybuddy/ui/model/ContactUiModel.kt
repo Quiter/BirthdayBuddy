@@ -28,6 +28,7 @@ data class ContactUiModel(
     val labels: List<String>,
     val giftIdeas: List<GiftIdea>,
     val birthday: LocalDate? = null,
+    val secondLookupKey: String? = null,
     val secondImageUri: String? = null,
     val secondInitials: String? = null,
     val secondFullName: String? = null,

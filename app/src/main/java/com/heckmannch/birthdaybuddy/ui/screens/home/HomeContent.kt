@@ -8,6 +8,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
@@ -48,6 +50,7 @@ fun HomeContent(
     onDetailOpenChanged: (Boolean) -> Unit = {},
 ) {
     val keyboardController = LocalSoftwareKeyboardController.current
+    val currentOnIntent by rememberUpdatedState(onIntent)
 
     LaunchedEffect(events) {
         events.collect { event ->
@@ -57,14 +60,14 @@ fun HomeContent(
                         homeState.searchFocusRequester.requestFocus()
                     }
                     keyboardController?.show()
-                    onIntent(HomeIntent.ConsumeSearchFocus)
                 }
                 is HomeUiEvent.FocusNewlyAddedIdea -> {
                     homeState.newlyAddedIdeaId = event.ideaId
-                    onIntent(HomeIntent.ConsumeNewlyAddedIdeaId)
                 }
                 is HomeUiEvent.ScrollToTop -> {
-                    homeState.scrollToTop()
+                    homeState.scrollToTop {
+                        currentOnIntent(HomeIntent.SetIsResettingFilter(isResetting = false))
+                    }
                 }
             }
         }

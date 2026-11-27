@@ -200,7 +200,6 @@ fun AppNavHost(
                             HomeScreen(
                                 uiState = uiState,
                                 onIntent = homeViewModel::onIntent,
-                                scrollToTopEvent = homeViewModel.scrollToTopEvent,
                                 eventFlow = homeViewModel.eventFlow,
                                 onNavigateToSettings = {
                                     scope.launch { pagerState.turnTo(MainPage.SETTINGS) }

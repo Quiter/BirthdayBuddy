@@ -96,16 +96,6 @@ sealed interface HomeIntent {
     data object TriggerSearchFocus : HomeIntent
 
     /**
-     * Dispatched by the UI after successfully applying focus to the search bar to consume the one-shot state.
-     */
-    data object ConsumeSearchFocus : HomeIntent
-
-    /**
-     * Dispatched by the UI after successfully applying focus to a newly added gift idea item.
-     */
-    data object ConsumeNewlyAddedIdeaId : HomeIntent
-
-    /**
      * Dispatched when the user confirms linking two contacts together into a couple entity.
      *
      * @property lookupKey1 Lookup key of the primary contact.

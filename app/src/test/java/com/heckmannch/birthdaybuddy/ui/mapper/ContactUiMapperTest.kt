@@ -223,10 +223,12 @@ class ContactUiMapperTest {
         val contacts = listOf(
             Contact(
                 contactId = "1", lookupKey = "k1", fullName = "Alice",
+                imageUri = "content://alice",
                 anniversary = today.plusDays(3), spouseLookupKey = "k2",
             ),
             Contact(
                 contactId = "2", lookupKey = "k2", fullName = "Bob",
+                imageUri = "content://bob",
                 anniversary = today.plusDays(3), spouseLookupKey = "k1",
             ),
             Contact(
@@ -246,8 +248,13 @@ class ContactUiMapperTest {
         assertThat(result).hasSize(2)
         // Sorted by daysUntilNext (Single is 1 day, Couple is 3 days)
         assertThat(result[0].fullName).isEqualTo("Single")
+        assertThat(result[0].secondLookupKey).isNull()
         assertThat(result[1].fullName).isEqualTo("Alice & Bob")
         assertThat(result[1].isCouple).isTrue()
+        assertThat(result[1].lookupKey).isEqualTo("k1")
+        assertThat(result[1].secondLookupKey).isEqualTo("k2")
+        assertThat(result[1].imageUri).isEqualTo("content://alice")
+        assertThat(result[1].secondImageUri).isEqualTo("content://bob")
     }
 
     @Test

@@ -193,8 +193,10 @@ class HomeViewModelSearchTest {
 
         var scrollCount = 0
         val collectJob = launch {
-            viewModel.scrollToTopEvent.collect {
-                scrollCount++
+            viewModel.eventFlow.collect { event ->
+                if (event is HomeUiEvent.ScrollToTop) {
+                    scrollCount++
+                }
             }
         }
         runCurrent()

@@ -284,6 +284,7 @@ class ContactUiMapper @Inject constructor() {
                     } else emptyList(),
                     giftIdeas = uiModelA.giftIdeas + uiModelB.giftIdeas,
                     birthday = contact.birthday,
+                    secondLookupKey = spouse.lookupKey,
                     secondImageUri = spouse.imageUri,
                     secondInitials = uiModelB.initials,
                     secondFullName = spouse.fullName,
