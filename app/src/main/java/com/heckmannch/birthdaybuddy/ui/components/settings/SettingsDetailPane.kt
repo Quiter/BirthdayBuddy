@@ -130,6 +130,7 @@ internal fun SettingsDetailPane(
 
             SettingsTab.STORAGE -> {
                 StorageSettingsScreen(
+                    viewModel = hiltViewModel(),
                     showBackButton = windowSizeClass.isWidthCompact,
                     onNavigateBack = { backStack.removeLastOrNull() },
                 )

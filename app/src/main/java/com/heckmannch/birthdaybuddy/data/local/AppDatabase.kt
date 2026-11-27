@@ -357,6 +357,8 @@ internal val APP_MIGRATION_6_7 = object : Migration(6, 7) {
     }
 }
 
+internal const val APP_DATABASE_NAME = "birthday_database"
+
 /**
  * Erstellt und konfiguriert die [AppDatabase]-Instanz.
  *
@@ -367,7 +369,7 @@ internal fun buildAppDatabase(context: Context): AppDatabase {
     return Room.databaseBuilder(
         context.applicationContext,
         AppDatabase::class.java,
-        "birthday_database",
+        APP_DATABASE_NAME,
     )
         .addMigrations(
             APP_MIGRATION_1_2,

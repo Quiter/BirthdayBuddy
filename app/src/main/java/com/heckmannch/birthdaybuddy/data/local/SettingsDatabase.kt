@@ -49,7 +49,7 @@ abstract class SettingsDatabase : RoomDatabase() {
     abstract fun contactUserDataDao(): ContactUserDataDao
 }
 
-private const val DATABASE_NAME = "settings_database"
+internal const val SETTINGS_DATABASE_NAME = "settings_database"
 
 /**
  * Migration von Version 1 auf 2.
@@ -256,7 +256,7 @@ internal fun buildSettingsDatabase(context: Context): SettingsDatabase {
     return Room.databaseBuilder(
         context.applicationContext,
         SettingsDatabase::class.java,
-        DATABASE_NAME,
+        SETTINGS_DATABASE_NAME,
     )
         .addMigrations(
             SETTINGS_MIGRATION_1_2,

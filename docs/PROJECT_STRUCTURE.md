@@ -32,7 +32,7 @@
   - `GiftIdeaRepositoryImpl.kt`: Geschenkideen-CRUD, atomarer DB-Commit & JSON-Backup.
   - `CoupleRepositoryImpl.kt`: Verknüpfung verheirateter Ehepartner & Vorschlagsverwaltung.
   - `SettingsRepositoryImpl.kt`: Thread-sichere Mutation von `AppSettings` via `Mutex`.
-  - `NotificationRepositoryImpl.kt`, `CalendarSyncRepositoryImpl.kt`, `TimeRepositoryImpl.kt`.
+  - `NotificationRepositoryImpl.kt`, `CalendarSyncRepositoryImpl.kt`, `TimeRepositoryImpl.kt`, `StorageRepositoryImpl.kt`.
   - Helpers & Data Sources: `GiftIdeaBackupManager`, `BirthdayWidgetUpdater`, `NotificationSchedulerImpl`, `SystemCalendarDataSourceImpl`, `SystemCalendarInfo`, `SystemContactDataSource`.
 - **Mapper & Provider (`data.mapper`, `data.permission`, `data.util`)**:
   - Mapper: `ContactDbMapper`, `AppSettingsMapper`.
@@ -40,7 +40,7 @@
   - Utilities: `AndroidCalendarStringProvider.kt`, `AndroidDeviceRegionProvider.kt`.
 
 ## 📁 Domain Layer (`domain`)
-- **Repositories (`domain.repository`)**: Interfaces für `ContactRepository`, `GiftIdeaRepository`, `CoupleRepository`, `SettingsRepository`, `NotificationRepository`, `CalendarSyncRepository`, `TimeRepository`, `NotificationScheduler`, `WidgetUpdater`.
+- **Repositories (`domain.repository`)**: Interfaces für `ContactRepository`, `GiftIdeaRepository`, `CoupleRepository`, `SettingsRepository`, `NotificationRepository`, `CalendarSyncRepository`, `TimeRepository`, `StorageRepository`, `NotificationScheduler`, `WidgetUpdater`.
 - **Permission & Models (`domain.permission`, `domain.model`)**:
   - `PermissionChecker`: Plattformunabhängige Berechtigungsprüfung.
   - Modelle: `ContactLabels` (Pseudo-Labels), `CoupleSuggestion`, `GiftIdea`, `EventType` (Enum), `MessengerApp` (Enum).
@@ -90,7 +90,7 @@
     - `subscreens/theme/`: `ThemeSettingsScreen`, `ThemeViewModel`, `ThemeUiState`.
     - `subscreens/sync/`: `SyncSettingsScreen`, `SyncViewModel`.
     - `subscreens/about/`: `AboutScreen`, `LicensesScreen`, `PrivacyPolicyScreen`.
-    - `subscreens/storage/`: `StorageSettingsScreen`.
+    - `subscreens/storage/`: `StorageSettingsScreen`, `StorageSettingsViewModel`, `StorageUiState`.
 
 ## 📁 Notification-Infrastruktur (`notification`)
 - `NotificationWorker.kt`: Worker für Benachrichtigungs-Verarbeitung (`@AssistedInject`).
@@ -116,10 +116,10 @@
 
 ### 📁 Lokale JVM Unit-Tests (`app/src/test`)
 - **Infrastructure & Root**: `MainDispatcherRule.kt`, `AppViewModelTest.kt`, `BootReceiverTest.kt`, `app/src/test/resources/robolectric.properties` (Globales SDK=35 Pinning).
-- **Data Layer**: `ContactDaoTest`, `PendingNotificationDaoTest`, `ConvertersTest`, `GiftIdeaConvertersTest`, DB-Mapper-Tests, Repository-Tests (`ContactRepositoryImplTest`, `CoupleRepositoryImplTest`, `GiftIdeaRepositoryImplTest`, `NotificationRepositoryImplTest`, `CalendarSyncRepositoryImplTest`, etc.).
+- **Data Layer**: `ContactDaoTest`, `PendingNotificationDaoTest`, `ConvertersTest`, `GiftIdeaConvertersTest`, DB-Mapper-Tests, Repository-Tests (`ContactRepositoryImplTest`, `CoupleRepositoryImplTest`, `GiftIdeaRepositoryImplTest`, `NotificationRepositoryImplTest`, `CalendarSyncRepositoryImplTest`, `StorageRepositoryImplTest`, etc.).
 - **Domain Layer**: Tests für Use Cases (`GetContactsUseCaseTest`, `GetPendingNotificationsUseCaseTest`, etc.) und Utilities (`PhoneNumberNormalizerTest`, `NotificationKeyUtilsTest`, `ContactFilterLogicTest`).
 - **Platform & Notification**: `BirthdayAppFunctionServiceTest`, `NotificationAlarmReceiverTest`, `NotificationActionReceiverTest`, `NotificationTextFormatterTest`, `NotificationWorkerTest`, `SnoozeWorkerTest`.
-- **UI & ViewModels**: Feature-co-located ViewModel-Tests (`HomeViewModelTest`, `OnboardingViewModelTest`, `BackupViewModelTest`, `CalendarViewModelTest`, `LabelViewModelTest`, `ThemeViewModelTest`, `SyncViewModelTest`), Compose-Komponenten- & UI-Util-Tests (`GiftIdeaListTest`, `SearchBarTest`, `FastScrollbarBoundsTest`, `AppTopHeaderTest`, `GlassCardTest`, `SettingsComponentsTest`, `ColorPickerComponentsTest`, `ColorUtilsTest`).
+- **UI & ViewModels**: Feature-co-located ViewModel-Tests (`HomeViewModelTest`, `OnboardingViewModelTest`, `BackupViewModelTest`, `CalendarViewModelTest`, `LabelViewModelTest`, `ThemeViewModelTest`, `SyncViewModelTest`, `StorageSettingsViewModelTest`), Compose-Komponenten- & UI-Util-Tests (`GiftIdeaListTest`, `SearchBarTest`, `FastScrollbarBoundsTest`, `AppTopHeaderTest`, `GlassCardTest`, `SettingsComponentsTest`, `ColorPickerComponentsTest`, `ColorUtilsTest`).
 - **Utilities & Widgets**: `AlarmSchedulerTest`, `IntentParserTest`, `IntentExtrasTest`, `WidgetLayoutHelperTest`, `BirthdayWidgetWorkerTest`.
 
 ### 📁 Instrumentierte Integrationstests (`app/src/androidTest`)
