@@ -9,5 +9,6 @@ data class PendingNotification(
     val daysBefore: Int,
     val year: Int,
     val isDone: Boolean = false,
-    val dismissCount: Int = 0
+    val dismissCount: Int = 0,
+    val id: Int = 0,
 )

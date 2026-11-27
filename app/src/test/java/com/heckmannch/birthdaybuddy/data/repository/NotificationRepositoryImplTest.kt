@@ -311,6 +311,19 @@ class NotificationRepositoryImplTest {
     }
 
     @Test
+    fun getNextPendingNotificationId_delegatesToDao() = runTest {
+        // Arrange
+        coEvery { pendingNotificationDao.getNextNotificationId() } returns 7
+
+        // Act
+        val result = repository.getNextPendingNotificationId()
+
+        // Assert
+        assertThat(result).isEqualTo(7)
+        coVerify(exactly = 1) { pendingNotificationDao.getNextNotificationId() }
+    }
+
+    @Test
     fun insertPendingNotification_delegatesToDaoAndReturnsId() = runTest {
         // Arrange
         val notification = PendingNotification(

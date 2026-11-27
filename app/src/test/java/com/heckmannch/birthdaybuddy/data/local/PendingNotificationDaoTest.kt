@@ -166,4 +166,23 @@ class PendingNotificationDaoTest {
             assertThat(result).hasSize(2)
             assertThat(result.flatMap { it.contactLookupKeys }).containsExactly("key1", "anniversary:key2", "nameday:key3")
         }
+
+    @Test
+    fun getNextNotificationId_returnsOneWhenEmptyAndIncrementsAfterExplicitInsert() =
+        runTest {
+            assertThat(dao.getNextNotificationId()).isEqualTo(1)
+
+            val firstId = dao.getNextNotificationId()
+            dao.upsert(
+                PendingNotificationEntity(
+                    id = firstId,
+                    contactLookupKeys = listOf("key1"),
+                    daysBefore = 0,
+                    year = 2026
+                )
+            )
+
+            assertThat(dao.getNotificationById(firstId)).isNotNull()
+            assertThat(dao.getNextNotificationId()).isEqualTo(2)
+        }
 }

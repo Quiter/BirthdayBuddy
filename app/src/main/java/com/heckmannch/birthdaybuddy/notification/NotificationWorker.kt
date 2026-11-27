@@ -53,14 +53,16 @@ class NotificationWorker @AssistedInject constructor(
             // Evaluieren der fälligen Benachrichtigungen via Use Case
             val pendingEvents = getPendingNotificationsUseCase(clock.nowLocalDateTime())
 
-            // Für jedes fällige Event eine PendingNotification einfügen und anzeigen
+            // Für jedes fällige Event erst die Benachrichtigung anzeigen und danach als verarbeitet persistieren,
+            // damit bei einem Fehler oder Prozess-Abbruch während des Anzeigens kein Event für das ganze Jahr verloren geht.
             pendingEvents.forEach { event ->
+                val pendingId = notificationRepository.getNextPendingNotificationId()
                 val pending = PendingNotification(
                     contactLookupKeys = event.dbKeys,
                     daysBefore = event.daysBefore,
-                    year = currentYear
+                    year = currentYear,
+                    id = pendingId,
                 )
-                val pendingId = notificationRepository.insertPendingNotification(pending).toInt()
 
                 notificationHelper.showBirthdayNotification(
                     contacts = event.contacts,
@@ -69,6 +71,8 @@ class NotificationWorker @AssistedInject constructor(
                     eventType = event.eventType,
                     customEventKey = event.customEventKey,
                 )
+
+                notificationRepository.insertPendingNotification(pending)
             }
 
             // Plane den nächsten Lauf sauber und deterministisch über APPEND_OR_REPLACE.
@@ -94,7 +98,9 @@ class NotificationWorker @AssistedInject constructor(
     private suspend fun scheduleNextRun() {
         val settings = settingsRepository.getSettingsImmediate()
         if (!settings.notificationsEnabled) {
-            WorkManager.getInstance(applicationContext).cancelUniqueWork(WORK_NAME)
+            val workManager = WorkManager.getInstance(applicationContext)
+            workManager.cancelUniqueWork(WORK_NAME)
+            workManager.cancelAllWorkByTag(NotificationActions.WORK_TAG_SNOOZE)
             alarmScheduler.cancelNotificationAlarm()
             return
         }
@@ -118,9 +124,11 @@ class NotificationWorker @AssistedInject constructor(
                 .addTag(NotificationActions.WORK_TAG_NOTIFICATION)
                 .build()
 
+            // APPEND_OR_REPLACE verhindert, dass zeitnahe Auslöser einen laufenden syncContacts()- oder
+            // Notification-Dispatch-Lauf mitten in der Ausführung abbrechen, und ersetzt dennoch fehlgeschlagene Ketten.
             WorkManager.getInstance(context).enqueueUniqueWork(
                 WORK_NAME,
-                ExistingWorkPolicy.REPLACE,
+                ExistingWorkPolicy.APPEND_OR_REPLACE,
                 request,
             )
         }

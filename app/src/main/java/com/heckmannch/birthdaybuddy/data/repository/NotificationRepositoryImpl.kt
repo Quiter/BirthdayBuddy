@@ -132,6 +132,17 @@ class NotificationRepositoryImpl @Inject constructor(
         }
 
     /**
+     * Computes the next available positive ID for a new pending notification so that the notification
+     * can be posted before persisting it as processed.
+     *
+     * @return The next positive integer ID for a pending notification.
+     */
+    override suspend fun getNextPendingNotificationId(): Int =
+        withContext(ioDispatcher) {
+            pendingNotificationDao.getNextNotificationId()
+        }
+
+    /**
      * Inserts or updates a pending notification entry in the database.
      *
      * @param notification The [PendingNotification] domain model to save.

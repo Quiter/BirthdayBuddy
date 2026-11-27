@@ -83,10 +83,18 @@ class NotificationSchedulerImplTest {
     }
 
     @Test
-    fun `cancelNotification - delegates to AlarmScheduler cancelNotificationAlarm`() {
+    fun `cancelNotification - delegates to AlarmScheduler cancelNotificationAlarm and cancels snoozed work`() {
         scheduler.cancelNotification()
 
         verify(exactly = 1) { alarmScheduler.cancelNotificationAlarm() }
+        verify(exactly = 1) { workManager.cancelAllWorkByTag(NotificationActions.WORK_TAG_SNOOZE) }
+    }
+
+    @Test
+    fun `cancelAllSnoozedNotifications - cancels all WorkManager jobs with WORK_TAG_SNOOZE`() {
+        scheduler.cancelAllSnoozedNotifications()
+
+        verify(exactly = 1) { workManager.cancelAllWorkByTag(NotificationActions.WORK_TAG_SNOOZE) }
     }
 
     // =========================================================================
@@ -210,6 +218,7 @@ class NotificationSchedulerImplTest {
         verify(exactly = 1) { workManager.enqueue(any<OneTimeWorkRequest>()) }
 
         val captured = workRequestSlot.captured
+        assertThat(captured.tags).contains(NotificationActions.WORK_TAG_SNOOZE)
         assertThat(captured.workSpec.initialDelay).isEqualTo(2500L)
 
         val inputData = captured.workSpec.input

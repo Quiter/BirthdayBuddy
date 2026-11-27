@@ -78,7 +78,7 @@ class NotificationAlarmReceiverTest {
     }
 
     @Test
-    fun `onReceive enqueues NotificationWorker immediately with REPLACE and reschedules alarm`() {
+    fun `onReceive enqueues NotificationWorker immediately with APPEND_OR_REPLACE and reschedules alarm`() {
         val intent = createIntent()
 
         receiver.onReceive(context, intent)
@@ -86,7 +86,7 @@ class NotificationAlarmReceiverTest {
         verify(exactly = 1) {
             workManager.enqueueUniqueWork(
                 NotificationActions.WORK_NAME_NOTIFICATION_UPDATE,
-                ExistingWorkPolicy.REPLACE,
+                ExistingWorkPolicy.APPEND_OR_REPLACE,
                 any<OneTimeWorkRequest>(),
             )
         }
@@ -120,7 +120,7 @@ class NotificationAlarmReceiverTest {
         verify(exactly = 1) {
             workManager.enqueueUniqueWork(
                 NotificationActions.WORK_NAME_NOTIFICATION_UPDATE,
-                ExistingWorkPolicy.REPLACE,
+                ExistingWorkPolicy.APPEND_OR_REPLACE,
                 any<OneTimeWorkRequest>(),
             )
         }
@@ -138,7 +138,7 @@ class NotificationAlarmReceiverTest {
         verify(exactly = 1) {
             workManager.enqueueUniqueWork(
                 NotificationActions.WORK_NAME_NOTIFICATION_UPDATE,
-                ExistingWorkPolicy.REPLACE,
+                ExistingWorkPolicy.APPEND_OR_REPLACE,
                 any<OneTimeWorkRequest>(),
             )
         }

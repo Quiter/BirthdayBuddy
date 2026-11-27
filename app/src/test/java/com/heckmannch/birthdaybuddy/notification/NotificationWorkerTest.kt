@@ -1,6 +1,7 @@
 package com.heckmannch.birthdaybuddy.notification
 
 import android.content.Context
+import androidx.work.ExistingWorkPolicy
 import androidx.work.ListenableWorker
 import androidx.work.OneTimeWorkRequest
 import androidx.work.WorkManager
@@ -19,6 +20,7 @@ import com.heckmannch.birthdaybuddy.util.AlarmScheduler
 import com.heckmannch.birthdaybuddy.util.Clock
 import io.mockk.coEvery
 import io.mockk.coVerify
+import io.mockk.coVerifyOrder
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.mockkObject
@@ -112,6 +114,7 @@ class NotificationWorkerTest {
         )
 
         coEvery { getPendingNotificationsUseCase(any()) } returns listOf(pendingEvent)
+        coEvery { notificationRepository.getNextPendingNotificationId() } returns 42
         coEvery { notificationRepository.insertPendingNotification(any()) } returns 42L
         coEvery { settingsRepository.getSettingsImmediate() } returns AppSettings(notificationsEnabled = true)
         coEvery { notificationRepository.getAllRulesImmediate() } returns rules
@@ -132,19 +135,63 @@ class NotificationWorkerTest {
         val result = worker.doWork()
 
         assertThat(result).isEqualTo(ListenableWorker.Result.success())
-        coVerify(exactly = 1) {
-            notificationRepository.insertPendingNotification(
-                match { (it.daysBefore == 1) && (it.year == currentYear) }
-            )
-        }
-        coVerify(exactly = 1) {
+        coVerifyOrder {
             notificationHelper.showBirthdayNotification(
                 contacts = listOf(testContact),
                 daysBefore = 1,
                 pendingId = 42,
                 eventType = EventType.BIRTHDAY,
             )
+            notificationRepository.insertPendingNotification(
+                match { (it.id == 42) && (it.daysBefore == 1) && (it.year == currentYear) }
+            )
         }
+    }
+
+    @Test
+    fun `doWork - when showBirthdayNotification fails - does not persist pending notification and returns retry`() = runTest {
+        val currentYear = 2026
+        every { clock.nowLocalDate() } returns LocalDate.of(currentYear, 1, 1)
+
+        val testContact = Contact(
+            contactId = "1",
+            lookupKey = "contact_lookup_1",
+            fullName = "Max Mustermann",
+            birthday = LocalDate.of(1990, 1, 2)
+        )
+        val pendingEvent = GetPendingNotificationsUseCase.PendingNotificationEvent(
+            contacts = listOf(testContact),
+            eventType = EventType.BIRTHDAY,
+            dbKeys = listOf("contact_lookup_1#BIRTHDAY"),
+            daysBefore = 1
+        )
+        val rules = listOf(NotificationRule(daysBefore = 1, hour = 9, minute = 0))
+
+        coEvery { getPendingNotificationsUseCase(any()) } returns listOf(pendingEvent)
+        coEvery { notificationRepository.getNextPendingNotificationId() } returns 42
+        coEvery {
+            notificationHelper.showBirthdayNotification(any(), any(), any(), any(), any())
+        } throws RuntimeException("NotificationManager failure")
+        coEvery { settingsRepository.getSettingsImmediate() } returns AppSettings(notificationsEnabled = true)
+        coEvery { notificationRepository.getAllRulesImmediate() } returns rules
+
+        val worker = NotificationWorker(
+            context = context,
+            workerParameters = workerParameters,
+            contactRepository = contactRepository,
+            notificationRepository = notificationRepository,
+            settingsRepository = settingsRepository,
+            notificationHelper = notificationHelper,
+            cleanupOldNotificationsUseCase = cleanupOldNotificationsUseCase,
+            getPendingNotificationsUseCase = getPendingNotificationsUseCase,
+            alarmScheduler = alarmScheduler,
+            clock = clock,
+        )
+
+        val result = worker.doWork()
+
+        assertThat(result).isEqualTo(ListenableWorker.Result.retry())
+        coVerify(exactly = 0) { notificationRepository.insertPendingNotification(any()) }
     }
 
     @Test
@@ -169,12 +216,26 @@ class NotificationWorkerTest {
 
         assertThat(result).isEqualTo(ListenableWorker.Result.success())
         verify(exactly = 1) { workManager.cancelUniqueWork(NotificationActions.WORK_NAME_NOTIFICATION_UPDATE) }
+        verify(exactly = 1) { workManager.cancelAllWorkByTag(NotificationActions.WORK_TAG_SNOOZE) }
         verify(exactly = 1) { alarmScheduler.cancelNotificationAlarm() }
         verify(exactly = 0) {
             workManager.enqueueUniqueWork(
                 any(),
                 any(),
                 any<OneTimeWorkRequest>()
+            )
+        }
+    }
+
+    @Test
+    fun `enqueueImmediateWork - uses APPEND_OR_REPLACE to avoid aborting an active run`() {
+        NotificationWorker.enqueueImmediateWork(context)
+
+        verify(exactly = 1) {
+            workManager.enqueueUniqueWork(
+                NotificationActions.WORK_NAME_NOTIFICATION_UPDATE,
+                ExistingWorkPolicy.APPEND_OR_REPLACE,
+                any<OneTimeWorkRequest>(),
             )
         }
     }
