@@ -21,7 +21,8 @@ interface GiftIdeaRepository {
      * and refreshing cached contact gift ideas when entries are imported.
      *
      * @param uriString The URI string pointing to the source JSON document.
-     * @return The number of successfully imported gift ideas, or -1 if the file could not be read or parsed.
+     * @return The number of successfully imported contacts with gift ideas, or -1 if the file could not be read or parsed.
+     * @throws IllegalArgumentException If the backup file exceeds the maximum allowed size.
      */
     suspend fun importGiftIdeas(uriString: String): Int
 

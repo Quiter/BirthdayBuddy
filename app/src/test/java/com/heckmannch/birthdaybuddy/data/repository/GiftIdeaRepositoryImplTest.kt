@@ -39,7 +39,10 @@ import org.mockito.kotlin.whenever
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
 import java.io.IOException
+import java.io.InputStream
+import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicInteger
+import java.util.concurrent.atomic.AtomicLong
 
 /**
  * JVM Unit Tests for [GiftIdeaRepositoryImpl].
@@ -631,6 +634,118 @@ class GiftIdeaRepositoryImplTest {
             verify(contactRepository, never()).syncContacts()
             verify(contactDao, never()).upsertContacts(any())
             verify(widgetUpdater, never()).updateWidget()
+        }
+    }
+
+    @Test
+    fun importGiftIdeas_returnsMinusOne_whenOpenInputStreamReturnsNull() = runTest {
+        val uriString = "content://test_uri"
+        val mockUri: Uri = mock()
+        mockStatic(Uri::class.java).use { mockedStatic ->
+            mockedStatic.`when`<Uri> { Uri.parse(uriString) }.thenReturn(mockUri)
+            whenever(contentResolver.openInputStream(mockUri)).thenReturn(null)
+
+            val result = repository.importGiftIdeas(uriString)
+
+            assertThat(result).isEqualTo(-1)
+            verify(giftIdeaBackupManager, never()).importGiftIdeas(any())
+            verify(contactRepository, never()).syncContacts()
+        }
+    }
+
+    @Test
+    fun importGiftIdeas_rejectsFileExceedingMaxSize_withoutReadingEntireStream() = runTest {
+        val uriString = "content://test_uri"
+        val mockUri: Uri = mock()
+        mockStatic(Uri::class.java).use { mockedStatic ->
+            mockedStatic.`when`<Uri> { Uri.parse(uriString) }.thenReturn(mockUri)
+
+            val simulatedSizeBytes = 100L * 1024L * 1024L // 100 MB
+            val bytesConsumed = AtomicLong(0L)
+            val streamClosed = AtomicBoolean(false)
+            val hugeStream = object : InputStream() {
+                override fun read(): Int {
+                    if (bytesConsumed.get() >= simulatedSizeBytes) return -1
+                    bytesConsumed.incrementAndGet()
+                    return ' '.code
+                }
+
+                override fun read(b: ByteArray, off: Int, len: Int): Int {
+                    val remaining = simulatedSizeBytes - bytesConsumed.get()
+                    if (remaining <= 0L) return -1
+                    val count = minOf(len.toLong(), remaining).toInt()
+                    b.fill(' '.code.toByte(), off, off + count)
+                    bytesConsumed.addAndGet(count.toLong())
+                    return count
+                }
+
+                override fun close() {
+                    streamClosed.set(true)
+                }
+            }
+            whenever(contentResolver.openInputStream(mockUri)).thenReturn(hugeStream)
+
+            var caught: Throwable? = null
+            try {
+                repository.importGiftIdeas(uriString)
+            } catch (e: Throwable) {
+                caught = e
+            }
+
+            assertThat(caught).isInstanceOf(IllegalArgumentException::class.java)
+            assertThat(caught?.message).contains("10 MB")
+            assertThat(streamClosed.get()).isTrue()
+            // Must abort right after exceeding MAX_BACKUP_SIZE_BYTES, never reading all 100 MB
+            assertThat(bytesConsumed.get()).isAtMost(
+                GiftIdeaRepositoryImpl.MAX_BACKUP_SIZE_BYTES.toLong() + 8 * 1024L
+            )
+            verify(giftIdeaBackupManager, never()).importGiftIdeas(any())
+            verify(contactRepository, never()).syncContacts()
+        }
+    }
+
+    @Test
+    fun importGiftIdeas_rejectsFileOneByteOverMaxSizeLimit() = runTest {
+        val uriString = "content://test_uri"
+        val mockUri: Uri = mock()
+        mockStatic(Uri::class.java).use { mockedStatic ->
+            mockedStatic.`when`<Uri> { Uri.parse(uriString) }.thenReturn(mockUri)
+
+            val overLimitBytes = ByteArray(GiftIdeaRepositoryImpl.MAX_BACKUP_SIZE_BYTES + 1) { ' '.code.toByte() }
+            whenever(contentResolver.openInputStream(mockUri)).thenReturn(ByteArrayInputStream(overLimitBytes))
+
+            var caught: Throwable? = null
+            try {
+                repository.importGiftIdeas(uriString)
+            } catch (e: Throwable) {
+                caught = e
+            }
+
+            assertThat(caught).isInstanceOf(IllegalArgumentException::class.java)
+            verify(giftIdeaBackupManager, never()).importGiftIdeas(any())
+            verify(contactRepository, never()).syncContacts()
+        }
+    }
+
+    @Test
+    fun importGiftIdeas_acceptsFileAtExactMaxSizeLimit() = runTest {
+        val uriString = "content://test_uri"
+        val mockUri: Uri = mock()
+        mockStatic(Uri::class.java).use { mockedStatic ->
+            mockedStatic.`when`<Uri> { Uri.parse(uriString) }.thenReturn(mockUri)
+
+            val exactLimitBytes = ByteArray(GiftIdeaRepositoryImpl.MAX_BACKUP_SIZE_BYTES) { ' '.code.toByte() }
+            exactLimitBytes[0] = '['.code.toByte()
+            exactLimitBytes[exactLimitBytes.lastIndex] = ']'.code.toByte()
+            whenever(contentResolver.openInputStream(mockUri)).thenReturn(ByteArrayInputStream(exactLimitBytes))
+            whenever(giftIdeaBackupManager.importGiftIdeas(any())).thenReturn(0)
+
+            val result = repository.importGiftIdeas(uriString)
+
+            assertThat(result).isEqualTo(0)
+            verify(giftIdeaBackupManager).importGiftIdeas(check { payload ->
+                assertThat(payload.length).isEqualTo(GiftIdeaRepositoryImpl.MAX_BACKUP_SIZE_BYTES)
+            })
         }
     }
 

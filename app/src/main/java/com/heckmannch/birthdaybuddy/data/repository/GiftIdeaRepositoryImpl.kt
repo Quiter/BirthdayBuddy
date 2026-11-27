@@ -17,10 +17,13 @@ import com.heckmannch.birthdaybuddy.domain.repository.GiftIdeaRepository
 import com.heckmannch.birthdaybuddy.domain.repository.WidgetUpdater
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
+import java.io.ByteArrayOutputStream
 import java.io.IOException
+import java.io.InputStream
 import javax.inject.Inject
 
 /**
@@ -172,7 +175,7 @@ class GiftIdeaRepositoryImpl @Inject constructor(
     override suspend fun importGiftIdeas(uriString: String): Int = withContext(ioDispatcher) {
         val uri = uriString.toUri()
         val json = contentResolver.openInputStream(uri)?.use { inputStream ->
-            inputStream.bufferedReader(Charsets.UTF_8).readText()
+            readBoundedUtf8Text(inputStream) { coroutineContext.ensureActive() }
         } ?: return@withContext -1
         val count = giftIdeaBackupManager.importGiftIdeas(json)
         if (count > 0) {
@@ -186,6 +189,39 @@ class GiftIdeaRepositoryImpl @Inject constructor(
             syncCachedContactGiftIdeas()
         }
         count
+    }
+
+    /**
+     * Reads UTF-8 text from [inputStream] in fixed-size chunks up to [maxBytes] bytes.
+     *
+     * Aborts immediately once the stream exceeds [maxBytes] so arbitrarily large SAF files
+     * cannot be buffered into the heap and trigger an [OutOfMemoryError].
+     *
+     * @throws IllegalArgumentException If the stream exceeds [maxBytes] bytes.
+     */
+    private fun readBoundedUtf8Text(
+        inputStream: InputStream,
+        maxBytes: Int = MAX_BACKUP_SIZE_BYTES,
+        checkActive: () -> Unit = {},
+    ): String {
+        val output = ByteArrayOutputStream()
+        val buffer = ByteArray(READ_BUFFER_SIZE_BYTES)
+        var totalBytesRead = 0L
+
+        while (true) {
+            checkActive()
+            val bytesRead = inputStream.read(buffer)
+            if (bytesRead == -1) break
+            totalBytesRead += bytesRead
+            if (totalBytesRead > maxBytes) {
+                throw IllegalArgumentException(
+                    "Backup file exceeds maximum allowed size of ${maxBytes / BYTES_PER_MIB} MB"
+                )
+            }
+            output.write(buffer, 0, bytesRead)
+        }
+
+        return output.toString(Charsets.UTF_8.name())
     }
 
     /**
@@ -235,5 +271,8 @@ class GiftIdeaRepositoryImpl @Inject constructor(
 
     companion object {
         private const val TAG = "GiftIdeaRepository"
+        private const val BYTES_PER_MIB = 1024 * 1024
+        internal const val MAX_BACKUP_SIZE_BYTES = 10 * BYTES_PER_MIB
+        private const val READ_BUFFER_SIZE_BYTES = 8 * 1024
     }
 }

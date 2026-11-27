@@ -15,11 +15,10 @@ import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.JsonArray
-import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.contentOrNull
 import kotlinx.serialization.json.decodeFromJsonElement
-import kotlinx.serialization.json.jsonPrimitive
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -73,7 +72,11 @@ class GiftIdeaBackupManager @Inject constructor(
 
     /**
      * Imports gift ideas from a JSON string.
-     * Writes the imported data into the persistent [ContactUserData] table.
+     * Writes the imported data into the persistent [ContactUserData] table,
+     * skipping malformed entries and deduplicating multiple entries per contact.
+     *
+     * @param jsonString The JSON array payload exported by [exportGiftIdeas].
+     * @return The number of unique contacts updated, or `-1` if the JSON payload cannot be parsed.
      */
     suspend fun importGiftIdeas(jsonString: String): Int = withContext(ioDispatcher) {
         try {
@@ -81,19 +84,23 @@ class GiftIdeaBackupManager @Inject constructor(
             if (rootElement !is JsonArray || rootElement.isEmpty()) return@withContext 0
 
             val dbContacts = contactDao.getAllContactsImmediate()
-            val contactsByLookup = dbContacts.associateBy { it.lookupKey }
-            val contactsByName = dbContacts.associateBy { it.fullName }
+            val contactsByLookup = dbContacts
+                .filter { it.lookupKey.isNotBlank() }
+                .associateBy { it.lookupKey }
+            val contactsByName = dbContacts
+                .filter { it.fullName.isNotBlank() }
+                .associateBy { it.fullName }
             settingsDatabase.withTransaction {
                 val existingUserDataMap =
                     contactUserDataDao.getAllUserDataImmediate().associateBy { it.lookupKey }
 
-                val toUpsert = mutableListOf<ContactUserData>()
+                val toUpsert = LinkedHashMap<String, ContactUserData>()
 
                 for (element in rootElement) {
                     if (element !is JsonObject) continue
 
-                    val lookupKey = element["lookupKey"]?.jsonPrimitive?.contentOrNull ?: ""
-                    val fullName = element["fullName"]?.jsonPrimitive?.contentOrNull ?: ""
+                    val lookupKey = (element["lookupKey"] as? JsonPrimitive)?.contentOrNull ?: ""
+                    val fullName = (element["fullName"] as? JsonPrimitive)?.contentOrNull ?: ""
                     val giftIdeasElement = element["giftIdeas"]
 
                     val giftIdeas: List<GiftIdea> = when (giftIdeasElement) {
@@ -105,8 +112,8 @@ class GiftIdeaBackupManager @Inject constructor(
                                 emptyList()
                             }
                         }
-                        is JsonElement -> {
-                            val str = giftIdeasElement.jsonPrimitive.contentOrNull
+                        is JsonPrimitive -> {
+                            val str = giftIdeasElement.contentOrNull
                             if (!str.isNullOrBlank()) {
                                 giftIdeaConverters.toGiftIdeaList(str)
                             } else {
@@ -114,28 +121,37 @@ class GiftIdeaBackupManager @Inject constructor(
                             }
                         }
                         null -> emptyList()
+                        else -> {
+                            Log.w(
+                                TAG,
+                                "Skipping unsupported giftIdeas JSON element type: ${giftIdeasElement::class.simpleName}"
+                            )
+                            emptyList()
+                        }
                     }
 
                     if (giftIdeas.isEmpty()) continue
 
-                    // Match via LookupKey (best) or name (fallback)
-                    val targetLookupKey = contactsByLookup[lookupKey]?.lookupKey
-                        ?: contactsByName[fullName]?.lookupKey
+                    // Match via LookupKey (best) or name (fallback), never matching blank values
+                    val targetLookupKey = lookupKey
+                        .takeIf { it.isNotBlank() }
+                        ?.let { contactsByLookup[it]?.lookupKey }
+                        ?: fullName
+                            .takeIf { it.isNotBlank() }
+                            ?.let { contactsByName[it]?.lookupKey }
 
                     if (targetLookupKey != null) {
                         val existingUserData = existingUserDataMap[targetLookupKey]
-                        toUpsert.add(
-                            ContactUserData(
-                                lookupKey = targetLookupKey,
-                                giftIdeasJson = giftIdeaConverters.fromGiftIdeaList(giftIdeas),
-                                spouseLookupKey = existingUserData?.spouseLookupKey
-                            )
+                        toUpsert[targetLookupKey] = ContactUserData(
+                            lookupKey = targetLookupKey,
+                            giftIdeasJson = giftIdeaConverters.fromGiftIdeaList(giftIdeas),
+                            spouseLookupKey = existingUserData?.spouseLookupKey
                         )
                     }
                 }
 
                 if (toUpsert.isNotEmpty()) {
-                    contactUserDataDao.upsertUserDataList(toUpsert)
+                    contactUserDataDao.upsertUserDataList(toUpsert.values.toList())
                 }
                 toUpsert.size
             }

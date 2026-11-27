@@ -21,7 +21,9 @@ import org.junit.After
 import org.junit.Before
 import org.junit.Test
 import org.mockito.kotlin.any
+import org.mockito.kotlin.check
 import org.mockito.kotlin.mock
+import org.mockito.kotlin.never
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 
@@ -116,7 +118,7 @@ class GiftIdeaBackupManagerTest {
 
         // Then
         assertThat(count).isEqualTo(1)
-        verify(contactUserDataDao).upsertUserDataList(org.mockito.kotlin.check { list ->
+        verify(contactUserDataDao).upsertUserDataList(check { list ->
             assertThat(list).hasSize(1)
             val ideas = com.heckmannch.birthdaybuddy.data.local.GiftIdeaConverters().toGiftIdeaList(list[0].giftIdeasJson)
             assertThat(ideas).hasSize(1)
@@ -138,7 +140,7 @@ class GiftIdeaBackupManagerTest {
 
         // Then
         assertThat(count).isEqualTo(1)
-        verify(contactUserDataDao).upsertUserDataList(org.mockito.kotlin.check { list ->
+        verify(contactUserDataDao).upsertUserDataList(check { list ->
             assertThat(list).hasSize(1)
             assertThat(list[0].lookupKey).isEqualTo("correct_key")
         })
@@ -163,7 +165,7 @@ class GiftIdeaBackupManagerTest {
 
         // Then
         assertThat(count).isEqualTo(1)
-        verify(contactUserDataDao).upsertUserDataList(org.mockito.kotlin.check { list ->
+        verify(contactUserDataDao).upsertUserDataList(check { list ->
             assertThat(list).hasSize(1)
             assertThat(list[0].lookupKey).isEqualTo("key1")
             assertThat(list[0].spouseLookupKey).isEqualTo("spouse_key")
@@ -180,5 +182,142 @@ class GiftIdeaBackupManagerTest {
 
         // Then
         assertThat(count).isEqualTo(-1)
+    }
+
+    @Test
+    fun `importGiftIdeas should skip entry with JsonObject giftIdeas and import valid entries`() = runTest {
+        // Given
+        val json = """
+            [
+                {"lookupKey": "key1", "fullName": "John Doe", "giftIdeas": {"unexpected": "object"}},
+                {"lookupKey": "key2", "fullName": "Jane Doe", "giftIdeas": [{"text": "Book"}]}
+            ]
+        """.trimIndent()
+        val contacts = listOf(
+            ContactEntity(contactId = "1", lookupKey = "key1", fullName = "John Doe"),
+            ContactEntity(contactId = "2", lookupKey = "key2", fullName = "Jane Doe"),
+        )
+        whenever(contactDao.getAllContactsImmediate()).thenReturn(contacts)
+
+        // When
+        val count = manager.importGiftIdeas(json)
+
+        // Then
+        assertThat(count).isEqualTo(1)
+        io.mockk.verify(atLeast = 1) { android.util.Log.w(any(), any<String>()) }
+        verify(contactUserDataDao).upsertUserDataList(check { list ->
+            assertThat(list).hasSize(1)
+            assertThat(list[0].lookupKey).isEqualTo("key2")
+        })
+    }
+
+    @Test
+    fun `importGiftIdeas should skip entry with non-primitive lookupKey or fullName and import valid entries`() = runTest {
+        // Given
+        val json = """
+            [
+                {"lookupKey": {"bad": 1}, "fullName": ["bad"], "giftIdeas": [{"text": "Ignored"}]},
+                {"lookupKey": "key1", "fullName": "John Doe", "giftIdeas": [{"text": "Book"}]}
+            ]
+        """.trimIndent()
+        val contacts = listOf(
+            ContactEntity(contactId = "1", lookupKey = "key1", fullName = "John Doe"),
+        )
+        whenever(contactDao.getAllContactsImmediate()).thenReturn(contacts)
+
+        // When
+        val count = manager.importGiftIdeas(json)
+
+        // Then
+        assertThat(count).isEqualTo(1)
+        verify(contactUserDataDao).upsertUserDataList(check { list ->
+            assertThat(list).hasSize(1)
+            assertThat(list[0].lookupKey).isEqualTo("key1")
+        })
+    }
+
+    @Test
+    fun `importGiftIdeas should not match blank lookupKey or blank fullName`() = runTest {
+        // Given
+        val json = """
+            [
+                {"lookupKey": "", "fullName": "", "giftIdeas": [{"text": "Book"}]},
+                {"lookupKey": "   ", "fullName": "   ", "giftIdeas": [{"text": "Flowers"}]},
+                {"lookupKey": "unknown_key", "fullName": "", "giftIdeas": [{"text": "Mug"}]}
+            ]
+        """.trimIndent()
+        val contacts = listOf(
+            ContactEntity(contactId = "1", lookupKey = "", fullName = ""),
+            ContactEntity(contactId = "2", lookupKey = "key_blank_name", fullName = ""),
+            ContactEntity(contactId = "3", lookupKey = "key_ws_name", fullName = "   "),
+            ContactEntity(contactId = "4", lookupKey = "key1", fullName = "John Doe"),
+        )
+        whenever(contactDao.getAllContactsImmediate()).thenReturn(contacts)
+
+        // When
+        val count = manager.importGiftIdeas(json)
+
+        // Then
+        assertThat(count).isEqualTo(0)
+        verify(contactUserDataDao, never()).upsertUserDataList(any())
+    }
+
+    @Test
+    fun `importGiftIdeas should fallback to fullName when lookupKey is blank`() = runTest {
+        // Given
+        val json = """
+            [
+                {"lookupKey": "   ", "fullName": "John Doe", "giftIdeas": [{"text": "Book"}]}
+            ]
+        """.trimIndent()
+        val contacts = listOf(
+            ContactEntity(contactId = "1", lookupKey = "   ", fullName = "Other"),
+            ContactEntity(contactId = "2", lookupKey = "key1", fullName = "John Doe"),
+        )
+        whenever(contactDao.getAllContactsImmediate()).thenReturn(contacts)
+
+        // When
+        val count = manager.importGiftIdeas(json)
+
+        // Then
+        assertThat(count).isEqualTo(1)
+        verify(contactUserDataDao).upsertUserDataList(check { list ->
+            assertThat(list).hasSize(1)
+            assertThat(list[0].lookupKey).isEqualTo("key1")
+        })
+    }
+
+    @Test
+    fun `importGiftIdeas should deduplicate multiple entries for same targetLookupKey`() = runTest {
+        // Given
+        val json = """
+            [
+                {"lookupKey": "key1", "fullName": "John Doe", "giftIdeas": [{"text": "First Idea"}]},
+                {"lookupKey": "wrong_key", "fullName": "John Doe", "giftIdeas": [{"text": "Second Idea"}]},
+                {"lookupKey": "key2", "fullName": "Jane Doe", "giftIdeas": [{"text": "Flowers"}]}
+            ]
+        """.trimIndent()
+        val contacts = listOf(
+            ContactEntity(contactId = "1", lookupKey = "key1", fullName = "John Doe"),
+            ContactEntity(contactId = "2", lookupKey = "key2", fullName = "Jane Doe"),
+        )
+        whenever(contactDao.getAllContactsImmediate()).thenReturn(contacts)
+
+        // When
+        val count = manager.importGiftIdeas(json)
+
+        // Then
+        assertThat(count).isEqualTo(2)
+        verify(contactUserDataDao).upsertUserDataList(check { list ->
+            assertThat(list).hasSize(2)
+            assertThat(list.map { it.lookupKey }).containsExactly("key1", "key2").inOrder()
+            val converters = com.heckmannch.birthdaybuddy.data.local.GiftIdeaConverters()
+            val johnIdeas = converters.toGiftIdeaList(list[0].giftIdeasJson)
+            assertThat(johnIdeas).hasSize(1)
+            assertThat(johnIdeas[0].text).isEqualTo("Second Idea")
+            val janeIdeas = converters.toGiftIdeaList(list[1].giftIdeasJson)
+            assertThat(janeIdeas).hasSize(1)
+            assertThat(janeIdeas[0].text).isEqualTo("Flowers")
+        })
     }
 }
