@@ -1,6 +1,5 @@
 ﻿package com.heckmannch.birthdaybuddy.ui.screens.settings.subscreens.theme
 
-import android.util.Log
 import androidx.annotation.VisibleForTesting
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material.icons.Icons
@@ -13,10 +12,8 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.core.graphics.toColorInt
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.heckmannch.birthdaybuddy.R
 import com.heckmannch.birthdaybuddy.domain.model.ThemeAccent
@@ -35,8 +32,10 @@ import com.heckmannch.birthdaybuddy.ui.components.settings.SettingsSwitchItem
 import com.heckmannch.birthdaybuddy.ui.screens.settings.subscreens.theme.components.ThemeAccentSelector
 import com.heckmannch.birthdaybuddy.ui.theme.BirthdayBuddyTheme
 import com.heckmannch.birthdaybuddy.ui.theme.BirthdayKidGreen
+import com.heckmannch.birthdaybuddy.ui.util.toColorOrNull
+import com.heckmannch.birthdaybuddy.ui.util.toHexString
 
-private const val TAG = "ThemeSettingsScreen"
+private val DefaultCustomAccentColor = Color(0xFFE91E63)
 
 /**
  * Entry point for the Appearance / Theme settings subpage.
@@ -155,16 +154,7 @@ internal fun ThemeSettingsScreenContent(
 
     if (showColorPickerDialog) {
         val parsedInitialColor = remember(customAccentColor) {
-            if (customAccentColor != null && customAccentColor.startsWith("#")) {
-                try {
-                    Color(customAccentColor.toColorInt())
-                } catch (e: Exception) {
-                    Log.w(TAG, "Fehler beim Parsen des Farb-Picker Initialwerts: $customAccentColor", e)
-                    Color(0xFFE91E63)
-                }
-            } else {
-                Color(0xFFE91E63)
-            }
+            customAccentColor.toColorOrNull() ?: DefaultCustomAccentColor
         }
         val presets = remember {
             listOf(
@@ -183,8 +173,7 @@ internal fun ThemeSettingsScreenContent(
             title = stringResource(R.string.theme_accent_custom_dialog_title),
             onDismissRequest = { showColorPickerDialog = false },
             onColorSelected = { color ->
-                val hexString = String.format("#%06X", 0xFFFFFF and color.toArgb())
-                onThemeAccentChange(ThemeAccent.CUSTOM, hexString)
+                onThemeAccentChange(ThemeAccent.CUSTOM, color.toHexString())
                 showColorPickerDialog = false
             },
             presets = presets,

@@ -1,14 +1,12 @@
 ﻿package com.heckmannch.birthdaybuddy.ui.screens.settings.subscreens.theme.components
 
 import android.os.Build
-import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.size
@@ -27,7 +25,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.selected
@@ -35,7 +32,6 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.core.graphics.toColorInt
 import com.heckmannch.birthdaybuddy.R
 import com.heckmannch.birthdaybuddy.domain.model.ThemeAccent
 import com.heckmannch.birthdaybuddy.ui.components.settings.CornerRadii
@@ -53,9 +49,10 @@ import com.heckmannch.birthdaybuddy.ui.theme.SettingsSwatchSize
 import com.heckmannch.birthdaybuddy.ui.theme.SpacingExtraSmall
 import com.heckmannch.birthdaybuddy.ui.theme.SpacingMedium
 import com.heckmannch.birthdaybuddy.ui.theme.SpacingNormal
+import com.heckmannch.birthdaybuddy.ui.util.contrastingContent
+import com.heckmannch.birthdaybuddy.ui.util.toColorOrNull
 
-private const val TAG = "ThemeAccentSelector"
-private const val LightSwatchLuminanceThreshold = 0.5f
+private val DefaultCustomSwatchColor = Color(0xFFE91E63)
 
 private val LightIconAccents = setOf(
     ThemeAccent.SYSTEM,
@@ -98,15 +95,10 @@ internal fun ThemeAccentSelector(
             add(AccentColorOption(ThemeAccent.ORANGE, AccentPresetColors[3]))
             add(AccentColorOption(ThemeAccent.PINK, AccentPresetColors[4]))
 
-            val customColor = if (themeAccent == ThemeAccent.CUSTOM && customAccentColor != null) {
-                try {
-                    Color(customAccentColor.toColorInt())
-                } catch (e: Exception) {
-                    Log.w(TAG, "Fehler beim Parsen der Akzentfarbe: $customAccentColor", e)
-                    Color(0xFFE91E63)
-                }
+            val customColor = if (themeAccent == ThemeAccent.CUSTOM) {
+                customAccentColor.toColorOrNull() ?: DefaultCustomSwatchColor
             } else {
-                Color(0xFFE91E63)
+                DefaultCustomSwatchColor
             }
             add(AccentColorOption(ThemeAccent.CUSTOM, customColor, isCustom = true))
         }
@@ -167,7 +159,7 @@ private fun AccentSwatchTile(
 
     val iconTint = when {
         option.isSystem -> Color.White
-        option.isCustom -> if (option.color.luminance() > LightSwatchLuminanceThreshold) Color.Black else Color.White
+        option.isCustom -> option.color.contrastingContent()
         option.id in LightIconAccents -> Color.White
         else -> Color.Black
     }

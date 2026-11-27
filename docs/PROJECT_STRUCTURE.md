@@ -69,7 +69,7 @@
 - **UI Components & Illustrations (`ui.components`, `ui.illustrations`)**:
   - **Bars (`ui.components.bars/`)**: `AppTopHeader` (zentraler Header mit animierter Suchleiste), `GlassPillBar` (`FloatingPillBar`), `GlassBlur` (`LocalBackdropHaze`, `glassFill`).
   - **Cards (`ui.components.cards/`)**: `GlassCard` (`GlassCardLayout`, `GlassCardScope`, `GlassCardTag`, `GlassCardExpandButton`, `GlassCardLoading`), `ContactCard` (`BirthdayCard`), `InfoCard`, `GlassCardStyle`, `CardBackground`, `CardBorder`, `SelectableCard`, `SwipeableCard`.
-  - **Color Picker (`ui.components.colorpicker/`)**: `ColorPickerDialog`, `ColorPickerCanvas` (`HsvColor`, `SaturationValuePanel`, `HueSlider`).
+  - **Color Picker (`ui.components.colorpicker/`)**: `ColorPickerDialog` (Portrait- & Landscape-Layout), `ColorPickerCanvas` (`HsvColor`, `SaturationValuePanel`, `HueSlider`), `ColorPresets` (`ColorPresetGrid`, `ColorPresetSwatch`, `PRESET_GRID_COLUMNS`, `PICKER_PRESET_COLUMNS`).
   - **Layout (`ui.components.layout/`)**: `ResponsiveLayout` (`WindowSizeClass`, `AppResponsiveScaffold`, `AdaptiveContentContainer`, `withSettingsInsets`), `PageScaffold` (`PinnedHeaderPage`, `FloatingBarsLayout`, `PageInsets`), `SharedScrollbar` (`ListScrollbar`, `ScrollToTopButton`).
   - **Settings (`ui.components.settings/`)**: Morphe-inspiriertes Material-3-Expressive-System aus `ConnectedShapes` (`ConnectedShapes.Pill`/`.Card`, `CornerRadii`, `rememberPressShape`, `shapedClickable`, `shapedToggleable`), `SegmentedGroup` (`SettingsGroup`, `ListSegment`, `FoldingVisibility`), `SettingsSearch` (`SettingsSearch`, `SettingsSearchState`, `SearchableSetting`, `SettingsSection`, `SettingsColumn`, `SettingsSearchBackHandler`), `OptionTiles` (`OptionGroup`, `SelectionTile`, `ModernIconOptionCard`), `SettingsNotice` (`SettingsNotice`, `SettingsFooter`, `InfoStatBox`, `SettingsEmptyState`), `SettingsRows` (`SurfaceCard`, `SettingsItemCard`, `SectionCard`, `ToggleSwitch`, `SettingsItem`, `SettingsSwitchItem`, `ThemedIcon`, `IconTextRow`, `ForwardChevronIcon`), `SettingsLayout` (`SettingsPageHeader`, `SettingsHeaderActionButton`, `SettingsSubpageScaffold`, `verticalScrollFade`) und `SettingsDetailPane` (`SettingsDetailPane`, `SettingsDetailPlaceholder`).
   - **Basis-Komponenten (`ui.components/`)**: `AppSwitch`, `StepItem`.
@@ -100,7 +100,7 @@
 
 ## 📁 Utilities (`util` & `ui.util`)
 - `util/`: `AlarmScheduler.kt`, `JsonUtils.kt` (SSOT JSON), `DateUtils.kt`, `StringUtils.kt`, `ContextExtensions.kt`, `IntentExtras.kt`, `IntentParser.kt`, `MessengerUtils.kt`, `WidgetUpdater.kt`, `NotificationScheduler.kt`.
-- `ui.util/`: `ContactActions.kt` (System-Intents & Aktionen).
+- `ui.util/`: `ContactActions.kt` (System-Intents & Aktionen), `ColorUtils.kt` (HSV-, HEX-, Darken- & Kontrast-Helfer).
 
 ## 📁 Widget (`widget`)
 - `BirthdayWidget.kt`, `BirthdayWidgetReceiver.kt`, `BirthdayWidgetWorker.kt`, `WidgetLayoutHelper.kt`: Glance-basierte Home-Screen-Widgets & Layoutberechnungen.
@@ -118,7 +118,7 @@
 - **Data Layer**: `ContactDaoTest`, `PendingNotificationDaoTest`, `ConvertersTest`, `GiftIdeaConvertersTest`, DB-Mapper-Tests, Repository-Tests (`ContactRepositoryImplTest`, `CoupleRepositoryImplTest`, `GiftIdeaRepositoryImplTest`, `NotificationRepositoryImplTest`, `CalendarSyncRepositoryImplTest`, etc.).
 - **Domain Layer**: Tests für Use Cases (`GetContactsUseCaseTest`, `GetPendingNotificationsUseCaseTest`, etc.) und Utilities (`PhoneNumberNormalizerTest`, `NotificationKeyUtilsTest`, `ContactFilterLogicTest`).
 - **Platform & Notification**: `BirthdayAppFunctionServiceTest`, `NotificationAlarmReceiverTest`, `NotificationActionReceiverTest`, `NotificationTextFormatterTest`, `NotificationWorkerTest`, `SnoozeWorkerTest`.
-- **UI & ViewModels**: Feature-co-located ViewModel-Tests (`HomeViewModelTest`, `OnboardingViewModelTest`, `BackupViewModelTest`, `CalendarViewModelTest`, `LabelViewModelTest`, `ThemeViewModelTest`, `SyncViewModelTest`), Compose-Komponenten-Tests (`GiftIdeaListTest`, `SearchBarTest`, `FastScrollbarBoundsTest`, `AppTopHeaderTest`, `GlassCardTest`, `SettingsComponentsTest`).
+- **UI & ViewModels**: Feature-co-located ViewModel-Tests (`HomeViewModelTest`, `OnboardingViewModelTest`, `BackupViewModelTest`, `CalendarViewModelTest`, `LabelViewModelTest`, `ThemeViewModelTest`, `SyncViewModelTest`), Compose-Komponenten- & UI-Util-Tests (`GiftIdeaListTest`, `SearchBarTest`, `FastScrollbarBoundsTest`, `AppTopHeaderTest`, `GlassCardTest`, `SettingsComponentsTest`, `ColorPickerComponentsTest`, `ColorUtilsTest`).
 - **Utilities & Widgets**: `AlarmSchedulerTest`, `IntentParserTest`, `IntentExtrasTest`, `WidgetLayoutHelperTest`, `BirthdayWidgetWorkerTest`.
 
 ### 📁 Instrumentierte Integrationstests (`app/src/androidTest`)
