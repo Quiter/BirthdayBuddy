@@ -1,8 +1,10 @@
 package com.heckmannch.birthdaybuddy
 
+import android.app.AlarmManager
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
+import android.os.Build
 import android.util.Log
 import com.heckmannch.birthdaybuddy.di.ApplicationScope
 import com.heckmannch.birthdaybuddy.domain.repository.WidgetUpdater
@@ -17,12 +19,19 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 
 /**
- * Empfängt BOOT_COMPLETED, MY_PACKAGE_REPLACED, TIMEZONE_CHANGED, TIME_SET und DATE_CHANGED,
- * um den WorkManager-Notification-Job nach einem Geräteneustart, App-Update oder Zeitanpassungen neu zu planen.
+ * Empfängt `BOOT_COMPLETED`, `MY_PACKAGE_REPLACED`, `TIMEZONE_CHANGED`, `TIME_SET`, `DATE_CHANGED`
+ * sowie ab Android 12 (API 31) [AlarmManager.ACTION_SCHEDULE_EXACT_ALARM_PERMISSION_STATE_CHANGED],
+ * um Benachrichtigungs- und Widget-Alarme nach einem Geräteneustart, App-Update, Zeitanpassungen
+ * oder nachträglicher Erteilung der `SCHEDULE_EXACT_ALARM`-Berechtigung sauber neu zu planen.
  *
- * Hintergrund: OneTimeWorkRequests werden vom Android-System beim Neustart gelöscht.
- * Zudem verbleibt bei Zeitzonen- oder Uhrzeitwechseln der geplante Job auf der alten absoluten Zeit.
- * Dieser Receiver stellt sicher, dass Benachrichtigungen stets zur korrekten lokalen Uhrzeit ausgelöst werden.
+ * Hintergrund:
+ * - OneTimeWorkRequests und geplante Alarme werden vom Android-System beim Neustart gelöscht.
+ * - Bei Zeitzonen- oder Uhrzeitwechseln verbleiben bestehende Jobs/Alarme auf der alten absoluten Zeit.
+ * - Wird `SCHEDULE_EXACT_ALARM` vom Nutzer nachträglich in den Systemeinstellungen erteilt,
+ *   löst das System [AlarmManager.ACTION_SCHEDULE_EXACT_ALARM_PERMISSION_STATE_CHANGED] aus.
+ *   Durch die sofortige Neuplanung via [SyncNotificationSchedulingUseCase] und
+ *   [ScheduleDailyWidgetUpdateUseCase] werden zuvor gesetzte ungenaue Fallback-Alarme
+ *   (`setAndAllowWhileIdle`) unmittelbar durch exakte Alarme (`setExactAndAllowWhileIdle`) ersetzt.
  *
  * Widget-Update-Strategie (Single-Path):
  * 1. Sofortiges Rendern: [WidgetUpdater.updateWidget] aktualisiert bestehende Glance-Homescreen-Widgets
@@ -57,12 +66,14 @@ class BootReceiver : BroadcastReceiver() {
         if (context == null || intent == null) return
 
         val action = intent.action ?: return
-        if (action != Intent.ACTION_BOOT_COMPLETED &&
-            action != Intent.ACTION_MY_PACKAGE_REPLACED &&
-            action != Intent.ACTION_TIMEZONE_CHANGED &&
-            action != Intent.ACTION_TIME_CHANGED &&
-            action != Intent.ACTION_DATE_CHANGED
-        ) return
+        val isSupportedAction = action == Intent.ACTION_BOOT_COMPLETED ||
+            action == Intent.ACTION_MY_PACKAGE_REPLACED ||
+            action == Intent.ACTION_TIMEZONE_CHANGED ||
+            action == Intent.ACTION_TIME_CHANGED ||
+            action == Intent.ACTION_DATE_CHANGED ||
+            (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S &&
+                action == AlarmManager.ACTION_SCHEDULE_EXACT_ALARM_PERMISSION_STATE_CHANGED)
+        if (!isSupportedAction) return
 
         val entryPoint = try {
             EntryPointAccessors.fromApplication(

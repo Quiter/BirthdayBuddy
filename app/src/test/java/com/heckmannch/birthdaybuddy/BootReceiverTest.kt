@@ -1,8 +1,10 @@
 package com.heckmannch.birthdaybuddy
 
+import android.app.AlarmManager
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
+import android.os.Build
 import com.heckmannch.birthdaybuddy.domain.repository.WidgetUpdater
 import com.heckmannch.birthdaybuddy.domain.usecase.ScheduleDailyWidgetUpdateUseCase
 import com.heckmannch.birthdaybuddy.domain.usecase.SyncNotificationSchedulingUseCase
@@ -21,9 +23,11 @@ import org.junit.After
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
-import org.junit.runners.JUnit4
+import org.robolectric.RobolectricTestRunner
+import org.robolectric.annotation.Config
 
-@RunWith(JUnit4::class)
+@RunWith(RobolectricTestRunner::class)
+@Config(sdk = [35])
 class BootReceiverTest {
 
     private val context = mockk<Context>(relaxed = true)
@@ -130,6 +134,32 @@ class BootReceiverTest {
         coVerify(exactly = 1) { widgetUpdater.updateWidget() }
         coVerify(exactly = 1) { scheduleDailyWidgetUpdateUseCase() }
         verify(exactly = 1) { pendingResult.finish() }
+    }
+
+    @Test
+    @Config(sdk = [Build.VERSION_CODES.S])
+    fun `onReceive with ACTION_SCHEDULE_EXACT_ALARM_PERMISSION_STATE_CHANGED on API 31+ syncs scheduling, updates widget, and finishes pending result`() {
+        val intent = createIntent(AlarmManager.ACTION_SCHEDULE_EXACT_ALARM_PERMISSION_STATE_CHANGED)
+
+        receiver.onReceive(context, intent)
+
+        coVerify(exactly = 1) { syncNotificationSchedulingUseCase() }
+        coVerify(exactly = 1) { widgetUpdater.updateWidget() }
+        coVerify(exactly = 1) { scheduleDailyWidgetUpdateUseCase() }
+        verify(exactly = 1) { pendingResult.finish() }
+    }
+
+    @Test
+    @Config(sdk = [Build.VERSION_CODES.R])
+    fun `onReceive with ACTION_SCHEDULE_EXACT_ALARM_PERMISSION_STATE_CHANGED below API 31 ignores broadcast`() {
+        val intent = createIntent(AlarmManager.ACTION_SCHEDULE_EXACT_ALARM_PERMISSION_STATE_CHANGED)
+
+        receiver.onReceive(context, intent)
+
+        coVerify(exactly = 0) { syncNotificationSchedulingUseCase() }
+        coVerify(exactly = 0) { widgetUpdater.updateWidget() }
+        coVerify(exactly = 0) { scheduleDailyWidgetUpdateUseCase() }
+        verify(exactly = 0) { receiver.goAsync() }
     }
 
     @Test
