@@ -220,6 +220,25 @@ class NotificationViewModelTest {
     }
 
     @Test
+    fun `replaceRule with already existing newDaysBefore aborts without deleting oldRule`() = runTest {
+        val oldRule = testRules[0] // daysBefore = 0
+        val conflictingDaysBefore = testRules[1].daysBefore // daysBefore = 1
+
+        viewModel.onIntent(
+            NotificationIntent.ReplaceRule(
+                oldRule = oldRule,
+                newDaysBefore = conflictingDaysBefore,
+                newHour = 12,
+                newMinute = 45
+            )
+        )
+
+        verify(notificationRepository, never()).deleteRule(any())
+        verify(notificationRepository, never()).insertRule(any())
+        verify(notificationRepository, never()).updateRule(any())
+    }
+
+    @Test
     fun `deleteNotificationRule should delegate to repository`() = runTest {
         val rule = testRules[0]
         viewModel.onIntent(NotificationIntent.DeleteRule(rule))

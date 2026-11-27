@@ -6,8 +6,10 @@ import androidx.compose.ui.test.assertIsNotEnabled
 import androidx.compose.ui.test.hasSetTextAction
 import androidx.compose.ui.test.junit4.v2.createComposeRule
 import androidx.compose.ui.test.onNodeWithText
+import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performTextReplacement
 import androidx.test.core.app.ApplicationProvider
+import com.google.common.truth.Truth.assertThat
 import com.heckmannch.birthdaybuddy.R
 import com.heckmannch.birthdaybuddy.domain.model.NotificationRule
 import com.heckmannch.birthdaybuddy.ui.theme.BirthdayBuddyTheme
@@ -105,6 +107,156 @@ class EditRuleDialogTest {
         val saveNode = composeRule.onNodeWithText(saveText)
         saveNode.assertIsEnabled()
         composeRule.onNodeWithText(errorText).assertDoesNotExist()
+    }
+
+    @Test
+    fun daysOver365_showsRangeError_andDisablesSaveButton() {
+        composeRule.setContent {
+            BirthdayBuddyTheme {
+                EditRuleDialog(
+                    existingDaysBefore = emptySet(),
+                    onDismiss = {},
+                    onConfirm = { _, _, _ -> },
+                )
+            }
+        }
+
+        val saveNode = composeRule.onNodeWithText(context.getString(R.string.dialog_save))
+        val rangeErrorText = context.getString(R.string.dialog_rule_range_error, 0, 365)
+
+        composeRule.onNode(hasSetTextAction()).performTextReplacement("366")
+
+        composeRule.onNodeWithText(rangeErrorText).assertExists()
+        saveNode.assertIsNotEnabled()
+    }
+
+    @Test
+    fun days365_enablesSaveButton_andConfirms365() {
+        var confirmedDays: Int? = null
+        composeRule.setContent {
+            BirthdayBuddyTheme {
+                EditRuleDialog(
+                    existingDaysBefore = emptySet(),
+                    onDismiss = {},
+                    onConfirm = { days, _, _ -> confirmedDays = days },
+                )
+            }
+        }
+
+        val saveNode = composeRule.onNodeWithText(context.getString(R.string.dialog_save))
+        val rangeErrorText = context.getString(R.string.dialog_rule_range_error, 0, 365)
+
+        composeRule.onNode(hasSetTextAction()).performTextReplacement("365")
+
+        composeRule.onNodeWithText(rangeErrorText).assertDoesNotExist()
+        saveNode.assertIsEnabled()
+        saveNode.performClick()
+        assertThat(confirmedDays).isEqualTo(365)
+    }
+
+    @Test
+    fun weeksLargeNumber_preventsIntOverflow_showsRangeError_andDisablesSaveButton() {
+        composeRule.setContent {
+            BirthdayBuddyTheme {
+                EditRuleDialog(
+                    existingDaysBefore = emptySet(),
+                    onDismiss = {},
+                    onConfirm = { _, _, _ -> },
+                )
+            }
+        }
+
+        val saveNode = composeRule.onNodeWithText(context.getString(R.string.dialog_save))
+        val rangeErrorText = context.getString(R.string.dialog_rule_range_error, 0, 365)
+        val weeksLabel = context.resources.getQuantityString(
+            R.plurals.dialog_rule_unit_weeks,
+            500000000,
+            500000000
+        )
+
+        composeRule.onNode(hasSetTextAction()).performTextReplacement("500000000")
+        composeRule.onNodeWithText(weeksLabel).performClick()
+
+        composeRule.onNodeWithText(rangeErrorText).assertExists()
+        saveNode.assertIsNotEnabled()
+    }
+
+    @Test
+    fun weeks53_showsRangeError_andDisablesSaveButton() {
+        composeRule.setContent {
+            BirthdayBuddyTheme {
+                EditRuleDialog(
+                    existingDaysBefore = emptySet(),
+                    onDismiss = {},
+                    onConfirm = { _, _, _ -> },
+                )
+            }
+        }
+
+        val saveNode = composeRule.onNodeWithText(context.getString(R.string.dialog_save))
+        val rangeErrorText = context.getString(R.string.dialog_rule_range_error, 0, 365)
+        val weeksLabel = context.resources.getQuantityString(
+            R.plurals.dialog_rule_unit_weeks,
+            53,
+            53
+        )
+
+        composeRule.onNode(hasSetTextAction()).performTextReplacement("53")
+        composeRule.onNodeWithText(weeksLabel).performClick()
+
+        composeRule.onNodeWithText(rangeErrorText).assertExists()
+        saveNode.assertIsNotEnabled()
+    }
+
+    @Test
+    fun weeks52_enablesSaveButton_andConfirms364Days() {
+        var confirmedDays: Int? = null
+        composeRule.setContent {
+            BirthdayBuddyTheme {
+                EditRuleDialog(
+                    existingDaysBefore = emptySet(),
+                    onDismiss = {},
+                    onConfirm = { days, _, _ -> confirmedDays = days },
+                )
+            }
+        }
+
+        val saveNode = composeRule.onNodeWithText(context.getString(R.string.dialog_save))
+        val rangeErrorText = context.getString(R.string.dialog_rule_range_error, 0, 365)
+        val weeksLabel = context.resources.getQuantityString(
+            R.plurals.dialog_rule_unit_weeks,
+            52,
+            52
+        )
+
+        composeRule.onNode(hasSetTextAction()).performTextReplacement("52")
+        composeRule.onNodeWithText(weeksLabel).performClick()
+
+        composeRule.onNodeWithText(rangeErrorText).assertDoesNotExist()
+        saveNode.assertIsEnabled()
+        saveNode.performClick()
+        assertThat(confirmedDays).isEqualTo(364)
+    }
+
+    @Test
+    fun blankInput_disablesSaveButton_withoutRangeError() {
+        composeRule.setContent {
+            BirthdayBuddyTheme {
+                EditRuleDialog(
+                    existingDaysBefore = emptySet(),
+                    onDismiss = {},
+                    onConfirm = { _, _, _ -> },
+                )
+            }
+        }
+
+        val saveNode = composeRule.onNodeWithText(context.getString(R.string.dialog_save))
+        val rangeErrorText = context.getString(R.string.dialog_rule_range_error, 0, 365)
+
+        composeRule.onNode(hasSetTextAction()).performTextReplacement("")
+
+        composeRule.onNodeWithText(rangeErrorText).assertDoesNotExist()
+        saveNode.assertIsNotEnabled()
     }
 }
 

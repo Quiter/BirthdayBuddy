@@ -43,6 +43,10 @@ import com.heckmannch.birthdaybuddy.ui.theme.SpacingMedium
 import com.heckmannch.birthdaybuddy.ui.theme.SpacingSmall
 import com.heckmannch.birthdaybuddy.ui.theme.WheelPickerItemHeight
 
+private const val MIN_DAYS_BEFORE = 0
+private const val MAX_DAYS_BEFORE = 365
+private const val DAYS_PER_WEEK = 7
+
 private enum class RuleUnit {
     DAYS, WEEKS
 }
@@ -113,12 +117,23 @@ fun EditRuleDialog(
 
     val showTimePickerState = rememberSaveable { mutableStateOf(false) }
 
-    val parsedNum = numberStringState.value.toIntOrNull()
-    val isInputValid =
-        numberStringState.value.isNotBlank() && parsedNum != null
-    val currentDaysBefore = if (parsedNum != null) {
-        if (selectedUnitState.value == RuleUnit.WEEKS) parsedNum * 7 else parsedNum
-    } else null
+    val parsedNum = numberStringState.value.toLongOrNull()
+    val rawDaysBefore: Long? = when {
+        parsedNum == null -> null
+        selectedUnitState.value == RuleUnit.WEEKS ->
+            if (parsedNum > MAX_DAYS_BEFORE.toLong() / DAYS_PER_WEEK) {
+                (MAX_DAYS_BEFORE + 1).toLong()
+            } else {
+                parsedNum * DAYS_PER_WEEK
+            }
+
+        else -> parsedNum
+    }
+    val currentDaysBefore = rawDaysBefore
+        ?.takeIf { it in MIN_DAYS_BEFORE.toLong()..MAX_DAYS_BEFORE.toLong() }
+        ?.toInt()
+    val isInputValid = numberStringState.value.isNotBlank() && currentDaysBefore != null
+    val isOutOfRange = numberStringState.value.isNotBlank() && currentDaysBefore == null
     val isDuplicate = currentDaysBefore != null && currentDaysBefore in existingDaysBefore
 
     AlertDialog(
@@ -142,15 +157,32 @@ fun EditRuleDialog(
                             numberStringState.value = newValue
                         }
                     },
-                    isError = isDuplicate,
-                    supportingText = if (isDuplicate) {
-                        {
-                            Text(
-                                text = stringResource(R.string.dialog_rule_duplicate_error),
-                                color = MaterialTheme.colorScheme.error
-                            )
+                    isError = isDuplicate || isOutOfRange,
+                    supportingText = when {
+                        isDuplicate -> {
+                            {
+                                Text(
+                                    text = stringResource(R.string.dialog_rule_duplicate_error),
+                                    color = MaterialTheme.colorScheme.error
+                                )
+                            }
                         }
-                    } else null,
+
+                        isOutOfRange -> {
+                            {
+                                Text(
+                                    text = stringResource(
+                                        R.string.dialog_rule_range_error,
+                                        MIN_DAYS_BEFORE,
+                                        MAX_DAYS_BEFORE
+                                    ),
+                                    color = MaterialTheme.colorScheme.error
+                                )
+                            }
+                        }
+
+                        else -> null
+                    },
                     keyboardOptions = KeyboardOptions(
                         keyboardType = KeyboardType.Number,
                         imeAction = ImeAction.Done
@@ -241,9 +273,9 @@ fun EditRuleDialog(
             TextButton(
                 enabled = isInputValid && !isDuplicate,
                 onClick = {
-                    val num = numberStringState.value.toIntOrNull() ?: 0
-                    val daysBefore = if (selectedUnitState.value == RuleUnit.WEEKS) num * 7 else num
-                    onConfirm(daysBefore, hourState.intValue, minuteState.intValue)
+                    currentDaysBefore?.let { daysBefore ->
+                        onConfirm(daysBefore, hourState.intValue, minuteState.intValue)
+                    }
                 }
             ) {
                 Text(stringResource(R.string.dialog_save))

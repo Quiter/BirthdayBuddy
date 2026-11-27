@@ -122,6 +122,12 @@ class NotificationViewModel @Inject constructor(
         notificationRepository.updateRule(rule)
     }
 
+    /**
+     * Replaces an existing notification rule with a new lead time and time of day.
+     *
+     * Checks whether [newDaysBefore] is already occupied before deleting [oldRule] so that
+     * duplicate target lead times abort cleanly without silently deleting the original rule.
+     */
     private fun replaceNotificationRule(
         oldRule: NotificationRule,
         newDaysBefore: Int,
@@ -132,6 +138,10 @@ class NotificationViewModel @Inject constructor(
             notificationRepository.updateRule(
                 oldRule.copy(hour = newHour, minute = newMinute)
             )
+            return@launch
+        }
+        val existingRules = notificationRepository.getAllRulesImmediate()
+        if (existingRules.any { it.daysBefore == newDaysBefore }) {
             return@launch
         }
         notificationRepository.deleteRule(oldRule)
