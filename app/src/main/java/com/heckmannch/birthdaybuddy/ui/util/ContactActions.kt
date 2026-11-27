@@ -15,6 +15,7 @@ import androidx.core.net.toUri
 import com.heckmannch.birthdaybuddy.domain.model.MessengerApp
 import com.heckmannch.birthdaybuddy.domain.util.DeviceRegionProvider
 import com.heckmannch.birthdaybuddy.domain.util.PhoneNumberNormalizer
+import com.heckmannch.birthdaybuddy.util.MessengerIntentBuilder
 import com.heckmannch.birthdaybuddy.util.findActivity
 import dagger.hilt.EntryPoint
 import dagger.hilt.InstallIn
@@ -74,13 +75,14 @@ class ContactActions @Inject constructor(
     }
 
     /**
-     * Öffnet die SMS-App.
+     * Opens the default SMS application addressed to [phoneNumber].
      */
     fun sendSms(phoneNumber: String) {
         try {
-            val normalized = PhoneNumberNormalizer.normalize(phoneNumber, deviceRegionProvider.getCountryIso())
-                .ifEmpty { phoneNumber.trim() }
-            val intent = Intent(Intent.ACTION_SENDTO, "smsto:$normalized".toUri())
+            val intent = MessengerIntentBuilder.buildSmsIntent(
+                phoneNumber = phoneNumber,
+                countryIso = deviceRegionProvider.getCountryIso(),
+            )
             startActivitySafely(intent)
         } catch (_: ActivityNotFoundException) {
             // Expected: no handler installed for this intent
@@ -91,62 +93,32 @@ class ContactActions @Inject constructor(
     }
 
     /**
-     * Öffnet einen Messenger mit der gewählten Nummer.
+     * Opens the requested [MessengerApp] addressed to [phoneNumber].
+     *
+     * Delegates URI/intent creation to [MessengerIntentBuilder]. For [MessengerApp.WHATSAPP], if an
+     * explicitly targeted WhatsApp package fails with [ActivityNotFoundException], retries once
+     * without a package restriction so the universal HTTPS deep link can be resolved by the system.
      */
     fun openMessengerApp(app: MessengerApp, phoneNumber: String) {
         try {
-            val region = deviceRegionProvider.getCountryIso()
-            val cleanNumberWithPlus = PhoneNumberNormalizer.normalize(phoneNumber, region)
-            val digitsOnly = PhoneNumberNormalizer.normalizeToDigitsOnly(phoneNumber, region)
+            val intent = MessengerIntentBuilder.buildMessengerIntent(
+                app = app,
+                phoneNumber = phoneNumber,
+                countryIso = deviceRegionProvider.getCountryIso(),
+                packageManager = context.packageManager,
+            )
 
-            val intent = when (app) {
-                MessengerApp.WHATSAPP -> {
-                    Intent(
-                        Intent.ACTION_VIEW,
-                        "https://api.whatsapp.com/send?phone=$digitsOnly".toUri()
-                    )
-                }
-
-                MessengerApp.SIGNAL -> {
-                    Intent(
-                        Intent.ACTION_VIEW,
-                        "https://signal.me/#p/$cleanNumberWithPlus".toUri()
-                    ).apply {
-                        setPackage(MessengerApp.SIGNAL.packageName)
+            intent?.let { targetIntent ->
+                try {
+                    startActivitySafely(targetIntent)
+                } catch (e: ActivityNotFoundException) {
+                    if ((app == MessengerApp.WHATSAPP) && (targetIntent.`package` != null)) {
+                        // Fallback to universal HTTPS link without explicit package restriction
+                        startActivitySafely(Intent(targetIntent).setPackage(null))
+                    } else {
+                        throw e
                     }
                 }
-
-                MessengerApp.TELEGRAM -> {
-                    Intent(
-                        Intent.ACTION_VIEW,
-                        "tg://resolve?phone=$cleanNumberWithPlus".toUri()
-                    )
-                }
-
-                MessengerApp.SKYPE -> {
-                    Intent(
-                        Intent.ACTION_VIEW,
-                        "skype:$cleanNumberWithPlus?chat".toUri()
-                    )
-                }
-
-                MessengerApp.VIBER -> {
-                    Intent(
-                        Intent.ACTION_VIEW,
-                        "viber://keypad?number=$cleanNumberWithPlus".toUri()
-                    )
-                }
-
-                MessengerApp.THREEMA,
-                MessengerApp.GOOGLE_MEET,
-                MessengerApp.MESSENGER,
-                MessengerApp.DISCORD -> {
-                    context.packageManager.getLaunchIntentForPackage(app.packageName)
-                }
-            }
-
-            intent?.let {
-                startActivitySafely(it)
             }
         } catch (_: ActivityNotFoundException) {
             // Expected: no handler installed for this intent

@@ -66,10 +66,10 @@ suspend fun MessengerApp.Companion.getInstalledMessengersAsync(
 }
 
 /**
- * Prüft abwärtskompatibel, ob ein Paket auf dem Gerät installiert ist.
- * Verwendet ab API 33 (Tiramisu) die typsichere [PackageManager.PackageInfoFlags]-API.
+ * Checks in a backwards-compatible manner whether a package is installed on the device.
+ * Uses the type-safe [PackageManager.PackageInfoFlags] API starting from API 33 (Tiramisu).
  */
-private fun isPackageInstalled(pm: PackageManager, packageName: String): Boolean {
+internal fun isPackageInstalled(pm: PackageManager, packageName: String): Boolean {
     return try {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             pm.getPackageInfo(packageName, PackageManager.PackageInfoFlags.of(0L))

@@ -100,7 +100,7 @@
 - `NotificationHelper.kt` & `NotificationTextFormatter.kt`: System-Notification-Manager Wrapper & Textgenerierung.
 
 ## 📁 Utilities (`util` & `ui.util`)
-- `util/`: `AlarmScheduler.kt`, `JsonUtils.kt` (SSOT JSON), `DateUtils.kt`, `StringUtils.kt`, `ContextExtensions.kt`, `IntentExtras.kt`, `IntentParser.kt`, `MessengerUtils.kt`, `WidgetUpdater.kt`, `NotificationScheduler.kt`.
+- `util/`: `AlarmScheduler.kt`, `JsonUtils.kt` (SSOT JSON), `DateUtils.kt`, `StringUtils.kt`, `ContextExtensions.kt`, `IntentExtras.kt`, `IntentParser.kt`, `MessengerUtils.kt`, `MessengerIntentBuilder.kt` (SSOT für Messenger- & SMS-Intents), `WidgetUpdater.kt`, `NotificationScheduler.kt`.
 - `ui.util/`: `ContactActions.kt` (System-Intents & Aktionen), `ColorUtils.kt` (HSV-, HEX-, Darken- & Kontrast-Helfer).
 
 ## 📁 Widget (`widget`)
@@ -120,8 +120,8 @@
 - **Data Layer**: `ContactDaoTest`, `PendingNotificationDaoTest`, `ConvertersTest`, `GiftIdeaConvertersTest`, DB-Mapper-Tests, `RepositoryTransactionHelperTest`, Repository-Tests (`ContactRepositoryImplTest`, `CoupleRepositoryImplTest`, `GiftIdeaRepositoryImplTest`, `NotificationRepositoryImplTest`, `CalendarSyncRepositoryImplTest`, `StorageRepositoryImplTest`, etc.).
 - **Domain Layer**: Tests für Use Cases (`GetContactsUseCaseTest`, `GetPendingNotificationsUseCaseTest`, etc.) und Utilities (`PhoneNumberNormalizerTest`, `NotificationKeyUtilsTest`, `ContactFilterLogicTest`).
 - **Platform & Notification**: `BirthdayAppFunctionServiceTest`, `NotificationAlarmReceiverTest`, `NotificationActionReceiverTest`, `NotificationTextFormatterTest`, `NotificationWorkerTest`, `SnoozeWorkerTest`.
-- **UI & ViewModels**: Feature-co-located ViewModel-Tests (`HomeViewModelTest`, `OnboardingViewModelTest`, `BackupViewModelTest`, `CalendarViewModelTest`, `LabelViewModelTest`, `ThemeViewModelTest`, `SyncViewModelTest`, `StorageSettingsViewModelTest`), Compose-Komponenten- & UI-Util-Tests (`GiftIdeaListTest`, `SearchBarTest`, `FastScrollbarBoundsTest`, `AppTopHeaderTest`, `GlassCardTest`, `SettingsComponentsTest`, `ColorPickerComponentsTest`, `ColorUtilsTest`).
-- **Utilities & Widgets**: `AlarmSchedulerTest`, `IntentParserTest`, `IntentExtrasTest`, `WidgetLayoutHelperTest`, `BirthdayWidgetWorkerTest`.
+- **UI & ViewModels**: Feature-co-located ViewModel-Tests (`HomeViewModelTest`, `OnboardingViewModelTest`, `BackupViewModelTest`, `CalendarViewModelTest`, `LabelViewModelTest`, `ThemeViewModelTest`, `SyncViewModelTest`, `StorageSettingsViewModelTest`), Compose-Komponenten- & UI-Util-Tests (`GiftIdeaListTest`, `SearchBarTest`, `FastScrollbarBoundsTest`, `AppTopHeaderTest`, `GlassCardTest`, `SettingsComponentsTest`, `ColorPickerComponentsTest`, `ColorUtilsTest`, `ContactActionsTest`).
+- **Utilities & Widgets**: `AlarmSchedulerTest`, `IntentParserTest`, `IntentExtrasTest`, `MessengerIntentBuilderTest`, `WidgetLayoutHelperTest`, `BirthdayWidgetWorkerTest`.
 
 ### 📁 Instrumentierte Integrationstests (`app/src/androidTest`)
 - DB-Migrationstests: `MigrationTest.kt` (V1–V13), `SettingsMigrationTest.kt` (V1–V12).

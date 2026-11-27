@@ -398,7 +398,7 @@ class BirthdayAppFunctionServiceTest {
         val intent = service.buildSendBirthdayMessageIntent(app = "whatsapp", phone = "+49 170 1234567")
 
         assertThat(intent.action).isEqualTo(android.content.Intent.ACTION_VIEW)
-        assertThat(intent.data.toString()).isEqualTo("https://wa.me/491701234567")
+        assertThat(intent.data.toString()).isEqualTo("https://api.whatsapp.com/send?phone=491701234567")
         assertThat(intent.`package`).isEqualTo("com.whatsapp")
     }
 
@@ -409,7 +409,7 @@ class BirthdayAppFunctionServiceTest {
         val intent = service.buildSendBirthdayMessageIntent(app = "whatsapp", phone = "+49 170 1234567")
 
         assertThat(intent.action).isEqualTo(android.content.Intent.ACTION_VIEW)
-        assertThat(intent.data.toString()).isEqualTo("https://wa.me/491701234567")
+        assertThat(intent.data.toString()).isEqualTo("https://api.whatsapp.com/send?phone=491701234567")
         assertThat(intent.`package`).isEqualTo("com.whatsapp.w4b")
     }
 
@@ -430,24 +430,26 @@ class BirthdayAppFunctionServiceTest {
         val intent = service.buildSendBirthdayMessageIntent(app = "whatsapp", phone = "+49 170 1234567")
 
         assertThat(intent.action).isEqualTo(android.content.Intent.ACTION_VIEW)
-        assertThat(intent.data.toString()).isEqualTo("https://wa.me/491701234567")
+        assertThat(intent.data.toString()).isEqualTo("https://api.whatsapp.com/send?phone=491701234567")
         assertThat(intent.`package`).isNull()
     }
 
     @Test
-    fun `buildSendBirthdayMessageIntent with signal generates valid uri`() {
+    fun `buildSendBirthdayMessageIntent with signal generates valid uri and targets Signal package`() {
         val intent = service.buildSendBirthdayMessageIntent(app = "signal", phone = "+49 170 1234567")
 
         assertThat(intent.action).isEqualTo(android.content.Intent.ACTION_VIEW)
-        assertThat(intent.data.toString()).isEqualTo("sgnl://send?phone=%2B491701234567")
+        assertThat(intent.data.toString()).isEqualTo("https://signal.me/#p/+491701234567")
+        assertThat(intent.`package`).isEqualTo("org.thoughtcrime.securesms")
     }
 
     @Test
-    fun `buildSendBirthdayMessageIntent with telegram generates valid uri`() {
+    fun `buildSendBirthdayMessageIntent with telegram generates valid uri with percent-encoded plus`() {
         val intent = service.buildSendBirthdayMessageIntent(app = "telegram", phone = "+49 170 1234567")
 
         assertThat(intent.action).isEqualTo(android.content.Intent.ACTION_VIEW)
-        assertThat(intent.data.toString()).isEqualTo("tg://msg?to=%2B491701234567")
+        assertThat(intent.data.toString()).isEqualTo("tg://resolve?phone=%2B491701234567")
+        assertThat(intent.data?.getQueryParameter("phone")).isEqualTo("+491701234567")
     }
 
     @Test
@@ -456,5 +458,16 @@ class BirthdayAppFunctionServiceTest {
 
         assertThat(intent.action).isEqualTo(android.content.Intent.ACTION_SENDTO)
         assertThat(intent.data.toString()).isEqualTo("smsto:+491701234567")
+    }
+
+    @Test
+    fun `buildSendBirthdayMessageIntent throws InvalidArgumentException for unsupported app`() {
+        val result = runCatching {
+            service.buildSendBirthdayMessageIntent(app = "carrier_pigeon", phone = "+49 170 1234567")
+        }
+
+        assertThat(result.isFailure).isTrue()
+        assertThat(result.exceptionOrNull())
+            .isInstanceOf(androidx.appfunctions.AppFunctionInvalidArgumentException::class.java)
     }
 }

@@ -17,16 +17,13 @@ package com.heckmannch.birthdaybuddy.platform.appfunctions
 import android.app.PendingIntent
 import android.content.Intent
 import android.content.pm.PackageManager
-import android.net.Uri
 import android.os.Build
-import android.util.Log
 import androidx.annotation.RequiresApi
 import androidx.annotation.VisibleForTesting
 import androidx.appfunctions.AppFunctionDeclaration
 import androidx.appfunctions.AppFunctionInvalidArgumentException
 import androidx.appfunctions.AppFunctionService
 import androidx.appfunctions.AppFunctionServiceEntryPoint
-import androidx.core.net.toUri
 import com.heckmannch.birthdaybuddy.MainActivity
 import com.heckmannch.birthdaybuddy.di.IoDispatcher
 import com.heckmannch.birthdaybuddy.domain.model.Contact
@@ -35,12 +32,13 @@ import com.heckmannch.birthdaybuddy.domain.repository.SettingsRepository
 import com.heckmannch.birthdaybuddy.domain.util.ContactFilterLogic
 import com.heckmannch.birthdaybuddy.domain.util.DeviceRegionProvider
 import com.heckmannch.birthdaybuddy.domain.util.NO_YEAR_MARKER
-import com.heckmannch.birthdaybuddy.domain.util.PhoneNumberNormalizer
 import com.heckmannch.birthdaybuddy.platform.appfunctions.model.ContactBirthday
 import com.heckmannch.birthdaybuddy.platform.appfunctions.model.UpcomingBirthday
 import com.heckmannch.birthdaybuddy.util.Clock
 import com.heckmannch.birthdaybuddy.util.IntentExtras
+import com.heckmannch.birthdaybuddy.util.MessengerIntentBuilder
 import com.heckmannch.birthdaybuddy.util.hasYear
+import com.heckmannch.birthdaybuddy.util.isPackageInstalled as isAppPackageInstalled
 import com.heckmannch.birthdaybuddy.util.safeDaysUntilNext
 import com.heckmannch.birthdaybuddy.util.safeNextAge
 import dagger.hilt.android.AndroidEntryPoint
@@ -50,6 +48,7 @@ import kotlinx.coroutines.withContext
 import java.time.DateTimeException
 import java.time.LocalDate
 import java.time.Month
+import java.util.Locale
 import javax.inject.Inject
 
 /**
@@ -243,42 +242,37 @@ abstract class BirthdayAppFunctionService : AppFunctionService() {
     }
 
     /**
-     * Erstellt den Basis-Intent für den Versand einer Geburtstagsnachricht an die angegebene
-     * Rufnummer über die ausgewählte Messenger-App.
+     * Builds the messaging [Intent] for [phone] using [MessengerIntentBuilder] so AppFunctions and
+     * in-app `ContactActions` produce identical, properly URI-encoded deep links.
      *
-     * Für WhatsApp wird dynamisch geprüft, ob das Standard-Paket (`com.whatsapp`) oder
-     * WhatsApp Business (`com.whatsapp.w4b`) installiert ist. Falls eines installiert ist, wird
-     * dieses explizit gesetzt. Andernfalls wird auf die universelle `https://wa.me/{phoneNumber}`
-     * URI ohne Paket-Einschränkung zurückgegriffen (Web/App-Chooser).
+     * For WhatsApp, dynamically resolves whether standard WhatsApp (`com.whatsapp`) or WhatsApp
+     * Business (`com.whatsapp.w4b`) is installed and scopes the intent accordingly; otherwise falls
+     * back to the universal HTTPS link without a package restriction.
      */
     @VisibleForTesting
     internal fun buildSendBirthdayMessageIntent(app: String, phone: String): Intent {
         val region = deviceRegionProvider.getCountryIso()
-        return when (app.lowercase()) {
-            "whatsapp" -> Intent(Intent.ACTION_VIEW).apply {
-                val digitsOnly = PhoneNumberNormalizer.normalizeToDigitsOnly(phone, defaultCountryIso = region)
-                data = "https://wa.me/$digitsOnly".toUri()
-                resolveWhatsAppPackage()?.let { packageName ->
-                    setPackage(packageName)
-                }
-            }
+        return when (app.lowercase(Locale.ROOT)) {
+            "whatsapp" -> MessengerIntentBuilder.buildWhatsAppIntent(
+                phoneNumber = phone,
+                countryIso = region,
+                targetPackage = resolveWhatsAppPackage(),
+            )
 
-            "signal" -> Intent(Intent.ACTION_VIEW).apply {
-                val normalized = PhoneNumberNormalizer.normalize(phone, defaultCountryIso = region)
-                data = "sgnl://send?phone=${Uri.encode(normalized)}".toUri()
-            }
+            "signal" -> MessengerIntentBuilder.buildSignalIntent(
+                phoneNumber = phone,
+                countryIso = region,
+            )
 
-            "telegram" -> Intent(Intent.ACTION_VIEW).apply {
-                val normalized = PhoneNumberNormalizer.normalize(phone, defaultCountryIso = region)
-                data = "tg://msg?to=${Uri.encode(normalized)}".toUri()
-            }
+            "telegram" -> MessengerIntentBuilder.buildTelegramIntent(
+                phoneNumber = phone,
+                countryIso = region,
+            )
 
-            "sms" -> {
-                val normalized = PhoneNumberNormalizer.normalize(phone, defaultCountryIso = region)
-                Intent(Intent.ACTION_SENDTO).apply {
-                    data = "smsto:$normalized".toUri()
-                }
-            }
+            "sms" -> MessengerIntentBuilder.buildSmsIntent(
+                phoneNumber = phone,
+                countryIso = region,
+            )
 
             else -> throw AppFunctionInvalidArgumentException(
                 errorMessage = "Unsupported app '$app'. Valid values: whatsapp, signal, telegram, sms.",
@@ -287,15 +281,13 @@ abstract class BirthdayAppFunctionService : AppFunctionService() {
     }
 
     /**
-     * Ermittelt das installierte WhatsApp-Paket (`com.whatsapp` oder `com.whatsapp.w4b`).
-     * Gibt null zurück, wenn keines der beiden Pakete über den [PackageManager] gefunden werden kann.
+     * Resolves the installed WhatsApp package (`com.whatsapp` or `com.whatsapp.w4b`).
+     * Returns `null` if neither package is found via [PackageManager].
      */
     @VisibleForTesting
     internal open fun resolveWhatsAppPackage(): String? {
         val pm = runCatching { packageManager }.getOrNull() ?: return null
-        return WHATSAPP_PACKAGES.firstOrNull { pkg ->
-            isPackageInstalled(pm, pkg)
-        }
+        return MessengerIntentBuilder.resolveWhatsAppPackage(pm, ::isPackageInstalled)
     }
 
     // -----------------------------------------------------------------------------------------
@@ -375,32 +367,18 @@ abstract class BirthdayAppFunctionService : AppFunctionService() {
     }
 
     /**
-     * Prüft, ob ein Paket auf dem Gerät installiert ist.
-     * Nutzt die typsichere [PackageManager.PackageInfoFlags]-API.
+     * Checks whether [packageName] is installed on the device.
+     * Delegates to the shared API-level-safe helper in `MessengerUtils`.
      */
     @VisibleForTesting
-    internal open fun isPackageInstalled(pm: PackageManager, packageName: String): Boolean {
-        return try {
-            pm.getPackageInfo(packageName, PackageManager.PackageInfoFlags.of(0L))
-            true
-        } catch (_: PackageManager.NameNotFoundException) {
-            false
-        } catch (e: Exception) {
-            Log.w(TAG, "Unerwarteter Fehler beim Prüfen der Paket-Installation: $packageName", e)
-            false
-        }
-    }
+    internal open fun isPackageInstalled(pm: PackageManager, packageName: String): Boolean =
+        isAppPackageInstalled(pm, packageName)
 
     companion object {
-        private const val TAG = "BirthdayAppFunctionService"
-
         /**
-         * Unterstützte WhatsApp-Paketnamen in Prioritätsreihenfolge:
-         * Standard WhatsApp (`com.whatsapp`), gefolgt von WhatsApp Business (`com.whatsapp.w4b`).
+         * Supported WhatsApp package names in priority order:
+         * standard WhatsApp (`com.whatsapp`), followed by WhatsApp Business (`com.whatsapp.w4b`).
          */
-        val WHATSAPP_PACKAGES = listOf(
-            "com.whatsapp",
-            "com.whatsapp.w4b",
-        )
+        val WHATSAPP_PACKAGES: List<String> = MessengerIntentBuilder.WHATSAPP_PACKAGES
     }
 }
