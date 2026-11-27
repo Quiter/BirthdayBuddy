@@ -119,6 +119,9 @@ fun NotificationSettingsScreen(
             viewModel.onIntent(NotificationIntent.AddRule(days, hour, minute))
         },
         onUpdateRule = { viewModel.onIntent(NotificationIntent.UpdateRule(it)) },
+        onReplaceRule = { oldRule, days, hour, minute ->
+            viewModel.onIntent(NotificationIntent.ReplaceRule(oldRule, days, hour, minute))
+        },
         onDeleteRule = { viewModel.onIntent(NotificationIntent.DeleteRule(it)) },
         onRequestPermission = {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
@@ -240,6 +243,7 @@ internal fun NotificationSettingsContent(
     onTogglePersistent: (Boolean) -> Unit,
     onAddRule: (Int, Int, Int) -> Unit,
     onUpdateRule: (NotificationRule) -> Unit,
+    onReplaceRule: (NotificationRule, Int, Int, Int) -> Unit,
     onDeleteRule: (NotificationRule) -> Unit,
     onRequestPermission: () -> Unit,
     onNavigateBack: () -> Unit,
@@ -355,8 +359,7 @@ internal fun NotificationSettingsContent(
             onDismiss = { state.closeEditDialog() },
             onConfirm = { days, hour, minute ->
                 if (days != rule.daysBefore) {
-                    onDeleteRule(rule)
-                    onAddRule(days, hour, minute)
+                    onReplaceRule(rule, days, hour, minute)
                 } else {
                     onUpdateRule(rule.copy(hour = hour, minute = minute))
                 }
@@ -383,6 +386,7 @@ private fun NotificationSettingsPreview() {
             onTogglePersistent = {},
             onAddRule = { _, _, _ -> },
             onUpdateRule = { _ -> },
+            onReplaceRule = { _, _, _, _ -> },
             onDeleteRule = { _ -> },
             onRequestPermission = {},
             onNavigateBack = {},

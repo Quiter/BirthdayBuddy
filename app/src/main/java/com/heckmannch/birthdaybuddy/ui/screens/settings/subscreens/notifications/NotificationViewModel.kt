@@ -56,6 +56,13 @@ class NotificationViewModel @Inject constructor(
             )
 
             is NotificationIntent.UpdateRule -> updateNotificationRule(intent.rule)
+            is NotificationIntent.ReplaceRule -> replaceNotificationRule(
+                intent.oldRule,
+                intent.newDaysBefore,
+                intent.newHour,
+                intent.newMinute
+            )
+
             is NotificationIntent.DeleteRule -> deleteNotificationRule(intent.rule)
             is NotificationIntent.RefreshPermissionStatus -> refreshPermissionStatus()
         }
@@ -64,7 +71,8 @@ class NotificationViewModel @Inject constructor(
     /**
      * Enables or disables global notifications.
      *
-     * If enabled and no rules exist, a default rule (9:00 AM on the exact day) is automatically created.
+     * If enabled and no rules exist, a default rule (9:00 AM on the exact day) is automatically created
+     * sequentially before updating settings and rescheduling alarms.
      * Design: Immediate rules lookup ensures a fallback rule is set only when enabling notifications for the first time.
      *
      * @param enabled True to enable notifications, false to disable.
@@ -73,7 +81,7 @@ class NotificationViewModel @Inject constructor(
         if (enabled) {
             val rules = notificationRepository.getAllRulesImmediate()
             if (rules.isEmpty()) {
-                addNotificationRule(daysBefore = 0, hour = 9, minute = 0)
+                insertRuleIfMissing(daysBefore = 0, hour = 9, minute = 0)
             }
         }
         settingsRepository.updateSettings { it.copy(notificationsEnabled = enabled) }
@@ -91,23 +99,47 @@ class NotificationViewModel @Inject constructor(
         settingsRepository.updateSettings { it.copy(persistentNotifications = persistent) }
     }
 
+    private suspend fun insertRuleIfMissing(daysBefore: Int, hour: Int, minute: Int) {
+        val existingRules = notificationRepository.getAllRulesImmediate()
+        if (existingRules.any { it.daysBefore == daysBefore }) {
+            return
+        }
+        notificationRepository.insertRule(
+            NotificationRule(
+                daysBefore = daysBefore,
+                hour = hour,
+                minute = minute
+            )
+        )
+    }
+
     private fun addNotificationRule(daysBefore: Int, hour: Int, minute: Int) =
         viewModelScope.launch {
-            val existingRules = notificationRepository.getAllRulesImmediate()
-            if (existingRules.any { it.daysBefore == daysBefore }) {
-                return@launch
-            }
-            notificationRepository.insertRule(
-                NotificationRule(
-                    daysBefore = daysBefore,
-                    hour = hour,
-                    minute = minute
-                )
-            )
+            insertRuleIfMissing(daysBefore, hour, minute)
         }
 
     private fun updateNotificationRule(rule: NotificationRule) = viewModelScope.launch {
         notificationRepository.updateRule(rule)
+    }
+
+    private fun replaceNotificationRule(
+        oldRule: NotificationRule,
+        newDaysBefore: Int,
+        newHour: Int,
+        newMinute: Int
+    ) = viewModelScope.launch {
+        if (oldRule.daysBefore == newDaysBefore) {
+            notificationRepository.updateRule(
+                oldRule.copy(hour = newHour, minute = newMinute)
+            )
+            return@launch
+        }
+        notificationRepository.deleteRule(oldRule)
+        insertRuleIfMissing(
+            daysBefore = newDaysBefore,
+            hour = newHour,
+            minute = newMinute
+        )
     }
 
     private fun deleteNotificationRule(rule: NotificationRule) = viewModelScope.launch {
@@ -124,6 +156,13 @@ sealed interface NotificationIntent {
     data class SetPersistent(val persistent: Boolean) : NotificationIntent
     data class AddRule(val daysBefore: Int, val hour: Int, val minute: Int) : NotificationIntent
     data class UpdateRule(val rule: NotificationRule) : NotificationIntent
+    data class ReplaceRule(
+        val oldRule: NotificationRule,
+        val newDaysBefore: Int,
+        val newHour: Int,
+        val newMinute: Int
+    ) : NotificationIntent
+
     data class DeleteRule(val rule: NotificationRule) : NotificationIntent
     data object RefreshPermissionStatus : NotificationIntent
 }

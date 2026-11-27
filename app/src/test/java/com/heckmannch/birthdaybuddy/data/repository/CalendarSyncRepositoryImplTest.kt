@@ -6,31 +6,36 @@ import android.provider.CalendarContract
 import android.util.Log
 import com.google.common.truth.Truth.assertThat
 import com.heckmannch.birthdaybuddy.MainDispatcherRule
-import com.heckmannch.birthdaybuddy.data.local.AppSettingsDao
-import com.heckmannch.birthdaybuddy.data.local.AppSettingsEntity
+import com.heckmannch.birthdaybuddy.domain.model.AppSettings
 import com.heckmannch.birthdaybuddy.domain.model.Contact
 import com.heckmannch.birthdaybuddy.domain.repository.CalendarSyncRepository
+import com.heckmannch.birthdaybuddy.domain.repository.SettingsRepository
 import com.heckmannch.birthdaybuddy.domain.util.CalendarStringProvider
 import com.heckmannch.birthdaybuddy.domain.util.NO_YEAR_MARKER
 import io.mockk.coEvery
 import io.mockk.coVerify
+import io.mockk.coVerifyOrder
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.mockkStatic
+import io.mockk.slot
 import io.mockk.unmockkAll
+import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.async
 import kotlinx.coroutines.test.runTest
 import org.junit.After
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import java.time.LocalDate
+import java.util.concurrent.atomic.AtomicInteger
 
 class CalendarSyncRepositoryImplTest {
 
     @get:Rule
     val mainDispatcherRule = MainDispatcherRule()
 
-    private val appSettingsDao: AppSettingsDao = mockk(relaxed = true)
+    private val settingsRepository: SettingsRepository = mockk(relaxed = true)
     private val systemCalendarDataSource: SystemCalendarDataSource = mockk(relaxed = true)
     private val calendarStringProvider: CalendarStringProvider = mockk(relaxed = true)
 
@@ -101,7 +106,7 @@ class CalendarSyncRepositoryImplTest {
         }
 
         repository = CalendarSyncRepositoryImpl(
-            appSettingsDao = appSettingsDao,
+            settingsRepository = settingsRepository,
             systemCalendarDataSource = systemCalendarDataSource,
             calendarStringProvider = calendarStringProvider,
             ioDispatcher = mainDispatcherRule.testDispatcher,
@@ -129,48 +134,53 @@ class CalendarSyncRepositoryImplTest {
     }
 
     @Test
-    fun updateCalendarColor_whenCalendarExists_updatesColorInDbAndDataSource() = runTest {
-        // Arrange
-        val type = CalendarSyncRepository.CalendarType.BIRTHDAY
-        val newColor = 0xFF123456.toInt()
-        val currentSettings = AppSettingsEntity(birthdayCalendarColor = 0)
-        coEvery { appSettingsDao.getSettingsImmediate() } returns currentSettings
-        coEvery { systemCalendarDataSource.findCalendarIdByName("BirthdayBuddy_Birthdays") } returns 123L
-        coEvery { systemCalendarDataSource.updateCalendarColor(123L, newColor) } returns true
+    fun updateCalendarColor_whenCalendarExists_updatesColorViaSettingsRepositoryAndDataSource() =
+        runTest {
+            // Arrange
+            val type = CalendarSyncRepository.CalendarType.BIRTHDAY
+            val newColor = 0xFF123456.toInt()
+            val transformSlot = slot<(AppSettings) -> AppSettings>()
+            coEvery { settingsRepository.updateSettings(capture(transformSlot)) } returns Unit
+            coEvery { systemCalendarDataSource.findCalendarIdByName("BirthdayBuddy_Birthdays") } returns 123L
+            coEvery { systemCalendarDataSource.updateCalendarColor(123L, newColor) } returns true
 
-        // Act
-        val result = repository.updateCalendarColor(type, newColor)
+            // Act
+            val result = repository.updateCalendarColor(type, newColor)
 
-        // Assert
-        assertThat(result).isTrue()
-        coVerify { appSettingsDao.upsertSettings(currentSettings.copy(birthdayCalendarColor = newColor)) }
-        coVerify { systemCalendarDataSource.updateCalendarColor(123L, newColor) }
-    }
-
-    @Test
-    fun updateCalendarColor_whenCalendarDoesNotExist_updatesColorInDbAndReturnsFalse() = runTest {
-        // Arrange
-        val type = CalendarSyncRepository.CalendarType.ANNIVERSARY
-        val newColor = 0xFF654321.toInt()
-        val currentSettings = AppSettingsEntity(anniversaryCalendarColor = 0)
-        coEvery { appSettingsDao.getSettingsImmediate() } returns currentSettings
-        coEvery { systemCalendarDataSource.findCalendarIdByName("BirthdayBuddy_Anniversaries") } returns null
-
-        // Act
-        val result = repository.updateCalendarColor(type, newColor)
-
-        // Assert
-        assertThat(result).isFalse()
-        coVerify { appSettingsDao.upsertSettings(currentSettings.copy(anniversaryCalendarColor = newColor)) }
-        coVerify(exactly = 0) { systemCalendarDataSource.updateCalendarColor(any(), any()) }
-    }
+            // Assert
+            assertThat(result).isTrue()
+            val updated = transformSlot.captured(AppSettings(birthdayCalendarColor = 0))
+            assertThat(updated.birthdayCalendarColor).isEqualTo(newColor)
+            coVerify { systemCalendarDataSource.updateCalendarColor(123L, newColor) }
+        }
 
     @Test
-    fun updateCalendarColor_whenSettingsNull_usesDefaultSettings() = runTest {
+    fun updateCalendarColor_whenCalendarDoesNotExist_updatesSettingsRepositoryAndReturnsFalse() =
+        runTest {
+            // Arrange
+            val type = CalendarSyncRepository.CalendarType.ANNIVERSARY
+            val newColor = 0xFF654321.toInt()
+            val transformSlot = slot<(AppSettings) -> AppSettings>()
+            coEvery { settingsRepository.updateSettings(capture(transformSlot)) } returns Unit
+            coEvery { systemCalendarDataSource.findCalendarIdByName("BirthdayBuddy_Anniversaries") } returns null
+
+            // Act
+            val result = repository.updateCalendarColor(type, newColor)
+
+            // Assert
+            assertThat(result).isFalse()
+            val updated = transformSlot.captured(AppSettings(anniversaryCalendarColor = 0))
+            assertThat(updated.anniversaryCalendarColor).isEqualTo(newColor)
+            coVerify(exactly = 0) { systemCalendarDataSource.updateCalendarColor(any(), any()) }
+        }
+
+    @Test
+    fun updateCalendarColor_nameDay_updatesNameDayColorViaSettingsRepository() = runTest {
         // Arrange
         val type = CalendarSyncRepository.CalendarType.NAMEDAY
         val newColor = 0xFF777777.toInt()
-        coEvery { appSettingsDao.getSettingsImmediate() } returns null
+        val transformSlot = slot<(AppSettings) -> AppSettings>()
+        coEvery { settingsRepository.updateSettings(capture(transformSlot)) } returns Unit
         coEvery { systemCalendarDataSource.findCalendarIdByName("BirthdayBuddy_NameDays") } returns 456L
         coEvery { systemCalendarDataSource.updateCalendarColor(456L, newColor) } returns true
 
@@ -179,15 +189,44 @@ class CalendarSyncRepositoryImplTest {
 
         // Assert
         assertThat(result).isTrue()
-        coVerify { appSettingsDao.upsertSettings(AppSettingsEntity().copy(nameDayCalendarColor = newColor)) }
+        val updated = transformSlot.captured(AppSettings(nameDayCalendarColor = 0))
+        assertThat(updated.nameDayCalendarColor).isEqualTo(newColor)
     }
 
     @Test
-    fun deleteCalendar_whenTargetCalendarsExist_deletesThemAndUpdatesSettingsAndReturnsTrue() =
+    fun updateCustomEventCalendarColor_atomicallyMergesColorViaSettingsRepository() = runTest {
+        // Arrange
+        val eventKey = "custom:graduation"
+        val newColor = 0xFF00AAFF.toInt()
+        val transformSlot = slot<(AppSettings) -> AppSettings>()
+        coEvery { settingsRepository.updateSettings(capture(transformSlot)) } returns Unit
+        coEvery {
+            systemCalendarDataSource.findCalendarIdByName("BirthdayBuddy_Event_custom:graduation")
+        } returns 789L
+        coEvery { systemCalendarDataSource.updateCalendarColor(789L, newColor) } returns true
+
+        // Act
+        val result = repository.updateCustomEventCalendarColor(eventKey, newColor)
+
+        // Assert
+        assertThat(result).isTrue()
+        val initialSettings = AppSettings(
+            customEventCalendarColors = mapOf("custom:existing" to 0xFF111111.toInt())
+        )
+        val updated = transformSlot.captured(initialSettings)
+        assertThat(updated.customEventCalendarColors).containsExactly(
+            "custom:existing", 0xFF111111.toInt(),
+            "custom:graduation", newColor
+        )
+        coVerify { systemCalendarDataSource.updateCalendarColor(789L, newColor) }
+    }
+
+    @Test
+    fun deleteCalendar_whenTargetCalendarsExist_deletesThemBeforeAtomicallyUpdatingSettings() =
         runTest {
             // Arrange
-            val currentSettings = AppSettingsEntity(calendarSyncEnabled = true, calendarId = 999L)
-            coEvery { appSettingsDao.getSettingsImmediate() } returns currentSettings
+            val transformSlot = slot<(AppSettings) -> AppSettings>()
+            coEvery { settingsRepository.updateSettings(capture(transformSlot)) } returns Unit
             val calendars = listOf(
                 SystemCalendarInfo(
                     id = 1L,
@@ -228,24 +267,30 @@ class CalendarSyncRepositoryImplTest {
 
             // Assert
             assertThat(result).isTrue()
-            coVerify { systemCalendarDataSource.deleteCalendarById(1L, "acc", "type") }
-            coVerify { systemCalendarDataSource.deleteCalendarById(2L, "BirthdayBuddy", "LOCAL") }
-            coVerify(exactly = 0) { systemCalendarDataSource.deleteCalendarById(3L, any(), any()) }
-            coVerify {
-                appSettingsDao.upsertSettings(
-                    currentSettings.copy(
-                        calendarSyncEnabled = false,
-                        calendarId = null
-                    )
-                )
+            coVerifyOrder {
+                systemCalendarDataSource.deleteCalendarById(1L, "acc", "type")
+                systemCalendarDataSource.deleteCalendarById(2L, "BirthdayBuddy", "LOCAL")
+                settingsRepository.updateSettings(any())
             }
+            coVerify(exactly = 0) { systemCalendarDataSource.deleteCalendarById(3L, any(), any()) }
+
+            val updated = transformSlot.captured(
+                AppSettings(
+                    calendarSyncEnabled = true,
+                    calendarId = 999L,
+                    notificationsEnabled = true
+                )
+            )
+            assertThat(updated.calendarSyncEnabled).isFalse()
+            assertThat(updated.calendarId).isNull()
+            assertThat(updated.notificationsEnabled).isTrue()
         }
 
     @Test
     fun deleteCalendar_whenNoTargetCalendarsExist_updatesSettingsAndReturnsFalse() = runTest {
         // Arrange
-        val currentSettings = AppSettingsEntity(calendarSyncEnabled = true, calendarId = 999L)
-        coEvery { appSettingsDao.getSettingsImmediate() } returns currentSettings
+        val transformSlot = slot<(AppSettings) -> AppSettings>()
+        coEvery { settingsRepository.updateSettings(capture(transformSlot)) } returns Unit
         val calendars = listOf(
             SystemCalendarInfo(
                 id = 3L,
@@ -264,16 +309,12 @@ class CalendarSyncRepositoryImplTest {
         // Assert
         assertThat(result).isFalse()
         coVerify(exactly = 0) { systemCalendarDataSource.deleteCalendarById(any(), any(), any()) }
-        coVerify {
-            appSettingsDao.upsertSettings(
-                currentSettings.copy(
-                    calendarSyncEnabled = false,
-                    calendarId = null
-                )
-            )
-        }
+        val updated = transformSlot.captured(
+            AppSettings(calendarSyncEnabled = true, calendarId = 999L)
+        )
+        assertThat(updated.calendarSyncEnabled).isFalse()
+        assertThat(updated.calendarId).isNull()
     }
-
 
     @Test
     fun syncBirthdays_whenNoPermissions_returnsFalse() = runTest {
@@ -308,7 +349,7 @@ class CalendarSyncRepositoryImplTest {
             SystemCalendarInfo(15L, "OtherCalendar", "other", "other", "disp", 1)
         )
         coEvery { systemCalendarDataSource.queryAllCalendars() } returns calendars
-        coEvery { appSettingsDao.getSettingsImmediate() } returns AppSettingsEntity(
+        coEvery { settingsRepository.getSettingsImmediate() } returns AppSettings(
             otherEventsEnabled = false
         )
         coEvery { systemCalendarDataSource.getOrCreateCalendar(any(), any(), any()) } returns 11L
@@ -334,7 +375,7 @@ class CalendarSyncRepositoryImplTest {
         // Arrange
         every { systemCalendarDataSource.hasCalendarPermissions() } returns true
         coEvery { systemCalendarDataSource.queryAllCalendars() } returns emptyList()
-        coEvery { appSettingsDao.getSettingsImmediate() } returns AppSettingsEntity()
+        coEvery { settingsRepository.getSettingsImmediate() } returns AppSettings()
         coEvery {
             systemCalendarDataSource.getOrCreateCalendar(
                 "BirthdayBuddy_Birthdays",
@@ -356,7 +397,7 @@ class CalendarSyncRepositoryImplTest {
             // Arrange
             every { systemCalendarDataSource.hasCalendarPermissions() } returns true
             coEvery { systemCalendarDataSource.queryAllCalendars() } returns emptyList()
-            coEvery { appSettingsDao.getSettingsImmediate() } returns AppSettingsEntity(
+            coEvery { settingsRepository.getSettingsImmediate() } returns AppSettings(
                 otherEventsEnabled = false
             )
             coEvery {
@@ -409,7 +450,7 @@ class CalendarSyncRepositoryImplTest {
             // Arrange
             every { systemCalendarDataSource.hasCalendarPermissions() } returns true
             coEvery { systemCalendarDataSource.queryAllCalendars() } returns emptyList()
-            coEvery { appSettingsDao.getSettingsImmediate() } returns AppSettingsEntity(
+            coEvery { settingsRepository.getSettingsImmediate() } returns AppSettings(
                 otherEventsEnabled = true
             )
             coEvery {
@@ -495,7 +536,7 @@ class CalendarSyncRepositoryImplTest {
         // Arrange
         every { systemCalendarDataSource.hasCalendarPermissions() } returns true
         coEvery { systemCalendarDataSource.queryAllCalendars() } returns emptyList()
-        coEvery { appSettingsDao.getSettingsImmediate() } returns AppSettingsEntity(
+        coEvery { settingsRepository.getSettingsImmediate() } returns AppSettings(
             otherEventsEnabled = false
         )
         coEvery {
@@ -532,11 +573,88 @@ class CalendarSyncRepositoryImplTest {
     }
 
     @Test
+    fun syncBirthdays_whenFinalApplyBatchReturnsFalse_returnsFalse() = runTest {
+        // Arrange
+        every { systemCalendarDataSource.hasCalendarPermissions() } returns true
+        coEvery { systemCalendarDataSource.queryAllCalendars() } returns emptyList()
+        coEvery { settingsRepository.getSettingsImmediate() } returns AppSettings(
+            otherEventsEnabled = false
+        )
+        coEvery {
+            systemCalendarDataSource.getOrCreateCalendar(
+                "BirthdayBuddy_Birthdays",
+                any(),
+                any()
+            )
+        } returns 11L
+        coEvery { systemCalendarDataSource.clearCalendarEvents(11L) } returns true
+        coEvery { systemCalendarDataSource.applyBatch(any()) } returns false
+
+        val contacts = listOf(
+            Contact(
+                contactId = "c1",
+                lookupKey = "key1",
+                fullName = "Alice",
+                birthday = LocalDate.of(1990, 5, 10)
+            )
+        )
+
+        every { calendarStringProvider.calendarEventNoYear() } returns "MockNoYear"
+        every { calendarStringProvider.calendarEventBirthYear(any()) } returns "MockWithArgs"
+        every { calendarStringProvider.calendarEventTitle(any()) } returns "MockWithArgs"
+
+        // Act
+        val result = repository.syncBirthdays(contacts)
+
+        // Assert
+        assertThat(result).isFalse()
+    }
+
+    @Test
+    fun syncBirthdays_whenIntermediateApplyBatchReturnsFalse_returnsFalse() = runTest {
+        // Arrange
+        every { systemCalendarDataSource.hasCalendarPermissions() } returns true
+        coEvery { systemCalendarDataSource.queryAllCalendars() } returns emptyList()
+        coEvery { settingsRepository.getSettingsImmediate() } returns AppSettings(
+            otherEventsEnabled = false
+        )
+        coEvery {
+            systemCalendarDataSource.getOrCreateCalendar(
+                "BirthdayBuddy_Birthdays",
+                any(),
+                any()
+            )
+        } returns 11L
+        coEvery { systemCalendarDataSource.clearCalendarEvents(11L) } returns true
+        coEvery { systemCalendarDataSource.applyBatch(any()) } returnsMany listOf(false, true)
+
+        val contacts = List(450) { index ->
+            Contact(
+                contactId = "c$index",
+                lookupKey = "key$index",
+                fullName = "Contact $index",
+                birthday = LocalDate.of(1990, 1, 1)
+            )
+        }
+
+        every { calendarStringProvider.calendarEventNoYear() } returns "MockNoYear"
+        every { calendarStringProvider.calendarEventBirthYear(any()) } returns "MockWithArgs"
+        every { calendarStringProvider.calendarEventTitle(any()) } returns "MockWithArgs"
+
+        // Act
+        val result = repository.syncBirthdays(contacts)
+
+        // Assert
+        assertThat(result).isFalse()
+        coVerify(exactly = 2) { systemCalendarDataSource.applyBatch(any()) }
+    }
+
+    @Test
     fun syncBirthdays_whenExceptionThrown_returnsFalse() = runTest {
         // Arrange
         every { systemCalendarDataSource.hasCalendarPermissions() } returns true
         coEvery { systemCalendarDataSource.queryAllCalendars() } returns emptyList()
-        coEvery { appSettingsDao.getSettingsImmediate() } returns AppSettingsEntity(
+        coEvery { settingsRepository.getSettingsImmediate() } returns AppSettings(
             otherEventsEnabled = false
         )
         coEvery {
@@ -567,5 +685,157 @@ class CalendarSyncRepositoryImplTest {
 
         // Assert
         assertThat(result).isFalse()
+    }
+
+    @Test
+    fun syncBirthdays_concurrentCalls_areSerializedWithoutInterleavingClearAndBatch() = runTest {
+        // Arrange
+        every { systemCalendarDataSource.hasCalendarPermissions() } returns true
+        coEvery { systemCalendarDataSource.queryAllCalendars() } returns emptyList()
+        coEvery { settingsRepository.getSettingsImmediate() } returns AppSettings(
+            otherEventsEnabled = false
+        )
+        coEvery {
+            systemCalendarDataSource.getOrCreateCalendar(
+                "BirthdayBuddy_Birthdays",
+                any(),
+                any()
+            )
+        } returns 11L
+
+        val events = mutableListOf<String>()
+        val clearCounter = AtomicInteger(0)
+        val batchCounter = AtomicInteger(0)
+        val firstClearEntered = CompletableDeferred<Unit>()
+        val allowFirstClearToFinish = CompletableDeferred<Unit>()
+
+        coEvery { systemCalendarDataSource.clearCalendarEvents(11L) } coAnswers {
+            val n = clearCounter.incrementAndGet()
+            events.add("clear_start_$n")
+            if (n == 1) {
+                firstClearEntered.complete(Unit)
+                allowFirstClearToFinish.await()
+            }
+            events.add("clear_end_$n")
+            true
+        }
+        coEvery { systemCalendarDataSource.applyBatch(any()) } coAnswers {
+            val n = batchCounter.incrementAndGet()
+            events.add("batch_$n")
+            true
+        }
+
+        val contacts = listOf(
+            Contact(
+                contactId = "c1",
+                lookupKey = "key1",
+                fullName = "Alice",
+                birthday = LocalDate.of(1990, 5, 10)
+            )
+        )
+
+        every { calendarStringProvider.calendarEventBirthYear(any()) } returns "1990"
+        every { calendarStringProvider.calendarEventTitle(any()) } returns "Alice"
+
+        // Act
+        val firstSync = async { repository.syncBirthdays(contacts) }
+        firstClearEntered.await()
+
+        val secondSync = async { repository.syncBirthdays(contacts) }
+
+        // While first sync holds the mutex, second sync must not have entered clearCalendarEvents
+        assertThat(events).containsExactly("clear_start_1")
+
+        allowFirstClearToFinish.complete(Unit)
+
+        assertThat(firstSync.await()).isTrue()
+        assertThat(secondSync.await()).isTrue()
+
+        // Assert strict sequential execution without interleaving
+        assertThat(events).containsExactly(
+            "clear_start_1",
+            "clear_end_1",
+            "batch_1",
+            "clear_start_2",
+            "clear_end_2",
+            "batch_2"
+        ).inOrder()
+    }
+
+    @Test
+    fun syncBirthdays_andDeleteCalendar_areSerializedByMutex() = runTest {
+        // Arrange
+        every { systemCalendarDataSource.hasCalendarPermissions() } returns true
+        coEvery { settingsRepository.getSettingsImmediate() } returns AppSettings(
+            otherEventsEnabled = false
+        )
+        coEvery {
+            systemCalendarDataSource.getOrCreateCalendar(
+                "BirthdayBuddy_Birthdays",
+                any(),
+                any()
+            )
+        } returns 11L
+
+        val events = mutableListOf<String>()
+        val firstClearEntered = CompletableDeferred<Unit>()
+        val allowFirstClearToFinish = CompletableDeferred<Unit>()
+
+        coEvery { systemCalendarDataSource.queryAllCalendars() } returns listOf(
+            SystemCalendarInfo(11L, "BirthdayBuddy_Birthdays", "BirthdayBuddy", "LOCAL", "Birthdays", 1)
+        )
+        coEvery { systemCalendarDataSource.clearCalendarEvents(11L) } coAnswers {
+            events.add("sync_clear_start")
+            firstClearEntered.complete(Unit)
+            allowFirstClearToFinish.await()
+            events.add("sync_clear_end")
+            true
+        }
+        coEvery { systemCalendarDataSource.applyBatch(any()) } coAnswers {
+            events.add("sync_batch")
+            true
+        }
+        coEvery { systemCalendarDataSource.deleteCalendarById(11L, "BirthdayBuddy", "LOCAL") } coAnswers {
+            events.add("delete_calendar")
+            true
+        }
+        coEvery { settingsRepository.updateSettings(any()) } coAnswers {
+            events.add("delete_update_settings")
+        }
+
+        val contacts = listOf(
+            Contact(
+                contactId = "c1",
+                lookupKey = "key1",
+                fullName = "Alice",
+                birthday = LocalDate.of(1990, 5, 10)
+            )
+        )
+
+        every { calendarStringProvider.calendarEventBirthYear(any()) } returns "1990"
+        every { calendarStringProvider.calendarEventTitle(any()) } returns "Alice"
+
+        // Act
+        val syncDeferred = async { repository.syncBirthdays(contacts) }
+        firstClearEntered.await()
+
+        val deleteDeferred = async { repository.deleteCalendar() }
+
+        // Delete must wait until sync finishes
+        assertThat(events).containsExactly("sync_clear_start")
+
+        allowFirstClearToFinish.complete(Unit)
+
+        assertThat(syncDeferred.await()).isTrue()
+        assertThat(deleteDeferred.await()).isTrue()
+
+        // Assert delete ran strictly after sync finished
+        assertThat(events).containsExactly(
+            "sync_clear_start",
+            "sync_clear_end",
+            "sync_batch",
+            "delete_calendar",
+            "delete_update_settings"
+        ).inOrder()
     }
 }

@@ -18,6 +18,8 @@ import com.heckmannch.birthdaybuddy.domain.repository.GiftIdeaRepository
 import com.heckmannch.birthdaybuddy.domain.repository.WidgetUpdater
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
@@ -41,6 +43,12 @@ class GiftIdeaRepositoryImpl @Inject constructor(
     private val giftIdeaConverters: GiftIdeaConverters = GiftIdeaConverters(),
     @IoDispatcher private val ioDispatcher: CoroutineDispatcher,
 ) : GiftIdeaRepository {
+
+    /**
+     * Mutex serializing read-modify-write operations on gift ideas to prevent lost updates
+     * when multiple mutations occur concurrently.
+     */
+    private val giftIdeaMutex = Mutex()
 
     /**
      * Executes a 2-phase transactional update:
@@ -124,19 +132,23 @@ class GiftIdeaRepositoryImpl @Inject constructor(
 
     override suspend fun addGiftIdea(lookupKey: String, newIdea: GiftIdea) =
         withContext(ioDispatcher) {
-            val contact = contactDao.getContactByLookupKey(lookupKey) ?: return@withContext
-            val ideas = giftIdeaConverters.toGiftIdeaList(contact.giftIdeasJson)
-            val updatedIdeas = GiftIdea.withNewIdea(ideas, newIdea)
-            updateGiftIdeas(lookupKey, updatedIdeas)
+            giftIdeaMutex.withLock {
+                val contact = contactDao.getContactByLookupKey(lookupKey) ?: return@withLock
+                val ideas = giftIdeaConverters.toGiftIdeaList(contact.giftIdeasJson)
+                val updatedIdeas = GiftIdea.withNewIdea(ideas, newIdea)
+                updateGiftIdeas(lookupKey, updatedIdeas)
+            }
         }
 
     override suspend fun removeGiftIdea(lookupKey: String, ideaId: String) =
         withContext(ioDispatcher) {
-            val (targetKey, targetContact) = resolveContactForGiftIdea(lookupKey, ideaId)
-                ?: return@withContext
-            val ideas = giftIdeaConverters.toGiftIdeaList(targetContact.giftIdeasJson)
-            val updatedIdeas = ideas.filter { it.id != ideaId }
-            updateGiftIdeas(targetKey, updatedIdeas)
+            giftIdeaMutex.withLock {
+                val (targetKey, targetContact) = resolveContactForGiftIdea(lookupKey, ideaId)
+                    ?: return@withLock
+                val ideas = giftIdeaConverters.toGiftIdeaList(targetContact.giftIdeasJson)
+                val updatedIdeas = ideas.filter { it.id != ideaId }
+                updateGiftIdeas(targetKey, updatedIdeas)
+            }
         }
 
     override suspend fun deleteGiftIdea(lookupKey: String, ideaId: String) =
@@ -144,22 +156,26 @@ class GiftIdeaRepositoryImpl @Inject constructor(
 
     override suspend fun toggleGiftIdea(lookupKey: String, idea: GiftIdea, isChecked: Boolean) =
         withContext(ioDispatcher) {
-            val (targetKey, targetContact) = resolveContactForGiftIdea(lookupKey, idea.id)
-                ?: return@withContext
-            val ideas = giftIdeaConverters.toGiftIdeaList(targetContact.giftIdeasJson)
-            val updatedIdeas = GiftIdea.withToggledIdea(ideas, idea, isChecked)
-            updateGiftIdeas(targetKey, updatedIdeas)
+            giftIdeaMutex.withLock {
+                val (targetKey, targetContact) = resolveContactForGiftIdea(lookupKey, idea.id)
+                    ?: return@withLock
+                val ideas = giftIdeaConverters.toGiftIdeaList(targetContact.giftIdeasJson)
+                val updatedIdeas = GiftIdea.withToggledIdea(ideas, idea, isChecked)
+                updateGiftIdeas(targetKey, updatedIdeas)
+            }
         }
 
     override suspend fun updateGiftIdeaText(lookupKey: String, ideaId: String, newText: String) =
         withContext(ioDispatcher) {
-            val (targetKey, targetContact) = resolveContactForGiftIdea(lookupKey, ideaId)
-                ?: return@withContext
-            val ideas = giftIdeaConverters.toGiftIdeaList(targetContact.giftIdeasJson)
-            val updatedIdeas = ideas.map {
-                if (it.id == ideaId) it.copy(text = newText) else it
+            giftIdeaMutex.withLock {
+                val (targetKey, targetContact) = resolveContactForGiftIdea(lookupKey, ideaId)
+                    ?: return@withLock
+                val ideas = giftIdeaConverters.toGiftIdeaList(targetContact.giftIdeasJson)
+                val updatedIdeas = ideas.map {
+                    if (it.id == ideaId) it.copy(text = newText) else it
+                }
+                updateGiftIdeas(targetKey, updatedIdeas)
             }
-            updateGiftIdeas(targetKey, updatedIdeas)
         }
 
     override suspend fun exportGiftIdeas(uriString: String): Unit = withContext(ioDispatcher) {

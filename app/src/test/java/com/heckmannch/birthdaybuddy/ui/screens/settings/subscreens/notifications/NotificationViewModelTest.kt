@@ -7,6 +7,7 @@ import com.heckmannch.birthdaybuddy.domain.model.NotificationRule
 import com.heckmannch.birthdaybuddy.domain.permission.PermissionChecker
 import com.heckmannch.birthdaybuddy.domain.repository.NotificationRepository
 import com.heckmannch.birthdaybuddy.domain.repository.SettingsRepository
+import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flowOf
@@ -18,6 +19,8 @@ import org.junit.Rule
 import org.junit.Test
 import org.mockito.kotlin.any
 import org.mockito.kotlin.argumentCaptor
+import org.mockito.kotlin.doSuspendableAnswer
+import org.mockito.kotlin.inOrder
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.never
 import org.mockito.kotlin.verify
@@ -100,6 +103,35 @@ class NotificationViewModelTest {
     }
 
     @Test
+    fun `setNotificationsEnabled true with no rules inserts default rule sequentially before updating settings and syncing`() =
+        runTest {
+            val insertStarted = CompletableDeferred<Unit>()
+            val allowInsertToFinish = CompletableDeferred<Unit>()
+            whenever(notificationRepository.getAllRulesImmediate()).thenReturn(emptyList())
+            whenever(notificationRepository.insertRule(any())).doSuspendableAnswer {
+                insertStarted.complete(Unit)
+                allowInsertToFinish.await()
+            }
+
+            viewModel.onIntent(NotificationIntent.SetEnabled(true))
+            insertStarted.await()
+
+            // Before insertRule completes, neither updateSettings nor syncScheduling may run
+            verify(settingsRepository, never()).updateSettings(any())
+            verify(notificationRepository, never()).syncScheduling()
+
+            allowInsertToFinish.complete(Unit)
+            runCurrent()
+
+            val ordered = inOrder(notificationRepository, settingsRepository)
+            ordered.verify(notificationRepository).insertRule(
+                NotificationRule(daysBefore = 0, hour = 9, minute = 0)
+            )
+            ordered.verify(settingsRepository).updateSettings(any())
+            ordered.verify(notificationRepository).syncScheduling()
+        }
+
+    @Test
     fun `setPersistentNotifications should delegate to repository`() = runTest {
         viewModel.onIntent(NotificationIntent.SetPersistent(true))
 
@@ -129,6 +161,62 @@ class NotificationViewModelTest {
         val rule = testRules[0]
         viewModel.onIntent(NotificationIntent.UpdateRule(rule))
         verify(notificationRepository).updateRule(rule)
+    }
+
+    @Test
+    fun `replaceRule with changed daysBefore deletes old rule sequentially before inserting new rule`() =
+        runTest {
+            val oldRule = testRules[0]
+            val deleteStarted = CompletableDeferred<Unit>()
+            val allowDeleteToFinish = CompletableDeferred<Unit>()
+
+            whenever(notificationRepository.deleteRule(oldRule)).doSuspendableAnswer {
+                deleteStarted.complete(Unit)
+                allowDeleteToFinish.await()
+            }
+            whenever(notificationRepository.getAllRulesImmediate()).thenReturn(listOf(testRules[1]))
+
+            viewModel.onIntent(
+                NotificationIntent.ReplaceRule(
+                    oldRule = oldRule,
+                    newDaysBefore = 3,
+                    newHour = 10,
+                    newMinute = 15
+                )
+            )
+            deleteStarted.await()
+
+            // Insert must not run before delete completes
+            verify(notificationRepository, never()).insertRule(any())
+
+            allowDeleteToFinish.complete(Unit)
+            runCurrent()
+
+            val ordered = inOrder(notificationRepository)
+            ordered.verify(notificationRepository).deleteRule(oldRule)
+            ordered.verify(notificationRepository).insertRule(
+                NotificationRule(daysBefore = 3, hour = 10, minute = 15)
+            )
+        }
+
+    @Test
+    fun `replaceRule with unchanged daysBefore updates rule instead of deleting`() = runTest {
+        val oldRule = testRules[0]
+
+        viewModel.onIntent(
+            NotificationIntent.ReplaceRule(
+                oldRule = oldRule,
+                newDaysBefore = oldRule.daysBefore,
+                newHour = 12,
+                newMinute = 45
+            )
+        )
+
+        verify(notificationRepository).updateRule(
+            NotificationRule(daysBefore = oldRule.daysBefore, hour = 12, minute = 45)
+        )
+        verify(notificationRepository, never()).deleteRule(any())
+        verify(notificationRepository, never()).insertRule(any())
     }
 
     @Test

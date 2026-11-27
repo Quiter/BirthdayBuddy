@@ -18,19 +18,24 @@ import com.heckmannch.birthdaybuddy.domain.repository.WidgetUpdater
 import io.mockk.every
 import io.mockk.mockkStatic
 import io.mockk.unmockkStatic
+import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.runTest
 import org.junit.After
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.mockito.Mockito.mockStatic
+import org.mockito.kotlin.any
 import org.mockito.kotlin.check
+import org.mockito.kotlin.doSuspendableAnswer
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
+import java.util.concurrent.atomic.AtomicInteger
 
 /**
  * JVM Unit Tests for [GiftIdeaRepositoryImpl].
@@ -466,5 +471,114 @@ class GiftIdeaRepositoryImplTest {
             verify(giftIdeaBackupManager).importGiftIdeas(json)
             verify(contactRepository).syncContacts()
         }
+    }
+
+    @Test
+    fun concurrentMutations_areSerializedByMutex_withoutLostUpdates() = runTest(createTransactionElement()) {
+        // Arrange: in-memory backing state for ContactDao and ContactUserDataDao
+        var storedContact = ContactEntity(
+            contactId = "c1",
+            lookupKey = "key1",
+            fullName = "John Doe",
+            giftIdeasJson = "[]"
+        )
+        var storedUserData: ContactUserData? = null
+        val writeCount = AtomicInteger(0)
+        val firstWriteEntered = CompletableDeferred<Unit>()
+        val allowFirstWriteToFinish = CompletableDeferred<Unit>()
+
+        whenever(contactDao.getContactByLookupKey("key1")).doSuspendableAnswer { storedContact }
+        whenever(contactUserDataDao.getUserDataForContact("key1")).doSuspendableAnswer { storedUserData }
+        whenever(contactUserDataDao.upsertUserData(any())).doSuspendableAnswer { invocation ->
+            val data = invocation.getArgument<ContactUserData>(0)
+            if (writeCount.incrementAndGet() == 1) {
+                firstWriteEntered.complete(Unit)
+                allowFirstWriteToFinish.await()
+            }
+            storedUserData = data
+        }
+        whenever(contactDao.upsertContact(any())).doSuspendableAnswer { invocation ->
+            storedContact = invocation.getArgument(0)
+        }
+
+        val idea1 = GiftIdea(id = "idea1", text = "Book", isChecked = false)
+        val idea2 = GiftIdea(id = "idea2", text = "Flowers", isChecked = false)
+
+        // Act: start first mutation and suspend mid-write, then fire concurrent mutations
+        val job1 = launch { repository.addGiftIdea("key1", idea1) }
+        firstWriteEntered.await()
+
+        val job2 = launch { repository.addGiftIdea("key1", idea2) }
+        val job3 = launch { repository.toggleGiftIdea("key1", idea1, isChecked = true) }
+        val job4 = launch { repository.updateGiftIdeaText("key1", "idea2", "Red Flowers") }
+
+        allowFirstWriteToFinish.complete(Unit)
+
+        job1.join()
+        job2.join()
+        job3.join()
+        job4.join()
+
+        // Assert: all mutations were applied sequentially without lost updates
+        val finalCacheIdeas = converters.toGiftIdeaList(storedContact.giftIdeasJson)
+        val finalSettingsIdeas = converters.toGiftIdeaList(storedUserData!!.giftIdeasJson)
+
+        assertThat(finalCacheIdeas).hasSize(2)
+        assertThat(finalCacheIdeas.find { it.id == "idea1" }?.isChecked).isTrue()
+        assertThat(finalCacheIdeas.find { it.id == "idea1" }?.text).isEqualTo("Book")
+        assertThat(finalCacheIdeas.find { it.id == "idea2" }?.text).isEqualTo("Red Flowers")
+        assertThat(finalSettingsIdeas).isEqualTo(finalCacheIdeas)
+    }
+
+    @Test
+    fun concurrentAddAndRemove_areSerializedByMutex_withoutLostUpdates() = runTest(createTransactionElement()) {
+        // Arrange
+        val idea1 = GiftIdea(id = "idea1", text = "Book")
+        val idea2 = GiftIdea(id = "idea2", text = "Mug")
+        val idea3 = GiftIdea(id = "idea3", text = "Headphones")
+        val initialJson = converters.fromGiftIdeaList(listOf(idea1, idea2))
+
+        var storedContact = ContactEntity(
+            contactId = "c1",
+            lookupKey = "key1",
+            fullName = "John Doe",
+            giftIdeasJson = initialJson
+        )
+        var storedUserData: ContactUserData? = ContactUserData(
+            lookupKey = "key1",
+            giftIdeasJson = initialJson
+        )
+        val writeCount = AtomicInteger(0)
+        val firstWriteEntered = CompletableDeferred<Unit>()
+        val allowFirstWriteToFinish = CompletableDeferred<Unit>()
+
+        whenever(contactDao.getContactByLookupKey("key1")).doSuspendableAnswer { storedContact }
+        whenever(contactUserDataDao.getUserDataForContact("key1")).doSuspendableAnswer { storedUserData }
+        whenever(contactUserDataDao.upsertUserData(any())).doSuspendableAnswer { invocation ->
+            val data = invocation.getArgument<ContactUserData>(0)
+            if (writeCount.incrementAndGet() == 1) {
+                firstWriteEntered.complete(Unit)
+                allowFirstWriteToFinish.await()
+            }
+            storedUserData = data
+        }
+        whenever(contactDao.upsertContact(any())).doSuspendableAnswer { invocation ->
+            storedContact = invocation.getArgument(0)
+        }
+
+        // Act
+        val removeJob = launch { repository.removeGiftIdea("key1", "idea1") }
+        firstWriteEntered.await()
+
+        val addJob = launch { repository.addGiftIdea("key1", idea3) }
+        allowFirstWriteToFinish.complete(Unit)
+
+        removeJob.join()
+        addJob.join()
+
+        // Assert: idea1 removed AND idea3 preserved
+        val finalIdeas = converters.toGiftIdeaList(storedContact.giftIdeasJson)
+        assertThat(finalIdeas.map { it.id }).containsExactly("idea2", "idea3")
+        assertThat(converters.toGiftIdeaList(storedUserData!!.giftIdeasJson)).isEqualTo(finalIdeas)
     }
 }
