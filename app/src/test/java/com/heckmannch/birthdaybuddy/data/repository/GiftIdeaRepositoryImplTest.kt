@@ -18,6 +18,7 @@ import com.heckmannch.birthdaybuddy.domain.repository.WidgetUpdater
 import io.mockk.every
 import io.mockk.mockkStatic
 import io.mockk.unmockkStatic
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -202,6 +203,42 @@ class GiftIdeaRepositoryImplTest {
         assertThat(caught).isNotNull()
         verify(contactUserDataDao).upsertUserData(prevUserData)
     }
+
+    @Test
+    fun addGiftIdea_rollsBackSettingsAndRethrows_whenCacheUpdateIsCancelled() =
+        runTest(createTransactionElement()) {
+            // Arrange
+            val prevUserData = ContactUserData(
+                lookupKey = "key1",
+                giftIdeasJson = "[]",
+                spouseLookupKey = "spouse_key"
+            )
+            val contactEntity = ContactEntity(
+                contactId = "c1",
+                lookupKey = "key1",
+                fullName = "John Doe",
+                giftIdeasJson = "[]",
+                spouseLookupKey = "spouse_key"
+            )
+            whenever(contactDao.getContactByLookupKey("key1")).thenReturn(contactEntity)
+                .thenThrow(CancellationException("Cancelled"))
+            whenever(contactUserDataDao.getUserDataForContact("key1")).thenReturn(prevUserData)
+
+            val newIdea = GiftIdea(id = "idea1", text = "Book")
+
+            // Act
+            var caught: Throwable? = null
+            try {
+                repository.addGiftIdea("key1", newIdea)
+            } catch (e: Throwable) {
+                caught = e
+            }
+
+            // Assert
+            assertThat(caught).isInstanceOf(CancellationException::class.java)
+            verify(contactUserDataDao).upsertUserData(prevUserData)
+            verify(widgetUpdater, never()).updateWidget()
+        }
 
     @Test
     fun toggleGiftIdea_updatesContactGiftIdeas_whenIdeaBelongsToContact() = runTest(createTransactionElement()) {

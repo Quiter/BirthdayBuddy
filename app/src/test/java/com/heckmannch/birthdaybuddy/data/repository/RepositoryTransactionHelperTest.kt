@@ -10,12 +10,17 @@ import io.mockk.mockkStatic
 import io.mockk.unmockkStatic
 import io.mockk.verify as mockkVerify
 import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.cancelAndJoin
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.runTest
+import kotlinx.coroutines.yield
 import org.junit.After
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
+import org.mockito.kotlin.doAnswer
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.whenever
 import java.util.concurrent.Executor
@@ -73,13 +78,56 @@ class RepositoryTransactionHelperTest {
                 rollbackSettings = { prev ->
                     events.add("rollback:$prev")
                 },
+                updateAppDbCache = { prev ->
+                    events.add("cache:$prev")
+                },
+            )
+
+            assertThat(events).containsExactly("read", "write:prev", "cache:prev").inOrder()
+            mockkVerify(exactly = 0) { Log.e(any(), any(), any()) }
+        }
+
+    @Test
+    @Suppress("DEPRECATION")
+    fun executeWithSettingsRollback_readsPreviousStateInsideSettingsTransaction() =
+        runTest(createTransactionElement()) {
+            val events = mutableListOf<String>()
+            whenever(settingsDatabase.beginTransaction()).doAnswer {
+                events.add("settings_tx_begin")
+                Unit
+            }
+            whenever(settingsDatabase.endTransaction()).doAnswer {
+                events.add("settings_tx_end")
+                Unit
+            }
+
+            executeWithSettingsRollback(
+                settingsDatabase = settingsDatabase,
+                appDatabase = appDatabase,
+                logTag = "TestTag",
+                errorMessage = "Test error",
+                readPreviousState = {
+                    events.add("read")
+                    "prev"
+                },
+                writeSettings = { prev ->
+                    events.add("write:$prev")
+                },
+                rollbackSettings = { prev ->
+                    events.add("rollback:$prev")
+                },
                 updateAppDbCache = {
                     events.add("cache")
                 },
             )
 
-            assertThat(events).containsExactly("read", "write:prev", "cache").inOrder()
-            mockkVerify(exactly = 0) { Log.e(any(), any(), any()) }
+            assertThat(events).containsExactly(
+                "settings_tx_begin",
+                "read",
+                "write:prev",
+                "settings_tx_end",
+                "cache",
+            ).inOrder()
         }
 
     @Test
@@ -120,7 +168,7 @@ class RepositoryTransactionHelperTest {
         }
 
     @Test
-    fun executeWithSettingsRollback_rethrowsCancellationExceptionWithoutRollbackOrLogging() =
+    fun executeWithSettingsRollback_rollsBackSettingsAndRethrows_whenCacheUpdateThrowsCancellationException() =
         runTest(createTransactionElement()) {
             val events = mutableListOf<String>()
 
@@ -151,7 +199,58 @@ class RepositoryTransactionHelperTest {
             }
 
             assertThat(caught).isInstanceOf(CancellationException::class.java)
-            assertThat(events).containsExactly("read", "write:prev_state", "cache_cancel").inOrder()
+            assertThat(events).containsExactly(
+                "read",
+                "write:prev_state",
+                "cache_cancel",
+                "rollback:prev_state",
+            ).inOrder()
+            mockkVerify(exactly = 0) { Log.e(any(), any(), any()) }
+        }
+
+    @Test
+    fun executeWithSettingsRollback_executesSuspendingRollbackUnderNonCancellable_whenCoroutineCancelled() =
+        runTest(createTransactionElement()) {
+            val events = mutableListOf<String>()
+            val enteredCacheUpdate = CompletableDeferred<Unit>()
+            val neverCompletes = CompletableDeferred<Unit>()
+
+            val job = launch {
+                executeWithSettingsRollback(
+                    settingsDatabase = settingsDatabase,
+                    appDatabase = appDatabase,
+                    logTag = "TestTag",
+                    errorMessage = "Cache failed",
+                    readPreviousState = {
+                        events.add("read")
+                        "prev_state"
+                    },
+                    writeSettings = { prev ->
+                        events.add("write:$prev")
+                    },
+                    rollbackSettings = { prev ->
+                        // yield() throws CancellationException immediately unless running in NonCancellable
+                        yield()
+                        events.add("rollback:$prev")
+                    },
+                    updateAppDbCache = {
+                        events.add("cache_start")
+                        enteredCacheUpdate.complete(Unit)
+                        neverCompletes.await()
+                    },
+                )
+            }
+
+            enteredCacheUpdate.await()
+            job.cancelAndJoin()
+
+            assertThat(job.isCancelled).isTrue()
+            assertThat(events).containsExactly(
+                "read",
+                "write:prev_state",
+                "cache_start",
+                "rollback:prev_state",
+            ).inOrder()
             mockkVerify(exactly = 0) { Log.e(any(), any(), any()) }
         }
 }

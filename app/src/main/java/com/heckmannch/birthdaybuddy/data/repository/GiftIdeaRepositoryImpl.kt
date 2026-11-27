@@ -69,6 +69,7 @@ class GiftIdeaRepositoryImpl @Inject constructor(
                 },
                 rollbackSettings = { prevUserData ->
                     val rollbackData = prevUserData
+                        ?: contactUserDataDao.getUserDataForContact(lookupKey)?.copy(giftIdeasJson = "[]")
                         ?: ContactUserData(lookupKey = lookupKey, giftIdeasJson = "[]")
                     contactUserDataDao.upsertUserData(rollbackData)
                 },

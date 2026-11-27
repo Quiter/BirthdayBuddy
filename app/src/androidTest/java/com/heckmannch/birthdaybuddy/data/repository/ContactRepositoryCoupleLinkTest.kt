@@ -60,6 +60,7 @@ class ContactRepositoryCoupleLinkTest {
         )
 
         repository = CoupleRepositoryImpl(
+            permissionChecker = mock(),
             contactDao = appDb.contactDao(),
             contactUserDataDao = settingsDb.contactUserDataDao(),
             settingsRepository = settingsRepository,
@@ -156,6 +157,27 @@ class ContactRepositoryCoupleLinkTest {
         assertThat(bobData).isNotNull()
         assertThat(aliceData?.spouseLookupKey).isEqualTo("bob")
         assertThat(bobData?.spouseLookupKey).isEqualTo("alice")
+    }
+
+    @Test
+    fun linkAsCouple_relinkingClearsPreviousPartner_inBothDatabases() = runTest {
+        // Arrange – Alice und Carol verknüpfen
+        appDb.contactDao().upsertContact(makeContact("alice", "Alice"))
+        appDb.contactDao().upsertContact(makeContact("bob", "Bob"))
+        appDb.contactDao().upsertContact(makeContact("carol", "Carol"))
+        repository.linkAsCouple("alice", "carol")
+
+        // Act – Alice neu mit Bob verknüpfen
+        repository.linkAsCouple("alice", "bob")
+
+        // Assert – Carol hat in beiden DBs keinen verwaisten Verweis mehr
+        assertThat(appDb.contactDao().getContactByLookupKey("alice")?.spouseLookupKey).isEqualTo("bob")
+        assertThat(appDb.contactDao().getContactByLookupKey("bob")?.spouseLookupKey).isEqualTo("alice")
+        assertThat(appDb.contactDao().getContactByLookupKey("carol")?.spouseLookupKey).isNull()
+
+        assertThat(settingsDb.contactUserDataDao().getUserDataForContact("alice")?.spouseLookupKey).isEqualTo("bob")
+        assertThat(settingsDb.contactUserDataDao().getUserDataForContact("bob")?.spouseLookupKey).isEqualTo("alice")
+        assertThat(settingsDb.contactUserDataDao().getUserDataForContact("carol")?.spouseLookupKey).isNull()
     }
 
     // ─────────────────────────────────────────────────

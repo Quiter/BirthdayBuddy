@@ -5,16 +5,19 @@ import androidx.room.withTransaction
 import com.heckmannch.birthdaybuddy.data.local.AppDatabase
 import com.heckmannch.birthdaybuddy.data.local.SettingsDatabase
 import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.NonCancellable
+import kotlinx.coroutines.withContext
 
 /**
  * Executes a 2-phase transactional update across [settingsDatabase] and [appDatabase]:
- * 1. Reads the previous state via [readPreviousState].
- * 2. Writes updated data to [settingsDatabase] (Source of Truth) inside a transaction.
- * 3. Updates the [appDatabase] query cache inside a transaction.
+ * 1. Atomically reads the previous state via [readPreviousState] and writes updated data to
+ *    [settingsDatabase] (Source of Truth) inside a single transaction.
+ * 2. Updates the [appDatabase] query cache inside a transaction, receiving the previously read state.
  *
- * If updating [appDatabase] fails with a non-cancellation exception, logs the error via [logTag],
- * rolls back the [settingsDatabase] change using [rollbackSettings], and rethrows the exception.
- * [CancellationException] is always rethrown immediately to preserve structured concurrency.
+ * If updating [appDatabase] fails (including via [CancellationException]), rolls back the
+ * [settingsDatabase] change using [rollbackSettings] inside [NonCancellable] so both databases
+ * remain consistent, and rethrows the original exception. Non-cancellation failures are logged
+ * via [logTag].
  */
 internal suspend fun <T> executeWithSettingsRollback(
     settingsDatabase: SettingsDatabase,
@@ -24,21 +27,40 @@ internal suspend fun <T> executeWithSettingsRollback(
     readPreviousState: suspend () -> T,
     writeSettings: suspend (T) -> Unit,
     rollbackSettings: suspend (T) -> Unit,
-    updateAppDbCache: suspend () -> Unit,
+    updateAppDbCache: suspend (T) -> Unit,
 ) {
-    val previousState = readPreviousState()
-    settingsDatabase.withTransaction {
-        writeSettings(previousState)
+    val previousState = settingsDatabase.withTransaction {
+        val prev = readPreviousState()
+        writeSettings(prev)
+        prev
     }
     try {
         appDatabase.withTransaction {
-            updateAppDbCache()
+            updateAppDbCache(previousState)
         }
+    } catch (e: CancellationException) {
+        try {
+            withContext(NonCancellable) {
+                settingsDatabase.withTransaction {
+                    rollbackSettings(previousState)
+                }
+            }
+        } catch (rollbackError: Exception) {
+            Log.e(logTag, "Rollback failed after cancellation ($errorMessage): ${rollbackError.message}", rollbackError)
+            e.addSuppressed(rollbackError)
+        }
+        throw e
     } catch (e: Exception) {
-        if (e is CancellationException) throw e
         Log.e(logTag, "$errorMessage: ${e.message}", e)
-        settingsDatabase.withTransaction {
-            rollbackSettings(previousState)
+        try {
+            withContext(NonCancellable) {
+                settingsDatabase.withTransaction {
+                    rollbackSettings(previousState)
+                }
+            }
+        } catch (rollbackError: Exception) {
+            Log.e(logTag, "Rollback failed ($errorMessage): ${rollbackError.message}", rollbackError)
+            e.addSuppressed(rollbackError)
         }
         throw e
     }
