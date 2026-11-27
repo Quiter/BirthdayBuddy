@@ -240,13 +240,21 @@ class SystemContactDataSource @Inject constructor(
                 val photoIdx = cursor.getColumnIndex(ContactsContract.Contacts.PHOTO_THUMBNAIL_URI)
                 val starredIdx = cursor.getColumnIndex(ContactsContract.Contacts.STARRED)
 
-                if (idIdx != -1) {
+                if (idIdx != -1 && lookupIdx != -1) {
                     while (cursor.moveToNext()) {
                         val contactId = cursor.getString(idIdx) ?: continue
+                        val lookupKey = cursor.getString(lookupIdx)
+                        if (lookupKey.isNullOrBlank()) {
+                            Log.w(
+                                TAG,
+                                "Skipping contact with empty or blank lookupKey (contactId=$contactId)"
+                            )
+                            continue
+                        }
                         val isStarred = starredIdx != -1 && cursor.getInt(starredIdx) == 1
                         contactsMap[contactId] = Contact(
                             contactId = contactId,
-                            lookupKey = if (lookupIdx != -1) cursor.getString(lookupIdx).orEmpty() else "",
+                            lookupKey = lookupKey,
                             fullName = (if (nameIdx != -1) cursor.getString(nameIdx) else null)
                                 ?: context.getString(R.string.contact_unknown),
                             birthday = null,
@@ -254,6 +262,8 @@ class SystemContactDataSource @Inject constructor(
                             isFavorite = isStarred,
                         )
                     }
+                } else if (idIdx != -1) {
+                    Log.w(TAG, "LOOKUP_KEY column missing in contacts cursor; skipping contacts")
                 }
             }
 

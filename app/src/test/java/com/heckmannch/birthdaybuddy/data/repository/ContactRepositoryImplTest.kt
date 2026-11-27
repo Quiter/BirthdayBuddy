@@ -19,6 +19,7 @@ import com.heckmannch.birthdaybuddy.domain.permission.PermissionChecker
 import com.heckmannch.birthdaybuddy.domain.repository.CalendarSyncRepository
 import com.heckmannch.birthdaybuddy.domain.repository.SettingsRepository
 import com.heckmannch.birthdaybuddy.domain.repository.WidgetUpdater
+import com.heckmannch.birthdaybuddy.domain.util.NO_YEAR_MARKER
 import io.mockk.every
 import io.mockk.mockkStatic
 import io.mockk.unmockkStatic
@@ -34,6 +35,7 @@ import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.mockito.kotlin.any
+import org.mockito.kotlin.argumentCaptor
 import org.mockito.kotlin.eq
 import org.mockito.kotlin.inOrder
 import org.mockito.kotlin.mock
@@ -73,6 +75,7 @@ class ContactRepositoryImplTest {
         mockkStatic(Log::class)
         every { Log.e(any(), any(), any()) } returns 0
         every { Log.e(any(), any()) } returns 0
+        every { Log.w(any(), any<String>()) } returns 0
         whenever(contactDao.getAllContacts()).thenReturn(allContactsFlow)
         whenever(labelConfigDao.getAllConfigs()).thenReturn(labelConfigsFlow)
         whenever(settingsRepository.settings).thenReturn(settingsFlow)
@@ -709,5 +712,199 @@ class ContactRepositoryImplTest {
         verify(contactDao, never()).refreshContacts(any())
         verify(widgetUpdater, never()).updateWidget()
         verify(calendarSyncRepository, never()).syncBirthdays(any())
+    }
+
+    @Test
+    fun syncContacts_filtersOutEmptyAndBlankLookupKeys() = runTest {
+        // Arrange
+        whenever(permissionChecker.hasContactsPermission()).thenReturn(true)
+        whenever(permissionChecker.hasCalendarPermission()).thenReturn(true)
+        whenever(settingsRepository.getSettingsImmediate()).thenReturn(
+            AppSettings(calendarSyncEnabled = true)
+        )
+        val groups = mapOf(1L to GroupInfo("Friends", isSystem = false))
+        val emptyKeyContact = Contact(
+            contactId = "c1",
+            lookupKey = "",
+            fullName = "Empty Key",
+            birthday = LocalDate.of(1990, 1, 1),
+            labels = listOf("Friends")
+        )
+        val blankKeyContact = Contact(
+            contactId = "c2",
+            lookupKey = "   ",
+            fullName = "Blank Key",
+            birthday = LocalDate.of(1991, 2, 2)
+        )
+        val validContact = Contact(
+            contactId = "c3",
+            lookupKey = "valid-key",
+            fullName = "Valid Contact",
+            birthday = LocalDate.of(1992, 3, 3)
+        )
+        whenever(systemContactDataSource.fetchContactGroups()).thenReturn(groups)
+        whenever(systemContactDataSource.fetchContactsFromSystem(groups)).thenReturn(
+            listOf(emptyKeyContact, blankKeyContact, validContact)
+        )
+        whenever(contactDao.getAllContactsImmediate()).thenReturn(emptyList())
+        whenever(labelConfigDao.getAllConfigsImmediate()).thenReturn(emptyList())
+        whenever(contactUserDataDao.getAllUserDataImmediate()).thenReturn(emptyList())
+
+        // Act
+        repository.syncContacts()
+
+        // Assert
+        val entitiesCaptor = argumentCaptor<List<ContactEntity>>()
+        verify(contactDao).refreshContacts(entitiesCaptor.capture())
+        val finalEntities = entitiesCaptor.firstValue
+        assertThat(finalEntities).hasSize(1)
+        assertThat(finalEntities.single().lookupKey).isEqualTo("valid-key")
+        assertThat(finalEntities.none { it.lookupKey.isBlank() }).isTrue()
+
+        val calendarCaptor = argumentCaptor<List<Contact>>()
+        verify(calendarSyncRepository).syncBirthdays(calendarCaptor.capture())
+        assertThat(calendarCaptor.firstValue).containsExactly(validContact)
+    }
+
+    @Test
+    fun syncContacts_deduplicatesByLookupKey_preferringEntryWithBirthdayRegardlessOfOrder() = runTest {
+        // Arrange
+        whenever(permissionChecker.hasContactsPermission()).thenReturn(true)
+        val groups = emptyMap<Long, GroupInfo>()
+        val withoutBirthdayRich = Contact(
+            contactId = "c1",
+            lookupKey = "dup-key",
+            fullName = "Alice",
+            birthday = null,
+            anniversary = LocalDate.of(2020, 6, 1),
+            phoneNumber = "+491701234567",
+            imageUri = "content://photo/1",
+            isFavorite = true,
+            hasWhatsApp = true,
+            labels = listOf("Friends", "Family")
+        )
+        val withBirthdayMinimal = Contact(
+            contactId = "c2",
+            lookupKey = "dup-key",
+            fullName = "Alice",
+            birthday = LocalDate.of(1990, 5, 10)
+        )
+        whenever(contactDao.getAllContactsImmediate()).thenReturn(emptyList())
+        whenever(labelConfigDao.getAllConfigsImmediate()).thenReturn(emptyList())
+        whenever(contactUserDataDao.getAllUserDataImmediate()).thenReturn(emptyList())
+        whenever(systemContactDataSource.fetchContactGroups()).thenReturn(groups)
+
+        // Act 1: withoutBirthday first, withBirthday second
+        whenever(systemContactDataSource.fetchContactsFromSystem(groups)).thenReturn(
+            listOf(withoutBirthdayRich, withBirthdayMinimal)
+        )
+        repository.syncContacts()
+
+        // Act 2: withBirthday first, withoutBirthday second
+        whenever(systemContactDataSource.fetchContactsFromSystem(groups)).thenReturn(
+            listOf(withBirthdayMinimal, withoutBirthdayRich)
+        )
+        repository.syncContacts()
+
+        // Assert
+        val entitiesCaptor = argumentCaptor<List<ContactEntity>>()
+        verify(contactDao, org.mockito.kotlin.times(2)).refreshContacts(entitiesCaptor.capture())
+
+        entitiesCaptor.allValues.forEach { finalEntities ->
+            assertThat(finalEntities).hasSize(1)
+            val entity = finalEntities.single()
+            assertThat(entity.lookupKey).isEqualTo("dup-key")
+            assertThat(entity.contactId).isEqualTo("c2")
+            assertThat(entity.birthday).isEqualTo(LocalDate.of(1990, 5, 10))
+        }
+    }
+
+    @Test
+    fun syncContacts_deduplicatesByLookupKey_preferringBirthdayWithYearOverNoYear() = runTest {
+        // Arrange
+        whenever(permissionChecker.hasContactsPermission()).thenReturn(true)
+        val groups = emptyMap<Long, GroupInfo>()
+        val noYearContact = Contact(
+            contactId = "c1",
+            lookupKey = "dup-key",
+            fullName = "Bob",
+            birthday = LocalDate.of(NO_YEAR_MARKER, 7, 20),
+            phoneNumber = "+491701234567",
+            isFavorite = true
+        )
+        val withYearContact = Contact(
+            contactId = "c2",
+            lookupKey = "dup-key",
+            fullName = "Bob",
+            birthday = LocalDate.of(1988, 7, 20)
+        )
+        whenever(contactDao.getAllContactsImmediate()).thenReturn(emptyList())
+        whenever(labelConfigDao.getAllConfigsImmediate()).thenReturn(emptyList())
+        whenever(contactUserDataDao.getAllUserDataImmediate()).thenReturn(emptyList())
+        whenever(systemContactDataSource.fetchContactGroups()).thenReturn(groups)
+        whenever(systemContactDataSource.fetchContactsFromSystem(groups)).thenReturn(
+            listOf(noYearContact, withYearContact)
+        )
+
+        // Act
+        repository.syncContacts()
+
+        // Assert
+        val entitiesCaptor = argumentCaptor<List<ContactEntity>>()
+        verify(contactDao).refreshContacts(entitiesCaptor.capture())
+        val finalEntities = entitiesCaptor.firstValue
+        assertThat(finalEntities).hasSize(1)
+        assertThat(finalEntities.single().contactId).isEqualTo("c2")
+        assertThat(finalEntities.single().birthday).isEqualTo(LocalDate.of(1988, 7, 20))
+    }
+
+    @Test
+    fun syncContacts_deduplicatesByLookupKey_preferringMoreCompleteEntryWhenBothLackBirthday() = runTest {
+        // Arrange
+        whenever(permissionChecker.hasContactsPermission()).thenReturn(true)
+        val groups = emptyMap<Long, GroupInfo>()
+        val sparseContact = Contact(
+            contactId = "c1",
+            lookupKey = "dup-key",
+            fullName = "Charlie",
+            birthday = null
+        )
+        val richContact = Contact(
+            contactId = "c2",
+            lookupKey = "dup-key",
+            fullName = "Charlie",
+            birthday = null,
+            phoneNumber = "+491709876543",
+            imageUri = "content://photo/2",
+            labels = listOf("Work")
+        )
+        whenever(contactDao.getAllContactsImmediate()).thenReturn(emptyList())
+        whenever(labelConfigDao.getAllConfigsImmediate()).thenReturn(emptyList())
+        whenever(contactUserDataDao.getAllUserDataImmediate()).thenReturn(emptyList())
+        whenever(systemContactDataSource.fetchContactGroups()).thenReturn(groups)
+
+        // Act 1: sparse first, rich second
+        whenever(systemContactDataSource.fetchContactsFromSystem(groups)).thenReturn(
+            listOf(sparseContact, richContact)
+        )
+        repository.syncContacts()
+
+        // Act 2: rich first, sparse second
+        whenever(systemContactDataSource.fetchContactsFromSystem(groups)).thenReturn(
+            listOf(richContact, sparseContact)
+        )
+        repository.syncContacts()
+
+        // Assert
+        val entitiesCaptor = argumentCaptor<List<ContactEntity>>()
+        verify(contactDao, org.mockito.kotlin.times(2)).refreshContacts(entitiesCaptor.capture())
+
+        entitiesCaptor.allValues.forEach { finalEntities ->
+            assertThat(finalEntities).hasSize(1)
+            val entity = finalEntities.single()
+            assertThat(entity.lookupKey).isEqualTo("dup-key")
+            assertThat(entity.contactId).isEqualTo("c2")
+            assertThat(entity.phoneNumber).isEqualTo("+491709876543")
+        }
     }
 }

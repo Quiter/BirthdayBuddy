@@ -21,6 +21,7 @@ import com.heckmannch.birthdaybuddy.domain.repository.CalendarSyncRepository
 import com.heckmannch.birthdaybuddy.domain.repository.ContactRepository
 import com.heckmannch.birthdaybuddy.domain.repository.SettingsRepository
 import com.heckmannch.birthdaybuddy.domain.repository.WidgetUpdater
+import com.heckmannch.birthdaybuddy.util.hasYear
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.async
@@ -163,14 +164,15 @@ class ContactRepositoryImpl @Inject constructor(
                     val dbConfigs = dbConfigsDeferred.await()
                     val userDataMap = userDataDeferred.await()
 
-                    // 2. Synchronize labels
-                    syncLabelConfigs(systemContacts, dbConfigs, groups)
-
-                    // 3. Diffing: Reconcile contacts (CPU-intensive operation offloaded to Dispatchers.Default)
+                    // 2. Diffing & Deduplication: Filter invalid lookupKeys, deduplicate by lookupKey,
+                    //    and reconcile contacts (CPU-intensive operation offloaded to DefaultDispatcher).
+                    //    Room enforces a UNIQUE index on lookupKey, so blank or duplicate keys would
+                    //    otherwise trigger a SQLiteConstraintException in refreshContacts().
                     val (contacts, finalEntities) = withContext(defaultDispatcher) {
-                        val reconciled = ArrayList<Contact>(systemContacts.size)
-                        val entities = ArrayList<ContactEntity>(systemContacts.size)
-                        for (systemContact in systemContacts) {
+                        val deduplicatedByLookupKey = deduplicateContacts(systemContacts)
+                        val reconciled = ArrayList<Contact>(deduplicatedByLookupKey.size)
+                        val entities = ArrayList<ContactEntity>(deduplicatedByLookupKey.size)
+                        for (systemContact in deduplicatedByLookupKey) {
                             val lookupKey = systemContact.lookupKey
                             val existing = dbContacts[lookupKey]
                             val userData = userDataMap[lookupKey]
@@ -187,6 +189,9 @@ class ContactRepositoryImpl @Inject constructor(
                         }
                         reconciled to entities
                     }
+
+                    // 3. Synchronize labels using sanitized contacts
+                    syncLabelConfigs(contacts, dbConfigs, groups)
 
                     // 4. Batch update via transaction
                     contactDao.refreshContacts(finalEntities)
@@ -319,6 +324,72 @@ class ContactRepositoryImpl @Inject constructor(
         } catch (e: Exception) {
             Log.e(TAG, "Error updating widget after label configuration update: ${e.message}", e)
         }
+    }
+
+    /**
+     * Filters out contacts with blank `lookupKey` values and deterministically deduplicates
+     * entries sharing the same `lookupKey`.
+     *
+     * Preference order on collision:
+     * 1. Entry with a birthday over an entry without a birthday.
+     * 2. Entry whose birthday includes a birth year over one without a year.
+     * 3. Entry with a higher [dataCompletenessScore].
+     * 4. First seen entry on an exact tie.
+     */
+    private fun deduplicateContacts(systemContacts: List<Contact>): List<Contact> {
+        val byLookupKey = LinkedHashMap<String, Contact>(systemContacts.size)
+        for (contact in systemContacts) {
+            val lookupKey = contact.lookupKey
+            if (lookupKey.isBlank()) {
+                Log.w(
+                    TAG,
+                    "Skipping contact with empty or blank lookupKey during sync (contactId=${contact.contactId})"
+                )
+                continue
+            }
+            val existing = byLookupKey[lookupKey]
+            if (existing == null) {
+                byLookupKey[lookupKey] = contact
+            } else {
+                Log.w(
+                    TAG,
+                    "Duplicate lookupKey detected during sync ($lookupKey); selecting preferred entry"
+                )
+                if (isPreferredDuplicate(candidate = contact, current = existing)) {
+                    byLookupKey[lookupKey] = contact
+                }
+            }
+        }
+        return byLookupKey.values.toList()
+    }
+
+    private fun isPreferredDuplicate(candidate: Contact, current: Contact): Boolean {
+        val candidateHasBirthday = candidate.birthday != null
+        val currentHasBirthday = current.birthday != null
+        if (candidateHasBirthday != currentHasBirthday) {
+            return candidateHasBirthday
+        }
+        val candidateHasYear = candidate.birthday?.hasYear == true
+        val currentHasYear = current.birthday?.hasYear == true
+        if (candidateHasYear != currentHasYear) {
+            return candidateHasYear
+        }
+        return candidate.dataCompletenessScore() > current.dataCompletenessScore()
+    }
+
+    private fun Contact.dataCompletenessScore(): Int {
+        var score = 0
+        if (anniversary != null) score += 1
+        if (nameDay != null) score += 1
+        score += customEvents.size
+        if (!phoneNumber.isNullOrBlank()) score += 1
+        if (!imageUri.isNullOrBlank()) score += 1
+        score += labels.size
+        if (isFavorite) score += 1
+        if (hasWhatsApp) score += 1
+        if (hasSignal) score += 1
+        if (fullName.isNotBlank()) score += 1
+        return score
     }
 
     companion object {

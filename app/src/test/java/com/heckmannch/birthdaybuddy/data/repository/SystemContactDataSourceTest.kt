@@ -16,6 +16,7 @@ import io.mockk.mockk
 import io.mockk.mockkStatic
 import io.mockk.slot
 import io.mockk.unmockkStatic
+import io.mockk.verify
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.runTest
@@ -185,7 +186,7 @@ class SystemContactDataSourceTest {
                 ContactsContract.Contacts.STARRED
             )
         ).apply {
-            addRow(arrayOf<Any?>("1", null, null, null, 0))
+            addRow(arrayOf<Any?>("1", "key-1", null, null, 0))
             addRow(arrayOf<Any?>(null, "ignored", "ShouldSkip", null, 0))
         }
 
@@ -296,12 +297,95 @@ class SystemContactDataSourceTest {
         assertThat(contacts).hasSize(1)
         val contact = contacts.first()
         assertThat(contact.contactId).isEqualTo("1")
-        assertThat(contact.lookupKey).isEmpty()
+        assertThat(contact.lookupKey).isEqualTo("key-1")
         assertThat(contact.fullName).isEqualTo(realContext.getString(R.string.contact_unknown))
         assertThat(contact.birthday).isEqualTo(LocalDate.of(1990, 5, 15))
         assertThat(contact.phoneNumber).isEqualTo("+491701234567")
         assertThat(contact.hasWhatsApp).isTrue()
         assertThat(contact.hasSignal).isFalse()
         assertThat(contact.labels).containsExactly("Friends")
+    }
+
+    @Test
+    fun `fetchContactsFromSystem skips contacts with null, empty, or blank lookupKey and logs warning`() = runTest {
+        val contactsCursor = MatrixCursor(
+            arrayOf(
+                ContactsContract.Contacts._ID,
+                ContactsContract.Contacts.LOOKUP_KEY,
+                ContactsContract.Contacts.DISPLAY_NAME,
+                ContactsContract.Contacts.PHOTO_THUMBNAIL_URI,
+                ContactsContract.Contacts.STARRED
+            )
+        ).apply {
+            addRow(arrayOf<Any?>("1", null, "NullKey", null, 0))
+            addRow(arrayOf<Any?>("2", "", "EmptyKey", null, 0))
+            addRow(arrayOf<Any?>("3", "   ", "BlankKey", null, 0))
+            addRow(arrayOf<Any?>("4", "valid-key", "ValidContact", null, 1))
+        }
+
+        every {
+            contentResolver.query(
+                ContactsContract.Contacts.CONTENT_URI,
+                any(),
+                any(),
+                any(),
+                any()
+            )
+        } returns contactsCursor
+
+        every {
+            contentResolver.query(
+                ContactsContract.Data.CONTENT_URI,
+                any(),
+                any(),
+                any(),
+                any()
+            )
+        } returns null
+
+        every {
+            contentResolver.query(
+                ContactsContract.CommonDataKinds.Phone.CONTENT_URI,
+                any(),
+                any(),
+                any(),
+                any()
+            )
+        } returns null
+
+        val contacts = dataSource.fetchContactsFromSystem(emptyMap())
+
+        assertThat(contacts).hasSize(1)
+        assertThat(contacts.single().contactId).isEqualTo("4")
+        assertThat(contacts.single().lookupKey).isEqualTo("valid-key")
+        assertThat(contacts.single().fullName).isEqualTo("ValidContact")
+        verify(exactly = 3) { Log.w(any(), any<String>()) }
+    }
+
+    @Test
+    fun `fetchContactsFromSystem skips all contacts and logs warning when LOOKUP_KEY column is missing`() = runTest {
+        val contactsCursor = MatrixCursor(
+            arrayOf(
+                ContactsContract.Contacts._ID,
+                ContactsContract.Contacts.DISPLAY_NAME,
+            )
+        ).apply {
+            addRow(arrayOf<Any?>("1", "Alice"))
+        }
+
+        every {
+            contentResolver.query(
+                ContactsContract.Contacts.CONTENT_URI,
+                any(),
+                any(),
+                any(),
+                any()
+            )
+        } returns contactsCursor
+
+        val contacts = dataSource.fetchContactsFromSystem(emptyMap())
+
+        assertThat(contacts).isEmpty()
+        verify(exactly = 1) { Log.w(any(), any<String>()) }
     }
 }
