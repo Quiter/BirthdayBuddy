@@ -219,6 +219,28 @@ const val AlphaSettingsSubtitleMuted = 0.70f
 const val AlphaSettingsInfoStatContainer = 0.30f
 const val AlphaSettingsSwatchUnselected = 0.40f
 
+/**
+ * Shared tokens for the Morphe-style Contact Detail Pane transitions and entrance choreography.
+ */
+const val DetailDialogScale = 0.95f
+const val DetailHeaderIconDamping = 0.55f
+const val DetailHeaderIconStiffness = 320f
+const val DetailHeaderIconInitialScale = 0.6f
+const val DetailHeaderTextDurationMs = 260
+const val DetailHeaderTextDelayMs = 60
+const val DetailHeaderSubtitleStartFraction = 0.15f
+const val DetailHeaderActionsDurationMs = 240
+const val DetailHeaderActionsDelayMs = 160
+const val DetailHeaderSlideOffsetPx = 40f
+const val DetailHeaderActionSlideOffsetPx = 20f
+const val DetailStaggerStepMs = 40
+const val DetailStaggerOffsetPx = 28f
+const val DetailStaggerInitialScale = 0.97f
+const val AlphaDetailCardBorder = 0.30f
+const val AlphaDetailInfoIcon = 0.55f
+const val AlphaDetailInfoLabel = 0.60f
+
+
 
 
 

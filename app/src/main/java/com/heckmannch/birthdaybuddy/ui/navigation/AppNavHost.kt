@@ -207,12 +207,14 @@ fun AppNavHost(
                     )
                 }
 
+                var isHomeDetailOpen by remember { mutableStateOf(false) }
                 var isSettingsSubscreenOpen by remember { mutableStateOf(false) }
 
                 MainPagerScaffold(
                     pagerState = pagerState,
                     navigationCovered = {
-                        pagerState.currentPage == MainPage.SETTINGS.ordinal && isSettingsSubscreenOpen
+                        (pagerState.currentPage == MainPage.HOME.ordinal && isHomeDetailOpen) ||
+                            (pagerState.currentPage == MainPage.SETTINGS.ordinal && isSettingsSubscreenOpen)
                     },
                 ) { page, bottomBarHeight ->
                     when (page) {
@@ -234,6 +236,7 @@ fun AppNavHost(
                                     scope.launch { pagerState.turnTo(MainPage.SETTINGS) }
                                 },
                                 bottomBarHeight = bottomBarHeight,
+                                onDetailOpenChanged = { isHomeDetailOpen = it },
                             )
                         }
 

@@ -44,6 +44,7 @@ import kotlinx.coroutines.flow.collectLatest
  * @param onNavigateToSettings Callback executed when the user initiates navigation to the app settings screen.
  * @param eventFlow A [SharedFlow] used to observe one-shot UI events (e.g. search focus, gift idea focus).
  * @param bottomBarHeight Padding reserved for the floating pill bar at the bottom of the list.
+ * @param onDetailOpenChanged Callback invoked when a compact full-screen contact detail pane opens or closes.
  */
 @Composable
 fun HomeScreen(
@@ -53,6 +54,7 @@ fun HomeScreen(
     onNavigateToSettings: () -> Unit,
     eventFlow: SharedFlow<HomeUiEvent>? = null,
     bottomBarHeight: Dp = 0.dp,
+    onDetailOpenChanged: (Boolean) -> Unit = {},
 ) {
     val actualEventFlow = eventFlow ?: remember { MutableSharedFlow() }
 
@@ -240,6 +242,7 @@ fun HomeScreen(
         events = actualEventFlow,
         onIntent = onIntent,
         bottomBarHeight = bottomBarHeight,
+        onDetailOpenChanged = onDetailOpenChanged,
     )
 }
 
@@ -251,6 +254,7 @@ internal fun HomeScreenContent(
     events: SharedFlow<HomeUiEvent>,
     onIntent: (HomeIntent) -> Unit,
     bottomBarHeight: Dp = 0.dp,
+    onDetailOpenChanged: (Boolean) -> Unit = {},
 ) {
     if (uiState.pendingBirthdayEdit != null) {
         val edit = uiState.pendingBirthdayEdit
@@ -272,6 +276,7 @@ internal fun HomeScreenContent(
         events = events,
         onIntent = onIntent,
         bottomBarHeight = bottomBarHeight,
+        onDetailOpenChanged = onDetailOpenChanged,
     )
 }
 
