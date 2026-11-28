@@ -86,7 +86,7 @@ BirthdayBuddy divides its persistent data across two isolated Room databases:
 * **Two-Phase Transactions:** Mutations to cached contact metadata execute via `executeWithSettingsRollback`, ensuring that if a cache update fails, the underlying settings state rolls back safely while preserving Kotlin Coroutines `CancellationException` structured concurrency.
 
 ### 3. Resilient Background & Notification Pipeline
-* **Doze-Proof Evaluation:** In `GetPendingNotificationsUseCase`, notification rules are evaluated against past and current time intervals (`ruleTime <= currentLocalTime`) combined with database-backed deduplication (`hasNotificationBeenScheduled`), eliminating missed notifications caused by Android Doze mode or OEM execution jitter.
+* **Doze-Proof Evaluation:** In `GetPendingNotificationsUseCase`, notification rules are evaluated against past and current time intervals (`ruleTime <= currentLocalTime`) combined with database-backed deduplication (`getScheduledContactLookupKeys`), eliminating missed notifications caused by Android Doze mode or OEM execution jitter.
 * **System Event Recovery:** `BootReceiver` registers for `BOOT_COMPLETED`, `MY_PACKAGE_REPLACED`, `TIMEZONE_CHANGED`, `TIME_SET`, and `DATE_CHANGED`. It utilizes `goAsync()` with `@ApplicationScope` coroutine dispatchers to ensure rescheduling completes even if the OS attempts to terminate the broadcast early.
 * **Leap-Year Math:** Built-in date arithmetic (`DateUtils.toYear()`) projects leap-day events (Feb 29) to Feb 28 during non-leap years so notifications and calendar events never drop silently.
 

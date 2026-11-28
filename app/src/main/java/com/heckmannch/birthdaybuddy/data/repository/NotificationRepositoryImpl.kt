@@ -181,35 +181,6 @@ class NotificationRepositoryImpl @Inject constructor(
         }
 
     /**
-     * Checks whether a notification for the specified year, days-before lead time, and contact lookup key
-     * has already been scheduled or created.
-     *
-     * @param year The calendar year of the notification event.
-     * @param daysBefore The number of days before the event when the notification is triggered.
-     * @param lookupKey The contact lookup key to search for within the notification metadata.
-     * @return `true` if a matching notification already exists, `false` otherwise.
-     */
-    override suspend fun hasNotificationBeenScheduled(
-        year: Int,
-        daysBefore: Int,
-        lookupKey: String
-    ): Boolean = withContext(ioDispatcher) {
-        val escapedLookupKey = escapeLikePattern(lookupKey)
-        val pattern = "%\"$escapedLookupKey\"%"
-        pendingNotificationDao.hasNotificationBeenScheduled(year, daysBefore, pattern)
-    }
-
-    /**
-     * Escapes special characters (`\`, `%`, `_`) for SQLite `LIKE` queries.
-     */
-    private fun escapeLikePattern(input: String): String {
-        return input
-            .replace("\\", "\\\\")
-            .replace("%", "\\%")
-            .replace("_", "\\_")
-    }
-
-    /**
      * Increments the dismissal counter for the specified pending notification.
      *
      * @param id The unique integer ID of the pending notification.

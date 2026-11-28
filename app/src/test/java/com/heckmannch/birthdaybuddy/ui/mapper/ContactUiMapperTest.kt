@@ -258,6 +258,47 @@ class ContactUiMapperTest {
     }
 
     @Test
+    fun `mapToUiModels - preserves birthdayTier for couple-merged anniversaries`() {
+        val contacts = listOf(
+            // 50th golden anniversary (2024 - 1974 = 50 -> MILESTONE_GOLD)
+            Contact(
+                contactId = "1", lookupKey = "k1", fullName = "Alice Gold",
+                anniversary = LocalDate.of(1974, 5, 20), spouseLookupKey = "k2",
+            ),
+            Contact(
+                contactId = "2", lookupKey = "k2", fullName = "Bob Gold",
+                anniversary = LocalDate.of(1974, 5, 20), spouseLookupKey = "k1",
+            ),
+            // 25th silver anniversary (2024 - 1999 = 25 -> MILESTONE_SILVER)
+            Contact(
+                contactId = "3", lookupKey = "k3", fullName = "Clara Silver",
+                anniversary = LocalDate.of(1999, 5, 25), spouseLookupKey = "k4",
+            ),
+            Contact(
+                contactId = "4", lookupKey = "k4", fullName = "David Silver",
+                anniversary = LocalDate.of(1999, 5, 25), spouseLookupKey = "k3",
+            ),
+        )
+
+        val result = mapper.mapToUiModels(
+            contacts = contacts,
+            today = today,
+            selectedLabel = ContactLabels.LABEL_ANNIVERSARY,
+            labelsEnabled = true,
+            otherEventsEnabled = true,
+        )
+
+        assertThat(result).hasSize(2)
+        assertThat(result[0].isCouple).isTrue()
+        assertThat(result[0].nextAge).isEqualTo(50)
+        assertThat(result[0].birthdayTier).isEqualTo(BirthdayTier.MILESTONE_GOLD)
+
+        assertThat(result[1].isCouple).isTrue()
+        assertThat(result[1].nextAge).isEqualTo(25)
+        assertThat(result[1].birthdayTier).isEqualTo(BirthdayTier.MILESTONE_SILVER)
+    }
+
+    @Test
     fun `toUiModel - reacts immediately to default Locale changes on same instance`() {
         val originalLocale = Locale.getDefault()
         try {

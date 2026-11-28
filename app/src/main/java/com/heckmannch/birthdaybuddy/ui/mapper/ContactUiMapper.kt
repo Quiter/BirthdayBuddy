@@ -289,6 +289,7 @@ class ContactUiMapper @Inject constructor() {
                     secondInitials = uiModelB.initials,
                     secondFullName = spouse.fullName,
                     isCouple = true,
+                    birthdayTier = uiModelA.birthdayTier,
                 )
                 list.add(mergedModel)
             } else {

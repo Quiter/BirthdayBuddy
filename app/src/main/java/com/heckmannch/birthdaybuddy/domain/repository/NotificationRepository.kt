@@ -33,12 +33,6 @@ interface NotificationRepository {
      */
     suspend fun getScheduledContactLookupKeys(year: Int, daysBefore: Int): Set<String>
 
-    suspend fun hasNotificationBeenScheduled(
-        year: Int,
-        daysBefore: Int,
-        lookupKey: String
-    ): Boolean
-
     suspend fun incrementDismissCount(id: Int)
     suspend fun markAsDone(id: Int)
     suspend fun deleteOldNotifications(currentYear: Int)

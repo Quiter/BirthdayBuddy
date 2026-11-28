@@ -123,6 +123,28 @@ class AppViewModelTest {
     }
 
     @Test
+    fun `settings repository flow is subscribed to only once for appSettings and onboardingCompleted`() = runTest {
+        var subscriptionCount = 0
+        val upstreamSettings = kotlinx.coroutines.flow.flow {
+            subscriptionCount++
+            emit(AppSettings(themeMode = ThemeMode.DARK, onboardingCompleted = true))
+        }
+        whenever(settingsRepository.settings).thenReturn(upstreamSettings)
+
+        val freshViewModel = AppViewModel(
+            syncNotificationSchedulingUseCase,
+            scheduleDailyWidgetUpdateUseCase,
+            settingsRepository
+        )
+
+        assertThat(subscriptionCount).isEqualTo(1)
+        assertThat(freshViewModel.appSettings.first { it.themeMode == ThemeMode.DARK }.themeMode)
+            .isEqualTo(ThemeMode.DARK)
+        assertThat(freshViewModel.onboardingCompleted.first { it != null }).isTrue()
+        assertThat(subscriptionCount).isEqualTo(1)
+    }
+
+    @Test
     fun `init completes safely and handles widget scheduling exception without crashing`() = runTest {
         val failingScheduleDailyWidgetUpdateUseCase: ScheduleDailyWidgetUpdateUseCase = mock()
         whenever(failingScheduleDailyWidgetUpdateUseCase.invoke()).thenThrow(RuntimeException("Scheduling failed"))

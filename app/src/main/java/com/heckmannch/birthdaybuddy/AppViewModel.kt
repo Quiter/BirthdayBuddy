@@ -11,10 +11,12 @@ import com.heckmannch.birthdaybuddy.ui.navigation.AppAction
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.shareIn
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -73,12 +75,23 @@ class AppViewModel @Inject constructor(
     }
 
     /**
+     * Single shared upstream subscription to [SettingsRepository.settings] so Room's cold Flow
+     * is collected only once and shared between [appSettings] and [onboardingCompleted].
+     */
+    private val settingsFlow: SharedFlow<AppSettings> = settingsRepository.settings
+        .shareIn(
+            scope = viewModelScope,
+            started = SharingStarted.Eagerly,
+            replay = 1
+        )
+
+    /**
      * Reaktiver App-Settings-Flow für das globale Theme (themeMode, themeAmoled,
      * themeAccent). [SharingStarted.Eagerly] stellt sicher, dass die
      * Settings sofort beim App-Start verfügbar sind, ohne auf den ersten Collector
      * warten zu müssen – verhindert ein kurzes Theme-Flackern beim Kaltstart.
      */
-    val appSettings: StateFlow<AppSettings> = settingsRepository.settings
+    val appSettings: StateFlow<AppSettings> = settingsFlow
         .stateIn(
             scope = viewModelScope,
             started = SharingStarted.Eagerly,
@@ -89,12 +102,11 @@ class AppViewModel @Inject constructor(
      * Exposes whether onboarding is completed for splash screen handling
      * and initial navigation key selection.
      *
-     * Directly observed from [SettingsRepository.settings] (a cold Flow from Room)
-     * with an initial value of null, so that the splash screen and initial route selection
-     * wait until the actual persisted settings are loaded from Room before determining
-     * whether to navigate to [Home] or [Onboarding].
+     * Derived from the shared [settingsFlow] with an initial value of null, so that the
+     * splash screen and initial route selection wait until the actual persisted settings
+     * are loaded from Room before determining whether to navigate to Home or Onboarding.
      */
-    val onboardingCompleted: StateFlow<Boolean?> = settingsRepository.settings
+    val onboardingCompleted: StateFlow<Boolean?> = settingsFlow
         .map<AppSettings, Boolean?> { it.onboardingCompleted }
         .stateIn(
             scope = viewModelScope,

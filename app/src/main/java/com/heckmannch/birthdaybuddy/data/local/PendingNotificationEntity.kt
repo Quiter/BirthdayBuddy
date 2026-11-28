@@ -11,7 +11,7 @@ import androidx.room.PrimaryKey
  * Indices:
  * - `isDone`: Accelerates queries for active notifications (`WHERE isDone = 0`)
  *   in [PendingNotificationDao.getActiveNotifications] and [PendingNotificationDao.getActiveNotificationsImmediate].
- * - `year`, `daysBefore`: Optimizes duplicate checks in [PendingNotificationDao.hasNotificationBeenScheduled]
+ * - `year`, `daysBefore`: Optimizes duplicate checks in [PendingNotificationDao.getScheduledNotifications]
  *   and cleanup queries in [PendingNotificationDao.deleteOldNotifications] to prevent full-table scans.
  */
 @Entity(

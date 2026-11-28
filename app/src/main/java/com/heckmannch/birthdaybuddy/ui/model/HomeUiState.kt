@@ -25,7 +25,6 @@ data class HomeUiState(
     val isResettingFilter: Boolean = false,
     val isSyncing: Boolean = false,
     val searchFocusRequested: Boolean = false,
-    val newlyAddedIdeaId: String? = null,
     val coupleSuggestion: CoupleSuggestionUiModel? = null,
     val hasContactPermission: Boolean = false,
     val pendingBirthdayEdit: PendingBirthdayEdit? = null,

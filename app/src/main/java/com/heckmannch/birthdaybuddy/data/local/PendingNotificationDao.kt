@@ -41,16 +41,6 @@ interface PendingNotificationDao {
     suspend fun getScheduledNotifications(year: Int, daysBefore: Int): List<PendingNotificationEntity>
 
     /**
-     * Checks whether a notification has already been scheduled for a given [year], [daysBefore] offset, and contact lookup key pattern.
-     */
-    @Query("SELECT EXISTS(SELECT 1 FROM pending_notifications WHERE year = :year AND daysBefore = :daysBefore AND contactLookupKeys LIKE :lookupKeyPattern ESCAPE '\\')")
-    suspend fun hasNotificationBeenScheduled(
-        year: Int,
-        daysBefore: Int,
-        lookupKeyPattern: String
-    ): Boolean
-
-    /**
      * Inserts or updates a pending notification, returning its generated row ID.
      */
     @Upsert
