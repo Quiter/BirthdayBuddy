@@ -1,9 +1,11 @@
 package com.heckmannch.birthdaybuddy.platform.appfunctions
 
 import android.os.CancellationSignal
+import androidx.appfunctions.AppFunctionInvalidArgumentException
 import androidx.appfunctions.ExecuteAppFunctionRequest
 import androidx.appfunctions.ExecuteAppFunctionResponse
 import androidx.appfunctions.internal.AppFunctionInventory
+import androidx.test.core.app.ApplicationProvider
 import com.google.common.truth.Truth.assertThat
 import com.heckmannch.birthdaybuddy.MainDispatcherRule
 import com.heckmannch.birthdaybuddy.domain.model.AppSettings
@@ -14,6 +16,7 @@ import com.heckmannch.birthdaybuddy.domain.repository.SettingsRepository
 import com.heckmannch.birthdaybuddy.domain.util.DeviceRegionProvider
 import com.heckmannch.birthdaybuddy.domain.util.NO_YEAR_MARKER
 import com.heckmannch.birthdaybuddy.util.Clock
+import com.heckmannch.birthdaybuddy.util.IntentExtras
 import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.mockk
@@ -65,6 +68,7 @@ class BirthdayAppFunctionServiceTest {
         val installedPackages = mutableSetOf<String>()
 
         init {
+            attachBaseContext(ApplicationProvider.getApplicationContext())
             contactRepository = this@BirthdayAppFunctionServiceTest.contactRepository
             settingsRepository = this@BirthdayAppFunctionServiceTest.settingsRepository
             ioDispatcher = mainDispatcherRule.testDispatcher
@@ -468,6 +472,83 @@ class BirthdayAppFunctionServiceTest {
 
         assertThat(result.isFailure).isTrue()
         assertThat(result.exceptionOrNull())
-            .isInstanceOf(androidx.appfunctions.AppFunctionInvalidArgumentException::class.java)
+            .isInstanceOf(AppFunctionInvalidArgumentException::class.java)
+    }
+
+    // ---- addBirthdayToContact ---------------------------------------------------------------
+
+    @Test
+    fun `addBirthdayToContact throws InvalidArgumentException when year is zero`() = runTest {
+        val result = runCatching {
+            service.addBirthdayToContact(contactId = "key1", year = 0, month = 5, day = 15)
+        }
+
+        assertThat(result.isFailure).isTrue()
+        val exception = result.exceptionOrNull()
+        assertThat(exception).isInstanceOf(AppFunctionInvalidArgumentException::class.java)
+        assertThat(exception?.message).contains("Invalid year 0")
+    }
+
+    @Test
+    fun `addBirthdayToContact throws InvalidArgumentException when year is negative`() = runTest {
+        val result = runCatching {
+            service.addBirthdayToContact(contactId = "key1", year = -1, month = 5, day = 15)
+        }
+
+        assertThat(result.isFailure).isTrue()
+        val exception = result.exceptionOrNull()
+        assertThat(exception).isInstanceOf(AppFunctionInvalidArgumentException::class.java)
+        assertThat(exception?.message).contains("Invalid year -1")
+    }
+
+    @Test
+    fun `addBirthdayToContact throws InvalidArgumentException when year exceeds 9999`() = runTest {
+        val result = runCatching {
+            service.addBirthdayToContact(contactId = "key1", year = 10000, month = 5, day = 15)
+        }
+
+        assertThat(result.isFailure).isTrue()
+        val exception = result.exceptionOrNull()
+        assertThat(exception).isInstanceOf(AppFunctionInvalidArgumentException::class.java)
+        assertThat(exception?.message).contains("Invalid year 10000")
+    }
+
+    @Test
+    fun `addBirthdayToContact succeeds when year is null even for Feb 29`() = runTest {
+        val contact = contactWithBirthdayInDays("key1", "Anna Schmidt", daysFromNow = 5)
+        coEvery { contactRepository.getAllContactsImmediate() } returns listOf(contact)
+
+        val pendingIntent = service.addBirthdayToContact(
+            contactId = "key1",
+            year = null,
+            month = 2,
+            day = 29,
+        )
+
+        val shadowIntent = org.robolectric.Shadows.shadowOf(pendingIntent).savedIntent
+        assertThat(shadowIntent.getStringExtra(IntentExtras.APPFN_CONTACT_ID)).isEqualTo("key1")
+        assertThat(shadowIntent.getIntExtra(IntentExtras.APPFN_BIRTHDAY_YEAR, -999))
+            .isEqualTo(NO_YEAR_MARKER)
+        assertThat(shadowIntent.getIntExtra(IntentExtras.APPFN_BIRTHDAY_MONTH, -1)).isEqualTo(2)
+        assertThat(shadowIntent.getIntExtra(IntentExtras.APPFN_BIRTHDAY_DAY, -1)).isEqualTo(29)
+    }
+
+    @Test
+    fun `addBirthdayToContact succeeds for valid year range`() = runTest {
+        val contact = contactWithBirthdayInDays("key1", "Anna Schmidt", daysFromNow = 5)
+        coEvery { contactRepository.getAllContactsImmediate() } returns listOf(contact)
+
+        val pendingIntent = service.addBirthdayToContact(
+            contactId = "key1",
+            year = 1995,
+            month = 7,
+            day = 20,
+        )
+
+        val shadowIntent = org.robolectric.Shadows.shadowOf(pendingIntent).savedIntent
+        assertThat(shadowIntent.getStringExtra(IntentExtras.APPFN_CONTACT_ID)).isEqualTo("key1")
+        assertThat(shadowIntent.getIntExtra(IntentExtras.APPFN_BIRTHDAY_YEAR, -1)).isEqualTo(1995)
+        assertThat(shadowIntent.getIntExtra(IntentExtras.APPFN_BIRTHDAY_MONTH, -1)).isEqualTo(7)
+        assertThat(shadowIntent.getIntExtra(IntentExtras.APPFN_BIRTHDAY_DAY, -1)).isEqualTo(20)
     }
 }

@@ -21,6 +21,7 @@ import com.heckmannch.birthdaybuddy.domain.repository.CalendarSyncRepository
 import com.heckmannch.birthdaybuddy.domain.repository.ContactRepository
 import com.heckmannch.birthdaybuddy.domain.repository.SettingsRepository
 import com.heckmannch.birthdaybuddy.domain.repository.WidgetUpdater
+import com.heckmannch.birthdaybuddy.util.Clock
 import com.heckmannch.birthdaybuddy.util.hasYear
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineDispatcher
@@ -36,6 +37,7 @@ import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import java.time.LocalDate
+import java.util.Locale
 import javax.inject.Inject
 
 /**
@@ -59,6 +61,7 @@ class ContactRepositoryImpl @Inject constructor(
     private val contactDbMapper: ContactDbMapper,
     private val labelConfigMapper: LabelConfigMapper,
     private val contentResolver: ContentResolver,
+    private val clock: Clock,
     private val giftIdeaConverters: GiftIdeaConverters = GiftIdeaConverters(),
     @IoDispatcher private val ioDispatcher: CoroutineDispatcher,
     @DefaultDispatcher private val defaultDispatcher: CoroutineDispatcher,
@@ -198,7 +201,7 @@ class ContactRepositoryImpl @Inject constructor(
 
                     // 5. Update timestamp
                     settingsRepository.updateSettings {
-                        it.copy(lastSyncTimestamp = System.currentTimeMillis())
+                        it.copy(lastSyncTimestamp = clock.currentTimeMillis())
                     }
 
                     contacts
@@ -256,7 +259,7 @@ class ContactRepositoryImpl @Inject constructor(
         val configsToInsert = buildList {
             // Process all system groups (excluding redundant ones)
             groups.values.asSequence()
-                .filter { it.title.lowercase() !in SystemContactDataSource.redundantLabels }
+                .filter { it.title.lowercase(Locale.ROOT) !in SystemContactDataSource.redundantLabels }
                 .distinctBy { it.title }
                 .forEach { group ->
                     val existing = existingConfigs[group.title]
@@ -276,7 +279,7 @@ class ContactRepositoryImpl @Inject constructor(
 
             // Add missing labels (which might not have a system group)
             allLabelsInSystem.forEach { label ->
-                if (label.lowercase() !in SystemContactDataSource.redundantLabels &&
+                if (label.lowercase(Locale.ROOT) !in SystemContactDataSource.redundantLabels &&
                     !existingConfigs.containsKey(label) &&
                     groups.values.none { it.title == label }
                 ) {

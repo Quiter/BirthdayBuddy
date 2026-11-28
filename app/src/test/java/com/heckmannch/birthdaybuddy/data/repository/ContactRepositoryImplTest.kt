@@ -20,6 +20,7 @@ import com.heckmannch.birthdaybuddy.domain.repository.CalendarSyncRepository
 import com.heckmannch.birthdaybuddy.domain.repository.SettingsRepository
 import com.heckmannch.birthdaybuddy.domain.repository.WidgetUpdater
 import com.heckmannch.birthdaybuddy.domain.util.NO_YEAR_MARKER
+import com.heckmannch.birthdaybuddy.util.Clock
 import io.mockk.every
 import io.mockk.mockkStatic
 import io.mockk.unmockkStatic
@@ -43,6 +44,7 @@ import org.mockito.kotlin.never
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 import java.time.LocalDate
+import java.util.Locale
 import java.util.concurrent.atomic.AtomicInteger
 import kotlin.time.Duration.Companion.milliseconds
 
@@ -60,6 +62,7 @@ class ContactRepositoryImplTest {
     private val calendarSyncRepository: CalendarSyncRepository = mock()
     private val widgetUpdater: WidgetUpdater = mock()
     private val contentResolver: ContentResolver = mock()
+    private val clock: Clock = mock()
     private val contactDbMapper = ContactDbMapper()
     private val labelConfigMapper = LabelConfigMapper()
 
@@ -83,6 +86,7 @@ class ContactRepositoryImplTest {
             whenever(settingsRepository.getSettingsImmediate()).thenReturn(AppSettings())
         }
         whenever(permissionChecker.hasCalendarPermission()).thenReturn(false)
+        whenever(clock.currentTimeMillis()).thenReturn(1_700_000_000_000L)
 
         repository = ContactRepositoryImpl(
             permissionChecker = permissionChecker,
@@ -96,6 +100,7 @@ class ContactRepositoryImplTest {
             contactDbMapper = contactDbMapper,
             labelConfigMapper = labelConfigMapper,
             contentResolver = contentResolver,
+            clock = clock,
             ioDispatcher = mainDispatcherRule.testDispatcher,
             defaultDispatcher = mainDispatcherRule.testDispatcher,
         )
@@ -439,6 +444,7 @@ class ContactRepositoryImplTest {
             contactDbMapper = contactDbMapper,
             labelConfigMapper = labelConfigMapper,
             contentResolver = contentResolver,
+            clock = clock,
             ioDispatcher = mainDispatcherRule.testDispatcher,
             defaultDispatcher = mainDispatcherRule.testDispatcher,
         )
@@ -905,6 +911,62 @@ class ContactRepositoryImplTest {
             assertThat(entity.lookupKey).isEqualTo("dup-key")
             assertThat(entity.contactId).isEqualTo("c2")
             assertThat(entity.phoneNumber).isEqualTo("+491709876543")
+        }
+    }
+
+    @Test
+    fun syncContacts_usesInjectedClockForLastSyncTimestamp() = runTest {
+        val expectedTimestamp = 987_654_321L
+        whenever(clock.currentTimeMillis()).thenReturn(expectedTimestamp)
+        whenever(permissionChecker.hasContactsPermission()).thenReturn(true)
+        whenever(systemContactDataSource.fetchContactGroups()).thenReturn(emptyMap())
+        whenever(systemContactDataSource.fetchContactsFromSystem(emptyMap())).thenReturn(emptyList())
+        whenever(contactDao.getAllContactsImmediate()).thenReturn(emptyList())
+        whenever(labelConfigDao.getAllConfigsImmediate()).thenReturn(emptyList())
+        whenever(contactUserDataDao.getAllUserDataImmediate()).thenReturn(emptyList())
+
+        repository.syncContacts()
+
+        val transformCaptor = argumentCaptor<(AppSettings) -> AppSettings>()
+        verify(settingsRepository).updateSettings(transformCaptor.capture())
+        val updatedSettings = transformCaptor.firstValue(AppSettings())
+        assertThat(updatedSettings.lastSyncTimestamp).isEqualTo(expectedTimestamp)
+    }
+
+    @Test
+    fun syncContacts_excludesRedundantUppercaseLabelsUnderTurkishLocale() = runTest {
+        val originalLocale = Locale.getDefault()
+        Locale.setDefault(Locale.forLanguageTag("tr-TR"))
+        try {
+            whenever(permissionChecker.hasContactsPermission()).thenReturn(true)
+            val groups = mapOf(
+                1L to GroupInfo("FAVORITES", isSystem = false),
+                2L to GroupInfo("STARRED IN ANDROID", isSystem = false),
+                3L to GroupInfo("Friends", isSystem = false)
+            )
+            val systemContact = Contact(
+                contactId = "c1",
+                lookupKey = "key1",
+                fullName = "Alice",
+                birthday = LocalDate.of(1990, 1, 1),
+                labels = listOf("ICH", "Friends", "Work")
+            )
+            whenever(systemContactDataSource.fetchContactGroups()).thenReturn(groups)
+            whenever(systemContactDataSource.fetchContactsFromSystem(groups)).thenReturn(
+                listOf(systemContact)
+            )
+            whenever(contactDao.getAllContactsImmediate()).thenReturn(emptyList())
+            whenever(labelConfigDao.getAllConfigsImmediate()).thenReturn(emptyList())
+            whenever(contactUserDataDao.getAllUserDataImmediate()).thenReturn(emptyList())
+
+            repository.syncContacts()
+
+            val configsCaptor = argumentCaptor<List<LabelConfigEntity>>()
+            verify(labelConfigDao).upsertConfigs(configsCaptor.capture())
+            assertThat(configsCaptor.firstValue.map { it.name })
+                .containsExactly("Friends", "Work")
+        } finally {
+            Locale.setDefault(originalLocale)
         }
     }
 }

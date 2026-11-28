@@ -158,6 +158,7 @@ class SyncViewModelTest {
                 contactDbMapper = ContactDbMapper(),
                 labelConfigMapper = LabelConfigMapper(),
                 contentResolver = contentResolver,
+                clock = clock,
                 ioDispatcher = mainDispatcherRule.testDispatcher,
                 defaultDispatcher = mainDispatcherRule.testDispatcher,
             )

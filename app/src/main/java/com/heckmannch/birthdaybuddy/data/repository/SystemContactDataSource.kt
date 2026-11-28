@@ -175,7 +175,7 @@ class SystemContactDataSource @Inject constructor(
         )
 
         val bestContact = rawContacts.firstOrNull { (_, type) ->
-            type == null || !readOnlyApps.contains(type.lowercase())
+            type == null || !readOnlyApps.contains(type.lowercase(Locale.ROOT))
         } ?: rawContacts.firstOrNull()
 
         return bestContact?.first
@@ -203,7 +203,7 @@ class SystemContactDataSource @Inject constructor(
                 val title = cursor.getString(titleIdx)
 
                 if (!title.isNullOrBlank()) {
-                    val isSystem = when (title.lowercase()) {
+                    val isSystem = when (title.lowercase(Locale.ROOT)) {
                         in pureSystemGroups -> true
                         else -> false
                     }
@@ -299,7 +299,7 @@ class SystemContactDataSource @Inject constructor(
                     val date = parseDate(dateStr) ?: continue
                     val type = cursor.getInt(typeIdx)
                     val rawLabel = cursor.getString(labelIdx)?.trim()
-                    val normalizedLabel = rawLabel?.lowercase()
+                    val normalizedLabel = rawLabel?.lowercase(Locale.ROOT)
 
                     contactsMap[contactId]?.let { contact ->
                         when {

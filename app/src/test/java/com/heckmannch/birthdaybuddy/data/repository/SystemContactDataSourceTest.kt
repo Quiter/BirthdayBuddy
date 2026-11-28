@@ -388,4 +388,167 @@ class SystemContactDataSourceTest {
         assertThat(contacts).isEmpty()
         verify(exactly = 1) { Log.w(any(), any<String>()) }
     }
+
+    @Test
+    fun `fetchContactsFromSystem matches uppercase ANNIVERSARY label under Turkish locale`() = runTest {
+        Locale.setDefault(Locale.forLanguageTag("tr-TR"))
+
+        val contactsCursor = MatrixCursor(
+            arrayOf(
+                ContactsContract.Contacts._ID,
+                ContactsContract.Contacts.LOOKUP_KEY,
+                ContactsContract.Contacts.DISPLAY_NAME,
+                ContactsContract.Contacts.PHOTO_THUMBNAIL_URI,
+                ContactsContract.Contacts.STARRED
+            )
+        ).apply {
+            addRow(arrayOf<Any?>("1", "key-1", "Alice", null, 0))
+        }
+
+        val eventsCursor = MatrixCursor(
+            arrayOf(
+                ContactsContract.Data.CONTACT_ID,
+                ContactsContract.CommonDataKinds.Event.START_DATE,
+                ContactsContract.CommonDataKinds.Event.TYPE,
+                ContactsContract.CommonDataKinds.Event.LABEL
+            )
+        ).apply {
+            addRow(
+                arrayOf<Any?>(
+                    "1",
+                    "2018-08-20",
+                    ContactsContract.CommonDataKinds.Event.TYPE_CUSTOM,
+                    "ANNIVERSARY"
+                )
+            )
+        }
+
+        every {
+            contentResolver.query(
+                ContactsContract.Contacts.CONTENT_URI,
+                any(),
+                any(),
+                any(),
+                any()
+            )
+        } returns contactsCursor
+
+        every {
+            contentResolver.query(
+                ContactsContract.Data.CONTENT_URI,
+                any(),
+                match { it == "${ContactsContract.Data.MIMETYPE} = ?" },
+                any(),
+                any()
+            )
+        } returns eventsCursor
+
+        every {
+            contentResolver.query(
+                ContactsContract.Data.CONTENT_URI,
+                any(),
+                match { it != "${ContactsContract.Data.MIMETYPE} = ?" },
+                any(),
+                any()
+            )
+        } returns null
+
+        every {
+            contentResolver.query(
+                ContactsContract.CommonDataKinds.Phone.CONTENT_URI,
+                any(),
+                any(),
+                any(),
+                any()
+            )
+        } returns null
+
+        val contacts = dataSource.fetchContactsFromSystem(emptyMap())
+
+        assertThat(contacts).hasSize(1)
+        val contact = contacts.single()
+        assertThat(contact.anniversary).isEqualTo(LocalDate.of(2018, 8, 20))
+        assertThat(contact.customEvents).isEmpty()
+    }
+
+    @Test
+    fun `fetchContactGroups marks system groups independently of Turkish locale`() = runTest {
+        Locale.setDefault(Locale.forLanguageTag("tr-TR"))
+
+        val groupsCursor = MatrixCursor(
+            arrayOf(
+                ContactsContract.Groups._ID,
+                ContactsContract.Groups.TITLE
+            )
+        ).apply {
+            addRow(arrayOf<Any?>(1L, "MY CONTACTS"))
+            addRow(arrayOf<Any?>(2L, "All Contacts"))
+            addRow(arrayOf<Any?>(3L, "Friends"))
+        }
+
+        every {
+            contentResolver.query(
+                ContactsContract.Groups.CONTENT_URI,
+                any(),
+                any(),
+                any(),
+                any()
+            )
+        } returns groupsCursor
+
+        val groups = dataSource.fetchContactGroups()
+
+        assertThat(groups[1L]).isEqualTo(GroupInfo("MY CONTACTS", isSystem = true))
+        assertThat(groups[2L]).isEqualTo(GroupInfo("All Contacts", isSystem = true))
+        assertThat(groups[3L]).isEqualTo(GroupInfo("Friends", isSystem = false))
+    }
+
+    @Test
+    fun `updateContactBirthday skips uppercase read-only Viber account under Turkish locale`() = runTest {
+        Locale.setDefault(Locale.forLanguageTag("tr-TR"))
+
+        val emptyExistingBirthdayCursor = MatrixCursor(arrayOf(ContactsContract.Data._ID))
+        val rawContactsCursor = MatrixCursor(
+            arrayOf(
+                ContactsContract.RawContacts._ID,
+                ContactsContract.RawContacts.ACCOUNT_TYPE,
+                ContactsContract.RawContacts.DELETED
+            )
+        ).apply {
+            addRow(arrayOf<Any?>(10L, "COM.VIBER.VOIP", 0))
+            addRow(arrayOf<Any?>(20L, "com.google", 0))
+        }
+
+        every {
+            contentResolver.query(
+                ContactsContract.Data.CONTENT_URI,
+                any(),
+                any(),
+                any(),
+                any()
+            )
+        } returns emptyExistingBirthdayCursor
+
+        every {
+            contentResolver.query(
+                ContactsContract.RawContacts.CONTENT_URI,
+                any(),
+                any(),
+                any(),
+                any()
+            )
+        } returns rawContactsCursor
+
+        val opsSlot = slot<ArrayList<ContentProviderOperation>>()
+        every {
+            contentResolver.applyBatch(ContactsContract.AUTHORITY, capture(opsSlot))
+        } returns emptyArray()
+
+        val result = dataSource.updateContactBirthday("1", LocalDate.of(1990, 5, 15))
+
+        assertThat(result).isTrue()
+        assertThat(opsSlot.captured).hasSize(1)
+        val resolvedValues = opsSlot.captured[0].resolveValueBackReferences(emptyArray(), 0)
+        assertThat(resolvedValues?.getAsLong(ContactsContract.Data.RAW_CONTACT_ID)).isEqualTo(20L)
+    }
 }

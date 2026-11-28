@@ -306,7 +306,7 @@ abstract class BirthdayAppFunctionService : AppFunctionService() {
      * `getContactBirthday` before calling this function.
      *
      * @param contactId Unique contact lookup key obtained from a prior call.
-     * @param year Four-digit birth year, or null to leave the year unset.
+     * @param year Birth year (1–9999), or null to leave the year unset.
      * @param month Month of the birthday (1 = January, 12 = December). Must be in 1–12.
      * @param day Day of the birthday (1–31). Must be a valid day for the given month.
      * @return A [PendingIntent] that opens the contact's edit screen inside BirthdayBuddy.
@@ -320,6 +320,12 @@ abstract class BirthdayAppFunctionService : AppFunctionService() {
         month: Int,
         day: Int,
     ): PendingIntent = withContext(ioDispatcher) {
+        if (year != null && year !in 1..9999) {
+            throw AppFunctionInvalidArgumentException(
+                errorMessage = "Invalid year $year: must be between 1 and 9999",
+            )
+        }
+
         val parsedMonth = try {
             Month.of(month)
         } catch (e: DateTimeException) {
