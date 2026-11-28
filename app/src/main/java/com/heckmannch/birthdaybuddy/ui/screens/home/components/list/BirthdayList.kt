@@ -165,14 +165,10 @@ fun BirthdayList(
 
     var expandedContactId by rememberSaveable { mutableStateOf<String?>(null) }
 
-    var previousLabel by remember { mutableStateOf(selectedLabel) }
-    var previousQuery by remember { mutableStateOf(searchQuery) }
-    val skipPlacementAnimation = (selectedLabel != previousLabel) || (searchQuery != previousQuery)
-
-    SideEffect {
-        previousLabel = selectedLabel
-        previousQuery = searchQuery
-    }
+    val skipPlacementAnimation = rememberSkipPlacementAnimation(
+        selectedLabel = selectedLabel,
+        searchQuery = searchQuery,
+    )
 
     // Schließen und Animationen anpassen, wenn sich Filter oder Suche ändern
     LaunchedEffect(selectedLabel, searchQuery) {
@@ -486,3 +482,34 @@ fun CoupleSuggestionBanner(
         }
     }
 }
+
+/**
+ * Tracks whether the label filter or search query changed in the current composition frame
+ * so item placement animations can be skipped without triggering a second recomposition.
+ */
+@Composable
+internal fun rememberSkipPlacementAnimation(
+    selectedLabel: String?,
+    searchQuery: String,
+): Boolean {
+    val previousFilter = remember { PreviousFilterState(selectedLabel, searchQuery) }
+    val skipPlacementAnimation =
+        (selectedLabel != previousFilter.label) || (searchQuery != previousFilter.query)
+
+    SideEffect {
+        previousFilter.label = selectedLabel
+        previousFilter.query = searchQuery
+    }
+
+    return skipPlacementAnimation
+}
+
+/**
+ * Non-snapshot holder for the previous label filter and search query.
+ * Mutating its fields inside [SideEffect] prevents triggering an unnecessary
+ * second recomposition of [BirthdayList].
+ */
+private class PreviousFilterState(
+    var label: String?,
+    var query: String,
+)
