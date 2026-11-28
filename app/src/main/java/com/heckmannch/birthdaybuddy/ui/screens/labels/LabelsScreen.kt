@@ -39,9 +39,9 @@ import com.heckmannch.birthdaybuddy.ui.screens.labels.components.AllLabelsCard
 import com.heckmannch.birthdaybuddy.ui.screens.labels.components.LabelCard
 import com.heckmannch.birthdaybuddy.ui.screens.labels.components.LabelsHeader
 import com.heckmannch.birthdaybuddy.ui.screens.settings.subscreens.labels.LabelIntent
+import com.heckmannch.birthdaybuddy.ui.screens.settings.subscreens.labels.LabelItemUiModel
 import com.heckmannch.birthdaybuddy.ui.screens.settings.subscreens.labels.LabelUiState
 import com.heckmannch.birthdaybuddy.ui.screens.settings.subscreens.labels.LabelViewModel
-import com.heckmannch.birthdaybuddy.ui.screens.settings.subscreens.labels.LabelWithContactsUiModel
 import com.heckmannch.birthdaybuddy.ui.theme.BirthdayBuddyTheme
 import com.heckmannch.birthdaybuddy.ui.theme.SpacingExtraSmall
 import com.heckmannch.birthdaybuddy.ui.theme.SpacingNormal
@@ -202,7 +202,7 @@ fun LabelsScreenContent(
 private fun LazyListScope.labelSection(
     sectionKey: String,
     headerTitle: (@Composable () -> String)?,
-    entries: List<LabelWithContactsUiModel>,
+    entries: List<LabelItemUiModel>,
     activeLabelFilter: String?,
     onSelectLabel: (String) -> Unit,
     onUpdateLabelConfig: (String, Boolean, Boolean, Boolean, Boolean, Boolean) -> Unit,
@@ -222,7 +222,7 @@ private fun LazyListScope.labelSection(
         LabelCard(
             label = entry.label,
             isActive = activeLabelFilter == entry.label.name,
-            assignedContacts = entry.assignedContacts,
+            contactsCount = entry.contactsCount,
             onSelectLabel = { onSelectLabel(entry.label.name) },
             onConfigChanged = onUpdateLabelConfig,
         )
@@ -258,7 +258,7 @@ private fun LabelsScreenPreview() {
             uiState = SampleData.homeUiState,
             labelUiState = LabelUiState(
                 activeLabels = listOf(
-                    LabelWithContactsUiModel(
+                    LabelItemUiModel(
                         label = LabelManagementModel(
                             name = "Familie",
                             isHiddenFromFilter = false,
@@ -267,9 +267,9 @@ private fun LabelsScreenPreview() {
                             notificationsEnabled = true,
                             showInWidget = true,
                         ),
-                        assignedContacts = SampleData.sampleContacts,
+                        contactsCount = SampleData.sampleContacts.size,
                     ),
-                    LabelWithContactsUiModel(
+                    LabelItemUiModel(
                         label = LabelManagementModel(
                             name = ContactLabels.LABEL_NO_BIRTHDAY,
                             isHiddenFromFilter = false,
@@ -278,11 +278,11 @@ private fun LabelsScreenPreview() {
                             notificationsEnabled = false,
                             showInWidget = false,
                         ),
-                        assignedContacts = emptyList(),
+                        contactsCount = 0,
                     ),
                 ),
                 otherEventLabels = listOf(
-                    LabelWithContactsUiModel(
+                    LabelItemUiModel(
                         label = LabelManagementModel(
                             name = ContactLabels.LABEL_ANNIVERSARY,
                             isHiddenFromFilter = false,
@@ -291,9 +291,9 @@ private fun LabelsScreenPreview() {
                             notificationsEnabled = true,
                             showInWidget = true,
                         ),
-                        assignedContacts = SampleData.sampleContacts.take(2),
+                        contactsCount = 2,
                     ),
-                    LabelWithContactsUiModel(
+                    LabelItemUiModel(
                         label = LabelManagementModel(
                             name = ContactLabels.customEventLabel("Jahrestag"),
                             isHiddenFromFilter = false,
@@ -302,11 +302,11 @@ private fun LabelsScreenPreview() {
                             notificationsEnabled = true,
                             showInWidget = true,
                         ),
-                        assignedContacts = SampleData.sampleContacts.take(1),
+                        contactsCount = 1,
                     ),
                 ),
                 hiddenLabels = listOf(
-                    LabelWithContactsUiModel(
+                    LabelItemUiModel(
                         label = LabelManagementModel(
                             name = "Arbeit",
                             isHiddenFromFilter = true,
@@ -315,11 +315,11 @@ private fun LabelsScreenPreview() {
                             notificationsEnabled = false,
                             showInWidget = false,
                         ),
-                        assignedContacts = SampleData.sampleContacts.take(1),
+                        contactsCount = 1,
                     ),
                 ),
                 ignoredLabels = listOf(
-                    LabelWithContactsUiModel(
+                    LabelItemUiModel(
                         label = LabelManagementModel(
                             name = "Spam",
                             isHiddenFromFilter = false,
@@ -328,7 +328,7 @@ private fun LabelsScreenPreview() {
                             notificationsEnabled = false,
                             showInWidget = false,
                         ),
-                        assignedContacts = emptyList(),
+                        contactsCount = 0,
                     ),
                 ),
                 allLabeledContactsCount = SampleData.sampleContacts.size,

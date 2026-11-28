@@ -81,7 +81,7 @@ class GlassCardTest {
                 LabelCard(
                     label = label,
                     isActive = false,
-                    assignedContacts = emptyList(),
+                    contactsCount = 2,
                     onSelectLabel = { selectClicks++ },
                     onConfigChanged = { _, _, _, _, _, _ -> }
                 )
@@ -138,14 +138,14 @@ class GlassCardTest {
                     LabelCard(
                         label = ignoredLabel,
                         isActive = false,
-                        assignedContacts = emptyList(),
+                        contactsCount = 0,
                         onSelectLabel = {},
                         onConfigChanged = { _, _, _, _, _, _ -> }
                     )
                     LabelCard(
                         label = hiddenLabel,
                         isActive = false,
-                        assignedContacts = emptyList(),
+                        contactsCount = 0,
                         onSelectLabel = {},
                         onConfigChanged = { _, _, _, _, _, _ -> }
                     )

@@ -2,14 +2,9 @@ package com.heckmannch.birthdaybuddy.ui.screens.labels.components
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.ListItem
@@ -33,9 +28,7 @@ import com.heckmannch.birthdaybuddy.ui.components.AppSwitch
 import com.heckmannch.birthdaybuddy.ui.components.cards.GlassCardExpandButton
 import com.heckmannch.birthdaybuddy.ui.components.cards.GlassCardLayout
 import com.heckmannch.birthdaybuddy.ui.components.cards.GlassCardTag
-import com.heckmannch.birthdaybuddy.ui.model.ContactUiModel
 import com.heckmannch.birthdaybuddy.ui.model.LabelManagementModel
-import com.heckmannch.birthdaybuddy.ui.model.SampleData
 import com.heckmannch.birthdaybuddy.ui.screens.home.components.labels.toDisplayLabel
 import com.heckmannch.birthdaybuddy.ui.theme.BirthdayBuddyTheme
 import com.heckmannch.birthdaybuddy.ui.theme.SpacingExtraSmall
@@ -56,13 +49,13 @@ import com.heckmannch.birthdaybuddy.ui.theme.labelIgnoredCardGradient
  * - Default labels: neutral frosted glass ([defaultCardGradient])
  *
  * Tapping the card toggles the active label filter ([onSelectLabel]).
- * Tapping the trailing expand button expands/collapses granular options and assigned contacts.
+ * Tapping the trailing expand button expands/collapses granular options.
  */
 @Composable
 internal fun LabelCard(
     label: LabelManagementModel,
     isActive: Boolean,
-    assignedContacts: List<ContactUiModel>,
+    contactsCount: Int,
     onSelectLabel: () -> Unit,
     onConfigChanged: (String, Boolean, Boolean, Boolean, Boolean, Boolean) -> Unit,
     modifier: Modifier = Modifier,
@@ -76,10 +69,10 @@ internal fun LabelCard(
         else -> defaultCardGradient()
     }
 
-    val contactCountText = if (assignedContacts.size == 1) {
+    val contactCountText = if (contactsCount == 1) {
         stringResource(R.string.labels_count_contacts_one)
     } else {
-        stringResource(R.string.labels_count_contacts_many, assignedContacts.size)
+        stringResource(R.string.labels_count_contacts_many, contactsCount)
     }
 
     GlassCardLayout(
@@ -214,26 +207,6 @@ internal fun LabelCard(
                     color = cardStyle.titleColor
                 )
             }
-
-            if (assignedContacts.isNotEmpty()) {
-                Spacer(modifier = Modifier.height(SpacingSmall))
-                Text(
-                    text = stringResource(R.string.labels_assigned_contacts, assignedContacts.size),
-                    style = MaterialTheme.typography.labelMedium,
-                    fontWeight = FontWeight.SemiBold,
-                    color = cardStyle.subtitleColor,
-                    modifier = Modifier.padding(bottom = SpacingSmall)
-                )
-
-                LazyRow(
-                    horizontalArrangement = Arrangement.spacedBy(SpacingSmall),
-                    contentPadding = PaddingValues(vertical = SpacingExtraSmall)
-                ) {
-                    items(assignedContacts, key = { it.id }) { contact ->
-                        ContactChip(contact = contact)
-                    }
-                }
-            }
         }
     ) {
         // 1. Selection indicator (left) - reflects active filter state
@@ -309,7 +282,7 @@ private fun LabelCardPreview() {
                     showInWidget = true
                 ),
                 isActive = true,
-                assignedContacts = SampleData.sampleContacts,
+                contactsCount = 3,
                 onSelectLabel = {},
                 onConfigChanged = { _, _, _, _, _, _ -> }
             )
@@ -323,7 +296,7 @@ private fun LabelCardPreview() {
                     showInWidget = false
                 ),
                 isActive = false,
-                assignedContacts = emptyList(),
+                contactsCount = 0,
                 onSelectLabel = {},
                 onConfigChanged = { _, _, _, _, _, _ -> }
             )
@@ -337,7 +310,7 @@ private fun LabelCardPreview() {
                     showInWidget = false
                 ),
                 isActive = false,
-                assignedContacts = emptyList(),
+                contactsCount = 0,
                 onSelectLabel = {},
                 onConfigChanged = { _, _, _, _, _, _ -> }
             )

@@ -14,6 +14,10 @@ import javax.inject.Inject
  * Encapsulates the filtering logic for the Home screen: keyword search,
  * ignored labels, and selected labels filter, returning domain [Contact] models.
  *
+ * Ignored labels exclude matching contacts from the unfiltered "All Labels" view and from
+ * non-ignored label views, while explicitly selecting an ignored label displays its matching
+ * contacts identically to a regular label.
+ *
  * All reactive inputs are accepted as [Flow] parameters so that the ViewModel
  * stays decoupled from the filter transformations and this class can be unit-tested
  * without any Android framework dependencies.
@@ -67,6 +71,7 @@ class GetContactsUseCase @Inject constructor(
         val labelsEnabled = settingsState.labelsEnabled
         val otherEventsEnabled = settingsState.otherEventsEnabled
         val disabledEvents = settingsState.disabledOtherEventLabels
+        val isSelectedLabelIgnored = label != null && label in ignoredLabels
 
         val contactMap = rawContacts.associateBy { it.lookupKey }
 
@@ -79,8 +84,9 @@ class GetContactsUseCase @Inject constructor(
                 }
             ) return@filter false
 
-            // 2. Ignored labels filter (only when not searching and labels are enabled)
-            if (labelsEnabled && !isSearching && contact.labels.any { it in ignoredLabels }) {
+            // 2. Ignored labels filter (applies when not searching, not explicitly filtering by
+            //    an ignored label, and labels are enabled)
+            if (labelsEnabled && !isSearching && !isSelectedLabelIgnored && contact.labels.any { it in ignoredLabels }) {
                 return@filter false
             }
 

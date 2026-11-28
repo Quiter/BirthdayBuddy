@@ -13,8 +13,8 @@ import com.google.common.truth.Truth.assertThat
 import com.heckmannch.birthdaybuddy.R
 import com.heckmannch.birthdaybuddy.ui.model.LabelManagementModel
 import com.heckmannch.birthdaybuddy.ui.model.SampleData
+import com.heckmannch.birthdaybuddy.ui.screens.settings.subscreens.labels.LabelItemUiModel
 import com.heckmannch.birthdaybuddy.ui.screens.settings.subscreens.labels.LabelUiState
-import com.heckmannch.birthdaybuddy.ui.screens.settings.subscreens.labels.LabelWithContactsUiModel
 import com.heckmannch.birthdaybuddy.ui.theme.BirthdayBuddyTheme
 import org.junit.Rule
 import org.junit.Test
@@ -25,7 +25,7 @@ import org.robolectric.annotation.Config
 import org.robolectric.annotation.GraphicsMode
 
 /**
- * UI tests for [LabelsScreenContent] verifying label creation via `AddLabelDialog`.
+ * UI tests for [LabelsScreenContent] verifying label creation and selection behavior.
  */
 @RunWith(RobolectricTestRunner::class)
 @Config(sdk = [35])
@@ -64,9 +64,9 @@ class LabelsScreenTest {
                         )
                         savedLabel = model
                         labelUiState = labelUiState.copy(
-                            activeLabels = labelUiState.activeLabels + LabelWithContactsUiModel(
+                            activeLabels = labelUiState.activeLabels + LabelItemUiModel(
                                 label = model,
-                                assignedContacts = emptyList(),
+                                contactsCount = 0,
                             ),
                         )
                     },
@@ -98,5 +98,43 @@ class LabelsScreenTest {
         assertThat(selectedLabels).isEmpty()
         // Newly created label appears immediately in the LabelsScreen list
         composeRule.onNodeWithText("Sportverein").assertIsDisplayed()
+    }
+
+    @Test
+    fun ignoredLabelCard_clickSelectsIgnoredLabelFilter() {
+        val selectedLabels = mutableListOf<String?>()
+        val ignoredModel = LabelManagementModel(
+            name = "Spam",
+            isHiddenFromFilter = false,
+            isIgnored = true,
+            isSystem = false,
+            notificationsEnabled = false,
+            showInWidget = false,
+        )
+
+        composeRule.setContent {
+            BirthdayBuddyTheme {
+                LabelsScreenContent(
+                    uiState = SampleData.homeUiState.copy(selectedLabel = null),
+                    labelUiState = LabelUiState(
+                        ignoredLabels = listOf(
+                            LabelItemUiModel(
+                                label = ignoredModel,
+                                contactsCount = 3,
+                            )
+                        ),
+                    ),
+                    actions = SampleData.homeActions.copy(
+                        onLabelSelected = { selectedLabels.add(it) },
+                    ),
+                )
+            }
+        }
+
+        composeRule.onNodeWithText("Spam").assertIsDisplayed()
+        composeRule.onNodeWithText("Spam").performClick()
+        composeRule.waitForIdle()
+
+        assertThat(selectedLabels).containsExactly("Spam")
     }
 }

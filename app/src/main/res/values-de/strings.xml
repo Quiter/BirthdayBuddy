@@ -473,7 +473,6 @@
     <string name="labels_add_placeholder">Labelname</string>
     <string name="labels_add_confirm">Erstellen</string>
     <string name="labels_cancel">Abbrechen</string>
-    <string name="labels_assigned_contacts">Zugewiesene Kontakte (%1$d)</string>
     <string name="labels_all_card">Alle Labels</string>
     <string name="labels_all_card_desc">Alle Kontakte mit zugewiesenen Labels</string>
     <string name="labels_count_contacts_one">1 Kontakt</string>

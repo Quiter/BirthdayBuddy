@@ -6,9 +6,7 @@ import com.heckmannch.birthdaybuddy.domain.model.Contact
 import com.heckmannch.birthdaybuddy.domain.model.ContactLabels
 import com.heckmannch.birthdaybuddy.domain.model.LabelConfig
 import com.heckmannch.birthdaybuddy.domain.repository.ContactRepository
-import com.heckmannch.birthdaybuddy.domain.repository.TimeRepository
 import com.heckmannch.birthdaybuddy.domain.usecase.GetCategorizedLabelsUseCase
-import com.heckmannch.birthdaybuddy.ui.mapper.ContactUiMapper
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.runTest
@@ -26,8 +24,6 @@ class LabelViewModelTest {
     val mainDispatcherRule = MainDispatcherRule()
 
     private val contactRepository: ContactRepository = mock()
-    private val timeRepository: TimeRepository = mock()
-    private val contactUiMapper = ContactUiMapper()
     private lateinit var getCategorizedLabelsUseCase: GetCategorizedLabelsUseCase
 
     private val today = LocalDate.of(2026, 5, 15)
@@ -35,7 +31,6 @@ class LabelViewModelTest {
     @Before
     fun setUp() {
         getCategorizedLabelsUseCase = GetCategorizedLabelsUseCase(mainDispatcherRule.testDispatcher)
-        whenever(timeRepository.currentDate).thenReturn(flowOf(today))
         whenever(contactRepository.otherEventsEnabled).thenReturn(flowOf(false))
         whenever(contactRepository.disabledOtherEventLabels).thenReturn(flowOf(emptySet()))
     }
@@ -43,13 +38,11 @@ class LabelViewModelTest {
     private fun createViewModel() = LabelViewModel(
         contactRepository = contactRepository,
         getCategorizedLabelsUseCase = getCategorizedLabelsUseCase,
-        contactUiMapper = contactUiMapper,
-        timeRepository = timeRepository,
         defaultDispatcher = mainDispatcherRule.testDispatcher,
     )
 
     @Test
-    fun `uiState should categorize labels into active, otherEvents, hidden, and ignored sections with assigned contacts`() = runTest {
+    fun `uiState should categorize labels into active, otherEvents, hidden, and ignored sections with contact counts`() = runTest {
         // Given
         val customEventKey = ContactLabels.customEventLabel("Jahrestag")
         val configs = listOf(
@@ -95,27 +88,22 @@ class LabelViewModelTest {
         assertThat(state.allLabeledContactsCount).isEqualTo(2)
 
         assertThat(state.activeLabels.map { it.label.name }).containsExactly("Family")
-        assertThat(state.activeLabels.first().assignedContacts.map { it.fullName })
-            .containsExactly("Alice")
+        assertThat(state.activeLabels.first().contactsCount).isEqualTo(1)
 
         assertThat(state.otherEventLabels.map { it.label.name }).containsExactly(
             ContactLabels.LABEL_ANNIVERSARY,
             customEventKey,
         ).inOrder()
-        assertThat(state.otherEventLabels[0].assignedContacts.map { it.fullName })
-            .containsExactly("Alice")
-        assertThat(state.otherEventLabels[1].assignedContacts.map { it.fullName })
-            .containsExactly("Alice")
+        assertThat(state.otherEventLabels[0].contactsCount).isEqualTo(1)
+        assertThat(state.otherEventLabels[1].contactsCount).isEqualTo(1)
 
         assertThat(state.hiddenLabels.map { it.label.name }).containsExactly("Friends")
-        assertThat(state.hiddenLabels.first().assignedContacts.map { it.fullName })
-            .containsExactly("Bob")
+        assertThat(state.hiddenLabels.first().contactsCount).isEqualTo(1)
 
         assertThat(state.ignoredLabels.map { it.label.name })
             .containsExactly(ContactLabels.LABEL_NO_BIRTHDAY)
         assertThat(state.ignoredLabels.first().label.isIgnored).isTrue()
-        assertThat(state.ignoredLabels.first().assignedContacts.map { it.fullName })
-            .containsExactly("Bob")
+        assertThat(state.ignoredLabels.first().contactsCount).isEqualTo(1)
     }
 
     @Test
@@ -200,7 +188,7 @@ class LabelViewModelTest {
 
         val state = viewModel.uiState.first { it.activeLabels.isNotEmpty() }
         assertThat(state.activeLabels.map { it.label.name }).containsExactly("Book Club")
-        assertThat(state.activeLabels.first().assignedContacts).isEmpty()
+        assertThat(state.activeLabels.first().contactsCount).isEqualTo(0)
         assertThat(state.allLabeledContactsCount).isEqualTo(0)
     }
 }

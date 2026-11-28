@@ -194,6 +194,40 @@ class HomeViewModelTest {
     }
 
     @Test
+    fun ignoredLabel_whenSelected_showsIgnoredContactsInList() = runTest {
+        val contacts = listOf(
+            Contact(
+                contactId = "1",
+                lookupKey = "k1",
+                fullName = "Visible",
+                birthday = today,
+                labels = listOf("Normal")
+            ),
+            Contact(
+                contactId = "2",
+                lookupKey = "k2",
+                fullName = "Ignored Person",
+                birthday = today,
+                labels = listOf("Ignored")
+            )
+        )
+        val labelConfigs = listOf(
+            LabelConfig(name = "Ignored", isIgnored = true)
+        )
+        whenever(contactRepository.allContacts).thenReturn(MutableStateFlow(contacts))
+        whenever(contactRepository.labelConfigs).thenReturn(MutableStateFlow(labelConfigs))
+
+        viewModel = createViewModel()
+        viewModel.onIntent(HomeIntent.LabelSelected("Ignored"))
+
+        val state = viewModel.uiState.first {
+            it.selectedLabel == "Ignored" && it.contacts?.map { c -> c.fullName } == listOf("Ignored Person")
+        }
+
+        assertThat(state.contacts?.map { it.fullName }).containsExactly("Ignored Person")
+    }
+
+    @Test
     fun otherEventsFiltering_worksCorrectly() = runTest {
         val contacts = listOf(
             Contact(

@@ -218,6 +218,134 @@ class GetContactsUseCaseTest {
     }
 
     @Test
+    fun ignoredLabel_whenSelected_showsMatchingContactsWithBirthdayLikeNormalLabel() = runTest {
+        val contacts = listOf(
+            Contact(
+                contactId = "1",
+                lookupKey = "k1",
+                fullName = "Ignored With Birthday",
+                birthday = today,
+                labels = listOf("Ignored"),
+            ),
+            Contact(
+                contactId = "2",
+                lookupKey = "k2",
+                fullName = "Ignored Without Birthday",
+                birthday = null,
+                labels = listOf("Ignored"),
+            ),
+            Contact(
+                contactId = "3",
+                lookupKey = "k3",
+                fullName = "Ignored And Normal",
+                birthday = today,
+                labels = listOf("Normal", "Ignored"),
+            ),
+            Contact(
+                contactId = "4",
+                lookupKey = "k4",
+                fullName = "Two Ignored Labels",
+                birthday = today,
+                labels = listOf("Ignored", "OtherIgnored"),
+            ),
+            Contact(
+                contactId = "5",
+                lookupKey = "k5",
+                fullName = "Only Normal",
+                birthday = today,
+                labels = listOf("Normal"),
+            ),
+        )
+        val settings = defaultSettings.copy(ignoredLabels = setOf("Ignored", "OtherIgnored"))
+
+        val result = invoke(
+            contacts = contacts,
+            selectedLabel = "Ignored",
+            settings = settings,
+        ).first()
+
+        assertThat(result.map { it.fullName }).containsExactly(
+            "Ignored With Birthday",
+            "Ignored And Normal",
+            "Two Ignored Labels",
+        )
+    }
+
+    @Test
+    fun normalLabel_whenSelected_stillHidesContactsThatAlsoHaveIgnoredLabel() = runTest {
+        val contacts = listOf(
+            Contact(
+                contactId = "1",
+                lookupKey = "k1",
+                fullName = "Only Normal",
+                birthday = today,
+                labels = listOf("Normal"),
+            ),
+            Contact(
+                contactId = "2",
+                lookupKey = "k2",
+                fullName = "Normal And Ignored",
+                birthday = today,
+                labels = listOf("Normal", "Ignored"),
+            ),
+        )
+        val settings = defaultSettings.copy(ignoredLabels = setOf("Ignored"))
+
+        val result = invoke(
+            contacts = contacts,
+            selectedLabel = "Normal",
+            settings = settings,
+        ).first()
+
+        assertThat(result.map { it.fullName }).containsExactly("Only Normal")
+    }
+
+    @Test
+    fun ignoredPseudoLabel_whenSelected_showsMatchingContacts() = runTest {
+        val contacts = listOf(
+            Contact(
+                contactId = "1",
+                lookupKey = "k1",
+                fullName = "Anniversary Contact",
+                anniversary = today.plusDays(2),
+                labels = listOf("Ignored"),
+            ),
+            Contact(
+                contactId = "2",
+                lookupKey = "k2",
+                fullName = "No Birthday Contact",
+                birthday = null,
+                labels = listOf("Ignored"),
+            ),
+        )
+        val settings = defaultSettings.copy(
+            ignoredLabels = setOf(
+                "Ignored",
+                ContactLabels.LABEL_ANNIVERSARY,
+                ContactLabels.LABEL_NO_BIRTHDAY,
+            ),
+            otherEventsEnabled = true,
+        )
+
+        val anniversaryResult = invoke(
+            contacts = contacts,
+            selectedLabel = ContactLabels.LABEL_ANNIVERSARY,
+            settings = settings,
+        ).first()
+        assertThat(anniversaryResult.map { it.fullName }).containsExactly("Anniversary Contact")
+
+        val noBirthdayResult = invoke(
+            contacts = contacts,
+            selectedLabel = ContactLabels.LABEL_NO_BIRTHDAY,
+            settings = settings,
+        ).first()
+        assertThat(noBirthdayResult.map { it.fullName }).containsExactly(
+            "Anniversary Contact",
+            "No Birthday Contact",
+        )
+    }
+
+    @Test
     fun labelFilter_noBirthday_showsOnlyContactsWithoutDate() = runTest {
         val contacts = listOf(
             Contact(contactId = "1", lookupKey = "k1", fullName = "Has Date", birthday = today),

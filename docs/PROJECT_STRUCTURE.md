@@ -79,7 +79,7 @@
   - **Home (`home/`)**: `HomeScreen`, `HomeContent`, `HomeNavKey`, `HomeState`, `HomeActions`, `HomeIntent`, `HomeUiEvent`, `HomeViewModel`.
     - Header (`components/header/`): `HomeHeader` (erbt von `AppTopHeader`), `TitleAction`.
     - Components: `BirthdayList`, `BirthdayItem` (nutzt zentrales `BirthdayCard` aus `ui.components.cards/`), `BirthdayDetailPane`, `GiftIdeaList`, `FastScrollbar`, `ScrollbarBubble`, `ContactActionRow`, `MessengerAppUi`, `ConfettiEffect`, etc.
-  - **Labels (`labels/`)**: `LabelsScreen`, `components/` (`LabelsHeader` [erbt von `AppTopHeader`], `AddLabelDialog`, `AllLabelsCard`, `LabelCard` [expandierbare Glass-Cards mit Statusfärbung rot/grau über `Color.kt`], `SelectionCheckIndicator`, `ContactChip`). Label-Erstellung erfolgt über das Header-Plus-Icon.
+  - **Labels (`labels/`)**: `LabelsScreen`, `components/` (`LabelsHeader` [erbt von `AppTopHeader`], `AddLabelDialog`, `AllLabelsCard`, `LabelCard` [expandierbare Glass-Cards mit Statusfärbung rot/grau über `Color.kt`], `SelectionCheckIndicator`). Label-Erstellung erfolgt über das Header-Plus-Icon.
   - **Onboarding (`onboarding/`)**: `OnboardingScreen`, `OnboardingViewModel`, `OnboardingUiState` & Pages (`WelcomePage`, `ContactsPage`, `NotificationsPage`, `CalendarPage`, `CalendarGuidePage`, `ReadyPage`, `OnboardingFooter`).
   - **Settings (`settings/`)**: `SettingsScreen` (inkl. `SettingsTab`, `PinnedHeaderPage` + Morphing-Suchleiste mit Tiefensuche über Unterseiten & Navigation-3-Split-Pane) & Sub-Features in `subscreens/`:
     - `subscreens/labels/`: `LabelSettingsScreen`, `LabelViewModel`, `LabelUiState`.

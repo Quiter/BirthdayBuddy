@@ -1,19 +1,18 @@
 ﻿package com.heckmannch.birthdaybuddy.ui.screens.settings.subscreens.labels
 
 import androidx.compose.runtime.Immutable
-import com.heckmannch.birthdaybuddy.ui.model.ContactUiModel
 import com.heckmannch.birthdaybuddy.ui.model.LabelManagementModel
 
 /**
- * UI model pairing a configurable label (or pseudo-label) with its assigned contacts.
+ * UI model pairing a configurable label (or pseudo-label) with its assigned contact count.
  *
  * @property label Configuration state of the label.
- * @property assignedContacts Unfiltered contacts belonging to this label, mapped for UI display.
+ * @property contactsCount Number of unfiltered contacts belonging to this label.
  */
 @Immutable
-data class LabelWithContactsUiModel(
+data class LabelItemUiModel(
     val label: LabelManagementModel,
-    val assignedContacts: List<ContactUiModel> = emptyList(),
+    val contactsCount: Int = 0,
 )
 
 /**
@@ -29,9 +28,9 @@ data class LabelWithContactsUiModel(
 @Immutable
 data class LabelUiState(
     val labelsEnabled: Boolean = true,
-    val activeLabels: List<LabelWithContactsUiModel> = emptyList(),
-    val otherEventLabels: List<LabelWithContactsUiModel> = emptyList(),
-    val hiddenLabels: List<LabelWithContactsUiModel> = emptyList(),
-    val ignoredLabels: List<LabelWithContactsUiModel> = emptyList(),
+    val activeLabels: List<LabelItemUiModel> = emptyList(),
+    val otherEventLabels: List<LabelItemUiModel> = emptyList(),
+    val hiddenLabels: List<LabelItemUiModel> = emptyList(),
+    val ignoredLabels: List<LabelItemUiModel> = emptyList(),
     val allLabeledContactsCount: Int = 0,
 )
