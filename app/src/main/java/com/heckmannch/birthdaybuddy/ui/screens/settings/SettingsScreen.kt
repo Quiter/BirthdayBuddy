@@ -20,6 +20,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.Label
+import androidx.compose.material.icons.automirrored.rounded.ViewList
 import androidx.compose.material.icons.rounded.Backup
 import androidx.compose.material.icons.rounded.CalendarMonth
 import androidx.compose.material.icons.rounded.ColorLens
@@ -574,6 +575,12 @@ private fun SubpageSearchMatches(onOpenTab: (SettingsTab) -> Unit) {
                     stringResource(R.string.home_filter_other_event),
                     stringResource(R.string.other_events_section_detected),
                 ),
+            )
+            SettingsItem(
+                onClick = { onOpenTab(SettingsTab.OTHER_EVENTS) },
+                title = stringResource(R.string.other_events_show_in_home_list),
+                subtitle = stringResource(R.string.other_events_show_in_home_list_desc),
+                icon = Icons.AutoMirrored.Rounded.ViewList,
             )
         }
     }

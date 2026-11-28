@@ -1,6 +1,7 @@
 package com.heckmannch.birthdaybuddy.ui.model
 
 import androidx.compose.runtime.Immutable
+import com.heckmannch.birthdaybuddy.domain.model.EventType
 import com.heckmannch.birthdaybuddy.domain.model.GiftIdea
 import java.time.LocalDate
 
@@ -34,6 +35,8 @@ data class ContactUiModel(
     val secondFullName: String? = null,
     val isCouple: Boolean = false,
     val birthdayTier: BirthdayTier = BirthdayTier.REGULAR,
+    val eventType: EventType = EventType.BIRTHDAY,
+    val eventKey: String? = null,
 ) {
     val hasGiftIdeas: Boolean get() = giftIdeas.any { it.text.isNotBlank() }
 }

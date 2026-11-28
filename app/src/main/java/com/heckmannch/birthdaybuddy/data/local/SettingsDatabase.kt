@@ -35,10 +35,11 @@ import androidx.sqlite.db.SupportSQLiteDatabase
  * - Version 9 -> 10: [SETTINGS_MIGRATION_9_10] (Hinzufügen von `notificationsEnabled` und `showInWidget` in `label_configs`)
  * - Version 10 -> 11: [SETTINGS_MIGRATION_10_11] (Entkopplung von Domain-Models: Umstellung auf giftIdeasJson in contact_user_data und themeModeString in app_settings)
  * - Version 11 -> 12: [SETTINGS_MIGRATION_11_12] (Hinzufügen von `disabledOtherEventLabels` und `customEventCalendarColors` in `app_settings`)
+ * - Version 12 -> 13: [SETTINGS_MIGRATION_12_13] (Hinzufügen von `showOtherEventsInHomeList` in `app_settings`)
  */
 @Database(
     entities = [LabelConfigEntity::class, NotificationRuleEntity::class, AppSettingsEntity::class, ContactUserData::class],
-    version = 12,
+    version = 13,
     exportSchema = true
 )
 @TypeConverters(Converters::class, GiftIdeaConverters::class)
@@ -243,6 +244,18 @@ internal val SETTINGS_MIGRATION_11_12 = object : Migration(11, 12) {
 }
 
 /**
+ * Migration von Version 12 auf 13.
+ *
+ * Fügt die Spalte `showOtherEventsInHomeList` (Default `0`) zur Tabelle `app_settings` hinzu,
+ * um festzulegen, ob weitere Ereignisse direkt in die Hauptliste auf dem Homescreen einsortiert werden.
+ */
+internal val SETTINGS_MIGRATION_12_13 = object : Migration(12, 13) {
+    override fun migrate(db: SupportSQLiteDatabase) {
+        db.execSQL("ALTER TABLE app_settings ADD COLUMN showOtherEventsInHomeList INTEGER NOT NULL DEFAULT 0")
+    }
+}
+
+/**
  * Erstellt und konfiguriert die [SettingsDatabase]-Instanz.
  *
  * Gemäß Projekt-Richtlinie wird [RoomDatabase.Builder.fallbackToDestructiveMigration] bewusst nicht aufgerufen,
@@ -269,7 +282,8 @@ internal fun buildSettingsDatabase(context: Context): SettingsDatabase {
             SETTINGS_MIGRATION_8_9,
             SETTINGS_MIGRATION_9_10,
             SETTINGS_MIGRATION_10_11,
-            SETTINGS_MIGRATION_11_12
+            SETTINGS_MIGRATION_11_12,
+            SETTINGS_MIGRATION_12_13
         )
         .build()
 }

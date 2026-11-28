@@ -194,7 +194,8 @@ class HomeViewModel @Inject constructor(
         contactRepository.labelsEnabled,
         contactRepository.otherEventsEnabled,
         contactRepository.disabledOtherEventLabels,
-    ) { configs, labelsEnabled, otherEventsEnabled, disabledOtherEventLabels ->
+        contactRepository.showOtherEventsInHomeList,
+    ) { configs, labelsEnabled, otherEventsEnabled, disabledOtherEventLabels, showOtherEventsInHomeList ->
         val ignored = if (!labelsEnabled) emptySet()
         else configs.asSequence()
             .filter { it.isIgnored }
@@ -205,6 +206,7 @@ class HomeViewModel @Inject constructor(
             labelsEnabled = labelsEnabled,
             otherEventsEnabled = otherEventsEnabled,
             disabledOtherEventLabels = disabledOtherEventLabels,
+            showOtherEventsInHomeList = showOtherEventsInHomeList,
         )
     }
         .distinctUntilChanged()
@@ -249,7 +251,8 @@ class HomeViewModel @Inject constructor(
             selectedLabel = selectedLabel,
             labelsEnabled = settings.labelsEnabled,
             otherEventsEnabled = settings.otherEventsEnabled,
-            disabledOtherEventLabels = settings.disabledOtherEventLabels,
+            disabledOtherEventLabels = settings.disabledOtherEventLabels + settings.ignoredLabels,
+            showOtherEventsInHomeList = settings.showOtherEventsInHomeList,
         )
     }.flowOn(defaultDispatcher)
 

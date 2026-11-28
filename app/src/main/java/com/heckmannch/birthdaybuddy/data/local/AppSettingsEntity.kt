@@ -18,6 +18,7 @@ data class AppSettingsEntity(
     val calendarSyncEnabled: Boolean = false,
     val calendarId: Long? = null,
     val otherEventsEnabled: Boolean = false,
+    val showOtherEventsInHomeList: Boolean = false,
     val disabledOtherEventLabels: List<String> = emptyList(),
     val ignoredCouplePairs: List<String> = emptyList(),
     val birthdayCalendarColor: Int = 0xFFE91E63.toInt(),

@@ -21,11 +21,14 @@ data class DetectedOtherEventUiModel(
  * Coherent UI state for the "Other Events" settings subpage.
  *
  * @property otherEventsEnabled Global toggle controlling whether non-birthday events are active.
+ * @property showOtherEventsInHomeList Toggle controlling whether enabled non-birthday events are
+ *   chronologically sorted into the main home screen list alongside birthdays.
  * @property detectedEvents All non-birthday date-field categories found in the user's contacts,
  *   in canonical display order.
  */
 @Immutable
 data class OtherEventsUiState(
     val otherEventsEnabled: Boolean = false,
+    val showOtherEventsInHomeList: Boolean = false,
     val detectedEvents: List<DetectedOtherEventUiModel> = emptyList(),
 )

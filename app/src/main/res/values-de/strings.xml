@@ -312,6 +312,8 @@
     <!-- Weitere Ereignisse -->
     <string name="other_events_enable">Weitere Ereignisse aktivieren</string>
     <string name="other_events_desc">Zeige Hochzeitstage, Namenstage und weitere Datumsfelder aus deinen System-Kontakten an.</string>
+    <string name="other_events_show_in_home_list">In Hauptliste einsortieren</string>
+    <string name="other_events_show_in_home_list_desc">Sortiert aktivierte Ereignisse chronologisch zwischen die Geburtstage auf dem Startbildschirm ein. Ausgeschaltet bleiben sie über die Labels einsehbar.</string>
     <string name="settings_other_events_title">Weitere Ereignisse</string>
     <string name="settings_other_events_desc">Hochzeitstage, Namenstage und eigene Datumsfelder verwalten</string>
     <string name="other_events_section_detected">Gefundene Ereignisse</string>
@@ -320,6 +322,10 @@
     <string name="home_filter_anniversary">Hochzeitstag</string>
     <string name="home_filter_name_day">Namenstag</string>
     <string name="home_filter_other_event">Sonstiges</string>
+    <plurals name="item_event_years">
+        <item quantity="one">%d Jahr</item>
+        <item quantity="other">%d Jahre</item>
+    </plurals>
 
     <!-- Benachrichtigungen Hochzeitstage -->
     <string name="notif_title_today_anniversary_age">Heute ist der %2$d. Hochzeitstag von %1$s!</string>
@@ -452,6 +458,7 @@
     <string name="detail_close_desc">Details schließen</string>
     <string name="detail_birthday_label">Geburtstag</string>
     <string name="detail_age_label">Nächstes Alter</string>
+    <string name="detail_event_years_label">Jahre</string>
     <string name="detail_edit_birthday_desc">Geburtstag bearbeiten</string>
     <string name="detail_placeholder_title">Wähle einen Kontakt</string>
     <string name="detail_placeholder_subtitle">Wähle links einen Kontakt aus, um Details anzuzeigen oder Geschenkideen zu verwalten.</string>

@@ -80,11 +80,19 @@ class ContactUiMapper @Inject constructor() {
             EventType.CUSTOM -> customEventKey?.let { contact.customEvents[it] }
             EventType.BIRTHDAY -> contact.birthday
         }
+        val resolvedEventKey = when (eventType) {
+            EventType.ANNIVERSARY -> ContactLabels.LABEL_ANNIVERSARY
+            EventType.NAME_DAY -> ContactLabels.LABEL_NAME_DAY
+            EventType.CUSTOM -> customEventKey
+            EventType.BIRTHDAY -> null
+        }
         return buildUiModel(
             contact = contact,
             today = today,
             eventDate = eventDate,
             id = contact.lookupKey,
+            eventType = eventType,
+            eventKey = resolvedEventKey,
         )
     }
 
@@ -93,6 +101,8 @@ class ContactUiMapper @Inject constructor() {
         today: LocalDate,
         eventDate: LocalDate?,
         id: String,
+        eventType: EventType = EventType.BIRTHDAY,
+        eventKey: String? = null,
     ): ContactUiModel {
         val formatters = getFormatters()
         val hasYear = eventDate?.hasYear ?: false
@@ -123,12 +133,18 @@ class ContactUiMapper @Inject constructor() {
             giftIdeas = contact.giftIdeas,
             birthday = contact.birthday,
             birthdayTier = BirthdayTier.from(nextAgeValue),
+            eventType = eventType,
+            eventKey = eventKey,
         )
     }
 
     /**
      * Maps a filtered list of domain [Contact] models to their corresponding [ContactUiModel]s,
      * applying couple pairing/merging for anniversaries and resolving standard or custom event types.
+     *
+     * When labels are disabled, or when [showOtherEventsInHomeList] is enabled while viewing the
+     * unfiltered home list or a regular user label, all enabled non-birthday events are expanded
+     * into individual list items with unique IDs and sorted chronologically alongside birthdays.
      */
     fun mapToUiModels(
         contacts: List<Contact>,
@@ -137,10 +153,21 @@ class ContactUiMapper @Inject constructor() {
         labelsEnabled: Boolean,
         otherEventsEnabled: Boolean,
         disabledOtherEventLabels: Set<String> = emptySet(),
+        showOtherEventsInHomeList: Boolean = false,
     ): List<ContactUiModel> {
-        val uiList = if (!labelsEnabled) {
-            // "No labels" path: Show birthdays, enabled name days, anniversaries, and custom events
-            // in one flat list, with couple merging for anniversaries.
+        val isSpecificEventOrNoBirthdayFilter =
+            selectedLabel == ContactLabels.LABEL_NO_BIRTHDAY ||
+                selectedLabel == ContactLabels.LABEL_ANNIVERSARY ||
+                selectedLabel == ContactLabels.LABEL_NAME_DAY ||
+                (selectedLabel != null && ContactLabels.isDynamicCustomEventKey(selectedLabel))
+
+        val mergeOtherEventsIntoList =
+            !labelsEnabled || (showOtherEventsInHomeList && !isSpecificEventOrNoBirthdayFilter)
+
+        val uiList = if (mergeOtherEventsIntoList) {
+            // Combined flat list path: Show birthdays, enabled name days, anniversaries, and custom
+            // events in one chronologically sorted list, with couple merging for anniversaries.
+            val preserveLabels = labelsEnabled
             val anniversaryEnabled = otherEventsEnabled &&
                 ContactLabels.LABEL_ANNIVERSARY !in disabledOtherEventLabels
             val nameDayEnabled = otherEventsEnabled &&
@@ -148,7 +175,11 @@ class ContactUiMapper @Inject constructor() {
 
             val birthdays = contacts.asSequence()
                 .filter { it.birthday != null }
-                .map { toUiModelForEvent(it, today, EventType.BIRTHDAY).copy(labels = emptyList()) }
+                .map {
+                    toUiModelForEvent(it, today, EventType.BIRTHDAY).let { model ->
+                        if (preserveLabels) model else model.copy(labels = emptyList())
+                    }
+                }
                 .toList()
 
             val nameDays = if (nameDayEnabled) {
@@ -160,13 +191,22 @@ class ContactUiMapper @Inject constructor() {
                             today = today,
                             eventDate = it.nameDay,
                             id = "${it.lookupKey}_${ContactLabels.LABEL_NAME_DAY}",
-                        ).copy(labels = emptyList())
+                            eventType = EventType.NAME_DAY,
+                            eventKey = ContactLabels.LABEL_NAME_DAY,
+                        ).let { model ->
+                            if (preserveLabels) model else model.copy(labels = emptyList())
+                        }
                     }
                     .toList()
             } else emptyList()
 
             val pairedAnniversaries = if (anniversaryEnabled) {
-                buildAnniversaryList(contacts, today, mergeLabels = false, uniqueIdSuffix = true)
+                buildAnniversaryList(
+                    contacts = contacts,
+                    today = today,
+                    mergeLabels = preserveLabels,
+                    uniqueIdSuffix = true,
+                )
             } else emptyList()
 
             val customEvents = if (otherEventsEnabled) {
@@ -180,7 +220,11 @@ class ContactUiMapper @Inject constructor() {
                                     today = today,
                                     eventDate = date,
                                     id = "${contact.lookupKey}_$key",
-                                ).copy(labels = emptyList())
+                                    eventType = EventType.CUSTOM,
+                                    eventKey = key,
+                                ).let { model ->
+                                    if (preserveLabels) model else model.copy(labels = emptyList())
+                                }
                             }
                     }
                     .toList()
@@ -195,12 +239,16 @@ class ContactUiMapper @Inject constructor() {
                         contact.customEvents.keys.none { it !in disabledOtherEventLabels }
                     contact.birthday == null && hasNoAnniversary && hasNoNameDay && hasNoCustomEvents
                 }
-                .map { toUiModelForEvent(it, today, EventType.BIRTHDAY).copy(labels = emptyList()) }
+                .map {
+                    toUiModelForEvent(it, today, EventType.BIRTHDAY).let { model ->
+                        if (preserveLabels) model else model.copy(labels = emptyList())
+                    }
+                }
                 .toList()
 
             birthdays + nameDays + pairedAnniversaries + customEvents + contactsWithNoEvent
         } else {
-            // "Labels enabled" path: Event type is determined by selectedLabel.
+            // "Labels enabled" path without merged other events (or with a specific event/no-birthday filter).
             when {
                 selectedLabel == ContactLabels.LABEL_ANNIVERSARY -> {
                     buildAnniversaryList(contacts, today, mergeLabels = true, uniqueIdSuffix = false)
@@ -290,6 +338,8 @@ class ContactUiMapper @Inject constructor() {
                     secondFullName = spouse.fullName,
                     isCouple = true,
                     birthdayTier = uiModelA.birthdayTier,
+                    eventType = EventType.ANNIVERSARY,
+                    eventKey = ContactLabels.LABEL_ANNIVERSARY,
                 )
                 list.add(mergedModel)
             } else {

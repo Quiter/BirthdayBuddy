@@ -43,6 +43,10 @@ class OtherEventsViewModel @Inject constructor(
         .map { it.otherEventsEnabled }
         .distinctUntilChanged()
 
+    private val showOtherEventsInHomeListFlow = settingsRepository.settings
+        .map { it.showOtherEventsInHomeList }
+        .distinctUntilChanged()
+
     private val disabledEventKeysFlow = settingsRepository.settings
         .map { it.disabledOtherEventLabels.toSet() }
         .distinctUntilChanged()
@@ -54,10 +58,12 @@ class OtherEventsViewModel @Inject constructor(
 
     val uiState: StateFlow<OtherEventsUiState> = combine(
         otherEventsEnabledFlow,
+        showOtherEventsInHomeListFlow,
         detectedEventsFlow,
-    ) { otherEventsEnabled, detectedEvents ->
+    ) { otherEventsEnabled, showOtherEventsInHomeList, detectedEvents ->
         OtherEventsUiState(
             otherEventsEnabled = otherEventsEnabled,
+            showOtherEventsInHomeList = showOtherEventsInHomeList,
             detectedEvents = detectedEvents.map { event ->
                 DetectedOtherEventUiModel(
                     eventKey = event.eventKey,
@@ -77,6 +83,7 @@ class OtherEventsViewModel @Inject constructor(
     fun onIntent(intent: OtherEventsIntent) {
         when (intent) {
             is OtherEventsIntent.SetOtherEventsEnabled -> setOtherEventsEnabled(intent.enabled)
+            is OtherEventsIntent.SetShowOtherEventsInHomeList -> setShowOtherEventsInHomeList(intent.enabled)
             is OtherEventsIntent.SetEventLabelEnabled -> setEventLabelEnabled(
                 eventKey = intent.eventKey,
                 enabled = intent.enabled,
@@ -145,6 +152,20 @@ class OtherEventsViewModel @Inject constructor(
         }
     }
 
+    /**
+     * Toggles whether enabled non-birthday events are chronologically sorted into the main
+     * home screen list alongside birthdays.
+     */
+    private fun setShowOtherEventsInHomeList(enabled: Boolean) = viewModelScope.launch {
+        try {
+            settingsRepository.updateSettings { it.copy(showOtherEventsInHomeList = enabled) }
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: Exception) {
+            Log.e(TAG, "Failed to update showOtherEventsInHomeList setting", e)
+        }
+    }
+
     private companion object {
         private const val TAG = "OtherEventsViewModel"
     }
@@ -152,5 +173,6 @@ class OtherEventsViewModel @Inject constructor(
 
 sealed interface OtherEventsIntent {
     data class SetOtherEventsEnabled(val enabled: Boolean) : OtherEventsIntent
+    data class SetShowOtherEventsInHomeList(val enabled: Boolean) : OtherEventsIntent
     data class SetEventLabelEnabled(val eventKey: String, val enabled: Boolean) : OtherEventsIntent
 }

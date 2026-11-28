@@ -3,6 +3,7 @@ package com.heckmannch.birthdaybuddy.ui.screens.settings.subscreens.otherevents
 import androidx.annotation.VisibleForTesting
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.EventNote
+import androidx.compose.material.icons.automirrored.rounded.ViewList
 import androidx.compose.material.icons.rounded.Celebration
 import androidx.compose.material.icons.rounded.Event
 import androidx.compose.material.icons.rounded.Favorite
@@ -43,6 +44,9 @@ fun OtherEventsSettingsScreen(
         onOtherEventsEnabledChanged = { enabled ->
             viewModel.onIntent(OtherEventsIntent.SetOtherEventsEnabled(enabled))
         },
+        onShowOtherEventsInHomeListChanged = { enabled ->
+            viewModel.onIntent(OtherEventsIntent.SetShowOtherEventsInHomeList(enabled))
+        },
         onEventLabelEnabledChanged = { eventKey, enabled ->
             viewModel.onIntent(OtherEventsIntent.SetEventLabelEnabled(eventKey, enabled))
         },
@@ -53,7 +57,8 @@ fun OtherEventsSettingsScreen(
 /**
  * Stateless UI content for the "Other Events" settings subpage.
  *
- * Displays a global enable/disable toggle at the top followed by individual toggles for every
+ * Displays a global enable/disable toggle and an optional toggle to sort enabled non-birthday
+ * events chronologically into the home screen list, followed by individual toggles for every
  * non-birthday date-field label discovered across the user's contacts (or an informative empty
  * notice when none are present).
  */
@@ -63,6 +68,7 @@ internal fun OtherEventsSettingsScreenContent(
     uiState: OtherEventsUiState,
     showBackButton: Boolean = true,
     onOtherEventsEnabledChanged: (Boolean) -> Unit = {},
+    onShowOtherEventsInHomeListChanged: (Boolean) -> Unit = {},
     onEventLabelEnabledChanged: (eventKey: String, enabled: Boolean) -> Unit = { _, _ -> },
     onNavigateBack: () -> Unit = {},
 ) {
@@ -79,6 +85,15 @@ internal fun OtherEventsSettingsScreenContent(
                     checked = uiState.otherEventsEnabled,
                     onCheckedChange = onOtherEventsEnabledChanged,
                 )
+                FoldingVisibility(visible = uiState.otherEventsEnabled) {
+                    SettingsSwitchItem(
+                        title = stringResource(R.string.other_events_show_in_home_list),
+                        subtitle = stringResource(R.string.other_events_show_in_home_list_desc),
+                        icon = Icons.AutoMirrored.Rounded.ViewList,
+                        checked = uiState.showOtherEventsInHomeList,
+                        onCheckedChange = onShowOtherEventsInHomeListChanged,
+                    )
+                }
             }
             SettingsFooter(text = stringResource(R.string.other_events_desc))
         }
@@ -131,6 +146,7 @@ private fun OtherEventsSettingsEnabledPreview() {
         OtherEventsSettingsScreenContent(
             uiState = OtherEventsUiState(
                 otherEventsEnabled = true,
+                showOtherEventsInHomeList = true,
                 detectedEvents = listOf(
                     DetectedOtherEventUiModel(
                         eventKey = ContactLabels.LABEL_ANNIVERSARY,

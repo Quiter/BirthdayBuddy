@@ -36,6 +36,7 @@ class GetContactsUseCase @Inject constructor(
         val labelsEnabled: Boolean,
         val otherEventsEnabled: Boolean,
         val disabledOtherEventLabels: Set<String> = emptySet(),
+        val showOtherEventsInHomeList: Boolean = false,
     )
 
     /**
@@ -71,6 +72,8 @@ class GetContactsUseCase @Inject constructor(
         val labelsEnabled = settingsState.labelsEnabled
         val otherEventsEnabled = settingsState.otherEventsEnabled
         val disabledEvents = settingsState.disabledOtherEventLabels
+        val includeOtherEventsInMainList = otherEventsEnabled && settingsState.showOtherEventsInHomeList
+        val excludedOtherEventsInMainList = disabledEvents + ignoredLabels
         val isSelectedLabelIgnored = label != null && label in ignoredLabels
 
         val contactMap = rawContacts.associateBy { it.lookupKey }
@@ -92,21 +95,18 @@ class GetContactsUseCase @Inject constructor(
 
             // 3. Label / Event type filter
             if (!labelsEnabled) {
-                val hasBirthday = contact.birthday != null
-                val hasAnniversary = otherEventsEnabled &&
-                    ContactLabels.LABEL_ANNIVERSARY !in disabledEvents &&
-                    contact.anniversary != null
-                val hasNameDay = otherEventsEnabled &&
-                    ContactLabels.LABEL_NAME_DAY !in disabledEvents &&
-                    contact.nameDay != null
-                val hasCustomEvent = otherEventsEnabled &&
-                    contact.customEvents.keys.any { it !in disabledEvents }
-                hasBirthday || hasNameDay || hasAnniversary || hasCustomEvent || isSearching
+                contact.birthday != null ||
+                    (otherEventsEnabled && contact.hasAnyActiveOtherEvent(disabledEvents)) ||
+                    isSearching
             } else {
                 when {
                     label == null -> {
-                        // All contacts with a birthday, or during search, contacts with no events too
-                        contact.birthday != null || isSearching
+                        // All contacts with a birthday, enabled other events when sorted into the main list,
+                        // or during search, contacts with no events too
+                        contact.birthday != null ||
+                            (includeOtherEventsInMainList &&
+                                contact.hasAnyActiveOtherEvent(excludedOtherEventsInMainList)) ||
+                            isSearching
                     }
 
                     label == ContactLabels.LABEL_NO_BIRTHDAY -> {
@@ -130,11 +130,23 @@ class GetContactsUseCase @Inject constructor(
                     }
 
                     else -> {
-                        // Contacts with specific label category and birthday (unless searching)
-                        contact.labels.contains(label) && (contact.birthday != null || isSearching)
+                        // Contacts with specific label category and birthday (or enabled other events when sorted in)
+                        contact.labels.contains(label) && (
+                            contact.birthday != null ||
+                                (includeOtherEventsInMainList &&
+                                    contact.hasAnyActiveOtherEvent(excludedOtherEventsInMainList)) ||
+                                isSearching
+                            )
                     }
                 }
             }
         }
+    }
+
+    private fun Contact.hasAnyActiveOtherEvent(excludedEvents: Set<String>): Boolean {
+        val hasAnniversary = ContactLabels.LABEL_ANNIVERSARY !in excludedEvents && anniversary != null
+        val hasNameDay = ContactLabels.LABEL_NAME_DAY !in excludedEvents && nameDay != null
+        val hasCustomEvent = customEvents.keys.any { it !in excludedEvents }
+        return hasAnniversary || hasNameDay || hasCustomEvent
     }
 }

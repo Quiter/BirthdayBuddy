@@ -12,6 +12,7 @@ interface ContactRepository {
     val allContacts: Flow<List<Contact>>
     val labelConfigs: Flow<List<LabelConfig>>
     val otherEventsEnabled: Flow<Boolean>
+    val showOtherEventsInHomeList: Flow<Boolean>
     val disabledOtherEventLabels: Flow<Set<String>>
     val labelsEnabled: Flow<Boolean>
 

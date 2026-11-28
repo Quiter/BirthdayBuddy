@@ -13,6 +13,7 @@ data class AppSettings(
     val calendarSyncEnabled: Boolean = false,
     val calendarId: Long? = null,
     val otherEventsEnabled: Boolean = false,
+    val showOtherEventsInHomeList: Boolean = false,
     val disabledOtherEventLabels: List<String> = emptyList(),
     val ignoredCouplePairs: List<String> = emptyList(),
     val birthdayCalendarColor: Int = DEFAULT_BIRTHDAY_CALENDAR_COLOR,

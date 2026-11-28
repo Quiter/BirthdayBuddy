@@ -312,6 +312,8 @@
     <!-- Weitere Ereignisse -->
     <string name="other_events_enable">Enable additional events</string>
     <string name="other_events_desc">Show anniversaries, name days, and other date fields from your system contacts.</string>
+    <string name="other_events_show_in_home_list">Include in main list</string>
+    <string name="other_events_show_in_home_list_desc">Sorts enabled events chronologically alongside birthdays on the home screen. When off, they remain accessible via labels.</string>
     <string name="settings_other_events_title">Additional Events</string>
     <string name="settings_other_events_desc">Manage anniversaries, name days, and custom date fields</string>
     <string name="other_events_section_detected">Detected Events</string>
@@ -320,6 +322,10 @@
     <string name="home_filter_anniversary">Anniversary</string>
     <string name="home_filter_name_day">Name Day</string>
     <string name="home_filter_other_event">Other</string>
+    <plurals name="item_event_years">
+        <item quantity="one">%d year</item>
+        <item quantity="other">%d years</item>
+    </plurals>
 
     <!-- Anniversary Notifications -->
     <string name="notif_title_today_anniversary_age">%1$s\'s wedding anniversary (%2$d years) is today!</string>
@@ -452,6 +458,7 @@
     <string name="detail_close_desc">Close details</string>
     <string name="detail_birthday_label">Birthday</string>
     <string name="detail_age_label">Upcoming age</string>
+    <string name="detail_event_years_label">Years</string>
     <string name="detail_edit_birthday_desc">Edit birthday</string>
     <string name="detail_placeholder_title">Select a Contact</string>
     <string name="detail_placeholder_subtitle">Pick a contact from the list on the left to see details or manage gift ideas.</string>
